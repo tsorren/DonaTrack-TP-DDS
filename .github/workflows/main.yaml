@@ -15,22 +15,22 @@ jobs:
           BASE_BRANCH="${{ github.base_ref }}"
           SRC_BRANCH="${{ github.head_ref }}"
 
-          # Caso 1: Merge a main (Debe venir de una rama de entrega parcial) [cite: 34]
+          # Caso 1: Merge a main (Debe venir de una rama de entrega parcial)
           if [[ "$BASE_BRANCH" == "main" ]]; then
             if [[ ! "$SRC_BRANCH" =~ ^ENTREGA_.* ]]; then
-              [cite_start]echo "Error: Pull Requests a 'main' solo se permiten desde 'ENTREGA_*'." [cite: 31]
+              echo "Error: Pull Requests a 'main' solo se permiten desde 'ENTREGA_*'."
               exit 1
             fi
           fi
 
-          # Caso 2: Merge a ENTREGA_n (Debe venir de En_...) [cite: 37, 39]
+          # Caso 2: Merge a ENTREGA_n (Debe venir de En_...)
           if [[ "$BASE_BRANCH" =~ ^ENTREGA_([0-9]+)$ ]]; then
             # Extrae el numero de entrega (ej: 1 de ENTREGA_1)
             DELIVERY_NUM="${BASH_REMATCH[1]}"
             REQUIRED_PREFIX="E${DELIVERY_NUM}_"
             
             if [[ ! "$SRC_BRANCH" =~ ^$REQUIRED_PREFIX.* ]]; then
-              [cite_start]echo "Error: Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'." [cite: 39]
+              echo "Error: Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'."]
               echo "Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
               exit 1
             fi
