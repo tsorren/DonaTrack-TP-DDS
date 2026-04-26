@@ -1,0 +1,28 @@
+# Build
+target/
+**/target/
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Logs
+*.log
+**/logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / configs locales
+.env
+.env.*
+application-local.yml
+application-local.properties
