@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>ar.edu.utn.frba.ddsi</groupId>
@@ -23,10 +23,10 @@
     <spring.boot.dependencies.version>3.2.4</spring.boot.dependencies.version>
     <spring.cloud-version>2023.0.0</spring.cloud-version>
     <lombok.version>1.18.34</lombok.version>
-    
+
     <spotless.version>2.43.0</spotless.version>
     <jacoco.version>0.8.11</jacoco.version>
-    <plantuml-generator.version>2.1.0</plantuml-generator.version>
+    <plantuml-generator.version>1.6.0</plantuml-generator.version>
     <sonar.version>3.10.0.2594</sonar.version>
   </properties>
 
@@ -141,22 +141,24 @@
       </plugin>
 
       <plugin>
-        <groupId>com.github.davidmoten</groupId>
+        <groupId>de.elnarion.maven</groupId>
         <artifactId>plantuml-generator-maven-plugin</artifactId>
         <version>${plantuml-generator.version}</version>
         <executions>
           <execution>
-            <id>generate-diagrams</id>
+            <id>generate-plantuml</id>
             <phase>test</phase>
             <goals>
               <goal>generate</goal>
             </goals>
             <configuration>
-              <outputDirectory>${project.basedir}/target</outputDirectory>
+              <outputDirectory>${project.build.directory}</outputDirectory>
               <outputFilename>modelo_tecnico.puml</outputFilename>
-              <packages>
-                <package>ar.edu.utn.frba.ddsi</package>
-              </packages>
+              <scanPackages>
+                <scanPackage>ar.edu.utn.frba.ddsi</scanPackage>
+              </scanPackages>
+              <hideFields>false</hideFields>
+              <hideMethods>false</hideMethods>
             </configuration>
           </execution>
         </executions>
