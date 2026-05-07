@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class ItemDonacion {
-    private Bien bien;
-    private Integer cantidad;
+  private Bien bien;
+  private Integer cantidad;
 }
