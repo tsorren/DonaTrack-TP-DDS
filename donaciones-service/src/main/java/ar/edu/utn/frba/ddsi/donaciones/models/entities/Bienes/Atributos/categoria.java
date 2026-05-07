@@ -1,4 +1,4 @@
-package Bienes.Atributos;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities.Bienes.Atributos;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,10 +6,10 @@ import lombok.Setter;
 @Getter
 @Setter
 
-public class Categoria {
+public class categoria {
     private String nombre;
     private Boolean conUso;
     private Boolean conVencimiento;
-    private Unidad tipoUnidad;
+    private unidad tipoUnidad;
 
 }

@@ -1,4 +1,4 @@
-package Bienes;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities.Bienes;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,8 +6,8 @@ import lombok.Setter;
 @Getter
 @Setter
 
-public class StockBien {
-    private Bien bien;
+public class stockBien {
+    private bien bien;
     private int cantidadEnStock;
 
     // Metodos
