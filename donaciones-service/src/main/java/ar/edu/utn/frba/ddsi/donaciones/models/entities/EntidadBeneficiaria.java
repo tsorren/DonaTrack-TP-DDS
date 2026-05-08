@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 public class EntidadBeneficiaria {
   private Juridica juridica;
-  private List<Necesidad> necesidades;
+  private List<Necesidad> necesidades = new ArrayList<>();
 
   public void agregarNecesidad(Necesidad necesidad) {
     this.necesidades.add(necesidad);
