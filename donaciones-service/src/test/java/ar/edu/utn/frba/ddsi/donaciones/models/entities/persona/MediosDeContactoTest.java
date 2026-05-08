@@ -8,7 +8,7 @@ import ar.edu.utn.frba.ddsi.donaciones.models.entities.persona.medioDeContacto.W
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class PersonaTest {
+class MediosDeContactoTest {
 
   Humana persona;
   Correo correo;
