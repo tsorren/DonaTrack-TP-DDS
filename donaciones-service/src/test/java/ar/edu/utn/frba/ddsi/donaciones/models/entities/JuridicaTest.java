@@ -1,15 +1,18 @@
-package ar.edu.utn.frba.ddsi.donaciones.models.entities.persona;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Humana;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Juridica;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class JuridicaTest {
 
-  Juridica juridica;
-  Humana representante1;
-  Humana representante2;
+  private Juridica juridica;
+  private Humana representante1;
+  private Humana representante2;
 
   @BeforeEach
   void setup() {
