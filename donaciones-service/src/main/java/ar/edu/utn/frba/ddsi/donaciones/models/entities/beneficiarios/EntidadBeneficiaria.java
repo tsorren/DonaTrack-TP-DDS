@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios;
 
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.persona.Juridica;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Juridica;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
