@@ -1,14 +1,13 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.DonacionAsignada;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.Periodo;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class NecesidadRecurrenteTests {
   private NecesidadRecurrente necesidad;

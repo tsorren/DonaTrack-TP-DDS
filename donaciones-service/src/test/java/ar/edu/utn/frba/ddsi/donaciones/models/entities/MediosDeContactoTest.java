@@ -1,14 +1,14 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Humana;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.Correo;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.Telefono;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.WhatsApp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MediosDeContactoTest {
 

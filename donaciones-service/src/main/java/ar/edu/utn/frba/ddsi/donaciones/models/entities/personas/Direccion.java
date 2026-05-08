@@ -2,7 +2,6 @@ package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
 
 import lombok.Data;
 
-
 @Data
 public class Direccion {
   private String calle;

@@ -1,9 +1,7 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes;
 
-import lombok.Data;
-
 import java.time.LocalDate;
-
+import lombok.Data;
 
 @Data
 public class Bien {
