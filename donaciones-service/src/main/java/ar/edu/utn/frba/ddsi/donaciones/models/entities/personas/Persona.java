@@ -9,14 +9,10 @@ import lombok.Setter;
 @Getter
 @Setter
 abstract class Persona {
-  private final List<MedioDeContacto> contactos;
+  private final List<MedioDeContacto> contactos = new ArrayList<>();
   private TipoDocumento tipoDocumento;
   private String documento;
   private Direccion direccion;
-
-  public Persona() {
-    this.contactos = new ArrayList<>();
-  }
 
   public void agregarMedioDeContacto(MedioDeContacto medioDeContacto) {
     contactos.add(medioDeContacto);
