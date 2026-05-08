@@ -7,8 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class NecesidadRecurrente extends Necesidad {
-  // private int cantidadObjetivo;
-  // private int cantidadAcumulada;
   private Periodo periodo;
   private LocalDate fechaInicioPeriodo;
   private LocalDate fechaFinPeriodo;
