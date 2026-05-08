@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.donaciones;
 
-import Bienes.Bien;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.Bien;
 import lombok.Data;
 
 @Data

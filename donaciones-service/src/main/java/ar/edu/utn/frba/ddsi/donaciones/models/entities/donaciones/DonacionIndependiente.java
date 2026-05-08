@@ -1,29 +1,20 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.donaciones;
 
-import Bienes.Bien;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Data;
 
 @Data
 public class DonacionIndependiente {
   private String descripcion;
-  private java.util.List<ItemDonacion> bienes = new java.util.ArrayList<>();
+  private List<ItemDonacion> items = new ArrayList<>();
 
-  public void agregarBien(Bien bien) {
-    ItemDonacion itemDonacion = new ItemDonacion();
-    itemDonacion.setBien(bien);
-    itemDonacion.setCantidad(1);
-    this.bienes.add(itemDonacion);
+  public void agregarItem(ItemDonacion item) {
+    this.items.add(item);
   }
 
-  public void quitarBien(Bien bien) {
-    this.bienes.removeIf(itemDonacion -> itemDonacion.getBien().equals(bien));
-  }
-
-  public void agregarItemDonacion(ItemDonacion itemDonacion) {
-    this.bienes.add(itemDonacion);
-  }
-
-  public void quitarItemDonacion(ItemDonacion itemDonacion) {
-    this.bienes.remove(itemDonacion);
+  // Lanzar excepcion si el item no esta en la lista
+  public void quitarItem(ItemDonacion bien) {
+    this.items.remove(bien);
   }
 }
