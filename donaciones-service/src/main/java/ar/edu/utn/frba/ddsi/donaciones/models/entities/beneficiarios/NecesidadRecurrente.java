@@ -1,8 +1,9 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios;
 
-import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter

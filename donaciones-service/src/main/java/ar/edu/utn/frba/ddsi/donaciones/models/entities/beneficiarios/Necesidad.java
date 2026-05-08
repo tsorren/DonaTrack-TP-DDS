@@ -1,13 +1,15 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios;
 
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes.SubCategoria;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
+import java.util.ArrayList;
+import java.util.List;
+
+
 @Getter
+@Setter
 public abstract class Necesidad {
   private SubCategoria subcategoria;
   private Integer cantidadNecesitada;

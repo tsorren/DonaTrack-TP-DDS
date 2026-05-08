@@ -1,10 +1,11 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
 
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.MedioDeContacto;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter

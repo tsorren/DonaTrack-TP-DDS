@@ -1,19 +1,21 @@
-package ar.edu.utn.frba.ddsi.donaciones.models.entities.persona;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.persona.medioDeContacto.Correo;
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.persona.medioDeContacto.Telefono;
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.persona.medioDeContacto.WhatsApp;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Humana;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.Correo;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.Telefono;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.WhatsApp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class MediosDeContactoTest {
 
-  Humana persona;
-  Correo correo;
-  Telefono telefono;
-  WhatsApp whatsApp;
+  private Humana persona;
+  private Correo correo;
+  private Telefono telefono;
+  private WhatsApp whatsApp;
 
   @BeforeEach
   void setup() {
