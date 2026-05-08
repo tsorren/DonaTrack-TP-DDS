@@ -2,9 +2,9 @@ package ar.edu.utn.frba.ddsi.donaciones;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.necesidades.DonacionAsignada;
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.necesidades.NecesidadRecurrente;
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.necesidades.Periodo;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.DonacionAsignada;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.Periodo;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

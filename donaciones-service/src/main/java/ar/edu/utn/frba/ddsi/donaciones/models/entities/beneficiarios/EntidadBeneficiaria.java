@@ -1,6 +1,5 @@
-package ar.edu.utn.frba.ddsi.donaciones.models.entities;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios;
 
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.necesidades.Necesidad;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.persona.Juridica;
 import java.util.ArrayList;
 import java.util.List;

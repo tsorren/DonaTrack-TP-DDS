@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.ddsi.donaciones.models.entities.necesidades;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios;
 
 import java.time.LocalDate;
 import lombok.Getter;

@@ -1,9 +1,10 @@
 package ar.edu.utn.frba.ddsi.donaciones;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.EntidadBeneficiaria;
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.NecesidadExtraordinaria;
 import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
