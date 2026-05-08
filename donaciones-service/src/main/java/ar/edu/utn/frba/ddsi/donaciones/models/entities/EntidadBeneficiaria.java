@@ -2,8 +2,8 @@ package ar.edu.utn.frba.ddsi.donaciones.models.entities;
 
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.necesidades.Necesidad;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.persona.Juridica;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
