@@ -7,11 +7,13 @@ import lombok.Setter;
 @Setter
 public class NecesidadExtraordinaria extends Necesidad {
 
-  private int cantidadObjetivo;
-  private int cantidadAcumulada;
+  @Override
+  public Integer cantidadAcumulada() {
+    return this.donacionesAsignadas.stream().mapToInt(DonacionAsignada::getCantidad).sum();
+  }
 
   @Override
   public boolean estaSatisfecha() {
-    return cantidadAcumulada >= cantidadObjetivo;
+    return this.cantidadAcumulada() >= this.getCantidadNecesitada();
   }
 }
