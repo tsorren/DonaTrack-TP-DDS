@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.ddsi.donaciones;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 

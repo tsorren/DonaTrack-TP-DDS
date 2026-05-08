@@ -2,12 +2,15 @@ package ar.edu.utn.frba.ddsi.donaciones.models.entities.donaciones;
 
 import ar.edu.utn.frba.ddsi.common.Persona;
 import java.util.ArrayList;
-import lombok.Data;
+import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class Donante {
   private Persona persona;
-  private java.util.List<Donacion> historialDonaciones = new ArrayList<>();
+  private List<Donacion> historialDonaciones = new ArrayList<>();
 
   public void agregarDonacion(Donacion donacion) {
     this.historialDonaciones.add(donacion);
