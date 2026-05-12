@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'ENTREGA_*'
   workflow_dispatch:
 
 permissions:
