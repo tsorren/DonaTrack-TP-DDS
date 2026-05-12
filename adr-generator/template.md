@@ -14,25 +14,25 @@
 * {Driver de decisión 3, ej: cumplimiento de restricciones de la cátedra}
 
 ## Alternativas Consideradas
-* {Titulo de la alternativa 1}
-* {Titulo de la alternativa 2}
-* {Titulo de la alternativa 3}
+* {Título de la alternativa 1}
+* {Título de la alternativa 2}
+* {Título de la alternativa 3}
 
 ## Resultado de la Decisión
 
-Alternativa elegida: "{Titulo de la alternativa 1}", porque {justificacion. Ej: es la unica alternativa que cumple con el criterio de diseno asincronico | resuelve la fuerza X | resulta ser la mejor tras el analisis comparativo}.
+Alternativa elegida: "{Título de la alternativa 1}", porque {justificación. Ej: es la única alternativa que cumple con el criterio de diseño asincrónico | resuelve la fuerza X | resulta ser la mejor tras el análisis comparativo}.
 
 ### Consecuencias
 * Bueno, porque {consecuencia positiva, ej: mejora de uno o más atributos de calidad deseados}
 * Malo, porque {consecuencia negativa, ej: compromete la simplicidad del sistema o añade latencia}
 
-### Confirmación
+### Validación
 
-{Describir cómo se confirmará el cumplimiento con este ADR. ¿El diseño elegido y su implementación están alineados con la decisión? Ej: revisión de código, diagrama de secuencia o un test de arquitectura}.
+{Describir cómo se validará el cumplimiento con este ADR. El diseño elegido y su implementación están alineados con la decisión? Ej: revisión de código, diagrama de secuencia o un test de arquitectura}.
 
 ## Pros y Contras de las Alternativas
 
-### {Titulo de la alternativa 1}
+### {Título de la alternativa 1}
 
 {Ejemplo | descripción | referencia a más información}
 
@@ -40,7 +40,7 @@ Alternativa elegida: "{Titulo de la alternativa 1}", porque {justificacion. Ej: 
 * Bueno, porque {argumento b}
 * Malo, porque {argumento c}
 
-### {Titulo de la alternativa 2}
+### {Título de la alternativa 2}
 
 {Ejemplo | descripción | referencia a más información}
 

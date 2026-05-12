@@ -14,7 +14,7 @@ Generador de ADRs en formato Markdown con modo Crear y modo Editar.
 - script.js
 - template.md
 
-## Uso rapido
+## Uso rápido
 
 1. Acceder a https://tsorren.github.io/DonaTrack-TP-DDS/adr-generator en el navegador.
 2. Completar el formulario en modo Crear.
@@ -22,17 +22,17 @@ Generador de ADRs en formato Markdown con modo Crear y modo Editar.
 
 ## Modo crear
 
-- Usar el boton "+" para activar el modo Crear.
-- Completar los campos de identificacion, contexto y alternativas.
+- Usar el botón "+" para activar el modo Crear.
+- Completar los campos de identificación, contexto, validación y alternativas.
 - Agregar drivers, alternativas y links con los botones correspondientes.
-- Elegir la alternativa final y completar la justificacion.
+- Elegir la alternativa final y completar la justificación.
 - Descargar o copiar el Markdown.
 
 ## Modo editar
 
-1. Cambiar a modo Editar (boton con lapiz).
-2. En la pestana Escribir, pegar el Markdown del ADR.
-3. Cambiar a la pestana Preview para cargar el formulario.
+1. Cambiar a modo Editar (botón con lápiz).
+2. En la pestaña Escribir, pegar el Markdown del ADR.
+3. Cambiar a la pestaña Preview para cargar el formulario.
 4. Editar los campos y usar "Copiar a portapapeles" o descargar.
 
 ## Salida

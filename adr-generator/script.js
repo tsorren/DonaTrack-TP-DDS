@@ -63,14 +63,14 @@ const buildOptionCard = (data = {}) => {
 
     const title = document.createElement('input');
     title.type = 'text';
-    title.placeholder = 'Titulo de la opcion';
+    title.placeholder = 'Título de la opción';
     title.className = 'option-title';
     title.value = data.title || '';
 
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'btn btn-danger';
-    remove.textContent = 'Quitar opcion';
+    remove.textContent = 'Quitar opción';
     remove.addEventListener('click', () => {
         card.remove();
         syncChosenOptions();
@@ -82,19 +82,19 @@ const buildOptionCard = (data = {}) => {
     const descGroup = document.createElement('div');
     descGroup.className = 'input-group';
     descGroup.innerHTML = `
-        <label>Descripcion o referencia</label>
-        <input type="text" class="option-desc" placeholder="Breve descripcion o link" value="${data.desc || ''}">
+        <label>Descripción o referencia</label>
+        <input type="text" class="option-desc" placeholder="Breve descripción o link" value="${data.desc || ''}">
     `;
 
     const triple = document.createElement('div');
     triple.className = 'grid-2';
     triple.innerHTML = `
         <div class="input-group">
-            <label>Pros (una linea por item)</label>
+            <label>Pros (una línea por ítem)</label>
             <textarea rows="3" class="option-pros" placeholder="Mejora X\nReduce Y">${data.pros || ''}</textarea>
         </div>
         <div class="input-group">
-            <label>Contras (una linea por item)</label>
+            <label>Contras (una línea por ítem)</label>
             <textarea rows="3" class="option-cons" placeholder="Aumenta complejidad">${data.cons || ''}</textarea>
         </div>
     `;
@@ -138,7 +138,7 @@ const syncChosenOptions = () => {
     if (titles.length === 0) {
         const opt = document.createElement('option');
         opt.value = '';
-        opt.textContent = 'Agrega al menos una opcion';
+        opt.textContent = 'Agrega al menos una opción';
         optionChosen.appendChild(opt);
         return;
     }
@@ -251,9 +251,9 @@ const parseMarkdownToForm = (markdown) => {
     let justification = '';
     let consequenceGood = '';
     let consequenceBad = '';
-    let confirmation = '';
+    let validation = '';
     let subSection = 'main';
-    const confirmationLines = [];
+    const validationLines = [];
 
     resultLines.forEach((line) => {
         const trimmed = line.trim();
@@ -279,12 +279,12 @@ const parseMarkdownToForm = (markdown) => {
             consequenceBad = extractBecause(line);
         }
 
-        if (subSection === 'confirmacion' && trimmed && !trimmed.startsWith('#')) {
-            confirmationLines.push(trimmed);
+        if ((subSection === 'confirmacion' || subSection === 'validacion') && trimmed && !trimmed.startsWith('#')) {
+            validationLines.push(trimmed);
         }
     });
 
-    confirmation = confirmationLines.join('\n').trim();
+    validation = validationLines.join('\n').trim();
 
     const optionsSectionLines = sections['pros y contras de las alternativas'] || [];
     const detailedOptions = [];
@@ -349,7 +349,7 @@ const parseMarkdownToForm = (markdown) => {
         if (matched) {
             chosen = matched.title;
         } else {
-            setStatus(`La opcion elegida "${chosen}" no coincide con ninguna alternativa.`);
+            setStatus(`La opción elegida "${chosen}" no coincide con ninguna alternativa.`);
         }
     }
 
@@ -374,7 +374,7 @@ const parseMarkdownToForm = (markdown) => {
     document.getElementById('justification').value = justification;
     document.getElementById('consequenceGood').value = consequenceGood;
     document.getElementById('consequenceBad').value = consequenceBad;
-    document.getElementById('confirmation').value = confirmation;
+    document.getElementById('validation').value = validation;
 
     clearList(driversList);
     (drivers.length ? drivers : ['']).forEach(driver => addDriver(driver));
@@ -402,20 +402,20 @@ const parseMarkdownToForm = (markdown) => {
 const buildMarkdown = () => {
     const title = document.getElementById('title').value.trim();
     if (!title) {
-        alert('Por favor, ingresa un titulo');
+        alert('Por favor, ingresa un título');
         return null;
     }
 
     const status = document.getElementById('status').value;
     const supersededBy = document.getElementById('supersededBy').value.trim();
     const date = new Date().toISOString().split('T')[0];
-    const deciders = getValue(document.getElementById('deciders'), '{lista de integrantes involucrados en la decision}');
+    const deciders = getValue(document.getElementById('deciders'), '{lista de integrantes involucrados en la decisión}');
     const tags = getValue(document.getElementById('tags'), '{lista}');
     const context = getValue(document.getElementById('context'), '{contexto}');
-    const justification = getValue(document.getElementById('justification'), '{justificacion}');
+    const justification = getValue(document.getElementById('justification'), '{justificación}');
     const consequenceGood = getValue(document.getElementById('consequenceGood'), '{consecuencia positiva}');
     const consequenceBad = getValue(document.getElementById('consequenceBad'), '{consecuencia negativa}');
-    const confirmation = getValue(document.getElementById('confirmation'), '{confirmacion}');
+    const validation = getValue(document.getElementById('validation'), '{validación}');
 
     const drivers = [...document.querySelectorAll('.driver-input')]
         .map(input => input.value.trim())
@@ -436,7 +436,7 @@ const buildMarkdown = () => {
     }).filter(option => option.title);
 
     if (options.length === 0) {
-        alert('Agrega al menos una opcion considerada');
+        alert('Agrega al menos una opción considerada');
         return null;
     }
 
@@ -447,7 +447,7 @@ const buildMarkdown = () => {
 
     const driverLines = drivers.length
         ? drivers.map(driver => `* ${driver}`).join('\n')
-        : '* {driver de decision}';
+        : '* {driver de decisión}';
 
     const optionLines = options
         .map(option => `* ${option.title}`)
@@ -490,13 +490,13 @@ const buildMarkdown = () => {
 
 ${context}
 
-## Atributos de Calidad y Drivers de Decision
+## Atributos de Calidad y Drivers de Decisión
 ${driverLines}
 
 ## Alternativas Consideradas
 ${optionLines}
 
-## Resultado de la Decision
+## Resultado de la Decisión
 
 Alternativa elegida: "${chosen}", porque: ${justification}.
 
@@ -504,9 +504,9 @@ Alternativa elegida: "${chosen}", porque: ${justification}.
 * Bueno, porque: ${consequenceGood}
 * Malo, porque: ${consequenceBad}
 
-### Confirmacion
+### Validación
 
-${confirmation}
+${validation}
 
 ## Pros y Contras de las Alternativas
 

@@ -12,7 +12,7 @@
         <header class="hero">
             <span class="badge">ADR Generator</span>
             <h1>DonaTrack ADR</h1>
-            <p>Generador de registros de decision de arquitectura con opciones dinamicas.</p>
+            <p>Generador de registros de decisión de arquitectura con opciones dinámicas.</p>
         </header>
 
         <div class="mode-bar">
@@ -22,7 +22,7 @@
             </div>
             <div class="mode-label">
                 <span id="modeTitle">Modo crear</span>
-                <span class="mode-hint">Usa el + para crear o el lapiz para editar.</span>
+                <span class="mode-hint">Usa el + para crear o el lápiz para editar.</span>
             </div>
         </div>
 
@@ -33,11 +33,11 @@
             </div>
             <div class="editor-body">
                 <div class="editor-write">
-                    <textarea id="markdownInput" rows="10" placeholder="Pega aqui el markdown del ADR"></textarea>
+                    <textarea id="markdownInput" rows="10" placeholder="Pega aquí el markdown del ADR"></textarea>
                 </div>
                 <div class="editor-preview">
                     <div class="editor-note">
-                        Vista previa activa. El formulario se completa automaticamente para editar.
+                        Vista previa activa. El formulario se completa automáticamente para editar.
                     </div>
                 </div>
             </div>
@@ -45,9 +45,9 @@
 
         <form id="adrForm" class="sheet">
             <section class="card">
-                <h2>1. Identificacion</h2>
+                <h2>1. Identificación</h2>
                 <div class="input-group">
-                    <label for="title">Titulo de la decision</label>
+                    <label for="title">Título de la decisión</label>
                     <input type="text" id="title" placeholder="Ej: Uso de RabbitMQ para notificaciones" required>
                 </div>
                 <div class="grid">
@@ -83,12 +83,12 @@
                 <h2>2. Contexto y drivers</h2>
                 <div class="input-group">
                     <label for="context">Problema a resolver</label>
-                    <textarea id="context" rows="4" placeholder="Que requerimiento de DonaTrack estamos resolviendo?"></textarea>
+                    <textarea id="context" rows="4" placeholder="Qué requerimiento de DonaTrack estamos resolviendo?"></textarea>
                 </div>
                 <div class="list-header">
                     <div>
                         <h3>Atributos de calidad y drivers</h3>
-                        <p class="hint">Agrega tantos como necesites. Una linea por driver.</p>
+                        <p class="hint">Agrega tantos como necesites. Una línea por driver.</p>
                     </div>
                     <button type="button" class="btn btn-outline" id="btnAddDriver">+ Agregar driver</button>
                 </div>
@@ -96,7 +96,7 @@
             </section>
 
             <section class="card">
-                <h2>3. Alternativas y justificacion</h2>
+                <h2>3. Alternativas y justificación</h2>
                 <div class="list-header">
                     <div>
                         <h3>Alternativas consideradas</h3>
@@ -108,18 +108,18 @@
 
                 <div class="grid">
                     <div class="input-group">
-                        <label for="optionChosen">Opcion elegida</label>
+                        <label for="optionChosen">Opción elegida</label>
                         <select id="optionChosen"></select>
                     </div>
                     <div class="input-group">
-                        <label for="justification">Justificacion</label>
+                        <label for="justification">Justificación</label>
                         <textarea id="justification" rows="2" placeholder="Porque permite..."></textarea>
                     </div>
                 </div>
             </section>
 
             <section class="card">
-                <h2>4. Consecuencias y confirmacion</h2>
+                <h2>4. Consecuencias y validación</h2>
                 <div class="grid">
                     <div class="input-group">
                         <label for="consequenceGood">Consecuencia positiva</label>
@@ -131,8 +131,8 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="confirmation">Confirmacion</label>
-                    <textarea id="confirmation" rows="3" placeholder="Como se confirmara esta decision?"></textarea>
+                    <label for="validation">Validación</label>
+                    <textarea id="validation" rows="3" placeholder="Cómo se validará esta decisión?"></textarea>
                 </div>
             </section>
 
