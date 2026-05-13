@@ -1,0 +1,19 @@
+{
+  "project": "DonaTrack - UTN FRBA",
+  "baseUrl": "https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview/",
+  "adrFolder": "docs/adr",
+  "template": "madr",
+  "categories": [
+  "Entrega 1: Arquitectura y Modelado I",
+  "Entrega 2: Arquitectura y Modelado II",
+  "Entrega 3: Arquitectura y Modelado III",
+  "Entrega 4: Persistencia y Maquetado de Interfaz de Usuario",
+  "Entrega 5: Arquitectura Web MVC",
+  "Entrega 6: Despliegue, Observabilidad y Seguridad"
+  ],
+  "priorityLevels": [
+    { "id": "high", "name": "Alta", "color": "#ff0000" },
+    { "id": "medium", "name": "Media", "color": "#ffaa00" },
+    { "id": "low", "name": "Baja", "color": "#00aa00" }
+  ]
+}

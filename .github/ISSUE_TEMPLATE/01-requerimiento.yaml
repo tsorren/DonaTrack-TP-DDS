@@ -1,0 +1,114 @@
+name: Formulario de nuevo requerimiento
+description: Plantilla para la creación de nuevos requerimientos en DonaTrack"
+title: "[REQ] - "
+labels: ["requerimiento"]
+assignees: ["Anushig04"]
+body:
+  - type: dropdown
+    id: entrega_milestone
+    attributes:
+      label: Entrega / Milestone
+      description: Seleccionar a que etapa del proyecto pertenece segun el cronograma del PDF.
+      options:
+        - "Entrega 1: Arquitectura y Modelado en Objetos - Parte I"
+        - "Entrega 2: Arquitectura y Modelado en Objetos - Parte II"
+        - "Entrega 3: Arquitectura y Modelado en Objetos - Parte III"
+        - "Entrega 4: Persistencia y Maquetado de Interfaz de Usuario"
+        - "Entrega 5: Arquitectura Web MVC"
+        - "Entrega 6: Despliegue, Observabilidad y Seguridad"
+    validations:
+      required: true
+
+  - type: input
+    id: fecha_estimada
+    attributes:
+      label: Fecha de finalización estimada
+      placeholder: "DD/MM/AAAA (Ej: 22/05/2026)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema a resolver
+      placeholder: "Como [rol], quiero [objetivo/funcionalidad] para [beneficio/razon]"
+    validations:
+      required: true
+
+  - type: textarea
+    id: informacion_de_enunciado
+    attributes:
+      label: Información de enunciado relevante
+      placeholder: "Detallar que secciones del enunciado son relevantes para este requerimiento"
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion_detallada
+    attributes:
+      label: Descripción de la issue
+      placeholder: "Detallar el comportamiento esperado y reglas de negocio involucradas"
+    validations:
+      required: true
+      
+  - type: checkboxes
+    id: atributos_calidad
+    attributes:
+      label: Atributos de calidad a priorizar
+      description: Seleccionar los atributos de calidad que guian el diseño de este requerimiento.
+      options:
+        - label: Testeabilidad
+        - label: Disponibilidad
+        - label: Performance
+        - label: Escalabilidad
+        - label: Seguridad
+        - label: Flexibilidad
+        - label: Mantenibilidad
+        - label: Reusabilidad
+        - label: Usabilidad
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: componentes
+    attributes:
+      label: Componentes afectados
+      description: Marcar todos los modulos que se veran afectados por esta implementacion.
+      options:
+        - label: Servicio de Notificaciones
+        - label: Servicio de Donaciones
+        - label: Servicio de Autenticación
+        - label: Servicio de Logística
+        - label: Cliente Liviano (UI/UX)
+        - label: Otros
+    validations:
+      required: true
+
+  - type: textarea
+    id: tasklist
+    attributes:
+      label: Lista de tareas
+      description: Seguir este flujo para asegurar la calidad del diseño.
+      value: |
+        - [ ] Analizar el problema y definir claramente el alcance de la implementacion
+        - [ ] Diseñar y modelar las alternativas (Diagrama de Clases/Secuencia/Etc)
+        - [ ] Evaluar trade-offs y elegir la opcion mas apta
+        - [ ] Generar ADR en Log4brains justificando la eleccion
+        - [ ] Implementar en el sistema
+        - [ ] Validar funcionamiento de la implementacion
+        - [ ] Verificar consistencia de diagramas con implementacion
+
+  - type: textarea
+    id: adr_refs
+    attributes:
+      label: Referencias de ADRs existentes (Opcional)
+      description: "Ingresar las rutas de los ADRs relacionados (uno por linea)"
+      placeholder: |
+        docs/adr/donaciones/ADR-001.md
+
+  - type: input
+    id: dependencia
+    attributes:
+      label: Dependencia (Opcional)
+      description: "Ingresar el ID de issue del cual depende esta tarea"
+      placeholder: "ID de issue (ej: #12)"

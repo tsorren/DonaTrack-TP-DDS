@@ -1,0 +1,23 @@
+project:
+  name: DonaTrack
+  tz: America/Buenos_Aires
+  adrFolder: ./docs/adr
+  packages:
+    - name: donaciones
+      path: donaciones-service
+      adrFolder: docs/adr/donaciones-service
+    - name: notificaciones
+      path: notificaciones-service
+      adrFolder: docs/adr/notificaciones-service
+    - name: logistica
+      path: logistica-service
+      adrFolder: docs/adr/logistica-service
+    - name: incentivos
+      path: incentivos-service
+      adrFolder: docs/adr/incentivos-service
+    - name: cliente-liviano
+      path: cliente-liviano
+      adrFolder: docs/adr/cliente-liviano
+    - name: auth
+      path: auth-service
+      adrFolder: docs/adr/auth-service
