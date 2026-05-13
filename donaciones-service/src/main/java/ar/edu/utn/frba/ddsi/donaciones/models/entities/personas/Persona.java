@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-abstract class Persona {
+public abstract class Persona {
   private final List<MedioDeContacto> contactos = new ArrayList<>();
   private TipoDocumento tipoDocumento;
   private String documento;

@@ -8,11 +8,11 @@ public class StockBien {
   private Integer cantidadEnStock;
 
   // Metodos
-  public void agregar(Integer cantidad) {
+  public void agregarStock(Integer cantidad) {
     this.cantidadEnStock += cantidad;
   }
 
-  public void retirar(Integer cantidad) throws Exception {
+  public void retirarStock(Integer cantidad) throws Exception {
     if (cantidad > this.cantidadEnStock) {
       throw new Exception("Stock insuficiente");
     }
