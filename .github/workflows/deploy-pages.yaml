@@ -1,0 +1,52 @@
+name: Deploy GitHub Pages (Generator & Preview)
+
+on:
+  push:
+    branches:
+      - main
+      - 'ENTREGA_*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Prepare Deployment Folders
+        run: |
+          mkdir -p staging/adr-generator
+          mkdir -p staging/adr-preview
+          
+          # Copiamos el generador a su nueva subcarpeta
+          cp -r adr-generator/* staging/adr-generator/
+          
+          # Creamos .nojekyll en la raíz para evitar errores de renderizado
+          touch staging/.nojekyll
+
+      - name: Build Log4brains (Preview)
+        run: |
+          npm install -g log4brains
+          # Construimos usando el nuevo basePath adr-preview
+          log4brains build --basePath /${GITHUB_REPOSITORY#*/}/adr-preview
+          # Movemos el build a la carpeta adr-preview dentro de staging
+          mv .log4brains/out/* staging/adr-preview/
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: staging
+          branch: gh-pages
+          clean: true

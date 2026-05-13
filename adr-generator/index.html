@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DonaTrack | ADR Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Source+Sans+3:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="hero">
+            <span class="badge">ADR Generator</span>
+            <h1>DonaTrack ADR</h1>
+            <p>Generador de registros de decisión de arquitectura con opciones dinámicas.</p>
+        </header>
+
+        <div class="mode-bar">
+            <div class="mode-toggle">
+                <button type="button" class="mode-btn is-active" id="btnModeCreate" title="Modo crear">+</button>
+                <button type="button" class="mode-btn" id="btnModeEdit" title="Modo editar">&#9998;</button>
+            </div>
+            <div class="mode-label">
+                <span id="modeTitle">Modo crear</span>
+                <span class="mode-hint">Usa el + para crear o el lápiz para editar.</span>
+            </div>
+        </div>
+
+        <section class="editor-panel" id="editorPanel" aria-hidden="true">
+            <div class="editor-tabs">
+                <button type="button" class="tab-btn is-active" id="btnWriteTab">&#9998; Escribir</button>
+                <button type="button" class="tab-btn" id="btnPreviewTab">&#128269; Preview</button>
+            </div>
+            <div class="editor-body">
+                <div class="editor-write">
+                    <textarea id="markdownInput" rows="10" placeholder="Pega aquí el markdown del ADR"></textarea>
+                </div>
+                <div class="editor-preview">
+                    <div class="editor-note">
+                        Vista previa activa. El formulario se completa automáticamente para editar.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <form id="adrForm" class="sheet">
+            <section class="card">
+                <h2>1. Identificación</h2>
+                <div class="input-group">
+                    <label for="title">Título de la decisión</label>
+                    <input type="text" id="title" placeholder="Ej: Uso de RabbitMQ para notificaciones" required>
+                </div>
+                <div class="grid">
+                    <div class="input-group">
+                        <label for="status">Estado</label>
+                        <select id="status">
+                            <option value="draft">Draft</option>
+                            <option value="proposed">Proposed</option>
+                            <option value="accepted">Accepted</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="deprecated">Deprecated</option>
+                            <option value="superseded">Superseded</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="tags">Tags</label>
+                        <input type="text" id="tags" placeholder="arquitectura, backend">
+                    </div>
+                </div>
+                <div class="grid">
+                    <div class="input-group">
+                        <label for="deciders">Decisores (integrantes)</label>
+                        <input type="text" id="deciders" placeholder="@Anush, @Ber, @Miranda">
+                    </div>
+                    <div class="input-group">
+                        <label for="supersededBy">Superseded by (opcional)</label>
+                        <input type="text" id="supersededBy" placeholder="[xxx](yyyymmdd-xxx.md)">
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>2. Contexto y drivers</h2>
+                <div class="input-group">
+                    <label for="context">Problema a resolver</label>
+                    <textarea id="context" rows="4" placeholder="Qué requerimiento de DonaTrack estamos resolviendo?"></textarea>
+                </div>
+                <div class="list-header">
+                    <div>
+                        <h3>Atributos de calidad y drivers</h3>
+                        <p class="hint">Agrega tantos como necesites. Una línea por driver.</p>
+                    </div>
+                    <button type="button" class="btn btn-outline" id="btnAddDriver">+ Agregar driver</button>
+                </div>
+                <div id="driversList" class="list"></div>
+            </section>
+
+            <section class="card">
+                <h2>3. Alternativas y justificación</h2>
+                <div class="list-header">
+                    <div>
+                        <h3>Alternativas consideradas</h3>
+                        <p class="hint">Cada alternativa puede tener pros y contras.</p>
+                    </div>
+                    <button type="button" class="btn btn-outline" id="btnAddOption">+ Agregar alternativa</button>
+                </div>
+                <div id="optionsList" class="options"></div>
+
+                <div class="grid">
+                    <div class="input-group">
+                        <label for="optionChosen">Opción elegida</label>
+                        <select id="optionChosen"></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="justification">Justificación</label>
+                        <textarea id="justification" rows="2" placeholder="Porque permite..."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>4. Consecuencias y validación</h2>
+                <div class="grid">
+                    <div class="input-group">
+                        <label for="consequenceGood">Consecuencia positiva</label>
+                        <textarea id="consequenceGood" rows="2" placeholder="Mejora de un atributo de calidad..."></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="consequenceBad">Consecuencia negativa</label>
+                        <textarea id="consequenceBad" rows="2" placeholder="Agrega complejidad, latencia, etc."></textarea>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="validation">Validación</label>
+                    <textarea id="validation" rows="3" placeholder="Cómo se validará esta decisión?"></textarea>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>5. Links</h2>
+                <div class="list-header">
+                    <div>
+                        <h3>Referencias o links</h3>
+                        <p class="hint">Pega links en formato Markdown o texto simple.</p>
+                    </div>
+                    <button type="button" class="btn btn-outline" id="btnAddLink">+ Agregar link</button>
+                </div>
+                <div id="linksList" class="list"></div>
+            </section>
+
+            <div class="action-row">
+                <button type="button" id="btnCopy" class="btn btn-outline">Copiar a portapapeles</button>
+                <button type="button" id="btnGenerate" class="btn btn-primary">Descargar ADR (.md)</button>
+            </div>
+            <div id="formStatus" class="form-status" aria-live="polite"></div>
+        </form>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
