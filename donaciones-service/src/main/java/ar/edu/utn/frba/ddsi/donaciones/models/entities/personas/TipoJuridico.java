@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.ddsi.donaciones.models.entities.persona;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
 
 public enum TipoJuridico {
   GUBERNAMENTAL,

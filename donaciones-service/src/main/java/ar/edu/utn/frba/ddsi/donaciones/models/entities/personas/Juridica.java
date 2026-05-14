@@ -1,5 +1,6 @@
-package ar.edu.utn.frba.ddsi.donaciones.models.entities.persona;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,10 @@ public class Juridica extends Persona {
   private TipoJuridico tipo;
   private String rubro;
   private List<Humana> representantes;
+
+  public Juridica() {
+    this.representantes = new ArrayList<>();
+  }
 
   public void agregarRepresentante(Humana representante) {
     this.representantes.add(representante);

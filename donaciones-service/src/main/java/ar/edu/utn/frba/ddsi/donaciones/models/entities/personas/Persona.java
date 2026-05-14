@@ -1,3 +1,34 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
 
-public class Persona {}
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.MedioDeContacto;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public abstract class Persona {
+  private final List<MedioDeContacto> contactos = new ArrayList<>();
+  private TipoDocumento tipoDocumento;
+  private String documento;
+  private Direccion direccion;
+
+  public void agregarMedioDeContacto(MedioDeContacto medioDeContacto) {
+    contactos.add(medioDeContacto);
+  }
+
+  public void quitarMedioDeContacto(MedioDeContacto medioDeContacto) {
+    // Ver que pasa si no pertenece a la lista el medio a quitar
+    contactos.remove(medioDeContacto);
+  }
+
+  public void definirMedioDeContactoPredeterminado(MedioDeContacto medioDeContacto) {
+    contactos.stream()
+        .filter(MedioDeContacto::getEsPredeterminado)
+        .findFirst()
+        .ifPresent(m -> m.setEsPredeterminado(false));
+
+    medioDeContacto.setEsPredeterminado(true);
+  }
+}

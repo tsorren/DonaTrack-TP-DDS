@@ -1,20 +1,18 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 public class StockBien {
   private Bien bien;
   private Integer cantidadEnStock;
 
   // Metodos
-  public void agregar(Integer cantidad) {
+  public void agregarStock(Integer cantidad) {
     this.cantidadEnStock += cantidad;
   }
 
-  public void retirar(Integer cantidad) throws Exception {
+  public void retirarStock(Integer cantidad) throws Exception {
     if (cantidad > this.cantidadEnStock) {
       throw new Exception("Stock insuficiente");
     }
