@@ -7,6 +7,7 @@ import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Humana;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.Correo;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.Telefono;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.WhatsApp;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,21 +20,20 @@ class MediosDeContactoTest {
 
   @BeforeEach
   void setup() {
-    persona = new Humana();
-
     correo = new Correo();
-    correo.setEsPredeterminado(false);
+    correo.setDireccionCorreo("test@mail.com");
 
     telefono = new Telefono();
-    telefono.setEsPredeterminado(false);
+    telefono.setNumero("12345678");
 
     whatsApp = new WhatsApp();
-    whatsApp.setEsPredeterminado(false);
+    whatsApp.setNumero("87654321");
+
+    persona = new Humana("Carlos", "López", LocalDate.of(1992, 8, 20), correo);
   }
 
   @Test
   void agregarMedioDeContacto() {
-    persona.agregarMedioDeContacto(correo);
     persona.agregarMedioDeContacto(telefono);
 
     assertTrue(persona.getContactos().contains(correo));
@@ -49,18 +49,18 @@ class MediosDeContactoTest {
 
     assertFalse(persona.getContactos().contains(telefono));
     assertTrue(persona.getContactos().contains(whatsApp));
+    assertTrue(persona.getContactos().contains(correo));
   }
 
   @Test
   void alDefinirPredeterminadoElAnteriorDejaDeSerlo() {
-    persona.agregarMedioDeContacto(correo);
     persona.agregarMedioDeContacto(whatsApp);
 
     whatsApp.setEsPredeterminado(true);
 
-    persona.definirMedioDeContactoPredeterminado(correo);
+    persona.definirMedioDeContactoPredeterminado(whatsApp);
 
-    assertFalse(whatsApp.getEsPredeterminado());
-    assertTrue(correo.getEsPredeterminado());
+    assertTrue(whatsApp.getEsPredeterminado());
+    assertFalse(correo.getEsPredeterminado());
   }
 }

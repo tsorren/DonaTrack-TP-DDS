@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
 
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.MedioDeContacto;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -11,17 +12,32 @@ public class Juridica extends Persona {
   private String razonSocial;
   private TipoJuridico tipo;
   private String rubro;
-  private List<Humana> representantes;
+  private final List<Humana> representantes = new ArrayList<>();
 
-  public Juridica() {
-    this.representantes = new ArrayList<>();
+  public Juridica(Humana representanteInicial, MedioDeContacto contactoInicial) {
+    super(contactoInicial);
+    if (representanteInicial == null) {
+      throw new IllegalArgumentException(
+          "Toda persona jurídica debe tener al menos un representante al registrarse.");
+    }
+    this.representantes.add(representanteInicial);
   }
 
   public void agregarRepresentante(Humana representante) {
+    if (representante == null) {
+      throw new IllegalArgumentException("El representante a agregar no puede ser nulo.");
+    }
     this.representantes.add(representante);
   }
 
   public void quitarRepresentante(Humana representante) {
+    if (!this.representantes.contains(representante)) {
+      throw new IllegalArgumentException(
+          "El representante no pertenece a la lista de esta entidad jurídica.");
+    }
+    if (this.representantes.size() == 1) {
+      throw new IllegalStateException("La entidad jurídica no puede quedarse sin representantes.");
+    }
     this.representantes.remove(representante);
   }
 }
