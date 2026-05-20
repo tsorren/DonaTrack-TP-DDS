@@ -5,5 +5,5 @@ import lombok.Data;
 @Data
 public class Provincia {
   private String nombre;
-  private Pais provincia;
+  private Pais pais;
 }
