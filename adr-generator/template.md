@@ -5,7 +5,6 @@
 - Tags: {lista}
 
 ## Contexto y Problema
-
 {Describir el contexto y la declaración del problema en dos o tres oraciones o en forma de historia ilustrativa. Se recomienda articular el problema en forma de pregunta e incluir enlaces a sistemas de gestión de issues o tableros de colaboración.}
 
 ## Atributos de Calidad y Drivers de Decisión
@@ -19,34 +18,51 @@
 * {Título de la alternativa 3}
 
 ## Resultado de la Decisión
+Alternativa elegida: "{Título de la alternativa 1}"
 
-Alternativa elegida: "{Título de la alternativa 1}", porque {justificación. Ej: es la única alternativa que cumple con el criterio de diseño asincrónico | resuelve la fuerza X | resulta ser la mejor tras el análisis comparativo}.
+Justificación:
+{justificación. Ej: es la única alternativa que cumple con el criterio de diseño asincrónico | resuelve la fuerza X | resulta ser la mejor tras el análisis comparativo}.
 
-### Consecuencias
-* Bueno, porque {consecuencia positiva, ej: mejora de uno o más atributos de calidad deseados}
-* Malo, porque {consecuencia negativa, ej: compromete la simplicidad del sistema o añade latencia}
+### Consecuencias Positivas
+* {consecuencia positiva 1}
+* {consecuencia positiva 2}
+* {consecuencia positiva 3}
+
+### Consecuencias Negativas
+* {consecuencia negativa 1}
+* {consecuencia negativa 2}
+* {consecuencia negativa 3}
 
 ### Validación
-
 {Describir cómo se validará el cumplimiento con este ADR. El diseño elegido y su implementación están alineados con la decisión? Ej: revisión de código, diagrama de secuencia o un test de arquitectura}.
 
-## Pros y Contras de las Alternativas
+## Análisis de Alternativas
 
 ### {Título de la alternativa 1}
-
 {Ejemplo | descripción | referencia a más información}
 
-* Bueno, porque {argumento a}
-* Bueno, porque {argumento b}
-* Malo, porque {argumento c}
+#### Pros
+* {argumento a}
+* {argumento b}
+* {argumento c}
+
+#### Contras
+* {argumento a}
+* {argumento b}
+* {argumento c}
 
 ### {Título de la alternativa 2}
-
 {Ejemplo | descripción | referencia a más información}
 
-* Bueno, porque {argumento a}
-* Bueno, porque {argumento b}
-* Malo, porque {argumento c}
+#### Pros
+* {argumento a}
+* {argumento b}
+* {argumento c}
+
+#### Contras
+* {argumento a}
+* {argumento b}
+* {argumento c}
 
 
 ## Links <!-- optional -->
