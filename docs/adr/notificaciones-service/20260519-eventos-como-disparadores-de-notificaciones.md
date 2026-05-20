@@ -1,11 +1,10 @@
 # Eventos como disparadores de notificaciones
 - Status: proposed
 - Date: 2026-05-19
-- Deciders: 
+- Deciders: Decisión Grupal
 - Tags: servicio-notificaciones
 
 ## Contexto y Problema
-
 Debido a que las notificaciones tienen mensajes distintos pero siguen cierta estructura, debemos modelar una solución que permita la creación polimórfica de estas notificaciones.
 Los eventos notificables son:
 El registro de un donante
@@ -22,37 +21,31 @@ La asignación de una donación a una entidad beneficiaria y la recepción de un
 * Clase Abstracta EventoNotificable
 
 ## Resultado de la Decisión
+Alternativa elegida: "Clase Abstracta EventoNotificable"
 
-Alternativa elegida: "Clase Abstracta EventoNotificable", porque: Permite gestionar las notificaciones con mayor facilidad, evita errores de la lógica de negocio al asociar los mensajes con los destinatarios.
+Justificación:
+Permite gestionar las notificaciones con mayor facilidad, evita errores de la lógica de negocio al asociar los mensajes con los destinatarios. La clase abstracta EventoNotificable es extendida por las clases DonanteRegistrado, MisionCumplida, SubioCategoria, y la clase abstracta EventoDeDonacion(Ver decisión de diseño asociada).
 
-La clase abstracta EventoNotificable es extendida por las clases DonanteRegistrado, MisionCumplida, SubioCategoria, y la clase abstracta EventoDeDonacion(Ver decisión de diseño asociada).
-
-### Consecuencias
-Bueno, porque:
-
+### Consecuencias Positivas
 * Obtenemos mayor flexibilidad en el diseño para generar distintos tipos de notificaciones y se facilita la implementación de eventos notificables futuros
 
-Malo, porque: 
-
+### Consecuencias Negativas
 * Se dificultará más la persistencia de estas clases ya que en los modelos relacionales no existe una forma nativa de representar las clases abstractas
 
 ### Validación
-
 Se realizarán los tests unitarios correspondientes, verificando que se generen las notificaciones con sus mensajes y destinatarios correspondientes al evento en cuestión.
 
-## Pros y Contras de las Alternativas
+## Análisis de Alternativas
 
 ### Interfaz con metodo generarMensajes
 
 Se modelarían los eventos en base a una interfaz común con el método generarMensajes(): List<String>
 
-Bueno, porque: 
-
+#### Pros
 * Fácil de modelar
 * Bajo acoplamiento
 
-Malo, porque:
-
+#### Contras
 * No asocia el mensaje al destinatario
 * Dificulta el envio de la notificación
 
@@ -60,14 +53,9 @@ Malo, porque:
 
 Se modelarían los eventos en base a una clase abstracta con el método generarNotificaciones(): List<Notificacion>
 
-Bueno, porque: 
-
+#### Pros
 * Reduce la repetición de código al compartir los atributos persona y fecha
 * Genera notificaciones completas en vez de mensajes, permitiendo vincular a los destinatarios con su respectivo mensaje
 
-Malo, porque: 
-
+#### Contras
 * Complejiza la persistencia al usar una clase abstracta
-
-## Links
-
