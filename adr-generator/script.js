@@ -135,11 +135,13 @@ const syncChosenOptions = () => {
         .filter(Boolean);
 
     optionChosen.innerHTML = '';
+    
+    const analyzeOpt = document.createElement('option');
+    analyzeOpt.value = '__pending__';
+    analyzeOpt.textContent = 'Decisión Pendiente';
+    optionChosen.appendChild(analyzeOpt);
+    
     if (titles.length === 0) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = 'Agrega al menos una opción';
-        optionChosen.appendChild(opt);
         return;
     }
 
@@ -191,16 +193,6 @@ const setTab = (tab) => {
     }
 };
 
-const extractBecause = (line) => {
-    const cleaned = line.replace(/^\*\s*/, '').trim();
-    const match = cleaned.split(/porque:?/i);
-    if (match.length > 1) {
-        return match.slice(1).join('porque').trim();
-    }
-    const commaSplit = cleaned.split(',').slice(1).join(',').trim();
-    return commaSplit || cleaned;
-};
-
 const parseMarkdownToForm = (markdown) => {
     const lines = markdown.split(/\r?\n/);
     const normalizedLines = lines.map(line => normalizeText(line.trim()));
@@ -246,52 +238,86 @@ const parseMarkdownToForm = (markdown) => {
         .filter(line => line.startsWith('* '))
         .map(line => line.replace(/^\*\s*/, '').trim());
 
-    const resultLines = sections['resultado de la decision'] || [];
+    const resultLines = sections['resultado de la decision'] || sections['decision pendiente'] || [];
     let chosen = '';
     let justification = '';
     let consequenceGood = '';
     let consequenceBad = '';
     let validation = '';
-    let subSection = 'main';
+    let currentSection = 'main';
+    const justificationLines = [];
+    const goodLines = [];
+    const badLines = [];
     const validationLines = [];
 
     resultLines.forEach((line) => {
         const trimmed = line.trim();
         const normalized = normalizeText(trimmed);
-        if (trimmed.startsWith('### ')) {
-            subSection = normalizeText(trimmed.slice(4));
+        if (!trimmed) {
             return;
         }
 
-        if (subSection === 'main' && (normalized.startsWith('opcion elegida:') || normalized.startsWith('alternativa elegida:'))) {
-            const match = normalized.match(/(opcion|alternativa) elegida:\s*"?([^\"]+)"?,\s*porque:?\s*(.+)\.?/i);
-            if (match) {
-                chosen = match[2].trim();
-                justification = match[3].trim();
+        if (trimmed.startsWith('### ')) {
+            currentSection = normalizeText(trimmed.slice(4));
+            return;
+        }
+
+        if (currentSection === 'main') {
+            if (normalized.includes('decision pendiente')) {
+                chosen = '__pending__';
+                return;
+            }
+
+            if (normalized.startsWith('alternativa elegida:')) {
+                const explicitMatch = trimmed.match(/alternativa elegida:\s*"([^"]+)"/i);
+                const looseMatch = trimmed.match(/alternativa elegida:\s*(.+)/i);
+                chosen = explicitMatch ? explicitMatch[1].trim() : (looseMatch ? looseMatch[1].trim() : chosen);
+                return;
+            }
+
+            const justMatch = trimmed.match(/^justificaci[oó]n:\s*(.*)$/i);
+            if (justMatch) {
+                currentSection = 'justificación';
+                if (justMatch[1]) {
+                    justificationLines.push(justMatch[1].trim());
+                }
+                return;
             }
         }
 
-        if (subSection === 'consecuencias' && normalized.startsWith('* bueno')) {
-            consequenceGood = extractBecause(line);
+        if (currentSection === 'justificación') {
+            justificationLines.push(trimmed);
+            return;
         }
 
-        if (subSection === 'consecuencias' && normalized.startsWith('* malo')) {
-            consequenceBad = extractBecause(line);
+        if (currentSection === 'consecuencias positivas' && trimmed.startsWith('*')) {
+            goodLines.push(trimmed.replace(/^\*\s*/, '').trim());
+            return;
         }
 
-        if ((subSection === 'confirmacion' || subSection === 'validacion') && trimmed && !trimmed.startsWith('#')) {
+        if (currentSection === 'consecuencias negativas' && trimmed.startsWith('*')) {
+            badLines.push(trimmed.replace(/^\*\s*/, '').trim());
+            return;
+        }
+
+        if (currentSection === 'validación' && trimmed) {
             validationLines.push(trimmed);
+            return;
         }
     });
 
+    justification = justificationLines.join('\n').trim();
+    consequenceGood = goodLines.join('\n').trim();
+    consequenceBad = badLines.join('\n').trim();
     validation = validationLines.join('\n').trim();
 
-    const optionsSectionLines = sections['pros y contras de las alternativas'] || [];
+    const optionsSectionLines = sections['analisis de alternativas'] || [];
     const detailedOptions = [];
     let currentOption = null;
     let currentDesc = [];
     let currentPros = [];
     let currentCons = [];
+    let optionSubSection = 'desc';
 
     const pushOption = () => {
         if (!currentOption) {
@@ -315,6 +341,7 @@ const parseMarkdownToForm = (markdown) => {
             currentDesc = [];
             currentPros = [];
             currentCons = [];
+            optionSubSection = 'desc';
             return;
         }
 
@@ -322,15 +349,26 @@ const parseMarkdownToForm = (markdown) => {
             return;
         }
 
+        if (trimmed.startsWith('#### ')) {
+            const sub = normalizeText(trimmed.slice(5).trim());
+            if (sub === 'pros') optionSubSection = 'pros';
+            else if (sub === 'contras') optionSubSection = 'contras';
+            return;
+        }
+
         if (trimmed.startsWith('*')) {
-            const itemText = extractBecause(line);
-            if (normalized.startsWith('* bueno')) {
+            const itemText = trimmed.replace(/^\*\s*/, '').trim();
+            if (optionSubSection === 'pros') {
                 currentPros.push(itemText);
-            } else if (normalized.startsWith('* malo')) {
+            } else if (optionSubSection === 'contras') {
                 currentCons.push(itemText);
+            } else {
+                currentDesc.push(trimmed);
             }
         } else if (trimmed) {
-            currentDesc.push(trimmed);
+            if (optionSubSection === 'desc') {
+                currentDesc.push(trimmed);
+            }
         }
     });
 
@@ -344,7 +382,7 @@ const parseMarkdownToForm = (markdown) => {
         ? optionsConsidered.map(title => detailMap.get(normalizeText(title)) || { title })
         : detailedOptions;
 
-    if (chosen && !mergedOptions.some(option => option.title === chosen)) {
+    if (chosen && !mergedOptions.some(option => option.title === chosen) && chosen !== '__pending__') {
         const matched = mergedOptions.find(option => normalizeText(option.title) === normalizeText(chosen));
         if (matched) {
             chosen = matched.title;
@@ -383,9 +421,13 @@ const parseMarkdownToForm = (markdown) => {
     finalOptions.forEach(option => buildOptionCard(option));
     syncChosenOptions();
     if (chosen) {
-        const chosenMatch = finalOptions.find(option => normalizeText(option.title) === normalizeText(chosen));
-        if (chosenMatch) {
-            optionChosen.value = chosenMatch.title;
+        if (chosen === '__pending__') {
+            optionChosen.value = '__pending__';
+        } else {
+            const chosenMatch = finalOptions.find(option => normalizeText(option.title) === normalizeText(chosen));
+            if (chosenMatch) {
+                optionChosen.value = chosenMatch.title;
+            }
         }
     }
 
@@ -409,13 +451,14 @@ const buildMarkdown = () => {
     const status = document.getElementById('status').value;
     const supersededBy = document.getElementById('supersededBy').value.trim();
     const date = new Date().toISOString().split('T')[0];
-    const deciders = getValue(document.getElementById('deciders'), '{lista de integrantes involucrados en la decisión}');
-    const tags = getValue(document.getElementById('tags'), '{lista}');
-    const context = getValue(document.getElementById('context'), '{contexto}');
-    const justification = getValue(document.getElementById('justification'), '{justificación}');
-    const consequenceGood = getValue(document.getElementById('consequenceGood'), '{consecuencia positiva}');
-    const consequenceBad = getValue(document.getElementById('consequenceBad'), '{consecuencia negativa}');
-    const validation = getValue(document.getElementById('validation'), '{validación}');
+    const decidersInput = document.getElementById('deciders').value.trim();
+    const deciders = decidersInput || 'Decisión Grupal';
+    const tags = document.getElementById('tags').value.trim();
+    const context = document.getElementById('context').value.trim();
+    const justification = document.getElementById('justification').value.trim();
+    const consequenceGood = document.getElementById('consequenceGood').value.trim();
+    const consequenceBad = document.getElementById('consequenceBad').value.trim();
+    const validation = document.getElementById('validation').value.trim();
 
     const drivers = [...document.querySelectorAll('.driver-input')]
         .map(input => input.value.trim())
@@ -430,8 +473,8 @@ const buildMarkdown = () => {
         return {
             title: titleInput.value.trim(),
             desc: descInput.value.trim(),
-            pros: prosInput.value,
-            cons: consInput.value
+            pros: prosInput.value.trim(),
+            cons: consInput.value.trim()
         };
     }).filter(option => option.title);
 
@@ -440,87 +483,118 @@ const buildMarkdown = () => {
         return null;
     }
 
-    const chosen = optionChosen.value || options[0].title;
+    let chosen = optionChosen.value;
+    if (!chosen || (chosen === '__pending__' && status !== 'draft')) {
+        chosen = options[0].title;
+    }
     const statusLine = status === 'superseded' && supersededBy
         ? `superseded by ${supersededBy}`
         : status;
-
-    const driverLines = drivers.length
-        ? drivers.map(driver => `* ${driver}`).join('\n')
-        : '* {driver de decisión}';
-
-    const optionLines = options
-        .map(option => `* ${option.title}`)
-        .join('\n');
-
-    const formatQualityList = (items, label) => {
-        if (items.length === 0) {
-            return '';
-        }
-        return items.map(item => `* ${label}, porque: ${item}`).join('\n');
-    };
-
-    const formatOptionSection = (option) => {
-        const pros = formatQualityList(getLines(option.pros), 'Bueno');
-        const cons = formatQualityList(getLines(option.cons), 'Malo');
-        const listBlocks = [pros, cons].filter(Boolean).join('\n');
-        const desc = option.desc ? `${option.desc}\n\n` : '';
-        const fallback = '* Bueno, porque: {argumento a}\n* Malo, porque: {argumento b}';
-
-        return `### ${option.title}\n\n${desc}${listBlocks || fallback}`;
-    };
-
-    const optionsDetails = options.map(formatOptionSection).join('\n\n');
 
     const links = [...document.querySelectorAll('.link-input')]
         .map(input => input.value.trim())
         .filter(Boolean);
 
-    const linkLines = links.length
-        ? links.map(link => `* ${link}`).join('\n')
-        : '';
+    let markdown = `# ${title}\n`;
+    if (statusLine) markdown += `- Status: ${statusLine}\n`;
+    markdown += `- Date: ${date}\n`;
+    markdown += `- Deciders: ${deciders}\n`;
+    if (tags) markdown += `- Tags: ${tags}\n`;
 
-    const markdown = `# ${title}
-- Status: ${statusLine}
-- Date: ${date}
-- Deciders: ${deciders}
-- Tags: ${tags}
+    if (context) {
+        markdown += `\n## Contexto y Problema\n${context}\n`;
+    }
 
-## Contexto y Problema
+    if (drivers.length > 0) {
+        markdown += `\n## Atributos de Calidad y Drivers de Decisión\n`;
+        markdown += drivers.map(driver => `* ${driver}`).join('\n') + '\n';
+    }
 
-${context}
+    if (options.length > 0) {
+        markdown += `\n## Alternativas Consideradas\n`;
+        markdown += options.map(option => `* ${option.title}`).join('\n') + '\n';
+    }
 
-## Atributos de Calidad y Drivers de Decisión
-${driverLines}
+    const isPending = chosen === '__pending__' && status === 'draft';
+    
+    if (isPending) {
+        markdown += `\n## Decisión Pendiente\n`;
+    } else if ((chosen && chosen !== '__pending__') || justification || consequenceGood || consequenceBad || validation) {
+        markdown += `\n## Resultado de la Decisión\n`;
+        if (chosen && chosen !== '__pending__') {
+            markdown += `\nAlternativa elegida: "${chosen}"\n`;
+        }
+    }
 
-## Alternativas Consideradas
-${optionLines}
+    if (justification) {
+        markdown += `\nJustificación:\n${justification}\n`;
+    }
 
-## Resultado de la Decisión
+    if (consequenceGood) {
+        markdown += `\n### Consecuencias Positivas\n`;
+        const lines = getLines(consequenceGood);
+        markdown += lines.map(line => `* ${line}`).join('\n') + '\n';
+    }
 
-Alternativa elegida: "${chosen}", porque: ${justification}.
+    if (consequenceBad) {
+        markdown += `\n### Consecuencias Negativas\n`;
+        const lines = getLines(consequenceBad);
+        markdown += lines.map(line => `* ${line}`).join('\n') + '\n';
+    }
 
-### Consecuencias
-* Bueno, porque: ${consequenceGood}
-* Malo, porque: ${consequenceBad}
+    if (validation) {
+        markdown += `\n### Validación\n\n${validation}\n`;
+    }
 
-### Validación
+    if (options.length > 0) {
+        let hasOptionDetails = false;
+        let optionsMarkdown = '';
+        
+        options.forEach(opt => {
+            let optBlock = `\n### ${opt.title}\n`;
+            let hasContent = false;
 
-${validation}
+            if (opt.desc) {
+                optBlock += `\n${opt.desc}\n`;
+                hasContent = true;
+            }
+            
+            const prosLines = getLines(opt.pros);
+            const consLines = getLines(opt.cons);
+            
+            if (prosLines.length > 0) {
+                optBlock += `\n#### Pros\n` + prosLines.map(p => `* ${p}`).join('\n') + '\n';
+                hasContent = true;
+            }
+            if (consLines.length > 0) {
+                optBlock += `\n#### Contras\n` + consLines.map(c => `* ${c}`).join('\n') + '\n';
+                hasContent = true;
+            }
+            
+            if (hasContent) {
+                optionsMarkdown += optBlock;
+                hasOptionDetails = true;
+            }
+        });
 
-## Pros y Contras de las Alternativas
+        if (hasOptionDetails) {
+            markdown += `\n## Análisis de Alternativas\n` + optionsMarkdown;
+        }
+    }
 
-${optionsDetails}
+    if (links.length > 0) {
+        markdown += `\n## Links\n`;
+        markdown += links.map(link => `* ${link}`).join('\n') + '\n';
+    }
 
-## Links
-${linkLines}
-`;
+    // Normaliza saltos de línea (elimina los excesos para mantener el archivo limpio)
+    markdown = markdown.replace(/\n{3,}/g, '\n\n').trim() + '\n';
 
     const dateCompact = date.replace(/-/g, '');
     const slug = title.toLowerCase().trim()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/[\s_-]+/g, '-')
-        .replace(/^-+|-+$/g, '');
+        .replace(/[^\w\s-]/gu, '')  
+        .replace(/[\s_-]+/g, '-')    
+        .replace(/^-+|-+$/g, '');    
     const filename = `${dateCompact}-${slug}.md`;
 
     return { markdown, filename };
