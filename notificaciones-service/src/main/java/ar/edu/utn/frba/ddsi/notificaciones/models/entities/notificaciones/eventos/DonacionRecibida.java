@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.ddsi.notificaciones.models.entities.notificaciones;
+package ar.edu.utn.frba.ddsi.notificaciones.models.entities.notificaciones.eventos;
 
 public class DonacionRecibida extends EventoDeDonacion {
   @Override

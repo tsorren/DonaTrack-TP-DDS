@@ -1,5 +1,6 @@
-package ar.edu.utn.frba.ddsi.notificaciones.models.entities.notificaciones;
+package ar.edu.utn.frba.ddsi.notificaciones.models.entities.notificaciones.eventos;
 
+import ar.edu.utn.frba.ddsi.notificaciones.models.entities.notificaciones.Notificacion;
 import ar.edu.utn.frba.ddsi.notificaciones.models.entities.persona.Persona;
 import java.util.List;
 import lombok.Getter;

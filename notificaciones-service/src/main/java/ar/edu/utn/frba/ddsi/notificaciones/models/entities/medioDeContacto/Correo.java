@@ -10,6 +10,6 @@ public class Correo extends MedioDeContacto {
 
   @Override
   public boolean enviarMensaje(String mensaje, NotificacionSender sender) {
-    return sender.enviarMensaje(this.direccionCorreo, mensaje);
+    return sender.enviarA(this, mensaje);
   }
 }

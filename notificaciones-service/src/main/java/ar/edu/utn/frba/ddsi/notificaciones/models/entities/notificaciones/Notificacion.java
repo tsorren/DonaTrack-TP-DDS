@@ -24,12 +24,11 @@ public class Notificacion {
     this.estadoNotificacion = EstadoNotificacion.PENDIENTE;
   }
 
-  public void notificar() {
+  public void notificar(NotificacionSender sender) {
     List<MedioDeContacto> medios = this.ordenarMedios();
 
     for (MedioDeContacto medio : medios) {
       try {
-        NotificacionSender sender = this.obtenerSender(medio);
         boolean enviado = medio.enviarMensaje(this.mensaje, sender);
 
         if (enviado) {
@@ -41,23 +40,6 @@ public class Notificacion {
       }
     }
     this.estadoNotificacion = EstadoNotificacion.FALLIDA;
-  }
-
-  private NotificacionSender obtenerSender(MedioDeContacto medio) {
-
-    if (medio instanceof Correo) {
-      return new EmailSender();
-    }
-
-    if (medio instanceof WhatsApp) {
-      return new WhatsAppSender();
-    }
-
-    if (medio instanceof Telefono) {
-      return new SmsSender();
-    }
-
-    throw new RuntimeException("No existe sender");
   }
 
   private List<MedioDeContacto> ordenarMedios() {

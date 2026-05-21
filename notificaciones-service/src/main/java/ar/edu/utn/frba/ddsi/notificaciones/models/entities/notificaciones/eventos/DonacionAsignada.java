@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.ddsi.notificaciones.models.entities.notificaciones;
+package ar.edu.utn.frba.ddsi.notificaciones.models.entities.notificaciones.eventos;
 
 public class DonacionAsignada extends EventoDeDonacion {
   @Override
@@ -11,6 +11,9 @@ public class DonacionAsignada extends EventoDeDonacion {
 
   @Override
   protected String armarMensajeBeneficiario() {
-    return "Se te ha asignado la donación del donante " + getPersona().getDenominacion() + ". Contiene: " + getDetalleDonacion();
+    return "Se te ha asignado la donación del donante "
+        + getPersona().getDenominacion()
+        + ". Contiene: "
+        + getDetalleDonacion();
   }
 }

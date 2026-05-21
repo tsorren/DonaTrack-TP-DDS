@@ -12,10 +12,10 @@ public class Telefono extends MedioDeContacto {
 
   @Override
   public boolean enviarMensaje(String mensaje, NotificacionSender sender) {
-    return sender.enviarMensaje(this.obtenerNumeroCompleto(), mensaje);
+    return sender.enviarA(this, mensaje);
   }
 
-  protected String obtenerNumeroCompleto() {
-    return caracteristica + codigoArea + numero;
+  public String obtenerNumeroCompleto() {
+    return this.caracteristica + this.codigoArea + this.numero;
   }
 }
