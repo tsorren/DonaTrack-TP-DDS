@@ -1,35 +1,19 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
 
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.direccion.Direccion;
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.MedioDeContacto;
-import java.util.ArrayList;
-import java.util.List;
+import ar.edu.utn.frba.ddsi.donaciones.models.privacidad.Anonimizable;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public abstract class Persona {
-  private final List<MedioDeContacto> contactos = new ArrayList<>();
+public abstract class Persona implements Anonimizable {
+  private Long id;
   private TipoDocumento tipoDocumento;
   private String documento;
   private Direccion direccion;
 
-  public void agregarMedioDeContacto(MedioDeContacto medioDeContacto) {
-    contactos.add(medioDeContacto);
-  }
+  // fuerzo a que se cree con al menos 1 contacto valido
+  protected Persona() {}
 
-  public void quitarMedioDeContacto(MedioDeContacto medioDeContacto) {
-    // Ver que pasa si no pertenece a la lista el medio a quitar
-    contactos.remove(medioDeContacto);
-  }
-
-  public void definirMedioDeContactoPredeterminado(MedioDeContacto medioDeContacto) {
-    contactos.stream()
-        .filter(MedioDeContacto::getEsPredeterminado)
-        .findFirst()
-        .ifPresent(m -> m.setEsPredeterminado(false));
-
-    medioDeContacto.setEsPredeterminado(true);
-  }
 }

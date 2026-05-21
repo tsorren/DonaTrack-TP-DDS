@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.DonacionAsignada;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.NecesidadExtraordinaria;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes.*;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,17 +18,38 @@ class NecesidadExtraordinariaTests {
 
   @BeforeEach
   void setUp() {
-    necesidad = new NecesidadExtraordinaria();
+
+    Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
+    SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
+    necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
+
     necesidad.setCantidadNecesitada(30);
 
-    donacionAsignada1 = new DonacionAsignada();
-    donacionAsignada1.setCantidad(15);
+    Bien bien1 =
+        new Bien(
+            "descripcion1",
+            "imagen.png",
+            LocalDate.now().plusMonths(2),
+            Estado.NUEVO,
+            subcategoria);
+    Bien bien2 =
+        new Bien(
+            "descripcion2",
+            "imagen.png",
+            LocalDate.now().plusMonths(2),
+            Estado.NUEVO,
+            subcategoria);
+    Bien bien3 =
+        new Bien(
+            "descripcion3",
+            "imagen.png",
+            LocalDate.now().plusMonths(2),
+            Estado.NUEVO,
+            subcategoria);
 
-    donacionAsignada2 = new DonacionAsignada();
-    donacionAsignada2.setCantidad(15);
-
-    donacionAsignada3 = new DonacionAsignada();
-    donacionAsignada3.setCantidad(15);
+    donacionAsignada1 = new DonacionAsignada(bien1, 15, LocalDate.now());
+    donacionAsignada2 = new DonacionAsignada(bien2, 15, LocalDate.now());
+    donacionAsignada3 = new DonacionAsignada(bien3, 15, LocalDate.now());
   }
 
   @Test

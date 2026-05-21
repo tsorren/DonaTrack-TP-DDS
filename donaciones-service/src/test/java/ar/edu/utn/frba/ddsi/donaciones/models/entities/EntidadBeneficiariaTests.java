@@ -5,7 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.NecesidadExtraordinaria;
-import java.util.ArrayList;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes.Categoria;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes.SubCategoria;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes.Unidad;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Humana;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Juridica;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,11 +20,13 @@ class EntidadBeneficiariaTests {
 
   @BeforeEach
   void setUp() {
-    entidad = new EntidadBeneficiaria();
-    entidad.setNecesidades(new ArrayList<>());
+    Humana representante = new Humana("Juan", "Perez", LocalDate.now().minusYears(25));
+    Juridica juridica = new Juridica(representante);
+    entidad = new EntidadBeneficiaria(juridica);
 
-    necesidad = new NecesidadExtraordinaria();
-    necesidad.setDescripcion("30 bancos y sillas para el aula");
+    Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
+    SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
+    necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
   }
 
   @Test

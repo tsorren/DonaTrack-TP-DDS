@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Humana;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.Juridica;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,22 +17,22 @@ class JuridicaTest {
 
   @BeforeEach
   void setup() {
-    juridica = new Juridica();
+    representante1 = new Humana("Juan", "Pérez", LocalDate.of(1990, 1, 1));
+    representante2 = new Humana("Ana", "Gómez", LocalDate.of(1985, 5, 15));
 
-    representante1 = new Humana();
-    representante2 = new Humana();
+    juridica = new Juridica(representante1);
   }
 
   @Test
   void agregarRepresentante() {
-    juridica.agregarRepresentante(representante1);
+    juridica.agregarRepresentante(representante2);
 
     assertTrue(juridica.getRepresentantes().contains(representante1));
+    assertTrue(juridica.getRepresentantes().contains(representante2));
   }
 
   @Test
   void quitarRepresentante() {
-    juridica.agregarRepresentante(representante1);
     juridica.agregarRepresentante(representante2);
 
     juridica.quitarRepresentante(representante1);
