@@ -63,14 +63,14 @@
                         </select>
                     </div>
                     <div class="input-group">
-                        <label for="tags">Tags</label>
-                        <input type="text" id="tags" placeholder="arquitectura, backend">
+                        <label for="tags">Tags (opcional)</label>
+                        <input type="text" id="tags" placeholder="arquitectura, backend (opcional)">
                     </div>
                 </div>
                 <div class="grid">
                     <div class="input-group">
                         <label for="deciders">Decisores (integrantes)</label>
-                        <input type="text" id="deciders" placeholder="@Anush, @Ber, @Miranda">
+                        <input type="text" id="deciders" placeholder="(opcional: usar &quot;Decisión Grupal&quot; si vacío)">
                     </div>
                     <div class="input-group">
                         <label for="supersededBy">Superseded by (opcional)</label>
@@ -83,7 +83,7 @@
                 <h2>2. Contexto y drivers</h2>
                 <div class="input-group">
                     <label for="context">Problema a resolver</label>
-                    <textarea id="context" rows="4" placeholder="Qué requerimiento de DonaTrack estamos resolviendo?"></textarea>
+                    <textarea id="context" rows="4" placeholder="Qué requerimiento de DonaTrack estamos resolviendo? (opcional)"></textarea>
                 </div>
                 <div class="list-header">
                     <div>
@@ -100,7 +100,7 @@
                 <div class="list-header">
                     <div>
                         <h3>Alternativas consideradas</h3>
-                        <p class="hint">Cada alternativa puede tener pros y contras.</p>
+                        <p class="hint">Agrega al menos una alternativa.</p>
                     </div>
                     <button type="button" class="btn btn-outline" id="btnAddOption">+ Agregar alternativa</button>
                 </div>
@@ -108,12 +108,12 @@
 
                 <div class="grid">
                     <div class="input-group">
-                        <label for="optionChosen">Opción elegida</label>
+                        <label for="optionChosen">Alternativa elegida (opcional si estado es Draft)</label>
                         <select id="optionChosen"></select>
                     </div>
                     <div class="input-group">
-                        <label for="justification">Justificación</label>
-                        <textarea id="justification" rows="2" placeholder="Porque permite..."></textarea>
+                        <label for="justification">Justificación (opcional si estado es Draft)</label>
+                        <textarea id="justification" rows="2" placeholder="Describe por qué elegiste la alternativa"></textarea>
                     </div>
                 </div>
             </section>
@@ -122,17 +122,17 @@
                 <h2>4. Consecuencias y validación</h2>
                 <div class="grid">
                     <div class="input-group">
-                        <label for="consequenceGood">Consecuencia positiva</label>
-                        <textarea id="consequenceGood" rows="2" placeholder="Mejora de un atributo de calidad..."></textarea>
+                        <label for="consequenceGood">Consecuencia positiva (opcional)</label>
+                        <textarea id="consequenceGood" rows="2" placeholder="Mejora de un atributo de calidad... (opcional)"></textarea>
                     </div>
                     <div class="input-group">
-                        <label for="consequenceBad">Consecuencia negativa</label>
-                        <textarea id="consequenceBad" rows="2" placeholder="Agrega complejidad, latencia, etc."></textarea>
+                        <label for="consequenceBad">Consecuencia negativa (opcional)</label>
+                        <textarea id="consequenceBad" rows="2" placeholder="Agrega complejidad, latencia, etc. (opcional)"></textarea>
                     </div>
                 </div>
                 <div class="input-group">
-                    <label for="validation">Validación</label>
-                    <textarea id="validation" rows="3" placeholder="Cómo se validará esta decisión?"></textarea>
+                    <label for="validation">Validación (opcional)</label>
+                    <textarea id="validation" rows="3" placeholder="Cómo se validará esta decisión? (opcional)"></textarea>
                 </div>
             </section>
 
