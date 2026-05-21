@@ -19,7 +19,7 @@ Decidir cómo modelar la ubicación geográfica dentro de las direcciones de per
 Alternativa elegida: "Dirección compuesta por Localidad, Provincia y País"
 
 Justificación:
-Inicialmente la dirección concentraba toda la información geográfica en una única clase. Se decidió separar el modelo en una cadena de composición `Direccion → Localidad → Provincia → Pais`, permitiendo representar mejor el dominio y desacoplar la ubicación de los datos propios del domicilio.
+Inicialmente la dirección concentraba toda la información geográfica en una única clase. Se decidió separar el modelo en una cadena de composición `Direccion -> Localidad -> Provincia -> Pais`, permitiendo representar mejor el dominio y desacoplar la ubicación de los datos propios del domicilio.
 
 ### Consecuencias Positivas
 * El modelo queda más expresivo.
