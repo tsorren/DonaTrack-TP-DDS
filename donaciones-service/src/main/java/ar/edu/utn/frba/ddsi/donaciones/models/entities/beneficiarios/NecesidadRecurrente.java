@@ -1,13 +1,14 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios;
 
 import java.time.LocalDate;
+import java.time.Period;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class NecesidadRecurrente extends Necesidad {
-  private Periodo periodo;
+  private Period periodo;
   private LocalDate fechaInicioPeriodo;
   private LocalDate fechaFinPeriodo;
 
@@ -26,13 +27,7 @@ public class NecesidadRecurrente extends Necesidad {
 
   public void setFechaPeriodo(LocalDate fecha) {
     this.fechaInicioPeriodo = fecha;
-    this.fechaFinPeriodo =
-        switch (this.periodo) {
-          case SEMANAL -> fechaInicioPeriodo.plusWeeks(1);
-          case MENSUAL -> fechaInicioPeriodo.plusMonths(1);
-          case ANUAL -> fechaInicioPeriodo.plusYears(1);
-          case QUINCENAL -> fechaInicioPeriodo.plusDays(15);
-        };
+    this.fechaFinPeriodo = fechaInicioPeriodo.plus(this.periodo);
   }
 
   // Inicio <= fecha < fin

@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
+package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.direccion;
 
 import lombok.Data;
 

@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.DonacionAsignada;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.Periodo;
 import java.time.LocalDate;
+import java.time.Period;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class NecesidadRecurrenteTests {
   void setUp() {
     necesidad = new NecesidadRecurrente();
     necesidad.setCantidadNecesitada(100);
-    necesidad.setPeriodo(Periodo.SEMANAL);
+    necesidad.setPeriodo(Period.ofWeeks(1));
     necesidad.reiniciarPeriodo();
 
     d1 = new DonacionAsignada();
