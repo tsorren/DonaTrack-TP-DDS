@@ -15,5 +15,4 @@ public abstract class Persona implements Anonimizable {
 
   // fuerzo a que se cree con al menos 1 contacto valido
   protected Persona() {}
-
 }
