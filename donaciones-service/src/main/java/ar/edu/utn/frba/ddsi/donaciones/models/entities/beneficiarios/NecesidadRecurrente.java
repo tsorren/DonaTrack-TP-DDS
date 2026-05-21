@@ -1,6 +1,8 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios;
 
 import java.time.LocalDate;
+
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes.SubCategoria;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +12,46 @@ public class NecesidadRecurrente extends Necesidad {
   private Periodo periodo;
   private LocalDate fechaInicioPeriodo;
   private LocalDate fechaFinPeriodo;
+
+    public NecesidadRecurrente(
+            SubCategoria subcategoria,
+            Integer cantidadNecesitada,
+            String descripcion,
+            Periodo periodo,
+            LocalDate fechaInicioPeriodo) {
+
+        super(subcategoria, cantidadNecesitada, descripcion);
+
+        validarNecesidadRecurrente(periodo, fechaInicioPeriodo);
+
+        this.periodo = periodo;
+
+        this.setFechaPeriodo(fechaInicioPeriodo);
+    }
+// constructor vacio para compatibilidad con test, borrar cuando se adapten los test al constructor validado
+    public NecesidadRecurrente() {
+
+    }
+
+    private void validarNecesidadRecurrente(
+            Periodo periodo,
+            LocalDate fechaInicioPeriodo) {
+
+        if (periodo == null) {
+            throw new IllegalArgumentException(
+                    "La necesidad recurrente debe tener un período definido.");
+        }
+
+        if (fechaInicioPeriodo == null) {
+            throw new IllegalArgumentException(
+                    "La fecha de inicio del período no puede ser nula.");
+        }
+
+        if (fechaInicioPeriodo.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException(
+                    "La fecha de inicio del período no puede ser futura.");
+        }
+    }
 
   @Override
   public Integer cantidadAcumulada() {
@@ -25,6 +67,12 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   public void setFechaPeriodo(LocalDate fecha) {
+
+    if (fecha == null) {
+        throw new IllegalArgumentException(
+          "La fecha del período no puede ser nula.");
+      }
+
     this.fechaInicioPeriodo = fecha;
     this.fechaFinPeriodo =
         switch (this.periodo) {
@@ -38,6 +86,11 @@ public class NecesidadRecurrente extends Necesidad {
   // Inicio <= fecha < fin
   // Dia 1 a 7: 8 sería el otro lunes y queda afuera
   public boolean estaEnPeriodo(LocalDate fecha) {
+
+    if (fecha == null) {
+      throw new IllegalArgumentException(
+          "La fecha del período no puede ser nula.");
+    }
     return (fechaInicioPeriodo.isBefore(fecha) || fechaInicioPeriodo.isEqual(fecha))
         && fechaFinPeriodo.isAfter(fecha);
   }

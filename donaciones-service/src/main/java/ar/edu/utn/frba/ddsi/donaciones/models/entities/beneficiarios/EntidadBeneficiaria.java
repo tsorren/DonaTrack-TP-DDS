@@ -12,11 +12,35 @@ public class EntidadBeneficiaria {
   private Juridica juridica;
   private List<Necesidad> necesidades = new ArrayList<>();
 
-  public void agregarNecesidad(Necesidad necesidad) {
-    this.necesidades.add(necesidad);
+  public EntidadBeneficiaria() {
+    if (juridica == null) {
+      throw new IllegalArgumentException(
+              "La entidad beneficiaria debe estar asociada a una persona jurídica.");
+    }
+
   }
 
+  public void agregarNecesidad(Necesidad necesidad) {
+      if (necesidad == null) {
+        throw new IllegalArgumentException(
+                "La necesidad a agregar no puede ser nula.");
+      }
+
+      if (this.necesidades.contains(necesidad)) {
+        throw new IllegalArgumentException(
+                "La necesidad ya se encuentra registrada.");
+      }
+
+      this.necesidades.add(necesidad);
+    }
+
+
   public void quitarNecesidad(Necesidad necesidad) {
+
+    if (!this.necesidades.contains(necesidad)) {
+      throw new IllegalArgumentException(
+              "La necesidad no pertenece a la entidad beneficiaria.");
+    }
 
     this.necesidades.remove(necesidad);
   }
