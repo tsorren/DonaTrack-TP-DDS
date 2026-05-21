@@ -10,11 +10,21 @@ public class DonacionIndependiente {
   private List<ItemDonacion> items = new ArrayList<>();
 
   public void agregarItem(ItemDonacion item) {
+    if (item == null) {
+      throw new IllegalArgumentException("El ítem a agregar no puede ser nulo.");
+    }
     this.items.add(item);
   }
 
-  // Lanzar excepcion si el item no esta en la lista
   public void quitarItem(ItemDonacion bien) {
+    if (!this.items.contains(bien)) {
+      throw new IllegalArgumentException(
+          "El ítem que intenta quitar no pertenece a esta donación.");
+    }
     this.items.remove(bien);
+  }
+
+  public int getCantidad() {
+    return this.items.stream().mapToInt(ItemDonacion::getCantidad).sum();
   }
 }
