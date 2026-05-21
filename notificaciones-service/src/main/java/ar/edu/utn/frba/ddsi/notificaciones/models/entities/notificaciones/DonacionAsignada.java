@@ -11,6 +11,6 @@ public class DonacionAsignada extends EventoDeDonacion {
 
   @Override
   protected String armarMensajeBeneficiario() {
-    return "Se te ha asignado la donación del donante " + ". Contiene: " + getDetalleDonacion();
+    return "Se te ha asignado la donación del donante " + getPersona().getDenominacion() + ". Contiene: " + getDetalleDonacion();
   }
 }
