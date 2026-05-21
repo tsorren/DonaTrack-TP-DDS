@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.DonacionAsignada;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
 import ar.edu.utn.frba.ddsi.donaciones.models.entities.beneficiarios.Periodo;
+import ar.edu.utn.frba.ddsi.donaciones.models.entities.bienes.*;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,14 +16,22 @@ class NecesidadRecurrenteTests {
 
   @BeforeEach
   void setUp() {
-    necesidad = new NecesidadRecurrente();
-    necesidad.setCantidadNecesitada(100);
-    necesidad.setPeriodo(Periodo.SEMANAL);
-    necesidad.reiniciarPeriodo();
+    Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
+    SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
+    necesidad =
+        new NecesidadRecurrente(
+            subcategoria,
+            100,
+            "30 bancos y sillas para el aula",
+            Periodo.SEMANAL,
+            LocalDate.now().minusDays(5));
+    necesidad.setFechaPeriodo(LocalDate.now().minusDays(5));
 
-    d1 = new DonacionAsignada();
-    d1.setCantidad(100);
-    d1.setFechaAsignacion(LocalDate.now());
+    Bien bien =
+        new Bien(
+            "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
+
+    d1 = new DonacionAsignada(bien, 100, LocalDate.now());
   }
 
   @Test

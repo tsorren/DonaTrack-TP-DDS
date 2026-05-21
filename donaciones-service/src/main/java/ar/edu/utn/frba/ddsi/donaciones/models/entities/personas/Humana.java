@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.ddsi.donaciones.models.entities.personas;
 
-import ar.edu.utn.frba.ddsi.donaciones.models.entities.personas.medioDeContacto.MedioDeContacto;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,9 +12,7 @@ public class Humana extends Persona {
   private Genero genero;
   private LocalDate fechaNacimiento;
 
-  public Humana(
-      String nombre, String apellido, LocalDate fechaNacimiento, MedioDeContacto contactoInicial) {
-    super(contactoInicial);
+  public Humana(String nombre, String apellido, LocalDate fechaNacimiento) {
     validarDatosHumanos(nombre, apellido, fechaNacimiento);
 
     this.nombre = nombre;
@@ -32,6 +29,20 @@ public class Humana extends Persona {
     }
     if (fechaNacimiento != null && fechaNacimiento.isAfter(LocalDate.now())) {
       throw new IllegalArgumentException("La fecha de nacimiento no puede ser futura.");
+    }
+  }
+
+  @Override
+  public void anonimizar() {
+    // El documento o DNI se ofusca o limpia
+
+    this.nombre = "ANONIMIZADO";
+    this.apellido = "ANONIMIZADO";
+    this.genero = null;
+    this.fechaNacimiento = null;
+    this.setDocumento(null);
+    if (this.getDireccion() != null) {
+      this.getDireccion().anonimizar();
     }
   }
 }

@@ -12,8 +12,7 @@ public class Donacion {
   public Donacion(Donante donante) {
 
     if (donante == null) {
-      throw new IllegalArgumentException(
-              "La donación debe tener un donante asociado.");
+      throw new IllegalArgumentException("La donación debe tener un donante asociado.");
     }
 
     this.donante = donante;
@@ -21,13 +20,11 @@ public class Donacion {
 
   public void agregarDonacionIndependiente(DonacionIndependiente donacionIndependiente) {
     if (donacionIndependiente == null) {
-      throw new IllegalArgumentException(
-              "La donación independiente no puede ser nula.");
+      throw new IllegalArgumentException("La donación independiente no puede ser nula.");
     }
 
     if (this.donaciones.contains(donacionIndependiente)) {
-      throw new IllegalArgumentException(
-              "La donación independiente ya fue agregada.");
+      throw new IllegalArgumentException("La donación independiente ya fue agregada.");
     }
 
     this.donaciones.add(donacionIndependiente);
@@ -36,8 +33,7 @@ public class Donacion {
   // Lanzar excepcion si la donacion independiente no esta en la lista
   public void quitarDonacionIndependiente(DonacionIndependiente donacionIndependiente) {
     if (!this.donaciones.contains(donacionIndependiente)) {
-      throw new IllegalArgumentException(
-              "La donación independiente no pertenece a la donación.");
+      throw new IllegalArgumentException("La donación independiente no pertenece a la donación.");
     }
 
     this.donaciones.remove(donacionIndependiente);

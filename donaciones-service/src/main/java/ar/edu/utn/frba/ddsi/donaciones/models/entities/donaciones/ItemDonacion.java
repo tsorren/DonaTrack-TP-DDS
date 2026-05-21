@@ -16,18 +16,14 @@ public class ItemDonacion {
     this.cantidad = cantidad;
   }
 
-  private void validarItemDonacion(
-          Bien bien,
-          Integer cantidad) {
+  private void validarItemDonacion(Bien bien, Integer cantidad) {
 
     if (bien == null) {
-      throw new IllegalArgumentException(
-              "El item de donación debe tener un bien asociado.");
+      throw new IllegalArgumentException("El item de donación debe tener un bien asociado.");
     }
 
     if (cantidad == null || cantidad <= 0) {
-      throw new IllegalArgumentException(
-              "La cantidad del item debe ser mayor a cero.");
+      throw new IllegalArgumentException("La cantidad del item debe ser mayor a cero.");
     }
   }
 }

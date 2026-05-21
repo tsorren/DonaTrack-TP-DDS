@@ -13,7 +13,7 @@ public class DonacionIndependiente {
 
     if (descripcion == null || descripcion.trim().isEmpty()) {
       throw new IllegalArgumentException(
-              "La descripción de la donación independiente no puede estar vacía.");
+          "La descripción de la donación independiente no puede estar vacía.");
     }
 
     this.descripcion = descripcion;
@@ -21,8 +21,7 @@ public class DonacionIndependiente {
 
   public void agregarItem(ItemDonacion item) {
     if (item == null) {
-      throw new IllegalArgumentException(
-              "El item de donación no puede ser nulo.");
+      throw new IllegalArgumentException("El ítem a agregar no puede ser nulo.");
     }
     this.items.add(item);
   }
@@ -31,8 +30,12 @@ public class DonacionIndependiente {
   public void quitarItem(ItemDonacion bien) {
     if (!this.items.contains(bien)) {
       throw new IllegalArgumentException(
-              "El item no pertenece a la donación.");
+          "El ítem que intenta quitar no pertenece a esta donación.");
     }
     this.items.remove(bien);
+  }
+
+  public int getCantidad() {
+    return this.items.stream().mapToInt(ItemDonacion::getCantidad).sum();
   }
 }
