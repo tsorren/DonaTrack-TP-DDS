@@ -20,7 +20,8 @@ Para previsualizar la base de conocimientos localmente, ejecuta:
 log4brains preview
 ```
 
-En el modo de previsualización, la función de Hot Reload está activada: cualquier cambio que realices en un archivo markdown se aplicará en vivo en la interfaz.
+En el modo de previsualización, la función de Hot Reload está activada: cualquier cambio que realices en un archivo
+markdown se aplicará en vivo en la interfaz.
 
 Para crear un nuevo ADR de forma interactiva, ejecuta:
 

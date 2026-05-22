@@ -1,8 +1,8 @@
 name: Formulario de nuevo requerimiento
 description: Plantilla para la creación de nuevos requerimientos en DonaTrack"
 title: "[REQ] - "
-labels: ["requerimiento"]
-assignees: ["Anushig04"]
+labels: [ "requerimiento" ]
+assignees: [ "Anushig04" ]
 body:
   - type: dropdown
     id: entrega_milestone
@@ -50,7 +50,7 @@ body:
       placeholder: "Detallar el comportamiento esperado y reglas de negocio involucradas"
     validations:
       required: true
-      
+
   - type: checkboxes
     id: atributos_calidad
     attributes:

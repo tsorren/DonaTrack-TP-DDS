@@ -28,7 +28,7 @@ jobs:
             # Extrae el numero de entrega (ej: 1 de ENTREGA_1)
             DELIVERY_NUM="${BASH_REMATCH[1]}"
             REQUIRED_PREFIX="E${DELIVERY_NUM}_"
-            
+          
             if [[ ! "$SRC_BRANCH" =~ ^$REQUIRED_PREFIX.* ]]; then
               echo "Error: Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'."]
               echo "Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
@@ -56,7 +56,7 @@ jobs:
         run: pip install -q -U google-generativeai
 
       - name: Generar y Auditar Diagramas (IA)
-          # Solo se ejecuta si la variable ENABLE_DESIGN_AUDIT es 'true'
+        # Solo se ejecuta si la variable ENABLE_DESIGN_AUDIT es 'true'
         if: vars.ENABLE_DESIGN_AUDIT == 'true'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

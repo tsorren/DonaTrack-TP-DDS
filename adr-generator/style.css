@@ -28,10 +28,9 @@ body::before {
     content: '';
     position: fixed;
     inset: -20% 0 0 0;
-    background:
-        radial-gradient(circle at 20% 20%, rgba(15, 118, 110, 0.18), transparent 55%),
-        radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.18), transparent 50%),
-        radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.12), transparent 55%);
+    background: radial-gradient(circle at 20% 20%, rgba(15, 118, 110, 0.18), transparent 55%),
+    radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.18), transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(59, 130, 246, 0.12), transparent 55%);
     z-index: -1;
 }
 
