@@ -62,9 +62,7 @@ class SubCategoriaTest {
   void agregarDonacion_noDeberiaPermitirNulos() {
     assertThrows(
         IllegalArgumentException.class,
-        () -> {
-          subcategoria.agregarDonacion(null);
-        },
+        () -> subcategoria.agregarDonacion(null),
         "Debería lanzar error al agregar una donación nula");
   }
 }
