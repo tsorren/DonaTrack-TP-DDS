@@ -1,9 +1,9 @@
-package ar.edu.utn.frba.ddsi.common;
+package grupo5.common;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 public class Persona {
   private String nombre;

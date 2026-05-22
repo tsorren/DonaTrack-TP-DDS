@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.ddsi.common;
+package grupo5.common;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
