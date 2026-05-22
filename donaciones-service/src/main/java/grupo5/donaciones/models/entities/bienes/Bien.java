@@ -1,6 +1,8 @@
 package grupo5.donaciones.models.entities.bienes;
 
 import java.time.LocalDate;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter

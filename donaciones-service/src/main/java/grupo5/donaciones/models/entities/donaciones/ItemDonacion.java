@@ -1,6 +1,8 @@
 package grupo5.donaciones.models.entities.donaciones;
 
 import grupo5.donaciones.models.entities.bienes.Bien;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter

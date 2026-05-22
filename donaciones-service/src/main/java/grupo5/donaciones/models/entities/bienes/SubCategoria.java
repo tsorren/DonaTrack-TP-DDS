@@ -3,6 +3,8 @@ package grupo5.donaciones.models.entities.bienes;
 import grupo5.donaciones.models.entities.donaciones.DonacionIndependiente;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
