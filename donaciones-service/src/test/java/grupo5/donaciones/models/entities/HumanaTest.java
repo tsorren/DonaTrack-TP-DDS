@@ -1,8 +1,6 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;

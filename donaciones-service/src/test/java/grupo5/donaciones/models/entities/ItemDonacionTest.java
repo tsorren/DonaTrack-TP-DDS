@@ -3,11 +3,7 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.bienes.Categoria;
-import grupo5.donaciones.models.entities.bienes.Estado;
-import grupo5.donaciones.models.entities.bienes.SubCategoria;
-import grupo5.donaciones.models.entities.bienes.Unidad;
+import grupo5.donaciones.models.entities.bienes.*;
 import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
