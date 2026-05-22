@@ -135,12 +135,12 @@ const syncChosenOptions = () => {
         .filter(Boolean);
 
     optionChosen.innerHTML = '';
-    
+
     const analyzeOpt = document.createElement('option');
     analyzeOpt.value = '__pending__';
     analyzeOpt.textContent = 'Decisión Pendiente';
     optionChosen.appendChild(analyzeOpt);
-    
+
     if (titles.length === 0) {
         return;
     }
@@ -379,7 +379,7 @@ const parseMarkdownToForm = (markdown) => {
     );
 
     const mergedOptions = optionsConsidered.length
-        ? optionsConsidered.map(title => detailMap.get(normalizeText(title)) || { title })
+        ? optionsConsidered.map(title => detailMap.get(normalizeText(title)) || {title})
         : detailedOptions;
 
     if (chosen && !mergedOptions.some(option => option.title === chosen) && chosen !== '__pending__') {
@@ -391,7 +391,7 @@ const parseMarkdownToForm = (markdown) => {
         }
     }
 
-    const finalOptions = mergedOptions.length ? mergedOptions : [{ title: '' }];
+    const finalOptions = mergedOptions.length ? mergedOptions : [{title: ''}];
 
     const links = (sections['links'] || [])
         .map(line => line.trim())
@@ -516,7 +516,7 @@ const buildMarkdown = () => {
     }
 
     const isPending = chosen === '__pending__' && status === 'draft';
-    
+
     if (isPending) {
         markdown += `\n## Decisión Pendiente\n`;
     } else if ((chosen && chosen !== '__pending__') || justification || consequenceGood || consequenceBad || validation) {
@@ -549,7 +549,7 @@ const buildMarkdown = () => {
     if (options.length > 0) {
         let hasOptionDetails = false;
         let optionsMarkdown = '';
-        
+
         options.forEach(opt => {
             let optBlock = `\n### ${opt.title}\n`;
             let hasContent = false;
@@ -558,10 +558,10 @@ const buildMarkdown = () => {
                 optBlock += `\n${opt.desc}\n`;
                 hasContent = true;
             }
-            
+
             const prosLines = getLines(opt.pros);
             const consLines = getLines(opt.cons);
-            
+
             if (prosLines.length > 0) {
                 optBlock += `\n#### Pros\n` + prosLines.map(p => `* ${p}`).join('\n') + '\n';
                 hasContent = true;
@@ -570,7 +570,7 @@ const buildMarkdown = () => {
                 optBlock += `\n#### Contras\n` + consLines.map(c => `* ${c}`).join('\n') + '\n';
                 hasContent = true;
             }
-            
+
             if (hasContent) {
                 optionsMarkdown += optBlock;
                 hasOptionDetails = true;
@@ -592,12 +592,12 @@ const buildMarkdown = () => {
 
     const dateCompact = date.replace(/-/g, '');
     const slug = title.toLowerCase().trim()
-        .replace(/[^\w\s-]/gu, '')  
-        .replace(/[\s_-]+/g, '-')    
-        .replace(/^-+|-+$/g, '');    
+        .replace(/[^\w\s-]/gu, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
     const filename = `${dateCompact}-${slug}.md`;
 
-    return { markdown, filename };
+    return {markdown, filename};
 };
 
 const handleDownload = () => {
@@ -605,7 +605,7 @@ const handleDownload = () => {
     if (!result) {
         return;
     }
-    const blob = new Blob([result.markdown], { type: 'text/markdown' });
+    const blob = new Blob([result.markdown], {type: 'text/markdown'});
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = result.filename;
