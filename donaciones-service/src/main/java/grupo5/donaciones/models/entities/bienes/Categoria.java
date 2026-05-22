@@ -21,7 +21,7 @@ public class Categoria {
     this.tipoUnidad = tipoUnidad;
   }
 
-  private void validarCategoria(
+  private static void validarCategoria(
       String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
 
     if (nombre == null || nombre.trim().isEmpty()) {

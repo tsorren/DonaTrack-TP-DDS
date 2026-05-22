@@ -14,7 +14,7 @@ public abstract class Necesidad {
   private Integer cantidadNecesitada;
   private String descripcion;
 
-  public Necesidad(SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
+  protected Necesidad(SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     this.subcategoria = subcategoria;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;

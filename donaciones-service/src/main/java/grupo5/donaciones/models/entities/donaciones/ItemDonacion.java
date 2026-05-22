@@ -18,7 +18,7 @@ public class ItemDonacion {
     this.cantidad = cantidad;
   }
 
-  private void validarItemDonacion(Bien bien, Integer cantidad) {
+  private static void validarItemDonacion(Bien bien, Integer cantidad) {
 
     if (bien == null) {
       throw new IllegalArgumentException("El item de donación debe tener un bien asociado.");

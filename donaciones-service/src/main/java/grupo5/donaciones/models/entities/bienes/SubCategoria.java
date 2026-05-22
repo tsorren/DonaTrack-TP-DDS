@@ -21,7 +21,7 @@ public class SubCategoria {
     this.nombre = nombre;
   }
 
-  private void validarSubCategoria(Categoria categoria, String nombre) {
+  private static void validarSubCategoria(Categoria categoria, String nombre) {
 
     if (categoria == null) {
       throw new IllegalArgumentException("La subcategoría debe pertenecer a una categoría.");

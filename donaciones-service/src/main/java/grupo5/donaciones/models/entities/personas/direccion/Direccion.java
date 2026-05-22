@@ -32,7 +32,8 @@ public class Direccion implements Anonimizable {
     this.localidad = localidad;
   }
 
-  private void validarDireccion(String calle, Integer altura, String zona, String localidad) {
+  private static void validarDireccion(
+      String calle, Integer altura, String zona, String localidad) {
 
     if (calle == null || calle.trim().isEmpty()) {
       throw new IllegalArgumentException("La dirección debe tener una calle.");

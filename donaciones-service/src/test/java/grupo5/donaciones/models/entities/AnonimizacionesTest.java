@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class AnonimizacionesTest {
+class AnonimizacionesTest {
   private Humana persona;
   private Juridica juridica;
 

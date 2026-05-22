@@ -3,6 +3,7 @@ package grupo5.donaciones.infraestructure;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.ports.CargadorDonantes;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -28,7 +29,7 @@ public class LectorCSV implements CargadorDonantes {
         }
       }
     } catch (IOException e) {
-      throw new RuntimeException("Error al leer el archivo CSV de donantes", e);
+      throw new UncheckedIOException("Error al leer el archivo CSV de donantes", e);
     }
 
     return personasCargadas;

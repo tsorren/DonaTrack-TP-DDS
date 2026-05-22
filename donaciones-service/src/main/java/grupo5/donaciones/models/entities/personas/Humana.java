@@ -20,7 +20,8 @@ public class Humana extends Persona {
     this.fechaNacimiento = fechaNacimiento;
   }
 
-  private void validarDatosHumanos(String nombre, String apellido, LocalDate fechaNacimiento) {
+  private static void validarDatosHumanos(
+      String nombre, String apellido, LocalDate fechaNacimiento) {
     if (nombre == null || nombre.trim().isEmpty()) {
       throw new IllegalArgumentException("El nombre de la persona no puede estar vacío.");
     }
