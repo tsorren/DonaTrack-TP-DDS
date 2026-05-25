@@ -1,104 +1,67 @@
-# ddsi-tp-template
+# DonaTrack
 
-Plantilla base para el trabajo práctico de DDSI (UTN FRBA). Implementa una arquitectura de servicios con Spring Boot y una biblioteca compartida, usando un reactor de Maven multi-módulo.
+DonaTrack es el proyecto anual de la cátedra de Diseño de Sistemas de Información (2026). El sistema tiene como objetivo optimizar la gestión, trazabilidad y distribución de donaciones de bienes materiales para organizaciones sin fines de lucro, buscando mejorar la transparencia y eficiencia en la asistencia a entidades beneficiarias.
 
----
+## Contexto del Proyecto
 
-## Requisitos previos
+El sistema está concebido bajo una arquitectura distribuida de microservicios, permitiendo un crecimiento incremental, modular y escalable.
+La plataforma permite la gestión integral de donantes (humanos y jurídicos), la recepción y asignación de donaciones, el registro de necesidades de entidades beneficiarias y la logística de entrega de bienes.
 
-- JDK 21
-- Maven 3.9+
-- Docker (opcional, solo para construir y ejecutar contenedores)
+## Documentación y Recursos
 
----
+- **[Entrega 1](docs/entrega-1/)**: Documentación, diagramas y bocetos de la primera entrega del proyecto.
+- **[ADR Preview](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview)**: Visualización interactiva de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
+- **[ADR Generator](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview)**: Generador de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
 
-## Estructura del repositorio
+## Tecnologías y Herramientas
 
-```
-ddsi-tp-template/
-├── pom.xml                    # POM padre: versiones y dependencyManagement
-├── common-lib/                # Librería compartida (JAR), importada por los servicios
-├── donaciones-service/        # Servicio de donaciones — puerto 8080
-└── notificaciones-service/    # Servicio de notificaciones — puerto 8081
-```
+El desarrollo de DonaTrack se fundamenta en un ecosistema robusto y moderno, alineado con estándares de la industria:
 
-Cada servicio es una aplicación Spring Boot independiente que declara `common-lib` como dependencia local del reactor.
+### Desarrollo y Backend
+- Lenguaje: Java 21 (enfocado en las últimas funcionalidades del lenguaje).
+- Framework: Spring Boot (base para el desarrollo de microservicios).
+- Gestión de dependencias: Maven.
+- Simplificación de código: Lombok (reducción de boilerplate).
 
----
+### Calidad y Testing
+- Análisis de código: SonarQube.
+- Cobertura de tests: JaCoCo.
+- Framework de Testing: JUnit 5 y Mockito.
+- Formateo y estilo: Spotless (aplicado mediante Git Hooks para garantizar determinismo).
 
-## Tecnologías
+### DevOps y Gestión
+- Control de versiones y flujo: GitHub (Actions para CI/CD, Issues para seguimiento, Projects para gestión ágil).
+- Documentación de arquitectura: LucidChart y ADRs (Architecture Decision Records) visualizados con Log4brains.
+- IDE: IntelliJ IDEA.
+## Estructura del Proyecto
 
-| Tecnología          | Versión       |
-|---------------------|---------------|
-| Java                | 21            |
-| Spring Boot         | 4.0.5         |
-| Spring Cloud BOM    | 2025.1.1      |
-| Lombok              | 1.18.34       |
-| Maven               | 3.9+          |
+El proyecto sigue una arquitectura de microservicios. A continuación se detalla la organización de los directorios principales:
 
-El BOM de Spring Cloud está declarado en el POM padre para que los módulos puedan incorporar dependencias de Spring Cloud sin especificar versión explícita.
+### Raíz del Proyecto
+- `.github/`: Flujos de trabajo de CI/CD (GitHub Actions) y plantillas para Issues.
+- `.log4brains/`: Configuración para la visualización de los Registros de Decisiones de Arquitectura (ADR).
+- `docs/`: Documentación técnica, diagramas de arquitectura y archivos ADR en formato Markdown.
+- `adr-generator/`: Herramienta interna para la generación estandarizada de nuevas decisiones de arquitectura.
 
----
+### Microservicios
+Cada servicio contiene su propia lógica de dominio siguiendo los principios de Clean Architecture:
+- `auth-service/`: Gestión de autenticación y seguridad.
+- `donaciones-service/`: Microservicio principal de gestión de donantes, donaciones y necesidades de entidades beneficiarias.
+- `notificaciones-service/`: Orquestación y envío de eventos y notificaciones (WhatsApp, Email, etc.).
+- `incentivos-service/`: Cálculo de analíticas y recompensas para donantes.
+- `logistica-service/`: Gestión de rutas de entrega y seguimiento de bienes.
 
-## Desarrollo local (Maven)
+### Componentes Compartidos y Utilidades
+- `common-lib/`: Dependencia compartida que incluirá frameworks de logging, tracing, etc.
+- `cliente-liviano/`: Renderizado de vistas desde el servidor.
 
-Todos los comandos se ejecutan desde la **raíz del proyecto**.
 
-### Compilar todos los módulos
+## Decisiones de Diseño Clave
 
-```bash
-mvn clean install
-```
+Para garantizar la calidad y mantenibilidad, hemos adoptado las siguientes decisiones estratégicas:
 
-Esto construye `common-lib` primero y luego los servicios que dependen de ella.
+- Pipeline CI/CD: Implementación de un flujo unificado basado en el enfoque de "Fallo Temprano", automatizando validaciones de calidad, Git Flow y despliegue de documentación.
+- Privacidad: Anonimización de usuarios para cumplir con las normativas de protección de datos sensibles.
+- Comunicación Asincrónica: Implementación de mensajería basada en eventos para desacoplar los servicios, mejorando la escalabilidad y tolerancia a fallos.
+- Pruebas Unitarias: Uso intensivo de JUnit y Mockito, garantizando el aislamiento y determinismo en los tests de lógica de negocio.
 
-### Ejecutar un servicio
-
-```bash
-# Servicio de donaciones (puerto 8080)
-mvn spring-boot:run -pl donaciones-service
-
-# Servicio de notificaciones (puerto 8081)
-mvn spring-boot:run -pl notificaciones-service
-```
-
-Maven resuelve `common-lib` directamente desde el reactor, por lo que no hace falta instalarla por separado si se ejecuta desde la raíz.
-
----
-
-## Construcción de imágenes Docker
-
-Este proyecto utiliza una arquitectura multi-módulo de Maven. Los microservicios dependen del `pom.xml` padre y de `common-lib`, por lo que **el contexto de construcción de Docker siempre debe ser la raíz del proyecto**. Si se limita el contexto a la carpeta del microservicio, Maven fallará al no encontrar el POM padre ni las dependencias comunes.
-
-### Construcción manual (CLI)
-
-Posicionarse en la carpeta raíz del proyecto y pasar el Dockerfile con `-f`, dejando `.` como contexto:
-
-```bash
-# donaciones-service (expone el puerto 8080)
-docker build -t donaciones-img -f donaciones-service/Dockerfile .
-
-# notificaciones-service (expone el puerto 8081)
-docker build -t notificaciones-img -f notificaciones-service/Dockerfile .
-```
-
-### Ejecutar los contenedores
-
-```bash
-docker run -p 8080:8080 donaciones-img
-docker run -p 8081:8081 notificaciones-img
-```
-
-### Nota sobre `ARG SERVICE_NAME`
-
-Cada Dockerfile define un `ARG SERVICE_NAME` cuyo valor por defecto ya coincide con el nombre del servicio (p. ej. `donaciones-service`). Solo es necesario sobreescribirlo si se reutiliza un Dockerfile genérico para construir un servicio diferente:
-
-```bash
-docker build --build-arg SERVICE_NAME=otro-service -f otro-service/Dockerfile .
-```
-
----
-
-## Estado del proyecto
-
-Los servicios son aplicaciones Spring Boot mínimas, listas para extender con controladores, repositorios y lógica de negocio. `common-lib` contiene el código compartido entre servicios.
