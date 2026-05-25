@@ -7,6 +7,12 @@ DonaTrack es el proyecto anual de la cátedra de Diseño de Sistemas de Informac
 El sistema está concebido bajo una arquitectura distribuida de microservicios, permitiendo un crecimiento incremental, modular y escalable.
 La plataforma permite la gestión integral de donantes (humanos y jurídicos), la recepción y asignación de donaciones, el registro de necesidades de entidades beneficiarias y la logística de entrega de bienes.
 
+## Documentación y Recursos
+
+- **[Entrega 1](docs/entrega-1/)**: Documentación, diagramas y bocetos de la primera entrega del proyecto.
+- **[ADR Preview](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview)**: Visualización interactiva de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
+- **[ADR Generator](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview)**: Generador de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
+
 ## Tecnologías y Herramientas
 
 El desarrollo de DonaTrack se fundamenta en un ecosistema robusto y moderno, alineado con estándares de la industria:
@@ -48,6 +54,7 @@ Cada servicio contiene su propia lógica de dominio siguiendo los principios de 
 ### Componentes Compartidos y Utilidades
 - `common-lib/`: Dependencia compartida que incluirá frameworks de logging, tracing, etc.
 - `cliente-liviano/`: Renderizado de vistas desde el servidor.
+
 
 ## Decisiones de Diseño Clave
 
