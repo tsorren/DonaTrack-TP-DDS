@@ -18,6 +18,28 @@ const GeneratorService = (() => {
   let editorPanel = null;
   let formContainer = null;
   let markdownInput = null;
+  let isListenersAttached = false;
+
+  let saveTimeout;
+  const debounceSave = () => {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(() => {
+      if (currentTemplate) {
+        const data = UIEngine.collectFormData();
+        Utils.setLocalStorage(`draft_${currentTemplate.id}`, data);
+      }
+    }, 800);
+  };
+
+  let saveMdTimeout;
+  const debounceSaveMarkdown = () => {
+    clearTimeout(saveMdTimeout);
+    saveMdTimeout = setTimeout(() => {
+      if (currentTemplate) {
+        Utils.setLocalStorage(`draft_md_${currentTemplate.id}`, markdownInput.value);
+      }
+    }, 800);
+  };
 
   /**
    * Inicializa el servicio con referencias a elementos DOM y plantilla.
@@ -39,7 +61,7 @@ const GeneratorService = (() => {
       'buildMarkdownFromFormData',
       'parseMarkdownToFormData',
       'validateFormData',
-      'getFilenamePattern'
+      'generateFilename'
     ];
 
     for (const method of requiredMethods) {
@@ -54,13 +76,22 @@ const GeneratorService = (() => {
     editorPanel = editorPanelEl;
     markdownInput = markdownInputEl;
 
+    // Enganchar listeners globales para autoguardado
+    if (!isListenersAttached) {
+      formContainer.addEventListener('input', debounceSave);
+      formContainer.addEventListener('change', debounceSave);
+      markdownInput.addEventListener('input', debounceSaveMarkdown);
+      isListenersAttached = true;
+    }
+
     return true;
   };
 
   /**
    * Renderiza el formulario para la plantilla actual.
+   * @param {boolean} ignoreDraft - Si es true, fuerza un canvas en blanco y no carga draft guardado
    */
-  const renderForm = () => {
+  const renderForm = (ignoreDraft = false) => {
     if (!currentTemplate || !formContainer) {
       console.error('GeneratorService: Not initialized');
       return;
@@ -73,6 +104,13 @@ const GeneratorService = (() => {
     const actionSection = document.getElementById('actionSection');
     if (actionSection) {
       Utils.clearElement(actionSection);
+
+      const btnReset = document.createElement('button');
+      btnReset.type = 'button';
+      btnReset.className = 'btn btn-danger';
+      btnReset.textContent = 'Limpiar Todo';
+      btnReset.id = 'btnReset';
+      btnReset.addEventListener('click', handleReset);
 
       const btnCopy = document.createElement('button');
       btnCopy.type = 'button';
@@ -88,6 +126,7 @@ const GeneratorService = (() => {
       btnDownload.id = 'btnGenerate';
       btnDownload.addEventListener('click', handleDownload);
 
+      actionSection.appendChild(btnReset);
       actionSection.appendChild(btnCopy);
       actionSection.appendChild(btnDownload);
     }
@@ -100,6 +139,14 @@ const GeneratorService = (() => {
       status.setAttribute('aria-live', 'polite');
       if (formContainer.parentElement) {
         formContainer.parentElement.appendChild(status);
+      }
+    }
+
+    // Cargar borrador automáticamente si existe y no se pide ignorar
+    if (!ignoreDraft) {
+      const draft = Utils.getLocalStorage(`draft_${currentTemplate.id}`);
+      if (draft) {
+        UIEngine.populateFormData(draft);
       }
     }
   };
@@ -144,9 +191,10 @@ const GeneratorService = (() => {
       formContainer.classList.toggle('is-hidden', isEdit);
     }
 
-    // Si entramos en edit, limpiar markdown input
+    // Si entramos en edit, restaurar el draft de markdown
     if (isEdit && markdownInput) {
-      markdownInput.value = '';
+      const mdDraft = Utils.getLocalStorage(`draft_md_${currentTemplate.id}`);
+      markdownInput.value = mdDraft || '';
       setTab('write');
     }
   };
@@ -185,7 +233,7 @@ const GeneratorService = (() => {
       if (markdown.trim()) {
         parseMarkdown(markdown);
       } else {
-        Utils.setStatus('Ingresa markdown en la pestaña "Escribir"');
+        Utils.setStatus('Ingresa markdown en la pestaña "Escribir"', 'error');
       }
     }
   };
@@ -204,19 +252,19 @@ const GeneratorService = (() => {
     try {
       const formData = currentTemplate.parseMarkdownToFormData(markdown);
       if (!formData) {
-        Utils.setStatus('Error al parsear markdown');
+        Utils.setStatus('Error al parsear markdown', 'error');
         return false;
       }
 
       // Cambiar a create mode y renderizar
       setMode('create');
-      renderForm();
+      renderForm(true); // ignorar draft porque queremos sobreescribir con el markdown cargado
       UIEngine.populateFormData(formData);
-      Utils.setStatus('Markdown cargado correctamente');
+      Utils.setStatus('Markdown cargado correctamente', 'success');
       return true;
     } catch (error) {
       console.error('Parse error:', error);
-      Utils.setStatus(`Error: ${error.message}`);
+      Utils.setStatus(`Error: ${error.message}`, 'error');
       return false;
     }
   };
@@ -237,21 +285,20 @@ const GeneratorService = (() => {
       // Validar
       const validation = currentTemplate.validateFormData(formData);
       if (!validation.isValid) {
-        Utils.setStatus(`Validación: ${validation.errors.join(', ')}`);
+        Utils.setStatus(`Validación: ${validation.errors.join(', ')}`, 'error');
         return null;
       }
 
       // Generar markdown
       const markdown = currentTemplate.buildMarkdownFromFormData(formData);
-      const filename = Utils.generateFilename(
-        formData.title || 'documento',
-        'md'
-      );
+      const filename = typeof currentTemplate.generateFilename === 'function'
+        ? currentTemplate.generateFilename(formData)
+        : Utils.generateFilename(formData.title || currentTemplate.id || 'documento', 'md');
 
       return { markdown, filename };
     } catch (error) {
       console.error('Build markdown error:', error);
-      Utils.setStatus(`Error: ${error.message}`);
+      Utils.setStatus(`Error: ${error.message}`, 'error');
       return null;
     }
   };
@@ -264,7 +311,7 @@ const GeneratorService = (() => {
     if (!result) return;
 
     Utils.downloadFile(result.markdown, result.filename, 'text/markdown');
-    Utils.setStatus(`Archivo descargado: ${result.filename}`);
+    Utils.setStatus(`Archivo descargado: ${result.filename}`, 'success');
   };
 
   /**
@@ -276,9 +323,24 @@ const GeneratorService = (() => {
 
     const success = await Utils.copyToClipboard(result.markdown);
     if (success) {
-      Utils.setStatus('Markdown copiado al portapapeles');
+      Utils.setStatus('Markdown copiado al portapapeles', 'success');
     } else {
-      Utils.setStatus('Error al copiar (verifica permisos)');
+      Utils.setStatus('Error al copiar (verifica permisos)', 'error');
+    }
+  };
+
+  /**
+   * Maneja la limpieza completa del formulario.
+   */
+  const handleReset = () => {
+    if (confirm('¿Estás seguro de que deseas empezar desde cero? Se perderán todos los datos no guardados.')) {
+      Utils.setLocalStorage(`draft_${currentTemplate.id}`, null); // Limpiar draft actual
+      Utils.setLocalStorage(`draft_md_${currentTemplate.id}`, null);
+      renderForm(true);
+      if (markdownInput) {
+        markdownInput.value = '';
+      }
+      Utils.setStatus('Formulario limpiado desde cero.', 'success');
     }
   };
 
@@ -323,6 +385,7 @@ const GeneratorService = (() => {
     buildMarkdown,
     handleDownload,
     handleCopy,
+    handleReset,
     setTemplate,
     getState
   };

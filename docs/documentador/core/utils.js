@@ -40,13 +40,36 @@ const Utils = (() => {
   /**
    * Establece mensaje de estado en elemento.
    * @param {string} message - Mensaje a mostrar
-   * @param {HTMLElement} element - Elemento donde mostrar (default: #formStatus)
+   * @param {string} type - Tipo de mensaje: 'info', 'success', 'error'
    */
-  const setStatus = (message, element = null) => {
-    const el = element || document.getElementById('formStatus');
+  const setStatus = (message, type = 'info') => {
+    // Compatibilidad para Screen Readers en caso de existir formStatus
+    const el = document.getElementById('formStatus');
     if (el) {
       el.textContent = message || '';
     }
+
+    if (!message) return;
+
+    // Crear e inyectar Toast System dinámicamente
+    let toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'toastContainer';
+      document.body.appendChild(toastContainer);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+
+    requestAnimationFrame(() => toast.classList.add('show'));
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300); // Esperar que termine CSS transition
+    }, 3500);
   };
 
   /**

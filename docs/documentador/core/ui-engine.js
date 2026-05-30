@@ -221,11 +221,12 @@ const UIEngine = (() => {
     item.className = 'list-item';
 
     const input = document.createElement(itemType === 'textarea' ? 'textarea' : 'input');
-    input.type = itemType === 'textarea' ? 'textarea' : 'text';
     input.className = `field-${listId}`;
     input.setAttribute('data-list-item', listId);
     if (itemType === 'textarea') {
       input.rows = 2;
+    } else {
+      input.type = itemType || 'text';
     }
 
     const btnRemove = document.createElement('button');
@@ -372,8 +373,8 @@ const UIEngine = (() => {
       processSpecForCollection(currentFormSpec);
     }
 
-    // Text inputs and textareas (ignorando los ya recolectados)
-    currentContainer.querySelectorAll('input[type="text"], textarea, select').forEach(el => {
+    // Todos los inputs (text, date, etc.), textareas y selects (ignorando los ya recolectados)
+    currentContainer.querySelectorAll('input, textarea, select').forEach(el => {
       if (el.id && !el.id.startsWith('btn') && data[el.id] === undefined) {
         data[el.id] = el.value;
       }

@@ -11,6 +11,7 @@ target/
 *.tmp
 /logs/
 **/logs/
+/staging/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml
