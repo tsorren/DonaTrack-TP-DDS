@@ -1,0 +1,19 @@
+{
+  "templates": [
+    {
+      "id": "adr",
+      "name": "Architecture Decision Record",
+      "file": "./templates/adr.js",
+      "className": "ADRTemplate",
+      "description": "Registro de decisión arquitectónica con alternativas y justificación"
+    },
+    {
+      "id": "minuta",
+      "name": "Minuta de Reunión",
+      "file": "./templates/minuta.js",
+      "className": "MinutaTemplate",
+      "description": "Registro de reunión con participantes, temas y tareas asignadas"
+    }
+  ],
+  "defaultTemplate": "adr"
+}
