@@ -90,6 +90,27 @@ body::before {
     align-items: center;
     gap: 1.5rem;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.template-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.template-selector label {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.template-selector select {
+    min-width: 200px;
+    font-size: 0.95rem;
+    padding: 0.6rem 0.75rem;
 }
 
 .mode-toggle {
@@ -383,10 +404,96 @@ input:focus, textarea:focus, select:focus {
     flex: 1 1 220px;
 }
 
+.action-row .btn-danger {
+    flex: 1 1 150px;
+}
+
 .form-status {
     margin-top: 0.75rem;
     color: var(--muted);
     font-size: 0.95rem;
+}
+
+/* Estilos genéricos para estructura dinámica */
+
+.field-group {
+    margin-bottom: 1rem;
+}
+
+.field-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.field-list-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.65rem;
+    border: 1px dashed rgba(15, 118, 110, 0.3);
+    border-radius: 0.75rem;
+    background: rgba(15, 118, 110, 0.04);
+}
+
+.field-nested {
+    margin-left: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.15);
+    border-radius: 0.6rem;
+    background: rgba(15, 118, 110, 0.02);
+}
+
+/* Compatibilidad con nombres antiguos para transición */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.list-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.65rem;
+    border: 1px dashed rgba(15, 118, 110, 0.3);
+    border-radius: 0.75rem;
+    background: rgba(15, 118, 110, 0.04);
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.option-card {
+    border: 1px solid rgba(15, 118, 110, 0.2);
+    border-radius: 0.9rem;
+    padding: 1rem 1rem 1.2rem;
+    background: #f8fbfa;
+}
+
+.option-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.8rem;
+}
+
+@media (max-width: 720px) {
+    .template-selector {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .template-selector select {
+        min-width: 100%;
+    }
 }
 
 @media (max-width: 720px) {
@@ -419,4 +526,49 @@ input:focus, textarea:focus, select:focus {
     .action-row {
         flex-direction: column;
     }
+}
+
+/* =========================================
+   Toast Notifications System
+   ========================================= */
+#toastContainer {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 9999;
+    pointer-events: none; /* No bloquear clicks en lo que está debajo */
+}
+
+.toast {
+    min-width: 250px;
+    padding: 1rem 1.25rem;
+    border-radius: 0.75rem;
+    background: var(--ink);
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast-success {
+    background: var(--primary-strong);
+}
+
+.toast-error {
+    background: #b91c1c; /* Color rojo de advertencia */
+}
+
+.toast-info {
+    background: var(--ink);
 }

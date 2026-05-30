@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>DonaTrack | Generador de Documentos</title>
+    <link href="style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Source+Sans+3:wght@400;500;700&display=swap"
+          rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div style="margin-bottom: 1rem;">
+        <a href=".." class="btn btn-outline" style="text-decoration: none; display: inline-block; padding: 0.5rem 1rem; width: auto; font-size: 0.9rem;">Volver al Hub</a>
+    </div>
+    <header class="hero">
+        <span class="badge">Document Generator</span>
+        <h1>DonaTrack Docs</h1>
+        <p>Generador de documentación: ADRs, Minutas, y más.</p>
+    </header>
+
+    <div class="mode-bar">
+        <div class="template-selector">
+            <label for="templateSelect">Plantilla:</label>
+            <select id="templateSelect">
+                <!-- Poblado dinámicamente -->
+            </select>
+        </div>
+        <div class="mode-toggle">
+            <button class="mode-btn is-active" id="btnModeCreate" title="Modo crear" type="button">+</button>
+            <button class="mode-btn" id="btnModeEdit" title="Modo editar" type="button">&#9998;</button>
+        </div>
+        <div class="mode-label">
+            <span id="modeTitle">Modo crear</span>
+            <span class="mode-hint">Usa el + para crear o el lápiz para editar.</span>
+        </div>
+    </div>
+
+    <section aria-hidden="true" class="editor-panel" id="editorPanel">
+        <div class="editor-tabs">
+            <button class="tab-btn is-active" id="btnWriteTab" type="button">&#9998; Escribir</button>
+            <button class="tab-btn" id="btnPreviewTab" type="button">&#128269; Preview</button>
+        </div>
+        <div class="editor-body">
+            <div class="editor-write">
+                <textarea id="markdownInput" placeholder="Pega aquí el markdown del documento" rows="10"></textarea>
+            </div>
+            <div class="editor-preview">
+                <div class="editor-note">
+                    Vista previa activa. El formulario se completa automáticamente para editar.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contenedor genérico para el formulario dinámico -->
+    <div id="formContainer" class="sheet"></div>
+
+</div>
+
+<!-- Scripts: Cargar módulos en orden correcto -->
+<script src="core/utils.js"></script>
+<script src="core/template-registry.js"></script>
+<script src="core/ui-engine.js"></script>
+<script src="core/generator.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
+</body>
+</html>
