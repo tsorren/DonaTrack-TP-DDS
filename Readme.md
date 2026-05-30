@@ -66,3 +66,18 @@ Para garantizar la calidad y mantenibilidad, hemos adoptado las siguientes decis
 - Privacidad: Anonimización de usuarios para cumplir con las normativas de protección de datos sensibles.
 - Comunicación Asincrónica: Implementación de mensajería basada en eventos para desacoplar los servicios, mejorando la escalabilidad y tolerancia a fallos.
 - Pruebas Unitarias: Uso intensivo de JUnit y Mockito, garantizando el aislamiento y determinismo en los tests de lógica de negocio.
+
+
+## Grupo 5 - Integrantes:
+|                **Nombre**                | **Legajo** |           **Correo**          |
+|:----------------------------------------:|:----------:|:-----------------------------:|
+|            Camila Aylen Suarez           |  214.170-0 |    casuarez@frba.utn.edu.ar   |
+|           Camila Belén Lencina           |  215.042-6 |   calencina@frba.utn.edu.ar   |
+|            Lara Anush Eriakian           |  213.678-8 |   leriakian@frba.utn.edu.ar   |
+|          Martín Ilán Zajdenberg          |  209.501-4 |  mzajdenberg@frba.utn.edu.ar  |
+| Milton Christopher Bernardo Estigarribia |  208.731-5 | mestigarribia@frba.utn.edu.ar |
+|               Miranda Rossi              |  208.818-6 |    mirossi@frba.utn.edu.ar    |
+|              Nicolás Delorte             |  172.817-9 |    ndelorte@frba.utn.edu.ar   |
+|             Sofia Maria Deane            |  210.350-3 |     sdeane@frba.utn.edu.ar    |
+|             Tadeo Sorrentino             |  214.153-0 |  tsorrentino@frba.utn.edu.ar  |
+|            Valentina Thiwissen           |  209.210-4 |   vthiwissen@frba.utn.edu.ar  |
