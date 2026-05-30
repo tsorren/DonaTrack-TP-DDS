@@ -29,7 +29,7 @@ function MinutaTemplate() {
                 inputType: 'date',
                 id: 'fecha',
                 label: 'Fecha',
-                placeholder: 'dd/mm/yyyy',
+                placeholder: 'YYYY-MM-DD',
                 required: true,
                 dataAttribute: 'fecha'
               },
@@ -126,6 +126,8 @@ function MinutaTemplate() {
 
     if (!formData.fecha || !formData.fecha.trim()) {
       errors.push('Fecha es obligatoria');
+    } else if (!/^\d{4}-\d{2}-\d{2}$/.test(formData.fecha)) {
+      errors.push('La fecha general debe tener un formato válido (YYYY-MM-DD)');
     }
 
     const participantes = Array.isArray(formData.participantes)
@@ -142,6 +144,13 @@ function MinutaTemplate() {
     Object.values(tareas).forEach(tasks => {
       if (Array.isArray(tasks)) {
         totalTasks += tasks.filter(t => t && t.descripcion && t.descripcion.trim()).length;
+        tasks.forEach(t => {
+          if (t.fechaLimite && !/^\d{4}-\d{2}-\d{2}$/.test(t.fechaLimite)) {
+            errors.push('Una tarea tiene una fecha límite con formato inválido (YYYY-MM-DD)');
+          } else if (t.fechaLimite && formData.fecha && t.fechaLimite < formData.fecha) {
+            errors.push(`La fecha límite de una tarea (${t.fechaLimite}) no puede ser anterior a la fecha de la reunión (${formData.fecha})`);
+          }
+        });
       }
     });
 
@@ -422,7 +431,7 @@ function MinutaTemplate() {
     // Parse secciones
     lines.forEach((line) => {
       const normalized = Utils.normalizeText(line.trim());
-      if (normalized.startsWith('##')) {
+      if (normalized.startsWith('## ')) {
         const header = Utils.normalizeText(line.replace(/^##\s*/, '').trim());
         current = header;
         sections[header] = [];
@@ -444,18 +453,13 @@ function MinutaTemplate() {
     infoGeneral.forEach(line => {
       const normalized = Utils.normalizeText(line);
       if (normalized.includes('fecha')) {
-        const match = line.match(/(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})/);
+        const match = line.match(/(\d{4})[-/](\d{2})[-/](\d{2})|(\d{1,2})\/(\d{1,2})\/(\d{4})/);
         if (match) {
-          let parsedDate = match[1];
-          if (parsedDate.includes('/')) {
-            const [d, m, y] = parsedDate.split('/');
-            parsedDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-          }
-          fecha = parsedDate;
+          fecha = match[1] ? `${match[1]}-${match[2]}-${match[3]}` : `${match[6]}-${match[5].padStart(2, '0')}-${match[4].padStart(2, '0')}`;
         }
       }
       if (normalized.includes('bloque horario')) {
-        const match = line.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+        const match = line.match(/(\d{1,2}:\d{2})(?:\s*hs)?\s*-\s*(\d{1,2}:\d{2})/i);
         if (match) {
           horaInicio = match[1];
           horaFin = match[2];
@@ -489,19 +493,25 @@ function MinutaTemplate() {
     let isParsingTaskDesc = false;
 
     tareasSection.forEach(line => {
-      const normalized = Utils.normalizeText(line.trim());
+      const trimmedLine = line.trim();
+      if (!trimmedLine) return; // Ignorar líneas vacías
 
-      // Detectar integrante (H4: ####)
-      if (line.trim().startsWith('####')) {
-        currentIntegrante = line.replace(/^####\s*/, '').replace(/:$/, '').trim();
-        tareas[currentIntegrante] = [];
+      // 1. Detectar Integrante (Exactamente 4 almohadillas + espacio)
+      const integranteMatch = trimmedLine.match(/^####\s+(.+)$/);
+      if (integranteMatch) {
+        // Captura "Tade:" y le limpia los dos puntos finales
+        currentIntegrante = integranteMatch[1].replace(/:$/, '').trim();
+        if (!tareas[currentIntegrante]) {
+          tareas[currentIntegrante] = [];
+        }
         isParsingTaskDesc = false;
         return;
       }
 
-      // Detectar tarea (H6: ###### o estructura de tarea)
-      if (currentIntegrante && line.trim().startsWith('######')) {
-        const taskTitle = line.replace(/^######\s*/, '').replace(/:$/, '').trim();
+      // 2. Detectar Tarea (Exactamente 6 almohadillas + espacio)
+      const tareaMatch = trimmedLine.match(/^######\s+(.+)$/);
+      if (currentIntegrante && tareaMatch) {
+        const taskTitle = tareaMatch[1].replace(/:$/, '').trim();
         tareas[currentIntegrante].push({
           titulo: taskTitle,
           fechaLimite: '',
@@ -511,35 +521,34 @@ function MinutaTemplate() {
         return;
       }
 
-      // Detectar fecha límite y descripción
+      // 3. Procesar atributos de la tarea actual
       if (currentIntegrante && tareas[currentIntegrante].length > 0) {
         const lastTask = tareas[currentIntegrante][tareas[currentIntegrante].length - 1];
 
-        if (normalized.includes('fecha limite')) {
-          const match = line.match(/(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})/);
-          if (match) {
-            let parsedDate = match[1];
-            if (parsedDate.includes('/')) {
-              const [d, m, y] = parsedDate.split('/');
-              parsedDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
-            }
-            lastTask.fechaLimite = parsedDate;
-            return;
+        // Fecha Límite (Búsqueda robusta)
+        const dateMatch = trimmedLine.match(/^Fecha L[ií]mite:\s*(.+)$/i);
+        if (dateMatch) {
+          const parsedMatch = dateMatch[1].trim().match(/(\d{4})[-/](\d{2})[-/](\d{2})|(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+          if (parsedMatch) {
+            lastTask.fechaLimite = parsedMatch[1] 
+              ? `${parsedMatch[1]}-${parsedMatch[2]}-${parsedMatch[3]}` 
+              : `${parsedMatch[6]}-${parsedMatch[5].padStart(2, '0')}-${parsedMatch[4].padStart(2, '0')}`;
           }
+          isParsingTaskDesc = false;
+          return;
         }
 
-        if (normalized.startsWith('descripcion:')) {
-          lastTask.descripcion = line.replace(/^descripci[oó]n:\s*/i, '').trim();
+        // Descripción
+        const descMatch = trimmedLine.match(/^Descripci[oó]n:\s*(.*)$/i);
+        if (descMatch) {
+          lastTask.descripcion = descMatch[1].trim();
           isParsingTaskDesc = true;
           return;
         }
 
+        // Acumulación de texto multilínea para la descripción
         if (isParsingTaskDesc) {
-          if (lastTask.descripcion) {
-            lastTask.descripcion += '\n' + line;
-          } else {
-            lastTask.descripcion = line;
-          }
+          lastTask.descripcion = lastTask.descripcion ? lastTask.descripcion + '\n' + trimmedLine : trimmedLine;
         }
       }
     });
@@ -582,7 +591,7 @@ function MinutaTemplate() {
 
     // Información General
     markdown += '## Información General\n';
-    markdown += `- **Fecha:** ${fecha || 'dd/mm/yyyy'}\n`;
+    markdown += `- **Fecha:** ${fecha || 'YYYY-MM-DD'}\n`;
     if (horaInicio && horaFin) {
       markdown += `- **Bloque Horario:** ${horaInicio} hs - ${horaFin} hs\n`;
     }
@@ -643,11 +652,14 @@ function MinutaTemplate() {
   };
 
   /**
-   * Retorna patrón de nombre de archivo.
+   * Genera el nombre del archivo para esta plantilla.
+   * @param {object} formData
    * @returns {string}
    */
-  this.getFilenamePattern = function () {
-    return 'yyyymmdd-minuta.md';
+  this.generateFilename = function (formData) {
+    const rawDate = formData.fecha || new Date().toISOString().split('T')[0];
+    const dateCompact = rawDate.replace(/-/g, '');
+    return `${dateCompact}-minuta.md`;
   };
 }
 

@@ -69,11 +69,23 @@ function ADRTemplate() {
             fields: [
               {
                 type: 'text',
+                inputType: 'date',
+                id: 'date',
+                label: 'Fecha',
+                dataAttribute: 'date'
+              },
+              {
+                type: 'text',
                 id: 'deciders',
                 label: 'Decisores (integrantes)',
                 placeholder: 'Decisión Grupal (si vacío)',
                 dataAttribute: 'deciders'
               },
+            ]
+          },
+          {
+            type: 'section',
+            fields: [
               {
                 type: 'text',
                 id: 'supersededBy',
@@ -219,6 +231,10 @@ function ADRTemplate() {
     const optionsArray = formData.options || [];
     if (!Array.isArray(optionsArray) || optionsArray.length === 0) {
       errors.push('Al menos una alternativa es requerida');
+    }
+
+    if (formData.date && !/^\d{4}-\d{2}-\d{2}$/.test(formData.date)) {
+      errors.push('La fecha tiene un formato inválido (debe ser YYYY-MM-DD)');
     }
 
     return {
@@ -433,17 +449,25 @@ function ADRTemplate() {
     const titleLineIndex = normalizedLines.findIndex(line => line.startsWith('# '));
     const title = titleLineIndex !== -1 ? lines[titleLineIndex].replace(/^#\s*/, '').trim() : '';
     const statusRaw = findMeta('status');
-    const date = findMeta('date');
     const deciders = findMeta('deciders');
     const tags = findMeta('tags');
+
+    const dateRaw = findMeta('date');
+    let parsedDate = '';
+    if (dateRaw) {
+      const match = dateRaw.match(/(\d{4})[-/](\d{2})[-/](\d{2})|(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (match) {
+        parsedDate = match[1] ? `${match[1]}-${match[2]}-${match[3]}` : `${match[6]}-${match[5].padStart(2, '0')}-${match[4].padStart(2, '0')}`;
+      }
+    }
 
     // Parse secciones
     const sections = {};
     let current = '';
     lines.forEach((line) => {
       const normalized = Utils.normalizeText(line.trim());
-      if (normalized.startsWith('##')) {
-        const header = line.replace(/^##\s*/, '').toLowerCase();
+      if (normalized.startsWith('## ')) {
+        const header = Utils.normalizeText(line.replace(/^##\s*/, '').trim());
         current = header;
         sections[header] = [];
       } else if (current && line.trim()) {
@@ -579,6 +603,7 @@ function ADRTemplate() {
     // Retornar en formato que UIEngine entienda
     return {
       title,
+      date: parsedDate,
       status: Utils.normalizeText(statusRaw || 'draft'),
       deciders,
       tags,
@@ -606,7 +631,7 @@ function ADRTemplate() {
     const title = (formData.title || '').trim();
     const status = formData.status || 'draft';
     const supersededBy = (formData.supersededBy || '').trim();
-    const date = new Date().toISOString().split('T')[0];
+    const date = formData.date || new Date().toISOString().split('T')[0];
     const decidersInput = (formData.deciders || '').trim();
     const deciders = decidersInput || 'Decisión Grupal';
     const tags = (formData.tags || '').trim();
@@ -728,11 +753,18 @@ function ADRTemplate() {
   };
 
   /**
-   * Retorna patrón de nombre de archivo para esta plantilla.
+   * Genera el nombre del archivo para esta plantilla.
+   * @param {object} formData
    * @returns {string} Patrón (ej: 'yyyymmdd-titulo.md')
    */
-  this.getFilenamePattern = function () {
-    return 'yyyymmdd-titulo.md';
+  this.generateFilename = function (formData) {
+    const dateStr = formData.date || new Date().toISOString().split('T')[0];
+    const dateCompact = dateStr.replace(/[-/]/g, '');
+    const titleStr = (formData.title || 'adr').toLowerCase().trim()
+      .replace(/[^\w\s-]/gu, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return `${dateCompact}-${titleStr}.md`;
   };
 }
 

@@ -9,9 +9,9 @@ La plataforma permite la gestión integral de donantes (humanos y jurídicos), l
 
 ## Documentación y Recursos
 
-- **[Entrega 1](docs/entrega-1/)**: Documentación, diagramas y bocetos de la primera entrega del proyecto.
+- **[Hub de Documentación](https://tsorren.github.io/DonaTrack-TP-DDS/)**: Página principal del proyecto que actúa como índice consolidado de documentación, incluyendo la indexación dinámica de las entregas (PDFs).
 - **[ADR Preview](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview)**: Visualización interactiva de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
-- **[ADR Generator](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview)**: Generador de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
+- **[Documentador](https://tsorren.github.io/DonaTrack-TP-DDS/documentador)**: Documentador de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
 
 ## Tecnologías y Herramientas
 
@@ -41,7 +41,9 @@ El proyecto sigue una arquitectura de microservicios. A continuación se detalla
 - `.github/`: Flujos de trabajo de CI/CD (GitHub Actions) y plantillas para Issues.
 - `.log4brains/`: Configuración para la visualización de los Registros de Decisiones de Arquitectura (ADR).
 - `docs/`: Documentación técnica, diagramas de arquitectura y archivos ADR en formato Markdown.
-- `adr-generator/`: Herramienta interna para la generación estandarizada de nuevas decisiones de arquitectura.
+  - `docs/hub/`: Código fuente de la página central del ecosistema desplegado en GitHub Pages.
+  - `docs/entregas/`: Directorio destinado al almacenamiento de documentos (PDFs) de entregas académicas, indexado automáticamente para su visualización.
+- `documentador/`: Herramienta interna para la generación estandarizada de nuevas decisiones de arquitectura.
 
 ### Microservicios
 Cada servicio contiene su propia lógica de dominio siguiendo los principios de Clean Architecture:
@@ -64,4 +66,3 @@ Para garantizar la calidad y mantenibilidad, hemos adoptado las siguientes decis
 - Privacidad: Anonimización de usuarios para cumplir con las normativas de protección de datos sensibles.
 - Comunicación Asincrónica: Implementación de mensajería basada en eventos para desacoplar los servicios, mejorando la escalabilidad y tolerancia a fallos.
 - Pruebas Unitarias: Uso intensivo de JUnit y Mockito, garantizando el aislamiento y determinismo en los tests de lógica de negocio.
-

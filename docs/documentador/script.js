@@ -46,7 +46,7 @@
 
     if (!registryReady) {
         console.error('❌ Failed to initialize TemplateRegistry');
-        Utils.setStatus('Error loading templates. Refresh the page.');
+        Utils.setStatus('Error loading templates. Refresh the page.', 'error');
         return;
     }
 
