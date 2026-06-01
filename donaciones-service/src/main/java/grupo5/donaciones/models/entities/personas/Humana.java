@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities.personas;
 
+import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,8 +38,8 @@ public class Humana extends Persona {
   public void anonimizar() {
     // El documento o DNI se ofusca o limpia
 
-    this.nombre = "ANONIMIZADO";
-    this.apellido = "ANONIMIZADO";
+    this.nombre = Anonimizable.VALOR_STRING;
+    this.apellido = Anonimizable.VALOR_STRING;
     this.genero = null;
     this.fechaNacimiento = null;
     this.setDocumento(null);

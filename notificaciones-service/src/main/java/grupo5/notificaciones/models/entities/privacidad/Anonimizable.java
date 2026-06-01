@@ -1,4 +1,4 @@
-package grupo5.donaciones.models.privacidad;
+package grupo5.notificaciones.models.entities.privacidad;
 
 public interface Anonimizable {
   Integer VALOR_NUMERICO = 0;
