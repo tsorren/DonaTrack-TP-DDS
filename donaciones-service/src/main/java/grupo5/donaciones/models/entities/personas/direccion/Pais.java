@@ -6,11 +6,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Pais  implements Anonimizable {
-private String nombre;
+public class Pais implements Anonimizable {
+  private String nombre;
 
   @Override
   public void anonimizar() {
-    this.nombre = "ANONIMIZADO";
+    this.nombre = Anonimizable.VALOR_STRING;
   }
 }

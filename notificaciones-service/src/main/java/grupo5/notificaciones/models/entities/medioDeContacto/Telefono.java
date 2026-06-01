@@ -1,5 +1,6 @@
 package grupo5.notificaciones.models.entities.medioDeContacto;
 
+import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,5 +18,12 @@ public class Telefono extends MedioDeContacto {
 
   public String obtenerNumeroCompleto() {
     return this.caracteristica + this.codigoArea + this.numero;
+  }
+
+  @Override
+  public void anonimizar() {
+    this.caracteristica = Anonimizable.VALOR_STRING;
+    this.codigoArea = Anonimizable.VALOR_STRING;
+    this.numero = Anonimizable.VALOR_STRING;
   }
 }

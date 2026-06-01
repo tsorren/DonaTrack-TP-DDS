@@ -47,17 +47,17 @@ public class Direccion implements Anonimizable {
       throw new IllegalArgumentException("La dirección debe tener un código postal.");
     }
 
-    if (localidad == null ){
+    if (localidad == null) {
       throw new IllegalArgumentException("La dirección debe tener una localidad.");
     }
   }
 
   @Override
   public void anonimizar() {
-    this.calle = "ANONIMIZADO";
+    this.calle = Anonimizable.VALOR_STRING;
     this.altura = 0;
-    this.codigoPostal = "ANONIMIZADO";
-    this.departamento = "ANONIMIZADO";
+    this.codigoPostal = Anonimizable.VALOR_STRING;
+    this.departamento = Anonimizable.VALOR_STRING;
     this.piso = 0;
     this.localidad.anonimizar();
   }

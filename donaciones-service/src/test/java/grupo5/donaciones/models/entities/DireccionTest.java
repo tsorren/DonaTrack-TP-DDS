@@ -8,6 +8,7 @@ import grupo5.donaciones.models.entities.personas.direccion.Direccion;
 import grupo5.donaciones.models.entities.personas.direccion.Localidad;
 import grupo5.donaciones.models.entities.personas.direccion.Pais;
 import grupo5.donaciones.models.entities.personas.direccion.Provincia;
+import grupo5.donaciones.models.privacidad.Anonimizable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -117,13 +118,14 @@ class DireccionTest {
   void anonimizar_deberiaLimpiarDatos() {
     direccion.anonimizar();
 
-    assertEquals("ANONIMIZADO", direccion.getCalle());
-    assertEquals(0, direccion.getAltura());
-    assertEquals("ANONIMIZADO", direccion.getCodigoPostal());
-    assertEquals("ANONIMIZADO", direccion.getDepartamento());
-    assertEquals(0, direccion.getPiso());
-    assertEquals("ANONIMIZADO", direccion.getLocalidad().getNombre());
-    assertEquals("ANONIMIZADO", direccion.getLocalidad().getProvincia().getNombre());
-    assertEquals("ANONIMIZADO", direccion.getLocalidad().getProvincia().getPais().getNombre());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getCalle());
+    assertEquals(Anonimizable.VALOR_NUMERICO, direccion.getAltura());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getCodigoPostal());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getDepartamento());
+    assertEquals(Anonimizable.VALOR_NUMERICO, direccion.getPiso());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getLocalidad().getNombre());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getLocalidad().getProvincia().getNombre());
+    assertEquals(
+        Anonimizable.VALOR_STRING, direccion.getLocalidad().getProvincia().getPais().getNombre());
   }
 }
