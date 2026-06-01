@@ -3,12 +3,11 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.donaciones.models.entities.bienes.*;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
