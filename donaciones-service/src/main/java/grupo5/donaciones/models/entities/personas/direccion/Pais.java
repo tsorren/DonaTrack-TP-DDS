@@ -11,6 +11,6 @@ public class Pais implements Anonimizable {
 
   @Override
   public void anonimizar() {
-    this.nombre = Anonimizable.valorString;
+    this.nombre = Anonimizable.VALOR_STRING;
   }
 }

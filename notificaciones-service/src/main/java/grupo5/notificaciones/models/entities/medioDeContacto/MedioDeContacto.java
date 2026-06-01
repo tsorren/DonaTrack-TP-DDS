@@ -1,6 +1,6 @@
 package grupo5.notificaciones.models.entities.medioDeContacto;
 
-import grupo5.notificaciones.models.entities.persona.Anonimizable;
+import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,11 +9,9 @@ import lombok.Setter;
 public abstract class MedioDeContacto implements Anonimizable {
   private Boolean esPredeterminado;
 
-  public MedioDeContacto() {
+  protected MedioDeContacto() {
     this.esPredeterminado = false;
   }
 
   public abstract boolean enviarMensaje(String mensaje, NotificacionSender sender);
-
-  public abstract void anonimizar();
 }

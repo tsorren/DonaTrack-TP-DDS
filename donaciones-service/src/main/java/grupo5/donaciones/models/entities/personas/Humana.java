@@ -38,8 +38,8 @@ public class Humana extends Persona {
   public void anonimizar() {
     // El documento o DNI se ofusca o limpia
 
-    this.nombre = Anonimizable.valorString;
-    this.apellido = Anonimizable.valorString;
+    this.nombre = Anonimizable.VALOR_STRING;
+    this.apellido = Anonimizable.VALOR_STRING;
     this.genero = null;
     this.fechaNacimiento = null;
     this.setDocumento(null);

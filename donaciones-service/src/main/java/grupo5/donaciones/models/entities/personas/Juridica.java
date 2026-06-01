@@ -42,7 +42,7 @@ public class Juridica extends Persona {
 
   @Override
   public void anonimizar() {
-    this.razonSocial = Anonimizable.valorString;
+    this.razonSocial = Anonimizable.VALOR_STRING;
     // Anonimizamos todos los representantes en la lista
     this.representantes.forEach(Anonimizable::anonimizar);
   }

@@ -1,6 +1,7 @@
 package grupo5.notificaciones.models.entities.persona;
 
 import grupo5.notificaciones.models.entities.medioDeContacto.MedioDeContacto;
+import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -33,7 +34,7 @@ public class Persona implements Anonimizable {
 
   @Override
   public void anonimizar() {
-    this.denominacion = Anonimizable.valorString;
+    this.denominacion = Anonimizable.VALOR_STRING;
     this.mediosDeContacto.forEach(Anonimizable::anonimizar);
   }
 }

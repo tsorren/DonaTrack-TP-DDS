@@ -118,14 +118,14 @@ class DireccionTest {
   void anonimizar_deberiaLimpiarDatos() {
     direccion.anonimizar();
 
-    assertEquals(Anonimizable.valorString, direccion.getCalle());
-    assertEquals(Anonimizable.valorNumerico, direccion.getAltura());
-    assertEquals(Anonimizable.valorString, direccion.getCodigoPostal());
-    assertEquals(Anonimizable.valorString, direccion.getDepartamento());
-    assertEquals(Anonimizable.valorNumerico, direccion.getPiso());
-    assertEquals(Anonimizable.valorString, direccion.getLocalidad().getNombre());
-    assertEquals(Anonimizable.valorString, direccion.getLocalidad().getProvincia().getNombre());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getCalle());
+    assertEquals(Anonimizable.VALOR_NUMERICO, direccion.getAltura());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getCodigoPostal());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getDepartamento());
+    assertEquals(Anonimizable.VALOR_NUMERICO, direccion.getPiso());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getLocalidad().getNombre());
+    assertEquals(Anonimizable.VALOR_STRING, direccion.getLocalidad().getProvincia().getNombre());
     assertEquals(
-        Anonimizable.valorString, direccion.getLocalidad().getProvincia().getPais().getNombre());
+        Anonimizable.VALOR_STRING, direccion.getLocalidad().getProvincia().getPais().getNombre());
   }
 }

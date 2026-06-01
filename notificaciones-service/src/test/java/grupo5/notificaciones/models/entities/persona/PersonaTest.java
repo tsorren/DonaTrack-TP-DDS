@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.notificaciones.models.entities.medioDeContacto.Correo;
 import grupo5.notificaciones.models.entities.medioDeContacto.Telefono;
+import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,12 +55,12 @@ class PersonaTest {
   void anonimizar_deberiaAnonimizarDenominacionYContactos() {
     persona.anonimizar();
 
-    assertEquals(Anonimizable.valorString, persona.getDenominacion());
+    assertEquals(Anonimizable.VALOR_STRING, persona.getDenominacion());
     assertEquals(
-        Anonimizable.valorString,
+        Anonimizable.VALOR_STRING,
         ((Correo) persona.getMediosDeContacto().get(0)).getDireccionCorreo());
     assertEquals(
-        Anonimizable.valorString,
+        Anonimizable.VALOR_STRING,
         ((Telefono) persona.getMediosDeContacto().get(1)).getCaracteristica());
   }
 }

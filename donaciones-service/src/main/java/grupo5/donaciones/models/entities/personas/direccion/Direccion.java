@@ -54,10 +54,10 @@ public class Direccion implements Anonimizable {
 
   @Override
   public void anonimizar() {
-    this.calle = Anonimizable.valorString;
+    this.calle = Anonimizable.VALOR_STRING;
     this.altura = 0;
-    this.codigoPostal = Anonimizable.valorString;
-    this.departamento = Anonimizable.valorString;
+    this.codigoPostal = Anonimizable.VALOR_STRING;
+    this.departamento = Anonimizable.VALOR_STRING;
     this.piso = 0;
     this.localidad.anonimizar();
   }

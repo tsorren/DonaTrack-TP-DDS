@@ -27,8 +27,8 @@ class AnonimizacionesTest {
   void anonimizar_deberiaLimpiarCamposSensibles() {
     persona.anonimizar();
 
-    assertEquals(Anonimizable.valorString, persona.getNombre());
-    assertEquals(Anonimizable.valorString, persona.getApellido());
+    assertEquals(Anonimizable.VALOR_STRING, persona.getNombre());
+    assertEquals(Anonimizable.VALOR_STRING, persona.getApellido());
     assertNull(persona.getDocumento(), "El documento debe ser nulo tras anonimizar");
   }
 
@@ -36,7 +36,7 @@ class AnonimizacionesTest {
   void anonimizar_deberiaPropagarAnonimizacionAlHijos() {
     juridica.anonimizar();
 
-    assertEquals(Anonimizable.valorString, juridica.getRepresentantes().getFirst().getNombre());
+    assertEquals(Anonimizable.VALOR_STRING, juridica.getRepresentantes().getFirst().getNombre());
   }
 
   @Test

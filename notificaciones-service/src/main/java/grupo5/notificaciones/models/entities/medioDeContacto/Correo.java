@@ -1,6 +1,6 @@
 package grupo5.notificaciones.models.entities.medioDeContacto;
 
-import grupo5.notificaciones.models.entities.persona.Anonimizable;
+import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +16,6 @@ public class Correo extends MedioDeContacto {
 
   @Override
   public void anonimizar() {
-    this.direccionCorreo = Anonimizable.valorString;
+    this.direccionCorreo = Anonimizable.VALOR_STRING;
   }
 }

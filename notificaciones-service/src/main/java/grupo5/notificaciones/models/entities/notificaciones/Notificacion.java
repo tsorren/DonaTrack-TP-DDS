@@ -2,8 +2,8 @@ package grupo5.notificaciones.models.entities.notificaciones;
 
 import grupo5.notificaciones.models.entities.medioDeContacto.MedioDeContacto;
 import grupo5.notificaciones.models.entities.medioDeContacto.NotificacionSender;
-import grupo5.notificaciones.models.entities.persona.Anonimizable;
 import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -52,7 +52,7 @@ public class Notificacion implements Anonimizable {
 
   @Override
   public void anonimizar() {
-    this.mensaje = Anonimizable.valorString;
+    this.mensaje = Anonimizable.VALOR_STRING;
     this.persona.anonimizar();
   }
 }
