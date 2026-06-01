@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionSegmentada;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @Setter
 public class Donante implements Anonimizable {
   private Persona persona;
-  private List<Donacion> historialDonaciones = new ArrayList<>();
+  private List<DonacionSegmentada> historialDonaciones = new ArrayList<>();
 
   public Donante(Persona persona) {
 
@@ -21,23 +22,23 @@ public class Donante implements Anonimizable {
     this.persona = persona;
   }
 
-  public void agregarDonacion(Donacion donacion) {
-    if (donacion == null) {
+  public void agregarDonacion(DonacionSegmentada donacionSegmentada) {
+    if (donacionSegmentada == null) {
       throw new IllegalArgumentException("La donación no puede ser nula.");
     }
 
-    if (this.historialDonaciones.contains(donacion)) {
+    if (this.historialDonaciones.contains(donacionSegmentada)) {
       throw new IllegalArgumentException("La donación ya pertenece al historial del donante.");
     }
-    this.historialDonaciones.add(donacion);
+    this.historialDonaciones.add(donacionSegmentada);
   }
 
   // Lanzar excepcion si la donacion no esta en la lista
-  public void quitarDonacion(Donacion donacion) {
-    if (!this.historialDonaciones.contains(donacion)) {
+  public void quitarDonacion(DonacionSegmentada donacionSegmentada) {
+    if (!this.historialDonaciones.contains(donacionSegmentada)) {
       throw new IllegalArgumentException("La donación no pertenece al historial del donante.");
     }
-    this.historialDonaciones.remove(donacion);
+    this.historialDonaciones.remove(donacionSegmentada);
   }
 
   @Override

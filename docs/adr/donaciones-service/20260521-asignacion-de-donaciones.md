@@ -42,7 +42,7 @@ asociadas en las subcategorías
 
 #### Pros
 
-* Permite asociar al donante con la cantidad asignada a entidades partiendo de la donacion que tiene al donante
+* Permite asociar al donante con la cantidad asignada a entidades partiendo de la donacionSegmentada que tiene al donante
 
 #### Contras
 

@@ -1,6 +1,6 @@
 package grupo5.donaciones.models.entities.bienes;
 
-import grupo5.donaciones.models.entities.donaciones.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SubCategoria {
-  private final List<DonacionIndependiente> donaciones = new ArrayList<>();
+  private final List<DonacionIndependiente> donacionesIndependientes = new ArrayList<>();
   private Categoria categoria;
   private String nombre;
 
@@ -37,10 +37,13 @@ public class SubCategoria {
       throw new IllegalArgumentException("No se puede agregar una donacion nula.");
     }
 
-    this.donaciones.add(donacion);
+    donacion.setSubCategoria(this);
+    this.donacionesIndependientes.add(donacion);
   }
 
   public Integer calcularStock() {
-    return this.donaciones.stream().mapToInt(DonacionIndependiente::getCantidad).sum();
+    return this.donacionesIndependientes.stream()
+        .mapToInt(DonacionIndependiente::getCantidad)
+        .sum();
   }
 }

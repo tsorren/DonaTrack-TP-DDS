@@ -5,8 +5,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.donaciones.models.entities.beneficiarios.DonacionAsignada;
 import grupo5.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.bienes.*;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +36,11 @@ class NecesidadRecurrenteTests {
         new Bien(
             "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
 
-    d1 = new DonacionAsignada(bien, 100, LocalDate.now());
+    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bien, 100);
+    List<ItemDonacionIndependiente> items = new ArrayList<>();
+    items.add(item);
+    DonacionIndependiente donacionIndependiente = new DonacionIndependiente(subcategoria, items);
+    d1 = new DonacionAsignada(donacionIndependiente, LocalDateTime.now());
   }
 
   @Test
@@ -56,7 +65,7 @@ class NecesidadRecurrenteTests {
     necesidad.setCantidadNecesitada(100);
     necesidad.setFechaPeriodo(LocalDate.now().minusDays(8));
 
-    d1.setFechaAsignacion(LocalDate.now().minusDays(7));
+    d1.setFechaAsignacion(LocalDateTime.now().minusDays(7));
     necesidad.asignarDonacion(d1);
 
     assertTrue(necesidad.estaSatisfecha());
