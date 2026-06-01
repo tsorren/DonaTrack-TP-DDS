@@ -2,16 +2,17 @@ package grupo5.notificaciones.models.entities.notificaciones;
 
 import grupo5.notificaciones.models.entities.medioDeContacto.MedioDeContacto;
 import grupo5.notificaciones.models.entities.medioDeContacto.NotificacionSender;
+import grupo5.notificaciones.models.entities.persona.Anonimizable;
 import grupo5.notificaciones.models.entities.persona.Persona;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Notificacion {
+public class Notificacion implements Anonimizable {
   private Persona persona;
   private String mensaje;
   private LocalDateTime fechaCreacion;
@@ -44,9 +45,14 @@ public class Notificacion {
   }
 
   private List<MedioDeContacto> ordenarMedios() {
-    List<MedioDeContacto> medios = new ArrayList<>(persona.getContactos());
+    return this.persona.getMediosDeContacto().stream()
+        .sorted(Comparator.comparing(MedioDeContacto::getEsPredeterminado).reversed())
+        .toList();
+  }
 
-    medios.sort((m1, m2) -> Boolean.compare(m2.getEsPredeterminado(), m1.getEsPredeterminado()));
-    return medios;
+  @Override
+  public void anonimizar() {
+    this.mensaje = Anonimizable.valorString;
+    this.persona.anonimizar();
   }
 }

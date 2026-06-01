@@ -12,7 +12,7 @@ public class Provincia implements Anonimizable {
 
   @Override
   public void anonimizar() {
-    this.nombre = "ANONIMIZADO";
+    this.nombre = Anonimizable.valorString;
     this.pais.anonimizar();
   }
 }

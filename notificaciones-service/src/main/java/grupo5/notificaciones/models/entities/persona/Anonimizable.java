@@ -1,5 +1,8 @@
 package grupo5.notificaciones.models.entities.persona;
 
 public interface Anonimizable {
-  public void anonimizar();
+  Integer valorNumerico = 0;
+  String valorString = "ANONIMIZADO";
+
+  void anonimizar();
 }
