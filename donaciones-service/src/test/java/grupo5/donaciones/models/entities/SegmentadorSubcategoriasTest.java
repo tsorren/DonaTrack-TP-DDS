@@ -18,11 +18,7 @@ class SegmentadorSubcategoriasTest {
 
   private SegmentadorSubcategorias segmentador;
   private Donante donante;
-  private Categoria categoriRopa;
-  private Categoria categoriAlimentos;
   private SubCategoria subcategoriaInvierno;
-  private SubCategoria subcategoriaVerano;
-  private SubCategoria subcategoriaFrutas;
   private Bien abrigoInvierno;
   private Bien polleraInvierno;
   private Bien manzanas;
@@ -33,12 +29,11 @@ class SegmentadorSubcategoriasTest {
     Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, 1, 1));
     donante = new Donante(humana);
 
-    categoriRopa = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    categoriAlimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
+    Categoria categoriaRopa = new Categoria("Ropa", false, true, Unidad.UNIDADES);
+    Categoria categoriaAlimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
 
-    subcategoriaInvierno = new SubCategoria(categoriRopa, "Ropa de Invierno");
-    subcategoriaVerano = new SubCategoria(categoriRopa, "Ropa de Verano");
-    subcategoriaFrutas = new SubCategoria(categoriAlimentos, "Frutas");
+    subcategoriaInvierno = new SubCategoria(categoriaRopa, "Ropa de Invierno");
+    SubCategoria subcategoriaFrutas = new SubCategoria(categoriaAlimentos, "Frutas");
 
     abrigoInvierno =
         new Bien(

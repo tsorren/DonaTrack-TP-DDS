@@ -21,20 +21,14 @@ public class SegmentadorSubcategorias implements Segmentador {
             .map(SegmentadorSubcategorias::toDonacionIndependiente)
             .toList();
 
-    DonacionSegmentada donacionSegmentada =
-        new DonacionSegmentada(donacion, donacionesIndependientes);
-
-    return donacionSegmentada;
+    return new DonacionSegmentada(donacion, donacionesIndependientes);
   }
 
   @NonNull
   private static DonacionIndependiente toDonacionIndependiente(
       Map.Entry<SubCategoria, List<ItemDonacion>> e) {
-    DonacionIndependiente donacionIndependiente =
-        new DonacionIndependiente(
-            e.getKey(),
-            e.getValue().stream().map(ItemDonacion::toItemDonacionIndependiente).toList());
-    return donacionIndependiente;
+    return new DonacionIndependiente(
+        e.getKey(), e.getValue().stream().map(ItemDonacion::toItemDonacionIndependiente).toList());
   }
 
   @NonNull

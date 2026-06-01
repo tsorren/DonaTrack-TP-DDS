@@ -40,11 +40,12 @@ class SubCategoriaTest {
     List<ItemDonacionIndependiente> items1 = new ArrayList<>();
     items1.add(item1);
     items1.add(item2);
-    DonacionIndependiente donacion1 = new DonacionIndependiente(subcategoria, items1);
+    new DonacionIndependiente(subcategoria, items1);
 
     List<ItemDonacionIndependiente> items2 = new ArrayList<>();
     items2.add(item3);
-    DonacionIndependiente donacion2 = new DonacionIndependiente(subcategoria, items2);
+
+    new DonacionIndependiente(subcategoria, items2);
 
     Integer stockTotal = subcategoria.calcularStock();
 
