@@ -375,7 +375,7 @@ jobs:
         run: |
           echo "📐 Generando diagramas de clases desde el código..."
           mvn -B clean test \
-            -pl common-lib,donaciones-service,notificaciones-service -am \
+            -pl donaciones-service,notificaciones-service -am \
             -DskipTests=true \
             -Dspotless.check.skip=true \
             -Dplantuml-generator.skip=false
