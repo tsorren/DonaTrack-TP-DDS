@@ -374,9 +374,11 @@ jobs:
       - name: Generar diagramas PlantUML desde el código
         run: |
           echo "📐 Generando diagramas de clases desde el código..."
-          mvn -B plantuml-generator:generate \
-            -pl common-lib,donaciones-service,notificaciones-service \
-            -Dspotless.check.skip=true
+          mvn -B clean test \
+            -pl common-lib,donaciones-service,notificaciones-service -am \
+            -DskipTests=true \
+            -Dspotless.check.skip=true \
+            -Dplantuml-generator.skip=false
           echo "✅ Diagramas generados."
 
       - name: Renderizar diagramas a SVG
