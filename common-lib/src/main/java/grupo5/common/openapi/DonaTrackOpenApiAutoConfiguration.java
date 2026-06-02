@@ -19,20 +19,21 @@ public class DonaTrackOpenApiAutoConfiguration {
   @Bean
   @ConditionalOnMissingBean
   public OpenAPI donaTrackOpenApi(DonaTrackOpenApiProperties properties, Environment environment) {
-    String applicationName = environment.getProperty("spring.application.name", "donaTrack-service");
+    String applicationName =
+        environment.getProperty("spring.application.name", "donaTrack-service");
     String serverPort = environment.getProperty("server.port", "8080");
 
     String title = valueOrDefault(properties.getTitle(), applicationName);
     String serverUrl = valueOrDefault(properties.getServerUrl(), "http://localhost:" + serverPort);
 
     return new OpenAPI()
-        .info(new Info()
-            .title(title)
-            .version(properties.getVersion())
-            .description(properties.getDescription()))
-        .servers(List.of(new Server()
-            .url(serverUrl)
-            .description(properties.getServerDescription())));
+        .info(
+            new Info()
+                .title(title)
+                .version(properties.getVersion())
+                .description(properties.getDescription()))
+        .servers(
+            List.of(new Server().url(serverUrl).description(properties.getServerDescription())));
   }
 
   private String valueOrDefault(String value, String defaultValue) {
