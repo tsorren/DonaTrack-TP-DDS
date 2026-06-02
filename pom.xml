@@ -76,6 +76,29 @@
                     <artifactId>sonar-maven-plugin</artifactId>
                     <version>${sonar.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>de.elnarion.maven</groupId>
+                    <artifactId>plantuml-generator-maven-plugin</artifactId>
+                    <version>${plantuml-generator.version}</version>
+                    <executions>
+                        <execution>
+                            <id>generate-plantuml</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>generate</goal>
+                            </goals>
+                            <configuration>
+                                <outputDirectory>${project.build.directory}</outputDirectory>
+                                <outputFilename>modelo_tecnico.puml</outputFilename>
+                                <scanPackages>
+                                    <scanPackage>grupo5</scanPackage>
+                                </scanPackages>
+                                <hideFields>false</hideFields>
+                                <hideMethods>false</hideMethods>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
 
@@ -140,29 +163,6 @@
                 </executions>
             </plugin>
 
-            <plugin>
-                <groupId>de.elnarion.maven</groupId>
-                <artifactId>plantuml-generator-maven-plugin</artifactId>
-                <version>${plantuml-generator.version}</version>
-                <executions>
-                    <execution>
-                        <id>generate-plantuml</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                            <outputFilename>modelo_tecnico.puml</outputFilename>
-                            <scanPackages>
-                                <scanPackage>grupo5</scanPackage>
-                            </scanPackages>
-                            <hideFields>false</hideFields>
-                            <hideMethods>false</hideMethods>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
