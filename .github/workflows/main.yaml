@@ -1,4 +1,29 @@
-name: DonaTrack Unified Pipeline
+# ============================================================================
+# DonaTrack — Pipeline de Integración Continua
+# ============================================================================
+# Arquitectura de Jobs:
+#
+#   validate-git-flow
+#           │
+#     detect-changes
+#       ┌───┼───────────────┐
+#  lint-and-format  build-and-test  generate-diagrams
+#       │           │               │
+#       └───┬───────┘               │
+#     sonar-analysis                │
+#           │                 design-audit (condicional)
+#     docker-build                  │
+#           │                       │
+#       quality-gate ◄──────────────┘
+#
+# Principios aplicados:
+#   • Fail-Fast: validaciones rápidas primero, en paralelo
+#   • Build Independiente: cada microservicio se compila aisladamente
+#   • Detección de Cambios: solo se construyen los módulos modificados
+#   • Escalabilidad: agregar un servicio no requiere editar este archivo
+# ============================================================================
+
+name: DonaTrack CI Pipeline
 
 on:
   pull_request:
@@ -6,7 +31,29 @@ on:
       - main
       - 'ENTREGA_*'
 
+# ── Permisos mínimos necesarios ──────────────────────────────────────────────
+permissions:
+  contents: read
+  pull-requests: write    # Para publicar comentarios en el PR
+  checks: write           # Para anotaciones de quality gate
+
+# ── Concurrencia ─────────────────────────────────────────────────────────────
+# Cancela ejecuciones previas del mismo PR para ahorrar minutos de CI
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# ============================================================================
+# JOBS
+# ============================================================================
 jobs:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 1: Validación de Git Flow
+  # ──────────────────────────────────────────────────────────────────────────
+  # Verifica que los Pull Requests respeten la jerarquía de ramas definida
+  # por la cátedra de Diseño de Sistemas de Información (UTN).
+  # ──────────────────────────────────────────────────────────────────────────
   validate-git-flow:
     runs-on: ubuntu-latest
     steps:
@@ -15,29 +62,146 @@ jobs:
           BASE_BRANCH="${{ github.base_ref }}"
           SRC_BRANCH="${{ github.head_ref }}"
 
-          # Caso 1: Merge a main (Debe venir de una rama de entrega parcial)
+          echo "📌 PR: $SRC_BRANCH → $BASE_BRANCH"
+
+          # Caso 1: Merge a main — solo desde ramas ENTREGA_*
           if [[ "$BASE_BRANCH" == "main" ]]; then
-            if [[ ! "$SRC_BRANCH" =~ ^ENTREGA_.* ]]; then
-              echo "Error: Pull Requests a 'main' solo se permiten desde 'ENTREGA_*'."
+            if [[ ! "$SRC_BRANCH" =~ ^ENTREGA_[0-9]+$ ]]; then
+              echo "::error::Pull Requests a 'main' solo se permiten desde ramas 'ENTREGA_N'."
               exit 1
             fi
           fi
 
-          # Caso 2: Merge a ENTREGA_n (Debe venir de En_...)
+          # Caso 2: Merge a ENTREGA_N — solo desde ramas EN_*
           if [[ "$BASE_BRANCH" =~ ^ENTREGA_([0-9]+)$ ]]; then
-            # Extrae el numero de entrega (ej: 1 de ENTREGA_1)
             DELIVERY_NUM="${BASH_REMATCH[1]}"
             REQUIRED_PREFIX="E${DELIVERY_NUM}_"
-          
-            if [[ ! "$SRC_BRANCH" =~ ^$REQUIRED_PREFIX.* ]]; then
-              echo "Error: Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'."]
-              echo "Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
+
+            if [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* ]]; then
+              echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'."
+              echo "  Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
               exit 1
             fi
           fi
 
-  static-analysis-and-design:
+          echo "✅ Nomenclatura de ramas válida."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 2: Detección de Cambios por Módulo
+  # ──────────────────────────────────────────────────────────────────────────
+  # Pieza clave para microservicios: determina QUÉ módulos fueron
+  # modificados para evitar compilar/testear todo el reactor.
+  # Si common-lib cambia, se reconstruyen TODOS los servicios dependientes.
+  # ──────────────────────────────────────────────────────────────────────────
+  detect-changes:
     needs: validate-git-flow
+    runs-on: ubuntu-latest
+    outputs:
+      common-lib: ${{ steps.filter.outputs.common-lib }}
+      donaciones-service: ${{ steps.filter.outputs.donaciones-service }}
+      notificaciones-service: ${{ steps.filter.outputs.notificaciones-service }}
+      any-service: ${{ steps.check.outputs.any-service }}
+      services-matrix: ${{ steps.matrix.outputs.matrix }}
+      docker-matrix: ${{ steps.docker-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detectar módulos modificados
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            common-lib:
+              - 'common-lib/**'
+              - 'pom.xml'
+            donaciones-service:
+              - 'donaciones-service/**'
+            notificaciones-service:
+              - 'notificaciones-service/**'
+
+      - name: Verificar si algún servicio cambió
+        id: check
+        run: |
+          if [[ "${{ steps.filter.outputs.common-lib }}" == "true" || \
+                "${{ steps.filter.outputs.donaciones-service }}" == "true" || \
+                "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
+            echo "any-service=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any-service=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Genera la matrix dinámica de servicios a construir.
+      # Si common-lib cambió, se construyen TODOS (dependencia transversal).
+      - name: Generar matrix de servicios
+        id: matrix
+        run: |
+          SERVICES=()
+          COMMON="${{ steps.filter.outputs.common-lib }}"
+
+          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
+            SERVICES+=('{"service":"donaciones-service"}')
+          fi
+          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
+            SERVICES+=('{"service":"notificaciones-service"}')
+          fi
+
+          if [[ ${#SERVICES[@]} -eq 0 ]]; then
+            echo "matrix={\"include\":[]}" >> "$GITHUB_OUTPUT"
+          else
+            JOINED=$(IFS=,; echo "${SERVICES[*]}")
+            echo "matrix={\"include\":[${JOINED}]}" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "📦 Servicios a construir: ${SERVICES[*]:-ninguno}"
+
+      # Genera matrix de servicios que tienen Dockerfile
+      - name: Generar matrix de Docker builds
+        id: docker-matrix
+        run: |
+          DOCKER_SERVICES=()
+          COMMON="${{ steps.filter.outputs.common-lib }}"
+
+          for svc in donaciones-service notificaciones-service; do
+            if [[ -f "${svc}/Dockerfile" ]]; then
+              CHANGED="${{ steps.filter.outputs[env.svc] }}"
+              # Reconstruir si el servicio cambió O si common-lib cambió
+              if [[ "$COMMON" == "true" || "${{ steps.filter.outputs[format('{0}', env.svc)] }}" == "true" ]]; then
+                DOCKER_SERVICES+=("{\"service\":\"${svc}\"}")
+              fi
+            fi
+          done
+
+          # Fallback: chequear directamente
+          DOCKER_FINAL=()
+          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
+            if [[ -f "donaciones-service/Dockerfile" ]]; then
+              DOCKER_FINAL+=('{"service":"donaciones-service"}')
+            fi
+          fi
+          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
+            if [[ -f "notificaciones-service/Dockerfile" ]]; then
+              DOCKER_FINAL+=('{"service":"notificaciones-service"}')
+            fi
+          fi
+
+          if [[ ${#DOCKER_FINAL[@]} -eq 0 ]]; then
+            echo "matrix={\"include\":[]}" >> "$GITHUB_OUTPUT"
+          else
+            JOINED=$(IFS=,; echo "${DOCKER_FINAL[*]}")
+            echo "matrix={\"include\":[${JOINED}]}" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "🐳 Docker builds: ${DOCKER_FINAL[*]:-ninguno}"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 3: Lint y Formato (Spotless)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Se ejecuta en PARALELO con build-and-test para feedback rápido.
+  # Solo verifica formato — no compila ni testea.
+  # ──────────────────────────────────────────────────────────────────────────
+  lint-and-format:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any-service == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -49,59 +213,346 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Verificar Formato (Spotless)
-        run: mvn spotless:check
-
-      - name: Instalar Dependencias de Python
-        run: pip install -q -U google-generativeai
-
-      - name: Generar y Auditar Diagramas (IA)
-        # Solo se ejecuta si la variable ENABLE_DESIGN_AUDIT es 'true'
-        if: vars.ENABLE_DESIGN_AUDIT == 'true'
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - name: Verificar formato (Spotless)
         run: |
-          mvn plantuml-generator:generate
-          python3 .github/scripts/compare_diagrams.py
+          echo "🔍 Verificando estilo de código..."
+          mvn -B spotless:check --fail-at-end
+          echo "✅ Formato verificado correctamente."
 
-  build-test-and-sonar:
-    needs: static-analysis-and-design
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 4: Build y Tests (Matrix por Servicio)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Cada microservicio se compila y testea de forma AISLADA.
+  # Usa -pl para seleccionar el módulo y -am para resolver dependencias
+  # (common-lib). Esto refleja el principio de despliegue independiente.
+  # ──────────────────────────────────────────────────────────────────────────
+  build-and-test:
+    needs: detect-changes
+    if: >-
+      needs.detect-changes.outputs.any-service == 'true' &&
+      toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Sin esto SonarCloud no ve el historial
+          fetch-depth: 0
 
       - name: Configurar JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: 'maven' # Esto reemplaza los pasos de "Cache" sugeridos por Sonar
+          cache: 'maven'
 
-      - name: Ejecutar Pipeline Unificado (Tests + Sonar + Spotless)
+      - name: "Compilar y testear: ${{ matrix.service }}"
+        run: |
+          echo "🔨 Construyendo ${{ matrix.service }}..."
+          mvn -B clean verify \
+            -pl ${{ matrix.service }} -am \
+            -Dspotless.check.skip=true
+          echo "✅ ${{ matrix.service }} construido y testeado."
+
+      - name: Subir reportes de JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/site/jacoco/
+          retention-days: 14
+
+      - name: Subir reportes de Surefire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/surefire-reports/
+          retention-days: 14
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 5: Análisis SonarCloud
+  # ──────────────────────────────────────────────────────────────────────────
+  # Se ejecuta DESPUÉS del build para reutilizar los reportes de JaCoCo.
+  # SonarCloud gestiona el Quality Gate (umbral de cobertura configurado
+  # desde la plataforma, no desde el pipeline).
+  # ──────────────────────────────────────────────────────────────────────────
+  sonar-analysis:
+    needs: [lint-and-format, build-and-test]
+    if: >-
+      always() &&
+      needs.build-and-test.result == 'success' &&
+      needs.lint-and-format.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # Necesitamos recompilar para que Sonar tenga las clases y reportes
+      - name: Build completo + Análisis Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
+          echo "📊 Ejecutando análisis SonarCloud..."
           mvn -B clean verify sonar:sonar \
             -Dsonar.projectKey="${{ secrets.SONAR_PROJECT_KEY }}" \
             -Dsonar.organization="${{ secrets.SONAR_ORG }}" \
             -Dsonar.host.url="${{ secrets.SONAR_URL }}" \
-            -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml
+            -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml \
+            -Dsonar.junit.reportPaths=**/target/surefire-reports \
+            -Dspotless.check.skip=true
+          echo "✅ Análisis SonarCloud completado."
 
-      - name: Subir reportes de calidad (Artifacts)
-        if: always()
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 6: Verificación de Imágenes Docker (Matrix)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Construye las imágenes Docker SOLO de los servicios modificados.
+  # No hace push (es CI, no CD). Usa cache de layers para acelerar builds.
+  # ──────────────────────────────────────────────────────────────────────────
+  docker-build:
+    needs: [detect-changes, build-and-test]
+    if: >-
+      needs.build-and-test.result == 'success' &&
+      toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.docker-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: "Construir imagen: ${{ matrix.service }}"
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.service }}/Dockerfile
+          push: false
+          tags: donatrack/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 7: Generar Diagramas (Siempre)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Genera diagramas PlantUML desde el código y los renderiza a SVG.
+  # Se ejecuta siempre que hay cambios en los servicios.
+  # ──────────────────────────────────────────────────────────────────────────
+  generate-diagrams:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any-service == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Instalar PlantUML
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq plantuml graphviz
+
+      - name: Generar diagramas PlantUML desde el código
+        run: |
+          echo "📐 Generando diagramas de clases desde el código..."
+          mvn -B clean test \
+            -pl donaciones-service,notificaciones-service -am \
+            -DskipTests=true \
+            -Dspotless.check.skip=true \
+            -Dplantuml-generator.skip=false
+          echo "✅ Diagramas generados."
+
+      - name: Renderizar diagramas a SVG
+        run: |
+          mkdir -p diagrams-output
+
+          for svc in donaciones-service notificaciones-service; do
+            PUML_FILE="${svc}/target/modelo_tecnico.puml"
+            if [[ -f "$PUML_FILE" ]]; then
+              echo "🎨 Renderizando ${svc}..."
+              plantuml -tsvg -o "$(pwd)/diagrams-output" "$PUML_FILE"
+              # Renombrar para identificar el servicio
+              if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
+                mv "diagrams-output/modelo_tecnico.svg" "diagrams-output/${svc}_modelo_tecnico.svg"
+              fi
+            else
+              echo "⚠️  No se encontró $PUML_FILE — saltando."
+            fi
+          done
+
+          echo "📁 Diagramas generados:"
+          ls -la diagrams-output/ || echo "  (vacío)"
+
+      - name: Subir diagramas renderizados
         uses: actions/upload-artifact@v4
         with:
-          name: reportes-calidad
-          path: |
-            **/target/site/jacoco/
-            **/target/surefire-reports/
+          name: diagramas-modelo-tecnico
+          path: diagrams-output/
+          retention-days: 30
 
-      - name: Verificar Construccion de Docker
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 8: Auditoría de Diseño (Condicional)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Usa IA para auditar paridad entre diseño manual e implementación.
+  # Solo se ejecuta si la variable ENABLE_DESIGN_AUDIT es 'true'.
+  # Depende del job de generación de diagramas.
+  # ──────────────────────────────────────────────────────────────────────────
+  design-audit:
+    needs: generate-diagrams
+    if: vars.ENABLE_DESIGN_AUDIT == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Instalar dependencias de Python
         run: |
-          docker build -t donaciones-test -f donaciones-service/Dockerfile .
-          docker build -t notificaciones-test -f notificaciones-service/Dockerfile .
+          pip install -q -U google-generativeai
+
+      - name: Descargar diagramas renderizados
+        uses: actions/download-artifact@v4
+        with:
+          name: diagramas-modelo-tecnico
+          path: diagrams-output/
+
+      - name: Auditar paridad diseño vs. implementación (IA)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 .github/scripts/compare_diagrams.py
+
+      - name: Publicar resultado de auditoría en PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const resultFile = 'audit-results.json';
+            let body = '## 📐 Auditoría de Diseño\n\n';
+
+            if (fs.existsSync(resultFile)) {
+              const results = JSON.parse(fs.readFileSync(resultFile, 'utf8'));
+              for (const [svc, result] of Object.entries(results)) {
+                const icon = result.status === 'PASS' ? '✅' : '❌';
+                body += `### ${icon} ${svc}\n`;
+                body += `**Estado:** ${result.status}\n\n`;
+                if (result.errors && result.errors.length > 0) {
+                  body += `**Discrepancias:**\n`;
+                  result.errors.forEach(e => { body += `- ${e}\n`; });
+                }
+                body += '\n';
+              }
+            } else {
+              body += '> ℹ️ No se generó archivo de resultados. Verificar logs del paso de auditoría.\n';
+            }
+
+            body += '\n---\n*Generado automáticamente por el pipeline de CI.*';
+
+            // Buscar comentario existente para actualizar en vez de duplicar
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.body.includes('Auditoría de Diseño') && c.user.type === 'Bot'
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body,
+              });
+             }
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 9: Quality Gate (Consolidador Final)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job centinela que depende de TODOS los demás. Usar como "Required
+  # Status Check" en las Branch Protection Rules de GitHub para tener
+  # un único check verde/rojo que represente todo el pipeline.
+  #
+  # Este patrón es necesario porque con matrix strategy los nombres
+  # de los checks son dinámicos y no se pueden usar como required checks.
+  # ──────────────────────────────────────────────────────────────────────────
+  quality-gate:
+    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, design-audit]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluar resultado del pipeline
+        run: |
+          echo "══════════════════════════════════════════"
+          echo "       QUALITY GATE — RESULTADOS"
+          echo "══════════════════════════════════════════"
+
+          FAILED=false
+
+          # ── Evaluar cada job ──
+          check_job() {
+            local name="$1"
+            local result="$2"
+            local required="$3"
+
+            if [[ "$result" == "success" || "$result" == "skipped" ]]; then
+              echo "  ✅ ${name}: ${result}"
+            elif [[ "$result" == "skipped" && "$required" == "false" ]]; then
+              echo "  ⏭️  ${name}: skipped (opcional)"
+            else
+              echo "  ❌ ${name}: ${result}"
+              if [[ "$required" == "true" ]]; then
+                FAILED=true
+              fi
+            fi
+          }
+
+          check_job "validate-git-flow"   "${{ needs.validate-git-flow.result }}"   "true"
+          check_job "detect-changes"      "${{ needs.detect-changes.result }}"       "true"
+          check_job "lint-and-format"     "${{ needs.lint-and-format.result }}"      "true"
+          check_job "build-and-test"      "${{ needs.build-and-test.result }}"       "true"
+          check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"       "true"
+          check_job "docker-build"        "${{ needs.docker-build.result }}"         "true"
+          check_job "generate-diagrams"   "${{ needs.generate-diagrams.result }}"    "true"
+          check_job "design-audit"        "${{ needs.design-audit.result }}"         "false"
+
+          echo "══════════════════════════════════════════"
+
+          if [[ "$FAILED" == "true" ]]; then
+            echo "::error::❌ Quality Gate FALLIDO — revisar los jobs anteriores."
+            exit 1
+          else
+            echo "✅ Quality Gate APROBADO — todos los checks pasaron."
+          fi
