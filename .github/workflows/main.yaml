@@ -385,7 +385,7 @@ jobs:
         run: |
           mkdir -p diagrams-output
 
-          for svc in common-lib donaciones-service notificaciones-service; do
+          for svc in donaciones-service notificaciones-service; do
             PUML_FILE="${svc}/target/modelo_tecnico.puml"
             if [[ -f "$PUML_FILE" ]]; then
               echo "🎨 Renderizando ${svc}..."
