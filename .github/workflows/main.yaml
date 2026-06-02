@@ -368,7 +368,8 @@ jobs:
 
       - name: Instalar PlantUML
         run: |
-          sudo apt-get install -y -qq plantuml
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq plantuml graphviz
 
       - name: Generar diagramas PlantUML desde el código
         run: |
