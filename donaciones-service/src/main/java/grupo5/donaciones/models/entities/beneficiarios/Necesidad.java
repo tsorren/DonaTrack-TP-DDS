@@ -1,6 +1,7 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -13,12 +14,13 @@ public abstract class Necesidad {
   private SubCategoria subcategoria;
   private Integer cantidadNecesitada;
   private String descripcion;
+  private LocalDate fechaInicio;
 
   protected Necesidad(SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     this.subcategoria = subcategoria;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
-
+    this.fechaInicio = LocalDate.now();
     this.donacionesAsignadas = new ArrayList<>();
 
     validarNecesidad();
