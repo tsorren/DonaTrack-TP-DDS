@@ -1,11 +1,11 @@
 package grupo5.common.responses;
 
-public record ApiResponse<T>(boolean success, String message, T data) {
-  public static <T> ApiResponse<T> ok(String message, T data) {
+public record ApiResponse<Recurso>(boolean success, String message, Recurso data) {
+  public static <Recurso> ApiResponse<Recurso> success(String message, Recurso data) {
     return new ApiResponse<>(true, message, data);
   }
 
-  public static ApiResponse<Void> ok(String message) {
+  public static ApiResponse<Void> success(String message) {
     return new ApiResponse<>(true, message, null);
   }
 }
