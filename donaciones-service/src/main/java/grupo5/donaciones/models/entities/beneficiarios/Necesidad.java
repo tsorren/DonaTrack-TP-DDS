@@ -10,7 +10,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class Necesidad {
-  protected List<DonacionAsignada> donacionesAsignadas;
   private SubCategoria subcategoria;
   private Integer cantidadNecesitada;
   private String descripcion;
@@ -21,7 +20,6 @@ public abstract class Necesidad {
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
     this.fechaInicio = LocalDate.now();
-    this.donacionesAsignadas = new ArrayList<>();
 
     validarNecesidad();
   }
@@ -41,30 +39,8 @@ public abstract class Necesidad {
     }
   }
 
-  public void asignarDonacion(DonacionAsignada donacionAsignada) {
-    if (donacionAsignada == null) {
-      throw new IllegalArgumentException("La donación asignada no puede ser nula.");
-    }
-
-    if (this.donacionesAsignadas.contains(donacionAsignada)) {
-      throw new IllegalArgumentException("La donación ya fue asignada a esta necesidad.");
-    }
-
-    this.donacionesAsignadas.add(donacionAsignada);
-  }
-
-  // Añadir excepcion si no está el elemento en la lista
-  public void quitarDonacion(DonacionAsignada donacionAsignada) {
-    if (!this.donacionesAsignadas.contains(donacionAsignada)) {
-      throw new IllegalArgumentException("La donación no pertenece a esta necesidad.");
-    }
-
-    this.donacionesAsignadas.remove(donacionAsignada);
-  }
-
-  public boolean estaSatisfecha() {
-    return this.cantidadAcumulada() >= this.cantidadNecesitada;
-  }
-
+  public abstract void asignarDonacion(DonacionAsignada donacionAsignada);
+  public abstract void quitarDonacion(DonacionAsignada donacionAsignada);
+  public abstract boolean estaSatisfecha();
   public abstract Integer cantidadAcumulada();
 }

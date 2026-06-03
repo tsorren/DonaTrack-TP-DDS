@@ -1,4 +1,4 @@
-/*package grupo5.donaciones.models.entities;
+package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,12 +12,15 @@ import org.junit.jupiter.api.Test;
 
 class NecesidadRecurrenteTests {
   private NecesidadRecurrente necesidad;
-  private DonacionAsignada d1;
+    private DonacionAsignada d1;
+    private DonacionAsignada d2;
+    private SubCategoria subcategoria;
+    private Categoria categoria;
 
   @BeforeEach
   void setUp() {
-    Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
+    categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
+    subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad =
             new NecesidadRecurrente(
                     subcategoria,
@@ -25,46 +28,70 @@ class NecesidadRecurrenteTests {
                     "30 bancos y sillas para el aula",
                     Period.ofWeeks(1),
                     LocalDate.now().minusDays(5));
-    necesidad.setFechaPeriodo(LocalDate.now().minusDays(5));
 
     Bien bien =
             new Bien(
                     "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
 
-    d1 = new DonacionAsignada(bien, 100, LocalDate.now());
+      d1 = new DonacionAsignada(bien, 40, LocalDate.now());
+      d2 = new DonacionAsignada(bien, 100, LocalDate.now());
   }
 
-  @Test
-  void estaSatisfecha_cuandoNoEstaVencidaYNoAlcanzaObj_deberiaSerFalse() {
-    necesidad.setCantidadNecesitada(150);
-    necesidad.asignarDonacion(d1);
+    @Test
+    void estaSatisfecha_cuandoNoAlcanzaObjetivo_deberiaSerFalse() {
+        necesidad.asignarDonacion(d1); // Suma 40 de 100
 
-    assertFalse(necesidad.estaSatisfecha());
-    assertEquals(100, necesidad.cantidadAcumulada());
-  }
+        assertFalse(necesidad.estaSatisfecha());
+        assertEquals(40, necesidad.cantidadAcumulada());
+    }
 
-  @Test
-  void estaSatisfecha_cuandoNoEstaVencidaYAlcanzaObj_deberiaSerTrue() {
-    necesidad.setCantidadNecesitada(100);
-    necesidad.asignarDonacion(d1);
+    @Test
+    void estaSatisfecha_cuandoAlcanzaObjetivo_deberiaSerTrue() {
+        necesidad.asignarDonacion(d2); // Suma 100 de 100
 
-    assertTrue(necesidad.estaSatisfecha());
-  }
+        assertTrue(necesidad.estaSatisfecha());
+    }
+
+    @Test
+    void generarNuevoPeriodo_deberiaComenzarConCantidadesEnCeroYGuardarElHistorico() {
+        necesidad.asignarDonacion(d2);
+        assertTrue(necesidad.estaSatisfecha());
+        assertEquals(100, necesidad.cantidadAcumulada());
+
+        necesidad.generarNuevoPeriodo();
+
+        assertFalse(necesidad.estaSatisfecha());
+        assertEquals(0, necesidad.cantidadAcumulada());
+
+        assertEquals(2, necesidad.getPeriodos().size());
+    }
+
+    @Test
+    void hayQueGenerarNuevo_cuandoPeriodoVencio_deberiaSerTrue() {
+        NecesidadRecurrente necesidadVencida = new NecesidadRecurrente(
+                subcategoria,
+                100,
+                "Test de vencimiento",
+                Period.ofWeeks(1),
+                LocalDate.now().minusDays(10)
+        );
+
+        assertTrue(necesidadVencida.hayQueGenerarNuevo());
+    }
+
+    @Test
+    void hayQueGenerarNuevo_cuandoPeriodoAunEstaVigente_deberiaSerFalse() {
+        assertFalse(necesidad.hayQueGenerarNuevo());
+    }
+
+    @Test
+    void asignarDonacion_cuandoNoHayPeriodoActivo_deberiaLanzarExcepcion() {
+        necesidad.getPeriodos().clear();
+
+        IllegalStateException excepcion = assertThrows(IllegalStateException.class, () -> {
+            necesidad.asignarDonacion(d2);
+        });
+
+        assertTrue(excepcion.getMessage().contains("No existe un período activo"));
+    }
 }
-  @Test
-  void estaSatisfecha_cuandoPeriodoVencido_deberiaReiniciarValoresYSerFalse() {
-    necesidad.setCantidadNecesitada(100);
-    necesidad.setFechaPeriodo(LocalDate.now().minusDays(8));
-
-    d1.setFechaAsignacion(LocalDate.now().minusDays(7));
-    necesidad.asignarDonacion(d1);
-
-    assertTrue(necesidad.estaSatisfecha());
-
-    necesidad.reiniciarPeriodo();
-
-    assertFalse(necesidad.estaSatisfecha());
-    assertEquals(0, necesidad.cantidadAcumulada());
-    assertEquals(LocalDate.now(), necesidad.getFechaInicioPeriodo());
-  }
-}*/

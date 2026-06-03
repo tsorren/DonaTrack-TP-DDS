@@ -15,22 +15,17 @@ public class NecesidadRecurrente extends Necesidad {
   private List<PeriodoNecesidad> periodos;
   private Boolean activa;
 
-  public NecesidadRecurrente(
-      SubCategoria subcategoria,
-      Integer cantidadNecesitada,
-      String descripcion,
-      Period periodo,
-      LocalDate fechaInicioPrimerPeriodo) {
-
+  public NecesidadRecurrente(SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion, Period periodo, LocalDate fechaInicio) {
     super(subcategoria, cantidadNecesitada, descripcion);
+    if (periodo == null) throw new IllegalArgumentException("Debe tener un período definido.");
+    if (fechaInicio == null) throw new IllegalArgumentException("La fecha de inicio no puede ser nula.");
+
     this.periodo = periodo;
     this.activa = true;
     this.periodos = new ArrayList<>();
 
-    validarNecesidadRecurrente(fechaInicioPrimerPeriodo);
-
-    this.periodos.add(
-        new PeriodoNecesidad(fechaInicioPrimerPeriodo.plus(this.periodo), cantidadNecesitada));
+    validarNecesidadRecurrente(fechaInicio);
+    this.periodos.add(new PeriodoNecesidad(fechaInicio.plus(this.periodo), cantidadNecesitada));
   }
 
   private void validarNecesidadRecurrente(LocalDate fechaInicio) {
@@ -42,6 +37,27 @@ public class NecesidadRecurrente extends Necesidad {
     }
     if (fechaInicio.isAfter(LocalDate.now())) {
       throw new IllegalArgumentException("La fecha de inicio del período no puede ser futura.");
+    }
+  }
+
+  public PeriodoNecesidad obtenerPeriodoActual() {
+    if (this.periodos.isEmpty()) return null;
+    return this.periodos.get(this.periodos.size() - 1);
+  }
+
+  public void asignarDonacion(DonacionAsignada donacionAsignada) {
+    PeriodoNecesidad actual = obtenerPeriodoActual();
+    if (actual == null) {
+      throw new IllegalStateException("No existe un período activo.");
+    }
+    actual.agregarDonacion(donacionAsignada);
+  }
+
+  @Override
+  public void quitarDonacion(DonacionAsignada donacion) {
+    PeriodoNecesidad actual = obtenerPeriodoActual();
+    if (actual != null) {
+      actual.quitarDonacion(donacion);
     }
   }
 
@@ -57,13 +73,12 @@ public class NecesidadRecurrente extends Necesidad {
     return actual != null && actual.estaSatisfecha();
   }
 
-  @Override
-  public void asignarDonacion(DonacionAsignada donacionAsignada) {
-    super.asignarDonacion(donacionAsignada);
-    PeriodoNecesidad actual = obtenerPeriodoActual();
-    if (actual != null) {
-      actual.agregarDonacion(donacionAsignada);
-    }
+  public boolean hayQueGenerarNuevo() {
+    if (this.activa != null && !this.activa) return false;
+    if (this.periodos.isEmpty()) return true;
+
+    // crear un período nuevo si "hoy" es posterior a la fecha de vencimiento
+    return !obtenerPeriodoActual().estaEnPeriodo(LocalDate.now());
   }
 
   public void generarNuevoPeriodo() {
@@ -75,20 +90,8 @@ public class NecesidadRecurrente extends Necesidad {
     this.periodos.add(new PeriodoNecesidad(nuevaFechaFin, super.getCantidadNecesitada()));
   }
 
-  public boolean hayQueGenerarNuevo() {
-    if (this.activa != null && !this.activa) return false;
-    if (this.periodos.isEmpty()) return true;
-
-    // crear un período nuevo si "hoy" es posterior a la fecha de vencimiento
-    return LocalDate.now().isAfter(obtenerPeriodoActual().getFechaFin());
-  }
-
-  public PeriodoNecesidad obtenerPeriodoActual() {
-    if (this.periodos.isEmpty()) return null;
-    return this.periodos.get(this.periodos.size() - 1);
-  }
-
   public boolean getActiva() {
+
     return this.activa != null && this.activa;
   }
 }

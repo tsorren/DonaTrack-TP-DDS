@@ -20,7 +20,12 @@ public class PeriodoNecesidad {
   }
 
   public void agregarDonacion(DonacionAsignada donacion) {
+    if (donacion == null) throw new IllegalArgumentException("La donación no puede ser nula.");
     this.donacionesAsignadas.add(donacion);
+  }
+
+  public void quitarDonacion(DonacionAsignada donacion) {
+    this.donacionesAsignadas.remove(donacion);
   }
 
   public Integer cantidadAcumulada() {
@@ -32,8 +37,16 @@ public class PeriodoNecesidad {
   }
 
   public boolean estaEnPeriodo(LocalDate fecha) {
+    if (this.fechaFin == null) {
+      return true;
+    }
     return !fecha.isAfter(this.fechaFin);
   }
 
-  public void finalizo() {}
+  public void finalizo() {
+    if (!this.estaSatisfecha()) {
+      System.out.println("El período cerró sin alcanzar la meta de " + this.cantidadObjetivo);
+      // Idealmente acá se dispararía un evento de notificación
+    }
+  }
 }
