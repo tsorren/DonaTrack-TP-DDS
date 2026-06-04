@@ -31,6 +31,6 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ErrorResponse.of("Error interno del servidor", ex.getMessage()));
+        .body(ErrorResponse.of("Error interno del servidor", "Ocurrió un error inesperado"));
   }
 }

@@ -4,10 +4,10 @@ import grupo5.common.errors.RecursoNoEncontradoException;
 import grupo5.common.repositories.BaseRepository;
 import java.util.List;
 
-public abstract class BaseService<ID, Recurso> {
-  private final BaseRepository<ID, Recurso> repository;
+public abstract class BaseService<Recurso, ID> {
+  private final BaseRepository<Recurso, ID> repository;
 
-  protected BaseService(BaseRepository<ID, Recurso> repository) {
+  protected BaseService(BaseRepository<Recurso, ID> repository) {
     this.repository = repository;
   }
 
@@ -43,7 +43,7 @@ public abstract class BaseService<ID, Recurso> {
     return repository.existsById(id);
   }
 
-  protected BaseRepository<ID, Recurso> repository() {
+  protected BaseRepository<Recurso, ID> repository() {
     return repository;
   }
 }

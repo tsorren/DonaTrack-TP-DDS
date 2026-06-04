@@ -8,10 +8,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-public abstract class BaseController<ID, Recurso> {
-  private final BaseService<ID, Recurso> service;
+public abstract class BaseController<Recurso, ID> {
+  private final BaseService<Recurso, ID> service;
 
-  protected BaseController(BaseService<ID, Recurso> service) {
+  protected BaseController(BaseService<Recurso, ID> service) {
     this.service = service;
   }
 
@@ -41,7 +41,7 @@ public abstract class BaseController<ID, Recurso> {
     return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(message, data));
   }
 
-  protected BaseService<ID, Recurso> service() {
+  protected BaseService<Recurso, ID> service() {
     return service;
   }
 }
