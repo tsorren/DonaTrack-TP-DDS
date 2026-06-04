@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -8,11 +9,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Donacion {
-  private List<DonacionIndependiente> donaciones = new ArrayList<>();
   private Donante donante;
+  private List<ItemDonacion> items;
+  private String descripcion;
+  private LocalDateTime fecha;
 
   public Donacion(Donante donante) {
-
+    this.items = new ArrayList<>();
     if (donante == null) {
       throw new IllegalArgumentException("La donación debe tener un donante asociado.");
     }
@@ -20,24 +23,24 @@ public class Donacion {
     this.donante = donante;
   }
 
-  public void agregarDonacionIndependiente(DonacionIndependiente donacionIndependiente) {
-    if (donacionIndependiente == null) {
+  public void agregarItem(ItemDonacion item) {
+    if (item == null) {
       throw new IllegalArgumentException("La donación independiente no puede ser nula.");
     }
 
-    if (this.donaciones.contains(donacionIndependiente)) {
+    if (this.items.contains(item)) {
       throw new IllegalArgumentException("La donación independiente ya fue agregada.");
     }
 
-    this.donaciones.add(donacionIndependiente);
+    this.items.add(item);
   }
 
   // Lanzar excepcion si la donacion independiente no esta en la lista
-  public void quitarDonacionIndependiente(DonacionIndependiente donacionIndependiente) {
-    if (!this.donaciones.contains(donacionIndependiente)) {
+  public void quitarItem(ItemDonacion item) {
+    if (!this.items.contains(item)) {
       throw new IllegalArgumentException("La donación independiente no pertenece a la donación.");
     }
 
-    this.donaciones.remove(donacionIndependiente);
+    this.items.remove(item);
   }
 }

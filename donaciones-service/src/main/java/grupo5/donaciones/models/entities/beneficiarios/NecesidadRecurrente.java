@@ -46,7 +46,7 @@ public class NecesidadRecurrente extends Necesidad {
   @Override
   public Integer cantidadAcumulada() {
     return this.donacionesAsignadas.stream()
-        .filter(d -> this.estaEnPeriodo(d.getFechaAsignacion()))
+        .filter(d -> this.estaEnPeriodo(d.getFechaAsignacion().toLocalDate()))
         .mapToInt(DonacionAsignada::getCantidad)
         .sum();
   }
