@@ -1,7 +1,7 @@
 package grupo5.common.responses;
 
-public record ApiResponse<Recurso>(boolean success, String message, Recurso data) {
-  public static <Recurso> ApiResponse<Recurso> success(String message, Recurso data) {
+public record ApiResponse<Contenido>(boolean success, String message, Contenido data) {
+  public static <Contenido> ApiResponse<Contenido> success(String message, Contenido data) {
     return new ApiResponse<>(true, message, data);
   }
 
