@@ -1,25 +1,23 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public abstract class Necesidad {
-  protected List<DonacionAsignada> donacionesAsignadas;
   private SubCategoria subcategoria;
   private Integer cantidadNecesitada;
   private String descripcion;
+  private LocalDate fechaInicio;
 
   protected Necesidad(SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     this.subcategoria = subcategoria;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
-
-    this.donacionesAsignadas = new ArrayList<>();
+    this.fechaInicio = LocalDate.now();
 
     validarNecesidad();
   }
@@ -39,30 +37,11 @@ public abstract class Necesidad {
     }
   }
 
-  public void asignarDonacion(DonacionAsignada donacionAsignada) {
-    if (donacionAsignada == null) {
-      throw new IllegalArgumentException("La donación asignada no puede ser nula.");
-    }
+  public abstract void asignarDonacion(DonacionAsignada donacionAsignada);
 
-    if (this.donacionesAsignadas.contains(donacionAsignada)) {
-      throw new IllegalArgumentException("La donación ya fue asignada a esta necesidad.");
-    }
+  public abstract void quitarDonacion(DonacionAsignada donacionAsignada);
 
-    this.donacionesAsignadas.add(donacionAsignada);
-  }
-
-  // Añadir excepcion si no está el elemento en la lista
-  public void quitarDonacion(DonacionAsignada donacionAsignada) {
-    if (!this.donacionesAsignadas.contains(donacionAsignada)) {
-      throw new IllegalArgumentException("La donación no pertenece a esta necesidad.");
-    }
-
-    this.donacionesAsignadas.remove(donacionAsignada);
-  }
-
-  public boolean estaSatisfecha() {
-    return this.cantidadAcumulada() >= this.cantidadNecesitada;
-  }
+  public abstract boolean estaSatisfecha();
 
   public abstract Integer cantidadAcumulada();
 }
