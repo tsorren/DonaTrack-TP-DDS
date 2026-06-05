@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 
 //Simulacion de base de datos, despues hay que implementar una enserio
+@Repository
 public class NecesidadRecurrenteRepository{
     private final List<NecesidadRecurrente> baseDeDatosFalsa = new ArrayList<>();
 
