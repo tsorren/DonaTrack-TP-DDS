@@ -6,7 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import grupo5.donaciones.models.entities.beneficiarios.DonacionAsignada;
 import grupo5.donaciones.models.entities.beneficiarios.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.bienes.*;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,9 +52,23 @@ class NecesidadExtraordinariaTests {
             Estado.NUEVO,
             subcategoria);
 
-    donacionAsignada1 = new DonacionAsignada(bien1, 15, LocalDate.now());
-    donacionAsignada2 = new DonacionAsignada(bien2, 15, LocalDate.now());
-    donacionAsignada3 = new DonacionAsignada(bien3, 15, LocalDate.now());
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien1, 15);
+    List<ItemDonacionIndependiente> items1 = new ArrayList<>();
+    items1.add(item1);
+    DonacionIndependiente donacionIndependiente1 = new DonacionIndependiente(subcategoria, items1);
+    donacionAsignada1 = new DonacionAsignada(donacionIndependiente1, LocalDateTime.now());
+
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien2, 15);
+    List<ItemDonacionIndependiente> items2 = new ArrayList<>();
+    items2.add(item2);
+    DonacionIndependiente donacionIndependiente2 = new DonacionIndependiente(subcategoria, items2);
+    donacionAsignada2 = new DonacionAsignada(donacionIndependiente2, LocalDateTime.now());
+
+    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien3, 15);
+    List<ItemDonacionIndependiente> items3 = new ArrayList<>();
+    items3.add(item3);
+    DonacionIndependiente donacionIndependiente3 = new DonacionIndependiente(subcategoria, items3);
+    donacionAsignada3 = new DonacionAsignada(donacionIndependiente3, LocalDateTime.now());
   }
 
   @Test

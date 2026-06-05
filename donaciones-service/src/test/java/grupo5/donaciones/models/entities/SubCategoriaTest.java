@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,21 +31,21 @@ class SubCategoriaTest {
 
   @Test
   void calcularStock_SumaCorrectamenteLosItemsDeLasDonaciones() {
-    ItemDonacion item1 = new ItemDonacion(bien, 5);
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 5);
 
-    ItemDonacion item2 = new ItemDonacion(bien, 10);
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 10);
 
-    ItemDonacion item3 = new ItemDonacion(bien, 5);
+    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien, 5);
 
-    DonacionIndependiente donacion1 = new DonacionIndependiente("Donación de camperas");
-    donacion1.agregarItem(item1);
-    donacion1.agregarItem(item2);
+    List<ItemDonacionIndependiente> items1 = new ArrayList<>();
+    items1.add(item1);
+    items1.add(item2);
+    new DonacionIndependiente(subcategoria, items1);
 
-    DonacionIndependiente donacion2 = new DonacionIndependiente("Donación de bufanda");
-    donacion2.agregarItem(item3);
+    List<ItemDonacionIndependiente> items2 = new ArrayList<>();
+    items2.add(item3);
 
-    subcategoria.agregarDonacion(donacion1);
-    subcategoria.agregarDonacion(donacion2);
+    new DonacionIndependiente(subcategoria, items2);
 
     Integer stockTotal = subcategoria.calcularStock();
 

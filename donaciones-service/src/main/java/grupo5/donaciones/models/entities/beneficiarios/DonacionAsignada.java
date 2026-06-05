@@ -1,36 +1,37 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
-import grupo5.donaciones.models.entities.bienes.Bien;
-import java.time.LocalDate;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class DonacionAsignada {
-  private Bien bien;
-  private Integer cantidad;
-  private LocalDate fechaAsignacion;
+  private DonacionIndependiente donacionIndependiente;
+  private Necesidad necesidad;
+  private LocalDateTime fechaAsignacion;
 
-  public DonacionAsignada(Bien bien, Integer cantidad, LocalDate fechaAsignacion) {
-    this.bien = bien;
-    this.cantidad = cantidad;
+  public DonacionAsignada(
+      DonacionIndependiente donacionIndependiente, LocalDateTime fechaAsignacion) {
+    this.donacionIndependiente = donacionIndependiente;
     this.fechaAsignacion = fechaAsignacion;
 
     validarDonacionAsignada();
   }
 
   private void validarDonacionAsignada() {
-    if (this.bien == null) {
-      throw new IllegalArgumentException("La donación asignada debe tener un bien.");
+    if (this.donacionIndependiente == null) {
+      throw new IllegalArgumentException(
+          "La donación asignada debe tener una donación independiente.");
     }
 
-    if (this.cantidad == null || this.cantidad <= 0) {
-      throw new IllegalArgumentException("La cantidad asignada debe ser mayor a cero.");
-    }
-
-    if (this.fechaAsignacion != null && this.fechaAsignacion.isAfter(LocalDate.now())) {
+    if (this.fechaAsignacion != null && this.fechaAsignacion.isAfter(LocalDateTime.now())) {
       throw new IllegalArgumentException("La fecha de asignación no puede ser futura.");
     }
+  }
+
+  public Integer getCantidad() {
+    return this.donacionIndependiente.getCantidad();
   }
 }
