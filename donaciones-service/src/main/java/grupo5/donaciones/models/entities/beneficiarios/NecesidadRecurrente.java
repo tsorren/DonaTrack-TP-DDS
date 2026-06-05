@@ -15,10 +15,16 @@ public class NecesidadRecurrente extends Necesidad {
   private List<PeriodoNecesidad> periodos;
   private Boolean activa;
 
-  public NecesidadRecurrente(SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion, Period periodo, LocalDate fechaInicio) {
+  public NecesidadRecurrente(
+      SubCategoria subcategoria,
+      Integer cantidadNecesitada,
+      String descripcion,
+      Period periodo,
+      LocalDate fechaInicio) {
     super(subcategoria, cantidadNecesitada, descripcion);
     if (periodo == null) throw new IllegalArgumentException("Debe tener un período definido.");
-    if (fechaInicio == null) throw new IllegalArgumentException("La fecha de inicio no puede ser nula.");
+    if (fechaInicio == null)
+      throw new IllegalArgumentException("La fecha de inicio no puede ser nula.");
 
     this.periodo = periodo;
     this.activa = true;

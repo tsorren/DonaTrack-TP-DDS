@@ -2,8 +2,6 @@ package grupo5.donaciones.models.entities.beneficiarios;
 
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -40,7 +38,10 @@ public abstract class Necesidad {
   }
 
   public abstract void asignarDonacion(DonacionAsignada donacionAsignada);
+
   public abstract void quitarDonacion(DonacionAsignada donacionAsignada);
+
   public abstract boolean estaSatisfecha();
+
   public abstract Integer cantidadAcumulada();
 }
