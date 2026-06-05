@@ -410,7 +410,64 @@ jobs:
           retention-days: 30
 
   # ──────────────────────────────────────────────────────────────────────────
-  # Job 8: Auditoría de Diseño (Condicional)
+  # Job 8: Semantic UML Diff (Architectural Review)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Compara los diagramas de arquitectura de la rama base contra la rama PR.
+  # Publica un diff visual en GitHub y Discord.
+  # ──────────────────────────────────────────────────────────────────────────
+  semantic-uml-diff:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any-service == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          path: pr_repo
+
+      - name: Configurar JDK 21 (PR)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Generar PUML (PR)
+        run: |
+          cd pr_repo
+          mvn -B clean test -pl donaciones-service,notificaciones-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false
+          mkdir -p ../pr_uml_dir
+          cp donaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/donaciones-service.puml || true
+          cp notificaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/notificaciones-service.puml || true
+
+      - name: Checkout Base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base_repo
+
+      - name: Generar PUML (Base)
+        run: |
+          cd base_repo
+          mvn -B clean test -pl donaciones-service,notificaciones-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false || true
+          mkdir -p ../base_uml_dir
+          cp donaciones-service/target/modelo_tecnico.puml ../base_uml_dir/donaciones-service.puml || true
+          cp notificaciones-service/target/modelo_tecnico.puml ../base_uml_dir/notificaciones-service.puml || true
+
+      - name: Semantic UML Diff
+        uses: tsorren/SemanticUMLDiff@main
+        with:
+          base_uml_dir: ./base_uml_dir
+          pr_uml_dir: ./pr_uml_dir
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          PUBLISH_GITHUB: 'true'
+          PUBLISH_DISCORD: 'true'
+          IMAGE_HOSTING_PROVIDER: 'discord'
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 9: Auditoría de Diseño (Condicional)
   # ──────────────────────────────────────────────────────────────────────────
   # Usa IA para auditar paridad entre diseño manual e implementación.
   # Solo se ejecuta si la variable ENABLE_DESIGN_AUDIT es 'true'.
@@ -499,7 +556,7 @@ jobs:
              }
 
   # ──────────────────────────────────────────────────────────────────────────
-  # Job 9: Quality Gate (Consolidador Final)
+  # Job 10: Quality Gate (Consolidador Final)
   # ──────────────────────────────────────────────────────────────────────────
   # Job centinela que depende de TODOS los demás. Usar como "Required
   # Status Check" en las Branch Protection Rules de GitHub para tener
@@ -509,7 +566,7 @@ jobs:
   # de los checks son dinámicos y no se pueden usar como required checks.
   # ──────────────────────────────────────────────────────────────────────────
   quality-gate:
-    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, design-audit]
+    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, design-audit]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -546,6 +603,7 @@ jobs:
           check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"       "true"
           check_job "docker-build"        "${{ needs.docker-build.result }}"         "true"
           check_job "generate-diagrams"   "${{ needs.generate-diagrams.result }}"    "true"
+          check_job "semantic-uml-diff"   "${{ needs.semantic-uml-diff.result }}"    "false"
           check_job "design-audit"        "${{ needs.design-audit.result }}"         "false"
 
           echo "══════════════════════════════════════════"
