@@ -31,12 +31,6 @@ on:
       - main
       - 'ENTREGA_*'
 
-# ── Permisos mínimos necesarios ──────────────────────────────────────────────
-permissions:
-  contents: read
-  pull-requests: write    # Para publicar comentarios en el PR
-  checks: write           # Para anotaciones de quality gate
-
 # ── Concurrencia ─────────────────────────────────────────────────────────────
 # Cancela ejecuciones previas del mismo PR para ahorrar minutos de CI
 concurrency:
@@ -78,17 +72,10 @@ jobs:
           if [[ "$BASE_BRANCH" =~ ^ENTREGA_([0-9]+)$ ]]; then
             DELIVERY_NUM="${BASH_REMATCH[1]}"
             REQUIRED_PREFIX="E${DELIVERY_NUM}_"
-<<<<<<< Updated upstream
 
             if [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* ]]; then
               echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'."
               echo "  Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
-=======
-          
-            if [[ ! "$SRC_BRANCH" =~ ^$REQUIRED_PREFIX.* ]]; then
-              echo "Error: Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'."
-              echo "Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
->>>>>>> Stashed changes
               exit 1
             fi
           fi
@@ -105,7 +92,9 @@ jobs:
   detect-changes:
     needs: validate-git-flow
     runs-on: ubuntu-latest
-<<<<<<< Updated upstream
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       common-lib: ${{ steps.filter.outputs.common-lib }}
       donaciones-service: ${{ steps.filter.outputs.donaciones-service }}
@@ -213,10 +202,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.any-service == 'true'
     runs-on: ubuntu-latest
-=======
     permissions:
       contents: read
->>>>>>> Stashed changes
     steps:
       - uses: actions/checkout@v4
 
@@ -227,21 +214,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-<<<<<<< Updated upstream
       - name: Verificar formato (Spotless)
-=======
-      - name: Verificar Formato (Spotless)
-        run: mvn spotless:check
-
-      - name: Instalar Dependencias de Python
-        run: pip install -q --only-binary :all: google-generativeai==0.8.3
-
-      - name: Generar y Auditar Diagramas (IA)
-        # Solo se ejecuta si la variable ENABLE_DESIGN_AUDIT es 'true'
-        if: vars.ENABLE_DESIGN_AUDIT == 'true'
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
->>>>>>> Stashed changes
         run: |
           echo "🔍 Verificando estilo de código..."
           mvn -B spotless:check --fail-at-end
@@ -260,14 +233,11 @@ jobs:
       needs.detect-changes.outputs.any-service == 'true' &&
       toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]'
     runs-on: ubuntu-latest
-<<<<<<< Updated upstream
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
-=======
-    permissions:
-      contents: read
->>>>>>> Stashed changes
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -319,6 +289,9 @@ jobs:
       needs.build-and-test.result == 'success' &&
       needs.lint-and-format.result == 'success'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -360,6 +333,8 @@ jobs:
       needs.build-and-test.result == 'success' &&
       toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-changes.outputs.docker-matrix) }}
@@ -389,6 +364,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.any-service == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -452,6 +429,9 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.any-service == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v4
@@ -510,6 +490,9 @@ jobs:
     needs: generate-diagrams
     if: vars.ENABLE_DESIGN_AUDIT == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
@@ -521,7 +504,7 @@ jobs:
 
       - name: Instalar dependencias de Python
         run: |
-          pip install -q -U google-generativeai
+          pip install -q --only-binary :all: google-generativeai==0.8.3
 
       - name: Descargar diagramas renderizados
         uses: actions/download-artifact@v4
@@ -602,6 +585,9 @@ jobs:
     needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, design-audit]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Evaluar resultado del pipeline
         run: |
