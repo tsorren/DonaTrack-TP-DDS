@@ -55,7 +55,10 @@ jobs:
             DELIVERY_NUM="${BASH_REMATCH[1]}"
             REQUIRED_PREFIX="E${DELIVERY_NUM}_"
 
-            if [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* ]]; then
+            # Excepción: Permitir la integración de correcciones/ramas de entregas anteriores
+            if [[ "$SRC_BRANCH" == "E1_CORREGIDA" || "$SRC_BRANCH" == "ENTREGA_1_CORREGIDA" || "$SRC_BRANCH" =~ ^E1_ || "$SRC_BRANCH" =~ ^ENTREGA_1 ]]; then
+              echo "⚠️ Excepción: Permitido integrar rama de entrega/corrección anterior ($SRC_BRANCH) a $BASE_BRANCH."
+            elif [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* ]]; then
               echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'."
               echo "  Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
               exit 1
