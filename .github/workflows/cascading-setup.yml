@@ -1,0 +1,33 @@
+name: Auto Setup Cascading Flow
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  setup-cascade:
+    if: contains(github.event.issue.labels.*.name, 'requerimiento')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generar Estructura en Cascada
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SUB_ISSUE_TEMPLATE_PATH: '.github/scripts/sub_issue_body_template.md'
+          STANDARD_TASKS_PATH: '.github/scripts/standard_tasks.json'
+        with:
+          script: |
+            const script = require('./.github/scripts/setup_cascade.js');
+            await script({github, context});

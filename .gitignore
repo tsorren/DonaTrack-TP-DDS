@@ -4,6 +4,7 @@ target/
 !**/src/test/**/target/
 .kotlin
 .idea/
+.github/tests/
 
 ### Logs y Temporales ###
 *.log
