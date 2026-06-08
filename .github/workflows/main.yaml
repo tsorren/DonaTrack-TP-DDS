@@ -12,9 +12,6 @@ name: DonaTrack CI Pipeline
 
 on:
   pull_request:
-    branches:
-      - main
-      - 'ENTREGA_*'
 
 # ── Concurrencia ─────────────────────────────────────────────────────────────
 # Cancela ejecuciones previas del mismo PR para ahorrar minutos de CI
@@ -272,7 +269,8 @@ jobs:
     if: >-
       always() &&
       needs.build-and-test.result == 'success' &&
-      needs.lint-and-format.result == 'success'
+      needs.lint-and-format.result == 'success' &&
+      (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_'))
     runs-on: ubuntu-latest
     permissions:
       contents: read
