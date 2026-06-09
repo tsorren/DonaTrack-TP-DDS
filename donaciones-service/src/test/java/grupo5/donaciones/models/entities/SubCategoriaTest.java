@@ -1,8 +1,8 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.*;
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
@@ -63,7 +63,7 @@ class SubCategoriaTest {
   @Test
   void agregarDonacion_noDeberiaPermitirNulos() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> subcategoria.agregarDonacion(null),
         "Debería lanzar error al agregar una donación nula");
   }

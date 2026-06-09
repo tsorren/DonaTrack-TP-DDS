@@ -1,5 +1,8 @@
 package grupo5.donaciones.models.entities.donaciones.segmentaciones;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,10 +19,10 @@ public class DonacionIndependiente {
   // Constructor para inicialización lazy (sin DonacionSegmentada)
   public DonacionIndependiente(SubCategoria subCategoria, List<ItemDonacionIndependiente> items) {
     if (subCategoria == null) {
-      throw new IllegalArgumentException("La subcategoría no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_SIN_SUBCATEGORIA);
     }
     if (items == null) {
-      throw new IllegalArgumentException("La lista de items no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ITEMS_NULOS);
     }
 
     subCategoria.agregarDonacion(this);
@@ -35,7 +38,7 @@ public class DonacionIndependiente {
       SubCategoria subCategoria,
       List<ItemDonacionIndependiente> items) {
     if (donacionSegmentada == null) {
-      throw new IllegalArgumentException("La donación segmentada no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_SEGMENTADA_NULA);
     }
     donacionSegmentada.agregarDonacionIndependiente(this);
     subCategoria.agregarDonacion(this);
@@ -46,7 +49,7 @@ public class DonacionIndependiente {
 
   public void agregarItem(ItemDonacionIndependiente item) {
     if (item == null) {
-      throw new IllegalArgumentException("El ítem a agregar no puede ser nulo.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_AGREGAR_ITEM_NULO);
     }
     item.setDonacionIndependiente(this);
     this.items.add(item);
@@ -55,8 +58,7 @@ public class DonacionIndependiente {
   // Lanzar excepcion si el item no esta en la lista
   public void quitarItem(ItemDonacionIndependiente bien) {
     if (!this.items.contains(bien)) {
-      throw new IllegalArgumentException(
-          "El ítem que intenta quitar no pertenece a esta donación.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_QUITAR_ITEM_INEXISTENTE);
     }
     this.items.remove(bien);
   }
@@ -67,7 +69,7 @@ public class DonacionIndependiente {
 
   public DonacionIndependiente fragmentarse(Integer cantidadNecesitada) {
     if (this.getCantidad() <= cantidadNecesitada) {
-      throw new RuntimeException();
+      throw new BusinessStateException(ErrorCatalog.FRAGMENTACION_CANTIDAD_INSUFICIENTE);
     }
 
     Integer cantidadPorExtraer = cantidadNecesitada;

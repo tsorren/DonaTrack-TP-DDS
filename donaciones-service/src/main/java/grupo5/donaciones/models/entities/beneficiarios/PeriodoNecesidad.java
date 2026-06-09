@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +22,7 @@ public class PeriodoNecesidad {
   }
 
   public void agregarDonacion(DonacionAsignada donacion) {
-    if (donacion == null) throw new IllegalArgumentException("La donación no puede ser nula.");
+    if (donacion == null) throw new ValidationException(ErrorCatalog.PERIODO_DONACION_NULA);
     this.donacionesAsignadas.add(donacion);
   }
 

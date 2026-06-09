@@ -3,6 +3,7 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.*;
 import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import java.time.LocalDate;
@@ -38,7 +39,7 @@ class ItemDonacionTest {
   @Test
   void crearItemDonacion_conBienNulo_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new ItemDonacion(null, 5),
         "Debería lanzar error cuando el bien es nulo");
   }
@@ -46,7 +47,7 @@ class ItemDonacionTest {
   @Test
   void crearItemDonacion_conCantidadNula_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new ItemDonacion(bien, null),
         "Debería lanzar error cuando la cantidad es nula");
   }
@@ -54,7 +55,7 @@ class ItemDonacionTest {
   @Test
   void crearItemDonacion_conCantidadCero_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new ItemDonacion(bien, 0),
         "Debería lanzar error cuando la cantidad es cero");
   }
@@ -62,7 +63,7 @@ class ItemDonacionTest {
   @Test
   void crearItemDonacion_conCantidadNegativa_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new ItemDonacion(bien, -5),
         "Debería lanzar error cuando la cantidad es negativa");
   }

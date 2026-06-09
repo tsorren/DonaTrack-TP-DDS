@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -22,12 +24,11 @@ public class DonacionAsignada {
 
   private void validarDonacionAsignada() {
     if (this.donacionIndependiente == null) {
-      throw new IllegalArgumentException(
-          "La donación asignada debe tener una donación independiente.");
+      throw new ValidationException(ErrorCatalog.DONACION_ASIGNADA_SIN_DONACION_INDEPENDIENTE);
     }
 
     if (this.fechaAsignacion != null && this.fechaAsignacion.isAfter(LocalDateTime.now())) {
-      throw new IllegalArgumentException("La fecha de asignación no puede ser futura.");
+      throw new ValidationException(ErrorCatalog.FECHA_ASIGNACION_FUTURA);
     }
   }
 

@@ -1,5 +1,8 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
 import java.time.LocalDate;
 import java.time.Period;
@@ -22,9 +25,9 @@ public class NecesidadRecurrente extends Necesidad {
       Period periodo,
       LocalDate fechaInicio) {
     super(subcategoria, cantidadNecesitada, descripcion);
-    if (periodo == null) throw new IllegalArgumentException("Debe tener un período definido.");
-    if (fechaInicio == null)
-      throw new IllegalArgumentException("La fecha de inicio no puede ser nula.");
+    if (periodo == null)
+      throw new ValidationException(ErrorCatalog.NECESIDAD_RECURRENTE_SIN_PERIODO);
+    if (fechaInicio == null) throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
 
     this.periodo = periodo;
     this.activa = true;
@@ -36,13 +39,13 @@ public class NecesidadRecurrente extends Necesidad {
 
   private void validarNecesidadRecurrente(LocalDate fechaInicio) {
     if (periodo == null) {
-      throw new IllegalArgumentException("La necesidad recurrente debe tener un período definido.");
+      throw new ValidationException(ErrorCatalog.NECESIDAD_RECURRENTE_SIN_PERIODO);
     }
     if (fechaInicio == null) {
-      throw new IllegalArgumentException("La fecha de inicio del período no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
     }
     if (fechaInicio.isAfter(LocalDate.now())) {
-      throw new IllegalArgumentException("La fecha de inicio del período no puede ser futura.");
+      throw new ValidationException(ErrorCatalog.FECHA_INICIO_FUTURA);
     }
   }
 
@@ -54,7 +57,7 @@ public class NecesidadRecurrente extends Necesidad {
   public void asignarDonacion(DonacionAsignada donacionAsignada) {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     if (actual == null) {
-      throw new IllegalStateException("No existe un período activo.");
+      throw new BusinessStateException(ErrorCatalog.SIN_PERIODO_ACTIVO);
     }
     actual.agregarDonacion(donacionAsignada);
   }

@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donaciones.segmentaciones;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import java.util.ArrayList;
@@ -16,8 +18,7 @@ public class DonacionSegmentada {
   public DonacionSegmentada(
       Donacion donacion, List<DonacionIndependiente> donacionesIndependientes) {
     if (donacion == null) {
-      throw new IllegalArgumentException(
-          "La donación segmentada debe tener una donación asociada.");
+      throw new ValidationException(ErrorCatalog.DONACION_SEGMENTADA_SIN_DONACION);
     }
 
     this.donacionesIndependientes = new ArrayList<>();
@@ -29,11 +30,12 @@ public class DonacionSegmentada {
 
   public void agregarDonacionIndependiente(DonacionIndependiente donacionIndependiente) {
     if (donacionIndependiente == null) {
-      throw new IllegalArgumentException("La donación independiente no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.DONACION_SEGMENTADA_AGREGAR_INDEPENDIENTE_NULA);
     }
 
     if (this.donacionesIndependientes.contains(donacionIndependiente)) {
-      throw new IllegalArgumentException("La donación independiente ya fue agregada.");
+      throw new ValidationException(
+          ErrorCatalog.DONACION_SEGMENTADA_AGREGAR_INDEPENDIENTE_REPETIDA);
     }
 
     donacionIndependiente.setDonacionSegmentada(this);
@@ -44,7 +46,8 @@ public class DonacionSegmentada {
   // Lanzar excepcion si la donacion independiente no esta en la lista
   public void quitarDonacionIndependiente(DonacionIndependiente donacionIndependiente) {
     if (!this.donacionesIndependientes.contains(donacionIndependiente)) {
-      throw new IllegalArgumentException("La donación independiente no pertenece a la donación.");
+      throw new ValidationException(
+          ErrorCatalog.DONACION_SEGMENTADA_QUITAR_INDEPENDIENTE_INEXISTENTE);
     }
 
     this.donacionesIndependientes.remove(donacionIndependiente);

@@ -1,9 +1,10 @@
 package grupo5.donaciones.infraestructure;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.InfrastructureException;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.ports.CargadorDonantes;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,9 +48,9 @@ public class LectorCSV implements CargadorDonantes {
       }
       return personasCargadas;
     } catch (IOException e) {
-      throw new UncheckedIOException("Error al leer el archivo CSV", e);
+      throw new InfrastructureException(ErrorCatalog.CSV_READ_ERROR, e);
     } catch (Exception e) {
-      throw new RuntimeException("Error al procesar el CSV", e);
+      throw new InfrastructureException(ErrorCatalog.CSV_PROCESS_ERROR, e);
     }
   }
 }

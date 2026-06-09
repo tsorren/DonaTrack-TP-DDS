@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.ArrayList;
@@ -15,8 +17,7 @@ public class EntidadBeneficiaria implements Anonimizable {
 
   public EntidadBeneficiaria(Juridica juridica) {
     if (juridica == null) {
-      throw new IllegalArgumentException(
-          "La entidad beneficiaria debe estar asociada a una persona jurídica.");
+      throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
     }
     this.juridica = juridica;
     this.necesidades = new ArrayList<>();
@@ -24,11 +25,11 @@ public class EntidadBeneficiaria implements Anonimizable {
 
   public void agregarNecesidad(Necesidad necesidad) {
     if (necesidad == null) {
-      throw new IllegalArgumentException("La necesidad a agregar no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.AGREGAR_NECESIDAD_NULA);
     }
 
     if (this.necesidades.contains(necesidad)) {
-      throw new IllegalArgumentException("La necesidad ya se encuentra registrada.");
+      throw new ValidationException(ErrorCatalog.NECESIDAD_YA_REGISTRADA);
     }
 
     this.necesidades.add(necesidad);
@@ -37,7 +38,7 @@ public class EntidadBeneficiaria implements Anonimizable {
   public void quitarNecesidad(Necesidad necesidad) {
 
     if (!this.necesidades.contains(necesidad)) {
-      throw new IllegalArgumentException("La necesidad no pertenece a la entidad beneficiaria.");
+      throw new ValidationException(ErrorCatalog.NECESIDAD_NO_PERTENECE_A_ENTIDAD);
     }
 
     this.necesidades.remove(necesidad);

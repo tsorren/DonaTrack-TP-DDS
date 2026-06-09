@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.bienes;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,17 +26,17 @@ public class SubCategoria {
   private static void validarSubCategoria(Categoria categoria, String nombre) {
 
     if (categoria == null) {
-      throw new IllegalArgumentException("La subcategoría debe pertenecer a una categoría.");
+      throw new ValidationException(ErrorCatalog.SUBCATEGORIA_SIN_CATEGORIA);
     }
 
     if (nombre == null || nombre.trim().isEmpty()) {
-      throw new IllegalArgumentException("La subcategoría debe tener un nombre.");
+      throw new ValidationException(ErrorCatalog.SUBCATEGORIA_SIN_NOMBRE);
     }
   }
 
   public void agregarDonacion(DonacionIndependiente donacion) {
     if (donacion == null) {
-      throw new IllegalArgumentException("No se puede agregar una donacion nula.");
+      throw new ValidationException(ErrorCatalog.SUBCATEGORIA_DONACION_NULA);
     }
 
     donacion.setSubCategoria(this);
