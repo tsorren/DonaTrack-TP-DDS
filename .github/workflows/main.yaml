@@ -1,21 +1,6 @@
 # ============================================================================
 # DonaTrack — Pipeline de Integración Continua
 # ============================================================================
-# Arquitectura de Jobs:
-#
-#   validate-git-flow
-#           │
-#     detect-changes
-#       ┌───┼───────────────┐
-#  lint-and-format  build-and-test  generate-diagrams
-#       │           │               │
-#       └───┬───────┘               │
-#     sonar-analysis                │
-#           │                 design-audit (condicional)
-#     docker-build                  │
-#           │                       │
-#       quality-gate ◄──────────────┘
-#
 # Principios aplicados:
 #   • Fail-Fast: validaciones rápidas primero, en paralelo
 #   • Build Independiente: cada microservicio se compila aisladamente
@@ -27,15 +12,6 @@ name: DonaTrack CI Pipeline
 
 on:
   pull_request:
-    branches:
-      - main
-      - 'ENTREGA_*'
-
-# ── Permisos mínimos necesarios ──────────────────────────────────────────────
-permissions:
-  contents: read
-  pull-requests: write    # Para publicar comentarios en el PR
-  checks: write           # Para anotaciones de quality gate
 
 # ── Concurrencia ─────────────────────────────────────────────────────────────
 # Cancela ejecuciones previas del mismo PR para ahorrar minutos de CI
@@ -56,12 +32,14 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   validate-git-flow:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Validar nomenclatura de ramas
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+          SRC_BRANCH: ${{ github.head_ref }}
         run: |
-          BASE_BRANCH="${{ github.base_ref }}"
-          SRC_BRANCH="${{ github.head_ref }}"
-
           echo "📌 PR: $SRC_BRANCH → $BASE_BRANCH"
 
           # Caso 1: Merge a main — solo desde ramas ENTREGA_*
@@ -96,6 +74,9 @@ jobs:
   detect-changes:
     needs: validate-git-flow
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       common-lib: ${{ steps.filter.outputs.common-lib }}
       donaciones-service: ${{ steps.filter.outputs.donaciones-service }}
@@ -203,6 +184,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.any-service == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -232,6 +215,8 @@ jobs:
       needs.detect-changes.outputs.any-service == 'true' &&
       toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
@@ -284,8 +269,12 @@ jobs:
     if: >-
       always() &&
       needs.build-and-test.result == 'success' &&
-      needs.lint-and-format.result == 'success'
+      needs.lint-and-format.result == 'success' &&
+      (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_'))
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -327,6 +316,8 @@ jobs:
       needs.build-and-test.result == 'success' &&
       toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-changes.outputs.docker-matrix) }}
@@ -356,6 +347,8 @@ jobs:
     needs: detect-changes
     if: needs.detect-changes.outputs.any-service == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -410,93 +403,64 @@ jobs:
           retention-days: 30
 
   # ──────────────────────────────────────────────────────────────────────────
-  # Job 8: Auditoría de Diseño (Condicional)
+  # Job 8: Semantic UML Diff (Architectural Review)
   # ──────────────────────────────────────────────────────────────────────────
-  # Usa IA para auditar paridad entre diseño manual e implementación.
-  # Solo se ejecuta si la variable ENABLE_DESIGN_AUDIT es 'true'.
-  # Depende del job de generación de diagramas.
+  # Compara los diagramas de arquitectura de la rama base contra la rama PR.
+  # Publica un diff visual en GitHub y Discord.
   # ──────────────────────────────────────────────────────────────────────────
-  design-audit:
-    needs: generate-diagrams
-    if: vars.ENABLE_DESIGN_AUDIT == 'true'
+  semantic-uml-diff:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.any-service == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
         with:
-          python-version: '3.12'
-          cache: 'pip'
+          path: pr_repo
 
-      - name: Instalar dependencias de Python
+      - name: Configurar JDK 21 (PR)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Generar PUML (PR)
         run: |
-          pip install -q -U google-generativeai
+          cd pr_repo
+          mvn -B clean test -pl donaciones-service,notificaciones-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false
+          mkdir -p ../pr_uml_dir
+          cp donaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/donaciones-service.puml || true
+          cp notificaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/notificaciones-service.puml || true
 
-      - name: Descargar diagramas renderizados
-        uses: actions/download-artifact@v4
+      - name: Checkout Base branch
+        uses: actions/checkout@v4
         with:
-          name: diagramas-modelo-tecnico
-          path: diagrams-output/
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: base_repo
 
-      - name: Auditar paridad diseño vs. implementación (IA)
+      - name: Generar PUML (Base)
+        run: |
+          cd base_repo
+          mvn -B clean test -pl donaciones-service,notificaciones-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false || true
+          mkdir -p ../base_uml_dir
+          cp donaciones-service/target/modelo_tecnico.puml ../base_uml_dir/donaciones-service.puml || true
+          cp notificaciones-service/target/modelo_tecnico.puml ../base_uml_dir/notificaciones-service.puml || true
+
+      - name: Semantic UML Diff
+        uses: tsorren/SemanticUMLDiff@main
+        with:
+          base_uml_dir: ./base_uml_dir
+          pr_uml_dir: ./pr_uml_dir
+          github_token: ${{ secrets.GITHUB_TOKEN }}
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python3 .github/scripts/compare_diagrams.py
-
-      - name: Publicar resultado de auditoría en PR
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const resultFile = 'audit-results.json';
-            let body = '## 📐 Auditoría de Diseño\n\n';
-
-            if (fs.existsSync(resultFile)) {
-              const results = JSON.parse(fs.readFileSync(resultFile, 'utf8'));
-              for (const [svc, result] of Object.entries(results)) {
-                const icon = result.status === 'PASS' ? '✅' : '❌';
-                body += `### ${icon} ${svc}\n`;
-                body += `**Estado:** ${result.status}\n\n`;
-                if (result.errors && result.errors.length > 0) {
-                  body += `**Discrepancias:**\n`;
-                  result.errors.forEach(e => { body += `- ${e}\n`; });
-                }
-                body += '\n';
-              }
-            } else {
-              body += '> ℹ️ No se generó archivo de resultados. Verificar logs del paso de auditoría.\n';
-            }
-
-            body += '\n---\n*Generado automáticamente por el pipeline de CI.*';
-
-            // Buscar comentario existente para actualizar en vez de duplicar
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-
-            const botComment = comments.find(c =>
-              c.body.includes('Auditoría de Diseño') && c.user.type === 'Bot'
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: body,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: body,
-              });
-             }
+          PUBLISH_GITHUB: 'true'
+          PUBLISH_DISCORD: 'true'
+          IMAGE_HOSTING_PROVIDER: 'discord'
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_SEMANTIC_DIFF_WEBHOOK_URL }}
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 9: Quality Gate (Consolidador Final)
@@ -504,14 +468,14 @@ jobs:
   # Job centinela que depende de TODOS los demás. Usar como "Required
   # Status Check" en las Branch Protection Rules de GitHub para tener
   # un único check verde/rojo que represente todo el pipeline.
-  #
-  # Este patrón es necesario porque con matrix strategy los nombres
-  # de los checks son dinámicos y no se pueden usar como required checks.
   # ──────────────────────────────────────────────────────────────────────────
   quality-gate:
-    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, design-audit]
+    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff]
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Evaluar resultado del pipeline
         run: |
@@ -546,7 +510,7 @@ jobs:
           check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"       "true"
           check_job "docker-build"        "${{ needs.docker-build.result }}"         "true"
           check_job "generate-diagrams"   "${{ needs.generate-diagrams.result }}"    "true"
-          check_job "design-audit"        "${{ needs.design-audit.result }}"         "false"
+          check_job "semantic-uml-diff"   "${{ needs.semantic-uml-diff.result }}"    "false"
 
           echo "══════════════════════════════════════════"
 
