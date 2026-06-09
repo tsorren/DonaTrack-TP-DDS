@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages (Generator & Preview)
+name: Deploy GitHub Pages (Hub, Documentador, Preview, Entregas)
 
 on:
   push:
@@ -27,22 +27,48 @@ jobs:
 
       - name: Prepare Deployment Folders
         run: |
-          mkdir -p staging/adr-generator
+          # Crear estructura base
+          mkdir -p staging/documentador
           mkdir -p staging/adr-preview
+          mkdir -p staging/docs/entregas
           
-          # Copiamos el generador a su nueva subcarpeta
-          cp -r adr-generator/* staging/adr-generator/
-          
-          # Creamos .nojekyll en la raíz para evitar errores de renderizado
+          # Archivo para evitar que GitHub Pages ignore carpetas que empiezan con _ (Jekyll)
           touch staging/.nojekyll
+          
+          # Copiar Documentador
+          if [ -d "docs/documentador" ]; then
+            cp -a docs/documentador/. staging/documentador/
+          fi
+          
+          # Copiar Hub a la raíz de staging
+          if [ -d "docs/hub" ]; then
+            cp -a docs/hub/. staging/
+          fi
+          
+          # Copiar archivos de entregas para que el visor de PDFs los consuma
+          if [ -d "docs/entregas" ]; then
+            cp -a docs/entregas/. staging/docs/entregas/
+          fi
+          
+          # Generar el árbol de directorio JSON de PDFs usando el script dedicado
+          if [ -f ".github/scripts/generate-pdf-tree.js" ]; then
+            node .github/scripts/generate-pdf-tree.js
+          else
+            echo "Script generate-pdf-tree.js no encontrado."
+          fi
 
       - name: Build Log4brains (Preview)
         run: |
-          npm install -g log4brains
-          # Construimos usando el nuevo basePath adr-preview
-          log4brains build --basePath /${GITHUB_REPOSITORY#*/}/adr-preview
-          # Movemos el build a la carpeta adr-preview dentro de staging
-          mv .log4brains/out/* staging/adr-preview/
+          # Construimos usando npx para usar siempre la última versión sin ensuciar el global
+          npx --yes log4brains build --basePath /${GITHUB_REPOSITORY#*/}/adr-preview
+          
+          # Copiamos el build (incluyendo archivos ocultos) a la carpeta adr-preview
+          if [ -d ".log4brains/out" ]; then
+            cp -a .log4brains/out/. staging/adr-preview/
+          else
+            echo "Error: el build de Log4brains falló, no existe .log4brains/out"
+            exit 1
+          fi
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4

@@ -4,12 +4,14 @@ target/
 !**/src/test/**/target/
 .kotlin
 .idea/
+.github/tests/
 
 ### Logs y Temporales ###
 *.log
 *.tmp
 /logs/
 **/logs/
+/staging/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

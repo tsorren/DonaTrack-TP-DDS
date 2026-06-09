@@ -1,5 +1,5 @@
-name: Formulario de nuevo requerimiento
-description: Plantilla para la creación de nuevos requerimientos en DonaTrack
+name: Nuevo requerimiento con Sub-Issues
+description: Plantilla para la creación de requerimientos con desglose automático de tareas en cascada
 title: "[REQ] - "
 labels: ["requerimiento"]
 assignees: [""]
@@ -51,22 +51,6 @@ body:
       placeholder: "Detallar el comportamiento esperado y reglas de negocio involucradas"
     validations:
       required: true
-      
-  - type: checkboxes
-    id: atributos_calidad
-    attributes:
-      label: Atributos de calidad a priorizar
-      description: Seleccionar los atributos de calidad que guían el diseño de este requerimiento.
-      options:
-        - label: Testeabilidad
-        - label: Disponibilidad
-        - label: Performance
-        - label: Escalabilidad
-        - label: Seguridad
-        - label: Flexibilidad
-        - label: Mantenibilidad
-        - label: Reusabilidad
-        - label: Usabilidad
 
   - type: checkboxes
     id: componentes
@@ -84,16 +68,36 @@ body:
   - type: textarea
     id: tasklist
     attributes:
-      label: Lista de tareas
-      description: Seguir este flujo para asegurar la calidad del diseño.
+      label: Sub-Issues Planificadas
+      description: Marcar o desmarcar las tareas de calidad y diseño para el desglose automático.
       value: |
-        - [ ] Analizar el problema y definir claramente el alcance de la implementación
-        - [ ] Diseñar y modelar las alternativas (Diagrama de Clases/Secuencia/Etc)
-        - [ ] Evaluar trade-offs y elegir la opción más apta
-        - [ ] Generar ADR en Log4brains justificando la elección
-        - [ ] Implementar en el sistema
-        - [ ] Validar funcionamiento de la implementación
-        - [ ] Verificar consistencia de diagramas con implementación
+        - [ ] Estructura: Creación de la estructura de la implementación (paquetes, entidades, interfaces)
+        - [ ] Dominio: Implementación de la lógica de la capa de dominio
+        - [ ] Tests Unidad: Desarrollo de pruebas unitarias correspondientes
+        - [ ] Persistencia: Implementación de gestores, servicios y repositorios de datos
+        - [ ] Tests Orquestación: Desarrollo de pruebas de integración y orquestación de servicios
+        - [ ] Controladores/Endpoints/Planificadores: Implementación de controladores, endpoints y planificadores
+        - [ ] Tests UI/Endpoints: Desarrollo de pruebas del controlador, endpoint y planificador
+        - [ ] Calidad y Diseño: Documentación de decisiones (ADR) y verificación de consistencia con diagramas UML
+    validations:
+      required: true
+
+  - type: textarea
+    id: asignaciones
+    attributes:
+      label: Asignaciones Planificadas
+      description: "Especificar los nombres de usuario de GitHub para cada sub-issue (ej. Task 1: @usuario)."
+      value: |
+        - Task 1: @
+        - Task 2: @
+        - Task 3: @
+        - Task 4: @
+        - Task 5: @
+        - Task 6: @
+        - Task 7: @
+        - Task 8: @
+    validations:
+      required: true
 
   - type: textarea
     id: adr_refs
