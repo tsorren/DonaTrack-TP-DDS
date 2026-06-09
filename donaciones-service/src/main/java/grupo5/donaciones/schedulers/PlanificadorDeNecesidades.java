@@ -1,4 +1,4 @@
-package grupo5.donaciones.models.entities.beneficiarios;
+package grupo5.donaciones.schedulers;
 
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.NecesidadRecurrenteRepository;
