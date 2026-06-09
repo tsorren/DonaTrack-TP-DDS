@@ -1,6 +1,7 @@
-package grupo5.notificaciones.models.entities.medioDeContacto;
+package grupo5.notificaciones.models.entities.personas;
 
-import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
+import grupo5.notificaciones.models.ports.Anonimizable;
+import grupo5.notificaciones.models.ports.NotificacionSender;
 import lombok.Getter;
 import lombok.Setter;
 

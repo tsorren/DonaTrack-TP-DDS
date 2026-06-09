@@ -1,4 +1,4 @@
-package grupo5.notificaciones.models.entities.privacidad;
+package grupo5.notificaciones.models.ports;
 
 public interface Anonimizable {
   Integer VALOR_NUMERICO = 0;

@@ -1,10 +1,8 @@
-package grupo5.notificaciones.models.entities.persona;
+package grupo5.notificaciones.models.entities.personas;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.notificaciones.models.entities.medioDeContacto.Correo;
-import grupo5.notificaciones.models.entities.medioDeContacto.Telefono;
-import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
+import grupo5.notificaciones.models.ports.Anonimizable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
