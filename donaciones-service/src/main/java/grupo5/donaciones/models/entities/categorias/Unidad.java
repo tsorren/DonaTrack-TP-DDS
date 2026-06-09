@@ -1,4 +1,4 @@
-package grupo5.donaciones.models.entities.bienes;
+package grupo5.donaciones.models.entities.categorias;
 
 public enum Unidad {
   UNIDADES,

@@ -1,8 +1,10 @@
-package grupo5.donaciones.models.entities.beneficiarios;
+package grupo5.donaciones.models.entities.necesidades;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,7 +12,7 @@ import lombok.Setter;
 @Setter
 public class PeriodoNecesidad {
   private LocalDate fechaFin;
-  private List<DonacionAsignada> donacionesAsignadas;
+  private List<DonacionIndependiente> donacionesAsignadas;
   private Integer cantidadObjetivo;
 
   public PeriodoNecesidad(LocalDate fechaFin, Integer cantidadObjetivo) {
@@ -19,17 +21,17 @@ public class PeriodoNecesidad {
     this.donacionesAsignadas = new ArrayList<>();
   }
 
-  public void agregarDonacion(DonacionAsignada donacion) {
+  public void agregarDonacion(DonacionIndependiente donacion) {
     if (donacion == null) throw new IllegalArgumentException("La donación no puede ser nula.");
     this.donacionesAsignadas.add(donacion);
   }
 
-  public void quitarDonacion(DonacionAsignada donacion) {
+  public void quitarDonacion(DonacionIndependiente donacion) {
     this.donacionesAsignadas.remove(donacion);
   }
 
   public Integer cantidadAcumulada() {
-    return this.donacionesAsignadas.stream().mapToInt(DonacionAsignada::getCantidad).sum();
+    return this.donacionesAsignadas.stream().mapToInt(DonacionIndependiente::getCantidad).sum();
   }
 
   public boolean estaSatisfecha() {

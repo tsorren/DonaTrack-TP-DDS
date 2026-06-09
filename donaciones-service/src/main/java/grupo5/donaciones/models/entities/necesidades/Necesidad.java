@@ -1,7 +1,9 @@
-package grupo5.donaciones.models.entities.beneficiarios;
+package grupo5.donaciones.models.entities.necesidades;
 
-import grupo5.donaciones.models.entities.bienes.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import java.time.LocalDate;
+
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -37,9 +39,9 @@ public abstract class Necesidad {
     }
   }
 
-  public abstract void asignarDonacion(DonacionAsignada donacionAsignada);
+  public abstract void asignarDonacion(DonacionIndependiente donacionAsignada);
 
-  public abstract void quitarDonacion(DonacionAsignada donacionAsignada);
+  public abstract void quitarDonacion(DonacionIndependiente donacionAsignada);
 
   public abstract boolean estaSatisfecha();
 

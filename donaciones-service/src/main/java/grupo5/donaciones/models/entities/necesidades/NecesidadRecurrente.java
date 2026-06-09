@@ -1,10 +1,12 @@
-package grupo5.donaciones.models.entities.beneficiarios;
+package grupo5.donaciones.models.entities.necesidades;
 
-import grupo5.donaciones.models.entities.bienes.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -51,7 +53,7 @@ public class NecesidadRecurrente extends Necesidad {
     return this.periodos.get(this.periodos.size() - 1);
   }
 
-  public void asignarDonacion(DonacionAsignada donacionAsignada) {
+  public void asignarDonacion(DonacionIndependiente donacionAsignada) {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     if (actual == null) {
       throw new IllegalStateException("No existe un período activo.");
@@ -60,7 +62,7 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   @Override
-  public void quitarDonacion(DonacionAsignada donacion) {
+  public void quitarDonacion(DonacionIndependiente donacion) {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     if (actual != null) {
       actual.quitarDonacion(donacion);

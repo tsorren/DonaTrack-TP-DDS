@@ -3,9 +3,13 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +33,7 @@ class SubCategoriaTest {
             "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
   }
 
+  /* TODO: Pasar a capa service
   @Test
   void calcularStock_SumaCorrectamenteLosItemsDeLasDonaciones() {
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 5);
@@ -59,12 +64,5 @@ class SubCategoriaTest {
   void calcularStock_cuandoNoHayDonaciones_deberiaRetornarCero() {
     assertEquals(0, subcategoria.calcularStock(), "El stock debe ser 0 si no hay donaciones");
   }
-
-  @Test
-  void agregarDonacion_noDeberiaPermitirNulos() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> subcategoria.agregarDonacion(null),
-        "Debería lanzar error al agregar una donación nula");
-  }
+  */
 }

@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import grupo5.donaciones.models.entities.personas.direccion.Direccion;
-import grupo5.donaciones.models.entities.personas.direccion.Localidad;
-import grupo5.donaciones.models.entities.personas.direccion.Pais;
-import grupo5.donaciones.models.entities.personas.direccion.Provincia;
+import grupo5.donaciones.models.entities.personas.Direccion;
+import grupo5.donaciones.models.entities.personas.Localidad;
+import grupo5.donaciones.models.entities.personas.Pais;
+import grupo5.donaciones.models.entities.personas.Provincia;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

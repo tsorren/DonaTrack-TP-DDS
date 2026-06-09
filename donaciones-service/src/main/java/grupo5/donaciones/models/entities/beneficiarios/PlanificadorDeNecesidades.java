@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
+import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.NecesidadRecurrenteRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;

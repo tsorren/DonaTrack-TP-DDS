@@ -1,6 +1,5 @@
 package grupo5.donaciones.models.entities.personas;
 
-import grupo5.donaciones.models.entities.personas.direccion.Direccion;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import lombok.Getter;
 import lombok.Setter;

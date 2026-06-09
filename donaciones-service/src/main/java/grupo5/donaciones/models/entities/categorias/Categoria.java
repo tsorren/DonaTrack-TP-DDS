@@ -1,4 +1,4 @@
-package grupo5.donaciones.models.entities.bienes;
+package grupo5.donaciones.models.entities.categorias;
 
 import lombok.Getter;
 import lombok.Setter;

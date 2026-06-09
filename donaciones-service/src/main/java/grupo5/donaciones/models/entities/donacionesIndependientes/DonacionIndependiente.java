@@ -1,44 +1,31 @@
-package grupo5.donaciones.models.entities.donaciones.segmentaciones;
+package grupo5.donaciones.models.entities.donacionesIndependientes;
 
-import grupo5.donaciones.models.entities.bienes.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import java.util.ArrayList;
 import java.util.List;
+
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class DonacionIndependiente {
-  private DonacionSegmentada donacionSegmentada;
+  private Donacion donacionOriginal;
   private SubCategoria subCategoria;
   private List<ItemDonacionIndependiente> items;
 
-  // Constructor para inicialización lazy (sin DonacionSegmentada)
-  public DonacionIndependiente(SubCategoria subCategoria, List<ItemDonacionIndependiente> items) {
-    if (subCategoria == null) {
-      throw new IllegalArgumentException("La subcategoría no puede ser nula.");
-    }
-    if (items == null) {
-      throw new IllegalArgumentException("La lista de items no puede ser nula.");
-    }
-
-    subCategoria.agregarDonacion(this);
-
-    this.items = new ArrayList<>();
-    items.forEach(this::agregarItem);
-  }
-
-  // Constructor completo (con DonacionSegmentada)
-
   public DonacionIndependiente(
-      DonacionSegmentada donacionSegmentada,
+      Donacion donacionOriginal,
       SubCategoria subCategoria,
       List<ItemDonacionIndependiente> items) {
-    if (donacionSegmentada == null) {
-      throw new IllegalArgumentException("La donación segmentada no puede ser nula.");
+    if (donacionOriginal == null) {
+      throw new IllegalArgumentException("La donación original no puede ser nula.");
     }
-    donacionSegmentada.agregarDonacionIndependiente(this);
-    subCategoria.agregarDonacion(this);
+
+    this.donacionOriginal = donacionOriginal;
+
+    this.subCategoria = subCategoria;
 
     this.items = new ArrayList<>();
     items.forEach(this::agregarItem);
@@ -83,15 +70,7 @@ public class DonacionIndependiente {
       itemsExtraidos.add(itemExtraido);
       cantidadPorExtraer -= itemExtraido.getCantidad();
     }
-    // Usar constructor lazy para la nueva donación
-    DonacionIndependiente donacionIndependienteExtraida =
-        new DonacionIndependiente(this.subCategoria, itemsExtraidos);
 
-    // Si esta donación pertenece a una DonacionSegmentada, vincular la nueva también
-    if (this.donacionSegmentada != null) {
-      this.donacionSegmentada.agregarDonacionIndependiente(donacionIndependienteExtraida);
-    }
-
-    return donacionIndependienteExtraida;
+      return new DonacionIndependiente(this.donacionOriginal, this.subCategoria, itemsExtraidos);
   }
 }

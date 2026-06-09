@@ -3,27 +3,37 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import grupo5.donaciones.models.entities.beneficiarios.DonacionAsignada;
-import grupo5.donaciones.models.entities.beneficiarios.NecesidadExtraordinaria;
-import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.Persona;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class NecesidadExtraordinariaTests {
   private NecesidadExtraordinaria necesidad;
-  private DonacionAsignada donacionAsignada1;
-  private DonacionAsignada donacionAsignada2;
-  private DonacionAsignada donacionAsignada3;
+  private DonacionIndependiente donacionAsignada1;
+  private DonacionIndependiente donacionAsignada2;
+  private DonacionIndependiente donacionAsignada3;
 
   @BeforeEach
   void setUp() {
 
+    Donacion donacionOriginal = new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now()) {
+    }));
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
@@ -55,21 +65,18 @@ class NecesidadExtraordinariaTests {
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien1, 15);
     List<ItemDonacionIndependiente> items1 = new ArrayList<>();
     items1.add(item1);
-    DonacionIndependiente donacionIndependiente1 = new DonacionIndependiente(subcategoria, items1);
-    donacionAsignada1 = new DonacionAsignada(donacionIndependiente1, LocalDateTime.now());
+    donacionAsignada1 = new DonacionIndependiente(donacionOriginal, subcategoria, items1);
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien2, 15);
     List<ItemDonacionIndependiente> items2 = new ArrayList<>();
     items2.add(item2);
-    DonacionIndependiente donacionIndependiente2 = new DonacionIndependiente(subcategoria, items2);
-    donacionAsignada2 = new DonacionAsignada(donacionIndependiente2, LocalDateTime.now());
+    donacionAsignada2 = new DonacionIndependiente(donacionOriginal, subcategoria, items2);
 
     ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien3, 15);
     List<ItemDonacionIndependiente> items3 = new ArrayList<>();
     items3.add(item3);
-    DonacionIndependiente donacionIndependiente3 = new DonacionIndependiente(subcategoria, items3);
-    donacionAsignada3 = new DonacionAsignada(donacionIndependiente3, LocalDateTime.now());
-  }
+    donacionAsignada3 = new DonacionIndependiente(donacionOriginal, subcategoria, items3);
+     }
 
   @Test
   void estaSatisfecha_cuandoCantidadAcumuladaEsMenor_deberiaSerFalse() {

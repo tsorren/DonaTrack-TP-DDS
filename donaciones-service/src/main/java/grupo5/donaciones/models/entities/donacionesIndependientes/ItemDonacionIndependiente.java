@@ -1,4 +1,4 @@
-package grupo5.donaciones.models.entities.donaciones.segmentaciones;
+package grupo5.donaciones.models.entities.donacionesIndependientes;
 
 import grupo5.donaciones.models.entities.bienes.Bien;
 import lombok.Getter;
