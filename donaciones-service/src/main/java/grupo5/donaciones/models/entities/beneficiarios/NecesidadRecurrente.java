@@ -6,6 +6,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -44,7 +45,7 @@ public class NecesidadRecurrente extends Necesidad {
     if (fechaInicio == null) {
       throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
     }
-    if (fechaInicio.isAfter(LocalDate.now())) {
+    if (fechaInicio.isAfter(LocalDate.now(ZoneId.systemDefault()))) {
       throw new ValidationException(ErrorCatalog.FECHA_INICIO_FUTURA);
     }
   }
@@ -87,13 +88,13 @@ public class NecesidadRecurrente extends Necesidad {
     if (this.periodos.isEmpty()) return true;
 
     // crear un período nuevo si "hoy" es posterior a la fecha de vencimiento
-    return !obtenerPeriodoActual().estaEnPeriodo(LocalDate.now());
+    return !obtenerPeriodoActual().estaEnPeriodo(LocalDate.now(ZoneId.systemDefault()));
   }
 
   public void generarNuevoPeriodo() {
     LocalDate nuevaFechaFin =
         periodos.isEmpty()
-            ? LocalDate.now().plus(this.periodo)
+            ? LocalDate.now(ZoneId.systemDefault()).plus(this.periodo)
             : obtenerPeriodoActual().getFechaFin().plus(this.periodo);
 
     this.periodos.add(new PeriodoNecesidad(nuevaFechaFin, super.getCantidadNecesitada()));

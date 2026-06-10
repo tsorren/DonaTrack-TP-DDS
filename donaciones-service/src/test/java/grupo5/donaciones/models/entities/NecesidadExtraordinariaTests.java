@@ -10,12 +10,16 @@ import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndep
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class NecesidadExtraordinariaTests {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
+  private static final LocalDateTime TEST_DATETIME = LocalDateTime.of(2026, Month.JUNE, 9, 12, 0);
+
   private NecesidadExtraordinaria necesidad;
   private DonacionAsignada donacionAsignada1;
   private DonacionAsignada donacionAsignada2;
@@ -31,44 +35,29 @@ class NecesidadExtraordinariaTests {
     necesidad.setCantidadNecesitada(30);
 
     Bien bien1 =
-        new Bien(
-            "descripcion1",
-            "imagen.png",
-            LocalDate.now().plusMonths(2),
-            Estado.NUEVO,
-            subcategoria);
+        new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
     Bien bien2 =
-        new Bien(
-            "descripcion2",
-            "imagen.png",
-            LocalDate.now().plusMonths(2),
-            Estado.NUEVO,
-            subcategoria);
+        new Bien("descripcion2", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
     Bien bien3 =
-        new Bien(
-            "descripcion3",
-            "imagen.png",
-            LocalDate.now().plusMonths(2),
-            Estado.NUEVO,
-            subcategoria);
+        new Bien("descripcion3", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien1, 15);
     List<ItemDonacionIndependiente> items1 = new ArrayList<>();
     items1.add(item1);
     DonacionIndependiente donacionIndependiente1 = new DonacionIndependiente(subcategoria, items1);
-    donacionAsignada1 = new DonacionAsignada(donacionIndependiente1, LocalDateTime.now());
+    donacionAsignada1 = new DonacionAsignada(donacionIndependiente1, TEST_DATETIME);
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien2, 15);
     List<ItemDonacionIndependiente> items2 = new ArrayList<>();
     items2.add(item2);
     DonacionIndependiente donacionIndependiente2 = new DonacionIndependiente(subcategoria, items2);
-    donacionAsignada2 = new DonacionAsignada(donacionIndependiente2, LocalDateTime.now());
+    donacionAsignada2 = new DonacionAsignada(donacionIndependiente2, TEST_DATETIME);
 
     ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien3, 15);
     List<ItemDonacionIndependiente> items3 = new ArrayList<>();
     items3.add(item3);
     DonacionIndependiente donacionIndependiente3 = new DonacionIndependiente(subcategoria, items3);
-    donacionAsignada3 = new DonacionAsignada(donacionIndependiente3, LocalDateTime.now());
+    donacionAsignada3 = new DonacionAsignada(donacionIndependiente3, TEST_DATETIME);
   }
 
   @Test

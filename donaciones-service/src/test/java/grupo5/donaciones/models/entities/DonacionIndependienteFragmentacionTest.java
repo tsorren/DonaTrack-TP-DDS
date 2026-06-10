@@ -9,12 +9,14 @@ import grupo5.donaciones.models.entities.bienes.*;
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DonacionIndependienteFragmentacionTest {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private SubCategoria subcategoria;
   private Bien bien;
@@ -26,8 +28,7 @@ class DonacionIndependienteFragmentacionTest {
     subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
 
     bien =
-        new Bien(
-            "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 10);
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 15);

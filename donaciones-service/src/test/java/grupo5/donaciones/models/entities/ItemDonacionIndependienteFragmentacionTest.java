@@ -8,10 +8,12 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.*;
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ItemDonacionIndependienteFragmentacionTest {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private Bien bien;
   private ItemDonacionIndependiente itemDonacion;
@@ -22,8 +24,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     SubCategoria subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
 
     bien =
-        new Bien(
-            "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
 
     itemDonacion = new ItemDonacionIndependiente(bien, 20);
   }

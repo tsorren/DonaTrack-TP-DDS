@@ -4,6 +4,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,7 +32,7 @@ public class Humana extends Persona {
     if (apellido == null || apellido.trim().isEmpty()) {
       throw new ValidationException(ErrorCatalog.HUMANA_APELLIDO_VACIO);
     }
-    if (fechaNacimiento != null && fechaNacimiento.isAfter(LocalDate.now())) {
+    if (fechaNacimiento != null && fechaNacimiento.isAfter(LocalDate.now(ZoneId.systemDefault()))) {
       throw new ValidationException(ErrorCatalog.HUMANA_FECHA_NACIMIENTO_FUTURA);
     }
   }

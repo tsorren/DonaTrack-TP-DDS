@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import org.springframework.lang.NonNull;
 
 public class SegmentadorSubcategorias implements Segmentador {
 
@@ -24,14 +23,12 @@ public class SegmentadorSubcategorias implements Segmentador {
     return new DonacionSegmentada(donacion, donacionesIndependientes);
   }
 
-  @NonNull
   private static DonacionIndependiente toDonacionIndependiente(
       Map.Entry<SubCategoria, List<ItemDonacion>> e) {
     return new DonacionIndependiente(
         e.getKey(), e.getValue().stream().map(ItemDonacion::toItemDonacionIndependiente).toList());
   }
 
-  @NonNull
   private static Collector<ItemDonacion, ?, Map<SubCategoria, List<ItemDonacion>>>
       toItemSubcateoriaMap() {
     return Collectors.groupingBy(i -> i.getBien().getSubcategoria());
