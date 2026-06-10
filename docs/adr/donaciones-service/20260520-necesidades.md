@@ -1,6 +1,6 @@
 # Necesidades
 
-- Status: proposed
+- Status: rejected
 - Date: 2026-05-20
 - Deciders: Decisión Grupal
 
