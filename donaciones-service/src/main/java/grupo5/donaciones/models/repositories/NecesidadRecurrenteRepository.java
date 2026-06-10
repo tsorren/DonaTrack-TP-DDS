@@ -22,6 +22,6 @@ public class NecesidadRecurrenteRepository {
   public List<NecesidadRecurrente> findByActivaTrue() {
     return baseDeDatosFalsa.stream()
         .filter(NecesidadRecurrente::getActiva)
-        .collect(Collectors.toList());
+        .toList();
   }
 }

@@ -3,6 +3,8 @@ package grupo5.donaciones.models.entities.bienes;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import java.time.LocalDate;
+import java.time.ZoneId;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -62,6 +64,6 @@ public class Bien {
   // metodos
   public boolean estaVencido() {
     if (this.fechaVencimiento == null) return false;
-    return this.fechaVencimiento.isBefore(LocalDate.now());
+    return this.fechaVencimiento.isBefore(LocalDate.now(ZoneId.systemDefault()));
   }
 }
