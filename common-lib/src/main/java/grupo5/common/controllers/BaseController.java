@@ -27,8 +27,7 @@ public abstract class BaseController<Recurso, ID> {
     return ok("Elemento encontrado", recurso);
   }
 
-  protected <Respuesta> ResponseEntity<ApiResponse<Respuesta>> ok(
-      String message, Respuesta data) {
+  protected <Respuesta> ResponseEntity<ApiResponse<Respuesta>> ok(String message, Respuesta data) {
     return ResponseEntity.ok(ApiResponse.success(message, data));
   }
 
