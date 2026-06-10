@@ -1,0 +1,16 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: donatrack-rabbitmq
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"     # Puerto de comunicación AMQP
+      - "15672:15672"   # Panel de control web (Management UI)
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USERNAME:-guest}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-guest}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - ./infra/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+
+volumes:
+  rabbitmq_data:
