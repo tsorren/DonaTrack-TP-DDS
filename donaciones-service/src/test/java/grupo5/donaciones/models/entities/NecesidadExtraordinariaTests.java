@@ -15,9 +15,7 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +23,6 @@ import org.junit.jupiter.api.Test;
 
 class NecesidadExtraordinariaTests {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
-  private static final LocalDateTime TEST_DATETIME = LocalDateTime.of(2026, Month.JUNE, 9, 12, 0);
 
   private NecesidadExtraordinaria necesidad;
   private DonacionIndependiente donacionAsignada1;
@@ -36,9 +33,7 @@ class NecesidadExtraordinariaTests {
   void setUp() {
 
     Donacion donacionOriginal =
-        new Donacion(
-            new Donante(
-                new Humana("nombre", "apellido", LocalDate.now(ZoneId.systemDefault())) {}));
+        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");

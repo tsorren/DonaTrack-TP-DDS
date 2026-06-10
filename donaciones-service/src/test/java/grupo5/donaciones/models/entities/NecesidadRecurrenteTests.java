@@ -16,7 +16,6 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Period;
 import java.util.List;
@@ -25,7 +24,6 @@ import org.junit.jupiter.api.Test;
 
 class NecesidadRecurrenteTests {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
-  private static final LocalDateTime TEST_DATETIME = LocalDateTime.of(2026, Month.JUNE, 9, 12, 0);
 
   private NecesidadRecurrente necesidad;
   private DonacionIndependiente d1;
