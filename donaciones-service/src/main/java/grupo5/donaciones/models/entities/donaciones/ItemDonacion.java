@@ -1,6 +1,9 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,11 +24,15 @@ public class ItemDonacion {
   private static void validarItemDonacion(Bien bien, Integer cantidad) {
 
     if (bien == null) {
-      throw new IllegalArgumentException("El item de donación debe tener un bien asociado.");
+      throw new ValidationException(ErrorCatalog.ITEM_DONACION_SIN_BIEN);
     }
 
     if (cantidad == null || cantidad <= 0) {
-      throw new IllegalArgumentException("La cantidad del item debe ser mayor a cero.");
+      throw new ValidationException(ErrorCatalog.ITEM_DONACION_CANTIDAD_INVALIDA);
     }
+  }
+
+  public ItemDonacionIndependiente toItemDonacionIndependiente() {
+    return new ItemDonacionIndependiente(bien, cantidad);
   }
 }

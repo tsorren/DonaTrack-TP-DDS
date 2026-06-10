@@ -1,0 +1,34 @@
+name: Daily PR Reminders
+
+on:
+  schedule:
+    # 15:00 UTC equivale a las 12:00 PM UTC-3 (Argentina)
+    - cron: '0 15 * * 1-5'
+  workflow_dispatch: {}
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Ejecutar Recordatorios
+        uses: actions/github-script@v7
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_USER_MAP: ${{ secrets.DISCORD_USER_MAP }}
+          INACTIVITY_LIMIT_HOURS: '48'
+          PR_STATE: 'open'
+        with:
+          script: |
+            const script = require('./.github/scripts/send_reminders.js');
+            await script({github, context});

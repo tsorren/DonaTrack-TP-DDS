@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.bienes;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,19 +27,19 @@ public class Categoria {
       String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
 
     if (nombre == null || nombre.trim().isEmpty()) {
-      throw new IllegalArgumentException("La categoría debe tener un nombre.");
+      throw new ValidationException(ErrorCatalog.CATEGORIA_SIN_NOMBRE);
     }
 
     if (conUso == null) {
-      throw new IllegalArgumentException("Debe indicarse si la categoría contempla uso.");
+      throw new ValidationException(ErrorCatalog.CATEGORIA_SIN_USO_DEFINIDO);
     }
 
     if (conVencimiento == null) {
-      throw new IllegalArgumentException("Debe indicarse si la categoría contempla vencimiento.");
+      throw new ValidationException(ErrorCatalog.CATEGORIA_SIN_VENCIMIENTO_DEFINIDO);
     }
 
     if (tipoUnidad == null) {
-      throw new IllegalArgumentException("La categoría debe tener una unidad definida.");
+      throw new ValidationException(ErrorCatalog.CATEGORIA_SIN_UNIDAD);
     }
   }
 }
