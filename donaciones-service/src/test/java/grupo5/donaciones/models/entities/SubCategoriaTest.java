@@ -6,9 +6,11 @@ import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 
 class SubCategoriaTest {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private SubCategoria subcategoria;
   private Bien bien;
@@ -21,8 +23,7 @@ class SubCategoriaTest {
     subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
 
     bien =
-        new Bien(
-            "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
   }
 
   /* TODO: Pasar a capa service

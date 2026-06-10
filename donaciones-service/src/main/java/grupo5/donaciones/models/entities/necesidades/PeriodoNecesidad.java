@@ -1,15 +1,20 @@
 package grupo5.donaciones.models.entities.necesidades;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class PeriodoNecesidad {
+  private static final Logger logger = Logger.getLogger(PeriodoNecesidad.class.getName());
+
   private LocalDate fechaFin;
   private List<DonacionIndependiente> donacionesAsignadas;
   private Integer cantidadObjetivo;
@@ -21,7 +26,7 @@ public class PeriodoNecesidad {
   }
 
   public void agregarDonacion(DonacionIndependiente donacion) {
-    if (donacion == null) throw new IllegalArgumentException("La donación no puede ser nula.");
+    if (donacion == null) throw new ValidationException(ErrorCatalog.PERIODO_DONACION_NULA);
     this.donacionesAsignadas.add(donacion);
   }
 
@@ -46,7 +51,8 @@ public class PeriodoNecesidad {
 
   public void finalizo() {
     if (!this.estaSatisfecha()) {
-      System.out.println("El período cerró sin alcanzar la meta de " + this.cantidadObjetivo);
+      String msj = "El período cerró sin alcanzar la meta de " + this.cantidadObjetivo;
+      logger.warning(msj);
       // Idealmente acá se dispararía un evento de notificación
     }
   }

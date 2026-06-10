@@ -1,5 +1,8 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import java.util.ArrayList;
@@ -17,7 +20,7 @@ public class DonacionIndependiente {
   public DonacionIndependiente(
       Donacion donacionOriginal, SubCategoria subCategoria, List<ItemDonacionIndependiente> items) {
     if (donacionOriginal == null) {
-      throw new IllegalArgumentException("La donación original no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
 
     this.donacionOriginal = donacionOriginal;
@@ -30,7 +33,7 @@ public class DonacionIndependiente {
 
   public void agregarItem(ItemDonacionIndependiente item) {
     if (item == null) {
-      throw new IllegalArgumentException("El ítem a agregar no puede ser nulo.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_AGREGAR_ITEM_NULO);
     }
     item.setDonacionIndependiente(this);
     this.items.add(item);
@@ -39,8 +42,7 @@ public class DonacionIndependiente {
   // Lanzar excepcion si el item no esta en la lista
   public void quitarItem(ItemDonacionIndependiente bien) {
     if (!this.items.contains(bien)) {
-      throw new IllegalArgumentException(
-          "El ítem que intenta quitar no pertenece a esta donación.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_QUITAR_ITEM_INEXISTENTE);
     }
     this.items.remove(bien);
   }
@@ -51,7 +53,7 @@ public class DonacionIndependiente {
 
   public DonacionIndependiente fragmentarse(Integer cantidadNecesitada) {
     if (this.getCantidad() <= cantidadNecesitada) {
-      throw new RuntimeException();
+      throw new BusinessStateException(ErrorCatalog.FRAGMENTACION_CANTIDAD_INSUFICIENTE);
     }
 
     Integer cantidadPorExtraer = cantidadNecesitada;

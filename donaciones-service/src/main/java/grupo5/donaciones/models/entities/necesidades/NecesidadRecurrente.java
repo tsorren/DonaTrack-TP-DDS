@@ -1,9 +1,13 @@
 package grupo5.donaciones.models.entities.necesidades;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.time.Period;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -23,9 +27,9 @@ public class NecesidadRecurrente extends Necesidad {
       Period periodo,
       LocalDate fechaInicio) {
     super(subcategoria, cantidadNecesitada, descripcion);
-    if (periodo == null) throw new IllegalArgumentException("Debe tener un período definido.");
-    if (fechaInicio == null)
-      throw new IllegalArgumentException("La fecha de inicio no puede ser nula.");
+    if (periodo == null)
+      throw new ValidationException(ErrorCatalog.NECESIDAD_RECURRENTE_SIN_PERIODO);
+    if (fechaInicio == null) throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
 
     this.periodo = periodo;
     this.activa = true;
@@ -37,13 +41,13 @@ public class NecesidadRecurrente extends Necesidad {
 
   private void validarNecesidadRecurrente(LocalDate fechaInicio) {
     if (periodo == null) {
-      throw new IllegalArgumentException("La necesidad recurrente debe tener un período definido.");
+      throw new ValidationException(ErrorCatalog.NECESIDAD_RECURRENTE_SIN_PERIODO);
     }
     if (fechaInicio == null) {
-      throw new IllegalArgumentException("La fecha de inicio del período no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
     }
-    if (fechaInicio.isAfter(LocalDate.now())) {
-      throw new IllegalArgumentException("La fecha de inicio del período no puede ser futura.");
+    if (fechaInicio.isAfter(LocalDate.now(ZoneId.systemDefault()))) {
+      throw new ValidationException(ErrorCatalog.FECHA_INICIO_FUTURA);
     }
   }
 
@@ -55,7 +59,7 @@ public class NecesidadRecurrente extends Necesidad {
   public void asignarDonacion(DonacionIndependiente donacionAsignada) {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     if (actual == null) {
-      throw new IllegalStateException("No existe un período activo.");
+      throw new BusinessStateException(ErrorCatalog.SIN_PERIODO_ACTIVO);
     }
     actual.agregarDonacion(donacionAsignada);
   }
@@ -85,13 +89,13 @@ public class NecesidadRecurrente extends Necesidad {
     if (this.periodos.isEmpty()) return true;
 
     // crear un período nuevo si "hoy" es posterior a la fecha de vencimiento
-    return !obtenerPeriodoActual().estaEnPeriodo(LocalDate.now());
+    return !obtenerPeriodoActual().estaEnPeriodo(LocalDate.now(ZoneId.systemDefault()));
   }
 
   public void generarNuevoPeriodo() {
     LocalDate nuevaFechaFin =
         periodos.isEmpty()
-            ? LocalDate.now().plus(this.periodo)
+            ? LocalDate.now(ZoneId.systemDefault()).plus(this.periodo)
             : obtenerPeriodoActual().getFechaFin().plus(this.periodo);
 
     this.periodos.add(new PeriodoNecesidad(nuevaFechaFin, super.getCantidadNecesitada()));

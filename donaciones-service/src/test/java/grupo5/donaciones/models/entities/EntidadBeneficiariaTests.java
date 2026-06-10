@@ -11,16 +11,18 @@ import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class EntidadBeneficiariaTests {
   private EntidadBeneficiaria entidad;
   private NecesidadExtraordinaria necesidad;
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   @BeforeEach
   void setUp() {
-    Humana representante = new Humana("Juan", "Perez", LocalDate.now().minusYears(25));
+    Humana representante = new Humana("Juan", "Perez", TEST_DATE.minusYears(25));
     Juridica juridica = new Juridica(representante);
     entidad = new EntidadBeneficiaria(juridica);
 

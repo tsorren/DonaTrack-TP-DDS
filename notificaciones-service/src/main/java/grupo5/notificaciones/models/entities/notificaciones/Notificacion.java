@@ -5,6 +5,7 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.ports.Anonimizable;
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class Notificacion implements Anonimizable {
 
     this.persona = persona;
     this.mensaje = mensaje;
-    this.fechaCreacion = LocalDateTime.now();
+    this.fechaCreacion = LocalDateTime.now(ZoneId.systemDefault());
     this.estadoNotificacion = EstadoNotificacion.PENDIENTE;
   }
 

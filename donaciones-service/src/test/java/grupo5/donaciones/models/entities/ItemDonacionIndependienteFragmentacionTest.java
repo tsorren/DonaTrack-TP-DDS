@@ -2,6 +2,9 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.Bien;
 import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
@@ -9,10 +12,12 @@ import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ItemDonacionIndependienteFragmentacionTest {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private Bien bien;
   private ItemDonacionIndependiente itemDonacion;
@@ -23,8 +28,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     SubCategoria subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
 
     bien =
-        new Bien(
-            "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
 
     itemDonacion = new ItemDonacionIndependiente(bien, 20);
   }
@@ -32,22 +36,26 @@ class ItemDonacionIndependienteFragmentacionTest {
   @Test
   void fragmentarse_conCantidadMayorOMenor_debeLanzarExcepcion() {
     // Cantidad total es 20
-    RuntimeException exception =
+    BusinessStateException exception =
         assertThrows(
-            RuntimeException.class,
+            BusinessStateException.class,
             () -> itemDonacion.fragmentarse(20),
             "Debería lanzar excepción cuando la cantidad es igual o mayor");
     assertNotNull(exception);
+    assertEquals(
+        ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA, exception.getError());
   }
 
   @Test
   void fragmentarse_conCantidadMayorQueTotal_debeLanzarExcepcion() {
-    RuntimeException exception =
+    BusinessStateException exception =
         assertThrows(
-            RuntimeException.class,
+            BusinessStateException.class,
             () -> itemDonacion.fragmentarse(25),
             "Debería lanzar excepción cuando solicita más de lo disponible");
     assertNotNull(exception);
+    assertEquals(
+        ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA, exception.getError());
   }
 
   @Test
@@ -99,54 +107,54 @@ class ItemDonacionIndependienteFragmentacionTest {
 
   @Test
   void validarItemDonacion_conBienNulo_debeLanzarExcepcion() {
-    IllegalArgumentException exception =
+    ValidationException exception =
         assertThrows(
-            IllegalArgumentException.class,
+            ValidationException.class,
             () -> new ItemDonacionIndependiente(null, 10),
             "Debería lanzar excepción cuando el bien es nulo");
     assertEquals(
-        "El item de donación debe tener un bien asociado.",
-        exception.getMessage(),
-        "Debe tener el mensaje correcto");
+        ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_SIN_BIEN,
+        exception.getError(),
+        "Debe tener el error correcto");
   }
 
   @Test
   void validarItemDonacion_conCantidadNula_debeLanzarExcepcion() {
-    IllegalArgumentException exception =
+    ValidationException exception =
         assertThrows(
-            IllegalArgumentException.class,
+            ValidationException.class,
             () -> new ItemDonacionIndependiente(bien, null),
             "Debería lanzar excepción cuando la cantidad es nula");
     assertEquals(
-        "La cantidad del item debe ser mayor a cero.",
-        exception.getMessage(),
-        "Debe tener el mensaje correcto");
+        ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,
+        exception.getError(),
+        "Debe tener el error correcto");
   }
 
   @Test
   void validarItemDonacion_conCantidadCero_debeLanzarExcepcion() {
-    IllegalArgumentException exception =
+    ValidationException exception =
         assertThrows(
-            IllegalArgumentException.class,
+            ValidationException.class,
             () -> new ItemDonacionIndependiente(bien, 0),
             "Debería lanzar excepción cuando la cantidad es cero");
     assertEquals(
-        "La cantidad del item debe ser mayor a cero.",
-        exception.getMessage(),
-        "Debe tener el mensaje correcto");
+        ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,
+        exception.getError(),
+        "Debe tener el error correcto");
   }
 
   @Test
   void validarItemDonacion_conCantidadNegativa_debeLanzarExcepcion() {
-    IllegalArgumentException exception =
+    ValidationException exception =
         assertThrows(
-            IllegalArgumentException.class,
+            ValidationException.class,
             () -> new ItemDonacionIndependiente(bien, -5),
             "Debería lanzar excepción cuando la cantidad es negativa");
     assertEquals(
-        "La cantidad del item debe ser mayor a cero.",
-        exception.getMessage(),
-        "Debe tener el mensaje correcto");
+        ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,
+        exception.getError(),
+        "Debe tener el error correcto");
   }
 
   @Test

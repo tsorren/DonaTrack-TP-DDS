@@ -10,8 +10,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class PlanificadorDeNecesidades {
 
-  // Usamos unrepositorio de base de datos
-  @Autowired private NecesidadRecurrenteRepository necesidadRepository;
+  private final NecesidadRecurrenteRepository necesidadRepository;
+
+  @Autowired
+  public PlanificadorDeNecesidades(NecesidadRecurrenteRepository necesidadRepository) {
+    this.necesidadRepository = necesidadRepository;
+  }
 
   @Scheduled(cron = "0 0 0 * * ?")
   public void generarNuevosPeriodos() {

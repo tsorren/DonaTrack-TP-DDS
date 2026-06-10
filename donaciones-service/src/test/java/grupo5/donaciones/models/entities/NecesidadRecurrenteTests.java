@@ -2,6 +2,8 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.models.entities.bienes.Bien;
 import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
@@ -14,12 +16,17 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.Period;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class NecesidadRecurrenteTests {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
+  private static final LocalDateTime TEST_DATETIME = LocalDateTime.of(2026, Month.JUNE, 9, 12, 0);
+
   private NecesidadRecurrente necesidad;
   private DonacionIndependiente d1;
   private DonacionIndependiente d2;
@@ -29,8 +36,7 @@ class NecesidadRecurrenteTests {
   @BeforeEach
   void setUp() {
 
-    Donacion donacion =
-        new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now())));
+    Donacion donacion = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad =
@@ -39,11 +45,10 @@ class NecesidadRecurrenteTests {
             100,
             "30 bancos y sillas para el aula",
             Period.ofWeeks(1),
-            LocalDate.now().minusDays(5));
+            TEST_DATE.minusDays(5));
 
     Bien bien =
-        new Bien(
-            "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
 
@@ -87,11 +92,7 @@ class NecesidadRecurrenteTests {
   void hayQueGenerarNuevo_cuandoPeriodoVencio_deberiaSerTrue() {
     NecesidadRecurrente necesidadVencida =
         new NecesidadRecurrente(
-            subcategoria,
-            100,
-            "Test de vencimiento",
-            Period.ofWeeks(1),
-            LocalDate.now().minusDays(10));
+            subcategoria, 100, "Test de vencimiento", Period.ofWeeks(1), TEST_DATE.minusDays(10));
 
     assertTrue(necesidadVencida.hayQueGenerarNuevo());
   }
@@ -105,13 +106,13 @@ class NecesidadRecurrenteTests {
   void asignarDonacion_cuandoNoHayPeriodoActivo_deberiaLanzarExcepcion() {
     necesidad.getPeriodos().clear();
 
-    IllegalStateException excepcion =
+    BusinessStateException excepcion =
         assertThrows(
-            IllegalStateException.class,
+            BusinessStateException.class,
             () -> {
               necesidad.asignarDonacion(d2);
             });
 
-    assertTrue(excepcion.getMessage().contains("No existe un período activo"));
+    assertEquals(ErrorCatalog.SIN_PERIODO_ACTIVO, excepcion.getError());
   }
 }

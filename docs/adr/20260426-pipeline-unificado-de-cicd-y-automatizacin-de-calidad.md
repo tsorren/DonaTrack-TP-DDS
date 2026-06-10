@@ -1,6 +1,6 @@
 # Pipeline Unificado de CI/CD y Automatización de Calidad
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-04-26
 - Deciders: Decisión Grupal
 - Tags: cicd, devops, calidad-software, gestion-proyecto

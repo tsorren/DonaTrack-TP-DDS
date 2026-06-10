@@ -1,6 +1,6 @@
 # Modelado de Direcciones
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-21
 - Deciders: Decisión Grupal
 

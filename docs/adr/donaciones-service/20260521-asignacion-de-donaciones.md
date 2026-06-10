@@ -1,6 +1,6 @@
 # Asignacion de Donaciones
 
-- Status: proposed
+- Status: rejected
 - Date: 2026-05-21
 - Deciders: Decisión Grupal
 

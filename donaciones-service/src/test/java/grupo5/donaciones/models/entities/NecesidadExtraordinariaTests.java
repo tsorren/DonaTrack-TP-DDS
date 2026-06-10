@@ -15,12 +15,18 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class NecesidadExtraordinariaTests {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
+  private static final LocalDateTime TEST_DATETIME = LocalDateTime.of(2026, Month.JUNE, 9, 12, 0);
+
   private NecesidadExtraordinaria necesidad;
   private DonacionIndependiente donacionAsignada1;
   private DonacionIndependiente donacionAsignada2;
@@ -30,7 +36,9 @@ class NecesidadExtraordinariaTests {
   void setUp() {
 
     Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now()) {}));
+        new Donacion(
+            new Donante(
+                new Humana("nombre", "apellido", LocalDate.now(ZoneId.systemDefault())) {}));
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
@@ -38,26 +46,11 @@ class NecesidadExtraordinariaTests {
     necesidad.setCantidadNecesitada(30);
 
     Bien bien1 =
-        new Bien(
-            "descripcion1",
-            "imagen.png",
-            LocalDate.now().plusMonths(2),
-            Estado.NUEVO,
-            subcategoria);
+        new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
     Bien bien2 =
-        new Bien(
-            "descripcion2",
-            "imagen.png",
-            LocalDate.now().plusMonths(2),
-            Estado.NUEVO,
-            subcategoria);
+        new Bien("descripcion2", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
     Bien bien3 =
-        new Bien(
-            "descripcion3",
-            "imagen.png",
-            LocalDate.now().plusMonths(2),
-            Estado.NUEVO,
-            subcategoria);
+        new Bien("descripcion3", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien1, 15);
     List<ItemDonacionIndependiente> items1 = new ArrayList<>();

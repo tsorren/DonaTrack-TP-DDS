@@ -1,6 +1,7 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import grupo5.donaciones.infraestructure.SegmentadorSubcategorias;
 import grupo5.donaciones.models.entities.bienes.Bien;
@@ -8,16 +9,19 @@ import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.donaciones.*;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SegmentadorSubcategoriasTest {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private SegmentadorSubcategorias segmentador;
   private Donante donante;
@@ -29,7 +33,7 @@ class SegmentadorSubcategoriasTest {
   @BeforeEach
   void setUp() {
     segmentador = new SegmentadorSubcategorias();
-    Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, 1, 1));
+    Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
     donante = new Donante(humana);
 
     Categoria categoriaRopa = new Categoria("Ropa", false, true, Unidad.UNIDADES);
@@ -42,21 +46,21 @@ class SegmentadorSubcategoriasTest {
         new Bien(
             "Abrigo de lana",
             "abrigo.png",
-            LocalDate.now().plusMonths(6),
+            TEST_DATE.plusMonths(6),
             Estado.NUEVO,
             subcategoriaInvierno);
     polleraInvierno =
         new Bien(
             "Pollera de invierno",
             "pollera.png",
-            LocalDate.now().plusMonths(6),
+            TEST_DATE.plusMonths(6),
             Estado.NUEVO,
             subcategoriaInvierno);
     manzanas =
         new Bien(
             "Manzanas rojas",
             "manzanas.png",
-            LocalDate.now().plusMonths(2),
+            TEST_DATE.plusMonths(2),
             Estado.NUEVO,
             subcategoriaFrutas);
   }
