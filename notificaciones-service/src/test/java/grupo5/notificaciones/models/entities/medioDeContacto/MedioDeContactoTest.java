@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
+import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -80,5 +81,27 @@ class MedioDeContactoTest {
     String numeroCompleto = whatsapp.obtenerNumeroCompleto();
 
     assertEquals("+541187654321", numeroCompleto);
+  }
+
+  @Test
+  void correo_anonimizar_deberiaFuncionarCorrectamente() {
+    correo.anonimizar();
+    assertEquals(Anonimizable.VALOR_STRING, correo.getDireccionCorreo());
+  }
+
+  @Test
+  void telefono_anonimizar_deberiaFuncionarCorrectamente() {
+    telefono.anonimizar();
+    assertEquals(Anonimizable.VALOR_STRING, telefono.getCaracteristica());
+    assertEquals(Anonimizable.VALOR_STRING, telefono.getCodigoArea());
+    assertEquals(Anonimizable.VALOR_STRING, telefono.getNumero());
+  }
+
+  @Test
+  void whatsapp_anonimizar_deberiaFuncionarCorrectamente() {
+    whatsapp.anonimizar();
+    assertEquals(Anonimizable.VALOR_STRING, whatsapp.getCaracteristica());
+    assertEquals(Anonimizable.VALOR_STRING, whatsapp.getCodigoArea());
+    assertEquals(Anonimizable.VALOR_STRING, whatsapp.getNumero());
   }
 }

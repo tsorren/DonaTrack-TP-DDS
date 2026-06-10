@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +17,7 @@ class AnonimizacionesTest {
 
   @BeforeEach
   void setUp() {
-    persona = new Humana("Juan", "Pérez", LocalDate.of(1990, 1, 1));
+    persona = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
     persona.setDocumento("12345678"); // Suponiendo este setter
 
     juridica = new Juridica(persona);
@@ -26,8 +28,8 @@ class AnonimizacionesTest {
   void anonimizar_deberiaLimpiarCamposSensibles() {
     persona.anonimizar();
 
-    assertEquals("ANONIMIZADO", persona.getNombre());
-    assertEquals("ANONIMIZADO", persona.getApellido());
+    assertEquals(Anonimizable.VALOR_STRING, persona.getNombre());
+    assertEquals(Anonimizable.VALOR_STRING, persona.getApellido());
     assertNull(persona.getDocumento(), "El documento debe ser nulo tras anonimizar");
   }
 
@@ -35,7 +37,7 @@ class AnonimizacionesTest {
   void anonimizar_deberiaPropagarAnonimizacionAlHijos() {
     juridica.anonimizar();
 
-    assertEquals("ANONIMIZADO", juridica.getRepresentantes().getFirst().getNombre());
+    assertEquals(Anonimizable.VALOR_STRING, juridica.getRepresentantes().getFirst().getNombre());
   }
 
   @Test

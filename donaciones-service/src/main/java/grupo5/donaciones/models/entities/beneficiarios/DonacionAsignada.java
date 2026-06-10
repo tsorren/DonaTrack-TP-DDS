@@ -1,36 +1,40 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
-import grupo5.donaciones.models.entities.bienes.Bien;
-import java.time.LocalDate;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class DonacionAsignada {
-  private Bien bien;
-  private Integer cantidad;
-  private LocalDate fechaAsignacion;
+  private DonacionIndependiente donacionIndependiente;
+  private Necesidad necesidad;
+  private LocalDateTime fechaAsignacion;
 
-  public DonacionAsignada(Bien bien, Integer cantidad, LocalDate fechaAsignacion) {
-    this.bien = bien;
-    this.cantidad = cantidad;
+  public DonacionAsignada(
+      DonacionIndependiente donacionIndependiente, LocalDateTime fechaAsignacion) {
+    this.donacionIndependiente = donacionIndependiente;
     this.fechaAsignacion = fechaAsignacion;
 
     validarDonacionAsignada();
   }
 
   private void validarDonacionAsignada() {
-    if (this.bien == null) {
-      throw new IllegalArgumentException("La donación asignada debe tener un bien.");
+    if (this.donacionIndependiente == null) {
+      throw new ValidationException(ErrorCatalog.DONACION_ASIGNADA_SIN_DONACION_INDEPENDIENTE);
     }
 
-    if (this.cantidad == null || this.cantidad <= 0) {
-      throw new IllegalArgumentException("La cantidad asignada debe ser mayor a cero.");
+    if (this.fechaAsignacion != null
+        && this.fechaAsignacion.isAfter(LocalDateTime.now(ZoneId.systemDefault()))) {
+      throw new ValidationException(ErrorCatalog.FECHA_ASIGNACION_FUTURA);
     }
+  }
 
-    if (this.fechaAsignacion != null && this.fechaAsignacion.isAfter(LocalDate.now())) {
-      throw new IllegalArgumentException("La fecha de asignación no puede ser futura.");
-    }
+  public Integer getCantidad() {
+    return this.donacionIndependiente.getCantidad();
   }
 }

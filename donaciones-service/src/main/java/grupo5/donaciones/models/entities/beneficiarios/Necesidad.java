@@ -1,25 +1,26 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public abstract class Necesidad {
-  protected List<DonacionAsignada> donacionesAsignadas;
   private SubCategoria subcategoria;
   private Integer cantidadNecesitada;
   private String descripcion;
+  private LocalDate fechaInicio;
 
   protected Necesidad(SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     this.subcategoria = subcategoria;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
-
-    this.donacionesAsignadas = new ArrayList<>();
+    this.fechaInicio = LocalDate.now(ZoneId.systemDefault());
 
     validarNecesidad();
   }
@@ -27,42 +28,23 @@ public abstract class Necesidad {
   private void validarNecesidad() {
 
     if (this.subcategoria == null) {
-      throw new IllegalArgumentException("La necesidad debe tener una subcategoría.");
+      throw new ValidationException(ErrorCatalog.NECESIDAD_SIN_SUBCATEGORIA);
     }
 
     if (this.cantidadNecesitada == null || this.cantidadNecesitada <= 0) {
-      throw new IllegalArgumentException("La cantidad necesitada debe ser mayor a cero.");
+      throw new ValidationException(ErrorCatalog.CANTIDAD_NECESITADA_INVALIDA);
     }
 
     if (this.descripcion == null || this.descripcion.trim().isEmpty()) {
-      throw new IllegalArgumentException("La descripción de la necesidad no puede estar vacía.");
+      throw new ValidationException(ErrorCatalog.DESCRIPCION_NECESIDAD_VACIA);
     }
   }
 
-  public void asignarDonacion(DonacionAsignada donacionAsignada) {
-    if (donacionAsignada == null) {
-      throw new IllegalArgumentException("La donación asignada no puede ser nula.");
-    }
+  public abstract void asignarDonacion(DonacionAsignada donacionAsignada);
 
-    if (this.donacionesAsignadas.contains(donacionAsignada)) {
-      throw new IllegalArgumentException("La donación ya fue asignada a esta necesidad.");
-    }
+  public abstract void quitarDonacion(DonacionAsignada donacionAsignada);
 
-    this.donacionesAsignadas.add(donacionAsignada);
-  }
-
-  // Añadir excepcion si no está el elemento en la lista
-  public void quitarDonacion(DonacionAsignada donacionAsignada) {
-    if (!this.donacionesAsignadas.contains(donacionAsignada)) {
-      throw new IllegalArgumentException("La donación no pertenece a esta necesidad.");
-    }
-
-    this.donacionesAsignadas.remove(donacionAsignada);
-  }
-
-  public boolean estaSatisfecha() {
-    return this.cantidadAcumulada() >= this.cantidadNecesitada;
-  }
+  public abstract boolean estaSatisfecha();
 
   public abstract Integer cantidadAcumulada();
 }

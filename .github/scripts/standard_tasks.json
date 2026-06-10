@@ -1,0 +1,10 @@
+[
+  { "id": 1, "name": "Estructura", "title": "Creación de la estructura de la implementación (paquetes, entidades, interfaces)" },
+  { "id": 2, "name": "Dominio", "title": "Implementación de la lógica de la capa de dominio" },
+  { "id": 3, "name": "Tests Unidad", "title": "Desarrollo de pruebas unitarias correspondientes" },
+  { "id": 4, "name": "Persistencia", "title": "Implementación de gestores, servicios y repositorios de datos" },
+  { "id": 5, "name": "Tests Orquestación", "title": "Desarrollo de pruebas de integración y orquestación de servicios" },
+  { "id": 6, "name": "Controladores/Endpoints", "title": "Implementación de controladores, endpoints y planificadores" },
+  { "id": 7, "name": "Tests UI/Endpoints", "title": "Desarrollo de pruebas del controlador, endpoint y planificador" },
+  { "id": 8, "name": "Calidad y Diseño", "title": "Documentación de decisiones (ADR) y verificación de consistencia con diagramas UML" }
+]

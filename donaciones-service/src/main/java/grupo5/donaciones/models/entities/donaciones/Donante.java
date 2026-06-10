@@ -1,5 +1,8 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionSegmentada;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.ArrayList;
@@ -11,33 +14,33 @@ import lombok.Setter;
 @Setter
 public class Donante implements Anonimizable {
   private Persona persona;
-  private List<Donacion> historialDonaciones = new ArrayList<>();
+  private List<DonacionSegmentada> historialDonaciones = new ArrayList<>();
 
   public Donante(Persona persona) {
 
     if (persona == null) {
-      throw new IllegalArgumentException("El donante debe estar asociado a una persona.");
+      throw new ValidationException(ErrorCatalog.DONANTE_SIN_PERSONA);
     }
     this.persona = persona;
   }
 
-  public void agregarDonacion(Donacion donacion) {
-    if (donacion == null) {
-      throw new IllegalArgumentException("La donación no puede ser nula.");
+  public void agregarDonacion(DonacionSegmentada donacionSegmentada) {
+    if (donacionSegmentada == null) {
+      throw new ValidationException(ErrorCatalog.DONANTE_DONACION_NULA);
     }
 
-    if (this.historialDonaciones.contains(donacion)) {
-      throw new IllegalArgumentException("La donación ya pertenece al historial del donante.");
+    if (this.historialDonaciones.contains(donacionSegmentada)) {
+      throw new ValidationException(ErrorCatalog.DONANTE_DONACION_YA_HISTORIAL);
     }
-    this.historialDonaciones.add(donacion);
+    this.historialDonaciones.add(donacionSegmentada);
   }
 
   // Lanzar excepcion si la donacion no esta en la lista
-  public void quitarDonacion(Donacion donacion) {
-    if (!this.historialDonaciones.contains(donacion)) {
-      throw new IllegalArgumentException("La donación no pertenece al historial del donante.");
+  public void quitarDonacion(DonacionSegmentada donacionSegmentada) {
+    if (!this.historialDonaciones.contains(donacionSegmentada)) {
+      throw new ValidationException(ErrorCatalog.DONANTE_DONACION_NO_HISTORIAL);
     }
-    this.historialDonaciones.remove(donacion);
+    this.historialDonaciones.remove(donacionSegmentada);
   }
 
   @Override
