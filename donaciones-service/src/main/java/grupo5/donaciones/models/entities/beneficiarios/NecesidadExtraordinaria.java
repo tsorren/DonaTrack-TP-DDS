@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.beneficiarios;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +21,9 @@ public class NecesidadExtraordinaria extends Necesidad {
 
   @Override
   public void asignarDonacion(DonacionAsignada donacion) {
-    if (donacion == null) throw new IllegalArgumentException("La donación no puede ser nula.");
+    if (donacion == null) throw new ValidationException(ErrorCatalog.ASIGNAR_DONACION_NULA);
     if (this.donacionesAsignadas.contains(donacion))
-      throw new IllegalArgumentException("La donación ya fue asignada.");
+      throw new ValidationException(ErrorCatalog.DONACION_YA_ASIGNADA);
 
     this.donacionesAsignadas.add(donacion);
   }
@@ -29,7 +31,7 @@ public class NecesidadExtraordinaria extends Necesidad {
   @Override
   public void quitarDonacion(DonacionAsignada donacion) {
     if (!this.donacionesAsignadas.contains(donacion))
-      throw new IllegalArgumentException("La donación no pertenece a esta necesidad.");
+      throw new ValidationException(ErrorCatalog.DONACION_NO_PERTENECE_A_NECESIDAD);
 
     this.donacionesAsignadas.remove(donacion);
   }

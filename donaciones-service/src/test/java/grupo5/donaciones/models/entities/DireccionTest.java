@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.personas.direccion.Direccion;
 import grupo5.donaciones.models.entities.personas.direccion.Localidad;
 import grupo5.donaciones.models.entities.personas.direccion.Pais;
@@ -43,7 +44,7 @@ class DireccionTest {
   @Test
   void crearDireccion_conCalleNula_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Direccion(null, 123, 2, "A", "C1000", localidad),
         "Debería lanzar error cuando la calle es nula");
   }
@@ -51,7 +52,7 @@ class DireccionTest {
   @Test
   void crearDireccion_conCalleVacia_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Direccion("   ", 123, 2, "A", "C1000", localidad),
         "Debería lanzar error cuando la calle está vacía");
   }
@@ -59,7 +60,7 @@ class DireccionTest {
   @Test
   void crearDireccion_conAlturaNula_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Direccion("Calle Principal", null, 2, "A", "C1000", localidad),
         "Debería lanzar error cuando la altura es nula");
   }
@@ -67,7 +68,7 @@ class DireccionTest {
   @Test
   void crearDireccion_conAlturaCero_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Direccion("Calle Principal", 0, 2, "A", "C1000", localidad),
         "Debería lanzar error cuando la altura es cero");
   }
@@ -75,7 +76,7 @@ class DireccionTest {
   @Test
   void crearDireccion_conAlturaNegativa_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Direccion("Calle Principal", -10, 2, "A", "C1000", localidad),
         "Debería lanzar error cuando la altura es negativa");
   }
@@ -83,7 +84,7 @@ class DireccionTest {
   @Test
   void crearDireccion_conCodigoPostalNulo_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Direccion("Calle Principal", 123, 2, "A", null, localidad),
         "Debería lanzar error cuando el código postal es nulo");
   }
@@ -91,7 +92,7 @@ class DireccionTest {
   @Test
   void crearDireccion_conCodigoPostalVacio_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Direccion("Calle Principal", 123, 2, "A", "   ", localidad),
         "Debería lanzar error cuando el código postal está vacío");
   }
@@ -99,7 +100,7 @@ class DireccionTest {
   @Test
   void crearDireccion_conLocalidadNula_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Direccion("Calle Principal", 123, 2, "A", "C1000", null),
         "Debería lanzar error cuando la localidad es nula");
   }

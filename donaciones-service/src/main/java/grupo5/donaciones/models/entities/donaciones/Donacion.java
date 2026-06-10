@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,7 @@ public class Donacion {
   public Donacion(Donante donante) {
     this.items = new ArrayList<>();
     if (donante == null) {
-      throw new IllegalArgumentException("La donación debe tener un donante asociado.");
+      throw new ValidationException(ErrorCatalog.DONACION_SIN_DONANTE);
     }
 
     this.donante = donante;
@@ -25,11 +27,11 @@ public class Donacion {
 
   public void agregarItem(ItemDonacion item) {
     if (item == null) {
-      throw new IllegalArgumentException("La donación independiente no puede ser nula.");
+      throw new ValidationException(ErrorCatalog.DONACION_ITEM_NULO);
     }
 
     if (this.items.contains(item)) {
-      throw new IllegalArgumentException("La donación independiente ya fue agregada.");
+      throw new ValidationException(ErrorCatalog.DONACION_ITEM_YA_AGREGADO);
     }
 
     this.items.add(item);
@@ -38,7 +40,7 @@ public class Donacion {
   // Lanzar excepcion si la donacion independiente no esta en la lista
   public void quitarItem(ItemDonacion item) {
     if (!this.items.contains(item)) {
-      throw new IllegalArgumentException("La donación independiente no pertenece a la donación.");
+      throw new ValidationException(ErrorCatalog.DONACION_ITEM_NO_PERTENECE);
     }
 
     this.items.remove(item);

@@ -2,6 +2,7 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ class HumanaTest {
   @Test
   void crearHumana_conNombreNulo_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Humana(null, "Pérez", LocalDate.of(1990, 1, 1)),
         "Debería lanzar error cuando el nombre es nulo");
   }
@@ -28,7 +29,7 @@ class HumanaTest {
   @Test
   void crearHumana_conNombreVacio_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Humana("   ", "Pérez", LocalDate.of(1990, 1, 1)),
         "Debería lanzar error cuando el nombre está vacío");
   }
@@ -36,7 +37,7 @@ class HumanaTest {
   @Test
   void crearHumana_conApellidoNulo_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Humana("Juan", null, LocalDate.of(1990, 1, 1)),
         "Debería lanzar error cuando el apellido es nulo");
   }
@@ -44,7 +45,7 @@ class HumanaTest {
   @Test
   void crearHumana_conApellidoVacio_deberiaLanzarExcepcion() {
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Humana("Juan", "   ", LocalDate.of(1990, 1, 1)),
         "Debería lanzar error cuando el apellido está vacío");
   }
@@ -54,7 +55,7 @@ class HumanaTest {
     LocalDate fechaFutura = LocalDate.now().plusDays(1);
 
     assertThrows(
-        IllegalArgumentException.class,
+        ValidationException.class,
         () -> new Humana("Juan", "Pérez", fechaFutura),
         "Debería lanzar error cuando la fecha de nacimiento es futura");
   }

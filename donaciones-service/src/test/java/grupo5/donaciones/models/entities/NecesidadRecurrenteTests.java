@@ -2,6 +2,8 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.models.entities.beneficiarios.DonacionAsignada;
 import grupo5.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.bienes.*;
@@ -37,17 +39,21 @@ class NecesidadRecurrenteTests {
         new Bien(
             "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
 
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(reveal(bien), 40);
 
     DonacionIndependiente donacionIndependiente1 =
         new DonacionIndependiente(subcategoria, List.of(item1));
     d1 = new DonacionAsignada(donacionIndependiente1, LocalDateTime.now());
 
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 100);
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(reveal(bien), 100);
 
     DonacionIndependiente donacionIndependiente2 =
         new DonacionIndependiente(subcategoria, List.of(item2));
     d2 = new DonacionAsignada(donacionIndependiente2, LocalDateTime.now());
+  }
+
+  private Bien reveal(Bien b) {
+    return b;
   }
 
   @Test
@@ -101,13 +107,13 @@ class NecesidadRecurrenteTests {
   void asignarDonacion_cuandoNoHayPeriodoActivo_deberiaLanzarExcepcion() {
     necesidad.getPeriodos().clear();
 
-    IllegalStateException excepcion =
+    BusinessStateException excepcion =
         assertThrows(
-            IllegalStateException.class,
+            BusinessStateException.class,
             () -> {
               necesidad.asignarDonacion(d2);
             });
 
-    assertTrue(excepcion.getMessage().contains("No existe un período activo"));
+    assertEquals(ErrorCatalog.SIN_PERIODO_ACTIVO, excepcion.getError());
   }
 }
