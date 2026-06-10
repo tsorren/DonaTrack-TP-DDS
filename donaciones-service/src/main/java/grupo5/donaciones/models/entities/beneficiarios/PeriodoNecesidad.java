@@ -50,7 +50,8 @@ public class PeriodoNecesidad {
 
   public void finalizo() {
     if (!this.estaSatisfecha()) {
-      logger.warning("El período cerró sin alcanzar la meta de " + this.cantidadObjetivo);
+      String msj = "El período cerró sin alcanzar la meta de " + this.cantidadObjetivo;
+      logger.warning(msj);
       // Idealmente acá se dispararía un evento de notificación
     }
   }
