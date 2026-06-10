@@ -2,19 +2,18 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.donaciones.infraestructure.SegmentadorSubcategorias;
 import grupo5.donaciones.models.entities.bienes.Bien;
 import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.donaciones.*;
-import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import java.util.List;
-
-import grupo5.donaciones.infraestructure.SegmentadorSubcategorias;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -74,12 +73,8 @@ class SegmentadorSubcategoriasTest {
     List<DonacionIndependiente> resultado = segmentador.segmentar(donacion);
 
     assertNotNull(resultado);
-    assertEquals(
-        1, resultado.size(), "Debe haber 1 donación independiente");
-    assertEquals(
-        8,
-        resultado.getFirst().getCantidad(),
-        "Debe sumar la cantidad de ambos items");
+    assertEquals(1, resultado.size(), "Debe haber 1 donación independiente");
+    assertEquals(8, resultado.getFirst().getCantidad(), "Debe sumar la cantidad de ambos items");
   }
 
   @Test
@@ -94,10 +89,7 @@ class SegmentadorSubcategoriasTest {
     List<DonacionIndependiente> resultado = segmentador.segmentar(donacion);
 
     assertNotNull(resultado);
-    assertEquals(
-        2,
-        resultado.size(),
-        "Debe haber 2 donaciones independientes");
+    assertEquals(2, resultado.size(), "Debe haber 2 donaciones independientes");
   }
 
   @Test
@@ -114,10 +106,7 @@ class SegmentadorSubcategoriasTest {
     List<DonacionIndependiente> resultado = segmentador.segmentar(donacion);
 
     assertNotNull(resultado);
-    assertEquals(
-        2,
-        resultado.size(),
-        "Debe haber 2 donaciones independientes (2 subcategorías)");
+    assertEquals(2, resultado.size(), "Debe haber 2 donaciones independientes (2 subcategorías)");
   }
 
   @Test
@@ -130,7 +119,8 @@ class SegmentadorSubcategoriasTest {
     List<DonacionIndependiente> resultado = segmentador.segmentar(donacion);
 
     assertNotNull(resultado.getFirst().getDonacionOriginal());
-    assertEquals(donacion, resultado.getFirst().getDonacionOriginal(), "Debe contener la donación original");
+    assertEquals(
+        donacion, resultado.getFirst().getDonacionOriginal(), "Debe contener la donación original");
   }
 
   @Test
@@ -144,8 +134,7 @@ class SegmentadorSubcategoriasTest {
 
     List<DonacionIndependiente> resultado = segmentador.segmentar(donacion);
 
-    DonacionIndependiente donacionIndependiente =
-        resultado.getFirst();
+    DonacionIndependiente donacionIndependiente = resultado.getFirst();
     assertEquals(
         subcategoriaInvierno,
         donacionIndependiente.getSubCategoria(),
@@ -167,10 +156,7 @@ class SegmentadorSubcategoriasTest {
 
     List<DonacionIndependiente> resultado = segmentador.segmentar(donacion);
 
-    int cantidadSegmentada =
-        resultado.stream()
-            .mapToInt(DonacionIndependiente::getCantidad)
-            .sum();
+    int cantidadSegmentada = resultado.stream().mapToInt(DonacionIndependiente::getCantidad).sum();
 
     assertEquals(cantidadOriginal, cantidadSegmentada, "Debe preservar la cantidad total");
   }
@@ -186,19 +172,18 @@ class SegmentadorSubcategoriasTest {
 
     List<DonacionIndependiente> resultado = segmentador.segmentar(donacion);
 
-    resultado
-        .forEach(
-            donacionInd ->
-                donacionInd
-                    .getItems()
-                    .forEach(
-                        item -> {
-                          assertNotNull(item.getBien(), "El item debe tener un bien asociado");
-                          assertEquals(
-                              donacionInd.getSubCategoria(),
-                              item.getBien().getSubcategoria(),
-                              "El bien debe pertenecer a la subcategoría de la donación");
-                        }));
+    resultado.forEach(
+        donacionInd ->
+            donacionInd
+                .getItems()
+                .forEach(
+                    item -> {
+                      assertNotNull(item.getBien(), "El item debe tener un bien asociado");
+                      assertEquals(
+                          donacionInd.getSubCategoria(),
+                          item.getBien().getSubcategoria(),
+                          "El bien debe pertenecer a la subcategoría de la donación");
+                    }));
   }
 
   @Test
@@ -210,17 +195,15 @@ class SegmentadorSubcategoriasTest {
 
     List<DonacionIndependiente> resultado = segmentador.segmentar(donacion);
 
-    resultado
-        .forEach(
-            donacionInd -> {
-              assertNotNull(
-                  donacionInd.getDonacionOriginal(),
-                  "La donación independiente debe estar vinculada");
-              assertEquals(
-                  donacion,
-                  donacionInd.getDonacionOriginal(),
-                  "Debe estar vinculada a la donación original");
-            });
+    resultado.forEach(
+        donacionInd -> {
+          assertNotNull(
+              donacionInd.getDonacionOriginal(), "La donación independiente debe estar vinculada");
+          assertEquals(
+              donacion,
+              donacionInd.getDonacionOriginal(),
+              "Debe estar vinculada a la donación original");
+        });
   }
 
   @Test

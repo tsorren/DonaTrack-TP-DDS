@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import grupo5.notificaciones.models.entities.personas.Correo;
-import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.entities.personas.Telefono;
 import grupo5.notificaciones.models.entities.personas.WhatsApp;
 import grupo5.notificaciones.models.ports.Anonimizable;
+import grupo5.notificaciones.models.ports.NotificacionSender;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;

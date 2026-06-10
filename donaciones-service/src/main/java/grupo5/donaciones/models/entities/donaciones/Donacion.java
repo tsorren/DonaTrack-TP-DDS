@@ -1,10 +1,9 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import grupo5.donaciones.models.entities.donantes.Donante;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import grupo5.donaciones.models.entities.donantes.Donante;
 import lombok.Getter;
 import lombok.Setter;
 

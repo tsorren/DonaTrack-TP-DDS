@@ -1,9 +1,9 @@
 package grupo5.notificaciones.models.entities.notificaciones;
 
 import grupo5.notificaciones.models.entities.personas.MedioDeContacto;
-import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.ports.Anonimizable;
+import grupo5.notificaciones.models.ports.NotificacionSender;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;

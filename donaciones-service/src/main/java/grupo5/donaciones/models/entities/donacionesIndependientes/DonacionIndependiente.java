@@ -1,10 +1,9 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import java.util.ArrayList;
 import java.util.List;
-
-import grupo5.donaciones.models.entities.donaciones.Donacion;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,9 +15,7 @@ public class DonacionIndependiente {
   private List<ItemDonacionIndependiente> items;
 
   public DonacionIndependiente(
-      Donacion donacionOriginal,
-      SubCategoria subCategoria,
-      List<ItemDonacionIndependiente> items) {
+      Donacion donacionOriginal, SubCategoria subCategoria, List<ItemDonacionIndependiente> items) {
     if (donacionOriginal == null) {
       throw new IllegalArgumentException("La donación original no puede ser nula.");
     }
@@ -71,6 +68,6 @@ public class DonacionIndependiente {
       cantidadPorExtraer -= itemExtraido.getCantidad();
     }
 
-      return new DonacionIndependiente(this.donacionOriginal, this.subCategoria, itemsExtraidos);
+    return new DonacionIndependiente(this.donacionOriginal, this.subCategoria, itemsExtraidos);
   }
 }

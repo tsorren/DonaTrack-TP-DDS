@@ -1,12 +1,11 @@
 package grupo5.donaciones.models.entities.necesidades;
 
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-
-import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import lombok.Getter;
 import lombok.Setter;
 

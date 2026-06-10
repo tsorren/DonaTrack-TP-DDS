@@ -1,9 +1,8 @@
 package grupo5.donaciones.models.entities.bienes;
 
-import java.time.LocalDate;
-
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 

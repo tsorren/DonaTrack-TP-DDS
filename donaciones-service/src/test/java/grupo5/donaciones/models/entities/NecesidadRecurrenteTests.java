@@ -2,22 +2,20 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
+import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
-
-import grupo5.donaciones.models.entities.personas.Humana;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +29,8 @@ class NecesidadRecurrenteTests {
   @BeforeEach
   void setUp() {
 
-    Donacion donacion = new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now())));
+    Donacion donacion =
+        new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now())));
     categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad =
@@ -48,14 +47,11 @@ class NecesidadRecurrenteTests {
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
 
-    d1 =
-        new DonacionIndependiente(donacion, subcategoria, List.of(item1));
-
+    d1 = new DonacionIndependiente(donacion, subcategoria, List.of(item1));
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 100);
 
-    d2 =
-        new DonacionIndependiente(donacion, subcategoria, List.of(item2));
+    d2 = new DonacionIndependiente(donacion, subcategoria, List.of(item2));
   }
 
   @Test

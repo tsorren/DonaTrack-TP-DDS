@@ -1,9 +1,9 @@
 package grupo5.notificaciones.infrastructure;
 
 import grupo5.notificaciones.models.entities.personas.Correo;
-import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.entities.personas.Telefono;
 import grupo5.notificaciones.models.entities.personas.WhatsApp;
+import grupo5.notificaciones.models.ports.NotificacionSender;
 
 public class NotificacionRouter implements NotificacionSender {
 

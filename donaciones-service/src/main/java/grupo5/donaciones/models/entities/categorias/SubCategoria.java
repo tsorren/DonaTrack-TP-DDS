@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SubCategoria {
- private Categoria categoria;
+  private Categoria categoria;
   private String nombre;
 
   public SubCategoria(Categoria categoria, String nombre) {

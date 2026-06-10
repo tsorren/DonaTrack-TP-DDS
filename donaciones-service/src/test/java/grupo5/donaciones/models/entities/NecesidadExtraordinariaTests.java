@@ -3,23 +3,20 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
+import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
-import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.entities.personas.Persona;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,8 +29,8 @@ class NecesidadExtraordinariaTests {
   @BeforeEach
   void setUp() {
 
-    Donacion donacionOriginal = new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now()) {
-    }));
+    Donacion donacionOriginal =
+        new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now()) {}));
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
@@ -76,7 +73,7 @@ class NecesidadExtraordinariaTests {
     List<ItemDonacionIndependiente> items3 = new ArrayList<>();
     items3.add(item3);
     donacionAsignada3 = new DonacionIndependiente(donacionOriginal, subcategoria, items3);
-     }
+  }
 
   @Test
   void estaSatisfecha_cuandoCantidadAcumuladaEsMenor_deberiaSerFalse() {
