@@ -7,10 +7,12 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.*;
 import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class ItemDonacionTest {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private Bien bien;
 
@@ -23,7 +25,7 @@ class ItemDonacionTest {
         new Bien(
             "Abrigo de invierno",
             "abrigo.png",
-            LocalDate.now().plusMonths(2),
+            TEST_DATE.plusMonths(2),
             Estado.NUEVO,
             subcategoria);
   }

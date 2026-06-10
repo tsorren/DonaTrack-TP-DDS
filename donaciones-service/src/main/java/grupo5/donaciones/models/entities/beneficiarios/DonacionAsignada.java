@@ -4,6 +4,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,7 +28,8 @@ public class DonacionAsignada {
       throw new ValidationException(ErrorCatalog.DONACION_ASIGNADA_SIN_DONACION_INDEPENDIENTE);
     }
 
-    if (this.fechaAsignacion != null && this.fechaAsignacion.isAfter(LocalDateTime.now())) {
+    if (this.fechaAsignacion != null
+        && this.fechaAsignacion.isAfter(LocalDateTime.now(ZoneId.systemDefault()))) {
       throw new ValidationException(ErrorCatalog.FECHA_ASIGNACION_FUTURA);
     }
   }

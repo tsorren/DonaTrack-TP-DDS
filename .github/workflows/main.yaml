@@ -69,7 +69,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   # Pieza clave para microservicios: determina QUÉ módulos fueron
   # modificados para evitar compilar/testear todo el reactor.
-  # Si common-lib cambia, se reconstruyen TODOS los servicios dependientes.
+  # Si common-lib cambia, se reconstruyen todos los servicios dependientes.
   # ──────────────────────────────────────────────────────────────────────────
   detect-changes:
     needs: validate-git-flow
@@ -112,7 +112,7 @@ jobs:
           fi
 
       # Genera la matrix dinámica de servicios a construir.
-      # Si common-lib cambió, se construyen TODOS (dependencia transversal).
+      # Si common-lib cambió, se construyen todos (dependencia transversal).
       - name: Generar matrix de servicios
         id: matrix
         run: |
@@ -293,12 +293,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_URL: ${{ secrets.SONAR_URL }}
         run: |
           echo "📊 Ejecutando análisis SonarCloud..."
           mvn -B clean verify sonar:sonar \
-            -Dsonar.projectKey="${{ secrets.SONAR_PROJECT_KEY }}" \
-            -Dsonar.organization="${{ secrets.SONAR_ORG }}" \
-            -Dsonar.host.url="${{ secrets.SONAR_URL }}" \
+            -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+            -Dsonar.organization="$SONAR_ORG" \
+            -Dsonar.host.url="$SONAR_URL" \
             -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml \
             -Dsonar.junit.reportPaths=**/target/surefire-reports \
             -Dspotless.check.skip=true
@@ -465,7 +468,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   # Job 9: Quality Gate (Consolidador Final)
   # ──────────────────────────────────────────────────────────────────────────
-  # Job centinela que depende de TODOS los demás. Usar como "Required
+  # Job centinela que depende de todos los demás. Usar como "Required
   # Status Check" en las Branch Protection Rules de GitHub para tener
   # un único check verde/rojo que represente todo el pipeline.
   # ──────────────────────────────────────────────────────────────────────────

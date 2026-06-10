@@ -9,13 +9,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LectorCSV implements CargadorDonantes {
-
-  private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE;
 
   @Override
   public List<Humana> cargarDonantes(String rutaArchivo) {
@@ -42,7 +40,7 @@ public class LectorCSV implements CargadorDonantes {
         // LocalDate fecha = LocalDate.parse(datos[x], DATE_FORMATTER);
         // Para el test de fecha inválida, si tu archivo no trae fecha,
         // ajusta la lógica para que el test sea coherente.
-        LocalDate fecha = LocalDate.now().minusYears(20);
+        LocalDate fecha = LocalDate.now(ZoneId.systemDefault()).minusYears(20);
 
         personasCargadas.add(new Humana(nombre, apellido, fecha));
       }

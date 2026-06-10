@@ -4,6 +4,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.SubCategoria;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,7 +20,7 @@ public abstract class Necesidad {
     this.subcategoria = subcategoria;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
-    this.fechaInicio = LocalDate.now();
+    this.fechaInicio = LocalDate.now(ZoneId.systemDefault());
 
     validarNecesidad();
   }

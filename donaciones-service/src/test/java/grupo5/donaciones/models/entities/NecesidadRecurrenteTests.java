@@ -11,12 +11,16 @@ import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndep
 import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.Period;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class NecesidadRecurrenteTests {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
+  private static final LocalDateTime TEST_DATETIME = LocalDateTime.of(2026, Month.JUNE, 9, 12, 0);
+
   private NecesidadRecurrente necesidad;
   private DonacionAsignada d1;
   private DonacionAsignada d2;
@@ -33,23 +37,22 @@ class NecesidadRecurrenteTests {
             100,
             "30 bancos y sillas para el aula",
             Period.ofWeeks(1),
-            LocalDate.now().minusDays(5));
+            TEST_DATE.minusDays(5));
 
     Bien bien =
-        new Bien(
-            "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(reveal(bien), 40);
 
     DonacionIndependiente donacionIndependiente1 =
         new DonacionIndependiente(subcategoria, List.of(item1));
-    d1 = new DonacionAsignada(donacionIndependiente1, LocalDateTime.now());
+    d1 = new DonacionAsignada(donacionIndependiente1, TEST_DATETIME);
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(reveal(bien), 100);
 
     DonacionIndependiente donacionIndependiente2 =
         new DonacionIndependiente(subcategoria, List.of(item2));
-    d2 = new DonacionAsignada(donacionIndependiente2, LocalDateTime.now());
+    d2 = new DonacionAsignada(donacionIndependiente2, TEST_DATETIME);
   }
 
   private Bien reveal(Bien b) {
@@ -89,11 +92,7 @@ class NecesidadRecurrenteTests {
   void hayQueGenerarNuevo_cuandoPeriodoVencio_deberiaSerTrue() {
     NecesidadRecurrente necesidadVencida =
         new NecesidadRecurrente(
-            subcategoria,
-            100,
-            "Test de vencimiento",
-            Period.ofWeeks(1),
-            LocalDate.now().minusDays(10));
+            subcategoria, 100, "Test de vencimiento", Period.ofWeeks(1), TEST_DATE.minusDays(10));
 
     assertTrue(necesidadVencida.hayQueGenerarNuevo());
   }
