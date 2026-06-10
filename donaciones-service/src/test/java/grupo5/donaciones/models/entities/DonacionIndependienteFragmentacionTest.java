@@ -106,14 +106,14 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item2);
     items.add(item3);
 
-    DonacionIndependiente donacionIndependiente =
+    DonacionIndependiente donacionLocal =
         new DonacionIndependiente(donacion, subcategoria, items);
 
     // Fragmentando 13: debe tomar 5 + 8 (completos)
-    DonacionIndependiente fragmentada = donacionIndependiente.fragmentarse(13);
+    DonacionIndependiente fragmentada = donacionLocal.fragmentarse(13);
 
     assertEquals(13, fragmentada.getCantidad());
-    assertEquals(12, donacionIndependiente.getCantidad());
+    assertEquals(12, donacionLocal.getCantidad());
     assertEquals(2, fragmentada.getItems().size(), "Debe haber extraído 2 items completos");
   }
 
