@@ -1,8 +1,11 @@
 package grupo5.donaciones.models.entities.necesidades;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +21,7 @@ public abstract class Necesidad {
     this.subcategoria = subcategoria;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
-    this.fechaInicio = LocalDate.now();
+    this.fechaInicio = LocalDate.now(ZoneId.systemDefault());
 
     validarNecesidad();
   }
@@ -26,15 +29,15 @@ public abstract class Necesidad {
   private void validarNecesidad() {
 
     if (this.subcategoria == null) {
-      throw new IllegalArgumentException("La necesidad debe tener una subcategoría.");
+      throw new ValidationException(ErrorCatalog.NECESIDAD_SIN_SUBCATEGORIA);
     }
 
     if (this.cantidadNecesitada == null || this.cantidadNecesitada <= 0) {
-      throw new IllegalArgumentException("La cantidad necesitada debe ser mayor a cero.");
+      throw new ValidationException(ErrorCatalog.CANTIDAD_NECESITADA_INVALIDA);
     }
 
     if (this.descripcion == null || this.descripcion.trim().isEmpty()) {
-      throw new IllegalArgumentException("La descripción de la necesidad no puede estar vacía.");
+      throw new ValidationException(ErrorCatalog.DESCRIPCION_NECESIDAD_VACIA);
     }
   }
 

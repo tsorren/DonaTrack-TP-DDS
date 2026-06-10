@@ -1,7 +1,10 @@
 package grupo5.donaciones.models.entities.personas;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,13 +27,13 @@ public class Humana extends Persona {
   private static void validarDatosHumanos(
       String nombre, String apellido, LocalDate fechaNacimiento) {
     if (nombre == null || nombre.trim().isEmpty()) {
-      throw new IllegalArgumentException("El nombre de la persona no puede estar vacío.");
+      throw new ValidationException(ErrorCatalog.HUMANA_NOMBRE_VACIO);
     }
     if (apellido == null || apellido.trim().isEmpty()) {
-      throw new IllegalArgumentException("El apellido de la persona no puede estar vacío.");
+      throw new ValidationException(ErrorCatalog.HUMANA_APELLIDO_VACIO);
     }
-    if (fechaNacimiento != null && fechaNacimiento.isAfter(LocalDate.now())) {
-      throw new IllegalArgumentException("La fecha de nacimiento no puede ser futura.");
+    if (fechaNacimiento != null && fechaNacimiento.isAfter(LocalDate.now(ZoneId.systemDefault()))) {
+      throw new ValidationException(ErrorCatalog.HUMANA_FECHA_NACIMIENTO_FUTURA);
     }
   }
 

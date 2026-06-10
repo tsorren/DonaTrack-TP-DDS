@@ -1,5 +1,8 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.Bien;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,17 +25,18 @@ public class ItemDonacionIndependiente {
   private static void validarItemDonacion(Bien bien, Integer cantidad) {
 
     if (bien == null) {
-      throw new IllegalArgumentException("El item de donación debe tener un bien asociado.");
+      throw new ValidationException(ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_SIN_BIEN);
     }
 
     if (cantidad == null || cantidad <= 0) {
-      throw new IllegalArgumentException("La cantidad del item debe ser mayor a cero.");
+      throw new ValidationException(ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA);
     }
   }
 
   public ItemDonacionIndependiente fragmentarse(Integer cantidadNecesitada) {
     if (this.getCantidad() <= cantidadNecesitada) {
-      throw new RuntimeException();
+      throw new BusinessStateException(
+          ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA);
     }
     this.cantidad -= cantidadNecesitada;
 

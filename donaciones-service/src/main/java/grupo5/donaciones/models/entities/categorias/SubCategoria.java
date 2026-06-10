@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.categorias;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,11 +22,11 @@ public class SubCategoria {
   private static void validarSubCategoria(Categoria categoria, String nombre) {
 
     if (categoria == null) {
-      throw new IllegalArgumentException("La subcategoría debe pertenecer a una categoría.");
+      throw new ValidationException(ErrorCatalog.SUBCATEGORIA_SIN_CATEGORIA);
     }
 
     if (nombre == null || nombre.trim().isEmpty()) {
-      throw new IllegalArgumentException("La subcategoría debe tener un nombre.");
+      throw new ValidationException(ErrorCatalog.SUBCATEGORIA_SIN_NOMBRE);
     }
   }
 

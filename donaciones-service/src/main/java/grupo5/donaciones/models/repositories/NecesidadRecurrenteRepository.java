@@ -3,7 +3,6 @@ package grupo5.donaciones.models.repositories;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Repository;
 
 // Simulacion de base de datos, despues hay que implementar una enserio
@@ -20,8 +19,6 @@ public class NecesidadRecurrenteRepository {
 
   // Método para simular la búsqueda de comedores activos
   public List<NecesidadRecurrente> findByActivaTrue() {
-    return baseDeDatosFalsa.stream()
-        .filter(NecesidadRecurrente::getActiva)
-        .collect(Collectors.toList());
+    return baseDeDatosFalsa.stream().filter(NecesidadRecurrente::getActiva).toList();
   }
 }

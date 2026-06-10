@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.personas;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,19 +38,19 @@ public class Direccion implements Anonimizable {
       String calle, Integer altura, String codigoPostal, Localidad localidad) {
 
     if (calle == null || calle.trim().isEmpty()) {
-      throw new IllegalArgumentException("La dirección debe tener una calle.");
+      throw new ValidationException(ErrorCatalog.DIRECCION_CALLE_VACIA);
     }
 
     if (altura == null || altura <= 0) {
-      throw new IllegalArgumentException("La altura debe ser mayor a cero.");
+      throw new ValidationException(ErrorCatalog.DIRECCION_ALTURA_INVALIDA);
     }
 
     if (codigoPostal == null || codigoPostal.trim().isEmpty()) {
-      throw new IllegalArgumentException("La dirección debe tener un código postal.");
+      throw new ValidationException(ErrorCatalog.DIRECCION_CODIGO_POSTAL_VACIO);
     }
 
     if (localidad == null) {
-      throw new IllegalArgumentException("La dirección debe tener una localidad.");
+      throw new ValidationException(ErrorCatalog.DIRECCION_LOCALIDAD_NULA);
     }
   }
 
