@@ -71,7 +71,7 @@ jobs:
           fi
 
       - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+        uses: JamesIves/github-pages-deploy-action@1d4f60c77c6ef842c3532aa4e8f3ebcfd1c9676e
         with:
           folder: staging
           branch: gh-pages
