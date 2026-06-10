@@ -2,13 +2,18 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.donaciones.models.entities.beneficiarios.DonacionAsignada;
-import grupo5.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
-import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
+import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,13 +21,16 @@ import org.junit.jupiter.api.Test;
 
 class NecesidadRecurrenteTests {
   private NecesidadRecurrente necesidad;
-  private DonacionAsignada d1;
-  private DonacionAsignada d2;
+  private DonacionIndependiente d1;
+  private DonacionIndependiente d2;
   private SubCategoria subcategoria;
   private Categoria categoria;
 
   @BeforeEach
   void setUp() {
+
+    Donacion donacion =
+        new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now())));
     categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad =
@@ -39,15 +47,11 @@ class NecesidadRecurrenteTests {
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
 
-    DonacionIndependiente donacionIndependiente1 =
-        new DonacionIndependiente(subcategoria, List.of(item1));
-    d1 = new DonacionAsignada(donacionIndependiente1, LocalDateTime.now());
+    d1 = new DonacionIndependiente(donacion, subcategoria, List.of(item1));
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 100);
 
-    DonacionIndependiente donacionIndependiente2 =
-        new DonacionIndependiente(subcategoria, List.of(item2));
-    d2 = new DonacionAsignada(donacionIndependiente2, LocalDateTime.now());
+    d2 = new DonacionIndependiente(donacion, subcategoria, List.of(item2));
   }
 
   @Test

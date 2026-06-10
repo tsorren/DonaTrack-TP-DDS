@@ -1,17 +1,17 @@
-package grupo5.donaciones.models.entities.donaciones;
+package grupo5.donaciones.models.entities.donacionesIndependientes;
 
 import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ItemDonacion {
+public class ItemDonacionIndependiente {
+  private DonacionIndependiente donacionIndependiente;
   private Bien bien;
   private Integer cantidad;
 
-  public ItemDonacion(Bien bien, Integer cantidad) {
+  public ItemDonacionIndependiente(Bien bien, Integer cantidad) {
 
     validarItemDonacion(bien, cantidad);
 
@@ -30,7 +30,12 @@ public class ItemDonacion {
     }
   }
 
-  public ItemDonacionIndependiente toItemDonacionIndependiente() {
-    return new ItemDonacionIndependiente(bien, cantidad);
+  public ItemDonacionIndependiente fragmentarse(Integer cantidadNecesitada) {
+    if (this.getCantidad() <= cantidadNecesitada) {
+      throw new RuntimeException();
+    }
+    this.cantidad -= cantidadNecesitada;
+
+    return new ItemDonacionIndependiente(this.bien, cantidadNecesitada);
   }
 }

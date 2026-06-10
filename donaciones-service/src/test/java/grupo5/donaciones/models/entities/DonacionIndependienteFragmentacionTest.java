@@ -2,9 +2,16 @@ package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +20,14 @@ import org.junit.jupiter.api.Test;
 
 class DonacionIndependienteFragmentacionTest {
 
+  private Donacion donacion;
   private SubCategoria subcategoria;
   private Bien bien;
   private DonacionIndependiente donacionIndependiente;
 
   @BeforeEach
   void setUp() {
+    donacion = new Donacion(new Donante(new Humana("nombre", "apellido", LocalDate.now())));
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
 
@@ -33,7 +42,7 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item1);
     items.add(item2);
 
-    donacionIndependiente = new DonacionIndependiente(subcategoria, items);
+    donacionIndependiente = new DonacionIndependiente(donacion, subcategoria, items);
   }
 
   @Test
@@ -91,13 +100,14 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item2);
     items.add(item3);
 
-    DonacionIndependiente donacion = new DonacionIndependiente(subcategoria, items);
+    DonacionIndependiente donacionIndependiente =
+        new DonacionIndependiente(donacion, subcategoria, items);
 
     // Fragmentando 13: debe tomar 5 + 8 (completos)
-    DonacionIndependiente fragmentada = donacion.fragmentarse(13);
+    DonacionIndependiente fragmentada = donacionIndependiente.fragmentarse(13);
 
     assertEquals(13, fragmentada.getCantidad());
-    assertEquals(12, donacion.getCantidad());
+    assertEquals(12, donacionIndependiente.getCantidad());
     assertEquals(2, fragmentada.getItems().size(), "Debe haber extraído 2 items completos");
   }
 

@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.beneficiarios.NecesidadExtraordinaria;
-import grupo5.donaciones.models.entities.bienes.Categoria;
-import grupo5.donaciones.models.entities.bienes.SubCategoria;
-import grupo5.donaciones.models.entities.bienes.Unidad;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import java.time.LocalDate;
