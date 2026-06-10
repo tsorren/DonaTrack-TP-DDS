@@ -3,6 +3,8 @@ package grupo5.donaciones.infraestructure;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,10 +42,10 @@ class LectorCSVTest {
 
     // Si tu clase Humana valida fechas, lanza excepción en el constructor
     assertThrows(
-        Exception.class,
+        ValidationException.class,
         () -> {
           // Aquí simulas el error que el lector debe propagar
-          throw new IllegalArgumentException("Fecha inválida");
+          throw new ValidationException(ErrorCatalog.TEST_FECHA_INVALIDA);
         });
   }
 }

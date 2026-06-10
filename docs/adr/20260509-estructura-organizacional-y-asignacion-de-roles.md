@@ -1,6 +1,6 @@
 # Estructura Organizacional y Asignación de Roles
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-09
 - Deciders: Decisión Grupal
 - Tags: organizacion, gestion-equipo, roles

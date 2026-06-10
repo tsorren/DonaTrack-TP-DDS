@@ -67,7 +67,6 @@ Para garantizar la calidad y mantenibilidad, hemos adoptado las siguientes decis
 - Comunicación Asincrónica: Implementación de mensajería basada en eventos para desacoplar los servicios, mejorando la escalabilidad y tolerancia a fallos.
 - Pruebas Unitarias: Uso intensivo de JUnit y Mockito, garantizando el aislamiento y determinismo en los tests de lógica de negocio.
 
-
 ## Grupo 5 - Integrantes:
 |                **Nombre**                | **Legajo** |           **Correo**          |
 |:----------------------------------------:|:----------:|:-----------------------------:|

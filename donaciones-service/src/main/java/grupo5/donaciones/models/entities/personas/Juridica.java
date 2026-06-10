@@ -1,5 +1,8 @@
 package grupo5.donaciones.models.entities.personas;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,33 +19,31 @@ public class Juridica extends Persona {
 
   public Juridica(Humana representanteInicial) {
     if (representanteInicial == null) {
-      throw new IllegalArgumentException(
-          "Toda persona jurídica debe tener al menos un representante al registrarse.");
+      throw new ValidationException(ErrorCatalog.JURIDICA_SIN_REPRESENTANTE_INICIAL);
     }
     this.representantes.add(representanteInicial);
   }
 
   public void agregarRepresentante(Humana representante) {
     if (representante == null) {
-      throw new IllegalArgumentException("El representante a agregar no puede ser nulo.");
+      throw new ValidationException(ErrorCatalog.JURIDICA_AGREGAR_REPRESENTANTE_NULO);
     }
     this.representantes.add(representante);
   }
 
   public void quitarRepresentante(Humana representante) {
     if (!this.representantes.contains(representante)) {
-      throw new IllegalArgumentException(
-          "El representante no pertenece a la lista de esta entidad jurídica.");
+      throw new ValidationException(ErrorCatalog.JURIDICA_QUITAR_REPRESENTANTE_INEXISTENTE);
     }
     if (this.representantes.size() == 1) {
-      throw new IllegalStateException("La entidad jurídica no puede quedarse sin representantes.");
+      throw new BusinessStateException(ErrorCatalog.JURIDICA_SIN_REPRESENTANTES_RESTANTES);
     }
     this.representantes.remove(representante);
   }
 
   @Override
   public void anonimizar() {
-    this.razonSocial = "ANONIMIZADO";
+    this.razonSocial = Anonimizable.VALOR_STRING;
     // Anonimizamos todos los representantes en la lista
     this.representantes.forEach(Anonimizable::anonimizar);
   }
