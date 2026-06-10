@@ -1,5 +1,6 @@
 package grupo5.donaciones.services;
 
+import grupo5.common.errors.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.donantes.ActualizarDonanteRequest;
 import grupo5.donaciones.dto.donantes.CrearDonanteRequest;
 import grupo5.donaciones.dto.donantes.DonanteDTO;
@@ -25,7 +26,7 @@ public class DonantesService {
   public DonanteDTO buscarPorId(Long id) {
     return donantesRepository
         .buscarPorId(id)
-        .orElseThrow(() -> new RuntimeException("No existe un donante con id " + id));
+        .orElseThrow(() -> new RecursoNoEncontradoException("No existe un donante con id " + id));
   }
 
   public DonanteDTO crear(CrearDonanteRequest request) {
