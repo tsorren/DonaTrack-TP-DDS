@@ -1,6 +1,7 @@
 package grupo5.donaciones.dto.necesidades;
 
-public record ActualizarNecesidadDTO(
+public record NecesidadDTO(
+    Long id,
     Long entidadBeneficiariaId,
     String tipoNecesidad,
     String subcategoria,
