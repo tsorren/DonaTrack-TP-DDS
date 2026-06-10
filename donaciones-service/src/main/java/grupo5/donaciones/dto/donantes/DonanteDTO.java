@@ -1,6 +1,7 @@
 package grupo5.donaciones.dto.donantes;
 
-public record CrearDonanteRequest(
+public record DonanteDTO(
+    Long id,
     String tipoPersona,
     String tipoDocumento,
     String documento,
