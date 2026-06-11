@@ -5,7 +5,9 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,6 +18,9 @@ public class DonacionIndependiente {
   private Donacion donacionOriginal;
   private SubCategoria subCategoria;
   private List<ItemDonacionIndependiente> items;
+  private EstadoDonacion estadoActual;
+  private final List<CambioEstado> historial;
+  private final LocalDateTime fechaRegistro;
 
   public DonacionIndependiente(
       Donacion donacionOriginal, SubCategoria subCategoria, List<ItemDonacionIndependiente> items) {
@@ -29,6 +34,10 @@ public class DonacionIndependiente {
 
     this.items = new ArrayList<>();
     items.forEach(this::agregarItem);
+
+    this.estadoActual = new EnDeposito();
+    this.historial = new ArrayList<>();
+    this.fechaRegistro = LocalDateTime.now();
   }
 
   public void agregarItem(ItemDonacionIndependiente item) {
@@ -71,5 +80,49 @@ public class DonacionIndependiente {
     }
 
     return new DonacionIndependiente(this.donacionOriginal, this.subCategoria, itemsExtraidos);
+  }
+
+  // Métodos de negocio — delegan al estado actual
+  public void registrar() {
+    this.estadoActual.registrar(this);
+  }
+
+  public void asignar() {
+    this.estadoActual.asignar(this);
+  }
+
+  public void planificarRuta() {
+    this.estadoActual.planificarRuta(this);
+  }
+
+  public void iniciarRecorrido() {
+    this.estadoActual.iniciarRecorrido(this);
+  }
+
+  public void confirmarEntrega() {
+    this.estadoActual.confirmarEntrega(this);
+  }
+
+  public void registrarFalla(String justificacion) {
+    this.estadoActual.registrarFalla(this, justificacion);
+  }
+
+  public void retornar() {
+    this.estadoActual.retornar(this);
+  }
+
+  public void vencer() {
+    this.estadoActual.vencer(this);
+  }
+
+  // Llamado únicamente por los estados concretos
+  public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion) {
+    CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion);
+    this.historial.add(cambio);
+    this.estadoActual = nuevoEstado;
+  }
+
+  public List<CambioEstado> getHistorial() {
+    return Collections.unmodifiableList(historial);
   }
 }
