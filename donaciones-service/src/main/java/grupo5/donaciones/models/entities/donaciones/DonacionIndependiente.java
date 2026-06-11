@@ -18,7 +18,7 @@ public class DonacionIndependiente {
 
     if (descripcion == null || descripcion.trim().isEmpty()) {
       throw new IllegalArgumentException(
-              "La descripción de la donación independiente no puede estar vacía.");
+          "La descripción de la donación independiente no puede estar vacía.");
     }
 
     this.descripcion = descripcion;
@@ -37,7 +37,7 @@ public class DonacionIndependiente {
   public void quitarItem(ItemDonacion bien) {
     if (!this.items.contains(bien)) {
       throw new IllegalArgumentException(
-              "El ítem que intenta quitar no pertenece a esta donación.");
+          "El ítem que intenta quitar no pertenece a esta donación.");
     }
     this.items.remove(bien);
   }
