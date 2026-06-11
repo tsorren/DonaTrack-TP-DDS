@@ -1,2 +1,4 @@
+grupo5.common.config.RabbitMQCommonConfig
+
 grupo5.common.openapi.DonaTrackOpenApiAutoConfiguration
 grupo5.common.CommonLibAutoConfiguration

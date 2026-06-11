@@ -1,6 +1,11 @@
 package grupo5.donaciones.models.entities.bienes;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,31 +36,28 @@ public class Bien {
   private void validarReglasDeNegocio() {
     // 1. Validar que la descripción no sea vacía
     if (this.descripcion == null || this.descripcion.trim().isEmpty()) {
-      throw new IllegalArgumentException("La descripción del bien no puede estar vacía.");
+      throw new ValidationException(ErrorCatalog.DESCRIPCION_BIEN_VACIA);
     }
     // 2. Validar que la subcategoría exista
     if (this.subcategoria == null) {
-      throw new IllegalArgumentException("El bien debe tener una subcategoría asignada.");
+      throw new ValidationException(ErrorCatalog.BIEN_SIN_SUBCATEGORIA);
     }
 
     Categoria categoria = this.subcategoria.getCategoria();
     if (categoria != null) {
       // 3. Validar bienes cuya categoría requiera vencimiento
       if (Boolean.TRUE.equals(categoria.getConVencimiento()) && this.fechaVencimiento == null) {
-        throw new IllegalArgumentException(
-            "La categoría exige una fecha de vencimiento (es perecedero).");
+        throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_REQUERIDO);
       }
 
       // 4. Validar bienes cuya categoría no requiera vencimiento
       if (Boolean.FALSE.equals(categoria.getConVencimiento()) && this.fechaVencimiento != null) {
-        throw new IllegalArgumentException(
-            "La categoría NO permite registrar una fecha de vencimiento.");
+        throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_NO_PERMITIDO);
       }
 
       // 5. Validar bienes cuya categoría requiera uso (estado)
       if (Boolean.TRUE.equals(categoria.getConUso()) && this.estado == null) {
-        throw new IllegalArgumentException(
-            "La categoría exige especificar el estado del bien (ej: NUEVO, USADO).");
+        throw new ValidationException(ErrorCatalog.BIEN_ESTADO_REQUERIDO);
       }
     }
   }
@@ -63,6 +65,6 @@ public class Bien {
   // metodos
   public boolean estaVencido() {
     if (this.fechaVencimiento == null) return false;
-    return this.fechaVencimiento.isBefore(LocalDate.now());
+    return this.fechaVencimiento.isBefore(LocalDate.now(ZoneId.systemDefault()));
   }
 }

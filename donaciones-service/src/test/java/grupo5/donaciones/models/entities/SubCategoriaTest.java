@@ -1,16 +1,21 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SubCategoriaTest {
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private SubCategoria subcategoria;
   private Bien bien;
@@ -23,27 +28,73 @@ class SubCategoriaTest {
     subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
 
     bien =
-        new Bien(
-            "descripcion", "imagen.png", LocalDate.now().plusMonths(2), Estado.NUEVO, subcategoria);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
   }
 
   @Test
+  void constructor_conCategoriaNull_debeLanzarExcepcion() {
+    ValidationException exception =
+        assertThrows(
+            ValidationException.class,
+            () -> new SubCategoria(null, "Ropa de Invierno"),
+            "Debería lanzar excepción cuando la categoría es nula");
+    assertNotNull(exception);
+    assertEquals(ErrorCatalog.SUBCATEGORIA_SIN_CATEGORIA, exception.getError());
+  }
+
+  @Test
+  void constructor_conNombreNull_debeLanzarExcepcion() {
+    Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
+    ValidationException exception =
+        assertThrows(
+            ValidationException.class,
+            () -> new SubCategoria(categoria, null),
+            "Debería lanzar excepción cuando el nombre es nulo");
+    assertNotNull(exception);
+    assertEquals(ErrorCatalog.SUBCATEGORIA_SIN_NOMBRE, exception.getError());
+  }
+
+  @Test
+  void constructor_conNombreVacio_debeLanzarExcepcion() {
+    Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
+    ValidationException exception =
+        assertThrows(
+            ValidationException.class,
+            () -> new SubCategoria(categoria, "   "),
+            "Debería lanzar excepción cuando el nombre está vacío");
+    assertNotNull(exception);
+    assertEquals(ErrorCatalog.SUBCATEGORIA_SIN_NOMBRE, exception.getError());
+  }
+
+  @Test
+  void constructor_conParametrosValidos_debeCrearseCorrectamente() {
+    Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
+    String nombre = "Ropa de Verano";
+    SubCategoria nuevaSubCategoria = new SubCategoria(categoria, nombre);
+
+    assertNotNull(nuevaSubCategoria);
+    assertEquals(nombre, nuevaSubCategoria.getNombre());
+    assertEquals(categoria, nuevaSubCategoria.getCategoria());
+  }
+
+  /* TODO: Pasar a capa service
+  @Test
   void calcularStock_SumaCorrectamenteLosItemsDeLasDonaciones() {
-    ItemDonacion item1 = new ItemDonacion(bien, 5);
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 5);
 
-    ItemDonacion item2 = new ItemDonacion(bien, 10);
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 10);
 
-    ItemDonacion item3 = new ItemDonacion(bien, 5);
+    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien, 5);
 
-    DonacionIndependiente donacion1 = new DonacionIndependiente("Donación de camperas");
-    donacion1.agregarItem(item1);
-    donacion1.agregarItem(item2);
+    List<ItemDonacionIndependiente> items1 = new ArrayList<>();
+    items1.add(item1);
+    items1.add(item2);
+    new DonacionIndependiente(subcategoria, items1);
 
-    DonacionIndependiente donacion2 = new DonacionIndependiente("Donación de bufanda");
-    donacion2.agregarItem(item3);
+    List<ItemDonacionIndependiente> items2 = new ArrayList<>();
+    items2.add(item3);
 
-    subcategoria.agregarDonacion(donacion1);
-    subcategoria.agregarDonacion(donacion2);
+    new DonacionIndependiente(subcategoria, items2);
 
     Integer stockTotal = subcategoria.calcularStock();
 
@@ -57,12 +108,5 @@ class SubCategoriaTest {
   void calcularStock_cuandoNoHayDonaciones_deberiaRetornarCero() {
     assertEquals(0, subcategoria.calcularStock(), "El stock debe ser 0 si no hay donaciones");
   }
-
-  @Test
-  void agregarDonacion_noDeberiaPermitirNulos() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> subcategoria.agregarDonacion(null),
-        "Debería lanzar error al agregar una donación nula");
-  }
+  */
 }

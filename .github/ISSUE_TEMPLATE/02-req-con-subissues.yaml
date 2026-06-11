@@ -1,0 +1,115 @@
+name: Nuevo requerimiento con Sub-Issues
+description: Plantilla para la creación de requerimientos con desglose automático de tareas en cascada
+title: "[REQ] - "
+labels: ["requerimiento"]
+assignees: [""]
+projects: "DonaTrack"
+body:
+  - type: dropdown
+    id: entrega_milestone
+    attributes:
+      label: Entrega / Milestone
+      description: Seleccionar a qué etapa del proyecto pertenece según el cronograma del PDF.
+      options:
+        - "Entrega 1: Arquitectura y Modelado en Objetos - Parte I"
+        - "Entrega 2: Arquitectura y Modelado en Objetos - Parte II"
+        - "Entrega 3: Arquitectura y Modelado en Objetos - Parte III"
+        - "Entrega 4: Persistencia y Maquetado de Interfaz de Usuario"
+        - "Entrega 5: Arquitectura Web MVC"
+        - "Entrega 6: Despliegue, Observabilidad y Seguridad"
+    validations:
+      required: true
+
+  - type: input
+    id: fecha_estimada
+    attributes:
+      label: Fecha de finalización estimada (Opcional)
+      placeholder: "DD/MM/AAAA (Ej: 22/05/2026)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: problema
+    attributes:
+      label: Problema a resolver
+      placeholder: "Como [rol], quiero [objetivo/funcionalidad] para [beneficio/razón]"
+    validations:
+      required: true
+
+  - type: textarea
+    id: informacion_de_enunciado
+    attributes:
+      label: Información de enunciado relevante
+      placeholder: "Detallar qué secciones del enunciado son relevantes para este requerimiento"
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion_detallada
+    attributes:
+      label: Descripción de la issue
+      placeholder: "Detallar el comportamiento esperado y reglas de negocio involucradas"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: componentes
+    attributes:
+      label: Componentes afectados
+      description: Marcar todos los módulos que se verán afectados por esta implementación.
+      options:
+        - label: Servicio de Notificaciones
+        - label: Servicio de Donaciones
+        - label: Servicio de Autenticación
+        - label: Servicio de Logística
+        - label: Cliente Liviano (UI/UX)
+        - label: Otros
+
+  - type: textarea
+    id: tasklist
+    attributes:
+      label: Sub-Issues Planificadas
+      description: Marcar o desmarcar las tareas de calidad y diseño para el desglose automático.
+      value: |
+        - [ ] Estructura: Creación de la estructura de la implementación (paquetes, entidades, interfaces)
+        - [ ] Dominio: Implementación de la lógica de la capa de dominio
+        - [ ] Tests Unidad: Desarrollo de pruebas unitarias correspondientes
+        - [ ] Persistencia: Implementación de gestores, servicios y repositorios de datos
+        - [ ] Tests Orquestación: Desarrollo de pruebas de integración y orquestación de servicios
+        - [ ] Controladores/Endpoints/Planificadores: Implementación de controladores, endpoints y planificadores
+        - [ ] Tests UI/Endpoints: Desarrollo de pruebas del controlador, endpoint y planificador
+        - [ ] Calidad y Diseño: Documentación de decisiones (ADR) y verificación de consistencia con diagramas UML
+    validations:
+      required: true
+
+  - type: textarea
+    id: asignaciones
+    attributes:
+      label: Asignaciones Planificadas
+      description: "Especificar los nombres de usuario de GitHub para cada sub-issue (ej. Task 1: @usuario)."
+      value: |
+        - Task 1: @
+        - Task 2: @
+        - Task 3: @
+        - Task 4: @
+        - Task 5: @
+        - Task 6: @
+        - Task 7: @
+        - Task 8: @
+    validations:
+      required: true
+
+  - type: textarea
+    id: adr_refs
+    attributes:
+      label: Referencias de ADRs existentes (Opcional)
+      description: "Ingresar las rutas de los ADRs relacionados (uno por línea)"
+      placeholder: |
+        docs/adr/donaciones/ADR-001.md
+
+  - type: input
+    id: dependencia
+    attributes:
+      label: Dependencia (Opcional)
+      description: "Ingresar el ID de issue del cual depende esta tarea"
+      placeholder: "ID de issue (ej: #12)"

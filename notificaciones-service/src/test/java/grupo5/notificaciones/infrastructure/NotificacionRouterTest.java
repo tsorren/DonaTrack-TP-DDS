@@ -5,12 +5,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import grupo5.notificaciones.models.entities.medioDeContacto.Correo;
-import grupo5.notificaciones.models.entities.medioDeContacto.Telefono;
-import grupo5.notificaciones.models.entities.medioDeContacto.WhatsApp;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.personas.Correo;
+import grupo5.notificaciones.models.entities.personas.Persona;
+import grupo5.notificaciones.models.entities.personas.Telefono;
+import grupo5.notificaciones.models.entities.personas.WhatsApp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

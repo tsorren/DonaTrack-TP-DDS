@@ -1,6 +1,6 @@
 # Stack de Tecnologías para el Desarrollo y Colaboración
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-04-26
 - Deciders: Decisión Grupal
 - Tags: stack-tecnologico, infraestructura, colaboracion, desarrollo
