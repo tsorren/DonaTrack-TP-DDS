@@ -2,7 +2,6 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-
 import lombok.Getter;
 
 @Getter
