@@ -6,6 +6,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +38,7 @@ public class DonacionIndependiente {
 
     this.estadoActual = new EnDeposito();
     this.historial = new ArrayList<>();
-    this.fechaRegistro = LocalDateTime.now();
+    this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
   }
 
   public void agregarItem(ItemDonacionIndependiente item) {

@@ -92,12 +92,12 @@ class NecesidadRecurrenteTests {
         new NecesidadRecurrente(
             subcategoria, 100, "Test de vencimiento", Period.ofWeeks(1), TEST_DATE.minusDays(10));
 
-    assertTrue(necesidadVencida.hayQueGenerarNuevo());
+    assertTrue(necesidadVencida.hayQueGenerarNuevo(TEST_DATE));
   }
 
   @Test
   void hayQueGenerarNuevo_cuandoPeriodoAunEstaVigente_deberiaSerFalse() {
-    assertFalse(necesidad.hayQueGenerarNuevo());
+    assertFalse(necesidad.hayQueGenerarNuevo(TEST_DATE));
   }
 
   @Test
