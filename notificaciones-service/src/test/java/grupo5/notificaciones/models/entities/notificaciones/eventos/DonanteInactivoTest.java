@@ -7,11 +7,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class DonanteInactivoTest {
+class DonanteInactivoTest {
   @Test
   @DisplayName(
       "Dado un donante inactivo por 30 días, debe generar una notificación con el mensaje correcto")
-  public void testGenerarNotificacionDonanteInactivo() {
+  void testGenerarNotificacionDonanteInactivo() {
     Persona mockDonante = new Persona();
     mockDonante.setDenominacion("Juan Pérez");
 
