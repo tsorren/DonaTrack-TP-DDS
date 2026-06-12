@@ -12,9 +12,6 @@
     <artifactId>common-lib</artifactId>
     <packaging>jar</packaging>
 
-    <dependencies>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>

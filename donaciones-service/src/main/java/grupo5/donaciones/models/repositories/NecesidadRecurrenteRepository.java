@@ -1,6 +1,6 @@
 package grupo5.donaciones.models.repositories;
 
-import grupo5.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
+import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Repository;

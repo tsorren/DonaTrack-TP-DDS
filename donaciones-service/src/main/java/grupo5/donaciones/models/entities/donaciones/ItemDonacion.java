@@ -3,7 +3,7 @@ package grupo5.donaciones.models.entities.donaciones;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import lombok.Getter;
 import lombok.Setter;
 

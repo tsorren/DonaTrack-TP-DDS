@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.bienes.Categoria;
-import grupo5.donaciones.models.entities.bienes.Unidad;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
 import org.junit.jupiter.api.Test;
 
 class CategoriaTest {

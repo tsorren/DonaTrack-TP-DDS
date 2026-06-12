@@ -5,8 +5,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import java.time.LocalDate;
 import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,11 +91,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     ItemDonacionIndependiente itemFragmentado = itemDonacion.fragmentarse(5);
 
     assertNotNull(itemFragmentado);
-    assertEquals(reveal(bien), itemFragmentado.getBien(), "El nuevo item debe tener el mismo bien");
-  }
-
-  private Bien reveal(Bien b) {
-    return b;
+    assertEquals(bien, itemFragmentado.getBien(), "El nuevo item debe tener el mismo bien");
   }
 
   @Test

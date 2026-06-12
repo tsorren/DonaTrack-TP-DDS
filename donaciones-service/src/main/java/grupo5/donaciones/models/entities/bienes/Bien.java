@@ -2,6 +2,8 @@ package grupo5.donaciones.models.entities.bienes;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import lombok.Getter;

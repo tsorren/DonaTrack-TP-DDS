@@ -2,6 +2,7 @@ package grupo5.donaciones.models.entities.beneficiarios;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.ArrayList;
