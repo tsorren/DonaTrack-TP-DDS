@@ -84,12 +84,12 @@ public class NecesidadRecurrente extends Necesidad {
     return actual != null && actual.estaSatisfecha();
   }
 
-  public boolean hayQueGenerarNuevo() {
+  public boolean hayQueGenerarNuevo(LocalDate fechaActual) {
     if (this.activa != null && !this.activa) return false;
     if (this.periodos.isEmpty()) return true;
 
     // crear un período nuevo si "hoy" es posterior a la fecha de vencimiento
-    return !obtenerPeriodoActual().estaEnPeriodo(LocalDate.now(ZoneId.systemDefault()));
+    return !obtenerPeriodoActual().estaEnPeriodo(fechaActual);
   }
 
   public void generarNuevoPeriodo() {
