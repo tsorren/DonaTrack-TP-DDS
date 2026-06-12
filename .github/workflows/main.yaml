@@ -145,17 +145,7 @@ jobs:
           DOCKER_SERVICES=()
           COMMON="${{ steps.filter.outputs.common-lib }}"
 
-          for svc in donaciones-service notificaciones-service; do
-            if [[ -f "${svc}/Dockerfile" ]]; then
-              CHANGED="${{ steps.filter.outputs[env.svc] }}"
-              # Reconstruir si el servicio cambió O si common-lib cambió
-              if [[ "$COMMON" == "true" || "${{ steps.filter.outputs[format('{0}', env.svc)] }}" == "true" ]]; then
-                DOCKER_SERVICES+=("{\"service\":\"${svc}\"}")
-              fi
-            fi
-          done
-
-          # Fallback: chequear directamente
+          # Fallback corregido y unificado directamente de manera segura
           DOCKER_FINAL=()
           if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
             if [[ -f "donaciones-service/Dockerfile" ]]; then
@@ -310,39 +300,38 @@ jobs:
             -Dspotless.check.skip=true
           echo "✅ Análisis SonarCloud completado."
 
-# ──────────────────────────────────────────────────────────────────────────
-# Job 6: Verificación de Imágenes Docker (Matrix)
-# ──────────────────────────────────────────────────────────────────────────
-# Construye las imágenes Docker SOLO de los servicios modificados.
-# No hace push (es CI, no CD). Usa cache de layers para acelerar builds.
-# ──────────────────────────────────────────────────────────────────────────
-docker-build:
-  needs: [detect-changes, build-and-test]
-  if: >-
-    needs.build-and-test.result == 'success' &&
-    toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]'
-  runs-on: ubuntu-latest
-  permissions:
-    contents: read
-  strategy:
-    fail-fast: false
-    matrix: ${{ fromJSON(needs.detect-changes.outputs.docker-matrix) }}
-  steps:
-    - uses: actions/checkout@v4
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 6: Verificación de Imágenes Docker (Matrix)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Construye las imágenes Docker SOLO de los servicios modificados.
+  # No hace push (es CI, no CD). Usa cache de layers para acelerar builds.
+  # ──────────────────────────────────────────────────────────────────────────
+  docker-build:
+    needs: [detect-changes, build-and-test]
+    if: >-
+      needs.build-and-test.result == 'success' &&
+      toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.docker-matrix) }}
+    steps:
+      - uses: actions/checkout@v4
 
-    - name: Configurar Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: "Construir imagen: ${{ matrix.service }}"
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        file: ${{ matrix.service }}/Dockerfile
-        push: false
-        tags: donatrack/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
-        cache-from: type=gha,scope=${{ matrix.service }}
-        # Cambiado aquí abajo: se agrega ignore-error=true 👇
-        cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
+      - name: "Construir imagen: ${{ matrix.service }}"
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.service }}/Dockerfile
+          push: false
+          tags: donatrack/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 7: Generar Diagramas (Siempre)
