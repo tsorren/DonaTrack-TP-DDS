@@ -8,17 +8,20 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DonanteInactivo extends EventoNotificable {
-    private Integer diasInactividad;
+  private Integer diasInactividad;
 
-    @Override
-    public List<Notificacion> generarNotificaciones() {
-        // Armamos un mensaje empático que fomente el regreso del donante
-        String mensaje = "¡Te extrañamos en DonaTrack! "
-                + "Hemos notado que han pasado " + diasInactividad + " días desde tu última actividad. "
-                + "Las entidades beneficiarias aún necesitan tu ayuda. ¡Vuelve a hacer la diferencia!";
+  @Override
+  public List<Notificacion> generarNotificaciones() {
+    // Armamos un mensaje empático que fomente el regreso del donante
+    String mensaje =
+        "¡Te extrañamos en DonaTrack! "
+            + "Hemos notado que han pasado "
+            + diasInactividad
+            + " días desde tu última actividad. "
+            + "Las entidades beneficiarias aún necesitan tu ayuda. ¡Vuelve a hacer la diferencia!";
 
-        Notificacion notificacion = new Notificacion(this.getPersona(), mensaje);
+    Notificacion notificacion = new Notificacion(this.getPersona(), mensaje);
 
-        return List.of(notificacion);
-    }
+    return List.of(notificacion);
+  }
 }

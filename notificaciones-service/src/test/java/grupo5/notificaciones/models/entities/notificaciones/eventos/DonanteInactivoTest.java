@@ -1,32 +1,39 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-import grupo5.notificaciones.models.entities.persona.Persona;
 import java.util.List;
+
+import grupo5.notificaciones.models.entities.personas.Persona;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 public class DonanteInactivoTest {
-    @Test
-    @DisplayName("Dado un donante inactivo por 30 días, debe generar una notificación con el mensaje correcto")
-    public void testGenerarNotificacionDonanteInactivo() {
-        Persona mockDonante = new Persona();
-        mockDonante.setDenominacion("Juan Pérez");
+  @Test
+  @DisplayName(
+      "Dado un donante inactivo por 30 días, debe generar una notificación con el mensaje correcto")
+  public void testGenerarNotificacionDonanteInactivo() {
+    Persona mockDonante = new Persona();
+    mockDonante.setDenominacion("Juan Pérez");
 
-        Integer dias = 30;
+    Integer dias = 30;
 
-        DonanteInactivo eventoInactividad = new DonanteInactivo();
-        eventoInactividad.setPersona(mockDonante);
-        eventoInactividad.setDiasInactividad(dias);
+    DonanteInactivo eventoInactividad = new DonanteInactivo();
+    eventoInactividad.setPersona(mockDonante);
+    eventoInactividad.setDiasInactividad(dias);
 
-        List<Notificacion> notificaciones = eventoInactividad.generarNotificaciones();
+    List<Notificacion> notificaciones = eventoInactividad.generarNotificaciones();
 
-        Assertions.assertEquals(1, notificaciones.size(), "Debe generar exactamente 1 notificación");
+    Assertions.assertEquals(1, notificaciones.size(), "Debe generar exactamente 1 notificación");
 
-        Notificacion notificacionGenerada = notificaciones.get(0);
+    Notificacion notificacionGenerada = notificaciones.get(0);
 
-        Assertions.assertEquals(mockDonante, notificacionGenerada.getPersona(), "La notificación debe estar dirigida al donante correcto");
-        Assertions.assertTrue(notificacionGenerada.getMensaje().contains("30 días"), "El mensaje debe incluir la cantidad de días de inactividad");
-    }
+    Assertions.assertEquals(
+        mockDonante,
+        notificacionGenerada.getPersona(),
+        "La notificación debe estar dirigida al donante correcto");
+    Assertions.assertTrue(
+        notificacionGenerada.getMensaje().contains("30 días"),
+        "El mensaje debe incluir la cantidad de días de inactividad");
+  }
 }
