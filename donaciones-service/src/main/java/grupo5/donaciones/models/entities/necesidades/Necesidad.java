@@ -2,10 +2,12 @@ package grupo5.donaciones.models.entities.necesidades;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +18,8 @@ public abstract class Necesidad {
   private Integer cantidadNecesitada;
   private String descripcion;
   private LocalDate fechaInicio;
+  private EntidadBeneficiaria entidad;
+  private List<DonacionIndependiente> donacionesAsignadas;
 
   protected Necesidad(SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     this.subcategoria = subcategoria;

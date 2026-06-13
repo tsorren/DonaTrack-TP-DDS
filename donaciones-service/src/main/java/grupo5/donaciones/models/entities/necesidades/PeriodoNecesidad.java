@@ -18,6 +18,7 @@ public class PeriodoNecesidad {
   private LocalDate fechaFin;
   private List<DonacionIndependiente> donacionesAsignadas;
   private Integer cantidadObjetivo;
+  private NecesidadRecurrente necesidadRecurrente;
 
   public PeriodoNecesidad(LocalDate fechaFin, Integer cantidadObjetivo) {
     this.fechaFin = fechaFin;
@@ -55,5 +56,9 @@ public class PeriodoNecesidad {
       logger.warning(msj);
       // Idealmente acá se dispararía un evento de notificación
     }
+  }
+
+  public Necesidad obtenerNecesidad() {
+    return necesidadRecurrente;
   }
 }
