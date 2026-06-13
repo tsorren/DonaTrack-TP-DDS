@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
@@ -27,7 +27,7 @@ class EntidadBeneficiariaTests {
     entidad = new EntidadBeneficiaria(juridica);
 
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
+    Subcategoria subcategoria = new Subcategoria(categoria, "Muebles Escolares");
     necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
   }
 
