@@ -33,7 +33,7 @@ class IncentivosServiceTest {
   @Mock private NotificacionesClient notificacionesClient;
 
   private IncentivosService service;
-  private DonanteIncentivosRepositorygit repository;
+  private DonanteIncentivosRepository repository;
   private MisionFactory misionFactory;
 
   @BeforeEach
