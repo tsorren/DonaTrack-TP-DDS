@@ -42,7 +42,7 @@ public abstract class AbstractSegmentador<K> implements Segmentador {
     return new DonacionIndependiente(donacionOriginal, subcategoria, itemsIndependientes);
   }
 
-  private List<ItemDonacionIndependiente> crearItemsIndependientes(
+  private static List<ItemDonacionIndependiente> crearItemsIndependientes(
       List<ItemDonacionNormalizado> grupo) {
     return grupo.stream()
         .map(item -> new ItemDonacionIndependiente(item.getBien(), item.getCantidad()))

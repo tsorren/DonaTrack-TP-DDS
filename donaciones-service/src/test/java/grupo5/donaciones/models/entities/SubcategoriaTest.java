@@ -7,29 +7,9 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.donaciones.Bien;
-import grupo5.donaciones.models.entities.donaciones.Estado;
-import java.time.LocalDate;
-import java.time.Month;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SubcategoriaTest {
-  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
-
-  private Subcategoria subcategoria;
-  private Bien bien;
-
-  @BeforeEach
-  void setUp() {
-
-    Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-
-    subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
-
-    bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
-  }
-
   @Test
   void constructor_conCategoriaNull_debeLanzarExcepcion() {
     ValidationException exception =

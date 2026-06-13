@@ -29,7 +29,7 @@ public class BienNormalizado {
     this.estadoNormalizacion = estadoNormalizacion;
   }
 
-  private void validarReglasDeNegocio(
+  private static void validarReglasDeNegocio(
       Bien bienOriginal,
       Subcategoria subcategoria,
       Double confianza,
@@ -43,9 +43,10 @@ public class BienNormalizado {
     if (confianza < 0 || confianza > 1.0) {
       throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_RANGO_CONFIANZA);
     }
+    if (estadoNormalizacion == null) {
+      throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_ESTADO);
+    }
 
-    assert bienOriginal != null;
-    assert subcategoria != null;
     Categoria categoria = subcategoria.getCategoria();
     if (categoria != null) {
       // 3. Validar bienes cuya categoría requiera vencimiento
