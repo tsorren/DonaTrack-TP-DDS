@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.necesidades.Asignable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ public class DonacionIndependiente {
   private EstadoDonacion estadoActual;
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
+  private Asignable asignadaA;
 
   public DonacionIndependiente(
       Donacion donacionOriginal, Subcategoria subCategoria, List<ItemDonacionIndependiente> items) {
@@ -125,5 +127,9 @@ public class DonacionIndependiente {
 
   public List<CambioEstado> getHistorial() {
     return Collections.unmodifiableList(historial);
+  }
+
+  public Asignable asignadaA() {
+    return this.asignadaA;
   }
 }
