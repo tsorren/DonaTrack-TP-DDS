@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Bien;
+import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
+import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import java.time.LocalDate;
 import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,18 +21,20 @@ import org.junit.jupiter.api.Test;
 class ItemDonacionIndependienteFragmentacionTest {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
-  private Bien bien;
+  private BienNormalizado bienNormalizado;
   private ItemDonacionIndependiente itemDonacion;
 
   @BeforeEach
   void setUp() {
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    SubCategoria subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
+    Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
 
-    bien =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
+    Bien bienOriginal =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    bienNormalizado =
+        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
 
-    itemDonacion = new ItemDonacionIndependiente(bien, 20);
+    itemDonacion = new ItemDonacionIndependiente(bienNormalizado, 20);
   }
 
   @Test
@@ -91,7 +95,8 @@ class ItemDonacionIndependienteFragmentacionTest {
     ItemDonacionIndependiente itemFragmentado = itemDonacion.fragmentarse(5);
 
     assertNotNull(itemFragmentado);
-    assertEquals(bien, itemFragmentado.getBien(), "El nuevo item debe tener el mismo bien");
+    assertEquals(
+        bienNormalizado, itemFragmentado.getBien(), "El nuevo item debe tener el mismo bien");
   }
 
   @Test
@@ -123,7 +128,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new ItemDonacionIndependiente(bien, null),
+            () -> new ItemDonacionIndependiente(bienNormalizado, null),
             "Debería lanzar excepción cuando la cantidad es nula");
     assertEquals(
         ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,
@@ -136,7 +141,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new ItemDonacionIndependiente(bien, 0),
+            () -> new ItemDonacionIndependiente(bienNormalizado, 0),
             "Debería lanzar excepción cuando la cantidad es cero");
     assertEquals(
         ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,
@@ -149,7 +154,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new ItemDonacionIndependiente(bien, -5),
+            () -> new ItemDonacionIndependiente(bienNormalizado, -5),
             "Debería lanzar excepción cuando la cantidad es negativa");
     assertEquals(
         ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,

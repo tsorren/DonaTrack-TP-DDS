@@ -3,7 +3,7 @@ package grupo5.donaciones.models.entities.necesidades;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.time.Period;
@@ -21,7 +21,7 @@ public class NecesidadRecurrente extends Necesidad {
   private Boolean activa;
 
   public NecesidadRecurrente(
-      SubCategoria subcategoria,
+      Subcategoria subcategoria,
       Integer cantidadNecesitada,
       String descripcion,
       Period periodo,
@@ -84,12 +84,12 @@ public class NecesidadRecurrente extends Necesidad {
     return actual != null && actual.estaSatisfecha();
   }
 
-  public boolean hayQueGenerarNuevo() {
+  public boolean hayQueGenerarNuevo(LocalDate fechaActual) {
     if (this.activa != null && !this.activa) return false;
     if (this.periodos.isEmpty()) return true;
 
     // crear un período nuevo si "hoy" es posterior a la fecha de vencimiento
-    return !obtenerPeriodoActual().estaEnPeriodo(LocalDate.now(ZoneId.systemDefault()));
+    return !obtenerPeriodoActual().estaEnPeriodo(fechaActual);
   }
 
   public void generarNuevoPeriodo() {

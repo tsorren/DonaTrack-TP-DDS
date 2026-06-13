@@ -4,15 +4,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
+import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
@@ -28,7 +30,7 @@ class NecesidadRecurrenteTests {
   private NecesidadRecurrente necesidad;
   private DonacionIndependiente d1;
   private DonacionIndependiente d2;
-  private SubCategoria subcategoria;
+  private Subcategoria subcategoria;
   private Categoria categoria;
 
   @BeforeEach
@@ -36,7 +38,7 @@ class NecesidadRecurrenteTests {
 
     Donacion donacion = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    subcategoria = new SubCategoria(categoria, "Muebles Escolares");
+    subcategoria = new Subcategoria(categoria, "Muebles Escolares");
     necesidad =
         new NecesidadRecurrente(
             subcategoria,
@@ -45,8 +47,10 @@ class NecesidadRecurrenteTests {
             Period.ofWeeks(1),
             TEST_DATE.minusDays(5));
 
-    Bien bien =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
+    Bien bienOriginal =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    BienNormalizado bien =
+        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
 
@@ -92,12 +96,12 @@ class NecesidadRecurrenteTests {
         new NecesidadRecurrente(
             subcategoria, 100, "Test de vencimiento", Period.ofWeeks(1), TEST_DATE.minusDays(10));
 
-    assertTrue(necesidadVencida.hayQueGenerarNuevo());
+    assertTrue(necesidadVencida.hayQueGenerarNuevo(TEST_DATE));
   }
 
   @Test
   void hayQueGenerarNuevo_cuandoPeriodoAunEstaVigente_deberiaSerFalse() {
-    assertFalse(necesidad.hayQueGenerarNuevo());
+    assertFalse(necesidad.hayQueGenerarNuevo(TEST_DATE));
   }
 
   @Test
