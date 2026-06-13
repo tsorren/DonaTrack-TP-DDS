@@ -28,10 +28,12 @@ public abstract class AbstractSegmentador<K> implements Segmentador {
 
   private List<DonacionIndependiente> crearDonacionesIndependientes(
       Map<K, List<ItemDonacionNormalizado>> grouped) {
-    return grouped.values().stream().map(this::crearDonacionIndependienteDesdeGrupo).toList();
+    return grouped.values().stream()
+        .map(AbstractSegmentador::crearDonacionIndependienteDesdeGrupo)
+        .toList();
   }
 
-  private DonacionIndependiente crearDonacionIndependienteDesdeGrupo(
+  private static DonacionIndependiente crearDonacionIndependienteDesdeGrupo(
       List<ItemDonacionNormalizado> grupo) {
     ItemDonacionNormalizado primerItem = grupo.getFirst();
     Donacion donacionOriginal = primerItem.getDonacionOriginal();
