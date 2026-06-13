@@ -3,18 +3,21 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
+import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
+import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import java.time.Month;
@@ -28,6 +31,7 @@ class AsignableTests {
 
   private NecesidadExtraordinaria necesidadExtraordinaria;
   private NecesidadRecurrente necesidadRecurrente;
+  private PeriodoNecesidad periodoNecesidad;
   private DonacionIndependiente donacionIndependiente;
 
   @BeforeEach
@@ -35,7 +39,7 @@ class AsignableTests {
     Donacion donacionOriginal =
         new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
-    SubCategoria subcategoria = new SubCategoria(categoria, "No Perecederos");
+    Subcategoria subcategoria = new Subcategoria(categoria, "No Perecederos");
 
     necesidadExtraordinaria =
         new NecesidadExtraordinaria(subcategoria, 100, "Latas de atún para comedor");
@@ -44,8 +48,13 @@ class AsignableTests {
         new NecesidadRecurrente(
             subcategoria, 50, "Leche en polvo", Period.ofMonths(1), TEST_DATE.minusDays(15));
 
-    Bien bien = new Bien("Arroz", "imagen.png", TEST_DATE.plusYears(1), Estado.NUEVO, subcategoria);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bien, 10);
+    periodoNecesidad = necesidadRecurrente.obtenerPeriodoActual();
+    periodoNecesidad.setNecesidadRecurrente(necesidadRecurrente);
+
+    Bien bienOriginal = new Bien("Arroz", "imagen.png", TEST_DATE.plusYears(1), Estado.NUEVO);
+    BienNormalizado bienNormalizado =
+        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 10);
     donacionIndependiente =
         new DonacionIndependiente(donacionOriginal, subcategoria, List.of(item));
   }
@@ -60,15 +69,6 @@ class AsignableTests {
   }
 
   @Test
-  void obtenerNecesidad_desdeNecesidadRecurrente_devuelveLaMismaInstancia() {
-    Necesidad resultado = necesidadRecurrente.obtenerNecesidad();
-    assertEquals(
-        necesidadRecurrente,
-        resultado,
-        "Debería devolver la propia instancia de NecesidadRecurrente.");
-  }
-
-  @Test
   void obtenerNecesidad_desdeDonacionAsignadaAExtraordinaria_devuelveLaNecesidadCorrecta() {
     donacionIndependiente.setAsignadaA(necesidadExtraordinaria);
     Necesidad resultado = donacionIndependiente.asignadaA().obtenerNecesidad();
@@ -77,17 +77,30 @@ class AsignableTests {
   }
 
   @Test
-  void obtenerNecesidad_desdeDonacionAsignadaARecurrente_devuelveLaNecesidadCorrecta() {
-    donacionIndependiente.setAsignadaA(necesidadRecurrente);
-    Necesidad resultado = donacionIndependiente.asignadaA().obtenerNecesidad();
-    assertEquals(
-        necesidadRecurrente, resultado, "Debería devolver la necesidad a la que fue asignada.");
-  }
-
-  @Test
   void obtenerNecesidad_desdeDonacionNoAsignada_asignadaAEsNull() {
     assertNull(
         donacionIndependiente.asignadaA(),
         "Una donación no asignada debería tener asignadaA en null.");
+  }
+
+  // Período devuelve a su Necesidad Recurrente padre
+  @Test
+  void obtenerNecesidad_desdePeriodoNecesidad_devuelveLaNecesidadRecurrentePadre() {
+    Necesidad resultado = periodoNecesidad.obtenerNecesidad();
+    assertEquals(
+        necesidadRecurrente,
+        resultado,
+        "El período debería delegar y devolver la NecesidadRecurrente asociada.");
+  }
+
+  // Al asignarlo a un período, la cadena polimórfica retorna la necesidad recurrente
+  @Test
+  void obtenerNecesidad_desdeDonacionAsignadaAPeriodoRecurrente_devuelveLaNecesidadCorrecta() {
+    donacionIndependiente.setAsignadaA(periodoNecesidad); // Se asigna al período
+    Necesidad resultado = donacionIndependiente.asignadaA().obtenerNecesidad();
+    assertEquals(
+        necesidadRecurrente,
+        resultado,
+        "Al pedirle la necesidad al asignable (período), debería llegar hasta la NecesidadRecurrente.");
   }
 }

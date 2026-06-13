@@ -12,7 +12,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PeriodoNecesidad {
+public class PeriodoNecesidad implements Asignable {
   private static final Logger logger = Logger.getLogger(PeriodoNecesidad.class.getName());
 
   private LocalDate fechaFin;
@@ -58,6 +58,7 @@ public class PeriodoNecesidad {
     }
   }
 
+  @Override
   public Necesidad obtenerNecesidad() {
     return necesidadRecurrente;
   }

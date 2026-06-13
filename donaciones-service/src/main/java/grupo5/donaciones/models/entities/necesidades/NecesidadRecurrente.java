@@ -15,7 +15,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NecesidadRecurrente extends Necesidad implements Asignable {
+public class NecesidadRecurrente extends Necesidad {
   private Period periodo;
   private List<PeriodoNecesidad> periodos;
   private Boolean activa;
@@ -104,10 +104,5 @@ public class NecesidadRecurrente extends Necesidad implements Asignable {
   public boolean getActiva() {
 
     return this.activa != null && this.activa;
-  }
-
-  @Override
-  public Necesidad obtenerNecesidad() {
-    return this;
   }
 }
