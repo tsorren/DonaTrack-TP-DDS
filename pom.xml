@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
 
     <name>donatrack</name>
-    <url>https://github.com/tsorren/DonaTrack-TP-DDS</url>
+    <url>https://github.com/dds-utn</url>
     <modules>
         <module>common-lib</module>
         <module>donaciones-service</module>

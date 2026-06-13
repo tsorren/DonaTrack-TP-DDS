@@ -2,8 +2,6 @@ package grupo5.donaciones.schedulers;
 
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.NecesidadRecurrenteRepository;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -25,7 +23,7 @@ public class PlanificadorDeNecesidades {
     List<NecesidadRecurrente> recurrentesActivas = necesidadRepository.findByActivaTrue();
 
     for (NecesidadRecurrente recurrente : recurrentesActivas) {
-      if (recurrente.hayQueGenerarNuevo(LocalDate.now(ZoneId.systemDefault()))) {
+      if (recurrente.hayQueGenerarNuevo()) {
         crearPeriodoPara(recurrente);
 
         necesidadRepository.save(recurrente);

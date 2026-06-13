@@ -3,17 +3,15 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
@@ -37,25 +35,17 @@ class NecesidadExtraordinariaTests {
     Donacion donacionOriginal =
         new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Muebles Escolares");
+    SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
     necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
 
     necesidad.setCantidadNecesitada(30);
 
-    Bien bienOriginal1 =
-        new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
-    BienNormalizado bien1 =
-        new BienNormalizado(bienOriginal1, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
-
-    Bien bienOriginal2 =
-        new Bien("descripcion2", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
-    BienNormalizado bien2 =
-        new BienNormalizado(bienOriginal2, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
-
-    Bien bienOriginal3 =
-        new Bien("descripcion3", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
-    BienNormalizado bien3 =
-        new BienNormalizado(bienOriginal3, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+    Bien bien1 =
+        new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
+    Bien bien2 =
+        new Bien("descripcion2", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
+    Bien bien3 =
+        new Bien("descripcion3", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien1, 15);
     List<ItemDonacionIndependiente> items1 = new ArrayList<>();

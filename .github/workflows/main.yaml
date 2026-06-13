@@ -145,7 +145,17 @@ jobs:
           DOCKER_SERVICES=()
           COMMON="${{ steps.filter.outputs.common-lib }}"
 
-          # Fallback corregido y unificado directamente de manera segura
+          for svc in donaciones-service notificaciones-service; do
+            if [[ -f "${svc}/Dockerfile" ]]; then
+              CHANGED="${{ steps.filter.outputs[env.svc] }}"
+              # Reconstruir si el servicio cambió O si common-lib cambió
+              if [[ "$COMMON" == "true" || "${{ steps.filter.outputs[format('{0}', env.svc)] }}" == "true" ]]; then
+                DOCKER_SERVICES+=("{\"service\":\"${svc}\"}")
+              fi
+            fi
+          done
+
+          # Fallback: chequear directamente
           DOCKER_FINAL=()
           if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
             if [[ -f "donaciones-service/Dockerfile" ]]; then
@@ -331,7 +341,7 @@ jobs:
           push: false
           tags: donatrack/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 7: Generar Diagramas (Siempre)

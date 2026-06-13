@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.donaciones.Bien;
-import grupo5.donaciones.models.entities.donaciones.Estado;
+import grupo5.donaciones.models.entities.bienes.Bien;
+import grupo5.donaciones.models.entities.bienes.Estado;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import java.time.LocalDate;
 import java.time.Month;
@@ -19,7 +22,16 @@ class ItemDonacionTest {
 
   @BeforeEach
   void setUp() {
-    bien = new Bien("Abrigo de invierno", "abrigo.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
+    SubCategoria subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
+
+    bien =
+        new Bien(
+            "Abrigo de invierno",
+            "abrigo.png",
+            TEST_DATE.plusMonths(2),
+            Estado.NUEVO,
+            subcategoria);
   }
 
   @Test
