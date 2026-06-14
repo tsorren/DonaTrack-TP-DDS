@@ -55,8 +55,7 @@ class AsignableTests {
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
     ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 10);
-    donacionIndependiente =
-        new DonacionIndependiente(donacionOriginal, subcategoria, List.of(item));
+    donacionIndependiente = new DonacionIndependiente(donacionOriginal, List.of(item));
   }
 
   @Test
@@ -83,7 +82,6 @@ class AsignableTests {
         "Una donación no asignada debería tener asignadaA en null.");
   }
 
-  // Período devuelve a su Necesidad Recurrente padre
   @Test
   void obtenerNecesidad_desdePeriodoNecesidad_devuelveLaNecesidadRecurrentePadre() {
     Necesidad resultado = periodoNecesidad.obtenerNecesidad();
@@ -93,10 +91,9 @@ class AsignableTests {
         "El período debería delegar y devolver la NecesidadRecurrente asociada.");
   }
 
-  // Al asignarlo a un período, la cadena polimórfica retorna la necesidad recurrente
   @Test
   void obtenerNecesidad_desdeDonacionAsignadaAPeriodoRecurrente_devuelveLaNecesidadCorrecta() {
-    donacionIndependiente.setAsignadaA(periodoNecesidad); // Se asigna al período
+    donacionIndependiente.setAsignadaA(periodoNecesidad);
     Necesidad resultado = donacionIndependiente.asignadaA().obtenerNecesidad();
     assertEquals(
         necesidadRecurrente,

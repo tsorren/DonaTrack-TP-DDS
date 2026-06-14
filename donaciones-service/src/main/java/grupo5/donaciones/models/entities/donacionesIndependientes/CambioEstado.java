@@ -11,12 +11,17 @@ public class CambioEstado {
   private final EstadoDonacion estadoNuevo;
   private final LocalDateTime timestamp;
   private final String justificacion;
+  private final String actor; // quién realizó la transición (ej: "admin@donatrack.org", "SISTEMA")
 
   public CambioEstado(
-      EstadoDonacion estadoAnterior, EstadoDonacion estadoNuevo, String justificacion) {
+      EstadoDonacion estadoAnterior,
+      EstadoDonacion estadoNuevo,
+      String justificacion,
+      String actor) {
     this.estadoAnterior = estadoAnterior;
     this.estadoNuevo = estadoNuevo;
     this.timestamp = LocalDateTime.now(ZoneId.systemDefault());
     this.justificacion = justificacion;
+    this.actor = actor;
   }
 }

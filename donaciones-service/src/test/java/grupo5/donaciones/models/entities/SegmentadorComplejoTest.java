@@ -131,9 +131,10 @@ class SegmentadorComplejoTest {
     List<DonacionIndependiente> resultado = segmentador.segmentar(items);
 
     DonacionIndependiente donacionIndependiente = resultado.getFirst();
+    // La subcategoría ahora se obtiene navegando por los ítems
     assertEquals(
         subcategoriaInvierno,
-        donacionIndependiente.getSubCategoria(),
+        donacionIndependiente.getSubcategoria(),
         "Debe tener la categoria correcta");
   }
 
@@ -173,7 +174,7 @@ class SegmentadorComplejoTest {
                     item -> {
                       assertNotNull(item.getBien(), "El item debe tener un bien asociado");
                       assertEquals(
-                          donacionInd.getSubCategoria(),
+                          donacionInd.getSubcategoria(),
                           item.getBien().getSubcategoria(),
                           "El bien debe pertenecer a la subcategoría de la donación");
                     }));

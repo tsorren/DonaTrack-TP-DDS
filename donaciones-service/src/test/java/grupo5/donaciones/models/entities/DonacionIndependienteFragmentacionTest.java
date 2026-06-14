@@ -28,7 +28,6 @@ class DonacionIndependienteFragmentacionTest {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private Donacion donacion;
-  private Subcategoria subcategoria;
   private BienNormalizado bienNormalizado;
   private DonacionIndependiente donacionIndependiente;
 
@@ -36,7 +35,7 @@ class DonacionIndependienteFragmentacionTest {
   void setUp() {
     donacion = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
+    Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
 
     Bien bienOriginal =
         new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
@@ -50,12 +49,11 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item1);
     items.add(item2);
 
-    donacionIndependiente = new DonacionIndependiente(donacion, subcategoria, items);
+    donacionIndependiente = new DonacionIndependiente(donacion, items);
   }
 
   @Test
   void fragmentarse_cuandoPideMenosQuantidadDelTotal_debeLanzarExcepcion() {
-    // Cantidad total es 25
     BusinessStateException exception =
         assertThrows(
             BusinessStateException.class,
@@ -67,7 +65,6 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_cuandoPideMasQuantidadDelTotal_debeLanzarExcepcion() {
-    // Cantidad total es 25
     BusinessStateException exception =
         assertThrows(
             BusinessStateException.class,
@@ -79,7 +76,6 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_exitoso_debeRetornarNuevaDonacion() {
-    // Cantidad total es 25, pidiendo 10
     DonacionIndependiente donacionFragmentada = donacionIndependiente.fragmentarse(10);
 
     assertNotNull(donacionFragmentada);
@@ -89,8 +85,6 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_exitoso_itemsSeDistribuyenCorrectamente() {
-    // Cantidad total es 25 (10 + 15)
-    // Fragmentando 12: debe tomar 10 del primer item y 2 del segundo
     DonacionIndependiente donacionFragmentada = donacionIndependiente.fragmentarse(12);
 
     assertEquals(12, donacionFragmentada.getCantidad());
@@ -100,7 +94,6 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_conMultiplesItems_extraePorCompleto() {
-    // Crear donación con 3 items: 5, 8, 12 (total 25)
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 5);
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 8);
     ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bienNormalizado, 12);
@@ -110,9 +103,8 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item2);
     items.add(item3);
 
-    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion, subcategoria, items);
+    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion, items);
 
-    // Fragmentando 13: debe tomar 5 + 8 (completos)
     DonacionIndependiente fragmentada = donacionLocal.fragmentarse(13);
 
     assertEquals(13, fragmentada.getCantidad());
