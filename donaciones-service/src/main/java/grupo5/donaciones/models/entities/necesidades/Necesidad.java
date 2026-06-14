@@ -13,7 +13,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public abstract class Necesidad {
+public abstract class Necesidad implements Asignable {
   private Subcategoria subcategoria;
   private Integer cantidadNecesitada;
   private String descripcion;
@@ -43,6 +43,11 @@ public abstract class Necesidad {
     if (this.descripcion == null || this.descripcion.trim().isEmpty()) {
       throw new ValidationException(ErrorCatalog.DESCRIPCION_NECESIDAD_VACIA);
     }
+  }
+
+  @Override
+  public Necesidad obtenerNecesidad() {
+    return this;
   }
 
   public abstract void asignarDonacion(DonacionIndependiente donacionAsignada);

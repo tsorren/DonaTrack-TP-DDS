@@ -102,7 +102,6 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   public boolean getActiva() {
-
     return this.activa != null && this.activa;
   }
 }
