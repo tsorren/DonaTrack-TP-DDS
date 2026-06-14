@@ -10,33 +10,33 @@ import java.util.Map;
 
 public class StockDeDonaciones {
 
-    private final Map<DonacionIndependiente, Integer> cantidades = new HashMap<>();
+  private final Map<DonacionIndependiente, Integer> cantidades = new HashMap<>();
 
-    public StockDeDonaciones(List<DonacionIndependiente> donaciones) {
-        for (DonacionIndependiente donacion : donaciones) {
-            cantidades.put(donacion, donacion.getCantidad());
-        }
+  public StockDeDonaciones(List<DonacionIndependiente> donaciones) {
+    for (DonacionIndependiente donacion : donaciones) {
+      cantidades.put(donacion, donacion.getCantidad());
     }
+  }
 
-    public List<DonacionIndependiente> disponibles() {
-        List<DonacionIndependiente> resultado = new ArrayList<>();
-        for (DonacionIndependiente donacion : cantidades.keySet()) {
-            if (cantidades.get(donacion) > 0) {
-                resultado.add(donacion);
-            }
-        }
-        return resultado;
+  public List<DonacionIndependiente> disponibles() {
+    List<DonacionIndependiente> resultado = new ArrayList<>();
+    for (DonacionIndependiente donacion : cantidades.keySet()) {
+      if (cantidades.get(donacion) > 0) {
+        resultado.add(donacion);
+      }
     }
+    return resultado;
+  }
 
-    public int disponibleDe(DonacionIndependiente donacion) {
-        return cantidades.getOrDefault(donacion, 0);
-    }
+  public int disponibleDe(DonacionIndependiente donacion) {
+    return cantidades.getOrDefault(donacion, 0);
+  }
 
-    public void registrarReservas(Propuesta propuesta) {
-        for (PosibleFragmentacion fragmentacion : propuesta.getPosiblesFragmentaciones()) {
-            DonacionIndependiente donacion = fragmentacion.getDonacionOriginal();
-            int restante = disponibleDe(donacion) - fragmentacion.getCantidadNecesaria();
-            cantidades.put(donacion, restante);
-        }
+  public void registrarReservas(Propuesta propuesta) {
+    for (PosibleFragmentacion fragmentacion : propuesta.getPosiblesFragmentaciones()) {
+      DonacionIndependiente donacion = fragmentacion.getDonacionOriginal();
+      int restante = disponibleDe(donacion) - fragmentacion.getCantidadNecesaria();
+      cantidades.put(donacion, restante);
     }
+  }
 }

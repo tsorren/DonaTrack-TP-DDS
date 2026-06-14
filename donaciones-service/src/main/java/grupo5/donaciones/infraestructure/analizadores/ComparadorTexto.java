@@ -3,39 +3,50 @@ package grupo5.donaciones.infraestructure.analizadores;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ComparadorTexto {
-    private String[] ListaDePalabras(String texto){
-        return texto.split("\\s+");
+
+  private final Normalizador normalizador;
+
+  // Inyección de dependencias por constructor
+  @Autowired
+  public ComparadorTexto(
+      @Qualifier("normalizadorBasicoTexto")
+          Normalizador normalizador) { // Cambiado a "normalizadorBasicoTexto"
+    this.normalizador = normalizador;
+  }
+
+  private String[] ListaDePalabras(String texto) {
+    // Divide el texto por uno o más espacios en blanco
+    return texto.split("\\s+");
+  }
+
+  private Set<String> textoASetUnico(String texto) {
+    String normalizado = normalizador.normalizar(texto); // Usa la instancia inyectada
+    if (normalizado == null || normalizado.isEmpty()) {
+      return new HashSet<>();
+    }
+    String[] lista = ListaDePalabras(normalizado);
+    return new HashSet<>(Arrays.asList(lista));
+  }
+
+  public Integer contarPalabrasEnComun(String textoA, String textoB) {
+    if (textoA == null || textoB == null) {
+      return 0;
     }
 
+    Set<String> palabrasTextoA = textoASetUnico(textoA);
+    Set<String> palabrasTextoB = textoASetUnico(textoB);
 
-    private Set<String> textoASetUnico (String texto){
-        String normalizado = Normalizador.normalizar(texto);
-        String[] lista = ListaDePalabras(normalizado);
-        return new HashSet<String>(Arrays.asList(lista));
-    }
+    // Para contar palabras en común, podemos usar la intersección de los sets
+    Set<String> interseccion = new HashSet<>(palabrasTextoA);
+    interseccion.retainAll(
+        palabrasTextoB); // Retiene solo los elementos que también están en palabrasTextoB
 
-    public Integer contarPalabrasEnComun(String textoA, String textoB){
-        if (textoA == null || textoB == null) {
-            return 0;
-        }
-
-        Set<String> palabrasTextoA = textoASetUnico(textoA);
-        Set<String> palabrasTextoB = textoASetUnico(textoB);
-
-        int contador = 0;
-        for (String palabraA : palabrasTextoA) {
-            for(String palabraB : palabrasTextoB){
-                // Si la palabra no está vacía y existe en el segundo conjunto, la contamos
-                if (palabraA.equals(palabraB)) {
-                    contador++;
-                }
-            }
-        }
-
-        return contador;
-    }
+    return interseccion.size();
+  }
 }

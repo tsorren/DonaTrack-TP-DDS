@@ -11,48 +11,49 @@ import java.util.Map;
 
 public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
 
-    @Override
-    public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
-        LocalDateTime hace3meses = LocalDateTime.now().minusMonths(3);
+  @Override
+  public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
+    LocalDateTime hace3meses = LocalDateTime.now().minusMonths(3);
 
-        Map<EntidadBeneficiaria, Integer> donacionesPorEntidad = new HashMap<>();
-        for (Necesidad necesidad : necesidades) {
-            if (necesidad.getEntidad() == null) continue;
-            int cantidad = contarDonacionesRecientes(necesidad, hace3meses);
-            int totalActual = donacionesPorEntidad.getOrDefault(necesidad.getEntidad(), 0);
-            donacionesPorEntidad.put(necesidad.getEntidad(), totalActual + cantidad);
-        }
+    Map<EntidadBeneficiaria, Integer> donacionesPorEntidad = new HashMap<>();
+    for (Necesidad necesidad : necesidades) {
+      if (necesidad.getEntidad() == null) continue;
+      int cantidad = contarDonacionesRecientes(necesidad, hace3meses);
+      int totalActual = donacionesPorEntidad.getOrDefault(necesidad.getEntidad(), 0);
+      donacionesPorEntidad.put(necesidad.getEntidad(), totalActual + cantidad);
+    }
 
-        List<Necesidad> ordenadas = new ArrayList<>(necesidades);
-        ordenadas.sort((a, b) -> {
-            int donA = donacionesPorEntidad.getOrDefault(a.getEntidad(), 0);
-            int donB = donacionesPorEntidad.getOrDefault(b.getEntidad(), 0);
-            return Integer.compare(donA, donB);
+    List<Necesidad> ordenadas = new ArrayList<>(necesidades);
+    ordenadas.sort(
+        (a, b) -> {
+          int donA = donacionesPorEntidad.getOrDefault(a.getEntidad(), 0);
+          int donB = donacionesPorEntidad.getOrDefault(b.getEntidad(), 0);
+          return Integer.compare(donA, donB);
         });
-        return ordenadas;
-    }
+    return ordenadas;
+  }
 
-    @Override
-    public List<DonacionIndependiente> filtrarDonaciones(
-            Necesidad necesidad, List<DonacionIndependiente> donaciones) {
-        List<DonacionIndependiente> filtradas = new ArrayList<>();
-        for (DonacionIndependiente donacion : donaciones) {
-            if (mismaSubcategoria(donacion, necesidad)) {
-                filtradas.add(donacion);
-            }
-        }
-        return filtradas;
+  @Override
+  public List<DonacionIndependiente> filtrarDonaciones(
+      Necesidad necesidad, List<DonacionIndependiente> donaciones) {
+    List<DonacionIndependiente> filtradas = new ArrayList<>();
+    for (DonacionIndependiente donacion : donaciones) {
+      if (mismaSubcategoria(donacion, necesidad)) {
+        filtradas.add(donacion);
+      }
     }
+    return filtradas;
+  }
 
-    private int contarDonacionesRecientes(Necesidad necesidad, LocalDateTime desde) {
-        List<DonacionIndependiente> asignadas = necesidad.getDonacionesAsignadas();
-        if (asignadas == null) return 0;
-        int contador = 0;
-        for (DonacionIndependiente donacion : asignadas) {
-            if (donacion.getFechaRegistro().isAfter(desde)) {
-                contador++;
-            }
-        }
-        return contador;
+  private int contarDonacionesRecientes(Necesidad necesidad, LocalDateTime desde) {
+    List<DonacionIndependiente> asignadas = necesidad.getDonacionesAsignadas();
+    if (asignadas == null) return 0;
+    int contador = 0;
+    for (DonacionIndependiente donacion : asignadas) {
+      if (donacion.getFechaRegistro().isAfter(desde)) {
+        contador++;
+      }
     }
+    return contador;
+  }
 }
