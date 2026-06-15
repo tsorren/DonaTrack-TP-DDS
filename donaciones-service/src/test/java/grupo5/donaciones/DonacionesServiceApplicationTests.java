@@ -7,6 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 @Disabled
 public class DonacionesServiceApplicationTests {
-  @Test
+  // @Test
   void contextLoads() {}
 }
