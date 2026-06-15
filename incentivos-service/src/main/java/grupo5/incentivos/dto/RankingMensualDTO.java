@@ -1,0 +1,28 @@
+package grupo5.incentivos.dto;
+
+import grupo5.incentivos.models.entities.ranking.EntradaRanking;
+import grupo5.incentivos.models.entities.ranking.RankingMensual;
+import java.util.List;
+
+public record RankingMensualDTO(
+    String periodo, List<EntradaRankingDTO> entradas, List<EntradaRankingDTO> podio) {
+
+  public static RankingMensualDTO desde(RankingMensual ranking) {
+    return new RankingMensualDTO(
+        ranking.getPeriodo().toString(),
+        ranking.getEntradas().stream().map(EntradaRankingDTO::desde).toList(),
+        ranking.getPodio().stream().map(EntradaRankingDTO::desde).toList());
+  }
+
+  public record EntradaRankingDTO(
+      int posicion, Long donanteId, String nombreDonante, long misionesCompletadas) {
+
+    public static EntradaRankingDTO desde(EntradaRanking entrada) {
+      return new EntradaRankingDTO(
+          entrada.getPosicion(),
+          entrada.getDonanteId(),
+          entrada.getNombreDonante(),
+          entrada.getMisionesCompletadas());
+    }
+  }
+}

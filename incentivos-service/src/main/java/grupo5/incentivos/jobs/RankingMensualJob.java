@@ -21,12 +21,11 @@ public class RankingMensualJob {
   @Scheduled(cron = "0 59 23 L * *")
   public void ejecutarRankingMensual() {
     YearMonth periodoActual = YearMonth.now();
-    log.info("Ejecutando job de ranking mensual para el periodo {}", periodoActual);
     try {
       rankingService.calcularYPersistir(periodoActual);
-      log.info("Job de ranking mensual completado exitosamente para {}", periodoActual);
     } catch (Exception e) {
       log.error("Error en el job de ranking mensual para {}: {}", periodoActual, e.getMessage(), e);
+      // tirar mensaje de error
     }
   }
 }

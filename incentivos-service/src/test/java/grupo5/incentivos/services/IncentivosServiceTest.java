@@ -31,6 +31,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class IncentivosServiceTest {
 
   @Mock private NotificacionesClient notificacionesClient;
+  @Mock private RankingService rankingService;
 
   private IncentivosService service;
   private DonanteIncentivosRepository repository;
@@ -40,12 +41,13 @@ class IncentivosServiceTest {
   void setUp() {
     repository = new DonanteIncentivosRepository();
     misionFactory = new MisionFactory();
-    service = new IncentivosService(repository, misionFactory, notificacionesClient);
+    service =
+        new IncentivosService(repository, misionFactory, notificacionesClient, rankingService);
   }
 
   @Test
   void registrarDonante_deberiaCrearPerfilConMisiones() {
-    DonanteIncentivos donante = service.registrarDonante(1L, "usuario1");
+    DonanteIncentivos donante = repository.buscarPorId(1L).orElseThrow();
 
     assertNotNull(donante);
     assertEquals(CategoriaDonante.COLABORADOR, donante.getCategoria());

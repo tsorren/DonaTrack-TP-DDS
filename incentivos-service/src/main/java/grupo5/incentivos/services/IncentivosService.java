@@ -1,45 +1,50 @@
 package grupo5.incentivos.services;
 
+import grupo5.incentivos.dto.*;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import java.time.YearMonth;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
 public class IncentivosService {
 
-  private static final Logger log = LoggerFactory.getLogger(IncentivosService.class);
-
   private final DonanteIncentivosRepository repository;
   private final MisionFactory misionFactory;
   private final NotificacionesClient notificacionesClient;
+  private final RankingService rankingService;
 
   public IncentivosService(
       DonanteIncentivosRepository repository,
       MisionFactory misionFactory,
-      NotificacionesClient notificacionesClient) {
+      NotificacionesClient notificacionesClient,
+      RankingService rankingService) {
     this.repository = repository;
     this.misionFactory = misionFactory;
     this.notificacionesClient = notificacionesClient;
+    this.rankingService = rankingService;
   }
 
-  public DonanteIncentivos registrarDonante(Long donanteId, String nombreUsuario) {
-    return repository
-        .buscarPorId(donanteId)
-        .orElseGet(
-            () -> {
-              DonanteIncentivos nuevo = new DonanteIncentivos(donanteId);
-              nuevo.setMisiones(misionFactory.crearMisionesEstandar());
-              repository.guardar(nuevo);
-              log.info("Donante {} registrado en sistema de incentivos.", donanteId);
-              return nuevo;
-            });
+  public DonanteRegistradoDTO registrarDonante(Long donanteId, String nombreUsuario) {
+    DonanteIncentivos donante =
+        repository
+            .buscarPorId(donanteId)
+            .orElseGet(
+                () -> {
+                  DonanteIncentivos nuevo = new DonanteIncentivos(donanteId);
+                  nuevo.setMisiones(misionFactory.crearMisionesEstandar());
+                  repository.guardar(nuevo);
+                  return nuevo;
+                });
+    return DonanteRegistradoDTO.desde(donante);
   }
 
   public void procesarDonacion(Long donanteId, String nombreUsuario, EventoDonacion evento) {
@@ -48,23 +53,23 @@ public class IncentivosService {
             .buscarPorId(donanteId)
             .orElseGet(
                 () -> {
-                  log.info(
-                      "Donante {} no existia en incentivos, registrando automaticamente",
-                      donanteId);
-                  return registrarDonante(donanteId, nombreUsuario);
+                  registrarDonante(donanteId, nombreUsuario);
+                  return obtenerDonante(donanteId);
                 });
 
-    List<Mision> misionesAntesDeEvento =
-        donante.getMisiones().stream().filter(Mision::isCompletada).toList();
+    Set<String> misionesCompletadasAntes =
+        donante.getMisiones().stream()
+            .filter(Mision::isCompletada)
+            .map(Mision::getNombre)
+            .collect(java.util.stream.Collectors.toSet());
 
     donante.registrarDonacion(evento);
 
     donante.getMisiones().stream()
         .filter(Mision::isCompletada)
-        .filter(m -> !misionesAntesDeEvento.contains(m))
+        .filter(m -> !misionesCompletadasAntes.contains(m.getNombre()))
         .forEach(
             mision -> {
-              log.info("Donante {} completo la mision '{}'", donanteId, mision.getNombre());
               Insignia insignia = mision.getInsignia();
               String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
 
@@ -72,13 +77,7 @@ public class IncentivosService {
                   donanteId, mision.getNombre(), recompensa);
             });
 
-    String categoriaAntes = donante.getCategoria().name();
     if (donante.intentarAscenso()) {
-      log.info(
-          "Donante {} ascendio de {} a {}",
-          donanteId,
-          categoriaAntes,
-          donante.getCategoria().name());
       notificacionesClient.notificarAscensoCategoria(donanteId, donante.getCategoria().name());
     }
 
@@ -94,6 +93,28 @@ public class IncentivosService {
                     "No existe un perfil de incentivos para el donante con id " + donanteId));
   }
 
+  public MetricasDonanteDTO obtenerMetricas(Long donanteId) {
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    Integer posicion = rankingService.obtenerPosicionDonante(donanteId).orElse(null);
+
+    int misionesCompletadas =
+        (int) donante.getMisiones().stream().filter(Mision::isCompletada).count();
+
+    Map<String, Long> evolucion =
+        donante.getMetricas().donacionesPorPeriodo().entrySet().stream()
+            .collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue));
+
+    return MetricasDonanteDTO.desde(donante, posicion, misionesCompletadas, evolucion);
+  }
+
+  public List<MisionDTO> obtenerMisiones(Long donanteId) {
+    return obtenerDonante(donanteId).getMisiones().stream().map(MisionDTO::desde).toList();
+  }
+
+  public List<InsigniaDTO> obtenerInsignias(Long donanteId) {
+    return obtenerDonante(donanteId).getInsignias().stream().map(InsigniaDTO::desde).toList();
+  }
+
   public void configurarVisibilidadInsignia(
       Long donanteId, String nombreInsignia, boolean visible) {
     DonanteIncentivos donante = obtenerDonante(donanteId);
@@ -102,6 +123,50 @@ public class IncentivosService {
         .findFirst()
         .ifPresent(i -> i.setVisible(visible));
     repository.guardar(donante);
+  }
+
+  public void darDeBaja(Long donanteId) {
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    repository.eliminar(donante);
+  }
+
+  public ResumenSistemaDTO obtenerResumenSistema() {
+    List<DonanteIncentivos> todos = repository.listarTodos();
+    YearMonth mesActual = YearMonth.now();
+    YearMonth mesAnterior = mesActual.minusMonths(1);
+
+    int donantesMesActual =
+        (int) todos.stream().filter(d -> d.getMetricas().donacionesEnMes(mesActual) > 0).count();
+
+    int donantesMesAnterior =
+        (int) todos.stream().filter(d -> d.getMetricas().donacionesEnMes(mesAnterior) > 0).count();
+
+    long totalMisiones =
+        todos.stream().flatMap(d -> d.getMisiones().stream()).filter(Mision::isCompletada).count();
+
+    long misionesMesActual =
+        todos.stream()
+            .mapToLong(
+                d -> d.misionesCompletadasEnMes(mesActual.getYear(), mesActual.getMonthValue()))
+            .sum();
+
+    Map<String, Long> porCategoria =
+        todos.stream()
+            .collect(Collectors.groupingBy(d -> d.getCategoria().name(), Collectors.counting()));
+
+    Map<String, Long> evolucion =
+        todos.stream()
+            .flatMap(d -> d.getMetricas().donacionesPorPeriodo().entrySet().stream())
+            .collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue, Long::sum));
+
+    return new ResumenSistemaDTO(
+        todos.size(),
+        donantesMesActual,
+        donantesMesAnterior,
+        totalMisiones,
+        misionesMesActual,
+        porCategoria,
+        evolucion);
   }
 
   public List<DonanteIncentivos> listarTodos() {

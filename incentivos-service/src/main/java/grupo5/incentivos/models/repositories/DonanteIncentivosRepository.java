@@ -29,4 +29,8 @@ public class DonanteIncentivosRepository {
   public boolean existe(Long donanteId) {
     return this.store.containsKey(donanteId);
   }
+
+  public void eliminar(DonanteIncentivos donante) {
+    this.store.remove(donante.getDonanteId());
+  }
 }

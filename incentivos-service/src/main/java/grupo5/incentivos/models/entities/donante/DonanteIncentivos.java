@@ -1,8 +1,8 @@
 package grupo5.incentivos.models.entities.donante;
 
 import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -14,13 +14,10 @@ public class DonanteIncentivos {
 
   private Long donanteId;
   private CategoriaDonante categoria;
+  private List<CambioCategoria> historialCategorias;
   private List<Mision> misiones;
   private List<Insignia> insignias;
-
-  private Integer totalDonacionesHistoricas;
-  private Integer totalOrganizacionesAyudadas;
-  private Integer totalDonacionesExitosas;
-  private LocalDate ultimaDonacion;
+  private Metricas metricas;
 
   public DonanteIncentivos(Long donanteId) {
     if (donanteId == null) {
@@ -28,33 +25,27 @@ public class DonanteIncentivos {
     }
     this.donanteId = donanteId;
     this.categoria = CategoriaDonante.COLABORADOR;
+    this.historialCategorias = new ArrayList<>();
     this.misiones = new ArrayList<>();
     this.insignias = new ArrayList<>();
-    this.totalDonacionesHistoricas = 0;
-    this.totalOrganizacionesAyudadas = 0;
-    this.totalDonacionesExitosas = 0;
+    this.metricas = new Metricas();
   }
 
   public void registrarDonacion(EventoDonacion evento) {
-    this.totalDonacionesHistoricas++;
-    this.ultimaDonacion = evento.getFecha();
+    metricas.registrarDonacion(evento);
 
-    if (evento.isExitosa()) {
-      this.totalDonacionesExitosas++;
-    }
-
-    if (evento.getOrganizacionId() != null && !this.yaAyudoA(evento.getOrganizacionId())) {
-      this.totalOrganizacionesAyudadas++;
+    if (evento.getOrganizacionId() != null && !metricas.yaAyudoA(evento.getOrganizacionId())) {
+      metricas.registrarOrganizacionAyudada(evento.getOrganizacionId());
     }
 
     this.misiones.stream()
-        .filter(m -> !m.isCompletada())
-        .forEach(m -> m.evaluarProgreso(this, evento));
+        .filter(m -> m.getCategoria() == this.categoria && !m.isCompletada())
+        .findFirst()
+        .ifPresent(m -> m.evaluarProgreso(this, evento));
   }
 
   private boolean yaAyudoA(Long organizacionId) {
-    // implementar
-    return false;
+    return metricas.yaAyudoA(organizacionId);
   }
 
   public void otorgarInsignia(Insignia insignia) {
@@ -71,7 +62,9 @@ public class DonanteIncentivos {
             .allMatch(Mision::isCompletada);
 
     if (todasCompletadasEnCategoria && this.categoria != CategoriaDonante.TRANSFORMADOR) {
+      CategoriaDonante anterior = this.categoria;
       this.categoria = siguienteCategoria();
+      this.historialCategorias.add(new CambioCategoria(anterior, this.categoria));
       return true;
     }
     return false;

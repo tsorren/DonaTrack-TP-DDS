@@ -1,5 +1,6 @@
 package grupo5.incentivos.services;
 
+import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.ranking.EntradaRanking;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
@@ -10,14 +11,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RankingService {
-
-  private static final Logger log = LoggerFactory.getLogger(RankingService.class);
 
   private final DonanteIncentivosRepository donanteRepository;
   private final RankingMensualRepository rankingRepository;
@@ -28,11 +25,8 @@ public class RankingService {
     this.rankingRepository = rankingRepository;
   }
 
-  public RankingMensual calcularYPersistir(YearMonth periodo) {
-    log.info("Calculando ranking mensual para el periodo {}", periodo);
-
+  public RankingMensualDTO calcularYPersistir(YearMonth periodo) {
     List<DonanteIncentivos> todos = donanteRepository.listarTodos();
-
     RankingMensual ranking = new RankingMensual(periodo);
     AtomicInteger posicion = new AtomicInteger(1);
 
@@ -53,21 +47,30 @@ public class RankingService {
             });
 
     rankingRepository.guardar(ranking);
-    log.info(
-        "Ranking del período {} calculado con {} entradas.", periodo, ranking.getEntradas().size());
-    return ranking;
+    return RankingMensualDTO.desde(ranking);
+  }
+
+  public Optional<Integer> obtenerPosicionDonante(Long donanteId) {
+    return obtenerUltimoRanking()
+        .flatMap(
+            r ->
+                r.entradas().stream()
+                    .filter(e -> e.donanteId().equals(donanteId))
+                    .findFirst()
+                    .map(RankingMensualDTO.EntradaRankingDTO::posicion));
   }
 
   public Optional<RankingMensual> obtenerRankingPorPeriodo(YearMonth periodo) {
     return rankingRepository.buscarPorPeriodo(periodo);
   }
 
-  public List<RankingMensual> obtenerHistorial() {
-    return rankingRepository.listarTodos();
+  public List<RankingMensualDTO> obtenerHistorial() {
+    return rankingRepository.listarTodos().stream().map(RankingMensualDTO::desde).toList();
   }
 
-  public Optional<RankingMensual> obtenerUltimoRanking() {
+  public Optional<RankingMensualDTO> obtenerUltimoRanking() {
     return rankingRepository.listarTodos().stream()
-        .max(Comparator.comparing(RankingMensual::getPeriodo));
+        .max(Comparator.comparing(RankingMensual::getPeriodo))
+        .map(RankingMensualDTO::desde);
   }
 }
