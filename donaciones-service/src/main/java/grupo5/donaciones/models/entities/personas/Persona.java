@@ -20,4 +20,12 @@ public abstract class Persona implements Anonimizable {
   protected Persona() {
     this.mediosDeContacto = new ArrayList<>();
   }
+
+  public void agregarMedioDeContacto(MedioDeContacto medioDeContacto) {
+    mediosDeContacto.add(medioDeContacto);
+  }
+
+  public void quitarMedioDeContacto(MedioDeContacto medioDeContacto) {
+    mediosDeContacto.remove(medioDeContacto);
+  }
 }
