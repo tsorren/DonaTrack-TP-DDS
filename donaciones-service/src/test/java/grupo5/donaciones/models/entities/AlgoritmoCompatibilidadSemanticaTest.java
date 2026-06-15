@@ -50,14 +50,16 @@ class AlgoritmoCompatibilidadSemanticaTest {
   private DonacionIndependiente crearDonacion(int cantidad, String descripcion) {
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, cantidad));
-    DonacionIndependiente donacion = new DonacionIndependiente(donacionOriginal, subcategoria, items);
+    DonacionIndependiente donacion =
+        new DonacionIndependiente(donacionOriginal, subcategoria, items);
     donacion.setDescripcion(descripcion);
     return donacion;
   }
 
   @Test
   void filtrarDonaciones_cuandoMismaSubcategoria_debeIncluirla() {
-    NecesidadExtraordinaria necesidad = new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
+    NecesidadExtraordinaria necesidad =
+        new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
     DonacionIndependiente donacion = crearDonacion(5, "banco madera");
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacion);
@@ -69,10 +71,12 @@ class AlgoritmoCompatibilidadSemanticaTest {
 
   @Test
   void filtrarDonaciones_cuandoDistintaSubcategoria_debeExcluirla() {
-    NecesidadExtraordinaria necesidad = new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
+    NecesidadExtraordinaria necesidad =
+        new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    DonacionIndependiente donacionOtraCategoria = new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
+    DonacionIndependiente donacionOtraCategoria =
+        new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
     donacionOtraCategoria.setDescripcion("escritorio madera");
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
@@ -85,7 +89,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
 
   @Test
   void filtrarDonaciones_debeOrdenarPorScoreSemanticoDescendente() {
-    NecesidadExtraordinaria necesidad = new NecesidadExtraordinaria(subcategoria, 3, "banco escolar madera");
+    NecesidadExtraordinaria necesidad =
+        new NecesidadExtraordinaria(subcategoria, 3, "banco escolar madera");
     DonacionIndependiente donacionConMasScore = crearDonacion(5, "banco madera");
     DonacionIndependiente donacionConMenosScore = crearDonacion(5, "banco plastico");
 
@@ -102,11 +107,14 @@ class AlgoritmoCompatibilidadSemanticaTest {
 
   @Test
   void filtrarDonaciones_cuandoTodasSonDiferenteSubcategoria_debeRetornarVacia() {
-    NecesidadExtraordinaria necesidad = new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
+    NecesidadExtraordinaria necesidad =
+        new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    DonacionIndependiente donacion1 = new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
-    DonacionIndependiente donacion2 = new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
+    DonacionIndependiente donacion1 =
+        new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
+    DonacionIndependiente donacion2 =
+        new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacion1);
@@ -122,19 +130,19 @@ class AlgoritmoCompatibilidadSemanticaTest {
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(crearDonacion(5, "banco madera"));
 
-    ValidationException exception = assertThrows(
-        ValidationException.class,
-        () -> algoritmo.filtrarDonaciones(null, donaciones));
+    ValidationException exception =
+        assertThrows(
+            ValidationException.class, () -> algoritmo.filtrarDonaciones(null, donaciones));
     assertEquals(ErrorCatalog.ALGORITMO_NECESIDAD_NULA, exception.getError());
   }
 
   @Test
   void filtrarDonaciones_conListaNula_debeLanzarExcepcion() {
-    NecesidadExtraordinaria necesidad = new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
+    NecesidadExtraordinaria necesidad =
+        new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
 
-    ValidationException exception = assertThrows(
-        ValidationException.class,
-        () -> algoritmo.filtrarDonaciones(necesidad, null));
+    ValidationException exception =
+        assertThrows(ValidationException.class, () -> algoritmo.filtrarDonaciones(necesidad, null));
     assertEquals(ErrorCatalog.ALGORITMO_DONACIONES_NULAS, exception.getError());
   }
 }

@@ -15,7 +15,8 @@ public class NormalizadorSemantico implements Normalizador {
     this.semanticMap = new HashMap<>();
     // Construye el mapa semántico a partir de los alias definidos en el dominio
     for (AliasSubcategoria aliasSubcategoria : aliases) {
-      semanticMap.put(aliasSubcategoria.getAlias(), aliasSubcategoria.getSubcategoria().getNombre());
+      semanticMap.put(
+          aliasSubcategoria.getAlias(), aliasSubcategoria.getSubcategoria().getNombre());
     }
   }
 

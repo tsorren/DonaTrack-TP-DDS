@@ -33,11 +33,13 @@ class StockDeDonacionesTest {
 
   @BeforeEach
   void setUp() {
-    Donacion donacionOriginal = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Donacion donacionOriginal =
+        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
-    BienNormalizado bienNormalizado = new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+    BienNormalizado bienNormalizado =
+        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
 
     List<ItemDonacionIndependiente> itemsDiez = new ArrayList<>();
     itemsDiez.add(new ItemDonacionIndependiente(bienNormalizado, 10));
@@ -108,9 +110,8 @@ class StockDeDonacionesTest {
 
   @Test
   void constructor_conListaNula_debeLanzarExcepcion() {
-    ValidationException exception = assertThrows(
-        ValidationException.class,
-        () -> new StockDeDonaciones(null));
+    ValidationException exception =
+        assertThrows(ValidationException.class, () -> new StockDeDonaciones(null));
     assertEquals(ErrorCatalog.STOCK_LISTA_DONACIONES_NULA, exception.getError());
   }
 }

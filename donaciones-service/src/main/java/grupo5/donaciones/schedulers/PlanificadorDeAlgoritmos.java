@@ -21,7 +21,8 @@ public class PlanificadorDeAlgoritmos {
   private static final char mes = '*';
   private static final char diaDeLaSemana = '?';
 
-  static final String expresionCron = segundos + " " + minutos + " " + horas + " " + diaDelMes + " " + mes + " " + diaDeLaSemana;
+  static final String expresionCron =
+      segundos + " " + minutos + " " + horas + " " + diaDelMes + " " + mes + " " + diaDeLaSemana;
 
   @Autowired
   public PlanificadorDeAlgoritmos(GestorAlgoritmos gestorAlgoritmos) {
@@ -35,7 +36,6 @@ public class PlanificadorDeAlgoritmos {
 
   private String traducir(String valor) {
     return switch (valor) {
-      case String s when s.matches("[0-9]+") -> s;
       case "*" -> "todos";
       case "?" -> "cualquier";
       case "-" -> "rango";
@@ -48,9 +48,15 @@ public class PlanificadorDeAlgoritmos {
   public String paraCuandoEstaPlanificado() {
     String[] partes = expresionCron.split(" ");
     String[] etiquetas = {"segundos", "minutos", "horas", "día del mes", "mes", "día de la semana"};
-    StringBuilder descripcion = new StringBuilder("El scheduler está planificado para correr en:\n");
+    StringBuilder descripcion =
+        new StringBuilder("El scheduler está planificado para correr en:\n");
     for (int i = 0; i < partes.length; i++) {
-      descripcion.append("  ").append(etiquetas[i]).append(": ").append(traducir(partes[i])).append("\n");
+      descripcion
+          .append("  ")
+          .append(etiquetas[i])
+          .append(": ")
+          .append(traducir(partes[i]))
+          .append("\n");
     }
     return descripcion.toString();
   }

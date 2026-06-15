@@ -68,7 +68,8 @@ class NormalizadorSemanticoTest {
     subcategoriaCompu.agregarAlias("compu");
     subcategoriaCompu.agregarAlias("pc");
 
-    List<grupo5.donaciones.models.entities.categorias.AliasSubcategoria> todosLosAliases = new ArrayList<>();
+    List<grupo5.donaciones.models.entities.categorias.AliasSubcategoria> todosLosAliases =
+        new ArrayList<>();
     todosLosAliases.addAll(subcategoriaElectronica.getAliases());
     todosLosAliases.addAll(subcategoriaCompu.getAliases());
     normalizador = new NormalizadorSemantico(todosLosAliases);
