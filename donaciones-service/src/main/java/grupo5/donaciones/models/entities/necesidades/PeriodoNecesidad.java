@@ -12,12 +12,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class PeriodoNecesidad {
+public class PeriodoNecesidad implements Asignable {
   private static final Logger logger = Logger.getLogger(PeriodoNecesidad.class.getName());
 
   private LocalDate fechaFin;
   private List<DonacionIndependiente> donacionesAsignadas;
   private Integer cantidadObjetivo;
+  private NecesidadRecurrente necesidadRecurrente;
 
   public PeriodoNecesidad(LocalDate fechaFin, Integer cantidadObjetivo) {
     this.fechaFin = fechaFin;
@@ -55,5 +56,10 @@ public class PeriodoNecesidad {
       logger.warning(msj);
       // Idealmente acá se dispararía un evento de notificación
     }
+  }
+
+  @Override
+  public Necesidad obtenerNecesidad() {
+    return necesidadRecurrente;
   }
 }

@@ -5,15 +5,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.bienes.Bien;
-import grupo5.donaciones.models.entities.bienes.Estado;
 import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
+import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import java.time.Month;
@@ -26,21 +28,23 @@ class DonacionIndependienteFragmentacionTest {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private Donacion donacion;
-  private SubCategoria subcategoria;
-  private Bien bien;
+  private Subcategoria subcategoria;
+  private BienNormalizado bienNormalizado;
   private DonacionIndependiente donacionIndependiente;
 
   @BeforeEach
   void setUp() {
     donacion = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
+    subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
 
-    bien =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
+    Bien bienOriginal =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    bienNormalizado =
+        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
 
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 10);
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 15);
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 10);
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 15);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(item1);
@@ -97,9 +101,9 @@ class DonacionIndependienteFragmentacionTest {
   @Test
   void fragmentarse_conMultiplesItems_extraePorCompleto() {
     // Crear donación con 3 items: 5, 8, 12 (total 25)
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 5);
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 8);
-    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien, 12);
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 5);
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 8);
+    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bienNormalizado, 12);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(item1);
@@ -123,7 +127,7 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void agregarItem_conItemValido_debeAgregarse() {
-    ItemDonacionIndependiente nuevoItem = new ItemDonacionIndependiente(bien, 5);
+    ItemDonacionIndependiente nuevoItem = new ItemDonacionIndependiente(bienNormalizado, 5);
     int cantidadActual = donacionIndependiente.getCantidad();
 
     donacionIndependiente.agregarItem(nuevoItem);
@@ -160,7 +164,7 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void quitarItem_conItemNoPerteneciente_debeLanzarExcepcion() {
-    ItemDonacionIndependiente itemExterno = new ItemDonacionIndependiente(bien, 5);
+    ItemDonacionIndependiente itemExterno = new ItemDonacionIndependiente(bienNormalizado, 5);
 
     ValidationException exception =
         assertThrows(

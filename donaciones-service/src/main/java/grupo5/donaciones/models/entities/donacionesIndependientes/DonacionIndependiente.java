@@ -3,8 +3,9 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.necesidades.Asignable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -17,14 +18,15 @@ import lombok.Setter;
 @Setter
 public class DonacionIndependiente {
   private Donacion donacionOriginal;
-  private SubCategoria subCategoria;
+  private Subcategoria subCategoria;
   private List<ItemDonacionIndependiente> items;
   private EstadoDonacion estadoActual;
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
+  private Asignable asignadaA;
 
   public DonacionIndependiente(
-      Donacion donacionOriginal, SubCategoria subCategoria, List<ItemDonacionIndependiente> items) {
+      Donacion donacionOriginal, Subcategoria subCategoria, List<ItemDonacionIndependiente> items) {
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
@@ -125,5 +127,9 @@ public class DonacionIndependiente {
 
   public List<CambioEstado> getHistorial() {
     return Collections.unmodifiableList(historial);
+  }
+
+  public Asignable asignadaA() {
+    return this.asignadaA;
   }
 }

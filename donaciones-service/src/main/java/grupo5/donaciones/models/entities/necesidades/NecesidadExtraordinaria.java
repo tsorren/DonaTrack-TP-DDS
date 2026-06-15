@@ -2,7 +2,7 @@ package grupo5.donaciones.models.entities.necesidades;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.categorias.SubCategoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +11,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NecesidadExtraordinaria extends Necesidad {
+public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   private List<DonacionIndependiente> donacionesAsignadas;
 
   public NecesidadExtraordinaria(
-      SubCategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
+      Subcategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     super(subcategoria, cantidadNecesitada, descripcion);
     this.donacionesAsignadas = new ArrayList<>();
   }
@@ -45,5 +45,10 @@ public class NecesidadExtraordinaria extends Necesidad {
   @Override
   public boolean estaSatisfecha() {
     return this.cantidadAcumulada() >= this.getCantidadNecesitada();
+  }
+
+  @Override
+  public Necesidad obtenerNecesidad() {
+    return this;
   }
 }
