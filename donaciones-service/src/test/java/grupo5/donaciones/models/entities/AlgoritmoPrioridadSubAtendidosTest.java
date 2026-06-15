@@ -20,7 +20,6 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
-import grupo5.donaciones.models.repositories.NecesidadRepository;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ class AlgoritmoPrioridadSubAtendidosTest {
   private Subcategoria subcategoriaOtra;
   private DonacionIndependiente donacionEnSubcategoria;
   private DonacionIndependiente donacionEnOtraSubcategoria;
-  private NecesidadRepository necesidadRepository;
   private AlgoritmoPrioridadSubAtendidos algoritmo;
 
   @BeforeEach
@@ -58,8 +56,7 @@ class AlgoritmoPrioridadSubAtendidosTest {
     donacionEnOtraSubcategoria =
         new DonacionIndependiente(donacionOriginal, subcategoriaOtra, itemsOtros);
 
-    necesidadRepository = new NecesidadRepository();
-    algoritmo = new AlgoritmoPrioridadSubAtendidos(necesidadRepository);
+    algoritmo = new AlgoritmoPrioridadSubAtendidos();
   }
 
   @Test
@@ -107,25 +104,13 @@ class AlgoritmoPrioridadSubAtendidosTest {
     EntidadBeneficiaria entidadMuyAtendida = new EntidadBeneficiaria(new Juridica(representante));
     EntidadBeneficiaria entidadPocoAtendida = new EntidadBeneficiaria(new Juridica(representante));
 
-    // Entidad muy atendida: su única necesidad reciente está satisfecha → tasa = 100%
-    NecesidadExtraordinaria necesidadHistoricaSatisfecha =
-        new NecesidadExtraordinaria(subcategoria, 5, "necesidad historica satisfecha");
-    necesidadHistoricaSatisfecha.setEntidad(entidadMuyAtendida);
-    necesidadHistoricaSatisfecha.asignarDonacion(
-        donacionEnSubcategoria); // 5 unidades, queda satisfecha
-    necesidadRepository.save(necesidadHistoricaSatisfecha);
-
-    // Entidad poco atendida: su única necesidad reciente no está satisfecha → tasa = 0%
-    NecesidadExtraordinaria necesidadHistoricaInsatisfecha =
-        new NecesidadExtraordinaria(subcategoria, 5, "necesidad historica insatisfecha");
-    necesidadHistoricaInsatisfecha.setEntidad(entidadPocoAtendida);
-    necesidadRepository.save(necesidadHistoricaInsatisfecha);
-
-    // Necesidades actuales a ordenar (ambas insatisfechas, solo se usan para el sort)
+    // Entidad muy atendida: tiene donaciones recientes asignadas a su necesidad
     NecesidadExtraordinaria necesidadActualMuyAtendida =
         new NecesidadExtraordinaria(subcategoria, 10, "nueva necesidad de entidad muy atendida");
     necesidadActualMuyAtendida.setEntidad(entidadMuyAtendida);
+    necesidadActualMuyAtendida.asignarDonacion(donacionEnSubcategoria);
 
+    // Entidad poco atendida: sin donaciones asignadas
     NecesidadExtraordinaria necesidadActualPocoAtendida =
         new NecesidadExtraordinaria(subcategoria, 5, "nueva necesidad de entidad poco atendida");
     necesidadActualPocoAtendida.setEntidad(entidadPocoAtendida);

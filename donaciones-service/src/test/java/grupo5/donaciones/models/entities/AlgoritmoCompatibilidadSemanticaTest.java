@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.infraestructure.analizadores.ComparadorTexto;
+import grupo5.donaciones.infraestructure.analizadores.NormalizadorBasicoTexto;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -44,7 +45,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     bienNormalizado = new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
 
-    algoritmo = new AlgoritmoCompatibilidadSemantica(new ComparadorTexto());
+    algoritmo = new AlgoritmoCompatibilidadSemantica(new ComparadorTexto(new NormalizadorBasicoTexto()));
   }
 
   private DonacionIndependiente crearDonacion(int cantidad, String descripcion) {
