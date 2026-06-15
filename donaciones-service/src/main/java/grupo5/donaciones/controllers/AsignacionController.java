@@ -19,32 +19,34 @@ import org.springframework.web.server.ResponseStatusException;
 @RequiredArgsConstructor
 public class AsignacionController {
 
-    private final GestorAlgoritmos gestorAlgoritmos;
-    private final PropuestaRepository propuestaRepository;
+  private final GestorAlgoritmos gestorAlgoritmos;
+  private final PropuestaRepository propuestaRepository;
 
-    @PostMapping("/ejecutar")
-    public ResponseEntity<List<Propuesta>> ejecutar() {
-        return ResponseEntity.ok(gestorAlgoritmos.ejecutar());
-    }
+  @PostMapping("/ejecutar")
+  public ResponseEntity<List<Propuesta>> ejecutar() {
+    return ResponseEntity.ok(gestorAlgoritmos.ejecutar());
+  }
 
-    @GetMapping("/propuestas")
-    public ResponseEntity<List<Propuesta>> listar() {
-        return ResponseEntity.ok(propuestaRepository.findAll());
-    }
+  @GetMapping("/propuestas")
+  public ResponseEntity<List<Propuesta>> listar() {
+    return ResponseEntity.ok(propuestaRepository.findAll());
+  }
 
-    @PostMapping("/propuestas/{id}/confirmar")
-    public ResponseEntity<Void> confirmar(@PathVariable Long id) {
-        propuestaRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
-            .confirmar();
-        return ResponseEntity.ok().build();
-    }
+  @PostMapping("/propuestas/{id}/confirmar")
+  public ResponseEntity<Void> confirmar(@PathVariable Long id) {
+    propuestaRepository
+        .findById(id)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
+        .confirmar();
+    return ResponseEntity.ok().build();
+  }
 
-    @PostMapping("/propuestas/{id}/rechazar")
-    public ResponseEntity<Void> rechazar(@PathVariable Long id) {
-        propuestaRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
-            .rechazar();
-        return ResponseEntity.ok().build();
-    }
+  @PostMapping("/propuestas/{id}/rechazar")
+  public ResponseEntity<Void> rechazar(@PathVariable Long id) {
+    propuestaRepository
+        .findById(id)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
+        .rechazar();
+    return ResponseEntity.ok().build();
+  }
 }
