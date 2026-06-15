@@ -1,52 +1,62 @@
 package grupo5.donaciones.controllers;
 
+import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.PropuestaRepository;
 import grupo5.donaciones.services.GestorAlgoritmos;
 import java.util.List;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/asignacion")
+@RequestMapping("/propuestas")
 @RequiredArgsConstructor
 public class AsignacionController {
 
   private final GestorAlgoritmos gestorAlgoritmos;
   private final PropuestaRepository propuestaRepository;
 
-  @PostMapping("/ejecutar")
+  @PostMapping
   public ResponseEntity<List<Propuesta>> ejecutar() {
-    return ResponseEntity.ok(gestorAlgoritmos.ejecutar());
+    return ResponseEntity.status(HttpStatus.CREATED).body(gestorAlgoritmos.ejecutar());
   }
 
-  @GetMapping("/propuestas")
+  @GetMapping
   public ResponseEntity<List<Propuesta>> listar() {
     return ResponseEntity.ok(propuestaRepository.findAll());
   }
 
-  @PostMapping("/propuestas/{id}/confirmar")
-  public ResponseEntity<Void> confirmar(@PathVariable Long id) {
-    propuestaRepository
-        .findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .confirmar();
+  @PatchMapping("/{id}")
+  public ResponseEntity<Void> actualizarEstado(
+      @PathVariable Long id, @RequestBody ActualizarEstadoRequest request) {
+    Propuesta propuesta =
+        propuestaRepository
+            .findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    if (request.getEstado() == EstadoPropuesta.APROBADA) {
+      propuesta.confirmar();
+    } else if (request.getEstado() == EstadoPropuesta.DESCARTADA) {
+      propuesta.rechazar();
+    } else {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado invalido para transicion");
+    }
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/propuestas/{id}/rechazar")
-  public ResponseEntity<Void> rechazar(@PathVariable Long id) {
-    propuestaRepository
-        .findById(id)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
-        .rechazar();
-    return ResponseEntity.ok().build();
+  @Getter
+  @Setter
+  static class ActualizarEstadoRequest {
+    private EstadoPropuesta estado;
   }
 }
