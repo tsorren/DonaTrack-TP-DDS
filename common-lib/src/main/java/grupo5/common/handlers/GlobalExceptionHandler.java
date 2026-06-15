@@ -1,7 +1,10 @@
 package grupo5.common.handlers;
 
-import grupo5.common.errors.RecursoNoEncontradoException;
-import grupo5.common.errors.ReglaDeNegocioException;
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.InfrastructureException;
+import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.common.responses.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,27 +13,37 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
   @ExceptionHandler(RecursoNoEncontradoException.class)
   public ResponseEntity<ErrorResponse> handleRecursoNoEncontrado(RecursoNoEncontradoException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ErrorResponse.of("Recurso no encontrado", ex.getMessage()));
+        .body(new ErrorResponse(ex, ex.getId() != null ? ex.getId().toString() : null));
   }
 
-  @ExceptionHandler(ReglaDeNegocioException.class)
-  public ResponseEntity<ErrorResponse> handleReglaDeNegocio(ReglaDeNegocioException ex) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of("Regla de negocio inválida", ex.getMessage()));
+  @ExceptionHandler(ValidationException.class)
+  public ResponseEntity<ErrorResponse> handleValidation(ValidationException ex) {
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex));
+  }
+
+  @ExceptionHandler(BusinessStateException.class)
+  public ResponseEntity<ErrorResponse> handleBusinessState(BusinessStateException ex) {
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex));
+  }
+
+  @ExceptionHandler(InfrastructureException.class)
+  public ResponseEntity<ErrorResponse> handleInfrastructure(InfrastructureException ex) {
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(ex));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(ErrorResponse.of("Solicitud inválida", ex.getMessage()));
+        .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), ex.getMessage()));
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ErrorResponse.of("Error interno del servidor", "Ocurrió un error inesperado"));
+        .body(new ErrorResponse(ex, ErrorCatalog.ERROR_INTERNO.getCode(), "Internal Server Error"));
   }
 }

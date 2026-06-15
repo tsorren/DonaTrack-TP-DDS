@@ -1,5 +1,8 @@
 package grupo5.common.exceptions;
 
+import lombok.Getter;
+
+@Getter
 public abstract class DonaTrackException extends RuntimeException {
   private final ErrorCatalog error;
 
@@ -11,10 +14,6 @@ public abstract class DonaTrackException extends RuntimeException {
   protected DonaTrackException(ErrorCatalog error, Throwable cause) {
     super(cause);
     this.error = error;
-  }
-
-  public ErrorCatalog getError() {
-    return error;
   }
 
   public String getErrorCode() {

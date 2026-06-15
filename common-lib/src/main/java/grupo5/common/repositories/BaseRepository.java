@@ -2,15 +2,20 @@ package grupo5.common.repositories;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
-public interface BaseRepository<Recurso, ID> {
-  List<Recurso> findAll();
+public interface BaseRepository<T extends RecursoDTO> {
+  List<T> findAll();
 
-  Optional<Recurso> findById(ID id);
+  Optional<T> findById(UUID id);
 
-  Recurso save(ID id, Recurso recurso);
+  T save(UUID id, T recurso);
 
-  void deleteById(ID id);
+  void deleteById(UUID id);
 
-  boolean existsById(ID id);
+  boolean existsById(UUID id);
+
+  long count();
+
+  void deleteAll();
 }

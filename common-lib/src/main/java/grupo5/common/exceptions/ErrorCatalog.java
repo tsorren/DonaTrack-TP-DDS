@@ -1,9 +1,18 @@
 package grupo5.common.exceptions;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorCatalog {
   // === INFRAESTRUCTURA (0xx) ===
   CSV_READ_ERROR("ERR-INF-001"),
   CSV_PROCESS_ERROR("ERR-INF-002"),
+
+  // === COMUNES / CSR ===
+  RECURSO_NO_ENCONTRADO("ERR-CSR-001"),
+  ARGUMENTO_NULO("ERR-CSR-002"),
+  ARGUMENTO_INVALIDO("ERR-CSR-003"),
+  ERROR_INTERNO("ERR-CSR-500"),
 
   // === PERSONAS Y DIRECCIÓN (1xx) ===
   HUMANA_NOMBRE_VACIO("ERR-VAL-101"),
@@ -72,9 +81,5 @@ public enum ErrorCatalog {
 
   ErrorCatalog(String code) {
     this.code = code;
-  }
-
-  public String getCode() {
-    return this.code;
   }
 }
