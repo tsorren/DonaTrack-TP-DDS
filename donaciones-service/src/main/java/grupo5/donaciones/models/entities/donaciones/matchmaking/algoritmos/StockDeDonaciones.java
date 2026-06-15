@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -13,6 +15,7 @@ public class StockDeDonaciones {
     private final Map<DonacionIndependiente, Integer> cantidades = new HashMap<>();
 
     public StockDeDonaciones(List<DonacionIndependiente> donaciones) {
+        if (donaciones == null) throw new ValidationException(ErrorCatalog.STOCK_LISTA_DONACIONES_NULA);
         for (DonacionIndependiente donacion : donaciones) {
             cantidades.put(donacion, donacion.getCantidad());
         }

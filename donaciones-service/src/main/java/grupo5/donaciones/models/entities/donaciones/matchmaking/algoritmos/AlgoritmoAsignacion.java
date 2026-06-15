@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -11,6 +13,8 @@ import java.util.List;
 public abstract class AlgoritmoAsignacion {
 
     public List<Propuesta> ejecutar(List<Necesidad> necesidades, List<DonacionIndependiente> donaciones) {
+        if (necesidades == null) throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);
+        if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
         List<Propuesta> propuestas = new ArrayList<>();
         StockDeDonaciones stock = new StockDeDonaciones(donaciones);
 
@@ -58,7 +62,13 @@ public abstract class AlgoritmoAsignacion {
     }
 
     public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
+        if (necesidades == null) throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);
         return necesidades;
+    }
+
+    protected void validarParametrosFiltrado(Necesidad necesidad, List<DonacionIndependiente> donaciones) {
+        if (necesidad == null) throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDAD_NULA);
+        if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
     }
 
     public abstract List<DonacionIndependiente> filtrarDonaciones(

@@ -34,7 +34,7 @@ public class GestorAlgoritmos {
         this.propuestaRepository = propuestaRepository;
         this.algoritmos = List.of(
             new AlgoritmoCompatibilidadSemantica(comparadorTexto),
-            new AlgoritmoPrioridadSubAtendidos()
+            new AlgoritmoPrioridadSubAtendidos(necesidadRepository)
         );
     }
 

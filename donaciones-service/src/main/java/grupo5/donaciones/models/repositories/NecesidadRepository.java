@@ -17,6 +17,11 @@ public class NecesidadRepository {
     }
   }
 
+  // Método para simular la búsqueda de todas las necesidades
+  public List<Necesidad> findAll() {
+    return new ArrayList<>(baseDeDatosFalsa);
+  }
+
   // Método para simular la búsqueda de necesidades insatisfechas
   public List<Necesidad> findInsatisfechas() {
     return baseDeDatosFalsa.stream().filter(n -> !n.estaSatisfecha()).toList();

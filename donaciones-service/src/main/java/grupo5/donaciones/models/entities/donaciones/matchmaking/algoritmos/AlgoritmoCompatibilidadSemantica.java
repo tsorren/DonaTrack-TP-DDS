@@ -17,6 +17,7 @@ public class AlgoritmoCompatibilidadSemantica extends AlgoritmoAsignacion {
     @Override
     public List<DonacionIndependiente> filtrarDonaciones(
             Necesidad necesidad, List<DonacionIndependiente> donaciones) {
+        validarParametrosFiltrado(necesidad, donaciones);
         List<DonacionIndependiente> filtradas = new ArrayList<>();
         for (DonacionIndependiente donacion : donaciones) {
             if (mismaSubcategoria(donacion, necesidad)) {
