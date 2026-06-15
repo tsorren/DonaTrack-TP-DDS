@@ -26,7 +26,7 @@ public class PeriodoNecesidad implements Asignable {
     this.donacionesAsignadas = new ArrayList<>();
   }
 
-  public void agregarDonacion(DonacionIndependiente donacion) {
+  public void asignarDonacion(DonacionIndependiente donacion) {
     if (donacion == null) throw new ValidationException(ErrorCatalog.PERIODO_DONACION_NULA);
     this.donacionesAsignadas.add(donacion);
   }
