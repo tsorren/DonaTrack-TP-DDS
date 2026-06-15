@@ -19,21 +19,19 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
 
   @Override
   public DonacionIndependienteResponseDTO cambiarEstado(
-      UUID id,
-      CambioEstadoDonacionIndependienteRequestDTO request,
-      String actor) {
+      UUID id, CambioEstadoDonacionIndependienteRequestDTO request, String actor) {
 
-    DonacionIndependiente donacion = repositorio.findById(id)
-        .orElseThrow(() -> new RecursoNoEncontradoException(id));
+    DonacionIndependiente donacion =
+        repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
     switch (request.estado().toUpperCase()) {
-      case "ASIGNADA"        -> donacion.asignar(actor);
-      case "VENCIDA"         -> donacion.vencer(actor);
-      case "EN_TRASLADO"     -> donacion.planificarRuta(actor);
-      case "RECORRIDO"       -> donacion.iniciarRecorrido(actor);
-      case "ENTREGADA"       -> donacion.confirmarEntrega(actor);
+      case "ASIGNADA" -> donacion.asignar(actor);
+      case "VENCIDA" -> donacion.vencer(actor);
+      case "EN_TRASLADO" -> donacion.planificarRuta(actor);
+      case "RECORRIDO" -> donacion.iniciarRecorrido(actor);
+      case "ENTREGADA" -> donacion.confirmarEntrega(actor);
       case "ENTREGA_FALLIDA" -> donacion.registrarFalla(request.justificacion(), actor);
-      case "EN_DEPOSITO"     -> donacion.retornar(actor);
+      case "EN_DEPOSITO" -> donacion.retornar(actor);
       default -> throw new IllegalArgumentException("Estado inválido: " + request.estado());
     }
 
@@ -47,7 +45,6 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         donacion.getEstadoActual().getClass().getSimpleName(),
         donacion.getHistorial().stream()
             .map(c -> c.getEstado().getClass().getSimpleName())
-            .toList()
-    );
+            .toList());
   }
 }

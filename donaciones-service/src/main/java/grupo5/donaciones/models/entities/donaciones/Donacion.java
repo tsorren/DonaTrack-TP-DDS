@@ -34,7 +34,6 @@ public class Donacion {
     this.historialEstados = new ArrayList<>();
   }
 
-
   public Donacion(Donante donante) {
     this(donante, null);
   }

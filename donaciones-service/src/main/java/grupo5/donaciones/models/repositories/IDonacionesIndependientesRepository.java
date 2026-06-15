@@ -3,10 +3,8 @@ package grupo5.donaciones.models.repositories;
 import grupo5.common.repositories.BaseRepository;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.util.List;
-import java.util.UUID;
 
-public interface IDonacionesIndependientesRepository
-    extends BaseRepository<DonacionIndependiente> {
+public interface IDonacionesIndependientesRepository extends BaseRepository<DonacionIndependiente> {
 
   List<DonacionIndependiente> findEnDeposito();
 }

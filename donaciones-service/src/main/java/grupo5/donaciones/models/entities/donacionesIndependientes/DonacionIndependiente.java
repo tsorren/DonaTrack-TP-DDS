@@ -84,14 +84,37 @@ public class DonacionIndependiente implements RecursoDTO {
     return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos);
   }
 
-  public void registrar(String actor) { this.estadoActual.registrar(this, actor); }
-  public void asignar(String actor) { this.estadoActual.asignar(this, actor); }
-  public void planificarRuta(String actor) { this.estadoActual.planificarRuta(this, actor); }
-  public void iniciarRecorrido(String actor) { this.estadoActual.iniciarRecorrido(this, actor); }
-  public void confirmarEntrega(String actor) { this.estadoActual.confirmarEntrega(this, actor); }
-  public void registrarFalla(String justificacion, String actor) { this.estadoActual.registrarFalla(this, justificacion, actor); }
-  public void retornar(String actor) { this.estadoActual.retornar(this, actor); }
-  public void vencer(String actor) { this.estadoActual.vencer(this, actor); }
+  public void registrar(String actor) {
+    this.estadoActual.registrar(this, actor);
+  }
+
+  public void asignar(String actor) {
+    this.estadoActual.asignar(this, actor);
+  }
+
+  public void planificarRuta(String actor) {
+    this.estadoActual.planificarRuta(this, actor);
+  }
+
+  public void iniciarRecorrido(String actor) {
+    this.estadoActual.iniciarRecorrido(this, actor);
+  }
+
+  public void confirmarEntrega(String actor) {
+    this.estadoActual.confirmarEntrega(this, actor);
+  }
+
+  public void registrarFalla(String justificacion, String actor) {
+    this.estadoActual.registrarFalla(this, justificacion, actor);
+  }
+
+  public void retornar(String actor) {
+    this.estadoActual.retornar(this, actor);
+  }
+
+  public void vencer(String actor) {
+    this.estadoActual.vencer(this, actor);
+  }
 
   public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion, String actor) {
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);

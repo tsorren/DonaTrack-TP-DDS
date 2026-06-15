@@ -6,7 +6,5 @@ import java.util.UUID;
 
 public interface IDonacionesIndependientesService {
   DonacionIndependienteResponseDTO cambiarEstado(
-      UUID id,
-      CambioEstadoDonacionIndependienteRequestDTO request,
-      String actor);
+      UUID id, CambioEstadoDonacionIndependienteRequestDTO request, String actor);
 }

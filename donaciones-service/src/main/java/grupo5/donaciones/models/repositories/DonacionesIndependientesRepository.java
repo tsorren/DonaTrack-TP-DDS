@@ -13,8 +13,6 @@ public class DonacionesIndependientesRepository
 
   @Override
   public List<DonacionIndependiente> findEnDeposito() {
-    return findAll().stream()
-        .filter(d -> d.getEstadoActual() instanceof EnDeposito)
-        .toList();
+    return findAll().stream().filter(d -> d.getEstadoActual() instanceof EnDeposito).toList();
   }
 }

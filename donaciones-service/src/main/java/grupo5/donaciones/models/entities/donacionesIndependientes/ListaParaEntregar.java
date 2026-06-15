@@ -6,5 +6,4 @@ public class ListaParaEntregar implements EstadoDonacion {
   public void iniciarRecorrido(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new EnTraslado(), null, actor);
   }
-
 }

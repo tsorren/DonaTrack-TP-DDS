@@ -63,7 +63,8 @@ class SegmentadorSimpleTest {
   }
 
   @Test
-  void segmentar_conItemsMismaSubcategoriaPeroDiferenteEstadoYVencimiento_losAgrupaEnUnaSolaDonacion() {
+  void
+      segmentar_conItemsMismaSubcategoriaPeroDiferenteEstadoYVencimiento_losAgrupaEnUnaSolaDonacion() {
     ItemDonacionNormalizado item1 = new ItemDonacionNormalizado(donacion, abrigoInviernoNuevo, 5);
     ItemDonacionNormalizado item2 = new ItemDonacionNormalizado(donacion, polleraInviernoUsada, 3);
 
