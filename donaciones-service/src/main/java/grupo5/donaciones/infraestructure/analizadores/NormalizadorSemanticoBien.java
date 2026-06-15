@@ -1,6 +1,8 @@
 package grupo5.donaciones.infraestructure.analizadores;
 
+import grupo5.donaciones.models.entities.categorias.AliasSubcategoria;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NormalizadorSemanticoBien implements Normalizador {
@@ -8,20 +10,13 @@ public class NormalizadorSemanticoBien implements Normalizador {
   private final Normalizador basicNormalizer;
   private final Map<String, String> semanticGoodsMap;
 
-  public NormalizadorSemanticoBien() {
+  public NormalizadorSemanticoBien(List<AliasSubcategoria> aliases) {
     this.basicNormalizer = new NormalizadorBasicoTexto();
     this.semanticGoodsMap = new HashMap<>();
-    // Mapeo de bienes específicos a nombres estandarizados o categorías
-    semanticGoodsMap.put("fideos tirabuzon", "pasta");
-    semanticGoodsMap.put("spaghetti", "pasta");
-    semanticGoodsMap.put("arroz blanco", "arroz");
-    semanticGoodsMap.put("arroz integral", "arroz");
-    semanticGoodsMap.put("leche entera", "leche");
-    semanticGoodsMap.put("leche descremada", "leche");
-    semanticGoodsMap.put("notebook", "computadora portatil");
-    semanticGoodsMap.put("laptop", "computadora portatil");
-    semanticGoodsMap.put(
-        "silla de ruedas", "silla de ruedas"); // Ejemplo de un bien que ya es estándar
+    // Construye el mapa semántico a partir de los alias definidos en el dominio
+    for (AliasSubcategoria aliasSubcategoria : aliases) {
+      semanticGoodsMap.put(aliasSubcategoria.getAlias(), aliasSubcategoria.getSubcategoria().getNombre());
+    }
   }
 
   @Override

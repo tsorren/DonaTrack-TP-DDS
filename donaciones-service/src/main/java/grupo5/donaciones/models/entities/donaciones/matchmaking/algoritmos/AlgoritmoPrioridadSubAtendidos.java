@@ -4,6 +4,7 @@ import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,7 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
 
   @Override
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
-    LocalDateTime hace3meses = LocalDateTime.now().minusMonths(3);
+    LocalDateTime hace3meses = LocalDateTime.now(ZoneId.systemDefault()).minusMonths(3);
 
     Map<EntidadBeneficiaria, Integer> donacionesPorEntidad = new HashMap<>();
     for (Necesidad necesidad : necesidades) {
@@ -45,7 +46,7 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
     return filtradas;
   }
 
-  private int contarDonacionesRecientes(Necesidad necesidad, LocalDateTime desde) {
+  private static int contarDonacionesRecientes(Necesidad necesidad, LocalDateTime desde) {
     List<DonacionIndependiente> asignadas = necesidad.getDonacionesAsignadas();
     if (asignadas == null) return 0;
     int contador = 0;

@@ -20,9 +20,9 @@ public class StockDeDonaciones {
 
   public List<DonacionIndependiente> disponibles() {
     List<DonacionIndependiente> resultado = new ArrayList<>();
-    for (DonacionIndependiente donacion : cantidades.keySet()) {
-      if (cantidades.get(donacion) > 0) {
-        resultado.add(donacion);
+    for (Map.Entry<DonacionIndependiente, Integer> entrada : cantidades.entrySet()) {
+      if (entrada.getValue() > 0) {
+        resultado.add(entrada.getKey());
       }
     }
     return resultado;

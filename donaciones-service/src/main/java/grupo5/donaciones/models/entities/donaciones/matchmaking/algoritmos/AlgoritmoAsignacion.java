@@ -5,6 +5,7 @@ import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propu
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,16 +20,16 @@ public abstract class AlgoritmoAsignacion {
       if (propuestas.size() >= 10) break;
 
       List<DonacionIndependiente> candidatas = filtrarDonaciones(necesidad, stock.disponibles());
-      if (candidatas.isEmpty()) continue;
-
-      Propuesta propuesta = crearPropuestaDesde(necesidad, candidatas, stock);
-      stock.registrarReservas(propuesta);
-      propuestas.add(propuesta);
+      if (!candidatas.isEmpty()) {
+        Propuesta propuesta = crearPropuestaDesde(necesidad, candidatas, stock);
+        stock.registrarReservas(propuesta);
+        propuestas.add(propuesta);
+      }
     }
     return propuestas;
   }
 
-  private Propuesta crearPropuestaDesde(
+  private static Propuesta crearPropuestaDesde(
       Necesidad necesidad,
       List<DonacionIndependiente> donacionesOrdenadas,
       StockDeDonaciones stock) {
@@ -36,18 +37,18 @@ public abstract class AlgoritmoAsignacion {
     Propuesta propuesta = new Propuesta();
     propuesta.setNecesidadQueSatisface(necesidad);
     propuesta.setEstado(EstadoPropuesta.PENDIENTE);
-    propuesta.setFechaCreacion(LocalDateTime.now());
+    propuesta.setFechaCreacion(LocalDateTime.now(ZoneId.systemDefault()));
 
     int cantidadRestante = necesidad.getCantidadNecesitada() - necesidad.cantidadAcumulada();
 
-    for (DonacionIndependiente donacion : donacionesOrdenadas) {
-      if (cantidadRestante <= 0) break;
+    for (int i = 0; i < donacionesOrdenadas.size() && cantidadRestante > 0; i++) {
+      DonacionIndependiente donacion = donacionesOrdenadas.get(i);
       int disponible = stock.disponibleDe(donacion);
-      if (disponible <= 0) continue;
-
-      int aAsignar = Math.min(disponible, cantidadRestante);
-      propuesta.agregarFragmentacion(donacion, aAsignar);
-      cantidadRestante -= aAsignar;
+      if (disponible > 0) {
+        int aAsignar = Math.min(disponible, cantidadRestante);
+        propuesta.agregarFragmentacion(donacion, aAsignar);
+        cantidadRestante -= aAsignar;
+      }
     }
 
     return propuesta;

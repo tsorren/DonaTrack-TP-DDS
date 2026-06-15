@@ -50,7 +50,7 @@ public class GestorAlgoritmos {
     return resultado;
   }
 
-  private List<Propuesta> consolidar(List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
+  private static List<Propuesta> consolidar(List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
     Set<Necesidad> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
     for (Propuesta propuesta : propuesta1) {
       necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisface());

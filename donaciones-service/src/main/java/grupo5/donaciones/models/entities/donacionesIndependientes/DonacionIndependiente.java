@@ -24,8 +24,7 @@ public class DonacionIndependiente {
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
   private Asignable asignadaA;
-  private String
-      Descripcion; // para poder decidir si me sirve la donacion para satisfacer una donacion
+  private String descripcion; // para poder decidir si me sirve la donacion para satisfacer una donacion
 
   // necesito analizar semanticamente su descripcion
 
