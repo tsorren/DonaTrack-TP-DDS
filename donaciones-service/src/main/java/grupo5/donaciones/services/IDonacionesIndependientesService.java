@@ -1,12 +1,12 @@
 package grupo5.donaciones.services;
 
-public interface IDonacionesIndependientesService {
+import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import java.util.UUID;
 
-  void asignar(Long donaIndepId, Long necesidadId, String actor);
-  void vencer(Long donaIndepId, String actor);
-  void planificarRuta(Long donaIndepId, String actor);
-  void iniciarRecorrido(Long donaIndepId, String actor);
-  void confirmarEntrega(Long donaIndepId, String actor);
-  void registrarFalla(Long donaIndepId, String justificacion, String actor);
-  void retornar(Long donaIndepId, String actor);
+public interface IDonacionesIndependientesService {
+  DonacionIndependienteResponseDTO cambiarEstado(
+      UUID id,
+      CambioEstadoDonacionIndependienteRequestDTO request,
+      String actor);
 }

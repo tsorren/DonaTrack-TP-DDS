@@ -1,7 +1,11 @@
 package grupo5.donaciones.services;
 
+import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,57 +18,36 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   }
 
   @Override
-  public void asignar(Long donaIndepId, Long necesidadId, String actor) {
-    DonacionIndependiente donacion = buscarOFallar(donaIndepId);
-    donacion.asignar(actor);
-    repositorio.save(donacion);
+  public DonacionIndependienteResponseDTO cambiarEstado(
+      UUID id,
+      CambioEstadoDonacionIndependienteRequestDTO request,
+      String actor) {
+
+    DonacionIndependiente donacion = repositorio.findById(id)
+        .orElseThrow(() -> new RecursoNoEncontradoException(id));
+
+    switch (request.estado().toUpperCase()) {
+      case "ASIGNADA"        -> donacion.asignar(actor);
+      case "VENCIDA"         -> donacion.vencer(actor);
+      case "EN_TRASLADO"     -> donacion.planificarRuta(actor);
+      case "RECORRIDO"       -> donacion.iniciarRecorrido(actor);
+      case "ENTREGADA"       -> donacion.confirmarEntrega(actor);
+      case "ENTREGA_FALLIDA" -> donacion.registrarFalla(request.justificacion(), actor);
+      case "EN_DEPOSITO"     -> donacion.retornar(actor);
+      default -> throw new IllegalArgumentException("Estado inválido: " + request.estado());
+    }
+
+    repositorio.save(id, donacion);
+    return toDTO(donacion);
   }
 
-  @Override
-  public void vencer(Long donaIndepId, String actor) {
-    DonacionIndependiente donacion = buscarOFallar(donaIndepId);
-    donacion.vencer(actor);
-    repositorio.save(donacion);
-  }
-
-  @Override
-  public void planificarRuta(Long donaIndepId, String actor) {
-    DonacionIndependiente donacion = buscarOFallar(donaIndepId);
-    donacion.planificarRuta(actor);
-    repositorio.save(donacion);
-  }
-
-  @Override
-  public void iniciarRecorrido(Long donaIndepId, String actor) {
-    DonacionIndependiente donacion = buscarOFallar(donaIndepId);
-    donacion.iniciarRecorrido(actor);
-    repositorio.save(donacion);
-  }
-
-  @Override
-  public void confirmarEntrega(Long donaIndepId, String actor) {
-    DonacionIndependiente donacion = buscarOFallar(donaIndepId);
-    donacion.confirmarEntrega(actor);
-    repositorio.save(donacion);
-  }
-
-  @Override
-  public void registrarFalla(Long donaIndepId, String justificacion, String actor) {
-    DonacionIndependiente donacion = buscarOFallar(donaIndepId);
-    donacion.registrarFalla(justificacion, actor);
-    repositorio.save(donacion);
-  }
-
-  @Override
-  public void retornar(Long donaIndepId, String actor) {
-    DonacionIndependiente donacion = buscarOFallar(donaIndepId);
-    donacion.retornar(actor);
-    repositorio.save(donacion);
-  }
-
-  private DonacionIndependiente buscarOFallar(Long id) {
-    return repositorio.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException(
-            "No existe DonacionIndependiente con id: " + id));
+  private DonacionIndependienteResponseDTO toDTO(DonacionIndependiente donacion) {
+    return new DonacionIndependienteResponseDTO(
+        donacion.getId(),
+        donacion.getEstadoActual().getClass().getSimpleName(),
+        donacion.getHistorial().stream()
+            .map(c -> c.getEstado().getClass().getSimpleName())
+            .toList()
+    );
   }
 }

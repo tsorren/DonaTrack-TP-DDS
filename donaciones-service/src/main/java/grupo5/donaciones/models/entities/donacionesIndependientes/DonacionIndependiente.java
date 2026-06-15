@@ -3,6 +3,7 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.RecursoDTO;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.necesidades.Asignable;
 import java.time.LocalDateTime;
@@ -10,13 +11,15 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class DonacionIndependiente {
+public class DonacionIndependiente implements RecursoDTO {
 
+  private UUID id;
   private Donacion donacionOriginal;
   private List<ItemDonacionIndependiente> items;
   private EstadoDonacion estadoActual;
@@ -24,8 +27,7 @@ public class DonacionIndependiente {
   private final LocalDateTime fechaRegistro;
   private Asignable asignadaA;
 
-  public DonacionIndependiente(
-      Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
+  public DonacionIndependiente(Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
@@ -56,10 +58,6 @@ public class DonacionIndependiente {
     return this.items.stream().mapToInt(ItemDonacionIndependiente::getCantidad).sum();
   }
 
-  /**
-   * La subcategoría se obtiene navegando por los ítems, ya que todos los ítems
-   * de una DonacionIndependiente pertenecen a la misma subcategoría por construcción.
-   */
   public grupo5.donaciones.models.entities.categorias.Subcategoria getSubcategoria() {
     return this.items.stream()
         .findFirst()
@@ -86,41 +84,15 @@ public class DonacionIndependiente {
     return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos);
   }
 
-  // ── Métodos de negocio ─────────────────────────────────────────────────────
+  public void registrar(String actor) { this.estadoActual.registrar(this, actor); }
+  public void asignar(String actor) { this.estadoActual.asignar(this, actor); }
+  public void planificarRuta(String actor) { this.estadoActual.planificarRuta(this, actor); }
+  public void iniciarRecorrido(String actor) { this.estadoActual.iniciarRecorrido(this, actor); }
+  public void confirmarEntrega(String actor) { this.estadoActual.confirmarEntrega(this, actor); }
+  public void registrarFalla(String justificacion, String actor) { this.estadoActual.registrarFalla(this, justificacion, actor); }
+  public void retornar(String actor) { this.estadoActual.retornar(this, actor); }
+  public void vencer(String actor) { this.estadoActual.vencer(this, actor); }
 
-  public void registrar(String actor) {
-    this.estadoActual.registrar(this, actor);
-  }
-
-  public void asignar(String actor) {
-    this.estadoActual.asignar(this, actor);
-  }
-
-  public void planificarRuta(String actor) {
-    this.estadoActual.planificarRuta(this, actor);
-  }
-
-  public void iniciarRecorrido(String actor) {
-    this.estadoActual.iniciarRecorrido(this, actor);
-  }
-
-  public void confirmarEntrega(String actor) {
-    this.estadoActual.confirmarEntrega(this, actor);
-  }
-
-  public void registrarFalla(String justificacion, String actor) {
-    this.estadoActual.registrarFalla(this, justificacion, actor);
-  }
-
-  public void retornar(String actor) {
-    this.estadoActual.retornar(this, actor);
-  }
-
-  public void vencer(String actor) {
-    this.estadoActual.vencer(this, actor);
-  }
-
-  // Llamado únicamente por los estados concretos
   public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion, String actor) {
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
