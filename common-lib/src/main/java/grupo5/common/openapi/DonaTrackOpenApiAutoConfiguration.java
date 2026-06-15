@@ -36,7 +36,7 @@ public class DonaTrackOpenApiAutoConfiguration {
             List.of(new Server().url(serverUrl).description(properties.getServerDescription())));
   }
 
-  private String valueOrDefault(String value, String defaultValue) {
+  private static String valueOrDefault(String value, String defaultValue) {
     return value == null || value.isBlank() ? defaultValue : value;
   }
 }
