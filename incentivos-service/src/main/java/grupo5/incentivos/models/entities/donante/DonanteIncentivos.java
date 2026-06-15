@@ -44,11 +44,10 @@ public class DonanteIncentivos {
     metricas.registrarDonacionExitosa(organizacionId);
 
     this.misiones.stream()
-            .filter(m -> m.getCategoria() == this.categoria && !m.isCompletada())
-            .findFirst()
-            .ifPresent(m -> m.evaluarProgresoExitoso(this));
+        .filter(m -> m.getCategoria() == this.categoria && !m.isCompletada())
+        .findFirst()
+        .ifPresent(m -> m.evaluarProgresoExitoso(this));
   }
-
 
   private boolean yaAyudoA(Long organizacionId) {
     return metricas.yaAyudoA(organizacionId);

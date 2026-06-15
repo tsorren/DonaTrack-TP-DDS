@@ -28,7 +28,8 @@ public class IncentivosController {
 
   @PostMapping("/donaciones")
   public ResponseEntity<Void> procesarDonacion(@RequestBody NuevaDonacionRequest request) {
-    EventoDonacion evento = EventoDonacion.builder()
+    EventoDonacion evento =
+        EventoDonacion.builder()
             .categorias(request.categorias())
             .cantidadBienes(request.cantidadBienes())
             .fecha(request.fecha())
@@ -45,8 +46,7 @@ public class IncentivosController {
   }
 
   @PostMapping("/donantes/{donanteId}")
-  public ResponseEntity<DonanteRegistradoDTO> registrarDonante(
-      @PathVariable Long donanteId) {
+  public ResponseEntity<DonanteRegistradoDTO> registrarDonante(@PathVariable Long donanteId) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(incentivosService.registrarDonante(donanteId));
   }

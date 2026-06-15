@@ -49,27 +49,31 @@ public class IncentivosService {
 
   public void procesarDonacion(Long donanteId, EventoDonacion evento) {
     DonanteIncentivos donante =
-            repository.buscarPorId(donanteId)
-                    .orElseGet(() -> {
-                      registrarDonante(donanteId);
-                      return obtenerDonante(donanteId);
-                    });
+        repository
+            .buscarPorId(donanteId)
+            .orElseGet(
+                () -> {
+                  registrarDonante(donanteId);
+                  return obtenerDonante(donanteId);
+                });
 
     Set<String> misionesCompletadasAntes =
-            donante.getMisiones().stream()
-                    .filter(Mision::isCompletada)
-                    .map(Mision::getNombre)
-                    .collect(java.util.stream.Collectors.toSet());
+        donante.getMisiones().stream()
+            .filter(Mision::isCompletada)
+            .map(Mision::getNombre)
+            .collect(java.util.stream.Collectors.toSet());
 
     donante.registrarDonacion(evento);
 
     donante.getMisiones().stream()
-            .filter(Mision::isCompletada)
-            .filter(m -> !misionesCompletadasAntes.contains(m.getNombre()))
-            .forEach(mision -> {
+        .filter(Mision::isCompletada)
+        .filter(m -> !misionesCompletadasAntes.contains(m.getNombre()))
+        .forEach(
+            mision -> {
               Insignia insignia = mision.getInsignia();
               String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
-              notificacionesClient.notificarMisionCumplida(donanteId, mision.getNombre(), recompensa);
+              notificacionesClient.notificarMisionCumplida(
+                  donanteId, mision.getNombre(), recompensa);
             });
 
     if (donante.intentarAscenso()) {
@@ -83,20 +87,22 @@ public class IncentivosService {
     DonanteIncentivos donante = obtenerDonante(donanteId);
 
     Set<String> misionesCompletadasAntes =
-            donante.getMisiones().stream()
-                    .filter(Mision::isCompletada)
-                    .map(Mision::getNombre)
-                    .collect(java.util.stream.Collectors.toSet());
+        donante.getMisiones().stream()
+            .filter(Mision::isCompletada)
+            .map(Mision::getNombre)
+            .collect(java.util.stream.Collectors.toSet());
 
     donante.registrarDonacionExitosa(organizacionId);
 
     donante.getMisiones().stream()
-            .filter(Mision::isCompletada)
-            .filter(m -> !misionesCompletadasAntes.contains(m.getNombre()))
-            .forEach(mision -> {
+        .filter(Mision::isCompletada)
+        .filter(m -> !misionesCompletadasAntes.contains(m.getNombre()))
+        .forEach(
+            mision -> {
               Insignia insignia = mision.getInsignia();
               String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
-              notificacionesClient.notificarMisionCumplida(donanteId, mision.getNombre(), recompensa);
+              notificacionesClient.notificarMisionCumplida(
+                  donanteId, mision.getNombre(), recompensa);
             });
 
     if (donante.intentarAscenso()) {

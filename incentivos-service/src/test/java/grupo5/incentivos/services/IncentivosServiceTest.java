@@ -43,7 +43,7 @@ class IncentivosServiceTest {
     repository = new DonanteIncentivosRepository();
     misionFactory = new MisionFactory();
     service =
-            new IncentivosService(repository, misionFactory, notificacionesClient, rankingService);
+        new IncentivosService(repository, misionFactory, notificacionesClient, rankingService);
   }
 
   @Test
@@ -76,7 +76,7 @@ class IncentivosServiceTest {
     service.procesarDonacionExitosa(42L, 99L);
 
     verify(notificacionesClient, atLeastOnce())
-            .notificarMisionCumplida(anyLong(), anyString(), anyString());
+        .notificarMisionCumplida(anyLong(), anyString(), anyString());
   }
 
   @Test
@@ -87,12 +87,12 @@ class IncentivosServiceTest {
     repository.guardar(donante);
 
     EventoDonacion evento =
-            EventoDonacion.builder()
-                    .donacionId(1L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(1)
-                    .categorias(List.of("fideos"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(1L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(1)
+            .categorias(List.of("fideos"))
+            .build();
 
     service.procesarDonacion(43L, evento);
 
@@ -107,12 +107,12 @@ class IncentivosServiceTest {
     repository.guardar(donante);
 
     EventoDonacion evento =
-            EventoDonacion.builder()
-                    .donacionId(1L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(1)
-                    .categorias(List.of("x"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(1L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(1)
+            .categorias(List.of("x"))
+            .build();
 
     service.procesarDonacion(44L, evento);
 

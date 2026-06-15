@@ -35,12 +35,12 @@ class RankingMensualTest {
     donante.getMisiones().add(mision);
 
     EventoDonacion evento =
-            EventoDonacion.builder()
-                    .donacionId(1L)
-                    .fecha(LocalDate.of(2026, 5, 10))
-                    .cantidadBienes(1)
-                    .categorias(List.of("x"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(1L)
+            .fecha(LocalDate.of(2026, 5, 10))
+            .cantidadBienes(1)
+            .categorias(List.of("x"))
+            .build();
 
     donante.registrarDonacion(evento);
     donante.registrarDonacionExitosa(100L);
@@ -59,12 +59,12 @@ class RankingMensualTest {
     donante.getMisiones().add(racha);
 
     EventoDonacion evento =
-            EventoDonacion.builder()
-                    .donacionId(1L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(1)
-                    .categorias(List.of("x"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(1L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(1)
+            .categorias(List.of("x"))
+            .build();
 
     donante.registrarDonacion(evento);
     boolean ascendio = donante.intentarAscenso();

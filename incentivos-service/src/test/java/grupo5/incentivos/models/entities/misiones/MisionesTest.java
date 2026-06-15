@@ -24,11 +24,11 @@ class MisionesTest {
 
   private EventoDonacion eventoEn(int anio, int mes) {
     return EventoDonacion.builder()
-            .donacionId(1L)
-            .fecha(LocalDate.of(anio, mes, 15))
-            .cantidadBienes(5)
-            .categorias(List.of("arroz"))
-            .build();
+        .donacionId(1L)
+        .fecha(LocalDate.of(anio, mes, 15))
+        .cantidadBienes(5)
+        .categorias(List.of("arroz"))
+        .build();
   }
 
   @Test
@@ -73,33 +73,33 @@ class MisionesTest {
     MisionCompletitud mision = new MisionCompletitud(CategoriaDonante.COLABORADOR, 3);
 
     EventoDonacion e1 =
-            EventoDonacion.builder()
-                    .donacionId(1L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(1)
-                    .categorias(List.of("arroz"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(1L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(1)
+            .categorias(List.of("arroz"))
+            .build();
     EventoDonacion e2 =
-            EventoDonacion.builder()
-                    .donacionId(2L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(1)
-                    .categorias(List.of("ropa"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(2L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(1)
+            .categorias(List.of("ropa"))
+            .build();
     EventoDonacion e3 =
-            EventoDonacion.builder()
-                    .donacionId(3L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(1)
-                    .categorias(List.of("arroz"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(3L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(1)
+            .categorias(List.of("arroz"))
+            .build();
     EventoDonacion e4 =
-            EventoDonacion.builder()
-                    .donacionId(4L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(1)
-                    .categorias(List.of("sillas"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(4L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(1)
+            .categorias(List.of("sillas"))
+            .build();
 
     mision.evaluarProgreso(donante, e1);
     mision.evaluarProgreso(donante, e2);
@@ -115,12 +115,12 @@ class MisionesTest {
     MisionHabilDonador mision = new MisionHabilDonador(CategoriaDonante.SOSTENEDOR, 50);
 
     EventoDonacion evento =
-            EventoDonacion.builder()
-                    .donacionId(1L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(55)
-                    .categorias(List.of("fideos"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(1L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(55)
+            .categorias(List.of("fideos"))
+            .build();
 
     mision.evaluarProgreso(donante, evento);
 
@@ -133,12 +133,12 @@ class MisionesTest {
 
     for (int i = 0; i < 10; i++) {
       EventoDonacion evento =
-              EventoDonacion.builder()
-                      .donacionId((long) i)
-                      .fecha(LocalDate.now())
-                      .cantidadBienes(5)
-                      .categorias(List.of("fideos"))
-                      .build();
+          EventoDonacion.builder()
+              .donacionId((long) i)
+              .fecha(LocalDate.now())
+              .cantidadBienes(5)
+              .categorias(List.of("fideos"))
+              .build();
       mision.evaluarProgreso(donante, evento);
     }
 
@@ -148,7 +148,7 @@ class MisionesTest {
   @Test
   void donacionesExitosas_soloDeberiaContarExitosas() {
     MisionDonacionesExitosas mision =
-            new MisionDonacionesExitosas(CategoriaDonante.TRANSFORMADOR, 3);
+        new MisionDonacionesExitosas(CategoriaDonante.TRANSFORMADOR, 3);
 
     mision.evaluarProgresoExitoso(donante);
     // donacion no exitosa: no se llama evaluarProgresoExitoso
@@ -164,12 +164,12 @@ class MisionesTest {
     MisionDonacionesExitosas mision = new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 4);
 
     EventoDonacion exitosa =
-            EventoDonacion.builder()
-                    .donacionId(1L)
-                    .fecha(LocalDate.now())
-                    .cantidadBienes(1)
-                    .categorias(List.of("x"))
-                    .build();
+        EventoDonacion.builder()
+            .donacionId(1L)
+            .fecha(LocalDate.now())
+            .cantidadBienes(1)
+            .categorias(List.of("x"))
+            .build();
 
     mision.evaluarProgresoExitoso(donante);
     mision.evaluarProgresoExitoso(donante);
@@ -182,8 +182,8 @@ class MisionesTest {
   void mision_deberiaOtorgarInsigniaAlCompletarse() {
     MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
     grupo5.incentivos.models.entities.insignias.Insignia insignia =
-            new grupo5.incentivos.models.entities.insignias.Insignia(
-                    "Perseverante", "2 meses seguidos", "/img.png");
+        new grupo5.incentivos.models.entities.insignias.Insignia(
+            "Perseverante", "2 meses seguidos", "/img.png");
     racha.setInsignia(insignia);
 
     racha.evaluarProgreso(donante, eventoEn(2026, 1));
