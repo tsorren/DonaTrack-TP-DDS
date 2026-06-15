@@ -24,8 +24,7 @@ public class DonacionIndependiente {
   private final LocalDateTime fechaRegistro;
   private Asignable asignadaA;
 
-  public DonacionIndependiente(
-      Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
+  public DonacionIndependiente(Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
@@ -57,8 +56,8 @@ public class DonacionIndependiente {
   }
 
   /**
-   * La subcategoría se obtiene navegando por los ítems, ya que todos los ítems
-   * de una DonacionIndependiente pertenecen a la misma subcategoría por construcción.
+   * La subcategoría se obtiene navegando por los ítems, ya que todos los ítems de una
+   * DonacionIndependiente pertenecen a la misma subcategoría por construcción.
    */
   public grupo5.donaciones.models.entities.categorias.Subcategoria getSubcategoria() {
     return this.items.stream()

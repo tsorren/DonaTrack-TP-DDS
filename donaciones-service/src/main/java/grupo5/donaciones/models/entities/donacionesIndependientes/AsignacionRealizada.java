@@ -6,5 +6,4 @@ public class AsignacionRealizada implements EstadoDonacion {
   public void planificarRuta(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new ListaParaEntregar(), null, actor);
   }
-
 }

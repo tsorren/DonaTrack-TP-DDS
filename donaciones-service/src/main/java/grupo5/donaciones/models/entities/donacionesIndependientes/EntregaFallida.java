@@ -6,5 +6,4 @@ public class EntregaFallida implements EstadoDonacion {
   public void retornar(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new EnDeposito(), null, actor);
   }
-
 }
