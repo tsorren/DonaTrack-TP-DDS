@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 public class MisionCompletitud extends Mision {
 
-  private final Set<String> subcategoriasdonadas = new HashSet<>();
+  private final Set<String> categoriasdonadas = new HashSet<>();
 
   public MisionCompletitud(CategoriaDonante categoria, Integer subcategoriasObjetivo) {
     super(
@@ -24,9 +24,9 @@ public class MisionCompletitud extends Mision {
 
   @Override
   protected Integer calcularNuevoProgreso(DonanteIncentivos donante, EventoDonacion evento) {
-    if (evento.getSubcategoria() != null) {
-      this.subcategoriasdonadas.add(evento.getSubcategoria());
+    if (evento.getCategorias() != null) {
+      this.categoriasdonadas.addAll(evento.getCategorias());
     }
-    return this.subcategoriasdonadas.size();
+    return this.categoriasdonadas.size();
   }
 }

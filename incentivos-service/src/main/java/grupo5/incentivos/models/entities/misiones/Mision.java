@@ -69,4 +69,8 @@ public abstract class Mision {
     if (!this.completada || this.fechaCompletada == null) return false;
     return this.fechaCompletada.getYear() == anio && this.fechaCompletada.getMonthValue() == mes;
   }
+
+  public void evaluarProgresoExitoso(DonanteIncentivos donante) {
+    // por defecto no hace nada
+  }
 }

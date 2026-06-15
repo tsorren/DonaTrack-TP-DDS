@@ -37,9 +37,12 @@ public class Metricas {
     this.totalDonacionesHistoricas++;
     this.ultimaDonacion = evento.getFecha();
     this.historialDonaciones.add(evento);
+  }
 
-    if (evento.isExitosa()) {
-      this.totalDonacionesExitosas++;
+  public void registrarDonacionExitosa(Long organizacionId) {
+    this.totalDonacionesExitosas++;
+    if (organizacionId != null && !this.yaAyudoA(organizacionId)) {
+      this.registrarOrganizacionAyudada(organizacionId);
     }
   }
 

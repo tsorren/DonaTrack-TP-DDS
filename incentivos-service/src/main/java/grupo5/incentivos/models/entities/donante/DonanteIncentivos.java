@@ -34,15 +34,21 @@ public class DonanteIncentivos {
   public void registrarDonacion(EventoDonacion evento) {
     metricas.registrarDonacion(evento);
 
-    if (evento.getOrganizacionId() != null && !metricas.yaAyudoA(evento.getOrganizacionId())) {
-      metricas.registrarOrganizacionAyudada(evento.getOrganizacionId());
-    }
-
     this.misiones.stream()
         .filter(m -> m.getCategoria() == this.categoria && !m.isCompletada())
         .findFirst()
         .ifPresent(m -> m.evaluarProgreso(this, evento));
   }
+
+  public void registrarDonacionExitosa(Long organizacionId) {
+    metricas.registrarDonacionExitosa(organizacionId);
+
+    this.misiones.stream()
+            .filter(m -> m.getCategoria() == this.categoria && !m.isCompletada())
+            .findFirst()
+            .ifPresent(m -> m.evaluarProgresoExitoso(this));
+  }
+
 
   private boolean yaAyudoA(Long organizacionId) {
     return metricas.yaAyudoA(organizacionId);

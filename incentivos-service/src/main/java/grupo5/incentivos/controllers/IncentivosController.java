@@ -27,26 +27,28 @@ public class IncentivosController {
   }
 
   @PostMapping("/donaciones")
-  public ResponseEntity<Void> procesarDonacion(@RequestBody DonacionEventoRequest request) {
-    EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(request.donacionId())
-            .organizacionId(request.organizacionId())
-            .subcategoria(request.subcategoria())
+  public ResponseEntity<Void> procesarDonacion(@RequestBody NuevaDonacionRequest request) {
+    EventoDonacion evento = EventoDonacion.builder()
+            .categorias(request.categorias())
             .cantidadBienes(request.cantidadBienes())
             .fecha(request.fecha())
-            .exitosa(request.exitosa())
             .build();
 
-    incentivosService.procesarDonacion(request.donanteId(), request.nombreUsuario(), evento);
+    incentivosService.procesarDonacion(request.donanteId(), evento);
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/donaciones/exitosa")
+  public ResponseEntity<Void> procesarDonacionExitosa(@RequestBody DonacionExitosaRequest request) {
+    incentivosService.procesarDonacionExitosa(request.donanteId(), request.organizacionId());
     return ResponseEntity.ok().build();
   }
 
   @PostMapping("/donantes/{donanteId}")
   public ResponseEntity<DonanteRegistradoDTO> registrarDonante(
-      @PathVariable Long donanteId, @RequestParam String nombreUsuario) {
+      @PathVariable Long donanteId) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(incentivosService.registrarDonante(donanteId, nombreUsuario));
+        .body(incentivosService.registrarDonante(donanteId));
   }
 
   @DeleteMapping("/donantes/{donanteId}")

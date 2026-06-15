@@ -10,6 +10,7 @@ import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class RankingMensualTest {
@@ -23,7 +24,7 @@ class RankingMensualTest {
     ranking.agregarEntrada(new EntradaRanking(4, 4L, "Diana", 1));
 
     assertEquals(3, ranking.getPodio().size());
-    assertEquals("Ana", ranking.getPodio().get(0).getNombreDonante());
+    assertEquals("Ana", ranking.getPodio().getFirst().getNombreDonante());
   }
 
   @Test
@@ -34,15 +35,15 @@ class RankingMensualTest {
     donante.getMisiones().add(mision);
 
     EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(1L)
-            .fecha(LocalDate.of(2026, 5, 10))
-            .exitosa(true)
-            .cantidadBienes(1)
-            .subcategoria("x")
-            .build();
+            EventoDonacion.builder()
+                    .donacionId(1L)
+                    .fecha(LocalDate.of(2026, 5, 10))
+                    .cantidadBienes(1)
+                    .categorias(List.of("x"))
+                    .build();
 
     donante.registrarDonacion(evento);
+    donante.registrarDonacionExitosa(100L);
 
     assertTrue(mision.isCompletada());
     assertEquals(1, donante.misionesCompletadasEnMes(2026, 5));
@@ -58,13 +59,12 @@ class RankingMensualTest {
     donante.getMisiones().add(racha);
 
     EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(1L)
-            .fecha(LocalDate.now())
-            .exitosa(true)
-            .cantidadBienes(1)
-            .subcategoria("x")
-            .build();
+            EventoDonacion.builder()
+                    .donacionId(1L)
+                    .fecha(LocalDate.now())
+                    .cantidadBienes(1)
+                    .categorias(List.of("x"))
+                    .build();
 
     donante.registrarDonacion(evento);
     boolean ascendio = donante.intentarAscenso();

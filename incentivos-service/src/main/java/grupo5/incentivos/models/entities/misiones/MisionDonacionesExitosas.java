@@ -19,10 +19,22 @@ public class MisionDonacionesExitosas extends Mision {
   }
 
   @Override
-  protected Integer calcularNuevoProgreso(DonanteIncentivos donante, EventoDonacion evento) {
-    if (evento.isExitosa()) {
-      return this.getProgresoActual() + 1;
+  public void evaluarProgresoExitoso(DonanteIncentivos donante) {
+    if (this.isCompletada()) return;
+
+    this.setProgresoActual(this.getProgresoActual() + 1);
+
+    if (this.getProgresoActual() >= this.getObjetivo()) {
+      this.setCompletada(true);
+      this.setFechaCompletada(java.time.LocalDate.now());
+      if (this.getInsignia() != null) {
+        donante.otorgarInsignia(this.getInsignia());
+      }
     }
+  }
+
+  @Override
+  protected Integer calcularNuevoProgreso(DonanteIncentivos donante, EventoDonacion evento) {
     return this.getProgresoActual();
   }
 }

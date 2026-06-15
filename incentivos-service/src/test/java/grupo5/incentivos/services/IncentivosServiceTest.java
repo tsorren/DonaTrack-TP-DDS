@@ -21,6 +21,7 @@ import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import grupo5.incentivos.services.IncentivosService.DonanteIncentivosNotFoundException;
 import java.time.LocalDate;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +43,7 @@ class IncentivosServiceTest {
     repository = new DonanteIncentivosRepository();
     misionFactory = new MisionFactory();
     service =
-        new IncentivosService(repository, misionFactory, notificacionesClient, rankingService);
+            new IncentivosService(repository, misionFactory, notificacionesClient, rankingService);
   }
 
   @Test
@@ -56,8 +57,8 @@ class IncentivosServiceTest {
 
   @Test
   void registrarDonante_deberiaSerIdempotente() {
-    service.registrarDonante(1L, "usuario1");
-    service.registrarDonante(1L, "usuario1"); // segunda llamada
+    service.registrarDonante(1L);
+    service.registrarDonante(1L); // segunda llamada
 
     assertEquals(1, repository.listarTodos().size());
   }
@@ -72,19 +73,10 @@ class IncentivosServiceTest {
     donante.getMisiones().add(mision);
     repository.guardar(donante);
 
-    EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(1L)
-            .fecha(LocalDate.now())
-            .exitosa(true)
-            .cantidadBienes(1)
-            .subcategoria("fideos")
-            .build();
-
-    service.procesarDonacion(42L, "usuario42", evento);
+    service.procesarDonacionExitosa(42L, 99L);
 
     verify(notificacionesClient, atLeastOnce())
-        .notificarMisionCumplida(anyLong(), anyString(), anyString());
+            .notificarMisionCumplida(anyLong(), anyString(), anyString());
   }
 
   @Test
@@ -95,15 +87,14 @@ class IncentivosServiceTest {
     repository.guardar(donante);
 
     EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(1L)
-            .fecha(LocalDate.now())
-            .exitosa(true)
-            .cantidadBienes(1)
-            .subcategoria("fideos")
-            .build();
+            EventoDonacion.builder()
+                    .donacionId(1L)
+                    .fecha(LocalDate.now())
+                    .cantidadBienes(1)
+                    .categorias(List.of("fideos"))
+                    .build();
 
-    service.procesarDonacion(43L, "usuario43", evento);
+    service.procesarDonacion(43L, evento);
 
     verify(notificacionesClient, never()).notificarMisionCumplida(any(), any(), any());
   }
@@ -116,15 +107,14 @@ class IncentivosServiceTest {
     repository.guardar(donante);
 
     EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(1L)
-            .fecha(LocalDate.now())
-            .exitosa(true)
-            .cantidadBienes(1)
-            .subcategoria("x")
-            .build();
+            EventoDonacion.builder()
+                    .donacionId(1L)
+                    .fecha(LocalDate.now())
+                    .cantidadBienes(1)
+                    .categorias(List.of("x"))
+                    .build();
 
-    service.procesarDonacion(44L, "usuario44", evento);
+    service.procesarDonacion(44L, evento);
 
     verify(notificacionesClient, atLeastOnce()).notificarAscensoCategoria(anyLong(), anyString());
   }
