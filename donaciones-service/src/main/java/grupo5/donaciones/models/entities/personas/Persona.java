@@ -1,7 +1,6 @@
 package grupo5.donaciones.models.entities.personas;
 
 import grupo5.donaciones.models.privacidad.Anonimizable;
-import grupo5.notificaciones.models.entities.personas.MedioDeContacto;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -27,5 +26,14 @@ public abstract class Persona implements Anonimizable {
 
   public void quitarMedioDeContacto(MedioDeContacto medioDeContacto) {
     mediosDeContacto.remove(medioDeContacto);
+  }
+
+  public void definirMedioDeContactoPredeterminado(MedioDeContacto medioDeContacto) {
+    mediosDeContacto.stream()
+        .filter(m -> m.getEsPredeterminado() != null && m.getEsPredeterminado())
+        .findFirst()
+        .ifPresent(m -> m.setEsPredeterminado(false));
+
+    medioDeContacto.setEsPredeterminado(true);
   }
 }
