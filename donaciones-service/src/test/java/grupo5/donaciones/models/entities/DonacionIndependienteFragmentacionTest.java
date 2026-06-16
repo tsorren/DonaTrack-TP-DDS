@@ -103,7 +103,8 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item2);
     items.add(item3);
 
-    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion, items, bienNormalizado.getSubcategoria());
+    DonacionIndependiente donacionLocal =
+        new DonacionIndependiente(donacion, items, bienNormalizado.getSubcategoria());
 
     DonacionIndependiente fragmentada = donacionLocal.fragmentarse(13);
 

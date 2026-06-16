@@ -11,8 +11,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import lombok.Getter;
 import lombok.Setter;
 

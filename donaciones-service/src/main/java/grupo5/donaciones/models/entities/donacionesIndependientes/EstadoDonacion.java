@@ -6,42 +6,42 @@ import grupo5.common.exceptions.ErrorCatalog;
 public interface EstadoDonacion {
 
   default void registrar(DonacionIndependiente d, String actor) {
-    //lanzarTransicionInvalida("registrar");
+    // lanzarTransicionInvalida("registrar");
     lanzarTransicionInvalida();
   }
 
   default void asignar(DonacionIndependiente d, String actor) {
-    //lanzarTransicionInvalida("asignar");
+    // lanzarTransicionInvalida("asignar");
     lanzarTransicionInvalida();
   }
 
   default void planificarRuta(DonacionIndependiente d, String actor) {
-    //lanzarTransicionInvalida("planificarRuta");
+    // lanzarTransicionInvalida("planificarRuta");
     lanzarTransicionInvalida();
   }
 
   default void iniciarRecorrido(DonacionIndependiente d, String actor) {
-    //lanzarTransicionInvalida("iniciarRecorrido");
+    // lanzarTransicionInvalida("iniciarRecorrido");
     lanzarTransicionInvalida();
   }
 
   default void confirmarEntrega(DonacionIndependiente d, String actor) {
-    //lanzarTransicionInvalida("confirmarEntrega");
+    // lanzarTransicionInvalida("confirmarEntrega");
     lanzarTransicionInvalida();
   }
 
   default void registrarFalla(DonacionIndependiente d, String justificacion, String actor) {
-    //lanzarTransicionInvalida("registrarFalla");
+    // lanzarTransicionInvalida("registrarFalla");
     lanzarTransicionInvalida();
   }
 
   default void retornar(DonacionIndependiente d, String actor) {
-    //lanzarTransicionInvalida("retornar");
+    // lanzarTransicionInvalida("retornar");
     lanzarTransicionInvalida();
   }
 
   default void vencer(DonacionIndependiente d, String actor) {
-    //lanzarTransicionInvalida("vencer");
+    // lanzarTransicionInvalida("vencer");
     lanzarTransicionInvalida();
   }
 
