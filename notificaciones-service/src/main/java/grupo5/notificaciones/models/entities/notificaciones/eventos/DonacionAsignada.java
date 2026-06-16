@@ -1,7 +1,19 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
+import grupo5.notificaciones.models.entities.persona.Persona;
+
+import java.time.LocalDateTime;
+
 public class DonacionAsignada extends EventoDeDonacion {
-  @Override
+    public DonacionAsignada(Persona persona, Persona entidadBeneficiaria, String detalleDonacion, LocalDateTime fecha) {
+        super();
+    }
+
+    public DonacionAsignada() {
+
+    }
+
+    @Override
   protected String armarMensajeDonante() {
     return "Tu donación de "
         + getDetalleDonacion()
