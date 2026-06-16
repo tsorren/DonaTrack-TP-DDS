@@ -49,12 +49,12 @@ class AlgoritmoPrioridadSubAtendidosTest {
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionEnSubcategoria = new DonacionIndependiente(donacionOriginal, subcategoria, items);
+    donacionEnSubcategoria = new DonacionIndependiente(donacionOriginal, items, subcategoria);
 
     List<ItemDonacionIndependiente> itemsOtros = new ArrayList<>();
     itemsOtros.add(new ItemDonacionIndependiente(bienNormalizado, 5));
     donacionEnOtraSubcategoria =
-        new DonacionIndependiente(donacionOriginal, subcategoriaOtra, itemsOtros);
+        new DonacionIndependiente(donacionOriginal, itemsOtros, subcategoriaOtra);
 
     algoritmo = new AlgoritmoPrioridadSubAtendidos();
   }

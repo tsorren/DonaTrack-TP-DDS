@@ -50,11 +50,13 @@ class AlgoritmoCompatibilidadSemanticaTest {
   }
 
   private DonacionIndependiente crearDonacion(int cantidad, String descripcion) {
+    Bien bien = new Bien(descripcion, "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    BienNormalizado bienConDescripcion =
+        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
     List<ItemDonacionIndependiente> items = new ArrayList<>();
-    items.add(new ItemDonacionIndependiente(bienNormalizado, cantidad));
+    items.add(new ItemDonacionIndependiente(bienConDescripcion, cantidad));
     DonacionIndependiente donacion =
-        new DonacionIndependiente(donacionOriginal, subcategoria, items);
-    donacion.setDescripcion(descripcion);
+        new DonacionIndependiente(donacionOriginal, items, subcategoria);
     return donacion;
   }
 
@@ -78,8 +80,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
     DonacionIndependiente donacionOtraCategoria =
-        new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
-    donacionOtraCategoria.setDescripcion("escritorio madera");
+        new DonacionIndependiente(donacionOriginal, items, subcategoriaOtra);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacionOtraCategoria);
@@ -114,9 +115,9 @@ class AlgoritmoCompatibilidadSemanticaTest {
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
     DonacionIndependiente donacion1 =
-        new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
+        new DonacionIndependiente(donacionOriginal, items, subcategoriaOtra);
     DonacionIndependiente donacion2 =
-        new DonacionIndependiente(donacionOriginal, subcategoriaOtra, items);
+        new DonacionIndependiente(donacionOriginal, items, subcategoriaOtra);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacion1);
