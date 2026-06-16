@@ -1,6 +1,6 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
-import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 
 public class DonacionAsignada extends EventoDeDonacion {

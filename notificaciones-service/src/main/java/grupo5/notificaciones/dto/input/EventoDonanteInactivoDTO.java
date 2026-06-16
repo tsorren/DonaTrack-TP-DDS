@@ -1,6 +1,6 @@
 package grupo5.notificaciones.dto.input;
 
-import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import lombok.Data;
 

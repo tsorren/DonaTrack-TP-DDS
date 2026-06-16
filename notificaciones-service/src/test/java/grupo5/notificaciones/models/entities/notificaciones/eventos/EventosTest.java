@@ -16,7 +16,7 @@ class EventosNotificablesTest {
 
     SubioCategoria evento = new SubioCategoria();
     evento.setPersona(persona);
-    evento.setCategoria("Platino");
+    evento.setCategoriaNueva("Platino");
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 
@@ -50,7 +50,7 @@ class EventosNotificablesTest {
     DonanteRegistrado evento = new DonanteRegistrado();
 
     evento.setPersona(persona);
-    evento.setBienvenida("Bienvenido a DonaTrack");
+    evento.setCredencialesDeAcceso("Bienvenido a DonaTrack");
     evento.setCredencialesDeAcceso("usuario: Usuario");
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();

@@ -1,7 +1,7 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
@@ -14,7 +14,7 @@ public class DonanteRegistrado extends EventoNotificable {
 
   public DonanteRegistrado(Persona persona, String credencialesDeAcceso, LocalDateTime fecha) {
     super();
-    credencialesDeAcceso = credencialesDeAcceso;
+    this.credencialesDeAcceso = credencialesDeAcceso;
   }
 
   public DonanteRegistrado() {}
@@ -22,11 +22,7 @@ public class DonanteRegistrado extends EventoNotificable {
   @Override
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacion =
-        new Notificacion(
-            this.getPersona(),
-            "Has sido registrado en el sistema con las siguientes credenciales"
-                + "\n"
-                + credencialesDeAcceso);
+        new Notificacion(this.getPersona(), "Bienvenido a DonaTrack\n" + credencialesDeAcceso);
 
     return List.of(notificacion);
   }

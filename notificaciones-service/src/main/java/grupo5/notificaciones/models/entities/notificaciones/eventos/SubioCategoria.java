@@ -1,7 +1,7 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
@@ -25,9 +25,7 @@ public class SubioCategoria extends EventoNotificable {
   @Override
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacion =
-        new Notificacion(
-            this.getPersona(),
-            "Subiste a la categoría " + categoriaNueva + "desde la categoria" + categoriaVieja);
+        new Notificacion(this.getPersona(), "Subiste a la categoría " + categoriaNueva);
 
     return List.of(notificacion);
   }
