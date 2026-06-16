@@ -4,13 +4,20 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.donaciones.models.entities.beneficiarios.DonacionAsignada;
-import grupo5.donaciones.models.entities.beneficiarios.NecesidadRecurrente;
-import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Bien;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.Estado;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
+import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
+import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
+import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.Period;
 import java.util.List;
@@ -19,18 +26,19 @@ import org.junit.jupiter.api.Test;
 
 class NecesidadRecurrenteTests {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
-  private static final LocalDateTime TEST_DATETIME = LocalDateTime.of(2026, Month.JUNE, 9, 12, 0);
 
   private NecesidadRecurrente necesidad;
-  private DonacionAsignada d1;
-  private DonacionAsignada d2;
-  private SubCategoria subcategoria;
+  private DonacionIndependiente d1;
+  private DonacionIndependiente d2;
+  private Subcategoria subcategoria;
   private Categoria categoria;
 
   @BeforeEach
   void setUp() {
+
+    Donacion donacion = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
     categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    subcategoria = new SubCategoria(categoria, "Muebles Escolares");
+    subcategoria = new Subcategoria(categoria, "Muebles Escolares");
     necesidad =
         new NecesidadRecurrente(
             subcategoria,
@@ -39,24 +47,18 @@ class NecesidadRecurrenteTests {
             Period.ofWeeks(1),
             TEST_DATE.minusDays(5));
 
-    Bien bien =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
+    Bien bienOriginal =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    BienNormalizado bien =
+        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
 
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(reveal(bien), 40);
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
 
-    DonacionIndependiente donacionIndependiente1 =
-        new DonacionIndependiente(subcategoria, List.of(item1));
-    d1 = new DonacionAsignada(donacionIndependiente1, TEST_DATETIME);
+    d1 = new DonacionIndependiente(donacion, List.of(item1), subcategoria);
 
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(reveal(bien), 100);
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 100);
 
-    DonacionIndependiente donacionIndependiente2 =
-        new DonacionIndependiente(subcategoria, List.of(item2));
-    d2 = new DonacionAsignada(donacionIndependiente2, TEST_DATETIME);
-  }
-
-  private Bien reveal(Bien b) {
-    return b;
+    d2 = new DonacionIndependiente(donacion, List.of(item2), subcategoria);
   }
 
   @Test
@@ -94,12 +96,12 @@ class NecesidadRecurrenteTests {
         new NecesidadRecurrente(
             subcategoria, 100, "Test de vencimiento", Period.ofWeeks(1), TEST_DATE.minusDays(10));
 
-    assertTrue(necesidadVencida.hayQueGenerarNuevo());
+    assertTrue(necesidadVencida.hayQueGenerarNuevo(TEST_DATE));
   }
 
   @Test
   void hayQueGenerarNuevo_cuandoPeriodoAunEstaVigente_deberiaSerFalse() {
-    assertFalse(necesidad.hayQueGenerarNuevo());
+    assertFalse(necesidad.hayQueGenerarNuevo(TEST_DATE));
   }
 
   @Test

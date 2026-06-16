@@ -3,7 +3,7 @@ package grupo5.notificaciones.models.entities.notificaciones.eventos;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.personas.Persona;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

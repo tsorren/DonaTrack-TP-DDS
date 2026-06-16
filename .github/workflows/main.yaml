@@ -55,7 +55,10 @@ jobs:
             DELIVERY_NUM="${BASH_REMATCH[1]}"
             REQUIRED_PREFIX="E${DELIVERY_NUM}_"
 
-            if [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* ]]; then
+            # Excepción: Permitir la integración de correcciones/ramas de entregas anteriores
+            if [[ "$SRC_BRANCH" == "E1_CORREGIDA" || "$SRC_BRANCH" == "ENTREGA_1_CORREGIDA" || "$SRC_BRANCH" =~ ^E1_ || "$SRC_BRANCH" =~ ^ENTREGA_1 ]]; then
+              echo "⚠️ Excepción: Permitido integrar rama de entrega/corrección anterior ($SRC_BRANCH) a $BASE_BRANCH."
+            elif [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* ]]; then
               echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX'."
               echo "  Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
               exit 1
@@ -142,17 +145,7 @@ jobs:
           DOCKER_SERVICES=()
           COMMON="${{ steps.filter.outputs.common-lib }}"
 
-          for svc in donaciones-service notificaciones-service; do
-            if [[ -f "${svc}/Dockerfile" ]]; then
-              CHANGED="${{ steps.filter.outputs[env.svc] }}"
-              # Reconstruir si el servicio cambió O si common-lib cambió
-              if [[ "$COMMON" == "true" || "${{ steps.filter.outputs[format('{0}', env.svc)] }}" == "true" ]]; then
-                DOCKER_SERVICES+=("{\"service\":\"${svc}\"}")
-              fi
-            fi
-          done
-
-          # Fallback: chequear directamente
+          # Fallback corregido y unificado directamente de manera segura
           DOCKER_FINAL=()
           if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
             if [[ -f "donaciones-service/Dockerfile" ]]; then
@@ -338,7 +331,7 @@ jobs:
           push: false
           tags: donatrack/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 7: Generar Diagramas (Siempre)
