@@ -5,6 +5,7 @@ import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propu
 import grupo5.donaciones.models.repositories.PropuestaRepository;
 import grupo5.donaciones.services.GestorAlgoritmos;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -33,7 +34,7 @@ public class AsignacionController {
 
   @PatchMapping("/{id}")
   public ResponseEntity<Void> actualizarEstado(
-      @PathVariable Long id, @RequestBody ActualizarEstadoRequest request) {
+      @PathVariable UUID id, @RequestBody ActualizarEstadoRequest request) {
     Propuesta propuesta =
         propuestaRepository
             .findById(id)

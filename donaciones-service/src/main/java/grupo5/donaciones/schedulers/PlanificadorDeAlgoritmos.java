@@ -2,34 +2,27 @@ package grupo5.donaciones.schedulers;
 
 import grupo5.donaciones.services.GestorAlgoritmos;
 import lombok.Getter;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Getter
-@Setter
 @Component
 public class PlanificadorDeAlgoritmos {
 
   private final GestorAlgoritmos gestorAlgoritmos;
 
-    // Borrar final para permitir setter
-    private String cronExpression;
-
-    // Usar annotation que inyecta el timer desde application.properties, también permite mockear
-    @Value("${planificador.algoritmos.cron.expression}") 
-    public void setCronExpression(String expression) {
-        this.cronExpression = expression;
-    }
-
+  // Inyecta el timer desde application.properties, también permite mockear en tests
+  @Value("${planificador.algoritmos.cron.expression}")
+  private String cronExpression;
 
   @Autowired
   public PlanificadorDeAlgoritmos(GestorAlgoritmos gestorAlgoritmos) {
     this.gestorAlgoritmos = gestorAlgoritmos;
   }
 
-  @Scheduled(cron = expresionCron)
+  @Scheduled(cron = "${planificador.algoritmos.cron.expression}")
   public void ejecutarAlgoritmos() {
     gestorAlgoritmos.ejecutar();
   }
@@ -46,7 +39,7 @@ public class PlanificadorDeAlgoritmos {
   }
 
   public String paraCuandoEstaPlanificado() {
-    String[] partes = expresionCron.split(" ");
+    String[] partes = cronExpression.split(" ");
     String[] etiquetas = {"segundos", "minutos", "horas", "día del mes", "mes", "día de la semana"};
     StringBuilder descripcion =
         new StringBuilder("El scheduler está planificado para correr en:\n");

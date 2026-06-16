@@ -5,6 +5,8 @@ import grupo5.common.exceptions.ErrorCatalog;
 
 public interface EstadoDonacion {
 
+  TipoEstadoDonacion getTipo();
+
   default void registrar(DonacionIndependiente d, String actor) {
     // lanzarTransicionInvalida("registrar");
     lanzarTransicionInvalida();

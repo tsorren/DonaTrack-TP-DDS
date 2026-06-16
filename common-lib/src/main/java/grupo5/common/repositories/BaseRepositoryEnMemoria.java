@@ -48,6 +48,10 @@ public abstract class BaseRepositoryEnMemoria<T extends RecursoDTO> implements B
     return recurso;
   }
 
+  public T save(T recurso) {
+    return save(null, recurso);
+  }
+
   @Override
   public void deleteById(UUID id) {
     if (id == null) {

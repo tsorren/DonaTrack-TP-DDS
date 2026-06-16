@@ -6,6 +6,7 @@ import grupo5.donaciones.infraestructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class AlgoritmoCompatibilidadSemantica extends AlgoritmoAsignacion {
@@ -32,27 +33,11 @@ public class AlgoritmoCompatibilidadSemantica extends AlgoritmoAsignacion {
 
   private List<DonacionIndependiente> ordenarPorScoreDescendente(
       List<DonacionIndependiente> donaciones, Necesidad necesidad) {
-    List<DonacionIndependiente> ordenadas = new ArrayList<>(donaciones);
-    int n = ordenadas.size();
-    for (int i = 0; i < n - 1; i++) {
-      int maxIdx = i;
-      for (int j = i + 1; j < n; j++) {
-        if (calcularScore(necesidad, ordenadas.get(j))
-            > calcularScore(necesidad, ordenadas.get(maxIdx))) {
-          maxIdx = j;
-private List<DonacionIndependiente> ordenarPorScoreDescendente(List<DonacionIndependiente> donaciones, Necesidad necesidad) {
     return donaciones.stream()
-        .sorted(Comparator.comparing(
-            donacion -> calcularScore(necesidad, donacion), Comparator.reverseOrder()
-        )).toList(); 
-}
-
-      }
-      DonacionIndependiente temp = ordenadas.get(i);
-      ordenadas.set(i, ordenadas.get(maxIdx));
-      ordenadas.set(maxIdx, temp);
-    }
-    return ordenadas;
+        .sorted(
+            Comparator.comparing(
+                donacion -> calcularScore(necesidad, donacion), Comparator.reverseOrder()))
+        .toList();
   }
 
   private int calcularScore(Necesidad necesidad, DonacionIndependiente donacion) {
