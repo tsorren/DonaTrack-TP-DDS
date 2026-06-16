@@ -7,7 +7,7 @@ import grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos.Algor
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
-import grupo5.donaciones.models.repositories.DonacionIndependienteRepository;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.NecesidadRepository;
 import grupo5.donaciones.models.repositories.PropuestaRepository;
 import java.util.ArrayList;
@@ -20,12 +20,12 @@ import org.springframework.stereotype.Component;
 public class GestorAlgoritmos {
 
   private final List<AlgoritmoAsignacion> algoritmos;
-  private final DonacionIndependienteRepository donacionRepository;
+  private final IDonacionesIndependientesRepository donacionRepository;
   private final NecesidadRepository necesidadRepository;
   private final PropuestaRepository propuestaRepository;
 
   public GestorAlgoritmos(
-      DonacionIndependienteRepository donacionRepository,
+      IDonacionesIndependientesRepository donacionRepository,
       NecesidadRepository necesidadRepository,
       PropuestaRepository propuestaRepository,
       ComparadorTexto comparadorTexto) {

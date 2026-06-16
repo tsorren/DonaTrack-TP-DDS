@@ -39,8 +39,7 @@ public abstract class AbstractSegmentador<K> implements Segmentador {
 
     List<ItemDonacionIndependiente> itemsIndependientes = crearItemsIndependientes(grupo);
 
-    return new DonacionIndependiente(
-        donacionOriginal, itemsIndependientes, primerItem.getBien().getSubcategoria());
+    return new DonacionIndependiente(donacionOriginal, itemsIndependientes);
   }
 
   private static List<ItemDonacionIndependiente> crearItemsIndependientes(

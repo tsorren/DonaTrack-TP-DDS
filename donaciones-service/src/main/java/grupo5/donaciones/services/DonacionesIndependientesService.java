@@ -25,7 +25,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
     switch (request.estado().toUpperCase()) {
-      case "ASIGNADA" -> donacion.asignar(actor);
+      case "ASIGNADA" -> donacion.asignar(actor, null);
       case "VENCIDA" -> donacion.vencer(actor);
       case "EN_TRASLADO" -> donacion.planificarRuta(actor);
       case "RECORRIDO" -> donacion.iniciarRecorrido(actor);
@@ -44,7 +44,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         donacion.getId(),
         donacion.getEstadoActual().getClass().getSimpleName(),
         donacion.getHistorial().stream()
-            .map(c -> c.getEstado().getClass().getSimpleName())
+            .map(c -> c.getEstadoNuevo().getClass().getSimpleName())
             .toList());
   }
 }
