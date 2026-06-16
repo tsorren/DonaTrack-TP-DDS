@@ -35,6 +35,10 @@ public class Propuesta {
     return this.estado != null && this.estado != EstadoPropuesta.DESCARTADA;
   }
 
+  public void confirmar() {
+    confirmar("SISTEMA");
+  }
+
   public void confirmar(String actor) {
     if (necesidadQueSatisface == null) {
       throw new ValidationException(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD);
