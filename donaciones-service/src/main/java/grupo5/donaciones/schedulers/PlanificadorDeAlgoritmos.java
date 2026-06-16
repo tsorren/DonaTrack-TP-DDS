@@ -14,15 +14,15 @@ public class PlanificadorDeAlgoritmos {
 
   private final GestorAlgoritmos gestorAlgoritmos;
 
-  private static final char segundos = '0';
-  private static final char minutos = '0';
-  private static final char horas = '2';
-  private static final char diaDelMes = '*';
-  private static final char mes = '*';
-  private static final char diaDeLaSemana = '?';
+    // Borrar final para permitir setter
+    private String cronExpression;
 
-  static final String expresionCron =
-      segundos + " " + minutos + " " + horas + " " + diaDelMes + " " + mes + " " + diaDeLaSemana;
+    // Usar annotation que inyecta el timer desde application.properties, también permite mockear
+    @Value("${planificador.algoritmos.cron.expression}") 
+    public void setCronExpression(String expression) {
+        this.cronExpression = expression;
+    }
+
 
   @Autowired
   public PlanificadorDeAlgoritmos(GestorAlgoritmos gestorAlgoritmos) {
