@@ -3,6 +3,7 @@ package grupo5.incentivos.models.entities.misiones;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,12 +11,14 @@ import lombok.Setter;
 @Setter
 public class MisionDonacionesExitosas extends Mision {
 
+  private LocalDate fechaUltimoDonacion;
+
   public MisionDonacionesExitosas(CategoriaDonante categoria, Integer donacionesObjetivo) {
     super(
-        "Donaciones Exitosas",
-        "Logra que " + donacionesObjetivo + " de tus donaciones sean recibidas exitosamente",
-        categoria,
-        donacionesObjetivo);
+            "Donaciones Exitosas",
+            "Logra que " + donacionesObjetivo + " de tus donaciones sean recibidas exitosamente",
+            categoria,
+            donacionesObjetivo);
   }
 
   @Override
@@ -26,7 +29,8 @@ public class MisionDonacionesExitosas extends Mision {
 
     if (this.getProgresoActual() >= this.getObjetivo()) {
       this.setCompletada(true);
-      this.setFechaCompletada(java.time.LocalDate.now());
+      LocalDate fecha = (fechaUltimoDonacion != null) ? fechaUltimoDonacion : LocalDate.now();
+      this.setFechaCompletada(fecha);
       if (this.getInsignia() != null) {
         donante.otorgarInsignia(this.getInsignia());
       }
@@ -35,6 +39,7 @@ public class MisionDonacionesExitosas extends Mision {
 
   @Override
   protected Integer calcularNuevoProgreso(DonanteIncentivos donante, EventoDonacion evento) {
+    this.fechaUltimoDonacion = evento.getFecha();
     return this.getProgresoActual();
   }
 }
