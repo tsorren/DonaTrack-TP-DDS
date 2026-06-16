@@ -29,8 +29,6 @@ public class Propuesta {
     return this.estado != null && this.estado != EstadoPropuesta.DESCARTADA;
   }
 
-  public void confirmar() {
-    posiblesFragmentaciones.forEach(f -> f.confirmar(necesidadQueSatisface));
   public void confirmar(String actor) {
     posiblesFragmentaciones.forEach(f -> f.confirmar(necesidadQueSatisface, actor));
     this.estado = EstadoPropuesta.APROBADA;

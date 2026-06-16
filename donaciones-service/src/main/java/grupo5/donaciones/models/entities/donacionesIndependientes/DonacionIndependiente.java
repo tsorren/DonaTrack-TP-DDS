@@ -107,7 +107,6 @@ public class DonacionIndependiente implements RecursoDTO {
     this.estadoActual.registrar(this, actor);
   }
 
-  public void asignar(String actor) {
   public void asignar(String actor, Asignable receptor) {
     this.asignadaA = receptor;
     this.estadoActual.asignar(this, actor);
