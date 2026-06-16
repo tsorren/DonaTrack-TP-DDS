@@ -13,6 +13,7 @@
         <module>common-lib</module>
         <module>donaciones-service</module>
         <module>notificaciones-service</module>
+        <module>incentivos-service</module>
     </modules>
 
     <properties>

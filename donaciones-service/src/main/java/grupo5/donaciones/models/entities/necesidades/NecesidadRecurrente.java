@@ -61,7 +61,7 @@ public class NecesidadRecurrente extends Necesidad {
     if (actual == null) {
       throw new BusinessStateException(ErrorCatalog.SIN_PERIODO_ACTIVO);
     }
-    actual.agregarDonacion(donacionAsignada);
+    actual.asignarDonacion(donacionAsignada);
   }
 
   @Override
