@@ -18,33 +18,35 @@ import lombok.Setter;
 @Setter
 public class DonacionIndependiente {
   private Donacion donacionOriginal;
-  private Subcategoria subCategoria;
+  private final Subcategoria subcategoria;
   private List<ItemDonacionIndependiente> items;
   private EstadoDonacion estadoActual;
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
   private Asignable asignadaA;
-  private String
-      descripcion; // para poder decidir si me sirve la donacion para satisfacer una donacion
-
-  // necesito analizar semanticamente su descripcion
 
   public DonacionIndependiente(
-      Donacion donacionOriginal, Subcategoria subCategoria, List<ItemDonacionIndependiente> items) {
+      Donacion donacionOriginal, List<ItemDonacionIndependiente> items, Subcategoria subcategoria) {
+    this.donacionOriginal = donacionOriginal;
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
-
-    this.donacionOriginal = donacionOriginal;
-
-    this.subCategoria = subCategoria;
+    this.subcategoria = subcategoria;
+    if (subcategoria == null) {
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_SUBCATEGORIA_NULA);
+    }
 
     this.items = new ArrayList<>();
     items.forEach(this::agregarItem);
-
     this.estadoActual = new EnDeposito();
     this.historial = new ArrayList<>();
     this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  public String getDescripcion() {
+    StringBuffer sb = new StringBuffer();
+    items.forEach(i -> sb.append(i.getBien().getBienOriginal().getDescripcion()).append(" "));
+    return sb.toString();
   }
 
   public void agregarItem(ItemDonacionIndependiente item) {
@@ -71,12 +73,10 @@ public class DonacionIndependiente {
     if (this.getCantidad() <= cantidadNecesitada) {
       throw new BusinessStateException(ErrorCatalog.FRAGMENTACION_CANTIDAD_INSUFICIENTE);
     }
-
     Integer cantidadPorExtraer = cantidadNecesitada;
     List<ItemDonacionIndependiente> itemsExtraidos = new ArrayList<>();
     while (cantidadPorExtraer > 0) {
       ItemDonacionIndependiente itemExtraido = this.items.getFirst();
-
       if (itemExtraido.getCantidad() > cantidadPorExtraer) {
         itemExtraido = itemExtraido.fragmentarse(cantidadPorExtraer);
       } else {
@@ -85,46 +85,47 @@ public class DonacionIndependiente {
       itemsExtraidos.add(itemExtraido);
       cantidadPorExtraer -= itemExtraido.getCantidad();
     }
-
-    return new DonacionIndependiente(this.donacionOriginal, this.subCategoria, itemsExtraidos);
+    return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos, subcategoria);
   }
 
-  // Métodos de negocio — delegan al estado actual
-  public void registrar() {
-    this.estadoActual.registrar(this);
+  // ── Métodos de negocio ─────────────────────────────────────────────────────
+
+  public void registrar(String actor) {
+    this.estadoActual.registrar(this, actor);
   }
 
-  public void asignar() {
-    this.estadoActual.asignar(this);
+  public void asignar(String actor, Asignable receptor) {
+    this.asignadaA = receptor;
+    this.estadoActual.asignar(this, actor);
   }
 
-  public void planificarRuta() {
-    this.estadoActual.planificarRuta(this);
+  public void planificarRuta(String actor) {
+    this.estadoActual.planificarRuta(this, actor);
   }
 
-  public void iniciarRecorrido() {
-    this.estadoActual.iniciarRecorrido(this);
+  public void iniciarRecorrido(String actor) {
+    this.estadoActual.iniciarRecorrido(this, actor);
   }
 
-  public void confirmarEntrega() {
-    this.estadoActual.confirmarEntrega(this);
+  public void confirmarEntrega(String actor) {
+    this.estadoActual.confirmarEntrega(this, actor);
   }
 
-  public void registrarFalla(String justificacion) {
-    this.estadoActual.registrarFalla(this, justificacion);
+  public void registrarFalla(String justificacion, String actor) {
+    this.estadoActual.registrarFalla(this, justificacion, actor);
   }
 
-  public void retornar() {
-    this.estadoActual.retornar(this);
+  public void retornar(String actor) {
+    this.estadoActual.retornar(this, actor);
   }
 
-  public void vencer() {
-    this.estadoActual.vencer(this);
+  public void vencer(String actor) {
+    this.estadoActual.vencer(this, actor);
   }
 
   // Llamado únicamente por los estados concretos
-  public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion) {
-    CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion);
+  public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion, String actor) {
+    CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
     this.estadoActual = nuevoEstado;
   }

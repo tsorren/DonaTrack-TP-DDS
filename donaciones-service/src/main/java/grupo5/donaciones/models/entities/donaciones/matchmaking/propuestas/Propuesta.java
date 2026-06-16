@@ -35,10 +35,12 @@ public class Propuesta {
     return this.estado != null && this.estado != EstadoPropuesta.DESCARTADA;
   }
 
-  public void confirmar() {
-    if (necesidadQueSatisface == null)
+  public void confirmar(String actor) {
+    if (necesidadQueSatisface == null) {
       throw new ValidationException(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD);
-    posiblesFragmentaciones.forEach(f -> f.confirmar(necesidadQueSatisface));
+    }
+
+    posiblesFragmentaciones.forEach(f -> f.confirmar(necesidadQueSatisface, actor));
     this.estado = EstadoPropuesta.APROBADA;
   }
 

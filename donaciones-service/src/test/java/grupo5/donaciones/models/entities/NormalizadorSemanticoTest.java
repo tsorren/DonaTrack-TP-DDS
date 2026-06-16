@@ -1,6 +1,7 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import grupo5.donaciones.infraestructure.analizadores.NormalizadorSemantico;
 import grupo5.donaciones.models.entities.categorias.Categoria;

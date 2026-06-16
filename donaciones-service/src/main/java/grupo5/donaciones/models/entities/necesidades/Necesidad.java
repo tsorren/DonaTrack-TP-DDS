@@ -7,6 +7,7 @@ import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,6 +43,8 @@ public abstract class Necesidad implements Asignable {
       throw new ValidationException(ErrorCatalog.DESCRIPCION_NECESIDAD_VACIA);
     }
   }
+
+  public abstract List<DonacionIndependiente> getDonacionesAsignadas();
 
   @Override
   public Necesidad obtenerNecesidad() {

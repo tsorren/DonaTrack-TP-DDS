@@ -27,7 +27,6 @@ class SegmentadorSimpleTest {
 
   private SegmentadorSimple segmentador;
   private Donacion donacion;
-  private Subcategoria subcategoriaInvierno;
   private BienNormalizado abrigoInviernoNuevo;
   private BienNormalizado polleraInviernoUsada;
   private BienNormalizado manzanasNormalizado;
@@ -42,7 +41,7 @@ class SegmentadorSimpleTest {
     Categoria categoriaRopa = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Categoria categoriaAlimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
 
-    subcategoriaInvierno = new Subcategoria(categoriaRopa, "Ropa de Invierno");
+    Subcategoria subcategoriaInvierno = new Subcategoria(categoriaRopa, "Ropa de Invierno");
     Subcategoria subcategoriaFrutas = new Subcategoria(categoriaAlimentos, "Frutas");
 
     Bien abrigoInvierno =
@@ -51,7 +50,6 @@ class SegmentadorSimpleTest {
         new BienNormalizado(
             abrigoInvierno, subcategoriaInvierno, 1.0, EstadoNormalizacion.ACEPTADO);
 
-    // Mismo subcategoría, pero diferente estado físico y diferente fecha de vencimiento
     Bien polleraInvierno =
         new Bien("Pollera de invierno", "pollera.png", TEST_DATE.plusMonths(2), Estado.USADO);
     polleraInviernoUsada =
@@ -67,7 +65,6 @@ class SegmentadorSimpleTest {
   @Test
   void
       segmentar_conItemsMismaSubcategoriaPeroDiferenteEstadoYVencimiento_losAgrupaEnUnaSolaDonacion() {
-    // Para el segmentador simple, deben agruparse porque comparten subcategoría
     ItemDonacionNormalizado item1 = new ItemDonacionNormalizado(donacion, abrigoInviernoNuevo, 5);
     ItemDonacionNormalizado item2 = new ItemDonacionNormalizado(donacion, polleraInviernoUsada, 3);
 
