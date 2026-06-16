@@ -4,16 +4,18 @@ import grupo5.notificaciones.infrastructure.CorreoAdapter;
 
 public class CorreoEnvioMock implements CorreoAdapter {
 
-    @Override
-    public boolean enviarMail(String destinatario, String mensaje) {
+  @Override
+  public boolean enviarMail(String destinatario, String mensaje) {
 
-        System.out.println("""
+    System.out.println(
+        """
             [EMAIL SIMULADO]
 
             Destinatario: %s
             Mensaje: %s
-            """.formatted(destinatario, mensaje));
+            """
+            .formatted(destinatario, mensaje));
 
-        return true;
-    }
+    return true;
+  }
 }

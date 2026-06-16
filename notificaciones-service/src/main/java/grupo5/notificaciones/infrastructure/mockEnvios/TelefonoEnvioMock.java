@@ -4,16 +4,18 @@ import grupo5.notificaciones.infrastructure.TelefonoAdapter;
 
 public class TelefonoEnvioMock implements TelefonoAdapter {
 
-    @Override
-    public boolean enviarSms(String telefono, String mensaje) {
+  @Override
+  public boolean enviarSms(String telefono, String mensaje) {
 
-        System.out.println("""
+    System.out.println(
+        """
             [SMS SIMULADO]
 
             Telefono: %s
             Mensaje: %s
-            """.formatted(telefono, mensaje));
+            """
+            .formatted(telefono, mensaje));
 
-        return true;
-    }
+    return true;
+  }
 }

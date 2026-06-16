@@ -1,7 +1,6 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;

@@ -4,16 +4,18 @@ import grupo5.notificaciones.infrastructure.WhatsAppAdapter;
 
 public class WhatsappEnvioMock implements WhatsAppAdapter {
 
-    @Override
-    public boolean enviarWhatsApp(String telefono, String mensaje) {
+  @Override
+  public boolean enviarWhatsApp(String telefono, String mensaje) {
 
-        System.out.println("""
+    System.out.println(
+        """
             [WHATSAPP SIMULADO]
 
             Telefono: %s
             Mensaje: %s
-            """.formatted(telefono, mensaje));
+            """
+            .formatted(telefono, mensaje));
 
-        return true;
-    }
+    return true;
+  }
 }
