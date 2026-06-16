@@ -9,13 +9,14 @@ import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MisionesTest {
 
-  private static final LocalDate HOY = LocalDate.of(2026, 6, 15);
+  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 15);
   private DonanteIncentivos donante;
 
   @BeforeEach
