@@ -16,8 +16,14 @@ public class DonanteInactivo extends EventoNotificable{
 
     @Override
     public List<Notificacion> generarNotificaciones() {
+        String mensaje = String.format(
+                "Hace %d días que no registramos una donación tuya. " +
+                "Tu colaboración es muy importante y podría ayudar a quienes más lo necesitan. " +
+                "Si estás en condiciones de donar nuevamente, te invitamos a colaborar!.",
+                diasInactivo
+        );
         Notificacion notificacion =
-                new Notificacion(this.getPersona(), "Dias de inactividad" + "\n" + diasInactivo);
+                new Notificacion(this.getPersona(), mensaje);
 
         return List.of(notificacion);
     }

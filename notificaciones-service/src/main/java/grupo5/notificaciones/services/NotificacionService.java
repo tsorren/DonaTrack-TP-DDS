@@ -19,8 +19,8 @@ public class NotificacionService {
         List<Notificacion> notificaciones = evento.generarNotificaciones();
 
         for (Notificacion notificacion : notificaciones) {
-            repository.save(notificacion);
             notificacion.notificar(null);
+            repository.save(notificacion);
         }
     }
 }
