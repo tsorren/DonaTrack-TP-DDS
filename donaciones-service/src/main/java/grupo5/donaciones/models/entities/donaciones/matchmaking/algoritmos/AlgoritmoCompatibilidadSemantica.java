@@ -40,7 +40,13 @@ public class AlgoritmoCompatibilidadSemantica extends AlgoritmoAsignacion {
         if (calcularScore(necesidad, ordenadas.get(j))
             > calcularScore(necesidad, ordenadas.get(maxIdx))) {
           maxIdx = j;
-        }
+private List<DonacionIndependiente> ordenarPorScoreDescendente(List<DonacionIndependiente> donaciones, Necesidad necesidad) {
+    return donaciones.stream()
+        .sorted(Comparator.comparing(
+            donacion -> calcularScore(necesidad, donacion), Comparator.reverseOrder()
+        )).toList(); 
+}
+
       }
       DonacionIndependiente temp = ordenadas.get(i);
       ordenadas.set(i, ordenadas.get(maxIdx));
