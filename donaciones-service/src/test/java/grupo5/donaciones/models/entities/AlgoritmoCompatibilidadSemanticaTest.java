@@ -45,7 +45,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     bienNormalizado = new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
 
-    algoritmo = new AlgoritmoCompatibilidadSemantica(new ComparadorTexto(new NormalizadorBasicoTexto()));
+    algoritmo =
+        new AlgoritmoCompatibilidadSemantica(new ComparadorTexto(new NormalizadorBasicoTexto()));
   }
 
   private DonacionIndependiente crearDonacion(int cantidad, String descripcion) {

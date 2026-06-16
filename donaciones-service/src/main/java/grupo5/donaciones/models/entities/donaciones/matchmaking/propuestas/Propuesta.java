@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.time.LocalDateTime;
@@ -18,6 +20,10 @@ public class Propuesta {
   LocalDateTime fechaCreacion;
 
   public void agregarFragmentacion(DonacionIndependiente donacion, int cantidad) {
+    if (donacion == null)
+      throw new ValidationException(ErrorCatalog.PROPUESTA_FRAGMENTACION_DONACION_NULA);
+    if (cantidad <= 0)
+      throw new ValidationException(ErrorCatalog.PROPUESTA_FRAGMENTACION_CANTIDAD_INVALIDA);
     if (posiblesFragmentaciones == null) posiblesFragmentaciones = new ArrayList<>();
     PosibleFragmentacion f = new PosibleFragmentacion();
     f.setDonacionOriginal(donacion);
@@ -30,6 +36,8 @@ public class Propuesta {
   }
 
   public void confirmar() {
+    if (necesidadQueSatisface == null)
+      throw new ValidationException(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD);
     posiblesFragmentaciones.forEach(f -> f.confirmar(necesidadQueSatisface));
     this.estado = EstadoPropuesta.APROBADA;
   }

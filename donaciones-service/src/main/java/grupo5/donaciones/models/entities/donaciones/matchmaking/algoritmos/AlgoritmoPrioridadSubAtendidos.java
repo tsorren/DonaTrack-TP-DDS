@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
@@ -14,6 +16,8 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
 
   @Override
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
+    if (necesidades == null)
+      throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);
     LocalDateTime hace3meses = LocalDateTime.now(ZoneId.systemDefault()).minusMonths(3);
 
     Map<EntidadBeneficiaria, Integer> donacionesPorEntidad = new HashMap<>();
@@ -37,6 +41,8 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
   @Override
   public List<DonacionIndependiente> filtrarDonaciones(
       Necesidad necesidad, List<DonacionIndependiente> donaciones) {
+    if (necesidad == null) throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDAD_NULA);
+    if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
     List<DonacionIndependiente> filtradas = new ArrayList<>();
     for (DonacionIndependiente donacion : donaciones) {
       if (mismaSubcategoria(donacion, necesidad)) {

@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -60,6 +62,8 @@ public abstract class AlgoritmoAsignacion {
   }
 
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
+    if (necesidades == null)
+      throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);
     return necesidades;
   }
 
