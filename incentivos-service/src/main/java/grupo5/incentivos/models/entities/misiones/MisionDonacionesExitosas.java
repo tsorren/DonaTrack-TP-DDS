@@ -4,6 +4,7 @@ import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,7 +30,10 @@ public class MisionDonacionesExitosas extends Mision {
 
     if (this.getProgresoActual() >= this.getObjetivo()) {
       this.setCompletada(true);
-      LocalDate fecha = (fechaUltimoDonacion != null) ? fechaUltimoDonacion : LocalDate.now();
+      LocalDate fecha =
+          (fechaUltimoDonacion != null)
+              ? fechaUltimoDonacion
+              : LocalDate.now(ZoneId.systemDefault());
       this.setFechaCompletada(fecha);
       if (this.getInsignia() != null) {
         donante.otorgarInsignia(this.getInsignia());

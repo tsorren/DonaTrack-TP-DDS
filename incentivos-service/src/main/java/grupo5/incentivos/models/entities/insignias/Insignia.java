@@ -1,6 +1,7 @@
 package grupo5.incentivos.models.entities.insignias;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +23,6 @@ public class Insignia {
     this.descripcion = descripcion;
     this.imagenUrl = imagenUrl;
     this.visible = true;
-    this.fechaObtenida = LocalDate.now();
+    this.fechaObtenida = LocalDate.now(ZoneId.systemDefault());
   }
 }
