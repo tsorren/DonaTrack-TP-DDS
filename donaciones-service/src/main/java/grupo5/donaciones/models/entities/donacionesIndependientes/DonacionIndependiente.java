@@ -3,6 +3,7 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.necesidades.Asignable;
 import java.time.LocalDateTime;
@@ -10,30 +11,44 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class DonacionIndependiente {
-
   private Donacion donacionOriginal;
+  private final Subcategoria subcategoria;
   private List<ItemDonacionIndependiente> items;
   private EstadoDonacion estadoActual;
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
   private Asignable asignadaA;
 
-  public DonacionIndependiente(Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
+  public DonacionIndependiente(
+      Donacion donacionOriginal, List<ItemDonacionIndependiente> items, Subcategoria subcategoria) {
+    this.donacionOriginal = donacionOriginal;
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
-    this.donacionOriginal = donacionOriginal;
+    this.subcategoria = subcategoria;
+    if (subcategoria == null) {
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_SUBCATEGORIA_NULA);
+    }
+
     this.items = new ArrayList<>();
     items.forEach(this::agregarItem);
     this.estadoActual = new EnDeposito();
     this.historial = new ArrayList<>();
     this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  public String getDescripcion() {
+    StringBuffer sb = new StringBuffer();
+    items.forEach(i -> sb.append(i.getBien().getBienOriginal().getDescripcion()));
+    return sb.toString();
   }
 
   public void agregarItem(ItemDonacionIndependiente item) {
@@ -82,7 +97,7 @@ public class DonacionIndependiente {
       itemsExtraidos.add(itemExtraido);
       cantidadPorExtraer -= itemExtraido.getCantidad();
     }
-    return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos);
+    return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos, subcategoria);
   }
 
   // ── Métodos de negocio ─────────────────────────────────────────────────────
@@ -91,7 +106,8 @@ public class DonacionIndependiente {
     this.estadoActual.registrar(this, actor);
   }
 
-  public void asignar(String actor) {
+  public void asignar(String actor, Asignable receptor) {
+    this.asignadaA = receptor;
     this.estadoActual.asignar(this, actor);
   }
 

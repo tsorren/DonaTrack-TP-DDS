@@ -19,6 +19,7 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
+import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import java.time.Month;
@@ -32,6 +33,8 @@ class DonacionIndependienteEstadosTest {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private DonacionIndependiente donacion;
+
+  private NecesidadExtraordinaria receptor;
 
   @BeforeEach
   void setUp() {
@@ -47,9 +50,9 @@ class DonacionIndependienteEstadosTest {
 
     ItemDonacionNormalizado itemNormalizado =
         new ItemDonacionNormalizado(donacionOriginal, bienNormalizado, 5);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(itemNormalizado, 5);
+    ItemDonacionIndependiente item = new ItemDonacionIndependiente(itemNormalizado.getBien(), 5);
 
-    donacion = new DonacionIndependiente(donacionOriginal, List.of(item));
+    donacion = new DonacionIndependiente(donacionOriginal, List.of(item), subcategoria);
   }
 
   @Test
@@ -59,28 +62,28 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void asignar_desdeEnDeposito_transicionaCorrectamente() {
-    donacion.asignar(ACTOR);
+    donacion.asignar(ACTOR, receptor);
     assertTrue(donacion.getHistorial().size() == 1);
   }
 
   @Test
   void planificarRuta_luegoDe_asignar_transicionaAEnTraslado() {
-    donacion.asignar(ACTOR);
+    donacion.asignar(ACTOR, receptor);
     donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
     assertInstanceOf(EnTraslado.class, donacion.getEstadoActual());
   }
 
   @Test
   void iniciarRecorrido_luegoDePlanificarRuta_transicionaAListaParaEntregar() {
-    donacion.asignar(ACTOR);
+    donacion.asignar(ACTOR, receptor);
     donacion.planificarRuta(ACTOR);
-    donacion.iniciarRecorrido(ACTOR);
     assertInstanceOf(ListaParaEntregar.class, donacion.getEstadoActual());
   }
 
   @Test
   void registrarFalla_desdeListaParaEntregar_transicionaAEntregaFallida() {
-    donacion.asignar(ACTOR);
+    donacion.asignar(ACTOR, receptor);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     donacion.registrarFalla("No había nadie", ACTOR);
@@ -89,7 +92,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void retornar_desdeEntregaFallida_vuelveAEnDeposito() {
-    donacion.asignar(ACTOR);
+    donacion.asignar(ACTOR, receptor);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     donacion.registrarFalla("No había nadie", ACTOR);
@@ -99,7 +102,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void historial_registraCadaTransicion() {
-    donacion.asignar(ACTOR);
+    donacion.asignar(ACTOR, receptor);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     assertEquals(3, donacion.getHistorial().size());
@@ -107,7 +110,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void historial_registraElActorEnCadaCambio() {
-    donacion.asignar("admin1");
+    donacion.asignar("admin1", receptor);
     assertEquals("admin1", donacion.getHistorial().getFirst().getActor());
   }
 
@@ -124,7 +127,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void registrarFalla_sinJustificacion_lanzaExcepcion() {
-    donacion.asignar(ACTOR);
+    donacion.asignar(ACTOR, receptor);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     assertThrows(Exception.class, () -> donacion.registrarFalla(null, ACTOR));
