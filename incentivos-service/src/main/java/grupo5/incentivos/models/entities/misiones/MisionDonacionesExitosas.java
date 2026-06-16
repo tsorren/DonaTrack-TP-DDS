@@ -15,10 +15,10 @@ public class MisionDonacionesExitosas extends Mision {
 
   public MisionDonacionesExitosas(CategoriaDonante categoria, Integer donacionesObjetivo) {
     super(
-            "Donaciones Exitosas",
-            "Logra que " + donacionesObjetivo + " de tus donaciones sean recibidas exitosamente",
-            categoria,
-            donacionesObjetivo);
+        "Donaciones Exitosas",
+        "Logra que " + donacionesObjetivo + " de tus donaciones sean recibidas exitosamente",
+        categoria,
+        donacionesObjetivo);
   }
 
   @Override
