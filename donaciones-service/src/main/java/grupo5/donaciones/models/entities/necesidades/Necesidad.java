@@ -19,7 +19,6 @@ public abstract class Necesidad implements Asignable {
   private String descripcion;
   private LocalDate fechaInicio;
   private EntidadBeneficiaria entidad;
-  private List<DonacionIndependiente> donacionesAsignadas;
 
   protected Necesidad(Subcategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     this.subcategoria = subcategoria;
@@ -44,6 +43,8 @@ public abstract class Necesidad implements Asignable {
       throw new ValidationException(ErrorCatalog.DESCRIPCION_NECESIDAD_VACIA);
     }
   }
+
+  public abstract List<DonacionIndependiente> getDonacionesAsignadas();
 
   @Override
   public Necesidad obtenerNecesidad() {

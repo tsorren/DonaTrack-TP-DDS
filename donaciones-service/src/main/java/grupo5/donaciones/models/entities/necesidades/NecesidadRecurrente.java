@@ -51,6 +51,11 @@ public class NecesidadRecurrente extends Necesidad {
     }
   }
 
+  @Override
+  public List<DonacionIndependiente> getDonacionesAsignadas() {
+    return obtenerPeriodoActual().getDonacionesAsignadas();
+  }
+
   public PeriodoNecesidad obtenerPeriodoActual() {
     if (this.periodos.isEmpty()) return null;
     return this.periodos.get(this.periodos.size() - 1);
@@ -61,7 +66,7 @@ public class NecesidadRecurrente extends Necesidad {
     if (actual == null) {
       throw new BusinessStateException(ErrorCatalog.SIN_PERIODO_ACTIVO);
     }
-    actual.agregarDonacion(donacionAsignada);
+    actual.asignarDonacion(donacionAsignada);
   }
 
   @Override

@@ -31,6 +31,8 @@ public class Propuesta {
 
   public void confirmar() {
     posiblesFragmentaciones.forEach(f -> f.confirmar(necesidadQueSatisface));
+  public void confirmar(String actor) {
+    posiblesFragmentaciones.forEach(f -> f.confirmar(necesidadQueSatisface, actor));
     this.estado = EstadoPropuesta.APROBADA;
   }
 

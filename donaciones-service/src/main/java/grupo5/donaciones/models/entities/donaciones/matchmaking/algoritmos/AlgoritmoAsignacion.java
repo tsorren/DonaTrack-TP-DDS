@@ -54,8 +54,8 @@ public abstract class AlgoritmoAsignacion {
   }
 
   protected boolean mismaSubcategoria(DonacionIndependiente donacion, Necesidad necesidad) {
-    return donacion.getSubCategoria() != null
-        && donacion.getSubCategoria().equals(necesidad.getSubcategoria());
+    return donacion.getSubcategoria() != null
+        && donacion.getSubcategoria().equals(necesidad.getSubcategoria());
   }
 
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {

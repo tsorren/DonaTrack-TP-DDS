@@ -12,16 +12,15 @@ public class PosibleFragmentacion {
   DonacionIndependiente donacionOriginal;
   Integer cantidadNecesaria;
 
-  public DonacionIndependiente confirmar(Necesidad necesidad) {
-    DonacionIndependiente donacionAAsignar;
+  public DonacionIndependiente confirmar(Necesidad necesidad, String actor) {
+    DonacionIndependiente donacionAsignar;
     if (donacionOriginal.getCantidad() > cantidadNecesaria) {
-      donacionAAsignar = donacionOriginal.fragmentarse(cantidadNecesaria);
+      donacionAsignar = donacionOriginal.fragmentarse(cantidadNecesaria);
     } else {
-      donacionAAsignar = donacionOriginal;
+      donacionAsignar = donacionOriginal;
     }
-    donacionAAsignar.setAsignadaA(necesidad);
-    donacionAAsignar.asignar();
-    necesidad.asignarDonacion(donacionAAsignar);
-    return donacionAAsignar;
+    donacionAsignar.asignar(actor, necesidad);
+    necesidad.asignarDonacion(donacionAsignar);
+    return donacionAsignar;
   }
 }

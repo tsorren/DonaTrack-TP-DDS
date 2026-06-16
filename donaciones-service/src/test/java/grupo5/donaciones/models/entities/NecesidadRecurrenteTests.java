@@ -54,11 +54,11 @@ class NecesidadRecurrenteTests {
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
 
-    d1 = new DonacionIndependiente(donacion, subcategoria, List.of(item1));
+    d1 = new DonacionIndependiente(donacion, List.of(item1), subcategoria);
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 100);
 
-    d2 = new DonacionIndependiente(donacion, subcategoria, List.of(item2));
+    d2 = new DonacionIndependiente(donacion, List.of(item2), subcategoria);
   }
 
   @Test

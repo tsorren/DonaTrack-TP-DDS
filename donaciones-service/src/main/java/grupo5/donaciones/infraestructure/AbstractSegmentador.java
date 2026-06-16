@@ -39,8 +39,8 @@ public abstract class AbstractSegmentador<K> implements Segmentador {
 
     List<ItemDonacionIndependiente> itemsIndependientes = crearItemsIndependientes(grupo);
 
-    // La subcategoría ya no se pasa al constructor — se navega por los ítems
-    return new DonacionIndependiente(donacionOriginal, itemsIndependientes);
+    return new DonacionIndependiente(
+        donacionOriginal, itemsIndependientes, primerItem.getBien().getSubcategoria());
   }
 
   private static List<ItemDonacionIndependiente> crearItemsIndependientes(

@@ -21,22 +21,35 @@ public class DonacionIndependiente implements RecursoDTO {
 
   private UUID id;
   private Donacion donacionOriginal;
+  private final Subcategoria subcategoria;
   private List<ItemDonacionIndependiente> items;
   private EstadoDonacion estadoActual;
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
   private Asignable asignadaA;
 
-  public DonacionIndependiente(Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
+  public DonacionIndependiente(
+      Donacion donacionOriginal, List<ItemDonacionIndependiente> items, Subcategoria subcategoria) {
+    this.donacionOriginal = donacionOriginal;
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
-    this.donacionOriginal = donacionOriginal;
+    this.subcategoria = subcategoria;
+    if (subcategoria == null) {
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_SUBCATEGORIA_NULA);
+    }
+
     this.items = new ArrayList<>();
     items.forEach(this::agregarItem);
     this.estadoActual = new EnDeposito();
     this.historial = new ArrayList<>();
     this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  public String getDescripcion() {
+    StringBuffer sb = new StringBuffer();
+    items.forEach(i -> sb.append(i.getBien().getBienOriginal().getDescripcion()));
+    return sb.toString();
   }
 
   public void agregarItem(ItemDonacionIndependiente item) {
@@ -58,6 +71,10 @@ public class DonacionIndependiente implements RecursoDTO {
     return this.items.stream().mapToInt(ItemDonacionIndependiente::getCantidad).sum();
   }
 
+  /**
+   * La subcategoría se obtiene navegando por los ítems, ya que todos los ítems de una
+   * DonacionIndependiente pertenecen a la misma subcategoría por construcción.
+   */
   public grupo5.donaciones.models.entities.categorias.Subcategoria getSubcategoria() {
     return this.items.stream()
         .findFirst()
@@ -81,14 +98,18 @@ public class DonacionIndependiente implements RecursoDTO {
       itemsExtraidos.add(itemExtraido);
       cantidadPorExtraer -= itemExtraido.getCantidad();
     }
-    return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos);
+    return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos, subcategoria);
   }
+
+  // ── Métodos de negocio ─────────────────────────────────────────────────────
 
   public void registrar(String actor) {
     this.estadoActual.registrar(this, actor);
   }
 
   public void asignar(String actor) {
+  public void asignar(String actor, Asignable receptor) {
+    this.asignadaA = receptor;
     this.estadoActual.asignar(this, actor);
   }
 
@@ -116,6 +137,7 @@ public class DonacionIndependiente implements RecursoDTO {
     this.estadoActual.vencer(this, actor);
   }
 
+  // Llamado únicamente por los estados concretos
   public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion, String actor) {
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
