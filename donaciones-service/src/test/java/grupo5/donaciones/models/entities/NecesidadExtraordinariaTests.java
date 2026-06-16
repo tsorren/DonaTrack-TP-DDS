@@ -60,17 +60,17 @@ class NecesidadExtraordinariaTests {
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien1, 15);
     List<ItemDonacionIndependiente> items1 = new ArrayList<>();
     items1.add(item1);
-    donacionAsignada1 = new DonacionIndependiente(donacionOriginal, subcategoria, items1);
+    donacionAsignada1 = new DonacionIndependiente(donacionOriginal, items1, subcategoria);
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien2, 15);
     List<ItemDonacionIndependiente> items2 = new ArrayList<>();
     items2.add(item2);
-    donacionAsignada2 = new DonacionIndependiente(donacionOriginal, subcategoria, items2);
+    donacionAsignada2 = new DonacionIndependiente(donacionOriginal, items2, subcategoria);
 
     ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien3, 15);
     List<ItemDonacionIndependiente> items3 = new ArrayList<>();
     items3.add(item3);
-    donacionAsignada3 = new DonacionIndependiente(donacionOriginal, subcategoria, items3);
+    donacionAsignada3 = new DonacionIndependiente(donacionOriginal, items3, subcategoria);
   }
 
   @Test
