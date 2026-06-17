@@ -18,10 +18,10 @@ public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
     if (aggregate == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
-    if (aggregate.id() == null) {
+    if (aggregate.getId() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
-    storage.put(aggregate.id(), aggregate);
+    storage.put(aggregate.getId(), aggregate);
     return aggregate;
   }
 
@@ -40,10 +40,10 @@ public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
 
   @Override
   public void delete(T aggregate) {
-    if (aggregate == null || aggregate.id() == null) {
+    if (aggregate == null || aggregate.getId() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
-    storage.remove(aggregate.id());
+    storage.remove(aggregate.getId());
   }
 
   @Override

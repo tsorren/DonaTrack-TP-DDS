@@ -6,6 +6,7 @@ import grupo5.common.exceptions.ValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,9 +14,19 @@ class CrudRepositoryEnMemoriaTest {
 
   private TestRepository repository;
 
-  private record TestAggregate(UUID id, String name) implements AggregateRoot {
+  @Getter
+  private static class TestAggregate implements AggregateRoot {
+    private final UUID id;
+    private final String name;
+
     public TestAggregate(String name) {
-      this(UUID.randomUUID(), name);
+      this.id = UUID.randomUUID();
+      this.name = name;
+    }
+
+    public TestAggregate(UUID id, String name) {
+      this.id = id;
+      this.name = name;
     }
   }
 
@@ -31,9 +42,9 @@ class CrudRepositoryEnMemoriaTest {
     TestAggregate aggregate = new TestAggregate("Test Name");
     repository.save(aggregate);
 
-    Optional<TestAggregate> found = repository.findById(aggregate.id());
+    Optional<TestAggregate> found = repository.findById(aggregate.getId());
     assertTrue(found.isPresent());
-    assertEquals("Test Name", found.get().name());
+    assertEquals("Test Name", found.get().getName());
   }
 
   @Test
@@ -45,8 +56,8 @@ class CrudRepositoryEnMemoriaTest {
 
     List<TestAggregate> all = repository.findAll();
     assertEquals(2, all.size());
-    assertTrue(all.stream().anyMatch(a -> a.name().equals("Test 1")));
-    assertTrue(all.stream().anyMatch(a -> a.name().equals("Test 2")));
+    assertTrue(all.stream().anyMatch(a -> a.getName().equals("Test 1")));
+    assertTrue(all.stream().anyMatch(a -> a.getName().equals("Test 2")));
   }
 
   @Test
@@ -68,10 +79,10 @@ class CrudRepositoryEnMemoriaTest {
   @Test
   void testExistsById() {
     TestAggregate aggregate = new TestAggregate("Test Name");
-    assertFalse(repository.existsById(aggregate.id()));
+    assertFalse(repository.existsById(aggregate.getId()));
 
     repository.save(aggregate);
-    assertTrue(repository.existsById(aggregate.id()));
+    assertTrue(repository.existsById(aggregate.getId()));
   }
 
   @Test
@@ -83,10 +94,10 @@ class CrudRepositoryEnMemoriaTest {
   void testDelete() {
     TestAggregate aggregate = new TestAggregate("Test Name");
     repository.save(aggregate);
-    assertTrue(repository.existsById(aggregate.id()));
+    assertTrue(repository.existsById(aggregate.getId()));
 
     repository.delete(aggregate);
-    assertFalse(repository.existsById(aggregate.id()));
+    assertFalse(repository.existsById(aggregate.getId()));
     assertEquals(0, repository.count());
   }
 
