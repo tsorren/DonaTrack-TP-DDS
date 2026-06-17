@@ -34,8 +34,8 @@ class NecesidadesServiceTest {
     inputDto.setSubcategoriaNombre("Alimentos");
     inputDto.setCantidadNecesitada(10);
     inputDto.setDescripcion("Fideos para el comedor");
-    inputDto.setFechaInicio(LocalDate.of(2026, 6, 1));
-    inputDto.setFechaFin(LocalDate.of(2026, 7, 1)); // un mes después
+    inputDto.setFechaInicio(LocalDate.of(2026, java.time.Month.JUNE, 1));
+    inputDto.setFechaFin(LocalDate.of(2026, java.time.Month.JULY, 1)); // un mes después
 
     when(necesidadRepositoryMock.save(eq(inputDto.getId()), any(NecesidadDTO.class)))
         .thenReturn(inputDto);
