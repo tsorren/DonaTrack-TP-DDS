@@ -9,7 +9,6 @@ import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -43,7 +42,7 @@ public class NecesidadesService implements INecesidadesService {
                 entidadId == null
                     || (n.getEntidadId() != null && n.getEntidadId().equals(entidadId)))
         .filter(n -> tipo == null || tipo.equalsIgnoreCase(n.getTipo()))
-        .collect(Collectors.toList());
+        .toList();
   }
 
   // MAPPER INPUT (dto -> dominio)
