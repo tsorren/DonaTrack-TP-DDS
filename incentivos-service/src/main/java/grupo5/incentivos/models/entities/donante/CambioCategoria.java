@@ -1,6 +1,7 @@
 package grupo5.incentivos.models.entities.donante;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import lombok.Getter;
 
 @Getter
@@ -13,6 +14,6 @@ public class CambioCategoria {
   public CambioCategoria(CategoriaDonante anterior, CategoriaDonante nueva) {
     this.anterior = anterior;
     this.nueva = nueva;
-    this.fecha = LocalDate.now();
+    this.fecha = LocalDate.now(ZoneId.systemDefault());
   }
 }

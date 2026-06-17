@@ -9,6 +9,7 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ class RankingMensualTest {
 
   @Test
   void rankingMensual_deberiaTenerPodioDeHastaTres() {
-    RankingMensual ranking = new RankingMensual(YearMonth.of(2026, 5));
+    RankingMensual ranking = new RankingMensual(YearMonth.of(2026, Month.MAY));
     ranking.agregarEntrada(new EntradaRanking(1, 1L, "Ana", 5));
     ranking.agregarEntrada(new EntradaRanking(2, 2L, "Bob", 3));
     ranking.agregarEntrada(new EntradaRanking(3, 3L, "Carlos", 2));
@@ -37,7 +38,7 @@ class RankingMensualTest {
     EventoDonacion evento =
         EventoDonacion.builder()
             .donacionId(1L)
-            .fecha(LocalDate.of(2026, 5, 10))
+            .fecha(LocalDate.of(2026, Month.MAY, 10))
             .cantidadBienes(1)
             .categorias(List.of("x"))
             .build();
@@ -61,7 +62,7 @@ class RankingMensualTest {
     EventoDonacion evento =
         EventoDonacion.builder()
             .donacionId(1L)
-            .fecha(LocalDate.now())
+            .fecha(LocalDate.of(2026, Month.MAY, 15))
             .cantidadBienes(1)
             .categorias(List.of("x"))
             .build();

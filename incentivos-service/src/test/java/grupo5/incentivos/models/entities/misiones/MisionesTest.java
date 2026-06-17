@@ -9,11 +9,14 @@ import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class MisionesTest {
+
+  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 15);
 
   private DonanteIncentivos donante;
 
@@ -75,28 +78,28 @@ class MisionesTest {
     EventoDonacion e1 =
         EventoDonacion.builder()
             .donacionId(1L)
-            .fecha(LocalDate.now())
+            .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("arroz"))
             .build();
     EventoDonacion e2 =
         EventoDonacion.builder()
             .donacionId(2L)
-            .fecha(LocalDate.now())
+            .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("ropa"))
             .build();
     EventoDonacion e3 =
         EventoDonacion.builder()
             .donacionId(3L)
-            .fecha(LocalDate.now())
+            .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("arroz"))
             .build();
     EventoDonacion e4 =
         EventoDonacion.builder()
             .donacionId(4L)
-            .fecha(LocalDate.now())
+            .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("sillas"))
             .build();
@@ -135,7 +138,7 @@ class MisionesTest {
       EventoDonacion evento =
           EventoDonacion.builder()
               .donacionId((long) i)
-              .fecha(LocalDate.now())
+              .fecha(HOY)
               .cantidadBienes(5)
               .categorias(List.of("fideos"))
               .build();
@@ -166,7 +169,7 @@ class MisionesTest {
     EventoDonacion exitosa =
         EventoDonacion.builder()
             .donacionId(1L)
-            .fecha(LocalDate.now())
+            .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("x"))
             .build();
