@@ -9,8 +9,21 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class BaseRepositoryEnMemoria<T extends RecursoDTO> implements BaseRepository<T> {
+public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
+    implements CrudRepository<T> {
   protected final Map<UUID, T> storage = new ConcurrentHashMap<>();
+
+  @Override
+  public T save(T aggregate) {
+    if (aggregate == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (aggregate.id() == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    storage.put(aggregate.id(), aggregate);
+    return aggregate;
+  }
 
   @Override
   public List<T> findAll() {
@@ -26,38 +39,11 @@ public abstract class BaseRepositoryEnMemoria<T extends RecursoDTO> implements B
   }
 
   @Override
-  public T save(UUID id, T recurso) {
-    if (recurso == null) {
+  public void delete(T aggregate) {
+    if (aggregate == null || aggregate.id() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
-
-    UUID targetId = id;
-
-    // Si el ID del parámetro es nulo, intentamos obtenerlo del recurso (DTO)
-    if (targetId == null) {
-      targetId = recurso.getId();
-    }
-
-    // Si sigue siendo nulo, se trata de una creación. Generamos un nuevo UUID y lo asignamos.
-    if (targetId == null) {
-      targetId = UUID.randomUUID();
-      recurso.setId(targetId);
-    } else {
-      // Si el ID ya existe (sea en el parámetro o en el recurso), aseguramos que se sincronice en
-      // el DTO (actualización)
-      recurso.setId(targetId);
-    }
-
-    storage.put(targetId, recurso);
-    return recurso;
-  }
-
-  @Override
-  public void deleteById(UUID id) {
-    if (id == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
-    storage.remove(id);
+    storage.remove(aggregate.id());
   }
 
   @Override
