@@ -1,7 +1,8 @@
 package grupo5.incentivos.models.entities.insignias;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,12 +18,12 @@ public class Insignia {
 
   public Insignia(String nombre, String descripcion, String imagenUrl) {
     if (nombre == null || nombre.trim().isEmpty()) {
-      throw new IllegalArgumentException("La insignia debe tener un nombre");
+      throw new ValidationException(ErrorCatalog.INSIGNIA_SIN_NOMBRE);
     }
     this.nombre = nombre;
     this.descripcion = descripcion;
     this.imagenUrl = imagenUrl;
     this.visible = true;
-    this.fechaObtenida = LocalDate.now(ZoneId.systemDefault());
+    this.fechaObtenida = LocalDate.now();
   }
 }

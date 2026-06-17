@@ -1,5 +1,7 @@
 package grupo5.incentivos.models.entities.donante;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
@@ -13,17 +15,19 @@ import lombok.Setter;
 public class DonanteIncentivos {
 
   private Long donanteId;
+  private String nombre;
   private CategoriaDonante categoria;
   private List<CambioCategoria> historialCategorias;
   private List<Mision> misiones;
   private List<Insignia> insignias;
   private Metricas metricas;
 
-  public DonanteIncentivos(Long donanteId) {
+  public DonanteIncentivos(Long donanteId, String nombre) {
     if (donanteId == null) {
-      throw new IllegalArgumentException("El ID del donante no puede ser nulo");
+      throw new ValidationException(ErrorCatalog.DONANTE_INCENTIVOS_ID_NULO);
     }
     this.donanteId = donanteId;
+    this.nombre = nombre;
     this.categoria = CategoriaDonante.COLABORADOR;
     this.historialCategorias = new ArrayList<>();
     this.misiones = new ArrayList<>();
@@ -55,7 +59,7 @@ public class DonanteIncentivos {
 
   public void otorgarInsignia(Insignia insignia) {
     if (insignia == null) {
-      throw new IllegalArgumentException("La insignia no puede ser nula");
+      throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
     }
     this.insignias.add(insignia);
   }

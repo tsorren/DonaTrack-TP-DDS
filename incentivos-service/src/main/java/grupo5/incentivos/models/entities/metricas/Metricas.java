@@ -3,7 +3,6 @@ package grupo5.incentivos.models.entities.metricas;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -67,10 +66,10 @@ public class Metricas {
   }
 
   public long donacionesMesActual() {
-    return donacionesEnMes(YearMonth.now(ZoneId.systemDefault()));
+    return donacionesEnMes(YearMonth.now());
   }
 
   public long donacionesMesAnterior() {
-    return donacionesEnMes(YearMonth.now(ZoneId.systemDefault()).minusMonths(1));
+    return donacionesEnMes(YearMonth.now().minusMonths(1));
   }
 }
