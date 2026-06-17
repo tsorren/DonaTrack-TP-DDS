@@ -2,12 +2,16 @@ package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,64 +21,105 @@ import org.junit.jupiter.api.Test;
 class NecesidadesServiceTest {
 
   private INecesidadesRepository necesidadRepositoryMock;
+  private IEntidadesBeneficiariasRepository entidadesBeneficiariasRepositoryMock;
+  private ISubcategoriasRepository subcategoriaRepositoryMock;
   private NecesidadesService necesidadesService;
 
   @BeforeEach
   void setUp() {
     necesidadRepositoryMock = mock(INecesidadesRepository.class);
+    entidadesBeneficiariasRepositoryMock = mock(IEntidadesBeneficiariasRepository.class);
+    subcategoriaRepositoryMock = mock(ISubcategoriasRepository.class);
 
-    necesidadesService = new NecesidadesService(necesidadRepositoryMock);
+    necesidadesService =
+        new NecesidadesService(
+            necesidadRepositoryMock,
+            entidadesBeneficiariasRepositoryMock,
+            subcategoriaRepositoryMock);
   }
 
   @Test
   void guardar_DeberiaPersistirNecesidadRecurrenteCorrectamente() {
-    NecesidadDTO inputDto = new NecesidadDTO();
-    inputDto.setId(UUID.randomUUID());
-    inputDto.setTipo("RECURRENTE");
-    inputDto.setSubcategoriaNombre("Alimentos");
-    inputDto.setCantidadNecesitada(10);
-    inputDto.setDescripcion("Fideos para el comedor");
-    inputDto.setFechaInicio(LocalDate.of(2026, java.time.Month.JUNE, 1));
-    inputDto.setFechaFin(LocalDate.of(2026, java.time.Month.JULY, 1)); // un mes después
+    UUID subcategoriaId = UUID.randomUUID();
+    UUID entidadId = UUID.randomUUID();
 
-    when(necesidadRepositoryMock.save(eq(inputDto.getId()), any(NecesidadDTO.class)))
-        .thenReturn(inputDto);
+    NecesidadDTO inputDto =
+        new NecesidadDTO(
+            UUID.randomUUID(),
+            "RECURRENTE",
+            entidadId,
+            subcategoriaId,
+            10,
+            "Fideos para el comedor",
+            false,
+            LocalDate.of(2026, java.time.Month.JUNE, 1),
+            LocalDate.of(2026, java.time.Month.JULY, 1));
+
+    Subcategoria subcategoriaMock = mock(Subcategoria.class);
+    EntidadBeneficiaria entidadMock = mock(EntidadBeneficiaria.class);
+
+    when(subcategoriaRepositoryMock.findById(subcategoriaId))
+        .thenReturn(Optional.of(subcategoriaMock));
+    when(entidadesBeneficiariasRepositoryMock.findById(entidadId))
+        .thenReturn(Optional.of(entidadMock));
 
     NecesidadDTO resultado = necesidadesService.guardar(inputDto);
 
     assertNotNull(resultado);
     assertEquals("RECURRENTE", resultado.getTipo());
-    assertFalse(resultado.getEstaSatisfecha(), "Al crearse, no debería estar satisfecha");
-    verify(necesidadRepositoryMock, times(1)).save(eq(inputDto.getId()), any(NecesidadDTO.class));
+    verify(necesidadRepositoryMock, times(1)).save(any(Necesidad.class));
   }
 
   @Test
   void guardar_DeberiaPersistirNecesidadExtraordinariaCorrectamente() {
-    NecesidadDTO inputDto = new NecesidadDTO();
-    inputDto.setId(UUID.randomUUID());
-    inputDto.setTipo("EXTRAORDINARIA");
-    inputDto.setSubcategoriaNombre("Ropa");
-    inputDto.setCantidadNecesitada(5);
-    inputDto.setDescripcion("Campañas de invierno");
+    UUID subcategoriaId = UUID.randomUUID();
+    UUID entidadId = UUID.randomUUID();
 
-    when(necesidadRepositoryMock.save(eq(inputDto.getId()), any(NecesidadDTO.class)))
-        .thenReturn(inputDto);
+    NecesidadDTO inputDto =
+        new NecesidadDTO(
+            UUID.randomUUID(),
+            "EXTRAORDINARIA",
+            entidadId,
+            subcategoriaId,
+            5,
+            "Campañas de invierno",
+            false,
+            LocalDate.of(2026, java.time.Month.JUNE, 1),
+            null);
+
+    Subcategoria subcategoriaMock = mock(Subcategoria.class);
+    EntidadBeneficiaria entidadMock = mock(EntidadBeneficiaria.class);
+
+    when(subcategoriaRepositoryMock.findById(subcategoriaId))
+        .thenReturn(Optional.of(subcategoriaMock));
+    when(entidadesBeneficiariasRepositoryMock.findById(entidadId))
+        .thenReturn(Optional.of(entidadMock));
 
     NecesidadDTO resultado = necesidadesService.guardar(inputDto);
 
     assertNotNull(resultado);
     assertEquals("EXTRAORDINARIA", resultado.getTipo());
-    verify(necesidadRepositoryMock, times(1)).save(eq(inputDto.getId()), any(NecesidadDTO.class));
+    verify(necesidadRepositoryMock, times(1)).save(any(Necesidad.class));
   }
 
   @Test
   void obtenerPorId_DeberiaRetornarDto_CuandoElIdExiste() {
     UUID idExistente = UUID.randomUUID();
-    NecesidadDTO dtoEsperado = new NecesidadDTO();
-    dtoEsperado.setId(idExistente);
-    dtoEsperado.setDescripcion("Test por ID");
+    Necesidad necesidadMock = mock(Necesidad.class);
+    NecesidadDTO dtoEsperado =
+        new NecesidadDTO(
+            idExistente,
+            "EXTRAORDINARIA",
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            5,
+            "Test por ID",
+            false,
+            LocalDate.now(),
+            null);
 
-    when(necesidadRepositoryMock.findById(idExistente)).thenReturn(Optional.of(dtoEsperado));
+    when(necesidadMock.toDTO()).thenReturn(dtoEsperado);
+    when(necesidadRepositoryMock.findById(idExistente)).thenReturn(Optional.of(necesidadMock));
 
     NecesidadDTO resultado = necesidadesService.obtenerPorId(idExistente);
 
@@ -92,7 +137,6 @@ class NecesidadesServiceTest {
         RecursoNoEncontradoException.class,
         () -> {
           necesidadesService.obtenerPorId(idInexistente);
-        },
-        "Debería lanzar RecursoNoEncontradoException si el repo devuelve un Optional vacío");
+        });
   }
 }

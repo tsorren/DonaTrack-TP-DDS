@@ -1,15 +1,15 @@
 package grupo5.donaciones.models.repositories;
 
-import grupo5.common.repositories.BaseRepository;
-import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.common.repositories.CrudRepository;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.util.List;
 import java.util.UUID;
 
-public interface INecesidadesRepository extends BaseRepository<NecesidadDTO> {
+public interface INecesidadesRepository extends CrudRepository<Necesidad> {
 
   // Los métodos CRUD básicos ya vienen de BaseRepository
 
-  List<NecesidadDTO> findByEstaSatisfechaFalse();
+  List<Necesidad> findByEstaSatisfechaFalse();
 
-  List<NecesidadDTO> buscarNecesidadesPorEntidad(UUID entidadId);
+  List<Necesidad> buscarNecesidadesPorEntidad(UUID entidadId);
 }

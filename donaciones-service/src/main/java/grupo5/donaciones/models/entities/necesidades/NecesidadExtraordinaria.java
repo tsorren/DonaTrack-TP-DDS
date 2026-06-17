@@ -2,6 +2,7 @@ package grupo5.donaciones.models.entities.necesidades;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.util.ArrayList;
@@ -18,6 +19,11 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
       Subcategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     super(subcategoria, cantidadNecesitada, descripcion);
     this.donacionesAsignadas = new ArrayList<>();
+  }
+
+  @Override
+  public NecesidadDTO toDTO() {
+    return super.toDTO("EXTRAORDINARIA", null);
   }
 
   @Override
