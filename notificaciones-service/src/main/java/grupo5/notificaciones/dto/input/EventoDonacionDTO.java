@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class EventoDonacionDTO {
   private Persona persona;
-  private LocalDateTime fecha = LocalDateTime.now();
+  private LocalDateTime fecha;
   private Persona entidadBeneficiaria;
   private String detalleDonacion;
 }
