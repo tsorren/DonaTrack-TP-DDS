@@ -9,6 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Persona implements Anonimizable {
+  private Long id;
   private final List<MedioDeContacto> mediosDeContacto = new ArrayList<>();
   private String denominacion;
   private TipoPersona tipoPersona;
