@@ -1,24 +1,31 @@
 package grupo5.notificaciones.models.entities.personas;
 
+import grupo5.common.repositories.AggregateRoot;
 import grupo5.notificaciones.models.ports.Anonimizable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Persona implements Anonimizable {
+public class Persona implements Anonimizable, AggregateRoot {
+  private UUID id;
   private final List<MedioDeContacto> mediosDeContacto = new ArrayList<>();
   private String denominacion;
   private TipoPersona tipoPersona;
+
+  @Override
+  public UUID getId() {
+    return this.id;
+  }
 
   public void agregarMedioDeContacto(MedioDeContacto medioDeContacto) {
     mediosDeContacto.add(medioDeContacto);
   }
 
   public void quitarMedioDeContacto(MedioDeContacto medioDeContacto) {
-    // Ver que pasa si no pertenece a la lista el medio a quitar
     mediosDeContacto.remove(medioDeContacto);
   }
 

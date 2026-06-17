@@ -1,7 +1,7 @@
-package grupo5.donaciones.models.repositories;
+package grupo5.notificaciones.models.repositories;
 
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
-import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.notificaciones.models.entities.personas.Persona;
 import org.springframework.stereotype.Repository;
 
 @Repository

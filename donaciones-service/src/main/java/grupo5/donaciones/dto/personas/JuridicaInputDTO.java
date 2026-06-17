@@ -16,5 +16,5 @@ public record JuridicaInputDTO(
     String razonSocial,
     TipoJuridico tipoJuridico,
     String rubro,
-    Long representanteInicialId)
+    List<HumanaInputDTO> representantes)
     implements PersonaInputDTO {}

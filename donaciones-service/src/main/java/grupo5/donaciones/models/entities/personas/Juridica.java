@@ -44,7 +44,7 @@ public final class Juridica extends Persona {
 
   @Override
   public TipoPersona getTipoPersona() {
-    return TipoPersona.HUMANA;
+    return TipoPersona.JURIDICA;
   }
 
   @Override

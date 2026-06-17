@@ -19,9 +19,9 @@ import java.util.UUID;
   @JsonSubTypes.Type(value = JuridicaOutputDTO.class, name = "JURIDICA")
 })
 public sealed interface PersonaOutputDTO permits HumanaOutputDTO, JuridicaOutputDTO {
-  UUID id();
-
   TipoPersona tipo();
+
+  UUID id();
 
   TipoDocumento tipoDocumento();
 

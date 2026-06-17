@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.UUID;
 
 public record HumanaOutputDTO(
-    UUID id,
     TipoPersona tipo,
+    UUID id,
     TipoDocumento tipoDocumento,
     String documento,
     DireccionOutputDTO direccion,
