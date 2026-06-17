@@ -2,38 +2,28 @@ package grupo5.donaciones.services;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.NecesidadDTO;
-import grupo5.donaciones.dto.PeriodoNecesidadDTO;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
+import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
-import grupo5.donaciones.models.repositories.IPeriodoNecesidadRepository;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NecesidadesService implements INecesidadesService {
 
-  private final INecesidadesRepository necesidadRepository;
-  private final IPeriodoNecesidadRepository periodoRepository;
-
-  public NecesidadesService(
-      INecesidadesRepository necesidadRepository, IPeriodoNecesidadRepository periodoRepository) {
-    this.necesidadRepository = necesidadRepository;
-    this.periodoRepository = periodoRepository;
-  }
-
-  //  Métodos CRUD
+  @Autowired private INecesidadesRepository necesidadRepository;
 
   @Override
   public NecesidadDTO guardar(NecesidadDTO dto) {
-    if (dto.getId() == null) {
-      dto.setId(UUID.randomUUID()); // Asignar ID para nuevos recursos
-    }
-    return necesidadRepository.save(dto.getId(), dto);
-  }
-
-  @Override
-  public List<NecesidadDTO> obtenerTodas() {
-    return necesidadRepository.findAll();
+    Necesidad necesidadDominio = convertirDTOANecesidad(dto);
+    dto.setEstaSatisfecha(necesidadDominio.estaSatisfecha());
+    necesidadRepository.save(dto.getId(), dto);
+    return dto;
   }
 
   @Override
@@ -41,34 +31,37 @@ public class NecesidadesService implements INecesidadesService {
     return necesidadRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
   }
 
-  @Override
-  public NecesidadDTO actualizar(UUID id, NecesidadDTO dto) {
-    obtenerPorId(id);
-    dto.setId(id);
-    return necesidadRepository.save(id, dto);
+  public List<NecesidadDTO> listarConFiltros(UUID entidadId, String tipo) {
+    List<NecesidadDTO> todas = necesidadRepository.findAll();
+
+    return todas.stream()
+        .filter(
+            n ->
+                entidadId == null
+                    || (n.getEntidadId() != null && n.getEntidadId().equals(entidadId)))
+        .filter(n -> tipo == null || tipo.equalsIgnoreCase(n.getTipo()))
+        .collect(Collectors.toList());
   }
 
-  @Override
-  public void eliminar(UUID id) {
-    necesidadRepository.deleteById(id);
-  }
+  // MAPPER INPUT (dto -> dominio)
+  private Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
 
-  // otros CU
+    String nombreSubcat =
+        dto.getSubcategoriaNombre() != null ? dto.getSubcategoriaNombre() : "General";
+    Subcategoria subcategoriaReal = new Subcategoria(null, nombreSubcat);
 
-  @Override
-  public List<NecesidadDTO> obtenerNecesidadesInsatisfechas() {
-    return necesidadRepository.findByEstaSatisfechaFalse();
-  }
-
-  @Override
-  public PeriodoNecesidadDTO obtenerPeriodoVigente(UUID necesidadRecurrenteId) {
-    return periodoRepository
-        .buscarPeriodoActual(necesidadRecurrenteId)
-        .orElseThrow(() -> new RecursoNoEncontradoException(necesidadRecurrenteId));
-  }
-
-  @Override
-  public List<NecesidadDTO> obtenerNecesidadesPorEntidad(UUID entidadId) {
-    return necesidadRepository.buscarNecesidadesPorEntidad(entidadId);
+    if ("RECURRENTE".equalsIgnoreCase(dto.getTipo())) {
+      java.time.Period frecuenciaJava =
+          java.time.Period.between(dto.getFechaInicio(), dto.getFechaFin());
+      return new NecesidadRecurrente(
+          subcategoriaReal,
+          dto.getCantidadNecesitada(),
+          dto.getDescripcion(),
+          frecuenciaJava,
+          dto.getFechaInicio());
+    } else {
+      return new NecesidadExtraordinaria(
+          subcategoriaReal, dto.getCantidadNecesitada(), dto.getDescripcion());
+    }
   }
 }
