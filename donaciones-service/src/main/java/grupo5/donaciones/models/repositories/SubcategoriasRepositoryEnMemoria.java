@@ -5,4 +5,5 @@ import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class SubcategoriasRepositoryEnMemoria extends CrudRepositoryEnMemoria<Subcategoria> {}
+public class SubcategoriasRepositoryEnMemoria extends CrudRepositoryEnMemoria<Subcategoria>
+    implements ISubcategoriasRepository {}

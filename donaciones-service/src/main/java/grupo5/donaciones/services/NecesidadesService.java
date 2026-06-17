@@ -52,16 +52,22 @@ public class NecesidadesService implements INecesidadesService {
   public List<NecesidadDTO> listarConFiltros(UUID entidadId, String tipo) {
     return necesidadRepository.findAll().stream()
         .map(Necesidad::toDTO)
-        .toList(); // TODO: Falta filtrar
+        .filter(dto -> entidadId == null || entidadId.equals(dto.getIdEntidad()))
+        .filter(dto -> tipo == null || tipo.equalsIgnoreCase(dto.getTipo()))
+        .toList();
   }
 
   // MAPPER INPUT (dto -> dominio)
   private Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
 
     Subcategoria subcategoria =
-        subcategoriaRepository.findById(dto.getIdSubcategoria()).orElseThrow();
+        subcategoriaRepository
+            .findById(dto.getIdSubcategoria())
+            .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdSubcategoria()));
     EntidadBeneficiaria entidadBeneficiaria =
-        entidadesBeneficiariasRepository.findById(dto.getIdEntidad()).orElseThrow();
+        entidadesBeneficiariasRepository
+            .findById(dto.getIdEntidad())
+            .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdEntidad()));
     Necesidad necesidad;
     switch (dto.getTipo()) {
       case "RECURRENTE" -> {

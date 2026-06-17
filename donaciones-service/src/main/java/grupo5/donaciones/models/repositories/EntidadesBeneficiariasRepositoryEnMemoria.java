@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class EntidadesBeneficiariasRepositoryEnMemoria
-    extends CrudRepositoryEnMemoria<EntidadBeneficiaria> {}
+    extends CrudRepositoryEnMemoria<EntidadBeneficiaria>
+    implements IEntidadesBeneficiariasRepository {}
