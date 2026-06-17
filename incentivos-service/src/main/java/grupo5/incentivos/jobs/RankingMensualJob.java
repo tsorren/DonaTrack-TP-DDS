@@ -2,6 +2,7 @@ package grupo5.incentivos.jobs;
 
 import grupo5.incentivos.services.RankingService;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,7 +21,7 @@ public class RankingMensualJob {
 
   @Scheduled(cron = "0 59 23 L * *")
   public void ejecutarRankingMensual() {
-    YearMonth periodoActual = YearMonth.now();
+    YearMonth periodoActual = YearMonth.now(ZoneId.systemDefault());
     try {
       rankingService.calcularYPersistir(periodoActual);
     } catch (Exception e) {

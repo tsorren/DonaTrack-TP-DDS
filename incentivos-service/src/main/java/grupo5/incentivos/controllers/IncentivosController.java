@@ -47,7 +47,7 @@ public class IncentivosController {
 
   @PostMapping("/donantes/{donanteId}")
   public ResponseEntity<DonanteRegistradoDTO> registrarDonante(
-      @PathVariable Long donanteId, String nombreDonante) {
+      @PathVariable Long donanteId, @RequestBody String nombreDonante) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(incentivosService.registrarDonante(donanteId, nombreDonante));
   }

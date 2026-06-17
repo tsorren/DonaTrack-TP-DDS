@@ -11,6 +11,7 @@ import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -181,7 +182,7 @@ public class IncentivosService {
 
   public ResumenSistemaDTO obtenerResumenSistema() {
     List<DonanteIncentivos> todos = repository.listarTodos();
-    YearMonth mesActual = YearMonth.now();
+    YearMonth mesActual = YearMonth.now(ZoneId.systemDefault());
     YearMonth mesAnterior = mesActual.minusMonths(1);
 
     int donantesMesActual =

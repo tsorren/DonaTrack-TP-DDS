@@ -120,7 +120,7 @@ class MisionesTest {
     EventoDonacion evento =
         EventoDonacion.builder()
             .donacionId(1L)
-            .fecha(LocalDate.now())
+            .fecha(HOY)
             .cantidadBienes(55)
             .categorias(List.of("fideos"))
             .build();

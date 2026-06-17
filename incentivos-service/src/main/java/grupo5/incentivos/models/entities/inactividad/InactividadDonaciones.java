@@ -2,6 +2,7 @@ package grupo5.incentivos.models.entities.inactividad;
 
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 public class InactividadDonaciones extends CriterioInactividad {
@@ -17,7 +18,7 @@ public class InactividadDonaciones extends CriterioInactividad {
 
   @Override
   public List<DonanteIncentivos> detectarInactivos(List<DonanteIncentivos> donantes) {
-    LocalDate umbral = LocalDate.now().minusDays(diasSinDonar);
+    LocalDate umbral = LocalDate.now(ZoneId.systemDefault()).minusDays(diasSinDonar);
     return donantes.stream().filter(d -> esInactivo(d, umbral)).toList();
   }
 
