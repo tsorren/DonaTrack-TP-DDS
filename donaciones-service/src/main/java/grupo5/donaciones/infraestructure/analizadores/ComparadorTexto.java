@@ -1,0 +1,52 @@
+package grupo5.donaciones.infraestructure.analizadores;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+
+@Component
+public class ComparadorTexto {
+
+  private final Normalizador normalizador;
+
+  // Inyección de dependencias por constructor
+  @Autowired
+  public ComparadorTexto(
+      @Qualifier("normalizadorBasicoTexto")
+          Normalizador normalizador) { // Cambiado a "normalizadorBasicoTexto"
+    this.normalizador = normalizador;
+  }
+
+  private String[] ListaDePalabras(String texto) {
+    // Divide el texto por uno o más espacios en blanco
+    return texto.split("\\s+");
+  }
+
+  private Set<String> textoASetUnico(String texto) {
+    String normalizado = normalizador.normalizar(texto); // Usa la instancia inyectada
+    if (normalizado == null || normalizado.isEmpty()) {
+      return new HashSet<>();
+    }
+    String[] lista = ListaDePalabras(normalizado);
+    return new HashSet<>(Arrays.asList(lista));
+  }
+
+  public Integer contarPalabrasEnComun(String textoA, String textoB) {
+    if (textoA == null || textoB == null) {
+      return 0;
+    }
+
+    Set<String> palabrasTextoA = textoASetUnico(textoA);
+    Set<String> palabrasTextoB = textoASetUnico(textoB);
+
+    // Para contar palabras en común, podemos usar la intersección de los sets
+    Set<String> interseccion = new HashSet<>(palabrasTextoA);
+    interseccion.retainAll(
+        palabrasTextoB); // Retiene solo los elementos que también están en palabrasTextoB
+
+    return interseccion.size();
+  }
+}

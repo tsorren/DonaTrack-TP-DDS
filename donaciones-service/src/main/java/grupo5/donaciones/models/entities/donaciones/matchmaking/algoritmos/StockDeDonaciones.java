@@ -1,0 +1,42 @@
+package grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos;
+
+import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.PosibleFragmentacion;
+import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class StockDeDonaciones {
+
+  private final Map<DonacionIndependiente, Integer> cantidades = new HashMap<>();
+
+  public StockDeDonaciones(List<DonacionIndependiente> donaciones) {
+    for (DonacionIndependiente donacion : donaciones) {
+      cantidades.put(donacion, donacion.getCantidad());
+    }
+  }
+
+  public List<DonacionIndependiente> disponibles() {
+    List<DonacionIndependiente> resultado = new ArrayList<>();
+    for (DonacionIndependiente donacion : cantidades.keySet()) {
+      if (cantidades.get(donacion) > 0) {
+        resultado.add(donacion);
+      }
+    }
+    return resultado;
+  }
+
+  public int disponibleDe(DonacionIndependiente donacion) {
+    return cantidades.getOrDefault(donacion, 0);
+  }
+
+  public void registrarReservas(Propuesta propuesta) {
+    for (PosibleFragmentacion fragmentacion : propuesta.getPosiblesFragmentaciones()) {
+      DonacionIndependiente donacion = fragmentacion.getDonacionOriginal();
+      int restante = disponibleDe(donacion) - fragmentacion.getCantidadNecesaria();
+      cantidades.put(donacion, restante);
+    }
+  }
+}
