@@ -33,7 +33,7 @@ public class AsignacionServiceTest {
 
     asignacionService.ejecutarAsignacion();
 
-    verify(asignacionRepository).save(eq(null), any(EjecucionAsignacionDTO.class));
+    verify(asignacionRepository).save(any(EjecucionAsignacionDTO.class));
   }
 
   @Test
@@ -48,7 +48,7 @@ public class AsignacionServiceTest {
     ArgumentCaptor<EjecucionAsignacionDTO> captor =
         ArgumentCaptor.forClass(EjecucionAsignacionDTO.class);
 
-    verify(asignacionRepository).save(eq(null), captor.capture());
+    verify(asignacionRepository).save(captor.capture());
 
     assertEquals(3, captor.getValue().getCantidadPropuestasGeneradas());
   }

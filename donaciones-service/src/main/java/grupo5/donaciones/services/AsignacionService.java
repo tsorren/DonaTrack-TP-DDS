@@ -29,7 +29,7 @@ public class AsignacionService {
     ejecucion.setFechaEjecucion(LocalDateTime.now());
     ejecucion.setCantidadPropuestasGeneradas(propuestas.size());
 
-    asignacionRepository.save(null, ejecucion);
+    asignacionRepository.save(ejecucion);
 
     return propuestas;
   }
