@@ -5,6 +5,7 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.repositories.NotificacionRepository;
+import grupo5.notificaciones.services.mappers.EventoMapper;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -22,15 +23,13 @@ public class NotificacionService {
   }
 
   public void procesar(EventoNotificableDTO dto) {
-    List<EventoNotificable> eventos = mapper.toEntities(dto);
+    EventoNotificable evento = mapper.toEntity(dto);
 
-    for (EventoNotificable evento : eventos) {
-      List<Notificacion> notificaciones = evento.generarNotificaciones();
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
 
-      for (Notificacion notificacion : notificaciones) {
-        notificacion.notificar(sender);
-        repository.save(notificacion);
-      }
+    for (Notificacion notificacion : notificaciones) {
+      notificacion.notificar(sender);
+      repository.save(notificacion);
     }
   }
 }
