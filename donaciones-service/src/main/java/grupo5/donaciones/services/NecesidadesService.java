@@ -10,13 +10,16 @@ import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NecesidadesService implements INecesidadesService {
 
-  @Autowired private INecesidadesRepository necesidadRepository;
+  private final INecesidadesRepository necesidadRepository;
+
+  public NecesidadesService(INecesidadesRepository necesidadRepository) {
+    this.necesidadRepository = necesidadRepository;
+  }
 
   @Override
   public NecesidadDTO guardar(NecesidadDTO dto) {
@@ -44,7 +47,7 @@ public class NecesidadesService implements INecesidadesService {
   }
 
   // MAPPER INPUT (dto -> dominio)
-  private Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
+  private static Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
 
     String nombreSubcat =
         dto.getSubcategoriaNombre() != null ? dto.getSubcategoriaNombre() : "General";

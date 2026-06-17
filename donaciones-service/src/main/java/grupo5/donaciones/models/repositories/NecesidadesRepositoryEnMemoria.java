@@ -13,9 +13,7 @@ public class NecesidadesRepositoryEnMemoria extends BaseRepositoryEnMemoria<Nece
 
   @Override
   public List<NecesidadDTO> findByEstaSatisfechaFalse() {
-    return storage.values().stream()
-        .filter(dto -> !dto.getEstaSatisfecha())
-        .collect(Collectors.toList());
+    return storage.values().stream().filter(dto -> !dto.getEstaSatisfecha()).toList();
   }
 
   @Override
