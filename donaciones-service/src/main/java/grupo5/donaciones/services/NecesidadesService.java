@@ -2,7 +2,9 @@ package grupo5.donaciones.services;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
@@ -48,10 +50,11 @@ public class NecesidadesService implements INecesidadesService {
   // MAPPER INPUT (dto -> dominio)
   private static Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
 
+    Categoria categoriaDummy = new Categoria("General", false, false, Unidad.UNIDADES);
+
     String nombreSubcat =
         dto.getSubcategoriaNombre() != null ? dto.getSubcategoriaNombre() : "General";
-    Subcategoria subcategoriaReal = new Subcategoria(null, nombreSubcat);
-
+    Subcategoria subcategoriaReal = new Subcategoria(categoriaDummy, nombreSubcat);
     if ("RECURRENTE".equalsIgnoreCase(dto.getTipo())) {
       java.time.Period frecuenciaJava =
           java.time.Period.between(dto.getFechaInicio(), dto.getFechaFin());
