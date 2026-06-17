@@ -44,11 +44,10 @@ public class InactividadJob {
       inactivos.forEach(
           donante -> {
             try {
-              notificacionesClient.notificarInactividad(donante.getDonanteId(), 20);
-              log.info("Notificación de inactividad enviada al donante {}", donante.getDonanteId());
+              notificacionesClient.notificarInactividad(donante.getId(), 20);
+              log.info("Notificación de inactividad enviada al donante {}", donante.getId());
             } catch (Exception e) {
-              log.warn(
-                  "No se pudo notificar al donante {}: {}", donante.getDonanteId(), e.getMessage());
+              log.warn("No se pudo notificar al donante {}: {}", donante.getId(), e.getMessage());
             }
           });
     }

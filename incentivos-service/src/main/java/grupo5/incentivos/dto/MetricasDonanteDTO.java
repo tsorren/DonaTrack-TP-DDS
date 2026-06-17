@@ -4,9 +4,10 @@ import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.UUID;
 
 public record MetricasDonanteDTO(
-    Long donanteId,
+    UUID donanteId,
     CategoriaDonante categoria,
     Integer totalDonacionesHistoricas,
     Integer totalOrganizacionesAyudadas,
@@ -36,7 +37,7 @@ public record MetricasDonanteDTO(
             : null;
 
     return new MetricasDonanteDTO(
-        donante.getDonanteId(),
+        donante.getId(),
         donante.getCategoria(),
         donante.getMetricas().getTotalDonacionesHistoricas(),
         donante.getMetricas().getTotalOrganizacionesAyudadas(),

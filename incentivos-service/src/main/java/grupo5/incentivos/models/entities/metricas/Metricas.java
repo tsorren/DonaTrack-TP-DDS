@@ -4,11 +4,7 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +17,7 @@ public class Metricas {
   private Integer totalDonacionesExitosas;
   private LocalDate ultimaDonacion;
   private List<EventoDonacion> historialDonaciones;
-  private Set<Long> organizacionesAyudadas;
+  private Set<UUID> organizacionesAyudadas;
 
   public Metricas() {
     this.totalDonacionesHistoricas = 0;
@@ -40,18 +36,18 @@ public class Metricas {
     this.historialDonaciones.add(evento);
   }
 
-  public void registrarDonacionExitosa(Long organizacionId) {
+  public void registrarDonacionExitosa(UUID organizacionId) {
     this.totalDonacionesExitosas++;
     if (organizacionId != null && !this.yaAyudoA(organizacionId)) {
       this.registrarOrganizacionAyudada(organizacionId);
     }
   }
 
-  public boolean yaAyudoA(Long organizacionId) {
+  public boolean yaAyudoA(UUID organizacionId) {
     return organizacionesAyudadas.contains(organizacionId);
   }
 
-  public void registrarOrganizacionAyudada(Long organizacionId) {
+  public void registrarOrganizacionAyudada(UUID organizacionId) {
     organizacionesAyudadas.add(organizacionId);
   }
 

@@ -21,6 +21,7 @@ import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,9 +51,9 @@ class RankingServiceTest {
     DonanteIncentivos ana = donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 3);
     DonanteIncentivos bob = donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 1);
     DonanteIncentivos carlos = donanteConMisionesCompletadasEnMes(3L, "Carlos", PERIODO, 2);
-    donanteRepository.guardar(ana);
-    donanteRepository.guardar(bob);
-    donanteRepository.guardar(carlos);
+    donanteRepository.save(ana);
+    donanteRepository.save(bob);
+    donanteRepository.save(carlos);
 
     RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
 
@@ -64,8 +65,8 @@ class RankingServiceTest {
 
   @Test
   void calcularYPersistir_deberiaAsignarPosicionesCorrectamente() {
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 2));
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 1));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 2));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 1));
 
     RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
 
@@ -75,10 +76,11 @@ class RankingServiceTest {
 
   @Test
   void calcularYPersistir_deberiaExcluirDonantesConCeroMisionesEnElMes() {
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 2));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 2));
 
-    DonanteIncentivos bob = new DonanteIncentivos(2L, "Bob");
-    donanteRepository.guardar(bob);
+    UUID bobId = new UUID(0L, 2L);
+    DonanteIncentivos bob = new DonanteIncentivos(bobId, bobId, "Bob");
+    donanteRepository.save(bob);
 
     RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
 
@@ -88,8 +90,10 @@ class RankingServiceTest {
 
   @Test
   void calcularYPersistir_deberiaRetornarVacioSiNadieTuvoDonacionesEnElMes() {
-    donanteRepository.guardar(new DonanteIncentivos(1L, "Ana"));
-    donanteRepository.guardar(new DonanteIncentivos(2L, "Bob"));
+    UUID anaId = new UUID(0L, 1L);
+    UUID bobId = new UUID(0L, 2L);
+    donanteRepository.save(new DonanteIncentivos(anaId, anaId, "Ana"));
+    donanteRepository.save(new DonanteIncentivos(bobId, bobId, "Bob"));
 
     RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
 
@@ -98,19 +102,19 @@ class RankingServiceTest {
 
   @Test
   void calcularYPersistir_deberiaPersistirElRankingEnElRepositorio() {
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 1));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 1));
 
     rankingService.calcularYPersistir(PERIODO);
 
-    assertTrue(rankingRepository.buscarPorPeriodo(PERIODO).isPresent());
+    assertTrue(rankingRepository.findByPeriodo(PERIODO).isPresent());
   }
 
   @Test
   void calcularYPersistir_deberiaNotificarN8nConElTop3() {
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 3));
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 2));
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(3L, "Carlos", PERIODO, 1));
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(4L, "Diana", PERIODO, 1));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 3));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 2));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(3L, "Carlos", PERIODO, 1));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(4L, "Diana", PERIODO, 1));
 
     rankingService.calcularYPersistir(PERIODO);
 
@@ -120,7 +124,7 @@ class RankingServiceTest {
   @Test
   void calcularYPersistir_podioDeberiaLimitarseATresDonantes() {
     for (long i = 1; i <= 5; i++) {
-      donanteRepository.guardar(
+      donanteRepository.save(
           donanteConMisionesCompletadasEnMes(i, "Donante" + i, PERIODO, (int) i));
     }
 
@@ -131,11 +135,11 @@ class RankingServiceTest {
 
   @Test
   void obtenerPosicionDonante_deberiaRetornarPosicionCorrecta() {
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 3));
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 1));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 3));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 1));
     rankingService.calcularYPersistir(PERIODO);
 
-    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(2L);
+    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(new UUID(0L, 2L));
 
     assertTrue(posicion.isPresent());
     assertEquals(2, posicion.get());
@@ -143,17 +147,17 @@ class RankingServiceTest {
 
   @Test
   void obtenerPosicionDonante_deberiaRetornarVacioCuandoNoHayRanking() {
-    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(1L);
+    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(new UUID(0L, 1L));
 
     assertFalse(posicion.isPresent());
   }
 
   @Test
   void obtenerPosicionDonante_deberiaRetornarVacioCuandoDonanteNoEstaEnElRanking() {
-    donanteRepository.guardar(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 1));
+    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 1));
     rankingService.calcularYPersistir(PERIODO);
 
-    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(99L);
+    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(new UUID(0L, 99L));
 
     assertFalse(posicion.isPresent());
   }
@@ -163,8 +167,8 @@ class RankingServiceTest {
     YearMonth periodoViejo = YearMonth.of(2026, Month.MARCH);
     YearMonth periodoNuevo = YearMonth.of(2026, Month.MAY);
 
-    rankingRepository.guardar(new RankingMensual(periodoViejo));
-    rankingRepository.guardar(new RankingMensual(periodoNuevo));
+    rankingRepository.save(new RankingMensual(periodoViejo));
+    rankingRepository.save(new RankingMensual(periodoNuevo));
 
     Optional<RankingMensualDTO> ultimo = rankingService.obtenerUltimoRanking();
 
@@ -181,9 +185,9 @@ class RankingServiceTest {
 
   @Test
   void obtenerHistorial_deberiaRetornarTodosLosRankings() {
-    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, Month.MARCH)));
-    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, Month.APRIL)));
-    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, Month.MAY)));
+    rankingRepository.save(new RankingMensual(YearMonth.of(2026, Month.MARCH)));
+    rankingRepository.save(new RankingMensual(YearMonth.of(2026, Month.APRIL)));
+    rankingRepository.save(new RankingMensual(YearMonth.of(2026, Month.MAY)));
 
     List<RankingMensualDTO> historial = rankingService.obtenerHistorial();
 
@@ -199,7 +203,7 @@ class RankingServiceTest {
 
   @Test
   void obtenerRankingPorPeriodo_deberiaRetornarElRankingDelPeriodoCorrecto() {
-    rankingRepository.guardar(new RankingMensual(PERIODO));
+    rankingRepository.save(new RankingMensual(PERIODO));
 
     Optional<RankingMensual> resultado = rankingService.obtenerRankingPorPeriodo(PERIODO);
 
@@ -209,7 +213,7 @@ class RankingServiceTest {
 
   @Test
   void obtenerRankingPorPeriodo_deberiaRetornarVacioCuandoNoBuscadoPeriodo() {
-    rankingRepository.guardar(new RankingMensual(PERIODO));
+    rankingRepository.save(new RankingMensual(PERIODO));
 
     Optional<RankingMensual> resultado =
         rankingService.obtenerRankingPorPeriodo(YearMonth.of(2025, Month.JANUARY));
@@ -219,12 +223,13 @@ class RankingServiceTest {
 
   private DonanteIncentivos donanteConMisionesCompletadasEnMes(
       long id, String nombre, YearMonth periodo, int cantidadMisiones) {
-    DonanteIncentivos donante = new DonanteIncentivos(id, nombre);
+    UUID donanteId = new UUID(0L, id);
+    DonanteIncentivos donante = new DonanteIncentivos(donanteId, donanteId, nombre);
     for (int i = 0; i < cantidadMisiones; i++) {
       MisionRacha mision = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
       EventoDonacion evento =
           EventoDonacion.builder()
-              .donacionId((long) i)
+              .donacionId(new UUID(0L, (long) i))
               .fecha(LocalDate.of(periodo.getYear(), periodo.getMonthValue(), 15))
               .cantidadBienes(1)
               .categorias(List.of("arroz"))

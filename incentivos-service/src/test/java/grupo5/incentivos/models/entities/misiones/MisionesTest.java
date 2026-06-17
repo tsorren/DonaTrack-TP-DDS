@@ -11,6 +11,7 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,12 +23,12 @@ class MisionesTest {
 
   @BeforeEach
   void setUp() {
-    donante = new DonanteIncentivos(1L, "Test");
+    donante = new DonanteIncentivos(new UUID(0L, 1L), new UUID(0L, 1L), "Test");
   }
 
   private EventoDonacion eventoEn(int anio, int mes) {
     return EventoDonacion.builder()
-        .donacionId(1L)
+        .donacionId(new UUID(0L, 1L))
         .fecha(LocalDate.of(anio, mes, 15))
         .cantidadBienes(5)
         .categorias(List.of("arroz"))
@@ -77,28 +78,28 @@ class MisionesTest {
 
     EventoDonacion e1 =
         EventoDonacion.builder()
-            .donacionId(1L)
+            .donacionId(new UUID(0L, 1L))
             .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("arroz"))
             .build();
     EventoDonacion e2 =
         EventoDonacion.builder()
-            .donacionId(2L)
+            .donacionId(new UUID(0L, 2L))
             .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("ropa"))
             .build();
     EventoDonacion e3 =
         EventoDonacion.builder()
-            .donacionId(3L)
+            .donacionId(new UUID(0L, 3L))
             .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("arroz"))
             .build();
     EventoDonacion e4 =
         EventoDonacion.builder()
-            .donacionId(4L)
+            .donacionId(new UUID(0L, 4L))
             .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("sillas"))
@@ -119,7 +120,7 @@ class MisionesTest {
 
     EventoDonacion evento =
         EventoDonacion.builder()
-            .donacionId(1L)
+            .donacionId(new UUID(0L, 1L))
             .fecha(HOY)
             .cantidadBienes(55)
             .categorias(List.of("fideos"))
@@ -137,7 +138,7 @@ class MisionesTest {
     for (int i = 0; i < 10; i++) {
       EventoDonacion evento =
           EventoDonacion.builder()
-              .donacionId((long) i)
+              .donacionId(new UUID(0L, (long) i))
               .fecha(HOY)
               .cantidadBienes(5)
               .categorias(List.of("fideos"))
@@ -168,7 +169,7 @@ class MisionesTest {
 
     EventoDonacion exitosa =
         EventoDonacion.builder()
-            .donacionId(1L)
+            .donacionId(new UUID(0L, 1L))
             .fecha(HOY)
             .cantidadBienes(1)
             .categorias(List.of("x"))
