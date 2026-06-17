@@ -84,6 +84,7 @@ jobs:
       common-lib: ${{ steps.filter.outputs.common-lib }}
       donaciones-service: ${{ steps.filter.outputs.donaciones-service }}
       notificaciones-service: ${{ steps.filter.outputs.notificaciones-service }}
+      incentivos-service: ${{ steps.filter.outputs.incentivos-service }}
       any-service: ${{ steps.check.outputs.any-service }}
       services-matrix: ${{ steps.matrix.outputs.matrix }}
       docker-matrix: ${{ steps.docker-matrix.outputs.matrix }}
@@ -102,13 +103,16 @@ jobs:
               - 'donaciones-service/**'
             notificaciones-service:
               - 'notificaciones-service/**'
+            incentivos-service:
+              - 'incentivos-service/**'
 
       - name: Verificar si algún servicio cambió
         id: check
         run: |
           if [[ "${{ steps.filter.outputs.common-lib }}" == "true" || \
                 "${{ steps.filter.outputs.donaciones-service }}" == "true" || \
-                "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
+                "${{ steps.filter.outputs.notificaciones-service }}" == "true" || \
+                "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
             echo "any-service=true" >> "$GITHUB_OUTPUT"
           else
             echo "any-service=false" >> "$GITHUB_OUTPUT"
@@ -127,6 +131,9 @@ jobs:
           fi
           if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
             SERVICES+=('{"service":"notificaciones-service"}')
+          fi
+          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
+            SERVICES+=('{"service":"incentivos-service"}')
           fi
 
           if [[ ${#SERVICES[@]} -eq 0 ]]; then
@@ -155,6 +162,11 @@ jobs:
           if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
             if [[ -f "notificaciones-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"notificaciones-service"}')
+            fi
+          fi
+          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
+            if [[ -f "incentivos-service/Dockerfile" ]]; then
+              DOCKER_FINAL+=('{"service":"incentivos-service"}')
             fi
           fi
 
@@ -364,7 +376,7 @@ jobs:
         run: |
           echo "📐 Generando diagramas de clases desde el código..."
           mvn -B clean test \
-            -pl donaciones-service,notificaciones-service -am \
+            -pl donaciones-service,notificaciones-service,incentivos-service -am \
             -DskipTests=true \
             -Dspotless.check.skip=true \
             -Dplantuml-generator.skip=false
@@ -374,7 +386,7 @@ jobs:
         run: |
           mkdir -p diagrams-output
 
-          for svc in donaciones-service notificaciones-service; do
+          for svc in donaciones-service notificaciones-service incentivos-service; do
             PUML_FILE="${svc}/target/modelo_tecnico.puml"
             if [[ -f "$PUML_FILE" ]]; then
               echo "🎨 Renderizando ${svc}..."
@@ -427,10 +439,11 @@ jobs:
       - name: Generar PUML (PR)
         run: |
           cd pr_repo
-          mvn -B clean test -pl donaciones-service,notificaciones-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false
+          mvn -B clean test -pl donaciones-service,notificaciones-service,incentivos-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false
           mkdir -p ../pr_uml_dir
           cp donaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/donaciones-service.puml || true
           cp notificaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/notificaciones-service.puml || true
+          cp incentivos-service/target/modelo_tecnico.puml ../pr_uml_dir/incentivos-service.puml || true
 
       - name: Checkout Base branch
         uses: actions/checkout@v4
@@ -441,10 +454,11 @@ jobs:
       - name: Generar PUML (Base)
         run: |
           cd base_repo
-          mvn -B clean test -pl donaciones-service,notificaciones-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false || true
+          mvn -B clean test -pl donaciones-service,notificaciones-service,incentivos-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false || true
           mkdir -p ../base_uml_dir
           cp donaciones-service/target/modelo_tecnico.puml ../base_uml_dir/donaciones-service.puml || true
           cp notificaciones-service/target/modelo_tecnico.puml ../base_uml_dir/notificaciones-service.puml || true
+          cp incentivos-service/target/modelo_tecnico.puml ../base_uml_dir/incentivos-service.puml || true
 
       - name: Semantic UML Diff
         uses: tsorren/SemanticUMLDiff@main
