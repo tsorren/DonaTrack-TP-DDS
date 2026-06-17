@@ -1,7 +1,9 @@
 package grupo5.notificaciones.infrastructure.mockEnvios;
 
 import grupo5.notificaciones.infrastructure.CorreoAdapter;
+import org.springframework.stereotype.Component;
 
+@Component
 public class CorreoEnvioMock implements CorreoAdapter {
 
   @Override

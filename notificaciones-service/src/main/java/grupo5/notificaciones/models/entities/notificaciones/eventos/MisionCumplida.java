@@ -15,7 +15,8 @@ public class MisionCumplida extends EventoNotificable {
 
   public MisionCumplida(
       Persona persona, String nombreMision, String recompensa, LocalDateTime fecha) {
-    super();
+    this.setPersona(persona);
+    this.setFecha(fecha);
     this.nombreMision = nombreMision;
     this.recompensa = recompensa;
   }

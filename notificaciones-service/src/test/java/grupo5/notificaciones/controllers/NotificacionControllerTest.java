@@ -7,15 +7,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.notificaciones.dto.input.*;
-import grupo5.notificaciones.models.entities.notificaciones.eventos.*;
 import grupo5.notificaciones.models.entities.personas.Persona;
+import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.services.NotificacionService;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,7 +27,7 @@ class NotificacionControllerTest {
 
   @Autowired private MockMvc mockMvc; // Herramienta para simular peticiones HTTP
 
-  @Autowired private ObjectMapper objectMapper; // Para convertir los objetos DTO a formato JSON
+  private ObjectMapper objectMapper; // Para convertir los objetos DTO a formato JSON
 
   @MockitoBean // Simula el servicio para no ejecutar lógica real
   private NotificacionService notificacionService;
@@ -34,63 +36,76 @@ class NotificacionControllerTest {
 
   @BeforeEach
   void setUp() {
+    objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
 
-    personaMock = new Persona();
-    personaMock.setId(1L);
+    personaMock =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Test Persona", TipoPersona.HUMANA);
   }
 
   @Test
   void registrarDonante_deberiaResponderOkYProcesarEvento() throws Exception {
-    // 1. Arrange: Preparamos el DTO de entrada
-    EventoDonanteRegistradoDTO dto = new EventoDonanteRegistradoDTO();
-    dto.setPersona(personaMock);
-    dto.setCredencialesDeAcceso("user123");
-    dto.setFecha(LocalDateTime.now());
+    EventoNotificableDTO dto =
+        new EventoDonanteRegistradoDTO(personaMock.getId(), LocalDateTime.now(), "user123");
 
     mockMvc
         .perform(
-            post("/notificaciones/donantes/registrados")
+            post("/notificaciones")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isOk());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(DonanteRegistrado.class));
+    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
   void donanteInactivo_deberiaResponderOkYProcesarEvento() throws Exception {
-    EventoDonanteInactivoDTO dto = new EventoDonanteInactivoDTO();
-    dto.setPersona(personaMock);
-    dto.setDiasInactivo(30);
-    dto.setFecha(LocalDateTime.now());
+    EventoNotificableDTO dto =
+        new EventoDonanteInactivoDTO(personaMock.getId(), LocalDateTime.now(), 30);
 
     mockMvc
         .perform(
-            post("/notificaciones/donantes/inactivos")
+            post("/notificaciones")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isOk());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(DonanteInactivo.class));
+    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
-  void donacionAsignada_deberiaResponderOkYProcesarAmbosEventos() throws Exception {
-    EventoDonacionDTO dto = new EventoDonacionDTO();
-    dto.setPersona(personaMock);
-    dto.setEntidadBeneficiaria(personaMock);
-    dto.setDetalleDonacion("10kg de arroz");
-    dto.setFecha(LocalDateTime.now());
+  void donacionAsignada_deberiaResponderOkYProcesarEvento() throws Exception {
+    EventoNotificableDTO dto =
+        new EventoDonacionAsignadaDTO(
+            personaMock.getId(), LocalDateTime.now(), personaMock.getId(), "10kg de arroz");
 
     mockMvc
         .perform(
-            post("/notificaciones/donaciones/asignadas")
+            post("/notificaciones")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(dto)))
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isOk());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(DonacionAsignada.class));
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(DonacionRecibida.class));
+    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+  }
+
+  @Test
+  void donacionRecibida_deberiaResponderOkYProcesarEvento() throws Exception {
+    EventoNotificableDTO dto =
+        new EventoDonacionRecibidaDTO(
+            personaMock.getId(), LocalDateTime.now(), personaMock.getId(), "ropa");
+
+    mockMvc
+        .perform(
+            post("/notificaciones")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
+        .andExpect(status().isOk());
+
+    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
   }
 }

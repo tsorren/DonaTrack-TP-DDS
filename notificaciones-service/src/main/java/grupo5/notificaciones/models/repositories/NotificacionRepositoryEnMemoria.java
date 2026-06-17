@@ -4,6 +4,7 @@ import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,7 +18,7 @@ public class NotificacionRepositoryEnMemoria extends CrudRepositoryEnMemoria<Not
   }
 
   @Override
-  public List<Notificacion> findByPersonaId(Long personaId) {
+  public List<Notificacion> findByPersonaId(UUID personaId) {
     return this.findAll().stream()
         .filter(n -> n.getPersona() != null && n.getPersona().getId().equals(personaId))
         .toList();

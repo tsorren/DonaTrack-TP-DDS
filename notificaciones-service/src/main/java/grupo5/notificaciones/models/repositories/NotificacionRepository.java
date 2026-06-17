@@ -4,12 +4,11 @@ import grupo5.common.repositories.CrudRepository;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import java.util.List;
-import org.springframework.stereotype.Repository;
+import java.util.UUID;
 
-@Repository
 public interface NotificacionRepository extends CrudRepository<Notificacion> {
 
   List<Notificacion> findByEstado(EstadoNotificacion estado);
 
-  List<Notificacion> findByPersonaId(Long personaId);
+  List<Notificacion> findByPersonaId(UUID personaId);
 }

@@ -13,7 +13,8 @@ public class DonanteRegistrado extends EventoNotificable {
   private String credencialesDeAcceso;
 
   public DonanteRegistrado(Persona persona, String credencialesDeAcceso, LocalDateTime fecha) {
-    super();
+    this.setPersona(persona);
+    this.setFecha(fecha);
     this.credencialesDeAcceso = credencialesDeAcceso;
   }
 

@@ -1,7 +1,9 @@
 package grupo5.notificaciones.infrastructure.mockEnvios;
 
 import grupo5.notificaciones.infrastructure.TelefonoAdapter;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TelefonoEnvioMock implements TelefonoAdapter {
 
   @Override
