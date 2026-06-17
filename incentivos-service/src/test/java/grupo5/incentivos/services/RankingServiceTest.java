@@ -17,6 +17,7 @@ import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import grupo5.incentivos.models.repositories.RankingMensualRepository;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +36,7 @@ class RankingServiceTest {
   private RankingMensualRepository rankingRepository;
   private RankingService rankingService;
 
-  private static final YearMonth PERIODO = YearMonth.of(2026, 5);
+  private static final YearMonth PERIODO = YearMonth.of(2026, Month.MAY);
 
   @BeforeEach
   void setUp() {
@@ -159,8 +160,8 @@ class RankingServiceTest {
 
   @Test
   void obtenerUltimoRanking_deberiaRetornarElMasReciente() {
-    YearMonth periodoViejo = YearMonth.of(2026, 3);
-    YearMonth periodoNuevo = YearMonth.of(2026, 5);
+    YearMonth periodoViejo = YearMonth.of(2026, Month.MARCH);
+    YearMonth periodoNuevo = YearMonth.of(2026, Month.MAY);
 
     rankingRepository.guardar(new RankingMensual(periodoViejo));
     rankingRepository.guardar(new RankingMensual(periodoNuevo));
@@ -180,9 +181,9 @@ class RankingServiceTest {
 
   @Test
   void obtenerHistorial_deberiaRetornarTodosLosRankings() {
-    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, 3)));
-    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, 4)));
-    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, 5)));
+    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, Month.MARCH)));
+    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, Month.APRIL)));
+    rankingRepository.guardar(new RankingMensual(YearMonth.of(2026, Month.MAY)));
 
     List<RankingMensualDTO> historial = rankingService.obtenerHistorial();
 
@@ -211,7 +212,7 @@ class RankingServiceTest {
     rankingRepository.guardar(new RankingMensual(PERIODO));
 
     Optional<RankingMensual> resultado =
-        rankingService.obtenerRankingPorPeriodo(YearMonth.of(2025, 1));
+        rankingService.obtenerRankingPorPeriodo(YearMonth.of(2025, Month.JANUARY));
 
     assertFalse(resultado.isPresent());
   }

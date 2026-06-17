@@ -21,7 +21,7 @@ public class InactividadDonaciones extends CriterioInactividad {
     return donantes.stream().filter(d -> esInactivo(d, umbral)).toList();
   }
 
-  private boolean esInactivo(DonanteIncentivos donante, LocalDate umbral) {
+  private static boolean esInactivo(DonanteIncentivos donante, LocalDate umbral) {
     LocalDate ultimaDonacion = donante.getMetricas().getUltimaDonacion();
     return ultimaDonacion == null || ultimaDonacion.isBefore(umbral);
   }

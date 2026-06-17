@@ -8,10 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class InactividadDonacionesTest {
+
+  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
 
   private DonanteIncentivos donanteConUltimaDonacion(LocalDate fecha) {
     DonanteIncentivos donante = new DonanteIncentivos(1L, "Test");
@@ -29,7 +32,7 @@ class InactividadDonacionesTest {
   @Test
   void detectarInactivos_deberiaDetectarDonanteConUltimaDonacionMuyAntigua() {
     InactividadDonaciones criterio = new InactividadDonaciones(30);
-    DonanteIncentivos inactivo = donanteConUltimaDonacion(LocalDate.now().minusDays(60));
+    DonanteIncentivos inactivo = donanteConUltimaDonacion(HOY.minusDays(60));
 
     List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of(inactivo));
 
@@ -39,7 +42,7 @@ class InactividadDonacionesTest {
   @Test
   void detectarInactivos_noDeberiaDetectarDonanteQueDonoReciente() {
     InactividadDonaciones criterio = new InactividadDonaciones(30);
-    DonanteIncentivos activo = donanteConUltimaDonacion(LocalDate.now().minusDays(5));
+    DonanteIncentivos activo = donanteConUltimaDonacion(HOY.minusDays(5));
 
     List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of(activo));
 
@@ -60,10 +63,10 @@ class InactividadDonacionesTest {
   void detectarInactivos_deberiaFiltrarCorrectamenteEntreMixDeActualesEInactivos() {
     InactividadDonaciones criterio = new InactividadDonaciones(30);
 
-    DonanteIncentivos activo = donanteConUltimaDonacion(LocalDate.now().minusDays(10));
+    DonanteIncentivos activo = donanteConUltimaDonacion(HOY.minusDays(10));
     activo.setDonanteId(1L);
 
-    DonanteIncentivos inactivo = donanteConUltimaDonacion(LocalDate.now().minusDays(45));
+    DonanteIncentivos inactivo = donanteConUltimaDonacion(HOY.minusDays(45));
     inactivo.setDonanteId(2L);
 
     DonanteIncentivos sinDonaciones = new DonanteIncentivos(3L, "Nuevo");

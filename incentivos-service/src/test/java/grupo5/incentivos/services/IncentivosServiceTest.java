@@ -27,6 +27,7 @@ import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -249,10 +250,12 @@ class IncentivosServiceTest {
     assertEquals(0, metricas.totalDonacionesHistoricas());
   }
 
+  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
+
   private EventoDonacion eventoHoy(long donacionId) {
     return EventoDonacion.builder()
         .donacionId(donacionId)
-        .fecha(LocalDate.now())
+        .fecha(HOY)
         .cantidadBienes(1)
         .categorias(List.of("arroz"))
         .build();
