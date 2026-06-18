@@ -1,5 +1,6 @@
 package grupo5.notificaciones.models.entities.notificaciones;
 
+import grupo5.common.repositories.AggregateRoot;
 import grupo5.notificaciones.models.entities.personas.MedioDeContacto;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.ports.Anonimizable;
@@ -8,19 +9,21 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Notificacion implements Anonimizable {
+public class Notificacion implements Anonimizable, AggregateRoot {
+  private UUID id;
   private Persona persona;
   private String mensaje;
   private LocalDateTime fechaCreacion;
   private EstadoNotificacion estadoNotificacion;
 
   public Notificacion(Persona persona, String mensaje) {
-
+    this.id = UUID.randomUUID();
     this.persona = persona;
     this.mensaje = mensaje;
     this.fechaCreacion = LocalDateTime.now(ZoneId.systemDefault());

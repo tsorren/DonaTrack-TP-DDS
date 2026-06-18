@@ -13,6 +13,7 @@ public class Subcategoria implements AggregateRoot {
   private final UUID id;
   private Categoria categoria;
   private String nombre;
+  private final List<AliasSubcategoria> aliases = new ArrayList<>();
 
   public Subcategoria(Categoria categoria, String nombre) {
     this.id = UUID.randomUUID();
@@ -20,6 +21,21 @@ public class Subcategoria implements AggregateRoot {
 
     this.categoria = categoria;
     this.nombre = nombre;
+  }
+
+  public void agregarAlias(String alias) {
+    aliases.add(new AliasSubcategoria(this, alias));
+  }
+
+  public void removerAlias(String alias) {
+    aliases.removeIf(a -> a.getAlias().equals(alias));
+  }
+
+  public boolean tieneAlias(String alias) {
+    for (AliasSubcategoria a : aliases) {
+      if (a.getAlias().equals(alias)) return true;
+    }
+    return false;
   }
 
   private static void validarSubCategoria(Categoria categoria, String nombre) {
