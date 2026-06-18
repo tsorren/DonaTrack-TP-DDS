@@ -2,18 +2,21 @@ package grupo5.donaciones.models.entities.donaciones;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
+import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Donacion {
-
+public class Donacion implements AggregateRoot {
+  private final UUID id;
   private Donante donante;
   private List<ItemDonacion> items;
   private String descripcion;
@@ -21,7 +24,7 @@ public class Donacion {
 
   private Deposito depositoRecepcion;
   private EstadoDonacion estadoActual;
-  private final List<CambioEstadoDonacion> historialEstados;
+  private final List<CambioEstado> historialEstados;
 
   public Donacion(Donante donante, Deposito depositoRecepcion) {
     if (donante == null) {
@@ -35,6 +38,7 @@ public class Donacion {
   }
 
   public Donacion(Donante donante) {
+    this.id = UUID.randomUUID();
     this(donante, null);
   }
 

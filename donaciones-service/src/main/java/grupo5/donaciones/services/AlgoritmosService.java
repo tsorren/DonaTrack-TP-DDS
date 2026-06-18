@@ -8,9 +8,9 @@ import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Estad
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
-import grupo5.donaciones.models.repositories.DonacionIndependienteRepository;
-import grupo5.donaciones.models.repositories.NecesidadRepository;
-import grupo5.donaciones.models.repositories.PropuestaRepository;
+import grupo5.donaciones.models.repositories.impl.DonacionIndependienteRepository;
+import grupo5.donaciones.models.repositories.impl.NecesidadRepository;
+import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

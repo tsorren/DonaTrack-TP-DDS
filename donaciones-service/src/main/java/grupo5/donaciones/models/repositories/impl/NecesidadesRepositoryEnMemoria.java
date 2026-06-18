@@ -1,7 +1,8 @@
-package grupo5.donaciones.models.repositories;
+package grupo5.donaciones.models.repositories.impl;
 
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;

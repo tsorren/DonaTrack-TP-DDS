@@ -8,8 +8,8 @@ import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propu
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.NecesidadRepository;
-import grupo5.donaciones.models.repositories.PropuestaRepository;
+import grupo5.donaciones.models.repositories.impl.NecesidadRepository;
+import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

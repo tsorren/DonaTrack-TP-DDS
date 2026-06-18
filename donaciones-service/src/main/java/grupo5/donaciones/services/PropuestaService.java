@@ -4,7 +4,7 @@ import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
-import grupo5.donaciones.models.repositories.IAsignacionRepository;
+import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class PropuestaService {
 
   private final AlgoritmosService algoritmosService;
-  private final IAsignacionRepository asignacionRepository;
+  private final IAsignacionesRepository asignacionRepository;
 
   private PropuestaResponseDTO toDTO(Propuesta propuesta) {
     return new PropuestaResponseDTO(

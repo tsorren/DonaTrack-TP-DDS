@@ -1,13 +1,14 @@
-package grupo5.donaciones.models.repositories;
+package grupo5.donaciones.models.repositories.impl;
 
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
+import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
-public abstract class AsignacionRepositoryEnMemoria
-    extends CrudRepositoryEnMemoria<EjecucionAsignacionDTO> implements IAsignacionRepository {
+public abstract class AsignacionesRepositoryEnMemoria
+    extends CrudRepositoryEnMemoria<EjecucionAsignacionDTO> implements IAsignacionesRepository {
   @Override
   public List<EjecucionAsignacionDTO> obtenerHistorial() {
     return findAll();
