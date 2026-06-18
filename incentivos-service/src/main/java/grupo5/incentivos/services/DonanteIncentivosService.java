@@ -6,6 +6,7 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.incentivos.dto.*;
 import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
+import grupo5.incentivos.models.entities.donante.CambioCategoria;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
@@ -111,8 +112,9 @@ public class DonanteIncentivosService implements IDonanteIncentivosService {
             });
 
     if (donante.intentarAscenso()) {
+      CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
       notificacionesClient.notificarAscensoCategoria(
-          donante.getId(), donante.getCategoria().name());
+          donante.getId(), ultimoCambio.getNueva().name(), ultimoCambio.getAnterior().name());
     }
 
     repository.save(donante);
@@ -149,8 +151,9 @@ public class DonanteIncentivosService implements IDonanteIncentivosService {
             });
 
     if (donante.intentarAscenso()) {
+      CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
       notificacionesClient.notificarAscensoCategoria(
-          donante.getId(), donante.getCategoria().name());
+          donante.getId(), ultimoCambio.getNueva().name(), ultimoCambio.getAnterior().name());
     }
 
     repository.save(donante);

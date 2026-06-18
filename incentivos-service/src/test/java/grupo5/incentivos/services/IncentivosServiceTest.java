@@ -111,7 +111,8 @@ class IncentivosServiceTest {
 
     service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
-    verify(notificacionesClient, atLeastOnce()).notificarAscensoCategoria(any(), anyString());
+    verify(notificacionesClient, atLeastOnce())
+        .notificarAscensoCategoria(any(), anyString(), anyString());
   }
 
   @Test
