@@ -58,7 +58,7 @@ public class MedioDeContactoMapper {
     };
   }
 
-  private Telefono populateTelefono(
+  private static Telefono populateTelefono(
       Telefono tel, String caracteristica, String codigoArea, String numero) {
     tel.setCaracteristica(caracteristica);
     tel.setCodigoArea(codigoArea);

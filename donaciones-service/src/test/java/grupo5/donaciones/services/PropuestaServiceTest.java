@@ -3,6 +3,7 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
@@ -13,15 +14,16 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class PropuestaServiceTest {
+class PropuestaServiceTest {
 
   private AlgoritmosService algoritmosService;
+  private IAsignacionRepository asignacionRepository;
   private PropuestaService propuestaService;
 
   @BeforeEach
   void setUp() {
     algoritmosService = mock(AlgoritmosService.class);
-    IAsignacionRepository asignacionRepository = mock(IAsignacionRepository.class);
+    asignacionRepository = mock(IAsignacionRepository.class);
 
     propuestaService = new PropuestaService(algoritmosService, asignacionRepository);
   }
@@ -54,5 +56,32 @@ public class PropuestaServiceTest {
     propuestaService.actualizarEstado(id, estado);
 
     verify(algoritmosService).actualizarEstadoPropuesta(id, estado);
+  }
+
+  @Test
+  void ejecutarAsignacion_debeInvocarAlgoritmosServiceYGuardarEjecucion() {
+    Propuesta propuesta = mock(Propuesta.class);
+    when(algoritmosService.ejecutar()).thenReturn(List.of(propuesta));
+
+    List<Propuesta> resultado = propuestaService.ejecutarAsignacion();
+
+    assertEquals(1, resultado.size());
+    assertEquals(propuesta, resultado.getFirst());
+
+    verify(algoritmosService).ejecutar();
+    verify(asignacionRepository).save(any(EjecucionAsignacionDTO.class));
+  }
+
+  @Test
+  void historialEjecuciones_debeRetornarLoDelRepositorio() {
+    EjecucionAsignacionDTO dto = mock(EjecucionAsignacionDTO.class);
+    when(asignacionRepository.obtenerHistorial()).thenReturn(List.of(dto));
+
+    List<EjecucionAsignacionDTO> resultado = propuestaService.historialEjecuciones();
+
+    assertEquals(1, resultado.size());
+    assertEquals(dto, resultado.getFirst());
+
+    verify(asignacionRepository).obtenerHistorial();
   }
 }

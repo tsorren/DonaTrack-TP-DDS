@@ -1,4 +1,4 @@
-package grupo5.donaciones.dto.replicas;
+package grupo5.donaciones.dto.comunicaciones;
 
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import java.util.List;

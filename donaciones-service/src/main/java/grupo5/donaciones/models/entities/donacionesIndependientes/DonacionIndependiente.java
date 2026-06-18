@@ -42,7 +42,7 @@ public class DonacionIndependiente implements AggregateRoot {
   }
 
   public String getDescripcion() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     items.forEach(i -> sb.append(i.getBien().getBienOriginal().getDescripcion()).append(" "));
     return sb.toString();
   }

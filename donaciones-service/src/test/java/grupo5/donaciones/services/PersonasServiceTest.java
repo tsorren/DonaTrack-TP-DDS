@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
-import grupo5.donaciones.dto.replicas.PersonaReplicaDTO;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.mappers.PersonaMapper;
@@ -36,7 +36,7 @@ class PersonasServiceTest {
 
   @BeforeEach
   void setUp() {
-    humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, 1, 1));
+    humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     inputDTO =
         new HumanaInputDTO(
             grupo5.donaciones.models.entities.personas.TipoPersona.HUMANA,
@@ -47,7 +47,7 @@ class PersonasServiceTest {
             "Juan",
             "Perez",
             grupo5.donaciones.models.entities.personas.Genero.HOMBRE,
-            java.time.LocalDate.of(1990, 1, 1));
+            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     outputDTO =
         new HumanaOutputDTO(
             grupo5.donaciones.models.entities.personas.TipoPersona.HUMANA,
@@ -59,7 +59,7 @@ class PersonasServiceTest {
             "Juan",
             "Perez",
             grupo5.donaciones.models.entities.personas.Genero.HOMBRE,
-            java.time.LocalDate.of(1990, 1, 1));
+            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     replicaDTO =
         new PersonaReplicaDTO(
             humana.getId(),
