@@ -3,10 +3,9 @@ package grupo5.incentivos.models.repositories;
 import grupo5.common.repositories.CrudRepository;
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
-import org.springframework.stereotype.Repository;
-
 import java.time.YearMonth;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 @Repository
 public class RankingMensualRepository extends CrudRepositoryEnMemoria<RankingMensual>

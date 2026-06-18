@@ -3,11 +3,10 @@ package grupo5.incentivos.models.entities.misiones;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter

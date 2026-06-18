@@ -1,9 +1,8 @@
 package grupo5.incentivos.models.entities.donante;
 
-import lombok.Getter;
-
 import java.time.LocalDate;
 import java.time.ZoneId;
+import lombok.Getter;
 
 @Getter
 public class CambioCategoria {

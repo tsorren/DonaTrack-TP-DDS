@@ -2,11 +2,10 @@ package grupo5.notificaciones.models.entities.personas;
 
 import grupo5.common.repositories.AggregateRoot;
 import grupo5.notificaciones.models.ports.Anonimizable;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.List;
 import java.util.UUID;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter

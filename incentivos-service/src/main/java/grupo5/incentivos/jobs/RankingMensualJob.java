@@ -1,13 +1,12 @@
 package grupo5.incentivos.jobs;
 
 import grupo5.incentivos.services.RankingService;
+import java.time.YearMonth;
+import java.time.ZoneId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
-import java.time.YearMonth;
-import java.time.ZoneId;
 
 @Component
 public class RankingMensualJob {

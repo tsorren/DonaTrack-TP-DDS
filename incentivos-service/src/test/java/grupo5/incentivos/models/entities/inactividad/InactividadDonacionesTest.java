@@ -1,15 +1,14 @@
 package grupo5.incentivos.models.entities.inactividad;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 class InactividadDonacionesTest {
 

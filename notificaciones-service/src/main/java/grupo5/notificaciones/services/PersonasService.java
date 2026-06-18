@@ -6,9 +6,8 @@ import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.repositories.IPersonasRepository;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
-import org.springframework.stereotype.Service;
-
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
 @Service
 public class PersonasService implements IPersonasService {

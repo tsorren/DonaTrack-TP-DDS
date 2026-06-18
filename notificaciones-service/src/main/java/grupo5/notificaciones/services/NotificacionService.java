@@ -6,9 +6,8 @@ import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotifi
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.repositories.NotificacionRepository;
 import grupo5.notificaciones.services.mappers.EventoMapper;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
+import org.springframework.stereotype.Service;
 
 @Service
 public class NotificacionService {

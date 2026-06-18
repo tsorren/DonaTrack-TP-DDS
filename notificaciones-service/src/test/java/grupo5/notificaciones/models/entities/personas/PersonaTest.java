@@ -1,13 +1,12 @@
 package grupo5.notificaciones.models.entities.personas;
 
-import grupo5.notificaciones.models.ports.Anonimizable;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.notificaciones.models.ports.Anonimizable;
 import java.util.ArrayList;
 import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class PersonaTest {
 
