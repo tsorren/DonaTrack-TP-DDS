@@ -5,8 +5,4 @@ import java.util.List;
 import java.util.UUID;
 
 public record NuevaDonacionRequest(
-    UUID donanteId,
-    List<String> categorias,
-    Integer cantidadBienes,
-    LocalDate fecha,
-    String nombreDonante) {}
+    UUID donanteId, List<String> categorias, Integer cantidadBienes, LocalDate fecha) {}
