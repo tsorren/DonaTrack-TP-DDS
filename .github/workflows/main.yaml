@@ -438,8 +438,7 @@ jobs:
 
       - name: Instalar Graphviz y descargar PlantUML
         run: |
-          sudo apt-get update -qq -o Acquire::Retries=3 -o Acquire::http::Timeout="10"
-          sudo apt-get install -y -qq --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout="10" graphviz
+          sudo apt-get install -y -q --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout="10" -o Acquire::https::Timeout="10" -o DPkg::Lock::Timeout=30 graphviz || (sudo apt-get update -q -o Acquire::Retries=3 -o Acquire::http::Timeout="10" -o Acquire::https::Timeout="10" && sudo apt-get install -y -q --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout="10" -o Acquire::https::Timeout="10" -o DPkg::Lock::Timeout=30 graphviz)
           curl -L -s -o plantuml.jar https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
 
       - name: Generar PUML de Base
