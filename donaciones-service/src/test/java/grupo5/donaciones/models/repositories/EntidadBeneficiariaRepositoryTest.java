@@ -11,7 +11,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class EntidadBeneficiariaRepositoryTest {
+class EntidadBeneficiariaRepositoryTest {
   private EntidadesBeneficiariasRepositoryEnMemoria repository;
 
   @BeforeEach

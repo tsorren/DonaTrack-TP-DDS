@@ -17,7 +17,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class EntidadBeneficiariaServiceTest {
+class EntidadBeneficiariaServiceTest {
   private IEntidadesBeneficiariasRepository repository;
   private IPersonasRepository personasRepository;
   private EntidadBeneficiariaMapper mapper;
