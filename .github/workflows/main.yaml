@@ -595,6 +595,25 @@ jobs:
         run: |
           docker compose -f docker-compose.preprod.yml up --build --wait -d
 
+      - name: Esperar endpoints /v3/api-docs disponibles
+        run: |
+          set -e
+          URLs=("http://localhost:8080/v3/api-docs" "http://localhost:8081/v3/api-docs" "http://localhost:8082/v3/api-docs")
+          for url in "${URLs[@]}"; do
+            echo "Esperando $url..."
+            attempt=0
+            until curl -s -f "$url" >/dev/null; do
+              attempt=$((attempt+1))
+              if [ $attempt -ge 60 ]; then
+                echo "ERROR: $url no respondió con 200 después de 60 intentos."
+                docker compose -f docker-compose.preprod.yml logs --no-color || true
+                exit 1
+              fi
+              sleep 2
+            done
+            echo "$url disponible"
+          done
+
       - name: Ejecutar Suite de Validación Pre-Producción (JUnit & RestAssured)
         run: |
           mvn clean verify -pl integration-tests -DskipTests=false \

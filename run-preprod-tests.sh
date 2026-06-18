@@ -68,6 +68,24 @@ step "Levantando stack pre-producción (esperando healthchecks)"
 docker compose -f "$COMPOSE_FILE" up --build --wait -d
 ok "Todos los servicios están healthy."
 
+# Esperar que /v3/api-docs esté disponible en cada servicio (evita fallos por endpoints no listos)
+step "Esperando /v3/api-docs en los servicios"
+for url in "$DONACIONES_URL/v3/api-docs" "$NOTIFICACIONES_URL/v3/api-docs" "$INCENTIVOS_URL/v3/api-docs"; do
+  echo "Esperando $url ..."
+  attempts=0
+  until curl -s -f "$url" >/dev/null; do
+    attempts=$((attempts+1))
+    if [ $attempts -ge 60 ]; then
+      fail "$url no respondió con 200 después de 60 intentos. Recolectando logs..."
+      mkdir -p docker-logs
+      docker compose -f "$COMPOSE_FILE" logs --no-color > docker-logs/preprod-services.log || true
+      exit 1
+    fi
+    sleep 2
+  done
+  ok "$url disponible"
+done
+
 # ── Paso 3: Ejecutar suite ───────────────────────────────────────────────────
 step "Ejecutando suite de validación"
 
