@@ -5,8 +5,8 @@ import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
+import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import grupo5.donaciones.services.impl.AlgoritmosService;

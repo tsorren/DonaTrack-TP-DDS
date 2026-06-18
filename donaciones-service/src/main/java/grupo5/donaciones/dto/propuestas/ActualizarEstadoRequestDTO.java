@@ -1,6 +1,6 @@
 package grupo5.donaciones.dto.propuestas;
 
-import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
+import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import lombok.Getter;
 import lombok.Setter;
 

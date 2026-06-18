@@ -10,7 +10,7 @@ import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.Estado;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.donantes.Donante;

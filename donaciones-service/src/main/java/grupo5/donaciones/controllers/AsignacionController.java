@@ -1,7 +1,7 @@
 package grupo5.donaciones.controllers;
 
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
