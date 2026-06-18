@@ -5,10 +5,4 @@ import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
-@Getter
-public class DonanteOutputDTO {
-  private PersonaOutputDTO persona;
-  private String canalContacto;
-  UUID id;
-}
+public record DonanteOutputDTO(UUID idDonante, PersonaOutputDTO){}
