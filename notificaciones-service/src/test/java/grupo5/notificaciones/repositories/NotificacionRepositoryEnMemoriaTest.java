@@ -1,18 +1,19 @@
 package grupo5.notificaciones.repositories;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.repositories.NotificacionRepositoryEnMemoria;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class NotificacionRepositoryEnMemoriaTest {
 

@@ -2,9 +2,10 @@ package grupo5.notificaciones.controllers;
 
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.services.IPersonasService;
-import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/notificaciones/personas")

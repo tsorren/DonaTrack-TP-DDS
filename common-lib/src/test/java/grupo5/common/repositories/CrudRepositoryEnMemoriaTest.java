@@ -1,14 +1,15 @@
 package grupo5.common.repositories;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import grupo5.common.exceptions.ValidationException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class CrudRepositoryEnMemoriaTest {
 

@@ -6,11 +6,12 @@ import grupo5.common.repositories.AggregateRoot;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Setter

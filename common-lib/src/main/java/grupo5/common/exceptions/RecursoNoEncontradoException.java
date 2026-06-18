@@ -1,7 +1,8 @@
 package grupo5.common.exceptions;
 
-import java.util.UUID;
 import lombok.Getter;
+
+import java.util.UUID;
 
 @Getter
 public class RecursoNoEncontradoException extends DonaTrackException {

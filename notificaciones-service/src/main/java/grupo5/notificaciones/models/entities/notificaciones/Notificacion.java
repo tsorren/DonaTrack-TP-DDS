@@ -5,13 +5,14 @@ import grupo5.notificaciones.models.entities.personas.MedioDeContacto;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.ports.Anonimizable;
 import grupo5.notificaciones.models.ports.NotificacionSender;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
-import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Setter

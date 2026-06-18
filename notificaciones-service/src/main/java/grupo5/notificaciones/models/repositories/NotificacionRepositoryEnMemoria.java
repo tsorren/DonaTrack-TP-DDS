@@ -3,9 +3,10 @@ package grupo5.notificaciones.models.repositories;
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.UUID;
-import org.springframework.stereotype.Repository;
 
 @Repository
 public class NotificacionRepositoryEnMemoria extends CrudRepositoryEnMemoria<Notificacion>

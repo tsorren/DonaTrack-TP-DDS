@@ -7,10 +7,11 @@ import grupo5.incentivos.models.entities.ranking.EntradaRanking;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import grupo5.incentivos.models.repositories.RankingMensualRepository;
+import org.springframework.stereotype.Service;
+
 import java.time.YearMonth;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.springframework.stereotype.Service;
 
 @Service
 public class RankingService {

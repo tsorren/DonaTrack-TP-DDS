@@ -1,15 +1,16 @@
 package grupo5.notificaciones.models.repositories;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class PersonasRepositoryTest {
 

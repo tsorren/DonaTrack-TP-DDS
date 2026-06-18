@@ -1,15 +1,16 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
+import org.junit.jupiter.api.Test;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EventosNotificablesTest {
 

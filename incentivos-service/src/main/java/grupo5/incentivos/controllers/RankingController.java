@@ -2,11 +2,12 @@ package grupo5.incentivos.controllers;
 
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.services.RankingService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/incentivos/ranking")

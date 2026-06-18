@@ -4,8 +4,9 @@ import grupo5.notificaciones.dto.input.*;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.*;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.repositories.PersonaRepository;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 public class EventoMapper {

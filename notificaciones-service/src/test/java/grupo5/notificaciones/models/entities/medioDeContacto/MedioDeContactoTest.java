@@ -1,9 +1,5 @@
 package grupo5.notificaciones.models.entities.medioDeContacto;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
-
 import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.entities.personas.Telefono;
 import grupo5.notificaciones.models.entities.personas.WhatsApp;
@@ -13,6 +9,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 class MedioDeContactoTest {
 

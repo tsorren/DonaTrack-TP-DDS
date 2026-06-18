@@ -1,13 +1,14 @@
 package grupo5.incentivos.models.entities.metricas;
 
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
-import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 @Setter
