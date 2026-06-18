@@ -31,7 +31,7 @@ public class IncentivosController implements IIncentivosController {
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/donantes}")
+  @PostMapping("/donantes")
   public ResponseEntity<DonanteRegistradoDTO> registrarDonante(
       @RequestBody RegistrarDonanteRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED)
