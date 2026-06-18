@@ -13,6 +13,9 @@ name: DonaTrack CI Pipeline
 on:
   pull_request:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # ── Concurrencia ─────────────────────────────────────────────────────────────
 # Cancela ejecuciones previas del mismo PR para ahorrar minutos de CI
 concurrency:
@@ -92,7 +95,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Detectar módulos modificados
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -187,7 +190,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   lint-and-format:
     needs: detect-changes
-    if: needs.detect-changes.outputs.any-service == 'true'
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -285,11 +288,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   sonar-analysis:
     needs: [lint-and-format, build-and-test]
-    if: >-
-      always() &&
-      needs.build-and-test.result == 'success' &&
-      needs.lint-and-format.result == 'success' &&
-      (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_'))
+    if: ${{ always() && needs.build-and-test.result == 'success' && needs.lint-and-format.result == 'success' && (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_')) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -419,12 +418,6 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: Descargar PUML de PR
-        uses: actions/download-artifact@v4
-        with:
-          name: puml-pr-${{ matrix.service }}
-          path: pr_uml/
-
       - name: Checkout de la rama Base
         uses: actions/checkout@v4
         with:
@@ -437,10 +430,17 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Instalar PlantUML
+      - name: Descargar PUML de PR
+        uses: actions/download-artifact@v4
+        with:
+          name: puml-pr-${{ matrix.service }}
+          path: pr_uml/
+
+      - name: Instalar Graphviz y descargar PlantUML
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq plantuml graphviz
+          sudo apt-get update -qq -o Acquire::Retries=3 -o Acquire::http::Timeout="10"
+          sudo apt-get install -y -qq --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout="10" graphviz
+          curl -L -s -o plantuml.jar https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
 
       - name: Generar PUML de Base
         run: |
@@ -459,7 +459,7 @@ jobs:
           # Renderizar y renombrar PR
           if [[ -f "pr_uml/modelo_tecnico.puml" ]]; then
             echo "🎨 Renderizando PR para ${{ matrix.service }}..."
-            plantuml -tsvg -o "$(pwd)/diagrams-output" pr_uml/modelo_tecnico.puml
+            java -jar plantuml.jar -tsvg -o "$(pwd)/diagrams-output" pr_uml/modelo_tecnico.puml
             if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
               mv diagrams-output/modelo_tecnico.svg diagrams-output/${{ matrix.service }}_modelo_tecnico_pr.svg
             fi
@@ -470,7 +470,7 @@ jobs:
           # Renderizar y renombrar Base
           if [[ -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]]; then
             echo "🎨 Renderizando Base para ${{ matrix.service }}..."
-            plantuml -tsvg -o "$(pwd)/diagrams-output" ${{ matrix.service }}/target/modelo_tecnico.puml
+            java -jar plantuml.jar -tsvg -o "$(pwd)/diagrams-output" ${{ matrix.service }}/target/modelo_tecnico.puml
             if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
               mv diagrams-output/modelo_tecnico.svg diagrams-output/${{ matrix.service }}_modelo_tecnico_base.svg
             fi
@@ -493,7 +493,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   semantic-uml-diff:
     needs: [detect-changes, generate-diagrams]
-    if: needs.detect-changes.outputs.any-service == 'true'
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
