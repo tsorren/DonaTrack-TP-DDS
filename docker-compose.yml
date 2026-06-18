@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  notificaciones-service:
+    image: donatrack/notificaciones-service:local
+    build:
+      context: .
+      file: notificaciones-service/Dockerfile
+      target: local
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+    networks:
+      - donatrack-network
+
+  incentivos-service:
+    image: donatrack/incentivos-service:local
+    build:
+      context: .
+      file: incentivos-service/Dockerfile
+      target: local
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+    depends_on:
+      - notificaciones-service
+    networks:
+      - donatrack-network
+
+  donaciones-service:
+    image: donatrack/donaciones-service:local
+    build:
+      context: .
+      file: donaciones-service/Dockerfile
+      target: local
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+      - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
+    depends_on:
+      - notificaciones-service
+      - incentivos-service
+    networks:
+      - donatrack-network
+
+networks:
+  donatrack-network:
+    driver: bridge

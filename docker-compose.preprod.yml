@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  notificaciones-service:
+    image: donatrack/notificaciones-service:preprod
+    build:
+      context: .
+      file: notificaciones-service/Dockerfile
+      target: ci
+      args:
+        JAR_FILE: notificaciones-service/target/notificaciones-service-1.0.jar
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/v3/api-docs"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - preprod-network
+
+  incentivos-service:
+    image: donatrack/incentivos-service:preprod
+    build:
+      context: .
+      file: incentivos-service/Dockerfile
+      target: ci
+      args:
+        JAR_FILE: incentivos-service/target/incentivos-service-1.0.jar
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+    depends_on:
+      notificaciones-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/v3/api-docs"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - preprod-network
+
+  donaciones-service:
+    image: donatrack/donaciones-service:preprod
+    build:
+      context: .
+      file: donaciones-service/Dockerfile
+      target: ci
+      args:
+        JAR_FILE: donaciones-service/target/donaciones-service-1.0.jar
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+      - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
+    depends_on:
+      notificaciones-service:
+        condition: service_healthy
+      incentivos-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v3/api-docs"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    networks:
+      - preprod-network
+
+networks:
+  preprod-network:
+    driver: bridge

@@ -547,6 +547,81 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_SEMANTIC_DIFF_WEBHOOK_URL }}
 
   # ──────────────────────────────────────────────────────────────────────────
+  # Job 10: CD - Validación en Pre-Producción (preprod-validation)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Levanta los tres microservicios con Docker Compose, espera sus healthchecks
+  # y ejecuta la suite JUnit + RestAssured del módulo integration-tests.
+  # Si un servicio no fue construido en este PR (no hubo cambios), su JAR se
+  # compila desde fuentes para garantizar el stack completo.
+  # ──────────────────────────────────────────────────────────────────────────
+  preprod-validation:
+    needs: build-and-test
+    if: ${{ needs.build-and-test.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Descargar JARs disponibles como artefactos
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jar-*
+          path: temp-jars/
+          merge-multiple: false
+
+      - name: Reubicar JARs — compilar desde fuentes si alguno no existe
+        run: |
+          for svc in donaciones-service notificaciones-service incentivos-service; do
+            mkdir -p "${svc}/target"
+            if [ -d "temp-jars/jar-${svc}" ]; then
+              cp "temp-jars/jar-${svc}"/*.jar "${svc}/target/"
+              echo "✅ JAR de ${svc} copiado desde artefactos."
+            else
+              echo "⚠️ JAR de ${svc} no disponible — compilando desde fuentes..."
+              mvn clean package -pl "${svc}" -am -DskipTests -Dspotless.check.skip=true -q
+            fi
+          done
+
+      - name: Provisionar Entorno de Pre-Producción (Docker Compose)
+        run: |
+          docker compose -f docker-compose.preprod.yml up --build -d
+
+      - name: Ejecutar Suite de Validación Pre-Producción (JUnit & RestAssured)
+        run: |
+          mvn clean verify -pl integration-tests -DskipTests=false \
+            -Ddonaciones.url=http://localhost:8080 \
+            -Dnotificaciones.url=http://localhost:8081 \
+            -Dincentivos.url=http://localhost:8082
+
+      - name: Recolectar Logs de Contenedores en Fallo
+        if: failure()
+        run: |
+          mkdir -p docker-logs
+          docker compose -f docker-compose.preprod.yml logs --no-color > docker-logs/preprod-services.log
+
+      - name: Archivar Logs de Docker
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-preprod-logs
+          path: docker-logs/
+          retention-days: 7
+
+      - name: Desmantelar Entorno
+        if: always()
+        run: |
+          docker compose -f docker-compose.preprod.yml down -v
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Job 9: Quality Gate (Consolidador Final)
   # ──────────────────────────────────────────────────────────────────────────
   # Job centinela que depende de todos los demás. Usar como "Required
@@ -554,7 +629,7 @@ jobs:
   # un único check verde/rojo que represente todo el pipeline.
   # ──────────────────────────────────────────────────────────────────────────
   quality-gate:
-    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff]
+    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, preprod-validation]
     if: always()
     runs-on: ubuntu-latest
     permissions:
@@ -595,6 +670,7 @@ jobs:
           check_job "docker-build"        "${{ needs.docker-build.result }}"         "true"
           check_job "generate-diagrams"   "${{ needs.generate-diagrams.result }}"    "true"
           check_job "semantic-uml-diff"   "${{ needs.semantic-uml-diff.result }}"    "false"
+          check_job "preprod-validation"  "${{ needs.preprod-validation.result }}"  "true"
 
           echo "══════════════════════════════════════════"
 
