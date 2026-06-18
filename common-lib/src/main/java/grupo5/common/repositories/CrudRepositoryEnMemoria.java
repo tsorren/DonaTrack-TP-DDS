@@ -4,6 +4,8 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
     implements CrudRepository<T> {
@@ -19,6 +21,16 @@ public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
     }
     storage.put(aggregate.getId(), aggregate);
     return aggregate;
+  }
+
+  @Override
+  public List<T> saveAll(List<T> aggregates) {
+    if (aggregates == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    Map<UUID, T> map = aggregates.stream().collect(Collectors.toMap(T::getId, Function.identity()));
+    storage.putAll(map);
+    return aggregates;
   }
 
   @Override
