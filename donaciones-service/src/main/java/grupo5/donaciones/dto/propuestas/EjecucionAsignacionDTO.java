@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Data;
 
-// TODO: Ver si esto realmente es un Aggregate Root
 @Data
 public class EjecucionAsignacionDTO implements AggregateRoot {
   private UUID id;

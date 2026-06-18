@@ -33,23 +33,53 @@ public class AlgoritmosService {
       NecesidadRepository necesidadRepository,
       PropuestaRepository propuestaRepository,
       ComparadorTexto comparadorTexto) {
+
     this.donacionRepository = donacionRepository;
     this.necesidadRepository = necesidadRepository;
     this.propuestaRepository = propuestaRepository;
+
     this.algoritmos =
         List.of(
             new AlgoritmoCompatibilidadSemantica(comparadorTexto),
             new AlgoritmoPrioridadSubAtendidos());
   }
 
+  private static List<Propuesta> consolidar(
+      List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
+
+    Set<Necesidad> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
+
+    for (Propuesta propuesta : propuesta1) {
+      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisface());
+    }
+
+    List<Propuesta> propuestasEnAmbos = new ArrayList<>();
+
+    for (Propuesta propuesta : propuesta2) {
+      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisface())) {
+        propuestasEnAmbos.add(propuesta);
+      }
+    }
+
+    if (!propuestasEnAmbos.isEmpty()) {
+      return propuestasEnAmbos;
+    }
+
+    List<Propuesta> todas = new ArrayList<>(propuesta1);
+    todas.addAll(propuesta2);
+
+    return todas;
+  }
+
   public List<Propuesta> ejecutar() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
     List<Necesidad> necesidades = necesidadRepository.findInsatisfechas();
 
-    List<Propuesta> propuesta1 = algoritmoPorCompatibilidad().ejecutar(necesidades, donaciones);
-    List<Propuesta> propuesta2 = algoritmoPorPrioridad().ejecutar(necesidades, donaciones);
+    List<Propuesta> p1 = algoritmoPorCompatibilidad().ejecutar(necesidades, donaciones);
+    List<Propuesta> p2 = algoritmoPorPrioridad().ejecutar(necesidades, donaciones);
 
-    List<Propuesta> resultado = consolidar(propuesta1, propuesta2);
+    List<Propuesta> resultado = consolidar(p1, p2);
+
     resultado.forEach(propuestaRepository::save);
     return resultado;
   }
@@ -63,37 +93,12 @@ public class AlgoritmosService {
         propuestaRepository
             .findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-    if (estado == EstadoPropuesta.APROBADA) {
-      propuesta.confirmar();
-    } else if (estado == EstadoPropuesta.DESCARTADA) {
-      propuesta.rechazar();
-    } else {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado invalido para transicion");
-    }
-    propuestaRepository.save(propuesta); // Save the updated proposal
-  }
 
-  private static List<Propuesta> consolidar(
-      List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
-    Set<Necesidad> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
-    for (Propuesta propuesta : propuesta1) {
-      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisface());
-    }
+    if (estado == EstadoPropuesta.APROBADA) propuesta.confirmar();
+    else if (estado == EstadoPropuesta.DESCARTADA) propuesta.rechazar();
+    else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
-    List<Propuesta> propuestasEnAmbos = new ArrayList<>();
-    for (Propuesta propuesta : propuesta2) {
-      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisface())) {
-        propuestasEnAmbos.add(propuesta);
-      }
-    }
-
-    if (!propuestasEnAmbos.isEmpty()) {
-      return propuestasEnAmbos;
-    }
-
-    List<Propuesta> todas = new ArrayList<>(propuesta1);
-    todas.addAll(propuesta2);
-    return todas;
+    propuestaRepository.save(propuesta);
   }
 
   private AlgoritmoAsignacion algoritmoPorCompatibilidad() {
