@@ -2,9 +2,9 @@ package grupo5.donaciones.infrastructure.algoritmos;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
-import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
