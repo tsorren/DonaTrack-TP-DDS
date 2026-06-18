@@ -1,8 +1,8 @@
 package grupo5.donaciones.models.ports;
 
-import grupo5.donaciones.models.entities.personas.Humana;
 import java.util.List;
+import java.util.Map;
 
 public interface CargadorDonantes {
-  List<Humana> cargarDonantes(String rutaArchivo);
+  List<Map<String, String>> cargarDonantes(String rutaArchivo);
 }
