@@ -216,9 +216,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   build-and-test:
     needs: detect-changes
-    if: >-
-      needs.detect-changes.outputs.any-service == 'true' &&
-      toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]'
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -262,6 +260,22 @@ jobs:
           path: ${{ matrix.service }}/target/surefire-reports/
           retention-days: 14
 
+      - name: Subir JAR de ${{ matrix.service }}
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/*.jar
+          retention-days: 1
+
+      - name: Subir PUML de ${{ matrix.service }}
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: puml-pr-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/modelo_tecnico.puml
+          retention-days: 1
+
   # ──────────────────────────────────────────────────────────────────────────
   # Job 5: Análisis SonarCloud
   # ──────────────────────────────────────────────────────────────────────────
@@ -293,8 +307,45 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # Necesitamos recompilar para que Sonar tenga las clases y reportes
-      - name: Build completo + Análisis Sonar
+      - name: Descargar reportes de JaCoCo
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jacoco-*
+          path: jacoco-reports
+
+      - name: Descargar reportes de Surefire
+        uses: actions/download-artifact@v4
+        with:
+          pattern: surefire-*
+          path: surefire-reports
+
+      - name: Reubicar reportes de test y cobertura
+        run: |
+          # Reubicar JaCoCo
+          if [ -d "jacoco-reports" ]; then
+            for dir in jacoco-reports/jacoco-*; do
+              if [ -d "$dir" ]; then
+                svc="${dir#jacoco-reports/jacoco-}"
+                echo "📋 Reubicando reporte de cobertura para $svc..."
+                mkdir -p "${svc}/target/site/jacoco"
+                cp -r "$dir"/* "${svc}/target/site/jacoco/"
+              fi
+            done
+          fi
+
+          # Reubicar Surefire
+          if [ -d "surefire-reports" ]; then
+            for dir in surefire-reports/surefire-*; do
+              if [ -d "$dir" ]; then
+                svc="${dir#surefire-reports/surefire-}"
+                echo "📋 Reubicando reporte de tests para $svc..."
+                mkdir -p "${svc}/target/surefire-reports"
+                cp -r "$dir"/* "${svc}/target/surefire-reports/"
+              fi
+            done
+          fi
+
+      - name: Compilar clases y análisis Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -302,8 +353,8 @@ jobs:
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
           SONAR_URL: ${{ secrets.SONAR_URL }}
         run: |
-          echo "📊 Ejecutando análisis SonarCloud..."
-          mvn -B clean verify sonar:sonar \
+          echo "📊 Compilando y ejecutando análisis SonarCloud..."
+          mvn -B test-compile sonar:sonar \
             -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
             -Dsonar.organization="$SONAR_ORG" \
             -Dsonar.host.url="$SONAR_URL" \
@@ -320,9 +371,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   docker-build:
     needs: [detect-changes, build-and-test]
-    if: >-
-      needs.build-and-test.result == 'success' &&
-      toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]'
+    if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -332,6 +381,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Descargar JAR compilado
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/
+
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -340,6 +395,9 @@ jobs:
         with:
           context: .
           file: ${{ matrix.service }}/Dockerfile
+          target: ci
+          build-args: |
+            JAR_FILE=${{ matrix.service }}/target/${{ matrix.service }}-1.0.jar
           push: false
           tags: donatrack/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha,scope=${{ matrix.service }}
@@ -352,13 +410,25 @@ jobs:
   # Se ejecuta siempre que hay cambios en los servicios.
   # ──────────────────────────────────────────────────────────────────────────
   generate-diagrams:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.any-service == 'true'
+    needs: [detect-changes, build-and-test]
+    if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Descargar PUML de PR
+        uses: actions/download-artifact@v4
+        with:
+          name: puml-pr-${{ matrix.service }}
+          path: pr_uml/
+
+      - name: Checkout de la rama Base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Configurar JDK 21
         uses: actions/setup-java@v4
@@ -372,43 +442,48 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq plantuml graphviz
 
-      - name: Generar diagramas PlantUML desde el código
+      - name: Generar PUML de Base
         run: |
-          echo "📐 Generando diagramas de clases desde el código..."
+          echo "📐 Generando diagrama de clase para ${{ matrix.service }} en rama Base..."
           mvn -B clean test \
-            -pl donaciones-service,notificaciones-service,incentivos-service -am \
+            -pl ${{ matrix.service }} -am \
             -DskipTests=true \
             -Dspotless.check.skip=true \
             -Dplantuml-generator.skip=false
-          echo "✅ Diagramas generados."
+          echo "✅ Diagrama de Base generado."
 
       - name: Renderizar diagramas a SVG
         run: |
           mkdir -p diagrams-output
-
-          for svc in donaciones-service notificaciones-service incentivos-service; do
-            PUML_FILE="${svc}/target/modelo_tecnico.puml"
-            if [[ -f "$PUML_FILE" ]]; then
-              echo "🎨 Renderizando ${svc}..."
-              plantuml -tsvg -o "$(pwd)/diagrams-output" "$PUML_FILE"
-              # Renombrar para identificar el servicio
-              if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
-                mv "diagrams-output/modelo_tecnico.svg" "diagrams-output/${svc}_modelo_tecnico.svg"
-              fi
-            else
-              echo "⚠️  No se encontró $PUML_FILE — saltando."
+          
+          # Renderizar y renombrar PR
+          if [[ -f "pr_uml/modelo_tecnico.puml" ]]; then
+            echo "🎨 Renderizando PR para ${{ matrix.service }}..."
+            plantuml -tsvg -o "$(pwd)/diagrams-output" pr_uml/modelo_tecnico.puml
+            if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
+              mv diagrams-output/modelo_tecnico.svg diagrams-output/${{ matrix.service }}_modelo_tecnico_pr.svg
             fi
-          done
+            # Guardar puml renombrado para el diff
+            cp pr_uml/modelo_tecnico.puml diagrams-output/${{ matrix.service }}_pr.puml
+          fi
 
-          echo "📁 Diagramas generados:"
-          ls -la diagrams-output/ || echo "  (vacío)"
+          # Renderizar y renombrar Base
+          if [[ -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]]; then
+            echo "🎨 Renderizando Base para ${{ matrix.service }}..."
+            plantuml -tsvg -o "$(pwd)/diagrams-output" ${{ matrix.service }}/target/modelo_tecnico.puml
+            if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
+              mv diagrams-output/modelo_tecnico.svg diagrams-output/${{ matrix.service }}_modelo_tecnico_base.svg
+            fi
+            # Guardar puml renombrado para el diff
+            cp ${{ matrix.service }}/target/modelo_tecnico.puml diagrams-output/${{ matrix.service }}_base.puml
+          fi
 
-      - name: Subir diagramas renderizados
+      - name: Subir artefactos de la matriz
         uses: actions/upload-artifact@v4
         with:
-          name: diagramas-modelo-tecnico
+          name: diagramas-servicio-${{ matrix.service }}
           path: diagrams-output/
-          retention-days: 30
+          retention-days: 14
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 8: Semantic UML Diff (Architectural Review)
@@ -417,48 +492,48 @@ jobs:
   # Publica un diff visual en GitHub y Discord.
   # ──────────────────────────────────────────────────────────────────────────
   semantic-uml-diff:
-    needs: detect-changes
+    needs: [detect-changes, generate-diagrams]
     if: needs.detect-changes.outputs.any-service == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
+      - name: Descargar diagramas de la matriz
+        uses: actions/download-artifact@v4
         with:
-          path: pr_repo
+          pattern: diagramas-servicio-*
+          path: diagramas-temp
 
-      - name: Configurar JDK 21 (PR)
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Generar PUML (PR)
+      - name: Reubicar archivos PUML
         run: |
-          cd pr_repo
-          mvn -B clean test -pl donaciones-service,notificaciones-service,incentivos-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false
-          mkdir -p ../pr_uml_dir
-          cp donaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/donaciones-service.puml || true
-          cp notificaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/notificaciones-service.puml || true
-          cp incentivos-service/target/modelo_tecnico.puml ../pr_uml_dir/incentivos-service.puml || true
-
-      - name: Checkout Base branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}
-          path: base_repo
-
-      - name: Generar PUML (Base)
-        run: |
-          cd base_repo
-          mvn -B clean test -pl donaciones-service,notificaciones-service,incentivos-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false || true
-          mkdir -p ../base_uml_dir
-          cp donaciones-service/target/modelo_tecnico.puml ../base_uml_dir/donaciones-service.puml || true
-          cp notificaciones-service/target/modelo_tecnico.puml ../base_uml_dir/notificaciones-service.puml || true
-          cp incentivos-service/target/modelo_tecnico.puml ../base_uml_dir/incentivos-service.puml || true
+          mkdir -p base_uml_dir
+          mkdir -p pr_uml_dir
+          
+          # Buscar archivos PUML y copiarlos a sus respectivas carpetas
+          find diagramas-temp -name "*_base.puml" -exec cp {} base_uml_dir/ \;
+          find diagramas-temp -name "*_pr.puml" -exec cp {} pr_uml_dir/ \;
+          
+          # Renombrar para que los archivos a comparar tengan exactamente el mismo nombre (ej: donaciones-service.puml)
+          cd base_uml_dir
+          for f in *_base.puml; do
+            if [[ -f "$f" ]]; then
+              mv "$f" "${f%_base.puml}.puml"
+            fi
+          done
+          
+          cd ../pr_uml_dir
+          for f in *_pr.puml; do
+            if [[ -f "$f" ]]; then
+              mv "$f" "${f%_pr.puml}.puml"
+            fi
+          done
+          
+          echo "📂 Diagramas listos para el diff:"
+          echo "  Base:"
+          ls -la ../base_uml_dir
+          echo "  PR:"
+          ls -la .
 
       - name: Semantic UML Diff
         uses: tsorren/SemanticUMLDiff@main
