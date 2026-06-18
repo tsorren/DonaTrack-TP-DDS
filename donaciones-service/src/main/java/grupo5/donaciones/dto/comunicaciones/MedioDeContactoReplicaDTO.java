@@ -1,4 +1,4 @@
-package grupo5.donaciones.dto.replicas;
+package grupo5.donaciones.dto.comunicaciones;
 
 public record MedioDeContactoReplicaDTO(
     String tipo,

@@ -2,9 +2,9 @@ package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
-import grupo5.donaciones.dto.replicas.PersonaReplicaDTO;
 import grupo5.donaciones.models.entities.personas.*;
 import java.time.LocalDate;
 import java.time.Month;
