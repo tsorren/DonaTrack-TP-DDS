@@ -4,11 +4,11 @@ import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import java.util.List;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
-public abstract class AsignacionesRepositoryEnMemoria
-    extends CrudRepositoryEnMemoria<EjecucionAsignacionDTO> implements IAsignacionesRepository {
+@Repository
+public class AsignacionesRepositoryEnMemoria extends CrudRepositoryEnMemoria<EjecucionAsignacionDTO>
+    implements IAsignacionesRepository {
   @Override
   public List<EjecucionAsignacionDTO> obtenerHistorial() {
     return findAll();
