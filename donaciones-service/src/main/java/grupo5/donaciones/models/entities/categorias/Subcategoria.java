@@ -3,6 +3,8 @@ package grupo5.donaciones.models.entities.categorias;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
