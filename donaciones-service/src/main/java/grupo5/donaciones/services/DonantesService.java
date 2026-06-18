@@ -34,15 +34,13 @@ public class DonantesService implements IDonantesService {
     List<Donante> donantes = donantesRepository.findAll();
 
     if (canal == null || canal.isBlank()) {
-      return donantes.stream()
-          .map(donanteMapper::toOutputDTO)
-          .collect(java.util.stream.Collectors.toList());
+      return donantes.stream().map(donanteMapper::toOutputDTO).toList();
     }
 
     return donantes.stream()
         .map(donanteMapper::toOutputDTO) // Convertimos cada Donante en DonanteOutputDTO
         .filter(d -> d.getCanalContacto() != null && canal.equalsIgnoreCase(d.getCanalContacto()))
-        .collect(java.util.stream.Collectors.toList());
+        .toList();
   }
 
   @Override
