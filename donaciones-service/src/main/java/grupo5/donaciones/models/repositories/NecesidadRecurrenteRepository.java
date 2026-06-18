@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
+// TODO: Borrar clase entera y usar NecesidadesRepository
 // Simulacion de base de datos, despues hay que implementar una enserio
 @Repository
 public class NecesidadRecurrenteRepository {

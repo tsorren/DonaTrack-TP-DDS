@@ -3,6 +3,7 @@ package grupo5.donaciones.models.entities.necesidades;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
+import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -16,7 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public abstract class Necesidad implements Asignable, AggregateRoot {
-  private UUID id;
+  private final UUID id;
   private Subcategoria subcategoria;
   private Integer cantidadNecesitada;
   private String descripcion;
@@ -24,6 +25,8 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
   private EntidadBeneficiaria entidad;
 
   protected Necesidad(Subcategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
+    this.id = UUID.randomUUID();
+
     this.subcategoria = subcategoria;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
@@ -31,6 +34,25 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
 
     validarNecesidad();
   }
+
+  protected NecesidadDTO toDTO(String tipo, LocalDate fechaFin) {
+    return new NecesidadDTO(
+        this.id,
+        tipo, // recurrente o extraordinaria
+        this.getEntidad() != null
+            ? this.getEntidad().getId()
+            : null, // Otro aggregate root -> ref por id
+        this.subcategoria != null
+            ? this.subcategoria.getId()
+            : null, // Otro aggregate root -> ref por id
+        this.cantidadNecesitada,
+        this.descripcion,
+        this.estaSatisfecha(),
+        this.fechaInicio,
+        fechaFin);
+  }
+
+  public abstract NecesidadDTO toDTO();
 
   private void validarNecesidad() {
 

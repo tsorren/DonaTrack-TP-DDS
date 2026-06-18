@@ -2,20 +2,23 @@ package grupo5.donaciones.models.entities.categorias;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Subcategoria {
+public class Subcategoria implements AggregateRoot {
+  private final UUID id;
   private Categoria categoria;
   private String nombre;
   private final List<AliasSubcategoria> aliases = new ArrayList<>();
 
   public Subcategoria(Categoria categoria, String nombre) {
-
+    this.id = UUID.randomUUID();
     validarSubCategoria(categoria, nombre);
 
     this.categoria = categoria;

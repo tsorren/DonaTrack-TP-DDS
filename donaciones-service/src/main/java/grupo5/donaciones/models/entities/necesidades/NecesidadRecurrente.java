@@ -3,6 +3,7 @@ package grupo5.donaciones.models.entities.necesidades;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
@@ -108,5 +109,12 @@ public class NecesidadRecurrente extends Necesidad {
 
   public boolean getActiva() {
     return this.activa != null && this.activa;
+  }
+
+  @Override
+  public NecesidadDTO toDTO() {
+    PeriodoNecesidad actual = obtenerPeriodoActual();
+    LocalDate fechaFin = actual != null ? actual.getFechaFin() : null;
+    return super.toDTO("RECURRENTE", fechaFin);
   }
 }
