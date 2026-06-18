@@ -1,7 +1,6 @@
 package grupo5.notificaciones.controllers;
 
-import grupo5.notificaciones.dto.input.*;
-import grupo5.notificaciones.models.entities.notificaciones.eventos.*;
+import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import grupo5.notificaciones.services.NotificacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

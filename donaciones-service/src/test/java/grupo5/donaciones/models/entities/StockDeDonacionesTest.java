@@ -43,11 +43,11 @@ class StockDeDonacionesTest {
 
     List<ItemDonacionIndependiente> itemsDiez = new ArrayList<>();
     itemsDiez.add(new ItemDonacionIndependiente(bienNormalizado, 10));
-    donacionDiez = new DonacionIndependiente(donacionOriginal, itemsDiez, subcategoria);
+    donacionDiez = new DonacionIndependiente(donacionOriginal, itemsDiez);
 
     List<ItemDonacionIndependiente> itemsCinco = new ArrayList<>();
     itemsCinco.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionCinco = new DonacionIndependiente(donacionOriginal, itemsCinco, subcategoria);
+    donacionCinco = new DonacionIndependiente(donacionOriginal, itemsCinco);
   }
 
   @Test

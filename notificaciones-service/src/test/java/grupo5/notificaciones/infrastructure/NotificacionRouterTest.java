@@ -7,11 +7,7 @@ import static org.mockito.Mockito.*;
 
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-import grupo5.notificaciones.models.entities.personas.Correo;
-import grupo5.notificaciones.models.entities.personas.Persona;
-import grupo5.notificaciones.models.entities.personas.Telefono;
-import grupo5.notificaciones.models.entities.personas.TipoPersona;
-import grupo5.notificaciones.models.entities.personas.WhatsApp;
+import grupo5.notificaciones.models.entities.personas.*;
 import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
