@@ -20,6 +20,7 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.services.impl.DonacionesIndependientesService;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;

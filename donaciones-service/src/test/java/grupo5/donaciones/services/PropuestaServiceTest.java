@@ -8,7 +8,9 @@ import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
-import grupo5.donaciones.models.repositories.IAsignacionRepository;
+import grupo5.donaciones.models.repositories.IAsignacionesRepository;
+import grupo5.donaciones.services.impl.AlgoritmosService;
+import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,13 +19,13 @@ import org.junit.jupiter.api.Test;
 class PropuestaServiceTest {
 
   private AlgoritmosService algoritmosService;
-  private IAsignacionRepository asignacionRepository;
+  private IAsignacionesRepository asignacionRepository;
   private PropuestaService propuestaService;
 
   @BeforeEach
   void setUp() {
     algoritmosService = mock(AlgoritmosService.class);
-    asignacionRepository = mock(IAsignacionRepository.class);
+    asignacionRepository = mock(IAsignacionesRepository.class);
 
     propuestaService = new PropuestaService(algoritmosService, asignacionRepository);
   }

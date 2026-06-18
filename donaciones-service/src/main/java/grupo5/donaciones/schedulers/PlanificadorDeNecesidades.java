@@ -1,7 +1,7 @@
 package grupo5.donaciones.schedulers;
 
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
-import grupo5.donaciones.models.repositories.NecesidadRecurrenteRepository;
+import grupo5.donaciones.models.repositories.impl.NecesidadRecurrenteRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;

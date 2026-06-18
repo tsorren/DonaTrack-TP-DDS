@@ -3,12 +3,13 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import grupo5.donaciones.infraestructure.analizadores.ComparadorTexto;
+import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
-import grupo5.donaciones.models.repositories.DonacionIndependienteRepository;
-import grupo5.donaciones.models.repositories.NecesidadRepository;
-import grupo5.donaciones.models.repositories.PropuestaRepository;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.impl.NecesidadRepository;
+import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
+import grupo5.donaciones.services.impl.AlgoritmosService;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 class AlgoritmosServiceTest {
 
-  private DonacionIndependienteRepository donacionRepositoryMock;
+  private IDonacionesIndependientesRepository donacionRepositoryMock;
   private NecesidadRepository necesidadRepositoryMock;
   private PropuestaRepository propuestaRepositoryMock;
   private ComparadorTexto comparadorTextoMock;
@@ -29,7 +30,7 @@ class AlgoritmosServiceTest {
 
   @BeforeEach
   void setUp() {
-    donacionRepositoryMock = mock(DonacionIndependienteRepository.class);
+    donacionRepositoryMock = mock(IDonacionesIndependientesRepository.class);
     necesidadRepositoryMock = mock(NecesidadRepository.class);
     propuestaRepositoryMock = mock(PropuestaRepository.class);
     comparadorTextoMock = mock(ComparadorTexto.class);

@@ -2,7 +2,7 @@ package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
-import grupo5.donaciones.services.PropuestaService;
+import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +66,7 @@ class PropuestasControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/asignaciones/propuestas/" + id + "/estado")
+            put("/api/asignaciones/propuestas/" + id + "/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
