@@ -1,7 +1,10 @@
 package grupo5.donaciones.services.mappers;
 
 import grupo5.donaciones.dto.mediosDeContacto.*;
-import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.models.entities.personas.Correo;
+import grupo5.donaciones.models.entities.personas.MedioDeContacto;
+import grupo5.donaciones.models.entities.personas.Telefono;
+import grupo5.donaciones.models.entities.personas.WhatsApp;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -42,7 +45,7 @@ public class MedioDeContactoMapper {
     };
   }
 
-  private Telefono populateTelefono(
+  private static Telefono populateTelefono(
       Telefono tel, String caracteristica, String codigoArea, String numero) {
     tel.setCaracteristica(caracteristica);
     tel.setCodigoArea(codigoArea);

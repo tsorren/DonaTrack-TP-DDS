@@ -7,6 +7,7 @@ import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.dto.replicas.PersonaReplicaDTO;
 import grupo5.donaciones.models.entities.personas.*;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ class PersonaMapperTest {
             "Juan",
             "Perez",
             Genero.HOMBRE,
-            LocalDate.of(1990, 1, 1));
+            LocalDate.of(1990, Month.JANUARY, 1));
 
     Persona entity = mapper.toEntity(input);
 
@@ -60,7 +61,7 @@ class PersonaMapperTest {
             "Representante",
             "Uno",
             Genero.PREFIERO_NO_DECIR,
-            LocalDate.of(1980, 1, 1));
+            LocalDate.of(1980, Month.JANUARY, 1));
 
     JuridicaInputDTO input =
         new JuridicaInputDTO(
@@ -87,7 +88,7 @@ class PersonaMapperTest {
 
   @Test
   void updateEntity_conHumana_deberiaModificarCampos() {
-    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, 1, 1));
+    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
     humana.setDocumento("12345678");
 
     HumanaInputDTO updatedInput =
@@ -100,7 +101,7 @@ class PersonaMapperTest {
             "Carlos",
             "Gomez",
             Genero.HOMBRE,
-            LocalDate.of(1995, 5, 5));
+            LocalDate.of(1995, Month.MAY, 5));
 
     mapper.updateEntity(humana, updatedInput);
 
@@ -108,12 +109,12 @@ class PersonaMapperTest {
     assertEquals("Gomez", humana.getApellido());
     assertEquals(TipoDocumento.PASAPORTE, humana.getTipoDocumento());
     assertEquals("87654321", humana.getDocumento());
-    assertEquals(LocalDate.of(1995, 5, 5), humana.getFechaNacimiento());
+    assertEquals(LocalDate.of(1995, Month.MAY, 5), humana.getFechaNacimiento());
   }
 
   @Test
   void toReplicaDTO_deberiaMapearCorrectamente() {
-    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, 1, 1));
+    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
     humana.setDocumento("12345678");
 
     PersonaReplicaDTO replica = mapper.toReplicaDTO(humana);

@@ -36,7 +36,7 @@ class PersonasServiceTest {
 
   @BeforeEach
   void setUp() {
-    humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, 1, 1));
+    humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     inputDTO =
         new HumanaInputDTO(
             grupo5.donaciones.models.entities.personas.TipoPersona.HUMANA,
@@ -47,7 +47,7 @@ class PersonasServiceTest {
             "Juan",
             "Perez",
             grupo5.donaciones.models.entities.personas.Genero.HOMBRE,
-            java.time.LocalDate.of(1990, 1, 1));
+            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     outputDTO =
         new HumanaOutputDTO(
             grupo5.donaciones.models.entities.personas.TipoPersona.HUMANA,
@@ -59,7 +59,7 @@ class PersonasServiceTest {
             "Juan",
             "Perez",
             grupo5.donaciones.models.entities.personas.Genero.HOMBRE,
-            java.time.LocalDate.of(1990, 1, 1));
+            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     replicaDTO =
         new PersonaReplicaDTO(
             humana.getId(),

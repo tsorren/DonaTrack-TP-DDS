@@ -19,25 +19,19 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DonacionIndependiente implements AggregateRoot {
-  private UUID id;
+  private final UUID id;
   private Donacion donacionOriginal;
-  private final Subcategoria subcategoria;
   private List<ItemDonacionIndependiente> items;
   private EstadoDonacion estadoActual;
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
   private Asignable asignadaA;
 
-  public DonacionIndependiente(
-      Donacion donacionOriginal, List<ItemDonacionIndependiente> items, Subcategoria subcategoria) {
+  public DonacionIndependiente(Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
     this.id = UUID.randomUUID();
     this.donacionOriginal = donacionOriginal;
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
-    }
-    this.subcategoria = subcategoria;
-    if (subcategoria == null) {
-      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_SUBCATEGORIA_NULA);
     }
 
     this.items = new ArrayList<>();
@@ -48,9 +42,16 @@ public class DonacionIndependiente implements AggregateRoot {
   }
 
   public String getDescripcion() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     items.forEach(i -> sb.append(i.getBien().getBienOriginal().getDescripcion()).append(" "));
     return sb.toString();
+  }
+
+  public Subcategoria getSubcategoria() {
+    return this.items.stream()
+        .findFirst()
+        .map(item -> item.getBien().getSubcategoria())
+        .orElse(null);
   }
 
   public void agregarItem(ItemDonacionIndependiente item) {
@@ -89,7 +90,7 @@ public class DonacionIndependiente implements AggregateRoot {
       itemsExtraidos.add(itemExtraido);
       cantidadPorExtraer -= itemExtraido.getCantidad();
     }
-    return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos, subcategoria);
+    return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos);
   }
 
   // ── Métodos de negocio ─────────────────────────────────────────────────────

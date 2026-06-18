@@ -2,7 +2,7 @@ package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -53,7 +53,7 @@ class PersonasControllerTest {
             "Juan",
             "Perez",
             Genero.HOMBRE,
-            java.time.LocalDate.of(1990, 1, 1));
+            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     PersonaOutputDTO output =
         new grupo5.donaciones.dto.personas.HumanaOutputDTO(
             TipoPersona.HUMANA,
@@ -65,7 +65,7 @@ class PersonasControllerTest {
             "Juan",
             "Perez",
             Genero.HOMBRE,
-            java.time.LocalDate.of(1990, 1, 1));
+            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     when(service.crearPersona(any())).thenReturn(output);
 
     mockMvc
@@ -89,7 +89,7 @@ class PersonasControllerTest {
             "Juan",
             "Perez",
             Genero.HOMBRE,
-            java.time.LocalDate.of(1990, 1, 1));
+            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     PersonaOutputDTO output =
         new grupo5.donaciones.dto.personas.HumanaOutputDTO(
             TipoPersona.HUMANA,
@@ -101,7 +101,7 @@ class PersonasControllerTest {
             "Juan",
             "Perez",
             Genero.HOMBRE,
-            java.time.LocalDate.of(1990, 1, 1));
+            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     when(service.actualizarPersona(eq(id), any())).thenReturn(output);
 
     mockMvc

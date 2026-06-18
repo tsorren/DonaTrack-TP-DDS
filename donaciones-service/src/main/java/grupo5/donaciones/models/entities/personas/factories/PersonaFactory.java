@@ -8,6 +8,10 @@ import java.time.LocalDate;
 
 public class PersonaFactory {
 
+  private PersonaFactory() {
+    throw new IllegalStateException("Utility class");
+  }
+
   public static Humana crearHumana(
       String nombre, String apellido, LocalDate fechaNacimiento, Genero genero) {
     Humana humana = new Humana(nombre, apellido, fechaNacimiento);

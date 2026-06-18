@@ -33,7 +33,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
   private Subcategoria subcategoria;
   private Subcategoria subcategoriaOtra;
   private Donacion donacionOriginal;
-  private BienNormalizado bienNormalizado;
+
+  private BienNormalizado bienNormalizadoOtro;
   private AlgoritmoCompatibilidadSemantica algoritmo;
 
   @BeforeEach
@@ -43,7 +44,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
     subcategoria = new Subcategoria(categoria, "Muebles Escolares");
     subcategoriaOtra = new Subcategoria(categoria, "Muebles de Oficina");
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
-    bienNormalizado = new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+    bienNormalizadoOtro =
+        new BienNormalizado(bien, subcategoriaOtra, 1.0, EstadoNormalizacion.ACEPTADO);
 
     algoritmo =
         new AlgoritmoCompatibilidadSemantica(new ComparadorTexto(new NormalizadorBasicoTexto()));
@@ -55,9 +57,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
         new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienConDescripcion, cantidad));
-    DonacionIndependiente donacion =
-        new DonacionIndependiente(donacionOriginal, items, subcategoria);
-    return donacion;
+    return new DonacionIndependiente(donacionOriginal, items);
   }
 
   @Test
@@ -78,9 +78,9 @@ class AlgoritmoCompatibilidadSemanticaTest {
     NecesidadExtraordinaria necesidad =
         new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
     List<ItemDonacionIndependiente> items = new ArrayList<>();
-    items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
+    items.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
     DonacionIndependiente donacionOtraCategoria =
-        new DonacionIndependiente(donacionOriginal, items, subcategoriaOtra);
+        new DonacionIndependiente(donacionOriginal, items);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacionOtraCategoria);
@@ -113,11 +113,9 @@ class AlgoritmoCompatibilidadSemanticaTest {
     NecesidadExtraordinaria necesidad =
         new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
     List<ItemDonacionIndependiente> items = new ArrayList<>();
-    items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    DonacionIndependiente donacion1 =
-        new DonacionIndependiente(donacionOriginal, items, subcategoriaOtra);
-    DonacionIndependiente donacion2 =
-        new DonacionIndependiente(donacionOriginal, items, subcategoriaOtra);
+    items.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
+    DonacionIndependiente donacion1 = new DonacionIndependiente(donacionOriginal, items);
+    DonacionIndependiente donacion2 = new DonacionIndependiente(donacionOriginal, items);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacion1);

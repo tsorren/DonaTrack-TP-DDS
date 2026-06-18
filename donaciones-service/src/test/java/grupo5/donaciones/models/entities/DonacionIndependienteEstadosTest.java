@@ -47,7 +47,7 @@ class DonacionIndependienteEstadosTest {
         new ItemDonacionNormalizado(donacionOriginal, bienNormalizado, 5);
     ItemDonacionIndependiente item = new ItemDonacionIndependiente(itemNormalizado.getBien(), 5);
 
-    donacion = new DonacionIndependiente(donacionOriginal, List.of(item), subcategoria);
+    donacion = new DonacionIndependiente(donacionOriginal, List.of(item));
   }
 
   @Test
@@ -58,7 +58,7 @@ class DonacionIndependienteEstadosTest {
   @Test
   void asignar_desdeEnDeposito_transicionaCorrectamente() {
     donacion.asignar(ACTOR, receptor);
-    assertTrue(donacion.getHistorial().size() == 1);
+    assertEquals(1, donacion.getHistorial().size());
   }
 
   @Test

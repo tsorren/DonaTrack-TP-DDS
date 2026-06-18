@@ -48,11 +48,11 @@ class PropuestaTest {
 
     List<ItemDonacionIndependiente> itemsDiez = new ArrayList<>();
     itemsDiez.add(new ItemDonacionIndependiente(bienNormalizado, 10));
-    donacionConSobrante = new DonacionIndependiente(donacionOriginal, itemsDiez, subcategoria);
+    donacionConSobrante = new DonacionIndependiente(donacionOriginal, itemsDiez);
 
     List<ItemDonacionIndependiente> itemsCinco = new ArrayList<>();
     itemsCinco.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionExacta = new DonacionIndependiente(donacionOriginal, itemsCinco, subcategoria);
+    donacionExacta = new DonacionIndependiente(donacionOriginal, itemsCinco);
   }
 
   @Test

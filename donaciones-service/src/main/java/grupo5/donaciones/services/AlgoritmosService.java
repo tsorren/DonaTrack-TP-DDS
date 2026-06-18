@@ -11,11 +11,7 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.DonacionIndependienteRepository;
 import grupo5.donaciones.models.repositories.NecesidadRepository;
 import grupo5.donaciones.models.repositories.PropuestaRepository;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -94,9 +90,11 @@ public class AlgoritmosService {
             .findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-    if (estado == EstadoPropuesta.APROBADA) propuesta.confirmar();
-    else if (estado == EstadoPropuesta.DESCARTADA) propuesta.rechazar();
-    else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    switch (estado) {
+      case APROBADA -> propuesta.confirmar();
+      case DESCARTADA -> propuesta.rechazar();
+      default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
 
     propuestaRepository.save(propuesta);
   }

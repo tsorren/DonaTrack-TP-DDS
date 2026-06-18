@@ -54,9 +54,8 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
   }
 
   private static int contarDonacionesRecientes(Necesidad necesidad, LocalDateTime desde) {
-    if (!(necesidad instanceof NecesidadExtraordinaria)) return 0;
-    List<DonacionIndependiente> asignadas =
-        ((NecesidadExtraordinaria) necesidad).getDonacionesAsignadas();
+    if (!(necesidad instanceof NecesidadExtraordinaria extraordinaria)) return 0;
+    List<DonacionIndependiente> asignadas = extraordinaria.getDonacionesAsignadas();
     if (asignadas == null) return 0;
     int contador = 0;
     for (DonacionIndependiente donacion : asignadas) {

@@ -46,15 +46,16 @@ class AlgoritmoPrioridadSubAtendidosTest {
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bienNormalizado =
         new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+    BienNormalizado bienNormalizadoOtro =
+        new BienNormalizado(bien, subcategoriaOtra, 1.0, EstadoNormalizacion.ACEPTADO);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionEnSubcategoria = new DonacionIndependiente(donacionOriginal, items, subcategoria);
+    donacionEnSubcategoria = new DonacionIndependiente(donacionOriginal, items);
 
     List<ItemDonacionIndependiente> itemsOtros = new ArrayList<>();
-    itemsOtros.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionEnOtraSubcategoria =
-        new DonacionIndependiente(donacionOriginal, itemsOtros, subcategoriaOtra);
+    itemsOtros.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
+    donacionEnOtraSubcategoria = new DonacionIndependiente(donacionOriginal, itemsOtros);
 
     algoritmo = new AlgoritmoPrioridadSubAtendidos();
   }

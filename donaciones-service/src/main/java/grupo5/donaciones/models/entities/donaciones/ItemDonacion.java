@@ -29,10 +29,4 @@ public class ItemDonacion {
       throw new ValidationException(ErrorCatalog.ITEM_DONACION_CANTIDAD_INVALIDA);
     }
   }
-
-  /*
-  public ItemDonacionIndependiente toItemDonacionIndependiente() {
-    return new ItemDonacionIndependiente(bien, cantidad);
-  }
-  */
 }
