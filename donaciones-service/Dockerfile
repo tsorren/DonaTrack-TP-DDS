@@ -20,6 +20,7 @@ RUN mvn clean package -pl ${SERVICE_NAME} -am -DskipTests
 # Etapa 2: Imagen final - CI (Copia el JAR pre-compilado de GitHub Actions)
 # ==============================================================================
 FROM eclipse-temurin:21-jre AS ci
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 ARG JAR_FILE
@@ -33,6 +34,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 # Etapa 3: Imagen final - Desarrollo local (Por defecto, compila desde builder)
 # ==============================================================================
 FROM eclipse-temurin:21-jre AS local
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # nombre del directorio físico del servicio,

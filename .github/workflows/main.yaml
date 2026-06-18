@@ -593,7 +593,7 @@ jobs:
 
       - name: Provisionar Entorno de Pre-Producción (Docker Compose)
         run: |
-          docker compose -f docker-compose.preprod.yml up --build -d
+          docker compose -f docker-compose.preprod.yml up --build --wait -d
 
       - name: Ejecutar Suite de Validación Pre-Producción (JUnit & RestAssured)
         run: |
