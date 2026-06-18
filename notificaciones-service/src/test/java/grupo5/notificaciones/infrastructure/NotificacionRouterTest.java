@@ -10,7 +10,10 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.Telefono;
+import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.entities.personas.WhatsApp;
+import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +37,7 @@ class NotificacionRouterTest {
 
   @BeforeEach
   void setUp() {
-    persona = new Persona();
+    persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Donante Test", TipoPersona.HUMANA);
 
     correo = new Correo();
     correo.setDireccionCorreo("donante@test.com");
