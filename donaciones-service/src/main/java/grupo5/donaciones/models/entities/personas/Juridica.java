@@ -11,7 +11,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Juridica extends Persona {
+// final para indicar que ninguno más hereda (sino rompe el switch
+public final class Juridica extends Persona {
   private final List<Humana> representantes = new ArrayList<>();
   private String razonSocial;
   private TipoJuridico tipo;
@@ -39,6 +40,11 @@ public class Juridica extends Persona {
       throw new BusinessStateException(ErrorCatalog.JURIDICA_SIN_REPRESENTANTES_RESTANTES);
     }
     this.representantes.remove(representante);
+  }
+
+  @Override
+  public TipoPersona getTipoPersona() {
+    return TipoPersona.JURIDICA;
   }
 
   @Override

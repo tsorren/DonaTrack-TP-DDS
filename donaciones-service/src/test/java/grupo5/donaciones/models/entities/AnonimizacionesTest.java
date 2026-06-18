@@ -42,12 +42,12 @@ class AnonimizacionesTest {
 
   @Test
   void anonimizar_deberiaMantenerIDYLimpiarDatosSensibles() {
-    persona.setId(99L);
+    java.util.UUID originalId = persona.getId();
     persona.setDocumento("12345678");
 
     persona.anonimizar();
 
-    assertEquals(99L, persona.getId(), "El ID de base de datos NUNCA debe cambiar");
+    assertEquals(originalId, persona.getId(), "El ID de base de datos NUNCA debe cambiar");
     assertNull(persona.getDocumento(), "El DNI es sensible y debe ser eliminado/nulo");
   }
 }

@@ -15,6 +15,11 @@ public class Persona implements Anonimizable, AggregateRoot {
   private String denominacion;
   private TipoPersona tipoPersona;
 
+  @Override
+  public UUID getId() {
+    return this.id;
+  }
+
   public Persona(
       UUID id,
       List<MedioDeContacto> mediosDeContacto,

@@ -10,7 +10,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Humana extends Persona {
+// final para indicar que ninguno más hereda (sino rompe el switch
+public final class Humana extends Persona {
   private String nombre;
   private String apellido;
   private Genero genero;
@@ -35,6 +36,11 @@ public class Humana extends Persona {
     if (fechaNacimiento != null && fechaNacimiento.isAfter(LocalDate.now(ZoneId.systemDefault()))) {
       throw new ValidationException(ErrorCatalog.HUMANA_FECHA_NACIMIENTO_FUTURA);
     }
+  }
+
+  @Override
+  public TipoPersona getTipoPersona() {
+    return TipoPersona.HUMANA;
   }
 
   @Override
