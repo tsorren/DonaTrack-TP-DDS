@@ -13,6 +13,9 @@ name: DonaTrack CI Pipeline
 on:
   pull_request:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 # ── Concurrencia ─────────────────────────────────────────────────────────────
 # Cancela ejecuciones previas del mismo PR para ahorrar minutos de CI
 concurrency:
@@ -92,7 +95,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Detectar módulos modificados
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -187,7 +190,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   lint-and-format:
     needs: detect-changes
-    if: needs.detect-changes.outputs.any-service == 'true'
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -216,9 +219,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   build-and-test:
     needs: detect-changes
-    if: >-
-      needs.detect-changes.outputs.any-service == 'true' &&
-      toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]'
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -262,6 +263,22 @@ jobs:
           path: ${{ matrix.service }}/target/surefire-reports/
           retention-days: 14
 
+      - name: Subir JAR de ${{ matrix.service }}
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jar-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/*.jar
+          retention-days: 1
+
+      - name: Subir PUML de ${{ matrix.service }}
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: puml-pr-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/modelo_tecnico.puml
+          retention-days: 1
+
   # ──────────────────────────────────────────────────────────────────────────
   # Job 5: Análisis SonarCloud
   # ──────────────────────────────────────────────────────────────────────────
@@ -271,11 +288,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   sonar-analysis:
     needs: [lint-and-format, build-and-test]
-    if: >-
-      always() &&
-      needs.build-and-test.result == 'success' &&
-      needs.lint-and-format.result == 'success' &&
-      (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_'))
+    if: ${{ always() && needs.build-and-test.result == 'success' && needs.lint-and-format.result == 'success' && (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_')) }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -293,8 +306,45 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # Necesitamos recompilar para que Sonar tenga las clases y reportes
-      - name: Build completo + Análisis Sonar
+      - name: Descargar reportes de JaCoCo
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jacoco-*
+          path: jacoco-reports
+
+      - name: Descargar reportes de Surefire
+        uses: actions/download-artifact@v4
+        with:
+          pattern: surefire-*
+          path: surefire-reports
+
+      - name: Reubicar reportes de test y cobertura
+        run: |
+          # Reubicar JaCoCo
+          if [ -d "jacoco-reports" ]; then
+            for dir in jacoco-reports/jacoco-*; do
+              if [ -d "$dir" ]; then
+                svc="${dir#jacoco-reports/jacoco-}"
+                echo "📋 Reubicando reporte de cobertura para $svc..."
+                mkdir -p "${svc}/target/site/jacoco"
+                cp -r "$dir"/* "${svc}/target/site/jacoco/"
+              fi
+            done
+          fi
+
+          # Reubicar Surefire
+          if [ -d "surefire-reports" ]; then
+            for dir in surefire-reports/surefire-*; do
+              if [ -d "$dir" ]; then
+                svc="${dir#surefire-reports/surefire-}"
+                echo "📋 Reubicando reporte de tests para $svc..."
+                mkdir -p "${svc}/target/surefire-reports"
+                cp -r "$dir"/* "${svc}/target/surefire-reports/"
+              fi
+            done
+          fi
+
+      - name: Compilar clases y análisis Sonar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -302,8 +352,8 @@ jobs:
           SONAR_ORG: ${{ secrets.SONAR_ORG }}
           SONAR_URL: ${{ secrets.SONAR_URL }}
         run: |
-          echo "📊 Ejecutando análisis SonarCloud..."
-          mvn -B clean verify sonar:sonar \
+          echo "📊 Compilando y ejecutando análisis SonarCloud..."
+          mvn -B test-compile sonar:sonar \
             -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
             -Dsonar.organization="$SONAR_ORG" \
             -Dsonar.host.url="$SONAR_URL" \
@@ -320,9 +370,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   docker-build:
     needs: [detect-changes, build-and-test]
-    if: >-
-      needs.build-and-test.result == 'success' &&
-      toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]'
+    if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -332,6 +380,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Descargar JAR compilado
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/
+
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -340,6 +394,9 @@ jobs:
         with:
           context: .
           file: ${{ matrix.service }}/Dockerfile
+          target: ci
+          build-args: |
+            JAR_FILE=${{ matrix.service }}/target/${{ matrix.service }}-1.0.jar
           push: false
           tags: donatrack/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}
           cache-from: type=gha,scope=${{ matrix.service }}
@@ -352,13 +409,19 @@ jobs:
   # Se ejecuta siempre que hay cambios en los servicios.
   # ──────────────────────────────────────────────────────────────────────────
   generate-diagrams:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.any-service == 'true'
+    needs: [detect-changes, build-and-test]
+    if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout de la rama Base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Configurar JDK 21
         uses: actions/setup-java@v4
@@ -367,48 +430,59 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Instalar PlantUML
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq plantuml graphviz
+      - name: Descargar PUML de PR
+        uses: actions/download-artifact@v4
+        with:
+          name: puml-pr-${{ matrix.service }}
+          path: pr_uml/
 
-      - name: Generar diagramas PlantUML desde el código
+      - name: Instalar Graphviz y descargar PlantUML
         run: |
-          echo "📐 Generando diagramas de clases desde el código..."
+          sudo apt-get install -y -q --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout="10" -o Acquire::https::Timeout="10" -o DPkg::Lock::Timeout=30 graphviz || (sudo apt-get update -q -o Acquire::Retries=3 -o Acquire::http::Timeout="10" -o Acquire::https::Timeout="10" && sudo apt-get install -y -q --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout="10" -o Acquire::https::Timeout="10" -o DPkg::Lock::Timeout=30 graphviz)
+          curl --proto '=https' --proto-redir =https -L -s -o plantuml.jar https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
+
+      - name: Generar PUML de Base
+        run: |
+          echo "📐 Generando diagrama de clase para ${{ matrix.service }} en rama Base..."
           mvn -B clean test \
-            -pl donaciones-service,notificaciones-service,incentivos-service -am \
+            -pl ${{ matrix.service }} -am \
             -DskipTests=true \
             -Dspotless.check.skip=true \
             -Dplantuml-generator.skip=false
-          echo "✅ Diagramas generados."
+          echo "✅ Diagrama de Base generado."
 
       - name: Renderizar diagramas a SVG
         run: |
           mkdir -p diagrams-output
-
-          for svc in donaciones-service notificaciones-service incentivos-service; do
-            PUML_FILE="${svc}/target/modelo_tecnico.puml"
-            if [[ -f "$PUML_FILE" ]]; then
-              echo "🎨 Renderizando ${svc}..."
-              plantuml -tsvg -o "$(pwd)/diagrams-output" "$PUML_FILE"
-              # Renombrar para identificar el servicio
-              if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
-                mv "diagrams-output/modelo_tecnico.svg" "diagrams-output/${svc}_modelo_tecnico.svg"
-              fi
-            else
-              echo "⚠️  No se encontró $PUML_FILE — saltando."
+          
+          # Renderizar y renombrar PR
+          if [[ -f "pr_uml/modelo_tecnico.puml" ]]; then
+            echo "🎨 Renderizando PR para ${{ matrix.service }}..."
+            java -jar plantuml.jar -tsvg -o "$(pwd)/diagrams-output" pr_uml/modelo_tecnico.puml
+            if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
+              mv diagrams-output/modelo_tecnico.svg diagrams-output/${{ matrix.service }}_modelo_tecnico_pr.svg
             fi
-          done
+            # Guardar puml renombrado para el diff
+            cp pr_uml/modelo_tecnico.puml diagrams-output/${{ matrix.service }}_pr.puml
+          fi
 
-          echo "📁 Diagramas generados:"
-          ls -la diagrams-output/ || echo "  (vacío)"
+          # Renderizar y renombrar Base
+          if [[ -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]]; then
+            echo "🎨 Renderizando Base para ${{ matrix.service }}..."
+            java -jar plantuml.jar -tsvg -o "$(pwd)/diagrams-output" ${{ matrix.service }}/target/modelo_tecnico.puml
+            if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
+              mv diagrams-output/modelo_tecnico.svg diagrams-output/${{ matrix.service }}_modelo_tecnico_base.svg
+            fi
+            # Guardar puml renombrado para el diff
+            cp ${{ matrix.service }}/target/modelo_tecnico.puml diagrams-output/${{ matrix.service }}_base.puml
+          fi
 
-      - name: Subir diagramas renderizados
+      - name: Subir artefactos de la matriz
         uses: actions/upload-artifact@v4
         with:
-          name: diagramas-modelo-tecnico
+          name: diagramas-servicio-${{ matrix.service }}
           path: diagrams-output/
-          retention-days: 30
+          retention-days: 14
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 8: Semantic UML Diff (Architectural Review)
@@ -417,48 +491,48 @@ jobs:
   # Publica un diff visual en GitHub y Discord.
   # ──────────────────────────────────────────────────────────────────────────
   semantic-uml-diff:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.any-service == 'true'
+    needs: [detect-changes, generate-diagrams]
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
     steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
+      - name: Descargar diagramas de la matriz
+        uses: actions/download-artifact@v4
         with:
-          path: pr_repo
+          pattern: diagramas-servicio-*
+          path: diagramas-temp
 
-      - name: Configurar JDK 21 (PR)
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Generar PUML (PR)
+      - name: Reubicar archivos PUML
         run: |
-          cd pr_repo
-          mvn -B clean test -pl donaciones-service,notificaciones-service,incentivos-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false
-          mkdir -p ../pr_uml_dir
-          cp donaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/donaciones-service.puml || true
-          cp notificaciones-service/target/modelo_tecnico.puml ../pr_uml_dir/notificaciones-service.puml || true
-          cp incentivos-service/target/modelo_tecnico.puml ../pr_uml_dir/incentivos-service.puml || true
-
-      - name: Checkout Base branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}
-          path: base_repo
-
-      - name: Generar PUML (Base)
-        run: |
-          cd base_repo
-          mvn -B clean test -pl donaciones-service,notificaciones-service,incentivos-service -am -DskipTests=true -Dspotless.check.skip=true -Dplantuml-generator.skip=false || true
-          mkdir -p ../base_uml_dir
-          cp donaciones-service/target/modelo_tecnico.puml ../base_uml_dir/donaciones-service.puml || true
-          cp notificaciones-service/target/modelo_tecnico.puml ../base_uml_dir/notificaciones-service.puml || true
-          cp incentivos-service/target/modelo_tecnico.puml ../base_uml_dir/incentivos-service.puml || true
+          mkdir -p base_uml_dir
+          mkdir -p pr_uml_dir
+          
+          # Buscar archivos PUML y copiarlos a sus respectivas carpetas
+          find diagramas-temp -name "*_base.puml" -exec cp {} base_uml_dir/ \;
+          find diagramas-temp -name "*_pr.puml" -exec cp {} pr_uml_dir/ \;
+          
+          # Renombrar para que los archivos a comparar tengan exactamente el mismo nombre (ej: donaciones-service.puml)
+          cd base_uml_dir
+          for f in *_base.puml; do
+            if [[ -f "$f" ]]; then
+              mv "$f" "${f%_base.puml}.puml"
+            fi
+          done
+          
+          cd ../pr_uml_dir
+          for f in *_pr.puml; do
+            if [[ -f "$f" ]]; then
+              mv "$f" "${f%_pr.puml}.puml"
+            fi
+          done
+          
+          echo "📂 Diagramas listos para el diff:"
+          echo "  Base:"
+          ls -la ../base_uml_dir
+          echo "  PR:"
+          ls -la .
 
       - name: Semantic UML Diff
         uses: tsorren/SemanticUMLDiff@main
@@ -473,6 +547,100 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_SEMANTIC_DIFF_WEBHOOK_URL }}
 
   # ──────────────────────────────────────────────────────────────────────────
+  # Job 10: CD - Validación en Pre-Producción (preprod-validation)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Levanta los tres microservicios con Docker Compose, espera sus healthchecks
+  # y ejecuta la suite JUnit + RestAssured del módulo integration-tests.
+  # Si un servicio no fue construido en este PR (no hubo cambios), su JAR se
+  # compila desde fuentes para garantizar el stack completo.
+  # ──────────────────────────────────────────────────────────────────────────
+  preprod-validation:
+    needs: build-and-test
+    if: ${{ needs.build-and-test.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Descargar JARs disponibles como artefactos
+        uses: actions/download-artifact@v4
+        with:
+          pattern: jar-*
+          path: temp-jars/
+          merge-multiple: false
+
+      - name: Reubicar JARs — compilar desde fuentes si alguno no existe
+        run: |
+          for svc in donaciones-service notificaciones-service incentivos-service; do
+            mkdir -p "${svc}/target"
+            if [ -d "temp-jars/jar-${svc}" ]; then
+              cp "temp-jars/jar-${svc}"/*.jar "${svc}/target/"
+              echo "✅ JAR de ${svc} copiado desde artefactos."
+            else
+              echo "⚠️ JAR de ${svc} no disponible — compilando desde fuentes..."
+              mvn clean package -pl "${svc}" -am -DskipTests -Dspotless.check.skip=true -q
+            fi
+          done
+
+      - name: Provisionar Entorno de Pre-Producción (Docker Compose)
+        run: |
+          docker compose -f docker-compose.preprod.yml up --build --wait -d
+
+      - name: Esperar endpoints /v3/api-docs disponibles
+        run: |
+          set -e
+          URLs=("http://localhost:8080/v3/api-docs" "http://localhost:8081/v3/api-docs" "http://localhost:8082/v3/api-docs")
+          for url in "${URLs[@]}"; do
+            echo "Esperando $url..."
+            attempt=0
+            until curl -s -f "$url" >/dev/null; do
+              attempt=$((attempt+1))
+              if [ $attempt -ge 60 ]; then
+                echo "ERROR: $url no respondió con 200 después de 60 intentos."
+                docker compose -f docker-compose.preprod.yml logs --no-color || true
+                exit 1
+              fi
+              sleep 2
+            done
+            echo "$url disponible"
+          done
+
+      - name: Ejecutar Suite de Validación Pre-Producción (JUnit & RestAssured)
+        run: |
+          mvn clean verify -pl integration-tests -DskipTests=false \
+            -Ddonaciones.url=http://localhost:8080 \
+            -Dnotificaciones.url=http://localhost:8081 \
+            -Dincentivos.url=http://localhost:8082
+
+      - name: Recolectar Logs de Contenedores en Fallo
+        if: failure()
+        run: |
+          mkdir -p docker-logs
+          docker compose -f docker-compose.preprod.yml logs --no-color > docker-logs/preprod-services.log
+
+      - name: Archivar Logs de Docker
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-preprod-logs
+          path: docker-logs/
+          retention-days: 7
+
+      - name: Desmantelar Entorno
+        if: always()
+        run: |
+          docker compose -f docker-compose.preprod.yml down -v
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Job 9: Quality Gate (Consolidador Final)
   # ──────────────────────────────────────────────────────────────────────────
   # Job centinela que depende de todos los demás. Usar como "Required
@@ -480,7 +648,7 @@ jobs:
   # un único check verde/rojo que represente todo el pipeline.
   # ──────────────────────────────────────────────────────────────────────────
   quality-gate:
-    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff]
+    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, preprod-validation]
     if: always()
     runs-on: ubuntu-latest
     permissions:
@@ -521,6 +689,7 @@ jobs:
           check_job "docker-build"        "${{ needs.docker-build.result }}"         "true"
           check_job "generate-diagrams"   "${{ needs.generate-diagrams.result }}"    "true"
           check_job "semantic-uml-diff"   "${{ needs.semantic-uml-diff.result }}"    "false"
+          check_job "preprod-validation"  "${{ needs.preprod-validation.result }}"  "true"
 
           echo "══════════════════════════════════════════"
 

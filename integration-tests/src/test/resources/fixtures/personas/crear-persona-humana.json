@@ -1,0 +1,11 @@
+{
+  "tipo": "HUMANA",
+  "tipoDocumento": "DNI",
+  "documento": "12345678",
+  "nombre": "Preprod",
+  "apellido": "CD",
+  "genero": "HOMBRE",
+  "fechaNacimiento": "2000-01-01",
+  "mediosDeContacto": [],
+  "direccion": null
+}

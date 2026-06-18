@@ -1,4 +1,4 @@
-package grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas;
+package grupo5.donaciones.models.entities.propuestas;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;

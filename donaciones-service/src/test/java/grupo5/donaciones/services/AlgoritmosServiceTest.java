@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
+import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.impl.NecesidadRepository;
 import grupo5.donaciones.models.repositories.impl.PropuestaRepository;

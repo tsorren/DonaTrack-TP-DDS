@@ -1,6 +1,8 @@
 # Build
 target/
 **/target/
+!**/target/*.jar
+
 
 # Git
 .git
