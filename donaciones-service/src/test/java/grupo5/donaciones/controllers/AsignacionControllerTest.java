@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.services.PropuestaService;
@@ -30,12 +29,9 @@ class AsignacionControllerTest {
 
   @InjectMocks private AsignacionController controller;
 
-  private ObjectMapper objectMapper;
-
   @BeforeEach
   void setUp() {
     mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-    objectMapper = new ObjectMapper();
   }
 
   @Test

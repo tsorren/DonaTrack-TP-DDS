@@ -62,7 +62,7 @@ class PropuestasControllerTest {
     ActualizarEstadoRequestDTO request = new ActualizarEstadoRequestDTO();
     request.setEstado(EstadoPropuesta.APROBADA);
 
-    doNothing().when(propuestaService).actualizarEstado(eq(id), eq(EstadoPropuesta.APROBADA));
+    doNothing().when(propuestaService).actualizarEstado(id, EstadoPropuesta.APROBADA);
 
     mockMvc
         .perform(

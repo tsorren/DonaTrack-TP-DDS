@@ -61,10 +61,6 @@ public class DonanteIncentivos implements AggregateRoot {
         .ifPresent(m -> m.evaluarProgresoExitoso(this));
   }
 
-  private boolean yaAyudoA(UUID organizacionId) {
-    return metricas.yaAyudoA(organizacionId);
-  }
-
   public void otorgarInsignia(Insignia insignia) {
     if (insignia == null) {
       throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
