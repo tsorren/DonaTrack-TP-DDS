@@ -83,11 +83,8 @@ class IncentivosServiceTest {
   @Test
   void procesarDonacion_deberiaLanzarExcepcionSiDonanteNoExiste() {
     UUID id = new UUID(0L, 99L);
-    assertThrows(
-        RecursoNoEncontradoException.class,
-            () ->
-                    service.procesarDonacion(
-                            new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY)));
+    NuevaDonacionRequest request = new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY);
+    assertThrows(RecursoNoEncontradoException.class, () -> service.procesarDonacion(request));
   }
 
   @Test
