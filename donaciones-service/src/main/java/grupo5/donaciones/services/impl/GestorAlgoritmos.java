@@ -1,4 +1,4 @@
-package grupo5.donaciones.services;
+package grupo5.donaciones.services.impl;
 
 import grupo5.donaciones.infraestructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos.AlgoritmoAsignacion;

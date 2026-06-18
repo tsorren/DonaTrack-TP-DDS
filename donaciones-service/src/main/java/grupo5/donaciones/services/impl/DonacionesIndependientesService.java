@@ -1,4 +1,4 @@
-package grupo5.donaciones.services;
+package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
@@ -7,6 +7,8 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import java.util.UUID;
+
+import grupo5.donaciones.services.IDonacionesIndependientesService;
 import org.springframework.stereotype.Service;
 
 @Service

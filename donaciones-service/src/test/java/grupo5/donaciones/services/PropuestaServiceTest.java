@@ -10,6 +10,9 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import java.util.List;
 import java.util.UUID;
+
+import grupo5.donaciones.services.impl.AlgoritmosService;
+import grupo5.donaciones.services.impl.PropuestaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

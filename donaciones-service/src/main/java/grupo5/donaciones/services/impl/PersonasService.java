@@ -1,4 +1,4 @@
-package grupo5.donaciones.services;
+package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
@@ -7,6 +7,7 @@ import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.IPersonasService;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.util.List;
 import java.util.UUID;

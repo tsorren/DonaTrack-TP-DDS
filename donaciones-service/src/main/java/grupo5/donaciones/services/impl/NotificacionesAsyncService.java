@@ -1,4 +1,4 @@
-package grupo5.donaciones.services;
+package grupo5.donaciones.services.impl;
 
 import grupo5.donaciones.dto.replicas.PersonaReplicaDTO;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;

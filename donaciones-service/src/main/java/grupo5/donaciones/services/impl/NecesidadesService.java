@@ -1,4 +1,4 @@
-package grupo5.donaciones.services;
+package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
@@ -15,6 +15,8 @@ import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.time.Period;
 import java.util.List;
 import java.util.UUID;
+
+import grupo5.donaciones.services.INecesidadesService;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -1,6 +1,6 @@
 package grupo5.donaciones.schedulers;
 
-import grupo5.donaciones.services.PropuestaService;
+import grupo5.donaciones.services.impl.PropuestaService;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;

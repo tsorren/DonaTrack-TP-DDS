@@ -2,7 +2,7 @@ package grupo5.donaciones.controllers;
 
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
-import grupo5.donaciones.services.PropuestaService;
+import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
