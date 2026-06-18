@@ -13,7 +13,9 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
-import grupo5.incentivos.models.repositories.RankingMensualRepository;
+import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
+import grupo5.incentivos.models.repositories.IRankingRepository;
+import grupo5.incentivos.models.repositories.RankingRepository;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
@@ -31,8 +33,8 @@ class RankingServiceTest {
 
   @Mock private N8nClient n8nClient;
 
-  private DonanteIncentivosRepository donanteRepository;
-  private RankingMensualRepository rankingRepository;
+  private IDonanteIncentivosRepository donanteRepository;
+  private IRankingRepository rankingRepository;
   private RankingService rankingService;
 
   private static final YearMonth PERIODO = YearMonth.of(2026, Month.MAY);
@@ -40,7 +42,7 @@ class RankingServiceTest {
   @BeforeEach
   void setUp() {
     donanteRepository = new DonanteIncentivosRepository();
-    rankingRepository = new RankingMensualRepository();
+    rankingRepository = new RankingRepository();
     rankingService = new RankingService(donanteRepository, rankingRepository, n8nClient);
   }
 

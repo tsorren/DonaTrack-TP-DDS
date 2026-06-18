@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
-public class MisionFactory {
+public class MisionFactory implements IMisionFactory {
 
   public List<Mision> crearMisionesEstandar() {
     List<Mision> misiones = new ArrayList<>();

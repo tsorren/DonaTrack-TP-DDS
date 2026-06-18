@@ -6,11 +6,12 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.incentivos.dto.*;
 import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
+import grupo5.incentivos.models.entities.donante.CambioCategoria;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
-import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
@@ -21,19 +22,19 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
-public class IncentivosService {
+public class IncentivosService implements IIncentivosService {
 
-  private final DonanteIncentivosRepository repository;
-  private final MisionFactory misionFactory;
+  private final IDonanteIncentivosRepository repository;
+  private final IMisionFactory misionFactory;
   private final NotificacionesClient notificacionesClient;
-  private final RankingService rankingService;
+  private final IRankingService rankingService;
   private final N8nClient n8nClient;
 
   public IncentivosService(
-      DonanteIncentivosRepository repository,
-      MisionFactory misionFactory,
+      IDonanteIncentivosRepository repository,
+      IMisionFactory misionFactory,
       NotificacionesClient notificacionesClient,
-      RankingService rankingService,
+      IRankingService rankingService,
       N8nClient n8nClient) {
     this.repository = repository;
     this.misionFactory = misionFactory;
@@ -100,8 +101,9 @@ public class IncentivosService {
             });
 
     if (donante.intentarAscenso()) {
+      CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
       notificacionesClient.notificarAscensoCategoria(
-          donante.getId(), donante.getCategoria().name());
+          donante.getId(), ultimoCambio.getNueva().name(), ultimoCambio.getAnterior().name());
     }
 
     repository.save(donante);
@@ -138,8 +140,9 @@ public class IncentivosService {
             });
 
     if (donante.intentarAscenso()) {
+      CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
       notificacionesClient.notificarAscensoCategoria(
-          donante.getId(), donante.getCategoria().name());
+          donante.getId(), ultimoCambio.getNueva().name(), ultimoCambio.getAnterior().name());
     }
 
     repository.save(donante);
