@@ -7,7 +7,9 @@ import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.dto.personas.*;
 import grupo5.donaciones.models.entities.personas.*;
 import grupo5.donaciones.models.entities.personas.factories.PersonaFactory;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -185,5 +187,51 @@ public class PersonaMapper {
         h.getApellido(),
         h.getGenero(),
         h.getFechaNacimiento());
+  }
+
+  public Persona mapToPersona(Map<String, String> fila) {
+    String tipo = fila.getOrDefault("TIPO_PERSONA", "HUMANA").toUpperCase();
+    Persona persona;
+
+    if ("JURIDICA".equals(tipo)) {
+      String razonSocial = fila.get("RAZON_SOCIAL");
+      // Crear un representante por defecto para cumplir con la validación del dominio.
+      Humana representanteDefault = new Humana("Representante", "Legal", LocalDate.now());
+      persona = PersonaFactory.crearJuridica(razonSocial, null, null, representanteDefault);
+    } else {
+      String nombre = fila.get("NOMBRE");
+      String apellido = fila.get("APELLIDO");
+      LocalDate fecha = null;
+      String fechaStr = fila.get("FECHA_NACIMIENTO");
+      if (fechaStr != null && !fechaStr.isBlank()) {
+        fecha = LocalDate.parse(fechaStr);
+      }
+
+      persona = PersonaFactory.crearHumana(nombre, apellido, fecha, null);
+    }
+
+    if (fila.containsKey("TIPO_DOCUMENTO") && fila.containsKey("DOCUMENTO")) {
+      String tipoDocStr = fila.get("TIPO_DOCUMENTO");
+      if (tipoDocStr != null && !tipoDocStr.isBlank()) {
+        persona.setTipoDocumento(TipoDocumento.valueOf(tipoDocStr.toUpperCase()));
+      }
+      persona.setDocumento(fila.get("DOCUMENTO"));
+    }
+
+    String email = fila.get("EMAIL");
+    if (email != null && !email.isBlank()) {
+      Correo correo = new Correo();
+      correo.setDireccionCorreo(email.trim());
+      persona.agregarMedioDeContacto(correo);
+    }
+
+    String telefono = fila.get("TELEFONO");
+    if (telefono != null && !telefono.isBlank()) {
+      Telefono tel = new Telefono();
+      tel.setNumero(telefono.trim());
+      persona.agregarMedioDeContacto(tel);
+    }
+
+    return persona;
   }
 }

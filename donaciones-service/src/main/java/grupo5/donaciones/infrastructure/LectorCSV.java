@@ -1,21 +1,8 @@
 package grupo5.donaciones.infrastructure;
 
-import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.common.exceptions.InfrastructureException;
-import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.ports.CargadorDonantes;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+public class LectorCSV {
 
-public class LectorCSV implements CargadorDonantes {
-
-  @Override
+  /*  @Override
   public List<Humana> cargarDonantes(String rutaArchivo) {
     List<Humana> personasCargadas = new ArrayList<>();
     try {
@@ -50,5 +37,5 @@ public class LectorCSV implements CargadorDonantes {
     } catch (Exception e) {
       throw new InfrastructureException(ErrorCatalog.CSV_PROCESS_ERROR, e);
     }
-  }
+  }*/
 }

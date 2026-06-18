@@ -25,7 +25,7 @@ public class ArchivoDonantesController {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
-    // Registramos usando el string limpio extraído del record input
+    // Registramos usando el string limpio extraído del record input -> service
     Archivo archivo = importacionService.registrarArchivoInicial(input.path());
 
     importacionService.procesarArchivoMasivo(archivo);

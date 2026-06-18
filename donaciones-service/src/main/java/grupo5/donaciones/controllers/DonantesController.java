@@ -1,7 +1,11 @@
 package grupo5.donaciones.controllers;
 
+import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
+import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
+import grupo5.donaciones.models.entities.donantes.Archivo;
+import grupo5.donaciones.services.ArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
 import java.util.List;
 import java.util.UUID;
@@ -14,9 +18,12 @@ import org.springframework.web.bind.annotation.*;
 public class DonantesController implements IDonantesController {
 
   private final IDonantesService donantesService;
+  private final ArchivoDonantesService archivoDonantesService;
 
-  public DonantesController(IDonantesService donantesService) {
+  public DonantesController(
+      IDonantesService donantesService, ArchivoDonantesService archivoDonantesService) {
     this.donantesService = donantesService;
+    this.archivoDonantesService = archivoDonantesService;
   }
 
   @Override
@@ -47,5 +54,22 @@ public class DonantesController implements IDonantesController {
       @PathVariable("id") UUID id, @RequestBody DonanteInputDTO dto) {
     DonanteOutputDTO donanteActualizado = donantesService.actualizarCanal(id, dto);
     return ResponseEntity.ok(donanteActualizado);
+  }
+
+  @PostMapping("/archivos")
+  public ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(
+      @RequestBody ArchivoInputDTO input) {
+    if (input.path() == null || input.path().isBlank()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
+    Archivo archivo = archivoDonantesService.registrarArchivoInicial(input.path());
+
+    archivoDonantesService.procesarArchivoMasivo(archivo);
+
+    ArchivoOutputDTO responseBody =
+        new ArchivoOutputDTO(archivo.getId(), archivo.getPath(), archivo.getEstado().toString());
+
+    return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
   }
 }
