@@ -55,8 +55,7 @@ class AsignableTests {
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
     ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 10);
-    donacionIndependiente =
-        new DonacionIndependiente(donacionOriginal, List.of(item), subcategoria);
+    donacionIndependiente = new DonacionIndependiente(donacionOriginal, List.of(item));
   }
 
   @Test
