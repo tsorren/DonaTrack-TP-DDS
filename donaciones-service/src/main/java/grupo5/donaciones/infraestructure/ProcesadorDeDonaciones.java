@@ -1,9 +1,11 @@
 package grupo5.donaciones.infraestructure;
 
+import grupo5.donaciones.infraestructure.analizadores.Normalizador;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
-import grupo5.donaciones.models.repositories.DonacionRepository;
+import grupo5.donaciones.models.ports.Segmentador;
+import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +18,12 @@ public class ProcesadorDeDonaciones {
 
   private final Normalizador normalizador;
   private final Segmentador segmentador;
-  private final DonacionRepository donacionRepository;
+  private final DonacionRepositoryEnMemoria donacionRepository;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
 
   @Async
   public void procesar(Donacion donacion) {
-    List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion.getItems());
+    List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion.getItems()); // falta ajustar normalizador de bienes
     donacion.marcarNormalizada();
     donacionRepository.save(donacion);
 
