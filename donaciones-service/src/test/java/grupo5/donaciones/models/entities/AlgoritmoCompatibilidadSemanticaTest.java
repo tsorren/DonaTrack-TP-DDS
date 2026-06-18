@@ -33,7 +33,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
   private Subcategoria subcategoria;
   private Subcategoria subcategoriaOtra;
   private Donacion donacionOriginal;
-  private BienNormalizado bienNormalizado;
+
   private BienNormalizado bienNormalizadoOtro;
   private AlgoritmoCompatibilidadSemantica algoritmo;
 
@@ -44,7 +44,6 @@ class AlgoritmoCompatibilidadSemanticaTest {
     subcategoria = new Subcategoria(categoria, "Muebles Escolares");
     subcategoriaOtra = new Subcategoria(categoria, "Muebles de Oficina");
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
-    bienNormalizado = new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
     bienNormalizadoOtro =
         new BienNormalizado(bien, subcategoriaOtra, 1.0, EstadoNormalizacion.ACEPTADO);
 
@@ -58,8 +57,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
         new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienConDescripcion, cantidad));
-    DonacionIndependiente donacion = new DonacionIndependiente(donacionOriginal, items);
-    return donacion;
+    return new DonacionIndependiente(donacionOriginal, items);
   }
 
   @Test

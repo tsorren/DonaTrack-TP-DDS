@@ -41,7 +41,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     return toDTO(donacion);
   }
 
-  private DonacionIndependienteResponseDTO toDTO(DonacionIndependiente donacion) {
+  private static DonacionIndependienteResponseDTO toDTO(DonacionIndependiente donacion) {
     return new DonacionIndependienteResponseDTO(
         donacion.getId(),
         donacion.getEstadoActual().getClass().getSimpleName(),

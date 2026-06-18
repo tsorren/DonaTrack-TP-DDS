@@ -106,37 +106,4 @@ class SubcategoriaTest {
 
     assertEquals(1, subcategoria.getAliases().size());
   }
-
-  /* TODO: Pasar a capa service
-  @Test
-  void calcularStock_SumaCorrectamenteLosItemsDeLasDonaciones() {
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 5);
-
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 10);
-
-    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien, 5);
-
-    List<ItemDonacionIndependiente> items1 = new ArrayList<>();
-    items1.add(item1);
-    items1.add(item2);
-    new DonacionIndependiente(subcategoria, items1);
-
-    List<ItemDonacionIndependiente> items2 = new ArrayList<>();
-    items2.add(item3);
-
-    new DonacionIndependiente(subcategoria, items2);
-
-    Integer stockTotal = subcategoria.calcularStock();
-
-    assertEquals(
-        20,
-        stockTotal,
-        "El stock total debería ser la suma exacta de todos los ítems de las donaciones asociadas.");
-  }
-
-  @Test
-  void calcularStock_cuandoNoHayDonaciones_deberiaRetornarCero() {
-    assertEquals(0, subcategoria.calcularStock(), "El stock debe ser 0 si no hay donaciones");
-  }
-  */
 }

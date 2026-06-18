@@ -12,6 +12,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.services.INecesidadesService;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,8 +58,8 @@ class NecesidadesControllerTest {
             10,
             "Fideos para el comedor",
             false,
-            LocalDate.of(2026, 6, 1),
-            LocalDate.of(2026, 7, 1));
+            LocalDate.of(2026, Month.JUNE, 1),
+            LocalDate.of(2026, Month.JULY, 1));
 
     when(necesidadesService.guardar(any(NecesidadDTO.class))).thenReturn(dto);
 
@@ -87,7 +88,7 @@ class NecesidadesControllerTest {
             5,
             "Ropa abrigo",
             false,
-            LocalDate.of(2026, 6, 1),
+            LocalDate.of(2026, Month.JUNE, 1),
             null);
 
     when(necesidadesService.listarConFiltros(null, null)).thenReturn(List.of(dto));
@@ -114,8 +115,8 @@ class NecesidadesControllerTest {
             10,
             "Leche",
             false,
-            LocalDate.of(2026, 6, 1),
-            LocalDate.of(2026, 8, 1));
+            LocalDate.of(2026, Month.JUNE, 1),
+            LocalDate.of(2026, Month.AUGUST, 1));
 
     when(necesidadesService.listarConFiltros(entidadId, tipo)).thenReturn(List.of(dto));
 

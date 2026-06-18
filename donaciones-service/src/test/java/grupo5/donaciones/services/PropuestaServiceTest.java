@@ -14,7 +14,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class PropuestaServiceTest {
+class PropuestaServiceTest {
 
   private AlgoritmosService algoritmosService;
   private IAsignacionRepository asignacionRepository;

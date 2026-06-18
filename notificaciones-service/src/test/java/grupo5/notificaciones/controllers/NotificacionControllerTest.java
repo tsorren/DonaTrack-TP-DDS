@@ -32,6 +32,9 @@ class NotificacionControllerTest {
   @MockitoBean // Simula el servicio para no ejecutar lógica real
   private NotificacionService notificacionService;
 
+  private static final LocalDateTime TEST_DATE_TIME =
+      LocalDateTime.of(2026, java.time.Month.JUNE, 18, 12, 0, 0);
+
   private Persona personaMock;
 
   @BeforeEach
@@ -46,7 +49,7 @@ class NotificacionControllerTest {
   @Test
   void registrarDonante_deberiaResponderOkYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
-        new EventoDonanteRegistradoDTO(personaMock.getId(), LocalDateTime.now(), "user123");
+        new EventoDonanteRegistradoDTO(personaMock.getId(), TEST_DATE_TIME, "user123");
 
     mockMvc
         .perform(
@@ -62,7 +65,7 @@ class NotificacionControllerTest {
   @Test
   void donanteInactivo_deberiaResponderOkYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
-        new EventoDonanteInactivoDTO(personaMock.getId(), LocalDateTime.now(), 30);
+        new EventoDonanteInactivoDTO(personaMock.getId(), TEST_DATE_TIME, 30);
 
     mockMvc
         .perform(
@@ -79,7 +82,7 @@ class NotificacionControllerTest {
   void donacionAsignada_deberiaResponderOkYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionAsignadaDTO(
-            personaMock.getId(), LocalDateTime.now(), personaMock.getId(), "10kg de arroz");
+            personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "10kg de arroz");
 
     mockMvc
         .perform(
@@ -96,7 +99,7 @@ class NotificacionControllerTest {
   void donacionRecibida_deberiaResponderOkYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionRecibidaDTO(
-            personaMock.getId(), LocalDateTime.now(), personaMock.getId(), "ropa");
+            personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "ropa");
 
     mockMvc
         .perform(

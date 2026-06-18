@@ -6,19 +6,22 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class EventosNotificablesTest {
+  private static final LocalDateTime TEST_DATE_TIME =
+      LocalDateTime.of(2026, Month.JUNE, 18, 12, 0, 0);
 
   @Test
   void subioCategoria_deberiaGenerarMensajeCorrecto() {
     Persona persona =
         new Persona(UUID.randomUUID(), new ArrayList<>(), "Persona", TipoPersona.HUMANA);
 
-    SubioCategoria evento = new SubioCategoria(persona, "Bronce", "Platino", LocalDateTime.now());
+    SubioCategoria evento = new SubioCategoria(persona, "Bronce", "Platino", TEST_DATE_TIME);
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 
@@ -33,7 +36,7 @@ class EventosNotificablesTest {
         new Persona(UUID.randomUUID(), new ArrayList<>(), "Persona", TipoPersona.HUMANA);
 
     MisionCumplida evento =
-        new MisionCumplida(persona, "Donador Frecuente", "100 puntos", LocalDateTime.now());
+        new MisionCumplida(persona, "Donador Frecuente", "100 puntos", TEST_DATE_TIME);
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 
@@ -48,8 +51,7 @@ class EventosNotificablesTest {
   void generarNotificaciones_deberiaCrearMensajeDeBienvenida() {
     Persona persona =
         new Persona(UUID.randomUUID(), new ArrayList<>(), "Persona", TipoPersona.HUMANA);
-    DonanteRegistrado evento =
-        new DonanteRegistrado(persona, "usuario: Usuario", LocalDateTime.now());
+    DonanteRegistrado evento = new DonanteRegistrado(persona, "usuario: Usuario", TEST_DATE_TIME);
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 
@@ -69,7 +71,7 @@ class EventosNotificablesTest {
             UUID.randomUUID(), new ArrayList<>(), "Comedor Esperanza", TipoPersona.JURIDICA);
 
     DonacionAsignada evento =
-        new DonacionAsignada(donante, beneficiario, "10 cajas de leche", LocalDateTime.now());
+        new DonacionAsignada(donante, beneficiario, "10 cajas de leche", TEST_DATE_TIME);
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 
@@ -91,8 +93,7 @@ class EventosNotificablesTest {
         new Persona(
             UUID.randomUUID(), new ArrayList<>(), "Comedor Esperanza", TipoPersona.JURIDICA);
 
-    DonacionRecibida evento =
-        new DonacionRecibida(donante, beneficiario, "ropa", LocalDateTime.now());
+    DonacionRecibida evento = new DonacionRecibida(donante, beneficiario, "ropa", TEST_DATE_TIME);
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 

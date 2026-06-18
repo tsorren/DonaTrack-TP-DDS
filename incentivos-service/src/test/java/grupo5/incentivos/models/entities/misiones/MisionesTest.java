@@ -164,14 +164,6 @@ class MisionesTest {
   void mision_deberiaCalcularPorcentajeCorrectamente() {
     MisionDonacionesExitosas mision = new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 4);
 
-    EventoDonacion exitosa =
-        EventoDonacion.builder()
-            .donacionId(new UUID(0L, 1L))
-            .fecha(HOY)
-            .cantidadBienes(1)
-            .categorias(List.of("x"))
-            .build();
-
     mision.evaluarProgresoExitoso(donante);
     mision.evaluarProgresoExitoso(donante);
 

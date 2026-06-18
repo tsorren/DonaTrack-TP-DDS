@@ -23,28 +23,6 @@ public class EntidadBeneficiaria implements Anonimizable, AggregateRoot {
     this.juridica = juridica;
   }
 
-  /*public void agregarNecesidad(Necesidad necesidad) {
-      if (necesidad == null) {
-        throw new ValidationException(ErrorCatalog.AGREGAR_NECESIDAD_NULA);
-      }
-
-     if (this.necesidades.contains(necesidad)) {
-        throw new ValidationException(ErrorCatalog.NECESIDAD_YA_REGISTRADA);
-      }
-
-      this.necesidades.add(necesidad);
-    }
-
-    public void quitarNecesidad(Necesidad necesidad) {
-
-      if (!this.necesidades.contains(necesidad)) {
-        throw new ValidationException(ErrorCatalog.NECESIDAD_NO_PERTENECE_A_ENTIDAD);
-      }
-
-      this.necesidades.remove(necesidad);
-    }
-  */
-
   @Override
   public void anonimizar() {
     if (this.juridica != null) {

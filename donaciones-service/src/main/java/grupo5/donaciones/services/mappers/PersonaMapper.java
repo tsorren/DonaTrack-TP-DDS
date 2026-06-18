@@ -84,12 +84,12 @@ public class PersonaMapper {
         };
 
     List<MedioDeContactoReplicaDTO> medios =
-        persona.getMediosDeContacto().stream().map(this::mapMedioToReplica).toList();
+        persona.getMediosDeContacto().stream().map(PersonaMapper::mapMedioToReplica).toList();
 
     return new PersonaReplicaDTO(persona.getId(), denominacion, persona.getTipoPersona(), medios);
   }
 
-  private MedioDeContactoReplicaDTO mapMedioToReplica(MedioDeContacto medio) {
+  private static MedioDeContactoReplicaDTO mapMedioToReplica(MedioDeContacto medio) {
     return switch (medio) {
       case Correo c -> new MedioDeContactoReplicaDTO(
           "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
@@ -134,21 +134,32 @@ public class PersonaMapper {
       return;
     }
 
-    if (entity instanceof Humana h && input instanceof HumanaInputDTO hi) {
-      h.setNombre(hi.nombre());
-      h.setApellido(hi.apellido());
-      h.setFechaNacimiento(hi.fechaNacimiento());
-      h.setGenero(hi.genero());
-    } else if (entity instanceof Juridica j && input instanceof JuridicaInputDTO ji) {
-      j.setRazonSocial(ji.razonSocial());
-      j.setTipo(ji.tipoJuridico());
-      j.setRubro(ji.rubro());
-      j.getRepresentantes().clear();
-      if (ji.representantes() != null) {
-        ji.representantes().forEach(repInput -> j.agregarRepresentante(toHumanaEntity(repInput)));
+    switch (entity) {
+      case Humana h -> {
+        if (input instanceof HumanaInputDTO hi) {
+          h.setNombre(hi.nombre());
+          h.setApellido(hi.apellido());
+          h.setFechaNacimiento(hi.fechaNacimiento());
+          h.setGenero(hi.genero());
+        } else {
+          throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+        }
       }
-    } else {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+      case Juridica j -> {
+        if (input instanceof JuridicaInputDTO ji) {
+          j.setRazonSocial(ji.razonSocial());
+          j.setTipo(ji.tipoJuridico());
+          j.setRubro(ji.rubro());
+          j.getRepresentantes().clear();
+          if (ji.representantes() != null) {
+            ji.representantes()
+                .forEach(repInput -> j.agregarRepresentante(toHumanaEntity(repInput)));
+          }
+        } else {
+          throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+        }
+      }
+      default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 
     entity.setTipoDocumento(input.tipoDocumento());
