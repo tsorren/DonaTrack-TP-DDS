@@ -1,0 +1,24 @@
+{
+  "idDonante": null,
+  "descripcion": "Donación abrigo preprod",
+  "items": [
+    {
+      "descripcionBien": "pantalon",
+      "fotoUrl": null,
+      "fechaVencimiento": null,
+      "estadoBien": "USADO",
+      "cantidad": 2
+    }
+  ],
+  "nombreDeposito": "Deposito Central",
+  "direccion": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "piso": null,
+    "departamento": null,
+    "codigoPostal": "1179",
+    "localidad": "CABA",
+    "provincia": "CABA",
+    "pais": "Argentina"
+  }
+}

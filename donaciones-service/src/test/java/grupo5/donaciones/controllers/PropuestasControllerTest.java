@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
+import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import java.util.UUID;

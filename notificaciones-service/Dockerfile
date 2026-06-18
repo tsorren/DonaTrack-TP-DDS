@@ -1,6 +1,6 @@
-# ==========================
-# Etapa 1: Build de Maven
-# ==========================
+# ==============================================================================
+# Etapa 1: Build de Maven (Para desarrollo local si no se tiene el JAR)
+# ==============================================================================
 FROM maven:3.9.6-eclipse-temurin-21 AS builder
 WORKDIR /app
 
@@ -16,10 +16,25 @@ COPY . .
 RUN mvn clean package -pl ${SERVICE_NAME} -am -DskipTests
 
 
-# ==========================
-# Etapa 2: Imagen final (solo el JAR)
-# ==========================
-FROM eclipse-temurin:21-jre
+# ==============================================================================
+# Etapa 2: Imagen final - CI (Copia el JAR pre-compilado de GitHub Actions)
+# ==============================================================================
+FROM eclipse-temurin:21-jre AS ci
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+
+ARG JAR_FILE
+COPY ${JAR_FILE} app.jar
+
+EXPOSE 8081
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
+# ==============================================================================
+# Etapa 3: Imagen final - Desarrollo local (Por defecto, compila desde builder)
+# ==============================================================================
+FROM eclipse-temurin:21-jre AS local
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # nombre del directorio físico del servicio,
