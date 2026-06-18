@@ -73,17 +73,6 @@ public class IncentivosService implements IIncentivosService {
             .findById(request.donanteId())
             .orElseThrow(() -> new RecursoNoEncontradoException(request.donanteId()));
 
-    /* TODO: Revisar si registrar el donante debería ser responsabilidad de este caso de uso
-    DonanteIncentivos donante =
-      repository
-          .findById(request.donanteId())
-          .orElseGet(
-              () -> {
-                registrarDonante(new RegistrarDonanteRequest(request.donanteId(), request.));
-                return obtenerDonante(donanteId);
-              });
-
-    */
     Set<String> misionesCompletadasAntes =
         donante.getMisiones().stream()
             .filter(Mision::isCompletada)

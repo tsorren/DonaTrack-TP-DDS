@@ -13,7 +13,6 @@ import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
@@ -38,6 +37,8 @@ class IncentivosServiceTest {
   private IncentivosService service;
   private DonanteIncentivosRepository repository;
   private MisionFactory misionFactory;
+
+  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
 
   @BeforeEach
   void setUp() {
@@ -175,9 +176,9 @@ class IncentivosServiceTest {
 
   @Test
   void obtenerDonante_deberiaLanzarExcepcionSiNoExiste() {
+    UUID uuid = new UUID(0L, 999L);
     BusinessStateException ex =
-        assertThrows(
-            BusinessStateException.class, () -> service.obtenerDonante(new UUID(0L, 999L)));
+        assertThrows(BusinessStateException.class, () -> service.obtenerDonante(uuid));
     assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
   }
 
@@ -222,7 +223,8 @@ class IncentivosServiceTest {
 
   @Test
   void darDeBaja_deberiaLanzarExcepcionSiDonanteNoExiste() {
-    assertThrows(BusinessStateException.class, () -> service.darDeBaja(new UUID(0L, 999L)));
+    UUID uuid = new UUID(0L, 999L);
+    assertThrows(BusinessStateException.class, () -> service.darDeBaja(uuid));
   }
 
   @Test
@@ -258,16 +260,5 @@ class IncentivosServiceTest {
     assertEquals(id, metricas.donanteId());
     assertEquals(CategoriaDonante.COLABORADOR, metricas.categoria());
     assertEquals(0, metricas.totalDonacionesHistoricas());
-  }
-
-  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
-
-  private EventoDonacion eventoHoy(UUID donacionId) {
-    return EventoDonacion.builder()
-        .donacionId(donacionId)
-        .fecha(HOY)
-        .cantidadBienes(1)
-        .categorias(List.of("arroz"))
-        .build();
   }
 }

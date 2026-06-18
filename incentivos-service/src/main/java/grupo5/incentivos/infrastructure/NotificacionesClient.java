@@ -1,6 +1,7 @@
 package grupo5.incentivos.infrastructure;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,8 @@ public class NotificacionesClient {
   @Async
   public void notificarMisionCumplida(UUID donanteId, String nombreMision, String recompensa) {
     enviar(
-        new EventoMisionCumplidaRequest(donanteId, LocalDateTime.now(), nombreMision, recompensa),
+        new EventoMisionCumplidaRequest(
+            donanteId, LocalDateTime.now(ZoneId.systemDefault()), nombreMision, recompensa),
         "MISION_CUMPLIDA",
         donanteId);
   }
@@ -31,7 +33,7 @@ public class NotificacionesClient {
       UUID donanteId, String categoriaNueva, String categoriaVieja) {
     enviar(
         new EventoSubioCategoriaRequest(
-            donanteId, LocalDateTime.now(), categoriaNueva, categoriaVieja),
+            donanteId, LocalDateTime.now(ZoneId.systemDefault()), categoriaNueva, categoriaVieja),
         "SUBIO_CATEGORIA",
         donanteId);
   }
@@ -39,7 +41,8 @@ public class NotificacionesClient {
   @Async
   public void notificarInactividad(UUID donanteId, int diasInactivo) {
     enviar(
-        new EventoDonanteInactivoRequest(donanteId, LocalDateTime.now(), diasInactivo),
+        new EventoDonanteInactivoRequest(
+            donanteId, LocalDateTime.now(ZoneId.systemDefault()), diasInactivo),
         "DONANTE_INACTIVO",
         donanteId);
   }
