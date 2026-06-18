@@ -1,4 +1,5 @@
 package grupo5.donaciones.dto.propuestas;
 
-public record PropuestaResponseDTO(
-    Long id, String estado, String necesidadDescripcion, Long donacionIndependienteId) {}
+import java.util.UUID;
+
+public record PropuestaResponseDTO(UUID id, String estado, String necesidadDescripcion) {}

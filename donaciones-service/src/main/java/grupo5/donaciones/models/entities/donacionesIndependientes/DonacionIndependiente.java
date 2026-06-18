@@ -3,7 +3,7 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.RecursoDTO;
+import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.necesidades.Asignable;
@@ -18,7 +18,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class DonacionIndependiente implements RecursoDTO {
+public class DonacionIndependiente implements AggregateRoot {
   private UUID id;
   private Donacion donacionOriginal;
   private final Subcategoria subcategoria;
@@ -30,6 +30,7 @@ public class DonacionIndependiente implements RecursoDTO {
 
   public DonacionIndependiente(
       Donacion donacionOriginal, List<ItemDonacionIndependiente> items, Subcategoria subcategoria) {
+    this.id = UUID.randomUUID();
     this.donacionOriginal = donacionOriginal;
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);

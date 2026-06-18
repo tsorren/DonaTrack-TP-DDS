@@ -2,7 +2,7 @@ package grupo5.donaciones.models.entities.necesidades;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.RecursoDTO;
+import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -15,7 +15,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public abstract class Necesidad implements Asignable, RecursoDTO {
+public abstract class Necesidad implements Asignable, AggregateRoot {
   private UUID id;
   private Subcategoria subcategoria;
   private Integer cantidadNecesitada;

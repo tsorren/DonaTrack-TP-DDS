@@ -2,7 +2,7 @@ package grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.RecursoDTO;
+import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.time.LocalDateTime;
@@ -14,7 +14,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Propuesta implements RecursoDTO {
+public class Propuesta implements AggregateRoot {
   UUID id;
   Necesidad necesidadQueSatisface;
   List<PosibleFragmentacion> posiblesFragmentaciones;
@@ -22,6 +22,7 @@ public class Propuesta implements RecursoDTO {
   LocalDateTime fechaCreacion;
 
   public void agregarFragmentacion(DonacionIndependiente donacion, int cantidad) {
+    this.id = UUID.randomUUID();
     if (donacion == null)
       throw new ValidationException(ErrorCatalog.PROPUESTA_FRAGMENTACION_DONACION_NULA);
     if (cantidad <= 0)
