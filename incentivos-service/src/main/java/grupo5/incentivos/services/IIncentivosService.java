@@ -5,7 +5,7 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import java.util.List;
 import java.util.UUID;
 
-public interface IDonanteIncentivosService {
+public interface IIncentivosService {
   DonanteRegistradoDTO registrarDonante(RegistrarDonanteRequest request);
 
   void procesarDonacion(NuevaDonacionRequest request);

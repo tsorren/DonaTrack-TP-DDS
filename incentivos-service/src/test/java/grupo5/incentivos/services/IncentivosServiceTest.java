@@ -35,7 +35,7 @@ class IncentivosServiceTest {
   @Mock private RankingService rankingService;
   @Mock private N8nClient n8nClient;
 
-  private DonanteIncentivosService service;
+  private IncentivosService service;
   private DonanteIncentivosRepository repository;
   private MisionFactory misionFactory;
 
@@ -44,7 +44,7 @@ class IncentivosServiceTest {
     repository = new DonanteIncentivosRepository();
     misionFactory = new MisionFactory();
     service =
-        new DonanteIncentivosService(
+        new IncentivosService(
             repository, misionFactory, notificacionesClient, rankingService, n8nClient);
   }
 

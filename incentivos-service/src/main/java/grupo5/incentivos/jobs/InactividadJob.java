@@ -3,7 +3,7 @@ package grupo5.incentivos.jobs;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
-import grupo5.incentivos.services.DonanteIncentivosService;
+import grupo5.incentivos.services.IncentivosService;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +15,12 @@ public class InactividadJob {
 
   private static final Logger log = LoggerFactory.getLogger(InactividadJob.class);
 
-  private final DonanteIncentivosService service;
+  private final IncentivosService service;
   private final NotificacionesClient notificacionesClient;
   private final List<CriterioInactividad> criterios;
 
   public InactividadJob(
-      DonanteIncentivosService service,
+      IncentivosService service,
       NotificacionesClient notificacionesClient,
       List<CriterioInactividad> criterios) {
     this.service = service;

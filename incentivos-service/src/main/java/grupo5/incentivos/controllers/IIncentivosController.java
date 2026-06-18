@@ -6,7 +6,7 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-public interface IDonanteIncentivosController {
+public interface IIncentivosController {
   ResponseEntity<Void> procesarDonacion(@RequestBody NuevaDonacionRequest request);
 
   ResponseEntity<Void> procesarDonacionExitosa(@RequestBody DonacionExitosaRequest request);

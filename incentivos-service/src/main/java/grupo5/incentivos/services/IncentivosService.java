@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DonanteIncentivosService implements IDonanteIncentivosService {
+public class IncentivosService implements IIncentivosService {
 
   private final IDonanteIncentivosRepository repository;
   private final IMisionFactory misionFactory;
@@ -30,7 +30,7 @@ public class DonanteIncentivosService implements IDonanteIncentivosService {
   private final IRankingService rankingService;
   private final N8nClient n8nClient;
 
-  public DonanteIncentivosService(
+  public IncentivosService(
       IDonanteIncentivosRepository repository,
       IMisionFactory misionFactory,
       NotificacionesClient notificacionesClient,
