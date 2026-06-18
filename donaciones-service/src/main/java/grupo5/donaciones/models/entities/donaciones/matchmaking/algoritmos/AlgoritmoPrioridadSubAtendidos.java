@@ -1,9 +1,13 @@
 package grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +17,9 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
 
   @Override
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
-    LocalDateTime hace3meses = LocalDateTime.now().minusMonths(3);
+    if (necesidades == null)
+      throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);
+    LocalDateTime hace3meses = LocalDateTime.now(ZoneId.systemDefault()).minusMonths(3);
 
     Map<EntidadBeneficiaria, Integer> donacionesPorEntidad = new HashMap<>();
     for (Necesidad necesidad : necesidades) {
@@ -36,6 +42,8 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
   @Override
   public List<DonacionIndependiente> filtrarDonaciones(
       Necesidad necesidad, List<DonacionIndependiente> donaciones) {
+    if (necesidad == null) throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDAD_NULA);
+    if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
     List<DonacionIndependiente> filtradas = new ArrayList<>();
     for (DonacionIndependiente donacion : donaciones) {
       if (mismaSubcategoria(donacion, necesidad)) {
@@ -45,8 +53,10 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
     return filtradas;
   }
 
-  private int contarDonacionesRecientes(Necesidad necesidad, LocalDateTime desde) {
-    List<DonacionIndependiente> asignadas = necesidad.getDonacionesAsignadas();
+  private static int contarDonacionesRecientes(Necesidad necesidad, LocalDateTime desde) {
+    if (!(necesidad instanceof NecesidadExtraordinaria)) return 0;
+    List<DonacionIndependiente> asignadas =
+        ((NecesidadExtraordinaria) necesidad).getDonacionesAsignadas();
     if (asignadas == null) return 0;
     int contador = 0;
     for (DonacionIndependiente donacion : asignadas) {

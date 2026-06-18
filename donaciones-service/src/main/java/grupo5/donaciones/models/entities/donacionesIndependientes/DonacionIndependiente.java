@@ -3,6 +3,7 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.necesidades.Asignable;
@@ -11,12 +12,14 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class DonacionIndependiente {
+public class DonacionIndependiente implements AggregateRoot {
+  private UUID id;
   private Donacion donacionOriginal;
   private final Subcategoria subcategoria;
   private List<ItemDonacionIndependiente> items;
@@ -27,6 +30,7 @@ public class DonacionIndependiente {
 
   public DonacionIndependiente(
       Donacion donacionOriginal, List<ItemDonacionIndependiente> items, Subcategoria subcategoria) {
+    this.id = UUID.randomUUID();
     this.donacionOriginal = donacionOriginal;
     if (donacionOriginal == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
@@ -45,7 +49,7 @@ public class DonacionIndependiente {
 
   public String getDescripcion() {
     StringBuffer sb = new StringBuffer();
-    items.forEach(i -> sb.append(i.getBien().getBienOriginal().getDescripcion()));
+    items.forEach(i -> sb.append(i.getBien().getBienOriginal().getDescripcion()).append(" "));
     return sb.toString();
   }
 
@@ -57,6 +61,7 @@ public class DonacionIndependiente {
     this.items.add(item);
   }
 
+  // Lanzar excepcion si el item no esta en la lista
   public void quitarItem(ItemDonacionIndependiente bien) {
     if (!this.items.contains(bien)) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_QUITAR_ITEM_INEXISTENTE);
@@ -66,17 +71,6 @@ public class DonacionIndependiente {
 
   public int getCantidad() {
     return this.items.stream().mapToInt(ItemDonacionIndependiente::getCantidad).sum();
-  }
-
-  /**
-   * La subcategoría se obtiene navegando por los ítems, ya que todos los ítems de una
-   * DonacionIndependiente pertenecen a la misma subcategoría por construcción.
-   */
-  public grupo5.donaciones.models.entities.categorias.Subcategoria getSubcategoria() {
-    return this.items.stream()
-        .findFirst()
-        .map(item -> item.getBien().getSubcategoria())
-        .orElse(null);
   }
 
   public DonacionIndependiente fragmentarse(Integer cantidadNecesitada) {

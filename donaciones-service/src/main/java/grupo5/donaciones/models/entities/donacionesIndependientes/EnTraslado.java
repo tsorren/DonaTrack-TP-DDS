@@ -3,6 +3,11 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 public class EnTraslado implements EstadoDonacion {
 
   @Override
+  public TipoEstadoDonacion getTipo() {
+    return TipoEstadoDonacion.EN_TRASLADO;
+  }
+
+  @Override
   public void confirmarEntrega(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new Entregada(), null, actor);
   }

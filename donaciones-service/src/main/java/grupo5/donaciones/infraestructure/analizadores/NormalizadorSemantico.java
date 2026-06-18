@@ -1,27 +1,23 @@
 package grupo5.donaciones.infraestructure.analizadores;
 
+import grupo5.donaciones.models.entities.categorias.AliasSubcategoria;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import org.springframework.stereotype.Component; // Importar la anotación Component
 
-@Component("semanticTextNormalizer")
 public class NormalizadorSemantico implements Normalizador {
 
   private final Normalizador basicNormalizer;
   private final Map<String, String> semanticMap;
 
-  public NormalizadorSemantico() {
+  public NormalizadorSemantico(List<AliasSubcategoria> aliases) {
     this.basicNormalizer = new NormalizadorBasicoTexto();
     this.semanticMap = new HashMap<>();
-    // Inicializa el mapa semántico con reglas básicas
-    semanticMap.put("celu", "celular");
-    semanticMap.put("movil", "celular");
-    semanticMap.put("telefono", "celular");
-    semanticMap.put("pc", "computadora");
-    semanticMap.put("compu", "computadora");
-    semanticMap.put("fideos", "pasta");
-    semanticMap.put("arroz", "cereal");
-    semanticMap.put("leche", "lacteo");
+    // Construye el mapa semántico a partir de los alias definidos en el dominio
+    for (AliasSubcategoria aliasSubcategoria : aliases) {
+      semanticMap.put(
+          aliasSubcategoria.getAlias(), aliasSubcategoria.getSubcategoria().getNombre());
+    }
   }
 
   @Override
@@ -33,7 +29,7 @@ public class NormalizadorSemantico implements Normalizador {
     String normalizedText = basicNormalizer.normalizar(texto);
 
     for (Map.Entry<String, String> entry : semanticMap.entrySet()) {
-
+      // Reemplaza el alias por el nombre canónico de la subcategoría, respetando límites de palabra
       normalizedText = normalizedText.replaceAll("\\b" + entry.getKey() + "\\b", entry.getValue());
     }
 
