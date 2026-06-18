@@ -9,6 +9,7 @@ import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.infrastructure.ProcesadorDeDonaciones;
 import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
@@ -35,6 +36,7 @@ class DonacionesServiceTest {
   @Mock private IDonacionesRepository donacionesRepository;
   @Mock private IPersonasRepository personasRepository;
   @Mock private DonacionMapper mapper;
+  @Mock private ProcesadorDeDonaciones procesadorDonaciones;
 
   @InjectMocks private DonacionesService service;
 

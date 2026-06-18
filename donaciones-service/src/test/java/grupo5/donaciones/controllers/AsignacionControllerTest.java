@@ -9,9 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
-import java.util.List;
-
 import grupo5.donaciones.services.impl.PropuestaService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,7 +40,7 @@ class AsignacionControllerTest {
     when(propuestaService.ejecutarAsignacion()).thenReturn(List.of(propuestaMock));
 
     mockMvc
-        .perform(post("/api/asignaciones/ejecuciones/ejecuciones"))
+        .perform(post("/api/asignaciones/ejecuciones"))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.size()").value(1));
   }
@@ -54,7 +53,7 @@ class AsignacionControllerTest {
     when(propuestaService.historialEjecuciones()).thenReturn(List.of(dto));
 
     mockMvc
-        .perform(get("/api/asignaciones/ejecuciones/ejecuciones"))
+        .perform(get("/api/asignaciones/ejecuciones"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.size()").value(1))
         .andExpect(jsonPath("$[0].cantidadPropuestasGeneradas").value(3));

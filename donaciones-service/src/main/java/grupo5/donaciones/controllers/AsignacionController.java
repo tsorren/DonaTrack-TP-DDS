@@ -19,12 +19,12 @@ public class AsignacionController {
 
   private final PropuestaService propuestaService;
 
-  @PostMapping("/ejecuciones")
+  @PostMapping
   public ResponseEntity<List<Propuesta>> ejecutar() {
     return ResponseEntity.status(HttpStatus.CREATED).body(propuestaService.ejecutarAsignacion());
   }
 
-  @GetMapping("/ejecuciones")
+  @GetMapping
   public ResponseEntity<List<EjecucionAsignacionDTO>> historial() {
     return ResponseEntity.ok(propuestaService.historialEjecuciones());
   }

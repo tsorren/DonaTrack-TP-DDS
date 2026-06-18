@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
+import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.*;
@@ -75,6 +77,47 @@ class DonacionMapperTest {
   @Test
   void toOutputDTO_conDonacionNula_deberiaRetornarNulo() {
     assertNull(mapper.toOutputDTO(null));
+  }
+
+  @Test
+  void toEntity_conItems_deberiaMapearItems() {
+    Humana persona = new Humana("Ana", "Garcia", LocalDate.of(1995, 3, 15));
+    ItemDonacionInputDTO item1 =
+        new ItemDonacionInputDTO("abrigo", "foto.png", LocalDate.of(2027, 1, 1), Estado.NUEVO, 3);
+    ItemDonacionInputDTO item2 = new ItemDonacionInputDTO("pantalon", null, null, Estado.USADO, 2);
+    DireccionInputDTO dirDTO =
+        new DireccionInputDTO(
+            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    DonacionInputDTO dto =
+        new DonacionInputDTO(
+            UUID.randomUUID(), "ropa de invierno", List.of(item1, item2), "Deposito Sur", dirDTO);
+
+    Donacion donacion = mapper.toEntity(dto, persona);
+
+    assertEquals(2, donacion.getItems().size());
+    assertEquals("abrigo", donacion.getItems().get(0).getBien().getDescripcion());
+    assertEquals(3, donacion.getItems().get(0).getCantidad());
+    assertEquals("pantalon", donacion.getItems().get(1).getBien().getDescripcion());
+    assertEquals(2, donacion.getItems().get(1).getCantidad());
+  }
+
+  @Test
+  void toOutputDTO_conHistorialEstados_deberiaMapearHistorial() {
+    Humana persona = new Humana("Carlos", "Ruiz", LocalDate.of(1988, 7, 20));
+    Donante donante = new Donante(persona);
+    Deposito deposito = new Deposito("Deposito Norte", crearDireccion());
+    Donacion donacion = new Donacion(donante, deposito);
+    donacion.marcarNormalizada();
+    donacion.marcarSegmentada();
+
+    DonacionOutputDTO output = mapper.toOutputDTO(donacion);
+
+    assertEquals(2, output.historialEstados().size());
+    assertEquals(EstadoDonacion.CARGADA, output.historialEstados().get(0).estadoAnterior());
+    assertEquals(EstadoDonacion.NORMALIZADA, output.historialEstados().get(0).estadoNuevo());
+    assertEquals(EstadoDonacion.NORMALIZADA, output.historialEstados().get(1).estadoAnterior());
+    assertEquals(EstadoDonacion.SEGMENTADA, output.historialEstados().get(1).estadoNuevo());
+    assertEquals(EstadoDonacion.SEGMENTADA, output.estadoActual());
   }
 
   private Direccion crearDireccion() {

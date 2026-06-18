@@ -8,7 +8,7 @@ import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Estad
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
-import grupo5.donaciones.models.repositories.impl.DonacionIndependienteRepository;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.impl.NecesidadRepository;
 import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
 import java.util.*;
@@ -20,12 +20,12 @@ import org.springframework.web.server.ResponseStatusException;
 public class AlgoritmosService {
 
   private final List<AlgoritmoAsignacion> algoritmos;
-  private final DonacionIndependienteRepository donacionRepository;
+  private final IDonacionesIndependientesRepository donacionRepository;
   private final NecesidadRepository necesidadRepository;
   private final PropuestaRepository propuestaRepository;
 
   public AlgoritmosService(
-      DonacionIndependienteRepository donacionRepository,
+      IDonacionesIndependientesRepository donacionRepository,
       NecesidadRepository necesidadRepository,
       PropuestaRepository propuestaRepository,
       ComparadorTexto comparadorTexto) {

@@ -21,7 +21,7 @@ public class PropuestasController {
     return ResponseEntity.ok(propuestaService.listarPropuestas());
   }
 
-  @PatchMapping("/{id}/estado")
+  @PutMapping("/{id}/estado")
   public ResponseEntity<Void> actualizarEstado(
       @PathVariable UUID id, @RequestBody ActualizarEstadoRequestDTO request) {
 

@@ -25,7 +25,7 @@ class PropuestaServiceTest {
   @BeforeEach
   void setUp() {
     algoritmosService = mock(AlgoritmosService.class);
-    IAsignacionesRepository asignacionRepository = mock(IAsignacionesRepository.class);
+    asignacionRepository = mock(IAsignacionesRepository.class);
 
     propuestaService = new PropuestaService(algoritmosService, asignacionRepository);
   }
