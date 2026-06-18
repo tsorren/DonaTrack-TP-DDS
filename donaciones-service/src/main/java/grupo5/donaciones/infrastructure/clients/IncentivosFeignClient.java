@@ -25,7 +25,7 @@ public interface IncentivosFeignClient {
 
   @PostMapping("/donantes/{donanteId}")
   DonanteRegistradoDTO registrarDonante(
-          @PathVariable UUID donanteId, @RequestBody RegistrarDonanteRequest request);
+      @PathVariable UUID donanteId, @RequestBody RegistrarDonanteRequest request);
 
   @DeleteMapping("/donantes/{donanteId}")
   void darDeBaja(@PathVariable UUID donanteId);
