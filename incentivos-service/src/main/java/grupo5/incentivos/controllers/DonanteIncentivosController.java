@@ -1,7 +1,7 @@
 package grupo5.incentivos.controllers;
 
 import grupo5.incentivos.dto.*;
-import grupo5.incentivos.services.IncentivosService;
+import grupo5.incentivos.services.IDonanteIncentivosService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/incentivos")
-public class IncentivosController {
+public class DonanteIncentivosController implements IDonanteIncentivosController {
 
-  private final IncentivosService incentivosService;
+  private final IDonanteIncentivosService incentivosService;
 
-  public IncentivosController(IncentivosService incentivosService) {
+  public DonanteIncentivosController(IDonanteIncentivosService incentivosService) {
     this.incentivosService = incentivosService;
   }
 

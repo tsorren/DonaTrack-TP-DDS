@@ -35,7 +35,7 @@ class IncentivosServiceTest {
   @Mock private RankingService rankingService;
   @Mock private N8nClient n8nClient;
 
-  private IncentivosService service;
+  private DonanteIncentivosService service;
   private DonanteIncentivosRepository repository;
   private MisionFactory misionFactory;
 
@@ -44,7 +44,7 @@ class IncentivosServiceTest {
     repository = new DonanteIncentivosRepository();
     misionFactory = new MisionFactory();
     service =
-        new IncentivosService(
+        new DonanteIncentivosService(
             repository, misionFactory, notificacionesClient, rankingService, n8nClient);
   }
 
@@ -74,7 +74,7 @@ class IncentivosServiceTest {
     UUID id = new UUID(0L, 1L);
     service.registrarDonante(new RegistrarDonanteRequest(id, id, "Test"));
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     DonanteIncentivos donante = repository.findById(id).orElseThrow();
     assertEquals(1, donante.getMetricas().getTotalDonacionesHistoricas());
@@ -85,9 +85,7 @@ class IncentivosServiceTest {
     UUID id = new UUID(0L, 99L);
     assertThrows(
         RecursoNoEncontradoException.class,
-        () ->
-            service.procesarDonacion(
-                new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Nuevo")));
+        () -> service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY)));
   }
 
   @Test
@@ -98,7 +96,7 @@ class IncentivosServiceTest {
     donante.getMisiones().add(mision);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     verify(notificacionesClient, never()).notificarMisionCumplida(any(), any(), any());
   }
@@ -111,7 +109,7 @@ class IncentivosServiceTest {
     donante.getMisiones().add(racha);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     verify(notificacionesClient, atLeastOnce()).notificarAscensoCategoria(any(), anyString());
   }
@@ -125,7 +123,7 @@ class IncentivosServiceTest {
     donante.getMisiones().add(mision);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     verify(n8nClient, atLeastOnce())
         .publicarInsigniaGanada(any(), anyString(), anyString(), anyString());
@@ -139,7 +137,7 @@ class IncentivosServiceTest {
     donante.getMisiones().add(mision);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     verify(n8nClient, never()).publicarInsigniaGanada(any(), any(), any(), any());
   }

@@ -10,7 +10,7 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
-import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
@@ -21,19 +21,19 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 @Service
-public class IncentivosService {
+public class DonanteIncentivosService implements IDonanteIncentivosService {
 
-  private final DonanteIncentivosRepository repository;
-  private final MisionFactory misionFactory;
+  private final IDonanteIncentivosRepository repository;
+  private final IMisionFactory misionFactory;
   private final NotificacionesClient notificacionesClient;
-  private final RankingService rankingService;
+  private final IRankingService rankingService;
   private final N8nClient n8nClient;
 
-  public IncentivosService(
-      DonanteIncentivosRepository repository,
-      MisionFactory misionFactory,
+  public DonanteIncentivosService(
+      IDonanteIncentivosRepository repository,
+      IMisionFactory misionFactory,
       NotificacionesClient notificacionesClient,
-      RankingService rankingService,
+      IRankingService rankingService,
       N8nClient n8nClient) {
     this.repository = repository;
     this.misionFactory = misionFactory;
