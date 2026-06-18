@@ -1,10 +1,9 @@
-package grupo5.donaciones.models.entities;
+package grupo5.donaciones.infrastructure.algoritmos;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoCompatibilidadSemantica;
 import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.infrastructure.analizadores.NormalizadorBasicoTexto;
 import grupo5.donaciones.models.entities.categorias.Categoria;

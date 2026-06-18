@@ -1,4 +1,4 @@
-package grupo5.donaciones.infrastructure;
+package grupo5.donaciones.infrastructure.segmentadores;
 
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;

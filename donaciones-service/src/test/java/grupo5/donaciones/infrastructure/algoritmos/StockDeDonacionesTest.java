@@ -1,10 +1,9 @@
-package grupo5.donaciones.models.entities;
+package grupo5.donaciones.infrastructure.algoritmos;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.infrastructure.algoritmos.StockDeDonaciones;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;

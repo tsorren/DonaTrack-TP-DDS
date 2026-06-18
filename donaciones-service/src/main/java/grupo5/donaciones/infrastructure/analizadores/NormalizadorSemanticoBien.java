@@ -36,11 +36,10 @@ public class NormalizadorSemanticoBien {
     donacion
         .getItems()
         .forEach(
-            i -> {
-              itemsNormalizados.add(
-                  new ItemDonacionNormalizado(
-                      donacion, normalizarBien(i, subcategorias), i.getCantidad()));
-            });
+            i ->
+                itemsNormalizados.add(
+                    new ItemDonacionNormalizado(
+                        donacion, normalizarBien(i, subcategorias), i.getCantidad())));
 
     return itemsNormalizados;
   }
@@ -49,17 +48,14 @@ public class NormalizadorSemanticoBien {
     Bien bien = item.getBien();
     String descripcion = bien.getDescripcion();
 
-    Subcategoria subcategoriaElegida = null;
-    double mejorConfianza = -1.0;
-
     if (subcategorias == null || subcategorias.isEmpty()) {
       throw new grupo5.common.exceptions.ValidationException(
           grupo5.common.exceptions.ErrorCatalog.BIEN_NORMALIZADO_SIN_SUBCATEGORIA);
     }
 
     // Default/fallback initialization: first subcategory with 0.0 confidence
-    subcategoriaElegida = subcategorias.getFirst();
-    mejorConfianza = 0.0;
+    Subcategoria subcategoriaElegida = subcategorias.getFirst();
+    double mejorConfianza = 0.0;
 
     for (Subcategoria subcategoria : subcategorias) {
       for (AliasSubcategoria aliasObj : subcategoria.getAliases()) {

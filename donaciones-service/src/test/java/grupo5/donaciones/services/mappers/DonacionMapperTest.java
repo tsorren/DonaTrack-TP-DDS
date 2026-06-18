@@ -13,6 +13,7 @@ import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.*;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +30,7 @@ class DonacionMapperTest {
 
   @Test
   void toEntity_conDtoValido_deberiaMapearCorrectamente() {
-    Humana persona = new Humana("Juan", "Perez", LocalDate.of(1990, 1, 1));
+    Humana persona = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
@@ -51,12 +52,12 @@ class DonacionMapperTest {
 
   @Test
   void toEntity_conDtoNulo_deberiaRetornarNulo() {
-    assertNull(mapper.toEntity(null, new Humana("A", "B", LocalDate.of(1990, 1, 1))));
+    assertNull(mapper.toEntity(null, new Humana("A", "B", LocalDate.of(1990, Month.JANUARY, 1))));
   }
 
   @Test
   void toOutputDTO_conDonacionValida_deberiaMapearCorrectamente() {
-    Humana persona = new Humana("Maria", "Lopez", LocalDate.of(1993, 4, 10));
+    Humana persona = new Humana("Maria", "Lopez", LocalDate.of(1993, Month.APRIL, 10));
     Donante donante = new Donante(persona);
     Deposito deposito = new Deposito("Deposito Test", crearDireccion());
     Donacion donacion = new Donacion(donante, deposito);
@@ -81,9 +82,10 @@ class DonacionMapperTest {
 
   @Test
   void toEntity_conItems_deberiaMapearItems() {
-    Humana persona = new Humana("Ana", "Garcia", LocalDate.of(1995, 3, 15));
+    Humana persona = new Humana("Ana", "Garcia", LocalDate.of(1995, Month.MARCH, 15));
     ItemDonacionInputDTO item1 =
-        new ItemDonacionInputDTO("abrigo", "foto.png", LocalDate.of(2027, 1, 1), Estado.NUEVO, 3);
+        new ItemDonacionInputDTO(
+            "abrigo", "foto.png", LocalDate.of(2027, Month.JANUARY, 1), Estado.NUEVO, 3);
     ItemDonacionInputDTO item2 = new ItemDonacionInputDTO("pantalon", null, null, Estado.USADO, 2);
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
@@ -103,7 +105,7 @@ class DonacionMapperTest {
 
   @Test
   void toOutputDTO_conHistorialEstados_deberiaMapearHistorial() {
-    Humana persona = new Humana("Carlos", "Ruiz", LocalDate.of(1988, 7, 20));
+    Humana persona = new Humana("Carlos", "Ruiz", LocalDate.of(1988, Month.JULY, 20));
     Donante donante = new Donante(persona);
     Deposito deposito = new Deposito("Deposito Norte", crearDireccion());
     Donacion donacion = new Donacion(donante, deposito);

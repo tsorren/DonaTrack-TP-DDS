@@ -48,10 +48,12 @@ public class DonacionMapper {
     }
 
     List<ItemDonacionOutputDTO> items =
-        donacion.getItems().stream().map(this::toItemOutputDTO).toList();
+        donacion.getItems().stream().map(DonacionMapper::toItemOutputDTO).toList();
 
     List<CambioEstadoOutputDTO> historial = // me da error (this::toCambioEstadoOutputDTO)  :(
-        donacion.getHistorialEstados().stream().map(this::toCambioEstadoOutputDTO).toList();
+        donacion.getHistorialEstados().stream()
+            .map(DonacionMapper::toCambioEstadoOutputDTO)
+            .toList();
 
     return new DonacionOutputDTO(
         donacion.getId(),
@@ -64,13 +66,13 @@ public class DonacionMapper {
         historial);
   }
 
-  private ItemDonacion toItemEntity(ItemDonacionInputDTO dto) {
+  private static ItemDonacion toItemEntity(ItemDonacionInputDTO dto) {
     Bien bien =
         new Bien(dto.descripcionBien(), dto.fotoUrl(), dto.fechaVencimiento(), dto.estadoBien());
     return new ItemDonacion(bien, dto.cantidad());
   }
 
-  private ItemDonacionOutputDTO toItemOutputDTO(ItemDonacion item) {
+  private static ItemDonacionOutputDTO toItemOutputDTO(ItemDonacion item) {
     return new ItemDonacionOutputDTO(
         item.getBien().getDescripcion(),
         item.getBien().getFotoUrl(),
@@ -79,7 +81,7 @@ public class DonacionMapper {
         item.getCantidad());
   }
 
-  private CambioEstadoOutputDTO toCambioEstadoOutputDTO(CambioEstadoDonacion cambio) {
+  private static CambioEstadoOutputDTO toCambioEstadoOutputDTO(CambioEstadoDonacion cambio) {
     return new CambioEstadoOutputDTO(
         cambio.getEstadoAnterior(), cambio.getEstadoNuevo(), cambio.getTimestamp());
   }

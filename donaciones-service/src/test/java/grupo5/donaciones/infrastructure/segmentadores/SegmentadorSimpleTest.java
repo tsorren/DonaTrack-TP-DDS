@@ -1,9 +1,8 @@
-package grupo5.donaciones.models.entities;
+package grupo5.donaciones.infrastructure.segmentadores;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import grupo5.donaciones.infrastructure.SegmentadorSimple;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;

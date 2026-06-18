@@ -21,6 +21,7 @@ import grupo5.donaciones.services.impl.DonacionesService;
 import grupo5.donaciones.services.mappers.DonacionMapper;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,7 +48,7 @@ class DonacionesServiceTest {
 
   @BeforeEach
   void setUp() {
-    persona = new Humana("Juan", "Perez", LocalDate.of(1990, 1, 1));
+    persona = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
 
     Donante donante = new Donante(persona);
     Pais pais = new Pais();
@@ -76,7 +77,7 @@ class DonacionesServiceTest {
             persona.getId(),
             List.of(),
             "desc",
-            LocalDateTime.now(),
+            LocalDateTime.of(2026, Month.JUNE, 18, 0, 0),
             dirOut,
             EstadoDonacion.CARGADA,
             List.of());

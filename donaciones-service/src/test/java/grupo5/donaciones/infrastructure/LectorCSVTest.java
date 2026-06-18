@@ -1,11 +1,10 @@
-package grupo5.donaciones.infraestructure;
+package grupo5.donaciones.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.infrastructure.LectorCSV;
 import grupo5.donaciones.models.entities.personas.Humana;
 import java.io.IOException;
 import java.nio.file.Files;

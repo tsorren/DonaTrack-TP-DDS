@@ -18,6 +18,7 @@ import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormaliza
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.impl.SubcategoriasRepositoryEnMemoria;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,8 @@ class NormalizadorSemanticoBienTest {
     subcategoriaRepository.deleteAll();
 
     categoria = new Categoria("Varios", false, false, Unidad.UNIDADES);
-    donacion = new Donacion(new Donante(new Humana("Juan", "Perez", LocalDate.now())));
+    donacion =
+        new Donacion(new Donante(new Humana("Juan", "Perez", LocalDate.of(2026, Month.JUNE, 18))));
   }
 
   @Test

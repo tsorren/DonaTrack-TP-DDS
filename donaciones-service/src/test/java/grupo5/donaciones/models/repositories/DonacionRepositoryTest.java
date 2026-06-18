@@ -8,6 +8,7 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.*;
 import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,7 +74,7 @@ class DonacionRepositoryTest {
   }
 
   private Donacion crearDonacion() {
-    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, 1, 1));
+    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
     Donante donante = new Donante(humana);
     Pais pais = new Pais();
     pais.setNombre("Argentina");

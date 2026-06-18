@@ -62,7 +62,7 @@ class DonacionesControllerTest {
             UUID.randomUUID(),
             List.of(),
             "descripcion",
-            LocalDateTime.now(),
+            LocalDateTime.of(2026, 6, 18, 0, 0),
             dirOut,
             EstadoDonacion.CARGADA,
             List.of());
