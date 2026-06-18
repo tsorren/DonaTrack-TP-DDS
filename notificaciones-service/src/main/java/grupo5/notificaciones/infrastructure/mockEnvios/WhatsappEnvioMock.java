@@ -1,7 +1,9 @@
 package grupo5.notificaciones.infrastructure.mockEnvios;
 
 import grupo5.notificaciones.infrastructure.WhatsAppAdapter;
+import org.springframework.stereotype.Component;
 
+@Component
 public class WhatsappEnvioMock implements WhatsAppAdapter {
 
   @Override

@@ -2,7 +2,10 @@ package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
+import grupo5.notificaciones.models.entities.personas.TipoPersona;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,8 +15,8 @@ class DonanteInactivoTest {
   @DisplayName(
       "Dado un donante inactivo por 30 días, debe generar una notificación con el mensaje correcto")
   void testGenerarNotificacionDonanteInactivo() {
-    Persona mockDonante = new Persona();
-    mockDonante.setDenominacion("Juan Pérez");
+    Persona mockDonante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan Pérez", TipoPersona.HUMANA);
 
     Integer dias = 30;
 

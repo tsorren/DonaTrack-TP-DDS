@@ -1,12 +1,8 @@
 package grupo5.notificaciones.dto.input;
 
-import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
-import lombok.Data;
+import java.util.UUID;
 
-@Data
-public class EventoDonanteInactivoDTO {
-  private Persona persona;
-  private LocalDateTime fecha = LocalDateTime.now();
-  private Integer diasInactivo;
-}
+public record EventoDonanteInactivoDTO(
+    UUID idPersonaDonante, LocalDateTime fecha, Integer diasInactivo)
+    implements EventoNotificableDTO {}

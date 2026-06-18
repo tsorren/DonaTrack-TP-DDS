@@ -6,8 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
+import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.repositories.NotificacionRepositoryEnMemoria;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -20,10 +23,13 @@ class NotificacionRepositoryEnMemoriaTest {
     repository = new NotificacionRepositoryEnMemoria();
   }
 
+  private Persona crearPersona() {
+    return new Persona(UUID.randomUUID(), new ArrayList<>(), "Test Persona", TipoPersona.HUMANA);
+  }
+
   @Test
   void deberiaFiltrarNotificacionesPorEstado() {
-    Persona persona = new Persona();
-    persona.setId(1L);
+    Persona persona = crearPersona();
 
     Notificacion notificacionPendiente = new Notificacion(persona, "Mensaje pendiente");
 
@@ -44,11 +50,9 @@ class NotificacionRepositoryEnMemoriaTest {
 
   @Test
   void deberiaFiltrarNotificacionesPorIdDePersona() {
-    Persona persona1 = new Persona();
-    persona1.setId(10L);
+    Persona persona1 = crearPersona();
 
-    Persona persona2 = new Persona();
-    persona2.setId(20L);
+    Persona persona2 = crearPersona();
 
     Notificacion notificacionPersona1 = new Notificacion(persona1, "Mensaje para persona 1");
     Notificacion notificacionPersona2 = new Notificacion(persona2, "Mensaje para persona 2");
@@ -56,7 +60,7 @@ class NotificacionRepositoryEnMemoriaTest {
     repository.save(notificacionPersona1);
     repository.save(notificacionPersona2);
 
-    List<Notificacion> resultado = repository.findByPersonaId(10L);
+    List<Notificacion> resultado = repository.findByPersonaId(persona1.getId());
 
     assertEquals(1, resultado.size(), "Debería encontrar 1 notificación para la persona 10");
     assertEquals(
@@ -67,12 +71,12 @@ class NotificacionRepositoryEnMemoriaTest {
 
   @Test
   void deberiaDevolverListaVaciaSiLaPersonaNoTieneNotificaciones() {
-    Persona persona1 = new Persona();
-    persona1.setId(1L);
+    Persona persona1 = crearPersona();
     Notificacion notificacion = new Notificacion(persona1, "Mensaje");
     repository.save(notificacion);
 
-    List<Notificacion> resultado = repository.findByPersonaId(99L); // ID que no existe
+    List<Notificacion> resultado =
+        repository.findByPersonaId(java.util.UUID.randomUUID()); // ID que no existe
 
     assertTrue(resultado.isEmpty(), "La lista debería estar vacía para un ID inexistente");
   }

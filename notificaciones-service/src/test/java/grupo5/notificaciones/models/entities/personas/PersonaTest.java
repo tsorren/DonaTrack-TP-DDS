@@ -3,6 +3,8 @@ package grupo5.notificaciones.models.entities.personas;
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.notificaciones.models.ports.Anonimizable;
+import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +16,7 @@ class PersonaTest {
 
   @BeforeEach
   void setUp() {
-    persona = new Persona();
-    persona.setDenominacion("Juan Perez");
-    persona.setTipoPersona(TipoPersona.HUMANA);
+    persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan Perez", TipoPersona.HUMANA);
 
     correo = new Correo();
     correo.setDireccionCorreo("juan.perez@example.com");

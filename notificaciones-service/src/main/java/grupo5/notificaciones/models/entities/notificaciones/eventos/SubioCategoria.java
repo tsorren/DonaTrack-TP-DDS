@@ -15,7 +15,8 @@ public class SubioCategoria extends EventoNotificable {
 
   public SubioCategoria(
       Persona persona, String categoriaVieja, String categoriaNueva, LocalDateTime fecha) {
-    super();
+    this.setPersona(persona);
+    this.setFecha(fecha);
     this.categoriaVieja = categoriaVieja;
     this.categoriaNueva = categoriaNueva;
   }

@@ -4,7 +4,9 @@ import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.entities.personas.Telefono;
 import grupo5.notificaciones.models.entities.personas.WhatsApp;
 import grupo5.notificaciones.models.ports.NotificacionSender;
+import org.springframework.stereotype.Component;
 
+@Component
 public class NotificacionRouter implements NotificacionSender {
 
   // Tiene como dependencias a las clases separadas

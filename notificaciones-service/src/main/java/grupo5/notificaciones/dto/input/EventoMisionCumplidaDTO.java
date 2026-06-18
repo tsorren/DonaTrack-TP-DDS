@@ -1,13 +1,8 @@
 package grupo5.notificaciones.dto.input;
 
-import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
-import lombok.Data;
+import java.util.UUID;
 
-@Data
-public class EventoMisionCumplidaDTO {
-  private Persona persona;
-  private LocalDateTime fecha = LocalDateTime.now();
-  private String nombreMision;
-  private String recompensa;
-}
+public record EventoMisionCumplidaDTO(
+    UUID idPersonaDonante, LocalDateTime fecha, String nombreMision, String recompensa)
+    implements EventoNotificableDTO {}
