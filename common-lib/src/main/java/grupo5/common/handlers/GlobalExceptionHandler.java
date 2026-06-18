@@ -1,10 +1,6 @@
 package grupo5.common.handlers;
 
-import grupo5.common.exceptions.BusinessStateException;
-import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.common.exceptions.InfrastructureException;
-import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.common.exceptions.ValidationException;
+import grupo5.common.exceptions.*;
 import grupo5.common.responses.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

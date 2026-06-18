@@ -1,7 +1,9 @@
 package grupo5.donaciones.infraestructure.analizadores;
 
 import java.text.Normalizer;
+import org.springframework.stereotype.Component;
 
+@Component("normalizadorBasicoTexto")
 public class NormalizadorBasicoTexto implements Normalizador {
   @Override
   public String normalizar(String texto) {

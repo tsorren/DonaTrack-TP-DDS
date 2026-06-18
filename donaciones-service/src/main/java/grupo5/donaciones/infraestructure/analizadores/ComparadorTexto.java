@@ -20,7 +20,7 @@ public class ComparadorTexto {
     this.normalizador = normalizador;
   }
 
-  private String[] ListaDePalabras(String texto) {
+  private static String[] listaDePalabras(String texto) {
     // Divide el texto por uno o más espacios en blanco
     return texto.split("\\s+");
   }
@@ -30,7 +30,7 @@ public class ComparadorTexto {
     if (normalizado == null || normalizado.isEmpty()) {
       return new HashSet<>();
     }
-    String[] lista = ListaDePalabras(normalizado);
+    String[] lista = listaDePalabras(normalizado);
     return new HashSet<>(Arrays.asList(lista));
   }
 
