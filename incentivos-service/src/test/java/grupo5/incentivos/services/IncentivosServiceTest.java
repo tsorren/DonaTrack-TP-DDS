@@ -13,6 +13,7 @@ import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
+import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
@@ -73,7 +74,7 @@ class IncentivosServiceTest {
     UUID id = new UUID(0L, 1L);
     service.registrarDonante(new RegistrarDonanteRequest(id, id, "Test"));
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     DonanteIncentivos donante = repository.findById(id).orElseThrow();
     assertEquals(1, donante.getMetricas().getTotalDonacionesHistoricas());
@@ -82,7 +83,7 @@ class IncentivosServiceTest {
   @Test
   void procesarDonacion_deberiaLanzarExcepcionSiDonanteNoExiste() {
     UUID id = new UUID(0L, 99L);
-    NuevaDonacionRequest request = new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Nuevo");
+    NuevaDonacionRequest request = new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY);
     assertThrows(RecursoNoEncontradoException.class, () -> service.procesarDonacion(request));
   }
 
@@ -94,7 +95,7 @@ class IncentivosServiceTest {
     donante.getMisiones().add(mision);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     verify(notificacionesClient, never()).notificarMisionCumplida(any(), any(), any());
   }
@@ -107,9 +108,10 @@ class IncentivosServiceTest {
     donante.getMisiones().add(racha);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
-    verify(notificacionesClient, atLeastOnce()).notificarAscensoCategoria(any(), anyString());
+    verify(notificacionesClient, atLeastOnce())
+        .notificarAscensoCategoria(any(), anyString(), anyString());
   }
 
   @Test
@@ -121,7 +123,7 @@ class IncentivosServiceTest {
     donante.getMisiones().add(mision);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     verify(n8nClient, atLeastOnce())
         .publicarInsigniaGanada(any(), anyString(), anyString(), anyString());
@@ -135,7 +137,7 @@ class IncentivosServiceTest {
     donante.getMisiones().add(mision);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY, "Test"));
+    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     verify(n8nClient, never()).publicarInsigniaGanada(any(), any(), any(), any());
   }
@@ -173,9 +175,9 @@ class IncentivosServiceTest {
 
   @Test
   void obtenerDonante_deberiaLanzarExcepcionSiNoExiste() {
-    UUID targetId = new UUID(0L, 999L);
     BusinessStateException ex =
-        assertThrows(BusinessStateException.class, () -> service.obtenerDonante(targetId));
+        assertThrows(
+            BusinessStateException.class, () -> service.obtenerDonante(new UUID(0L, 999L)));
     assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
   }
 
@@ -220,8 +222,7 @@ class IncentivosServiceTest {
 
   @Test
   void darDeBaja_deberiaLanzarExcepcionSiDonanteNoExiste() {
-    UUID targetId = new UUID(0L, 999L);
-    assertThrows(BusinessStateException.class, () -> service.darDeBaja(targetId));
+    assertThrows(BusinessStateException.class, () -> service.darDeBaja(new UUID(0L, 999L)));
   }
 
   @Test
@@ -260,4 +261,13 @@ class IncentivosServiceTest {
   }
 
   private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
+
+  private EventoDonacion eventoHoy(UUID donacionId) {
+    return EventoDonacion.builder()
+        .donacionId(donacionId)
+        .fecha(HOY)
+        .cantidadBienes(1)
+        .categorias(List.of("arroz"))
+        .build();
+  }
 }

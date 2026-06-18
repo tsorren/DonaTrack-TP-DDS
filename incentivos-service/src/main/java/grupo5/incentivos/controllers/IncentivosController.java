@@ -1,7 +1,7 @@
 package grupo5.incentivos.controllers;
 
 import grupo5.incentivos.dto.*;
-import grupo5.incentivos.services.IncentivosService;
+import grupo5.incentivos.services.IIncentivosService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/incentivos")
-public class IncentivosController {
+public class IncentivosController implements IIncentivosController {
 
-  private final IncentivosService incentivosService;
+  private final IIncentivosService incentivosService;
 
-  public IncentivosController(IncentivosService incentivosService) {
+  public IncentivosController(IIncentivosService incentivosService) {
     this.incentivosService = incentivosService;
   }
 
@@ -33,7 +33,7 @@ public class IncentivosController {
 
   @PostMapping("/donantes/{donanteId}")
   public ResponseEntity<DonanteRegistradoDTO> registrarDonante(
-      @PathVariable UUID donanteId, @RequestBody RegistrarDonanteRequest request) {
+      @RequestBody RegistrarDonanteRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(incentivosService.registrarDonante(request));
   }
