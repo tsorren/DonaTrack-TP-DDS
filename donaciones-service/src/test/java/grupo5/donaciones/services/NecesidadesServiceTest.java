@@ -12,6 +12,7 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.services.impl.NecesidadesService;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;

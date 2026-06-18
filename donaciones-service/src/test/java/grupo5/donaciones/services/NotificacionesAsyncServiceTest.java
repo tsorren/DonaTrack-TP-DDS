@@ -4,6 +4,7 @@ import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.services.impl.NotificacionesAsyncService;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

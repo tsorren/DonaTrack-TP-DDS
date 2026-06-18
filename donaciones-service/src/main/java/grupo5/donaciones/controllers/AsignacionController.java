@@ -2,7 +2,7 @@ package grupo5.donaciones.controllers;
 
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
-import grupo5.donaciones.services.PropuestaService;
+import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,12 +19,12 @@ public class AsignacionController {
 
   private final PropuestaService propuestaService;
 
-  @PostMapping("/ejecuciones")
+  @PostMapping
   public ResponseEntity<List<Propuesta>> ejecutar() {
     return ResponseEntity.status(HttpStatus.CREATED).body(propuestaService.ejecutarAsignacion());
   }
 
-  @GetMapping("/ejecuciones")
+  @GetMapping
   public ResponseEntity<List<EjecucionAsignacionDTO>> historial() {
     return ResponseEntity.ok(propuestaService.historialEjecuciones());
   }

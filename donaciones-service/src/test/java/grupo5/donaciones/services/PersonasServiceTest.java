@@ -10,6 +10,8 @@ import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.impl.NotificacionesAsyncService;
+import grupo5.donaciones.services.impl.PersonasService;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.util.Optional;
 import java.util.UUID;
