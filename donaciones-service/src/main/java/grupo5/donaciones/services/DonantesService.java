@@ -23,14 +23,12 @@ public class DonantesService implements IDonantesService {
   @Override
   public DonanteOutputDTO crearDonante(DonanteInputDTO input) {
     Donante donanteDominio = donanteMapper.toEntity(input);
-
     Donante guardado = donantesRepository.save(donanteDominio);
     return donanteMapper.toOutputDTO(guardado);
   }
 
   @Override
   public List<DonanteOutputDTO> listarDonantesPorContacto(String canal) {
-
     List<Donante> donantes = donantesRepository.findAll();
 
     if (canal == null || canal.isBlank()) {
@@ -38,8 +36,23 @@ public class DonantesService implements IDonantesService {
     }
 
     return donantes.stream()
-        .map(donanteMapper::toOutputDTO) // Convertimos cada Donante en DonanteOutputDTO
-        .filter(d -> d.getCanalContacto() != null && canal.equalsIgnoreCase(d.getCanalContacto()))
+        .map(donanteMapper::toOutputDTO)
+        .filter(
+            d ->
+                d.persona() != null
+                    && d.persona().mediosDeContacto() != null
+                    && d.persona().mediosDeContacto().stream()
+                        .anyMatch(
+                            medio -> {
+                              if (medio == null) return false;
+                              String tipoMedio =
+                                  medio
+                                      .getClass()
+                                      .getSimpleName()
+                                      .replace("OutputDTO", "")
+                                      .toUpperCase();
+                              return canal.equalsIgnoreCase(tipoMedio);
+                            }))
         .toList();
   }
 
@@ -58,7 +71,6 @@ public class DonantesService implements IDonantesService {
     donanteMapper.updateEntity(donante, dto);
 
     Donante donanteActualizado = donantesRepository.save(donante);
-
     return donanteMapper.toOutputDTO(donanteActualizado);
   }
 }
