@@ -5,7 +5,7 @@ services:
     image: donatrack/notificaciones-service:local
     build:
       context: .
-      file: notificaciones-service/Dockerfile
+      dockerfile: notificaciones-service/Dockerfile
       target: local
     ports:
       - "8081:8081"
@@ -18,7 +18,7 @@ services:
     image: donatrack/incentivos-service:local
     build:
       context: .
-      file: incentivos-service/Dockerfile
+      dockerfile: incentivos-service/Dockerfile
       target: local
     ports:
       - "8082:8082"
@@ -34,7 +34,7 @@ services:
     image: donatrack/donaciones-service:local
     build:
       context: .
-      file: donaciones-service/Dockerfile
+      dockerfile: donaciones-service/Dockerfile
       target: local
     ports:
       - "8080:8080"

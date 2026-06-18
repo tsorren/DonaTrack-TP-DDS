@@ -5,7 +5,7 @@ services:
     image: donatrack/notificaciones-service:preprod
     build:
       context: .
-      file: notificaciones-service/Dockerfile
+      dockerfile: notificaciones-service/Dockerfile
       target: ci
       args:
         JAR_FILE: notificaciones-service/target/notificaciones-service-1.0.jar
@@ -26,7 +26,7 @@ services:
     image: donatrack/incentivos-service:preprod
     build:
       context: .
-      file: incentivos-service/Dockerfile
+      dockerfile: incentivos-service/Dockerfile
       target: ci
       args:
         JAR_FILE: incentivos-service/target/incentivos-service-1.0.jar
@@ -51,7 +51,7 @@ services:
     image: donatrack/donaciones-service:preprod
     build:
       context: .
-      file: donaciones-service/Dockerfile
+      dockerfile: donaciones-service/Dockerfile
       target: ci
       args:
         JAR_FILE: donaciones-service/target/donaciones-service-1.0.jar
