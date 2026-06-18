@@ -1,4 +1,4 @@
-package grupo5.donaciones.infraestructure.analizadores;
+package grupo5.donaciones.infrastructure.analizadores;
 
 import grupo5.donaciones.models.entities.categorias.AliasSubcategoria;
 import java.util.HashMap;

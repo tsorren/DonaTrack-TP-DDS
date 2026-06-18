@@ -9,11 +9,7 @@ import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.personas.Direccion;
-import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.entities.personas.Localidad;
-import grupo5.donaciones.models.entities.personas.Pais;
-import grupo5.donaciones.models.entities.personas.Provincia;
+import grupo5.donaciones.models.entities.personas.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -33,9 +29,11 @@ class DonacionMapperTest {
   void toEntity_conDtoValido_deberiaMapearCorrectamente() {
     Humana persona = new Humana("Juan", "Perez", LocalDate.of(1990, 1, 1));
     DireccionInputDTO dirDTO =
-        new DireccionInputDTO("Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+        new DireccionInputDTO(
+            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     DonacionInputDTO dto =
-        new DonacionInputDTO(UUID.randomUUID(), "descripcion test", List.of(), "Deposito Central", dirDTO);
+        new DonacionInputDTO(
+            UUID.randomUUID(), "descripcion test", List.of(), "Deposito Central", dirDTO);
 
     Donacion donacion = mapper.toEntity(dto, persona);
 

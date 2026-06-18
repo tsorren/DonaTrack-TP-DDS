@@ -1,4 +1,4 @@
-package grupo5.donaciones.infraestructure;
+package grupo5.donaciones.infrastructure;
 
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;

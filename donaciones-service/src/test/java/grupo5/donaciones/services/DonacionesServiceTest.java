@@ -1,6 +1,7 @@
 package grupo5.donaciones.services;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
@@ -12,11 +13,7 @@ import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.personas.Direccion;
-import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.entities.personas.Localidad;
-import grupo5.donaciones.models.entities.personas.Pais;
-import grupo5.donaciones.models.entities.personas.Provincia;
+import grupo5.donaciones.models.entities.personas.*;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.DonacionesService;
@@ -25,7 +22,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -65,14 +61,23 @@ class DonacionesServiceTest {
     donacion = new Donacion(donante, deposito);
 
     DireccionInputDTO dirDTO =
-        new DireccionInputDTO("Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+        new DireccionInputDTO(
+            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     inputDTO = new DonacionInputDTO(persona.getId(), "desc", List.of(), "Deposito Test", dirDTO);
 
     DireccionOutputDTO dirOut =
-        new DireccionOutputDTO("Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+        new DireccionOutputDTO(
+            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     outputDTO =
         new DonacionOutputDTO(
-            donacion.getId(), persona.getId(), List.of(), "desc", LocalDateTime.now(), dirOut, EstadoDonacion.CARGADA, List.of());
+            donacion.getId(),
+            persona.getId(),
+            List.of(),
+            "desc",
+            LocalDateTime.now(),
+            dirOut,
+            EstadoDonacion.CARGADA,
+            List.of());
   }
 
   @Test

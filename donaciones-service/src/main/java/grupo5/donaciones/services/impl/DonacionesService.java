@@ -3,6 +3,7 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.infrastructure.ProcesadorDeDonaciones;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
@@ -17,14 +18,17 @@ public class DonacionesService implements IDonacionesService {
   private final IDonacionesRepository donacionesRepository;
   private final IPersonasRepository personasRepository;
   private final DonacionMapper mapper;
+  private final ProcesadorDeDonaciones procesadorDonaciones;
 
   public DonacionesService(
       IDonacionesRepository donacionesRepository,
       IPersonasRepository personasRepository,
-      DonacionMapper mapper) {
+      DonacionMapper mapper,
+      ProcesadorDeDonaciones procesadorDonaciones) {
     this.donacionesRepository = donacionesRepository;
     this.personasRepository = personasRepository;
     this.mapper = mapper;
+    this.procesadorDonaciones = procesadorDonaciones;
   }
 
   @Override
@@ -38,7 +42,7 @@ public class DonacionesService implements IDonacionesService {
 
     donacionesRepository.save(donacion);
 
-    // TODO: procesarDonacion(donacion) - pendiente
+    procesadorDonaciones.procesar(donacion);
 
     return mapper.toOutputDTO(donacion);
   }

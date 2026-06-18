@@ -1,9 +1,9 @@
 package grupo5.donaciones.services.impl;
 
-import grupo5.donaciones.infraestructure.analizadores.ComparadorTexto;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos.AlgoritmoAsignacion;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos.AlgoritmoCompatibilidadSemantica;
-import grupo5.donaciones.models.entities.donaciones.matchmaking.algoritmos.AlgoritmoPrioridadSubAtendidos;
+import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoAsignacion;
+import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoCompatibilidadSemantica;
+import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoPrioridadSubAtendidos;
+import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.donaciones.matchmaking.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;

@@ -1,4 +1,4 @@
-package grupo5.donaciones.infraestructure;
+package grupo5.donaciones.infrastructure;
 
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -6,7 +6,9 @@ import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import java.time.LocalDate;
+import org.springframework.stereotype.Component;
 
+@Component
 public class SegmentadorComplejo extends AbstractSegmentador<SegmentadorComplejo.GroupingKey> {
 
   protected record GroupingKey(

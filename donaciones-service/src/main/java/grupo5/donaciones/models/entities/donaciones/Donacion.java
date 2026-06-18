@@ -3,7 +3,6 @@ package grupo5.donaciones.models.entities.donaciones;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
-import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,12 +23,13 @@ public class Donacion implements AggregateRoot {
 
   private Deposito depositoRecepcion;
   private EstadoDonacion estadoActual;
-  private final List<CambioEstado> historialEstados;
+  private final List<CambioEstadoDonacion> historialEstados;
 
   public Donacion(Donante donante, Deposito depositoRecepcion) {
     if (donante == null) {
       throw new ValidationException(ErrorCatalog.DONACION_SIN_DONANTE);
     }
+    this.id = UUID.randomUUID();
     this.donante = donante;
     this.depositoRecepcion = depositoRecepcion;
     this.items = new ArrayList<>();
@@ -38,7 +38,6 @@ public class Donacion implements AggregateRoot {
   }
 
   public Donacion(Donante donante) {
-    this.id = UUID.randomUUID();
     this(donante, null);
   }
 

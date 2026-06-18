@@ -1,4 +1,4 @@
-package grupo5.donaciones.infraestructure;
+package grupo5.donaciones.infrastructure;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.InfrastructureException;

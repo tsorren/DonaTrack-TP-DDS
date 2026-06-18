@@ -1,4 +1,4 @@
-package grupo5.donaciones.infraestructure.analizadores;
+package grupo5.donaciones.infrastructure.analizadores;
 
 import java.util.Arrays;
 import java.util.HashSet;

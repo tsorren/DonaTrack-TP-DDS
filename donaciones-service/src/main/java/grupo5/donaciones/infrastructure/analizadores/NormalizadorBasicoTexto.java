@@ -1,4 +1,4 @@
-package grupo5.donaciones.infraestructure.analizadores;
+package grupo5.donaciones.infrastructure.analizadores;
 
 import java.text.Normalizer;
 import org.springframework.stereotype.Component;
