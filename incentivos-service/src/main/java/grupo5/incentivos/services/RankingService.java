@@ -5,23 +5,23 @@ import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.ranking.EntradaRanking;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
-import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
-import grupo5.incentivos.models.repositories.RankingMensualRepository;
+import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
+import grupo5.incentivos.models.repositories.IRankingRepository;
 import java.time.YearMonth;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RankingService {
+public class RankingService implements IRankingService {
 
-  private final DonanteIncentivosRepository donanteRepository;
-  private final RankingMensualRepository rankingRepository;
+  private final IDonanteIncentivosRepository donanteRepository;
+  private final IRankingRepository rankingRepository;
   private final N8nClient n8nClient;
 
   public RankingService(
-      DonanteIncentivosRepository donanteRepository,
-      RankingMensualRepository rankingRepository,
+      IDonanteIncentivosRepository donanteRepository,
+      IRankingRepository rankingRepository,
       N8nClient n8nClient) {
     this.donanteRepository = donanteRepository;
     this.rankingRepository = rankingRepository;
