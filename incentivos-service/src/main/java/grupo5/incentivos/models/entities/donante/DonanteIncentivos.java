@@ -1,29 +1,41 @@
 package grupo5.incentivos.models.entities.donante;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class DonanteIncentivos {
+public class DonanteIncentivos implements AggregateRoot {
 
-  private Long donanteId;
+  private final UUID id;
+  private final UUID idPersona;
+  private String nombre;
   private CategoriaDonante categoria;
   private List<CambioCategoria> historialCategorias;
   private List<Mision> misiones;
   private List<Insignia> insignias;
   private Metricas metricas;
 
-  public DonanteIncentivos(Long donanteId) {
-    if (donanteId == null) {
-      throw new IllegalArgumentException("El ID del donante no puede ser nulo");
+  public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre) {
+    if (idPersona == null) {
+      throw new ValidationException(ErrorCatalog.DONANTE_INCENTIVOS_ID_NULO);
     }
-    this.donanteId = donanteId;
+
+    if (idDonante == null) {
+      throw new ValidationException(ErrorCatalog.DONANTE_INCENTIVOS_ID_NULO);
+    }
+    this.id = idDonante;
+    this.idPersona = idPersona;
+    this.nombre = nombre;
     this.categoria = CategoriaDonante.COLABORADOR;
     this.historialCategorias = new ArrayList<>();
     this.misiones = new ArrayList<>();
@@ -40,7 +52,7 @@ public class DonanteIncentivos {
         .ifPresent(m -> m.evaluarProgreso(this, evento));
   }
 
-  public void registrarDonacionExitosa(Long organizacionId) {
+  public void registrarDonacionExitosa(UUID organizacionId) {
     metricas.registrarDonacionExitosa(organizacionId);
 
     this.misiones.stream()
@@ -49,13 +61,13 @@ public class DonanteIncentivos {
         .ifPresent(m -> m.evaluarProgresoExitoso(this));
   }
 
-  private boolean yaAyudoA(Long organizacionId) {
+  private boolean yaAyudoA(UUID organizacionId) {
     return metricas.yaAyudoA(organizacionId);
   }
 
   public void otorgarInsignia(Insignia insignia) {
     if (insignia == null) {
-      throw new IllegalArgumentException("La insignia no puede ser nula");
+      throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
     }
     this.insignias.add(insignia);
   }
