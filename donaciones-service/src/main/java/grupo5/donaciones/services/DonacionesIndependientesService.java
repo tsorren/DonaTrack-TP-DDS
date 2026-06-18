@@ -25,6 +25,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     DonacionIndependiente donacion =
         repositorio.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
+    // Ver si asignacion realizada va aca o solo por el algoritmo
+    // Agregar url de foto a necesidad al confirmar entrega
     switch (request.estado()) {
       case TipoEstadoDonacion.ASIGNACION_REALIZADA -> donacion.asignar(actor, null);
       case TipoEstadoDonacion.VENCIDA -> donacion.vencer(actor);

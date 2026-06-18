@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
-import grupo5.donaciones.dto.replicas.PersonaReplicaDTO;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.mappers.PersonaMapper;

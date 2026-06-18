@@ -2,9 +2,9 @@ package grupo5.donaciones.services.mappers;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.comunicaciones.MedioDeContactoReplicaDTO;
+import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.dto.personas.*;
-import grupo5.donaciones.dto.replicas.MedioDeContactoReplicaDTO;
-import grupo5.donaciones.dto.replicas.PersonaReplicaDTO;
 import grupo5.donaciones.models.entities.personas.*;
 import grupo5.donaciones.models.entities.personas.factories.PersonaFactory;
 import java.util.List;

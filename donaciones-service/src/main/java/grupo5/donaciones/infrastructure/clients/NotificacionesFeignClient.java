@@ -1,6 +1,6 @@
 package grupo5.donaciones.infrastructure.clients;
 
-import grupo5.donaciones.dto.replicas.PersonaReplicaDTO;
+import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
