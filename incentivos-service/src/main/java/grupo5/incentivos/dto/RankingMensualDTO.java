@@ -3,6 +3,7 @@ package grupo5.incentivos.dto;
 import grupo5.incentivos.models.entities.ranking.EntradaRanking;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import java.util.List;
+import java.util.UUID;
 
 public record RankingMensualDTO(
     String periodo, List<EntradaRankingDTO> entradas, List<EntradaRankingDTO> podio) {
@@ -15,7 +16,7 @@ public record RankingMensualDTO(
   }
 
   public record EntradaRankingDTO(
-      int posicion, Long donanteId, String nombreDonante, long misionesCompletadas) {
+      int posicion, UUID donanteId, String nombreDonante, long misionesCompletadas) {
 
     public static EntradaRankingDTO desde(EntradaRanking entrada) {
       return new EntradaRankingDTO(

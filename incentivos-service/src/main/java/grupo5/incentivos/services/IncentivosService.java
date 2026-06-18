@@ -2,6 +2,7 @@ package grupo5.incentivos.services;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.incentivos.dto.*;
 import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
@@ -15,6 +16,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -40,30 +42,47 @@ public class IncentivosService {
     this.n8nClient = n8nClient;
   }
 
-  public DonanteRegistradoDTO registrarDonante(Long donanteId, String nombreDonante) {
+  public DonanteRegistradoDTO registrarDonante(RegistrarDonanteRequest request) {
     DonanteIncentivos donante =
         repository
-            .buscarPorId(donanteId)
+            .findById(request.idDonante())
             .orElseGet(
                 () -> {
-                  DonanteIncentivos nuevo = new DonanteIncentivos(donanteId, nombreDonante);
+                  DonanteIncentivos nuevo =
+                      new DonanteIncentivos(
+                          request.idDonante(), request.idPersona(), request.nombre());
                   nuevo.setMisiones(misionFactory.crearMisionesEstandar());
-                  repository.guardar(nuevo);
+                  repository.save(nuevo);
                   return nuevo;
                 });
     return DonanteRegistradoDTO.desde(donante);
   }
 
-  public void procesarDonacion(Long donanteId, String nombreDonante, EventoDonacion evento) {
+  public void procesarDonacion(NuevaDonacionRequest request) {
+
+    EventoDonacion evento =
+        EventoDonacion.builder()
+            .categorias(request.categorias())
+            .cantidadBienes(request.cantidadBienes())
+            .fecha(request.fecha())
+            .build();
+
     DonanteIncentivos donante =
         repository
-            .buscarPorId(donanteId)
-            .orElseGet(
-                () -> {
-                  registrarDonante(donanteId, nombreDonante);
-                  return obtenerDonante(donanteId);
-                });
+            .findById(request.donanteId())
+            .orElseThrow(() -> new RecursoNoEncontradoException(request.donanteId()));
 
+    /* TODO: Revisar si registrar el donante debería ser responsabilidad de este caso de uso
+    DonanteIncentivos donante =
+      repository
+          .findById(request.donanteId())
+          .orElseGet(
+              () -> {
+                registrarDonante(new RegistrarDonanteRequest(request.donanteId(), request.));
+                return obtenerDonante(donanteId);
+              });
+
+    */
     Set<String> misionesCompletadasAntes =
         donante.getMisiones().stream()
             .filter(Mision::isCompletada)
@@ -80,26 +99,27 @@ public class IncentivosService {
               Insignia insignia = mision.getInsignia();
               String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
               notificacionesClient.notificarMisionCumplida(
-                  donanteId, mision.getNombre(), recompensa);
+                  donante.getId(), mision.getNombre(), recompensa);
               // Disparar flujo n8n para publicar la insignia ganada
               if (insignia != null) {
                 n8nClient.publicarInsigniaGanada(
-                    donanteId,
-                    "Donante " + nombreDonante,
+                    donante.getId(),
+                    "Donante " + donante.getNombre(),
                     insignia.getNombre(),
                     insignia.getDescripcion());
               }
             });
 
     if (donante.intentarAscenso()) {
-      notificacionesClient.notificarAscensoCategoria(donanteId, donante.getCategoria().name());
+      notificacionesClient.notificarAscensoCategoria(
+          donante.getId(), donante.getCategoria().name());
     }
 
-    repository.guardar(donante);
+    repository.save(donante);
   }
 
-  public void procesarDonacionExitosa(Long donanteId, Long organizacionId) {
-    DonanteIncentivos donante = obtenerDonante(donanteId);
+  public void procesarDonacionExitosa(DonacionExitosaRequest request) {
+    DonanteIncentivos donante = obtenerDonante(request.donanteId());
 
     Set<String> misionesCompletadasAntes =
         donante.getMisiones().stream()
@@ -107,7 +127,7 @@ public class IncentivosService {
             .map(Mision::getNombre)
             .collect(Collectors.toSet());
 
-    donante.registrarDonacionExitosa(organizacionId);
+    donante.registrarDonacionExitosa(request.organizacionId());
 
     donante.getMisiones().stream()
         .filter(Mision::isCompletada)
@@ -117,32 +137,33 @@ public class IncentivosService {
               Insignia insignia = mision.getInsignia();
               String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
               notificacionesClient.notificarMisionCumplida(
-                  donanteId, mision.getNombre(), recompensa);
+                  donante.getId(), mision.getNombre(), recompensa);
               // Disparar flujo n8n para publicar la insignia ganada
               if (insignia != null) {
                 n8nClient.publicarInsigniaGanada(
-                    donanteId,
-                    "Donante #" + donanteId,
+                    donante.getId(),
+                    "Donante #" + donante.getId(),
                     insignia.getNombre(),
                     insignia.getDescripcion());
               }
             });
 
     if (donante.intentarAscenso()) {
-      notificacionesClient.notificarAscensoCategoria(donanteId, donante.getCategoria().name());
+      notificacionesClient.notificarAscensoCategoria(
+          donante.getId(), donante.getCategoria().name());
     }
 
-    repository.guardar(donante);
+    repository.save(donante);
   }
 
-  public DonanteIncentivos obtenerDonante(Long donanteId) {
+  public DonanteIncentivos obtenerDonante(UUID donanteId) {
     return repository
-        .buscarPorId(donanteId)
+        .findById(donanteId)
         .orElseThrow(
             () -> new BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO));
   }
 
-  public MetricasDonanteDTO obtenerMetricas(Long donanteId) {
+  public MetricasDonanteDTO obtenerMetricas(UUID donanteId) {
     DonanteIncentivos donante = obtenerDonante(donanteId);
     Integer posicion = rankingService.obtenerPosicionDonante(donanteId).orElse(null);
 
@@ -156,32 +177,32 @@ public class IncentivosService {
     return MetricasDonanteDTO.desde(donante, posicion, misionesCompletadas, evolucion);
   }
 
-  public List<MisionDTO> obtenerMisiones(Long donanteId) {
+  public List<MisionDTO> obtenerMisiones(UUID donanteId) {
     return obtenerDonante(donanteId).getMisiones().stream().map(MisionDTO::desde).toList();
   }
 
-  public List<InsigniaDTO> obtenerInsignias(Long donanteId) {
+  public List<InsigniaDTO> obtenerInsignias(UUID donanteId) {
     return obtenerDonante(donanteId).getInsignias().stream().map(InsigniaDTO::desde).toList();
   }
 
   public void configurarVisibilidadInsignia(
-      Long donanteId, String nombreInsignia, boolean visible) {
+      UUID donanteId, String nombreInsignia, boolean visible) {
     DonanteIncentivos donante = obtenerDonante(donanteId);
     donante.getInsignias().stream()
         .filter(i -> i.getNombre().equals(nombreInsignia))
         .findFirst()
         .orElseThrow(() -> new BusinessStateException(ErrorCatalog.INSIGNIA_NO_ENCONTRADA))
         .setVisible(visible);
-    repository.guardar(donante);
+    repository.save(donante);
   }
 
-  public void darDeBaja(Long donanteId) {
+  public void darDeBaja(UUID donanteId) {
     DonanteIncentivos donante = obtenerDonante(donanteId);
-    repository.eliminar(donante);
+    repository.delete(donante);
   }
 
   public ResumenSistemaDTO obtenerResumenSistema() {
-    List<DonanteIncentivos> todos = repository.listarTodos();
+    List<DonanteIncentivos> todos = repository.findAll();
     YearMonth mesActual = YearMonth.now(ZoneId.systemDefault());
     YearMonth mesAnterior = mesActual.minusMonths(1);
 
@@ -220,6 +241,6 @@ public class IncentivosService {
   }
 
   public List<DonanteIncentivos> listarTodos() {
-    return repository.listarTodos();
+    return repository.findAll();
   }
 }

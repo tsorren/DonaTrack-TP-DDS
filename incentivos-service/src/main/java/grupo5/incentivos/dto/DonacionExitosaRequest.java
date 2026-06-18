@@ -1,3 +1,5 @@
 package grupo5.incentivos.dto;
 
-public record DonacionExitosaRequest(Long donanteId, Long organizacionId) {}
+import java.util.UUID;
+
+public record DonacionExitosaRequest(UUID donanteId, UUID organizacionId) {}

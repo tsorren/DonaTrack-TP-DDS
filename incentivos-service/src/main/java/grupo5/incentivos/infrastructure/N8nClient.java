@@ -1,6 +1,7 @@
 package grupo5.incentivos.infrastructure;
 
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +30,7 @@ public class N8nClient {
    * imagen y "publicar" en red social (mockeado).
    */
   public void publicarInsigniaGanada(
-      Long donanteId, String nombreDonante, String nombreInsignia, String descripcionInsignia) {
+      UUID donanteId, String nombreDonante, String nombreInsignia, String descripcionInsignia) {
 
     Map<String, Object> payload =
         Map.of(

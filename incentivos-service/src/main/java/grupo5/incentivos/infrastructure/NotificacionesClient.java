@@ -1,5 +1,6 @@
 package grupo5.incentivos.infrastructure;
 
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,26 +18,26 @@ public class NotificacionesClient {
     this.webClient = WebClient.builder().baseUrl(baseUrl).build();
   }
 
-  public void notificarMisionCumplida(Long donanteId, String nombreMision, String recompensa) {
+  public void notificarMisionCumplida(UUID donanteId, String nombreMision, String recompensa) {
     enviarNotificacion(
         donanteId,
         "MISION_CUMPLIDA",
         "Completaste la mision " + nombreMision + ". Recompensa: " + recompensa);
   }
 
-  public void notificarAscensoCategoria(Long donanteId, String nuevaCategoria) {
+  public void notificarAscensoCategoria(UUID donanteId, String nuevaCategoria) {
     enviarNotificacion(
         donanteId, "ASCENSO_CATEGORIA", "¡Subiste a la categoría " + nuevaCategoria + "!");
   }
 
-  public void notificarInactividad(Long donanteId, int diasInactivo) {
+  public void notificarInactividad(UUID donanteId, int diasInactivo) {
     enviarNotificacion(
         donanteId,
         "INACTIVIDAD",
         "Hace " + diasInactivo + " días que no realizás una donación. ¡Te esperamos!");
   }
 
-  private void enviarNotificacion(Long donanteId, String tipoEvento, String mensaje) {
+  private void enviarNotificacion(UUID donanteId, String tipoEvento, String mensaje) {
     try {
       webClient
           .post()
@@ -54,5 +55,5 @@ public class NotificacionesClient {
     }
   }
 
-  record NotificacionRequest(Long donanteId, String tipoEvento, String mensaje) {}
+  record NotificacionRequest(UUID donanteId, String tipoEvento, String mensaje) {}
 }
