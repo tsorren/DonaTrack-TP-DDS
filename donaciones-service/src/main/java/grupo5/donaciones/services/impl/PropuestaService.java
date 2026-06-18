@@ -18,7 +18,7 @@ public class PropuestaService {
   private final AlgoritmosService algoritmosService;
   private final IAsignacionesRepository asignacionRepository;
 
-  private PropuestaResponseDTO toDTO(Propuesta propuesta) {
+  private static PropuestaResponseDTO toDTO(Propuesta propuesta) {
     return new PropuestaResponseDTO(
         propuesta.getId(),
         propuesta.getEstado().name(),
@@ -29,7 +29,7 @@ public class PropuestaService {
     List<Propuesta> propuestas = algoritmosService.ejecutar();
 
     EjecucionAsignacionDTO ejecucion = new EjecucionAsignacionDTO();
-    ejecucion.setFechaEjecucion(LocalDateTime.now());
+    ejecucion.setFechaEjecucion(LocalDateTime.now(java.time.ZoneId.systemDefault()));
     ejecucion.setCantidadPropuestasGeneradas(propuestas.size());
 
     asignacionRepository.save(ejecucion);
@@ -38,7 +38,7 @@ public class PropuestaService {
   }
 
   public List<PropuestaResponseDTO> listarPropuestas() {
-    return algoritmosService.listarPropuestas().stream().map(this::toDTO).toList();
+    return algoritmosService.listarPropuestas().stream().map(PropuestaService::toDTO).toList();
   }
 
   public void actualizarEstado(UUID id, EstadoPropuesta estado) {

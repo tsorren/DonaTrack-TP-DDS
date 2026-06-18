@@ -69,25 +69,21 @@ public class NecesidadesService implements INecesidadesService {
         entidadesBeneficiariasRepository
             .findById(dto.getIdEntidad())
             .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdEntidad()));
-    Necesidad necesidad;
-    switch (dto.getTipo()) {
-      case "RECURRENTE" -> {
-        Period periodo = Period.between(dto.getFechaInicio(), dto.getFechaFin());
-        necesidad =
-            new NecesidadRecurrente(
+    Necesidad necesidad =
+        switch (dto.getTipo()) {
+          case "RECURRENTE" -> {
+            Period periodo = Period.between(dto.getFechaInicio(), dto.getFechaFin());
+            yield new NecesidadRecurrente(
                 subcategoria,
                 dto.getCantidadNecesitada(),
                 dto.getDescripcion(),
                 periodo,
                 dto.getFechaInicio());
-      }
-      case "EXTRAORDINARIA" -> {
-        necesidad =
-            new NecesidadExtraordinaria(
-                subcategoria, dto.getCantidadNecesitada(), dto.getDescripcion());
-      }
-      default -> throw (new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
-    }
+          }
+          case "EXTRAORDINARIA" -> new NecesidadExtraordinaria(
+              subcategoria, dto.getCantidadNecesitada(), dto.getDescripcion());
+          default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+        };
 
     necesidad.setEntidad(
         entidadBeneficiaria); // TODO: Anaalizar si esto debería ir en el constructor

@@ -1,6 +1,6 @@
 package grupo5.donaciones.services.impl;
 
-import grupo5.donaciones.dto.replicas.PersonaReplicaDTO;
+import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import java.util.UUID;
 import org.slf4j.Logger;

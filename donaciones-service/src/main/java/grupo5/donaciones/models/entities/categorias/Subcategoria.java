@@ -50,13 +50,4 @@ public class Subcategoria implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.SUBCATEGORIA_SIN_NOMBRE);
     }
   }
-
-  /* TODO: Pasar a capa de service
-  public Integer calcularStock() {
-    return this.donacionesIndependientes.stream()
-        .mapToInt(DonacionIndependiente::getCantidad)
-        .sum();
-  }
-  */
-
 }

@@ -24,7 +24,7 @@ public class PlanificadorDeAlgoritmos {
     propuestaService.ejecutarAsignacion();
   }
 
-  private String traducir(String valor) {
+  private static String traducir(String valor) {
     return switch (valor) {
       case "*" -> "todos";
       case "?" -> "cualquier";

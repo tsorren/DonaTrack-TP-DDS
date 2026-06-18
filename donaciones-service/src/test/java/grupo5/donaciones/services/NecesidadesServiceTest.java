@@ -116,7 +116,7 @@ class NecesidadesServiceTest {
             5,
             "Test por ID",
             false,
-            LocalDate.now(),
+            LocalDate.of(2026, java.time.Month.JUNE, 18),
             null);
 
     when(necesidadMock.toDTO()).thenReturn(dtoEsperado);

@@ -90,9 +90,11 @@ public class AlgoritmosService {
             .findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-    if (estado == EstadoPropuesta.APROBADA) propuesta.confirmar();
-    else if (estado == EstadoPropuesta.DESCARTADA) propuesta.rechazar();
-    else throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    switch (estado) {
+      case APROBADA -> propuesta.confirmar();
+      case DESCARTADA -> propuesta.rechazar();
+      default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
 
     propuestaRepository.save(propuesta);
   }
