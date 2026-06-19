@@ -38,13 +38,18 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(BusinessStateException.class)
   public ResponseEntity<ErrorResponse> handleBusinessState(BusinessStateException ex) {
+    HttpStatus status = HttpStatus.CONFLICT;
+    if (ex.getError() == ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO
+        || ex.getError() == ErrorCatalog.INSIGNIA_NO_ENCONTRADA) {
+      status = HttpStatus.NOT_FOUND;
+    }
     log.warn(
         "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Business state exception: {}",
         ex.getErrorCode(),
         ex.getClass().getSimpleName(),
         ex.getMessage(),
         ex);
-    return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex));
+    return ResponseEntity.status(status).body(new ErrorResponse(ex));
   }
 
   @ExceptionHandler(InfrastructureException.class)

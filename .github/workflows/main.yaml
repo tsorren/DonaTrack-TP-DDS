@@ -567,6 +567,8 @@ jobs:
     needs: build-and-test
     if: ${{ needs.build-and-test.result == 'success' }}
     runs-on: ubuntu-latest
+    env:
+      EXECUTION_ID: "run_${{ github.run_id }}_${{ github.run_attempt }}"
     permissions:
       contents: read
     steps:
@@ -603,6 +605,9 @@ jobs:
       - name: Provisionar Entorno de Pre-Producción (Docker Compose)
         run: |
           docker compose -f docker-compose.preprod.yml up --build --wait -d
+          echo "Importando workflows en n8n..."
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Insignias.JSON || true
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || true
 
       - name: Esperar endpoints /v3/api-docs disponibles
         run: |
@@ -630,14 +635,17 @@ jobs:
             -Dnotificaciones.url=http://localhost:8081 \
             -Dincentivos.url=http://localhost:8082
 
-      - name: Recolectar Logs de Contenedores en Fallo
-        if: failure()
+      - name: Recolectar Logs de Contenedores y Archivos de Logs
+        if: always()
         run: |
           mkdir -p docker-logs
-          docker compose -f docker-compose.preprod.yml logs --no-color > docker-logs/preprod-services.log
+          docker compose -f docker-compose.preprod.yml logs --no-color > docker-logs/preprod-services.log || true
+          if [ -d "logs" ]; then
+            cp -r logs docker-logs/files || true
+          fi
 
       - name: Archivar Logs de Docker
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: docker-preprod-logs

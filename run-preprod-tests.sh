@@ -40,6 +40,12 @@ DONACIONES_URL="http://localhost:8080"
 NOTIFICACIONES_URL="http://localhost:8081"
 INCENTIVOS_URL="http://localhost:8082"
 
+# Generar EXECUTION_ID si no está definido
+if [[ -z "${EXECUTION_ID:-}" ]]; then
+  EXECUTION_ID="run_$(date +%Y%m%d_%H%M%S)"
+  export EXECUTION_ID
+fi
+
 # ── Cleanup garantizado al salir (con o sin error) ───────────────────────────
 cleanup() {
   local exit_code=$?
@@ -67,6 +73,10 @@ step "Levantando stack pre-producción (esperando healthchecks)"
 # --wait bloquea hasta que todos los servicios con healthcheck reportan 'healthy'
 docker compose -f "$COMPOSE_FILE" up --build --wait -d
 ok "Todos los servicios están healthy."
+
+step "Importando workflows en n8n"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Insignias.JSON || warn "No se pudo importar el workflow de insignias"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || warn "No se pudo importar el workflow de ranking"
 
 # Esperar que /v3/api-docs esté disponible en cada servicio (evita fallos por endpoints no listos)
 step "Esperando /v3/api-docs en los servicios"
