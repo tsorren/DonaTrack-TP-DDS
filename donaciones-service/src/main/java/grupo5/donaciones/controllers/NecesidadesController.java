@@ -38,4 +38,9 @@ public class NecesidadesController implements INecesidadesController {
     List<NecesidadDTO> lista = necesidadesService.listarConFiltros(entidadId, tipo);
     return ResponseEntity.ok(lista);
   }
+
+  @GetMapping("/subcategorias")
+  public ResponseEntity<List<grupo5.donaciones.dto.SubcategoriaDTO>> obtenerSubcategorias() {
+    return ResponseEntity.ok(necesidadesService.obtenerSubcategorias());
+  }
 }

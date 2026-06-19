@@ -14,6 +14,8 @@ import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
 import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ProcesadorDeDonaciones {
 
+  private static final Logger log = LoggerFactory.getLogger(ProcesadorDeDonaciones.class);
+
   private final NormalizadorSemanticoBien normalizador;
   private final Segmentador segmentador;
   private final DonacionRepositoryEnMemoria donacionRepository;
@@ -31,11 +35,34 @@ public class ProcesadorDeDonaciones {
 
   @Async
   public void procesar(Donacion donacion) {
+    log.info("Iniciando procesamiento de donación ID: {}", donacion.getId());
     List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion);
+    log.info("Normalización exitosa. Items normalizados: {}", itemsNormalizados.size());
+    for (ItemDonacionNormalizado item : itemsNormalizados) {
+      log.info(
+          "  Item: {}, Subcategoría asignada: {}, Confianza: {}, Estado: {}",
+          item.getBien().getBienOriginal().getDescripcion(),
+          item.getBien().getSubcategoria() != null
+              ? item.getBien().getSubcategoria().getNombre()
+              : "null",
+          item.getBien().getConfianza(),
+          item.getBien().getEstadoNormalizacion());
+    }
     donacion.marcarNormalizada();
     donacionRepository.save(donacion);
 
     List<DonacionIndependiente> donacionesIndependientes = segmentador.segmentar(itemsNormalizados);
+    log.info(
+        "Segmentación exitosa. Donaciones independientes generadas: {}",
+        donacionesIndependientes.size());
+    for (DonacionIndependiente di : donacionesIndependientes) {
+      log.info(
+          "  Donación Independiente ID: {}, Subcategoría: {}, Cantidad: {}, Estado: {}",
+          di.getId(),
+          di.getSubcategoria() != null ? di.getSubcategoria().getNombre() : "null",
+          di.getCantidad(),
+          di.getEstadoActual() != null ? di.getEstadoActual().getClass().getSimpleName() : "null");
+    }
     donacion.marcarSegmentada();
     donacionRepository.save(donacion);
 
@@ -57,10 +84,15 @@ public class ProcesadorDeDonaciones {
               di.getDonacionOriginal().getFecha().toLocalDate(),
               nombreDonante);
 
+      log.info(
+          "Registrando donación independiente en motor de incentivos. Donante ID: {}, Cantidad: {}",
+          di.getDonacionOriginal().getDonante().getId(),
+          di.getCantidad());
       incentivosFeignClient.procesarDonacion(request);
     }
 
     donacionesIndependientesRepository.saveAll(donacionesIndependientes);
+    log.info("Donación ID: {} procesada completamente y persistida.", donacion.getId());
   }
 
   private String obtenerNombrePersona(Persona persona) {

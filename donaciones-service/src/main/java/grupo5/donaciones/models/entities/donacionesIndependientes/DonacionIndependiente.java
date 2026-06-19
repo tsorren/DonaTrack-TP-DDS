@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
@@ -25,7 +26,7 @@ public class DonacionIndependiente implements AggregateRoot {
   private EstadoDonacion estadoActual;
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
-  private Asignable asignadaA;
+  @JsonIgnore private Asignable asignadaA;
 
   public DonacionIndependiente(Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
     this.id = UUID.randomUUID();

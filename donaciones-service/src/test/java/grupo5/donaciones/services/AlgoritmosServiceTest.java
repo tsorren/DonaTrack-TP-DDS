@@ -9,7 +9,7 @@ import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.impl.NecesidadRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
 import grupo5.donaciones.services.impl.AlgoritmosService;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 class AlgoritmosServiceTest {
 
   private IDonacionesIndependientesRepository donacionRepositoryMock;
-  private NecesidadRepository necesidadRepositoryMock;
+  private INecesidadesRepository necesidadRepositoryMock;
   private PropuestaRepository propuestaRepositoryMock;
   private ComparadorTexto comparadorTextoMock;
   private NotificacionesFeignClient notificacionesFeignClientMock;
@@ -34,7 +34,7 @@ class AlgoritmosServiceTest {
   @BeforeEach
   void setUp() {
     donacionRepositoryMock = mock(IDonacionesIndependientesRepository.class);
-    necesidadRepositoryMock = mock(NecesidadRepository.class);
+    necesidadRepositoryMock = mock(INecesidadesRepository.class);
     propuestaRepositoryMock = mock(PropuestaRepository.class);
     comparadorTextoMock = mock(ComparadorTexto.class);
     notificacionesFeignClientMock = mock(NotificacionesFeignClient.class);
@@ -51,13 +51,13 @@ class AlgoritmosServiceTest {
   @Test
   void ejecutar_deberiaBuscarDonacionesYNecesidadesYConsolidarResultados() {
     when(donacionRepositoryMock.findEnDeposito()).thenReturn(Collections.emptyList());
-    when(necesidadRepositoryMock.findInsatisfechas()).thenReturn(Collections.emptyList());
+    when(necesidadRepositoryMock.findByEstaSatisfechaFalse()).thenReturn(Collections.emptyList());
 
     List<Propuesta> resultado = service.ejecutar();
 
     assertNotNull(resultado);
     verify(donacionRepositoryMock, times(1)).findEnDeposito();
-    verify(necesidadRepositoryMock, times(1)).findInsatisfechas();
+    verify(necesidadRepositoryMock, times(1)).findByEstaSatisfechaFalse();
   }
 
   @Test
