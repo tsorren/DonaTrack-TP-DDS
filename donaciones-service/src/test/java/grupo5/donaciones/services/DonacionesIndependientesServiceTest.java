@@ -175,7 +175,7 @@ class DonacionesIndependientesServiceTest {
         .procesarDonacionExitosa(
             eq(
                 new DonacionExitosaRequest(
-                    donacion.getDonacionOriginal().getDonante().getPersona().getId(), null)));
+                    donacion.getDonacionOriginal().getDonante().getId(), null)));
     verify(notificacionesFeignClientMock, times(1))
         .enviarEvento(any(EventoDonacionRecibidaDTO.class));
   }

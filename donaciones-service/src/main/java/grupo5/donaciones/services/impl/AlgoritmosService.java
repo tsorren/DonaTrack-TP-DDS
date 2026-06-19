@@ -99,8 +99,25 @@ public class AlgoritmosService {
     switch (estado) {
       case APROBADA -> {
         propuesta.confirmar();
+        Necesidad necesidad = propuesta.getNecesidadQueSatisface();
+        if (necesidad != null) {
+          necesidadRepository.save(necesidad);
+        }
         if (propuesta.getPosiblesFragmentaciones() != null) {
-          Necesidad necesidad = propuesta.getNecesidadQueSatisface();
+          propuesta
+              .getPosiblesFragmentaciones()
+              .forEach(
+                  f -> {
+                    if (f.getDonacionOriginal() != null) {
+                      donacionRepository.save(f.getDonacionOriginal());
+                    }
+                  });
+        }
+        if (necesidad != null && necesidad.getDonacionesAsignadas() != null) {
+          necesidad.getDonacionesAsignadas().forEach(donacionRepository::save);
+        }
+
+        if (propuesta.getPosiblesFragmentaciones() != null) {
           UUID idPersonaBeneficiaria =
               (necesidad != null
                       && necesidad.getEntidad() != null

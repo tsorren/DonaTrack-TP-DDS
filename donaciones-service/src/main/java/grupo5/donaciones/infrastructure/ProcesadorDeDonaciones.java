@@ -51,7 +51,7 @@ public class ProcesadorDeDonaciones {
 
       NuevaDonacionRequest request =
           new NuevaDonacionRequest(
-              persona.getId(),
+              di.getDonacionOriginal().getDonante().getId(),
               categorias,
               di.getCantidad(),
               di.getDonacionOriginal().getFecha().toLocalDate(),
