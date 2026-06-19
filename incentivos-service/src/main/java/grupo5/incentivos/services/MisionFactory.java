@@ -23,7 +23,7 @@ public class MisionFactory implements IMisionFactory {
     MisionCompletitud completitud = new MisionCompletitud(CategoriaDonante.COLABORADOR, 3);
     completitud.setInsignia(
         new Insignia(
-            "Explorador", "Donaciones en 3 subcategorías distintas", "/insignias/explorador.png"));
+            "Explorador", "Donaciones en 3 categorías distintas", "/insignias/explorador.png"));
     misiones.add(completitud);
 
     // === CATEGORÍA SOSTENEDOR ===
@@ -51,7 +51,7 @@ public class MisionFactory implements IMisionFactory {
     completitudTransformador.setInsignia(
         new Insignia(
             "Diversidad Solidaria",
-            "Donaciones en 8 subcategorías distintas",
+            "Donaciones en 8 categorías distintas",
             "/insignias/diversidad.png"));
     misiones.add(completitudTransformador);
 

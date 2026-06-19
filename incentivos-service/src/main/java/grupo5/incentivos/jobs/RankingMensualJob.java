@@ -1,6 +1,6 @@
 package grupo5.incentivos.jobs;
 
-import grupo5.incentivos.services.RankingService;
+import grupo5.incentivos.services.IRankingService;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import org.slf4j.Logger;
@@ -13,9 +13,9 @@ public class RankingMensualJob {
 
   private static final Logger log = LoggerFactory.getLogger(RankingMensualJob.class);
 
-  private final RankingService rankingService;
+  private final IRankingService rankingService;
 
-  public RankingMensualJob(RankingService rankingService) {
+  public RankingMensualJob(IRankingService rankingService) {
     this.rankingService = rankingService;
   }
 
@@ -23,7 +23,7 @@ public class RankingMensualJob {
   public void ejecutarRankingMensual() {
     YearMonth periodoActual = YearMonth.now(ZoneId.systemDefault());
     try {
-      rankingService.calcularYPersistir(periodoActual);
+      rankingService.calcularYNotificar(periodoActual);
     } catch (Exception e) {
       log.error("Error en el job de ranking mensual para {}: {}", periodoActual, e.getMessage(), e);
       // tirar mensaje de error

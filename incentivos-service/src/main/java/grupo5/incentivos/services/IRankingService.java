@@ -8,6 +8,8 @@ import java.util.*;
 public interface IRankingService {
   RankingMensualDTO calcularYPersistir(YearMonth periodo);
 
+  RankingMensualDTO calcularYNotificar(YearMonth periodo);
+
   Optional<Integer> obtenerPosicionDonante(UUID donanteId);
 
   Optional<RankingMensual> obtenerRankingPorPeriodo(YearMonth periodo);

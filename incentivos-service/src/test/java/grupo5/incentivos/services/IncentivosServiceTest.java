@@ -98,7 +98,7 @@ class IncentivosServiceTest {
 
     service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
-    verify(notificacionesClient, never()).notificarMisionCumplida(any(), any(), any());
+    verify(notificacionesClient, never()).notificarMisionCumplida(any(), any(), any(), any());
   }
 
   @Test
@@ -112,7 +112,7 @@ class IncentivosServiceTest {
     service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
     verify(notificacionesClient, atLeastOnce())
-        .notificarAscensoCategoria(any(), anyString(), anyString());
+        .notificarAscensoCategoria(any(), any(), anyString(), anyString());
   }
 
   @Test
@@ -156,7 +156,7 @@ class IncentivosServiceTest {
     service.procesarDonacionExitosa(new DonacionExitosaRequest(id, new UUID(0L, 99L)));
 
     verify(notificacionesClient, atLeastOnce())
-        .notificarMisionCumplida(any(), anyString(), anyString());
+        .notificarMisionCumplida(any(), any(), anyString(), anyString());
   }
 
   @Test

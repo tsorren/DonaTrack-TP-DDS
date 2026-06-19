@@ -6,6 +6,8 @@ import grupo5.common.repositories.AggregateRoot;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -66,6 +68,7 @@ public class DonanteIncentivos implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
     }
     this.insignias.add(insignia);
+    insignia.setFechaObtenida(LocalDate.now(ZoneId.systemDefault()));
   }
 
   public boolean intentarAscenso() {
