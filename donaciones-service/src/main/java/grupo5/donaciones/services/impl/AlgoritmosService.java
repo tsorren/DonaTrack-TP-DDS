@@ -9,8 +9,8 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.impl.NecesidadRepository;
-import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
+import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import java.util.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -21,18 +21,18 @@ public class AlgoritmosService {
 
   private final List<AlgoritmoAsignacion> algoritmos;
   private final IDonacionesIndependientesRepository donacionRepository;
-  private final NecesidadRepository necesidadRepository;
-  private final PropuestaRepository propuestaRepository;
+  private final INecesidadesRepository necesidadesRepository;
+  private final IPropuestasRepository propuestasRepository;
 
   public AlgoritmosService(
       IDonacionesIndependientesRepository donacionRepository,
-      NecesidadRepository necesidadRepository,
-      PropuestaRepository propuestaRepository,
+      INecesidadesRepository necesidadesRepository,
+      IPropuestasRepository propuestasRepository,
       ComparadorTexto comparadorTexto) {
 
     this.donacionRepository = donacionRepository;
-    this.necesidadRepository = necesidadRepository;
-    this.propuestaRepository = propuestaRepository;
+    this.necesidadesRepository = necesidadesRepository;
+    this.propuestasRepository = propuestasRepository;
 
     this.algoritmos =
         List.of(
@@ -69,24 +69,24 @@ public class AlgoritmosService {
 
   public List<Propuesta> ejecutar() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
-    List<Necesidad> necesidades = necesidadRepository.findInsatisfechas();
+    List<Necesidad> necesidades = necesidadesRepository.findByEstaSatisfechaFalse();
 
     List<Propuesta> p1 = algoritmoPorCompatibilidad().ejecutar(necesidades, donaciones);
     List<Propuesta> p2 = algoritmoPorPrioridad().ejecutar(necesidades, donaciones);
 
     List<Propuesta> resultado = consolidar(p1, p2);
 
-    resultado.forEach(propuestaRepository::save);
+    resultado.forEach(propuestasRepository::save);
     return resultado;
   }
 
   public List<Propuesta> listarPropuestas() {
-    return propuestaRepository.findAll();
+    return propuestasRepository.findAll();
   }
 
   public void actualizarEstadoPropuesta(UUID id, EstadoPropuesta estado) {
     Propuesta propuesta =
-        propuestaRepository
+        propuestasRepository
             .findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -96,7 +96,7 @@ public class AlgoritmosService {
       default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
-    propuestaRepository.save(propuesta);
+    propuestasRepository.save(propuesta);
   }
 
   private AlgoritmoAsignacion algoritmoPorCompatibilidad() {

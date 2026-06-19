@@ -3,15 +3,16 @@ package grupo5.donaciones.models.repositories.impl;
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
-// Simulacion de base de datos, despues hay que implementar una enserio
 @Repository
-public class DonacionIndependienteRepository
-    extends CrudRepositoryEnMemoria<DonacionIndependiente> {
+public class DonacionesIndependientesRepositoryEnMemoria
+    extends CrudRepositoryEnMemoria<DonacionIndependiente>
+    implements IDonacionesIndependientesRepository {
 
-  // Metodo para simular la búsqueda de donaciones en depósito
+  @Override
   public List<DonacionIndependiente> findEnDeposito() {
     return findAll().stream()
         .filter(d -> d.getEstadoActual().getTipo() == TipoEstadoDonacion.EN_DEPOSITO)

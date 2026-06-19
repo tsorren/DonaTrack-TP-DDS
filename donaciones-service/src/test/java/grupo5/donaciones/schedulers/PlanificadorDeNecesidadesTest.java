@@ -4,7 +4,7 @@ import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
-import grupo5.donaciones.models.repositories.impl.NecesidadRecurrenteRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRecurrentesRepository;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,12 +12,12 @@ import org.junit.jupiter.api.Test;
 
 class PlanificadorDeNecesidadesTest {
 
-  private NecesidadRecurrenteRepository necesidadRepositoryMock;
+  private INecesidadesRecurrentesRepository necesidadRepositoryMock;
   private PlanificadorDeNecesidades planificador;
 
   @BeforeEach
   void setUp() {
-    necesidadRepositoryMock = mock(NecesidadRecurrenteRepository.class);
+    necesidadRepositoryMock = mock(INecesidadesRecurrentesRepository.class);
     planificador = new PlanificadorDeNecesidades(necesidadRepositoryMock);
   }
 

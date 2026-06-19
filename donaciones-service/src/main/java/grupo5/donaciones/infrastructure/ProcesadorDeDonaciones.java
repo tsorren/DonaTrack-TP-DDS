@@ -6,7 +6,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.ports.Segmentador;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -20,7 +20,7 @@ public class ProcesadorDeDonaciones {
 
   private final NormalizadorSemanticoBien normalizador;
   private final Segmentador segmentador;
-  private final DonacionRepositoryEnMemoria donacionRepository;
+  private final IDonacionesRepository donacionRepository;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
 
   @Async

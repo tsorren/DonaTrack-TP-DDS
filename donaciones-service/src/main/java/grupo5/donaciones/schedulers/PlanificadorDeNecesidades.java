@@ -1,7 +1,7 @@
 package grupo5.donaciones.schedulers;
 
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
-import grupo5.donaciones.models.repositories.impl.NecesidadRecurrenteRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRecurrentesRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -12,10 +12,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class PlanificadorDeNecesidades {
 
-  private final NecesidadRecurrenteRepository necesidadRepository;
+  private final INecesidadesRecurrentesRepository necesidadRepository;
 
   @Autowired
-  public PlanificadorDeNecesidades(NecesidadRecurrenteRepository necesidadRepository) {
+  public PlanificadorDeNecesidades(INecesidadesRecurrentesRepository necesidadRepository) {
     this.necesidadRepository = necesidadRepository;
   }
 
