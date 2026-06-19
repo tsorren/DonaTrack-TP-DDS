@@ -76,8 +76,9 @@ class ProcesadorDeDonacionesTest {
     DonacionIndependiente donacionIndependiente =
         new DonacionIndependiente(donacion, List.of(item));
 
-    List<ItemDonacionNormalizado> itemsNormalizados =
-        Collections.singletonList(mock(ItemDonacionNormalizado.class));
+    ItemDonacionNormalizado itemNormalizado =
+        new ItemDonacionNormalizado(donacion, bienNormalizado, 5);
+    List<ItemDonacionNormalizado> itemsNormalizados = Collections.singletonList(itemNormalizado);
     List<DonacionIndependiente> donacionesIndependientes =
         Collections.singletonList(donacionIndependiente);
 
