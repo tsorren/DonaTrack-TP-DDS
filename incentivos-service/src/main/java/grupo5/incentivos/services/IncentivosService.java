@@ -60,7 +60,6 @@ public class IncentivosService implements IIncentivosService {
   }
 
   public void procesarDonacion(NuevaDonacionRequest request) {
-
     EventoDonacion evento =
         EventoDonacion.builder()
             .categorias(request.categorias())
@@ -73,32 +72,35 @@ public class IncentivosService implements IIncentivosService {
             .findById(request.donanteId())
             .orElseThrow(() -> new RecursoNoEncontradoException(request.donanteId()));
 
-    Set<UUID> misionesCompletadasAntes =
-        donante.getMisiones().stream()
-            .filter(Mision::isCompletada)
-            .map(Mision::getId)
-            .collect(Collectors.toSet());
+    Set<UUID> misionesCompletadasAntes = misionesCompletadasActuales(donante);
 
     donante.registrarDonacion(evento);
 
+    notificarYGuardar(donante, misionesCompletadasAntes);
+  }
+
+  public void procesarDonacionExitosa(DonacionExitosaRequest request) {
+    DonanteIncentivos donante = obtenerDonante(request.donanteId());
+
+    Set<UUID> misionesCompletadasAntes = misionesCompletadasActuales(donante);
+
+    donante.registrarDonacionExitosa(request.organizacionId());
+
+    notificarYGuardar(donante, misionesCompletadasAntes);
+  }
+
+  private Set<UUID> misionesCompletadasActuales(DonanteIncentivos donante) {
+    return donante.getMisiones().stream()
+        .filter(Mision::isCompletada)
+        .map(Mision::getId)
+        .collect(Collectors.toSet());
+  }
+
+  private void notificarYGuardar(DonanteIncentivos donante, Set<UUID> misionesCompletadasAntes) {
     donante.getMisiones().stream()
         .filter(Mision::isCompletada)
         .filter(m -> !misionesCompletadasAntes.contains(m.getId()))
-        .forEach(
-            mision -> {
-              Insignia insignia = mision.getInsignia();
-              String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
-              notificacionesClient.notificarMisionCumplida(
-                  donante.getIdPersona(), mision.getNombre(), recompensa);
-              // Disparar flujo n8n para publicar la insignia ganada
-              if (insignia != null) {
-                n8nClient.publicarInsigniaGanada(
-                    donante.getId(),
-                    "Donante " + donante.getNombre(),
-                    insignia.getNombre(),
-                    insignia.getDescripcion());
-              }
-            });
+        .forEach(mision -> notificarMisionCompletada(donante, mision));
 
     if (donante.intentarAscenso()) {
       CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
@@ -111,45 +113,19 @@ public class IncentivosService implements IIncentivosService {
     repository.save(donante);
   }
 
-  public void procesarDonacionExitosa(DonacionExitosaRequest request) {
-    DonanteIncentivos donante = obtenerDonante(request.donanteId());
-
-    Set<UUID> misionesCompletadasAntes =
-        donante.getMisiones().stream()
-            .filter(Mision::isCompletada)
-            .map(Mision::getId)
-            .collect(Collectors.toSet());
-
-    donante.registrarDonacionExitosa(request.organizacionId());
-
-    donante.getMisiones().stream()
-        .filter(Mision::isCompletada)
-        .filter(m -> !misionesCompletadasAntes.contains(m.getId()))
-        .forEach(
-            mision -> {
-              Insignia insignia = mision.getInsignia();
-              String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
-              notificacionesClient.notificarMisionCumplida(
-                  donante.getIdPersona(), mision.getNombre(), recompensa);
-              // Disparar flujo n8n para publicar la insignia ganada
-              if (insignia != null) {
-                n8nClient.publicarInsigniaGanada(
-                    donante.getId(),
-                    "Donante #" + donante.getNombre(),
-                    insignia.getNombre(),
-                    insignia.getDescripcion());
-              }
-            });
-
-    if (donante.intentarAscenso()) {
-      CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
-      notificacionesClient.notificarAscensoCategoria(
-          donante.getIdPersona(),
-          ultimoCambio.getNueva().name(),
-          ultimoCambio.getAnterior().name());
+  private void notificarMisionCompletada(DonanteIncentivos donante, Mision mision) {
+    Insignia insignia = mision.getInsignia();
+    String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
+    notificacionesClient.notificarMisionCumplida(
+        donante.getIdPersona(), mision.getNombre(), recompensa);
+    // Disparar flujo n8n para publicar la insignia ganada
+    if (insignia != null) {
+      n8nClient.publicarInsigniaGanada(
+          donante.getId(),
+          "Donante " + donante.getNombre(),
+          insignia.getNombre(),
+          insignia.getDescripcion());
     }
-
-    repository.save(donante);
   }
 
   public DonanteIncentivos obtenerDonante(UUID donanteId) {
