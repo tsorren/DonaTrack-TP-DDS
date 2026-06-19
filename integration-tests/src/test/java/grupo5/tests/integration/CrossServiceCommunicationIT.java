@@ -282,7 +282,6 @@ public class CrossServiceCommunicationIT extends BaseIT {
         .statusCode(anyOf(equalTo(400), equalTo(404)));
   }
 
-  @Disabled
   @Test
   @SuppressWarnings("unchecked")
   public void testE2EDonationFlowAndSideEffects() {
