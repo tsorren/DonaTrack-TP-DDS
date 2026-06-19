@@ -1,5 +1,6 @@
-package grupo5.donaciones.controllers;
+package grupo5.donaciones.controllers.impl;
 
+import grupo5.donaciones.controllers.INecesidadesController;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.services.INecesidadesService;
 import java.util.List;
@@ -37,5 +38,10 @@ public class NecesidadesController implements INecesidadesController {
       @RequestParam(required = false) UUID entidadId, @RequestParam(required = false) String tipo) {
     List<NecesidadDTO> lista = necesidadesService.listarConFiltros(entidadId, tipo);
     return ResponseEntity.ok(lista);
+  }
+
+  @GetMapping("/subcategorias")
+  public ResponseEntity<List<grupo5.donaciones.dto.SubcategoriaDTO>> obtenerSubcategorias() {
+    return ResponseEntity.ok(necesidadesService.obtenerSubcategorias());
   }
 }

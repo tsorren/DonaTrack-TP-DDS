@@ -29,4 +29,10 @@ public class PersonasController implements IPersonasController {
     service.anonimizar(id);
     return ResponseEntity.ok().build();
   }
+
+  @Override
+  @GetMapping("/{id}")
+  public ResponseEntity<PersonaReplicaDTO> obtenerPersona(@PathVariable("id") UUID id) {
+    return ResponseEntity.ok(service.obtenerPersona(id));
+  }
 }

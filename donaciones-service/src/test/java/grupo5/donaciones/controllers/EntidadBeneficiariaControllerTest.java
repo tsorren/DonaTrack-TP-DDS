@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import grupo5.donaciones.controllers.impl.EntidadBeneficiariaController;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import java.util.UUID;

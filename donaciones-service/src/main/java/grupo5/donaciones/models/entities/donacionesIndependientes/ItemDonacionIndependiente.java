@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
@@ -10,7 +11,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ItemDonacionIndependiente {
-  private DonacionIndependiente donacionIndependiente;
+  @JsonIgnore private DonacionIndependiente donacionIndependiente;
   private BienNormalizado bien;
   private Integer cantidad;
 

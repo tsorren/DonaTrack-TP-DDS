@@ -1,5 +1,6 @@
-package grupo5.donaciones.controllers;
+package grupo5.donaciones.controllers.impl;
 
+import grupo5.donaciones.controllers.IDonacionesController;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.services.IDonacionesService;

@@ -35,4 +35,13 @@ public class PersonasService implements IPersonasService {
     persona.anonimizar();
     repository.save(persona);
   }
+
+  @Override
+  public PersonaReplicaDTO obtenerPersona(UUID id) {
+    Persona persona =
+        repository
+            .findById(id)
+            .orElseThrow(() -> new ValidationException(ErrorCatalog.RECURSO_NO_ENCONTRADO));
+    return mapper.toReplicaDTO(persona);
+  }
 }

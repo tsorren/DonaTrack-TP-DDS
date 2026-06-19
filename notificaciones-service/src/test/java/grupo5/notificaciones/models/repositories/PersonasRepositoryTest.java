@@ -17,7 +17,7 @@ class PersonasRepositoryTest {
 
   @BeforeEach
   void setUp() {
-    repository = new PersonasRepositoryEnMemoria();
+    repository = new PersonaRepositoryEnMemoria();
   }
 
   @Test

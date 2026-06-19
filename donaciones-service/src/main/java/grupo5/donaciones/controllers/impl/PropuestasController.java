@@ -1,4 +1,4 @@
-package grupo5.donaciones.controllers;
+package grupo5.donaciones.controllers.impl;
 
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;

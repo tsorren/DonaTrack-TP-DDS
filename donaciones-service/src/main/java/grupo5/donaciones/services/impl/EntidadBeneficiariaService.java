@@ -1,4 +1,4 @@
-package grupo5.donaciones.services;
+package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
@@ -7,6 +7,7 @@ import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
 import java.util.UUID;
 import org.springframework.stereotype.Service;

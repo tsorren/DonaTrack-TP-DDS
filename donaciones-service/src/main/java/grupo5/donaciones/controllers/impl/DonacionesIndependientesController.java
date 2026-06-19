@@ -1,4 +1,4 @@
-package grupo5.donaciones.controllers;
+package grupo5.donaciones.controllers.impl;
 
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;

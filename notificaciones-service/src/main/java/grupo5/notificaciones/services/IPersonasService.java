@@ -7,4 +7,6 @@ public interface IPersonasService {
   void sincronizar(PersonaReplicaDTO dto);
 
   void anonimizar(UUID id);
+
+  PersonaReplicaDTO obtenerPersona(UUID id);
 }
