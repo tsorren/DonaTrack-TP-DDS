@@ -12,3 +12,6 @@ Se implementaron las siguientes modificaciones para solucionar problemas de inco
      - La necesidad que se satisface.
      - Las donaciones independientes originales (que pueden haber visto reducida su cantidad debido a una fragmentación).
      - Todas las donaciones independientes asignadas (incluyendo fragmentos recién creados e instancias completas).
+
+3. **Datos Iniciales de Catálogo (Subcategorías)**:
+   - Se creó `CatalogDataInitializer.java` que implementa `CommandLineRunner`. Este componente pre-popula el catálogo de categorías ("Alimentos", "Ropa", "Muebles") y sus respectivas subcategorías y alias en el repositorio en memoria al iniciar la aplicación.
