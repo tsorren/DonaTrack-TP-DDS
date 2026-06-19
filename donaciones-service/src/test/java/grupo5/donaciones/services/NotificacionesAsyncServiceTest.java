@@ -22,7 +22,6 @@ class NotificacionesAsyncServiceTest {
   @Test
   void sincronizarPersona_deberiaInvocarCliente_CuandoNoHayErrores() {
     PersonaReplicaDTO dto = mock(PersonaReplicaDTO.class);
-    when(dto.id()).thenReturn(UUID.randomUUID());
 
     service.sincronizarPersona(dto);
 
