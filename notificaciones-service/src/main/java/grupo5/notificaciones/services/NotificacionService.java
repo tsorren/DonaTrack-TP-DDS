@@ -1,5 +1,6 @@
 package grupo5.notificaciones.services;
 
+import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
@@ -7,6 +8,7 @@ import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.repositories.NotificacionRepository;
 import grupo5.notificaciones.services.mappers.EventoMapper;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,5 +33,17 @@ public class NotificacionService {
       notificacion.notificar(sender);
       repository.save(notificacion);
     }
+  }
+
+  public List<NotificacionDTO> obtenerPorPersona(UUID personaId) {
+    return repository.findByPersonaId(personaId).stream()
+        .map(
+            n ->
+                new NotificacionDTO(
+                    n.getId(),
+                    n.getMensaje(),
+                    n.getEstadoNotificacion().name(),
+                    n.getFechaCreacion()))
+        .toList();
   }
 }
