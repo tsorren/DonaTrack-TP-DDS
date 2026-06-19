@@ -20,30 +20,29 @@ public class NotificacionesClient {
   }
 
   @Async
-  public void notificarMisionCumplida(
-      UUID personaId, UUID donanteId, String nombreMision, String recompensa) {
+  public void notificarMisionCumplida(UUID donanteId, String nombreMision, String recompensa) {
     enviar(
         new EventoMisionCumplidaRequest(
-            personaId, LocalDateTime.now(ZoneId.systemDefault()), nombreMision, recompensa),
+            donanteId, LocalDateTime.now(ZoneId.systemDefault()), nombreMision, recompensa),
         "MISION_CUMPLIDA",
         donanteId);
   }
 
   @Async
   public void notificarAscensoCategoria(
-      UUID personaId, UUID donanteId, String categoriaNueva, String categoriaVieja) {
+      UUID donanteId, String categoriaNueva, String categoriaVieja) {
     enviar(
         new EventoSubioCategoriaRequest(
-            personaId, LocalDateTime.now(ZoneId.systemDefault()), categoriaNueva, categoriaVieja),
+            donanteId, LocalDateTime.now(ZoneId.systemDefault()), categoriaNueva, categoriaVieja),
         "SUBIO_CATEGORIA",
         donanteId);
   }
 
   @Async
-  public void notificarInactividad(UUID personaId, UUID donanteId, int diasInactivo) {
+  public void notificarInactividad(UUID donanteId, int diasInactivo) {
     enviar(
         new EventoDonanteInactivoRequest(
-            personaId, LocalDateTime.now(ZoneId.systemDefault()), diasInactivo),
+            donanteId, LocalDateTime.now(ZoneId.systemDefault()), diasInactivo),
         "DONANTE_INACTIVO",
         donanteId);
   }
