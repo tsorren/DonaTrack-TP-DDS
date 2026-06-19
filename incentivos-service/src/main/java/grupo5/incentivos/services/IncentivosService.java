@@ -89,7 +89,7 @@ public class IncentivosService implements IIncentivosService {
               Insignia insignia = mision.getInsignia();
               String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
               notificacionesClient.notificarMisionCumplida(
-                  donante.getId(), mision.getNombre(), recompensa);
+                  donante.getIdPersona(), mision.getNombre(), recompensa);
               // Disparar flujo n8n para publicar la insignia ganada
               if (insignia != null) {
                 n8nClient.publicarInsigniaGanada(
@@ -103,7 +103,9 @@ public class IncentivosService implements IIncentivosService {
     if (donante.intentarAscenso()) {
       CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
       notificacionesClient.notificarAscensoCategoria(
-          donante.getId(), ultimoCambio.getNueva().name(), ultimoCambio.getAnterior().name());
+          donante.getIdPersona(),
+          ultimoCambio.getNueva().name(),
+          ultimoCambio.getAnterior().name());
     }
 
     repository.save(donante);
@@ -128,7 +130,7 @@ public class IncentivosService implements IIncentivosService {
               Insignia insignia = mision.getInsignia();
               String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
               notificacionesClient.notificarMisionCumplida(
-                  donante.getId(), mision.getNombre(), recompensa);
+                  donante.getIdPersona(), mision.getNombre(), recompensa);
               // Disparar flujo n8n para publicar la insignia ganada
               if (insignia != null) {
                 n8nClient.publicarInsigniaGanada(
@@ -142,7 +144,9 @@ public class IncentivosService implements IIncentivosService {
     if (donante.intentarAscenso()) {
       CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
       notificacionesClient.notificarAscensoCategoria(
-          donante.getId(), ultimoCambio.getNueva().name(), ultimoCambio.getAnterior().name());
+          donante.getIdPersona(),
+          ultimoCambio.getNueva().name(),
+          ultimoCambio.getAnterior().name());
     }
 
     repository.save(donante);
