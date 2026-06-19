@@ -1,8 +1,11 @@
-package grupo5.donaciones.services;
+package grupo5.donaciones.services.impl;
 
+import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
+import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.models.entities.donantes.Archivo;
 import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
-import grupo5.donaciones.models.repositories.ArchivoDonantesRepository;
+import grupo5.donaciones.models.repositories.impl.ArchivoDonantesRepository;
+import grupo5.donaciones.services.IImportadorService;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,13 +20,13 @@ public class ArchivoDonantesService {
     this.importadorService = importadorService;
   }
 
-  public Archivo registrarArchivoInicial(String path) {
-    Archivo archivo = new Archivo(path);
+  public ArchivoOutputDTO cargarArchivoDonantes(ArchivoInputDTO input) {
+    Archivo archivo = new Archivo(input.path());
     archivo.setEstado(EstadoArchivo.PENDIENTE);
-    return archivoRepository.save(archivo);
-  }
+    archivoRepository.save(archivo);
 
-  public void procesarArchivoMasivo(Archivo archivo) {
     importadorService.procesarImportacionAsincronica(archivo.getId());
+
+    return new ArchivoOutputDTO(archivo.getId(), archivo.getPath(), archivo.getEstado().toString());
   }
 }

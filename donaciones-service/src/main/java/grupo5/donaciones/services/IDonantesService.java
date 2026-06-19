@@ -13,4 +13,6 @@ public interface IDonantesService {
   DonanteOutputDTO obtenerPorId(UUID id);
 
   DonanteOutputDTO actualizarCanal(UUID id, DonanteInputDTO dto);
+
+  void eliminarDonante(UUID id);
 }

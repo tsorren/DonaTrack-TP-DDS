@@ -444,12 +444,21 @@ jobs:
       - name: Generar PUML de Base
         run: |
           echo "📐 Generando diagrama de clase para ${{ matrix.service }} en rama Base..."
-          mvn -B clean test \
-            -pl ${{ matrix.service }} -am \
-            -DskipTests=true \
-            -Dspotless.check.skip=true \
-            -Dplantuml-generator.skip=false
-          echo "✅ Diagrama de Base generado."
+          if [ -d "${{ matrix.service }}" ]; then
+            mvn -B clean test \
+              -pl ${{ matrix.service }} -am \
+              -DskipTests=true \
+              -Dspotless.check.skip=true \
+              -Dplantuml-generator.skip=false || true
+          fi
+          
+          if [ ! -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]; then
+            echo "⚠️ El archivo PlantUML no existe o no pudo generarse. Creando uno vacío..."
+            mkdir -p "${{ matrix.service }}/target"
+            echo "@startuml" > "${{ matrix.service }}/target/modelo_tecnico.puml"
+            echo "@endum" >> "${{ matrix.service }}/target/modelo_tecnico.puml"
+          fi
+          echo "✅ Diagrama de Base listo."
 
       - name: Renderizar diagramas a SVG
         run: |

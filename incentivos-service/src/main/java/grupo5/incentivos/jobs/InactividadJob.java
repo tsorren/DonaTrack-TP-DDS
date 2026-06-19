@@ -44,8 +44,7 @@ public class InactividadJob {
       inactivos.forEach(
           donante -> {
             try {
-              notificacionesClient.notificarInactividad(
-                  donante.getIdPersona(), donante.getId(), 20);
+              notificacionesClient.notificarInactividad(donante.getIdPersona(), 20);
               log.info("Notificación de inactividad enviada al donante {}", donante.getId());
             } catch (Exception e) {
               log.warn("No se pudo notificar al donante {}: {}", donante.getId(), e.getMessage());

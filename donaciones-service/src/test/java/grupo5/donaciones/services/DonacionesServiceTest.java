@@ -16,6 +16,7 @@ import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.*;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.DonacionesService;
 import grupo5.donaciones.services.mappers.DonacionMapper;
@@ -36,12 +37,15 @@ class DonacionesServiceTest {
 
   @Mock private IDonacionesRepository donacionesRepository;
   @Mock private IPersonasRepository personasRepository;
+  @Mock private IDonantesRepository donantesRepository;
+  @Mock private IDonantesService donantesService;
   @Mock private DonacionMapper mapper;
   @Mock private ProcesadorDeDonaciones procesadorDonaciones;
 
   @InjectMocks private DonacionesService service;
 
   private Humana persona;
+  private Donante donante;
   private Donacion donacion;
   private DonacionInputDTO inputDTO;
   private DonacionOutputDTO outputDTO;
@@ -50,7 +54,7 @@ class DonacionesServiceTest {
   void setUp() {
     persona = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
 
-    Donante donante = new Donante(persona);
+    donante = new Donante(persona);
     Pais pais = new Pais();
     pais.setNombre("Argentina");
     Provincia provincia = new Provincia();
@@ -86,7 +90,8 @@ class DonacionesServiceTest {
   @Test
   void cargarDonacion_cuandoPersonaExiste_deberiaGuardarYRetornarDTO() {
     when(personasRepository.findById(persona.getId())).thenReturn(Optional.of(persona));
-    when(mapper.toEntity(inputDTO, persona)).thenReturn(donacion);
+    when(donantesRepository.findAll()).thenReturn(List.of(donante));
+    when(mapper.toEntity(inputDTO, donante)).thenReturn(donacion);
     when(donacionesRepository.save(donacion)).thenReturn(donacion);
     when(mapper.toOutputDTO(donacion)).thenReturn(outputDTO);
 

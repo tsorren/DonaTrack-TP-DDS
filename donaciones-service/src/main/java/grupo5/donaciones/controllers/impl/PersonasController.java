@@ -1,5 +1,6 @@
-package grupo5.donaciones.controllers;
+package grupo5.donaciones.controllers.impl;
 
+import grupo5.donaciones.controllers.IPersonasController;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
