@@ -1,4 +1,4 @@
-package grupo5.donaciones.services;
+package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoDTO;
@@ -12,6 +12,7 @@ import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.mappers.DonanteMapper;
 import java.time.LocalDateTime;
 import java.util.List;
