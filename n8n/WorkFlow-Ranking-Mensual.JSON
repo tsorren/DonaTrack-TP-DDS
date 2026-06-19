@@ -1,4 +1,5 @@
 {
+  "id": "2",
   "name": "DonaTrack - Ranking Mensual",
   "nodes": [
     {
@@ -109,6 +110,5 @@
     }
   },
   "active": true,
-  "settings": { "executionOrder": "v1" },
-  "tags": ["donatrack", "ranking", "mensual"]
+  "settings": { "executionOrder": "v1" }
 }

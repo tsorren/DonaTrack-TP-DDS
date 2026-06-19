@@ -74,9 +74,28 @@ step "Levantando stack pre-producción (esperando healthchecks)"
 docker compose -f "$COMPOSE_FILE" up --build --wait -d
 ok "Todos los servicios están healthy."
 
-step "Importando workflows en n8n"
+step "Importando y activando workflows en n8n"
 MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Insignias.JSON || warn "No se pudo importar el workflow de insignias"
 MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || warn "No se pudo importar el workflow de ranking"
+
+echo "Publicando (activando) workflows en n8n..."
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=1 || warn "No se pudo activar el workflow de insignias"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=2 || warn "No se pudo activar el workflow de ranking"
+
+echo "Reiniciando contenedor de n8n para registrar webhooks..."
+docker compose -f "$COMPOSE_FILE" restart n8n
+
+echo "Esperando que n8n se recupere tras reinicio..."
+attempts=0
+until curl -s -f http://localhost:5678/healthz >/dev/null; do
+  attempts=$((attempts+1))
+  if [ $attempts -ge 30 ]; then
+    fail "Error: n8n no se recuperó tras reinicio."
+    exit 1
+  fi
+  sleep 2
+done
+ok "n8n listo y activo."
 
 # Esperar que /v3/api-docs esté disponible en cada servicio (evita fallos por endpoints no listos)
 step "Esperando /v3/api-docs en los servicios"
