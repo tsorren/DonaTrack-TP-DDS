@@ -20,49 +20,20 @@ public class PerformanceStressIT extends BaseIT {
     long startTimeSuite = System.currentTimeMillis();
 
     for (int i = 0; i < totalRequests; i++) {
-      Map<String, Object> personaPayload = new HashMap<>();
-      personaPayload.put("tipo", "HUMANA");
-      personaPayload.put("tipoDocumento", "DNI");
-      // Use dynamic document number to avoid conflicts
-      personaPayload.put("documento", "700" + String.format("%05d", i));
-      personaPayload.put("nombre", "PerfRaul_" + i);
-      personaPayload.put("apellido", "PerfGomez_" + i);
-      personaPayload.put("genero", "HOMBRE");
-      personaPayload.put("fechaNacimiento", "1990-01-01");
-
-      Map<String, Object> medio = new HashMap<>();
-      medio.put("tipo", "CORREO");
-      medio.put("esPredeterminado", true);
-      medio.put("direccionCorreo", "perf.raul." + i + "@example.com");
-      personaPayload.put("mediosDeContacto", List.of(medio));
+      String documento = "700" + String.format("%05d", i);
+      String nombre = "PerfRaul_" + i;
+      String email = "perf.raul." + i + "@example.com";
 
       long start = System.currentTimeMillis();
       try {
-        String personaId =
-            given()
-                .contentType(ContentType.JSON)
-                .body(personaPayload)
-                .when()
-                .post(DONACIONES_URL + "/api/personas")
-                .then()
-                .statusCode(201)
-                .extract()
-                .path("id");
-
-        Map<String, Object> donorPayload = new HashMap<>();
-        donorPayload.put("idPersona", personaId);
-
-        given()
-            .contentType(ContentType.JSON)
-            .body(donorPayload)
-            .when()
-            .post(DONACIONES_URL + "/api/donantes")
-            .then()
-            .statusCode(201);
-
+        String personaId = apiCrearPersonaHumana(documento, nombre, email);
+        apiCrearDonante(personaId);
+        apiCrearDonacion(personaId, "Donación stress " + i, "arroz", 1);
         long end = System.currentTimeMillis();
         latencies.add(end - start);
-      } catch (Exception e) {
+      } catch (Throwable t) {
+        System.err.println("Error creating donor/donation at iteration " + i + ": " + t.getMessage());
+        t.printStackTrace();
         errorCount++;
       }
     }
@@ -71,55 +42,18 @@ public class PerformanceStressIT extends BaseIT {
     long totalDuration = endTimeSuite - startTimeSuite;
 
     // Report
-    printPerformanceReport("Donor Creation (Persona + Donor)", totalRequests, latencies, errorCount, totalDuration);
+    printPerformanceReport("Donor and Donation Creation", totalRequests, latencies, errorCount, totalDuration);
 
-    assertEquals(0, errorCount, "There should be no errors during sequential donor creation performance test.");
+    assertEquals(0, errorCount, "There should be no errors during sequential donor and donation creation performance test.");
     double average = calculateAverage(latencies);
-    assertTrue(average < 350.0, "Average latency of donor creation (" + average + " ms) should be below 350ms.");
+    assertTrue(average < 500.0, "Average latency of donor + donation creation (" + average + " ms) should be below 500ms.");
   }
 
   @Test
   public void testDonationEventProcessingStress() {
     // 1. Pre-register a donor to run stress tests on
-    Map<String, Object> personaPayload = new HashMap<>();
-    personaPayload.put("tipo", "HUMANA");
-    personaPayload.put("tipoDocumento", "DNI");
-    personaPayload.put("documento", "79998888");
-    personaPayload.put("nombre", "StressDonor");
-    personaPayload.put("apellido", "StressLastName");
-    personaPayload.put("genero", "HOMBRE");
-    personaPayload.put("fechaNacimiento", "1995-01-01");
-
-    Map<String, Object> medio = new HashMap<>();
-    medio.put("tipo", "CORREO");
-    medio.put("esPredeterminado", true);
-    medio.put("direccionCorreo", "stress.donor@example.com");
-    personaPayload.put("mediosDeContacto", List.of(medio));
-
-    String personaId =
-        given()
-            .contentType(ContentType.JSON)
-            .body(personaPayload)
-            .when()
-            .post(DONACIONES_URL + "/api/personas")
-            .then()
-            .statusCode(201)
-            .extract()
-            .path("id");
-
-    Map<String, Object> donorPayload = new HashMap<>();
-    donorPayload.put("idPersona", personaId);
-
-    String donorId =
-        given()
-            .contentType(ContentType.JSON)
-            .body(donorPayload)
-            .when()
-            .post(DONACIONES_URL + "/api/donantes")
-            .then()
-            .statusCode(201)
-            .extract()
-            .path("idDonante");
+    String personaId = apiCrearPersonaHumana("79998888", "StressDonor", "stress.donor@example.com");
+    String donorId = apiCrearDonante(personaId);
 
     // 2. Stress with 200 sequential calls to /api/incentivos/donaciones
     int totalRequests = 200;
@@ -129,25 +63,14 @@ public class PerformanceStressIT extends BaseIT {
     long startTimeSuite = System.currentTimeMillis();
 
     for (int i = 0; i < totalRequests; i++) {
-      Map<String, Object> event = new HashMap<>();
-      event.put("donanteId", donorId);
-      event.put("categorias", List.of("Alimentos"));
-      event.put("cantidadBienes", 1);
-      event.put("fecha", "2026-06-01");
-
       long start = System.currentTimeMillis();
       try {
-        given()
-            .contentType(ContentType.JSON)
-            .body(event)
-            .when()
-            .post(INCENTIVOS_URL + "/api/incentivos/donaciones")
-            .then()
-            .statusCode(200);
-
+        apiEnviarEventoDonacionIncentivos(donorId, "2026-06-01", 1);
         long end = System.currentTimeMillis();
         latencies.add(end - start);
-      } catch (Exception e) {
+      } catch (Throwable t) {
+        System.err.println("Error sending donation event at iteration " + i + ": " + t.getMessage());
+        t.printStackTrace();
         errorCount++;
       }
     }

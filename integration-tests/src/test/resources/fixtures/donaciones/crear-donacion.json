@@ -1,13 +1,12 @@
 {
   "idDonante": null,
-  "descripcion": "Donación abrigo preprod",
+  "descripcion": "Donación estándar",
   "items": [
     {
-      "descripcionBien": "pantalon",
-      "fotoUrl": null,
-      "fechaVencimiento": null,
-      "estadoBien": "USADO",
-      "cantidad": 2
+      "descripcionBien": "arroz",
+      "cantidad": 10,
+      "estadoBien": "NUEVO",
+      "fechaVencimiento": "2026-12-31"
     }
   ],
   "nombreDeposito": "Deposito Central",

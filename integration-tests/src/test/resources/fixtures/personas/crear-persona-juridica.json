@@ -1,0 +1,37 @@
+{
+  "tipo": "JURIDICA",
+  "tipoDocumento": "CUIT",
+  "documento": "30-11112222-3",
+  "razonSocial": "Comedor Solidario",
+  "rubro": "Comedor",
+  "fechaConstitucion": "2010-01-01",
+  "representantes": [
+    {
+      "tipo": "HUMANA",
+      "tipoDocumento": "DNI",
+      "documento": "12345678",
+      "nombre": "Juan",
+      "apellido": "Representante",
+      "genero": "HOMBRE",
+      "fechaNacimiento": "1980-01-01",
+      "mediosDeContacto": []
+    }
+  ],
+  "mediosDeContacto": [
+    {
+      "tipo": "CORREO",
+      "esPredeterminado": true,
+      "direccionCorreo": "comedor@example.com"
+    }
+  ],
+  "direccion": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "piso": null,
+    "departamento": null,
+    "codigoPostal": "1179",
+    "localidad": "CABA",
+    "provincia": "CABA",
+    "pais": "Argentina"
+  }
+}
