@@ -113,6 +113,11 @@ mvn clean verify -pl integration-tests -DskipTests=false
 mvn test -pl integration-tests -Dtest=PerformanceStressIT -DskipTests=false
 ```
 
+### Orden de Ejecución y Evitación de Interferencia
+Dado que el entorno de preproducción mantiene el estado de las bases de datos en memoria durante la ejecución de la suite, las pruebas de performance/estrés (que insertan una cantidad volumétrica de donaciones) pueden provocar interferencias en los escenarios de matching de `CrossServiceCommunicationIT` si se ejecutan antes que éstas.
+
+Para garantizar determinismo tanto localmente como en el Runner de CI (GitHub Actions), el plugin `maven-surefire-plugin` tiene configurado el parámetro `<runOrder>alphabetical</runOrder>`. Esto obliga a que las pruebas funcionales y de E2E se ejecuten siempre antes de las pruebas de performance.
+
 ### Parametrizar URLs
 Si ejecutas los microservicios en puertos o hosts distintos a los locales por defecto (`localhost:8080`, `localhost:8081`, `localhost:8082`), puedes sobrescribirlos mediante variables de sistema:
 ```powershell

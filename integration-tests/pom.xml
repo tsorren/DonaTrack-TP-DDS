@@ -51,6 +51,7 @@
                 <version>3.2.5</version>
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
+                    <runOrder>alphabetical</runOrder>
                     <!-- Surefire excluye *IT.java por convencion; lo habilitamos explicitamente -->
                     <includes>
                         <include>**/*IT.java</include>
