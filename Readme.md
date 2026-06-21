@@ -8,163 +8,147 @@
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-blue?style=flat-square&logo=githubactions)](https://github.com/features/actions)
 [![n8n](https://img.shields.io/badge/n8n-workflow-red?style=flat-square&logo=n8n)](https://n8n.io/)
 
-Plataforma distribuida para la trazabilidad integral, asignación inteligente de recursos y fidelización en la gestión de donaciones para organizaciones sin fines de lucro.
+Optimizacion logistica, trazabilidad transparente y fidelizacion de donantes para potenciar el impacto de las organizaciones sociales mediante una plataforma de software robusta, moderna y escalable.
 
 ---
 
-## Índice
+## Indice
 
-* [El Desafío y la Motivación](#1-el-desafío-y-la-motivación)
-* [Arquitectura de Sistemas y Componentes](#2-arquitectura-de-sistemas-y-componentes)
-* [Estructura del Proyecto](#3-estructura-del-proyecto)
-* [Ecosistema Tecnológico](#4-ecosistema-tecnológico)
-* [Capacidades y Diseño de Dominio (Hitos de Entrega)](#5-capacidades-y-diseño-de-dominio-hitos-de-entrega)
-* [Ingeniería de Infraestructura, Calidad y CI/CD](#6-ingeniería-de-infraestructura-calidad-y-cicd)
-* [Configuración y Automatización de Entornos](#7-configuración-y-automatización-de-entornos)
-* [Recursos y Documentación Anexa](#8-recursos-y-documentación-anexa)
-* [Equipo de Ingeniería](#9-equipo-de-ingeniería)
-
----
-
-## 1. El Desafío y la Motivación
-
-La gestión eficiente de donaciones de bienes materiales en organizaciones sin fines de lucro enfrenta tres desafíos operacionales críticos:
-1. **Transparencia y Trazabilidad:** Garantizar la procedencia, el estado físico y el destino final de cada bien para asegurar auditorías limpias y generar confianza en los donantes.
-2. **Optimización de Recursos (Matchmaking):** Conectar de forma inteligente el stock de donaciones disponibles con las necesidades reales (recurrentes o de emergencia) de las entidades beneficiarias, evitando el desperdicio y la sobre-atención de ciertos sectores en detrimento de otros.
-3. **Fidelización y Participación (Donor Engagement):** Incentivar a los colaboradores mediante métricas de impacto claras, misiones secuenciales y reconocimiento público de su participación para mantener una comunidad activa y comprometida.
-
-**DonaTrack** resuelve estas problemáticas mediante una arquitectura modular y desacoplada que automatiza el ciclo de vida de las donaciones, optimiza la logística de asignación y gamifica la experiencia del donante.
+* [Propuesta de Valor y Desafios Resolutivos](#propuesta-de-valor-y-desafios-resolutivos)
+* [Soluciones Operativas de la Plataforma](#soluciones-operativas-de-la-plataforma)
+* [Arquitectura Distribuida y Resiliencia](#arquitectura-distribuida-y-resiliencia)
+* [Estructura del Repositorio](#estructura-del-repositorio)
+* [Ecosistema Tecnologico](#ecosistema-tecnologico)
+* [Garantias de Calidad y Estandares de Desarrollo](#garantias-de-calidad-y-estandares-de-desarrollo)
+* [Guia de Instalacion y Validacion Local](#guia-de-instalacion-y-validacion-local)
+* [Equipo de Ingenieria](#equipo-de-ingenieria)
 
 ---
 
-## 2. Arquitectura de Sistemas y Componentes
+## Propuesta de Valor y Desafios Resolutivos
 
-El ecosistema de **DonaTrack** se organiza como una solución modular de microservicios. Cada componente asume una responsabilidad de negocio o técnica delimitada para garantizar el desacoplamiento y facilitar la evolución independiente en futuras entregas:
+La gestion diaria de donaciones materiales en el tercer sector requiere de un control riguroso para asegurar que la ayuda llegue a su destino en tiempo y forma. DonaTrack ha sido diseñada para transformar y optimizar esta operatoria, resolviendo tres problematicas criticas del sector social:
 
-*   **`donaciones-service` (Núcleo Transaccional):** Administra el catálogo de bienes, donantes, necesidades y la logística física de inventario. Aloja el motor interno de matchmaking para consolidar y sugerir asignaciones de stock.
-*   **`notificaciones-service` (Despacho Autónomo):** Orquesta el envío asíncrono de alertas multicanal (Email, SMS y WhatsApp). Cuenta con réplicas locales ligeras del perfil de las personas para funcionar de manera independiente, eliminando dependencias síncronas críticas.
-*   **`incentivos-service` (Motor de Gamificación):** Procesa eventos de finalización de donaciones para computar el progreso de misiones, otorgar insignias y calcular rankings mensuales de participación.
-*   **`cliente-liviano` (Interfaz de Usuario):** Capa de presentación que sirve como portal de interacción directa para los donantes, beneficiarios y administradores del sistema.
-*   **`n8n` (Orquestador de Procesos Externos):** Workflow Engine externo que automatiza la difusión publicitaria e integraciones low-code (como publicaciones en redes sociales tras la obtención de insignias).
-*   **`common-lib` (Kernel Técnico Compartido):** Biblioteca que centraliza concerns transversales como el control global de excepciones, formateo de trazas y utilidades de testing, evitando duplicar código de infraestructura entre módulos.
+* **Trazabilidad y Auditoria Clara:** Asegura un registro inmutable de la ubicacion y estado fisico de los bienes donados, aportando total transparencia ante donantes y auditores de la organizacion.
+* **Matchmaking Inteligente de Recursos:** Distribuye el stock disponible cruzando las necesidades declaradas por los centros con el inventario fisico. El sistema asigna los recursos priorizando activamente a las entidades que han recibido menor asistencia en el ultimo trimestre para evitar la sobre-atencion y el desperdicio.
+* **Engagement del Colaborador:** Incentiva la participacion constante mediante misiones de ayuda secuenciales (rachas de donacion consecutivas, completitud de rubros de bienes y volumenes de stock) y el otorgamiento de insignias de impacto social.
 
 ---
 
-## 3. Estructura del Proyecto
+## Soluciones Operativas de la Plataforma
 
-A continuación se detalla la organización física de directorios y componentes principales del repositorio multi-módulo:
+DonaTrack resuelve las necesidades logisticas complejas mediante modulos tecnicos robustos que aseguran consistencia y escalabilidad:
+
+* **Control de Inventario ininterrumpido:** Cada recurso ingresado transiciona de manera estrictamente controlada por una maquina de estados logica (desde deposito hasta su entrega final o retorno justificado), previniendo desvios en el stock fisico.
+* **Procesamiento Semantico Protegido:** Clasifica las descripciones coloquiales de los bienes donados relacionandolas con alias oficiales de la organizacion, al tiempo que preserva inalterado el registro original ingresado por el donante para auditorias posteriores.
+* **Despacho Multicanal Inteligente:** Envia notificaciones en tiempo real (WhatsApp, SMS o Correo) resolviendo el canal y formato de forma automatica en base a las preferencias y perfil del destinatario.
+* **Orquestacion de Procesos Automatizada:** Integra las alertas y reconocimientos del sistema con redes sociales y plataformas externas mediante flujos visuales independientes, permitiendo flexibilizar las campañas de difusion sin alterar la logica central de la organizacion.
+
+---
+
+## Arquitectura Distribuida y Resiliencia
+
+La plataforma se organiza bajo una arquitectura modular de servicios independientes desacoplados para asegurar una alta disponibilidad operativa:
+
+* **Modulo de Donaciones:** Gestiona de forma transaccional el catalogo de bienes, inventarios y necesidades operativas.
+* **Modulo de Incentivos:** Registra las metricas historicas de ayuda, procesa el cumplimiento de misiones y administra los rankings.
+* **Modulo de Notificaciones:** Sistema no bloqueante para el despacho de alertas que mantiene réplicas locales ligeras de los perfiles. Esto garantiza que las comunicaciones sigan funcionando de forma autonoma incluso ante eventuales caidas o demoras en la red de los otros modulos.
+* **Kernel Compartido (common-lib):** Biblioteca que centraliza excepciones tecnicas y logging estructurado de manera transversal sin compartir logica ni entidades de negocio, resguardando la autonomia de desarrollo y despliegue de cada modulo.
+
+---
+
+## Estructura del Repositorio
+
+Organizacion del reactor multi-modulo y de los directorios principales del proyecto:
 
 ```text
 DonaTrack-TP-DDS/
-├── .github/                      # Flujos de trabajo de CI/CD (GitHub Actions)
-├── docs/                         # Documentación general y entregas
-│   ├── documentador/             # Editor reactivo de ADRs y minutas de reuniones
-│   ├── entregas/                 # Índice de entregables en PDF
-│   └── hub/                      # Código fuente del portal de documentación
-├── n8n/                          # Workflows serializados en JSON para el motor low-code
-├── integration-tests/            # Módulo de Maven para tests funcionales y volumétricos E2E
-├── common-lib/                   # Módulo de Maven con utilidades compartidas del Kernel Técnico
-├── cliente-liviano/              # Módulo de Maven para el renderizado web en servidor
-│
-│   # Microservicios Core (Clean Architecture / Hexagonal)
-├── auth-service/                 # Gestión de autenticación, usuarios y seguridad
-├── donaciones-service/           # Dominio central de donantes, donaciones y matchmaking
-├── incentivos-service/           # Lógica de gamificación, misiones y rankings
-├── logistica-service/            # Planificación de rutas y tracking de transportes
-└── notificaciones-service/       # Despacho multicanal asíncrono y réplicas de contactos
+├── .github/                      # Flujos de integracion continua y calidad automatizada
+├── docs/                         # Documentacion del portal y registros de decisiones
+├── n8n/                          # Workflows serializados para la integracion externa
+├── integration-tests/            # Suite de pruebas funcionales y de extremo a extremo
+├── common-lib/                   # shared kernel de utilidades de infraestructura y logging
+├── cliente-liviano/              # Interfaz y portal web de administracion
+├── auth-service/                 # Modulo de seguridad, usuarios y accesos
+├── donaciones-service/           # Modulo central de inventario y matchmaking
+├── incentivos-service/           # Modulo de gamificacion, rankings e incentivos
+├── logistica-service/            # Modulo experimental de transporte y rutas
+└── notificaciones-service/       # Modulo de despacho de comunicaciones y alertas
 ```
 
 ---
 
-## 4. Ecosistema Tecnológico
+## Ecosistema Tecnologico
 
-### Capas Lógicas y Justificaciones Arquitectónicas
+La seleccion de tecnologias responde a la necesidad de construir un producto confiable, mantenible a largo plazo y facilmente adaptable:
 
-| Componente / Tecnología | Rol en el Sistema | Justificación Arquitectónica |
-| :--- | :--- | :--- |
-| **Java 21 & Spring Boot 3** | Motor de Servicios Core | Plataforma base para el desarrollo de microservicios robustos, aprovechando características modernas del lenguaje (records, pattern matching) y un contenedor de inyección de dependencias estandarizado. |
-| **OpenFeign** | Cliente HTTP Declarativo | Abstrae la comunicación síncrona entre microservicios core (`donaciones` ➔ `notificaciones` / `incentivos`), integrando de forma nativa políticas de resiliencia y propagación de trazas distribuidas. |
-| **n8n Workflow Engine** | Orquestador Low-Code Externo | Permite integrar lógica de difusión externa (redes sociales y generación de piezas gráficas de insignias) de manera ágil y visual, desacoplando los servicios core de APIs externas de terceros. |
-| **Docker & Docker Compose** | Virtualización y Orquestación Local | Unifica el comportamiento del entorno de pre-producción mediante imágenes Docker multi-etapa y validación en cascada de salud de componentes (Healthchecks). |
-| **Maven** | Reactor Multi-Módulo | Gestiona de forma unificada las dependencias y la compilación coordinada de todos los servicios del proyecto desde la raíz. |
+* **Java 21 y Spring Boot 3:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
+* **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema, logrando que funcione de forma identica en cualquier computadora personal o servidor en la nube.
+* **n8n Workflow Engine:** Agilidad logica para automatizar integraciones mediante flujos de trabajo independientes, liberando a los microservicios principales de las dependencias de APIs de terceros.
+* **Maven Reactor:** Reactor de compilacion unificado que simplifica la compilacion incremental y la administracion de dependencias.
 
 ---
 
-## 5. Capacidades y Diseño de Dominio (Hitos de Entrega)
+## Garantias de Calidad y Estandares de Desarrollo
 
-El diseño del dominio está estructurado para evolucionar incrementalmente en cada entrega académica. A continuación se presentan las capacidades activas agrupadas conceptualmente:
+La integridad y estabilidad de DonaTrack se respalda en procesos de ingenieria rigurosos aplicados a lo largo de todo el ciclo de desarrollo:
 
-### Hito 1: Cimiento del Dominio y CI/CD
-*   Definición inicial del modelo de datos de personas, donantes y bienes.
-*   Configuración del pipeline de calidad de código estático (Spotless + Google Java Format y SonarCloud).
-
-### Hito 2: Distribución, Gamificación y Trazabilidad (Hito Activo)
-*   **Trazabilidad Física de Bienes (State Machine):** Ciclo de vida estricto para cada donación (`En depósito` ➔ `Asignación realizada` ➔ `Lista para entregar` ➔ `En traslado` ➔ `Entregada` / `Entrega fallida` o `Vencida`), garantizando un historial de auditoría inmutable.
-*   **Matchmaking de Stock:** Algoritmo estructurado que prioriza entidades sub-atendidas y calcula compatibilidad semántica de necesidades en horarios programados de baja carga.
-*   **Motor de Recompensas (Incentivos):** Progresión secuencial de misiones por categorías del donante (rachas consecutivas, variedad de bienes y volúmenes) y entrega de insignias digitales.
-*   **Alertas Multicanal Desacopladas (Double Dispatch):** Envío polimórfico de notificaciones basadas en perfiles preferidos del usuario, implementando consistencia eventual para soportar caídas de red temporales.
+* **Integracion Continua (CI/CD):** Flujos de ejecucion en GitHub Actions que compilan, formatean (Spotless) y validan de manera automatica el codigo en cada actualizacion, optimizando tiempos mediante la deteccion de cambios por modulos.
+* **Monitoreo de Deuda Tecnica:** Integracion con SonarCloud para evaluar de forma automatica la salud del codigo, previniendo vulnerabilidades y asegurando una cobertura robusta de pruebas.
+* **Suite de Pruebas Automatizadas E2E:** Verificacion automatica de extremo a extremo que simula solicitudes HTTP reales y tolera retrasos de red temporales, asegurando la robustez de las integraciones antes de promover cambios a produccion.
+* **Politica de Desarrollo Ordenado:** Uso de convenciones de ramas estrictas y hooks locales que previenen el registro de codigo que no cumpla con los estandares de formato y calidad exigidos.
 
 ---
 
-## 6. Ingeniería de Infraestructura, Calidad y CI/CD
-
-El proyecto prioriza la resiliencia en red, la observabilidad y la automatización del ciclo de desarrollo:
-
-*   **Resiliencia y Tolerancia a Fallos:** Las llamadas inter-servicio configuran políticas de reintento exponencial automático para resistir caídas de red transitorias. El procesamiento lento de notificaciones o difusión externa se delega a pools de hilos asíncronos (`@Async`), liberando de inmediato el hilo HTTP de respuesta al cliente.
-*   **Observabilidad y Trazabilidad Distribuidas:** Un esquema de logging estructurado unifica la visibilidad de los logs del ecosistema. Mediante *Micrometer Tracing* y aspectos AOP, se genera y propaga un Correlation ID (`traceId`) a través de llamadas de red HTTP y tareas en segundo plano (`@Scheduled`), facilitando el rastreo transaccional de extremo a extremo.
-*   **Pipeline de Integración Continua (CI/CD):** Flujo automatizado en GitHub Actions que valida:
-    - Convención de nombres en ramas (Git Flow UTN).
-    - Compilación incremental modular (`Dorny Filter`) para optimizar tiempos del pipeline.
-    - Calidad y cobertura estática de código (SonarCloud & JaCoCo).
-    - Flujo de PRs Apiladas (*Stacked PRs*) para subdividir requerimientos complejos.
-    - Auditoría arquitectónica automatizada (*Semantic UML Diff*) que detecta cambios estructurales en el grafo de clases de dominio de la PR frente a la rama base.
-
----
-
-## 7. Configuración y Automatización de Entornos
+## Guia de Instalacion y Validacion Local
 
 ### Prerrequisitos
-* Java 21 (JDK)
-* Maven 3.8+
-* Docker & Docker Compose
 
-### 1. Compilación del Proyecto
-Para compilar y empaquetar de forma limpia todos los módulos del reactor Maven:
+* Java 21 (JDK)
+* Maven 3.8 o superior
+* Docker con Compose v2 (soporte para el parametro --wait)
+
+### 1. Compilacion Manual de Componentes
+Si se desea compilar y empaquetar de forma manual y limpia todos los modulos del reactor Maven:
 ```bash
 mvn clean package -DskipTests
 ```
 
-### 2. Ejecución del Entorno de Pre-producción
-El proyecto dispone de un entorno virtualizado local idéntico a pre-producción que levanta los microservicios core (`donaciones`, `notificaciones`, `incentivos`) y el motor de `n8n` con sus dependencias correspondientes.
+### 2. Despliegue del Entorno Local con Docker Compose
+Para levantar manualmente el ecosistema virtualizado completo de microservicios y la plataforma n8n en segundo plano:
 ```bash
 docker compose -f docker-compose.preprod.yml up --build -d
 ```
-*Nota: Los servicios cuentan con Healthchecks configurados contra el endpoint `/actuator/health` de Spring Boot, asegurando un arranque en cascada ordenado.*
+*Los contenedores utilizan healthchecks basados en Actuator (/actuator/health) para asegurar una secuencia de arranque ordenada y segura.*
 
-### 3. Suite de Pruebas de Integración y Smoke Tests
-Para automatizar la verificación del stack (incluyendo compilación limpia, importación desatendida de workflows de insignias en n8n mediante CLI, y calentamiento de Tomcat para evitar timeouts):
+### 3. Suite de Validacion y Pruebas de Integracion Automatizadas
+El repositorio cuenta con dos scripts orquestadores en Bash diseñados para automatizar por completo el ciclo de construccion, ejecucion de infraestructura y pruebas de extremo a extremo:
+
+* **run-preprod-tests.sh (Flujo Completo con Auto-cleanup):** Compila el proyecto, levanta la infraestructura esperando a que todos los servicios esten saludables, importa y activa de forma automatica los flujos de n8n, realiza un warm-up de las APIs HTTP para evitar timeouts iniciales, ejecuta los tests de integracion REST y destruye todos los contenedores al finalizar para liberar puertos y recursos de forma automatica.
+* **run-preprod-tests-stay.sh (Flujo de Depuracion):** Realiza exactamente la misma secuencia de arranque y ejecucion de pruebas, pero mantiene el entorno Docker y los contenedores corriendo en segundo plano para permitir la depuracion o consulta manual de los endpoints, esperando la confirmacion del usuario antes de desmontar el stack.
+
+#### Comandos de Ejecucion de la Suite:
+
 ```bash
-# En sistemas basados en Linux/Bash
+# Ejecucion del flujo de pruebas estandarizado con limpieza automatica:
 ./run-preprod-tests.sh
 
-# En sistemas Windows (PowerShell)
-powershell -File ./run-preprod-tests.sh
+# Ejecucion del flujo de pruebas manteniendo la infraestructura activa para depuracion:
+./run-preprod-tests-stay.sh
+
+# Saltar la fase de compilacion de Maven (util si ya se cuenta con los JARs actualizados en target/):
+./run-preprod-tests.sh --skip-build
+
+# Ejecutar una unica clase de test de integracion en particular:
+./run-preprod-tests.sh --test NombreDeClaseIT
 ```
-*Este script utiliza un manejador `trap EXIT` en Bash para remover automáticamente los contenedores temporales, liberar puertos del host y borrar volúmenes residuales al finalizar las pruebas (hayan pasado o fallado).*
+*Nota en Windows: Ambos scripts se pueden ejecutar en PowerShell mediante `powershell -File ./run-preprod-tests.sh`.*
 
 ---
 
-## 8. Recursos y Documentación Anexa
+## Equipo de Ingenieria
 
-*   **[Hub de Documentación Principal](https://tsorren.github.io/DonaTrack-TP-DDS/)**: Portal estático centralizado que actúa como índice dinámico de todas las entregas académicas (PDFs) e hitos del proyecto.
-*   **[ADR Preview (Log4brains)](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview)**: Visualización interactiva y searchable de los Registros de Decisiones de Arquitectura (ADRs) del sistema.
-*   **[DonaTrack Document Generator](https://tsorren.github.io/DonaTrack-TP-DDS/documentador)**: Herramienta reactiva basada en formularios web interactivos para la creación estandarizada y edición bidireccional de ADRs y minutas de reuniones del equipo.
-
----
-
-## 9. Equipo de Ingeniería
-
-### UTN-FRBA - Diseño de Sistemas (2026) - Grupo 5
+### UTN-FRBA - Diseñó de Sistemas (2026) - Grupo 5
 
 | Nombre | Legajo | Correo |
 | :--- | :---: | :--- |
