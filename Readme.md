@@ -1,82 +1,164 @@
 # DonaTrack
 
-DonaTrack es el proyecto anual de la cátedra de Diseño de Sistemas de Información (2026). El sistema tiene como objetivo optimizar la gestión, trazabilidad y distribución de donaciones de bienes materiales para organizaciones sin fines de lucro, buscando mejorar la transparencia y eficiencia en la asistencia a entidades beneficiarias.
+[![Java 21](https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=openjdk)](https://openjdk.org/)
+[![Spring Boot 3](https://img.shields.io/badge/Spring_Boot-3-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
+[![Maven](https://img.shields.io/badge/Maven-build-blue?style=flat-square&logo=apachemaven)](https://maven.apache.org/)
+[![Docker](https://img.shields.io/badge/Docker-compose-blue?style=flat-square&logo=docker)](https://www.docker.com/)
+[![SonarCloud](https://img.shields.io/badge/SonarCloud-quality_gate-green?style=flat-square&logo=sonarcloud)](https://sonarcloud.io/)
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-blue?style=flat-square&logo=githubactions)](https://github.com/features/actions)
+[![n8n](https://img.shields.io/badge/n8n-workflow-red?style=flat-square&logo=n8n)](https://n8n.io/)
 
-## Contexto del Proyecto
+Optimizacion logistica, trazabilidad transparente y fidelizacion de donantes para potenciar el impacto de las organizaciones sociales mediante una plataforma de software robusta, moderna y escalable.
 
-El sistema está concebido bajo una arquitectura distribuida de microservicios, permitiendo un crecimiento incremental, modular y escalable.
-La plataforma permite la gestión integral de donantes (humanos y jurídicos), la recepción y asignación de donaciones, el registro de necesidades de entidades beneficiarias y la logística de entrega de bienes.
+---
 
-## Documentación y Recursos
+## Indice
 
-- **[Hub de Documentación](https://tsorren.github.io/DonaTrack-TP-DDS/)**: Página principal del proyecto que actúa como índice consolidado de documentación, incluyendo la indexación dinámica de las entregas (PDFs).
-- **[ADR Preview](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview)**: Visualización interactiva de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
-- **[Documentador](https://tsorren.github.io/DonaTrack-TP-DDS/documentador)**: Documentador de los Registros de Decisiones de Arquitectura (ADRs) publicada en GitHub Pages.
+* [Propuesta de Valor y Desafios Resolutivos](#propuesta-de-valor-y-desafios-resolutivos)
+* [Soluciones Operativas de la Plataforma](#soluciones-operativas-de-la-plataforma)
+* [Arquitectura Distribuida y Resiliencia](#arquitectura-distribuida-y-resiliencia)
+* [Estructura del Repositorio](#estructura-del-repositorio)
+* [Ecosistema Tecnologico](#ecosistema-tecnologico)
+* [Garantias de Calidad y Estandares de Desarrollo](#garantias-de-calidad-y-estandares-de-desarrollo)
+* [Guia de Instalacion y Validacion Local](#guia-de-instalacion-y-validacion-local)
+* [Equipo de Ingenieria](#equipo-de-ingenieria)
 
-## Tecnologías y Herramientas
+---
 
-El desarrollo de DonaTrack se fundamenta en un ecosistema robusto y moderno, alineado con estándares de la industria:
+## Propuesta de Valor y Desafios Resolutivos
 
-### Desarrollo y Backend
-- Lenguaje: Java 21 (enfocado en las últimas funcionalidades del lenguaje).
-- Framework: Spring Boot (base para el desarrollo de microservicios).
-- Gestión de dependencias: Maven.
-- Simplificación de código: Lombok (reducción de boilerplate).
+La gestion diaria de donaciones materiales en el tercer sector requiere de un control riguroso para asegurar que la ayuda llegue a su destino en tiempo y forma. DonaTrack ha sido diseñada para transformar y optimizar esta operatoria, resolviendo tres problematicas criticas del sector social:
 
-### Calidad y Testing
-- Análisis de código: SonarQube.
-- Cobertura de tests: JaCoCo.
-- Framework de Testing: JUnit 5 y Mockito.
-- Formateo y estilo: Spotless (aplicado mediante Git Hooks para garantizar determinismo).
+* **Trazabilidad y Auditoria Clara:** Asegura un registro inmutable de la ubicacion y estado fisico de los bienes donados, aportando total transparencia ante donantes y auditores de la organizacion.
+* **Matchmaking Inteligente de Recursos:** Distribuye el stock disponible cruzando las necesidades declaradas por los centros con el inventario fisico. El sistema asigna los recursos priorizando activamente a las entidades que han recibido menor asistencia en el ultimo trimestre para evitar la sobre-atencion y el desperdicio.
+* **Engagement del Colaborador:** Incentiva la participacion constante mediante misiones de ayuda secuenciales (rachas de donacion consecutivas, completitud de rubros de bienes y volumenes de stock) y el otorgamiento de insignias de impacto social.
 
-### DevOps y Gestión
-- Control de versiones y flujo: GitHub (Actions para CI/CD, Issues para seguimiento, Projects para gestión ágil).
-- Documentación de arquitectura: LucidChart y ADRs (Architecture Decision Records) visualizados con Log4brains.
-- IDE: IntelliJ IDEA.
-## Estructura del Proyecto
+---
 
-El proyecto sigue una arquitectura de microservicios. A continuación se detalla la organización de los directorios principales:
+## Soluciones Operativas de la Plataforma
 
-### Raíz del Proyecto
-- `.github/`: Flujos de trabajo de CI/CD (GitHub Actions) y plantillas para Issues.
-- `.log4brains/`: Configuración para la visualización de los Registros de Decisiones de Arquitectura (ADR).
-- `docs/`: Documentación técnica, diagramas de arquitectura y archivos ADR en formato Markdown.
-  - `docs/hub/`: Código fuente de la página central del ecosistema desplegado en GitHub Pages.
-  - `docs/entregas/`: Directorio destinado al almacenamiento de documentos (PDFs) de entregas académicas, indexado automáticamente para su visualización.
-- `documentador/`: Herramienta interna para la generación estandarizada de nuevas decisiones de arquitectura.
+DonaTrack resuelve las necesidades logisticas complejas mediante modulos tecnicos robustos que aseguran consistencia y escalabilidad:
 
-### Microservicios
-Cada servicio contiene su propia lógica de dominio siguiendo los principios de Clean Architecture:
-- `auth-service/`: Gestión de autenticación y seguridad.
-- `donaciones-service/`: Microservicio principal de gestión de donantes, donaciones y necesidades de entidades beneficiarias.
-- `notificaciones-service/`: Orquestación y envío de eventos y notificaciones (WhatsApp, Email, etc.).
-- `incentivos-service/`: Cálculo de analíticas y recompensas para donantes.
-- `logistica-service/`: Gestión de rutas de entrega y seguimiento de bienes.
+* **Control de Inventario ininterrumpido:** Cada recurso ingresado transiciona de manera estrictamente controlada por una maquina de estados logica (desde deposito hasta su entrega final o retorno justificado), previniendo desvios en el stock fisico.
+* **Procesamiento Semantico Protegido:** Clasifica las descripciones coloquiales de los bienes donados relacionandolas con alias oficiales de la organizacion, al tiempo que preserva inalterado el registro original ingresado por el donante para auditorias posteriores.
+* **Despacho Multicanal Inteligente:** Envia notificaciones en tiempo real (WhatsApp, SMS o Correo) resolviendo el canal y formato de forma automatica en base a las preferencias y perfil del destinatario.
+* **Orquestacion de Procesos Automatizada:** Integra las alertas y reconocimientos del sistema con redes sociales y plataformas externas mediante flujos visuales independientes, permitiendo flexibilizar las campañas de difusion sin alterar la logica central de la organizacion.
 
-### Componentes Compartidos y Utilidades
-- `common-lib/`: Dependencia compartida que incluirá frameworks de logging, tracing, etc.
-- `cliente-liviano/`: Renderizado de vistas desde el servidor.
+---
 
+## Arquitectura Distribuida y Resiliencia
 
-## Decisiones de Diseño Clave
+La plataforma se organiza bajo una arquitectura modular de servicios independientes desacoplados para asegurar una alta disponibilidad operativa:
 
-Para garantizar la calidad y mantenibilidad, hemos adoptado las siguientes decisiones estratégicas:
+* **Modulo de Donaciones:** Gestiona de forma transaccional el catalogo de bienes, inventarios y necesidades operativas.
+* **Modulo de Incentivos:** Registra las metricas historicas de ayuda, procesa el cumplimiento de misiones y administra los rankings.
+* **Modulo de Notificaciones:** Sistema no bloqueante para el despacho de alertas que mantiene réplicas locales ligeras de los perfiles. Esto garantiza que las comunicaciones sigan funcionando de forma autonoma incluso ante eventuales caidas o demoras en la red de los otros modulos.
+* **Kernel Compartido (common-lib):** Biblioteca que centraliza excepciones tecnicas y logging estructurado de manera transversal sin compartir logica ni entidades de negocio, resguardando la autonomia de desarrollo y despliegue de cada modulo.
 
-- Pipeline CI/CD: Implementación de un flujo unificado basado en el enfoque de "Fallo Temprano", automatizando validaciones de calidad, Git Flow y despliegue de documentación.
-- Privacidad: Anonimización de usuarios para cumplir con las normativas de protección de datos sensibles.
-- Comunicación Asincrónica: Implementación de mensajería basada en eventos para desacoplar los servicios, mejorando la escalabilidad y tolerancia a fallos.
-- Pruebas Unitarias: Uso intensivo de JUnit y Mockito, garantizando el aislamiento y determinismo en los tests de lógica de negocio.
+---
 
-## Grupo 5 - Integrantes:
-|                **Nombre**                | **Legajo** |           **Correo**          |
-|:----------------------------------------:|:----------:|:-----------------------------:|
-|            Camila Aylen Suarez           |  214.170-0 |    casuarez@frba.utn.edu.ar   |
-|           Camila Belén Lencina           |  215.042-6 |   calencina@frba.utn.edu.ar   |
-|            Lara Anush Eriakian           |  213.678-8 |   leriakian@frba.utn.edu.ar   |
-|          Martín Ilán Zajdenberg          |  209.501-4 |  mzajdenberg@frba.utn.edu.ar  |
-| Milton Christopher Bernardo Estigarribia |  208.731-5 | mestigarribia@frba.utn.edu.ar |
-|               Miranda Rossi              |  208.818-6 |    mirossi@frba.utn.edu.ar    |
-|              Nicolás Delorte             |  172.817-9 |    ndelorte@frba.utn.edu.ar   |
-|             Sofia Maria Deane            |  210.350-3 |     sdeane@frba.utn.edu.ar    |
-|             Tadeo Sorrentino             |  214.153-0 |  tsorrentino@frba.utn.edu.ar  |
-|            Valentina Thiwissen           |  209.210-4 |   vthiwissen@frba.utn.edu.ar  |
+## Estructura del Repositorio
+
+Organizacion del reactor multi-modulo y de los directorios principales del proyecto:
+
+```text
+DonaTrack-TP-DDS/
+├── .github/                      # Flujos de integracion continua y calidad automatizada
+├── docs/                         # Documentacion del portal y registros de decisiones
+├── n8n/                          # Workflows serializados para la integracion externa
+├── integration-tests/            # Suite de pruebas funcionales y de extremo a extremo
+├── common-lib/                   # shared kernel de utilidades de infraestructura y logging
+├── cliente-liviano/              # Interfaz y portal web de administracion
+├── auth-service/                 # Modulo de seguridad, usuarios y accesos
+├── donaciones-service/           # Modulo central de inventario y matchmaking
+├── incentivos-service/           # Modulo de gamificacion, rankings e incentivos
+├── logistica-service/            # Modulo experimental de transporte y rutas
+└── notificaciones-service/       # Modulo de despacho de comunicaciones y alertas
+```
+
+---
+
+## Ecosistema Tecnologico
+
+La seleccion de tecnologias responde a la necesidad de construir un producto confiable, mantenible a largo plazo y facilmente adaptable:
+
+* **Java 21 y Spring Boot 3:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
+* **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema, logrando que funcione de forma identica en cualquier computadora personal o servidor en la nube.
+* **n8n Workflow Engine:** Agilidad logica para automatizar integraciones mediante flujos de trabajo independientes, liberando a los microservicios principales de las dependencias de APIs de terceros.
+* **Maven Reactor:** Reactor de compilacion unificado que simplifica la compilacion incremental y la administracion de dependencias.
+
+---
+
+## Garantias de Calidad y Estandares de Desarrollo
+
+La integridad y estabilidad de DonaTrack se respalda en procesos de ingenieria rigurosos aplicados a lo largo de todo el ciclo de desarrollo:
+
+* **Integracion Continua (CI/CD):** Flujos de ejecucion en GitHub Actions que compilan, formatean (Spotless) y validan de manera automatica el codigo en cada actualizacion, optimizando tiempos mediante la deteccion de cambios por modulos.
+* **Monitoreo de Deuda Tecnica:** Integracion con SonarCloud para evaluar de forma automatica la salud del codigo, previniendo vulnerabilidades y asegurando una cobertura robusta de pruebas.
+* **Suite de Pruebas Automatizadas E2E:** Verificacion automatica de extremo a extremo que simula solicitudes HTTP reales y tolera retrasos de red temporales, asegurando la robustez de las integraciones antes de promover cambios a produccion.
+* **Politica de Desarrollo Ordenado:** Uso de convenciones de ramas estrictas y hooks locales que previenen el registro de codigo que no cumpla con los estandares de formato y calidad exigidos.
+
+---
+
+## Guia de Instalacion y Validacion Local
+
+### Prerrequisitos
+
+* Java 21 (JDK)
+* Maven 3.8 o superior
+* Docker con Compose v2 (soporte para el parametro --wait)
+
+### 1. Compilacion Manual de Componentes
+Si se desea compilar y empaquetar de forma manual y limpia todos los modulos del reactor Maven:
+```bash
+mvn clean package -DskipTests
+```
+
+### 2. Despliegue del Entorno Local con Docker Compose
+Para levantar manualmente el ecosistema virtualizado completo de microservicios y la plataforma n8n en segundo plano:
+```bash
+docker compose -f docker-compose.preprod.yml up --build -d
+```
+*Los contenedores utilizan healthchecks basados en Actuator (/actuator/health) para asegurar una secuencia de arranque ordenada y segura.*
+
+### 3. Suite de Validacion y Pruebas de Integracion Automatizadas
+El repositorio cuenta con dos scripts orquestadores en Bash diseñados para automatizar por completo el ciclo de construccion, ejecucion de infraestructura y pruebas de extremo a extremo:
+
+* **run-preprod-tests.sh (Flujo Completo con Auto-cleanup):** Compila el proyecto, levanta la infraestructura esperando a que todos los servicios esten saludables, importa y activa de forma automatica los flujos de n8n, realiza un warm-up de las APIs HTTP para evitar timeouts iniciales, ejecuta los tests de integracion REST y destruye todos los contenedores al finalizar para liberar puertos y recursos de forma automatica.
+* **run-preprod-tests-stay.sh (Flujo de Depuracion):** Realiza exactamente la misma secuencia de arranque y ejecucion de pruebas, pero mantiene el entorno Docker y los contenedores corriendo en segundo plano para permitir la depuracion o consulta manual de los endpoints, esperando la confirmacion del usuario antes de desmontar el stack.
+
+#### Comandos de Ejecucion de la Suite:
+
+```bash
+# Ejecucion del flujo de pruebas estandarizado con limpieza automatica:
+./run-preprod-tests.sh
+
+# Ejecucion del flujo de pruebas manteniendo la infraestructura activa para depuracion:
+./run-preprod-tests-stay.sh
+
+# Saltar la fase de compilacion de Maven (util si ya se cuenta con los JARs actualizados en target/):
+./run-preprod-tests.sh --skip-build
+
+# Ejecutar una unica clase de test de integracion en particular:
+./run-preprod-tests.sh --test NombreDeClaseIT
+```
+*Nota en Windows: Ambos scripts se pueden ejecutar en PowerShell mediante `powershell -File ./run-preprod-tests.sh`.*
+
+---
+
+## Equipo de Ingenieria
+
+### UTN-FRBA - Diseñó de Sistemas (2026) - Grupo 5
+
+| Nombre | Legajo | Correo |
+| :--- | :---: | :--- |
+| **Camila Aylen Suarez** | 214.170-0 | casuarez@frba.utn.edu.ar |
+| **Camila Belén Lencina** | 215.042-6 | calencina@frba.utn.edu.ar |
+| **Lara Anush Eriakian** | 213.678-8 | leriakian@frba.utn.edu.ar |
+| **Martín Ilán Zajdenberg** | 209.501-4 | mzajdenberg@frba.utn.edu.ar |
+| **Milton Christopher B. Estigarribia** | 208.731-5 | mestigarribia@frba.utn.edu.ar |
+| **Miranda Rossi** | 208.818-6 | mirossi@frba.utn.edu.ar |
+| **Nicolás Delorte** | 172.817-9 | ndelorte@frba.utn.edu.ar |
+| **Sofia Maria Deane** | 210.350-3 | sdeane@frba.utn.edu.ar |
+| **Tadeo Sorrentino** | 214.153-0 | tsorrentino@frba.utn.edu.ar |
+| **Valentina Thiwissen** | 209.210-4 | vthiwissen@frba.utn.edu.ar |

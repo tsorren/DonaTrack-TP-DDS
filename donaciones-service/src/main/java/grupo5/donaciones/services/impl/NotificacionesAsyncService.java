@@ -21,25 +21,23 @@ public class NotificacionesAsyncService {
   @Async
   public void sincronizarPersona(PersonaReplicaDTO dto) {
     try {
-      log.info("Iniciando sincronización asincrónica de persona: {}", dto.id());
       client.sincronizarPersona(dto);
-      log.info("Sincronización asincrónica exitosa para persona: {}", dto.id());
     } catch (Exception e) {
       log.error(
           "Fallo al sincronizar persona {} en notificaciones-service: {}",
           dto.id(),
-          e.getMessage());
+          e.getMessage(),
+          e);
     }
   }
 
   @Async
   public void anonimizarPersona(UUID id) {
     try {
-      log.info("Iniciando anonimización asincrónica de persona: {}", id);
       client.anonimizarPersona(id);
-      log.info("Anonimización asincrónica exitosa para persona: {}", id);
     } catch (Exception e) {
-      log.error("Fallo al anonimizar persona {} en notificaciones-service: {}", id, e.getMessage());
+      log.error(
+          "Fallo al anonimizar persona {} en notificaciones-service: {}", id, e.getMessage(), e);
     }
   }
 }

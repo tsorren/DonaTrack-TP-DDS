@@ -1,4 +1,5 @@
 {
+  "id": "1",
   "name": "DonaTrack - Difusión de Insignias",
   "nodes": [
     {
@@ -175,6 +176,5 @@
   "active": true,
   "settings": {
     "executionOrder": "v1"
-  },
-  "tags": ["donatrack", "insignias", "gamificacion"]
+  }
 }

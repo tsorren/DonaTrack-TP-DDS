@@ -49,6 +49,10 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       case TipoEstadoDonacion.ENTREGADA -> {
         donacion.confirmarEntrega(actor);
         UUID donanteId = donacion.getDonacionOriginal().getDonante().getId();
+        UUID personaDonanteId =
+            donacion.getDonacionOriginal().getDonante().getPersona() != null
+                ? donacion.getDonacionOriginal().getDonante().getPersona().getId()
+                : null;
         UUID organizacionId = null;
         UUID idPersonaBeneficiaria = null;
         if (donacion.getAsignadaA() != null) {
@@ -65,7 +69,10 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
 
         notificacionesFeignClient.enviarEvento(
             new EventoDonacionRecibidaDTO(
-                donanteId, LocalDateTime.now(), idPersonaBeneficiaria, donacion.getDescripcion()));
+                personaDonanteId,
+                LocalDateTime.now(),
+                idPersonaBeneficiaria,
+                donacion.getDescripcion()));
       }
       case TipoEstadoDonacion.ENTREGA_FALLIDA -> donacion.registrarFalla(
           request.justificacion(), actor);

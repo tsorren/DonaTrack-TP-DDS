@@ -46,18 +46,12 @@ if [[ -z "${EXECUTION_ID:-}" ]]; then
   export EXECUTION_ID
 fi
 
-# ── Cleanup garantizado al salir (con o sin error) ───────────────────────────
+# ── Cleanup manual (ya no se ejecuta automáticamente) ────────────────────────
 cleanup() {
-  local exit_code=$?
   step "Desmontando entorno"
   docker compose -f "$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null || true
-  if [[ $exit_code -eq 0 ]]; then
-    ok "Entorno desmontado correctamente."
-  else
-    warn "Entorno desmontado tras fallo."
-  fi
+  ok "Entorno desmontado correctamente."
 }
-trap cleanup EXIT
 
 # ── Paso 1: Compilar JARs ────────────────────────────────────────────────────
 if [[ "$SKIP_BUILD" == "true" ]]; then
@@ -141,3 +135,7 @@ else
   # El trap cleanup se ejecuta igual al salir con exit_code != 0
   exit 1
 fi
+echo ""
+echo "Los contenedores siguen ejecutándose."
+echo "Presioná cualquier tecla para finalizar el script..."
+read -n 1 -s

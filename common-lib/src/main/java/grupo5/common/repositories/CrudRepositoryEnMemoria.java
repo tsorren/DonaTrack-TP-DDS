@@ -6,9 +6,12 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
     implements CrudRepository<T> {
+  private final Logger log = LoggerFactory.getLogger(getClass());
   protected final Map<UUID, T> storage = new ConcurrentHashMap<>();
 
   @Override
@@ -20,6 +23,10 @@ public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
     storage.put(aggregate.getId(), aggregate);
+    log.info(
+        "[REPOSITORY] [ACTION: SAVE] [ENTITY: {}] [ID: {}] - Entity saved successfully",
+        aggregate.getClass().getSimpleName(),
+        aggregate.getId());
     return aggregate;
   }
 
@@ -30,11 +37,18 @@ public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
     }
     Map<UUID, T> map = aggregates.stream().collect(Collectors.toMap(T::getId, Function.identity()));
     storage.putAll(map);
+    String entityName =
+        aggregates.isEmpty() ? "Unknown" : aggregates.get(0).getClass().getSimpleName();
+    log.info(
+        "[REPOSITORY] [ACTION: SAVE_ALL] [ENTITY: {}] [COUNT: {}] - Multiple entities saved successfully",
+        entityName,
+        aggregates.size());
     return aggregates;
   }
 
   @Override
   public List<T> findAll() {
+    log.debug("[REPOSITORY] [ACTION: FIND_ALL] - Retrieving all entities");
     return new ArrayList<>(storage.values());
   }
 
@@ -43,6 +57,7 @@ public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
     if (id == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
+    log.debug("[REPOSITORY] [ACTION: FIND_BY_ID] [ID: {}] - Retrieving entity by ID", id);
     return Optional.ofNullable(storage.get(id));
   }
 
@@ -52,6 +67,10 @@ public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
     storage.remove(aggregate.getId());
+    log.info(
+        "[REPOSITORY] [ACTION: DELETE] [ENTITY: {}] [ID: {}] - Entity deleted successfully",
+        aggregate.getClass().getSimpleName(),
+        aggregate.getId());
   }
 
   @Override
@@ -59,16 +78,24 @@ public abstract class CrudRepositoryEnMemoria<T extends AggregateRoot>
     if (id == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
-    return storage.containsKey(id);
+    boolean exists = storage.containsKey(id);
+    log.debug(
+        "[REPOSITORY] [ACTION: EXISTS_BY_ID] [ID: {}] [EXISTS: {}] - Checking entity existence",
+        id,
+        exists);
+    return exists;
   }
 
   @Override
   public long count() {
-    return storage.size();
+    long total = storage.size();
+    log.debug("[REPOSITORY] [ACTION: COUNT] [TOTAL: {}] - Counting all entities", total);
+    return total;
   }
 
   @Override
   public void deleteAll() {
     storage.clear();
+    log.info("[REPOSITORY] [ACTION: DELETE_ALL] - All entities deleted successfully");
   }
 }

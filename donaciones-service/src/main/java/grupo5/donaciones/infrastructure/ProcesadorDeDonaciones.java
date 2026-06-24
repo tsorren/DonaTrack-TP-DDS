@@ -17,11 +17,11 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 // TODO: Testear Procesador
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class ProcesadorDeDonaciones {
 
@@ -35,9 +35,7 @@ public class ProcesadorDeDonaciones {
 
   @Async
   public void procesar(Donacion donacion) {
-    log.info("Iniciando procesamiento de donación ID: {}", donacion.getId());
     List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion);
-    log.info("Normalización exitosa. Items normalizados: {}", itemsNormalizados.size());
     for (ItemDonacionNormalizado item : itemsNormalizados) {
       log.info(
           "  Item: {}, Subcategoría asignada: {}, Confianza: {}, Estado: {}",
@@ -52,9 +50,6 @@ public class ProcesadorDeDonaciones {
     donacionRepository.save(donacion);
 
     List<DonacionIndependiente> donacionesIndependientes = segmentador.segmentar(itemsNormalizados);
-    log.info(
-        "Segmentación exitosa. Donaciones independientes generadas: {}",
-        donacionesIndependientes.size());
     for (DonacionIndependiente di : donacionesIndependientes) {
       log.info(
           "  Donación Independiente ID: {}, Subcategoría: {}, Cantidad: {}, Estado: {}",
@@ -92,7 +87,6 @@ public class ProcesadorDeDonaciones {
     }
 
     donacionesIndependientesRepository.saveAll(donacionesIndependientes);
-    log.info("Donación ID: {} procesada completamente y persistida.", donacion.getId());
   }
 
   private String obtenerNombrePersona(Persona persona) {
