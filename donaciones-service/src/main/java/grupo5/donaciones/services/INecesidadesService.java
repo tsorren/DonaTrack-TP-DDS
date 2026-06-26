@@ -11,6 +11,4 @@ public interface INecesidadesService {
   List<NecesidadDTO> listarConFiltros(UUID entidadId, String tipo);
 
   NecesidadDTO obtenerPorId(UUID id);
-
-  List<grupo5.donaciones.dto.SubcategoriaDTO> obtenerSubcategorias();
 }
