@@ -49,14 +49,6 @@ public class DonantesController implements IDonantesController {
   }
 
   @Override
-  @PutMapping("/{id}")
-  public ResponseEntity<DonanteOutputDTO> actualizarCanal(
-      @PathVariable("id") UUID id, @RequestBody DonanteInputDTO dto) {
-    DonanteOutputDTO donanteActualizado = donantesService.actualizarCanal(id, dto);
-    return ResponseEntity.ok(donanteActualizado);
-  }
-
-  @Override
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> eliminarDonante(@PathVariable("id") UUID id) {
     donantesService.eliminarDonante(id);

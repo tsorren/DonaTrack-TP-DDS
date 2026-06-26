@@ -84,4 +84,15 @@ public class PersonasService implements IPersonasService {
     // Sincronizar asincrónicamente con el servicio de notificaciones
     notificacionesAsyncService.anonimizarPersona(id);
   }
+
+  @Override
+  public PersonaOutputDTO actualizarCanal(UUID id, PersonaInputDTO dto) {
+    Persona persona =
+        repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+
+    mapper.updateEntity(persona, dto);
+
+    Persona personaActualizada = repository.save(persona);
+    return mapper.toOutputDTO(personaActualizada);
+  }
 }
