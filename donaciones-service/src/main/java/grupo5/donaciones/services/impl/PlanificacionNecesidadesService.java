@@ -27,7 +27,7 @@ public class PlanificacionNecesidadesService {
     }
   }
 
-  private void crearPeriodoPara(NecesidadRecurrente necesidadRecurrente) {
+  private static void crearPeriodoPara(NecesidadRecurrente necesidadRecurrente) {
     if (necesidadRecurrente.obtenerPeriodoActual() != null) {
       necesidadRecurrente.obtenerPeriodoActual().finalizo();
     }
