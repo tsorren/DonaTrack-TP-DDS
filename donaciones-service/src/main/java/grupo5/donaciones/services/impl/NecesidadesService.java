@@ -85,8 +85,7 @@ public class NecesidadesService implements INecesidadesService {
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
 
-    necesidad.setEntidad(
-        entidadBeneficiaria); // TODO: Anaalizar si esto debería ir en el constructor
+    entidadBeneficiaria.agregarNecesidad(necesidad);
     return necesidad;
   }
 

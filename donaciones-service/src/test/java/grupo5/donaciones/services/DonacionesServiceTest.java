@@ -1,7 +1,6 @@
 package grupo5.donaciones.services;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
@@ -98,6 +97,7 @@ class DonacionesServiceTest {
     DonacionOutputDTO result = service.cargarDonacion(inputDTO);
 
     assertNotNull(result);
+    assertTrue(donante.getDonaciones().contains(donacion));
     verify(donacionesRepository).save(donacion);
     verify(mapper).toOutputDTO(donacion);
   }
