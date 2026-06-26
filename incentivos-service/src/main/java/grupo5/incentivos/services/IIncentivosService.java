@@ -14,6 +14,8 @@ public interface IIncentivosService {
 
   void procesarDonacionExitosa(DonacionExitosaRequest request);
 
+  void procesarInactividad();
+
   DonanteIncentivos obtenerDonante(UUID donanteId);
 
   MetricasDonanteDTO obtenerMetricas(UUID donanteId);
