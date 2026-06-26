@@ -50,7 +50,8 @@ class ItemDonacionNormalizadoServiceTest {
 
   @BeforeEach
   void setUp() {
-    Humana humana = new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, 5, 15));
+    Humana humana =
+        new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, java.time.Month.MAY, 15));
     Donante donante = new Donante(humana);
     donacion = new Donacion(donante);
 

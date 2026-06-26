@@ -48,7 +48,8 @@ class SegmentacionEventListenerTest {
 
   @BeforeEach
   void setUp() {
-    Humana humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, 1, 1));
+    Humana humana =
+        new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     Donante donante = new Donante(humana);
     donacion = new Donacion(donante);
     donacion.setFecha(java.time.LocalDateTime.now());

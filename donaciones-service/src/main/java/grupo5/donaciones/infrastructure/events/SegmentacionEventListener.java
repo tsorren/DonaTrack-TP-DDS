@@ -125,7 +125,7 @@ public class SegmentacionEventListener {
     log.info("Segmentación completada con éxito para la donación ID: {}", event.donacionId());
   }
 
-  private String obtenerNombrePersona(Persona persona) {
+  private static String obtenerNombrePersona(Persona persona) {
     if (persona instanceof Humana humana) {
       return humana.getNombre() + " " + humana.getApellido();
     } else if (persona instanceof Juridica juridica) {
