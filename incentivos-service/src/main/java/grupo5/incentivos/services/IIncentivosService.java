@@ -8,6 +8,8 @@ import java.util.UUID;
 public interface IIncentivosService {
   DonanteRegistradoDTO registrarDonante(RegistrarDonanteRequest request);
 
+  void modificarDonante(UUID donanteId, ModificarDonanteRequest request);
+
   void procesarDonacion(NuevaDonacionRequest request);
 
   void procesarDonacionExitosa(DonacionExitosaRequest request);

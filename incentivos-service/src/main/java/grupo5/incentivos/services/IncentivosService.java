@@ -59,6 +59,12 @@ public class IncentivosService implements IIncentivosService {
     return DonanteRegistradoDTO.desde(donante);
   }
 
+  public void modificarDonante(UUID donanteId, ModificarDonanteRequest request) {
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    donante.setNombre(request.nombre());
+    repository.save(donante);
+  }
+
   public void procesarDonacion(NuevaDonacionRequest request) {
     EventoDonacion evento =
         EventoDonacion.builder()
