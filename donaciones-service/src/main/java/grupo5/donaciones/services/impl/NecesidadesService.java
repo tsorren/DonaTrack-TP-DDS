@@ -84,8 +84,9 @@ public class NecesidadesService implements INecesidadesService {
               subcategoria, dto.getCantidadNecesitada(), dto.getDescripcion());
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
+    necesidad.setEntidad(entidadBeneficiaria);
 
-    entidadBeneficiaria.agregarNecesidad(necesidad);
+    // entidadBeneficiaria.agregarNecesidad(necesidad);
     return necesidad;
   }
 
