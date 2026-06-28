@@ -8,4 +8,6 @@ public interface IPersonasController {
   ResponseEntity<Void> sincronizar(PersonaReplicaDTO dto);
 
   ResponseEntity<Void> anonimizar(UUID id);
+
+  ResponseEntity<PersonaReplicaDTO> obtenerPersona(UUID id);
 }

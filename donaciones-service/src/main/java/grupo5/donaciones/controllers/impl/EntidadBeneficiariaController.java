@@ -1,5 +1,6 @@
-package grupo5.donaciones.controllers;
+package grupo5.donaciones.controllers.impl;
 
+import grupo5.donaciones.controllers.IEntidadBeneficiariaController;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;

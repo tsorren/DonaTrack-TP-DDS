@@ -6,6 +6,21 @@
   "apellido": "CD",
   "genero": "HOMBRE",
   "fechaNacimiento": "2000-01-01",
-  "mediosDeContacto": [],
-  "direccion": null
+  "mediosDeContacto": [
+    {
+      "tipo": "CORREO",
+      "esPredeterminado": true,
+      "direccionCorreo": "juan.perez@example.com"
+    }
+  ],
+  "direccion": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "piso": null,
+    "departamento": null,
+    "codigoPostal": "1179",
+    "localidad": "CABA",
+    "provincia": "CABA",
+    "pais": "Argentina"
+  }
 }

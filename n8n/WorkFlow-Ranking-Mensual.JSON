@@ -1,66 +1,41 @@
 {
+  "id": "2",
   "name": "DonaTrack - Ranking Mensual",
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "cronExpression",
-              "expression": "59 23 L * *"
-            }
-          ]
-        }
-      },
-      "id": "1",
-      "name": "Cron - Último día del mes",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1,
-      "position": [240, 300],
-      "notes": "Etapa 1: Se ejecuta automáticamente el último día de cada mes a las 23:59.\nCron: '59 23 L * *'"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "http://localhost:8082/api/incentivos/ranking/calcular",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
+        "httpMethod": "POST",
+        "path": "ranking-calculado",
+        "responseMode": "responseNode",
         "options": {}
       },
-      "id": "2",
-      "name": "Calcular Ranking en Backend",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [460, 300],
-      "notes": "Etapa 2: Llama al endpoint del backend para calcular y persistir el ranking del mes.\nEl backend devuelve el ranking completo con todas las entradas."
+      "id": "1",
+      "name": "Webhook - Ranking Calculado",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "notes": "Recibe el evento desde el backend cuando el job calcula el ranking mensual.\nEspera: { periodo, top3: [{ posicion, donanteId, nombre, misionesCompletadas }] }"
     },
     {
       "parameters": {
-        "jsCode": "// Etapa 3: Procesar la respuesta y extraer el top 3\nconst ranking = $input.first().json;\n\nconst entradas = ranking.entradas || [];\n\nconst top3 = entradas\n  .filter(e => e.posicion <= 3)\n  .sort((a, b) => a.posicion - b.posicion);\n\nconst medallas = ['🥇', '🥈', '🥉'];\n\nconst top3Formateado = top3.map((entrada, idx) => ({\n  posicion: entrada.posicion,\n  medalla: medallas[idx] || '🏅',\n  nombre: entrada.nombre || `Donante #${entrada.donanteId}`,\n  donanteId: entrada.donanteId,\n  misionesCompletadas: entrada.misionesCompletadas\n}));\n\nconst periodo = ranking.periodo || new Date().toISOString().slice(0, 7);\n\nconsole.log(`Ranking ${periodo} procesado. Top 3:`, JSON.stringify(top3Formateado));\n\nreturn [{\n  json: {\n    periodo,\n    totalParticipantes: entradas.length,\n    top3: top3Formateado,\n    timestamp: new Date().toISOString()\n  }\n}];"
+        "jsCode": "// Extraer y formatear el top 3 recibido del backend\nconst data = $input.first().json.body;\n\nconst periodo = data.periodo || new Date().toISOString().slice(0, 7);\nconst top3 = data.top3 || [];\n\nconst medallas = ['🥇', '🥈', '🥉'];\n\nconst top3Formateado = top3.map((entrada, idx) => ({\n  posicion: entrada.posicion,\n  medalla: medallas[idx] || '🏅',\n  nombre: entrada.nombre || `Donante #${entrada.donanteId}`,\n  donanteId: entrada.donanteId,\n  misionesCompletadas: entrada.misionesCompletadas\n}));\n\nconsole.log(`Ranking ${periodo} recibido. Top 3:`, JSON.stringify(top3Formateado));\n\nreturn [{\n  json: {\n    periodo,\n    totalParticipantes: top3.length,\n    top3: top3Formateado,\n    timestamp: new Date().toISOString()\n  }\n}];"
       },
-      "id": "3",
+      "id": "2",
       "name": "Procesar Top 3",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [680, 300],
-      "notes": "Etapa 3: Extrae y formatea el top 3 del ranking para su difusión"
+      "position": [460, 300],
+      "notes": "Formatea el top 3 recibido del backend para su difusión"
     },
     {
       "parameters": {
-        "jsCode": "// Etapa 4: Construir el mensaje de publicación del ranking\nconst data = $input.first().json;\n\nconst top3Lines = data.top3.map(\n  e => `${e.medalla} ${e.nombre} — ${e.misionesCompletadas} misiones completadas`\n).join('\\n');\n\nconst postText = [\n  `📊 Ranking DonaTrack — ${data.periodo}`,\n  '',\n  '¡Felicitamos a los donantes más activos del mes!',\n  '',\n  top3Lines,\n  '',\n  `Total de participantes activos: ${data.totalParticipantes}`,\n  '',\n  '#DonaTrack #Donaciones #RankingMensual #Solidaridad'\n].join('\\n');\n\nreturn [{\n  json: {\n    ...data,\n    postText\n  }\n}];"
+        "jsCode": "// Construir el mensaje de publicación del ranking\nconst data = $input.first().json;\n\nconst top3Lines = data.top3.map(\n  e => `${e.medalla} ${e.nombre} — ${e.misionesCompletadas} misiones completadas`\n).join('\\n');\n\nconst postText = [\n  `📊 Ranking DonaTrack — ${data.periodo}`,\n  '',\n  '¡Felicitamos a los donantes más activos del mes!',\n  '',\n  top3Lines,\n  '',\n  '#DonaTrack #Donaciones #RankingMensual #Solidaridad'\n].join('\\n');\n\nreturn [{\n  json: {\n    ...data,\n    postText\n  }\n}];"
       },
-      "id": "4",
+      "id": "3",
       "name": "Construir Mensaje del Ranking",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 300],
+      "position": [680, 300],
       "notes": "Construye el texto del post con el ranking formateado"
     },
     {
@@ -70,118 +45,70 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "X-Mock-Social-Network",
-              "value": "DonaTrack-MockSocial"
-            }
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-Mock-Social-Network", "value": "DonaTrack-MockSocial" }
           ]
         },
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            {
-              "name": "platform",
-              "value": "mock_social_network"
-            },
-            {
-              "name": "text",
-              "value": "={{ $json.postText }}"
-            },
-            {
-              "name": "periodo",
-              "value": "={{ $json.periodo }}"
-            },
-            {
-              "name": "top3",
-              "value": "={{ JSON.stringify($json.top3) }}"
-            }
+            { "name": "platform", "value": "mock_social_network" },
+            { "name": "text", "value": "={{ $json.postText }}" },
+            { "name": "periodo", "value": "={{ $json.periodo }}" },
+            { "name": "top3", "value": "={{ JSON.stringify($json.top3) }}" }
           ]
         },
         "options": {}
       },
-      "id": "5",
+      "id": "4",
       "name": "Publicar Ranking (Mock)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4,
-      "position": [1120, 300],
-      "notes": "Etapa 5: Simula la publicación del ranking en red social (httpbin.org).\nEn producción: reemplazar por Twitter/LinkedIn con credenciales reales."
+      "position": [900, 300],
+      "notes": "Simula la publicación del ranking en red social (httpbin.org).\nEn producción: reemplazar por Twitter/LinkedIn con credenciales reales."
     },
     {
       "parameters": {
-        "jsCode": "// Etapa 5: Notificar al backend que el ranking fue publicado y registrar resultado\nconst data = $('Construir Mensaje del Ranking').first().json;\nconst respuesta = $input.first().json;\n\nconst exitoso = respuesta.url !== undefined;\n\nconsole.log(`[MOCK] Ranking ${data.periodo} publicado en red social: ${exitoso ? 'EXITOSO' : 'FALLIDO'}`);\nconsole.log(`Top 3:`);\ndata.top3.forEach(e => console.log(`  ${e.medalla} ${e.nombre}: ${e.misionesCompletadas} misiones`));\n\nreturn [{\n  json: {\n    status: 'ok',\n    periodo: data.periodo,\n    publicado: exitoso,\n    top3: data.top3,\n    mensaje: `Ranking mensual ${data.periodo} calculado y publicado correctamente (mock)`,\n    timestamp: new Date().toISOString()\n  }\n}];"
+        "jsCode": "// Validar resultado de la publicación\nconst data = $('Construir Mensaje del Ranking').first().json;\nconst respuesta = $input.first().json;\n\nconst exitoso = respuesta.url !== undefined;\n\nconsole.log(`[MOCK] Ranking ${data.periodo} publicado en red social: ${exitoso ? 'EXITOSO' : 'FALLIDO'}`);\ndata.top3.forEach(e => console.log(`  ${e.medalla} ${e.nombre}: ${e.misionesCompletadas} misiones`));\n\nreturn [{\n  json: {\n    status: 'ok',\n    periodo: data.periodo,\n    publicado: exitoso,\n    top3: data.top3,\n    mensaje: `Ranking mensual ${data.periodo} publicado correctamente (mock)`,\n    timestamp: new Date().toISOString()\n  }\n}];"
       },
-      "id": "6",
+      "id": "5",
       "name": "Registrar Resultado",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1340, 300],
+      "position": [1120, 300],
       "notes": "Registra el resultado final del flujo en los logs de n8n"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "6",
+      "name": "Responder al Backend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300],
+      "notes": "Responde al backend confirmando que el flujo se procesó"
     }
   ],
   "connections": {
-    "Cron - Último día del mes": {
-      "main": [
-        [
-          {
-            "node": "Calcular Ranking en Backend",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Calcular Ranking en Backend": {
-      "main": [
-        [
-          {
-            "node": "Procesar Top 3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Webhook - Ranking Calculado": {
+      "main": [[{ "node": "Procesar Top 3", "type": "main", "index": 0 }]]
     },
     "Procesar Top 3": {
-      "main": [
-        [
-          {
-            "node": "Construir Mensaje del Ranking",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Construir Mensaje del Ranking", "type": "main", "index": 0 }]]
     },
     "Construir Mensaje del Ranking": {
-      "main": [
-        [
-          {
-            "node": "Publicar Ranking (Mock)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Publicar Ranking (Mock)", "type": "main", "index": 0 }]]
     },
     "Publicar Ranking (Mock)": {
-      "main": [
-        [
-          {
-            "node": "Registrar Resultado",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Registrar Resultado", "type": "main", "index": 0 }]]
+    },
+    "Registrar Resultado": {
+      "main": [[{ "node": "Responder al Backend", "type": "main", "index": 0 }]]
     }
   },
   "active": true,
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "tags": ["donatrack", "ranking", "mensual"]
+  "settings": { "executionOrder": "v1" }
 }

@@ -3,7 +3,6 @@ package grupo5.incentivos.models.entities.insignias;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +24,6 @@ public class Insignia {
     this.descripcion = descripcion;
     this.imagenUrl = imagenUrl;
     this.visible = true;
-    this.fechaObtenida = LocalDate.now(ZoneId.systemDefault());
+    this.fechaObtenida = null;
   }
 }

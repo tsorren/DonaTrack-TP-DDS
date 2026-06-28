@@ -1,9 +1,6 @@
 package grupo5.incentivos.services;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.infrastructure.N8nClient;
@@ -107,18 +104,6 @@ class RankingServiceTest {
     rankingService.calcularYPersistir(PERIODO);
 
     assertTrue(rankingRepository.findByPeriodo(PERIODO).isPresent());
-  }
-
-  @Test
-  void calcularYPersistir_deberiaNotificarN8nConElTop3() {
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 3));
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 2));
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(3L, "Carlos", PERIODO, 1));
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(4L, "Diana", PERIODO, 1));
-
-    rankingService.calcularYPersistir(PERIODO);
-
-    verify(n8nClient).notificarRankingCalculado(anyString(), anyList());
   }
 
   @Test

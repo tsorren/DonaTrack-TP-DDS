@@ -1,12 +1,12 @@
-package grupo5.donaciones.controllers;
+package grupo5.donaciones.controllers.impl;
 
+import grupo5.donaciones.controllers.IDonantesController;
 import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
-import grupo5.donaciones.models.entities.donantes.Archivo;
-import grupo5.donaciones.services.ArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
+import grupo5.donaciones.services.impl.ArchivoDonantesService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -56,20 +56,22 @@ public class DonantesController implements IDonantesController {
     return ResponseEntity.ok(donanteActualizado);
   }
 
+  @Override
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> eliminarDonante(@PathVariable("id") UUID id) {
+    donantesService.eliminarDonante(id);
+    return ResponseEntity.noContent().build();
+  }
+
   @PostMapping("/archivos")
   public ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(
       @RequestBody ArchivoInputDTO input) {
     if (input.path() == null || input.path().isBlank()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
+    // TODO: Pasar logica a service
 
-    Archivo archivo = archivoDonantesService.registrarArchivoInicial(input.path());
-
-    archivoDonantesService.procesarArchivoMasivo(archivo);
-
-    ArchivoOutputDTO responseBody =
-        new ArchivoOutputDTO(archivo.getId(), archivo.getPath(), archivo.getEstado().toString());
-
+    ArchivoOutputDTO responseBody = archivoDonantesService.cargarArchivoDonantes(input);
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
   }
 }

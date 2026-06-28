@@ -29,6 +29,8 @@ public class RankingService implements IRankingService {
   }
 
   public RankingMensualDTO calcularYPersistir(YearMonth periodo) {
+    // TODO: Revisar si se debe eliminar, corregir logica ya que sin esto rompe
+    rankingRepository.findByPeriodo(periodo).ifPresent(rankingRepository::delete);
     List<DonanteIncentivos> todos = donanteRepository.findAll();
     RankingMensual ranking = new RankingMensual(periodo);
     AtomicInteger posicion = new AtomicInteger(1);
@@ -50,9 +52,13 @@ public class RankingService implements IRankingService {
             });
 
     rankingRepository.save(ranking);
-    RankingMensualDTO resultado = RankingMensualDTO.desde(ranking);
+    return RankingMensualDTO.desde(ranking);
+    // ← sin n8n
+  }
 
-    // Notificar a n8n con el top 3 para que "publique" en red social (mock)
+  public RankingMensualDTO calcularYNotificar(YearMonth periodo) {
+    RankingMensualDTO resultado = calcularYPersistir(periodo);
+
     List<Map<String, Object>> top3 =
         resultado.entradas().stream()
             .filter(e -> e.posicion() <= 3)
@@ -66,7 +72,6 @@ public class RankingService implements IRankingService {
             .toList();
 
     n8nClient.notificarRankingCalculado(periodo.toString(), top3);
-
     return resultado;
   }
 

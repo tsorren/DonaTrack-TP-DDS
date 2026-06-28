@@ -5,8 +5,12 @@ import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.donaciones.dto.comunicaciones.DonacionExitosaRequest;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
+import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -32,6 +36,8 @@ import org.junit.jupiter.api.Test;
 class DonacionesIndependientesServiceTest {
 
   private IDonacionesIndependientesRepository repositoryMock;
+  private IncentivosFeignClient incentivosFeignClientMock;
+  private NotificacionesFeignClient notificacionesFeignClientMock;
   private DonacionesIndependientesService service;
 
   private static final String ACTOR = "SISTEMA";
@@ -40,7 +46,11 @@ class DonacionesIndependientesServiceTest {
   @BeforeEach
   void setUp() {
     repositoryMock = mock(IDonacionesIndependientesRepository.class);
-    service = new DonacionesIndependientesService(repositoryMock);
+    incentivosFeignClientMock = mock(IncentivosFeignClient.class);
+    notificacionesFeignClientMock = mock(NotificacionesFeignClient.class);
+    service =
+        new DonacionesIndependientesService(
+            repositoryMock, incentivosFeignClientMock, notificacionesFeignClientMock);
   }
 
   private DonacionIndependiente crearDonacionDePrueba() {
@@ -161,6 +171,13 @@ class DonacionesIndependientesServiceTest {
     assertInstanceOf(Entregada.class, donacion.getEstadoActual());
     assertEquals("Entregada", response.estadoActual());
     verify(repositoryMock, times(1)).save(donacion);
+    verify(incentivosFeignClientMock, times(1))
+        .procesarDonacionExitosa(
+            eq(
+                new DonacionExitosaRequest(
+                    donacion.getDonacionOriginal().getDonante().getId(), null)));
+    verify(notificacionesFeignClientMock, times(1))
+        .enviarEvento(any(EventoDonacionRecibidaDTO.class));
   }
 
   @Test

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <timestamp key="startupTime" datePattern="yyyyMMdd_HHmmss" />
+
+    <!-- Dynamically define the instanceId property -->
+    <define name="instanceId" class="grupo5.common.logging.InstanceIdPropertyDefiner" />
+
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="unknown-service"/>
+    <!-- Default executionId is run_<timestamp> unless execution.id is passed via system property / env variable -->
+    <springProperty scope="context" name="executionId" source="execution.id" defaultValue="run_${startupTime}"/>
+
+    <property name="LOGS_DIR" value="logs" />
+    <property name="ACTUAL_FILE" value="${LOGS_DIR}/actual/${appName}-${instanceId}.log" />
+    <property name="REGISTRO_FILE" value="${LOGS_DIR}/registro/${executionId}/${appName}-${instanceId}.log" />
+
+    <property name="CONSOLE_LOG_PATTERN" 
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5level | ${appName} | ${instanceId} | %X{traceId:-NO_TRACE} | %logger{36} | %msg%n"/>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Actual File Appender (Overwritten per run) -->
+    <appender name="FILE_ACTUAL" class="ch.qos.logback.core.FileAppender">
+        <file>${ACTUAL_FILE}</file>
+        <append>false</append>
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Registro File Appender (Persistent historical) -->
+    <appender name="FILE_REGISTRO" class="ch.qos.logback.core.FileAppender">
+        <file>${REGISTRO_FILE}</file>
+        <append>true</append>
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Configure dynamic logging levels from application.properties -->
+    <springProperty scope="context" name="rootLogLevel" source="logging.level.root" defaultValue="INFO"/>
+    <springProperty scope="context" name="grupo5LogLevel" source="logging.level.grupo5" defaultValue="INFO"/>
+
+    <logger name="grupo5" level="${grupo5LogLevel}"/>
+
+    <root level="${rootLogLevel}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE_ACTUAL"/>
+        <appender-ref ref="FILE_REGISTRO"/>
+    </root>
+</configuration>

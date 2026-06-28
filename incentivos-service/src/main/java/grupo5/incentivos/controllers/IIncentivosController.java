@@ -12,7 +12,7 @@ public interface IIncentivosController {
   ResponseEntity<Void> procesarDonacionExitosa(@RequestBody DonacionExitosaRequest request);
 
   ResponseEntity<DonanteRegistradoDTO> registrarDonante(
-      @RequestBody RegistrarDonanteRequest request);
+      @PathVariable("donanteId") UUID donanteId, @RequestBody RegistrarDonanteRequest request);
 
   ResponseEntity<Void> darDeBaja(@PathVariable UUID donanteId);
 

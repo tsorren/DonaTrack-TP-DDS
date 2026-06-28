@@ -5,6 +5,7 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import java.time.LocalDate;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Setter
 public abstract class Mision {
 
+  private final UUID id;
   private String nombre;
   private String descripcion;
   private CategoriaDonante categoria;
@@ -29,6 +31,7 @@ public abstract class Mision {
     if (objetivo == null || objetivo <= 0) {
       throw new IllegalArgumentException("El objetivo de la mision debe ser mayor a cero.");
     }
+    this.id = UUID.randomUUID();
     this.nombre = nombre;
     this.descripcion = descripcion;
     this.categoria = categoria;

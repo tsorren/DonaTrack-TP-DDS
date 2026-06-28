@@ -23,11 +23,14 @@ public class DonacionMapper {
   }
 
   public Donacion toEntity(DonacionInputDTO dto, Persona persona) {
+    return toEntity(dto, new Donante(persona));
+  }
+
+  public Donacion toEntity(DonacionInputDTO dto, Donante donante) {
     if (dto == null) {
       return null;
     }
 
-    Donante donante = new Donante(persona);
     Deposito deposito =
         new Deposito(dto.nombreDeposito(), direccionMapper.toEntity(dto.direccion()));
 
