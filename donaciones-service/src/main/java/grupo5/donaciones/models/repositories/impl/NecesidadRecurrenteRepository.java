@@ -1,14 +1,16 @@
 package grupo5.donaciones.models.repositories.impl;
 
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
+import grupo5.donaciones.models.repositories.INecesidadesRecurrentesRepository;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 // TODO: Borrar clase entera y usar NecesidadesRepository
 // Simulacion de base de datos, despues hay que implementar una enserio
 @Repository
-public class NecesidadRecurrenteRepository {
+public class NecesidadRecurrenteRepository implements INecesidadesRecurrentesRepository {
   private final List<NecesidadRecurrente> baseDeDatosFalsa = new ArrayList<>();
 
   // Método para simular que guardás un comedor
@@ -21,5 +23,11 @@ public class NecesidadRecurrenteRepository {
   // Método para simular la búsqueda de comedores activos
   public List<NecesidadRecurrente> findByActivaTrue() {
     return baseDeDatosFalsa.stream().filter(NecesidadRecurrente::getActiva).toList();
+  }
+
+  public List<NecesidadRecurrente> buscarNecesidadesPorEntidad(UUID entidadId) {
+    return baseDeDatosFalsa.stream()
+        .filter(n -> n.getEntidad() != null && entidadId.equals(n.getEntidad().getId()))
+        .toList();
   }
 }
