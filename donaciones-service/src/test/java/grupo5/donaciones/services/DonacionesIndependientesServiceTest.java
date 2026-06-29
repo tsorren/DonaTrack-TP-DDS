@@ -44,6 +44,7 @@ class DonacionesIndependientesServiceTest {
   private IDonantesRepository donantesRepositoryMock;
   private grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
       entidadesBeneficiariasRepositoryMock;
+  private grupo5.donaciones.services.mappers.DonacionIndependienteMapper mapperMock;
   private DonacionesIndependientesService service;
 
   private static final String ACTOR = "SISTEMA";
@@ -61,6 +62,21 @@ class DonacionesIndependientesServiceTest {
     donantesRepositoryMock = mock(IDonantesRepository.class);
     entidadesBeneficiariasRepositoryMock =
         mock(grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository.class);
+    mapperMock = mock(grupo5.donaciones.services.mappers.DonacionIndependienteMapper.class);
+
+    when(mapperMock.toDTO(any(DonacionIndependiente.class)))
+        .thenAnswer(
+            invocation -> {
+              DonacionIndependiente don = invocation.getArgument(0);
+              return new DonacionIndependienteResponseDTO(
+                  don.getId(),
+                  don.getEstadoActual().getClass().getSimpleName(),
+                  don.getHistorial().stream()
+                      .map(c -> c.getEstadoNuevo().getClass().getSimpleName())
+                      .toList(),
+                  List.of(),
+                  don.getCantidad());
+            });
 
     service =
         new DonacionesIndependientesService(
@@ -69,7 +85,8 @@ class DonacionesIndependientesServiceTest {
             notificacionesFeignClientMock,
             donacionRepositoryMock,
             donantesRepositoryMock,
-            entidadesBeneficiariasRepositoryMock);
+            entidadesBeneficiariasRepositoryMock,
+            mapperMock);
   }
 
   private DonacionIndependiente crearDonacionDePrueba() {

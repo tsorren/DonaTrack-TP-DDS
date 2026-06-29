@@ -30,6 +30,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   private final IDonantesRepository donantesRepository;
   private final grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
       entidadesBeneficiariasRepository;
+  private final grupo5.donaciones.services.mappers.DonacionIndependienteMapper
+      donacionIndependienteMapper;
 
   public DonacionesIndependientesService(
       IDonacionesIndependientesRepository repositorio,
@@ -38,13 +40,15 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       IDonacionesRepository donacionRepository,
       IDonantesRepository donantesRepository,
       grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
-          entidadesBeneficiariasRepository) {
+          entidadesBeneficiariasRepository,
+      grupo5.donaciones.services.mappers.DonacionIndependienteMapper donacionIndependienteMapper) {
     this.repositorio = repositorio;
     this.incentivosFeignClient = incentivosFeignClient;
     this.notificacionesFeignClient = notificacionesFeignClient;
     this.donacionRepository = donacionRepository;
     this.donantesRepository = donantesRepository;
     this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
+    this.donacionIndependienteMapper = donacionIndependienteMapper;
   }
 
   @Override
@@ -104,15 +108,6 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     }
 
     repositorio.save(donacion);
-    return toDTO(donacion);
-  }
-
-  private static DonacionIndependienteResponseDTO toDTO(DonacionIndependiente donacion) {
-    return new DonacionIndependienteResponseDTO(
-        donacion.getId(),
-        donacion.getEstadoActual().getClass().getSimpleName(),
-        donacion.getHistorial().stream()
-            .map(c -> c.getEstadoNuevo().getClass().getSimpleName())
-            .toList());
+    return donacionIndependienteMapper.toDTO(donacion);
   }
 }

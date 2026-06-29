@@ -57,7 +57,7 @@ class DonacionesIndependientesControllerTest {
             TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null);
     DonacionIndependienteResponseDTO response =
         new DonacionIndependienteResponseDTO(
-            id, "AsignacionRealizada", List.of("AsignacionRealizada"));
+            id, "AsignacionRealizada", List.of("AsignacionRealizada"), List.of(), 0);
 
     when(service.cambiarEstado(eq(id), any(), eq(ACTOR))).thenReturn(response);
 
