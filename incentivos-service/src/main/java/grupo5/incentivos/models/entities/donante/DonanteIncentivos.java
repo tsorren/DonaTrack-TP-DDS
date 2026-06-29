@@ -48,6 +48,10 @@ public class DonanteIncentivos implements AggregateRoot {
     this(idDonante, idPersona, nombre, new ArrayList<>());
   }
 
+  public void cambiarNombre(String nombre) {
+    this.nombre = nombre;
+  }
+
   public void registrarDonacion(EventoDonacion evento) {
     metricas.registrarDonacion(evento);
 

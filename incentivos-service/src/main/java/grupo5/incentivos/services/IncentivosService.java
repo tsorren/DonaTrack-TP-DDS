@@ -72,7 +72,7 @@ public class IncentivosService implements IIncentivosService {
 
   public void modificarDonante(UUID donanteId, ModificarDonanteRequest request) {
     DonanteIncentivos donante = obtenerDonante(donanteId);
-    donante.setNombre(request.nombre());
+    donante.cambiarNombre(request.nombre());
     repository.save(donante);
   }
 
