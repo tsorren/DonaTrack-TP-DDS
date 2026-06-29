@@ -16,6 +16,8 @@ public interface IIncentivosService {
 
   void procesarInactividad();
 
+  void verificarRachasVencidas(java.time.YearMonth mesActual);
+
   DonanteIncentivos obtenerDonante(UUID donanteId);
 
   MetricasDonanteDTO obtenerMetricas(UUID donanteId);

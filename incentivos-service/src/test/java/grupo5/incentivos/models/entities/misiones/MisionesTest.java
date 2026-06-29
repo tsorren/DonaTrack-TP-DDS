@@ -172,6 +172,48 @@ class MisionesTest {
   }
 
   @Test
+  void racha_deberiaResetearseAlVerificarVigenciaSiPasoMasDeUnMesSinDonar() {
+    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+
+    racha.evaluarProgreso(donante, eventoEn(2026, 1));
+    racha.evaluarProgreso(donante, eventoEn(2026, 2)); // progreso = 2
+
+    // No dona en marzo. El job corre en abril:
+    racha.verificarVigencia(java.time.YearMonth.of(2026, 4));
+
+    assertFalse(racha.isCompletada());
+    assertEquals(0, racha.getProgresoActual());
+  }
+
+  @Test
+  void racha_noDeberiaResetearseAlVerificarVigenciaEnElMesSiguienteAlUltimoDonado() {
+    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+
+    racha.evaluarProgreso(donante, eventoEn(2026, 3)); // progreso = 1
+
+    // El job corre en abril (mes inmediatamente siguiente): la racha todavía puede continuar
+    racha.verificarVigencia(java.time.YearMonth.of(2026, 4));
+
+    assertFalse(racha.isCompletada());
+    assertEquals(1, racha.getProgresoActual());
+  }
+
+  @Test
+  void racha_noDeberiaModificarseAlVerificarVigenciaSiYaEstaCompletada() {
+    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
+
+    racha.evaluarProgreso(donante, eventoEn(2026, 1));
+    racha.evaluarProgreso(donante, eventoEn(2026, 2));
+    assertTrue(racha.isCompletada());
+
+    // Aunque pasen meses sin donar, una misión completada no se toca
+    racha.verificarVigencia(java.time.YearMonth.of(2026, 6));
+
+    assertTrue(racha.isCompletada());
+    assertEquals(2, racha.getProgresoActual());
+  }
+
+  @Test
   void mision_deberiaOtorgarInsigniaAlCompletarse() {
     MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
     grupo5.incentivos.models.entities.insignias.Insignia insignia =

@@ -12,6 +12,7 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
+import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -245,6 +246,17 @@ public class IncentivosService implements IIncentivosService {
         misionesMesActual,
         porCategoria,
         evolucion);
+  }
+
+  public void verificarRachasVencidas(YearMonth mesActual) {
+    List<DonanteIncentivos> todos = repository.findAll();
+    todos.forEach(
+        donante ->
+            donante.getMisiones().stream()
+                .filter(m -> m instanceof MisionRacha && !m.isCompletada())
+                .map(m -> (MisionRacha) m)
+                .forEach(r -> r.verificarVigencia(mesActual)));
+    repository.saveAll(todos);
   }
 
   public List<DonanteIncentivos> listarTodos() {

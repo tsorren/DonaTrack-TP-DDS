@@ -21,6 +21,16 @@ public class MisionRacha extends Mision {
         mesesConsecutivosObjetivo);
   }
 
+  public void verificarVigencia(YearMonth mesActual) {
+    if (this.isCompletada() || this.ultimoMesDonado == null) {
+      return;
+    }
+    if (mesActual.isAfter(this.ultimoMesDonado.plusMonths(1))) {
+      this.ultimoMesDonado = null;
+      this.setProgresoActual(0);
+    }
+  }
+
   @Override
   protected Integer calcularNuevoProgreso(DonanteIncentivos donante, EventoDonacion evento) {
     YearMonth mesEvento = YearMonth.from(evento.getFecha());
