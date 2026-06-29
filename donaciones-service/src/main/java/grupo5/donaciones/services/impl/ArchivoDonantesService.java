@@ -3,7 +3,6 @@ package grupo5.donaciones.services.impl;
 import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.models.entities.donantes.Archivo;
-import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.IImportadorService;
 import org.springframework.stereotype.Service;
