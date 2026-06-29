@@ -36,7 +36,7 @@ public class Ruta implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
     this.estado = EstadoRuta.EN_TRASLADO;
-    this.horaInicioReal = LocalDateTime.now();
+    this.horaInicioReal = LocalDateTime.now(ZoneId.of("UTC"));
     this.horaFinReal = null;
   }
 
