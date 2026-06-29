@@ -37,16 +37,18 @@ class AlgoritmoPrioridadSubAtendidosTest {
 
   @BeforeEach
   void setUp() {
-    Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donacion donacionOriginal = new Donacion(new Donante(humana.getId()));
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
-    subcategoriaOtra = new Subcategoria(categoria, "Ropa de Verano");
+    subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
+    subcategoriaOtra = new Subcategoria(categoria.getId(), "Ropa de Verano");
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bienNormalizado =
-        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
     BienNormalizado bienNormalizadoOtro =
-        new BienNormalizado(bien, subcategoriaOtra, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoriaOtra.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
@@ -101,8 +103,10 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void ordenarNecesidades_cuandoUnaEntidadTieneMayorPorcentajeSatisfecho_debeQuedarAlFinal() {
     Humana representante = new Humana("rep", "apellido", TEST_DATE);
-    EntidadBeneficiaria entidadMuyAtendida = new EntidadBeneficiaria(new Juridica(representante));
-    EntidadBeneficiaria entidadPocoAtendida = new EntidadBeneficiaria(new Juridica(representante));
+    Juridica juridicaMuyAtendida = new Juridica(representante);
+    Juridica juridicaPocoAtendida = new Juridica(representante);
+    EntidadBeneficiaria entidadMuyAtendida = new EntidadBeneficiaria(juridicaMuyAtendida.getId());
+    EntidadBeneficiaria entidadPocoAtendida = new EntidadBeneficiaria(juridicaPocoAtendida.getId());
 
     // Entidad muy atendida: tiene donaciones recientes asignadas a su necesidad
     NecesidadExtraordinaria necesidadActualMuyAtendida =

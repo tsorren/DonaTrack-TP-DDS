@@ -7,13 +7,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 public class ItemDonacionNormalizado implements AggregateRoot {
   private final UUID id;
   private final Donacion donacionOriginal;
-  private final BienNormalizado bien;
+  private BienNormalizado bien;
   private final Integer cantidad;
-  private boolean segmentado;
+  @Setter private boolean segmentado;
 
   public ItemDonacionNormalizado(
       Donacion donacionOriginal, BienNormalizado bien, Integer cantidad) {
@@ -22,5 +21,9 @@ public class ItemDonacionNormalizado implements AggregateRoot {
     this.bien = bien;
     this.cantidad = cantidad;
     this.segmentado = false;
+  }
+
+  public void actualizarBien(BienNormalizado nuevoBien) {
+    this.bien = nuevoBien;
   }
 }

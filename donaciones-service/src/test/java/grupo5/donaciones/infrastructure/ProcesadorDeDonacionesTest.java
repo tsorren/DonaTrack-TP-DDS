@@ -5,13 +5,19 @@ import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemanticoBien;
 import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +30,7 @@ class ProcesadorDeDonacionesTest {
   private NormalizadorSemanticoBien normalizadorMock;
   private DonacionRepositoryEnMemoria donacionRepositoryMock;
   private IItemDonacionNormalizadoRepository itemNormalizadoRepositoryMock;
+  private ISubcategoriasRepository subcategoriasRepositoryMock;
   private ApplicationEventPublisher eventPublisherMock;
 
   private ProcesadorDeDonaciones procesador;
@@ -33,6 +40,7 @@ class ProcesadorDeDonacionesTest {
     normalizadorMock = mock(NormalizadorSemanticoBien.class);
     donacionRepositoryMock = mock(DonacionRepositoryEnMemoria.class);
     itemNormalizadoRepositoryMock = mock(IItemDonacionNormalizadoRepository.class);
+    subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
     eventPublisherMock = mock(ApplicationEventPublisher.class);
 
     procesador =
@@ -40,6 +48,7 @@ class ProcesadorDeDonacionesTest {
             normalizadorMock,
             donacionRepositoryMock,
             itemNormalizadoRepositoryMock,
+            subcategoriasRepositoryMock,
             eventPublisherMock);
   }
 
@@ -47,20 +56,16 @@ class ProcesadorDeDonacionesTest {
   void procesar_conTodosAceptados_deberiaNormalizarYPublicarEvento() {
     Humana humana =
         new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    Donante donante = new Donante(humana);
+    Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante);
     donacion.setFecha(java.time.LocalDateTime.now());
 
-    grupo5.donaciones.models.entities.categorias.Categoria categoria =
-        new grupo5.donaciones.models.entities.categorias.Categoria(
-            "Ropa", false, false, grupo5.donaciones.models.entities.categorias.Unidad.UNIDADES);
-    grupo5.donaciones.models.entities.categorias.Subcategoria subcategoria =
-        new grupo5.donaciones.models.entities.categorias.Subcategoria(categoria, "Abrigos");
-    grupo5.donaciones.models.entities.donaciones.Bien bien =
-        new grupo5.donaciones.models.entities.donaciones.Bien("Abrigo", null, null, null);
-    grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado bienNormalizado =
-        new grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado(
-            bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+    Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
+    Bien bien = new Bien("Abrigo", null, null, null);
+    BienNormalizado bienNormalizado =
+        new BienNormalizado(
+            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, false, false);
 
     ItemDonacionNormalizado itemNormalizado =
         new ItemDonacionNormalizado(donacion, bienNormalizado, 5);
@@ -81,23 +86,21 @@ class ProcesadorDeDonacionesTest {
   void procesar_conPendientesDeRevision_deberiaGuardarNormalizacionesYQuedarEnCargada() {
     Humana humana =
         new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    Donante donante = new Donante(humana);
+    Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante);
     donacion.setFecha(java.time.LocalDateTime.now());
 
-    grupo5.donaciones.models.entities.categorias.Categoria categoria =
-        new grupo5.donaciones.models.entities.categorias.Categoria(
-            "Ropa", false, false, grupo5.donaciones.models.entities.categorias.Unidad.UNIDADES);
-    grupo5.donaciones.models.entities.categorias.Subcategoria subcategoria =
-        new grupo5.donaciones.models.entities.categorias.Subcategoria(categoria, "Abrigos");
-    grupo5.donaciones.models.entities.donaciones.Bien bien =
-        new grupo5.donaciones.models.entities.donaciones.Bien("Abrigo", null, null, null);
-    grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado bienNormalizado =
-        new grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado(
+    Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
+    Bien bien = new Bien("Abrigo", null, null, null);
+    BienNormalizado bienNormalizado =
+        new BienNormalizado(
             bien,
-            subcategoria,
+            subcategoria.getId(),
             0.4, // Confianza baja
-            EstadoNormalizacion.PENDIENTE_REVISION);
+            EstadoNormalizacion.PENDIENTE_REVISION,
+            false,
+            false);
 
     ItemDonacionNormalizado itemNormalizado =
         new ItemDonacionNormalizado(donacion, bienNormalizado, 5);

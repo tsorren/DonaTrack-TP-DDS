@@ -24,25 +24,14 @@ class EntidadBeneficiariaTests {
 
   @Test
   void crearEntidadBeneficiaria_conJuridicaValida_deberiaInicializarCorrectamente() {
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica);
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica.getId());
 
     assertNotNull(entidad.getId());
-    assertEquals(juridica, entidad.getJuridica());
+    assertEquals(juridica.getId(), entidad.juridicaId());
   }
 
   @Test
   void crearEntidadBeneficiaria_conJuridicaNula_deberiaLanzarValidationException() {
     assertThrows(ValidationException.class, () -> new EntidadBeneficiaria(null));
-  }
-
-  @Test
-  void anonimizar_deberiaAnonimizarJuridica() {
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica);
-    entidad.anonimizar();
-
-    assertEquals(
-        grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING, representante.getNombre());
-    assertEquals(
-        grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING, representante.getApellido());
   }
 }

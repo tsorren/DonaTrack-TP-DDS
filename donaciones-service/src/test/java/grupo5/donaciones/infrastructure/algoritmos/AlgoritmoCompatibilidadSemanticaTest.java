@@ -38,13 +38,15 @@ class AlgoritmoCompatibilidadSemanticaTest {
 
   @BeforeEach
   void setUp() {
-    donacionOriginal = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    donacionOriginal = new Donacion(new Donante(humana.getId()));
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    subcategoria = new Subcategoria(categoria, "Muebles Escolares");
-    subcategoriaOtra = new Subcategoria(categoria, "Muebles de Oficina");
+    subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
+    subcategoriaOtra = new Subcategoria(categoria.getId(), "Muebles de Oficina");
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     bienNormalizadoOtro =
-        new BienNormalizado(bien, subcategoriaOtra, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoriaOtra.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     algoritmo =
         new AlgoritmoCompatibilidadSemantica(new ComparadorTexto(new NormalizadorBasicoTexto()));
@@ -53,7 +55,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
   private DonacionIndependiente crearDonacion(int cantidad, String descripcion) {
     Bien bien = new Bien(descripcion, "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bienConDescripcion =
-        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienConDescripcion, cantidad));
     return new DonacionIndependiente(donacionOriginal, items);

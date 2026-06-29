@@ -28,6 +28,8 @@ class AlgoritmosServiceTest {
   private PropuestaRepository propuestaRepositoryMock;
   private ComparadorTexto comparadorTextoMock;
   private NotificacionesFeignClient notificacionesFeignClientMock;
+  private grupo5.donaciones.models.repositories.ISubcategoriasRepository
+      subcategoriasRepositoryMock;
 
   private AlgoritmosService service;
 
@@ -38,6 +40,8 @@ class AlgoritmosServiceTest {
     propuestaRepositoryMock = mock(PropuestaRepository.class);
     comparadorTextoMock = mock(ComparadorTexto.class);
     notificacionesFeignClientMock = mock(NotificacionesFeignClient.class);
+    subcategoriasRepositoryMock =
+        mock(grupo5.donaciones.models.repositories.ISubcategoriasRepository.class);
 
     service =
         new AlgoritmosService(
@@ -45,7 +49,8 @@ class AlgoritmosServiceTest {
             necesidadRepositoryMock,
             propuestaRepositoryMock,
             comparadorTextoMock,
-            notificacionesFeignClientMock);
+            notificacionesFeignClientMock,
+            subcategoriasRepositoryMock);
   }
 
   @Test
@@ -101,7 +106,7 @@ class AlgoritmosServiceTest {
         mock(grupo5.donaciones.models.entities.personas.Juridica.class);
     UUID juridicaId = UUID.randomUUID();
     when(juridicaMock.getId()).thenReturn(juridicaId);
-    when(entidadMock.getJuridica()).thenReturn(juridicaMock);
+    when(entidadMock.juridicaId()).thenReturn(juridicaId);
     when(necesidadMock.getEntidad()).thenReturn(entidadMock);
 
     propuesta.setNecesidadQueSatisface(necesidadMock);
@@ -127,7 +132,7 @@ class AlgoritmosServiceTest {
         mock(grupo5.donaciones.models.entities.personas.Humana.class);
     UUID donantePersonaId = UUID.randomUUID();
     when(humanaMock.getId()).thenReturn(donantePersonaId);
-    when(donanteMock.getPersona()).thenReturn(humanaMock);
+    when(donanteMock.personaId()).thenReturn(donantePersonaId);
     when(donacionOriginalMock.getDonante()).thenReturn(donanteMock);
     when(donacionIndependienteMock.getDonacionOriginal()).thenReturn(donacionOriginalMock);
     when(donacionIndependienteMock.getDescripcion()).thenReturn("Ropa de abrigo");

@@ -6,6 +6,10 @@ import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.models.entities.ubicaciones.Direccion;
+import grupo5.donaciones.models.entities.ubicaciones.Localidad;
+import grupo5.donaciones.models.entities.ubicaciones.Pais;
+import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import java.time.LocalDate;
 import java.time.Month;
@@ -75,15 +79,10 @@ class DonacionRepositoryTest {
 
   private Donacion crearDonacion() {
     Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
-    Donante donante = new Donante(humana);
-    Pais pais = new Pais();
-    pais.setNombre("Argentina");
-    Provincia provincia = new Provincia();
-    provincia.setNombre("Buenos Aires");
-    provincia.setPais(pais);
-    Localidad localidad = new Localidad();
-    localidad.setNombre("CABA");
-    localidad.setProvincia(provincia);
+    Donante donante = new Donante(humana.getId());
+    Pais pais = new Pais("Argentina");
+    Provincia provincia = new Provincia("Buenos Aires", pais);
+    Localidad localidad = new Localidad("CABA", provincia);
     Direccion direccion = new Direccion("Calle Falsa", 123, null, null, "1000", localidad);
     Deposito deposito = new Deposito("Deposito Test", direccion);
     return new Donacion(donante, deposito);

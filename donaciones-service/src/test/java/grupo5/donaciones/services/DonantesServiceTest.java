@@ -32,6 +32,7 @@ class DonantesServiceTest {
 
   @Mock private IncentivosFeignClient incentivosFeignClient;
   @Mock private NotificacionesFeignClient notificacionesFeignClient;
+  @Mock private grupo5.donaciones.models.repositories.IPersonasRepository personasRepository;
 
   @InjectMocks private DonantesService donantesService;
 
@@ -45,7 +46,7 @@ class DonantesServiceTest {
     MockitoAnnotations.openMocks(this);
     donanteId = UUID.randomUUID();
 
-    donante = new Donante();
+    donante = new Donante(UUID.randomUUID());
     Field idField = Donante.class.getDeclaredField("id");
     idField.setAccessible(true);
     idField.set(donante, donanteId);
@@ -55,11 +56,15 @@ class DonantesServiceTest {
   }
 
   @Test
-  void testCrearDonante() {
+  void testCrearDonante() throws Exception {
     // Arrange
     Humana humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, 1, 1));
-    donante.setPersona(humana);
+    donante = new Donante(humana.getId());
+    Field idField = Donante.class.getDeclaredField("id");
+    idField.setAccessible(true);
+    idField.set(donante, donanteId);
 
+    when(personasRepository.findById(humana.getId())).thenReturn(Optional.of(humana));
     when(donanteMapper.toEntity(donanteInputDTO)).thenReturn(donante);
     when(donantesRepository.save(donante)).thenReturn(donante);
     when(donanteMapper.toOutputDTO(donante)).thenReturn(donanteOutputDTO);

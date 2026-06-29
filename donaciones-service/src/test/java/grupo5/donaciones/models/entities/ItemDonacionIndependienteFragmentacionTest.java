@@ -27,12 +27,13 @@ class ItemDonacionIndependienteFragmentacionTest {
   @BeforeEach
   void setUp() {
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
 
     Bien bienOriginal =
         new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     bienNormalizado =
-        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     itemDonacion = new ItemDonacionIndependiente(bienNormalizado, 20);
   }

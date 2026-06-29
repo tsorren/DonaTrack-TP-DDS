@@ -31,18 +31,22 @@ public class AlgoritmosService {
   private final INecesidadesRepository necesidadRepository;
   private final PropuestaRepository propuestaRepository;
   private final NotificacionesFeignClient notificacionesFeignClient;
+  private final grupo5.donaciones.models.repositories.ISubcategoriasRepository
+      subcategoriasRepository;
 
   public AlgoritmosService(
       IDonacionesIndependientesRepository donacionRepository,
       INecesidadesRepository necesidadRepository,
       PropuestaRepository propuestaRepository,
       ComparadorTexto comparadorTexto,
-      NotificacionesFeignClient notificacionesFeignClient) {
+      NotificacionesFeignClient notificacionesFeignClient,
+      grupo5.donaciones.models.repositories.ISubcategoriasRepository subcategoriasRepository) {
 
     this.donacionRepository = donacionRepository;
     this.necesidadRepository = necesidadRepository;
     this.propuestaRepository = propuestaRepository;
     this.notificacionesFeignClient = notificacionesFeignClient;
+    this.subcategoriasRepository = subcategoriasRepository;
 
     this.algoritmos =
         List.of(
@@ -104,7 +108,12 @@ public class AlgoritmosService {
       log.info(
           "Donación en depósito ID: {}, Subcategoría: {}, Cantidad: {}",
           d.getId(),
-          d.getSubcategoria() != null ? d.getSubcategoria().getNombre() : "null",
+          d.getSubcategoriaId() != null
+              ? subcategoriasRepository
+                  .findById(d.getSubcategoriaId())
+                  .map(s -> s.getNombre())
+                  .orElse("null")
+              : "null",
           d.getCantidad());
     }
 
@@ -165,10 +174,8 @@ public class AlgoritmosService {
 
         if (propuesta.getPosiblesFragmentaciones() != null) {
           UUID idPersonaBeneficiaria =
-              (necesidad != null
-                      && necesidad.getEntidad() != null
-                      && necesidad.getEntidad().getJuridica() != null)
-                  ? necesidad.getEntidad().getJuridica().getId()
+              (necesidad != null && necesidad.getEntidad() != null)
+                  ? necesidad.getEntidad().juridicaId()
                   : null;
           propuesta
               .getPosiblesFragmentaciones()
@@ -176,15 +183,9 @@ public class AlgoritmosService {
                   f -> {
                     if (f.getDonacionOriginal() != null
                         && f.getDonacionOriginal().getDonacionOriginal() != null
-                        && f.getDonacionOriginal().getDonacionOriginal().getDonante() != null
-                        && f.getDonacionOriginal().getDonacionOriginal().getDonante().getPersona()
-                            != null) {
+                        && f.getDonacionOriginal().getDonacionOriginal().getDonante() != null) {
                       UUID idPersonaDonante =
-                          f.getDonacionOriginal()
-                              .getDonacionOriginal()
-                              .getDonante()
-                              .getPersona()
-                              .getId();
+                          f.getDonacionOriginal().getDonacionOriginal().getDonante().personaId();
                       String detalle = f.getDonacionOriginal().getDescripcion();
                       notificacionesFeignClient.enviarEvento(
                           new EventoDonacionAsignadaDTO(

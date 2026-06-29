@@ -5,7 +5,6 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.necesidades.Asignable;
 import java.time.LocalDateTime;
@@ -44,14 +43,14 @@ public class DonacionIndependiente implements AggregateRoot {
 
   public String getDescripcion() {
     StringBuilder sb = new StringBuilder();
-    items.forEach(i -> sb.append(i.getBien().getBienOriginal().getDescripcion()).append(" "));
+    items.forEach(i -> sb.append(i.getBien().bienOriginal().getDescripcion()).append(" "));
     return sb.toString();
   }
 
-  public Subcategoria getSubcategoria() {
+  public UUID getSubcategoriaId() {
     return this.items.stream()
         .findFirst()
-        .map(item -> item.getBien().getSubcategoria())
+        .map(item -> item.getBien().subcategoriaId())
         .orElse(null);
   }
 

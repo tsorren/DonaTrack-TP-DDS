@@ -49,18 +49,15 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       case TipoEstadoDonacion.ENTREGADA -> {
         donacion.confirmarEntrega(actor);
         UUID donanteId = donacion.getDonacionOriginal().getDonante().getId();
-        UUID personaDonanteId =
-            donacion.getDonacionOriginal().getDonante().getPersona() != null
-                ? donacion.getDonacionOriginal().getDonante().getPersona().getId()
-                : null;
+        UUID personaDonanteId = donacion.getDonacionOriginal().getDonante().personaId();
         UUID organizacionId = null;
         UUID idPersonaBeneficiaria = null;
         if (donacion.getAsignadaA() != null) {
           Necesidad necesidad = donacion.getAsignadaA().obtenerNecesidad();
           if (necesidad != null && necesidad.getEntidad() != null) {
             organizacionId = necesidad.getEntidad().getId();
-            if (necesidad.getEntidad().getJuridica() != null) {
-              idPersonaBeneficiaria = necesidad.getEntidad().getJuridica().getId();
+            if (necesidad.getEntidad().juridicaId() != null) {
+              idPersonaBeneficiaria = necesidad.getEntidad().juridicaId();
             }
           }
         }

@@ -34,10 +34,10 @@ class NecesidadExtraordinariaTests {
   @BeforeEach
   void setUp() {
 
-    Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donacion donacionOriginal = new Donacion(new Donante(humana.getId()));
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Muebles Escolares");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
     necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
 
     necesidad.setCantidadNecesitada(30);
@@ -45,17 +45,20 @@ class NecesidadExtraordinariaTests {
     Bien bienOriginal1 =
         new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bien1 =
-        new BienNormalizado(bienOriginal1, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal1, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     Bien bienOriginal2 =
         new Bien("descripcion2", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bien2 =
-        new BienNormalizado(bienOriginal2, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal2, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     Bien bienOriginal3 =
         new Bien("descripcion3", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bien3 =
-        new BienNormalizado(bienOriginal3, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal3, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien1, 15);
     List<ItemDonacionIndependiente> items1 = new ArrayList<>();

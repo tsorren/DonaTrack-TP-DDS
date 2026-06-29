@@ -23,7 +23,7 @@ public class DonacionMapper {
   }
 
   public Donacion toEntity(DonacionInputDTO dto, Persona persona) {
-    return toEntity(dto, new Donante(persona));
+    return toEntity(dto, new Donante(persona.getId()));
   }
 
   public Donacion toEntity(DonacionInputDTO dto, Donante donante) {
@@ -60,11 +60,11 @@ public class DonacionMapper {
 
     return new DonacionOutputDTO(
         donacion.getId(),
-        donacion.getDonante().getPersona().getId(),
+        donacion.getDonante().personaId(),
         items,
         donacion.getDescripcion(),
         donacion.getFecha(),
-        direccionMapper.toOutputDTO(donacion.getDepositoRecepcion().getDireccion()),
+        direccionMapper.toOutputDTO(donacion.getDepositoRecepcion().direccion()),
         donacion.getEstadoActual(),
         historial);
   }

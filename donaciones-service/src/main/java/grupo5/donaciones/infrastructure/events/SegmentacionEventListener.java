@@ -2,6 +2,8 @@ package grupo5.donaciones.infrastructure.events;
 
 import grupo5.donaciones.dto.comunicaciones.NuevaDonacionRequest;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
@@ -10,10 +12,14 @@ import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.ports.Segmentador;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +37,9 @@ public class SegmentacionEventListener {
   private final Segmentador segmentador;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
   private final IncentivosFeignClient incentivosFeignClient;
+  private final ICategoriasRepository categoriasRepository;
+  private final ISubcategoriasRepository subcategoriasRepository;
+  private final IPersonasRepository personasRepository;
 
   @EventListener
   public void onDonacionNormalizada(DonacionNormalizadaEvent event) {
@@ -54,7 +63,7 @@ public class SegmentacionEventListener {
         itemsDeDonacion.stream()
             .filter(
                 item ->
-                    item.getBien().getEstadoNormalizacion() == EstadoNormalizacion.ACEPTADO
+                    item.getBien().estadoNormalizacion() == EstadoNormalizacion.ACEPTADO
                         && !item.isSegmentado())
             .toList();
 
@@ -74,10 +83,19 @@ public class SegmentacionEventListener {
     List<DonacionIndependiente> donacionesIndependientes = segmentador.segmentar(itemsAceptados);
 
     for (DonacionIndependiente di : donacionesIndependientes) {
+      String subcatNombre = "null";
+      if (di.getSubcategoriaId() != null) {
+        subcatNombre =
+            subcategoriasRepository
+                .findById(di.getSubcategoriaId())
+                .map(Subcategoria::getNombre)
+                .orElse("null");
+      }
+
       log.info(
           "  Donación Independiente ID: {}, Subcategoría: {}, Cantidad: {}, Estado: {}",
           di.getId(),
-          di.getSubcategoria() != null ? di.getSubcategoria().getNombre() : "null",
+          subcatNombre,
           di.getCantidad(),
           di.getEstadoActual() != null ? di.getEstadoActual().getClass().getSimpleName() : "null");
     }
@@ -86,11 +104,31 @@ public class SegmentacionEventListener {
     for (DonacionIndependiente di : donacionesIndependientes) {
       List<String> categorias =
           di.getItems().stream()
-              .map(item -> item.getBien().getSubcategoria().getCategoria().getNombre())
+              .map(
+                  item -> {
+                    UUID subId = item.getBien().subcategoriaId();
+                    UUID catId =
+                        subId != null
+                            ? subcategoriasRepository
+                                .findById(subId)
+                                .map(Subcategoria::getCategoriaId)
+                                .orElse(null)
+                            : null;
+                    return catId != null
+                        ? categoriasRepository
+                            .findById(catId)
+                            .map(Categoria::getNombre)
+                            .orElse("Desconocida")
+                        : "Desconocida";
+                  })
               .distinct()
               .toList();
 
-      Persona persona = di.getDonacionOriginal().getDonante().getPersona();
+      UUID personaId = di.getDonacionOriginal().getDonante().personaId();
+      Persona persona =
+          personasRepository
+              .findById(personaId)
+              .orElseThrow(() -> new IllegalStateException("Persona no encontrada: " + personaId));
       String nombreDonante = obtenerNombrePersona(persona);
 
       NuevaDonacionRequest request =
@@ -101,36 +139,35 @@ public class SegmentacionEventListener {
               di.getDonacionOriginal().getFecha().toLocalDate(),
               nombreDonante);
 
-      log.info(
-          "Registrando donación independiente en motor de incentivos. Donante ID: {}, Cantidad: {}",
-          di.getDonacionOriginal().getDonante().getId(),
-          di.getCantidad());
-      incentivosFeignClient.procesarDonacion(request);
+      try {
+        log.info(
+            "Registrando donación en motor de incentivos para donante ID: {}", request.donanteId());
+        incentivosFeignClient.procesarDonacion(request);
+      } catch (Exception e) {
+        log.error("Error al registrar donación en motor de incentivos: {}", e.getMessage());
+      }
     }
 
-    // Persistir las donaciones independientes creadas
+    // Persistir las donaciones independientes
     donacionesIndependientesRepository.saveAll(donacionesIndependientes);
 
-    // Marcar items normalizados como segmentados
+    // Marcar los ítems procesados como segmentados
     itemsAceptados.forEach(
-        item -> {
-          item.setSegmentado(true);
-          itemNormalizadoRepository.save(item);
+        i -> {
+          i.setSegmentado(true);
+          itemNormalizadoRepository.save(i);
         });
 
-    // Marcar donación original como segmentada
+    // Cambiar estado de donación original a SEGMENTADA
     donacion.marcarSegmentada();
     donacionRepository.save(donacion);
-
-    log.info("Segmentación completada con éxito para la donación ID: {}", event.donacionId());
+    log.info("Donación original ID {} movida a SEGMENTADA.", donacion.getId());
   }
 
-  private static String obtenerNombrePersona(Persona persona) {
-    if (persona instanceof Humana humana) {
-      return humana.getNombre() + " " + humana.getApellido();
-    } else if (persona instanceof Juridica juridica) {
-      return juridica.getRazonSocial();
-    }
-    return "Anónimo";
+  private String obtenerNombrePersona(Persona persona) {
+    return switch (persona) {
+      case Humana h -> h.getNombre() + " " + h.getApellido();
+      case Juridica j -> j.getRazonSocial();
+    };
   }
 }

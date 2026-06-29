@@ -36,13 +36,14 @@ class PropuestaTest {
 
   @BeforeEach
   void setUp() {
-    Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donacion donacionOriginal = new Donacion(new Donante(humana.getId()));
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Muebles Escolares");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bienNormalizado =
-        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, true);
 
     necesidad = new NecesidadExtraordinaria(subcategoria, 5, "bancos para el aula");
 

@@ -2,6 +2,8 @@ package grupo5.donaciones.infrastructure.segmentadores;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
@@ -15,9 +17,11 @@ import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,33 +36,51 @@ class SegmentadorSimpleTest {
 
   @BeforeEach
   void setUp() {
-    segmentador = new SegmentadorSimple();
     Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
-    Donante donante = new Donante(humana);
+    Donante donante = new Donante(humana.getId());
     donacion = new Donacion(donante);
 
     Categoria categoriaRopa = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Categoria categoriaAlimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
 
-    Subcategoria subcategoriaInvierno = new Subcategoria(categoriaRopa, "Ropa de Invierno");
-    Subcategoria subcategoriaFrutas = new Subcategoria(categoriaAlimentos, "Frutas");
+    Subcategoria subcategoriaInvierno = new Subcategoria(categoriaRopa.getId(), "Ropa de Invierno");
+    Subcategoria subcategoriaFrutas = new Subcategoria(categoriaAlimentos.getId(), "Frutas");
+
+    ISubcategoriasRepository subcategoriasRepository = mock(ISubcategoriasRepository.class);
+    when(subcategoriasRepository.findById(subcategoriaInvierno.getId()))
+        .thenReturn(Optional.of(subcategoriaInvierno));
+    when(subcategoriasRepository.findById(subcategoriaFrutas.getId()))
+        .thenReturn(Optional.of(subcategoriaFrutas));
+
+    segmentador = new SegmentadorSimple(subcategoriasRepository);
 
     Bien abrigoInvierno =
         new Bien("Abrigo de lana", "abrigo.png", TEST_DATE.plusMonths(6), Estado.NUEVO);
     abrigoInviernoNuevo =
         new BienNormalizado(
-            abrigoInvierno, subcategoriaInvierno, 1.0, EstadoNormalizacion.ACEPTADO);
+            abrigoInvierno,
+            subcategoriaInvierno.getId(),
+            1.0,
+            EstadoNormalizacion.ACEPTADO,
+            true,
+            false);
 
     Bien polleraInvierno =
         new Bien("Pollera de invierno", "pollera.png", TEST_DATE.plusMonths(2), Estado.USADO);
     polleraInviernoUsada =
         new BienNormalizado(
-            polleraInvierno, subcategoriaInvierno, 1.0, EstadoNormalizacion.ACEPTADO);
+            polleraInvierno,
+            subcategoriaInvierno.getId(),
+            1.0,
+            EstadoNormalizacion.ACEPTADO,
+            true,
+            false);
 
     Bien manzanas =
         new Bien("Manzanas rojas", "manzanas.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     manzanasNormalizado =
-        new BienNormalizado(manzanas, subcategoriaFrutas, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            manzanas, subcategoriaFrutas.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
   }
 
   @Test

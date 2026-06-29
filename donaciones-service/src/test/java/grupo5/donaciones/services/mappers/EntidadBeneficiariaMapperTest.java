@@ -11,7 +11,9 @@ import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class EntidadBeneficiariaMapperTest {
 
   @Mock private PersonaMapper personaMapper;
+  @Mock private IPersonasRepository personasRepository;
 
   @InjectMocks private EntidadBeneficiariaMapper mapper;
 
@@ -30,6 +33,7 @@ class EntidadBeneficiariaMapperTest {
   void toOutputDTO_debeMapearCorrectamente() {
     // Arrange
     UUID id = UUID.randomUUID();
+    UUID juridicaId = UUID.randomUUID();
 
     Juridica juridica = mock(Juridica.class);
     EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
@@ -37,7 +41,7 @@ class EntidadBeneficiariaMapperTest {
     JuridicaOutputDTO juridicaDTO =
         new JuridicaOutputDTO(
             TipoPersona.JURIDICA,
-            UUID.randomUUID(),
+            juridicaId,
             TipoDocumento.DNI,
             "123",
             null,
@@ -48,7 +52,8 @@ class EntidadBeneficiariaMapperTest {
             List.of());
 
     when(entidad.getId()).thenReturn(id);
-    when(entidad.getJuridica()).thenReturn(juridica);
+    when(entidad.juridicaId()).thenReturn(juridicaId);
+    when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
     when(personaMapper.toOutputDTO(juridica)).thenReturn(juridicaDTO);
 
     // Act

@@ -34,14 +34,15 @@ class DonacionIndependienteEstadosTest {
   @BeforeEach
   void setUp() {
     Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
-    Donante donante = new Donante(humana);
+    Donante donante = new Donante(humana.getId());
     Donacion donacionOriginal = new Donacion(donante);
 
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
     Bien bien = new Bien("Abrigo", "abrigo.png", TEST_DATE.plusMonths(6), Estado.NUEVO);
     BienNormalizado bienNormalizado =
-        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     ItemDonacionNormalizado itemNormalizado =
         new ItemDonacionNormalizado(donacionOriginal, bienNormalizado, 5);

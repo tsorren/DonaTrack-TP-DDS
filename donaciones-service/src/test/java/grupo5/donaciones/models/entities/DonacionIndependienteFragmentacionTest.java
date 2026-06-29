@@ -33,14 +33,16 @@ class DonacionIndependienteFragmentacionTest {
 
   @BeforeEach
   void setUp() {
-    donacion = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    donacion = new Donacion(new Donante(humana.getId()));
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
 
     Bien bienOriginal =
         new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     bienNormalizado =
-        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 10);
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 15);

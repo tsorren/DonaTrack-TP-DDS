@@ -36,10 +36,10 @@ class AsignableTests {
 
   @BeforeEach
   void setUp() {
-    Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donacion donacionOriginal = new Donacion(new Donante(humana.getId()));
     Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
-    Subcategoria subcategoria = new Subcategoria(categoria, "No Perecederos");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "No Perecederos");
 
     necesidadExtraordinaria =
         new NecesidadExtraordinaria(subcategoria, 100, "Latas de atún para comedor");
@@ -53,7 +53,8 @@ class AsignableTests {
 
     Bien bienOriginal = new Bien("Arroz", "imagen.png", TEST_DATE.plusYears(1), Estado.NUEVO);
     BienNormalizado bienNormalizado =
-        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
     ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 10);
     donacionIndependiente = new DonacionIndependiente(donacionOriginal, List.of(item));
   }

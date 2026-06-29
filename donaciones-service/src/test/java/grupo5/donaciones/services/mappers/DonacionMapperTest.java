@@ -12,6 +12,10 @@ import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.models.entities.ubicaciones.Direccion;
+import grupo5.donaciones.models.entities.ubicaciones.Localidad;
+import grupo5.donaciones.models.entities.ubicaciones.Pais;
+import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -45,8 +49,8 @@ class DonacionMapperTest {
     assertEquals("descripcion test", donacion.getDescripcion());
     assertNotNull(donacion.getFecha());
     assertEquals(EstadoDonacion.CARGADA, donacion.getEstadoActual());
-    assertEquals(persona, donacion.getDonante().getPersona());
-    assertEquals("Deposito Central", donacion.getDepositoRecepcion().getNombre());
+    assertEquals(persona.getId(), donacion.getDonante().personaId());
+    assertEquals("Deposito Central", donacion.getDepositoRecepcion().nombre());
     assertTrue(donacion.getItems().isEmpty());
   }
 
@@ -58,7 +62,7 @@ class DonacionMapperTest {
   @Test
   void toOutputDTO_conDonacionValida_deberiaMapearCorrectamente() {
     Humana persona = new Humana("Maria", "Lopez", LocalDate.of(1993, Month.APRIL, 10));
-    Donante donante = new Donante(persona);
+    Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Test", crearDireccion());
     Donacion donacion = new Donacion(donante, deposito);
     donacion.setDescripcion("una donacion");
@@ -106,7 +110,7 @@ class DonacionMapperTest {
   @Test
   void toOutputDTO_conHistorialEstados_deberiaMapearHistorial() {
     Humana persona = new Humana("Carlos", "Ruiz", LocalDate.of(1988, Month.JULY, 20));
-    Donante donante = new Donante(persona);
+    Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Norte", crearDireccion());
     Donacion donacion = new Donacion(donante, deposito);
     donacion.marcarNormalizada();
@@ -123,14 +127,9 @@ class DonacionMapperTest {
   }
 
   private Direccion crearDireccion() {
-    Pais pais = new Pais();
-    pais.setNombre("Argentina");
-    Provincia provincia = new Provincia();
-    provincia.setNombre("Buenos Aires");
-    provincia.setPais(pais);
-    Localidad localidad = new Localidad();
-    localidad.setNombre("CABA");
-    localidad.setProvincia(provincia);
+    Pais pais = new Pais("Argentina");
+    Provincia provincia = new Provincia("Buenos Aires", pais);
+    Localidad localidad = new Localidad("CABA", provincia);
     return new Direccion("Calle Falsa", 123, null, null, "1000", localidad);
   }
 }
