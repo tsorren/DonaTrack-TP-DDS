@@ -39,9 +39,6 @@ public class CategoriaMapper {
     if (entity == null || dto == null) {
       return;
     }
-    entity.setNombre(dto.nombre());
-    entity.setConUso(dto.conUso());
-    entity.setConVencimiento(dto.conVencimiento());
-    entity.setTipoUnidad(dto.unidad());
+    entity.actualizar(dto.nombre(), dto.conUso(), dto.conVencimiento(), dto.unidad());
   }
 }

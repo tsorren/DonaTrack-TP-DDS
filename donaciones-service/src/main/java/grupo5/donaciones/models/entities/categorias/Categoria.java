@@ -5,16 +5,22 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class Categoria implements AggregateRoot {
   private final UUID id;
   private String nombre;
   private Boolean conUso;
   private Boolean conVencimiento;
   private Unidad tipoUnidad;
+
+  public void actualizar(String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
+    validarCategoria(nombre, conUso, conVencimiento, tipoUnidad);
+    this.nombre = nombre;
+    this.conUso = conUso;
+    this.conVencimiento = conVencimiento;
+    this.tipoUnidad = tipoUnidad;
+  }
 
   public Categoria(String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
     this.id = UUID.randomUUID();

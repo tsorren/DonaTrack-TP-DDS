@@ -42,7 +42,7 @@ class SubcategoriasServiceTest {
     UUID categoriaId = UUID.randomUUID();
     Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
     SubcategoriaInputDTO input = new SubcategoriaInputDTO("Fideos", categoriaId, List.of());
-    Subcategoria entity = new Subcategoria(categoria, "Fideos");
+    Subcategoria entity = new Subcategoria(categoria.getId(), "Fideos");
     SubcategoriaOutputDTO output =
         new SubcategoriaOutputDTO(entity.getId(), "Fideos", null, List.of());
 
@@ -61,7 +61,7 @@ class SubcategoriasServiceTest {
   void agregarAlias_DeberiaAgregarYGuardar() {
     UUID id = UUID.randomUUID();
     Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
-    Subcategoria entity = new Subcategoria(categoria, "Fideos");
+    Subcategoria entity = new Subcategoria(categoria.getId(), "Fideos");
     AliasSubcategoriaInputDTO input = new AliasSubcategoriaInputDTO("tallarines");
     SubcategoriaOutputDTO output =
         new SubcategoriaOutputDTO(entity.getId(), "Fideos", null, List.of());

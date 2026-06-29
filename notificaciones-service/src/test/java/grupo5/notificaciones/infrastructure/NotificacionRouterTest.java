@@ -29,7 +29,7 @@ class NotificacionRouterTest {
   private Persona persona;
   private Correo correo;
   private Telefono telefono;
-  private WhatsApp whatsapp;
+  private Telefono whatsapp;
 
   @BeforeEach
   void setUp() {
@@ -44,12 +44,14 @@ class NotificacionRouterTest {
     telefono.setCodigoArea("11");
     telefono.setNumero("55556666");
     telefono.setEsPredeterminado(false);
+    telefono.setTipo(TipoTelefono.ESTANDAR);
 
-    whatsapp = new WhatsApp();
+    whatsapp = new Telefono();
     whatsapp.setCaracteristica("+54");
     whatsapp.setCodigoArea("11");
     whatsapp.setNumero("99998888");
     whatsapp.setEsPredeterminado(false);
+    whatsapp.setTipo(TipoTelefono.WHATSAPP);
   }
 
   @Test

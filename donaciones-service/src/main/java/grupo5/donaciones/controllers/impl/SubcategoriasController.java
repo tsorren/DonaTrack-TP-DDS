@@ -66,10 +66,10 @@ public class SubcategoriasController implements ISubcategoriasController {
   }
 
   @Override
-  @DeleteMapping("/{id}/aliases/{idAlias}")
+  @DeleteMapping("/{id}/aliases/{alias}")
   public ResponseEntity<SubcategoriaOutputDTO> quitarAlias(
-      @PathVariable UUID id, @PathVariable UUID idAlias) {
-    SubcategoriaOutputDTO actualizada = subcategoriasService.quitarAlias(id, idAlias);
+      @PathVariable UUID id, @PathVariable String alias) {
+    SubcategoriaOutputDTO actualizada = subcategoriasService.quitarAlias(id, alias);
     return ResponseEntity.ok(actualizada);
   }
 }

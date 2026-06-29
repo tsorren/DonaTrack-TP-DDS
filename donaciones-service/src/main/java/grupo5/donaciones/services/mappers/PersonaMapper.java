@@ -4,8 +4,22 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.comunicaciones.MedioDeContactoReplicaDTO;
 import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
-import grupo5.donaciones.dto.personas.*;
-import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.dto.personas.HumanaInputDTO;
+import grupo5.donaciones.dto.personas.HumanaOutputDTO;
+import grupo5.donaciones.dto.personas.JuridicaInputDTO;
+import grupo5.donaciones.dto.personas.JuridicaOutputDTO;
+import grupo5.donaciones.dto.personas.PersonaInputDTO;
+import grupo5.donaciones.dto.personas.PersonaOutputDTO;
+import grupo5.donaciones.models.entities.personas.Correo;
+import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.MedioDeContacto;
+import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.Telefono;
+import grupo5.donaciones.models.entities.personas.TipoDocumento;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
+import grupo5.donaciones.models.entities.personas.TipoPersona;
+import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import grupo5.donaciones.models.entities.personas.factories.PersonaFactory;
 import java.time.LocalDate;
 import java.util.List;
@@ -31,86 +45,24 @@ public class PersonaMapper {
 
     return switch (input) {
       case HumanaInputDTO h -> toHumanaEntity(h);
-      case JuridicaInputDTO j -> {
-        if (j.representantes() == null || j.representantes().isEmpty()) {
-          throw new ValidationException(ErrorCatalog.JURIDICA_SIN_REPRESENTANTE_INICIAL);
-        }
+      case JuridicaInputDTO j -> toJuridicaEntity(j);
+    };
+  }
 
-        Humana representanteInicial = toHumanaEntity(j.representantes().getFirst());
-
-        Juridica juridica =
-            PersonaFactory.crearJuridica(
-                j.razonSocial(), j.tipoJuridico(), j.rubro(), representanteInicial);
-
-        for (int i = 1; i < j.representantes().size(); i++) {
-          Humana extra = toHumanaEntity(j.representantes().get(i));
-          juridica.agregarRepresentante(extra);
-        }
-
-        populateCommonFields(juridica, j);
-        yield juridica;
+  private Juridica toJuridicaEntity(JuridicaInputDTO j) {
+    Humana representante =
+        (j.representantes() != null && !j.representantes().isEmpty())
+            ? toHumanaEntity(j.representantes().get(0))
+            : null;
+    Juridica juridica =
+        PersonaFactory.crearJuridica(j.razonSocial(), j.tipoJuridico(), j.rubro(), representante);
+    populateCommonFields(juridica, j);
+    if (j.representantes() != null && j.representantes().size() > 1) {
+      for (int i = 1; i < j.representantes().size(); i++) {
+        juridica.agregarRepresentante(toHumanaEntity(j.representantes().get(i)));
       }
-    };
-  }
-
-  public PersonaOutputDTO toOutputDTO(Persona entity) {
-    if (entity == null) {
-      return null;
     }
-
-    return switch (entity) {
-      case Humana h -> toHumanaOutputDTO(h);
-      case Juridica j -> new JuridicaOutputDTO(
-          TipoPersona.JURIDICA,
-          j.getId(),
-          j.getTipoDocumento(),
-          j.getDocumento(),
-          direccionMapper.toOutputDTO(j.getDireccion()),
-          j.getMediosDeContacto().stream().map(medioDeContactoMapper::toOutputDTO).toList(),
-          j.getRazonSocial(),
-          j.getTipo(),
-          j.getRubro(),
-          j.getRepresentantes().stream().map(this::toHumanaOutputDTO).toList());
-    };
-  }
-
-  public PersonaReplicaDTO toReplicaDTO(Persona persona) {
-    if (persona == null) {
-      return null;
-    }
-
-    String denominacion =
-        switch (persona) {
-          case Humana h -> h.getNombre() + " " + h.getApellido();
-          case Juridica j -> j.getRazonSocial();
-        };
-
-    List<MedioDeContactoReplicaDTO> medios =
-        persona.getMediosDeContacto().stream().map(PersonaMapper::mapMedioToReplica).toList();
-
-    return new PersonaReplicaDTO(persona.getId(), denominacion, persona.getTipoPersona(), medios);
-  }
-
-  private static MedioDeContactoReplicaDTO mapMedioToReplica(MedioDeContacto medio) {
-    return switch (medio) {
-      case Correo c -> new MedioDeContactoReplicaDTO(
-          "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
-      case WhatsApp w -> new MedioDeContactoReplicaDTO(
-          "WHATSAPP",
-          w.getEsPredeterminado(),
-          null,
-          w.getCaracteristica(),
-          w.getCodigoArea(),
-          w.getNumero());
-      case Telefono t -> new MedioDeContactoReplicaDTO(
-          "TELEFONO",
-          t.getEsPredeterminado(),
-          null,
-          t.getCaracteristica(),
-          t.getCodigoArea(),
-          t.getNumero());
-      default -> throw new IllegalArgumentException("Medio de contacto no soportado");
-    };
+    return juridica;
   }
 
   private Humana toHumanaEntity(HumanaInputDTO h) {
@@ -121,10 +73,10 @@ public class PersonaMapper {
   }
 
   private void populateCommonFields(Persona persona, PersonaInputDTO input) {
-    persona.setTipoDocumento(input.tipoDocumento());
-    persona.setDocumento(input.documento());
-    persona.setDireccion(direccionMapper.toEntity(input.direccion()));
+    persona.actualizarDocumento(input.tipoDocumento(), input.documento());
+    persona.actualizarDireccion(direccionMapper.toEntity(input.direccion()));
     if (input.mediosDeContacto() != null) {
+      persona.limpiarMediosDeContacto();
       input.mediosDeContacto().stream()
           .map(medioDeContactoMapper::toEntity)
           .forEach(persona::agregarMedioDeContacto);
@@ -139,20 +91,15 @@ public class PersonaMapper {
     switch (entity) {
       case Humana h -> {
         if (input instanceof HumanaInputDTO hi) {
-          h.setNombre(hi.nombre());
-          h.setApellido(hi.apellido());
-          h.setFechaNacimiento(hi.fechaNacimiento());
-          h.setGenero(hi.genero());
+          h.actualizar(hi.nombre(), hi.apellido(), hi.fechaNacimiento(), hi.genero());
         } else {
           throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         }
       }
       case Juridica j -> {
         if (input instanceof JuridicaInputDTO ji) {
-          j.setRazonSocial(ji.razonSocial());
-          j.setTipo(ji.tipoJuridico());
-          j.setRubro(ji.rubro());
-          j.getRepresentantes().clear();
+          j.actualizar(ji.razonSocial(), ji.tipoJuridico(), ji.rubro());
+          j.limpiarRepresentantes();
           if (ji.representantes() != null) {
             ji.representantes()
                 .forEach(repInput -> j.agregarRepresentante(toHumanaEntity(repInput)));
@@ -164,10 +111,9 @@ public class PersonaMapper {
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 
-    entity.setTipoDocumento(input.tipoDocumento());
-    entity.setDocumento(input.documento());
-    entity.setDireccion(direccionMapper.toEntity(input.direccion()));
-    entity.getMediosDeContacto().clear();
+    entity.actualizarDocumento(input.tipoDocumento(), input.documento());
+    entity.actualizarDireccion(direccionMapper.toEntity(input.direccion()));
+    entity.limpiarMediosDeContacto();
     if (input.mediosDeContacto() != null) {
       input.mediosDeContacto().stream()
           .map(medioDeContactoMapper::toEntity)
@@ -189,15 +135,43 @@ public class PersonaMapper {
         h.getFechaNacimiento());
   }
 
+  private JuridicaOutputDTO toJuridicaOutputDTO(Juridica j) {
+    List<HumanaOutputDTO> representantes =
+        j.getRepresentantes().stream().map(this::toHumanaOutputDTO).toList();
+
+    return new JuridicaOutputDTO(
+        TipoPersona.JURIDICA,
+        j.getId(),
+        j.getTipoDocumento(),
+        j.getDocumento(),
+        direccionMapper.toOutputDTO(j.getDireccion()),
+        j.getMediosDeContacto().stream().map(medioDeContactoMapper::toOutputDTO).toList(),
+        j.getRazonSocial(),
+        j.getTipo(),
+        j.getRubro(),
+        representantes);
+  }
+
+  public PersonaOutputDTO toOutputDTO(Persona entity) {
+    if (entity == null) {
+      return null;
+    }
+    return switch (entity) {
+      case Humana h -> toHumanaOutputDTO(h);
+      case Juridica j -> toJuridicaOutputDTO(j);
+    };
+  }
+
   public Persona mapToPersona(Map<String, String> fila) {
     String tipo = fila.getOrDefault("TIPO_PERSONA", "HUMANA").toUpperCase();
     Persona persona;
 
     if ("JURIDICA".equals(tipo)) {
       String razonSocial = fila.get("RAZON_SOCIAL");
-      // Crear un representante por defecto para cumplir con la validación del dominio.
       Humana representanteDefault = new Humana("Representante", "Legal", LocalDate.now());
-      persona = PersonaFactory.crearJuridica(razonSocial, null, null, representanteDefault);
+      persona =
+          PersonaFactory.crearJuridica(
+              razonSocial, TipoJuridico.EMPRESA, "Rubro CSV", representanteDefault);
     } else {
       String nombre = fila.get("NOMBRE");
       String apellido = fila.get("APELLIDO");
@@ -213,9 +187,11 @@ public class PersonaMapper {
     if (fila.containsKey("TIPO_DOCUMENTO") && fila.containsKey("DOCUMENTO")) {
       String tipoDocStr = fila.get("TIPO_DOCUMENTO");
       if (tipoDocStr != null && !tipoDocStr.isBlank()) {
-        persona.setTipoDocumento(TipoDocumento.valueOf(tipoDocStr.toUpperCase()));
+        persona.actualizarDocumento(
+            TipoDocumento.valueOf(tipoDocStr.toUpperCase()), fila.get("DOCUMENTO"));
+      } else {
+        persona.actualizarDocumento(null, fila.get("DOCUMENTO"));
       }
-      persona.setDocumento(fila.get("DOCUMENTO"));
     }
 
     String email = fila.get("EMAIL");
@@ -225,13 +201,48 @@ public class PersonaMapper {
       persona.agregarMedioDeContacto(correo);
     }
 
-    String telefono = fila.get("TELEFONO");
-    if (telefono != null && !telefono.isBlank()) {
+    String telephone = fila.get("TELEFONO");
+    if (telephone != null && !telephone.isBlank()) {
       Telefono tel = new Telefono();
-      tel.setNumero(telefono.trim());
+      tel.setNumero(telephone.trim());
       persona.agregarMedioDeContacto(tel);
     }
 
     return persona;
+  }
+
+  public PersonaReplicaDTO toReplicaDTO(Persona p) {
+    if (p == null) {
+      return null;
+    }
+    String denominacion =
+        switch (p) {
+          case Humana h -> h.getNombre() + " " + h.getApellido();
+          case Juridica j -> j.getRazonSocial();
+        };
+
+    List<MedioDeContactoReplicaDTO> medios =
+        p.getMediosDeContacto().stream().map(this::toMedioReplicaDTO).toList();
+
+    return new PersonaReplicaDTO(p.getId(), denominacion, p.getTipoPersona(), medios);
+  }
+
+  private MedioDeContactoReplicaDTO toMedioReplicaDTO(MedioDeContacto m) {
+    return switch (m) {
+      case Correo c -> new MedioDeContactoReplicaDTO(
+          "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
+      case Telefono t -> {
+        String tipoStr = t.getTipo() == TipoTelefono.WHATSAPP ? "WHATSAPP" : "TELEFONO";
+        yield new MedioDeContactoReplicaDTO(
+            tipoStr,
+            t.getEsPredeterminado(),
+            null,
+            t.getCaracteristica(),
+            t.getCodigoArea(),
+            t.getNumero());
+      }
+      default -> throw new IllegalArgumentException(
+          "Medio de contacto no soportado: " + m.getClass().getSimpleName());
+    };
   }
 }

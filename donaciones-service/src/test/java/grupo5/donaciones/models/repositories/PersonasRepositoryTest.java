@@ -25,7 +25,8 @@ class PersonasRepositoryTest {
   @Test
   void save_deberiaPersistirPersona() {
     Humana humana = new Humana("Maria", "Lopez", LocalDate.of(1993, Month.APRIL, 10));
-    humana.setDocumento("22334455");
+    humana.actualizarDocumento(
+        grupo5.donaciones.models.entities.personas.TipoDocumento.DNI, "22334455");
 
     Persona saved = repository.save(humana);
 
