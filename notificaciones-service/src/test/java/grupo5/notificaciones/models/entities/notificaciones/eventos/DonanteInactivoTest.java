@@ -31,8 +31,8 @@ class DonanteInactivoTest {
     Notificacion notificacionGenerada = notificaciones.get(0);
 
     Assertions.assertEquals(
-        mockDonante,
-        notificacionGenerada.getPersona(),
+        mockDonante.getId(),
+        notificacionGenerada.getPersonaId(),
         "La notificación debe estar dirigida al donante correcto");
     Assertions.assertTrue(
         notificacionGenerada.getMensaje().contains("30 días"),

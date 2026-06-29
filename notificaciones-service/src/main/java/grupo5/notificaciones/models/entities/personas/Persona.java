@@ -4,6 +4,7 @@ import grupo5.common.repositories.AggregateRoot;
 import grupo5.notificaciones.models.ports.Anonimizable;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +12,14 @@ import lombok.Setter;
 @Setter
 public class Persona implements Anonimizable, AggregateRoot {
   private final UUID id;
+
+  @Getter(AccessLevel.NONE)
   private final List<MedioDeContacto> mediosDeContacto;
+
+  public List<MedioDeContacto> getMediosDeContacto() {
+    return java.util.Collections.unmodifiableList(this.mediosDeContacto);
+  }
+
   private String denominacion;
   private TipoPersona tipoPersona;
 
