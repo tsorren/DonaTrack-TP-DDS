@@ -11,7 +11,6 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.INecesidadesRecurrentesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
 import java.time.LocalDateTime;
@@ -30,21 +29,18 @@ public class AlgoritmosService {
   private final List<AlgoritmoAsignacion> algoritmos;
   private final IDonacionesIndependientesRepository donacionRepository;
   private final INecesidadesRepository necesidadRepository;
-  private final INecesidadesRecurrentesRepository necesidadesRecurrentesRepository;
   private final PropuestaRepository propuestaRepository;
   private final NotificacionesFeignClient notificacionesFeignClient;
 
   public AlgoritmosService(
       IDonacionesIndependientesRepository donacionRepository,
       INecesidadesRepository necesidadRepository,
-      INecesidadesRecurrentesRepository necesidadesRecurrentesRepository,
       PropuestaRepository propuestaRepository,
       ComparadorTexto comparadorTexto,
       NotificacionesFeignClient notificacionesFeignClient) {
 
     this.donacionRepository = donacionRepository;
     this.necesidadRepository = necesidadRepository;
-    this.necesidadesRecurrentesRepository = necesidadesRecurrentesRepository;
     this.propuestaRepository = propuestaRepository;
     this.notificacionesFeignClient = notificacionesFeignClient;
 
@@ -84,10 +80,8 @@ public class AlgoritmosService {
   public List<Propuesta> ejecutar() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
 
-    List<Necesidad> necesidades = new ArrayList<>(necesidadRepository.findByEstaSatisfechaFalse());
-    necesidadesRecurrentesRepository.findByActivaTrue().stream()
-        .filter(n -> !n.estaSatisfecha())
-        .forEach(necesidades::add);
+    List<Necesidad> necesidades =
+        new ArrayList<>(necesidadRepository.findByEstaSatisfechaFalseActivaTrue());
 
     long extraordinarias =
         necesidades.stream()

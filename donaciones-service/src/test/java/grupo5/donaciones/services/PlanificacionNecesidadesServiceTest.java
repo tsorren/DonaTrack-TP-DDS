@@ -3,7 +3,7 @@ package grupo5.donaciones.services;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
-import grupo5.donaciones.models.repositories.impl.NecesidadRecurrenteRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.impl.PlanificacionNecesidadesService;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -16,7 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PlanificacionNecesidadesServiceTest {
 
-  @Mock private NecesidadRecurrenteRepository necesidadRepository;
+  @Mock private INecesidadesRepository necesidadRepository;
 
   @InjectMocks private PlanificacionNecesidadesService planificacionNecesidadesService;
 
