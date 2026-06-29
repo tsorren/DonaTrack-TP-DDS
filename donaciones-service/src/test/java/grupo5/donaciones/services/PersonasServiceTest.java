@@ -133,19 +133,4 @@ class PersonasServiceTest {
     verify(repository, never()).save(any());
     verify(notificacionesAsyncService, never()).anonimizarPersona(any());
   }
-
-  @Test
-  void actualizarCanal_siExiste_deberiaModificarYGuardar() {
-    UUID id = humana.getId();
-    when(repository.findById(id)).thenReturn(Optional.of(humana));
-    doNothing().when(mapper).updateEntity(humana, inputDTO);
-    when(repository.save(humana)).thenReturn(humana);
-    when(mapper.toOutputDTO(humana)).thenReturn(outputDTO);
-
-    PersonaOutputDTO result = service.actualizarCanal(id, inputDTO);
-
-    assertNotNull(result);
-    verify(mapper).updateEntity(humana, inputDTO);
-    verify(repository).save(humana);
-  }
 }

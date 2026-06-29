@@ -14,6 +14,4 @@ public interface IPersonasService {
   PersonaOutputDTO actualizarPersona(UUID id, PersonaInputDTO input);
 
   void eliminarPersona(UUID id);
-
-  PersonaOutputDTO actualizarCanal(UUID id, PersonaInputDTO dto);
 }

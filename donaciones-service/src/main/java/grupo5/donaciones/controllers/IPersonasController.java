@@ -18,6 +18,4 @@ public interface IPersonasController {
   ResponseEntity<PersonaOutputDTO> actualizarPersona(UUID id, PersonaInputDTO persona);
 
   ResponseEntity<Void> eliminarPersona(UUID id);
-
-  ResponseEntity<PersonaOutputDTO> actualizarCanal(UUID id, PersonaInputDTO dto);
 }

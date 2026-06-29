@@ -50,11 +50,4 @@ public class PersonasController implements IPersonasController {
     service.eliminarPersona(id);
     return ResponseEntity.noContent().build();
   }
-
-  @PutMapping("/{id}/canal")
-  public ResponseEntity<PersonaOutputDTO> actualizarCanal(
-      @PathVariable("id") UUID id, @RequestBody PersonaInputDTO dto) {
-    PersonaOutputDTO personaActualizada = service.actualizarCanal(id, dto);
-    return ResponseEntity.ok(personaActualizada);
-  }
 }
