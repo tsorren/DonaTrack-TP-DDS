@@ -11,8 +11,8 @@ import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.ports.Segmentador;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
-import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ public class SegmentacionEventListener {
   private static final Logger log = LoggerFactory.getLogger(SegmentacionEventListener.class);
 
   private final IItemDonacionNormalizadoRepository itemNormalizadoRepository;
-  private final DonacionRepositoryEnMemoria donacionRepository;
+  private final IDonacionesRepository donacionRepository;
   private final Segmentador segmentador;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
   private final IncentivosFeignClient incentivosFeignClient;

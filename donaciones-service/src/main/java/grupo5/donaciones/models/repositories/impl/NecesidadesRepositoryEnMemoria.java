@@ -2,6 +2,7 @@ package grupo5.donaciones.models.repositories.impl;
 
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
@@ -21,7 +22,7 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
   public List<Necesidad> findByEstaSatisfechaFalseActivaTrue() {
     return storage.values().stream()
         .filter(n -> !n.estaSatisfecha())
-        .filter(Necesidad::getActiva)
+        .filter(n -> n instanceof NecesidadRecurrente r && r.getActiva())
         .toList();
   }
 
@@ -33,26 +34,24 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
   @Override
   public List<Necesidad> findByActivaTrueAndSatisfechaFalse() {
     return storage.values().stream()
-        .filter(Necesidad::getActiva)
-        .filter(n -> !n.getSatisfecha())
+        .filter(n -> !(n instanceof NecesidadRecurrente r) || r.getActiva())
+        .filter(n -> !n.estaSatisfecha())
         .toList();
   }
 
   @Override
   public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue() {
     return storage.values().stream()
-        .filter(Necesidad::getActiva)
-        .filter(n -> !n.getSatisfecha())
-        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.RECURRENTE)
+        .filter(n -> n instanceof NecesidadRecurrente r && r.getActiva())
+        .filter(n -> !n.estaSatisfecha())
         .toList();
   }
 
   @Override
   public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse() {
     return storage.values().stream()
-        .filter(Necesidad::getActiva)
-        .filter(n -> !n.getSatisfecha())
         .filter(n -> n.getTipoNecesidad() == TipoNecesidad.EXTRAORDINARIA)
+        .filter(n -> !n.estaSatisfecha())
         .toList();
   }
 }
