@@ -174,7 +174,8 @@ class AlgoritmosServiceTest {
 
     // Service: donacionRepository.findById(f.getDonacionOriginalId()) → donacion
     when(donacionRepositoryMock.findById(donacion.getId())).thenReturn(Optional.of(donacion));
-    // Service: donacionOriginalRepository.findById(di.getDonacionOriginalId()) → donacionOriginalMock
+    // Service: donacionOriginalRepository.findById(di.getDonacionOriginalId()) →
+    // donacionOriginalMock
     when(donacionOriginalRepositoryMock.findById(donacionOriginalId))
         .thenReturn(Optional.of(donacionOriginalMock));
     when(donantesRepositoryMock.findById(donanteId)).thenReturn(Optional.of(donanteMock));
