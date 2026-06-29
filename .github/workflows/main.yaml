@@ -549,6 +549,8 @@ jobs:
           base_uml_dir: ./base_uml_dir
           pr_uml_dir: ./pr_uml_dir
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          diagram_spacing: 20
+          context_depth: 0
         env:
           PUBLISH_GITHUB: 'true'
           PUBLISH_DISCORD: 'true'
