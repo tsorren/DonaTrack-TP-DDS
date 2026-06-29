@@ -3,6 +3,7 @@ package grupo5.donaciones.infrastructure;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,9 +15,12 @@ public class CatalogDataInitializer implements CommandLineRunner {
 
   private static final Logger log = LoggerFactory.getLogger(CatalogDataInitializer.class);
   private final ISubcategoriasRepository subcategoryRepository;
+  private final ICategoriasRepository categoryRepository;
 
-  public CatalogDataInitializer(ISubcategoriasRepository subcategoryRepository) {
+  public CatalogDataInitializer(
+      ISubcategoriasRepository subcategoryRepository, ICategoriasRepository categoryRepository) {
     this.subcategoryRepository = subcategoryRepository;
+    this.categoryRepository = categoryRepository;
   }
 
   @Override
@@ -25,6 +29,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
 
     // Categoria Alimentos
     Categoria alimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
+    categoryRepository.save(alimentos);
 
     Subcategoria noPerecederos = new Subcategoria(alimentos, "No Perecederos");
     noPerecederos.agregarAlias("arroz");
@@ -44,6 +49,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
 
     // Categoria Ropa
     Categoria ropa = new Categoria("Ropa", true, false, Unidad.UNIDADES);
+    categoryRepository.save(ropa);
 
     Subcategoria ropaInvierno = new Subcategoria(ropa, "Ropa de Invierno");
     ropaInvierno.agregarAlias("pantalon");
@@ -61,6 +67,7 @@ public class CatalogDataInitializer implements CommandLineRunner {
 
     // Categoria Muebles
     Categoria muebles = new Categoria("Muebles", true, false, Unidad.UNIDADES);
+    categoryRepository.save(muebles);
 
     Subcategoria mueblesEscolares = new Subcategoria(muebles, "Muebles Escolares");
     mueblesEscolares.agregarAlias("banco");

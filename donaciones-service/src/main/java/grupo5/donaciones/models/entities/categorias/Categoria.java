@@ -2,18 +2,22 @@ package grupo5.donaciones.models.entities.categorias;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Categoria {
+public class Categoria implements AggregateRoot {
+  private final UUID id;
   private String nombre;
   private Boolean conUso;
   private Boolean conVencimiento;
   private Unidad tipoUnidad;
 
   public Categoria(String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
+    this.id = UUID.randomUUID();
 
     validarCategoria(nombre, conUso, conVencimiento, tipoUnidad);
 
