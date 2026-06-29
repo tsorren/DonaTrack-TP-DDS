@@ -4,13 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
-import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
+import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
+import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import grupo5.donaciones.services.impl.AlgoritmosService;
 import grupo5.donaciones.services.impl.PropuestaService;
+import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ class PropuestaServiceTest {
   private grupo5.donaciones.models.repositories.INecesidadesRepository necesidadRepository;
   private grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
       donacionRepository;
+  private PropuestaMapper propuestaMapper;
   private PropuestaService propuestaService;
 
   @BeforeEach
@@ -32,32 +35,36 @@ class PropuestaServiceTest {
     necesidadRepository = mock(grupo5.donaciones.models.repositories.INecesidadesRepository.class);
     donacionRepository =
         mock(grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository.class);
+    propuestaMapper = mock(PropuestaMapper.class);
 
     propuestaService =
         new PropuestaService(
-            algoritmosService, asignacionRepository, necesidadRepository, donacionRepository);
+            algoritmosService,
+            asignacionRepository,
+            necesidadRepository,
+            donacionRepository,
+            propuestaMapper);
   }
 
   @Test
   void listarPropuestas_debeRetornarLoDeAlgoritmosService() {
     Propuesta propuesta = mock(Propuesta.class);
-    Necesidad necesidad = mock(Necesidad.class);
-    UUID necesidadId = UUID.randomUUID();
-
-    when(propuesta.getId()).thenReturn(UUID.randomUUID());
-    when(propuesta.getEstado()).thenReturn(EstadoPropuesta.APROBADA);
-    when(propuesta.getNecesidadQueSatisfaceId()).thenReturn(necesidadId);
-    when(necesidadRepository.findById(necesidadId)).thenReturn(java.util.Optional.of(necesidad));
-    when(necesidad.getDescripcion()).thenReturn("Alimentos");
+    UUID id = UUID.randomUUID();
+    NecesidadResumenDTO necesidadResumen =
+        new NecesidadResumenDTO(UUID.randomUUID(), "Alimentos", 10);
+    PropuestaDTO dto = new PropuestaDTO(id, EstadoPropuesta.APROBADA, necesidadResumen, List.of());
 
     when(algoritmosService.listarPropuestas()).thenReturn(List.of(propuesta));
+    when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
 
-    List<PropuestaResponseDTO> resultado = propuestaService.listarPropuestas();
+    List<PropuestaDTO> resultado = propuestaService.listarPropuestas();
 
     assertEquals(1, resultado.size());
-    assertEquals("APROBADA", resultado.getFirst().estado());
+    assertEquals(EstadoPropuesta.APROBADA, resultado.getFirst().estado());
+    assertEquals("Alimentos", resultado.getFirst().necesidad().descripcion());
 
     verify(algoritmosService).listarPropuestas();
+    verify(propuestaMapper).toDTO(propuesta);
   }
 
   @Test

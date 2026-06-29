@@ -37,7 +37,7 @@ public class NecesidadesService implements INecesidadesService {
     Necesidad necesidadDominio = convertirDTOANecesidad(dto);
     necesidadRepository.save(necesidadDominio);
 
-    return dto;
+    return necesidadDominio.toDTO();
   }
 
   @Override
@@ -51,8 +51,8 @@ public class NecesidadesService implements INecesidadesService {
   public List<NecesidadDTO> listarConFiltros(UUID entidadId, String tipo) {
     return necesidadRepository.findAll().stream()
         .map(Necesidad::toDTO)
-        .filter(dto -> entidadId == null || entidadId.equals(dto.getIdEntidad()))
-        .filter(dto -> tipo == null || tipo.equalsIgnoreCase(dto.getTipo()))
+        .filter(dto -> entidadId == null || entidadId.equals(dto.idEntidad()))
+        .filter(dto -> tipo == null || tipo.equalsIgnoreCase(dto.tipo()))
         .toList();
   }
 
@@ -60,28 +60,28 @@ public class NecesidadesService implements INecesidadesService {
   private Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
 
     subcategoriaRepository
-        .findById(dto.getIdSubcategoria())
-        .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdSubcategoria()));
+        .findById(dto.idSubcategoria())
+        .orElseThrow(() -> new RecursoNoEncontradoException(dto.idSubcategoria()));
     entidadesBeneficiariasRepository
-        .findById(dto.getIdEntidad())
-        .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdEntidad()));
+        .findById(dto.idEntidad())
+        .orElseThrow(() -> new RecursoNoEncontradoException(dto.idEntidad()));
     Necesidad necesidad =
-        switch (dto.getTipo()) {
+        switch (dto.tipo()) {
           case "RECURRENTE" -> {
-            Period periodo = Period.between(dto.getFechaInicio(), dto.getFechaFin());
+            Period periodo = Period.between(dto.fechaInicio(), dto.fechaFin());
             yield new NecesidadRecurrente(
-                dto.getIdSubcategoria(),
-                dto.getCantidadNecesitada(),
-                dto.getDescripcion(),
+                dto.idSubcategoria(),
+                dto.cantidadNecesitada(),
+                dto.descripcion(),
                 periodo,
-                dto.getFechaInicio());
+                dto.fechaInicio());
           }
           case "EXTRAORDINARIA" -> new NecesidadExtraordinaria(
-              dto.getIdSubcategoria(), dto.getCantidadNecesitada(), dto.getDescripcion());
+              dto.idSubcategoria(), dto.cantidadNecesitada(), dto.descripcion());
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
-    if (dto.getIdEntidad() != null) {
-      necesidad.asociarAEntidad(dto.getIdEntidad());
+    if (dto.idEntidad() != null) {
+      necesidad.asociarAEntidad(dto.idEntidad());
     }
 
     return necesidad;
