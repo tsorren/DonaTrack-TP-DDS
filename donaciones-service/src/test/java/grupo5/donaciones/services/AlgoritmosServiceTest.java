@@ -51,13 +51,14 @@ class AlgoritmosServiceTest {
   @Test
   void ejecutar_deberiaBuscarDonacionesYNecesidadesYConsolidarResultados() {
     when(donacionRepositoryMock.findEnDeposito()).thenReturn(Collections.emptyList());
-    when(necesidadRepositoryMock.findByEstaSatisfechaFalse()).thenReturn(Collections.emptyList());
+    when(necesidadRepositoryMock.findByEstaSatisfechaFalseActivaTrue())
+        .thenReturn(Collections.emptyList());
 
     List<Propuesta> resultado = service.ejecutar();
 
     assertNotNull(resultado);
     verify(donacionRepositoryMock, times(1)).findEnDeposito();
-    verify(necesidadRepositoryMock, times(1)).findByEstaSatisfechaFalse();
+    verify(necesidadRepositoryMock, times(1)).findByEstaSatisfechaFalseActivaTrue();
   }
 
   @Test

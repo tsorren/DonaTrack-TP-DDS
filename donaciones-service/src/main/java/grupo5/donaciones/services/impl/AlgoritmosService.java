@@ -79,12 +79,26 @@ public class AlgoritmosService {
 
   public List<Propuesta> ejecutar() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
-    List<Necesidad> necesidades = necesidadRepository.findByEstaSatisfechaFalse();
+
+    List<Necesidad> necesidades =
+        new ArrayList<>(necesidadRepository.findByEstaSatisfechaFalseActivaTrue());
+
+    long extraordinarias =
+        necesidades.stream()
+            .filter(
+                n ->
+                    !(n
+                        instanceof
+                        grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente))
+            .count();
+    long recurrentes = necesidades.size() - extraordinarias;
 
     log.info(
-        "Ejecutando algoritmo de asignación. Donaciones en depósito: {}, Necesidades insatisfechas: {}",
+        "Ejecutando algoritmo de asignación. Donaciones en depósito: {}, Necesidades totales: {} ({} extraordinarias, {} recurrentes activas)",
         donaciones.size(),
-        necesidades.size());
+        necesidades.size(),
+        extraordinarias,
+        recurrentes);
 
     for (DonacionIndependiente d : donaciones) {
       log.info(
@@ -96,8 +110,9 @@ public class AlgoritmosService {
 
     for (Necesidad n : necesidades) {
       log.info(
-          "Necesidad insatisfecha ID: {}, Subcategoría: {}, Cantidad necesitada: {}, Cantidad acumulada: {}, Descripción: {}",
+          "Necesidad insatisfecha ID: {}, Tipo: {}, Subcategoría: {}, Cantidad necesitada: {}, Cantidad acumulada: {}, Descripción: {}",
           n.getId(),
+          n.getClass().getSimpleName(),
           n.getSubcategoria() != null ? n.getSubcategoria().getNombre() : "null",
           n.getCantidadNecesitada(),
           n.cantidadAcumulada(),
