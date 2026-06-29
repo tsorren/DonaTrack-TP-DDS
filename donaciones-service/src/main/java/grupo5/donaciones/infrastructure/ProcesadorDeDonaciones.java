@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure;
 
 import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemanticoBien;
+import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
