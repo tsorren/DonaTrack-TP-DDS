@@ -15,6 +15,8 @@ public class EntidadBeneficiaria implements Anonimizable, AggregateRoot {
   private final UUID id;
   private Juridica juridica;
 
+  // private List<Necesidad> necesidades = new ArrayList<>();
+
   public EntidadBeneficiaria(Juridica juridica) {
     this.id = UUID.randomUUID();
     if (juridica == null) {
@@ -23,6 +25,25 @@ public class EntidadBeneficiaria implements Anonimizable, AggregateRoot {
     this.juridica = juridica;
   }
 
+  /* public void agregarNecesidad(Necesidad necesidad) {
+      if (necesidad == null) {
+        throw new ValidationException(ErrorCatalog.AGREGAR_NECESIDAD_NULA);
+      }
+      if (necesidades.contains(necesidad)) {
+        throw new ValidationException(ErrorCatalog.NECESIDAD_YA_REGISTRADA);
+      }
+      this.necesidades.add(necesidad);
+      necesidad.setEntidad(this);
+    }
+
+    public void quitarNecesidad(Necesidad necesidad) {
+      if (!this.necesidades.contains(necesidad)) {
+        throw new ValidationException(ErrorCatalog.NECESIDAD_NO_PERTENECE_A_ENTIDAD);
+      }
+      this.necesidades.remove(necesidad);
+      necesidad.setEntidad(null);
+    }
+  */
   @Override
   public void anonimizar() {
     if (this.juridica != null) {

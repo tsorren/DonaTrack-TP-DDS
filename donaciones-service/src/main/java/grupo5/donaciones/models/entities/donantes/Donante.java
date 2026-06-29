@@ -13,6 +13,8 @@ public class Donante implements Anonimizable, AggregateRoot {
   private Persona persona;
   private final UUID id;
 
+  // private List<Donacion> donaciones = new ArrayList<>();
+
   public Donante() {
     this.id = UUID.randomUUID();
   }
@@ -25,6 +27,20 @@ public class Donante implements Anonimizable, AggregateRoot {
     this.persona = persona;
   }
 
+  /* public void agregarDonacion(Donacion donacion) {
+      if (donacion != null && !this.donaciones.contains(donacion)) {
+        this.donaciones.add(donacion);
+        donacion.setDonante(this);
+      }
+    }
+
+    public void quitarDonacion(Donacion donacion) {
+      if (donacion != null && this.donaciones.contains(donacion)) {
+        this.donaciones.remove(donacion);
+        donacion.setDonante(null);
+      }
+    }
+  */
   @Override
   public UUID getId() {
     return this.id;
