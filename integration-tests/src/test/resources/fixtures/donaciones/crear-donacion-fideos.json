@@ -1,10 +1,10 @@
 {
   "idDonante": null,
-  "descripcion": "Donación estándar",
+  "descripcion": "Donación de fideos",
   "items": [
     {
-      "descripcionBien": "arroz",
-      "cantidad": 10,
+      "descripcionBien": "fideos",
+      "cantidad": 5,
       "estadoBien": "NUEVO",
       "fechaVencimiento": "2027-12-31"
     }

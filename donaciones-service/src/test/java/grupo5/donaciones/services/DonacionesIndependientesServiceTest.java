@@ -70,9 +70,25 @@ class DonacionesIndependientesServiceTest {
               DonacionIndependiente don = invocation.getArgument(0);
               return new DonacionIndependienteResponseDTO(
                   don.getId(),
+                  don.getDonacionOriginalId(),
+                  don.getDescripcion(),
                   don.getEstadoActual().getClass().getSimpleName(),
+                  don.getFechaRegistro(),
                   don.getHistorial().stream()
-                      .map(c -> c.getEstadoNuevo().getClass().getSimpleName())
+                      .map(
+                          c ->
+                              new grupo5
+                                  .donaciones
+                                  .dto
+                                  .donacionesIndependientes
+                                  .CambioEstadoDIResponseDTO(
+                                  c.getEstadoAnterior() != null
+                                      ? c.getEstadoAnterior().getClass().getSimpleName()
+                                      : null,
+                                  c.getEstadoNuevo().getClass().getSimpleName(),
+                                  c.getTimestamp(),
+                                  c.getJustificacion(),
+                                  c.getActor()))
                       .toList(),
                   List.of(),
                   don.getCantidad());
@@ -136,8 +152,8 @@ class DonacionesIndependientesServiceTest {
 
     assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
     assertEquals(id, response.id());
-    assertEquals("AsignacionRealizada", response.estadoActual());
-    assertTrue(response.historialEstados().contains("AsignacionRealizada"));
+    assertTrue(
+        response.historial().stream().anyMatch(h -> "AsignacionRealizada".equals(h.estadoNuevo())));
     verify(repositoryMock, times(1)).save(donacion);
   }
 

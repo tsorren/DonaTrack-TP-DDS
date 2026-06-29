@@ -46,8 +46,11 @@ class PropuestasControllerTest {
   void listar_deberiaRetornarOkYListaPropuestas() throws Exception {
     UUID id = UUID.randomUUID();
     NecesidadResumenDTO necesidad =
-        new NecesidadResumenDTO(UUID.randomUUID(), "Necesidad abrigo", 10);
-    PropuestaDTO dto = new PropuestaDTO(id, EstadoPropuesta.APROBADA, necesidad, List.of());
+        new NecesidadResumenDTO(
+            UUID.randomUUID(), "Necesidad abrigo", 10, "EXTRAORDINARIA", "PENDIENTE");
+    PropuestaDTO dto =
+        new PropuestaDTO(
+            id, EstadoPropuesta.APROBADA, java.time.LocalDateTime.now(), necesidad, List.of());
 
     when(propuestaService.listarPropuestas()).thenReturn(List.of(dto));
 

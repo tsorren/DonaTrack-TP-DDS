@@ -1,0 +1,9 @@
+{
+  "tipo": "RECURRENTE",
+  "idEntidad": null,
+  "idSubcategoria": null,
+  "cantidadNecesitada": 10,
+  "descripcion": "Necesidad recurrente estándar",
+  "fechaInicio": "2026-01-01",
+  "fechaFin": "2026-12-31"
+}

@@ -5,11 +5,14 @@ import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.CambioEstadoOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ItemDonacionOutputDTO;
+import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.models.entities.donaciones.*;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -21,10 +24,18 @@ public class DonacionMapper {
 
   private final DireccionMapper direccionMapper;
   private final IDonantesRepository donantesRepository;
+  private final IPersonasRepository personasRepository;
+  private final PersonaMapper personaMapper;
 
-  public DonacionMapper(DireccionMapper direccionMapper, IDonantesRepository donantesRepository) {
+  public DonacionMapper(
+      DireccionMapper direccionMapper,
+      IDonantesRepository donantesRepository,
+      IPersonasRepository personasRepository,
+      PersonaMapper personaMapper) {
     this.direccionMapper = direccionMapper;
     this.donantesRepository = donantesRepository;
+    this.personasRepository = personasRepository;
+    this.personaMapper = personaMapper;
   }
 
   public Donacion toEntity(DonacionInputDTO dto, Persona persona) {
@@ -65,22 +76,34 @@ public class DonacionMapper {
     List<ItemDonacionOutputDTO> items =
         donacion.getItems().stream().map(DonacionMapper::toItemOutputDTO).toList();
 
-    List<CambioEstadoOutputDTO> historial = // me da error (this::toCambioEstadoOutputDTO)  :(
+    List<CambioEstadoOutputDTO> historial =
         donacion.getHistorialEstados().stream()
             .map(DonacionMapper::toCambioEstadoOutputDTO)
             .toList();
 
-    UUID personaId =
-        donacion.getDonanteId() != null
-            ? donantesRepository
-                .findById(donacion.getDonanteId())
-                .map(Donante::personaId)
-                .orElse(null)
-            : null;
+    DonanteResumenDTO donanteResumen = null;
+    if (donacion.getDonanteId() != null) {
+      donanteResumen =
+          donantesRepository
+              .findById(donacion.getDonanteId())
+              .map(
+                  donante -> {
+                    PersonaOutputDTO personaDTO = null;
+                    if (donante.personaId() != null) {
+                      personaDTO =
+                          personasRepository
+                              .findById(donante.personaId())
+                              .map(personaMapper::toOutputDTO)
+                              .orElse(null);
+                    }
+                    return new DonanteResumenDTO(donante.getId(), donante.personaId(), personaDTO);
+                  })
+              .orElse(null);
+    }
 
     return new DonacionOutputDTO(
         donacion.getId(),
-        personaId,
+        donanteResumen,
         items,
         donacion.getDescripcion(),
         donacion.getFecha(),

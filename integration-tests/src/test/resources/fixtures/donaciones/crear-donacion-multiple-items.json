@@ -1,12 +1,18 @@
 {
   "idDonante": null,
-  "descripcion": "Donación estándar",
+  "descripcion": "Donación multi-ítem",
   "items": [
     {
       "descripcionBien": "arroz",
-      "cantidad": 10,
+      "cantidad": 5,
       "estadoBien": "NUEVO",
       "fechaVencimiento": "2027-12-31"
+    },
+    {
+      "descripcionBien": "fideos",
+      "cantidad": 5,
+      "estadoBien": "NUEVO",
+      "fechaVencimiento": "2027-06-30"
     }
   ],
   "nombreDeposito": "Deposito Central",

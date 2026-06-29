@@ -29,12 +29,21 @@ import org.junit.jupiter.api.Test;
 class DonacionMapperTest {
 
   private IDonantesRepository donantesRepositoryMock;
+  private grupo5.donaciones.models.repositories.IPersonasRepository personasRepositoryMock;
+  private PersonaMapper personaMapperMock;
   private DonacionMapper mapper;
 
   @BeforeEach
   void setUp() {
     donantesRepositoryMock = mock(IDonantesRepository.class);
-    mapper = new DonacionMapper(new DireccionMapper(), donantesRepositoryMock);
+    personasRepositoryMock = mock(grupo5.donaciones.models.repositories.IPersonasRepository.class);
+    personaMapperMock = mock(PersonaMapper.class);
+    mapper =
+        new DonacionMapper(
+            new DireccionMapper(),
+            donantesRepositoryMock,
+            personasRepositoryMock,
+            personaMapperMock);
   }
 
   @Test
@@ -73,12 +82,27 @@ class DonacionMapperTest {
     Donacion donacion = new Donacion(donante.getId(), deposito, "una donacion", null);
 
     when(donantesRepositoryMock.findById(donante.getId())).thenReturn(Optional.of(donante));
+    when(personasRepositoryMock.findById(persona.getId())).thenReturn(Optional.of(persona));
+    var personaDTO =
+        new grupo5.donaciones.dto.personas.HumanaOutputDTO(
+            grupo5.donaciones.models.entities.personas.TipoPersona.HUMANA,
+            persona.getId(),
+            grupo5.donaciones.models.entities.personas.TipoDocumento.DNI,
+            "1234",
+            null,
+            List.of(),
+            "Maria",
+            "Lopez",
+            grupo5.donaciones.models.entities.personas.Genero.MUJER,
+            LocalDate.of(1993, 4, 10));
+    when(personaMapperMock.toOutputDTO(persona)).thenReturn(personaDTO);
 
     DonacionOutputDTO output = mapper.toOutputDTO(donacion);
 
     assertNotNull(output);
     assertEquals(donacion.getId(), output.id());
-    assertEquals(persona.getId(), output.idDonante());
+    assertNotNull(output.donante());
+    assertEquals(persona.getId(), output.donante().personaId());
     assertEquals("una donacion", output.descripcion());
     assertEquals(EstadoDonacion.CARGADA, output.estadoActual());
     assertNotNull(output.deposito());

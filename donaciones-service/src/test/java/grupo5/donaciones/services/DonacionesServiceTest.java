@@ -76,7 +76,8 @@ class DonacionesServiceTest {
     outputDTO =
         new DonacionOutputDTO(
             donacion.getId(),
-            persona.getId(),
+            new grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO(
+                donante.getId(), persona.getId(), null),
             List.of(),
             "desc",
             LocalDateTime.of(2026, Month.JUNE, 18, 0, 0),

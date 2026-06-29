@@ -57,7 +57,20 @@ class DonacionesIndependientesControllerTest {
             TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null);
     DonacionIndependienteResponseDTO response =
         new DonacionIndependienteResponseDTO(
-            id, "AsignacionRealizada", List.of("AsignacionRealizada"), List.of(), 0);
+            id,
+            UUID.randomUUID(),
+            "Descripcion",
+            "AsignacionRealizada",
+            java.time.LocalDateTime.now(),
+            List.of(
+                new grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDIResponseDTO(
+                    "EnDeposito",
+                    "AsignacionRealizada",
+                    java.time.LocalDateTime.now(),
+                    null,
+                    ACTOR)),
+            List.of(),
+            0);
 
     when(service.cambiarEstado(eq(id), any(), eq(ACTOR))).thenReturn(response);
 
@@ -70,7 +83,7 @@ class DonacionesIndependientesControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(id.toString()))
         .andExpect(jsonPath("$.estadoActual").value("AsignacionRealizada"))
-        .andExpect(jsonPath("$.historialEstados[0]").value("AsignacionRealizada"));
+        .andExpect(jsonPath("$.historial[0].estadoNuevo").value("AsignacionRealizada"));
   }
 
   @Test

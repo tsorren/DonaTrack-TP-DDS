@@ -126,6 +126,10 @@ public abstract class BaseIT {
   }
 
   protected String apiCrearDonacion(String donanteId, String descripcion, String itemDescripcion, int cantidad) {
+    return apiCrearDonacion(donanteId, descripcion, itemDescripcion, cantidad, "NUEVO");
+  }
+
+  protected String apiCrearDonacion(String donanteId, String descripcion, String itemDescripcion, int cantidad, String estadoBien) {
     Map<String, Object> payload = fixture("donaciones/crear-donacion.json");
     payload.put("idDonante", donanteId);
     payload.put("descripcion", descripcion);
@@ -135,6 +139,7 @@ public abstract class BaseIT {
       if (!items.isEmpty()) {
         items.get(0).put("descripcionBien", itemDescripcion);
         items.get(0).put("cantidad", cantidad);
+        items.get(0).put("estadoBien", estadoBien);
       }
     }
     return io.restassured.RestAssured.given()

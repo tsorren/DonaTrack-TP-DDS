@@ -51,8 +51,14 @@ class PropuestaServiceTest {
     Propuesta propuesta = mock(Propuesta.class);
     UUID id = UUID.randomUUID();
     NecesidadResumenDTO necesidadResumen =
-        new NecesidadResumenDTO(UUID.randomUUID(), "Alimentos", 10);
-    PropuestaDTO dto = new PropuestaDTO(id, EstadoPropuesta.APROBADA, necesidadResumen, List.of());
+        new NecesidadResumenDTO(UUID.randomUUID(), "Alimentos", 10, "EXTRAORDINARIA", "PENDIENTE");
+    PropuestaDTO dto =
+        new PropuestaDTO(
+            id,
+            EstadoPropuesta.APROBADA,
+            java.time.LocalDateTime.now(),
+            necesidadResumen,
+            List.of());
 
     when(algoritmosService.listarPropuestas()).thenReturn(List.of(propuesta));
     when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
