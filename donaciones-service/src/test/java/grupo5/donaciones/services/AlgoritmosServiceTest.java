@@ -9,6 +9,8 @@ import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
 import grupo5.donaciones.services.impl.AlgoritmosService;
@@ -30,6 +32,8 @@ class AlgoritmosServiceTest {
   private NotificacionesFeignClient notificacionesFeignClientMock;
   private grupo5.donaciones.models.repositories.ISubcategoriasRepository
       subcategoriasRepositoryMock;
+  private IDonacionesRepository donacionOriginalRepositoryMock;
+  private IDonantesRepository donantesRepositoryMock;
 
   private AlgoritmosService service;
 
@@ -42,6 +46,8 @@ class AlgoritmosServiceTest {
     notificacionesFeignClientMock = mock(NotificacionesFeignClient.class);
     subcategoriasRepositoryMock =
         mock(grupo5.donaciones.models.repositories.ISubcategoriasRepository.class);
+    donacionOriginalRepositoryMock = mock(IDonacionesRepository.class);
+    donantesRepositoryMock = mock(IDonantesRepository.class);
 
     service =
         new AlgoritmosService(
@@ -50,7 +56,9 @@ class AlgoritmosServiceTest {
             propuestaRepositoryMock,
             comparadorTextoMock,
             notificacionesFeignClientMock,
-            subcategoriasRepositoryMock);
+            subcategoriasRepositoryMock,
+            donacionOriginalRepositoryMock,
+            donantesRepositoryMock);
   }
 
   @Test
@@ -133,10 +141,18 @@ class AlgoritmosServiceTest {
     UUID donantePersonaId = UUID.randomUUID();
     when(humanaMock.getId()).thenReturn(donantePersonaId);
     when(donanteMock.personaId()).thenReturn(donantePersonaId);
-    when(donacionOriginalMock.getDonante()).thenReturn(donanteMock);
-    when(donacionIndependienteMock.getDonacionOriginal()).thenReturn(donacionOriginalMock);
+
+    UUID donacionOriginalId = UUID.randomUUID();
+    UUID donanteId = UUID.randomUUID();
+
+    when(donacionIndependienteMock.getDonacionOriginalId()).thenReturn(donacionOriginalId);
+    when(donacionOriginalMock.getDonanteId()).thenReturn(donanteId);
     when(donacionIndependienteMock.getDescripcion()).thenReturn("Ropa de abrigo");
     when(fragmentationMock.getDonacionOriginal()).thenReturn(donacionIndependienteMock);
+
+    when(donacionOriginalRepositoryMock.findById(donacionOriginalId))
+        .thenReturn(Optional.of(donacionOriginalMock));
+    when(donantesRepositoryMock.findById(donanteId)).thenReturn(Optional.of(donanteMock));
 
     propuesta.setPosiblesFragmentaciones(List.of(fragmentationMock));
 

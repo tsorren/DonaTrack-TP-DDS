@@ -35,9 +35,9 @@ public class ItemDonacionNormalizadoMapper {
 
     return new ItemDonacionNormalizadoOutputDTO(
         entity.getId(),
-        entity.getDonacionOriginal() != null ? entity.getDonacionOriginal().getId() : null,
+        entity.getDonacionOriginalId(),
         entity.getBien() != null && entity.getBien().bienOriginal() != null
-            ? entity.getBien().bienOriginal().getDescripcion()
+            ? entity.getBien().bienOriginal().descripcion()
             : null,
         entity.getCantidad(),
         subcatDto,

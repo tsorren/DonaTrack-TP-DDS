@@ -33,7 +33,8 @@ class StockDeDonacionesTest {
   @BeforeEach
   void setUp() {
     Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    Donacion donacionOriginal = new Donacion(new Donante(humana.getId()));
+    Donante donante = new Donante(humana.getId());
+    Donacion donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
@@ -43,11 +44,11 @@ class StockDeDonacionesTest {
 
     List<ItemDonacionIndependiente> itemsDiez = new ArrayList<>();
     itemsDiez.add(new ItemDonacionIndependiente(bienNormalizado, 10));
-    donacionDiez = new DonacionIndependiente(donacionOriginal, itemsDiez);
+    donacionDiez = new DonacionIndependiente(donacionOriginal.getId(), itemsDiez);
 
     List<ItemDonacionIndependiente> itemsCinco = new ArrayList<>();
     itemsCinco.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionCinco = new DonacionIndependiente(donacionOriginal, itemsCinco);
+    donacionCinco = new DonacionIndependiente(donacionOriginal.getId(), itemsCinco);
   }
 
   @Test

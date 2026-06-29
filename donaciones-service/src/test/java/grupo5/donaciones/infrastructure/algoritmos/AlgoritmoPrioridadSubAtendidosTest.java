@@ -38,7 +38,8 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @BeforeEach
   void setUp() {
     Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    Donacion donacionOriginal = new Donacion(new Donante(humana.getId()));
+    Donante donante = new Donante(humana.getId());
+    Donacion donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
     subcategoriaOtra = new Subcategoria(categoria.getId(), "Ropa de Verano");
@@ -52,11 +53,11 @@ class AlgoritmoPrioridadSubAtendidosTest {
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionEnSubcategoria = new DonacionIndependiente(donacionOriginal, items);
+    donacionEnSubcategoria = new DonacionIndependiente(donacionOriginal.getId(), items);
 
     List<ItemDonacionIndependiente> itemsOtros = new ArrayList<>();
     itemsOtros.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
-    donacionEnOtraSubcategoria = new DonacionIndependiente(donacionOriginal, itemsOtros);
+    donacionEnOtraSubcategoria = new DonacionIndependiente(donacionOriginal.getId(), itemsOtros);
 
     algoritmo = new AlgoritmoPrioridadSubAtendidos();
   }

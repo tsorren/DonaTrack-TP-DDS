@@ -45,7 +45,7 @@ public class ProcesadorDeDonaciones {
       log.info(
           "  Item: {}, Subcategoría asignada: {}, Confianza: {}, Estado: {}",
           item.getBien() != null && item.getBien().bienOriginal() != null
-              ? item.getBien().bienOriginal().getDescripcion()
+              ? item.getBien().bienOriginal().descripcion()
               : "null",
           subcatNombre,
           item.getBien() != null ? item.getBien().confianza() : "null",

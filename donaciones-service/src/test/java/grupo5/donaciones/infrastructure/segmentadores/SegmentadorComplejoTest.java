@@ -39,7 +39,7 @@ class SegmentadorComplejoTest {
   void setUp() {
     Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
     Donante donante = new Donante(humana.getId());
-    donacion = new Donacion(donante);
+    donacion = new Donacion(donante.getId());
 
     Categoria categoriaRopa = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Categoria categoriaAlimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
@@ -93,9 +93,9 @@ class SegmentadorComplejoTest {
   @Test
   void segmentar_conItemsMismoAtributo_generaUnaSolaDonacion() {
     ItemDonacionNormalizado item1 =
-        new ItemDonacionNormalizado(donacion, abrigoInviernoNormalizado, 5);
+        new ItemDonacionNormalizado(donacion.getId(), abrigoInviernoNormalizado, 5);
     ItemDonacionNormalizado item2 =
-        new ItemDonacionNormalizado(donacion, polleraInviernoNormalizado, 3);
+        new ItemDonacionNormalizado(donacion.getId(), polleraInviernoNormalizado, 3);
 
     List<ItemDonacionNormalizado> items = List.of(item1, item2);
 
@@ -107,8 +107,9 @@ class SegmentadorComplejoTest {
   @Test
   void segmentar_conDiferentesAtributos_generaMultiplesDonaciones() {
     ItemDonacionNormalizado item1 =
-        new ItemDonacionNormalizado(donacion, abrigoInviernoNormalizado, 5);
-    ItemDonacionNormalizado item2 = new ItemDonacionNormalizado(donacion, manzanasNormalizado, 10);
+        new ItemDonacionNormalizado(donacion.getId(), abrigoInviernoNormalizado, 5);
+    ItemDonacionNormalizado item2 =
+        new ItemDonacionNormalizado(donacion.getId(), manzanasNormalizado, 10);
 
     List<ItemDonacionNormalizado> items = List.of(item1, item2);
 
@@ -120,9 +121,9 @@ class SegmentadorComplejoTest {
   @Test
   void segmentar_asignaCorrectamenteElCategoria() {
     ItemDonacionNormalizado item1 =
-        new ItemDonacionNormalizado(donacion, abrigoInviernoNormalizado, 5);
+        new ItemDonacionNormalizado(donacion.getId(), abrigoInviernoNormalizado, 5);
     ItemDonacionNormalizado item2 =
-        new ItemDonacionNormalizado(donacion, polleraInviernoNormalizado, 3);
+        new ItemDonacionNormalizado(donacion.getId(), polleraInviernoNormalizado, 3);
 
     List<ItemDonacionNormalizado> items = List.of(item1, item2);
 
@@ -138,10 +139,11 @@ class SegmentadorComplejoTest {
   @Test
   void segmentar_preservaCantidadesTotal() {
     ItemDonacionNormalizado item1 =
-        new ItemDonacionNormalizado(donacion, abrigoInviernoNormalizado, 5);
+        new ItemDonacionNormalizado(donacion.getId(), abrigoInviernoNormalizado, 5);
     ItemDonacionNormalizado item2 =
-        new ItemDonacionNormalizado(donacion, polleraInviernoNormalizado, 3);
-    ItemDonacionNormalizado item3 = new ItemDonacionNormalizado(donacion, manzanasNormalizado, 10);
+        new ItemDonacionNormalizado(donacion.getId(), polleraInviernoNormalizado, 3);
+    ItemDonacionNormalizado item3 =
+        new ItemDonacionNormalizado(donacion.getId(), manzanasNormalizado, 10);
 
     List<ItemDonacionNormalizado> items = List.of(item1, item2, item3);
     int cantidadOriginal = items.stream().mapToInt(ItemDonacionNormalizado::getCantidad).sum();
@@ -156,9 +158,9 @@ class SegmentadorComplejoTest {
   @Test
   void segmentar_todosLosItemsEscanQueBienAsociado() {
     ItemDonacionNormalizado item1 =
-        new ItemDonacionNormalizado(donacion, abrigoInviernoNormalizado, 5);
+        new ItemDonacionNormalizado(donacion.getId(), abrigoInviernoNormalizado, 5);
     ItemDonacionNormalizado item2 =
-        new ItemDonacionNormalizado(donacion, polleraInviernoNormalizado, 3);
+        new ItemDonacionNormalizado(donacion.getId(), polleraInviernoNormalizado, 3);
 
     List<ItemDonacionNormalizado> items = List.of(item1, item2);
     List<DonacionIndependiente> resultado = segmentador.segmentar(items);
@@ -169,10 +171,10 @@ class SegmentadorComplejoTest {
                 .getItems()
                 .forEach(
                     item -> {
-                      assertNotNull(item.getBien(), "El item debe tener un bien asociado");
+                      assertNotNull(item.bien(), "El item debe tener un bien asociado");
                       assertEquals(
                           donacionInd.getSubcategoriaId(),
-                          item.getBien().subcategoriaId(),
+                          item.bien().subcategoriaId(),
                           "El bien debe pertenecer a la subcategoría de la donación");
                     }));
   }
@@ -180,8 +182,9 @@ class SegmentadorComplejoTest {
   @Test
   void segmentar_donacionesIndependientesEstanVinculadasAlDonacionOriginal() {
     ItemDonacionNormalizado item1 =
-        new ItemDonacionNormalizado(donacion, abrigoInviernoNormalizado, 5);
-    ItemDonacionNormalizado item2 = new ItemDonacionNormalizado(donacion, manzanasNormalizado, 10);
+        new ItemDonacionNormalizado(donacion.getId(), abrigoInviernoNormalizado, 5);
+    ItemDonacionNormalizado item2 =
+        new ItemDonacionNormalizado(donacion.getId(), manzanasNormalizado, 10);
 
     List<ItemDonacionNormalizado> items = List.of(item1, item2);
     List<DonacionIndependiente> resultado = segmentador.segmentar(items);
@@ -189,8 +192,8 @@ class SegmentadorComplejoTest {
     resultado.forEach(
         donacionInd ->
             assertEquals(
-                donacion,
-                donacionInd.getDonacionOriginal(),
+                donacion.getId(),
+                donacionInd.getDonacionOriginalId(),
                 "Debe estar vinculada a la donacion original"));
   }
 }

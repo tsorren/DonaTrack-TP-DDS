@@ -1,5 +1,6 @@
 package grupo5.donaciones.services.mappers;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.CambioEstadoOutputDTO;
@@ -8,25 +9,36 @@ import grupo5.donaciones.dto.donaciones.outputs.ItemDonacionOutputDTO;
 import grupo5.donaciones.models.entities.donaciones.*;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DonacionMapper {
 
   private final DireccionMapper direccionMapper;
+  private final IDonantesRepository donantesRepository;
 
-  public DonacionMapper(DireccionMapper direccionMapper) {
+  public DonacionMapper(DireccionMapper direccionMapper, IDonantesRepository donantesRepository) {
     this.direccionMapper = direccionMapper;
+    this.donantesRepository = donantesRepository;
   }
 
   public Donacion toEntity(DonacionInputDTO dto, Persona persona) {
-    return toEntity(dto, new Donante(persona.getId()));
+    return toEntity(dto, persona.getId());
   }
 
   public Donacion toEntity(DonacionInputDTO dto, Donante donante) {
+    if (donante == null) {
+      throw new ValidationException(grupo5.common.exceptions.ErrorCatalog.DONACION_SIN_DONANTE);
+    }
+    return toEntity(dto, donante.getId());
+  }
+
+  public Donacion toEntity(DonacionInputDTO dto, UUID donanteId) {
     if (dto == null) {
       return null;
     }
@@ -34,7 +46,7 @@ public class DonacionMapper {
     Deposito deposito =
         new Deposito(dto.nombreDeposito(), direccionMapper.toEntity(dto.direccion()));
 
-    Donacion donacion = new Donacion(donante, deposito);
+    Donacion donacion = new Donacion(donanteId, deposito);
     donacion.setDescripcion(dto.descripcion());
     donacion.setFecha(LocalDateTime.now(ZoneId.systemDefault()));
 
@@ -58,9 +70,17 @@ public class DonacionMapper {
             .map(DonacionMapper::toCambioEstadoOutputDTO)
             .toList();
 
+    UUID personaId =
+        donacion.getDonanteId() != null
+            ? donantesRepository
+                .findById(donacion.getDonanteId())
+                .map(Donante::personaId)
+                .orElse(null)
+            : null;
+
     return new DonacionOutputDTO(
         donacion.getId(),
-        donacion.getDonante().personaId(),
+        personaId,
         items,
         donacion.getDescripcion(),
         donacion.getFecha(),
@@ -77,11 +97,11 @@ public class DonacionMapper {
 
   private static ItemDonacionOutputDTO toItemOutputDTO(ItemDonacion item) {
     return new ItemDonacionOutputDTO(
-        item.getBien().getDescripcion(),
-        item.getBien().getFotoUrl(),
-        item.getBien().getFechaVencimiento(),
-        item.getBien().getEstado(),
-        item.getCantidad());
+        item.bien().descripcion(),
+        item.bien().fotoUrl(),
+        item.bien().fechaVencimiento(),
+        item.bien().estado(),
+        item.cantidad());
   }
 
   private static CambioEstadoOutputDTO toCambioEstadoOutputDTO(CambioEstadoDonacion cambio) {

@@ -38,7 +38,7 @@ class SegmentadorSimpleTest {
   void setUp() {
     Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
     Donante donante = new Donante(humana.getId());
-    donacion = new Donacion(donante);
+    donacion = new Donacion(donante.getId());
 
     Categoria categoriaRopa = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Categoria categoriaAlimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
@@ -86,8 +86,10 @@ class SegmentadorSimpleTest {
   @Test
   void
       segmentar_conItemsMismaSubcategoriaPeroDiferenteEstadoYVencimiento_losAgrupaEnUnaSolaDonacion() {
-    ItemDonacionNormalizado item1 = new ItemDonacionNormalizado(donacion, abrigoInviernoNuevo, 5);
-    ItemDonacionNormalizado item2 = new ItemDonacionNormalizado(donacion, polleraInviernoUsada, 3);
+    ItemDonacionNormalizado item1 =
+        new ItemDonacionNormalizado(donacion.getId(), abrigoInviernoNuevo, 5);
+    ItemDonacionNormalizado item2 =
+        new ItemDonacionNormalizado(donacion.getId(), polleraInviernoUsada, 3);
 
     List<ItemDonacionNormalizado> items = List.of(item1, item2);
     List<DonacionIndependiente> resultado = segmentador.segmentar(items);
@@ -100,8 +102,10 @@ class SegmentadorSimpleTest {
 
   @Test
   void segmentar_conDiferentesSubcategorias_lasSeparaCorrectamente() {
-    ItemDonacionNormalizado item1 = new ItemDonacionNormalizado(donacion, abrigoInviernoNuevo, 5);
-    ItemDonacionNormalizado item2 = new ItemDonacionNormalizado(donacion, manzanasNormalizado, 10);
+    ItemDonacionNormalizado item1 =
+        new ItemDonacionNormalizado(donacion.getId(), abrigoInviernoNuevo, 5);
+    ItemDonacionNormalizado item2 =
+        new ItemDonacionNormalizado(donacion.getId(), manzanasNormalizado, 10);
 
     List<ItemDonacionNormalizado> items = List.of(item1, item2);
     List<DonacionIndependiente> resultado = segmentador.segmentar(items);

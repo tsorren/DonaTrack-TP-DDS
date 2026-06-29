@@ -24,6 +24,8 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.services.impl.DonacionesIndependientesService;
 import java.time.LocalDate;
 import java.time.Month;
@@ -38,25 +40,37 @@ class DonacionesIndependientesServiceTest {
   private IDonacionesIndependientesRepository repositoryMock;
   private IncentivosFeignClient incentivosFeignClientMock;
   private NotificacionesFeignClient notificacionesFeignClientMock;
+  private IDonacionesRepository donacionRepositoryMock;
+  private IDonantesRepository donantesRepositoryMock;
   private DonacionesIndependientesService service;
 
   private static final String ACTOR = "SISTEMA";
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
+
+  private Donante testDonante;
+  private Donacion testDonacionOriginal;
 
   @BeforeEach
   void setUp() {
     repositoryMock = mock(IDonacionesIndependientesRepository.class);
     incentivosFeignClientMock = mock(IncentivosFeignClient.class);
     notificacionesFeignClientMock = mock(NotificacionesFeignClient.class);
+    donacionRepositoryMock = mock(IDonacionesRepository.class);
+    donantesRepositoryMock = mock(IDonantesRepository.class);
+
     service =
         new DonacionesIndependientesService(
-            repositoryMock, incentivosFeignClientMock, notificacionesFeignClientMock);
+            repositoryMock,
+            incentivosFeignClientMock,
+            notificacionesFeignClientMock,
+            donacionRepositoryMock,
+            donantesRepositoryMock);
   }
 
   private DonacionIndependiente crearDonacionDePrueba() {
     Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
-    Donante donante = new Donante(humana.getId());
-    Donacion donacionOriginal = new Donacion(donante);
+    testDonante = new Donante(humana.getId());
+    testDonacionOriginal = new Donacion(testDonante.getId());
 
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
@@ -66,10 +80,10 @@ class DonacionesIndependientesServiceTest {
             bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     ItemDonacionNormalizado itemNormalizado =
-        new ItemDonacionNormalizado(donacionOriginal, bienNormalizado, 5);
+        new ItemDonacionNormalizado(testDonacionOriginal.getId(), bienNormalizado, 5);
     ItemDonacionIndependiente item = new ItemDonacionIndependiente(itemNormalizado.getBien(), 5);
 
-    return new DonacionIndependiente(donacionOriginal, List.of(item));
+    return new DonacionIndependiente(testDonacionOriginal.getId(), List.of(item));
   }
 
   @Test
@@ -163,6 +177,10 @@ class DonacionesIndependientesServiceTest {
     donacion.setEstadoActual(new EnTraslado());
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(donacionRepositoryMock.findById(donacion.getDonacionOriginalId()))
+        .thenReturn(Optional.of(testDonacionOriginal));
+    when(donantesRepositoryMock.findById(testDonacionOriginal.getDonanteId()))
+        .thenReturn(Optional.of(testDonante));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(TipoEstadoDonacion.ENTREGADA, null, null);
@@ -173,10 +191,7 @@ class DonacionesIndependientesServiceTest {
     assertEquals("Entregada", response.estadoActual());
     verify(repositoryMock, times(1)).save(donacion);
     verify(incentivosFeignClientMock, times(1))
-        .procesarDonacionExitosa(
-            eq(
-                new DonacionExitosaRequest(
-                    donacion.getDonacionOriginal().getDonante().getId(), null)));
+        .procesarDonacionExitosa(eq(new DonacionExitosaRequest(testDonante.getId(), null)));
     verify(notificacionesFeignClientMock, times(1))
         .enviarEvento(any(EventoDonacionRecibidaDTO.class));
   }

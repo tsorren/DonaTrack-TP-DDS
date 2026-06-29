@@ -55,7 +55,7 @@ class ItemDonacionNormalizadoServiceTest {
     Humana humana =
         new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, java.time.Month.MAY, 15));
     Donante donante = new Donante(humana.getId());
-    donacion = new Donacion(donante);
+    donacion = new Donacion(donante.getId());
 
     Categoria categoria =
         new Categoria(
@@ -69,7 +69,7 @@ class ItemDonacionNormalizadoServiceTest {
     BienNormalizado bienNormalizado =
         new BienNormalizado(
             bien, subcategoria.getId(), 0.4, EstadoNormalizacion.PENDIENTE_REVISION, false, false);
-    itemNormalizado = new ItemDonacionNormalizado(donacion, bienNormalizado, 10);
+    itemNormalizado = new ItemDonacionNormalizado(donacion.getId(), bienNormalizado, 10);
   }
 
   @Test

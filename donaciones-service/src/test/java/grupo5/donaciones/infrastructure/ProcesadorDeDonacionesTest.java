@@ -57,7 +57,7 @@ class ProcesadorDeDonacionesTest {
     Humana humana =
         new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     Donante donante = new Donante(humana.getId());
-    Donacion donacion = new Donacion(donante);
+    Donacion donacion = new Donacion(donante.getId());
     donacion.setFecha(java.time.LocalDateTime.now());
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
@@ -68,7 +68,7 @@ class ProcesadorDeDonacionesTest {
             bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, false, false);
 
     ItemDonacionNormalizado itemNormalizado =
-        new ItemDonacionNormalizado(donacion, bienNormalizado, 5);
+        new ItemDonacionNormalizado(donacion.getId(), bienNormalizado, 5);
     List<ItemDonacionNormalizado> itemsNormalizados = Collections.singletonList(itemNormalizado);
 
     when(normalizadorMock.normalizar(donacion)).thenReturn(itemsNormalizados);
@@ -87,7 +87,7 @@ class ProcesadorDeDonacionesTest {
     Humana humana =
         new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     Donante donante = new Donante(humana.getId());
-    Donacion donacion = new Donacion(donante);
+    Donacion donacion = new Donacion(donante.getId());
     donacion.setFecha(java.time.LocalDateTime.now());
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
@@ -103,7 +103,7 @@ class ProcesadorDeDonacionesTest {
             false);
 
     ItemDonacionNormalizado itemNormalizado =
-        new ItemDonacionNormalizado(donacion, bienNormalizado, 5);
+        new ItemDonacionNormalizado(donacion.getId(), bienNormalizado, 5);
     List<ItemDonacionNormalizado> itemsNormalizados = Collections.singletonList(itemNormalizado);
 
     when(normalizadorMock.normalizar(donacion)).thenReturn(itemsNormalizados);

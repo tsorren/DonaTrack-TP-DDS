@@ -5,7 +5,6 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.necesidades.Asignable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -20,17 +19,17 @@ import lombok.Setter;
 @Setter
 public class DonacionIndependiente implements AggregateRoot {
   private final UUID id;
-  private Donacion donacionOriginal;
+  private UUID donacionOriginalId;
   private List<ItemDonacionIndependiente> items;
   private EstadoDonacion estadoActual;
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
   @JsonIgnore private Asignable asignadaA;
 
-  public DonacionIndependiente(Donacion donacionOriginal, List<ItemDonacionIndependiente> items) {
+  public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
     this.id = UUID.randomUUID();
-    this.donacionOriginal = donacionOriginal;
-    if (donacionOriginal == null) {
+    this.donacionOriginalId = donacionOriginalId;
+    if (donacionOriginalId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
 
@@ -43,22 +42,18 @@ public class DonacionIndependiente implements AggregateRoot {
 
   public String getDescripcion() {
     StringBuilder sb = new StringBuilder();
-    items.forEach(i -> sb.append(i.getBien().bienOriginal().getDescripcion()).append(" "));
+    items.forEach(i -> sb.append(i.bien().bienOriginal().descripcion()).append(" "));
     return sb.toString();
   }
 
   public UUID getSubcategoriaId() {
-    return this.items.stream()
-        .findFirst()
-        .map(item -> item.getBien().subcategoriaId())
-        .orElse(null);
+    return this.items.stream().findFirst().map(item -> item.bien().subcategoriaId()).orElse(null);
   }
 
   public void agregarItem(ItemDonacionIndependiente item) {
     if (item == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_AGREGAR_ITEM_NULO);
     }
-    item.setDonacionIndependiente(this);
     this.items.add(item);
   }
 
@@ -71,7 +66,7 @@ public class DonacionIndependiente implements AggregateRoot {
   }
 
   public int getCantidad() {
-    return this.items.stream().mapToInt(ItemDonacionIndependiente::getCantidad).sum();
+    return this.items.stream().mapToInt(ItemDonacionIndependiente::cantidad).sum();
   }
 
   public DonacionIndependiente fragmentarse(Integer cantidadNecesitada) {
@@ -82,15 +77,19 @@ public class DonacionIndependiente implements AggregateRoot {
     List<ItemDonacionIndependiente> itemsExtraidos = new ArrayList<>();
     while (cantidadPorExtraer > 0) {
       ItemDonacionIndependiente itemExtraido = this.items.getFirst();
-      if (itemExtraido.getCantidad() > cantidadPorExtraer) {
+      if (itemExtraido.cantidad() > cantidadPorExtraer) {
+        ItemDonacionIndependiente remainder =
+            new ItemDonacionIndependiente(
+                itemExtraido.bien(), itemExtraido.cantidad() - cantidadPorExtraer);
         itemExtraido = itemExtraido.fragmentarse(cantidadPorExtraer);
+        this.items.set(0, remainder);
       } else {
         this.items.remove(itemExtraido);
       }
       itemsExtraidos.add(itemExtraido);
-      cantidadPorExtraer -= itemExtraido.getCantidad();
+      cantidadPorExtraer -= itemExtraido.cantidad();
     }
-    return new DonacionIndependiente(this.donacionOriginal, itemsExtraidos);
+    return new DonacionIndependiente(this.donacionOriginalId, itemsExtraidos);
   }
 
   // ── Métodos de negocio ─────────────────────────────────────────────────────
@@ -129,7 +128,7 @@ public class DonacionIndependiente implements AggregateRoot {
   }
 
   // Llamado únicamente por los estados concretos
-  public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion, String actor) {
+  void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion, String actor) {
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
     this.estadoActual = nuevoEstado;

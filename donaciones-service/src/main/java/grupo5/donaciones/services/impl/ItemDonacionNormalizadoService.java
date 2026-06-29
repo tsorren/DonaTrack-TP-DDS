@@ -126,8 +126,8 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
     itemNormalizadoRepository.save(item);
 
     // Verificar el estado de la Donación original
-    if (item.getDonacionOriginal() != null) {
-      UUID donacionId = item.getDonacionOriginal().getId();
+    if (item.getDonacionOriginalId() != null) {
+      UUID donacionId = item.getDonacionOriginalId();
       Donacion donacion =
           donacionRepository
               .findById(donacionId)
@@ -140,8 +140,8 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
           itemNormalizadoRepository.findAll().stream()
               .filter(
                   i ->
-                      i.getDonacionOriginal() != null
-                          && i.getDonacionOriginal().getId().equals(donacionId))
+                      i.getDonacionOriginalId() != null
+                          && i.getDonacionOriginalId().equals(donacionId))
               .toList();
 
       boolean tienePendientes =

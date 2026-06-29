@@ -47,13 +47,13 @@ public record BienNormalizado(
       throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_ESTADO);
     }
 
-    if (conVencimiento && bienOriginal.getFechaVencimiento() == null) {
+    if (conVencimiento && bienOriginal.fechaVencimiento() == null) {
       throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_REQUERIDO);
     }
-    if (!conVencimiento && bienOriginal.getFechaVencimiento() != null) {
+    if (!conVencimiento && bienOriginal.fechaVencimiento() != null) {
       throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_NO_PERMITIDO);
     }
-    if (conEstado && bienOriginal.getEstado() == null) {
+    if (conEstado && bienOriginal.estado() == null) {
       throw new ValidationException(ErrorCatalog.BIEN_ESTADO_REQUERIDO);
     }
   }

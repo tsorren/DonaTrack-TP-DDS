@@ -85,6 +85,6 @@ class DonacionRepositoryTest {
     Localidad localidad = new Localidad("CABA", provincia);
     Direccion direccion = new Direccion("Calle Falsa", 123, null, null, "1000", localidad);
     Deposito deposito = new Deposito("Deposito Test", direccion);
-    return new Donacion(donante, deposito);
+    return new Donacion(donante.getId(), deposito);
   }
 }

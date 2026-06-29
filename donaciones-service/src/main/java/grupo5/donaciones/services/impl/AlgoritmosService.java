@@ -11,6 +11,8 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
 import java.time.LocalDateTime;
@@ -33,6 +35,8 @@ public class AlgoritmosService {
   private final NotificacionesFeignClient notificacionesFeignClient;
   private final grupo5.donaciones.models.repositories.ISubcategoriasRepository
       subcategoriasRepository;
+  private final IDonacionesRepository donacionOriginalRepository;
+  private final IDonantesRepository donantesRepository;
 
   public AlgoritmosService(
       IDonacionesIndependientesRepository donacionRepository,
@@ -40,13 +44,17 @@ public class AlgoritmosService {
       PropuestaRepository propuestaRepository,
       ComparadorTexto comparadorTexto,
       NotificacionesFeignClient notificacionesFeignClient,
-      grupo5.donaciones.models.repositories.ISubcategoriasRepository subcategoriasRepository) {
+      grupo5.donaciones.models.repositories.ISubcategoriasRepository subcategoriasRepository,
+      IDonacionesRepository donacionOriginalRepository,
+      IDonantesRepository donantesRepository) {
 
     this.donacionRepository = donacionRepository;
     this.necesidadRepository = necesidadRepository;
     this.propuestaRepository = propuestaRepository;
     this.notificacionesFeignClient = notificacionesFeignClient;
     this.subcategoriasRepository = subcategoriasRepository;
+    this.donacionOriginalRepository = donacionOriginalRepository;
+    this.donantesRepository = donantesRepository;
 
     this.algoritmos =
         List.of(
@@ -182,17 +190,29 @@ public class AlgoritmosService {
               .forEach(
                   f -> {
                     if (f.getDonacionOriginal() != null
-                        && f.getDonacionOriginal().getDonacionOriginal() != null
-                        && f.getDonacionOriginal().getDonacionOriginal().getDonante() != null) {
-                      UUID idPersonaDonante =
-                          f.getDonacionOriginal().getDonacionOriginal().getDonante().personaId();
-                      String detalle = f.getDonacionOriginal().getDescripcion();
-                      notificacionesFeignClient.enviarEvento(
-                          new EventoDonacionAsignadaDTO(
-                              idPersonaDonante,
-                              LocalDateTime.now(),
-                              idPersonaBeneficiaria,
-                              detalle));
+                        && f.getDonacionOriginal().getDonacionOriginalId() != null) {
+                      UUID donacionId = f.getDonacionOriginal().getDonacionOriginalId();
+                      donacionOriginalRepository
+                          .findById(donacionId)
+                          .ifPresent(
+                              donacion -> {
+                                if (donacion.getDonanteId() != null) {
+                                  donantesRepository
+                                      .findById(donacion.getDonanteId())
+                                      .ifPresent(
+                                          donante -> {
+                                            UUID idPersonaDonante = donante.personaId();
+                                            String detalle =
+                                                f.getDonacionOriginal().getDescripcion();
+                                            notificacionesFeignClient.enviarEvento(
+                                                new EventoDonacionAsignadaDTO(
+                                                    idPersonaDonante,
+                                                    LocalDateTime.now(),
+                                                    idPersonaBeneficiaria,
+                                                    detalle));
+                                          });
+                                }
+                              });
                     }
                   });
         }

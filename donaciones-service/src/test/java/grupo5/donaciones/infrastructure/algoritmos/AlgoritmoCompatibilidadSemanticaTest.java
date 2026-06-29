@@ -39,7 +39,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @BeforeEach
   void setUp() {
     Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    donacionOriginal = new Donacion(new Donante(humana.getId()));
+    Donante donante = new Donante(humana.getId());
+    donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
     subcategoriaOtra = new Subcategoria(categoria.getId(), "Muebles de Oficina");
@@ -59,7 +60,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
             bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienConDescripcion, cantidad));
-    return new DonacionIndependiente(donacionOriginal, items);
+    return new DonacionIndependiente(donacionOriginal.getId(), items);
   }
 
   @Test
@@ -82,7 +83,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
     DonacionIndependiente donacionOtraCategoria =
-        new DonacionIndependiente(donacionOriginal, items);
+        new DonacionIndependiente(donacionOriginal.getId(), items);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacionOtraCategoria);
@@ -116,8 +117,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
         new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
-    DonacionIndependiente donacion1 = new DonacionIndependiente(donacionOriginal, items);
-    DonacionIndependiente donacion2 = new DonacionIndependiente(donacionOriginal, items);
+    DonacionIndependiente donacion1 = new DonacionIndependiente(donacionOriginal.getId(), items);
+    DonacionIndependiente donacion2 = new DonacionIndependiente(donacionOriginal.getId(), items);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacion1);

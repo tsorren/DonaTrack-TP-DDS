@@ -3,42 +3,47 @@ package grupo5.donaciones.models.entities.donaciones;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
-import grupo5.donaciones.models.entities.donantes.Donante;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-@Setter
 public class Donacion implements AggregateRoot {
   private final UUID id;
-  private Donante donante;
-  private List<ItemDonacion> items;
-  private String descripcion;
-  private LocalDateTime fecha;
+  @Setter private UUID donanteId;
 
-  private Deposito depositoRecepcion;
+  @Getter(AccessLevel.NONE)
+  private List<ItemDonacion> items;
+
+  @Setter private String descripcion;
+  @Setter private LocalDateTime fecha;
+  @Setter private Deposito depositoRecepcion;
   private EstadoDonacion estadoActual;
   private final List<CambioEstadoDonacion> historialEstados;
 
-  public Donacion(Donante donante, Deposito depositoRecepcion) {
-    if (donante == null) {
+  public Donacion(UUID donanteId, Deposito depositoRecepcion) {
+    if (donanteId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_SIN_DONANTE);
     }
     this.id = UUID.randomUUID();
-    this.donante = donante;
+    this.donanteId = donanteId;
     this.depositoRecepcion = depositoRecepcion;
     this.items = new ArrayList<>();
     this.estadoActual = EstadoDonacion.CARGADA;
     this.historialEstados = new ArrayList<>();
   }
 
-  public Donacion(Donante donante) {
-    this(donante, null);
+  public Donacion(UUID donanteId) {
+    this(donanteId, null);
+  }
+
+  public List<ItemDonacion> getItems() {
+    return Collections.unmodifiableList(items);
   }
 
   public void agregarItem(ItemDonacion item) {

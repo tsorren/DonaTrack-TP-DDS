@@ -1,6 +1,7 @@
 package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
@@ -16,25 +17,30 @@ import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.entities.ubicaciones.Localidad;
 import grupo5.donaciones.models.entities.ubicaciones.Pais;
 import grupo5.donaciones.models.entities.ubicaciones.Provincia;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DonacionMapperTest {
 
+  private IDonantesRepository donantesRepositoryMock;
   private DonacionMapper mapper;
 
   @BeforeEach
   void setUp() {
-    mapper = new DonacionMapper(new DireccionMapper());
+    donantesRepositoryMock = mock(IDonantesRepository.class);
+    mapper = new DonacionMapper(new DireccionMapper(), donantesRepositoryMock);
   }
 
   @Test
   void toEntity_conDtoValido_deberiaMapearCorrectamente() {
     Humana persona = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
+
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
@@ -49,7 +55,7 @@ class DonacionMapperTest {
     assertEquals("descripcion test", donacion.getDescripcion());
     assertNotNull(donacion.getFecha());
     assertEquals(EstadoDonacion.CARGADA, donacion.getEstadoActual());
-    assertEquals(persona.getId(), donacion.getDonante().personaId());
+    assertEquals(persona.getId(), donacion.getDonanteId());
     assertEquals("Deposito Central", donacion.getDepositoRecepcion().nombre());
     assertTrue(donacion.getItems().isEmpty());
   }
@@ -64,8 +70,10 @@ class DonacionMapperTest {
     Humana persona = new Humana("Maria", "Lopez", LocalDate.of(1993, Month.APRIL, 10));
     Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Test", crearDireccion());
-    Donacion donacion = new Donacion(donante, deposito);
+    Donacion donacion = new Donacion(donante.getId(), deposito);
     donacion.setDescripcion("una donacion");
+
+    when(donantesRepositoryMock.findById(donante.getId())).thenReturn(Optional.of(donante));
 
     DonacionOutputDTO output = mapper.toOutputDTO(donacion);
 
@@ -87,6 +95,7 @@ class DonacionMapperTest {
   @Test
   void toEntity_conItems_deberiaMapearItems() {
     Humana persona = new Humana("Ana", "Garcia", LocalDate.of(1995, Month.MARCH, 15));
+
     ItemDonacionInputDTO item1 =
         new ItemDonacionInputDTO(
             "abrigo", "foto.png", LocalDate.of(2027, Month.JANUARY, 1), Estado.NUEVO, 3);
@@ -101,10 +110,10 @@ class DonacionMapperTest {
     Donacion donacion = mapper.toEntity(dto, persona);
 
     assertEquals(2, donacion.getItems().size());
-    assertEquals("abrigo", donacion.getItems().get(0).getBien().getDescripcion());
-    assertEquals(3, donacion.getItems().get(0).getCantidad());
-    assertEquals("pantalon", donacion.getItems().get(1).getBien().getDescripcion());
-    assertEquals(2, donacion.getItems().get(1).getCantidad());
+    assertEquals("abrigo", donacion.getItems().get(0).bien().descripcion());
+    assertEquals(3, donacion.getItems().get(0).cantidad());
+    assertEquals("pantalon", donacion.getItems().get(1).bien().descripcion());
+    assertEquals(2, donacion.getItems().get(1).cantidad());
   }
 
   @Test
@@ -112,9 +121,11 @@ class DonacionMapperTest {
     Humana persona = new Humana("Carlos", "Ruiz", LocalDate.of(1988, Month.JULY, 20));
     Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Norte", crearDireccion());
-    Donacion donacion = new Donacion(donante, deposito);
+    Donacion donacion = new Donacion(donante.getId(), deposito);
     donacion.marcarNormalizada();
     donacion.marcarSegmentada();
+
+    when(donantesRepositoryMock.findById(donante.getId())).thenReturn(Optional.of(donante));
 
     DonacionOutputDTO output = mapper.toOutputDTO(donacion);
 

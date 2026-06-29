@@ -42,7 +42,8 @@ class NormalizadorSemanticoBienTest {
 
     categoria = new Categoria("Varios", false, false, Unidad.UNIDADES);
     Humana humana = new Humana("Juan", "Perez", LocalDate.of(2026, Month.JUNE, 18));
-    donacion = new Donacion(new Donante(humana.getId()));
+    Donante donante = new Donante(humana.getId());
+    donacion = new Donacion(donante.getId());
   }
 
   @Test

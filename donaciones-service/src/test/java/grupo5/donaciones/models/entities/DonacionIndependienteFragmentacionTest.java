@@ -34,7 +34,8 @@ class DonacionIndependienteFragmentacionTest {
   @BeforeEach
   void setUp() {
     Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    donacion = new Donacion(new Donante(humana.getId()));
+    Donante donante = new Donante(humana.getId());
+    donacion = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
 
@@ -51,7 +52,7 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item1);
     items.add(item2);
 
-    donacionIndependiente = new DonacionIndependiente(donacion, items);
+    donacionIndependiente = new DonacionIndependiente(donacion.getId(), items);
   }
 
   @Test
@@ -105,7 +106,7 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item2);
     items.add(item3);
 
-    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion, items);
+    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion.getId(), items);
 
     DonacionIndependiente fragmentada = donacionLocal.fragmentarse(13);
 
@@ -146,7 +147,7 @@ class DonacionIndependienteFragmentacionTest {
   @Test
   void quitarItem_conItemValido_debieraQuitarse() {
     ItemDonacionIndependiente item = donacionIndependiente.getItems().getFirst();
-    int cantidadInicial = item.getCantidad();
+    int cantidadInicial = item.cantidad();
     int cantidadTotalInicial = donacionIndependiente.getCantidad();
 
     donacionIndependiente.quitarItem(item);

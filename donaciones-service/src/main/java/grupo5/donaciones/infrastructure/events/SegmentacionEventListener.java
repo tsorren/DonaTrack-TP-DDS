@@ -6,6 +6,7 @@ import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
@@ -14,6 +15,7 @@ import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.ports.Segmentador;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
@@ -40,6 +42,7 @@ public class SegmentacionEventListener {
   private final ICategoriasRepository categoriasRepository;
   private final ISubcategoriasRepository subcategoriasRepository;
   private final IPersonasRepository personasRepository;
+  private final IDonantesRepository donantesRepository;
 
   @EventListener
   public void onDonacionNormalizada(DonacionNormalizadaEvent event) {
@@ -55,8 +58,8 @@ public class SegmentacionEventListener {
         itemNormalizadoRepository.findAll().stream()
             .filter(
                 item ->
-                    item.getDonacionOriginal() != null
-                        && item.getDonacionOriginal().getId().equals(event.donacionId()))
+                    item.getDonacionOriginalId() != null
+                        && item.getDonacionOriginalId().equals(event.donacionId()))
             .toList();
 
     List<ItemDonacionNormalizado> itemsAceptados =
@@ -106,7 +109,7 @@ public class SegmentacionEventListener {
           di.getItems().stream()
               .map(
                   item -> {
-                    UUID subId = item.getBien().subcategoriaId();
+                    UUID subId = item.bien().subcategoriaId();
                     UUID catId =
                         subId != null
                             ? subcategoriasRepository
@@ -124,7 +127,20 @@ public class SegmentacionEventListener {
               .distinct()
               .toList();
 
-      UUID personaId = di.getDonacionOriginal().getDonante().personaId();
+      UUID donacionOriginalId = di.getDonacionOriginalId();
+      Donacion donacionOriginal =
+          donacionRepository
+              .findById(donacionOriginalId)
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "Donación original no encontrada: " + donacionOriginalId));
+      UUID donanteId = donacionOriginal.getDonanteId();
+      Donante donante =
+          donantesRepository
+              .findById(donanteId)
+              .orElseThrow(() -> new IllegalStateException("Donante no encontrado: " + donanteId));
+      UUID personaId = donante.personaId();
       Persona persona =
           personasRepository
               .findById(personaId)
@@ -133,10 +149,10 @@ public class SegmentacionEventListener {
 
       NuevaDonacionRequest request =
           new NuevaDonacionRequest(
-              di.getDonacionOriginal().getDonante().getId(),
+              donanteId,
               categorias,
               di.getCantidad(),
-              di.getDonacionOriginal().getFecha().toLocalDate(),
+              donacionOriginal.getFecha().toLocalDate(),
               nombreDonante);
 
       try {

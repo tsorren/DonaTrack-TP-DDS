@@ -21,6 +21,7 @@ import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.ports.Segmentador;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
@@ -44,10 +45,12 @@ class SegmentacionEventListenerTest {
   @Mock private ICategoriasRepository categoriasRepository;
   @Mock private ISubcategoriasRepository subcategoriasRepository;
   @Mock private grupo5.donaciones.models.repositories.IPersonasRepository personasRepository;
+  @Mock private IDonantesRepository donantesRepository;
 
   @InjectMocks private SegmentacionEventListener listener;
 
   private Donacion donacion;
+  private Donante donante;
   private Categoria categoria;
   private Subcategoria subcategoria;
   private ItemDonacionNormalizado itemAceptado;
@@ -57,8 +60,8 @@ class SegmentacionEventListenerTest {
   @BeforeEach
   void setUp() {
     humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    Donante donante = new Donante(humana.getId());
-    donacion = new Donacion(donante);
+    donante = new Donante(humana.getId());
+    donacion = new Donacion(donante.getId());
     donacion.setFecha(java.time.LocalDateTime.now());
     donacion.marcarNormalizada();
 
@@ -70,13 +73,13 @@ class SegmentacionEventListenerTest {
     BienNormalizado bnAceptado =
         new BienNormalizado(
             bien1, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, false, false);
-    itemAceptado = new ItemDonacionNormalizado(donacion, bnAceptado, 5);
+    itemAceptado = new ItemDonacionNormalizado(donacion.getId(), bnAceptado, 5);
 
     Bien bien2 = new Bien("Basura", null, null, null);
     BienNormalizado bnRechazado =
         new BienNormalizado(
             bien2, subcategoria.getId(), 0.0, EstadoNormalizacion.RECHAZADO, false, false);
-    itemRechazado = new ItemDonacionNormalizado(donacion, bnRechazado, 1);
+    itemRechazado = new ItemDonacionNormalizado(donacion.getId(), bnRechazado, 1);
   }
 
   @Test
@@ -88,12 +91,13 @@ class SegmentacionEventListenerTest {
         new grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente(
             itemAceptado.getBien(), 5);
     DonacionIndependiente donacionIndependiente =
-        new DonacionIndependiente(donacion, List.of(itemIndep));
+        new DonacionIndependiente(donacion.getId(), List.of(itemIndep));
 
     when(segmentador.segmentar(List.of(itemAceptado))).thenReturn(List.of(donacionIndependiente));
     when(subcategoriasRepository.findById(subcategoria.getId()))
         .thenReturn(Optional.of(subcategoria));
     when(categoriasRepository.findById(categoria.getId())).thenReturn(Optional.of(categoria));
+    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.of(donante));
     when(personasRepository.findById(humana.getId())).thenReturn(Optional.of(humana));
 
     listener.onDonacionNormalizada(new DonacionNormalizadaEvent(donacion.getId()));

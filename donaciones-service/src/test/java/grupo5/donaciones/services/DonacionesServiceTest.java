@@ -63,7 +63,7 @@ class DonacionesServiceTest {
     Localidad localidad = new Localidad("CABA", provincia);
     Direccion direccion = new Direccion("Calle Falsa", 123, null, null, "1000", localidad);
     Deposito deposito = new Deposito("Deposito Test", direccion);
-    donacion = new Donacion(donante, deposito);
+    donacion = new Donacion(donante.getId(), deposito);
 
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(

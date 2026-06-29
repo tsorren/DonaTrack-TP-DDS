@@ -7,10 +7,14 @@ import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndepe
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -22,14 +26,20 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   private final IDonacionesIndependientesRepository repositorio;
   private final IncentivosFeignClient incentivosFeignClient;
   private final NotificacionesFeignClient notificacionesFeignClient;
+  private final IDonacionesRepository donacionRepository;
+  private final IDonantesRepository donantesRepository;
 
   public DonacionesIndependientesService(
       IDonacionesIndependientesRepository repositorio,
       IncentivosFeignClient incentivosFeignClient,
-      NotificacionesFeignClient notificacionesFeignClient) {
+      NotificacionesFeignClient notificacionesFeignClient,
+      IDonacionesRepository donacionRepository,
+      IDonantesRepository donantesRepository) {
     this.repositorio = repositorio;
     this.incentivosFeignClient = incentivosFeignClient;
     this.notificacionesFeignClient = notificacionesFeignClient;
+    this.donacionRepository = donacionRepository;
+    this.donantesRepository = donantesRepository;
   }
 
   @Override
@@ -48,8 +58,17 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(actor);
       case TipoEstadoDonacion.ENTREGADA -> {
         donacion.confirmarEntrega(actor);
-        UUID donanteId = donacion.getDonacionOriginal().getDonante().getId();
-        UUID personaDonanteId = donacion.getDonacionOriginal().getDonante().personaId();
+        UUID donacionOriginalId = donacion.getDonacionOriginalId();
+        Donacion donacionOriginal =
+            donacionRepository
+                .findById(donacionOriginalId)
+                .orElseThrow(() -> new RecursoNoEncontradoException(donacionOriginalId));
+        UUID donanteId = donacionOriginal.getDonanteId();
+        Donante donante =
+            donantesRepository
+                .findById(donanteId)
+                .orElseThrow(() -> new RecursoNoEncontradoException(donanteId));
+        UUID personaDonanteId = donante.personaId();
         UUID organizacionId = null;
         UUID idPersonaBeneficiaria = null;
         if (donacion.getAsignadaA() != null) {

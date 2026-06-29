@@ -3,12 +3,12 @@ package grupo5.donaciones.infrastructure.segmentadores;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.time.LocalDate;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ public class SegmentadorComplejo extends AbstractSegmentador<SegmentadorComplejo
   private final ISubcategoriasRepository subcategoriasRepository;
 
   protected record GroupingKey(
-      Donacion donacionOriginal,
+      UUID donacionOriginalId,
       Subcategoria subcategoria,
       Estado estado,
       LocalDate fechaVencimiento,
@@ -42,10 +42,10 @@ public class SegmentadorComplejo extends AbstractSegmentador<SegmentadorComplejo
             : Unidad.UNIDADES;
 
     return new GroupingKey(
-        item.getDonacionOriginal(),
+        item.getDonacionOriginalId(),
         subcat,
-        item.getBien().bienOriginal().getEstado(),
-        item.getBien().bienOriginal().getFechaVencimiento(),
+        item.getBien().bienOriginal().estado(),
+        item.getBien().bienOriginal().fechaVencimiento(),
         unidad);
   }
 }

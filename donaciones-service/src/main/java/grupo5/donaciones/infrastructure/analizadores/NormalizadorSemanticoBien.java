@@ -44,14 +44,14 @@ public class NormalizadorSemanticoBien {
             i ->
                 itemsNormalizados.add(
                     new ItemDonacionNormalizado(
-                        donacion, normalizarBien(i, subcategorias), i.getCantidad())));
+                        donacion.getId(), normalizarBien(i, subcategorias), i.cantidad())));
 
     return itemsNormalizados;
   }
 
   private BienNormalizado normalizarBien(ItemDonacion item, List<Subcategoria> subcategorias) {
-    Bien bien = item.getBien();
-    String descripcion = bien.getDescripcion();
+    Bien bien = item.bien();
+    String descripcion = bien.descripcion();
 
     if (subcategorias == null || subcategorias.isEmpty()) {
       throw new grupo5.common.exceptions.ValidationException(

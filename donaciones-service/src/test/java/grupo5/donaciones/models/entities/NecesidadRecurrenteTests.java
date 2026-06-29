@@ -37,7 +37,8 @@ class NecesidadRecurrenteTests {
   void setUp() {
 
     Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    Donacion donacion = new Donacion(new Donante(humana.getId()));
+    Donante donante = new Donante(humana.getId());
+    Donacion donacion = new Donacion(donante.getId());
     categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
     necesidad =
@@ -56,11 +57,11 @@ class NecesidadRecurrenteTests {
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
 
-    d1 = new DonacionIndependiente(donacion, List.of(item1));
+    d1 = new DonacionIndependiente(donacion.getId(), List.of(item1));
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 100);
 
-    d2 = new DonacionIndependiente(donacion, List.of(item2));
+    d2 = new DonacionIndependiente(donacion.getId(), List.of(item2));
   }
 
   @Test
