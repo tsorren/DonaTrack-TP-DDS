@@ -16,6 +16,9 @@ public interface IIncentivosController {
 
   ResponseEntity<Void> darDeBaja(@PathVariable UUID donanteId);
 
+  ResponseEntity<Void> modificarDonante(
+      @PathVariable UUID donanteId, @RequestBody ModificarDonanteRequest request);
+
   ResponseEntity<MetricasDonanteDTO> obtenerMetricas(@PathVariable UUID donanteId);
 
   ResponseEntity<List<MisionDTO>> obtenerMisiones(@PathVariable UUID donanteId);
