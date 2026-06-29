@@ -4,30 +4,25 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.dto.NecesidadDTO;
-import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public abstract class Necesidad implements Asignable, AggregateRoot {
   private final UUID id;
-  private Subcategoria subcategoria;
+  private UUID subcategoriaId;
   private Integer cantidadNecesitada;
   private String descripcion;
   private LocalDate fechaInicio;
-  private EntidadBeneficiaria entidad;
+  private UUID entidadId;
 
-  protected Necesidad(Subcategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
+  protected Necesidad(UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
     this.id = UUID.randomUUID();
-
-    this.subcategoria = subcategoria;
+    this.subcategoriaId = subcategoriaId;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
     this.fechaInicio = LocalDate.now(ZoneId.systemDefault());
@@ -35,16 +30,28 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
     validarNecesidad();
   }
 
-  protected NecesidadDTO toDTO(String tipo, LocalDate fechaFin) {
+  public void asociarAEntidad(UUID entidadId) {
+    if (entidadId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    this.entidadId = entidadId;
+  }
+
+  public void actualizarCantidadNecesitada(Integer cantidadNecesitada) {
+    if (cantidadNecesitada == null || cantidadNecesitada <= 0) {
+      throw new ValidationException(ErrorCatalog.CANTIDAD_NECESITADA_INVALIDA);
+    }
+    this.cantidadNecesitada = cantidadNecesitada;
+  }
+
+  public abstract TipoNecesidad getTipoNecesidad();
+
+  protected NecesidadDTO toDTO(LocalDate fechaFin) {
     return new NecesidadDTO(
         this.id,
-        tipo, // recurrente o extraordinaria
-        this.getEntidad() != null
-            ? this.getEntidad().getId()
-            : null, // Otro aggregate root -> ref por id
-        this.subcategoria != null
-            ? this.subcategoria.getId()
-            : null, // Otro aggregate root -> ref por id
+        this.getTipoNecesidad().name(),
+        this.entidadId, // Otro aggregate root -> ref por id
+        this.subcategoriaId, // Otro aggregate root -> ref por id
         this.cantidadNecesitada,
         this.descripcion,
         this.estaSatisfecha(),
@@ -56,7 +63,7 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
 
   private void validarNecesidad() {
 
-    if (this.subcategoria == null) {
+    if (this.subcategoriaId == null) {
       throw new ValidationException(ErrorCatalog.NECESIDAD_SIN_SUBCATEGORIA);
     }
 
@@ -81,6 +88,8 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
   public abstract void quitarDonacion(DonacionIndependiente donacionAsignada);
 
   public abstract boolean estaSatisfecha();
+
+  public abstract boolean isActiva();
 
   public abstract Integer cantidadAcumulada();
 }

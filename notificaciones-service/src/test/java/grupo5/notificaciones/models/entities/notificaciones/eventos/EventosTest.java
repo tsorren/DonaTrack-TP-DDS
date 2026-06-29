@@ -60,7 +60,7 @@ class EventosNotificablesTest {
     assertEquals(
         "Bienvenido a DonaTrack\nusuario: Usuario", notificaciones.getFirst().getMensaje());
 
-    assertEquals(persona, notificaciones.getFirst().getPersona());
+    assertEquals(persona.getId(), notificaciones.getFirst().getPersonaId());
   }
 
   @Test

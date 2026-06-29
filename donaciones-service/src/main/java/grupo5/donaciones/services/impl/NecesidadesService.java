@@ -4,8 +4,6 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
-import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
@@ -39,7 +37,7 @@ public class NecesidadesService implements INecesidadesService {
     Necesidad necesidadDominio = convertirDTOANecesidad(dto);
     necesidadRepository.save(necesidadDominio);
 
-    return dto;
+    return necesidadDominio.toDTO();
   }
 
   @Override
@@ -53,40 +51,39 @@ public class NecesidadesService implements INecesidadesService {
   public List<NecesidadDTO> listarConFiltros(UUID entidadId, String tipo) {
     return necesidadRepository.findAll().stream()
         .map(Necesidad::toDTO)
-        .filter(dto -> entidadId == null || entidadId.equals(dto.getIdEntidad()))
-        .filter(dto -> tipo == null || tipo.equalsIgnoreCase(dto.getTipo()))
+        .filter(dto -> entidadId == null || entidadId.equals(dto.idEntidad()))
+        .filter(dto -> tipo == null || tipo.equalsIgnoreCase(dto.tipo()))
         .toList();
   }
 
   // MAPPER INPUT (dto -> dominio)
   private Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
 
-    Subcategoria subcategoria =
-        subcategoriaRepository
-            .findById(dto.getIdSubcategoria())
-            .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdSubcategoria()));
-    EntidadBeneficiaria entidadBeneficiaria =
-        entidadesBeneficiariasRepository
-            .findById(dto.getIdEntidad())
-            .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdEntidad()));
+    subcategoriaRepository
+        .findById(dto.idSubcategoria())
+        .orElseThrow(() -> new RecursoNoEncontradoException(dto.idSubcategoria()));
+    entidadesBeneficiariasRepository
+        .findById(dto.idEntidad())
+        .orElseThrow(() -> new RecursoNoEncontradoException(dto.idEntidad()));
     Necesidad necesidad =
-        switch (dto.getTipo()) {
+        switch (dto.tipo()) {
           case "RECURRENTE" -> {
-            Period periodo = Period.between(dto.getFechaInicio(), dto.getFechaFin());
+            Period periodo = Period.between(dto.fechaInicio(), dto.fechaFin());
             yield new NecesidadRecurrente(
-                subcategoria,
-                dto.getCantidadNecesitada(),
-                dto.getDescripcion(),
+                dto.idSubcategoria(),
+                dto.cantidadNecesitada(),
+                dto.descripcion(),
                 periodo,
-                dto.getFechaInicio());
+                dto.fechaInicio());
           }
           case "EXTRAORDINARIA" -> new NecesidadExtraordinaria(
-              subcategoria, dto.getCantidadNecesitada(), dto.getDescripcion());
+              dto.idSubcategoria(), dto.cantidadNecesitada(), dto.descripcion());
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
-    necesidad.setEntidad(entidadBeneficiaria);
+    if (dto.idEntidad() != null) {
+      necesidad.asociarAEntidad(dto.idEntidad());
+    }
 
-    // entidadBeneficiaria.agregarNecesidad(necesidad);
     return necesidad;
   }
 }

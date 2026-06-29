@@ -20,5 +20,5 @@ public interface ISubcategoriasController {
 
   ResponseEntity<SubcategoriaOutputDTO> agregarAlias(UUID id, AliasSubcategoriaInputDTO dto);
 
-  ResponseEntity<SubcategoriaOutputDTO> quitarAlias(UUID id, UUID idAlias);
+  ResponseEntity<SubcategoriaOutputDTO> quitarAlias(UUID id, String alias);
 }

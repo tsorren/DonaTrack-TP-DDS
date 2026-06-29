@@ -3,8 +3,10 @@ package grupo5.notificaciones.services;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
+import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
-import grupo5.notificaciones.models.repositories.IPersonasRepository;
+import grupo5.notificaciones.models.repositories.NotificacionRepository;
+import grupo5.notificaciones.models.repositories.PersonaRepository;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -12,11 +14,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class PersonasService implements IPersonasService {
 
-  private final IPersonasRepository repository;
+  private final PersonaRepository repository;
+  private final NotificacionRepository notificacionRepository;
   private final PersonaMapper mapper;
 
-  public PersonasService(IPersonasRepository repository, PersonaMapper mapper) {
+  public PersonasService(
+      PersonaRepository repository,
+      NotificacionRepository notificacionRepository,
+      PersonaMapper mapper) {
     this.repository = repository;
+    this.notificacionRepository = notificacionRepository;
     this.mapper = mapper;
   }
 
@@ -34,6 +41,13 @@ public class PersonasService implements IPersonasService {
             .orElseThrow(() -> new ValidationException(ErrorCatalog.RECURSO_NO_ENCONTRADO));
     persona.anonimizar();
     repository.save(persona);
+
+    // Coordinate the anonimizacion of related notifications
+    java.util.List<Notificacion> notificaciones = notificacionRepository.findByPersonaId(id);
+    for (Notificacion notificacion : notificaciones) {
+      notificacion.anonimizar();
+      notificacionRepository.save(notificacion);
+    }
   }
 
   @Override

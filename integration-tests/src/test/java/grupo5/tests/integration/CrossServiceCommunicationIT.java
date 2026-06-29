@@ -250,10 +250,11 @@ public class CrossServiceCommunicationIT extends BaseIT {
     assertFalse(propuestas.isEmpty());
 
     // Find the proposal matching our necessity description
+    // PropuestaDTO fields: id, estado, necesidad (NecesidadResumenDTO), fragmentaciones
     Map<String, Object> propuesta = null;
     for (Map<String, Object> p : propuestas) {
-      Map<String, Object> nec = (Map<String, Object>) p.get("necesidadQueSatisface");
-      if (nec != null && nec.get("descripcion").equals("Necesidad de arroz preprod")) {
+      Map<String, Object> nec = (Map<String, Object>) p.get("necesidad");
+      if (nec != null && "Necesidad de arroz preprod".equals(nec.get("descripcion"))) {
         propuesta = p;
         break;
       }
@@ -262,14 +263,16 @@ public class CrossServiceCommunicationIT extends BaseIT {
     assertNotNull(propuesta, "Propuesta no encontrada para la necesidad de arroz");
     String propuestaId = (String) propuesta.get("id");
 
-    // Get the DonacionIndependiente ID from posiblesFragmentaciones
+    // Get the DonacionIndependiente ID from fragmentaciones
+    // FragmentacionDTO fields: donacionOriginalId (UUID of DonacionIndependiente), cantidadNecesaria, descripcionDonacion
     List<Map<String, Object>> frags =
-        (List<Map<String, Object>>) propuesta.get("posiblesFragmentaciones");
+        (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertFalse(frags.isEmpty());
     Map<String, Object> frag = frags.get(0);
-    Map<String, Object> donacionInd = (Map<String, Object>) frag.get("donacionOriginal");
-    String donacionIndependienteId = (String) donacionInd.get("id");
+    Map<String, Object> di = (Map<String, Object>) frag.get("donacionIndependiente");
+    assertNotNull(di);
+    String donacionIndependienteId = (String) di.get("id");
     assertNotNull(donacionIndependienteId);
 
     // 7. Approve Propuesta
@@ -405,7 +408,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 4. Toggle visibility to false
     given()
         .when()
-        .patch(
+        .put(
             INCENTIVOS_URL
                 + "/api/incentivos/donantes/"
                 + donorId
@@ -424,7 +427,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 6. Toggle visibility to true
     given()
         .when()
-        .patch(
+        .put(
             INCENTIVOS_URL
                 + "/api/incentivos/donantes/"
                 + donorId
@@ -489,10 +492,11 @@ public class CrossServiceCommunicationIT extends BaseIT {
     assertFalse(propuestas.isEmpty());
 
     // Find the proposal matching our necessity description
+    // PropuestaDTO fields: id, estado, necesidad (NecesidadResumenDTO), fragmentaciones
     Map<String, Object> propuesta = null;
     for (Map<String, Object> p : propuestas) {
-      Map<String, Object> nec = (Map<String, Object>) p.get("necesidadQueSatisface");
-      if (nec != null && nec.get("descripcion").equals("Necesidad de arroz/fideos preprod")) {
+      Map<String, Object> nec = (Map<String, Object>) p.get("necesidad");
+      if (nec != null && "Necesidad de arroz/fideos preprod".equals(nec.get("descripcion"))) {
         propuesta = p;
         break;
       }
@@ -501,7 +505,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     assertNotNull(propuesta, "Propuesta no encontrada para la necesidad de arroz/fideos");
     String propuestaId = (String) propuesta.get("id");
 
-    // Approve Propuesta (this confirms assignments and outputs fragmentations)
+    // Approve Propuesta (this confirms assignments and triggers notifications)
     Map<String, Object> approveBody = new HashMap<>();
     approveBody.put("estado", "APROBADA");
     given()
@@ -512,15 +516,16 @@ public class CrossServiceCommunicationIT extends BaseIT {
         .then()
         .statusCode(200);
 
-    // Get the DonacionIndependiente IDs from posiblesFragmentaciones
+    // Get the DonacionIndependiente IDs from fragmentaciones
+    // FragmentacionDTO fields: donacionOriginalId (UUID of DonacionIndependiente), cantidadNecesaria, descripcionDonacion
     List<Map<String, Object>> frags =
-        (List<Map<String, Object>>) propuesta.get("posiblesFragmentaciones");
+        (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertEquals(
         2, frags.size(), "Deberían haber 2 fragmentaciones para completar la necesidad de 10 unidades");
 
-    String diId1 = (String) ((Map<String, Object>) frags.get(0).get("donacionOriginal")).get("id");
-    String diId2 = (String) ((Map<String, Object>) frags.get(1).get("donacionOriginal")).get("id");
+    String diId1 = (String) ((Map<String, Object>) frags.get(0).get("donacionIndependiente")).get("id");
+    String diId2 = (String) ((Map<String, Object>) frags.get(1).get("donacionIndependiente")).get("id");
 
     // 7. Transition both DonacionIndependiente states to ENTREGADA
     for (String diId : List.of(diId1, diId2)) {

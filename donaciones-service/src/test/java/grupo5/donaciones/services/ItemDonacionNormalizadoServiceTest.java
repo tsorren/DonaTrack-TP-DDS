@@ -17,9 +17,10 @@ import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
-import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import grupo5.donaciones.services.impl.ItemDonacionNormalizadoService;
 import grupo5.donaciones.services.mappers.ItemDonacionNormalizadoMapper;
 import java.util.List;
@@ -37,8 +38,9 @@ import org.springframework.context.ApplicationEventPublisher;
 class ItemDonacionNormalizadoServiceTest {
 
   @Mock private IItemDonacionNormalizadoRepository itemNormalizadoRepository;
-  @Mock private DonacionRepositoryEnMemoria donacionRepository;
+  @Mock private IDonacionesRepository donacionRepository;
   @Mock private ISubcategoriasRepository subcategoriasRepository;
+  @Mock private ICategoriasRepository categoriasRepository;
   @Mock private ItemDonacionNormalizadoMapper mapper;
   @Mock private ApplicationEventPublisher eventPublisher;
 
@@ -52,8 +54,8 @@ class ItemDonacionNormalizadoServiceTest {
   void setUp() {
     Humana humana =
         new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, java.time.Month.MAY, 15));
-    Donante donante = new Donante(humana);
-    donacion = new Donacion(donante);
+    Donante donante = new Donante(humana.getId());
+    donacion = new Donacion(donante.getId());
 
     Categoria categoria =
         new Categoria(
@@ -61,12 +63,13 @@ class ItemDonacionNormalizadoServiceTest {
             false,
             false,
             grupo5.donaciones.models.entities.categorias.Unidad.KILOGRAMO);
-    subcategoria = new Subcategoria(categoria, "Arroz");
+    subcategoria = new Subcategoria(categoria.getId(), "Arroz");
 
     Bien bien = new Bien("Paquete de arroz", null, null, null);
     BienNormalizado bienNormalizado =
-        new BienNormalizado(bien, subcategoria, 0.4, EstadoNormalizacion.PENDIENTE_REVISION);
-    itemNormalizado = new ItemDonacionNormalizado(donacion, bienNormalizado, 10);
+        new BienNormalizado(
+            bien, subcategoria.getId(), 0.4, EstadoNormalizacion.PENDIENTE_REVISION, false, false);
+    itemNormalizado = new ItemDonacionNormalizado(donacion.getId(), bienNormalizado, 10);
   }
 
   @Test
@@ -107,6 +110,8 @@ class ItemDonacionNormalizadoServiceTest {
       actualizarEstado_cuandoAceptaYEsElUltimoPendiente_deberiaNormalizarDonacionYPublicarEvento() {
     when(itemNormalizadoRepository.findById(itemNormalizado.getId()))
         .thenReturn(Optional.of(itemNormalizado));
+    when(subcategoriasRepository.findById(subcategoria.getId()))
+        .thenReturn(Optional.of(subcategoria));
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
     when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
 
@@ -115,7 +120,7 @@ class ItemDonacionNormalizadoServiceTest {
 
     service.actualizarEstado(itemNormalizado.getId(), patchDTO);
 
-    assertEquals(EstadoNormalizacion.ACEPTADO, itemNormalizado.getBien().getEstadoNormalizacion());
+    assertEquals(EstadoNormalizacion.ACEPTADO, itemNormalizado.getBien().estadoNormalizacion());
     assertEquals(EstadoDonacion.NORMALIZADA, donacion.getEstadoActual());
     verify(itemNormalizadoRepository, times(1)).save(itemNormalizado);
     verify(donacionRepository, times(1)).save(donacion);
@@ -128,6 +133,7 @@ class ItemDonacionNormalizadoServiceTest {
     UUID newSubId = UUID.randomUUID();
     Subcategoria newSub = mock(Subcategoria.class);
     when(newSub.getNombre()).thenReturn("Fideos");
+    when(newSub.getId()).thenReturn(newSubId);
 
     when(itemNormalizadoRepository.findById(itemNormalizado.getId()))
         .thenReturn(Optional.of(itemNormalizado));
@@ -142,9 +148,9 @@ class ItemDonacionNormalizadoServiceTest {
 
     assertEquals(
         EstadoNormalizacion.ACEPTADO,
-        itemNormalizado.getBien().getEstadoNormalizacion()); // Aceptado porque fue manual
-    assertEquals(newSub, itemNormalizado.getBien().getSubcategoria());
-    assertEquals(1.0, itemNormalizado.getBien().getConfianza());
+        itemNormalizado.getBien().estadoNormalizacion()); // Aceptado porque fue manual
+    assertEquals(newSubId, itemNormalizado.getBien().subcategoriaId());
+    assertEquals(1.0, itemNormalizado.getBien().confianza());
     assertEquals(EstadoDonacion.NORMALIZADA, donacion.getEstadoActual());
     verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizadaEvent.class));
   }

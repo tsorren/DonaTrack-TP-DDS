@@ -10,7 +10,9 @@ import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class SubcategoriaMapperTest {
 
   @Mock private CategoriaMapper categoriaMapper;
+  @Mock private ICategoriasRepository categoriasRepository;
 
   @InjectMocks private SubcategoriaMapper mapper;
 
@@ -35,20 +38,22 @@ class SubcategoriaMapperTest {
 
     assertNotNull(entity);
     assertEquals("Fideos", entity.getNombre());
-    assertEquals(categoria, entity.getCategoria());
+    assertEquals(categoria.getId(), entity.getCategoriaId());
     assertEquals(1, entity.getAliases().size());
-    assertEquals("tallarines", entity.getAliases().get(0).getAlias());
+    assertEquals("tallarines", entity.getAliases().get(0).alias());
   }
 
   @Test
   void toOutputDTO_debeMapearCorrectamente() {
     Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
-    Subcategoria entity = new Subcategoria(categoria, "Fideos");
+    Subcategoria entity = new Subcategoria(categoria.getId(), "Fideos");
     entity.agregarAlias("tallarines");
 
     CategoriaOutputDTO catDto =
         new CategoriaOutputDTO(
             categoria.getId(), "Alimentos", false, true, Unidad.KILOGRAMO, List.of());
+
+    when(categoriasRepository.findById(categoria.getId())).thenReturn(Optional.of(categoria));
     when(categoriaMapper.toOutputDTO(categoria)).thenReturn(catDto);
 
     SubcategoriaOutputDTO output = mapper.toOutputDTO(entity);

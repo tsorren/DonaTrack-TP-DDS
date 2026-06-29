@@ -6,12 +6,11 @@ import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.infrastructure.LectorCSVMejorado;
 import grupo5.donaciones.models.entities.donantes.Archivo;
-import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
-import grupo5.donaciones.models.repositories.impl.ArchivoDonantesRepository;
+import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
@@ -27,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImportadorService implements IImportadorService {
 
-  private final ArchivoDonantesRepository archivoRepository;
+  private final IArchivoDonantesRepository archivoRepository;
   private final LectorCSVMejorado lectorCSV;
   private final PersonaMapper personaMapper;
   private final ValidadorPersonaDuplicada validadorDuplicados;
@@ -35,7 +34,7 @@ public class ImportadorService implements IImportadorService {
   private final IDonantesService donantesService;
 
   public ImportadorService(
-      ArchivoDonantesRepository archivoRepository,
+      IArchivoDonantesRepository archivoRepository,
       LectorCSVMejorado lectorCSV,
       PersonaMapper personaMapper,
       ValidadorPersonaDuplicada validadorDuplicados,
@@ -57,7 +56,7 @@ public class ImportadorService implements IImportadorService {
             .orElseThrow(() -> new RuntimeException("Archivo no encontrado"));
 
     try {
-      archivo.setEstado(EstadoArchivo.PROCESANDO);
+      archivo.marcarComoProcesando();
       archivoRepository.save(archivo);
 
       List<Map<String, String>> filas = lectorCSV.cargarDonantes(archivo.getPath());
@@ -86,11 +85,11 @@ public class ImportadorService implements IImportadorService {
         }
       }
 
-      archivo.setEstado(EstadoArchivo.PROCESADO);
+      archivo.marcarComoProcesado();
       archivoRepository.save(archivo);
 
     } catch (Exception e) {
-      archivo.setEstado(EstadoArchivo.ERROR);
+      archivo.marcarComoError();
       archivoRepository.save(archivo);
     }
   }

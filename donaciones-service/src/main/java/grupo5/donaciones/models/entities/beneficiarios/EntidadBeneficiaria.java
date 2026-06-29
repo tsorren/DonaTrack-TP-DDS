@@ -3,51 +3,29 @@ package grupo5.donaciones.models.entities.beneficiarios;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
-import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class EntidadBeneficiaria implements Anonimizable, AggregateRoot {
   private final UUID id;
-  private Juridica juridica;
+  private final UUID juridicaId;
 
-  // private List<Necesidad> necesidades = new ArrayList<>();
-
-  public EntidadBeneficiaria(Juridica juridica) {
-    this.id = UUID.randomUUID();
-    if (juridica == null) {
+  public EntidadBeneficiaria(UUID juridicaId) {
+    if (juridicaId == null) {
       throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
     }
-    this.juridica = juridica;
+    this.id = UUID.randomUUID();
+    this.juridicaId = juridicaId;
   }
 
-  /* public void agregarNecesidad(Necesidad necesidad) {
-      if (necesidad == null) {
-        throw new ValidationException(ErrorCatalog.AGREGAR_NECESIDAD_NULA);
-      }
-      if (necesidades.contains(necesidad)) {
-        throw new ValidationException(ErrorCatalog.NECESIDAD_YA_REGISTRADA);
-      }
-      this.necesidades.add(necesidad);
-      necesidad.setEntidad(this);
-    }
+  public UUID juridicaId() {
+    return this.juridicaId;
+  }
 
-    public void quitarNecesidad(Necesidad necesidad) {
-      if (!this.necesidades.contains(necesidad)) {
-        throw new ValidationException(ErrorCatalog.NECESIDAD_NO_PERTENECE_A_ENTIDAD);
-      }
-      this.necesidades.remove(necesidad);
-      necesidad.setEntidad(null);
-    }
-  */
   @Override
   public void anonimizar() {
-    if (this.juridica != null) {
-      this.juridica.anonimizar();
-    }
+    // Coordinado a nivel de servicio de aplicación (PersonasService)
   }
 }

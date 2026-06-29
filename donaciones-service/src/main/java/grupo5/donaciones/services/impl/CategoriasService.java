@@ -82,7 +82,7 @@ public class CategoriasService implements ICategoriasService {
 
   private List<Subcategoria> getSubcategoriesFor(UUID categoryId) {
     return subcategoriasRepository.findAll().stream()
-        .filter(s -> s.getCategoria() != null && s.getCategoria().getId().equals(categoryId))
+        .filter(s -> categoryId.equals(s.getCategoriaId()))
         .toList();
   }
 }

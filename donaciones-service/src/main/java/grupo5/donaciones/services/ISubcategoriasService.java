@@ -17,5 +17,5 @@ public interface ISubcategoriasService {
 
   SubcategoriaOutputDTO agregarAlias(UUID id, AliasSubcategoriaInputDTO dto);
 
-  SubcategoriaOutputDTO quitarAlias(UUID id, UUID idAlias);
+  SubcategoriaOutputDTO quitarAlias(UUID id, String alias);
 }

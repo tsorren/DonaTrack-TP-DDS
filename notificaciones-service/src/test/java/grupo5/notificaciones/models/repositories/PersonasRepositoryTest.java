@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 
 class PersonasRepositoryTest {
 
-  private IPersonasRepository repository;
+  private PersonaRepository repository;
 
   @BeforeEach
   void setUp() {

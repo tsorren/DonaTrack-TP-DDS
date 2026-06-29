@@ -6,7 +6,7 @@ import grupo5.donaciones.dto.mediosDeContacto.*;
 import grupo5.donaciones.models.entities.personas.Correo;
 import grupo5.donaciones.models.entities.personas.MedioDeContacto;
 import grupo5.donaciones.models.entities.personas.Telefono;
-import grupo5.donaciones.models.entities.personas.WhatsApp;
+import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,6 +45,7 @@ class MedioDeContactoMapperTest {
     assertEquals("+54", telefono.getCaracteristica());
     assertEquals("11", telefono.getCodigoArea());
     assertEquals("12345678", telefono.getNumero());
+    assertEquals(TipoTelefono.ESTANDAR, telefono.getTipo());
   }
 
   @Test
@@ -54,12 +55,13 @@ class MedioDeContactoMapperTest {
     MedioDeContacto entity = mapper.toEntity(dto);
 
     assertNotNull(entity);
-    assertTrue(entity instanceof WhatsApp);
-    WhatsApp whatsapp = (WhatsApp) entity;
-    assertTrue(whatsapp.getEsPredeterminado());
-    assertEquals("+54", whatsapp.getCaracteristica());
-    assertEquals("9", whatsapp.getCodigoArea());
-    assertEquals("1187654321", whatsapp.getNumero());
+    assertTrue(entity instanceof Telefono);
+    Telefono telefono = (Telefono) entity;
+    assertTrue(telefono.getEsPredeterminado());
+    assertEquals("+54", telefono.getCaracteristica());
+    assertEquals("9", telefono.getCodigoArea());
+    assertEquals("1187654321", telefono.getNumero());
+    assertEquals(TipoTelefono.WHATSAPP, telefono.getTipo());
   }
 
   @Test
@@ -89,6 +91,7 @@ class MedioDeContactoMapperTest {
     telefono.setCodigoArea("305");
     telefono.setNumero("5550199");
     telefono.setEsPredeterminado(false);
+    telefono.setTipo(TipoTelefono.ESTANDAR);
 
     MedioDeContactoOutputDTO dto = mapper.toOutputDTO(telefono);
 
@@ -103,11 +106,12 @@ class MedioDeContactoMapperTest {
 
   @Test
   void toOutputDTO_conWhatsApp_deberiaMapearCorrectamente() {
-    WhatsApp whatsapp = new WhatsApp();
+    Telefono whatsapp = new Telefono();
     whatsapp.setCaracteristica("+55");
     whatsapp.setCodigoArea("11");
     whatsapp.setNumero("999998888");
     whatsapp.setEsPredeterminado(true);
+    whatsapp.setTipo(TipoTelefono.WHATSAPP);
 
     MedioDeContactoOutputDTO dto = mapper.toOutputDTO(whatsapp);
 

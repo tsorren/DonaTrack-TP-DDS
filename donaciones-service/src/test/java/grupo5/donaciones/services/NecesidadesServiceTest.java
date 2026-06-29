@@ -67,7 +67,7 @@ class NecesidadesServiceTest {
     NecesidadDTO resultado = necesidadesService.guardar(inputDto);
 
     assertNotNull(resultado);
-    assertEquals("RECURRENTE", resultado.getTipo());
+    assertEquals("RECURRENTE", resultado.tipo());
     // verify(entidadMock, times(1)).agregarNecesidad(any(Necesidad.class));
     verify(necesidadRepositoryMock, times(1)).save(any(Necesidad.class));
   }
@@ -100,7 +100,7 @@ class NecesidadesServiceTest {
     NecesidadDTO resultado = necesidadesService.guardar(inputDto);
 
     assertNotNull(resultado);
-    assertEquals("EXTRAORDINARIA", resultado.getTipo());
+    assertEquals("EXTRAORDINARIA", resultado.tipo());
     // verify(entidadMock, times(1)).agregarNecesidad(any(Necesidad.class));
     verify(necesidadRepositoryMock, times(1)).save(any(Necesidad.class));
   }
@@ -127,8 +127,8 @@ class NecesidadesServiceTest {
     NecesidadDTO resultado = necesidadesService.obtenerPorId(idExistente);
 
     assertNotNull(resultado);
-    assertEquals(idExistente, resultado.getId());
-    assertEquals("Test por ID", resultado.getDescripcion());
+    assertEquals(idExistente, resultado.id());
+    assertEquals("Test por ID", resultado.descripcion());
   }
 
   @Test

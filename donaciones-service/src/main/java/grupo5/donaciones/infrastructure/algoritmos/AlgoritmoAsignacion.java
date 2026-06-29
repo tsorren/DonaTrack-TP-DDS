@@ -4,10 +4,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
-import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +34,7 @@ public abstract class AlgoritmoAsignacion {
       StockDeDonaciones stock) {
 
     Propuesta propuesta = new Propuesta();
-    propuesta.setNecesidadQueSatisface(necesidad);
-    propuesta.setEstado(EstadoPropuesta.PENDIENTE);
-    propuesta.setFechaCreacion(LocalDateTime.now(ZoneId.systemDefault()));
+    propuesta.asociarNecesidad(necesidad.getId());
 
     int cantidadRestante = necesidad.getCantidadNecesitada() - necesidad.cantidadAcumulada();
 
@@ -57,8 +52,9 @@ public abstract class AlgoritmoAsignacion {
   }
 
   protected boolean mismaSubcategoria(DonacionIndependiente donacion, Necesidad necesidad) {
-    return donacion.getSubcategoria() != null
-        && donacion.getSubcategoria().equals(necesidad.getSubcategoria());
+    return donacion.getSubcategoriaId() != null
+        && necesidad.getSubcategoriaId() != null
+        && donacion.getSubcategoriaId().equals(necesidad.getSubcategoriaId());
   }
 
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {

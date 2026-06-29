@@ -4,8 +4,10 @@ import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
+import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.repositories.NotificacionRepository;
+import grupo5.notificaciones.models.repositories.PersonaRepository;
 import grupo5.notificaciones.services.mappers.EventoMapper;
 import java.util.List;
 import java.util.UUID;
@@ -14,12 +16,17 @@ import org.springframework.stereotype.Service;
 @Service
 public class NotificacionService {
   private final NotificacionRepository repository;
+  private final PersonaRepository personaRepository;
   private final NotificacionSender sender;
   private final EventoMapper mapper;
 
   public NotificacionService(
-      NotificacionRepository repository, NotificacionSender sender, EventoMapper mapper) {
+      NotificacionRepository repository,
+      PersonaRepository personaRepository,
+      NotificacionSender sender,
+      EventoMapper mapper) {
     this.repository = repository;
+    this.personaRepository = personaRepository;
     this.sender = sender;
     this.mapper = mapper;
   }
@@ -30,7 +37,8 @@ public class NotificacionService {
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 
     for (Notificacion notificacion : notificaciones) {
-      notificacion.notificar(sender);
+      Persona persona = personaRepository.findById(notificacion.getPersonaId()).orElse(null);
+      notificacion.notificar(persona, sender);
       repository.save(notificacion);
     }
   }

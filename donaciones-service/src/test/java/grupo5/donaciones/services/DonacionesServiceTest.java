@@ -14,6 +14,10 @@ import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.models.entities.ubicaciones.Direccion;
+import grupo5.donaciones.models.entities.ubicaciones.Localidad;
+import grupo5.donaciones.models.entities.ubicaciones.Pais;
+import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
@@ -53,18 +57,13 @@ class DonacionesServiceTest {
   void setUp() {
     persona = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
 
-    donante = new Donante(persona);
-    Pais pais = new Pais();
-    pais.setNombre("Argentina");
-    Provincia provincia = new Provincia();
-    provincia.setNombre("Buenos Aires");
-    provincia.setPais(pais);
-    Localidad localidad = new Localidad();
-    localidad.setNombre("CABA");
-    localidad.setProvincia(provincia);
+    donante = new Donante(persona.getId());
+    Pais pais = new Pais("Argentina");
+    Provincia provincia = new Provincia("Buenos Aires", pais);
+    Localidad localidad = new Localidad("CABA", provincia);
     Direccion direccion = new Direccion("Calle Falsa", 123, null, null, "1000", localidad);
     Deposito deposito = new Deposito("Deposito Test", direccion);
-    donacion = new Donacion(donante, deposito);
+    donacion = new Donacion(donante.getId(), deposito);
 
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
@@ -77,7 +76,8 @@ class DonacionesServiceTest {
     outputDTO =
         new DonacionOutputDTO(
             donacion.getId(),
-            persona.getId(),
+            new grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO(
+                donante.getId(), persona.getId(), null),
             List.of(),
             "desc",
             LocalDateTime.of(2026, Month.JUNE, 18, 0, 0),

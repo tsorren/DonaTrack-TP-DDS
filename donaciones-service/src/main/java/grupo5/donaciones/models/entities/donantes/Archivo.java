@@ -3,10 +3,8 @@ package grupo5.donaciones.models.entities.donantes;
 import grupo5.common.repositories.AggregateRoot;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class Archivo implements AggregateRoot {
   private final UUID id;
   private String path;
@@ -16,6 +14,18 @@ public class Archivo implements AggregateRoot {
     this.id = UUID.randomUUID();
     this.path = path;
     this.estado = EstadoArchivo.PENDIENTE;
+  }
+
+  public void marcarComoProcesando() {
+    this.estado = EstadoArchivo.PROCESANDO;
+  }
+
+  public void marcarComoProcesado() {
+    this.estado = EstadoArchivo.PROCESADO;
+  }
+
+  public void marcarComoError() {
+    this.estado = EstadoArchivo.ERROR;
   }
 
   @Override

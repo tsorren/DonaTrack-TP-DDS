@@ -2,73 +2,63 @@ package grupo5.donaciones.models.entities.itemsNormalizados;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Bien;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.UUID;
 
-@Getter
-@Setter
-public class BienNormalizado {
-  private Bien bienOriginal;
-  private Subcategoria subcategoria;
-  private Double confianza;
-  private EstadoNormalizacion estadoNormalizacion;
+public record BienNormalizado(
+    Bien bienOriginal,
+    UUID subcategoriaId,
+    Double confianza,
+    EstadoNormalizacion estadoNormalizacion) {
+
+  public BienNormalizado {
+    // Compact constructor
+  }
 
   public BienNormalizado(
       Bien bienOriginal,
-      Subcategoria subcategoria,
+      UUID subcategoriaId,
       Double confianza,
-      EstadoNormalizacion estadoNormalizacion) {
-    validarReglasDeNegocio(bienOriginal, subcategoria, confianza, estadoNormalizacion);
-
-    this.bienOriginal = bienOriginal;
-    this.subcategoria = subcategoria;
-    this.confianza = confianza;
-    this.estadoNormalizacion = estadoNormalizacion;
+      EstadoNormalizacion estadoNormalizacion,
+      boolean conVencimiento,
+      boolean conEstado) {
+    this(bienOriginal, subcategoriaId, confianza, estadoNormalizacion);
+    validar(
+        bienOriginal, subcategoriaId, confianza, estadoNormalizacion, conVencimiento, conEstado);
   }
 
-  private static void validarReglasDeNegocio(
+  private static void validar(
       Bien bienOriginal,
-      Subcategoria subcategoria,
+      UUID subcategoriaId,
       Double confianza,
-      EstadoNormalizacion estadoNormalizacion) {
+      EstadoNormalizacion estadoNormalizacion,
+      boolean conVencimiento,
+      boolean conEstado) {
     if (bienOriginal == null) {
       throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_BIEN);
     }
-    if (subcategoria == null) {
+    if (subcategoriaId == null) {
       throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_SUBCATEGORIA);
     }
-    if (confianza < 0 || confianza > 1.0) {
+    if (confianza == null || confianza < 0 || confianza > 1.0) {
       throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_RANGO_CONFIANZA);
     }
     if (estadoNormalizacion == null) {
       throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_ESTADO);
     }
 
-    Categoria categoria = subcategoria.getCategoria();
-    if (categoria != null) {
-      // 3. Validar bienes cuya categoría requiera vencimiento
-      if (Boolean.TRUE.equals(categoria.getConVencimiento())
-          && bienOriginal.getFechaVencimiento() == null) {
-        throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_REQUERIDO);
-      }
-
-      // 4. Validar bienes cuya categoría no requiera vencimiento
-      if (Boolean.FALSE.equals(categoria.getConVencimiento())
-          && bienOriginal.getFechaVencimiento() != null) {
-        throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_NO_PERMITIDO);
-      }
-
-      // 5. Validar bienes cuya categoría requiera uso (estado)
-      if (Boolean.TRUE.equals(categoria.getConUso()) && bienOriginal.getEstado() == null) {
-        throw new ValidationException(ErrorCatalog.BIEN_ESTADO_REQUERIDO);
-      }
+    if (conVencimiento && bienOriginal.fechaVencimiento() == null) {
+      throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_REQUERIDO);
+    }
+    if (!conVencimiento && bienOriginal.fechaVencimiento() != null) {
+      throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_NO_PERMITIDO);
+    }
+    if (conEstado && bienOriginal.estado() == null) {
+      throw new ValidationException(ErrorCatalog.BIEN_ESTADO_REQUERIDO);
     }
   }
 
   public Boolean estaVencido() {
-    return bienOriginal.estaVencido();
+    return bienOriginal != null && bienOriginal.estaVencido();
   }
 }

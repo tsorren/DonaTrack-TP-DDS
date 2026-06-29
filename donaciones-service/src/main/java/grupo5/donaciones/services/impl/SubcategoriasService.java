@@ -2,7 +2,6 @@ package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.categorias.*;
-import grupo5.donaciones.models.entities.categorias.AliasSubcategoria;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
@@ -91,20 +90,13 @@ public class SubcategoriasService implements ISubcategoriasService {
   }
 
   @Override
-  public SubcategoriaOutputDTO quitarAlias(UUID id, UUID idAlias) {
+  public SubcategoriaOutputDTO quitarAlias(UUID id, String alias) {
     Subcategoria entity =
         subcategoriasRepository
             .findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException(id));
 
-    String aliasText =
-        entity.getAliases().stream()
-            .filter(a -> a.getId().equals(idAlias))
-            .map(AliasSubcategoria::getAlias)
-            .findFirst()
-            .orElseThrow(() -> new RecursoNoEncontradoException(idAlias));
-
-    entity.removerAlias(aliasText);
+    entity.removerAlias(alias);
     subcategoriasRepository.save(entity);
     return subcategoriaMapper.toOutputDTO(entity);
   }

@@ -36,12 +36,14 @@ class NecesidadRecurrenteTests {
   @BeforeEach
   void setUp() {
 
-    Donacion donacion = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donante donante = new Donante(humana.getId());
+    Donacion donacion = new Donacion(donante.getId());
     categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    subcategoria = new Subcategoria(categoria, "Muebles Escolares");
+    subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
     necesidad =
         new NecesidadRecurrente(
-            subcategoria,
+            subcategoria.getId(),
             100,
             "30 bancos y sillas para el aula",
             Period.ofWeeks(1),
@@ -50,15 +52,16 @@ class NecesidadRecurrenteTests {
     Bien bienOriginal =
         new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bien =
-        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
 
-    d1 = new DonacionIndependiente(donacion, List.of(item1));
+    d1 = new DonacionIndependiente(donacion.getId(), List.of(item1));
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 100);
 
-    d2 = new DonacionIndependiente(donacion, List.of(item2));
+    d2 = new DonacionIndependiente(donacion.getId(), List.of(item2));
   }
 
   @Test
@@ -94,7 +97,11 @@ class NecesidadRecurrenteTests {
   void hayQueGenerarNuevo_cuandoPeriodoVencio_deberiaSerTrue() {
     NecesidadRecurrente necesidadVencida =
         new NecesidadRecurrente(
-            subcategoria, 100, "Test de vencimiento", Period.ofWeeks(1), TEST_DATE.minusDays(10));
+            subcategoria.getId(),
+            100,
+            "Test de vencimiento",
+            Period.ofWeeks(1),
+            TEST_DATE.minusDays(10));
 
     assertTrue(necesidadVencida.hayQueGenerarNuevo(TEST_DATE));
   }

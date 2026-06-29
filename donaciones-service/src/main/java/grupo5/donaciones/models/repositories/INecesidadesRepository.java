@@ -2,7 +2,6 @@ package grupo5.donaciones.models.repositories;
 
 import grupo5.common.repositories.CrudRepository;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
-import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,9 +11,16 @@ public interface INecesidadesRepository extends CrudRepository<Necesidad> {
 
   List<Necesidad> findByEstaSatisfechaFalse();
 
+  List<Necesidad> findByEstaSatisfechaFalseActivaTrue();
+
   List<Necesidad> buscarNecesidadesPorEntidad(UUID entidadId);
 
-  List<NecesidadRecurrente> findByActivaTrue();
+  // Activas y no satisfechas
+  List<Necesidad> findByActivaTrueAndSatisfechaFalse();
 
-  List<Necesidad> findByEstaSatisfechaFalseActivaTrue();
+  // Activas, no satisfechas y recurrentes
+  List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue();
+
+  // Activas, no satisfechas y extraordinarias
+  List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse();
 }

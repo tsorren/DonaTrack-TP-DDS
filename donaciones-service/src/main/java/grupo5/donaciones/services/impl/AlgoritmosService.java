@@ -11,8 +11,10 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
-import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
+import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.slf4j.Logger;
@@ -29,20 +31,38 @@ public class AlgoritmosService {
   private final List<AlgoritmoAsignacion> algoritmos;
   private final IDonacionesIndependientesRepository donacionRepository;
   private final INecesidadesRepository necesidadRepository;
-  private final PropuestaRepository propuestaRepository;
+  private final IPropuestasRepository propuestaRepository;
   private final NotificacionesFeignClient notificacionesFeignClient;
+  private final grupo5.donaciones.models.repositories.ISubcategoriasRepository
+      subcategoriasRepository;
+  private final IDonacionesRepository donacionOriginalRepository;
+  private final IDonantesRepository donantesRepository;
+  private final grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+      entidadesBeneficiariasRepository;
+  private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
   public AlgoritmosService(
       IDonacionesIndependientesRepository donacionRepository,
       INecesidadesRepository necesidadRepository,
-      PropuestaRepository propuestaRepository,
+      IPropuestasRepository propuestaRepository,
       ComparadorTexto comparadorTexto,
-      NotificacionesFeignClient notificacionesFeignClient) {
+      NotificacionesFeignClient notificacionesFeignClient,
+      grupo5.donaciones.models.repositories.ISubcategoriasRepository subcategoriasRepository,
+      IDonacionesRepository donacionOriginalRepository,
+      IDonantesRepository donantesRepository,
+      grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+          entidadesBeneficiariasRepository,
+      org.springframework.context.ApplicationEventPublisher eventPublisher) {
 
     this.donacionRepository = donacionRepository;
     this.necesidadRepository = necesidadRepository;
     this.propuestaRepository = propuestaRepository;
     this.notificacionesFeignClient = notificacionesFeignClient;
+    this.subcategoriasRepository = subcategoriasRepository;
+    this.donacionOriginalRepository = donacionOriginalRepository;
+    this.donantesRepository = donantesRepository;
+    this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
+    this.eventPublisher = eventPublisher;
 
     this.algoritmos =
         List.of(
@@ -53,16 +73,16 @@ public class AlgoritmosService {
   private static List<Propuesta> consolidar(
       List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
 
-    Set<Necesidad> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
+    Set<UUID> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
 
     for (Propuesta propuesta : propuesta1) {
-      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisface());
+      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisfaceId());
     }
 
     List<Propuesta> propuestasEnAmbos = new ArrayList<>();
 
     for (Propuesta propuesta : propuesta2) {
-      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisface())) {
+      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisfaceId())) {
         propuestasEnAmbos.add(propuesta);
       }
     }
@@ -104,16 +124,29 @@ public class AlgoritmosService {
       log.info(
           "Donación en depósito ID: {}, Subcategoría: {}, Cantidad: {}",
           d.getId(),
-          d.getSubcategoria() != null ? d.getSubcategoria().getNombre() : "null",
+          d.getSubcategoriaId() != null
+              ? subcategoriasRepository
+                  .findById(d.getSubcategoriaId())
+                  .map(s -> s.getNombre())
+                  .orElse("null")
+              : "null",
           d.getCantidad());
     }
 
     for (Necesidad n : necesidades) {
+      String subcatNombre = "null";
+      if (n.getSubcategoriaId() != null) {
+        subcatNombre =
+            subcategoriasRepository
+                .findById(n.getSubcategoriaId())
+                .map(grupo5.donaciones.models.entities.categorias.Subcategoria::getNombre)
+                .orElse("null");
+      }
       log.info(
           "Necesidad insatisfecha ID: {}, Tipo: {}, Subcategoría: {}, Cantidad necesitada: {}, Cantidad acumulada: {}, Descripción: {}",
           n.getId(),
           n.getClass().getSimpleName(),
-          n.getSubcategoria() != null ? n.getSubcategoria().getNombre() : "null",
+          subcatNombre,
           n.getCantidadNecesitada(),
           n.cantidadAcumulada(),
           n.getDescripcion());
@@ -145,53 +178,57 @@ public class AlgoritmosService {
     switch (estado) {
       case APROBADA -> {
         propuesta.confirmar();
-        Necesidad necesidad = propuesta.getNecesidadQueSatisface();
-        if (necesidad != null) {
-          necesidadRepository.save(necesidad);
-        }
-        if (propuesta.getPosiblesFragmentaciones() != null) {
-          propuesta
-              .getPosiblesFragmentaciones()
-              .forEach(
-                  f -> {
-                    if (f.getDonacionOriginal() != null) {
-                      donacionRepository.save(f.getDonacionOriginal());
-                    }
-                  });
-        }
-        if (necesidad != null && necesidad.getDonacionesAsignadas() != null) {
-          necesidad.getDonacionesAsignadas().forEach(donacionRepository::save);
-        }
+        propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
+        propuesta.clearDomainEvents();
 
+        Necesidad necesidad =
+            propuesta.getNecesidadQueSatisfaceId() != null
+                ? necesidadRepository.findById(propuesta.getNecesidadQueSatisfaceId()).orElse(null)
+                : null;
         if (propuesta.getPosiblesFragmentaciones() != null) {
-          UUID idPersonaBeneficiaria =
-              (necesidad != null
-                      && necesidad.getEntidad() != null
-                      && necesidad.getEntidad().getJuridica() != null)
-                  ? necesidad.getEntidad().getJuridica().getId()
-                  : null;
+          UUID idPersonaBeneficiaria = null;
+          if (necesidad != null && necesidad.getEntidadId() != null) {
+            idPersonaBeneficiaria =
+                entidadesBeneficiariasRepository
+                    .findById(necesidad.getEntidadId())
+                    .map(
+                        grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria
+                            ::juridicaId)
+                    .orElse(null);
+          }
+          final UUID finalIdPersonaBeneficiaria = idPersonaBeneficiaria;
           propuesta
               .getPosiblesFragmentaciones()
               .forEach(
                   f -> {
-                    if (f.getDonacionOriginal() != null
-                        && f.getDonacionOriginal().getDonacionOriginal() != null
-                        && f.getDonacionOriginal().getDonacionOriginal().getDonante() != null
-                        && f.getDonacionOriginal().getDonacionOriginal().getDonante().getPersona()
-                            != null) {
-                      UUID idPersonaDonante =
-                          f.getDonacionOriginal()
-                              .getDonacionOriginal()
-                              .getDonante()
-                              .getPersona()
-                              .getId();
-                      String detalle = f.getDonacionOriginal().getDescripcion();
-                      notificacionesFeignClient.enviarEvento(
-                          new EventoDonacionAsignadaDTO(
-                              idPersonaDonante,
-                              LocalDateTime.now(),
-                              idPersonaBeneficiaria,
-                              detalle));
+                    if (f.getDonacionOriginalId() != null) {
+                      donacionRepository
+                          .findById(f.getDonacionOriginalId())
+                          .ifPresent(
+                              di -> {
+                                if (di.getDonacionOriginalId() != null) {
+                                  donacionOriginalRepository
+                                      .findById(di.getDonacionOriginalId())
+                                      .ifPresent(
+                                          donacion -> {
+                                            if (donacion.getDonanteId() != null) {
+                                              donantesRepository
+                                                  .findById(donacion.getDonanteId())
+                                                  .ifPresent(
+                                                      donante -> {
+                                                        UUID idPersonaDonante = donante.personaId();
+                                                        String detalle = di.getDescripcion();
+                                                        notificacionesFeignClient.enviarEvento(
+                                                            new EventoDonacionAsignadaDTO(
+                                                                idPersonaDonante,
+                                                                LocalDateTime.now(),
+                                                                finalIdPersonaBeneficiaria,
+                                                                detalle));
+                                                      });
+                                            }
+                                          });
+                                }
+                              });
                     }
                   });
         }

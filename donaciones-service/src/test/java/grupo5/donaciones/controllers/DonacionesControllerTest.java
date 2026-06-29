@@ -60,7 +60,8 @@ class DonacionesControllerTest {
     DonacionOutputDTO output =
         new DonacionOutputDTO(
             UUID.randomUUID(),
-            UUID.randomUUID(),
+            new grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO(
+                UUID.randomUUID(), UUID.randomUUID(), null),
             List.of(),
             "descripcion",
             LocalDateTime.of(2026, 6, 18, 0, 0),
