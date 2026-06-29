@@ -6,7 +6,7 @@ import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.*;
-import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
+import grupo5.donaciones.models.repositories.impl.DonacionesRepositoryEnMemoria;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -21,7 +21,7 @@ class DonacionRepositoryTest {
 
   @BeforeEach
   void setUp() {
-    repository = new DonacionRepositoryEnMemoria();
+    repository = new DonacionesRepositoryEnMemoria();
   }
 
   @Test

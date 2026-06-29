@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemanticoBien;
+import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
@@ -11,8 +12,10 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.ports.Segmentador;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
-import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +25,10 @@ import org.springframework.context.ApplicationEventPublisher;
 class ProcesadorDeDonacionesTest {
 
   private NormalizadorSemanticoBien normalizadorMock;
-  private DonacionRepositoryEnMemoria donacionRepositoryMock;
+  private Segmentador segmentadorMock;
+  private IDonacionesRepository donacionRepositoryMock;
+  private IDonacionesIndependientesRepository donacionesIndependientesRepositoryMock;
+  private IncentivosFeignClient incentivosFeignClientMock;
   private IItemDonacionNormalizadoRepository itemNormalizadoRepositoryMock;
   private ApplicationEventPublisher eventPublisherMock;
 
@@ -31,14 +37,20 @@ class ProcesadorDeDonacionesTest {
   @BeforeEach
   void setUp() {
     normalizadorMock = mock(NormalizadorSemanticoBien.class);
-    donacionRepositoryMock = mock(DonacionRepositoryEnMemoria.class);
+    segmentadorMock = mock(Segmentador.class);
+    donacionRepositoryMock = mock(IDonacionesRepository.class);
+    donacionesIndependientesRepositoryMock = mock(IDonacionesIndependientesRepository.class);
+    incentivosFeignClientMock = mock(IncentivosFeignClient.class);
     itemNormalizadoRepositoryMock = mock(IItemDonacionNormalizadoRepository.class);
     eventPublisherMock = mock(ApplicationEventPublisher.class);
 
     procesador =
         new ProcesadorDeDonaciones(
             normalizadorMock,
+            segmentadorMock,
             donacionRepositoryMock,
+            donacionesIndependientesRepositoryMock,
+            incentivosFeignClientMock,
             itemNormalizadoRepositoryMock,
             eventPublisherMock);
   }

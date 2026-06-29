@@ -24,7 +24,7 @@ class PlanificacionNecesidadesServiceTest {
   void testGenerarNuevosPeriodosParaNecesidadesRecurrentes() {
     NecesidadRecurrente necesidadRecurrente = mock(NecesidadRecurrente.class);
 
-    when(necesidadRepository.findByActivaTrue())
+    when(necesidadRepository.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue())
         .thenReturn(Collections.singletonList(necesidadRecurrente));
 
     when(necesidadRecurrente.hayQueGenerarNuevo(any(LocalDate.class))).thenReturn(true);
