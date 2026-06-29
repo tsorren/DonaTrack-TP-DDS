@@ -34,7 +34,7 @@ class NotificacionRepositoryEnMemoriaTest {
     Notificacion notificacionPendiente = new Notificacion(persona.getId(), "Mensaje pendiente");
 
     Notificacion notificacionEnviada = new Notificacion(persona.getId(), "Mensaje enviado");
-    notificacionEnviada.setEstadoNotificacion(EstadoNotificacion.ENVIADA);
+    notificacionEnviada.actualizarEstado(EstadoNotificacion.ENVIADA);
 
     repository.save(notificacionPendiente);
     repository.save(notificacionEnviada);

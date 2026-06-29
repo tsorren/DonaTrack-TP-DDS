@@ -13,15 +13,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class DonacionIndependiente implements AggregateRoot {
   private final UUID id;
   private UUID donacionOriginalId;
   private List<ItemDonacionIndependiente> items;
   private EstadoDonacion estadoActual;
+
+  void setEstadoActual(EstadoDonacion estadoActual) {
+    this.estadoActual = estadoActual;
+  }
+
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
   @JsonIgnore private Asignable asignadaA;

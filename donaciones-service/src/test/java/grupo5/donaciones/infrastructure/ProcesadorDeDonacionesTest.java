@@ -58,7 +58,6 @@ class ProcesadorDeDonacionesTest {
         new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante.getId());
-    donacion.setFecha(java.time.LocalDateTime.now());
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
@@ -88,7 +87,6 @@ class ProcesadorDeDonacionesTest {
         new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante.getId());
-    donacion.setFecha(java.time.LocalDateTime.now());
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");

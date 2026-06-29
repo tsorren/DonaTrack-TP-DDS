@@ -3,7 +3,6 @@ package grupo5.donaciones.models.entities.itemsNormalizados;
 import grupo5.common.repositories.AggregateRoot;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class ItemDonacionNormalizado implements AggregateRoot {
@@ -11,7 +10,11 @@ public class ItemDonacionNormalizado implements AggregateRoot {
   private final UUID donacionOriginalId;
   private BienNormalizado bien;
   private final Integer cantidad;
-  @Setter private boolean segmentado;
+  private boolean segmentado;
+
+  public void marcarComoSegmentado() {
+    this.segmentado = true;
+  }
 
   public ItemDonacionNormalizado(UUID donacionOriginalId, BienNormalizado bien, Integer cantidad) {
     this.id = UUID.randomUUID();

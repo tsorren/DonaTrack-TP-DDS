@@ -6,7 +6,6 @@ import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.infrastructure.LectorCSVMejorado;
 import grupo5.donaciones.models.entities.donantes.Archivo;
-import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Persona;
@@ -57,7 +56,7 @@ public class ImportadorService implements IImportadorService {
             .orElseThrow(() -> new RuntimeException("Archivo no encontrado"));
 
     try {
-      archivo.setEstado(EstadoArchivo.PROCESANDO);
+      archivo.marcarComoProcesando();
       archivoRepository.save(archivo);
 
       List<Map<String, String>> filas = lectorCSV.cargarDonantes(archivo.getPath());
@@ -86,11 +85,11 @@ public class ImportadorService implements IImportadorService {
         }
       }
 
-      archivo.setEstado(EstadoArchivo.PROCESADO);
+      archivo.marcarComoProcesado();
       archivoRepository.save(archivo);
 
     } catch (Exception e) {
-      archivo.setEstado(EstadoArchivo.ERROR);
+      archivo.marcarComoError();
       archivoRepository.save(archivo);
     }
   }

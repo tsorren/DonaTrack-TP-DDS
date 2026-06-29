@@ -3,7 +3,6 @@ package grupo5.donaciones.services.impl;
 import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.models.entities.donantes.Archivo;
-import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.repositories.impl.ArchivoDonantesRepository;
 import grupo5.donaciones.services.IImportadorService;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ public class ArchivoDonantesService {
 
   public ArchivoOutputDTO cargarArchivoDonantes(ArchivoInputDTO input) {
     Archivo archivo = new Archivo(input.path());
-    archivo.setEstado(EstadoArchivo.PENDIENTE);
     archivoRepository.save(archivo);
 
     importadorService.procesarImportacionAsincronica(archivo.getId());

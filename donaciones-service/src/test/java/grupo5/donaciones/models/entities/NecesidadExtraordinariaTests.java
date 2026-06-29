@@ -42,7 +42,7 @@ class NecesidadExtraordinariaTests {
     necesidad =
         new NecesidadExtraordinaria(subcategoria.getId(), 30, "30 bancos y sillas para el aula");
 
-    necesidad.setCantidadNecesitada(30);
+    necesidad.actualizarCantidadNecesitada(30);
 
     Bien bienOriginal1 =
         new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);

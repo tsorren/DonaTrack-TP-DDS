@@ -70,8 +70,7 @@ class DonacionMapperTest {
     Humana persona = new Humana("Maria", "Lopez", LocalDate.of(1993, Month.APRIL, 10));
     Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Test", crearDireccion());
-    Donacion donacion = new Donacion(donante.getId(), deposito);
-    donacion.setDescripcion("una donacion");
+    Donacion donacion = new Donacion(donante.getId(), deposito, "una donacion", null);
 
     when(donantesRepositoryMock.findById(donante.getId())).thenReturn(Optional.of(donante));
 

@@ -80,7 +80,9 @@ public class NecesidadesService implements INecesidadesService {
               dto.getIdSubcategoria(), dto.getCantidadNecesitada(), dto.getDescripcion());
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
-    necesidad.setEntidadId(dto.getIdEntidad());
+    if (dto.getIdEntidad() != null) {
+      necesidad.asociarAEntidad(dto.getIdEntidad());
+    }
 
     return necesidad;
   }

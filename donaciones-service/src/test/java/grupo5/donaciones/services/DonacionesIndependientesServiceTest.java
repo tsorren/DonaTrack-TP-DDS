@@ -144,7 +144,7 @@ class DonacionesIndependientesServiceTest {
   void
       cambiarEstado_DeberiaTransicionarAListaParaEntregar_CuandoEstadoActualEsAsignacionRealizada() {
     DonacionIndependiente donacion = crearDonacionDePrueba();
-    donacion.setEstadoActual(new AsignacionRealizada());
+    donacion.asignar(ACTOR, null);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
@@ -161,7 +161,8 @@ class DonacionesIndependientesServiceTest {
   @Test
   void cambiarEstado_DeberiaTransicionarAEnTraslado_CuandoEstadoActualEsListaParaEntregar() {
     DonacionIndependiente donacion = crearDonacionDePrueba();
-    donacion.setEstadoActual(new ListaParaEntregar());
+    donacion.asignar(ACTOR, null);
+    donacion.planificarRuta(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
@@ -179,7 +180,9 @@ class DonacionesIndependientesServiceTest {
   @Test
   void cambiarEstado_DeberiaTransicionarAEntregada_CuandoEstadoActualEsEnTraslado() {
     DonacionIndependiente donacion = crearDonacionDePrueba();
-    donacion.setEstadoActual(new EnTraslado());
+    donacion.asignar(ACTOR, null);
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
     when(donacionRepositoryMock.findById(donacion.getDonacionOriginalId()))
@@ -205,7 +208,9 @@ class DonacionesIndependientesServiceTest {
   void
       cambiarEstado_DeberiaTransicionarAEntregaFallida_CuandoEstadoActualEsEnTrasladoYJustificacionEsValida() {
     DonacionIndependiente donacion = crearDonacionDePrueba();
-    donacion.setEstadoActual(new EnTraslado());
+    donacion.asignar(ACTOR, null);
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
@@ -224,7 +229,9 @@ class DonacionesIndependientesServiceTest {
   void
       cambiarEstado_DeberiaLanzarIllegalArgumentException_CuandoEstadoActualEsEnTrasladoYJustificacionEsInvalida() {
     DonacionIndependiente donacion = crearDonacionDePrueba();
-    donacion.setEstadoActual(new EnTraslado());
+    donacion.asignar(ACTOR, null);
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
@@ -239,7 +246,10 @@ class DonacionesIndependientesServiceTest {
   @Test
   void cambiarEstado_DeberiaTransicionarAEnDeposito_CuandoEstadoActualEsEntregaFallida() {
     DonacionIndependiente donacion = crearDonacionDePrueba();
-    donacion.setEstadoActual(new EntregaFallida());
+    donacion.asignar(ACTOR, null);
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
+    donacion.registrarFalla("motivo test", ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 

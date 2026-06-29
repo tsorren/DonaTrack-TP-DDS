@@ -42,10 +42,12 @@ class PropuestaServiceTest {
   void listarPropuestas_debeRetornarLoDeAlgoritmosService() {
     Propuesta propuesta = mock(Propuesta.class);
     Necesidad necesidad = mock(Necesidad.class);
+    UUID necesidadId = UUID.randomUUID();
 
     when(propuesta.getId()).thenReturn(UUID.randomUUID());
     when(propuesta.getEstado()).thenReturn(EstadoPropuesta.APROBADA);
-    when(propuesta.getNecesidadQueSatisface()).thenReturn(necesidad);
+    when(propuesta.getNecesidadQueSatisfaceId()).thenReturn(necesidadId);
+    when(necesidadRepository.findById(necesidadId)).thenReturn(java.util.Optional.of(necesidad));
     when(necesidad.getDescripcion()).thenReturn("Alimentos");
 
     when(algoritmosService.listarPropuestas()).thenReturn(List.of(propuesta));
@@ -82,6 +84,10 @@ class PropuestaServiceTest {
     verify(asignacionRepository).save(any(EjecucionAsignacionDTO.class));
   }
 
+  // Helper type matching for any EjecucionAsignacionDTO - kept for reference
+  @SuppressWarnings("unused")
+  private static class RunEjecucionAsignacionMockGuardar extends EjecucionAsignacionDTO {}
+
   @Test
   void historialEjecuciones_debeRetornarLoDelRepositorio() {
     EjecucionAsignacionDTO dto = mock(EjecucionAsignacionDTO.class);
@@ -111,13 +117,19 @@ class PropuestaServiceTest {
                     .DonacionIndependiente
                     .class);
 
-    when(fragmentacion.getDonacionOriginal()).thenReturn(donacionOriginal);
+    UUID necesidadId = UUID.randomUUID();
+    UUID donacionOriginalId = UUID.randomUUID();
+    when(necesidadRepository.findById(necesidadId)).thenReturn(java.util.Optional.of(necesidad));
+    when(donacionRepository.findById(donacionOriginalId))
+        .thenReturn(java.util.Optional.of(donacionOriginal));
+
+    when(fragmentacion.getDonacionOriginalId()).thenReturn(donacionOriginalId);
     when(fragmentacion.getCantidadNecesaria()).thenReturn(5);
     when(donacionOriginal.getCantidad()).thenReturn(5); // Exact quantity, no fragmentation
 
     grupo5.donaciones.models.entities.propuestas.PropuestaAprobada event =
         new grupo5.donaciones.models.entities.propuestas.PropuestaAprobada(
-            UUID.randomUUID(), necesidad, List.of(fragmentacion), "actor");
+            UUID.randomUUID(), necesidadId, List.of(fragmentacion), "actor");
 
     propuestaService.onPropuestaAprobada(event);
 

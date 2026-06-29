@@ -1,6 +1,6 @@
 package grupo5.donaciones.models.entities.propuestas;
 
-import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 public class PosibleFragmentacion {
   Long id;
-  DonacionIndependiente donacionOriginal;
+  UUID donacionOriginalId;
   Integer cantidadNecesaria;
 }

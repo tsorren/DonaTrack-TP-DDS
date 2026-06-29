@@ -21,11 +21,15 @@ public class PropuestaService {
   private final grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
       donacionRepository;
 
-  private static PropuestaResponseDTO toDTO(Propuesta propuesta) {
-    return new PropuestaResponseDTO(
-        propuesta.getId(),
-        propuesta.getEstado().name(),
-        propuesta.getNecesidadQueSatisface().getDescripcion());
+  private PropuestaResponseDTO toDTO(Propuesta propuesta) {
+    String descripcion =
+        propuesta.getNecesidadQueSatisfaceId() != null
+            ? necesidadRepository
+                .findById(propuesta.getNecesidadQueSatisfaceId())
+                .map(grupo5.donaciones.models.entities.necesidades.Necesidad::getDescripcion)
+                .orElse("null")
+            : "null";
+    return new PropuestaResponseDTO(propuesta.getId(), propuesta.getEstado().name(), descripcion);
   }
 
   public List<Propuesta> ejecutarAsignacion() {
@@ -41,7 +45,7 @@ public class PropuestaService {
   }
 
   public List<PropuestaResponseDTO> listarPropuestas() {
-    return algoritmosService.listarPropuestas().stream().map(PropuestaService::toDTO).toList();
+    return algoritmosService.listarPropuestas().stream().map(this::toDTO).toList();
   }
 
   public void actualizarEstado(UUID id, EstadoPropuesta estado) {
@@ -55,13 +59,25 @@ public class PropuestaService {
   @org.springframework.context.event.EventListener
   public void onPropuestaAprobada(
       grupo5.donaciones.models.entities.propuestas.PropuestaAprobada event) {
-    grupo5.donaciones.models.entities.necesidades.Necesidad necesidad = event.necesidad();
+    grupo5.donaciones.models.entities.necesidades.Necesidad necesidad =
+        necesidadRepository
+            .findById(event.necesidadId())
+            .orElseThrow(
+                () ->
+                    new grupo5.common.exceptions.ValidationException(
+                        grupo5.common.exceptions.ErrorCatalog.RECURSO_NO_ENCONTRADO));
     String actor = event.actor();
 
     for (grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion f :
         event.fragmentaciones()) {
       grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente
-          donacionOriginal = f.getDonacionOriginal();
+          donacionOriginal =
+              donacionRepository
+                  .findById(f.getDonacionOriginalId())
+                  .orElseThrow(
+                      () ->
+                          new grupo5.common.exceptions.ValidationException(
+                              grupo5.common.exceptions.ErrorCatalog.RECURSO_NO_ENCONTRADO));
       Integer cantidadNecesaria = f.getCantidadNecesaria();
       grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente
           donacionAsignar;

@@ -46,9 +46,9 @@ public class DonacionMapper {
     Deposito deposito =
         new Deposito(dto.nombreDeposito(), direccionMapper.toEntity(dto.direccion()));
 
-    Donacion donacion = new Donacion(donanteId, deposito);
-    donacion.setDescripcion(dto.descripcion());
-    donacion.setFecha(LocalDateTime.now(ZoneId.systemDefault()));
+    Donacion donacion =
+        new Donacion(
+            donanteId, deposito, dto.descripcion(), LocalDateTime.now(ZoneId.systemDefault()));
 
     if (dto.items() != null) {
       dto.items().forEach(item -> donacion.agregarItem(toItemEntity(item)));

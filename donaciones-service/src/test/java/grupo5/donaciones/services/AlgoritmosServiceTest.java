@@ -111,62 +111,73 @@ class AlgoritmosServiceTest {
   void
       actualizarEstadoPropuesta_deberiaAprobarPropuesta_YEnviarNotificacion_CuandoTieneFragmentaciones() {
     UUID id = UUID.randomUUID();
-    Propuesta propuesta = new Propuesta();
-    propuesta.setId(id);
+    Propuesta propuesta = new Propuesta(id);
 
     // We need a Necesidad, Entidad, Juridica
     grupo5.donaciones.models.entities.necesidades.Necesidad necesidadMock =
         mock(grupo5.donaciones.models.entities.necesidades.Necesidad.class);
     grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria entidadMock =
         mock(grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria.class);
-    grupo5.donaciones.models.entities.personas.Juridica juridicaMock =
-        mock(grupo5.donaciones.models.entities.personas.Juridica.class);
     UUID juridicaId = UUID.randomUUID();
     UUID entidadId = UUID.randomUUID();
-    when(juridicaMock.getId()).thenReturn(juridicaId);
+    UUID necesidadId = UUID.randomUUID();
+    when(necesidadMock.getId()).thenReturn(necesidadId);
     when(entidadMock.juridicaId()).thenReturn(juridicaId);
     when(necesidadMock.getEntidadId()).thenReturn(entidadId);
     when(entidadesBeneficiariasRepositoryMock.findById(entidadId))
         .thenReturn(Optional.of(entidadMock));
 
-    propuesta.setNecesidadQueSatisface(necesidadMock);
+    propuesta.asociarNecesidad(necesidadId);
+    when(necesidadRepositoryMock.findById(necesidadId)).thenReturn(Optional.of(necesidadMock));
 
-    // We need a fragmentation
-    grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion fragmentationMock =
-        mock(grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion.class);
-    grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente
-        donacionIndependienteMock =
-            mock(
-                grupo5
-                    .donaciones
-                    .models
-                    .entities
-                    .donacionesIndependientes
-                    .DonacionIndependiente
-                    .class);
-    grupo5.donaciones.models.entities.donaciones.Donacion donacionOriginalMock =
-        mock(grupo5.donaciones.models.entities.donaciones.Donacion.class);
-    grupo5.donaciones.models.entities.donantes.Donante donanteMock =
-        mock(grupo5.donaciones.models.entities.donantes.Donante.class);
-    grupo5.donaciones.models.entities.personas.Humana humanaMock =
-        mock(grupo5.donaciones.models.entities.personas.Humana.class);
-    UUID donantePersonaId = UUID.randomUUID();
-    when(humanaMock.getId()).thenReturn(donantePersonaId);
-    when(donanteMock.personaId()).thenReturn(donantePersonaId);
-
+    // Build real DonacionIndependiente for fragmentation
     UUID donacionOriginalId = UUID.randomUUID();
     UUID donanteId = UUID.randomUUID();
-
-    when(donacionIndependienteMock.getDonacionOriginalId()).thenReturn(donacionOriginalId);
+    grupo5.donaciones.models.entities.donantes.Donante donanteMock =
+        mock(grupo5.donaciones.models.entities.donantes.Donante.class);
+    UUID donantePersonaId = UUID.randomUUID();
+    when(donanteMock.personaId()).thenReturn(donantePersonaId);
+    grupo5.donaciones.models.entities.donaciones.Donacion donacionOriginalMock =
+        mock(grupo5.donaciones.models.entities.donaciones.Donacion.class);
     when(donacionOriginalMock.getDonanteId()).thenReturn(donanteId);
-    when(donacionIndependienteMock.getDescripcion()).thenReturn("Ropa de abrigo");
-    when(fragmentationMock.getDonacionOriginal()).thenReturn(donacionIndependienteMock);
+    when(donacionOriginalMock.getDescripcion()).thenReturn("Ropa de abrigo");
 
+    // Build a real DonacionIndependiente with items
+    grupo5.donaciones.models.entities.categorias.Categoria categoria =
+        new grupo5.donaciones.models.entities.categorias.Categoria(
+            "Ropa", false, true, grupo5.donaciones.models.entities.categorias.Unidad.UNIDADES);
+    grupo5.donaciones.models.entities.categorias.Subcategoria subcategoria =
+        new grupo5.donaciones.models.entities.categorias.Subcategoria(
+            categoria.getId(), "Ropa Invierno");
+    grupo5.donaciones.models.entities.donaciones.Bien bien =
+        new grupo5.donaciones.models.entities.donaciones.Bien(
+            "Campera",
+            "img.png",
+            java.time.LocalDate.now().plusYears(1),
+            grupo5.donaciones.models.entities.donaciones.Estado.NUEVO);
+    grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado bienNormalizado =
+        new grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado(
+            bien,
+            subcategoria.getId(),
+            1.0,
+            grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion.ACEPTADO,
+            true,
+            false);
+    grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente item =
+        new grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente(
+            bienNormalizado, 5);
+    grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente donacion =
+        new grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente(
+            donacionOriginalId, java.util.List.of(item));
+
+    propuesta.agregarFragmentacion(donacion, 5);
+
+    // Service: donacionRepository.findById(f.getDonacionOriginalId()) → donacion
+    when(donacionRepositoryMock.findById(donacion.getId())).thenReturn(Optional.of(donacion));
+    // Service: donacionOriginalRepository.findById(di.getDonacionOriginalId()) → donacionOriginalMock
     when(donacionOriginalRepositoryMock.findById(donacionOriginalId))
         .thenReturn(Optional.of(donacionOriginalMock));
     when(donantesRepositoryMock.findById(donanteId)).thenReturn(Optional.of(donanteMock));
-
-    propuesta.setPosiblesFragmentaciones(List.of(fragmentationMock));
 
     when(propuestaRepositoryMock.findById(id)).thenReturn(Optional.of(propuesta));
 

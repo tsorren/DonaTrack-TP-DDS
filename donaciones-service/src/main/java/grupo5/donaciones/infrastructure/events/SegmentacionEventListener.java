@@ -170,7 +170,7 @@ public class SegmentacionEventListener {
     // Marcar los ítems procesados como segmentados
     itemsAceptados.forEach(
         i -> {
-          i.setSegmentado(true);
+          i.marcarComoSegmentado();
           itemNormalizadoRepository.save(i);
         });
 

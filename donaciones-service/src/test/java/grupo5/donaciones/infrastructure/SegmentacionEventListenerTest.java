@@ -62,7 +62,6 @@ class SegmentacionEventListenerTest {
     humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     donante = new Donante(humana.getId());
     donacion = new Donacion(donante.getId());
-    donacion.setFecha(java.time.LocalDateTime.now());
     donacion.marcarNormalizada();
 
     categoria =

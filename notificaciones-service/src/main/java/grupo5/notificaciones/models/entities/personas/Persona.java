@@ -6,10 +6,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class Persona implements Anonimizable, AggregateRoot {
   private final UUID id;
 

@@ -73,16 +73,16 @@ public class AlgoritmosService {
   private static List<Propuesta> consolidar(
       List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
 
-    Set<Necesidad> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
+    Set<UUID> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
 
     for (Propuesta propuesta : propuesta1) {
-      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisface());
+      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisfaceId());
     }
 
     List<Propuesta> propuestasEnAmbos = new ArrayList<>();
 
     for (Propuesta propuesta : propuesta2) {
-      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisface())) {
+      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisfaceId())) {
         propuestasEnAmbos.add(propuesta);
       }
     }
@@ -181,7 +181,10 @@ public class AlgoritmosService {
         propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
         propuesta.clearDomainEvents();
 
-        Necesidad necesidad = propuesta.getNecesidadQueSatisface();
+        Necesidad necesidad =
+            propuesta.getNecesidadQueSatisfaceId() != null
+                ? necesidadRepository.findById(propuesta.getNecesidadQueSatisfaceId()).orElse(null)
+                : null;
         if (propuesta.getPosiblesFragmentaciones() != null) {
           UUID idPersonaBeneficiaria = null;
           if (necesidad != null && necesidad.getEntidadId() != null) {
@@ -198,27 +201,31 @@ public class AlgoritmosService {
               .getPosiblesFragmentaciones()
               .forEach(
                   f -> {
-                    if (f.getDonacionOriginal() != null
-                        && f.getDonacionOriginal().getDonacionOriginalId() != null) {
-                      UUID donacionId = f.getDonacionOriginal().getDonacionOriginalId();
-                      donacionOriginalRepository
-                          .findById(donacionId)
+                    if (f.getDonacionOriginalId() != null) {
+                      donacionRepository
+                          .findById(f.getDonacionOriginalId())
                           .ifPresent(
-                              donacion -> {
-                                if (donacion.getDonanteId() != null) {
-                                  donantesRepository
-                                      .findById(donacion.getDonanteId())
+                              di -> {
+                                if (di.getDonacionOriginalId() != null) {
+                                  donacionOriginalRepository
+                                      .findById(di.getDonacionOriginalId())
                                       .ifPresent(
-                                          donante -> {
-                                            UUID idPersonaDonante = donante.personaId();
-                                            String detalle =
-                                                f.getDonacionOriginal().getDescripcion();
-                                            notificacionesFeignClient.enviarEvento(
-                                                new EventoDonacionAsignadaDTO(
-                                                    idPersonaDonante,
-                                                    LocalDateTime.now(),
-                                                    finalIdPersonaBeneficiaria,
-                                                    detalle));
+                                          donacion -> {
+                                            if (donacion.getDonanteId() != null) {
+                                              donantesRepository
+                                                  .findById(donacion.getDonanteId())
+                                                  .ifPresent(
+                                                      donante -> {
+                                                        UUID idPersonaDonante = donante.personaId();
+                                                        String detalle = di.getDescripcion();
+                                                        notificacionesFeignClient.enviarEvento(
+                                                            new EventoDonacionAsignadaDTO(
+                                                                idPersonaDonante,
+                                                                LocalDateTime.now(),
+                                                                finalIdPersonaBeneficiaria,
+                                                                detalle));
+                                                      });
+                                            }
                                           });
                                 }
                               });

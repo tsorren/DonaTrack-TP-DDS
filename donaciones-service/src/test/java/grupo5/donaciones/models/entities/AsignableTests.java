@@ -74,7 +74,7 @@ class AsignableTests {
 
   @Test
   void obtenerNecesidad_desdeDonacionAsignadaAExtraordinaria_devuelveLaNecesidadCorrecta() {
-    donacionIndependiente.setAsignadaA(necesidadExtraordinaria);
+    donacionIndependiente.asignar("SISTEMA", necesidadExtraordinaria);
     Necesidad resultado = donacionIndependiente.asignadaA().obtenerNecesidad();
     assertEquals(
         necesidadExtraordinaria, resultado, "Debería devolver la necesidad a la que fue asignada.");
@@ -98,7 +98,7 @@ class AsignableTests {
 
   @Test
   void obtenerNecesidad_desdeDonacionAsignadaAPeriodoRecurrente_devuelveLaNecesidadCorrecta() {
-    donacionIndependiente.setAsignadaA(periodoNecesidad);
+    donacionIndependiente.asignar("SISTEMA", periodoNecesidad);
     Necesidad resultado = donacionIndependiente.asignadaA().obtenerNecesidad();
     assertEquals(
         necesidadRecurrente,

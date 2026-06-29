@@ -31,11 +31,17 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
     validarNecesidad();
   }
 
-  public void setEntidadId(UUID entidadId) {
+  public void asociarAEntidad(UUID entidadId) {
+    if (entidadId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
     this.entidadId = entidadId;
   }
 
-  public void setCantidadNecesitada(Integer cantidadNecesitada) {
+  public void actualizarCantidadNecesitada(Integer cantidadNecesitada) {
+    if (cantidadNecesitada == null || cantidadNecesitada <= 0) {
+      throw new ValidationException(ErrorCatalog.CANTIDAD_NECESITADA_INVALIDA);
+    }
     this.cantidadNecesitada = cantidadNecesitada;
   }
 

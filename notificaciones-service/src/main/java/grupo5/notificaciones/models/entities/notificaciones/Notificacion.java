@@ -11,7 +11,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class Notificacion implements Anonimizable, AggregateRoot {
@@ -20,7 +19,11 @@ public class Notificacion implements Anonimizable, AggregateRoot {
   private String mensaje;
   private LocalDateTime fechaCreacion;
 
-  @Setter private EstadoNotificacion estadoNotificacion;
+  private EstadoNotificacion estadoNotificacion;
+
+  public void actualizarEstado(EstadoNotificacion estadoNotificacion) {
+    this.estadoNotificacion = estadoNotificacion;
+  }
 
   public Notificacion(UUID personaId, String mensaje) {
     this.id = UUID.randomUUID();

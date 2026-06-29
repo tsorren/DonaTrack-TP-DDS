@@ -15,31 +15,46 @@ import lombok.Setter;
 @Getter
 public class Donacion implements AggregateRoot {
   private final UUID id;
-  @Setter private UUID donanteId;
+
+  @Setter(AccessLevel.PACKAGE)
+  private UUID donanteId;
 
   @Getter(AccessLevel.NONE)
   private List<ItemDonacion> items;
 
-  @Setter private String descripcion;
-  @Setter private LocalDateTime fecha;
-  @Setter private Deposito depositoRecepcion;
+  @Setter(AccessLevel.PACKAGE)
+  private String descripcion;
+
+  @Setter(AccessLevel.PACKAGE)
+  private LocalDateTime fecha;
+
+  @Setter(AccessLevel.PACKAGE)
+  private Deposito depositoRecepcion;
+
   private EstadoDonacion estadoActual;
   private final List<CambioEstadoDonacion> historialEstados;
 
-  public Donacion(UUID donanteId, Deposito depositoRecepcion) {
+  public Donacion(
+      UUID donanteId, Deposito depositoRecepcion, String descripcion, LocalDateTime fecha) {
     if (donanteId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_SIN_DONANTE);
     }
     this.id = UUID.randomUUID();
     this.donanteId = donanteId;
     this.depositoRecepcion = depositoRecepcion;
+    this.descripcion = descripcion;
+    this.fecha = fecha != null ? fecha : LocalDateTime.now(java.time.ZoneId.systemDefault());
     this.items = new ArrayList<>();
     this.estadoActual = EstadoDonacion.CARGADA;
     this.historialEstados = new ArrayList<>();
   }
 
+  public Donacion(UUID donanteId, Deposito depositoRecepcion) {
+    this(donanteId, depositoRecepcion, null, null);
+  }
+
   public Donacion(UUID donanteId) {
-    this(donanteId, null);
+    this(donanteId, null, null, null);
   }
 
   public List<ItemDonacion> getItems() {

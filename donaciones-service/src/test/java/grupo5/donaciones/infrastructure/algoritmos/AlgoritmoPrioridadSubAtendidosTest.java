@@ -113,14 +113,14 @@ class AlgoritmoPrioridadSubAtendidosTest {
     NecesidadExtraordinaria necesidadActualMuyAtendida =
         new NecesidadExtraordinaria(
             subcategoria.getId(), 10, "nueva necesidad de entidad muy atendida");
-    necesidadActualMuyAtendida.setEntidadId(entidadMuyAtendida.getId());
+    necesidadActualMuyAtendida.asociarAEntidad(entidadMuyAtendida.getId());
     necesidadActualMuyAtendida.asignarDonacion(donacionEnSubcategoria);
 
     // Entidad poco atendida: sin donaciones asignadas
     NecesidadExtraordinaria necesidadActualPocoAtendida =
         new NecesidadExtraordinaria(
             subcategoria.getId(), 5, "nueva necesidad de entidad poco atendida");
-    necesidadActualPocoAtendida.setEntidadId(entidadPocoAtendida.getId());
+    necesidadActualPocoAtendida.asociarAEntidad(entidadPocoAtendida.getId());
 
     List<grupo5.donaciones.models.entities.necesidades.Necesidad> necesidades = new ArrayList<>();
     necesidades.add(necesidadActualMuyAtendida);
