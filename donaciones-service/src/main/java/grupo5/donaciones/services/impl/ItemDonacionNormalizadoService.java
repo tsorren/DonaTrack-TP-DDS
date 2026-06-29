@@ -11,9 +11,9 @@ import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
-import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import grupo5.donaciones.services.IItemDonacionNormalizadoService;
 import grupo5.donaciones.services.mappers.ItemDonacionNormalizadoMapper;
 import java.util.List;
@@ -31,7 +31,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
   private static final Logger log = LoggerFactory.getLogger(ItemDonacionNormalizadoService.class);
 
   private final IItemDonacionNormalizadoRepository itemNormalizadoRepository;
-  private final DonacionRepositoryEnMemoria donacionRepository;
+  private final IDonacionesRepository donacionRepository;
   private final ISubcategoriasRepository subcategoriasRepository;
   private final ICategoriasRepository categoriasRepository;
   private final ItemDonacionNormalizadoMapper mapper;

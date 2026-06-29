@@ -10,7 +10,7 @@ import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
-import grupo5.donaciones.models.repositories.impl.SubcategoriasRepositoryEnMemoria;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,13 +20,13 @@ import org.springframework.stereotype.Component;
 public class NormalizadorSemanticoBien {
 
   private final ComparadorTexto comparador;
-  private final SubcategoriasRepositoryEnMemoria subcategoriaRepository;
+  private final ISubcategoriasRepository subcategoriaRepository;
   private final ICategoriasRepository categoriasRepository;
   private final double umbralAceptacion;
 
   public NormalizadorSemanticoBien(
       ComparadorTexto comparador,
-      SubcategoriasRepositoryEnMemoria subcategoriaRepository,
+      ISubcategoriasRepository subcategoriaRepository,
       ICategoriasRepository categoriasRepository,
       @Value("${donatrack.normalizacion.umbral-aceptacion:0.6}") double umbralAceptacion) {
     this.comparador = comparador;

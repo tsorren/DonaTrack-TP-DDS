@@ -20,8 +20,13 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   }
 
   @Override
+  public TipoNecesidad getTipoNecesidad() {
+    return TipoNecesidad.EXTRAORDINARIA;
+  }
+
+  @Override
   public NecesidadDTO toDTO() {
-    return super.toDTO("EXTRAORDINARIA", null);
+    return super.toDTO(null);
   }
 
   @Override
@@ -49,6 +54,11 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   @Override
   public boolean estaSatisfecha() {
     return this.cantidadAcumulada() >= this.getCantidadNecesitada();
+  }
+
+  @Override
+  public boolean isActiva() {
+    return true;
   }
 
   @Override

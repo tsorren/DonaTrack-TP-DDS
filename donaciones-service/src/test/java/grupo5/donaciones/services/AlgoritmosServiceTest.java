@@ -12,7 +12,7 @@ import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
-import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
+import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import grupo5.donaciones.services.impl.AlgoritmosService;
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +27,7 @@ class AlgoritmosServiceTest {
 
   private IDonacionesIndependientesRepository donacionRepositoryMock;
   private INecesidadesRepository necesidadRepositoryMock;
-  private PropuestaRepository propuestaRepositoryMock;
+  private IPropuestasRepository propuestaRepositoryMock;
   private ComparadorTexto comparadorTextoMock;
   private NotificacionesFeignClient notificacionesFeignClientMock;
   private grupo5.donaciones.models.repositories.ISubcategoriasRepository
@@ -44,7 +44,7 @@ class AlgoritmosServiceTest {
   void setUp() {
     donacionRepositoryMock = mock(IDonacionesIndependientesRepository.class);
     necesidadRepositoryMock = mock(INecesidadesRepository.class);
-    propuestaRepositoryMock = mock(PropuestaRepository.class);
+    propuestaRepositoryMock = mock(IPropuestasRepository.class);
     comparadorTextoMock = mock(ComparadorTexto.class);
     notificacionesFeignClientMock = mock(NotificacionesFeignClient.class);
     subcategoriasRepositoryMock =

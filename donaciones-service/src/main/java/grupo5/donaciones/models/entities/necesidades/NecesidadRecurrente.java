@@ -114,9 +114,19 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   @Override
+  public boolean isActiva() {
+    return getActiva();
+  }
+
+  @Override
+  public TipoNecesidad getTipoNecesidad() {
+    return TipoNecesidad.RECURRENTE;
+  }
+
+  @Override
   public NecesidadDTO toDTO() {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     LocalDate fechaFin = actual != null ? actual.fechaFin() : null;
-    return super.toDTO("RECURRENTE", fechaFin);
+    return super.toDTO(fechaFin);
   }
 }

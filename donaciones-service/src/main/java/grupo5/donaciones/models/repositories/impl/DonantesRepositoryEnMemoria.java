@@ -6,5 +6,5 @@ import grupo5.donaciones.models.repositories.IDonantesRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class DonantesRepository extends CrudRepositoryEnMemoria<Donante>
+public class DonantesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Donante>
     implements IDonantesRepository {}

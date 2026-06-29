@@ -22,7 +22,6 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
 
   protected Necesidad(UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
     this.id = UUID.randomUUID();
-
     this.subcategoriaId = subcategoriaId;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
@@ -45,10 +44,12 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
     this.cantidadNecesitada = cantidadNecesitada;
   }
 
-  protected NecesidadDTO toDTO(String tipo, LocalDate fechaFin) {
+  public abstract TipoNecesidad getTipoNecesidad();
+
+  protected NecesidadDTO toDTO(LocalDate fechaFin) {
     return new NecesidadDTO(
         this.id,
-        tipo, // recurrente o extraordinaria
+        this.getTipoNecesidad().name(),
         this.entidadId, // Otro aggregate root -> ref por id
         this.subcategoriaId, // Otro aggregate root -> ref por id
         this.cantidadNecesitada,
@@ -87,6 +88,8 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
   public abstract void quitarDonacion(DonacionIndependiente donacionAsignada);
 
   public abstract boolean estaSatisfecha();
+
+  public abstract boolean isActiva();
 
   public abstract Integer cantidadAcumulada();
 }

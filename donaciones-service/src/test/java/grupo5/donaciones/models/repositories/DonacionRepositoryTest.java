@@ -10,7 +10,7 @@ import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.entities.ubicaciones.Localidad;
 import grupo5.donaciones.models.entities.ubicaciones.Pais;
 import grupo5.donaciones.models.entities.ubicaciones.Provincia;
-import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
+import grupo5.donaciones.models.repositories.impl.DonacionesRepositoryEnMemoria;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -25,7 +25,7 @@ class DonacionRepositoryTest {
 
   @BeforeEach
   void setUp() {
-    repository = new DonacionRepositoryEnMemoria();
+    repository = new DonacionesRepositoryEnMemoria();
   }
 
   @Test

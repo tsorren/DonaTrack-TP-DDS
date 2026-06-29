@@ -18,9 +18,9 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
-import grupo5.donaciones.models.repositories.impl.DonacionRepositoryEnMemoria;
 import grupo5.donaciones.services.impl.ItemDonacionNormalizadoService;
 import grupo5.donaciones.services.mappers.ItemDonacionNormalizadoMapper;
 import java.util.List;
@@ -38,7 +38,7 @@ import org.springframework.context.ApplicationEventPublisher;
 class ItemDonacionNormalizadoServiceTest {
 
   @Mock private IItemDonacionNormalizadoRepository itemNormalizadoRepository;
-  @Mock private DonacionRepositoryEnMemoria donacionRepository;
+  @Mock private IDonacionesRepository donacionRepository;
   @Mock private ISubcategoriasRepository subcategoriasRepository;
   @Mock private ICategoriasRepository categoriasRepository;
   @Mock private ItemDonacionNormalizadoMapper mapper;
