@@ -12,7 +12,7 @@ import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
-import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
+import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import java.time.LocalDateTime;
 import java.util.*;
 import org.slf4j.Logger;
@@ -29,13 +29,13 @@ public class AlgoritmosService {
   private final List<AlgoritmoAsignacion> algoritmos;
   private final IDonacionesIndependientesRepository donacionRepository;
   private final INecesidadesRepository necesidadRepository;
-  private final PropuestaRepository propuestaRepository;
+  private final IPropuestasRepository propuestaRepository;
   private final NotificacionesFeignClient notificacionesFeignClient;
 
   public AlgoritmosService(
       IDonacionesIndependientesRepository donacionRepository,
       INecesidadesRepository necesidadRepository,
-      PropuestaRepository propuestaRepository,
+      IPropuestasRepository propuestaRepository,
       ComparadorTexto comparadorTexto,
       NotificacionesFeignClient notificacionesFeignClient) {
 

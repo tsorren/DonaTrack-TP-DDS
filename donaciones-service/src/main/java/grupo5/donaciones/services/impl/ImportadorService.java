@@ -11,7 +11,7 @@ import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
-import grupo5.donaciones.models.repositories.impl.ArchivoDonantesRepository;
+import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ImportadorService implements IImportadorService {
 
-  private final ArchivoDonantesRepository archivoRepository;
+  private final IArchivoDonantesRepository archivoRepository;
   private final LectorCSVMejorado lectorCSV;
   private final PersonaMapper personaMapper;
   private final ValidadorPersonaDuplicada validadorDuplicados;
@@ -35,7 +35,7 @@ public class ImportadorService implements IImportadorService {
   private final IDonantesService donantesService;
 
   public ImportadorService(
-      ArchivoDonantesRepository archivoRepository,
+      IArchivoDonantesRepository archivoRepository,
       LectorCSVMejorado lectorCSV,
       PersonaMapper personaMapper,
       ValidadorPersonaDuplicada validadorDuplicados,

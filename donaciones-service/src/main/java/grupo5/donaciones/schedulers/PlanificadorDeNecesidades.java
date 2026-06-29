@@ -1,7 +1,7 @@
 package grupo5.donaciones.schedulers;
 
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
-import grupo5.donaciones.models.repositories.INecesidadesRecurrentesRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -12,17 +12,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class PlanificadorDeNecesidades {
 
-  private final INecesidadesRecurrentesRepository necesidadRepository;
+  private final INecesidadesRepository necesidadRepository;
 
   @Autowired
-  public PlanificadorDeNecesidades(INecesidadesRecurrentesRepository necesidadRepository) {
+  public PlanificadorDeNecesidades(INecesidadesRepository necesidadRepository) {
     this.necesidadRepository = necesidadRepository;
   }
 
   @Scheduled(cron = "0 0 0 * * ?")
   public void generarNuevosPeriodos() {
 
-    List<NecesidadRecurrente> recurrentesActivas = necesidadRepository.findByActivaTrue();
+    List<NecesidadRecurrente> recurrentesActivas = necesidadRepository.findRecurrentesActivas();
 
     for (NecesidadRecurrente recurrente : recurrentesActivas) {
       if (recurrente.hayQueGenerarNuevo(LocalDate.now(ZoneId.systemDefault()))) {

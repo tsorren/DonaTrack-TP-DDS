@@ -35,10 +35,12 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
     validarNecesidad();
   }
 
-  protected NecesidadDTO toDTO(String tipo, LocalDate fechaFin) {
+  public abstract TipoNecesidad getTipoNecesidad();
+
+  protected NecesidadDTO toDTO(LocalDate fechaFin) {
     return new NecesidadDTO(
         this.id,
-        tipo, // recurrente o extraordinaria
+        this.getTipoNecesidad().name(),
         this.getEntidad() != null
             ? this.getEntidad().getId()
             : null, // Otro aggregate root -> ref por id

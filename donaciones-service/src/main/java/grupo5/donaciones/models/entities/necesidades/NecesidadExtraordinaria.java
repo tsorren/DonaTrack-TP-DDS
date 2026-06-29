@@ -22,8 +22,13 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   }
 
   @Override
+  public TipoNecesidad getTipoNecesidad() {
+    return TipoNecesidad.EXTRAORDINARIA;
+  }
+
+  @Override
   public NecesidadDTO toDTO() {
-    return super.toDTO("EXTRAORDINARIA", null);
+    return super.toDTO(null);
   }
 
   @Override
