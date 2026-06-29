@@ -7,6 +7,7 @@ import grupo5.incentivos.services.IIncentivosService;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -18,14 +19,17 @@ public class InactividadJob {
   private final IIncentivosService service;
   private final NotificacionesClient notificacionesClient;
   private final List<CriterioInactividad> criterios;
+  private final int diasLimite;
 
   public InactividadJob(
       IIncentivosService service,
       NotificacionesClient notificacionesClient,
-      List<CriterioInactividad> criterios) {
+      List<CriterioInactividad> criterios,
+      @Value("${donante.inactividad.limite:20}") int diasLimite) {
     this.service = service;
     this.notificacionesClient = notificacionesClient;
     this.criterios = criterios;
+    this.diasLimite = diasLimite;
   }
 
   // Se ejecuta todos los días a las 8:00 AM
@@ -44,7 +48,7 @@ public class InactividadJob {
       inactivos.forEach(
           donante -> {
             try {
-              notificacionesClient.notificarInactividad(donante.getIdPersona(), 20);
+              notificacionesClient.notificarInactividad(donante.getIdPersona(), diasLimite);
               log.info("Notificación de inactividad enviada al donante {}", donante.getId());
             } catch (Exception e) {
               log.warn("No se pudo notificar al donante {}: {}", donante.getId(), e.getMessage());

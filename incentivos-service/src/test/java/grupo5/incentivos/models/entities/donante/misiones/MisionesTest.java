@@ -1,10 +1,11 @@
-package grupo5.incentivos.models.entities.misiones;
+package grupo5.incentivos.models.entities.donante.misiones;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
+import grupo5.incentivos.models.entities.donante.insignias.Insignia;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -174,9 +175,7 @@ class MisionesTest {
   @Test
   void mision_deberiaOtorgarInsigniaAlCompletarse() {
     MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
-    grupo5.incentivos.models.entities.insignias.Insignia insignia =
-        new grupo5.incentivos.models.entities.insignias.Insignia(
-            "Perseverante", "2 meses seguidos", "/img.png");
+    Insignia insignia = new Insignia("Perseverante", "2 meses seguidos", "/img.png");
     racha.setInsignia(insignia);
 
     racha.evaluarProgreso(donante, eventoEn(2026, 1));
@@ -185,6 +184,6 @@ class MisionesTest {
     assertTrue(racha.isCompletada());
     assertNotNull(racha.getFechaCompletada());
     assertEquals(1, donante.getInsignias().size());
-    assertEquals("Perseverante", donante.getInsignias().getFirst().getNombre());
+    assertEquals("Perseverante", donante.getInsignias().getFirst().nombre());
   }
 }

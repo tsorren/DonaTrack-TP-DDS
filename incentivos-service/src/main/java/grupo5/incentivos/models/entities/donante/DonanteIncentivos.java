@@ -1,21 +1,20 @@
 package grupo5.incentivos.models.entities.donante;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
-import grupo5.incentivos.models.entities.insignias.Insignia;
-import grupo5.incentivos.models.entities.metricas.Metricas;
-import grupo5.incentivos.models.entities.misiones.Mision;
+import grupo5.incentivos.models.entities.donante.insignias.Insignia;
+import grupo5.incentivos.models.entities.donante.metricas.Metricas;
+import grupo5.incentivos.models.entities.donante.misiones.Mision;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class DonanteIncentivos implements AggregateRoot {
 
   private final UUID id;
@@ -27,7 +26,7 @@ public class DonanteIncentivos implements AggregateRoot {
   private List<Insignia> insignias;
   private Metricas metricas;
 
-  public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre) {
+  public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre, List<Mision> misiones) {
     if (idPersona == null) {
       throw new ValidationException(ErrorCatalog.DONANTE_INCENTIVOS_ID_NULO);
     }
@@ -40,9 +39,13 @@ public class DonanteIncentivos implements AggregateRoot {
     this.nombre = nombre;
     this.categoria = CategoriaDonante.COLABORADOR;
     this.historialCategorias = new ArrayList<>();
-    this.misiones = new ArrayList<>();
+    this.misiones = misiones != null ? new ArrayList<>(misiones) : new ArrayList<>();
     this.insignias = new ArrayList<>();
     this.metricas = new Metricas();
+  }
+
+  public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre) {
+    this(idDonante, idPersona, nombre, new ArrayList<>());
   }
 
   public void registrarDonacion(EventoDonacion evento) {
@@ -67,8 +70,32 @@ public class DonanteIncentivos implements AggregateRoot {
     if (insignia == null) {
       throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
     }
-    this.insignias.add(insignia);
-    insignia.setFechaObtenida(LocalDate.now(ZoneId.systemDefault()));
+    Insignia nuevaInsignia =
+        new Insignia(
+            insignia.nombre(),
+            insignia.descripcion(),
+            insignia.imagenUrl(),
+            insignia.visible(),
+            LocalDate.now(ZoneId.systemDefault()));
+    this.insignias.add(nuevaInsignia);
+  }
+
+  public void configurarVisibilidadInsignia(String nombre, boolean visible) {
+    for (int i = 0; i < this.insignias.size(); i++) {
+      Insignia current = this.insignias.get(i);
+      if (current.nombre().equals(nombre)) {
+        this.insignias.set(
+            i,
+            new Insignia(
+                current.nombre(),
+                current.descripcion(),
+                current.imagenUrl(),
+                visible,
+                current.fechaObtenida()));
+        return;
+      }
+    }
+    throw new BusinessStateException(ErrorCatalog.INSIGNIA_NO_ENCONTRADA);
   }
 
   public boolean intentarAscenso() {

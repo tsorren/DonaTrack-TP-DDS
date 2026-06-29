@@ -9,8 +9,8 @@ import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.CambioCategoria;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import grupo5.incentivos.models.entities.insignias.Insignia;
-import grupo5.incentivos.models.entities.misiones.Mision;
+import grupo5.incentivos.models.entities.donante.insignias.Insignia;
+import grupo5.incentivos.models.entities.donante.misiones.Mision;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -51,8 +51,10 @@ public class IncentivosService implements IIncentivosService {
                 () -> {
                   DonanteIncentivos nuevo =
                       new DonanteIncentivos(
-                          request.idDonante(), request.idPersona(), request.nombre());
-                  nuevo.setMisiones(misionFactory.crearMisionesEstandar());
+                          request.idDonante(),
+                          request.idPersona(),
+                          request.nombre(),
+                          misionFactory.crearMisionesEstandar());
                   repository.save(nuevo);
                   return nuevo;
                 });
@@ -115,7 +117,7 @@ public class IncentivosService implements IIncentivosService {
 
   private void notificarMisionCompletada(DonanteIncentivos donante, Mision mision) {
     Insignia insignia = mision.getInsignia();
-    String recompensa = insignia != null ? insignia.getNombre() : "Sin recompensa";
+    String recompensa = insignia != null ? insignia.nombre() : "Sin recompensa";
     notificacionesClient.notificarMisionCumplida(
         donante.getIdPersona(), mision.getNombre(), recompensa);
     // Disparar flujo n8n para publicar la insignia ganada
@@ -123,8 +125,8 @@ public class IncentivosService implements IIncentivosService {
       n8nClient.publicarInsigniaGanada(
           donante.getId(),
           "Donante " + donante.getNombre(),
-          insignia.getNombre(),
-          insignia.getDescripcion());
+          insignia.nombre(),
+          insignia.descripcion());
     }
   }
 
@@ -152,7 +154,7 @@ public class IncentivosService implements IIncentivosService {
 
   public List<InsigniaDTO> obtenerInsignias(UUID donanteId) {
     return obtenerDonante(donanteId).getInsignias().stream()
-        .filter(Insignia::isVisible)
+        .filter(Insignia::visible)
         .map(InsigniaDTO::desde)
         .toList();
   }
@@ -160,11 +162,7 @@ public class IncentivosService implements IIncentivosService {
   public void configurarVisibilidadInsignia(
       UUID donanteId, String nombreInsignia, boolean visible) {
     DonanteIncentivos donante = obtenerDonante(donanteId);
-    donante.getInsignias().stream()
-        .filter(i -> i.getNombre().equals(nombreInsignia))
-        .findFirst()
-        .orElseThrow(() -> new BusinessStateException(ErrorCatalog.INSIGNIA_NO_ENCONTRADA))
-        .setVisible(visible);
+    donante.configurarVisibilidadInsignia(nombreInsignia, visible);
     repository.save(donante);
   }
 
