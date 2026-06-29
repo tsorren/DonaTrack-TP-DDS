@@ -60,7 +60,7 @@ public class IncentivosController implements IIncentivosController {
     return ResponseEntity.ok(incentivosService.obtenerInsignias(donanteId));
   }
 
-  @PatchMapping("/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad")
+  @PutMapping("/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad")
   public ResponseEntity<Void> configurarVisibilidad(
       @PathVariable UUID donanteId,
       @PathVariable String nombreInsignia,
