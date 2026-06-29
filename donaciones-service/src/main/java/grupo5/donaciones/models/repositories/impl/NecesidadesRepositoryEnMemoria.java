@@ -19,7 +19,7 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
 
   @Override
   public List<Necesidad> buscarNecesidadesPorEntidad(UUID entidadId) {
-    return storage.values().stream().filter(n -> entidadId.equals(n.getEntidad().getId())).toList();
+    return storage.values().stream().filter(n -> entidadId.equals(n.getEntidadId())).toList();
   }
 
   @Override

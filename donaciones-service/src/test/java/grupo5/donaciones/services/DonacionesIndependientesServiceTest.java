@@ -42,6 +42,8 @@ class DonacionesIndependientesServiceTest {
   private NotificacionesFeignClient notificacionesFeignClientMock;
   private IDonacionesRepository donacionRepositoryMock;
   private IDonantesRepository donantesRepositoryMock;
+  private grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+      entidadesBeneficiariasRepositoryMock;
   private DonacionesIndependientesService service;
 
   private static final String ACTOR = "SISTEMA";
@@ -57,6 +59,8 @@ class DonacionesIndependientesServiceTest {
     notificacionesFeignClientMock = mock(NotificacionesFeignClient.class);
     donacionRepositoryMock = mock(IDonacionesRepository.class);
     donantesRepositoryMock = mock(IDonantesRepository.class);
+    entidadesBeneficiariasRepositoryMock =
+        mock(grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository.class);
 
     service =
         new DonacionesIndependientesService(
@@ -64,7 +68,8 @@ class DonacionesIndependientesServiceTest {
             incentivosFeignClientMock,
             notificacionesFeignClientMock,
             donacionRepositoryMock,
-            donantesRepositoryMock);
+            donantesRepositoryMock,
+            entidadesBeneficiariasRepositoryMock);
   }
 
   private DonacionIndependiente crearDonacionDePrueba() {

@@ -4,8 +4,6 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
-import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
@@ -61,32 +59,29 @@ public class NecesidadesService implements INecesidadesService {
   // MAPPER INPUT (dto -> dominio)
   private Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
 
-    Subcategoria subcategoria =
-        subcategoriaRepository
-            .findById(dto.getIdSubcategoria())
-            .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdSubcategoria()));
-    EntidadBeneficiaria entidadBeneficiaria =
-        entidadesBeneficiariasRepository
-            .findById(dto.getIdEntidad())
-            .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdEntidad()));
+    subcategoriaRepository
+        .findById(dto.getIdSubcategoria())
+        .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdSubcategoria()));
+    entidadesBeneficiariasRepository
+        .findById(dto.getIdEntidad())
+        .orElseThrow(() -> new RecursoNoEncontradoException(dto.getIdEntidad()));
     Necesidad necesidad =
         switch (dto.getTipo()) {
           case "RECURRENTE" -> {
             Period periodo = Period.between(dto.getFechaInicio(), dto.getFechaFin());
             yield new NecesidadRecurrente(
-                subcategoria,
+                dto.getIdSubcategoria(),
                 dto.getCantidadNecesitada(),
                 dto.getDescripcion(),
                 periodo,
                 dto.getFechaInicio());
           }
           case "EXTRAORDINARIA" -> new NecesidadExtraordinaria(
-              subcategoria, dto.getCantidadNecesitada(), dto.getDescripcion());
+              dto.getIdSubcategoria(), dto.getCantidadNecesitada(), dto.getDescripcion());
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
-    necesidad.setEntidad(entidadBeneficiaria);
+    necesidad.setEntidadId(dto.getIdEntidad());
 
-    // entidadBeneficiaria.agregarNecesidad(necesidad);
     return necesidad;
   }
 }

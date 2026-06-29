@@ -34,6 +34,9 @@ class AlgoritmosServiceTest {
       subcategoriasRepositoryMock;
   private IDonacionesRepository donacionOriginalRepositoryMock;
   private IDonantesRepository donantesRepositoryMock;
+  private grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+      entidadesBeneficiariasRepositoryMock;
+  private org.springframework.context.ApplicationEventPublisher eventPublisherMock;
 
   private AlgoritmosService service;
 
@@ -48,6 +51,9 @@ class AlgoritmosServiceTest {
         mock(grupo5.donaciones.models.repositories.ISubcategoriasRepository.class);
     donacionOriginalRepositoryMock = mock(IDonacionesRepository.class);
     donantesRepositoryMock = mock(IDonantesRepository.class);
+    entidadesBeneficiariasRepositoryMock =
+        mock(grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository.class);
+    eventPublisherMock = mock(org.springframework.context.ApplicationEventPublisher.class);
 
     service =
         new AlgoritmosService(
@@ -58,7 +64,9 @@ class AlgoritmosServiceTest {
             notificacionesFeignClientMock,
             subcategoriasRepositoryMock,
             donacionOriginalRepositoryMock,
-            donantesRepositoryMock);
+            donantesRepositoryMock,
+            entidadesBeneficiariasRepositoryMock,
+            eventPublisherMock);
   }
 
   @Test
@@ -90,6 +98,7 @@ class AlgoritmosServiceTest {
   void actualizarEstadoPropuesta_deberiaAprobarPropuesta_CuandoEstadoEsAprobada() {
     UUID id = UUID.randomUUID();
     Propuesta propuestaMock = mock(Propuesta.class);
+    when(propuestaMock.getDomainEvents()).thenReturn(List.of());
     when(propuestaRepositoryMock.findById(id)).thenReturn(Optional.of(propuestaMock));
 
     service.actualizarEstadoPropuesta(id, EstadoPropuesta.APROBADA);
@@ -113,9 +122,12 @@ class AlgoritmosServiceTest {
     grupo5.donaciones.models.entities.personas.Juridica juridicaMock =
         mock(grupo5.donaciones.models.entities.personas.Juridica.class);
     UUID juridicaId = UUID.randomUUID();
+    UUID entidadId = UUID.randomUUID();
     when(juridicaMock.getId()).thenReturn(juridicaId);
     when(entidadMock.juridicaId()).thenReturn(juridicaId);
-    when(necesidadMock.getEntidad()).thenReturn(entidadMock);
+    when(necesidadMock.getEntidadId()).thenReturn(entidadId);
+    when(entidadesBeneficiariasRepositoryMock.findById(entidadId))
+        .thenReturn(Optional.of(entidadMock));
 
     propuesta.setNecesidadQueSatisface(necesidadMock);
 

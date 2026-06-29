@@ -43,14 +43,17 @@ class AsignableTests {
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "No Perecederos");
 
     necesidadExtraordinaria =
-        new NecesidadExtraordinaria(subcategoria, 100, "Latas de atún para comedor");
+        new NecesidadExtraordinaria(subcategoria.getId(), 100, "Latas de atún para comedor");
 
     necesidadRecurrente =
         new NecesidadRecurrente(
-            subcategoria, 50, "Leche en polvo", Period.ofMonths(1), TEST_DATE.minusDays(15));
+            subcategoria.getId(),
+            50,
+            "Leche en polvo",
+            Period.ofMonths(1),
+            TEST_DATE.minusDays(15));
 
     periodoNecesidad = necesidadRecurrente.obtenerPeriodoActual();
-    periodoNecesidad.setNecesidadRecurrente(necesidadRecurrente);
 
     Bien bienOriginal = new Bien("Arroz", "imagen.png", TEST_DATE.plusYears(1), Estado.NUEVO);
     BienNormalizado bienNormalizado =

@@ -19,7 +19,9 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
+import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.propuestas.PropuestaAprobada;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -46,7 +48,7 @@ class PropuestaTest {
         new BienNormalizado(
             bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, true);
 
-    necesidad = new NecesidadExtraordinaria(subcategoria, 5, "bancos para el aula");
+    necesidad = new NecesidadExtraordinaria(subcategoria.getId(), 5, "bancos para el aula");
 
     List<ItemDonacionIndependiente> itemsDiez = new ArrayList<>();
     itemsDiez.add(new ItemDonacionIndependiente(bienNormalizado, 10));
@@ -110,6 +112,26 @@ class PropuestaTest {
     propuesta.confirmar();
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
+    assertEquals(1, propuesta.getDomainEvents().size());
+    PropuestaAprobada event = (PropuestaAprobada) propuesta.getDomainEvents().getFirst();
+
+    // Simulate listener mutation
+    String actor = event.actor();
+    for (PosibleFragmentacion f : event.fragmentaciones()) {
+      DonacionIndependiente donacionOriginal = f.getDonacionOriginal();
+      Integer cantidadNecesaria = f.getCantidadNecesaria();
+      DonacionIndependiente donacionAsignar;
+
+      if (donacionOriginal.getCantidad() > cantidadNecesaria) {
+        donacionAsignar = donacionOriginal.fragmentarse(cantidadNecesaria);
+      } else {
+        donacionAsignar = donacionOriginal;
+      }
+
+      donacionAsignar.asignar(actor, event.necesidad());
+      event.necesidad().asignarDonacion(donacionAsignar);
+    }
+
     assertEquals(1, necesidad.getDonacionesAsignadas().size());
     assertEquals(5, necesidad.getDonacionesAsignadas().getFirst().getCantidad());
     assertEquals(5, donacionConSobrante.getCantidad());
@@ -125,6 +147,26 @@ class PropuestaTest {
     propuesta.confirmar();
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
+    assertEquals(1, propuesta.getDomainEvents().size());
+    PropuestaAprobada event = (PropuestaAprobada) propuesta.getDomainEvents().getFirst();
+
+    // Simulate listener mutation
+    String actor = event.actor();
+    for (PosibleFragmentacion f : event.fragmentaciones()) {
+      DonacionIndependiente donacionOriginal = f.getDonacionOriginal();
+      Integer cantidadNecesaria = f.getCantidadNecesaria();
+      DonacionIndependiente donacionAsignar;
+
+      if (donacionOriginal.getCantidad() > cantidadNecesaria) {
+        donacionAsignar = donacionOriginal.fragmentarse(cantidadNecesaria);
+      } else {
+        donacionAsignar = donacionOriginal;
+      }
+
+      donacionAsignar.asignar(actor, event.necesidad());
+      event.necesidad().asignarDonacion(donacionAsignar);
+    }
+
     assertEquals(1, necesidad.getDonacionesAsignadas().size());
     assertSame(donacionExacta, necesidad.getDonacionesAsignadas().getFirst());
     assertInstanceOf(AsignacionRealizada.class, donacionExacta.getEstadoActual());

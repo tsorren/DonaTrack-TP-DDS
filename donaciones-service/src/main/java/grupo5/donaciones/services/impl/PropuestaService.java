@@ -17,6 +17,9 @@ public class PropuestaService {
 
   private final AlgoritmosService algoritmosService;
   private final IAsignacionesRepository asignacionRepository;
+  private final grupo5.donaciones.models.repositories.INecesidadesRepository necesidadRepository;
+  private final grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
+      donacionRepository;
 
   private static PropuestaResponseDTO toDTO(Propuesta propuesta) {
     return new PropuestaResponseDTO(
@@ -47,5 +50,35 @@ public class PropuestaService {
 
   public List<EjecucionAsignacionDTO> historialEjecuciones() {
     return asignacionRepository.obtenerHistorial();
+  }
+
+  @org.springframework.context.event.EventListener
+  public void onPropuestaAprobada(
+      grupo5.donaciones.models.entities.propuestas.PropuestaAprobada event) {
+    grupo5.donaciones.models.entities.necesidades.Necesidad necesidad = event.necesidad();
+    String actor = event.actor();
+
+    for (grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion f :
+        event.fragmentaciones()) {
+      grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente
+          donacionOriginal = f.getDonacionOriginal();
+      Integer cantidadNecesaria = f.getCantidadNecesaria();
+      grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente
+          donacionAsignar;
+
+      if (donacionOriginal.getCantidad() > cantidadNecesaria) {
+        donacionAsignar = donacionOriginal.fragmentarse(cantidadNecesaria);
+      } else {
+        donacionAsignar = donacionOriginal;
+      }
+
+      donacionAsignar.asignar(actor, necesidad);
+      necesidad.asignarDonacion(donacionAsignar);
+
+      donacionRepository.save(donacionOriginal);
+      donacionRepository.save(donacionAsignar);
+    }
+
+    necesidadRepository.save(necesidad);
   }
 }

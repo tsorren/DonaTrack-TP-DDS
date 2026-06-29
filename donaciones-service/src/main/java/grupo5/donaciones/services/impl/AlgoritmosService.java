@@ -37,6 +37,9 @@ public class AlgoritmosService {
       subcategoriasRepository;
   private final IDonacionesRepository donacionOriginalRepository;
   private final IDonantesRepository donantesRepository;
+  private final grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+      entidadesBeneficiariasRepository;
+  private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
   public AlgoritmosService(
       IDonacionesIndependientesRepository donacionRepository,
@@ -46,7 +49,10 @@ public class AlgoritmosService {
       NotificacionesFeignClient notificacionesFeignClient,
       grupo5.donaciones.models.repositories.ISubcategoriasRepository subcategoriasRepository,
       IDonacionesRepository donacionOriginalRepository,
-      IDonantesRepository donantesRepository) {
+      IDonantesRepository donantesRepository,
+      grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+          entidadesBeneficiariasRepository,
+      org.springframework.context.ApplicationEventPublisher eventPublisher) {
 
     this.donacionRepository = donacionRepository;
     this.necesidadRepository = necesidadRepository;
@@ -55,6 +61,8 @@ public class AlgoritmosService {
     this.subcategoriasRepository = subcategoriasRepository;
     this.donacionOriginalRepository = donacionOriginalRepository;
     this.donantesRepository = donantesRepository;
+    this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
+    this.eventPublisher = eventPublisher;
 
     this.algoritmos =
         List.of(
@@ -126,11 +134,19 @@ public class AlgoritmosService {
     }
 
     for (Necesidad n : necesidades) {
+      String subcatNombre = "null";
+      if (n.getSubcategoriaId() != null) {
+        subcatNombre =
+            subcategoriasRepository
+                .findById(n.getSubcategoriaId())
+                .map(grupo5.donaciones.models.entities.categorias.Subcategoria::getNombre)
+                .orElse("null");
+      }
       log.info(
           "Necesidad insatisfecha ID: {}, Tipo: {}, Subcategoría: {}, Cantidad necesitada: {}, Cantidad acumulada: {}, Descripción: {}",
           n.getId(),
           n.getClass().getSimpleName(),
-          n.getSubcategoria() != null ? n.getSubcategoria().getNombre() : "null",
+          subcatNombre,
           n.getCantidadNecesitada(),
           n.cantidadAcumulada(),
           n.getDescripcion());
@@ -162,29 +178,22 @@ public class AlgoritmosService {
     switch (estado) {
       case APROBADA -> {
         propuesta.confirmar();
-        Necesidad necesidad = propuesta.getNecesidadQueSatisface();
-        if (necesidad != null) {
-          necesidadRepository.save(necesidad);
-        }
-        if (propuesta.getPosiblesFragmentaciones() != null) {
-          propuesta
-              .getPosiblesFragmentaciones()
-              .forEach(
-                  f -> {
-                    if (f.getDonacionOriginal() != null) {
-                      donacionRepository.save(f.getDonacionOriginal());
-                    }
-                  });
-        }
-        if (necesidad != null && necesidad.getDonacionesAsignadas() != null) {
-          necesidad.getDonacionesAsignadas().forEach(donacionRepository::save);
-        }
+        propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
+        propuesta.clearDomainEvents();
 
+        Necesidad necesidad = propuesta.getNecesidadQueSatisface();
         if (propuesta.getPosiblesFragmentaciones() != null) {
-          UUID idPersonaBeneficiaria =
-              (necesidad != null && necesidad.getEntidad() != null)
-                  ? necesidad.getEntidad().juridicaId()
-                  : null;
+          UUID idPersonaBeneficiaria = null;
+          if (necesidad != null && necesidad.getEntidadId() != null) {
+            idPersonaBeneficiaria =
+                entidadesBeneficiariasRepository
+                    .findById(necesidad.getEntidadId())
+                    .map(
+                        grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria
+                            ::juridicaId)
+                    .orElse(null);
+          }
+          final UUID finalIdPersonaBeneficiaria = idPersonaBeneficiaria;
           propuesta
               .getPosiblesFragmentaciones()
               .forEach(
@@ -208,7 +217,7 @@ public class AlgoritmosService {
                                                 new EventoDonacionAsignadaDTO(
                                                     idPersonaDonante,
                                                     LocalDateTime.now(),
-                                                    idPersonaBeneficiaria,
+                                                    finalIdPersonaBeneficiaria,
                                                     detalle));
                                           });
                                 }

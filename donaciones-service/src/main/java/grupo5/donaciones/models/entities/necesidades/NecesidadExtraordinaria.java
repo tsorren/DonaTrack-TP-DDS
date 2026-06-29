@@ -3,21 +3,19 @@ package grupo5.donaciones.models.entities.necesidades;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   private List<DonacionIndependiente> donacionesAsignadas;
 
   public NecesidadExtraordinaria(
-      Subcategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
-    super(subcategoria, cantidadNecesitada, descripcion);
+      UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
+    super(subcategoriaId, cantidadNecesitada, descripcion);
     this.donacionesAsignadas = new ArrayList<>();
   }
 

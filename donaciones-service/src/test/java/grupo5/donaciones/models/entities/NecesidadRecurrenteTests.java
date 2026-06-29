@@ -43,7 +43,7 @@ class NecesidadRecurrenteTests {
     subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
     necesidad =
         new NecesidadRecurrente(
-            subcategoria,
+            subcategoria.getId(),
             100,
             "30 bancos y sillas para el aula",
             Period.ofWeeks(1),
@@ -97,7 +97,11 @@ class NecesidadRecurrenteTests {
   void hayQueGenerarNuevo_cuandoPeriodoVencio_deberiaSerTrue() {
     NecesidadRecurrente necesidadVencida =
         new NecesidadRecurrente(
-            subcategoria, 100, "Test de vencimiento", Period.ofWeeks(1), TEST_DATE.minusDays(10));
+            subcategoria.getId(),
+            100,
+            "Test de vencimiento",
+            Period.ofWeeks(1),
+            TEST_DATE.minusDays(10));
 
     assertTrue(necesidadVencida.hayQueGenerarNuevo(TEST_DATE));
   }

@@ -20,14 +20,22 @@ class PropuestaServiceTest {
 
   private AlgoritmosService algoritmosService;
   private IAsignacionesRepository asignacionRepository;
+  private grupo5.donaciones.models.repositories.INecesidadesRepository necesidadRepository;
+  private grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
+      donacionRepository;
   private PropuestaService propuestaService;
 
   @BeforeEach
   void setUp() {
     algoritmosService = mock(AlgoritmosService.class);
     asignacionRepository = mock(IAsignacionesRepository.class);
+    necesidadRepository = mock(grupo5.donaciones.models.repositories.INecesidadesRepository.class);
+    donacionRepository =
+        mock(grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository.class);
 
-    propuestaService = new PropuestaService(algoritmosService, asignacionRepository);
+    propuestaService =
+        new PropuestaService(
+            algoritmosService, asignacionRepository, necesidadRepository, donacionRepository);
   }
 
   @Test
@@ -85,5 +93,37 @@ class PropuestaServiceTest {
     assertEquals(dto, resultado.getFirst());
 
     verify(asignacionRepository).obtenerHistorial();
+  }
+
+  @Test
+  void onPropuestaAprobada_debeMutarYPersistir() {
+    Necesidad necesidad = mock(Necesidad.class);
+    grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion fragmentacion =
+        mock(grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion.class);
+    grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente
+        donacionOriginal =
+            mock(
+                grupo5
+                    .donaciones
+                    .models
+                    .entities
+                    .donacionesIndependientes
+                    .DonacionIndependiente
+                    .class);
+
+    when(fragmentacion.getDonacionOriginal()).thenReturn(donacionOriginal);
+    when(fragmentacion.getCantidadNecesaria()).thenReturn(5);
+    when(donacionOriginal.getCantidad()).thenReturn(5); // Exact quantity, no fragmentation
+
+    grupo5.donaciones.models.entities.propuestas.PropuestaAprobada event =
+        new grupo5.donaciones.models.entities.propuestas.PropuestaAprobada(
+            UUID.randomUUID(), necesidad, List.of(fragmentacion), "actor");
+
+    propuestaService.onPropuestaAprobada(event);
+
+    verify(donacionOriginal).asignar("actor", necesidad);
+    verify(necesidad).asignarDonacion(donacionOriginal);
+    verify(donacionRepository, times(2)).save(donacionOriginal);
+    verify(necesidadRepository).save(necesidad);
   }
 }

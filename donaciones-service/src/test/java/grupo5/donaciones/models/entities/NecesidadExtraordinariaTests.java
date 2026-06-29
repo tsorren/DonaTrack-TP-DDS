@@ -39,7 +39,8 @@ class NecesidadExtraordinariaTests {
     Donacion donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
-    necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
+    necesidad =
+        new NecesidadExtraordinaria(subcategoria.getId(), 30, "30 bancos y sillas para el aula");
 
     necesidad.setCantidadNecesitada(30);
 

@@ -28,18 +28,23 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   private final NotificacionesFeignClient notificacionesFeignClient;
   private final IDonacionesRepository donacionRepository;
   private final IDonantesRepository donantesRepository;
+  private final grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+      entidadesBeneficiariasRepository;
 
   public DonacionesIndependientesService(
       IDonacionesIndependientesRepository repositorio,
       IncentivosFeignClient incentivosFeignClient,
       NotificacionesFeignClient notificacionesFeignClient,
       IDonacionesRepository donacionRepository,
-      IDonantesRepository donantesRepository) {
+      IDonantesRepository donantesRepository,
+      grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+          entidadesBeneficiariasRepository) {
     this.repositorio = repositorio;
     this.incentivosFeignClient = incentivosFeignClient;
     this.notificacionesFeignClient = notificacionesFeignClient;
     this.donacionRepository = donacionRepository;
     this.donantesRepository = donantesRepository;
+    this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
   }
 
   @Override
@@ -73,10 +78,12 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         UUID idPersonaBeneficiaria = null;
         if (donacion.getAsignadaA() != null) {
           Necesidad necesidad = donacion.getAsignadaA().obtenerNecesidad();
-          if (necesidad != null && necesidad.getEntidad() != null) {
-            organizacionId = necesidad.getEntidad().getId();
-            if (necesidad.getEntidad().juridicaId() != null) {
-              idPersonaBeneficiaria = necesidad.getEntidad().juridicaId();
+          if (necesidad != null && necesidad.getEntidadId() != null) {
+            organizacionId = necesidad.getEntidadId();
+            grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria entidad =
+                entidadesBeneficiariasRepository.findById(necesidad.getEntidadId()).orElse(null);
+            if (entidad != null && entidad.juridicaId() != null) {
+              idPersonaBeneficiaria = entidad.juridicaId();
             }
           }
         }

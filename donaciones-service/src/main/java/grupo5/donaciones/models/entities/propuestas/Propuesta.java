@@ -21,6 +21,8 @@ public class Propuesta implements AggregateRoot {
   EstadoPropuesta estado;
   LocalDateTime fechaCreacion;
 
+  @Getter private final transient List<Object> domainEvents = new ArrayList<>();
+
   public void agregarFragmentacion(DonacionIndependiente donacion, int cantidad) {
     this.id = UUID.randomUUID();
     if (donacion == null)
@@ -47,11 +49,22 @@ public class Propuesta implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD);
     }
 
-    posiblesFragmentaciones.forEach(f -> f.confirmar(necesidadQueSatisface, actor));
     this.estado = EstadoPropuesta.APROBADA;
+    this.domainEvents.add(
+        new PropuestaAprobada(
+            this.id,
+            this.necesidadQueSatisface,
+            this.posiblesFragmentaciones != null
+                ? new ArrayList<>(this.posiblesFragmentaciones)
+                : new ArrayList<>(),
+            actor));
   }
 
   public void rechazar() {
     this.estado = EstadoPropuesta.DESCARTADA;
+  }
+
+  public void clearDomainEvents() {
+    this.domainEvents.clear();
   }
 }
