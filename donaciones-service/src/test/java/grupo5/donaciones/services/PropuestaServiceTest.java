@@ -80,14 +80,17 @@ class PropuestaServiceTest {
   @Test
   void ejecutarAsignacion_debeInvocarAlgoritmosServiceYGuardarEjecucion() {
     Propuesta propuesta = mock(Propuesta.class);
+    PropuestaDTO dto = mock(PropuestaDTO.class);
     when(algoritmosService.ejecutar()).thenReturn(List.of(propuesta));
+    when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
 
-    List<Propuesta> resultado = propuestaService.ejecutarAsignacion();
+    List<PropuestaDTO> resultado = propuestaService.ejecutarAsignacion();
 
     assertEquals(1, resultado.size());
-    assertEquals(propuesta, resultado.getFirst());
+    assertEquals(dto, resultado.getFirst());
 
     verify(algoritmosService).ejecutar();
+    verify(propuestaMapper).toDTO(propuesta);
     verify(asignacionRepository).save(any(EjecucionAsignacionDTO.class));
   }
 

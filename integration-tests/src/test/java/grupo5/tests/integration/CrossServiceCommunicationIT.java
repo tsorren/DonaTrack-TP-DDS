@@ -405,7 +405,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 4. Toggle visibility to false
     given()
         .when()
-        .patch(
+        .put(
             INCENTIVOS_URL
                 + "/api/incentivos/donantes/"
                 + donorId
@@ -424,7 +424,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 6. Toggle visibility to true
     given()
         .when()
-        .patch(
+        .put(
             INCENTIVOS_URL
                 + "/api/incentivos/donantes/"
                 + donorId

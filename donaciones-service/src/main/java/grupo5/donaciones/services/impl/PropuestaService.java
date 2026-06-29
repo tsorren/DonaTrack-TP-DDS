@@ -32,7 +32,7 @@ public class PropuestaService {
     this.propuestaMapper = propuestaMapper;
   }
 
-  public List<Propuesta> ejecutarAsignacion() {
+  public List<grupo5.donaciones.dto.propuestas.PropuestaDTO> ejecutarAsignacion() {
     List<Propuesta> propuestas = algoritmosService.ejecutar();
 
     EjecucionAsignacionDTO ejecucion = new EjecucionAsignacionDTO();
@@ -41,7 +41,7 @@ public class PropuestaService {
 
     asignacionRepository.save(ejecucion);
 
-    return propuestas;
+    return propuestas.stream().map(propuestaMapper::toDTO).toList();
   }
 
   public List<grupo5.donaciones.dto.propuestas.PropuestaDTO> listarPropuestas() {

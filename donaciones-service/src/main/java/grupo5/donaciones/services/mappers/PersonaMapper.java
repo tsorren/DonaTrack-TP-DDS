@@ -54,8 +54,9 @@ public class PersonaMapper {
         (j.representantes() != null && !j.representantes().isEmpty())
             ? toHumanaEntity(j.representantes().get(0))
             : null;
+    TipoJuridico tipo = j.tipoJuridico() != null ? j.tipoJuridico() : TipoJuridico.ONG;
     Juridica juridica =
-        PersonaFactory.crearJuridica(j.razonSocial(), j.tipoJuridico(), j.rubro(), representante);
+        PersonaFactory.crearJuridica(j.razonSocial(), tipo, j.rubro(), representante);
     populateCommonFields(juridica, j);
     if (j.representantes() != null && j.representantes().size() > 1) {
       for (int i = 1; i < j.representantes().size(); i++) {
@@ -98,7 +99,8 @@ public class PersonaMapper {
       }
       case Juridica j -> {
         if (input instanceof JuridicaInputDTO ji) {
-          j.actualizar(ji.razonSocial(), ji.tipoJuridico(), ji.rubro());
+          TipoJuridico tipo = ji.tipoJuridico() != null ? ji.tipoJuridico() : j.getTipo();
+          j.actualizar(ji.razonSocial(), tipo, ji.rubro());
           j.limpiarRepresentantes();
           if (ji.representantes() != null) {
             ji.representantes()
