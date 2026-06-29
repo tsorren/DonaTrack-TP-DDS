@@ -89,11 +89,4 @@ public class NecesidadesService implements INecesidadesService {
     // entidadBeneficiaria.agregarNecesidad(necesidad);
     return necesidad;
   }
-
-  @Override
-  public List<grupo5.donaciones.dto.SubcategoriaDTO> obtenerSubcategorias() {
-    return subcategoriaRepository.findAll().stream()
-        .map(s -> new grupo5.donaciones.dto.SubcategoriaDTO(s.getId(), s.getNombre()))
-        .toList();
-  }
 }
