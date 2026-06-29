@@ -112,6 +112,11 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   @Override
+  public boolean isActiva() {
+    return getActiva();
+  }
+
+  @Override
   public TipoNecesidad getTipoNecesidad() {
     return TipoNecesidad.RECURRENTE;
   }

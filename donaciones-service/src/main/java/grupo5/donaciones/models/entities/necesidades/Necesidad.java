@@ -83,5 +83,7 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
 
   public abstract boolean estaSatisfecha();
 
+  public abstract boolean isActiva();
+
   public abstract Integer cantidadAcumulada();
 }

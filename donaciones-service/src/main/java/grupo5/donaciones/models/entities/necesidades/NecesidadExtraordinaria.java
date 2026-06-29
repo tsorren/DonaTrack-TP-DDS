@@ -59,6 +59,11 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   }
 
   @Override
+  public boolean isActiva() {
+    return true;
+  }
+
+  @Override
   public Necesidad obtenerNecesidad() {
     return this;
   }
