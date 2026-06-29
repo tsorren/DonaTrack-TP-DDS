@@ -223,7 +223,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     String subcategoryId =
         given()
             .when()
-            .get(DONACIONES_URL + "/api/necesidades/subcategorias")
+            .get(DONACIONES_URL + "/api/subcategorias")
             .then()
             .statusCode(200)
             .extract()
@@ -458,7 +458,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     String subcategoryId =
         given()
             .when()
-            .get(DONACIONES_URL + "/api/necesidades/subcategorias")
+            .get(DONACIONES_URL + "/api/subcategorias")
             .then()
             .statusCode(200)
             .extract()

@@ -13,7 +13,5 @@ public interface IDonantesController {
 
   ResponseEntity<DonanteOutputDTO> obtenerDonante(UUID id);
 
-  ResponseEntity<DonanteOutputDTO> actualizarCanal(UUID id, DonanteInputDTO dto);
-
   ResponseEntity<Void> eliminarDonante(UUID id);
 }

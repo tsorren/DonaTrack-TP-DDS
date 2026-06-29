@@ -26,7 +26,6 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
 
   protected Necesidad(Subcategoria subcategoria, Integer cantidadNecesitada, String descripcion) {
     this.id = UUID.randomUUID();
-
     this.subcategoria = subcategoria;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;

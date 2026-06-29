@@ -107,17 +107,6 @@ public class DonantesService implements IDonantesService {
   }
 
   @Override
-  public DonanteOutputDTO actualizarCanal(UUID id, DonanteInputDTO dto) {
-    Donante donante =
-        donantesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
-
-    donanteMapper.updateEntity(donante, dto);
-
-    Donante donanteActualizado = donantesRepository.save(donante);
-    return donanteMapper.toOutputDTO(donanteActualizado);
-  }
-
-  @Override
   public void eliminarDonante(UUID id) {
     Donante donante =
         donantesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
