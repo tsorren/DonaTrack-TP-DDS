@@ -47,6 +47,7 @@ public class Camion {
     if (this.estado == EstadoCamion.EN_RUTA) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
+
     this.estado = EstadoCamion.EN_MANTENIMIENTO;
   }
 
@@ -54,6 +55,7 @@ public class Camion {
     if (this.estado != EstadoCamion.EN_MANTENIMIENTO) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
+
     this.estado = EstadoCamion.DISPONIBLE;
   }
 
@@ -61,6 +63,7 @@ public class Camion {
     if (this.estado == EstadoCamion.EN_RUTA) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
+
     this.estado = EstadoCamion.DESHABILITADO;
   }
 
