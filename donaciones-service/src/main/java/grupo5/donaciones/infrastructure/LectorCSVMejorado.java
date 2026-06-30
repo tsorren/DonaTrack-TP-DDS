@@ -32,17 +32,7 @@ public class LectorCSVMejorado implements CargadorDonantes {
         String linea = lineas.get(i);
         if (linea == null || linea.isBlank()) continue;
 
-        String[] datos = linea.split(",");
-        Map<String, String> filaMap = new HashMap<>();
-
-        for (int j = 0; j < cabecera.length; j++) {
-          if (j < datos.length) {
-            filaMap.put(cabecera[j], datos[j].trim());
-          } else {
-            filaMap.put(cabecera[j], "");
-          }
-        }
-        filasMapeadas.add(filaMap);
+        filasMapeadas.add(procesarLinea(linea, cabecera));
       }
       return filasMapeadas;
     } catch (IOException e) {
@@ -50,5 +40,19 @@ public class LectorCSVMejorado implements CargadorDonantes {
     } catch (Exception e) {
       throw new InfrastructureException(ErrorCatalog.CSV_PROCESS_ERROR, e);
     }
+  }
+
+  private Map<String, String> procesarLinea(String linea, String[] cabecera) {
+    String[] datos = linea.split(",");
+    Map<String, String> filaMap = new HashMap<>();
+
+    for (int j = 0; j < cabecera.length; j++) {
+      if (j < datos.length) {
+        filaMap.put(cabecera[j], datos[j].trim());
+      } else {
+        filaMap.put(cabecera[j], "");
+      }
+    }
+    return filaMap;
   }
 }

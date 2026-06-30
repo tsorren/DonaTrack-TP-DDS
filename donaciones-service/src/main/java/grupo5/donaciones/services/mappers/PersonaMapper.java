@@ -29,6 +29,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class PersonaMapper {
 
+  private static final String DOCUMENTO_KEY = "DOCUMENTO";
+
   private final DireccionMapper direccionMapper;
   private final MedioDeContactoMapper medioDeContactoMapper;
 
@@ -89,6 +91,11 @@ public class PersonaMapper {
       return;
     }
 
+    updateTypeSpecificFields(entity, input);
+    updateCommonFields(entity, input);
+  }
+
+  private void updateTypeSpecificFields(Persona entity, PersonaInputDTO input) {
     switch (entity) {
       case Humana h -> {
         if (input instanceof HumanaInputDTO hi) {
@@ -112,7 +119,9 @@ public class PersonaMapper {
       }
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+  }
 
+  private void updateCommonFields(Persona entity, PersonaInputDTO input) {
     entity.actualizarDocumento(input.tipoDocumento(), input.documento());
     entity.actualizarDireccion(direccionMapper.toEntity(input.direccion()));
     entity.limpiarMediosDeContacto();
@@ -186,13 +195,13 @@ public class PersonaMapper {
       persona = PersonaFactory.crearHumana(nombre, apellido, fecha, null);
     }
 
-    if (fila.containsKey("TIPO_DOCUMENTO") && fila.containsKey("DOCUMENTO")) {
+    if (fila.containsKey("TIPO_DOCUMENTO") && fila.containsKey(DOCUMENTO_KEY)) {
       String tipoDocStr = fila.get("TIPO_DOCUMENTO");
       if (tipoDocStr != null && !tipoDocStr.isBlank()) {
         persona.actualizarDocumento(
-            TipoDocumento.valueOf(tipoDocStr.toUpperCase()), fila.get("DOCUMENTO"));
+            TipoDocumento.valueOf(tipoDocStr.toUpperCase()), fila.get(DOCUMENTO_KEY));
       } else {
-        persona.actualizarDocumento(null, fila.get("DOCUMENTO"));
+        persona.actualizarDocumento(null, fila.get(DOCUMENTO_KEY));
       }
     }
 

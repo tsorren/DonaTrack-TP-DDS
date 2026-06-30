@@ -39,15 +39,7 @@ public class DonacionIndependienteMapper {
                 item -> {
                   BienNormalizado bienNormalizado = item.bien();
                   Bien bienOriginal = bienNormalizado.bienOriginal();
-                  BienResumenDTO bienResumen = null;
-                  if (bienOriginal != null) {
-                    bienResumen =
-                        new BienResumenDTO(
-                            bienOriginal.descripcion(),
-                            bienOriginal.fotoUrl(),
-                            bienOriginal.fechaVencimiento(),
-                            bienOriginal.estado());
-                  }
+                  BienResumenDTO bienResumen = mapBienResumen(bienOriginal);
 
                   SubcategoriaResumenDTO subcategoriaResumen = null;
                   CategoriaResumenDTO categoriaResumen = null;
@@ -55,21 +47,8 @@ public class DonacionIndependienteMapper {
                     var subOpt = subcategoriasRepository.findById(bienNormalizado.subcategoriaId());
                     if (subOpt.isPresent()) {
                       var sub = subOpt.get();
-                      subcategoriaResumen =
-                          new SubcategoriaResumenDTO(sub.getId(), sub.getNombre());
-                      if (sub.getCategoriaId() != null) {
-                        var catOpt = categoriasRepository.findById(sub.getCategoriaId());
-                        if (catOpt.isPresent()) {
-                          var cat = catOpt.get();
-                          categoriaResumen =
-                              new CategoriaResumenDTO(
-                                  cat.getId(),
-                                  cat.getNombre(),
-                                  cat.getTipoUnidad() != null
-                                      ? cat.getTipoUnidad().name()
-                                      : "UNIDADES");
-                        }
-                      }
+                      subcategoriaResumen = mapSubcategoriaResumen(sub);
+                      categoriaResumen = mapCategoriaResumen(sub);
                     }
                   }
 
@@ -102,5 +81,40 @@ public class DonacionIndependienteMapper {
         historialMapped,
         itemsMapped,
         donacion.getCantidad());
+  }
+
+  private BienResumenDTO mapBienResumen(Bien bienOriginal) {
+    if (bienOriginal == null) {
+      return null;
+    }
+    return new BienResumenDTO(
+        bienOriginal.descripcion(),
+        bienOriginal.fotoUrl(),
+        bienOriginal.fechaVencimiento(),
+        bienOriginal.estado());
+  }
+
+  private SubcategoriaResumenDTO mapSubcategoriaResumen(
+      grupo5.donaciones.models.entities.categorias.Subcategoria sub) {
+    if (sub == null) {
+      return null;
+    }
+    return new SubcategoriaResumenDTO(sub.getId(), sub.getNombre());
+  }
+
+  private CategoriaResumenDTO mapCategoriaResumen(
+      grupo5.donaciones.models.entities.categorias.Subcategoria sub) {
+    if (sub == null || sub.getCategoriaId() == null) {
+      return null;
+    }
+    return categoriasRepository
+        .findById(sub.getCategoriaId())
+        .map(
+            cat ->
+                new CategoriaResumenDTO(
+                    cat.getId(),
+                    cat.getNombre(),
+                    cat.getTipoUnidad() != null ? cat.getTipoUnidad().name() : "UNIDADES"))
+        .orElse(null);
   }
 }

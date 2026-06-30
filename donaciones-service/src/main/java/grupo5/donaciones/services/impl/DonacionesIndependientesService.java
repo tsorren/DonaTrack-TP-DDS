@@ -78,19 +78,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
                 .findById(donanteId)
                 .orElseThrow(() -> new RecursoNoEncontradoException(donanteId));
         UUID personaDonanteId = donante.personaId();
-        UUID organizacionId = null;
-        UUID idPersonaBeneficiaria = null;
-        if (donacion.getAsignadaA() != null) {
-          Necesidad necesidad = donacion.getAsignadaA().obtenerNecesidad();
-          if (necesidad != null && necesidad.getEntidadId() != null) {
-            organizacionId = necesidad.getEntidadId();
-            grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria entidad =
-                entidadesBeneficiariasRepository.findById(necesidad.getEntidadId()).orElse(null);
-            if (entidad != null && entidad.juridicaId() != null) {
-              idPersonaBeneficiaria = entidad.juridicaId();
-            }
-          }
-        }
+        UUID organizacionId = obtenerOrganizacionId(donacion);
+        UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(donacion);
         incentivosFeignClient.procesarDonacionExitosa(
             new DonacionExitosaRequest(donanteId, organizacionId));
 
@@ -109,5 +98,30 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
 
     repositorio.save(donacion);
     return donacionIndependienteMapper.toDTO(donacion);
+  }
+
+  private UUID obtenerOrganizacionId(DonacionIndependiente donacion) {
+    if (donacion.getAsignadaA() == null) {
+      return null;
+    }
+    Necesidad necesidad = donacion.getAsignadaA().obtenerNecesidad();
+    if (necesidad == null) {
+      return null;
+    }
+    return necesidad.getEntidadId();
+  }
+
+  private UUID obtenerPersonaBeneficiariaId(DonacionIndependiente donacion) {
+    if (donacion.getAsignadaA() == null) {
+      return null;
+    }
+    Necesidad necesidad = donacion.getAsignadaA().obtenerNecesidad();
+    if (necesidad == null || necesidad.getEntidadId() == null) {
+      return null;
+    }
+    return entidadesBeneficiariasRepository
+        .findById(necesidad.getEntidadId())
+        .map(grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria::juridicaId)
+        .orElse(null);
   }
 }

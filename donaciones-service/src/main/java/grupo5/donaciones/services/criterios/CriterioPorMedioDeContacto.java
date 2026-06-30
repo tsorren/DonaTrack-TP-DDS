@@ -26,17 +26,25 @@ public class CriterioPorMedioDeContacto implements CriterioDuplicado {
     }
 
     for (Persona personaGuardada : personasRepository.findAll()) {
-      if (personaGuardada.getMediosDeContacto() == null) continue;
-
-      for (MedioDeContacto medioImportado : personaAImportar.getMediosDeContacto()) {
-        for (MedioDeContacto medioGuardado : personaGuardada.getMediosDeContacto()) {
-          if (hayCoincidenciaInteligente(medioImportado, medioGuardado)) {
-            return Optional.of(personaGuardada);
-          }
-        }
+      if (tienenMedioEnComun(personaAImportar, personaGuardada)) {
+        return Optional.of(personaGuardada);
       }
     }
     return Optional.empty();
+  }
+
+  private boolean tienenMedioEnComun(Persona p1, Persona p2) {
+    if (p1.getMediosDeContacto() == null || p2.getMediosDeContacto() == null) {
+      return false;
+    }
+    for (MedioDeContacto medio1 : p1.getMediosDeContacto()) {
+      for (MedioDeContacto medio2 : p2.getMediosDeContacto()) {
+        if (hayCoincidenciaInteligente(medio1, medio2)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private boolean hayCoincidenciaInteligente(MedioDeContacto medio1, MedioDeContacto medio2) {

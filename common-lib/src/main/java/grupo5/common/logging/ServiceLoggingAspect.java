@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 @Aspect
 public class ServiceLoggingAspect {
   private static final Logger log = LoggerFactory.getLogger(ServiceLoggingAspect.class);
+  private static final String UNKNOWN = "Unknown";
 
   @AfterReturning(
       pointcut =
@@ -17,8 +18,8 @@ public class ServiceLoggingAspect {
       returning = "result")
   public void logServiceMethodSuccess(JoinPoint joinPoint, Object result) {
     Object target = joinPoint.getTarget();
-    String className = target != null ? target.getClass().getSimpleName() : "Unknown";
-    String packageName = target != null ? target.getClass().getPackageName() : "Unknown";
+    String className = target != null ? target.getClass().getSimpleName() : UNKNOWN;
+    String packageName = target != null ? target.getClass().getPackageName() : UNKNOWN;
     String methodName = joinPoint.getSignature().getName();
     log.info(
         "[SERVICE-SUCCESS] [PACKAGE: {}] [CLASS: {}] [METHOD: {}] - Completed successfully",
@@ -33,8 +34,8 @@ public class ServiceLoggingAspect {
       throwing = "ex")
   public void logServiceMethodError(JoinPoint joinPoint, Throwable ex) {
     Object target = joinPoint.getTarget();
-    String className = target != null ? target.getClass().getSimpleName() : "Unknown";
-    String packageName = target != null ? target.getClass().getPackageName() : "Unknown";
+    String className = target != null ? target.getClass().getSimpleName() : UNKNOWN;
+    String packageName = target != null ? target.getClass().getPackageName() : UNKNOWN;
     String methodName = joinPoint.getSignature().getName();
     log.error(
         "[SERVICE-ERROR] [PACKAGE: {}] [CLASS: {}] [METHOD: {}] - Failed with exception: {}",

@@ -6,6 +6,7 @@ import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoCompatibilidadSemant
 import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoPrioridadSubAtendidos;
 import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
@@ -176,68 +177,74 @@ public class AlgoritmosService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
     switch (estado) {
-      case APROBADA -> {
-        propuesta.confirmar();
-        propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
-        propuesta.clearDomainEvents();
-
-        Necesidad necesidad =
-            propuesta.getNecesidadQueSatisfaceId() != null
-                ? necesidadRepository.findById(propuesta.getNecesidadQueSatisfaceId()).orElse(null)
-                : null;
-        if (propuesta.getPosiblesFragmentaciones() != null) {
-          UUID idPersonaBeneficiaria = null;
-          if (necesidad != null && necesidad.getEntidadId() != null) {
-            idPersonaBeneficiaria =
-                entidadesBeneficiariasRepository
-                    .findById(necesidad.getEntidadId())
-                    .map(
-                        grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria
-                            ::juridicaId)
-                    .orElse(null);
-          }
-          final UUID finalIdPersonaBeneficiaria = idPersonaBeneficiaria;
-          propuesta
-              .getPosiblesFragmentaciones()
-              .forEach(
-                  f -> {
-                    if (f.getDonacionOriginalId() != null) {
-                      donacionRepository
-                          .findById(f.getDonacionOriginalId())
-                          .ifPresent(
-                              di -> {
-                                if (di.getDonacionOriginalId() != null) {
-                                  donacionOriginalRepository
-                                      .findById(di.getDonacionOriginalId())
-                                      .ifPresent(
-                                          donacion -> {
-                                            if (donacion.getDonanteId() != null) {
-                                              donantesRepository
-                                                  .findById(donacion.getDonanteId())
-                                                  .ifPresent(
-                                                      donante -> {
-                                                        UUID idPersonaDonante = donante.personaId();
-                                                        String detalle = di.getDescripcion();
-                                                        notificacionesFeignClient.enviarEvento(
-                                                            new EventoDonacionAsignadaDTO(
-                                                                idPersonaDonante,
-                                                                LocalDateTime.now(),
-                                                                finalIdPersonaBeneficiaria,
-                                                                detalle));
-                                                      });
-                                            }
-                                          });
-                                }
-                              });
-                    }
-                  });
-        }
-      }
+      case APROBADA -> aprobarPropuesta(propuesta);
       case DESCARTADA -> propuesta.rechazar();
       default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
     propuestaRepository.save(propuesta);
+  }
+
+  private void aprobarPropuesta(Propuesta propuesta) {
+    propuesta.confirmar();
+    propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
+    propuesta.clearDomainEvents();
+
+    if (propuesta.getPosiblesFragmentaciones() == null) {
+      return;
+    }
+
+    Necesidad necesidad =
+        propuesta.getNecesidadQueSatisfaceId() != null
+            ? necesidadRepository.findById(propuesta.getNecesidadQueSatisfaceId()).orElse(null)
+            : null;
+
+    UUID idPersonaBeneficiaria = obtenerIdPersonaBeneficiaria(necesidad);
+
+    propuesta
+        .getPosiblesFragmentaciones()
+        .forEach(f -> notificarFragmentacion(f, idPersonaBeneficiaria));
+  }
+
+  private UUID obtenerIdPersonaBeneficiaria(Necesidad necesidad) {
+    if (necesidad == null || necesidad.getEntidadId() == null) {
+      return null;
+    }
+    return entidadesBeneficiariasRepository
+        .findById(necesidad.getEntidadId())
+        .map(grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria::juridicaId)
+        .orElse(null);
+  }
+
+  private void notificarFragmentacion(
+      grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion f,
+      UUID idPersonaBeneficiaria) {
+    if (f.getDonacionOriginalId() == null) {
+      return;
+    }
+
+    DonacionIndependiente di = donacionRepository.findById(f.getDonacionOriginalId()).orElse(null);
+    if (di == null || di.getDonacionOriginalId() == null) {
+      return;
+    }
+
+    Donacion donacion =
+        donacionOriginalRepository.findById(di.getDonacionOriginalId()).orElse(null);
+    if (donacion == null || donacion.getDonanteId() == null) {
+      return;
+    }
+
+    grupo5.donaciones.models.entities.donantes.Donante donante =
+        donantesRepository.findById(donacion.getDonanteId()).orElse(null);
+    if (donante == null) {
+      return;
+    }
+
+    UUID idPersonaDonante = donante.personaId();
+    String detalle = di.getDescripcion();
+    notificacionesFeignClient.enviarEvento(
+        new EventoDonacionAsignadaDTO(
+            idPersonaDonante, LocalDateTime.now(), idPersonaBeneficiaria, detalle));
   }
 
   private AlgoritmoAsignacion algoritmoPorCompatibilidad() {
