@@ -1,3 +1,9 @@
 package grupo5.logistica.models.entities.entregas;
 
-public interface EstadoEntrega {}
+public enum EstadoEntrega {
+  PENDIENTE,
+  EN_TRASLADO,
+  ENTREGADA,
+  NO_RECIBIDA,
+  REVISION
+}
