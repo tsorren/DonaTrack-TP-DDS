@@ -11,6 +11,7 @@ import grupo5.donaciones.controllers.impl.AsignacionController;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.services.impl.PropuestaService;
+import grupo5.donaciones.utils.MockMvcTestUtils;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class AsignacionControllerTest {
@@ -32,7 +32,7 @@ class AsignacionControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc = MockMvcTestUtils.standaloneSetup(controller).build();
   }
 
   @Test

@@ -101,7 +101,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     return donacionIndependienteMapper.toDTO(donacion);
   }
 
-  private UUID obtenerOrganizacionId(DonacionIndependiente donacion) {
+  private static UUID obtenerOrganizacionId(DonacionIndependiente donacion) {
     if (donacion.getAsignadaA() == null) {
       return null;
     }

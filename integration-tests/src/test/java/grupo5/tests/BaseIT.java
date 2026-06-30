@@ -18,6 +18,18 @@ public abstract class BaseIT {
   protected static final String INCENTIVOS_URL =
       System.getProperty("incentivos.url", "http://localhost:8082");
 
+  protected static final java.util.Properties ROUTES = new java.util.Properties();
+  static {
+    try (java.io.InputStream is = BaseIT.class.getClassLoader().getResourceAsStream("common-routes.properties")) {
+      if (is == null) {
+        throw new IllegalStateException("common-routes.properties no encontrado en el classpath");
+      }
+      ROUTES.load(is);
+    } catch (java.io.IOException e) {
+      throw new RuntimeException("Error al cargar common-routes.properties", e);
+    }
+  }
+
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
   /**
@@ -59,7 +71,7 @@ public abstract class BaseIT {
         .contentType(io.restassured.http.ContentType.JSON)
         .body(payload)
         .when()
-        .post(DONACIONES_URL + "/api/personas")
+        .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.personas-base"))
         .then()
         .statusCode(201)
         .extract()
@@ -89,7 +101,7 @@ public abstract class BaseIT {
         .contentType(io.restassured.http.ContentType.JSON)
         .body(payload)
         .when()
-        .post(DONACIONES_URL + "/api/personas")
+        .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.personas-base"))
         .then()
         .statusCode(201)
         .extract()
@@ -104,7 +116,7 @@ public abstract class BaseIT {
         .contentType(io.restassured.http.ContentType.JSON)
         .body(payload)
         .when()
-        .post(DONACIONES_URL + "/api/donantes")
+        .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.donantes-base"))
         .then()
         .statusCode(201)
         .extract()
@@ -118,7 +130,7 @@ public abstract class BaseIT {
         .contentType(io.restassured.http.ContentType.JSON)
         .body(payload)
         .when()
-        .post(DONACIONES_URL + "/api/entidades")
+        .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.entidades-base"))
         .then()
         .statusCode(201)
         .extract()
@@ -146,7 +158,7 @@ public abstract class BaseIT {
         .contentType(io.restassured.http.ContentType.JSON)
         .body(payload)
         .when()
-        .post(DONACIONES_URL + "/api/donaciones")
+        .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.donaciones-base"))
         .then()
         .statusCode(201)
         .extract()
@@ -163,7 +175,7 @@ public abstract class BaseIT {
         .contentType(io.restassured.http.ContentType.JSON)
         .body(payload)
         .when()
-        .post(DONACIONES_URL + "/api/necesidades")
+        .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.necesidades-base"))
         .then()
         .statusCode(201)
         .extract()
@@ -180,7 +192,7 @@ public abstract class BaseIT {
         .contentType(io.restassured.http.ContentType.JSON)
         .body(payload)
         .when()
-        .post(INCENTIVOS_URL + "/api/incentivos/donaciones")
+        .post(INCENTIVOS_URL + ROUTES.getProperty("donatrack.routes.incentivos.base") + ROUTES.getProperty("donatrack.routes.incentivos.donaciones"))
         .then()
         .statusCode(200);
   }
@@ -192,7 +204,7 @@ public abstract class BaseIT {
         .ignoreExceptions()
         .until(() -> io.restassured.RestAssured.given()
             .when()
-            .get(NOTIFICACIONES_URL + "/api/notificaciones/personas/" + personaId)
+            .get(NOTIFICACIONES_URL + (ROUTES.getProperty("donatrack.routes.notificaciones.personas-base") + ROUTES.getProperty("donatrack.routes.notificaciones.personas-id")).replace("{id}", personaId))
             .getStatusCode() == 200);
   }
 }

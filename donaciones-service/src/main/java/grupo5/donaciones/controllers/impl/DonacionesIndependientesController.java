@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/donaciones-independientes")
+@RequestMapping("${donatrack.routes.donaciones.donaciones-independientes-base}")
 public class DonacionesIndependientesController {
 
   private final IDonacionesIndependientesService service;
@@ -17,7 +17,7 @@ public class DonacionesIndependientesController {
     this.service = service;
   }
 
-  @PatchMapping("/{id}/estado")
+  @PatchMapping("${donatrack.routes.donaciones.donaciones-independientes-id-estado}")
   public ResponseEntity<DonacionIndependienteResponseDTO> cambiarEstado(
       @PathVariable UUID id,
       @RequestBody CambioEstadoDonacionIndependienteRequestDTO request,

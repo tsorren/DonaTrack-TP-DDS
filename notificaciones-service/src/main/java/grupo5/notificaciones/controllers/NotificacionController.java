@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/notificaciones")
+@RequestMapping("${donatrack.routes.notificaciones.notificaciones-base}")
 @RequiredArgsConstructor
 public class NotificacionController {
   private final NotificacionService service;
@@ -26,7 +26,7 @@ public class NotificacionController {
     return ResponseEntity.ok().build();
   }
 
-  @GetMapping("/persona/{personaId}")
+  @GetMapping("${donatrack.routes.notificaciones.notificaciones-persona-id}")
   public ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(@PathVariable UUID personaId) {
     return ResponseEntity.ok(service.obtenerPorPersona(personaId));
   }

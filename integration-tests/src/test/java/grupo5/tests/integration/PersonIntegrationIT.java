@@ -19,7 +19,7 @@ class PersonIntegrationIT extends BaseIT {
         .contentType(ContentType.JSON)
         .body(payload)
         .when()
-        .post(DONACIONES_URL + "/api/personas")
+        .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.personas-base"))
         .then()
         .statusCode(201)
         .body("id", notNullValue())

@@ -25,7 +25,7 @@ class DonationIntegrationIT extends BaseIT {
             .contentType(ContentType.JSON)
             .body(donantePayload)
             .when()
-            .post(DONACIONES_URL + "/api/personas")
+            .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.personas-base"))
             .then()
             .statusCode(201)
             .extract()
@@ -39,7 +39,7 @@ class DonationIntegrationIT extends BaseIT {
         .contentType(ContentType.JSON)
         .body(donacionPayload)
         .when()
-        .post(DONACIONES_URL + "/api/donaciones")
+        .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.donaciones-base"))
         .then()
         .statusCode(201)
         .body("id", notNullValue());

@@ -83,7 +83,7 @@ public class DonacionIndependienteMapper {
         donacion.getCantidad());
   }
 
-  private BienResumenDTO mapBienResumen(Bien bienOriginal) {
+  private static BienResumenDTO mapBienResumen(Bien bienOriginal) {
     if (bienOriginal == null) {
       return null;
     }
@@ -94,7 +94,7 @@ public class DonacionIndependienteMapper {
         bienOriginal.estado());
   }
 
-  private SubcategoriaResumenDTO mapSubcategoriaResumen(
+  private static SubcategoriaResumenDTO mapSubcategoriaResumen(
       grupo5.donaciones.models.entities.categorias.Subcategoria sub) {
     if (sub == null) {
       return null;

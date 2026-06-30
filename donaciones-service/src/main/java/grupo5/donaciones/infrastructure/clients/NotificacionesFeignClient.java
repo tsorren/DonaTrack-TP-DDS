@@ -16,12 +16,13 @@ import org.springframework.web.bind.annotation.RequestBody;
     configuration = FeignRetryConfig.class)
 public interface NotificacionesFeignClient {
 
-  @PutMapping("/api/notificaciones/personas")
+  @PutMapping("${donatrack.routes.notificaciones.personas-base}")
   void sincronizarPersona(@RequestBody PersonaReplicaDTO dto);
 
-  @DeleteMapping("/api/notificaciones/personas/{id}")
+  @DeleteMapping(
+      "${donatrack.routes.notificaciones.personas-base}${donatrack.routes.notificaciones.personas-id}")
   void anonimizarPersona(@PathVariable("id") UUID id);
 
-  @PostMapping("/notificaciones")
+  @PostMapping("${donatrack.routes.notificaciones.notificaciones-base}")
   void enviarEvento(@RequestBody EventoNotificableDTO dto);
 }

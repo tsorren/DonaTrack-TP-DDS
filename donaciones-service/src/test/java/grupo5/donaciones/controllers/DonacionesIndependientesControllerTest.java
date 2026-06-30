@@ -15,6 +15,7 @@ import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndepe
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.utils.MockMvcTestUtils;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +26,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class DonacionesIndependientesControllerTest {
@@ -43,7 +43,7 @@ class DonacionesIndependientesControllerTest {
   @BeforeEach
   void setUp() {
     mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
+        MockMvcTestUtils.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler())
             .build();
     objectMapper = new ObjectMapper();
@@ -88,7 +88,7 @@ class DonacionesIndependientesControllerTest {
 
   @Test
   void cambiarEstado_DeberiaRetornarBadRequest_CuandoFaltaHeaderActor() throws Exception {
-    MockMvc mockMvcWithoutAdvice = MockMvcBuilders.standaloneSetup(controller).build();
+    MockMvc mockMvcWithoutAdvice = MockMvcTestUtils.standaloneSetup(controller).build();
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(

@@ -13,6 +13,7 @@ import grupo5.donaciones.dto.itemsNormalizados.inputs.ItemDonacionNormalizadoPat
 import grupo5.donaciones.dto.itemsNormalizados.outputs.ItemDonacionNormalizadoOutputDTO;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.services.IItemDonacionNormalizadoService;
+import grupo5.donaciones.utils.MockMvcTestUtils;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class ItemDonacionNormalizadoControllerTest {
@@ -38,7 +38,7 @@ class ItemDonacionNormalizadoControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc = MockMvcTestUtils.standaloneSetup(controller).build();
     objectMapper = new ObjectMapper();
   }
 

@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/incentivos")
+@RequestMapping("${donatrack.routes.incentivos.base}")
 public class IncentivosController implements IIncentivosController {
 
   private final IIncentivosService incentivosService;
@@ -18,56 +18,56 @@ public class IncentivosController implements IIncentivosController {
     this.incentivosService = incentivosService;
   }
 
-  @PostMapping("/donaciones")
+  @PostMapping("${donatrack.routes.incentivos.donaciones}")
   public ResponseEntity<Void> procesarDonacion(@RequestBody NuevaDonacionRequest request) {
 
     incentivosService.procesarDonacion(request);
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping("/donaciones/exitosa")
+  @PostMapping("${donatrack.routes.incentivos.donaciones-exitosa}")
   public ResponseEntity<Void> procesarDonacionExitosa(@RequestBody DonacionExitosaRequest request) {
     incentivosService.procesarDonacionExitosa(request);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @PostMapping("/donantes/{donanteId}")
+  @PostMapping("${donatrack.routes.incentivos.donantes-id}")
   public ResponseEntity<DonanteRegistradoDTO> registrarDonante(
       @PathVariable UUID donanteId, @RequestBody RegistrarDonanteRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(incentivosService.registrarDonante(request));
   }
 
-  @DeleteMapping("/donantes/{donanteId}")
+  @DeleteMapping("${donatrack.routes.incentivos.donantes-id}")
   public ResponseEntity<Void> darDeBaja(@PathVariable UUID donanteId) {
     incentivosService.darDeBaja(donanteId);
     return ResponseEntity.noContent().build();
   }
 
-  @PatchMapping("/donantes/{donanteId}")
+  @PatchMapping("${donatrack.routes.incentivos.donantes-id}")
   public ResponseEntity<Void> modificarDonante(
       @PathVariable UUID donanteId, @RequestBody ModificarDonanteRequest request) {
     incentivosService.modificarDonante(donanteId, request);
     return ResponseEntity.ok().build();
   }
 
-  @GetMapping("/donantes/{donanteId}/metricas")
+  @GetMapping("${donatrack.routes.incentivos.donantes-id-metricas}")
   public ResponseEntity<MetricasDonanteDTO> obtenerMetricas(@PathVariable UUID donanteId) {
     return ResponseEntity.ok(incentivosService.obtenerMetricas(donanteId));
   }
 
-  @GetMapping("/donantes/{donanteId}/misiones")
+  @GetMapping("${donatrack.routes.incentivos.donantes-id-misiones}")
   public ResponseEntity<List<MisionDTO>> obtenerMisiones(@PathVariable UUID donanteId) {
     return ResponseEntity.ok(incentivosService.obtenerMisiones(donanteId));
   }
 
-  @GetMapping("/donantes/{donanteId}/insignias")
+  @GetMapping("${donatrack.routes.incentivos.donantes-id-insignias}")
   public ResponseEntity<List<InsigniaDTO>> obtenerInsignias(@PathVariable UUID donanteId) {
     return ResponseEntity.ok(incentivosService.obtenerInsignias(donanteId));
   }
 
-  @PutMapping("/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad")
+  @PutMapping("${donatrack.routes.incentivos.donantes-id-visibilidad}")
   public ResponseEntity<Void> configurarVisibilidad(
       @PathVariable UUID donanteId,
       @PathVariable String nombreInsignia,
@@ -76,7 +76,7 @@ public class IncentivosController implements IIncentivosController {
     return ResponseEntity.ok().build();
   }
 
-  @GetMapping("/admin/resumen")
+  @GetMapping("${donatrack.routes.incentivos.admin-resumen}")
   public ResponseEntity<ResumenSistemaDTO> obtenerResumenSistema() {
     return ResponseEntity.ok(incentivosService.obtenerResumenSistema());
   }

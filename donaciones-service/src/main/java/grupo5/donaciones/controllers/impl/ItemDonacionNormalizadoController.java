@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/items-normalizados")
+@RequestMapping("${donatrack.routes.donaciones.items-normalizados-base}")
 public class ItemDonacionNormalizadoController implements IItemDonacionNormalizadoController {
 
   private final IItemDonacionNormalizadoService service;
@@ -25,13 +25,13 @@ public class ItemDonacionNormalizadoController implements IItemDonacionNormaliza
   }
 
   @Override
-  @GetMapping("/pendientes")
+  @GetMapping("${donatrack.routes.donaciones.items-normalizados-pendientes}")
   public ResponseEntity<List<ItemDonacionNormalizadoOutputDTO>> obtenerPendientes() {
     return ResponseEntity.ok(service.obtenerPendientes());
   }
 
   @Override
-  @PatchMapping("/{id}")
+  @PatchMapping("${donatrack.routes.donaciones.items-normalizados-id}")
   public ResponseEntity<ItemDonacionNormalizadoOutputDTO> actualizarEstado(
       @PathVariable UUID id, @RequestBody ItemDonacionNormalizadoPatchDTO dto) {
     return ResponseEntity.ok(service.actualizarEstado(id, dto));

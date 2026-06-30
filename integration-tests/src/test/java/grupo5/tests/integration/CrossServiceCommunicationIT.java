@@ -27,7 +27,12 @@ class CrossServiceCommunicationIT extends BaseIT {
           Integer total =
               given()
                   .when()
-                  .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
+                  .get(
+                      INCENTIVOS_URL
+                          + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                          + ROUTES.getProperty(
+                                  "donatrack.routes.incentivos.donantes-id-metricas")
+                              .replace("{donanteId}", donanteId))
                   .then()
                   .statusCode(200)
                   .extract()
@@ -45,7 +50,12 @@ class CrossServiceCommunicationIT extends BaseIT {
           List<?> resp =
               given()
                   .when()
-                  .get(NOTIFICACIONES_URL + "/notificaciones/persona/" + personaId)
+                  .get(
+                      NOTIFICACIONES_URL
+                          + ROUTES.getProperty("donatrack.routes.notificaciones.notificaciones-base")
+                          + ROUTES.getProperty(
+                                  "donatrack.routes.notificaciones.notificaciones-persona-id")
+                              .replace("{personaId}", personaId))
                   .then()
                   .statusCode(200)
                   .extract()
@@ -67,7 +77,7 @@ class CrossServiceCommunicationIT extends BaseIT {
             .contentType(ContentType.JSON)
             .body(personaPayload)
             .when()
-            .post(DONACIONES_URL + "/api/personas")
+            .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.personas-base"))
             .then()
             .statusCode(201)
             .extract()
@@ -79,7 +89,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     esperarAsync();
     given()
         .when()
-        .get(NOTIFICACIONES_URL + "/api/notificaciones/personas/" + personaId)
+        .get(
+            NOTIFICACIONES_URL
+                + (ROUTES.getProperty("donatrack.routes.notificaciones.personas-base")
+                        + ROUTES.getProperty("donatrack.routes.notificaciones.personas-id"))
+                    .replace("{id}", personaId))
         .then()
         .statusCode(200)
         .body("id", equalTo(personaId))
@@ -93,7 +107,11 @@ class CrossServiceCommunicationIT extends BaseIT {
         .contentType(ContentType.JSON)
         .body(personaPayload)
         .when()
-        .put(DONACIONES_URL + "/api/personas/" + personaId)
+        .put(
+            DONACIONES_URL
+                + (ROUTES.getProperty("donatrack.routes.donaciones.personas-base")
+                        + ROUTES.getProperty("donatrack.routes.donaciones.personas-id"))
+                    .replace("{id}", personaId))
         .then()
         .statusCode(200)
         .body("nombre", equalTo("Juan Carlos"));
@@ -102,7 +120,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     esperarAsync();
     given()
         .when()
-        .get(NOTIFICACIONES_URL + "/api/notificaciones/personas/" + personaId)
+        .get(
+            NOTIFICACIONES_URL
+                + (ROUTES.getProperty("donatrack.routes.notificaciones.personas-base")
+                        + ROUTES.getProperty("donatrack.routes.notificaciones.personas-id"))
+                    .replace("{id}", personaId))
         .then()
         .statusCode(200)
         .body("denominacion", equalTo("Juan Carlos Perez"));
@@ -110,7 +132,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 5. Delete (anonimyze) the persona in donaciones-service
     given()
         .when()
-        .delete(DONACIONES_URL + "/api/personas/" + personaId)
+        .delete(
+            DONACIONES_URL
+                + (ROUTES.getProperty("donatrack.routes.donaciones.personas-base")
+                        + ROUTES.getProperty("donatrack.routes.donaciones.personas-id"))
+                    .replace("{id}", personaId))
         .then()
         .statusCode(204);
 
@@ -118,7 +144,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     esperarAsync();
     given()
         .when()
-        .get(NOTIFICACIONES_URL + "/api/notificaciones/personas/" + personaId)
+        .get(
+            NOTIFICACIONES_URL
+                + (ROUTES.getProperty("donatrack.routes.notificaciones.personas-base")
+                        + ROUTES.getProperty("donatrack.routes.notificaciones.personas-id"))
+                    .replace("{id}", personaId))
         .then()
         .statusCode(200)
         .body("denominacion", equalTo("ANONIMIZADO"))
@@ -138,7 +168,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 3. Verify donor metrics exist in incentivos-service
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(
+            INCENTIVOS_URL
+                + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-metricas")
+                    .replace("{donanteId}", donorId))
         .then()
         .statusCode(200)
         .body("totalDonacionesExitosas", equalTo(0))
@@ -148,7 +182,12 @@ class CrossServiceCommunicationIT extends BaseIT {
     esperarHastaNotificaciones(personaId, 1, 10000);
     given()
         .when()
-        .get(NOTIFICACIONES_URL + "/notificaciones/persona/" + personaId)
+        .get(
+            NOTIFICACIONES_URL
+                + ROUTES.getProperty("donatrack.routes.notificaciones.notificaciones-base")
+                + ROUTES.getProperty(
+                        "donatrack.routes.notificaciones.notificaciones-persona-id")
+                    .replace("{personaId}", personaId))
         .then()
         .statusCode(200)
         .body("size()", greaterThanOrEqualTo(1))
@@ -166,17 +205,33 @@ class CrossServiceCommunicationIT extends BaseIT {
     // Verify profile is created in incentives
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(
+            INCENTIVOS_URL
+                + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-metricas")
+                    .replace("{donanteId}", donorId))
         .then()
         .statusCode(200);
 
     // 3. Perform delete (baja) of donor in donaciones-service
-    given().when().delete(DONACIONES_URL + "/api/donantes/" + donorId).then().statusCode(204);
+    given()
+        .when()
+        .delete(
+            DONACIONES_URL
+                + (ROUTES.getProperty("donatrack.routes.donaciones.donantes-base")
+                        + ROUTES.getProperty("donatrack.routes.donaciones.donantes-id"))
+                    .replace("{id}", donorId))
+        .then()
+        .statusCode(204);
 
     // 4. Verify profile is removed in incentives
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(
+            INCENTIVOS_URL
+                + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-metricas")
+                    .replace("{donanteId}", donorId))
         .then()
         .statusCode(anyOf(equalTo(400), equalTo(404)));
   }
@@ -201,7 +256,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     String subcategoryId =
         given()
             .when()
-            .get(DONACIONES_URL + "/api/subcategorias")
+            .get(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.subcategorias-base"))
             .then()
             .statusCode(200)
             .extract()
@@ -216,7 +271,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     String responseBody =
         given()
             .when()
-            .post(DONACIONES_URL + "/api/asignaciones/ejecuciones")
+            .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.asignacion-base"))
             .then()
             .statusCode(201)
             .extract()
@@ -260,7 +315,11 @@ class CrossServiceCommunicationIT extends BaseIT {
         .contentType(ContentType.JSON)
         .body(approveBody)
         .when()
-        .put(DONACIONES_URL + "/api/asignaciones/propuestas/" + propuestaId + "/estado")
+        .put(
+            DONACIONES_URL
+                + (ROUTES.getProperty("donatrack.routes.donaciones.propuestas-base")
+                        + ROUTES.getProperty("donatrack.routes.donaciones.propuestas-id-estado"))
+                    .replace("{id}", propuestaId))
         .then()
         .statusCode(200);
 
@@ -273,7 +332,13 @@ class CrossServiceCommunicationIT extends BaseIT {
         .body(patchBody)
         .header("X-Actor", "TRANSPORTISTA")
         .when()
-        .patch(DONACIONES_URL + "/donaciones-independientes/" + donacionIndependienteId + "/estado")
+        .patch(
+            DONACIONES_URL
+                + (ROUTES.getProperty(
+                            "donatrack.routes.donaciones.donaciones-independientes-base")
+                        + ROUTES.getProperty(
+                            "donatrack.routes.donaciones.donaciones-independientes-id-estado"))
+                    .replace("{id}", donacionIndependienteId))
         .then()
         .statusCode(200);
 
@@ -284,7 +349,13 @@ class CrossServiceCommunicationIT extends BaseIT {
         .body(patchBody)
         .header("X-Actor", "TRANSPORTISTA")
         .when()
-        .patch(DONACIONES_URL + "/donaciones-independientes/" + donacionIndependienteId + "/estado")
+        .patch(
+            DONACIONES_URL
+                + (ROUTES.getProperty(
+                            "donatrack.routes.donaciones.donaciones-independientes-base")
+                        + ROUTES.getProperty(
+                            "donatrack.routes.donaciones.donaciones-independientes-id-estado"))
+                    .replace("{id}", donacionIndependienteId))
         .then()
         .statusCode(200);
 
@@ -295,7 +366,13 @@ class CrossServiceCommunicationIT extends BaseIT {
         .body(patchBody)
         .header("X-Actor", "TRANSPORTISTA")
         .when()
-        .patch(DONACIONES_URL + "/donaciones-independientes/" + donacionIndependienteId + "/estado")
+        .patch(
+            DONACIONES_URL
+                + (ROUTES.getProperty(
+                            "donatrack.routes.donaciones.donaciones-independientes-base")
+                        + ROUTES.getProperty(
+                            "donatrack.routes.donaciones.donaciones-independientes-id-estado"))
+                    .replace("{id}", donacionIndependienteId))
         .then()
         .statusCode(200);
 
@@ -323,7 +400,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 3. Calculate ranking for 2026-06
     given()
         .when()
-        .post(INCENTIVOS_URL + "/api/incentivos/ranking/calcular?periodo=2026-06")
+        .post(
+            INCENTIVOS_URL
+                + ROUTES.getProperty("donatrack.routes.incentivos.ranking-base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.ranking-calcular")
+                + "?periodo=2026-06")
         .then()
         .statusCode(200);
 
@@ -331,7 +412,10 @@ class CrossServiceCommunicationIT extends BaseIT {
     int actualPosicion =
         given()
             .when()
-            .get(INCENTIVOS_URL + "/api/incentivos/ranking/ultimo")
+            .get(
+                INCENTIVOS_URL
+                    + ROUTES.getProperty("donatrack.routes.incentivos.ranking-base")
+                    + ROUTES.getProperty("donatrack.routes.incentivos.ranking-ultimo"))
             .then()
             .statusCode(200)
             .body("periodo", equalTo("2026-06"))
@@ -345,7 +429,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 5. Query donante metrics to check position is updated
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+          .get(
+              INCENTIVOS_URL
+                  + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                  + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-metricas")
+                      .replace("{donanteId}", donorId))
         .then()
         .statusCode(200)
         .body("posicionEnRanking", equalTo(actualPosicion))
@@ -354,7 +442,10 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 6. Query ranking history
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/ranking/historial")
+            .get(
+                INCENTIVOS_URL
+                    + ROUTES.getProperty("donatrack.routes.incentivos.ranking-base")
+                    + ROUTES.getProperty("donatrack.routes.incentivos.ranking-historial"))
         .then()
         .statusCode(200)
         .body("size()", greaterThanOrEqualTo(1));
@@ -376,7 +467,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 3. Verify insignia "Racha Inicial" is returned and is visible
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(
+            INCENTIVOS_URL
+                + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-insignias")
+                    .replace("{donanteId}", donorId))
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))
@@ -388,16 +483,22 @@ class CrossServiceCommunicationIT extends BaseIT {
         .when()
         .put(
             INCENTIVOS_URL
-                + "/api/incentivos/donantes/"
-                + donorId
-                + "/insignias/Racha Inicial/visibilidad?visible=false")
+                + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-visibilidad")
+                    .replace("{donanteId}", donorId)
+                    .replace("{nombreInsignia}", "Racha Inicial")
+                + "?visible=false")
         .then()
         .statusCode(200);
 
     // 5. Verify insignia is no longer listed
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(
+            INCENTIVOS_URL
+                + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-insignias")
+                    .replace("{donanteId}", donorId))
         .then()
         .statusCode(200)
         .body("size()", equalTo(0));
@@ -407,16 +508,22 @@ class CrossServiceCommunicationIT extends BaseIT {
         .when()
         .put(
             INCENTIVOS_URL
-                + "/api/incentivos/donantes/"
-                + donorId
-                + "/insignias/Racha Inicial/visibilidad?visible=true")
+                + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-visibilidad")
+                    .replace("{donanteId}", donorId)
+                    .replace("{nombreInsignia}", "Racha Inicial")
+                + "?visible=true")
         .then()
         .statusCode(200);
 
     // 7. Verify insignia is visible again
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(
+            INCENTIVOS_URL
+                + ROUTES.getProperty("donatrack.routes.incentivos.base")
+                + ROUTES.getProperty("donatrack.routes.incentivos.donantes-id-insignias")
+                    .replace("{donanteId}", donorId))
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))
@@ -439,7 +546,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     String subcategoryId =
         given()
             .when()
-            .get(DONACIONES_URL + "/api/subcategorias")
+            .get(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.subcategorias-base"))
             .then()
             .statusCode(200)
             .extract()
@@ -459,7 +566,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     String responseBody =
         given()
             .when()
-            .post(DONACIONES_URL + "/api/asignaciones/ejecuciones")
+            .post(DONACIONES_URL + ROUTES.getProperty("donatrack.routes.donaciones.asignacion-base"))
             .then()
             .statusCode(201)
             .extract()
@@ -490,7 +597,11 @@ class CrossServiceCommunicationIT extends BaseIT {
         .contentType(ContentType.JSON)
         .body(approveBody)
         .when()
-        .put(DONACIONES_URL + "/api/asignaciones/propuestas/" + propuestaId + "/estado")
+        .put(
+            DONACIONES_URL
+                + (ROUTES.getProperty("donatrack.routes.donaciones.propuestas-base")
+                        + ROUTES.getProperty("donatrack.routes.donaciones.propuestas-id-estado"))
+                    .replace("{id}", propuestaId))
         .then()
         .statusCode(200);
 
@@ -514,7 +625,13 @@ class CrossServiceCommunicationIT extends BaseIT {
           .body(patchBody)
           .header("X-Actor", "TRANSPORTISTA")
           .when()
-          .patch(DONACIONES_URL + "/donaciones-independientes/" + diId + "/estado")
+          .patch(
+              DONACIONES_URL
+                  + (ROUTES.getProperty(
+                              "donatrack.routes.donaciones.donaciones-independientes-base")
+                          + ROUTES.getProperty(
+                              "donatrack.routes.donaciones.donaciones-independientes-id-estado"))
+                      .replace("{id}", diId))
           .then()
           .statusCode(200);
 
@@ -524,7 +641,13 @@ class CrossServiceCommunicationIT extends BaseIT {
           .body(patchBody)
           .header("X-Actor", "TRANSPORTISTA")
           .when()
-          .patch(DONACIONES_URL + "/donaciones-independientes/" + diId + "/estado")
+          .patch(
+              DONACIONES_URL
+                  + (ROUTES.getProperty(
+                              "donatrack.routes.donaciones.donaciones-independientes-base")
+                          + ROUTES.getProperty(
+                              "donatrack.routes.donaciones.donaciones-independientes-id-estado"))
+                      .replace("{id}", diId))
           .then()
           .statusCode(200);
 
@@ -534,7 +657,13 @@ class CrossServiceCommunicationIT extends BaseIT {
           .body(patchBody)
           .header("X-Actor", "TRANSPORTISTA")
           .when()
-          .patch(DONACIONES_URL + "/donaciones-independientes/" + diId + "/estado")
+          .patch(
+              DONACIONES_URL
+                  + (ROUTES.getProperty(
+                              "donatrack.routes.donaciones.donaciones-independientes-base")
+                          + ROUTES.getProperty(
+                              "donatrack.routes.donaciones.donaciones-independientes-id-estado"))
+                      .replace("{id}", diId))
           .then()
           .statusCode(200);
     }

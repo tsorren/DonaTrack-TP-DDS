@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/incentivos/ranking")
+@RequestMapping("${donatrack.routes.incentivos.ranking-base}")
 public class RankingController implements IRankingController {
 
   private final IRankingService rankingService;
@@ -18,7 +18,7 @@ public class RankingController implements IRankingController {
     this.rankingService = rankingService;
   }
 
-  @GetMapping("/ultimo")
+  @GetMapping("${donatrack.routes.incentivos.ranking-ultimo}")
   public ResponseEntity<RankingMensualDTO> obtenerUltimoRanking() {
     return rankingService
         .obtenerUltimoRanking()
@@ -26,12 +26,12 @@ public class RankingController implements IRankingController {
         .orElse(ResponseEntity.noContent().build());
   }
 
-  @GetMapping("/historial")
+  @GetMapping("${donatrack.routes.incentivos.ranking-historial}")
   public ResponseEntity<List<RankingMensualDTO>> obtenerHistorial() {
     return ResponseEntity.ok(rankingService.obtenerHistorial());
   }
 
-  @PostMapping("/calcular")
+  @PostMapping("${donatrack.routes.incentivos.ranking-calcular}")
   public ResponseEntity<RankingMensualDTO> calcularRanking(
       @RequestParam(required = false) String periodo) {
     YearMonth yearMonth =

@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/donaciones")
+@RequestMapping("${donatrack.routes.donaciones.donaciones-base}")
 public class DonacionesController implements IDonacionesController {
 
   private final IDonacionesService service;

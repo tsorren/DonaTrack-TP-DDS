@@ -17,6 +17,7 @@ import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -244,7 +245,10 @@ public class AlgoritmosService {
     String detalle = di.getDescripcion();
     notificacionesFeignClient.enviarEvento(
         new EventoDonacionAsignadaDTO(
-            idPersonaDonante, LocalDateTime.now(), idPersonaBeneficiaria, detalle));
+            idPersonaDonante,
+            LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaBeneficiaria,
+            detalle));
   }
 
   private AlgoritmoAsignacion algoritmoPorCompatibilidad() {

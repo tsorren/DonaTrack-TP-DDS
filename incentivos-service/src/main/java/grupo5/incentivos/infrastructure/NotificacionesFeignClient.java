@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "notificaciones-service", url = "${notificaciones.service.url}")
 public interface NotificacionesFeignClient {
 
-  @PostMapping("/notificaciones")
+  @PostMapping("${donatrack.routes.notificaciones.notificaciones-base}")
   void procesarEvento(@RequestBody Object evento);
 }

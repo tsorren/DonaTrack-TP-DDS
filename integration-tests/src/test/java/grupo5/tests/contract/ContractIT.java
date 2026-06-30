@@ -10,23 +10,25 @@ class ContractIT extends BaseIT {
 
   @Test
   void testNotificacionesPersonasContract() {
-    // donaciones-service espera que notificaciones-service tenga PUT /api/notificaciones/personas
+    String path = ROUTES.getProperty("donatrack.routes.notificaciones.personas-base");
     given()
         .when()
         .get(NOTIFICACIONES_URL + "/v3/api-docs")
         .then()
         .statusCode(200)
-        .body("paths.\"/api/notificaciones/personas\".put", notNullValue());
+        .body("paths.\"" + path + "\".put", notNullValue());
   }
 
   @Test
   void testIncentivosDonacionesContract() {
-    // donaciones-service espera que incentivos-service tenga POST /api/incentivos/donaciones
+    String path =
+        ROUTES.getProperty("donatrack.routes.incentivos.base")
+            + ROUTES.getProperty("donatrack.routes.incentivos.donaciones");
     given()
         .when()
         .get(INCENTIVOS_URL + "/v3/api-docs")
         .then()
         .statusCode(200)
-        .body("paths.\"/api/incentivos/donaciones\".post", notNullValue());
+        .body("paths.\"" + path + "\".post", notNullValue());
   }
 }

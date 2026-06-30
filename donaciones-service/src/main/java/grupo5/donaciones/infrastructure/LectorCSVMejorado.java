@@ -42,7 +42,7 @@ public class LectorCSVMejorado implements CargadorDonantes {
     }
   }
 
-  private Map<String, String> procesarLinea(String linea, String[] cabecera) {
+  private static Map<String, String> procesarLinea(String linea, String[] cabecera) {
     String[] datos = linea.split(",");
     Map<String, String> filaMap = new HashMap<>();
 

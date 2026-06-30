@@ -35,7 +35,12 @@ class PersonasControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .addPlaceholderValue(
+                "donatrack.routes.notificaciones.personas-base", "/api/notificaciones/personas")
+            .addPlaceholderValue("donatrack.routes.notificaciones.personas-id", "/{id}")
+            .build();
     objectMapper = new ObjectMapper();
   }
 

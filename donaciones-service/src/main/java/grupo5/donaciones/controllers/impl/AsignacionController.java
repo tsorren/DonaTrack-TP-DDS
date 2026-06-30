@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/asignaciones/ejecuciones")
+@RequestMapping("${donatrack.routes.donaciones.asignacion-base}")
 @RequiredArgsConstructor
 public class AsignacionController {
 

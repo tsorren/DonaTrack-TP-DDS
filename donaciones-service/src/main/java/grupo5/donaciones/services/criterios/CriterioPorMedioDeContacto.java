@@ -33,7 +33,7 @@ public class CriterioPorMedioDeContacto implements CriterioDuplicado {
     return Optional.empty();
   }
 
-  private boolean tienenMedioEnComun(Persona p1, Persona p2) {
+  private static boolean tienenMedioEnComun(Persona p1, Persona p2) {
     if (p1.getMediosDeContacto() == null || p2.getMediosDeContacto() == null) {
       return false;
     }

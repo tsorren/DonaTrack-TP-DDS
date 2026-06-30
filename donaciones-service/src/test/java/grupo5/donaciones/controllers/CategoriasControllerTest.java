@@ -10,6 +10,7 @@ import grupo5.donaciones.dto.categorias.CategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.CategoriaOutputDTO;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.services.ICategoriasService;
+import grupo5.donaciones.utils.MockMvcTestUtils;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class CategoriasControllerTest {
@@ -35,7 +35,7 @@ class CategoriasControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc = MockMvcTestUtils.standaloneSetup(controller).build();
     objectMapper = new ObjectMapper();
   }
 

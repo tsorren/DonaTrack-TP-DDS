@@ -12,6 +12,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.donaciones.controllers.impl.NecesidadesController;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.services.INecesidadesService;
+import grupo5.donaciones.utils.MockMvcTestUtils;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -24,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class NecesidadesControllerTest {
@@ -39,7 +39,7 @@ class NecesidadesControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc = MockMvcTestUtils.standaloneSetup(controller).build();
     objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
   }
