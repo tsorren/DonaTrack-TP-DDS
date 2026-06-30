@@ -4,5 +4,5 @@ public enum EstadoCamion {
   DISPONIBLE,
   EN_RUTA,
   EN_MANTENIMIENTO,
-  INACTIVO
+  DESHABILITADO
 }
