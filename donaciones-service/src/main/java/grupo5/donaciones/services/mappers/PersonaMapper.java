@@ -22,12 +22,15 @@ import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import grupo5.donaciones.models.entities.personas.factories.PersonaFactory;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PersonaMapper {
+
+  private static final String DOCUMENTO_KEY = "DOCUMENTO";
 
   private final DireccionMapper direccionMapper;
   private final MedioDeContactoMapper medioDeContactoMapper;
@@ -89,6 +92,11 @@ public class PersonaMapper {
       return;
     }
 
+    updateTypeSpecificFields(entity, input);
+    updateCommonFields(entity, input);
+  }
+
+  private void updateTypeSpecificFields(Persona entity, PersonaInputDTO input) {
     switch (entity) {
       case Humana h -> {
         if (input instanceof HumanaInputDTO hi) {
@@ -112,7 +120,9 @@ public class PersonaMapper {
       }
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+  }
 
+  private void updateCommonFields(Persona entity, PersonaInputDTO input) {
     entity.actualizarDocumento(input.tipoDocumento(), input.documento());
     entity.actualizarDireccion(direccionMapper.toEntity(input.direccion()));
     entity.limpiarMediosDeContacto();
@@ -170,7 +180,8 @@ public class PersonaMapper {
 
     if ("JURIDICA".equals(tipo)) {
       String razonSocial = fila.get("RAZON_SOCIAL");
-      Humana representanteDefault = new Humana("Representante", "Legal", LocalDate.now());
+      Humana representanteDefault =
+          new Humana("Representante", "Legal", LocalDate.now(ZoneId.systemDefault()));
       persona =
           PersonaFactory.crearJuridica(
               razonSocial, TipoJuridico.EMPRESA, "Rubro CSV", representanteDefault);
@@ -186,13 +197,13 @@ public class PersonaMapper {
       persona = PersonaFactory.crearHumana(nombre, apellido, fecha, null);
     }
 
-    if (fila.containsKey("TIPO_DOCUMENTO") && fila.containsKey("DOCUMENTO")) {
+    if (fila.containsKey("TIPO_DOCUMENTO") && fila.containsKey(DOCUMENTO_KEY)) {
       String tipoDocStr = fila.get("TIPO_DOCUMENTO");
       if (tipoDocStr != null && !tipoDocStr.isBlank()) {
         persona.actualizarDocumento(
-            TipoDocumento.valueOf(tipoDocStr.toUpperCase()), fila.get("DOCUMENTO"));
+            TipoDocumento.valueOf(tipoDocStr.toUpperCase()), fila.get(DOCUMENTO_KEY));
       } else {
-        persona.actualizarDocumento(null, fila.get("DOCUMENTO"));
+        persona.actualizarDocumento(null, fila.get(DOCUMENTO_KEY));
       }
     }
 
@@ -224,12 +235,12 @@ public class PersonaMapper {
         };
 
     List<MedioDeContactoReplicaDTO> medios =
-        p.getMediosDeContacto().stream().map(this::toMedioReplicaDTO).toList();
+        p.getMediosDeContacto().stream().map(PersonaMapper::toMedioReplicaDTO).toList();
 
     return new PersonaReplicaDTO(p.getId(), denominacion, p.getTipoPersona(), medios);
   }
 
-  private MedioDeContactoReplicaDTO toMedioReplicaDTO(MedioDeContacto m) {
+  private static MedioDeContactoReplicaDTO toMedioReplicaDTO(MedioDeContacto m) {
     return switch (m) {
       case Correo c -> new MedioDeContactoReplicaDTO(
           "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);

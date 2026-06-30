@@ -27,9 +27,10 @@ class LectorCSVMejoradoTest {
     // Arrange
     Path archivoCSV = tempDir.resolve("donantes.csv");
     String contenido =
-        "TipoPersona,Nombre,Apellido,Email\n"
-            + "Humana,Juan,Perez,juan.perez@example.com\n"
-            + "Juridica,Tech Corp,,info@techcorp.com";
+        """
+        TipoPersona,Nombre,Apellido,Email
+        Humana,Juan,Perez,juan.perez@example.com
+        Juridica,Tech Corp,,info@techcorp.com""";
     Files.writeString(archivoCSV, contenido);
 
     // Act

@@ -38,6 +38,16 @@ public class ProcesadorDeDonaciones {
   @Async
   public void procesar(Donacion donacion) {
     List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion);
+    logItemsNormalizados(itemsNormalizados);
+
+    // Persistir todos los items normalizados
+    itemNormalizadoRepository.saveAll(itemsNormalizados);
+
+    // Verificar y finalizar
+    finalizarNormalizacion(donacion, itemsNormalizados);
+  }
+
+  private void logItemsNormalizados(List<ItemDonacionNormalizado> itemsNormalizados) {
     for (ItemDonacionNormalizado item : itemsNormalizados) {
       String subcatNombre = "null";
       if (item.getBien() != null && item.getBien().subcategoriaId() != null) {
@@ -57,11 +67,10 @@ public class ProcesadorDeDonaciones {
           item.getBien() != null ? item.getBien().confianza() : "null",
           item.getBien() != null ? item.getBien().estadoNormalizacion() : "null");
     }
+  }
 
-    // Persistir todos los items normalizados
-    itemNormalizadoRepository.saveAll(itemsNormalizados);
-
-    // Verificar si quedan pendientes de revisión
+  private void finalizarNormalizacion(
+      Donacion donacion, List<ItemDonacionNormalizado> itemsNormalizados) {
     boolean tienePendientes =
         itemsNormalizados.stream()
             .anyMatch(

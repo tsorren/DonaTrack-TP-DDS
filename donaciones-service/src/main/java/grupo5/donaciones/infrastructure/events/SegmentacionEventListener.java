@@ -54,21 +54,8 @@ public class SegmentacionEventListener {
             .orElseThrow(
                 () -> new IllegalStateException("Donación no encontrada: " + event.donacionId()));
 
-    List<ItemDonacionNormalizado> itemsDeDonacion =
-        itemNormalizadoRepository.findAll().stream()
-            .filter(
-                item ->
-                    item.getDonacionOriginalId() != null
-                        && item.getDonacionOriginalId().equals(event.donacionId()))
-            .toList();
-
     List<ItemDonacionNormalizado> itemsAceptados =
-        itemsDeDonacion.stream()
-            .filter(
-                item ->
-                    item.getBien().estadoNormalizacion() == EstadoNormalizacion.ACEPTADO
-                        && !item.isSegmentado())
-            .toList();
+        obtenerItemsAceptadosNoSegmentados(event.donacionId());
 
     if (itemsAceptados.isEmpty()) {
       log.info(
@@ -85,6 +72,45 @@ public class SegmentacionEventListener {
         event.donacionId());
     List<DonacionIndependiente> donacionesIndependientes = segmentador.segmentar(itemsAceptados);
 
+    logDonacionesIndependientes(donacionesIndependientes);
+
+    // Registrar en motor de incentivos
+    registrarEnIncentivos(donacionesIndependientes);
+
+    // Persistir las donaciones independientes
+    donacionesIndependientesRepository.saveAll(donacionesIndependientes);
+
+    // Marcar los ítems procesados como segmentados
+    itemsAceptados.forEach(
+        i -> {
+          i.marcarComoSegmentado();
+          itemNormalizadoRepository.save(i);
+        });
+
+    // Cambiar estado de donación original a SEGMENTADA
+    donacion.marcarSegmentada();
+    donacionRepository.save(donacion);
+    log.info("Donación original ID {} movida a SEGMENTADA.", donacion.getId());
+  }
+
+  private List<ItemDonacionNormalizado> obtenerItemsAceptadosNoSegmentados(UUID donacionId) {
+    List<ItemDonacionNormalizado> itemsDeDonacion =
+        itemNormalizadoRepository.findAll().stream()
+            .filter(
+                item ->
+                    item.getDonacionOriginalId() != null
+                        && item.getDonacionOriginalId().equals(donacionId))
+            .toList();
+
+    return itemsDeDonacion.stream()
+        .filter(
+            item ->
+                item.getBien().estadoNormalizacion() == EstadoNormalizacion.ACEPTADO
+                    && !item.isSegmentado())
+        .toList();
+  }
+
+  private void logDonacionesIndependientes(List<DonacionIndependiente> donacionesIndependientes) {
     for (DonacionIndependiente di : donacionesIndependientes) {
       String subcatNombre = "null";
       if (di.getSubcategoriaId() != null) {
@@ -102,30 +128,11 @@ public class SegmentacionEventListener {
           di.getCantidad(),
           di.getEstadoActual() != null ? di.getEstadoActual().getClass().getSimpleName() : "null");
     }
+  }
 
-    // Registrar en motor de incentivos
+  private void registrarEnIncentivos(List<DonacionIndependiente> donacionesIndependientes) {
     for (DonacionIndependiente di : donacionesIndependientes) {
-      List<String> categorias =
-          di.getItems().stream()
-              .map(
-                  item -> {
-                    UUID subId = item.bien().subcategoriaId();
-                    UUID catId =
-                        subId != null
-                            ? subcategoriasRepository
-                                .findById(subId)
-                                .map(Subcategoria::getCategoriaId)
-                                .orElse(null)
-                            : null;
-                    return catId != null
-                        ? categoriasRepository
-                            .findById(catId)
-                            .map(Categoria::getNombre)
-                            .orElse("Desconocida")
-                        : "Desconocida";
-                  })
-              .distinct()
-              .toList();
+      List<String> categorias = obtenerCategoriasDeItems(di);
 
       UUID donacionOriginalId = di.getDonacionOriginalId();
       Donacion donacionOriginal =
@@ -163,24 +170,32 @@ public class SegmentacionEventListener {
         log.error("Error al registrar donación en motor de incentivos: {}", e.getMessage());
       }
     }
-
-    // Persistir las donaciones independientes
-    donacionesIndependientesRepository.saveAll(donacionesIndependientes);
-
-    // Marcar los ítems procesados como segmentados
-    itemsAceptados.forEach(
-        i -> {
-          i.marcarComoSegmentado();
-          itemNormalizadoRepository.save(i);
-        });
-
-    // Cambiar estado de donación original a SEGMENTADA
-    donacion.marcarSegmentada();
-    donacionRepository.save(donacion);
-    log.info("Donación original ID {} movida a SEGMENTADA.", donacion.getId());
   }
 
-  private String obtenerNombrePersona(Persona persona) {
+  private List<String> obtenerCategoriasDeItems(DonacionIndependiente di) {
+    return di.getItems().stream()
+        .map(
+            item -> {
+              UUID subId = item.bien().subcategoriaId();
+              UUID catId =
+                  subId != null
+                      ? subcategoriasRepository
+                          .findById(subId)
+                          .map(Subcategoria::getCategoriaId)
+                          .orElse(null)
+                      : null;
+              return catId != null
+                  ? categoriasRepository
+                      .findById(catId)
+                      .map(Categoria::getNombre)
+                      .orElse("Desconocida")
+                  : "Desconocida";
+            })
+        .distinct()
+        .toList();
+  }
+
+  private static String obtenerNombrePersona(Persona persona) {
     return switch (persona) {
       case Humana h -> h.getNombre() + " " + h.getApellido();
       case Juridica j -> j.getRazonSocial();

@@ -19,6 +19,7 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -104,8 +105,10 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void ordenarNecesidades_cuandoUnaEntidadTieneMayorPorcentajeSatisfecho_debeQuedarAlFinal() {
     Humana representante = new Humana("rep", "apellido", TEST_DATE);
-    Juridica juridicaMuyAtendida = new Juridica(representante);
-    Juridica juridicaPocoAtendida = new Juridica(representante);
+    Juridica juridicaMuyAtendida =
+        new Juridica(representante, "Empresa Muy Atendida", TipoJuridico.EMPRESA, "Rubro");
+    Juridica juridicaPocoAtendida =
+        new Juridica(representante, "Empresa Poco Atendida", TipoJuridico.EMPRESA, "Rubro");
     EntidadBeneficiaria entidadMuyAtendida = new EntidadBeneficiaria(juridicaMuyAtendida.getId());
     EntidadBeneficiaria entidadPocoAtendida = new EntidadBeneficiaria(juridicaPocoAtendida.getId());
 

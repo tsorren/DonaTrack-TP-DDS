@@ -6,7 +6,7 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import java.util.List;
 import java.util.UUID;
 
-public interface NotificacionRepository extends CrudRepository<Notificacion> {
+public interface INotificacionRepository extends CrudRepository<Notificacion> {
 
   List<Notificacion> findByEstado(EstadoNotificacion estado);
 

@@ -29,7 +29,6 @@ public class RankingService implements IRankingService {
   }
 
   public RankingMensualDTO calcularYPersistir(YearMonth periodo) {
-    // TODO: Revisar si se debe eliminar, corregir logica ya que sin esto rompe
     rankingRepository.findByPeriodo(periodo).ifPresent(rankingRepository::delete);
     List<DonanteIncentivos> todos = donanteRepository.findAll();
     RankingMensual ranking = new RankingMensual(periodo);

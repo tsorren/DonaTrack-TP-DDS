@@ -64,102 +64,112 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
 
     if (dto.estadoNormalizacion() == EstadoNormalizacion.RECHAZADO
         && dto.subcategoriaId() != null) {
-      // Reclasificación manual al rechazar
-      Subcategoria subcategoria =
-          subcategoriasRepository
-              .findById(dto.subcategoriaId())
-              .orElseThrow(() -> new RecursoNoEncontradoException(dto.subcategoriaId()));
-
-      Categoria categoria =
-          subcategoria.getCategoriaId() != null
-              ? categoriasRepository.findById(subcategoria.getCategoriaId()).orElse(null)
-              : null;
-      boolean conVencimiento =
-          categoria != null && Boolean.TRUE.equals(categoria.getConVencimiento());
-      boolean conEstado = categoria != null && Boolean.TRUE.equals(categoria.getConUso());
-
-      BienNormalizado nuevoBien =
-          new BienNormalizado(
-              original.bienOriginal(),
-              subcategoria.getId(),
-              1.0,
-              EstadoNormalizacion.ACEPTADO,
-              conVencimiento,
-              conEstado);
-      item.actualizarBien(nuevoBien);
-      log.info(
-          "Reclasificación manual al rechazar: Subcategoría {} asignada. Estado cambia a ACEPTADO.",
-          subcategoria.getNombre());
+      reclasificarManual(item, original, dto);
     } else {
-      // Modificación estándar (Aceptar con/sin cambio de subcategoría, o Rechazo simple)
-      UUID subId = dto.subcategoriaId() != null ? dto.subcategoriaId() : original.subcategoriaId();
-      Subcategoria subcategoria =
-          subcategoriasRepository
-              .findById(subId)
-              .orElseThrow(() -> new RecursoNoEncontradoException(subId));
-
-      Categoria categoria =
-          subcategoria.getCategoriaId() != null
-              ? categoriasRepository.findById(subcategoria.getCategoriaId()).orElse(null)
-              : null;
-      boolean conVencimiento =
-          categoria != null && Boolean.TRUE.equals(categoria.getConVencimiento());
-      boolean conEstado = categoria != null && Boolean.TRUE.equals(categoria.getConUso());
-
-      double conf = dto.subcategoriaId() != null ? 1.0 : original.confianza();
-
-      BienNormalizado nuevoBien =
-          new BienNormalizado(
-              original.bienOriginal(),
-              subId,
-              conf,
-              dto.estadoNormalizacion(),
-              conVencimiento,
-              conEstado);
-      item.actualizarBien(nuevoBien);
-      if (dto.subcategoriaId() != null) {
-        log.info(
-            "Categorización manual provista. Subcategoría {} asignada.", subcategoria.getNombre());
-      }
+      actualizarEstandar(item, original, dto);
     }
 
     itemNormalizadoRepository.save(item);
 
-    // Verificar el estado de la Donación original
     if (item.getDonacionOriginalId() != null) {
-      UUID donacionId = item.getDonacionOriginalId();
-      Donacion donacion =
-          donacionRepository
-              .findById(donacionId)
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException(
-                          "Donación original no encontrada para el ID: " + donacionId));
-
-      List<ItemDonacionNormalizado> itemsDeDonacion =
-          itemNormalizadoRepository.findAll().stream()
-              .filter(
-                  i ->
-                      i.getDonacionOriginalId() != null
-                          && i.getDonacionOriginalId().equals(donacionId))
-              .toList();
-
-      boolean tienePendientes =
-          itemsDeDonacion.stream()
-              .anyMatch(
-                  i -> i.getBien().estadoNormalizacion() == EstadoNormalizacion.PENDIENTE_REVISION);
-
-      if (!tienePendientes) {
-        donacion.marcarNormalizada();
-        donacionRepository.save(donacion);
-        log.info(
-            "Todos los ítems de la donación {} fueron revisados. Donación cambia a estado NORMALIZADA y se emite evento.",
-            donacionId);
-        eventPublisher.publishEvent(new DonacionNormalizadaEvent(donacionId));
-      }
+      verificarYActualizarEstadoDonacionOriginal(item.getDonacionOriginalId());
     }
 
     return mapper.toOutputDTO(item);
+  }
+
+  private void reclasificarManual(
+      ItemDonacionNormalizado item, BienNormalizado original, ItemDonacionNormalizadoPatchDTO dto) {
+    Subcategoria subcategoria =
+        subcategoriasRepository
+            .findById(dto.subcategoriaId())
+            .orElseThrow(() -> new RecursoNoEncontradoException(dto.subcategoriaId()));
+
+    Categoria categoria =
+        subcategoria.getCategoriaId() != null
+            ? categoriasRepository.findById(subcategoria.getCategoriaId()).orElse(null)
+            : null;
+    boolean conVencimiento =
+        categoria != null && Boolean.TRUE.equals(categoria.getConVencimiento());
+    boolean conEstado = categoria != null && Boolean.TRUE.equals(categoria.getConUso());
+
+    BienNormalizado nuevoBien =
+        new BienNormalizado(
+            original.bienOriginal(),
+            subcategoria.getId(),
+            1.0,
+            EstadoNormalizacion.ACEPTADO,
+            conVencimiento,
+            conEstado);
+    item.actualizarBien(nuevoBien);
+    log.info(
+        "Reclasificación manual al rechazar: Subcategoría {} asignada. Estado cambia a ACEPTADO.",
+        subcategoria.getNombre());
+  }
+
+  private void actualizarEstandar(
+      ItemDonacionNormalizado item, BienNormalizado original, ItemDonacionNormalizadoPatchDTO dto) {
+    UUID subId = dto.subcategoriaId() != null ? dto.subcategoriaId() : original.subcategoriaId();
+    Subcategoria subcategoria =
+        subcategoriasRepository
+            .findById(subId)
+            .orElseThrow(() -> new RecursoNoEncontradoException(subId));
+
+    Categoria categoria =
+        subcategoria.getCategoriaId() != null
+            ? categoriasRepository.findById(subcategoria.getCategoriaId()).orElse(null)
+            : null;
+    boolean conVencimiento =
+        categoria != null && Boolean.TRUE.equals(categoria.getConVencimiento());
+    boolean conEstado = categoria != null && Boolean.TRUE.equals(categoria.getConUso());
+
+    double conf = dto.subcategoriaId() != null ? 1.0 : original.confianza();
+
+    BienNormalizado nuevoBien =
+        new BienNormalizado(
+            original.bienOriginal(),
+            subId,
+            conf,
+            dto.estadoNormalizacion(),
+            conVencimiento,
+            conEstado);
+    item.actualizarBien(nuevoBien);
+    if (dto.subcategoriaId() != null) {
+      log.info(
+          "Categorización manual provista. Subcategoría {} asignada.", subcategoria.getNombre());
+    }
+  }
+
+  private void verificarYActualizarEstadoDonacionOriginal(UUID donacionId) {
+    Donacion donacion =
+        donacionRepository
+            .findById(donacionId)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "Donación original no encontrada para el ID: " + donacionId));
+
+    List<ItemDonacionNormalizado> itemsDeDonacion =
+        itemNormalizadoRepository.findAll().stream()
+            .filter(
+                i ->
+                    i.getDonacionOriginalId() != null
+                        && i.getDonacionOriginalId().equals(donacionId))
+            .toList();
+
+    boolean tienePendientes =
+        itemsDeDonacion.stream()
+            .anyMatch(
+                i -> i.getBien().estadoNormalizacion() == EstadoNormalizacion.PENDIENTE_REVISION);
+
+    if (!tienePendientes) {
+      donacion.marcarNormalizada();
+      donacionRepository.save(donacion);
+      log.info(
+          "Todos los ítems de la donación {} fueron revisados. Donación cambia a estado NORMALIZADA y se emite evento.",
+          donacionId);
+      eventPublisher.publishEvent(new DonacionNormalizadaEvent(donacionId));
+    }
   }
 
   public ItemDonacionNormalizadoOutputDTO obtener(UUID id) {

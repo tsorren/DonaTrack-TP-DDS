@@ -63,6 +63,19 @@ public abstract class AlgoritmoAsignacion {
     return necesidades;
   }
 
+  protected List<DonacionIndependiente> filtrarPorSubcategoria(
+      Necesidad necesidad, List<DonacionIndependiente> donaciones) {
+    if (necesidad == null) throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDAD_NULA);
+    if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
+    List<DonacionIndependiente> filtradas = new ArrayList<>();
+    for (DonacionIndependiente donacion : donaciones) {
+      if (mismaSubcategoria(donacion, necesidad)) {
+        filtradas.add(donacion);
+      }
+    }
+    return filtradas;
+  }
+
   public abstract List<DonacionIndependiente> filtrarDonaciones(
       Necesidad necesidad, List<DonacionIndependiente> donaciones);
 }

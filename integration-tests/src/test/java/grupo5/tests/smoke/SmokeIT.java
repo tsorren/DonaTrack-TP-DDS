@@ -6,10 +6,10 @@ import static org.hamcrest.Matchers.containsString;
 import grupo5.tests.BaseIT;
 import org.junit.jupiter.api.Test;
 
-public class SmokeIT extends BaseIT {
+class SmokeIT extends BaseIT {
 
   @Test
-  public void testDonacionesServiceUp() {
+  void testDonacionesServiceUp() {
     given()
         .when()
         .get(DONACIONES_URL + "/v3/api-docs")
@@ -19,7 +19,7 @@ public class SmokeIT extends BaseIT {
   }
 
   @Test
-  public void testNotificacionesServiceUp() {
+  void testNotificacionesServiceUp() {
     given()
         .when()
         .get(NOTIFICACIONES_URL + "/v3/api-docs")
@@ -29,7 +29,7 @@ public class SmokeIT extends BaseIT {
   }
 
   @Test
-  public void testIncentivosServiceUp() {
+  void testIncentivosServiceUp() {
     given()
         .when()
         .get(INCENTIVOS_URL + "/v3/api-docs")

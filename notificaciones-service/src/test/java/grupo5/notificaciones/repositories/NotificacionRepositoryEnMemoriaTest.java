@@ -7,7 +7,7 @@ import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
-import grupo5.notificaciones.models.repositories.NotificacionRepositoryEnMemoria;
+import grupo5.notificaciones.models.repositories.impl.NotificacionRepositoryEnMemoria;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

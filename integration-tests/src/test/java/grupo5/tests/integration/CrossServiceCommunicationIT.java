@@ -9,75 +9,53 @@ import io.restassured.http.ContentType;
 import java.util.*;
 import org.junit.jupiter.api.Test;
 
-public class CrossServiceCommunicationIT extends BaseIT {
+class CrossServiceCommunicationIT extends BaseIT {
 
   // Polling helper to wait for async events with a timeout
   private void esperarAsync() {
-    try {
-      Thread.sleep(1500);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+    org.awaitility.Awaitility.await()
+        .pollDelay(java.time.Duration.ofMillis(1500))
+        .until(() -> true);
   }
 
   private void esperarHastaTotalDonacionesExitosas(String donanteId, int min, long timeoutMs) {
-    long start = System.currentTimeMillis();
-    while (System.currentTimeMillis() - start < timeoutMs) {
-      try {
-        Integer total =
-            given()
-                .when()
-                .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
-                .then()
-                .statusCode(200)
-                .extract()
-                .path("totalDonacionesExitosas");
-        if (total != null && total > min) {
-          return;
-        }
-      } catch (Exception e) {
-        // ignore and retry until timeout
-      }
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        break;
-      }
-    }
-    fail("Timeout waiting for totalDonacionesExitosas > " + min);
+    org.awaitility.Awaitility.await()
+        .atMost(java.time.Duration.ofMillis(timeoutMs))
+        .pollInterval(java.time.Duration.ofMillis(500))
+        .ignoreExceptions()
+        .until(() -> {
+          Integer total =
+              given()
+                  .when()
+                  .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
+                  .then()
+                  .statusCode(200)
+                  .extract()
+                  .path("totalDonacionesExitosas");
+          return total != null && total > min;
+        });
   }
 
   private void esperarHastaNotificaciones(String personaId, int minSize, long timeoutMs) {
-    long start = System.currentTimeMillis();
-    while (System.currentTimeMillis() - start < timeoutMs) {
-      try {
-        List<?> resp =
-            given()
-                .when()
-                .get(NOTIFICACIONES_URL + "/notificaciones/persona/" + personaId)
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(List.class);
-        if (resp != null && resp.size() >= minSize) {
-          return;
-        }
-      } catch (Exception e) {
-        // ignore and retry
-      }
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        break;
-      }
-    }
-    fail("Timeout waiting for notifications size >= " + minSize);
+    org.awaitility.Awaitility.await()
+        .atMost(java.time.Duration.ofMillis(timeoutMs))
+        .pollInterval(java.time.Duration.ofMillis(500))
+        .ignoreExceptions()
+        .until(() -> {
+          List<?> resp =
+              given()
+                  .when()
+                  .get(NOTIFICACIONES_URL + "/notificaciones/persona/" + personaId)
+                  .then()
+                  .statusCode(200)
+                  .extract()
+                  .as(List.class);
+          return resp != null && resp.size() >= minSize;
+        });
   }
 
   @Test
-  public void testPersonaReplicationLifecycle() {
+  void testPersonaReplicationLifecycle() {
     // 1. Create a persona in donaciones-service
     Map<String, Object> personaPayload = fixture("personas/crear-persona-humana.json");
     personaPayload.put("documento", "55554444");
@@ -148,7 +126,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testDonanteRegistrationAndWelcomeNotification() {
+  void testDonanteRegistrationAndWelcomeNotification() {
     // 1. Create a persona
     String personaId = apiCrearPersonaHumana("11112222", "Maria", "maria.gomez@example.com");
 
@@ -178,7 +156,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testDonanteBaja() {
+  void testDonanteBaja() {
     // 1. Create a persona
     String personaId = apiCrearPersonaHumana("33332222", "Pedro", "pedro.sosa@example.com");
 
@@ -205,7 +183,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testE2EDonationFlowAndSideEffects() {
+  void testE2EDonationFlowAndSideEffects() {
     // 1. Create Donante Persona & Donor
     String donantePersonaId = apiCrearPersonaHumana("88887777", "Ana", "ana.lopez@example.com");
     String donorId = apiCrearDonante(donantePersonaId);
@@ -330,7 +308,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testRankingMensualYPosicion() {
+  void testRankingMensualYPosicion() {
     // 1. Create Persona and Donor
     String personaId = apiCrearPersonaHumana("99112233", "Raul", "raul.gomez@example.com");
     String donorId = apiCrearDonante(personaId);
@@ -383,7 +361,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testInsigniaVisibilityFlow() {
+  void testInsigniaVisibilityFlow() {
     // 1. Create Persona and Donor
     String personaId = apiCrearPersonaHumana("99112244", "Laura", "laura.perez@example.com");
     String donorId = apiCrearDonante(personaId);
@@ -448,7 +426,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testComplexE2EMultipleDonationsFlow() {
+  void testComplexE2EMultipleDonationsFlow() {
     // 1. Create Donante Persona & Donor
     String donantePersonaId = apiCrearPersonaHumana("77889900", "Carlos", "carlos.gimenez@example.com");
     String donorId = apiCrearDonante(donantePersonaId);
