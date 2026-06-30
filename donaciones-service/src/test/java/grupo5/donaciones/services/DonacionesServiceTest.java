@@ -97,7 +97,6 @@ class DonacionesServiceTest {
     DonacionOutputDTO result = service.cargarDonacion(inputDTO);
 
     assertNotNull(result);
-    //    assertTrue(donante.getDonaciones().contains(donacion));
     verify(donacionesRepository).save(donacion);
     verify(mapper).toOutputDTO(donacion);
   }

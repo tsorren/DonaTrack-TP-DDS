@@ -6,6 +6,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import java.time.LocalDate;
 import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +20,7 @@ class EntidadBeneficiariaTests {
   @BeforeEach
   void setUp() {
     representante = new Humana("Juan", "Perez", TEST_DATE.minusYears(25));
-    juridica = new Juridica(representante);
+    juridica = new Juridica(representante, "Empresa SA", TipoJuridico.EMPRESA, "Rubro");
   }
 
   @Test

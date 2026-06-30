@@ -28,10 +28,8 @@ public class ScheduledJobLoggingAspect {
       log.info("[SCHEDULED-JOB-SUCCESS] Finished execution of job: {}", jobName);
       return result;
     } catch (Throwable t) {
-      log.error(
-          "[SCHEDULED-JOB-FAILURE] Job: {} failed with exception: {}", jobName, t.getMessage(), t);
       newSpan.error(t);
-      throw t;
+      throw new RuntimeException("Scheduled job failed: " + jobName, t);
     } finally {
       newSpan.end();
     }

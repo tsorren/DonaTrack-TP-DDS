@@ -62,7 +62,6 @@ public class DonacionesService implements IDonacionesService {
                 });
 
     Donacion donacion = mapper.toEntity(dto, donante);
-    // donante.agregarDonacion(donacion);
 
     donacionesRepository.save(donacion);
 

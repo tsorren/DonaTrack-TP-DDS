@@ -7,6 +7,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,10 +34,11 @@ class SubcategoriaTest {
 
   @Test
   void constructor_conNombreNull_debeLanzarExcepcion() {
+    UUID categoriaId = categoria.getId();
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new Subcategoria(categoria.getId(), null),
+            () -> new Subcategoria(categoriaId, null),
             "Debería lanzar excepción cuando el nombre es nulo");
     assertNotNull(exception);
     assertEquals(ErrorCatalog.SUBCATEGORIA_SIN_NOMBRE, exception.getError());
@@ -44,10 +46,11 @@ class SubcategoriaTest {
 
   @Test
   void constructor_conNombreVacio_debeLanzarExcepcion() {
+    UUID categoriaId = categoria.getId();
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new Subcategoria(categoria.getId(), "   "),
+            () -> new Subcategoria(categoriaId, "   "),
             "Debería lanzar excepción cuando el nombre está vacío");
     assertNotNull(exception);
     assertEquals(ErrorCatalog.SUBCATEGORIA_SIN_NOMBRE, exception.getError());

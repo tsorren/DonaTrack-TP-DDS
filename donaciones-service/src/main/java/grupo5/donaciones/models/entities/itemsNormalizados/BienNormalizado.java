@@ -11,10 +11,6 @@ public record BienNormalizado(
     Double confianza,
     EstadoNormalizacion estadoNormalizacion) {
 
-  public BienNormalizado {
-    // Compact constructor
-  }
-
   public BienNormalizado(
       Bien bienOriginal,
       UUID subcategoriaId,

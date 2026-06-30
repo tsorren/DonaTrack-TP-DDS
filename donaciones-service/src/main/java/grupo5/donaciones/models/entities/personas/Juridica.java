@@ -23,18 +23,6 @@ public final class Juridica extends Persona {
   private TipoJuridico tipo;
   private String rubro;
 
-  @Deprecated
-  public Juridica(Humana representanteInicial) {
-    super();
-    if (representanteInicial == null) {
-      throw new ValidationException(ErrorCatalog.JURIDICA_SIN_REPRESENTANTE_INICIAL);
-    }
-    this.representantes.add(representanteInicial);
-    this.razonSocial = "Legacy SA";
-    this.tipo = TipoJuridico.EMPRESA;
-    this.rubro = "Legacy Rubro";
-  }
-
   public Juridica(
       Humana representanteInicial, String razonSocial, TipoJuridico tipo, String rubro) {
     super();

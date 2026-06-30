@@ -68,7 +68,6 @@ class NecesidadesServiceTest {
 
     assertNotNull(resultado);
     assertEquals("RECURRENTE", resultado.tipo());
-    // verify(entidadMock, times(1)).agregarNecesidad(any(Necesidad.class));
     verify(necesidadRepositoryMock, times(1)).save(any(Necesidad.class));
   }
 
@@ -101,7 +100,6 @@ class NecesidadesServiceTest {
 
     assertNotNull(resultado);
     assertEquals("EXTRAORDINARIA", resultado.tipo());
-    // verify(entidadMock, times(1)).agregarNecesidad(any(Necesidad.class));
     verify(necesidadRepositoryMock, times(1)).save(any(Necesidad.class));
   }
 
