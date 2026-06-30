@@ -8,7 +8,9 @@ import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteRespo
 import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.SubcategoriaResumenDTO;
 import grupo5.donaciones.models.entities.donaciones.Bien;
+import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
@@ -33,54 +35,76 @@ public class DonacionIndependienteMapper {
       return null;
     }
 
-    List<ItemDonacionIndependienteResponseDTO> itemsMapped =
-        donacion.getItems().stream()
-            .map(
-                item -> {
-                  BienNormalizado bienNormalizado = item.bien();
-                  Bien bienOriginal = bienNormalizado.bienOriginal();
-                  BienResumenDTO bienResumen = mapBienResumen(bienOriginal);
-
-                  SubcategoriaResumenDTO subcategoriaResumen = null;
-                  CategoriaResumenDTO categoriaResumen = null;
-                  if (bienNormalizado.subcategoriaId() != null) {
-                    var subOpt = subcategoriasRepository.findById(bienNormalizado.subcategoriaId());
-                    if (subOpt.isPresent()) {
-                      var sub = subOpt.get();
-                      subcategoriaResumen = mapSubcategoriaResumen(sub);
-                      categoriaResumen = mapCategoriaResumen(sub);
-                    }
-                  }
-
-                  BienNormalizadoDTO bienDTO =
-                      new BienNormalizadoDTO(bienResumen, subcategoriaResumen, categoriaResumen);
-                  return new ItemDonacionIndependienteResponseDTO(bienDTO, item.cantidad());
-                })
-            .toList();
-
-    List<CambioEstadoDIResponseDTO> historialMapped =
-        donacion.getHistorial().stream()
-            .map(
-                c ->
-                    new CambioEstadoDIResponseDTO(
-                        c.getEstadoAnterior() != null
-                            ? c.getEstadoAnterior().getClass().getSimpleName()
-                            : null,
-                        c.getEstadoNuevo().getClass().getSimpleName(),
-                        c.getTimestamp(),
-                        c.getJustificacion(),
-                        c.getActor()))
-            .toList();
+    List<ItemDonacionIndependienteResponseDTO> itemsMapped = mapItems(donacion.getItems());
+    List<CambioEstadoDIResponseDTO> historialMapped = mapHistorial(donacion.getHistorial());
 
     return new DonacionIndependienteResponseDTO(
         donacion.getId(),
         donacion.getDonacionOriginalId(),
         donacion.getDescripcion(),
-        donacion.getEstadoActual().getClass().getSimpleName(),
+        donacion.getEstadoActual() != null
+            ? donacion.getEstadoActual().getClass().getSimpleName()
+            : null,
         donacion.getFechaRegistro(),
         historialMapped,
         itemsMapped,
         donacion.getCantidad());
+  }
+
+  private List<ItemDonacionIndependienteResponseDTO> mapItems(
+      List<ItemDonacionIndependiente> items) {
+    if (items == null) {
+      return List.of();
+    }
+    return items.stream().map(this::mapItem).toList();
+  }
+
+  private ItemDonacionIndependienteResponseDTO mapItem(ItemDonacionIndependiente item) {
+    if (item == null) {
+      return null;
+    }
+    BienNormalizado bienNormalizado = item.bien();
+    BienNormalizadoDTO bienDTO = mapBienNormalizado(bienNormalizado);
+    return new ItemDonacionIndependienteResponseDTO(bienDTO, item.cantidad());
+  }
+
+  private BienNormalizadoDTO mapBienNormalizado(BienNormalizado bienNormalizado) {
+    if (bienNormalizado == null) {
+      return null;
+    }
+    Bien bienOriginal = bienNormalizado.bienOriginal();
+    BienResumenDTO bienResumen = mapBienResumen(bienOriginal);
+
+    SubcategoriaResumenDTO subcategoriaResumen = null;
+    CategoriaResumenDTO categoriaResumen = null;
+    if (bienNormalizado.subcategoriaId() != null) {
+      var subOpt = subcategoriasRepository.findById(bienNormalizado.subcategoriaId());
+      if (subOpt.isPresent()) {
+        var sub = subOpt.get();
+        subcategoriaResumen = mapSubcategoriaResumen(sub);
+        categoriaResumen = mapCategoriaResumen(sub);
+      }
+    }
+    return new BienNormalizadoDTO(bienResumen, subcategoriaResumen, categoriaResumen);
+  }
+
+  private List<CambioEstadoDIResponseDTO> mapHistorial(List<CambioEstado> historial) {
+    if (historial == null) {
+      return List.of();
+    }
+    return historial.stream().map(this::mapCambioEstado).toList();
+  }
+
+  private CambioEstadoDIResponseDTO mapCambioEstado(CambioEstado c) {
+    if (c == null) {
+      return null;
+    }
+    String estadoAnterior =
+        c.getEstadoAnterior() != null ? c.getEstadoAnterior().getClass().getSimpleName() : null;
+    String estadoNuevo =
+        c.getEstadoNuevo() != null ? c.getEstadoNuevo().getClass().getSimpleName() : null;
+    return new CambioEstadoDIResponseDTO(
+        estadoAnterior, estadoNuevo, c.getTimestamp(), c.getJustificacion(), c.getActor());
   }
 
   private static BienResumenDTO mapBienResumen(Bien bienOriginal) {

@@ -2,7 +2,7 @@ package grupo5.notificaciones.controllers;
 
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
-import grupo5.notificaciones.services.NotificacionService;
+import grupo5.notificaciones.services.impl.NotificacionService;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
