@@ -43,16 +43,8 @@ public class Camion {
     this.rutaId = null;
   }
 
-  public void mandarAMantenimiento() {
-    if (this.estado == EstadoCamion.EN_RUTA) {
-      throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
-    }
-
-    this.estado = EstadoCamion.EN_MANTENIMIENTO;
-  }
-
   public void habilitar() {
-    if (this.estado != EstadoCamion.EN_MANTENIMIENTO) {
+    if (this.estado != EstadoCamion.DESHABILITADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
@@ -60,7 +52,7 @@ public class Camion {
   }
 
   public void deshabilitar() {
-    if (this.estado == EstadoCamion.EN_RUTA) {
+    if (this.estado != EstadoCamion.DISPONIBLE) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
