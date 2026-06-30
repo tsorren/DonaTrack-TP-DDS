@@ -9,7 +9,7 @@ import io.restassured.http.ContentType;
 import java.util.*;
 import org.junit.jupiter.api.Test;
 
-public class CrossServiceCommunicationIT extends BaseIT {
+class CrossServiceCommunicationIT extends BaseIT {
 
   // Polling helper to wait for async events with a timeout
   private void esperarAsync() {
@@ -55,7 +55,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testPersonaReplicationLifecycle() {
+  void testPersonaReplicationLifecycle() {
     // 1. Create a persona in donaciones-service
     Map<String, Object> personaPayload = fixture("personas/crear-persona-humana.json");
     personaPayload.put("documento", "55554444");
@@ -126,7 +126,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testDonanteRegistrationAndWelcomeNotification() {
+  void testDonanteRegistrationAndWelcomeNotification() {
     // 1. Create a persona
     String personaId = apiCrearPersonaHumana("11112222", "Maria", "maria.gomez@example.com");
 
@@ -156,7 +156,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testDonanteBaja() {
+  void testDonanteBaja() {
     // 1. Create a persona
     String personaId = apiCrearPersonaHumana("33332222", "Pedro", "pedro.sosa@example.com");
 
@@ -183,7 +183,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testE2EDonationFlowAndSideEffects() {
+  void testE2EDonationFlowAndSideEffects() {
     // 1. Create Donante Persona & Donor
     String donantePersonaId = apiCrearPersonaHumana("88887777", "Ana", "ana.lopez@example.com");
     String donorId = apiCrearDonante(donantePersonaId);
@@ -308,7 +308,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testRankingMensualYPosicion() {
+  void testRankingMensualYPosicion() {
     // 1. Create Persona and Donor
     String personaId = apiCrearPersonaHumana("99112233", "Raul", "raul.gomez@example.com");
     String donorId = apiCrearDonante(personaId);
@@ -361,7 +361,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testInsigniaVisibilityFlow() {
+  void testInsigniaVisibilityFlow() {
     // 1. Create Persona and Donor
     String personaId = apiCrearPersonaHumana("99112244", "Laura", "laura.perez@example.com");
     String donorId = apiCrearDonante(personaId);
@@ -426,7 +426,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testComplexE2EMultipleDonationsFlow() {
+  void testComplexE2EMultipleDonationsFlow() {
     // 1. Create Donante Persona & Donor
     String donantePersonaId = apiCrearPersonaHumana("77889900", "Carlos", "carlos.gimenez@example.com");
     String donorId = apiCrearDonante(donantePersonaId);

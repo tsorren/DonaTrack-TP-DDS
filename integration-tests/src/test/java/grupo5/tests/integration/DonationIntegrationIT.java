@@ -8,10 +8,10 @@ import io.restassured.http.ContentType;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class DonationIntegrationIT extends BaseIT {
+class DonationIntegrationIT extends BaseIT {
 
   @Test
-  public void testRegistrarDonacion() {
+  void testRegistrarDonacion() {
     // 1. Crear donante usando la plantilla base con overrides especificos para este test
     Map<String, Object> donantePayload = fixture("personas/crear-persona-humana.json");
     donantePayload.put("documento", "99998888");

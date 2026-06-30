@@ -17,6 +17,7 @@ import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -86,7 +87,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         notificacionesFeignClient.enviarEvento(
             new EventoDonacionRecibidaDTO(
                 personaDonanteId,
-                LocalDateTime.now(),
+                LocalDateTime.now(ZoneId.systemDefault()),
                 idPersonaBeneficiaria,
                 donacion.getDescripcion()));
       }

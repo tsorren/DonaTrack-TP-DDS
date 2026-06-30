@@ -22,6 +22,7 @@ import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import grupo5.donaciones.models.entities.personas.factories.PersonaFactory;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -179,7 +180,8 @@ public class PersonaMapper {
 
     if ("JURIDICA".equals(tipo)) {
       String razonSocial = fila.get("RAZON_SOCIAL");
-      Humana representanteDefault = new Humana("Representante", "Legal", LocalDate.now());
+      Humana representanteDefault =
+          new Humana("Representante", "Legal", LocalDate.now(ZoneId.systemDefault()));
       persona =
           PersonaFactory.crearJuridica(
               razonSocial, TipoJuridico.EMPRESA, "Rubro CSV", representanteDefault);

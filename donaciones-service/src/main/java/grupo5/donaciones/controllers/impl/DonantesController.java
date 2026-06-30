@@ -61,7 +61,6 @@ public class DonantesController implements IDonantesController {
     if (input.path() == null || input.path().isBlank()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
-    // TODO: Pasar logica a service
 
     ArchivoOutputDTO responseBody = archivoDonantesService.cargarArchivoDonantes(input);
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);

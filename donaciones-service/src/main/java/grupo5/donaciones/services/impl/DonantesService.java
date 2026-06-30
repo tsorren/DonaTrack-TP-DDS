@@ -15,6 +15,7 @@ import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.mappers.DonanteMapper;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -61,7 +62,8 @@ public class DonantesService implements IDonantesService {
               + " / Password: "
               + UUID.randomUUID().toString().substring(0, 8);
       notificacionesFeignClient.enviarEvento(
-          new EventoDonanteRegistradoDTO(persona.getId(), LocalDateTime.now(), credenciales));
+          new EventoDonanteRegistradoDTO(
+              persona.getId(), LocalDateTime.now(ZoneId.systemDefault()), credenciales));
     }
 
     return donanteMapper.toOutputDTO(guardado);
