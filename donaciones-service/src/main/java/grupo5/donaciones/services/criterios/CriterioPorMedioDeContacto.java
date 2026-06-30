@@ -47,7 +47,8 @@ public class CriterioPorMedioDeContacto implements CriterioDuplicado {
     return false;
   }
 
-  private boolean hayCoincidenciaInteligente(MedioDeContacto medio1, MedioDeContacto medio2) {
+  private static boolean hayCoincidenciaInteligente(
+      MedioDeContacto medio1, MedioDeContacto medio2) {
     if (medio1 == null || medio2 == null) return false;
 
     // Si ambos son Correos
@@ -66,8 +67,8 @@ public class CriterioPorMedioDeContacto implements CriterioDuplicado {
       String val2 = tel2.obtenerNumeroCompleto();
       if (val1 == null || val2 == null) return false;
 
-      String limpio1 = val1.replaceAll("[^0-9]", "");
-      String limpio2 = val2.replaceAll("[^0-9]", "");
+      String limpio1 = val1.replaceAll("\\D", "");
+      String limpio2 = val2.replaceAll("\\D", "");
 
       return !limpio1.isEmpty()
           && !limpio2.isEmpty()

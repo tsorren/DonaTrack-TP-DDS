@@ -5,8 +5,8 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
-import grupo5.notificaciones.models.repositories.NotificacionRepository;
-import grupo5.notificaciones.models.repositories.PersonaRepository;
+import grupo5.notificaciones.models.repositories.INotificacionRepository;
+import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -14,13 +14,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class PersonasService implements IPersonasService {
 
-  private final PersonaRepository repository;
-  private final NotificacionRepository notificacionRepository;
+  private final IPersonaRepository repository;
+  private final INotificacionRepository notificacionRepository;
   private final PersonaMapper mapper;
 
   public PersonasService(
-      PersonaRepository repository,
-      NotificacionRepository notificacionRepository,
+      IPersonaRepository repository,
+      INotificacionRepository notificacionRepository,
       PersonaMapper mapper) {
     this.repository = repository;
     this.notificacionRepository = notificacionRepository;

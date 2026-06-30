@@ -94,7 +94,7 @@ class DonacionMapperTest {
             "Maria",
             "Lopez",
             grupo5.donaciones.models.entities.personas.Genero.MUJER,
-            LocalDate.of(1993, 4, 10));
+            LocalDate.of(1993, Month.APRIL, 10));
     when(personaMapperMock.toOutputDTO(persona)).thenReturn(personaDTO);
 
     DonacionOutputDTO output = mapper.toOutputDTO(donacion);

@@ -195,7 +195,7 @@ public class SegmentacionEventListener {
         .toList();
   }
 
-  private String obtenerNombrePersona(Persona persona) {
+  private static String obtenerNombrePersona(Persona persona) {
     return switch (persona) {
       case Humana h -> h.getNombre() + " " + h.getApellido();
       case Juridica j -> j.getRazonSocial();

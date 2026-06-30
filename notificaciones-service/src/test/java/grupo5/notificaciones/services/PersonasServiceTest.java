@@ -8,8 +8,8 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
-import grupo5.notificaciones.models.repositories.NotificacionRepository;
-import grupo5.notificaciones.models.repositories.PersonaRepository;
+import grupo5.notificaciones.models.repositories.INotificacionRepository;
+import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -24,8 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PersonasServiceTest {
 
-  @Mock private PersonaRepository repository;
-  @Mock private NotificacionRepository notificacionRepository;
+  @Mock private IPersonaRepository repository;
+  @Mock private INotificacionRepository notificacionRepository;
   @Mock private PersonaMapper mapper;
 
   @InjectMocks private PersonasService service;

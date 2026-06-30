@@ -67,7 +67,7 @@ public class DonantesService implements IDonantesService {
     return donanteMapper.toOutputDTO(guardado);
   }
 
-  private String obtenerNombrePersona(Persona persona) {
+  private static String obtenerNombrePersona(Persona persona) {
     if (persona instanceof Humana humana) {
       return humana.getNombre() + " " + humana.getApellido();
     } else if (persona instanceof Juridica juridica) {

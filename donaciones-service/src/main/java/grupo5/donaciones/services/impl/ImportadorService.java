@@ -94,7 +94,7 @@ public class ImportadorService implements IImportadorService {
     }
   }
 
-  private PersonaInputDTO transformarAPersonaInputDTO(Persona persona) {
+  private static PersonaInputDTO transformarAPersonaInputDTO(Persona persona) {
     String nombre = "";
     String apellido = "";
     Genero genero = null;

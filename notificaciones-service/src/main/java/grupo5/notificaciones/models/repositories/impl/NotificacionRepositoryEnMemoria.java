@@ -1,15 +1,16 @@
-package grupo5.notificaciones.models.repositories;
+package grupo5.notificaciones.models.repositories.impl;
 
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
+import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class NotificacionRepositoryEnMemoria extends CrudRepositoryEnMemoria<Notificacion>
-    implements NotificacionRepository {
+    implements INotificacionRepository {
 
   @Override
   public List<Notificacion> findByEstado(EstadoNotificacion estado) {

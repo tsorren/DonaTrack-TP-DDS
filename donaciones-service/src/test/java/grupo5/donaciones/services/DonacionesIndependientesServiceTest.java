@@ -232,7 +232,7 @@ class DonacionesIndependientesServiceTest {
     assertEquals("Entregada", response.estadoActual());
     verify(repositoryMock, times(1)).save(donacion);
     verify(incentivosFeignClientMock, times(1))
-        .procesarDonacionExitosa(eq(new DonacionExitosaRequest(testDonante.getId(), null)));
+        .procesarDonacionExitosa(new DonacionExitosaRequest(testDonante.getId(), null));
     verify(notificacionesFeignClientMock, times(1))
         .enviarEvento(any(EventoDonacionRecibidaDTO.class));
   }

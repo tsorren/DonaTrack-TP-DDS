@@ -58,7 +58,8 @@ class DonantesServiceTest {
   @Test
   void testCrearDonante() throws Exception {
     // Arrange
-    Humana humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, 1, 1));
+    Humana humana =
+        new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     donante = new Donante(humana.getId());
     Field idField = Donante.class.getDeclaredField("id");
     idField.setAccessible(true);

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
+import grupo5.notificaciones.models.repositories.impl.PersonaRepositoryEnMemoria;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 class PersonasRepositoryTest {
 
-  private PersonaRepository repository;
+  private IPersonaRepository repository;
 
   @BeforeEach
   void setUp() {

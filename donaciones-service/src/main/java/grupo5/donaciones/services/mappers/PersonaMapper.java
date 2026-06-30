@@ -233,12 +233,12 @@ public class PersonaMapper {
         };
 
     List<MedioDeContactoReplicaDTO> medios =
-        p.getMediosDeContacto().stream().map(this::toMedioReplicaDTO).toList();
+        p.getMediosDeContacto().stream().map(PersonaMapper::toMedioReplicaDTO).toList();
 
     return new PersonaReplicaDTO(p.getId(), denominacion, p.getTipoPersona(), medios);
   }
 
-  private MedioDeContactoReplicaDTO toMedioReplicaDTO(MedioDeContacto m) {
+  private static MedioDeContactoReplicaDTO toMedioReplicaDTO(MedioDeContacto m) {
     return switch (m) {
       case Correo c -> new MedioDeContactoReplicaDTO(
           "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
