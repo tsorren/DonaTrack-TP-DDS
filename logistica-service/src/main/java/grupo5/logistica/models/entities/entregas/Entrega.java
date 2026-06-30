@@ -2,6 +2,7 @@ package grupo5.logistica.models.entities.entregas;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -11,7 +12,7 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class Entrega {
+public class Entrega implements AggregateRoot {
   private final UUID id;
   private final UUID idRuta;
   private final UUID idDonacion;
