@@ -1,23 +1,36 @@
 package grupo5.logistica.models.entities.chofer;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
-public class Chofer {
+public class Chofer implements AggregateRoot {
   private final UUID id;
-  private String nombre;
-  private String apellido;
-  private String licencia;
-  private String telefonoContacto;
+  private final String nombre;
+  private final String apellido;
+  private final String licencia;
+  private final String telefonoContacto;
 
   public Chofer(String nombre, String apellido, String licencia, String telefonoContacto) {
+    validarTexto(nombre);
+    validarTexto(apellido);
+    validarTexto(licencia);
+    validarTexto(telefonoContacto);
+
     this.id = UUID.randomUUID();
-    this.nombre = nombre;
-    this.apellido = apellido;
-    this.licencia = licencia;
-    this.telefonoContacto = telefonoContacto;
+    this.nombre = nombre.trim();
+    this.apellido = apellido.trim();
+    this.licencia = licencia.trim();
+    this.telefonoContacto = telefonoContacto.trim();
+  }
+
+  private void validarTexto(String valor) {
+    if (Objects.isNull(valor) || valor.isBlank()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
   }
 }

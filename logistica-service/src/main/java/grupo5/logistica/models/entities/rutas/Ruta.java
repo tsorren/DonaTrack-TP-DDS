@@ -8,54 +8,87 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class Ruta implements AggregateRoot {
   private final UUID id;
   private final LocalDate fecha;
+
+  @Getter(AccessLevel.NONE)
   private final List<UUID> entregas;
+
   private final UUID choferId;
   private final UUID camionId;
   private EstadoRuta estado;
   private LocalDateTime horaInicioReal;
   private LocalDateTime horaFinReal;
 
-  public Ruta(LocalDate fecha, UUID chofer, UUID camion) {
+  public Ruta(LocalDate fecha, UUID choferId, UUID camionId) {
+    validarFecha(fecha);
+    validarIdentificador(choferId);
+    validarIdentificador(camionId);
+
     this.id = UUID.randomUUID();
     this.fecha = fecha;
-    this.choferId = chofer;
-    this.camionId = camion;
+    this.choferId = choferId;
+    this.camionId = camionId;
     this.estado = EstadoRuta.PENDIENTE;
     this.entregas = new ArrayList<>();
   }
 
   public void iniciarRuta() {
-    if (this.estado != EstadoRuta.PENDIENTE) {
+    if (this.estado != EstadoRuta.PENDIENTE || this.entregas.isEmpty()) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
-    this.estado = EstadoRuta.EN_TRASLADO;
+    this.estado = EstadoRuta.INICIADA;
     this.horaInicioReal = LocalDateTime.now(ZoneId.of("UTC"));
     this.horaFinReal = null;
   }
 
   public void completarRuta() {
-    if (this.estado != EstadoRuta.EN_TRASLADO) {
+    if (this.estado != EstadoRuta.INICIADA) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
     this.estado = EstadoRuta.COMPLETADA;
     this.horaFinReal = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
-  public void agregarEntrega(UUID entrega) {
+  public void agregarEntrega(UUID entregaId) {
+    validarIdentificador(entregaId);
     if (this.estado != EstadoRuta.PENDIENTE) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
-    this.entregas.add(entrega);
+    if (this.entregas.contains(entregaId)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    this.entregas.add(entregaId);
   }
 
   public List<UUID> obtenerEntregas() {
-    return this.entregas;
+    return List.copyOf(this.entregas);
+  }
+
+  public List<UUID> getEntregas() {
+    return obtenerEntregas();
+  }
+
+  public List<UUID> getEntregaIds() {
+    return obtenerEntregas();
+  }
+
+  private void validarFecha(LocalDate fecha) {
+    if (Objects.isNull(fecha)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+  }
+
+  private void validarIdentificador(UUID id) {
+    if (Objects.isNull(id)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
   }
 }

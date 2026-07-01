@@ -2,11 +2,13 @@ package grupo5.logistica.models.entities.camiones;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class Camion {
+public class Camion implements AggregateRoot {
   private final UUID id;
   private UUID rutaId;
   private final String patente;
@@ -16,9 +18,14 @@ public class Camion {
   private EstadoCamion estado;
 
   public Camion(String patente, Float capacidadVolumen, Float capacidadKG, Float altura) {
+    validarPatente(patente);
+    validarCapacidad(capacidadVolumen);
+    validarCapacidad(capacidadKG);
+    validarCapacidad(altura);
+
     this.id = UUID.randomUUID();
     this.rutaId = null;
-    this.patente = patente;
+    this.patente = patente.trim();
     this.capacidadVolumen = capacidadVolumen;
     this.capacidadKG = capacidadKG;
     this.altura = altura;
@@ -26,7 +33,10 @@ public class Camion {
   }
 
   public void asignarARuta(UUID rutaId) {
-    if (estado != EstadoCamion.DISPONIBLE) {
+    if (Objects.isNull(rutaId)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (!estaDisponibleParaAsignar()) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
@@ -57,9 +67,22 @@ public class Camion {
     }
 
     this.estado = EstadoCamion.DESHABILITADO;
+    this.rutaId = null;
   }
 
   public boolean estaDisponibleParaAsignar() {
-    return this.estado == EstadoCamion.DISPONIBLE;
+    return this.estado == EstadoCamion.DISPONIBLE && Objects.isNull(this.rutaId);
+  }
+
+  private void validarPatente(String patente) {
+    if (Objects.isNull(patente) || patente.isBlank()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
+  private void validarCapacidad(Float valor) {
+    if (Objects.isNull(valor) || valor <= 0) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
   }
 }

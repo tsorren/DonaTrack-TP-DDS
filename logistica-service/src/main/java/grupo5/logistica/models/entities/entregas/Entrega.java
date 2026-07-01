@@ -8,47 +8,86 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class Entrega implements AggregateRoot {
   private final UUID id;
-  private final UUID idRuta;
+  private UUID idRuta;
   private final UUID idDonacion;
   private final UUID idBeneficiaria;
   private final Direccion destino;
   private EstadoEntrega estadoActual;
+
+  @Getter(AccessLevel.NONE)
   private final List<CambioEstadoEntrega> historialEstado;
+
   private LocalDateTime horaArribo;
   private LocalDateTime horaSalida;
   private String fotoRecepcionUrl;
   private Boolean confirmacionEntrega;
-  private float pesoTotalKG;
-  private float volumenTotalM3;
+  private final float pesoTotalKG;
+  private final float volumenTotalM3;
 
-  public Entrega(UUID idRuta, UUID idDonacion, UUID idBeneficiaria, Direccion destino) {
+  public Entrega(
+      UUID idDonacion,
+      UUID idBeneficiaria,
+      Direccion destino,
+      float pesoTotalKG,
+      float volumenTotalM3) {
+    validarIdentificador(idDonacion);
+    validarIdentificador(idBeneficiaria);
+    validarDestino(destino);
+    validarMagnitudPositiva(pesoTotalKG);
+    validarMagnitudPositiva(volumenTotalM3);
+
     this.id = UUID.randomUUID();
-    this.idRuta = idRuta;
+    this.idRuta = null;
     this.idDonacion = idDonacion;
     this.idBeneficiaria = idBeneficiaria;
     this.destino = destino;
     this.estadoActual = EstadoEntrega.PENDIENTE;
     this.historialEstado = new ArrayList<>();
     this.confirmacionEntrega = false;
+    this.pesoTotalKG = pesoTotalKG;
+    this.volumenTotalM3 = volumenTotalM3;
 
     registrarCambioEstado(null, EstadoEntrega.PENDIENTE, "ADMINISTRADOR");
   }
 
-  public void iniciarRuta(String chofer) {
+  public Entrega(
+      UUID idRuta,
+      UUID idDonacion,
+      UUID idBeneficiaria,
+      Direccion destino,
+      float pesoTotalKG,
+      float volumenTotalM3) {
+    this(idDonacion, idBeneficiaria, destino, pesoTotalKG, volumenTotalM3);
+    asignarRuta(idRuta);
+  }
+
+  public void asignarRuta(UUID rutaId) {
+    validarIdentificador(rutaId);
     if (this.estadoActual != EstadoEntrega.PENDIENTE) {
-      throw new ValidationException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
+      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+    }
+    this.idRuta = rutaId;
+  }
+
+  public void iniciarRuta(String chofer) {
+    validarActor(chofer);
+    if (this.estadoActual != EstadoEntrega.PENDIENTE) {
+      throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
     actualizarEstado(EstadoEntrega.EN_TRASLADO, chofer);
     this.horaSalida = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
   public void confirmarEntrega(String entidad) {
+    validarActor(entidad);
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
@@ -58,13 +97,17 @@ public class Entrega implements AggregateRoot {
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {
+    if (Objects.isNull(fotoURL) || fotoURL.isBlank()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
     if (this.estadoActual != EstadoEntrega.ENTREGADA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
-    this.fotoRecepcionUrl = fotoURL;
+    this.fotoRecepcionUrl = fotoURL.trim();
   }
 
   public void negarEntrega(String entidad) {
+    validarActor(entidad);
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
@@ -75,6 +118,7 @@ public class Entrega implements AggregateRoot {
   }
 
   private void mandarARevision(String actor) {
+    validarActor(actor);
     if (this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
@@ -82,6 +126,7 @@ public class Entrega implements AggregateRoot {
   }
 
   public void regresarAlDeposito(String administrador) {
+    validarActor(administrador);
     if (this.estadoActual != EstadoEntrega.REVISION
         && this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
@@ -90,6 +135,11 @@ public class Entrega implements AggregateRoot {
     this.confirmacionEntrega = false;
     this.horaArribo = null;
     this.horaSalida = null;
+    this.idRuta = null;
+  }
+
+  public List<CambioEstadoEntrega> getHistorialEstado() {
+    return List.copyOf(this.historialEstado);
   }
 
   private void actualizarEstado(EstadoEntrega nuevoEstado, String actor) {
@@ -102,5 +152,29 @@ public class Entrega implements AggregateRoot {
     CambioEstadoEntrega cambio =
         new CambioEstadoEntrega(anterior, nuevo, LocalDateTime.now(ZoneId.of("UTC")), actor);
     this.historialEstado.add(cambio);
+  }
+
+  private void validarIdentificador(UUID id) {
+    if (Objects.isNull(id)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+  }
+
+  private void validarDestino(Direccion destino) {
+    if (Objects.isNull(destino)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+  }
+
+  private void validarMagnitudPositiva(float valor) {
+    if (valor <= 0) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
+  private void validarActor(String actor) {
+    if (Objects.isNull(actor) || actor.isBlank()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
   }
 }

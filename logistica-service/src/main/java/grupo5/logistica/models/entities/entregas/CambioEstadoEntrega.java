@@ -2,15 +2,13 @@ package grupo5.logistica.models.entities.entregas;
 
 import java.time.LocalDateTime;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class CambioEstadoEntrega {
-  private EstadoEntrega estadoAnterior;
-  private EstadoEntrega estadoNuevo;
-  private LocalDateTime timeStamp;
-  private String actor;
+  private final EstadoEntrega estadoAnterior;
+  private final EstadoEntrega estadoNuevo;
+  private final LocalDateTime timeStamp;
+  private final String actor;
 
   public CambioEstadoEntrega(
       EstadoEntrega estadoAnterior,
