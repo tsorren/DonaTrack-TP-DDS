@@ -86,10 +86,10 @@ public class DonacionIndependienteMapper {
     if (historial == null) {
       return List.of();
     }
-    return historial.stream().map(this::mapCambioEstado).toList();
+    return historial.stream().map(DonacionIndependienteMapper::mapCambioEstado).toList();
   }
 
-  private CambioEstadoDIResponseDTO mapCambioEstado(CambioEstado c) {
+  private static CambioEstadoDIResponseDTO mapCambioEstado(CambioEstado c) {
     if (c == null) {
       return null;
     }
