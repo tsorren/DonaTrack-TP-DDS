@@ -36,7 +36,6 @@ public class LectorCSVMejorado implements CargadorDonantes {
         return filasMapeadas; // Archivo vacío
       }
 
-      // Si la línea de la cabecera empieza con el carácter BOM, se elimina
       if (cabeceraStr.startsWith(BOM)) {
         cabeceraStr = cabeceraStr.substring(1);
       }
@@ -48,17 +47,7 @@ public class LectorCSVMejorado implements CargadorDonantes {
       int numeroDeLinea = 1;
       while ((linea = reader.readLine()) != null) {
         numeroDeLinea++;
-        if (linea.isBlank()) continue;
-
-        try {
-          filasMapeadas.add(procesarLinea(linea, cabecera));
-        } catch (IllegalArgumentException e) {
-          log.warn(
-              "Línea {} ignorada por error de formato: '{}'. Motivo: {}",
-              numeroDeLinea,
-              linea,
-              e.getMessage());
-        }
+        procesarYAgregarLinea(linea, cabecera, filasMapeadas, numeroDeLinea);
       }
 
     } catch (IOException e) {
@@ -66,6 +55,22 @@ public class LectorCSVMejorado implements CargadorDonantes {
     }
 
     return filasMapeadas;
+  }
+
+  private void procesarYAgregarLinea(
+      String linea, String[] cabecera, List<Map<String, String>> filasMapeadas, int numeroDeLinea) {
+    if (linea.isBlank()) {
+      return;
+    }
+    try {
+      filasMapeadas.add(procesarLinea(linea, cabecera));
+    } catch (IllegalArgumentException e) {
+      log.warn(
+          "Línea {} ignorada por error de formato: '{}'. Motivo: {}",
+          numeroDeLinea,
+          linea,
+          e.getMessage());
+    }
   }
 
   private Map<String, String> procesarLinea(String linea, String[] cabecera) {
