@@ -10,6 +10,7 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
+import grupo5.notificaciones.services.impl.PersonasService;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.util.ArrayList;
 import java.util.Optional;

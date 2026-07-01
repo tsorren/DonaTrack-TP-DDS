@@ -1,6 +1,6 @@
 package grupo5.donaciones.infrastructure;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemanticoBien;

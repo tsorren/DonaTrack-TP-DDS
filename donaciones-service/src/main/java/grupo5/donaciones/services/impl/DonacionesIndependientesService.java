@@ -65,32 +65,9 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       case TipoEstadoDonacion.ASIGNACION_REALIZADA -> donacion.asignar(actor, null);
       case TipoEstadoDonacion.VENCIDA -> donacion.vencer(actor);
       case TipoEstadoDonacion.EN_TRASLADO -> donacion.planificarRuta(actor);
-      case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(actor);
-      case TipoEstadoDonacion.ENTREGADA -> {
-        donacion.confirmarEntrega(actor);
-        UUID donacionOriginalId = donacion.getDonacionOriginalId();
-        Donacion donacionOriginal =
-            donacionRepository
-                .findById(donacionOriginalId)
-                .orElseThrow(() -> new RecursoNoEncontradoException(donacionOriginalId));
-        UUID donanteId = donacionOriginal.getDonanteId();
-        Donante donante =
-            donantesRepository
-                .findById(donanteId)
-                .orElseThrow(() -> new RecursoNoEncontradoException(donanteId));
-        UUID personaDonanteId = donante.personaId();
-        UUID organizacionId = obtenerOrganizacionId(donacion);
-        UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(donacion);
-        incentivosFeignClient.procesarDonacionExitosa(
-            new DonacionExitosaRequest(donanteId, organizacionId));
-
-        notificacionesFeignClient.enviarEvento(
-            new EventoDonacionRecibidaDTO(
-                personaDonanteId,
-                LocalDateTime.now(ZoneId.systemDefault()),
-                idPersonaBeneficiaria,
-                donacion.getDescripcion()));
-      }
+      case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(
+          actor); // Aca notificamos tambien
+      case TipoEstadoDonacion.ENTREGADA -> procesarDonacionEntregada(actor, donacion);
       case TipoEstadoDonacion.ENTREGA_FALLIDA -> donacion.registrarFalla(
           request.justificacion(), actor);
       case TipoEstadoDonacion.EN_DEPOSITO -> donacion.retornar(actor);
@@ -101,7 +78,33 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     return donacionIndependienteMapper.toDTO(donacion);
   }
 
-  private UUID obtenerOrganizacionId(DonacionIndependiente donacion) {
+  private void procesarDonacionEntregada(String actor, DonacionIndependiente donacion) {
+    donacion.confirmarEntrega(actor);
+    UUID donacionOriginalId = donacion.getDonacionOriginalId();
+    Donacion donacionOriginal =
+        donacionRepository
+            .findById(donacionOriginalId)
+            .orElseThrow(() -> new RecursoNoEncontradoException(donacionOriginalId));
+    UUID donanteId = donacionOriginal.getDonanteId();
+    Donante donante =
+        donantesRepository
+            .findById(donanteId)
+            .orElseThrow(() -> new RecursoNoEncontradoException(donanteId));
+    UUID personaDonanteId = donante.personaId();
+    UUID organizacionId = obtenerOrganizacionId(donacion);
+    UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(donacion);
+    incentivosFeignClient.procesarDonacionExitosa(
+        new DonacionExitosaRequest(donanteId, organizacionId));
+
+    notificacionesFeignClient.enviarEvento(
+        new EventoDonacionRecibidaDTO(
+            personaDonanteId,
+            LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaBeneficiaria,
+            donacion.getDescripcion()));
+  }
+
+  private static UUID obtenerOrganizacionId(DonacionIndependiente donacion) {
     if (donacion.getAsignadaA() == null) {
       return null;
     }

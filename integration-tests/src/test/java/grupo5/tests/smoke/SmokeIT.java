@@ -1,10 +1,10 @@
 package grupo5.tests.smoke;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.containsString;
-
 import grupo5.tests.BaseIT;
 import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
 
 class SmokeIT extends BaseIT {
 

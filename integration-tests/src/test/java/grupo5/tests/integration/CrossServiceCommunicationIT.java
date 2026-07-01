@@ -1,13 +1,16 @@
 package grupo5.tests.integration;
 
+import grupo5.tests.BaseIT;
+import io.restassured.http.ContentType;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
-
-import grupo5.tests.BaseIT;
-import io.restassured.http.ContentType;
-import java.util.*;
-import org.junit.jupiter.api.Test;
 
 class CrossServiceCommunicationIT extends BaseIT {
 

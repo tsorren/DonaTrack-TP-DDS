@@ -1,7 +1,9 @@
 package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.donaciones.dto.categorias.*;
+import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
+import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
+import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;

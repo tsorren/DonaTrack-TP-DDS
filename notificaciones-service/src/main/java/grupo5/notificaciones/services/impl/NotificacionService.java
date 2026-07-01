@@ -1,4 +1,4 @@
-package grupo5.notificaciones.services;
+package grupo5.notificaciones.services.impl;
 
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;

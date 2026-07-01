@@ -1,6 +1,7 @@
 package grupo5.donaciones.services;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
@@ -13,7 +14,7 @@ import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.entities.ubicaciones.Localidad;
 import grupo5.donaciones.models.entities.ubicaciones.Pais;

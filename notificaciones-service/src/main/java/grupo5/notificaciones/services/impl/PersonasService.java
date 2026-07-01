@@ -1,4 +1,4 @@
-package grupo5.notificaciones.services;
+package grupo5.notificaciones.services.impl;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
@@ -7,6 +7,7 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
+import grupo5.notificaciones.services.IPersonasService;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
