@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${donatrack.routes.notificaciones.personas-base}")
+@RequestMapping("/api/notificaciones/personas")
 public class PersonasController implements IPersonasController {
 
   private final IPersonasService service;
@@ -24,14 +24,14 @@ public class PersonasController implements IPersonasController {
   }
 
   @Override
-  @DeleteMapping("${donatrack.routes.notificaciones.personas-id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<Void> anonimizar(@PathVariable("id") UUID id) {
     service.anonimizar(id);
     return ResponseEntity.ok().build();
   }
 
   @Override
-  @GetMapping("${donatrack.routes.notificaciones.personas-id}")
+  @GetMapping("/{id}")
   public ResponseEntity<PersonaReplicaDTO> obtenerPersona(@PathVariable("id") UUID id) {
     return ResponseEntity.ok(service.obtenerPersona(id));
   }

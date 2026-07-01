@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${donatrack.routes.donaciones.categorias-base}")
+@RequestMapping("/api/categorias")
 public class CategoriasController implements ICategoriasController {
 
   private final ICategoriasService categoriasService;
@@ -28,14 +28,14 @@ public class CategoriasController implements ICategoriasController {
   }
 
   @Override
-  @DeleteMapping("${donatrack.routes.donaciones.categorias-id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<CategoriaOutputDTO> eliminar(@PathVariable UUID id) {
     CategoriaOutputDTO eliminada = categoriasService.eliminar(id);
     return ResponseEntity.ok(eliminada);
   }
 
   @Override
-  @PutMapping("${donatrack.routes.donaciones.categorias-id}")
+  @PutMapping("/{id}")
   public ResponseEntity<CategoriaOutputDTO> modificar(
       @PathVariable UUID id, @RequestBody CategoriaInputDTO dto) {
     CategoriaOutputDTO modificada = categoriasService.modificar(id, dto);
@@ -50,7 +50,7 @@ public class CategoriasController implements ICategoriasController {
   }
 
   @Override
-  @GetMapping("${donatrack.routes.donaciones.categorias-id}")
+  @GetMapping("/{id}")
   public ResponseEntity<CategoriaOutputDTO> obtener(@PathVariable UUID id) {
     CategoriaOutputDTO obtenida = categoriasService.obtener(id);
     return ResponseEntity.ok(obtenida);

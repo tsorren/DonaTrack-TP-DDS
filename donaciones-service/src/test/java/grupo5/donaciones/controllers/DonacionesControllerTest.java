@@ -14,7 +14,6 @@ import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.services.IDonacionesService;
-import grupo5.donaciones.utils.MockMvcTestUtils;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
@@ -27,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class DonacionesControllerTest {
@@ -41,7 +41,7 @@ class DonacionesControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcTestUtils.standaloneSetup(controller).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
   }

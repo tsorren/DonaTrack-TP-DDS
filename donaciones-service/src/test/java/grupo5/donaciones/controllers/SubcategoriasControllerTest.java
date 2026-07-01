@@ -11,7 +11,6 @@ import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.services.ISubcategoriasService;
-import grupo5.donaciones.utils.MockMvcTestUtils;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
 class SubcategoriasControllerTest {
@@ -36,7 +36,7 @@ class SubcategoriasControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcTestUtils.standaloneSetup(controller).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     objectMapper = new ObjectMapper();
   }
 

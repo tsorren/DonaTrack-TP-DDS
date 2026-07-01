@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${donatrack.routes.donaciones.personas-base}")
+@RequestMapping("/api/personas")
 public class PersonasController implements IPersonasController {
 
   private final IPersonasService service;
@@ -37,7 +37,7 @@ public class PersonasController implements IPersonasController {
   }
 
   @Override
-  @PutMapping("${donatrack.routes.donaciones.personas-id}")
+  @PutMapping("/{id}")
   public ResponseEntity<PersonaOutputDTO> actualizarPersona(
       @PathVariable UUID id, @RequestBody PersonaInputDTO persona) {
     PersonaOutputDTO actualizada = service.actualizarPersona(id, persona);
@@ -45,7 +45,7 @@ public class PersonasController implements IPersonasController {
   }
 
   @Override
-  @DeleteMapping("${donatrack.routes.donaciones.personas-id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<Void> eliminarPersona(@PathVariable UUID id) {
     service.eliminarPersona(id);
     return ResponseEntity.noContent().build();

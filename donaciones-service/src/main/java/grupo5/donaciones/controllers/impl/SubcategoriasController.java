@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${donatrack.routes.donaciones.subcategorias-base}")
+@RequestMapping("/api/subcategorias")
 public class SubcategoriasController implements ISubcategoriasController {
 
   private final ISubcategoriasService subcategoriasService;
@@ -29,14 +29,14 @@ public class SubcategoriasController implements ISubcategoriasController {
   }
 
   @Override
-  @DeleteMapping("${donatrack.routes.donaciones.subcategorias-id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<SubcategoriaOutputDTO> eliminar(@PathVariable UUID id) {
     SubcategoriaOutputDTO eliminada = subcategoriasService.eliminar(id);
     return ResponseEntity.ok(eliminada);
   }
 
   @Override
-  @PutMapping("${donatrack.routes.donaciones.subcategorias-id}")
+  @PutMapping("/{id}")
   public ResponseEntity<SubcategoriaOutputDTO> modificar(
       @PathVariable UUID id, @RequestBody SubcategoriaInputDTO dto) {
     SubcategoriaOutputDTO modificada = subcategoriasService.modificar(id, dto);
@@ -51,14 +51,14 @@ public class SubcategoriasController implements ISubcategoriasController {
   }
 
   @Override
-  @GetMapping("${donatrack.routes.donaciones.subcategorias-id}")
+  @GetMapping("/{id}")
   public ResponseEntity<SubcategoriaOutputDTO> obtener(@PathVariable UUID id) {
     SubcategoriaOutputDTO obtenida = subcategoriasService.obtener(id);
     return ResponseEntity.ok(obtenida);
   }
 
   @Override
-  @PostMapping("${donatrack.routes.donaciones.subcategorias-id}/aliases")
+  @PostMapping("/{id}/aliases")
   public ResponseEntity<SubcategoriaOutputDTO> agregarAlias(
       @PathVariable UUID id, @RequestBody AliasSubcategoriaInputDTO dto) {
     SubcategoriaOutputDTO actualizada = subcategoriasService.agregarAlias(id, dto);
@@ -66,7 +66,7 @@ public class SubcategoriasController implements ISubcategoriasController {
   }
 
   @Override
-  @DeleteMapping("${donatrack.routes.donaciones.subcategorias-id}/aliases/{alias}")
+  @DeleteMapping("/{id}/aliases/{alias}")
   public ResponseEntity<SubcategoriaOutputDTO> quitarAlias(
       @PathVariable UUID id, @PathVariable String alias) {
     SubcategoriaOutputDTO actualizada = subcategoriasService.quitarAlias(id, alias);

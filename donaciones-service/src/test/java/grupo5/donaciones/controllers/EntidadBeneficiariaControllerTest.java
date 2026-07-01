@@ -10,12 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.donaciones.controllers.impl.EntidadBeneficiariaController;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
-import grupo5.donaciones.utils.MockMvcTestUtils;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 class EntidadBeneficiariaControllerTest {
   private MockMvc mockMvc;
@@ -26,7 +26,7 @@ class EntidadBeneficiariaControllerTest {
   void setUp() {
     service = mock(IEntidadBeneficiariaService.class);
 
-    mockMvc = MockMvcTestUtils.standaloneSetup(new EntidadBeneficiariaController(service)).build();
+    mockMvc = MockMvcBuilders.standaloneSetup(new EntidadBeneficiariaController(service)).build();
   }
 
   @Test

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${donatrack.routes.donaciones.necesidades-base}")
+@RequestMapping("/api/necesidades")
 public class NecesidadesController implements INecesidadesController {
 
   private final INecesidadesService necesidadesService;

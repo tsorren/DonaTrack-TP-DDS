@@ -13,20 +13,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
     name = "incentivos-service",
-    url = "${donatrack.incentivos.url}${donatrack.routes.incentivos.base}",
+    url = "${donatrack.incentivos.url}/api/incentivos",
     configuration = FeignRetryConfig.class)
 public interface IncentivosFeignClient {
 
-  @PostMapping("${donatrack.routes.incentivos.donaciones}")
+  @PostMapping("/donaciones")
   void procesarDonacion(@RequestBody NuevaDonacionRequest request);
 
-  @PostMapping("${donatrack.routes.incentivos.donaciones-exitosa}")
+  @PostMapping("/donaciones/exitosa")
   void procesarDonacionExitosa(@RequestBody DonacionExitosaRequest request);
 
-  @PostMapping("${donatrack.routes.incentivos.donantes-id}")
+  @PostMapping("/donantes/{donanteId}")
   DonanteRegistradoDTO registrarDonante(
       @PathVariable UUID donanteId, @RequestBody RegistrarDonanteRequest request);
 
-  @DeleteMapping("${donatrack.routes.incentivos.donantes-id}")
+  @DeleteMapping("/donantes/{donanteId}")
   void darDeBaja(@PathVariable UUID donanteId);
 }

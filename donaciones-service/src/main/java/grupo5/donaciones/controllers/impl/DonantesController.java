@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${donatrack.routes.donaciones.donantes-base}")
+@RequestMapping("/api/donantes")
 public class DonantesController implements IDonantesController {
 
   private final IDonantesService donantesService;
@@ -42,20 +42,20 @@ public class DonantesController implements IDonantesController {
   }
 
   @Override
-  @GetMapping("${donatrack.routes.donaciones.donantes-id}")
+  @GetMapping("/{id}")
   public ResponseEntity<DonanteOutputDTO> obtenerDonante(@PathVariable("id") UUID id) {
     DonanteOutputDTO donante = donantesService.obtenerPorId(id);
     return ResponseEntity.ok(donante);
   }
 
   @Override
-  @DeleteMapping("${donatrack.routes.donaciones.donantes-id}")
+  @DeleteMapping("/{id}")
   public ResponseEntity<Void> eliminarDonante(@PathVariable("id") UUID id) {
     donantesService.eliminarDonante(id);
     return ResponseEntity.noContent().build();
   }
 
-  @PostMapping("${donatrack.routes.donaciones.donantes-archivos}")
+  @PostMapping("/archivos")
   public ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(
       @RequestBody ArchivoInputDTO input) {
     if (input.path() == null || input.path().isBlank()) {

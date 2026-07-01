@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${donatrack.routes.donaciones.entidades-base}")
+@RequestMapping("/api/entidades")
 public class EntidadBeneficiariaController implements IEntidadBeneficiariaController {
 
   private final IEntidadBeneficiariaService service;
@@ -30,7 +30,7 @@ public class EntidadBeneficiariaController implements IEntidadBeneficiariaContro
   }
 
   @Override
-  @GetMapping("${donatrack.routes.donaciones.entidades-id}")
+  @GetMapping("/{id}")
   public ResponseEntity<EntidadBeneficiariaOutputDTO> obtenerEntidad(@PathVariable UUID id) {
 
     return ResponseEntity.ok(service.obtenerEntidad(id));

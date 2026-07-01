@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("${donatrack.routes.donaciones.propuestas-base}")
+@RequestMapping("/api/asignaciones/propuestas")
 @RequiredArgsConstructor
 public class PropuestasController {
 
@@ -21,7 +21,7 @@ public class PropuestasController {
     return ResponseEntity.ok(propuestaService.listarPropuestas());
   }
 
-  @PutMapping("${donatrack.routes.donaciones.propuestas-id-estado}")
+  @PutMapping("/{id}/estado")
   public ResponseEntity<Void> actualizarEstado(
       @PathVariable UUID id, @RequestBody ActualizarEstadoRequestDTO request) {
 
