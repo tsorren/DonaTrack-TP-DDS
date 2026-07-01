@@ -11,4 +11,6 @@ public interface IPlanificacionService {
   SolicitudPlanificacionResponseDTO procesarCallback(CallbackPlanificacionRequestDTO dto);
 
   SolicitudPlanificacionResponseDTO obtenerPorId(UUID id);
+
+  void solicitarPlanificacionParaSiguienteJornada();
 }

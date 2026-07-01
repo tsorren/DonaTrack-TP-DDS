@@ -79,6 +79,13 @@ public class PlanificacionService implements IPlanificacionService {
     return solicitudMapper.toResponseDTO(buscarSolicitud(id));
   }
 
+  @Override
+  public void solicitarPlanificacionParaSiguienteJornada() {
+    // La planificación automática queda como punto de entrada del scheduler.
+    // En esta etapa, las solicitudes concretas se crean desde crearSolicitud(...)
+    // con los ids de entregas recibidos por API.
+  }
+
   private UUID guardarRutaPlanificada(RutaPlanificadaDTO dto) {
     if (dto == null || dto.entregaIds() == null || dto.entregaIds().isEmpty()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
