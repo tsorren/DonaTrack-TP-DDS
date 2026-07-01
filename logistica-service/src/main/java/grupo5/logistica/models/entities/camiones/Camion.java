@@ -2,11 +2,12 @@ package grupo5.logistica.models.entities.camiones;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
 import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class Camion {
+public class Camion implements AggregateRoot {
   private final UUID id;
   private UUID rutaId;
   private final String patente;
@@ -16,6 +17,7 @@ public class Camion {
   private EstadoCamion estado;
 
   public Camion(String patente, Float capacidadVolumen, Float capacidadKG, Float altura) {
+    validarDatos(patente, capacidadVolumen, capacidadKG, altura);
     this.id = UUID.randomUUID();
     this.rutaId = null;
     this.patente = patente;
@@ -25,7 +27,20 @@ public class Camion {
     this.estado = EstadoCamion.DISPONIBLE;
   }
 
+  private static void validarDatos(
+      String patente, Float capacidadVolumen, Float capacidadKG, Float altura) {
+    if (patente == null || capacidadVolumen == null || capacidadKG == null || altura == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (patente.trim().isEmpty() || capacidadVolumen <= 0 || capacidadKG <= 0 || altura <= 0) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
   public void asignarARuta(UUID rutaId) {
+    if (rutaId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
     if (estado != EstadoCamion.DISPONIBLE) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
