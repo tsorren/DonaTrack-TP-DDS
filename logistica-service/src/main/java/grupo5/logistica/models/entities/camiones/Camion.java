@@ -27,7 +27,7 @@ public class Camion implements AggregateRoot {
     this.estado = EstadoCamion.DISPONIBLE;
   }
 
-  private void validarDatos(
+  private static void validarDatos(
       String patente, Float capacidadVolumen, Float capacidadKG, Float altura) {
     if (patente == null || capacidadVolumen == null || capacidadKG == null || altura == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);

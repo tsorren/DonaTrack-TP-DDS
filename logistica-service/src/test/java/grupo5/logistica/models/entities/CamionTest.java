@@ -9,10 +9,10 @@ import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-public class CamionTest {
+class CamionTest {
 
   @Test
-  public void testConstructorExitoso() {
+  void testConstructorExitoso() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     assertNotNull(camion.getId());
     assertEquals("ABC-123", camion.getPatente());
@@ -24,42 +24,42 @@ public class CamionTest {
   }
 
   @Test
-  public void testConstructorConPatenteNulaLanzaExcepcion() {
+  void testConstructorConPatenteNulaLanzaExcepcion() {
     ValidationException exception =
         assertThrows(ValidationException.class, () -> new Camion(null, 15.5f, 1500f, 2.5f));
     assertEquals(ErrorCatalog.ARGUMENTO_NULO, exception.getError());
   }
 
   @Test
-  public void testConstructorConPatenteVaciaLanzaExcepcion() {
+  void testConstructorConPatenteVaciaLanzaExcepcion() {
     ValidationException exception =
         assertThrows(ValidationException.class, () -> new Camion("   ", 15.5f, 1500f, 2.5f));
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, exception.getError());
   }
 
   @Test
-  public void testConstructorConCapacidadVolumenInvalidaLanzaExcepcion() {
+  void testConstructorConCapacidadVolumenInvalidaLanzaExcepcion() {
     ValidationException exception =
         assertThrows(ValidationException.class, () -> new Camion("ABC-123", 0f, 1500f, 2.5f));
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, exception.getError());
   }
 
   @Test
-  public void testConstructorConCapacidadKGInvalidaLanzaExcepcion() {
+  void testConstructorConCapacidadKGInvalidaLanzaExcepcion() {
     ValidationException exception =
         assertThrows(ValidationException.class, () -> new Camion("ABC-123", 15.5f, -100f, 2.5f));
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, exception.getError());
   }
 
   @Test
-  public void testConstructorConAlturaInvalidaLanzaExcepcion() {
+  void testConstructorConAlturaInvalidaLanzaExcepcion() {
     ValidationException exception =
         assertThrows(ValidationException.class, () -> new Camion("ABC-123", 15.5f, 1500f, 0f));
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, exception.getError());
   }
 
   @Test
-  public void testAsignarARutaExitoso() {
+  void testAsignarARutaExitoso() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     UUID rutaId = UUID.randomUUID();
     camion.asignarARuta(rutaId);
@@ -68,7 +68,7 @@ public class CamionTest {
   }
 
   @Test
-  public void testAsignarARutaConIdNuloLanzaExcepcion() {
+  void testAsignarARutaConIdNuloLanzaExcepcion() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     ValidationException exception =
         assertThrows(ValidationException.class, () -> camion.asignarARuta(null));
@@ -76,17 +76,18 @@ public class CamionTest {
   }
 
   @Test
-  public void testAsignarARutaCuandoYaEstaEnRutaLanzaExcepcion() {
+  void testAsignarARutaCuandoYaEstaEnRutaLanzaExcepcion() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     camion.asignarARuta(UUID.randomUUID());
 
+    UUID rutaId = UUID.randomUUID();
     ValidationException exception =
-        assertThrows(ValidationException.class, () -> camion.asignarARuta(UUID.randomUUID()));
+        assertThrows(ValidationException.class, () -> camion.asignarARuta(rutaId));
     assertEquals(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA, exception.getError());
   }
 
   @Test
-  public void testCompletarRutaExitoso() {
+  void testCompletarRutaExitoso() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     camion.asignarARuta(UUID.randomUUID());
     camion.completarRuta();
@@ -95,14 +96,14 @@ public class CamionTest {
   }
 
   @Test
-  public void testCompletarRutaCuandoEstaDisponibleLanzaExcepcion() {
+  void testCompletarRutaCuandoEstaDisponibleLanzaExcepcion() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     ValidationException exception = assertThrows(ValidationException.class, camion::completarRuta);
     assertEquals(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA, exception.getError());
   }
 
   @Test
-  public void testHabilitarYDeshabilitarCamion() {
+  void testHabilitarYDeshabilitarCamion() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     assertTrue(camion.estaDisponibleParaAsignar());
 
@@ -116,14 +117,14 @@ public class CamionTest {
   }
 
   @Test
-  public void testHabilitarCamionCuandoYaEstaHabilitadoLanzaExcepcion() {
+  void testHabilitarCamionCuandoYaEstaHabilitadoLanzaExcepcion() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     ValidationException exception = assertThrows(ValidationException.class, camion::habilitar);
     assertEquals(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA, exception.getError());
   }
 
   @Test
-  public void testDeshabilitarCamionCuandoEstaEnRutaLanzaExcepcion() {
+  void testDeshabilitarCamionCuandoEstaEnRutaLanzaExcepcion() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     camion.asignarARuta(UUID.randomUUID());
 

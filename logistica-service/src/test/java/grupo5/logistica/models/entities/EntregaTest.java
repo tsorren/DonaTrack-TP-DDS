@@ -11,10 +11,11 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-public class EntregaTest {
+class EntregaTest {
 
   private Direccion createTestDireccion() {
     Pais pais = new Pais("Argentina");
@@ -24,7 +25,7 @@ public class EntregaTest {
   }
 
   @Test
-  public void testConstructorExitoso() {
+  void testConstructorExitoso() {
     UUID idRuta = UUID.randomUUID();
     UUID idDonacion = UUID.randomUUID();
     UUID idBeneficiaria = UUID.randomUUID();
@@ -44,34 +45,32 @@ public class EntregaTest {
   }
 
   @Test
-  public void testConstructorConIdDonacionNuloLanzaExcepcion() {
+  void testConstructorConIdDonacionNuloLanzaExcepcion() {
+    UUID idRuta = UUID.randomUUID();
+    UUID idBeneficiaria = UUID.randomUUID();
+    Direccion destino = createTestDireccion();
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () ->
-                new Entrega(
-                    UUID.randomUUID(), null, UUID.randomUUID(), createTestDireccion(), 10f, 1f));
+            () -> new Entrega(idRuta, null, idBeneficiaria, destino, 10f, 1f));
     assertEquals(ErrorCatalog.ARGUMENTO_NULO, exception.getError());
   }
 
   @Test
-  public void testConstructorConPesoNegativoLanzaExcepcion() {
+  void testConstructorConPesoNegativoLanzaExcepcion() {
+    UUID idRuta = UUID.randomUUID();
+    UUID idDonacion = UUID.randomUUID();
+    UUID idBeneficiaria = UUID.randomUUID();
+    Direccion destino = createTestDireccion();
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () ->
-                new Entrega(
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
-                    createTestDireccion(),
-                    -5f,
-                    1f));
+            () -> new Entrega(idRuta, idDonacion, idBeneficiaria, destino, -5f, 1f));
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, exception.getError());
   }
 
   @Test
-  public void testFlujoFelizDeTrazabilidad() {
+  void testFlujoFelizDeTrazabilidad() {
     Entrega entrega =
         new Entrega(
             UUID.randomUUID(),
@@ -86,7 +85,7 @@ public class EntregaTest {
     assertEquals(EstadoEntrega.EN_TRASLADO, entrega.getEstadoActual());
     assertNotNull(entrega.getHoraSalida());
     assertEquals(1, entrega.getHistorialEstado().size());
-    CambioEstadoEntrega cambio1 = entrega.getHistorialEstado().get(0);
+    CambioEstadoEntrega cambio1 = entrega.getHistorialEstado().getFirst();
     assertEquals(EstadoEntrega.PENDIENTE, cambio1.estadoAnterior());
     assertEquals(EstadoEntrega.EN_TRASLADO, cambio1.estadoNuevo());
     assertEquals("Chofer Jose", cambio1.actor());
@@ -107,7 +106,7 @@ public class EntregaTest {
   }
 
   @Test
-  public void testFlujoAlternativoNoRecibidoYRegreso() {
+  void testFlujoAlternativoNoRecibidoYRegreso() {
     Entrega entrega =
         new Entrega(
             UUID.randomUUID(),
@@ -139,7 +138,7 @@ public class EntregaTest {
   }
 
   @Test
-  public void testIniciarRutaConChoferVacioLanzaExcepcion() {
+  void testIniciarRutaConChoferVacioLanzaExcepcion() {
     Entrega entrega =
         new Entrega(
             UUID.randomUUID(),
@@ -155,7 +154,7 @@ public class EntregaTest {
   }
 
   @Test
-  public void testTransicionInvalidaLanzaExcepcion() {
+  void testTransicionInvalidaLanzaExcepcion() {
     Entrega entrega =
         new Entrega(
             UUID.randomUUID(),
@@ -172,7 +171,7 @@ public class EntregaTest {
   }
 
   @Test
-  public void testHistorialEstadoEsInmutable() {
+  void testHistorialEstadoEsInmutable() {
     Entrega entrega =
         new Entrega(
             UUID.randomUUID(),
@@ -183,13 +182,9 @@ public class EntregaTest {
             1f);
     entrega.iniciarRuta("Chofer Jose");
 
-    assertThrows(
-        UnsupportedOperationException.class,
-        () ->
-            entrega
-                .getHistorialEstado()
-                .add(
-                    new CambioEstadoEntrega(
-                        EstadoEntrega.PENDIENTE, EstadoEntrega.ENTREGADA, null, "hack")));
+    List<CambioEstadoEntrega> historial = entrega.getHistorialEstado();
+    CambioEstadoEntrega nuevoCambio =
+        new CambioEstadoEntrega(EstadoEntrega.PENDIENTE, EstadoEntrega.ENTREGADA, null, "hack");
+    assertThrows(UnsupportedOperationException.class, () -> historial.add(nuevoCambio));
   }
 }

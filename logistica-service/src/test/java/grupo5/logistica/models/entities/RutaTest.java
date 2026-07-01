@@ -7,13 +7,14 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-public class RutaTest {
+class RutaTest {
 
   @Test
-  public void testConstructorExitoso() {
+  void testConstructorExitoso() {
     LocalDate fecha = LocalDate.now();
     UUID choferId = UUID.randomUUID();
     UUID camionId = UUID.randomUUID();
@@ -29,7 +30,7 @@ public class RutaTest {
   }
 
   @Test
-  public void testConstructorConFechaNulaLanzaExcepcion() {
+  void testConstructorConFechaNulaLanzaExcepcion() {
     UUID choferId = UUID.randomUUID();
     UUID camionId = UUID.randomUUID();
 
@@ -39,15 +40,16 @@ public class RutaTest {
   }
 
   @Test
-  public void testConstructorConChoferNuloLanzaExcepcion() {
+  void testConstructorConChoferNuloLanzaExcepcion() {
+    LocalDate fecha = LocalDate.now();
+    UUID camionId = UUID.randomUUID();
     ValidationException exception =
-        assertThrows(
-            ValidationException.class, () -> new Ruta(LocalDate.now(), null, UUID.randomUUID()));
+        assertThrows(ValidationException.class, () -> new Ruta(fecha, null, camionId));
     assertEquals(ErrorCatalog.ARGUMENTO_NULO, exception.getError());
   }
 
   @Test
-  public void testAgregarEntregaExitoso() {
+  void testAgregarEntregaExitoso() {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
     UUID entregaId = UUID.randomUUID();
 
@@ -58,7 +60,7 @@ public class RutaTest {
   }
 
   @Test
-  public void testAgregarEntregaNulaLanzaExcepcion() {
+  void testAgregarEntregaNulaLanzaExcepcion() {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
 
     ValidationException exception =
@@ -67,7 +69,7 @@ public class RutaTest {
   }
 
   @Test
-  public void testAgregarEntregaDuplicadaLanzaExcepcion() {
+  void testAgregarEntregaDuplicadaLanzaExcepcion() {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
     UUID entregaId = UUID.randomUUID();
     ruta.agregarEntrega(entregaId);
@@ -78,7 +80,7 @@ public class RutaTest {
   }
 
   @Test
-  public void testIniciarRutaExitoso() {
+  void testIniciarRutaExitoso() {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(UUID.randomUUID());
 
@@ -90,7 +92,7 @@ public class RutaTest {
   }
 
   @Test
-  public void testIniciarRutaSinEntregasLanzaExcepcion() {
+  void testIniciarRutaSinEntregasLanzaExcepcion() {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
 
     ValidationException exception = assertThrows(ValidationException.class, ruta::iniciarRuta);
@@ -98,7 +100,7 @@ public class RutaTest {
   }
 
   @Test
-  public void testCompletarRutaExitoso() {
+  void testCompletarRutaExitoso() {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(UUID.randomUUID());
     ruta.iniciarRuta();
@@ -110,7 +112,7 @@ public class RutaTest {
   }
 
   @Test
-  public void testCompletarRutaCuandoEstaPendienteLanzaExcepcion() {
+  void testCompletarRutaCuandoEstaPendienteLanzaExcepcion() {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(UUID.randomUUID());
 
@@ -119,11 +121,12 @@ public class RutaTest {
   }
 
   @Test
-  public void testColeccionEntregasInmutable() {
+  void testColeccionEntregasInmutable() {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(UUID.randomUUID());
 
-    assertThrows(
-        UnsupportedOperationException.class, () -> ruta.getEntregas().add(UUID.randomUUID()));
+    List<UUID> entregas = ruta.getEntregas();
+    UUID nuevaEntregaId = UUID.randomUUID();
+    assertThrows(UnsupportedOperationException.class, () -> entregas.add(nuevaEntregaId));
   }
 }

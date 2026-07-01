@@ -7,10 +7,10 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import org.junit.jupiter.api.Test;
 
-public class ChoferTest {
+class ChoferTest {
 
   @Test
-  public void testConstructorExitoso() {
+  void testConstructorExitoso() {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     assertNotNull(chofer.getId());
     assertEquals("Juan", chofer.getNombre());
@@ -20,7 +20,7 @@ public class ChoferTest {
   }
 
   @Test
-  public void testConstructorConDatosNulosLanzaExcepcion() {
+  void testConstructorConDatosNulosLanzaExcepcion() {
     ValidationException exception =
         assertThrows(
             ValidationException.class,
@@ -29,7 +29,7 @@ public class ChoferTest {
   }
 
   @Test
-  public void testConstructorConDatosVaciosLanzaExcepcion() {
+  void testConstructorConDatosVaciosLanzaExcepcion() {
     ValidationException exception =
         assertThrows(
             ValidationException.class, () -> new Chofer("Juan", " ", "LIC-12345", "+541123456789"));
@@ -37,14 +37,14 @@ public class ChoferTest {
   }
 
   @Test
-  public void testActualizarLicenciaExitoso() {
+  void testActualizarLicenciaExitoso() {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     chofer.actualizarLicencia("LIC-99999");
     assertEquals("LIC-99999", chofer.getLicencia());
   }
 
   @Test
-  public void testActualizarLicenciaNulaLanzaExcepcion() {
+  void testActualizarLicenciaNulaLanzaExcepcion() {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     ValidationException exception =
         assertThrows(ValidationException.class, () -> chofer.actualizarLicencia(null));
@@ -52,7 +52,7 @@ public class ChoferTest {
   }
 
   @Test
-  public void testActualizarLicenciaVaciaLanzaExcepcion() {
+  void testActualizarLicenciaVaciaLanzaExcepcion() {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     ValidationException exception =
         assertThrows(ValidationException.class, () -> chofer.actualizarLicencia(""));
@@ -60,14 +60,14 @@ public class ChoferTest {
   }
 
   @Test
-  public void testActualizarTelefonoContactoExitoso() {
+  void testActualizarTelefonoContactoExitoso() {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     chofer.actualizarTelefonoContacto("+541198765432");
     assertEquals("+541198765432", chofer.getTelefonoContacto());
   }
 
   @Test
-  public void testActualizarTelefonoContactoNuloLanzaExcepcion() {
+  void testActualizarTelefonoContactoNuloLanzaExcepcion() {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     ValidationException exception =
         assertThrows(ValidationException.class, () -> chofer.actualizarTelefonoContacto(null));
@@ -75,7 +75,7 @@ public class ChoferTest {
   }
 
   @Test
-  public void testActualizarTelefonoContactoVacioLanzaExcepcion() {
+  void testActualizarTelefonoContactoVacioLanzaExcepcion() {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     ValidationException exception =
         assertThrows(ValidationException.class, () -> chofer.actualizarTelefonoContacto("   "));

@@ -43,7 +43,7 @@ public class Chofer implements AggregateRoot {
     this.telefonoContacto = nuevoTelefono;
   }
 
-  private void validarDatos(
+  private static void validarDatos(
       String nombre, String apellido, String licencia, String telefonoContacto) {
     if (nombre == null || apellido == null || licencia == null || telefonoContacto == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
