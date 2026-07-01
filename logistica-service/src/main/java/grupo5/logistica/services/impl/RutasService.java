@@ -9,12 +9,9 @@ import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
 import grupo5.logistica.dto.rutas.RutaResponseDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.eventos.EventoLogistico;
-import grupo5.logistica.models.entities.eventos.TipoEventoLogistico;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionesRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
-import grupo5.logistica.models.repositories.IEventosLogisticosRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.IRutasService;
 import grupo5.logistica.services.mappers.RutaMapper;
@@ -28,19 +25,16 @@ public class RutasService implements IRutasService {
   private final IRutasRepository rutasRepository;
   private final IEntregasRepository entregasRepository;
   private final ICamionesRepository camionesRepository;
-  private final IEventosLogisticosRepository eventosRepository;
   private final RutaMapper rutaMapper;
 
   public RutasService(
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
       ICamionesRepository camionesRepository,
-      IEventosLogisticosRepository eventosRepository,
       RutaMapper rutaMapper) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.camionesRepository = camionesRepository;
-    this.eventosRepository = eventosRepository;
     this.rutaMapper = rutaMapper;
   }
 
@@ -99,8 +93,8 @@ public class RutasService implements IRutasService {
 
     camionesRepository.save(camion);
     rutasRepository.save(ruta);
-    eventosRepository.save(
-        new EventoLogistico(TipoEventoLogistico.RUTA_INICIADA, ruta.getId(), null, null, null));
+    // Punto futuro de integración: cuando se consolide RabbitMQ/broker,
+    // publicar acá el evento de ruta iniciada sin invocar Donaciones ni Notificaciones.
     return rutaMapper.toResponseDTO(ruta);
   }
 

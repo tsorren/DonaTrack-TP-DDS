@@ -11,10 +11,7 @@ import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
 import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.eventos.EventoLogistico;
-import grupo5.logistica.models.entities.eventos.TipoEventoLogistico;
 import grupo5.logistica.models.repositories.IEntregasRepository;
-import grupo5.logistica.models.repositories.IEventosLogisticosRepository;
 import grupo5.logistica.services.IEntregasService;
 import grupo5.logistica.services.mappers.EntregaMapper;
 import java.util.List;
@@ -24,15 +21,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class EntregasService implements IEntregasService {
   private final IEntregasRepository entregasRepository;
-  private final IEventosLogisticosRepository eventosRepository;
   private final EntregaMapper entregaMapper;
 
-  public EntregasService(
-      IEntregasRepository entregasRepository,
-      IEventosLogisticosRepository eventosRepository,
-      EntregaMapper entregaMapper) {
+  public EntregasService(IEntregasRepository entregasRepository, EntregaMapper entregaMapper) {
     this.entregasRepository = entregasRepository;
-    this.eventosRepository = eventosRepository;
     this.entregaMapper = entregaMapper;
   }
 
@@ -65,7 +57,8 @@ public class EntregasService implements IEntregasService {
     Entrega entrega = buscarEntrega(id);
     entrega.confirmarEntrega(dto.actor());
     entregasRepository.save(entrega);
-    registrarEvento(entrega, TipoEventoLogistico.ENTREGA_EXITOSA);
+    // Punto futuro de integración: publicar EntregaExitosaEvent vía broker
+    // cuando se consolide la comunicación asincrónica.
     return entregaMapper.toResponseDTO(entrega);
   }
 
@@ -89,7 +82,8 @@ public class EntregasService implements IEntregasService {
     Entrega entrega = buscarEntrega(id);
     entrega.negarEntrega(dto.actor());
     entregasRepository.save(entrega);
-    registrarEvento(entrega, TipoEventoLogistico.ENTREGA_FALLIDA);
+    // Punto futuro de integración: publicar EntregaFallidaEvent vía broker
+    // cuando se consolide la comunicación asincrónica.
     return entregaMapper.toResponseDTO(entrega);
   }
 
@@ -113,15 +107,5 @@ public class EntregasService implements IEntregasService {
 
   private Entrega buscarEntrega(UUID id) {
     return entregasRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
-  }
-
-  private void registrarEvento(Entrega entrega, TipoEventoLogistico tipo) {
-    eventosRepository.save(
-        new EventoLogistico(
-            tipo,
-            entrega.getIdRuta(),
-            entrega.getId(),
-            entrega.getIdDonacion(),
-            entrega.getIdBeneficiaria()));
   }
 }
