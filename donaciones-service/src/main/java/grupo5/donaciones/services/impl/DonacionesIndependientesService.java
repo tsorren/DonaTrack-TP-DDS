@@ -65,7 +65,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       case TipoEstadoDonacion.ASIGNACION_REALIZADA -> donacion.asignar(actor, null);
       case TipoEstadoDonacion.VENCIDA -> donacion.vencer(actor);
       case TipoEstadoDonacion.EN_TRASLADO -> donacion.planificarRuta(actor);
-      case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(actor); // Aca notificamos tambien
+      case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(
+          actor); // Aca notificamos tambien
       case TipoEstadoDonacion.ENTREGADA -> procesarDonacionEntregada(actor, donacion);
       case TipoEstadoDonacion.ENTREGA_FALLIDA -> donacion.registrarFalla(
           request.justificacion(), actor);
