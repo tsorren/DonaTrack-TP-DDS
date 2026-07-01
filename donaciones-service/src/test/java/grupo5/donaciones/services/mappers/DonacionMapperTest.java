@@ -20,6 +20,7 @@ import grupo5.donaciones.models.entities.ubicaciones.Pais;
 import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +57,12 @@ class DonacionMapperTest {
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     DonacionInputDTO dto =
         new DonacionInputDTO(
-            UUID.randomUUID(), "descripcion test", List.of(), "Deposito Central", dirDTO);
+            UUID.randomUUID(),
+            "descripcion test",
+            List.of(),
+            "Deposito Central",
+            dirDTO,
+            LocalDateTime.now());
 
     Donacion donacion = mapper.toEntity(dto, persona);
 
@@ -130,7 +136,12 @@ class DonacionMapperTest {
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     DonacionInputDTO dto =
         new DonacionInputDTO(
-            UUID.randomUUID(), "ropa de invierno", List.of(item1, item2), "Deposito Sur", dirDTO);
+            UUID.randomUUID(),
+            "ropa de invierno",
+            List.of(item1, item2),
+            "Deposito Sur",
+            dirDTO,
+            LocalDateTime.now());
 
     Donacion donacion = mapper.toEntity(dto, persona);
 

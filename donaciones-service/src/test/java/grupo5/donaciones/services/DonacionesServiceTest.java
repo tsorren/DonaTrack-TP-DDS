@@ -69,7 +69,9 @@ class DonacionesServiceTest {
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
-    inputDTO = new DonacionInputDTO(persona.getId(), "desc", List.of(), "Deposito Test", dirDTO);
+    inputDTO =
+        new DonacionInputDTO(
+            persona.getId(), "desc", List.of(), "Deposito Test", dirDTO, LocalDateTime.now());
 
     DireccionOutputDTO dirOut =
         new DireccionOutputDTO(
