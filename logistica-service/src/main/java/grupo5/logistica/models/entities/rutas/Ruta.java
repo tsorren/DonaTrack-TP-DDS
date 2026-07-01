@@ -9,13 +9,17 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class Ruta implements AggregateRoot {
   private final UUID id;
   private final LocalDate fecha;
+
+  @Getter(AccessLevel.NONE)
   private final List<UUID> entregas;
+
   private final UUID choferId;
   private final UUID camionId;
   private EstadoRuta estado;
@@ -23,6 +27,9 @@ public class Ruta implements AggregateRoot {
   private LocalDateTime horaFinReal;
 
   public Ruta(LocalDate fecha, UUID chofer, UUID camion) {
+    if (fecha == null || chofer == null || camion == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
     this.id = UUID.randomUUID();
     this.fecha = fecha;
     this.choferId = chofer;
@@ -33,6 +40,9 @@ public class Ruta implements AggregateRoot {
 
   public void iniciarRuta() {
     if (this.estado != EstadoRuta.PENDIENTE) {
+      throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
+    }
+    if (this.entregas.isEmpty()) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
     this.estado = EstadoRuta.EN_TRASLADO;
@@ -49,13 +59,23 @@ public class Ruta implements AggregateRoot {
   }
 
   public void agregarEntrega(UUID entrega) {
+    if (entrega == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
     if (this.estado != EstadoRuta.PENDIENTE) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
+    }
+    if (this.entregas.contains(entrega)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
     this.entregas.add(entrega);
   }
 
+  public List<UUID> getEntregas() {
+    return List.copyOf(this.entregas);
+  }
+
   public List<UUID> obtenerEntregas() {
-    return this.entregas;
+    return List.copyOf(this.entregas);
   }
 }
