@@ -1,6 +1,7 @@
 package grupo5.donaciones.models.entities.donantes;
 
 import grupo5.common.repositories.AggregateRoot;
+import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.UUID;
 import lombok.Getter;
@@ -16,6 +17,13 @@ public class Donante implements Anonimizable, AggregateRoot {
     }
     this.id = UUID.randomUUID();
     this.personaId = personaId;
+  }
+
+  public Donante(Persona persona) {
+    this(persona.getId());
+    if (persona == null) {
+      throw new IllegalArgumentException("El donante debe estar asociado a una persona.");
+    }
   }
 
   public UUID personaId() {

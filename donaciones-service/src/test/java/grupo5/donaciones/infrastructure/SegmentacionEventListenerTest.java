@@ -63,13 +63,13 @@ class SegmentacionEventListenerTest {
         new Categoria(
             "Ropa", false, false, grupo5.donaciones.models.entities.categorias.Unidad.UNIDADES);
     subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
-    Bien bien1 = new Bien("Abrigo", null, null, null);
+    Bien bien1 = new Bien("Abrigo", null, null, null, 1.0, 1.0);
     BienNormalizado bnAceptado =
         new BienNormalizado(
             bien1, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, false, false);
     itemAceptado = new ItemDonacionNormalizado(donacion.getId(), bnAceptado, 5);
 
-    Bien bien2 = new Bien("Basura", null, null, null);
+    Bien bien2 = new Bien("Basura", null, null, null, 1.0, 1.0);
     BienNormalizado bnRechazado =
         new BienNormalizado(
             bien2, subcategoria.getId(), 0.0, EstadoNormalizacion.RECHAZADO, false, false);

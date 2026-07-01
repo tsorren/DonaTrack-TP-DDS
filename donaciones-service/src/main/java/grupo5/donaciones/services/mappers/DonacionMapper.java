@@ -114,7 +114,13 @@ public class DonacionMapper {
 
   private static ItemDonacion toItemEntity(ItemDonacionInputDTO dto) {
     Bien bien =
-        new Bien(dto.descripcionBien(), dto.fotoUrl(), dto.fechaVencimiento(), dto.estadoBien());
+        new Bien(
+            dto.descripcionBien(),
+            dto.fotoUrl(),
+            dto.fechaVencimiento(),
+            dto.estadoBien(),
+            dto.pesoUnitario(),
+            dto.volumenUnitario());
     return new ItemDonacion(bien, dto.cantidad());
   }
 
@@ -124,6 +130,8 @@ public class DonacionMapper {
         item.bien().fotoUrl(),
         item.bien().fechaVencimiento(),
         item.bien().estado(),
+        item.bien().pesoUnitario(),
+        item.bien().volumenUnitario(),
         item.cantidad());
   }
 

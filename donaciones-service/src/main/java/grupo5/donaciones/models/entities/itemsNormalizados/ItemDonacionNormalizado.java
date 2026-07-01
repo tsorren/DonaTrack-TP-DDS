@@ -24,6 +24,14 @@ public class ItemDonacionNormalizado implements AggregateRoot {
     this.segmentado = false;
   }
 
+  public Double getPesoTotal() {
+    return bien.pesoUnitario() * cantidad;
+  }
+
+  public Double getVolumenTotal() {
+    return bien.volumenUnitario() * cantidad;
+  }
+
   public void actualizarBien(BienNormalizado nuevoBien) {
     this.bien = nuevoBien;
   }

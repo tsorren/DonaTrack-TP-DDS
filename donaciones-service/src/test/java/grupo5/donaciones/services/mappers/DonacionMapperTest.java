@@ -122,8 +122,9 @@ class DonacionMapperTest {
 
     ItemDonacionInputDTO item1 =
         new ItemDonacionInputDTO(
-            "abrigo", "foto.png", LocalDate.of(2027, Month.JANUARY, 1), Estado.NUEVO, 3);
-    ItemDonacionInputDTO item2 = new ItemDonacionInputDTO("pantalon", null, null, Estado.USADO, 2);
+            "abrigo", "foto.png", LocalDate.of(2027, Month.JANUARY, 1), Estado.NUEVO, 1.0, 1.0, 3);
+    ItemDonacionInputDTO item2 =
+        new ItemDonacionInputDTO("pantalon", null, null, Estado.USADO, 1.0, 1.0, 2);
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
