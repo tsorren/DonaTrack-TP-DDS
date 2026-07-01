@@ -23,7 +23,7 @@ public class LectorCSVMejorado implements CargadorDonantes {
       List<String> lineas = Files.readAllLines(Paths.get(rutaArchivo), StandardCharsets.UTF_8);
       if (lineas.isEmpty()) return filasMapeadas;
 
-      String[] cabecera = lineas.get(0).split(",");
+      String[] cabecera = lineas.getFirst().split(",");
       for (int i = 0; i < cabecera.length; i++) {
         cabecera[i] = cabecera[i].trim();
       }

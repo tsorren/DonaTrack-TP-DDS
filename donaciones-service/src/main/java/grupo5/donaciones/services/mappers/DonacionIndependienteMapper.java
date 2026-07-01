@@ -82,7 +82,7 @@ public class DonacionIndependienteMapper {
     return new BienNormalizadoDTO(bienResumen, subcategoriaResumen, categoriaResumen);
   }
 
-  private List<CambioEstadoDIResponseDTO> mapHistorial(List<CambioEstado> historial) {
+  private static List<CambioEstadoDIResponseDTO> mapHistorial(List<CambioEstado> historial) {
     if (historial == null) {
       return List.of();
     }
