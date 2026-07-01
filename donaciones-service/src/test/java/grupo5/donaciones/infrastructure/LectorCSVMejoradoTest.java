@@ -1,11 +1,15 @@
 package grupo5.donaciones.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,5 +99,50 @@ class LectorCSVMejoradoTest {
     assertEquals("Humana", primeraFila.get("TipoPersona"));
     assertEquals("Ana", primeraFila.get("Nombre"));
     assertEquals("test@example.com", primeraFila.get("Email"));
+  }
+
+  @Test
+  void cargarDonantes_conLineasMalFormadas_deberiaIgnorarlasYContinuar() throws IOException {
+    // Arrange
+    Path archivoCSV = tempDir.resolve("mixto.csv");
+    String contenido =
+        """
+        Nombre,Email
+        Ana,ana@mail.com
+        Carlos,carlos@mail.com,DATO_EXTRA
+        David,david@mail.com
+        Eva"""; // Línea con menos datos
+    Files.writeString(archivoCSV, contenido);
+
+    // Act
+    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(archivoCSV.toString());
+
+    // Assert
+    // Debería haber procesado solo las 2 filas válidas (Ana y David)
+    assertEquals(2, resultado.size());
+    assertTrue(resultado.stream().anyMatch(fila -> "Ana".equals(fila.get("Nombre"))));
+    assertTrue(resultado.stream().anyMatch(fila -> "David".equals(fila.get("Nombre"))));
+  }
+
+  @Test
+  void cargarDonantes_conArchivoDeDatasetReal_deberiaProcesarlo() throws URISyntaxException {
+    // Arrange
+    URL recurso =
+        getClass().getClassLoader().getResource("datasets/donantes_import_20000_UTF8_BOM.csv");
+    assertNotNull(
+        recurso,
+        "El archivo de dataset no se encontró. Asegúrate de que esté en 'src/test/resources/datasets'");
+    Path rutaDelArchivo = Paths.get(recurso.toURI());
+
+    // Act
+    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(rutaDelArchivo.toString());
+
+    // Assert
+    assertTrue(resultado.size() > 19000, "Debería haber leído la gran mayoría de las 20000 filas.");
+
+    Map<String, String> primeraFila = resultado.get(0);
+    assertTrue(primeraFila.containsKey("TipoPersona"));
+    assertTrue(primeraFila.containsKey("Email"));
+    assertTrue(primeraFila.containsKey("Nombre/Razón Social"));
   }
 }

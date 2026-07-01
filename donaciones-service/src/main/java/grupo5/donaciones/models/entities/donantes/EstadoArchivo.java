@@ -4,5 +4,6 @@ public enum EstadoArchivo {
   PENDIENTE,
   PROCESANDO,
   PROCESADO,
+  PROCESADO_CON_ERRORES,
   ERROR;
 }
