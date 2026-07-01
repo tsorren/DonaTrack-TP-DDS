@@ -1,12 +1,13 @@
 package grupo5.tests.integration;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.notNullValue;
-
 import grupo5.tests.BaseIT;
 import io.restassured.http.ContentType;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.notNullValue;
 
 class DonationIntegrationIT extends BaseIT {
 

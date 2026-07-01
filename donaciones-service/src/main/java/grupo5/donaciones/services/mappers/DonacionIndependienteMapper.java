@@ -1,12 +1,6 @@
 package grupo5.donaciones.services.mappers;
 
-import grupo5.donaciones.dto.donacionesIndependientes.BienNormalizadoDTO;
-import grupo5.donaciones.dto.donacionesIndependientes.BienResumenDTO;
-import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDIResponseDTO;
-import grupo5.donaciones.dto.donacionesIndependientes.CategoriaResumenDTO;
-import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
-import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
-import grupo5.donaciones.dto.donacionesIndependientes.SubcategoriaResumenDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.*;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;

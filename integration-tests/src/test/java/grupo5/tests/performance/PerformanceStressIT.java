@@ -1,13 +1,14 @@
 package grupo5.tests.performance;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 import grupo5.tests.BaseIT;
-import io.restassured.http.ContentType;
-import java.util.*;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PerformanceStressIT extends BaseIT {
 

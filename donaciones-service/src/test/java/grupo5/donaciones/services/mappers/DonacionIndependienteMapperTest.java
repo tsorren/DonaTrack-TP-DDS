@@ -1,15 +1,18 @@
 package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import grupo5.donaciones.dto.donacionesIndependientes.*;
+import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Estado;
-import grupo5.donaciones.models.entities.donacionesIndependientes.*;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;

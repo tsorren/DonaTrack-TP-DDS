@@ -11,11 +11,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
-import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.IDonacionesRepository;
-import grupo5.donaciones.models.repositories.IDonantesRepository;
-import grupo5.donaciones.models.repositories.INecesidadesRepository;
-import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.models.repositories.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;

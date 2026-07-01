@@ -1,7 +1,8 @@
 package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
@@ -12,7 +13,7 @@ import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.entities.ubicaciones.Localidad;
 import grupo5.donaciones.models.entities.ubicaciones.Pais;

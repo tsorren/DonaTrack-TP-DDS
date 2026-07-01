@@ -1,6 +1,8 @@
 package grupo5.donaciones.services;
 
-import grupo5.donaciones.dto.categorias.*;
+import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
+import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
+import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import java.util.List;
 import java.util.UUID;
 

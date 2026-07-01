@@ -1,10 +1,10 @@
 package grupo5.tests.contract;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.notNullValue;
-
 import grupo5.tests.BaseIT;
 import org.junit.jupiter.api.Test;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.notNullValue;
 
 class ContractIT extends BaseIT {
 
