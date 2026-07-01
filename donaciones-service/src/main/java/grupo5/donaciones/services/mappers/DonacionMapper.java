@@ -13,8 +13,6 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -57,9 +55,7 @@ public class DonacionMapper {
     Deposito deposito =
         new Deposito(dto.nombreDeposito(), direccionMapper.toEntity(dto.direccion()));
 
-    Donacion donacion =
-        new Donacion(
-            donanteId, deposito, dto.descripcion(), LocalDateTime.now(ZoneId.systemDefault()));
+    Donacion donacion = new Donacion(donanteId, deposito, dto.descripcion(), dto.fecha());
 
     if (dto.items() != null) {
       dto.items().forEach(item -> donacion.agregarItem(toItemEntity(item)));
