@@ -1,5 +1,7 @@
 package grupo5.logistica.services.mappers;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
@@ -21,6 +23,7 @@ public class EntregaMapper {
       return null;
     }
 
+    validarMagnitudes(dto);
     return new Entrega(
         dto.idDonacion(),
         dto.idBeneficiaria(),
@@ -60,5 +63,11 @@ public class EntregaMapper {
         cambio.getEstadoNuevo(),
         cambio.getTimeStamp(),
         cambio.getActor());
+  }
+
+  private void validarMagnitudes(CrearEntregaRequestDTO dto) {
+    if (dto.pesoTotalKG() == null || dto.volumenTotalM3() == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
   }
 }
