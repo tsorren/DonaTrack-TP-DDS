@@ -24,6 +24,8 @@ public class Entrega implements AggregateRoot {
   private LocalDateTime horaSalida;
   private String fotoRecepcionUrl;
   private Boolean confirmacionEntrega;
+  private float pesoTotalKG;
+  private float volumenTotalM3;
 
   public Entrega(UUID idRuta, UUID idDonacion, UUID idBeneficiaria, Direccion destino) {
     this.id = UUID.randomUUID();
