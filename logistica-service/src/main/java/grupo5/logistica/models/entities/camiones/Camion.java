@@ -2,11 +2,12 @@ package grupo5.logistica.models.entities.camiones;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.repositories.AggregateRoot;
 import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class Camion {
+public class Camion implements AggregateRoot {
   private final UUID id;
   private UUID rutaId;
   private final String patente;
