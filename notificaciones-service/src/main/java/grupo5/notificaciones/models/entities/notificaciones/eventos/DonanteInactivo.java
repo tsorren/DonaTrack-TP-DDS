@@ -22,7 +22,7 @@ public class DonanteInactivo extends EventoNotificable {
 
   @Override
   public List<Notificacion> generarNotificaciones() {
-    // Armamos un mensaje empático que fomente el regreso del donante
+
     String mensaje =
         "¡Te extrañamos en DonaTrack! "
             + "Hemos notado que han pasado "

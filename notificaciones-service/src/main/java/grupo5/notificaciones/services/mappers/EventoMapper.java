@@ -24,7 +24,8 @@ public class EventoMapper {
       }
       case EventoDonacionRecibidaDTO rec -> {
         Persona beneficiario = buscarPersona(rec.idPersonaBeneficiaria());
-        yield new DonacionRecibida(donante, beneficiario, rec.detalleDonacion(), rec.fecha());
+        yield new DonacionRecibida(
+            donante, beneficiario, rec.detalleDonacion(), rec.patenteCamion(), rec.fecha());
       }
       case EventoDonanteRegistradoDTO reg -> new DonanteRegistrado(
           donante, reg.credencialesDeAcceso(), reg.fecha());
@@ -34,6 +35,23 @@ public class EventoMapper {
           donante, mis.nombreMision(), mis.recompensa(), mis.fecha());
       case EventoSubioCategoriaDTO cat -> new SubioCategoria(
           donante, cat.categoriaVieja(), cat.categoriaNueva(), cat.fecha());
+      case EventoDonacionEnCaminoDTO dec -> {
+        Persona beneficiario = buscarPersona(dec.idPersonaBeneficiaria());
+        yield new DonacionEnCamino(
+            donante, beneficiario, dec.detalleDonacion(), dec.enlaceSeguimiento(), dec.fecha());
+      }
+      case EventoEntregaFallidaDTO ef -> {
+        Persona beneficiario = buscarPersona(ef.idPersonaBeneficiaria());
+        Persona admin = buscarPersona(ef.idPersonaAdmin());
+        yield new EntregaFallida(
+            donante,
+            beneficiario,
+            admin,
+            ef.detalleDonacion(),
+            ef.motivo(),
+            ef.replanificable(),
+            ef.fecha());
+      }
     };
   }
 
