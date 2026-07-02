@@ -1,9 +1,9 @@
 package grupo5.logistica.infrastructure;
 
 import grupo5.logistica.config.RabbitMQConfig;
-import grupo5.logistica.dto.eventos.EntregaExitosaEvent;
-import grupo5.logistica.dto.eventos.EntregaFallidaEvent;
-import grupo5.logistica.dto.eventos.RutaIniciadaEvent;
+import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
+import grupo5.logistica.dto.eventos.EventoEntregaFallida;
+import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -21,19 +21,19 @@ public class LogisticaEventPublisher {
     this.rabbitTemplate = rabbitTemplate;
   }
 
-  public void publicarRutaIniciada(RutaIniciadaEvent evento) {
+  public void publicarRutaIniciada(EventoRutaIniciada evento) {
     log.info("Publicando RutaIniciadaEvent: rutaId={}", evento.rutaId());
     rabbitTemplate.convertAndSend(
         RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_RUTA_INICIADA, evento);
   }
 
-  public void publicarEntregaExitosa(EntregaExitosaEvent evento) {
+  public void publicarEntregaExitosa(EventoEntregaExitosa evento) {
     log.info("Publicando EntregaExitosaEvent: entregaId={}", evento.entregaId());
     rabbitTemplate.convertAndSend(
         RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_ENTREGA_EXITOSA, evento);
   }
 
-  public void publicarEntregaFallida(EntregaFallidaEvent evento) {
+  public void publicarEntregaFallida(EventoEntregaFallida evento) {
     log.info("Publicando EntregaFallidaEvent: entregaId={}", evento.entregaId());
     rabbitTemplate.convertAndSend(
         RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_ENTREGA_FALLIDA, evento);

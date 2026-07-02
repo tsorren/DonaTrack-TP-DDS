@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /** Evento publicado por Logística cuando una entrega no puede concretarse. */
-public record EntregaFallidaEvent(
+public record EventoEntregaFallida(
     UUID entregaId,
     UUID donacionIndependienteId,
     String justificacion,

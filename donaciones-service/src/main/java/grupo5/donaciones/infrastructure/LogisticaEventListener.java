@@ -1,9 +1,9 @@
 package grupo5.donaciones.infrastructure;
 
 import grupo5.donaciones.config.RabbitMQConfig;
-import grupo5.donaciones.dto.comunicaciones.EntregaExitosaEvent;
-import grupo5.donaciones.dto.comunicaciones.EntregaFallidaEvent;
-import grupo5.donaciones.dto.comunicaciones.RutaIniciadaEvent;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
+import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
@@ -26,7 +26,7 @@ public class LogisticaEventListener {
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_INICIADA)
-  public void onRutaIniciada(RutaIniciadaEvent evento) {
+  public void onRutaIniciada(EventoRutaIniciada evento) {
     log.info(
         "Evento RutaIniciada recibido: rutaId={}, donaciones={}",
         evento.rutaId(),
@@ -44,7 +44,7 @@ public class LogisticaEventListener {
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_EXITOSA)
-  public void onEntregaExitosa(EntregaExitosaEvent evento) {
+  public void onEntregaExitosa(EventoEntregaExitosa evento) {
     log.info(
         "Evento EntregaExitosa recibido: donacionId={}, camion={}",
         evento.donacionIndependienteId(),
@@ -57,7 +57,7 @@ public class LogisticaEventListener {
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_FALLIDA)
-  public void onEntregaFallida(EntregaFallidaEvent evento) {
+  public void onEntregaFallida(EventoEntregaFallida evento) {
     log.info(
         "Evento EntregaFallida recibido: donacionId={}, motivo={}",
         evento.donacionIndependienteId(),
