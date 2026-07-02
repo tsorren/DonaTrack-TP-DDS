@@ -1,5 +1,5 @@
 # Procesamiento de Donaciones
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-09
 - Deciders: Decisión Grupal
 

@@ -1,5 +1,5 @@
 # Asignación parcial de donación independiente
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-09
 - Deciders: Decisión Grupal
 
