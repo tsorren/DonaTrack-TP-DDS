@@ -21,9 +21,6 @@ public class Donante implements Anonimizable, AggregateRoot {
 
   public Donante(Persona persona) {
     this(persona.getId());
-    if (persona == null) {
-      throw new IllegalArgumentException("El donante debe estar asociado a una persona.");
-    }
   }
 
   public UUID personaId() {
