@@ -1,7 +1,7 @@
 package grupo5.donaciones.controllers.impl;
 
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
-import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class AsignacionController {
   private final PropuestaService propuestaService;
 
   @PostMapping
-  public ResponseEntity<List<Propuesta>> ejecutar() {
+  public ResponseEntity<List<PropuestaDTO>> ejecutar() {
     return ResponseEntity.status(HttpStatus.CREATED).body(propuestaService.ejecutarAsignacion());
   }
 

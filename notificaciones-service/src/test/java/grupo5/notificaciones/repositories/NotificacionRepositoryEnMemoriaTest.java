@@ -7,7 +7,7 @@ import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
-import grupo5.notificaciones.models.repositories.NotificacionRepositoryEnMemoria;
+import grupo5.notificaciones.models.repositories.impl.NotificacionRepositoryEnMemoria;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,10 +31,10 @@ class NotificacionRepositoryEnMemoriaTest {
   void deberiaFiltrarNotificacionesPorEstado() {
     Persona persona = crearPersona();
 
-    Notificacion notificacionPendiente = new Notificacion(persona, "Mensaje pendiente");
+    Notificacion notificacionPendiente = new Notificacion(persona.getId(), "Mensaje pendiente");
 
-    Notificacion notificacionEnviada = new Notificacion(persona, "Mensaje enviado");
-    notificacionEnviada.setEstadoNotificacion(EstadoNotificacion.ENVIADA);
+    Notificacion notificacionEnviada = new Notificacion(persona.getId(), "Mensaje enviado");
+    notificacionEnviada.actualizarEstado(EstadoNotificacion.ENVIADA);
 
     repository.save(notificacionPendiente);
     repository.save(notificacionEnviada);
@@ -54,8 +54,10 @@ class NotificacionRepositoryEnMemoriaTest {
 
     Persona persona2 = crearPersona();
 
-    Notificacion notificacionPersona1 = new Notificacion(persona1, "Mensaje para persona 1");
-    Notificacion notificacionPersona2 = new Notificacion(persona2, "Mensaje para persona 2");
+    Notificacion notificacionPersona1 =
+        new Notificacion(persona1.getId(), "Mensaje para persona 1");
+    Notificacion notificacionPersona2 =
+        new Notificacion(persona2.getId(), "Mensaje para persona 2");
 
     repository.save(notificacionPersona1);
     repository.save(notificacionPersona2);
@@ -72,7 +74,7 @@ class NotificacionRepositoryEnMemoriaTest {
   @Test
   void deberiaDevolverListaVaciaSiLaPersonaNoTieneNotificaciones() {
     Persona persona1 = crearPersona();
-    Notificacion notificacion = new Notificacion(persona1, "Mensaje");
+    Notificacion notificacion = new Notificacion(persona1.getId(), "Mensaje");
     repository.save(notificacion);
 
     List<Notificacion> resultado =

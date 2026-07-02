@@ -1,6 +1,6 @@
 # Template Method en AlgoritmoAsignacion
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-15
 - Deciders: Decision Grupal
 - Tags: matchmaking, patrones-de-diseño, algoritmos

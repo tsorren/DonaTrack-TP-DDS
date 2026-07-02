@@ -6,6 +6,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import java.time.LocalDate;
 import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,30 +20,19 @@ class EntidadBeneficiariaTests {
   @BeforeEach
   void setUp() {
     representante = new Humana("Juan", "Perez", TEST_DATE.minusYears(25));
-    juridica = new Juridica(representante);
+    juridica = new Juridica(representante, "Empresa SA", TipoJuridico.EMPRESA, "Rubro");
   }
 
   @Test
   void crearEntidadBeneficiaria_conJuridicaValida_deberiaInicializarCorrectamente() {
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica);
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica.getId());
 
     assertNotNull(entidad.getId());
-    assertEquals(juridica, entidad.getJuridica());
+    assertEquals(juridica.getId(), entidad.juridicaId());
   }
 
   @Test
   void crearEntidadBeneficiaria_conJuridicaNula_deberiaLanzarValidationException() {
     assertThrows(ValidationException.class, () -> new EntidadBeneficiaria(null));
-  }
-
-  @Test
-  void anonimizar_deberiaAnonimizarJuridica() {
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica);
-    entidad.anonimizar();
-
-    assertEquals(
-        grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING, representante.getNombre());
-    assertEquals(
-        grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING, representante.getApellido());
   }
 }

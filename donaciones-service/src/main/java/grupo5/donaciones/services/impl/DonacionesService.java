@@ -50,16 +50,13 @@ public class DonacionesService implements IDonacionesService {
 
     Donante donante =
         donantesRepository.findAll().stream()
-            .filter(d -> d.getPersona() != null && d.getPersona().getId().equals(persona.getId()))
+            .filter(d -> d.personaId() != null && d.personaId().equals(persona.getId()))
             .findFirst()
             .orElseGet(
                 () -> {
                   donantesService.crearDonante(new DonanteInputDTO(persona.getId()));
                   return donantesRepository.findAll().stream()
-                      .filter(
-                          d ->
-                              d.getPersona() != null
-                                  && d.getPersona().getId().equals(persona.getId()))
+                      .filter(d -> d.personaId() != null && d.personaId().equals(persona.getId()))
                       .findFirst()
                       .orElseThrow(() -> new IllegalStateException("Failed to register donor"));
                 });

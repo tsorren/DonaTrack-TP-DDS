@@ -1,0 +1,29 @@
+{
+  "idDonante": null,
+  "descripcion": "Donación multi-ítem",
+  "items": [
+    {
+      "descripcionBien": "arroz",
+      "cantidad": 5,
+      "estadoBien": "NUEVO",
+      "fechaVencimiento": "2027-12-31"
+    },
+    {
+      "descripcionBien": "fideos",
+      "cantidad": 5,
+      "estadoBien": "NUEVO",
+      "fechaVencimiento": "2027-06-30"
+    }
+  ],
+  "nombreDeposito": "Deposito Central",
+  "direccion": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "piso": null,
+    "departamento": null,
+    "codigoPostal": "1179",
+    "localidad": "CABA",
+    "provincia": "CABA",
+    "pais": "Argentina"
+  }
+}

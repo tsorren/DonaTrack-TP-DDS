@@ -11,5 +11,16 @@ public interface INecesidadesRepository extends CrudRepository<Necesidad> {
 
   List<Necesidad> findByEstaSatisfechaFalse();
 
+  List<Necesidad> findByEstaSatisfechaFalseActivaTrue();
+
   List<Necesidad> buscarNecesidadesPorEntidad(UUID entidadId);
+
+  // Activas y no satisfechas
+  List<Necesidad> findByActivaTrueAndSatisfechaFalse();
+
+  // Activas, no satisfechas y recurrentes
+  List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue();
+
+  // Activas, no satisfechas y extraordinarias
+  List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse();
 }

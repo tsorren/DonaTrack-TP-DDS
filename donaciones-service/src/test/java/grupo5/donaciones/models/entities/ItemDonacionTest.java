@@ -26,8 +26,8 @@ class ItemDonacionTest {
   void crearItemDonacion_conDatosValidos_deberiaSuceder() {
     ItemDonacion item = new ItemDonacion(bien, 10);
 
-    assertEquals(bien, item.getBien());
-    assertEquals(10, item.getCantidad());
+    assertEquals(bien, item.bien());
+    assertEquals(10, item.cantidad());
   }
 
   @Test
@@ -67,7 +67,7 @@ class ItemDonacionTest {
     ItemDonacion item1 = new ItemDonacion(bien, 1);
     ItemDonacion item2 = new ItemDonacion(bien, 100);
 
-    assertEquals(1, item1.getCantidad());
-    assertEquals(100, item2.getCantidad());
+    assertEquals(1, item1.cantidad());
+    assertEquals(100, item2.cantidad());
   }
 }

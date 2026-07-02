@@ -89,7 +89,7 @@ class PersonaMapperTest {
   @Test
   void updateEntity_conHumana_deberiaModificarCampos() {
     Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
-    humana.setDocumento("12345678");
+    humana.actualizarDocumento(null, "12345678");
 
     HumanaInputDTO updatedInput =
         new HumanaInputDTO(
@@ -115,7 +115,7 @@ class PersonaMapperTest {
   @Test
   void toReplicaDTO_deberiaMapearCorrectamente() {
     Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
-    humana.setDocumento("12345678");
+    humana.actualizarDocumento(null, "12345678");
 
     PersonaReplicaDTO replica = mapper.toReplicaDTO(humana);
 

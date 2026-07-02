@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,7 @@ class JuridicaTest {
     representante1 = new Humana("Juan", "Pérez", LocalDate.of(1990, 1, 1));
     representante2 = new Humana("Ana", "Gómez", LocalDate.of(1985, 5, 15));
 
-    juridica = new Juridica(representante1);
+    juridica = new Juridica(representante1, "Empresa SA", TipoJuridico.EMPRESA, "Rubro");
   }
 
   @Test

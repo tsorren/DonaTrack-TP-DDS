@@ -3,15 +3,15 @@ package grupo5.notificaciones.services.mappers;
 import grupo5.notificaciones.dto.input.*;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.*;
 import grupo5.notificaciones.models.entities.personas.Persona;
-import grupo5.notificaciones.models.repositories.PersonaRepository;
+import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EventoMapper {
-  private final PersonaRepository personaRepository;
+  private final IPersonaRepository personaRepository;
 
-  public EventoMapper(PersonaRepository personaRepository) {
+  public EventoMapper(IPersonaRepository personaRepository) {
     this.personaRepository = personaRepository;
   }
 

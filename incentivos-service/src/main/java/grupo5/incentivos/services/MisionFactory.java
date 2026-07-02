@@ -1,8 +1,8 @@
 package grupo5.incentivos.services;
 
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
-import grupo5.incentivos.models.entities.insignias.Insignia;
-import grupo5.incentivos.models.entities.misiones.*;
+import grupo5.incentivos.models.entities.donante.insignias.Insignia;
+import grupo5.incentivos.models.entities.donante.misiones.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;

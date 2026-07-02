@@ -11,6 +11,7 @@ public class Telefono extends MedioDeContacto {
   private String caracteristica;
   private String codigoArea;
   private String numero;
+  private TipoTelefono tipo = TipoTelefono.ESTANDAR;
 
   @Override
   public boolean enviarMensaje(String mensaje, NotificacionSender sender) {

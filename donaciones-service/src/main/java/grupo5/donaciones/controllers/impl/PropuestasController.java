@@ -1,7 +1,7 @@
 package grupo5.donaciones.controllers.impl;
 
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
-import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
+import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +17,7 @@ public class PropuestasController {
   private final PropuestaService propuestaService;
 
   @GetMapping
-  public ResponseEntity<List<PropuestaResponseDTO>> listar() {
+  public ResponseEntity<List<PropuestaDTO>> listar() {
     return ResponseEntity.ok(propuestaService.listarPropuestas());
   }
 
@@ -25,7 +25,7 @@ public class PropuestasController {
   public ResponseEntity<Void> actualizarEstado(
       @PathVariable UUID id, @RequestBody ActualizarEstadoRequestDTO request) {
 
-    propuestaService.actualizarEstado(id, request.getEstado());
+    propuestaService.actualizarEstado(id, request.estado());
     return ResponseEntity.ok().build();
   }
 }

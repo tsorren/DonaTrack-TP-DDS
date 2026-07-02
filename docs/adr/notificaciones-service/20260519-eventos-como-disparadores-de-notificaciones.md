@@ -1,6 +1,6 @@
 # Eventos como disparadores de notificaciones
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-19
 - Deciders: Decisión Grupal
 - Tags: servicio-notificaciones

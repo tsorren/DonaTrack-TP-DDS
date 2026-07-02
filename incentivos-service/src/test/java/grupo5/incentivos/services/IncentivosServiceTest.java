@@ -13,9 +13,10 @@ import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.insignias.Insignia;
-import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
-import grupo5.incentivos.models.entities.misiones.MisionRacha;
+import grupo5.incentivos.models.entities.donante.insignias.Insignia;
+import grupo5.incentivos.models.entities.donante.misiones.MisionDonacionesExitosas;
+import grupo5.incentivos.models.entities.donante.misiones.MisionRacha;
+import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import java.time.LocalDate;
 import java.time.Month;
@@ -44,9 +45,10 @@ class IncentivosServiceTest {
   void setUp() {
     repository = new DonanteIncentivosRepository();
     misionFactory = new MisionFactory();
+    List<CriterioInactividad> criterios = List.of();
     service =
         new IncentivosService(
-            repository, misionFactory, notificacionesClient, rankingService, n8nClient);
+            repository, misionFactory, notificacionesClient, rankingService, n8nClient, criterios);
   }
 
   @Test
@@ -193,10 +195,10 @@ class IncentivosServiceTest {
 
     Insignia insignia =
         repository.findById(id).orElseThrow().getInsignias().stream()
-            .filter(i -> i.getNombre().equals("Explorador"))
+            .filter(i -> i.nombre().equals("Explorador"))
             .findFirst()
             .orElseThrow();
-    assertFalse(insignia.isVisible());
+    assertFalse(insignia.visible());
   }
 
   @Test

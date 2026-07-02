@@ -1,6 +1,7 @@
 package grupo5.donaciones.schedulers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.services.impl.PropuestaService;

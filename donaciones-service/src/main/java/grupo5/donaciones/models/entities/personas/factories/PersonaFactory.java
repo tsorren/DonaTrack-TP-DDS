@@ -14,17 +14,11 @@ public class PersonaFactory {
 
   public static Humana crearHumana(
       String nombre, String apellido, LocalDate fechaNacimiento, Genero genero) {
-    Humana humana = new Humana(nombre, apellido, fechaNacimiento);
-    humana.setGenero(genero);
-    return humana;
+    return new Humana(nombre, apellido, fechaNacimiento, genero);
   }
 
   public static Juridica crearJuridica(
       String razonSocial, TipoJuridico tipo, String rubro, Humana representanteInicial) {
-    Juridica juridica = new Juridica(representanteInicial);
-    juridica.setRazonSocial(razonSocial);
-    juridica.setTipo(tipo);
-    juridica.setRubro(rubro);
-    return juridica;
+    return new Juridica(representanteInicial, razonSocial, tipo, rubro);
   }
 }
