@@ -71,7 +71,7 @@ class DonacionesServiceTest {
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     inputDTO =
         new DonacionInputDTO(
-            persona.getId(), "desc", List.of(), "Deposito Test", dirDTO, LocalDateTime.now());
+            donante.getId(), "desc", List.of(), "Deposito Test", dirDTO, LocalDateTime.now());
 
     DireccionOutputDTO dirOut =
         new DireccionOutputDTO(
@@ -91,8 +91,7 @@ class DonacionesServiceTest {
 
   @Test
   void cargarDonacion_cuandoPersonaExiste_deberiaGuardarYRetornarDTO() {
-    when(personasRepository.findById(persona.getId())).thenReturn(Optional.of(persona));
-    when(donantesRepository.findAll()).thenReturn(List.of(donante));
+    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.of(donante));
     when(mapper.toEntity(inputDTO, donante)).thenReturn(donacion);
     when(donacionesRepository.save(donacion)).thenReturn(donacion);
     when(mapper.toOutputDTO(donacion)).thenReturn(outputDTO);
@@ -105,8 +104,8 @@ class DonacionesServiceTest {
   }
 
   @Test
-  void cargarDonacion_cuandoPersonaNoExiste_deberiaLanzarExcepcion() {
-    when(personasRepository.findById(persona.getId())).thenReturn(Optional.empty());
+  void cargarDonacion_cuandoDonanteNoExiste_deberiaLanzarExcepcion() {
+    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.empty());
 
     assertThrows(RecursoNoEncontradoException.class, () -> service.cargarDonacion(inputDTO));
     verify(donacionesRepository, never()).save(any());

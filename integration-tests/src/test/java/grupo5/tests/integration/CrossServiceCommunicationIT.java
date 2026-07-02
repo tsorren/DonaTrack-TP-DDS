@@ -133,15 +133,15 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 1. Create a persona
     String personaId = apiCrearPersonaHumana("11112222", "Maria", "maria.gomez@example.com");
 
-    // 2. Register the persona as a donor
-    String donorId = apiCrearDonante(personaId);
+    // 2. Register the persona as a donante
+    String donanteId = apiCrearDonante(personaId);
 
-    assertNotNull(donorId);
+    assertNotNull(donanteId);
 
-    // 3. Verify donor metrics exist in incentivos-service
+    // 3. Verify donante metrics exist in incentivos-service
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
         .then()
         .statusCode(200)
         .body("totalDonacionesExitosas", equalTo(0))
@@ -163,23 +163,23 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 1. Create a persona
     String personaId = apiCrearPersonaHumana("33332222", "Pedro", "pedro.sosa@example.com");
 
-    // 2. Register as a donor
-    String donorId = apiCrearDonante(personaId);
+    // 2. Register as a donante
+    String donanteId = apiCrearDonante(personaId);
 
     // Verify profile is created in incentives
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
         .then()
         .statusCode(200);
 
-    // 3. Perform delete (baja) of donor in donaciones-service
-    given().when().delete(DONACIONES_URL + "/api/donantes/" + donorId).then().statusCode(204);
+    // 3. Perform delete (baja) of donante in donaciones-service
+    given().when().delete(DONACIONES_URL + "/api/donantes/" + donanteId).then().statusCode(204);
 
     // 4. Verify profile is removed in incentives
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
         .then()
         .statusCode(anyOf(equalTo(400), equalTo(404)));
   }
@@ -189,14 +189,14 @@ class CrossServiceCommunicationIT extends BaseIT {
   void testE2EDonationFlowAndSideEffects() {
     // 1. Create Donante Persona & Donor
     String donantePersonaId = apiCrearPersonaHumana("88887777", "Ana", "ana.lopez@example.com");
-    String donorId = apiCrearDonante(donantePersonaId);
+    String donanteId = apiCrearDonante(donantePersonaId);
 
     // 2. Create Beneficiary Persona (Juridica) & EntidadBeneficiaria
     String benefPersonaId = apiCrearPersonaJuridica("30-11112222-3", "Comedor Solidario", "comedor@example.com");
     String entidadId = apiCrearEntidad(benefPersonaId);
 
     // 3. Load Donation (using subcategory arroz)
-    String donacionId = apiCrearDonacion(donantePersonaId, "Donación de arroz preprod", "arroz", 10);
+    String donacionId = apiCrearDonacion(donanteId, "Donación de arroz preprod", "arroz", 10);
     assertNotNull(donacionId);
     esperarAsync(); // wait for async processing of donation (normalization and segmentation)
 
@@ -250,7 +250,7 @@ class CrossServiceCommunicationIT extends BaseIT {
         (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertFalse(frags.isEmpty());
-    Map<String, Object> frag = frags.get(0);
+    Map<String, Object> frag = frags.getFirst();
     Map<String, Object> di = (Map<String, Object>) frag.get("donacionIndependiente");
     assertNotNull(di);
     String donacionIndependienteId = (String) di.get("id");
@@ -302,10 +302,10 @@ class CrossServiceCommunicationIT extends BaseIT {
         .then()
         .statusCode(200);
 
-    // 9. Verify Side-Effects in incentivos-service (puntos > 0)
-    esperarHastaTotalDonacionesExitosas(donorId, 0, 10000);
+    // 9. Verify Side Effects in incentivos-service (puntos > 0)
+    esperarHastaTotalDonacionesExitosas(donanteId, 0, 10000);
 
-    // 10. Verify Side-Effects in notificaciones-service
+    // 10. Verify Side Effects in notificaciones-service
     // Donante notifications: welcome (registrado), asignada, recibida
     esperarHastaNotificaciones(donantePersonaId, 3, 10000);
   }
@@ -314,14 +314,14 @@ class CrossServiceCommunicationIT extends BaseIT {
   void testRankingMensualYPosicion() {
     // 1. Create Persona and Donor
     String personaId = apiCrearPersonaHumana("99112233", "Raul", "raul.gomez@example.com");
-    String donorId = apiCrearDonante(personaId);
+    String donanteId = apiCrearDonante(personaId);
 
-    assertNotNull(donorId);
+    assertNotNull(donanteId);
 
     // 2. Submit consecutive monthly donations to complete MisionRacha (COLABORADOR, objetivo = 3)
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-04-01", 1);
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-05-01", 1);
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-06-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-04-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-05-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-06-01", 1);
 
     // 3. Calculate ranking for 2026-06
     given()
@@ -339,16 +339,16 @@ class CrossServiceCommunicationIT extends BaseIT {
             .statusCode(200)
             .body("periodo", equalTo("2026-06"))
             .body("entradas", hasSize(greaterThanOrEqualTo(1)))
-            .body("entradas.find { it.donanteId == '" + donorId + "' }.misionesCompletadas", equalTo(1))
+            .body("entradas.find { it.donanteId == '" + donanteId + "' }.misionesCompletadas", equalTo(1))
             .extract()
-            .path("entradas.find { it.donanteId == '" + donorId + "' }.posicion");
+            .path("entradas.find { it.donanteId == '" + donanteId + "' }.posicion");
 
     assertTrue(actualPosicion >= 1);
 
     // 5. Query donante metrics to check position is updated
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
         .then()
         .statusCode(200)
         .body("posicionEnRanking", equalTo(actualPosicion))
@@ -367,19 +367,19 @@ class CrossServiceCommunicationIT extends BaseIT {
   void testInsigniaVisibilityFlow() {
     // 1. Create Persona and Donor
     String personaId = apiCrearPersonaHumana("99112244", "Laura", "laura.perez@example.com");
-    String donorId = apiCrearDonante(personaId);
+    String donanteId = apiCrearDonante(personaId);
 
-    assertNotNull(donorId);
+    assertNotNull(donanteId);
 
     // 2. Submit consecutive monthly donations to complete MisionRacha
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-04-01", 1);
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-05-01", 1);
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-06-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-04-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-05-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-06-01", 1);
 
     // 3. Verify insignia "Racha Inicial" is returned and is visible
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))
@@ -392,7 +392,7 @@ class CrossServiceCommunicationIT extends BaseIT {
         .put(
             INCENTIVOS_URL
                 + "/api/incentivos/donantes/"
-                + donorId
+                + donanteId
                 + "/insignias/Racha Inicial/visibilidad?visible=false")
         .then()
         .statusCode(200);
@@ -400,7 +400,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 5. Verify insignia is no longer listed
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
         .then()
         .statusCode(200)
         .body("size()", equalTo(0));
@@ -411,7 +411,7 @@ class CrossServiceCommunicationIT extends BaseIT {
         .put(
             INCENTIVOS_URL
                 + "/api/incentivos/donantes/"
-                + donorId
+                + donanteId
                 + "/insignias/Racha Inicial/visibilidad?visible=true")
         .then()
         .statusCode(200);
@@ -419,7 +419,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 7. Verify insignia is visible again
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))
@@ -432,7 +432,7 @@ class CrossServiceCommunicationIT extends BaseIT {
   void testComplexE2EMultipleDonationsFlow() {
     // 1. Create Donante Persona & Donor
     String donantePersonaId = apiCrearPersonaHumana("77889900", "Carlos", "carlos.gimenez@example.com");
-    String donorId = apiCrearDonante(donantePersonaId);
+    String donanteId = apiCrearDonante(donantePersonaId);
 
     // 2. Create Beneficiary Persona (Juridica) & EntidadBeneficiaria
     String benefPersonaId = apiCrearPersonaJuridica("30-22223333-4", "Hogar de Dia", "hogar@example.com");
@@ -454,8 +454,8 @@ class CrossServiceCommunicationIT extends BaseIT {
     apiCrearNecesidad(entidadId, subcategoryId, 10, "Necesidad de arroz/fideos preprod");
 
     // 5. Load two separate donations (5 units of arroz, 5 units of fideos)
-    apiCrearDonacion(donantePersonaId, "Donación de arroz preprod complex", "arroz", 5);
-    apiCrearDonacion(donantePersonaId, "Donación de fideos preprod complex", "fideos", 5);
+    apiCrearDonacion(donanteId, "Donación de arroz preprod complex", "arroz", 5);
+    apiCrearDonacion(donanteId, "Donación de fideos preprod complex", "fideos", 5);
     esperarAsync(); // wait for async processing
 
     // 6. Execute Matching
@@ -543,7 +543,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     }
 
     // 8. Verify metrics in incentivos-service (totalDonacionesExitosas == 2)
-    esperarHastaTotalDonacionesExitosas(donorId, 1, 10000);
+    esperarHastaTotalDonacionesExitosas(donanteId, 1, 10000);
 
     // 9. Verify notifications in notificaciones-service
     // Expected: welcome, 2 assignments, 2 deliveries = 5 notifications

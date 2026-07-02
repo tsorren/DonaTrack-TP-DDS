@@ -1,0 +1,5 @@
+$kind: http-request
+name: Obtener Donante
+url: http://localhost:8080/api/donantes
+method: GET
+order: 4393659705768440
