@@ -1,6 +1,6 @@
 # Manejo de donaciones durante la ejecución del algoritmo
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-15
 - Deciders: Sofia Deane
 - Tags: matchmaking, algoritmos, dominio

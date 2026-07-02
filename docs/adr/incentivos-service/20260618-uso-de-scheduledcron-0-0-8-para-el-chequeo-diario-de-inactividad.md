@@ -1,5 +1,5 @@
 # Uso de @Scheduled(cron = "0 0 8 * * *") para el chequeo diario de inactividad
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-18
 - Deciders: Bernardo Estigarribia, Miranda Rossi
 

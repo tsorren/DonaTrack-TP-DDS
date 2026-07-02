@@ -1,5 +1,5 @@
 # Gestión de Donaciones a la clase abstracta Necesidad para habilitar Polimorfismo
-- Status: proposed
+- Status: rejected
 - Date: 2026-06-12
 - Deciders: Decisión Grupal
 
