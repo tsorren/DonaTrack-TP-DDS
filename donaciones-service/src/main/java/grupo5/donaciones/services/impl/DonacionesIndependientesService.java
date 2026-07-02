@@ -67,7 +67,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       case TipoEstadoDonacion.EN_TRASLADO -> donacion.planificarRuta(actor);
       case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(
           actor); // Aca notificamos tambien
-      case TipoEstadoDonacion.ENTREGADA -> procesarDonacionEntregada(actor, donacion);
+      case TipoEstadoDonacion.ENTREGADA -> procesarDonacionEntregada(
+          actor, donacion, request.patenteCamion());
       case TipoEstadoDonacion.ENTREGA_FALLIDA -> donacion.registrarFalla(
           request.justificacion(), actor);
       case TipoEstadoDonacion.EN_DEPOSITO -> donacion.retornar(actor);
@@ -78,7 +79,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     return donacionIndependienteMapper.toDTO(donacion);
   }
 
-  private void procesarDonacionEntregada(String actor, DonacionIndependiente donacion) {
+  private void procesarDonacionEntregada(
+      String actor, DonacionIndependiente donacion, String patenteCamion) {
     donacion.confirmarEntrega(actor);
     UUID donacionOriginalId = donacion.getDonacionOriginalId();
     Donacion donacionOriginal =
@@ -101,7 +103,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
             personaDonanteId,
             LocalDateTime.now(ZoneId.systemDefault()),
             idPersonaBeneficiaria,
-            donacion.getDescripcion()));
+            donacion.getDescripcion(),
+            patenteCamion));
   }
 
   private static UUID obtenerOrganizacionId(DonacionIndependiente donacion) {
