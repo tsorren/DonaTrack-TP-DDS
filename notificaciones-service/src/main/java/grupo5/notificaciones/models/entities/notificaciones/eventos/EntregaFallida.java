@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EntregaFallida extends EventoDeDonacion {
-
+  private static final String SEPARADOR_MOTIVO = ". Motivo: ";
   private Persona administracion;
   private String motivo;
   private boolean replanificable;
@@ -37,12 +37,9 @@ public class EntregaFallida extends EventoDeDonacion {
   @Override
   public List<Notificacion> generarNotificaciones() {
     Notificacion aDonante = new Notificacion(this.getPersona().getId(), this.armarMensajeDonante());
-
     Notificacion aBeneficiario =
         new Notificacion(this.getEntidadBeneficiaria().getId(), this.armarMensajeBeneficiario());
-
     Notificacion aAdmin = new Notificacion(this.administracion.getId(), this.armarMensajeAdmin());
-
     return List.of(aDonante, aBeneficiario, aAdmin);
   }
 
@@ -50,7 +47,7 @@ public class EntregaFallida extends EventoDeDonacion {
   protected String armarMensajeDonante() {
     return "No pudimos entregar tu donación de "
         + getDetalleDonacion()
-        + ". Motivo: "
+        + SEPARADOR_MOTIVO
         + motivo
         + "."
         + (replanificable ? " Vamos a reprogramar la entrega." : "");
@@ -60,7 +57,7 @@ public class EntregaFallida extends EventoDeDonacion {
   protected String armarMensajeBeneficiario() {
     return "No pudimos entregarte la donación "
         + getDetalleDonacion()
-        + ". Motivo: "
+        + SEPARADOR_MOTIVO
         + motivo
         + "."
         + (replanificable ? " La entrega será reprogramada." : "");
@@ -73,7 +70,7 @@ public class EntregaFallida extends EventoDeDonacion {
         + getEntidadBeneficiaria().getDenominacion()
         + ", donación: "
         + getDetalleDonacion()
-        + ". Motivo: "
+        + SEPARADOR_MOTIVO
         + motivo
         + ". Replanificada: "
         + (replanificable ? "sí" : "no");
