@@ -45,19 +45,19 @@ class NecesidadExtraordinariaTests {
     necesidad.actualizarCantidadNecesitada(30);
 
     Bien bienOriginal1 =
-        new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+        new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bien1 =
         new BienNormalizado(
             bienOriginal1, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     Bien bienOriginal2 =
-        new Bien("descripcion2", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+        new Bien("descripcion2", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bien2 =
         new BienNormalizado(
             bienOriginal2, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     Bien bienOriginal3 =
-        new Bien("descripcion3", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+        new Bien("descripcion3", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bien3 =
         new BienNormalizado(
             bienOriginal3, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);

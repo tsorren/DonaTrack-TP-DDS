@@ -20,6 +20,14 @@ public record ItemDonacionIndependiente(BienNormalizado bien, Integer cantidad) 
     }
   }
 
+  public Double getPesoTotal() {
+    return bien.pesoUnitario() * cantidad;
+  }
+
+  public Double getVolumenTotal() {
+    return bien.volumenUnitario() * cantidad;
+  }
+
   public ItemDonacionIndependiente fragmentarse(Integer cantidadNecesitada) {
     if (this.cantidad() <= cantidadNecesitada) {
       throw new BusinessStateException(

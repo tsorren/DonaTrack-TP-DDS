@@ -13,8 +13,6 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -57,9 +55,7 @@ public class DonacionMapper {
     Deposito deposito =
         new Deposito(dto.nombreDeposito(), direccionMapper.toEntity(dto.direccion()));
 
-    Donacion donacion =
-        new Donacion(
-            donanteId, deposito, dto.descripcion(), LocalDateTime.now(ZoneId.systemDefault()));
+    Donacion donacion = new Donacion(donanteId, deposito, dto.descripcion(), dto.fecha());
 
     if (dto.items() != null) {
       dto.items().forEach(item -> donacion.agregarItem(toItemEntity(item)));
@@ -114,7 +110,13 @@ public class DonacionMapper {
 
   private static ItemDonacion toItemEntity(ItemDonacionInputDTO dto) {
     Bien bien =
-        new Bien(dto.descripcionBien(), dto.fotoUrl(), dto.fechaVencimiento(), dto.estadoBien());
+        new Bien(
+            dto.descripcionBien(),
+            dto.fotoUrl(),
+            dto.fechaVencimiento(),
+            dto.estadoBien(),
+            dto.pesoUnitario(),
+            dto.volumenUnitario());
     return new ItemDonacion(bien, dto.cantidad());
   }
 
@@ -124,6 +126,8 @@ public class DonacionMapper {
         item.bien().fotoUrl(),
         item.bien().fechaVencimiento(),
         item.bien().estado(),
+        item.bien().pesoUnitario(),
+        item.bien().volumenUnitario(),
         item.cantidad());
   }
 

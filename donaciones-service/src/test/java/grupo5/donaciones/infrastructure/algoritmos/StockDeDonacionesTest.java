@@ -37,7 +37,8 @@ class StockDeDonacionesTest {
     Donacion donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
-    Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    Bien bien =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(
             bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);

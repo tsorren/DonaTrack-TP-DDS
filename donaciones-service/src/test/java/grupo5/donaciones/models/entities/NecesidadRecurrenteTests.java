@@ -50,7 +50,7 @@ class NecesidadRecurrenteTests {
             TEST_DATE.minusDays(5));
 
     Bien bienOriginal =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bien =
         new BienNormalizado(
             bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
