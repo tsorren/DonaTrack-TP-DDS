@@ -39,7 +39,7 @@ public class LogisticaEventListener {
                 aplicarCambioEstado(
                     donacionId,
                     new CambioEstadoDonacionIndependienteRequestDTO(
-                        TipoEstadoDonacion.EN_TRASLADO, null, null),
+                        TipoEstadoDonacion.EN_TRASLADO, null, null, evento.urlMapa(), null, null),
                     "RutaIniciada"));
   }
 
@@ -52,7 +52,8 @@ public class LogisticaEventListener {
 
     aplicarCambioEstado(
         evento.donacionIndependienteId(),
-        new CambioEstadoDonacionIndependienteRequestDTO(TipoEstadoDonacion.ENTREGADA, null, null),
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, null, null),
         "EntregaExitosa");
   }
 
@@ -66,7 +67,7 @@ public class LogisticaEventListener {
     aplicarCambioEstado(
         evento.donacionIndependienteId(),
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGA_FALLIDA, evento.justificacion(), null),
+            TipoEstadoDonacion.ENTREGA_FALLIDA, evento.justificacion(), null, null, null, null),
         "EntregaFallida");
   }
 

@@ -5,8 +5,7 @@ import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.donaciones.dto.comunicaciones.DonacionExitosaRequest;
-import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaDTO;
+import grupo5.donaciones.dto.comunicaciones.*;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
@@ -78,7 +77,7 @@ class DonacionesIndependientesServiceTest {
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null);
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
 
     assertThrows(
         RecursoNoEncontradoException.class, () -> service.cambiarEstado(id, request, ACTOR));
@@ -93,7 +92,7 @@ class DonacionesIndependientesServiceTest {
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null);
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -111,7 +110,8 @@ class DonacionesIndependientesServiceTest {
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(TipoEstadoDonacion.VENCIDA, null, null);
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.VENCIDA, null, null, null, null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -129,7 +129,8 @@ class DonacionesIndependientesServiceTest {
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(TipoEstadoDonacion.EN_TRASLADO, null, null);
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -147,7 +148,7 @@ class DonacionesIndependientesServiceTest {
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null);
+            TipoEstadoDonacion.EN_TRASLADO, null, null, "http://mapa/ruta-1", null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -164,7 +165,8 @@ class DonacionesIndependientesServiceTest {
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(TipoEstadoDonacion.ENTREGADA, null, null);
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -190,7 +192,7 @@ class DonacionesIndependientesServiceTest {
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGA_FALLIDA, "Dirección incorrecta", null);
+            TipoEstadoDonacion.ENTREGA_FALLIDA, "Dirección incorrecta", null, null, null, false);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -209,7 +211,7 @@ class DonacionesIndependientesServiceTest {
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGA_FALLIDA, "", null);
+            TipoEstadoDonacion.ENTREGA_FALLIDA, "", null, null, null, null);
 
     assertThrows(IllegalArgumentException.class, () -> service.cambiarEstado(id, request, ACTOR));
     verify(repositoryMock, never()).save(any());
@@ -223,7 +225,8 @@ class DonacionesIndependientesServiceTest {
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(TipoEstadoDonacion.EN_DEPOSITO, null, null);
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.EN_DEPOSITO, null, null, null, null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -240,7 +243,8 @@ class DonacionesIndependientesServiceTest {
 
     // EnDeposito a ENTREGADA es una transición inválida
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(TipoEstadoDonacion.ENTREGADA, null, null);
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null);
 
     assertThrows(BusinessStateException.class, () -> service.cambiarEstado(id, request, ACTOR));
     verify(repositoryMock, never()).save(any());

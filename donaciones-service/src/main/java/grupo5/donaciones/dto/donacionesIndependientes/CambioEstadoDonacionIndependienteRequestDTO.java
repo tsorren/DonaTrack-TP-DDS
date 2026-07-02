@@ -5,5 +5,8 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDona
 public record CambioEstadoDonacionIndependienteRequestDTO(
     TipoEstadoDonacion estado,
     String justificacion, // solo para ENTREGA_FALLIDA
-    Long necesidadId // solo para ASIGNADA
+    Long necesidadId, // solo para ASIGNADA
+    String urlMapa, // solo para EN_TRASLADO
+    String patenteCamion, // solo para ENTREGADA
+    Boolean replanificable // solo para ENTREGA_FALLIDA
     ) {}

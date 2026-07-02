@@ -3,6 +3,7 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.DonacionExitosaRequest;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallidaDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
@@ -44,44 +45,80 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     switch (request.estado()) {
       case TipoEstadoDonacion.ASIGNACION_REALIZADA -> donacion.asignar(actor, null);
       case TipoEstadoDonacion.VENCIDA -> donacion.vencer(actor);
-      case TipoEstadoDonacion.EN_TRASLADO -> donacion.planificarRuta(actor);
-      case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(actor);
+      case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.planificarRuta(actor);
+
+      case TipoEstadoDonacion.EN_TRASLADO -> {
+        donacion.iniciarRecorrido(actor);
+
+        DatosDestino destino = obtenerDatosDestino(donacion);
+        notificacionesFeignClient.enviarEvento(
+            new EventoDonacionRecibidaDTO(
+                obtenerIdPersonaDonante(donacion),
+                LocalDateTime.now(),
+                destino.idPersonaBeneficiaria(),
+                donacion.getDescripcion(),
+                request.urlMapa()));
+      }
+
       case TipoEstadoDonacion.ENTREGADA -> {
         donacion.confirmarEntrega(actor);
         UUID donanteId = donacion.getDonacionOriginal().getDonante().getId();
-        UUID personaDonanteId =
-            donacion.getDonacionOriginal().getDonante().getPersona() != null
-                ? donacion.getDonacionOriginal().getDonante().getPersona().getId()
-                : null;
-        UUID organizacionId = null;
-        UUID idPersonaBeneficiaria = null;
-        if (donacion.getAsignadaA() != null) {
-          Necesidad necesidad = donacion.getAsignadaA().obtenerNecesidad();
-          if (necesidad != null && necesidad.getEntidad() != null) {
-            organizacionId = necesidad.getEntidad().getId();
-            if (necesidad.getEntidad().getJuridica() != null) {
-              idPersonaBeneficiaria = necesidad.getEntidad().getJuridica().getId();
-            }
-          }
-        }
+        DatosDestino destino = obtenerDatosDestino(donacion);
+
         incentivosFeignClient.procesarDonacionExitosa(
-            new DonacionExitosaRequest(donanteId, organizacionId));
+            new DonacionExitosaRequest(donanteId, destino.organizacionId()));
 
         notificacionesFeignClient.enviarEvento(
             new EventoDonacionRecibidaDTO(
-                personaDonanteId,
+                obtenerIdPersonaDonante(donacion),
                 LocalDateTime.now(),
-                idPersonaBeneficiaria,
-                donacion.getDescripcion()));
+                destino.idPersonaBeneficiaria(),
+                donacion.getDescripcion(),
+                request.patenteCamion()));
       }
-      case TipoEstadoDonacion.ENTREGA_FALLIDA -> donacion.registrarFalla(
-          request.justificacion(), actor);
+
+      case TipoEstadoDonacion.ENTREGA_FALLIDA -> {
+        donacion.registrarFalla(request.justificacion(), actor);
+
+        DatosDestino destino = obtenerDatosDestino(donacion);
+        notificacionesFeignClient.enviarEvento(
+            new EventoEntregaFallidaDTO(
+                obtenerIdPersonaDonante(donacion),
+                LocalDateTime.now(),
+                destino.idPersonaBeneficiaria(),
+                donacion.getDescripcion(),
+                null, // TODO: resolver persona adminsitradora
+                request.justificacion(),
+                request.replanificable() // TODO: resolver logica de replanificacion
+                ));
+      }
+
       case TipoEstadoDonacion.EN_DEPOSITO -> donacion.retornar(actor);
       default -> throw new IllegalArgumentException("Estado inválido: " + request.estado());
     }
 
     repositorio.save(donacion);
     return toDTO(donacion);
+  }
+
+  private UUID obtenerIdPersonaDonante(DonacionIndependiente donacion) {
+    return donacion.getDonacionOriginal().getDonante().getPersona() != null
+        ? donacion.getDonacionOriginal().getDonante().getPersona().getId()
+        : null;
+  }
+
+  private record DatosDestino(UUID organizacionId, UUID idPersonaBeneficiaria) {}
+
+  private DatosDestino obtenerDatosDestino(DonacionIndependiente donacion) {
+    if (donacion.getAsignadaA() == null) return new DatosDestino(null, null);
+    Necesidad necesidad = donacion.getAsignadaA().obtenerNecesidad();
+    if (necesidad == null || necesidad.getEntidad() == null) return new DatosDestino(null, null);
+    UUID organizacionId = necesidad.getEntidad().getId();
+    UUID idPersonaBeneficiaria =
+        necesidad.getEntidad().getJuridica() != null
+            ? necesidad.getEntidad().getJuridica().getId()
+            : null;
+    return new DatosDestino(organizacionId, idPersonaBeneficiaria);
   }
 
   private static DonacionIndependienteResponseDTO toDTO(DonacionIndependiente donacion) {
