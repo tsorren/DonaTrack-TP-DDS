@@ -7,7 +7,7 @@ import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import grupo5.incentivos.models.entities.misiones.MisionRacha;
+import grupo5.incentivos.models.entities.donante.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;

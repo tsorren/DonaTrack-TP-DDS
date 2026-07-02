@@ -4,5 +4,4 @@ public enum EstadoRuta {
   PENDIENTE,
   EN_TRASLADO,
   COMPLETADA,
-  CON_ERRORES
 }

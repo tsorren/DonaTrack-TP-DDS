@@ -26,20 +26,29 @@ public class CriterioPorMedioDeContacto implements CriterioDuplicado {
     }
 
     for (Persona personaGuardada : personasRepository.findAll()) {
-      if (personaGuardada.getMediosDeContacto() == null) continue;
-
-      for (MedioDeContacto medioImportado : personaAImportar.getMediosDeContacto()) {
-        for (MedioDeContacto medioGuardado : personaGuardada.getMediosDeContacto()) {
-          if (hayCoincidenciaInteligente(medioImportado, medioGuardado)) {
-            return Optional.of(personaGuardada);
-          }
-        }
+      if (tienenMedioEnComun(personaAImportar, personaGuardada)) {
+        return Optional.of(personaGuardada);
       }
     }
     return Optional.empty();
   }
 
-  private boolean hayCoincidenciaInteligente(MedioDeContacto medio1, MedioDeContacto medio2) {
+  private static boolean tienenMedioEnComun(Persona p1, Persona p2) {
+    if (p1.getMediosDeContacto() == null || p2.getMediosDeContacto() == null) {
+      return false;
+    }
+    for (MedioDeContacto medio1 : p1.getMediosDeContacto()) {
+      for (MedioDeContacto medio2 : p2.getMediosDeContacto()) {
+        if (hayCoincidenciaInteligente(medio1, medio2)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean hayCoincidenciaInteligente(
+      MedioDeContacto medio1, MedioDeContacto medio2) {
     if (medio1 == null || medio2 == null) return false;
 
     // Si ambos son Correos
@@ -58,8 +67,8 @@ public class CriterioPorMedioDeContacto implements CriterioDuplicado {
       String val2 = tel2.obtenerNumeroCompleto();
       if (val1 == null || val2 == null) return false;
 
-      String limpio1 = val1.replaceAll("[^0-9]", "");
-      String limpio2 = val2.replaceAll("[^0-9]", "");
+      String limpio1 = val1.replaceAll("\\D", "");
+      String limpio2 = val2.replaceAll("\\D", "");
 
       return !limpio1.isEmpty()
           && !limpio2.isEmpty()

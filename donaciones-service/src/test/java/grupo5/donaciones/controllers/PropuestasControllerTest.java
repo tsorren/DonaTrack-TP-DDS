@@ -9,7 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.donaciones.controllers.impl.PropuestasController;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
-import grupo5.donaciones.dto.propuestas.PropuestaResponseDTO;
+import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
+import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
@@ -44,7 +45,12 @@ class PropuestasControllerTest {
   @Test
   void listar_deberiaRetornarOkYListaPropuestas() throws Exception {
     UUID id = UUID.randomUUID();
-    PropuestaResponseDTO dto = new PropuestaResponseDTO(id, "APROBADA", "Necesidad abrigo");
+    NecesidadResumenDTO necesidad =
+        new NecesidadResumenDTO(
+            UUID.randomUUID(), "Necesidad abrigo", 10, "EXTRAORDINARIA", "PENDIENTE");
+    PropuestaDTO dto =
+        new PropuestaDTO(
+            id, EstadoPropuesta.APROBADA, java.time.LocalDateTime.now(), necesidad, List.of());
 
     when(propuestaService.listarPropuestas()).thenReturn(List.of(dto));
 
@@ -54,14 +60,14 @@ class PropuestasControllerTest {
         .andExpect(jsonPath("$.size()").value(1))
         .andExpect(jsonPath("$[0].id").value(id.toString()))
         .andExpect(jsonPath("$[0].estado").value("APROBADA"))
-        .andExpect(jsonPath("$[0].necesidadDescripcion").value("Necesidad abrigo"));
+        .andExpect(jsonPath("$[0].necesidad.descripcion").value("Necesidad abrigo"));
   }
 
   @Test
   void actualizarEstado_deberiaRetornarOk_CuandoRequestEsValido() throws Exception {
     UUID id = UUID.randomUUID();
-    ActualizarEstadoRequestDTO request = new ActualizarEstadoRequestDTO();
-    request.setEstado(EstadoPropuesta.APROBADA);
+    ActualizarEstadoRequestDTO request =
+        new ActualizarEstadoRequestDTO(EstadoPropuesta.APROBADA, null);
 
     doNothing().when(propuestaService).actualizarEstado(id, EstadoPropuesta.APROBADA);
 

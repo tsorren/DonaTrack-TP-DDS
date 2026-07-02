@@ -29,14 +29,17 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   }
 
   public EntidadBeneficiariaOutputDTO crearEntidad(EntidadBeneficiariaInputDTO input) {
+    grupo5.donaciones.models.entities.personas.Persona persona =
+        personasRepository
+            .findById(input.juridicaId())
+            .orElseThrow(() -> new RecursoNoEncontradoException(input.juridicaId()));
 
-    Juridica juridica =
-        (Juridica)
-            personasRepository
-                .findById(input.juridicaId())
-                .orElseThrow(() -> new RecursoNoEncontradoException(input.juridicaId()));
+    if (!(persona instanceof Juridica)) {
+      throw new grupo5.common.exceptions.ValidationException(
+          grupo5.common.exceptions.ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
+    }
 
-    EntidadBeneficiaria guardada = repository.save(new EntidadBeneficiaria(juridica));
+    EntidadBeneficiaria guardada = repository.save(new EntidadBeneficiaria(input.juridicaId()));
 
     return mapper.toOutputDTO(guardada);
   }

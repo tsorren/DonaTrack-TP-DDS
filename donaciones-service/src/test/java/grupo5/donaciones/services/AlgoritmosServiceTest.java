@@ -8,9 +8,7 @@ import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
-import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.INecesidadesRepository;
-import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
+import grupo5.donaciones.models.repositories.*;
 import grupo5.donaciones.services.impl.AlgoritmosService;
 import java.util.Collections;
 import java.util.List;
@@ -25,9 +23,16 @@ class AlgoritmosServiceTest {
 
   private IDonacionesIndependientesRepository donacionRepositoryMock;
   private INecesidadesRepository necesidadRepositoryMock;
-  private PropuestaRepository propuestaRepositoryMock;
+  private IPropuestasRepository propuestaRepositoryMock;
   private ComparadorTexto comparadorTextoMock;
   private NotificacionesFeignClient notificacionesFeignClientMock;
+  private grupo5.donaciones.models.repositories.ISubcategoriasRepository
+      subcategoriasRepositoryMock;
+  private IDonacionesRepository donacionOriginalRepositoryMock;
+  private IDonantesRepository donantesRepositoryMock;
+  private grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+      entidadesBeneficiariasRepositoryMock;
+  private org.springframework.context.ApplicationEventPublisher eventPublisherMock;
 
   private AlgoritmosService service;
 
@@ -35,9 +40,16 @@ class AlgoritmosServiceTest {
   void setUp() {
     donacionRepositoryMock = mock(IDonacionesIndependientesRepository.class);
     necesidadRepositoryMock = mock(INecesidadesRepository.class);
-    propuestaRepositoryMock = mock(PropuestaRepository.class);
+    propuestaRepositoryMock = mock(IPropuestasRepository.class);
     comparadorTextoMock = mock(ComparadorTexto.class);
     notificacionesFeignClientMock = mock(NotificacionesFeignClient.class);
+    subcategoriasRepositoryMock =
+        mock(grupo5.donaciones.models.repositories.ISubcategoriasRepository.class);
+    donacionOriginalRepositoryMock = mock(IDonacionesRepository.class);
+    donantesRepositoryMock = mock(IDonantesRepository.class);
+    entidadesBeneficiariasRepositoryMock =
+        mock(grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository.class);
+    eventPublisherMock = mock(org.springframework.context.ApplicationEventPublisher.class);
 
     service =
         new AlgoritmosService(
@@ -45,19 +57,25 @@ class AlgoritmosServiceTest {
             necesidadRepositoryMock,
             propuestaRepositoryMock,
             comparadorTextoMock,
-            notificacionesFeignClientMock);
+            notificacionesFeignClientMock,
+            subcategoriasRepositoryMock,
+            donacionOriginalRepositoryMock,
+            donantesRepositoryMock,
+            entidadesBeneficiariasRepositoryMock,
+            eventPublisherMock);
   }
 
   @Test
   void ejecutar_deberiaBuscarDonacionesYNecesidadesYConsolidarResultados() {
     when(donacionRepositoryMock.findEnDeposito()).thenReturn(Collections.emptyList());
-    when(necesidadRepositoryMock.findByEstaSatisfechaFalse()).thenReturn(Collections.emptyList());
+    when(necesidadRepositoryMock.findByEstaSatisfechaFalseActivaTrue())
+        .thenReturn(Collections.emptyList());
 
     List<Propuesta> resultado = service.ejecutar();
 
     assertNotNull(resultado);
     verify(donacionRepositoryMock, times(1)).findEnDeposito();
-    verify(necesidadRepositoryMock, times(1)).findByEstaSatisfechaFalse();
+    verify(necesidadRepositoryMock, times(1)).findByEstaSatisfechaFalseActivaTrue();
   }
 
   @Test
@@ -76,6 +94,7 @@ class AlgoritmosServiceTest {
   void actualizarEstadoPropuesta_deberiaAprobarPropuesta_CuandoEstadoEsAprobada() {
     UUID id = UUID.randomUUID();
     Propuesta propuestaMock = mock(Propuesta.class);
+    when(propuestaMock.getDomainEvents()).thenReturn(List.of());
     when(propuestaRepositoryMock.findById(id)).thenReturn(Optional.of(propuestaMock));
 
     service.actualizarEstadoPropuesta(id, EstadoPropuesta.APROBADA);
@@ -88,51 +107,74 @@ class AlgoritmosServiceTest {
   void
       actualizarEstadoPropuesta_deberiaAprobarPropuesta_YEnviarNotificacion_CuandoTieneFragmentaciones() {
     UUID id = UUID.randomUUID();
-    Propuesta propuesta = new Propuesta();
-    propuesta.setId(id);
+    Propuesta propuesta = new Propuesta(id);
 
     // We need a Necesidad, Entidad, Juridica
     grupo5.donaciones.models.entities.necesidades.Necesidad necesidadMock =
         mock(grupo5.donaciones.models.entities.necesidades.Necesidad.class);
     grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria entidadMock =
         mock(grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria.class);
-    grupo5.donaciones.models.entities.personas.Juridica juridicaMock =
-        mock(grupo5.donaciones.models.entities.personas.Juridica.class);
     UUID juridicaId = UUID.randomUUID();
-    when(juridicaMock.getId()).thenReturn(juridicaId);
-    when(entidadMock.getJuridica()).thenReturn(juridicaMock);
-    when(necesidadMock.getEntidad()).thenReturn(entidadMock);
+    UUID entidadId = UUID.randomUUID();
+    UUID necesidadId = UUID.randomUUID();
+    when(necesidadMock.getId()).thenReturn(necesidadId);
+    when(entidadMock.juridicaId()).thenReturn(juridicaId);
+    when(necesidadMock.getEntidadId()).thenReturn(entidadId);
+    when(entidadesBeneficiariasRepositoryMock.findById(entidadId))
+        .thenReturn(Optional.of(entidadMock));
 
-    propuesta.setNecesidadQueSatisface(necesidadMock);
+    propuesta.asociarNecesidad(necesidadId);
+    when(necesidadRepositoryMock.findById(necesidadId)).thenReturn(Optional.of(necesidadMock));
 
-    // We need a fragmentation
-    grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion fragmentationMock =
-        mock(grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion.class);
-    grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente
-        donacionIndependienteMock =
-            mock(
-                grupo5
-                    .donaciones
-                    .models
-                    .entities
-                    .donacionesIndependientes
-                    .DonacionIndependiente
-                    .class);
-    grupo5.donaciones.models.entities.donaciones.Donacion donacionOriginalMock =
-        mock(grupo5.donaciones.models.entities.donaciones.Donacion.class);
+    // Build real DonacionIndependiente for fragmentation
+    UUID donacionOriginalId = UUID.randomUUID();
+    UUID donanteId = UUID.randomUUID();
     grupo5.donaciones.models.entities.donantes.Donante donanteMock =
         mock(grupo5.donaciones.models.entities.donantes.Donante.class);
-    grupo5.donaciones.models.entities.personas.Humana humanaMock =
-        mock(grupo5.donaciones.models.entities.personas.Humana.class);
     UUID donantePersonaId = UUID.randomUUID();
-    when(humanaMock.getId()).thenReturn(donantePersonaId);
-    when(donanteMock.getPersona()).thenReturn(humanaMock);
-    when(donacionOriginalMock.getDonante()).thenReturn(donanteMock);
-    when(donacionIndependienteMock.getDonacionOriginal()).thenReturn(donacionOriginalMock);
-    when(donacionIndependienteMock.getDescripcion()).thenReturn("Ropa de abrigo");
-    when(fragmentationMock.getDonacionOriginal()).thenReturn(donacionIndependienteMock);
+    when(donanteMock.personaId()).thenReturn(donantePersonaId);
+    grupo5.donaciones.models.entities.donaciones.Donacion donacionOriginalMock =
+        mock(grupo5.donaciones.models.entities.donaciones.Donacion.class);
+    when(donacionOriginalMock.getDonanteId()).thenReturn(donanteId);
+    when(donacionOriginalMock.getDescripcion()).thenReturn("Ropa de abrigo");
 
-    propuesta.setPosiblesFragmentaciones(List.of(fragmentationMock));
+    // Build a real DonacionIndependiente with items
+    grupo5.donaciones.models.entities.categorias.Categoria categoria =
+        new grupo5.donaciones.models.entities.categorias.Categoria(
+            "Ropa", false, true, grupo5.donaciones.models.entities.categorias.Unidad.UNIDADES);
+    grupo5.donaciones.models.entities.categorias.Subcategoria subcategoria =
+        new grupo5.donaciones.models.entities.categorias.Subcategoria(
+            categoria.getId(), "Ropa Invierno");
+    grupo5.donaciones.models.entities.donaciones.Bien bien =
+        new grupo5.donaciones.models.entities.donaciones.Bien(
+            "Campera",
+            "img.png",
+            java.time.LocalDate.now().plusYears(1),
+            grupo5.donaciones.models.entities.donaciones.Estado.NUEVO);
+    grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado bienNormalizado =
+        new grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado(
+            bien,
+            subcategoria.getId(),
+            1.0,
+            grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion.ACEPTADO,
+            true,
+            false);
+    grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente item =
+        new grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente(
+            bienNormalizado, 5);
+    grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente donacion =
+        new grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente(
+            donacionOriginalId, java.util.List.of(item));
+
+    propuesta.agregarFragmentacion(donacion, 5);
+
+    // Service: donacionRepository.findById(f.getDonacionOriginalId()) → donacion
+    when(donacionRepositoryMock.findById(donacion.getId())).thenReturn(Optional.of(donacion));
+    // Service: donacionOriginalRepository.findById(di.getDonacionOriginalId()) →
+    // donacionOriginalMock
+    when(donacionOriginalRepositoryMock.findById(donacionOriginalId))
+        .thenReturn(Optional.of(donacionOriginalMock));
+    when(donantesRepositoryMock.findById(donanteId)).thenReturn(Optional.of(donanteMock));
 
     when(propuestaRepositoryMock.findById(id)).thenReturn(Optional.of(propuesta));
 

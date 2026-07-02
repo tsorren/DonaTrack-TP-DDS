@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public record DonacionOutputDTO(
     UUID id,
-    UUID idDonante,
+    DonanteResumenDTO donante,
     List<ItemDonacionOutputDTO> items,
     String descripcion,
     LocalDateTime fecha,

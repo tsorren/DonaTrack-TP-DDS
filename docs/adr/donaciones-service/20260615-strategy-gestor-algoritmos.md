@@ -1,6 +1,6 @@
 # Strategy en GestorAlgoritmos
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-15
 - Deciders: Sofia Deane
 - Tags: matchmaking, patrones-de-diseño, algoritmos

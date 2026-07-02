@@ -126,6 +126,10 @@ public abstract class BaseIT {
   }
 
   protected String apiCrearDonacion(String donanteId, String descripcion, String itemDescripcion, int cantidad) {
+    return apiCrearDonacion(donanteId, descripcion, itemDescripcion, cantidad, "NUEVO");
+  }
+
+  protected String apiCrearDonacion(String donanteId, String descripcion, String itemDescripcion, int cantidad, String estadoBien) {
     Map<String, Object> payload = fixture("donaciones/crear-donacion.json");
     payload.put("idDonante", donanteId);
     payload.put("descripcion", descripcion);
@@ -135,6 +139,7 @@ public abstract class BaseIT {
       if (!items.isEmpty()) {
         items.get(0).put("descripcionBien", itemDescripcion);
         items.get(0).put("cantidad", cantidad);
+        items.get(0).put("estadoBien", estadoBien);
       }
     }
     return io.restassured.RestAssured.given()
@@ -181,26 +186,13 @@ public abstract class BaseIT {
   }
 
   protected void esperarReplicacionPersona(String personaId) {
-    long start = System.currentTimeMillis();
-    while (System.currentTimeMillis() - start < 5000) {
-      try {
-        int statusCode = io.restassured.RestAssured.given()
+    org.awaitility.Awaitility.await()
+        .atMost(java.time.Duration.ofSeconds(5))
+        .pollInterval(java.time.Duration.ofMillis(10))
+        .ignoreExceptions()
+        .until(() -> io.restassured.RestAssured.given()
             .when()
             .get(NOTIFICACIONES_URL + "/api/notificaciones/personas/" + personaId)
-            .getStatusCode();
-        if (statusCode == 200) {
-          return;
-        }
-      } catch (Exception e) {
-        // ignore and retry
-      }
-      try {
-        Thread.sleep(10);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        break;
-      }
-    }
-    throw new RuntimeException("Persona " + personaId + " no se replicó a tiempo");
+            .getStatusCode() == 200);
   }
 }

@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 
 import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.entities.personas.Telefono;
-import grupo5.notificaciones.models.entities.personas.WhatsApp;
+import grupo5.notificaciones.models.entities.personas.TipoTelefono;
 import grupo5.notificaciones.models.ports.Anonimizable;
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +20,7 @@ class MedioDeContactoTest {
 
   private Correo correo;
   private Telefono telefono;
-  private WhatsApp whatsapp;
+  private Telefono whatsapp;
 
   @BeforeEach
   void setUp() {
@@ -33,11 +33,13 @@ class MedioDeContactoTest {
     telefono.setCaracteristica("+54");
     telefono.setCodigoArea("11");
     telefono.setNumero("12345678");
+    telefono.setTipo(TipoTelefono.ESTANDAR);
 
-    whatsapp = new WhatsApp();
+    whatsapp = new Telefono();
     whatsapp.setCaracteristica("+54");
     whatsapp.setCodigoArea("11");
     whatsapp.setNumero("87654321");
+    whatsapp.setTipo(TipoTelefono.WHATSAPP);
   }
 
   @Test

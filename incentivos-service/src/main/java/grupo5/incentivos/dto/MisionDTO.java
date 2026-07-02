@@ -1,7 +1,7 @@
 package grupo5.incentivos.dto;
 
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
-import grupo5.incentivos.models.entities.misiones.Mision;
+import grupo5.incentivos.models.entities.donante.misiones.Mision;
 import java.time.LocalDate;
 
 public record MisionDTO(

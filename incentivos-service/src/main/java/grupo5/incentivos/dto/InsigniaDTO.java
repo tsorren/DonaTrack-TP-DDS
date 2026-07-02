@@ -1,6 +1,6 @@
 package grupo5.incentivos.dto;
 
-import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.donante.insignias.Insignia;
 import java.time.LocalDate;
 
 public record InsigniaDTO(
@@ -8,10 +8,10 @@ public record InsigniaDTO(
 
   public static InsigniaDTO desde(Insignia insignia) {
     return new InsigniaDTO(
-        insignia.getNombre(),
-        insignia.getDescripcion(),
-        insignia.getImagenUrl(),
-        insignia.isVisible(),
-        insignia.getFechaObtenida());
+        insignia.nombre(),
+        insignia.descripcion(),
+        insignia.imagenUrl(),
+        insignia.visible(),
+        insignia.fechaObtenida());
   }
 }

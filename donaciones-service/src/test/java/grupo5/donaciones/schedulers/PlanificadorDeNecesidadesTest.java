@@ -2,9 +2,11 @@ package grupo5.donaciones.schedulers;
 
 import static org.mockito.Mockito.*;
 
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
-import grupo5.donaciones.models.repositories.impl.NecesidadRecurrenteRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
+import grupo5.donaciones.services.impl.PlanificacionNecesidadesService;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,22 +14,25 @@ import org.junit.jupiter.api.Test;
 
 class PlanificadorDeNecesidadesTest {
 
-  private NecesidadRecurrenteRepository necesidadRepositoryMock;
+  private INecesidadesRepository necesidadRepositoryMock;
+  private PlanificacionNecesidadesService planificacionServiceMock;
   private PlanificadorDeNecesidades planificador;
 
   @BeforeEach
   void setUp() {
-    necesidadRepositoryMock = mock(NecesidadRecurrenteRepository.class);
-    planificador = new PlanificadorDeNecesidades(necesidadRepositoryMock);
+    necesidadRepositoryMock = mock(INecesidadesRepository.class);
+    planificacionServiceMock = mock(PlanificacionNecesidadesService.class);
+    planificador = new PlanificadorDeNecesidades(necesidadRepositoryMock, planificacionServiceMock);
   }
 
   @Test
   void generarNuevosPeriodos_deberiaHacerNada_CuandoNoHayNecesidadesActivas() {
-    when(necesidadRepositoryMock.findByActivaTrue()).thenReturn(Collections.emptyList());
+    when(necesidadRepositoryMock.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue())
+        .thenReturn(Collections.emptyList());
 
     planificador.generarNuevosPeriodos();
 
-    verify(necesidadRepositoryMock, times(1)).findByActivaTrue();
+    verify(necesidadRepositoryMock, times(1)).findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue();
     verify(necesidadRepositoryMock, never()).save(any());
   }
 
@@ -36,7 +41,8 @@ class PlanificadorDeNecesidadesTest {
     NecesidadRecurrente recurrenteMock = mock(NecesidadRecurrente.class);
     PeriodoNecesidad periodoActualMock = mock(PeriodoNecesidad.class);
 
-    when(necesidadRepositoryMock.findByActivaTrue()).thenReturn(List.of(recurrenteMock));
+    when(necesidadRepositoryMock.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue())
+        .thenReturn(List.of((Necesidad) recurrenteMock));
     when(recurrenteMock.hayQueGenerarNuevo(any())).thenReturn(true);
     when(recurrenteMock.obtenerPeriodoActual()).thenReturn(periodoActualMock);
 
@@ -51,7 +57,8 @@ class PlanificadorDeNecesidadesTest {
   void generarNuevosPeriodos_deberiaNoCrearPeriodo_CuandoNoHayQueGenerar() {
     NecesidadRecurrente recurrenteMock = mock(NecesidadRecurrente.class);
 
-    when(necesidadRepositoryMock.findByActivaTrue()).thenReturn(List.of(recurrenteMock));
+    when(necesidadRepositoryMock.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue())
+        .thenReturn(List.of((Necesidad) recurrenteMock));
     when(recurrenteMock.hayQueGenerarNuevo(any())).thenReturn(false);
 
     planificador.generarNuevosPeriodos();

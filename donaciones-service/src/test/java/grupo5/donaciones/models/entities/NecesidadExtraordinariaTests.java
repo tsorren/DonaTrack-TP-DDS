@@ -34,43 +34,48 @@ class NecesidadExtraordinariaTests {
   @BeforeEach
   void setUp() {
 
-    Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donante donante = new Donante(humana.getId());
+    Donacion donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Muebles Escolares");
-    necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
+    necesidad =
+        new NecesidadExtraordinaria(subcategoria.getId(), 30, "30 bancos y sillas para el aula");
 
-    necesidad.setCantidadNecesitada(30);
+    necesidad.actualizarCantidadNecesitada(30);
 
     Bien bienOriginal1 =
         new Bien("descripcion1", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bien1 =
-        new BienNormalizado(bienOriginal1, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal1, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     Bien bienOriginal2 =
         new Bien("descripcion2", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bien2 =
-        new BienNormalizado(bienOriginal2, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal2, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     Bien bienOriginal3 =
         new Bien("descripcion3", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bien3 =
-        new BienNormalizado(bienOriginal3, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal3, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien1, 15);
     List<ItemDonacionIndependiente> items1 = new ArrayList<>();
     items1.add(item1);
-    donacionAsignada1 = new DonacionIndependiente(donacionOriginal, items1);
+    donacionAsignada1 = new DonacionIndependiente(donacionOriginal.getId(), items1);
 
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien2, 15);
     List<ItemDonacionIndependiente> items2 = new ArrayList<>();
     items2.add(item2);
-    donacionAsignada2 = new DonacionIndependiente(donacionOriginal, items2);
+    donacionAsignada2 = new DonacionIndependiente(donacionOriginal.getId(), items2);
 
     ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien3, 15);
     List<ItemDonacionIndependiente> items3 = new ArrayList<>();
     items3.add(item3);
-    donacionAsignada3 = new DonacionIndependiente(donacionOriginal, items3);
+    donacionAsignada3 = new DonacionIndependiente(donacionOriginal.getId(), items3);
   }
 
   @Test

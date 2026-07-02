@@ -1,6 +1,6 @@
 # Adopción de Mockito para Pruebas Unitarias
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-21
 - Deciders: Decisión Grupal
 - Tags: testing

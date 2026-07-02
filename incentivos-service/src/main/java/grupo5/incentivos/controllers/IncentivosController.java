@@ -45,6 +45,13 @@ public class IncentivosController implements IIncentivosController {
     return ResponseEntity.noContent().build();
   }
 
+  @PatchMapping("/donantes/{donanteId}")
+  public ResponseEntity<Void> modificarDonante(
+      @PathVariable UUID donanteId, @RequestBody ModificarDonanteRequest request) {
+    incentivosService.modificarDonante(donanteId, request);
+    return ResponseEntity.ok().build();
+  }
+
   @GetMapping("/donantes/{donanteId}/metricas")
   public ResponseEntity<MetricasDonanteDTO> obtenerMetricas(@PathVariable UUID donanteId) {
     return ResponseEntity.ok(incentivosService.obtenerMetricas(donanteId));
@@ -60,7 +67,7 @@ public class IncentivosController implements IIncentivosController {
     return ResponseEntity.ok(incentivosService.obtenerInsignias(donanteId));
   }
 
-  @PatchMapping("/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad")
+  @PutMapping("/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad")
   public ResponseEntity<Void> configurarVisibilidad(
       @PathVariable UUID donanteId,
       @PathVariable String nombreInsignia,

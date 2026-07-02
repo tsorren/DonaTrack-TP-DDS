@@ -1,18 +1,19 @@
 package grupo5.tests.performance;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
-
 import grupo5.tests.BaseIT;
-import io.restassured.http.ContentType;
-import java.util.*;
 import org.junit.jupiter.api.Test;
 
-public class PerformanceStressIT extends BaseIT {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class PerformanceStressIT extends BaseIT {
 
   @Test
-  public void testDonorCreationPerformance() {
+  void testDonorCreationPerformance() {
     int totalRequests = 100;
     List<Long> latencies = new ArrayList<>();
     int errorCount = 0;
@@ -50,7 +51,7 @@ public class PerformanceStressIT extends BaseIT {
   }
 
   @Test
-  public void testDonationEventProcessingStress() {
+  void testDonationEventProcessingStress() {
     // 1. Pre-register a donor to run stress tests on
     String personaId = apiCrearPersonaHumana("79998888", "StressDonor", "stress.donor@example.com");
     String donorId = apiCrearDonante(personaId);

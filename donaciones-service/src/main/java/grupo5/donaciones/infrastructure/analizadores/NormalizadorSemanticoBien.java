@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.analizadores;
 
 import grupo5.donaciones.models.entities.categorias.AliasSubcategoria;
+import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
@@ -8,7 +9,8 @@ import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
-import grupo5.donaciones.models.repositories.impl.SubcategoriasRepositoryEnMemoria;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,15 +20,18 @@ import org.springframework.stereotype.Component;
 public class NormalizadorSemanticoBien {
 
   private final ComparadorTexto comparador;
-  private final SubcategoriasRepositoryEnMemoria subcategoriaRepository;
+  private final ISubcategoriasRepository subcategoriaRepository;
+  private final ICategoriasRepository categoriasRepository;
   private final double umbralAceptacion;
 
   public NormalizadorSemanticoBien(
       ComparadorTexto comparador,
-      SubcategoriasRepositoryEnMemoria subcategoriaRepository,
+      ISubcategoriasRepository subcategoriaRepository,
+      ICategoriasRepository categoriasRepository,
       @Value("${donatrack.normalizacion.umbral-aceptacion:0.6}") double umbralAceptacion) {
     this.comparador = comparador;
     this.subcategoriaRepository = subcategoriaRepository;
+    this.categoriasRepository = categoriasRepository;
     this.umbralAceptacion = umbralAceptacion;
   }
 
@@ -39,14 +44,14 @@ public class NormalizadorSemanticoBien {
             i ->
                 itemsNormalizados.add(
                     new ItemDonacionNormalizado(
-                        donacion, normalizarBien(i, subcategorias), i.getCantidad())));
+                        donacion.getId(), normalizarBien(i, subcategorias), i.cantidad())));
 
     return itemsNormalizados;
   }
 
   private BienNormalizado normalizarBien(ItemDonacion item, List<Subcategoria> subcategorias) {
-    Bien bien = item.getBien();
-    String descripcion = bien.getDescripcion();
+    Bien bien = item.bien();
+    String descripcion = bien.descripcion();
 
     if (subcategorias == null || subcategorias.isEmpty()) {
       throw new grupo5.common.exceptions.ValidationException(
@@ -59,7 +64,7 @@ public class NormalizadorSemanticoBien {
 
     for (Subcategoria subcategoria : subcategorias) {
       for (AliasSubcategoria aliasObj : subcategoria.getAliases()) {
-        String alias = aliasObj.getAlias();
+        String alias = aliasObj.alias();
         int palabrasEnComun = comparador.contarPalabrasEnComun(descripcion, alias);
         int palabrasAlias = comparador.contarPalabrasEnComun(alias, alias);
 
@@ -77,6 +82,15 @@ public class NormalizadorSemanticoBien {
             ? EstadoNormalizacion.ACEPTADO
             : EstadoNormalizacion.PENDIENTE_REVISION;
 
-    return new BienNormalizado(bien, subcategoriaElegida, mejorConfianza, estado);
+    Categoria categoria =
+        subcategoriaElegida.getCategoriaId() != null
+            ? categoriasRepository.findById(subcategoriaElegida.getCategoriaId()).orElse(null)
+            : null;
+    boolean conVencimiento =
+        categoria != null && Boolean.TRUE.equals(categoria.getConVencimiento());
+    boolean conUso = categoria != null && Boolean.TRUE.equals(categoria.getConUso());
+
+    return new BienNormalizado(
+        bien, subcategoriaElegida.getId(), mejorConfianza, estado, conVencimiento, conUso);
   }
 }

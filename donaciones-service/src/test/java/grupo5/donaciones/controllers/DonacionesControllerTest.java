@@ -15,6 +15,7 @@ import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.services.IDonacionesService;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,10 +61,11 @@ class DonacionesControllerTest {
     DonacionOutputDTO output =
         new DonacionOutputDTO(
             UUID.randomUUID(),
-            UUID.randomUUID(),
+            new grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO(
+                UUID.randomUUID(), UUID.randomUUID(), null),
             List.of(),
             "descripcion",
-            LocalDateTime.of(2026, 6, 18, 0, 0),
+            LocalDateTime.of(2026, Month.JUNE, 18, 0, 0),
             dirOut,
             EstadoDonacion.CARGADA,
             List.of());

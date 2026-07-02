@@ -17,6 +17,7 @@ public class Camion implements AggregateRoot {
   private EstadoCamion estado;
 
   public Camion(String patente, Float capacidadVolumen, Float capacidadKG, Float altura) {
+    validarDatos(patente, capacidadVolumen, capacidadKG, altura);
     this.id = UUID.randomUUID();
     this.rutaId = null;
     this.patente = patente;
@@ -26,7 +27,20 @@ public class Camion implements AggregateRoot {
     this.estado = EstadoCamion.DISPONIBLE;
   }
 
+  private static void validarDatos(
+      String patente, Float capacidadVolumen, Float capacidadKG, Float altura) {
+    if (patente == null || capacidadVolumen == null || capacidadKG == null || altura == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (patente.trim().isEmpty() || capacidadVolumen <= 0 || capacidadKG <= 0 || altura <= 0) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
   public void asignarARuta(UUID rutaId) {
+    if (rutaId == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
     if (estado != EstadoCamion.DISPONIBLE) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
@@ -44,16 +58,8 @@ public class Camion implements AggregateRoot {
     this.rutaId = null;
   }
 
-  public void mandarAMantenimiento() {
-    if (this.estado == EstadoCamion.EN_RUTA) {
-      throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
-    }
-
-    this.estado = EstadoCamion.EN_MANTENIMIENTO;
-  }
-
   public void habilitar() {
-    if (this.estado != EstadoCamion.EN_MANTENIMIENTO) {
+    if (this.estado != EstadoCamion.DESHABILITADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
@@ -61,7 +67,7 @@ public class Camion implements AggregateRoot {
   }
 
   public void deshabilitar() {
-    if (this.estado == EstadoCamion.EN_RUTA) {
+    if (this.estado != EstadoCamion.DISPONIBLE) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
