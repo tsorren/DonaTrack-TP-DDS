@@ -18,6 +18,7 @@ public class RabbitMQConfig {
   public static final String EXCHANGE = "logistica.exchange";
 
   // Una cola por tipo de evento
+  public static final String QUEUE_RUTA_ASIGNADA = "donaciones.ruta.asignada";
   public static final String QUEUE_RUTA_INICIADA = "donaciones.ruta.iniciada";
   public static final String QUEUE_ENTREGA_EXITOSA = "donaciones.entrega.exitosa";
   public static final String QUEUE_ENTREGA_FALLIDA = "donaciones.entrega.fallida";

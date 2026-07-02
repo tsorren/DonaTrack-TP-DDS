@@ -13,6 +13,7 @@ public class RabbitMQConfig {
 
   public static final String EXCHANGE = "logistica.exchange";
 
+  public static final String ROUTING_KEY_RUTA_ASIGNADA = "ruta.asignada";
   public static final String ROUTING_KEY_RUTA_INICIADA = "ruta.iniciada";
   public static final String ROUTING_KEY_ENTREGA_EXITOSA = "entrega.exitosa";
   public static final String ROUTING_KEY_ENTREGA_FALLIDA = "entrega.fallida";

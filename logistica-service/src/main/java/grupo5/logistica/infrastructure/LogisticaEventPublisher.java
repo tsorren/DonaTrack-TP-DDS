@@ -3,6 +3,7 @@ package grupo5.logistica.infrastructure;
 import grupo5.logistica.config.RabbitMQConfig;
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
+import grupo5.logistica.dto.eventos.EventoRutaAsignada;
 import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,12 @@ public class LogisticaEventPublisher {
   public LogisticaEventPublisher(RabbitTemplate rabbitTemplate) {
     this.rabbitTemplate = rabbitTemplate;
   }
+
+    public void publicarRutaAsignada(EventoRutaAsignada evento) {
+        log.info("Publicando RutaAsignadaEvent: rutaId={}", evento.rutaId());
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_RUTA_ASIGNADA, evento);
+    }
 
   public void publicarRutaIniciada(EventoRutaIniciada evento) {
     log.info("Publicando RutaIniciadaEvent: rutaId={}", evento.rutaId());
