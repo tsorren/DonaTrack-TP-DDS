@@ -145,24 +145,9 @@ class CamionesControllerTest {
   // ===================== PATCH /api/camiones/{id}/estado =====================
 
   @Test
-  void cambiarEstado_deberiaRetornar400_cuandoSeIntentaPasarAEnRuta() throws Exception {
-    CambioEstadoCamionRequestDTO request = new CambioEstadoCamionRequestDTO(EstadoCamion.EN_RUTA);
-    when(camionesService.cambiarEstado(eq(ID), any()))
-        .thenThrow(new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA));
-
-    mockMvc
-        .perform(
-            patch("/api/camiones/" + ID + "/estado")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  void cambiarEstado_deberiaRetornar200_cuandoTransicionDeDisponibleADeshabilitado()
-      throws Exception {
+  void cambiarEstado_deberiaRetornar200_cuandoTransicionValida() throws Exception {
     CambioEstadoCamionRequestDTO request =
-        new CambioEstadoCamionRequestDTO(EstadoCamion.DESHABILITADO);
+        new CambioEstadoCamionRequestDTO(EstadoCamion.DESHABILITADO, null);
     CamionResponseDTO responseDeshabilitado =
         new CamionResponseDTO(ID, "AB123CD", 10f, 2f, 5000f, EstadoCamion.DESHABILITADO, null);
 
@@ -178,9 +163,24 @@ class CamionesControllerTest {
   }
 
   @Test
+  void cambiarEstado_deberiaRetornar400_cuandoSeIntentaPasarAEnRuta() throws Exception {
+    CambioEstadoCamionRequestDTO request =
+        new CambioEstadoCamionRequestDTO(EstadoCamion.EN_RUTA, null);
+    when(camionesService.cambiarEstado(eq(ID), any()))
+        .thenThrow(new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA));
+
+    mockMvc
+        .perform(
+            patch("/api/camiones/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void cambiarEstado_deberiaRetornar404_cuandoCamionNoExiste() throws Exception {
     CambioEstadoCamionRequestDTO request =
-        new CambioEstadoCamionRequestDTO(EstadoCamion.DESHABILITADO);
+        new CambioEstadoCamionRequestDTO(EstadoCamion.DESHABILITADO, null);
     when(camionesService.cambiarEstado(eq(ID), any()))
         .thenThrow(new RecursoNoEncontradoException(ID));
 

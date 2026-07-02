@@ -152,9 +152,8 @@ class CamionesServiceTest {
     UUID id = UUID.randomUUID();
     Camion camion = mock(Camion.class);
     CambioEstadoCamionRequestDTO request =
-        new CambioEstadoCamionRequestDTO(EstadoCamion.DISPONIBLE);
+        new CambioEstadoCamionRequestDTO(EstadoCamion.DISPONIBLE, null);
 
-    // No pasa por buscarCamionActivo — acepta DESHABILITADO
     when(camionRepository.findById(id)).thenReturn(Optional.of(camion));
     when(camionMapper.toResponseDTO(camion))
         .thenReturn(
@@ -170,7 +169,8 @@ class CamionesServiceTest {
   void cambiarEstado_deberiaLanzarExcepcion_cuandoSeIntentaPasarAEnRuta() {
     UUID id = UUID.randomUUID();
     Camion camion = mock(Camion.class);
-    CambioEstadoCamionRequestDTO request = new CambioEstadoCamionRequestDTO(EstadoCamion.EN_RUTA);
+    CambioEstadoCamionRequestDTO request =
+        new CambioEstadoCamionRequestDTO(EstadoCamion.EN_RUTA, null);
 
     when(camion.getEstado()).thenReturn(EstadoCamion.DISPONIBLE);
     when(camionRepository.findById(id)).thenReturn(Optional.of(camion));
@@ -183,7 +183,7 @@ class CamionesServiceTest {
   void cambiarEstado_deberiaLanzarExcepcion_cuandoCamionNoExiste() {
     UUID id = UUID.randomUUID();
     CambioEstadoCamionRequestDTO request =
-        new CambioEstadoCamionRequestDTO(EstadoCamion.DESHABILITADO);
+        new CambioEstadoCamionRequestDTO(EstadoCamion.DESHABILITADO, null);
 
     when(camionRepository.findById(id)).thenReturn(Optional.empty());
 
