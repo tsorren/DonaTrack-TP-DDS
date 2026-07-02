@@ -54,7 +54,7 @@ class DonacionesIndependientesControllerTest {
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null);
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
     DonacionIndependienteResponseDTO response =
         new DonacionIndependienteResponseDTO(
             id,
@@ -92,7 +92,7 @@ class DonacionesIndependientesControllerTest {
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null);
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
 
     mockMvcWithoutAdvice
         .perform(
@@ -107,7 +107,7 @@ class DonacionesIndependientesControllerTest {
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null);
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
 
     when(service.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenThrow(new RecursoNoEncontradoException(id));
@@ -126,7 +126,8 @@ class DonacionesIndependientesControllerTest {
   void cambiarEstado_DeberiaRetornarConflict_CuandoTransicionEsInvalida() throws Exception {
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(TipoEstadoDonacion.ENTREGADA, null, null);
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, null, null);
 
     when(service.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenThrow(new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA));
@@ -147,7 +148,7 @@ class DonacionesIndependientesControllerTest {
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGA_FALLIDA, "", null);
+            TipoEstadoDonacion.ENTREGA_FALLIDA, "", null, null, null, null);
 
     when(service.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenThrow(
