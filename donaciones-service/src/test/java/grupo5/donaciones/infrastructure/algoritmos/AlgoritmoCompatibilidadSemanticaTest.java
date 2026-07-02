@@ -44,7 +44,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
     subcategoriaOtra = new Subcategoria(categoria.getId(), "Muebles de Oficina");
-    Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    Bien bien =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     bienNormalizadoOtro =
         new BienNormalizado(
             bien, subcategoriaOtra.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
@@ -54,7 +55,8 @@ class AlgoritmoCompatibilidadSemanticaTest {
   }
 
   private DonacionIndependiente crearDonacion(int cantidad, String descripcion) {
-    Bien bien = new Bien(descripcion, "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    Bien bien =
+        new Bien(descripcion, "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienConDescripcion =
         new BienNormalizado(
             bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);

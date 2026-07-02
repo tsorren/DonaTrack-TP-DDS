@@ -1,0 +1,56 @@
+$kind: http-request
+name: Crear Donacion
+url: http://localhost:8080/api/donaciones
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"idDonante\": \"c494333c-640b-4e68-9a7e-16a4ec7dcc90\",\r
+
+    \  \"descripcion\": \"Donación estándar\",\r
+
+    \  \"items\": [\r
+
+    \    {\r
+
+    \      \"descripcionBien\": \"arroz\",\r
+
+    \      \"cantidad\": 10,\r
+
+    \      \"estadoBien\": \"NUEVO\",\r
+
+    \      \"fechaVencimiento\": \"2027-12-31\",\r
+
+    \      \"pesoUnitario\": 1.0,\r
+
+    \      \"volumenUnitario\": 0.01\r
+
+    \    }\r
+
+    \  ],\r
+
+    \  \"nombreDeposito\": \"Deposito Central\",\r
+
+    \  \"direccion\": {\r
+
+    \    \"calle\": \"Av. Medrano\",\r
+
+    \    \"altura\": 951,\r
+
+    \    \"piso\": null,\r
+
+    \    \"departamento\": null,\r
+
+    \    \"codigoPostal\": \"1179\",\r
+
+    \    \"localidad\": \"CABA\",\r
+
+    \    \"provincia\": \"CABA\",\r
+
+    \    \"pais\": \"Argentina\"\r
+
+    \  }\r
+
+    }"
+order: 1783004766431

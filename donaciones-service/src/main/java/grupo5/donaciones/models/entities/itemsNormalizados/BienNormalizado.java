@@ -54,6 +54,14 @@ public record BienNormalizado(
     }
   }
 
+  public Double pesoUnitario() {
+    return bienOriginal.pesoUnitario();
+  }
+
+  public Double volumenUnitario() {
+    return bienOriginal.volumenUnitario();
+  }
+
   public Boolean estaVencido() {
     return bienOriginal != null && bienOriginal.estaVencido();
   }

@@ -1,0 +1,13 @@
+$kind: http-request
+name: Crear Donante
+url: https://localhost:8080/api/donantes
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: iDersona
+      value: ""
+      description: ""
+      disabled: false
+order: 3276516041920215

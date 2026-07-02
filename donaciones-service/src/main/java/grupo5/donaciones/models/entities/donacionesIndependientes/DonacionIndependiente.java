@@ -95,6 +95,14 @@ public class DonacionIndependiente implements AggregateRoot {
     return new DonacionIndependiente(this.donacionOriginalId, itemsExtraidos);
   }
 
+  public Double getPesoTotal() {
+    return items.stream().mapToDouble(ItemDonacionIndependiente::getPesoTotal).sum();
+  }
+
+  public Double getVolumenTotal() {
+    return items.stream().mapToDouble(ItemDonacionIndependiente::getVolumenTotal).sum();
+  }
+
   // ── Métodos de negocio ─────────────────────────────────────────────────────
 
   public void registrar(String actor) {
