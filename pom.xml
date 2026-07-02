@@ -14,6 +14,7 @@
         <module>donaciones-service</module>
         <module>notificaciones-service</module>
         <module>incentivos-service</module>
+        <module>logistica-service</module>
         <module>integration-tests</module>
     </modules>
 
