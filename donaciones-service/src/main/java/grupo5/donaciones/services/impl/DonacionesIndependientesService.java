@@ -13,6 +13,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDona
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         notificacionesFeignClient.enviarEvento(
             new EventoDonacionRecibidaDTO(
                 obtenerIdPersonaDonante(donacion),
-                LocalDateTime.now(),
+                LocalDateTime.now(Clock.systemDefaultZone()),
                 destino.idPersonaBeneficiaria(),
                 donacion.getDescripcion(),
                 request.urlMapa()));
@@ -84,7 +85,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         notificacionesFeignClient.enviarEvento(
             new EventoEntregaFallidaDTO(
                 obtenerIdPersonaDonante(donacion),
-                LocalDateTime.now(),
+                LocalDateTime.now(Clock.systemDefaultZone()),
                 destino.idPersonaBeneficiaria(),
                 donacion.getDescripcion(),
                 null, // TODO: resolver persona adminsitradora
@@ -101,7 +102,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     return toDTO(donacion);
   }
 
-  private UUID obtenerIdPersonaDonante(DonacionIndependiente donacion) {
+  private static UUID obtenerIdPersonaDonante(DonacionIndependiente donacion) {
     return donacion.getDonacionOriginal().getDonante().getPersona() != null
         ? donacion.getDonacionOriginal().getDonante().getPersona().getId()
         : null;
@@ -109,7 +110,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
 
   private record DatosDestino(UUID organizacionId, UUID idPersonaBeneficiaria) {}
 
-  private DatosDestino obtenerDatosDestino(DonacionIndependiente donacion) {
+  private static DatosDestino obtenerDatosDestino(DonacionIndependiente donacion) {
     if (donacion.getAsignadaA() == null) return new DatosDestino(null, null);
     Necesidad necesidad = donacion.getAsignadaA().obtenerNecesidad();
     if (necesidad == null || necesidad.getEntidad() == null) return new DatosDestino(null, null);
