@@ -1,7 +1,7 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.personas.Persona;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,10 +15,10 @@ public abstract class EventoDeDonacion extends EventoNotificable {
   @Override
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacionDonante =
-        new Notificacion(this.getPersona(), this.armarMensajeDonante());
+        new Notificacion(this.getPersona().getId(), this.armarMensajeDonante());
 
     Notificacion notificacionBeneficiario =
-        new Notificacion(this.entidadBeneficiaria, this.armarMensajeBeneficiario());
+        new Notificacion(this.entidadBeneficiaria.getId(), this.armarMensajeBeneficiario());
 
     return List.of(notificacionDonante, notificacionBeneficiario);
   }

@@ -1,34 +1,44 @@
 package grupo5.notificaciones.models.entities.notificaciones;
 
-import grupo5.notificaciones.models.entities.medioDeContacto.MedioDeContacto;
-import grupo5.notificaciones.models.entities.medioDeContacto.NotificacionSender;
-import grupo5.notificaciones.models.entities.persona.Persona;
-import grupo5.notificaciones.models.entities.privacidad.Anonimizable;
+import grupo5.common.repositories.AggregateRoot;
+import grupo5.notificaciones.models.entities.personas.MedioDeContacto;
+import grupo5.notificaciones.models.entities.personas.Persona;
+import grupo5.notificaciones.models.ports.Anonimizable;
+import grupo5.notificaciones.models.ports.NotificacionSender;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
-public class Notificacion implements Anonimizable {
-  private Persona persona;
+public class Notificacion implements Anonimizable, AggregateRoot {
+  private UUID id;
+  private UUID personaId;
   private String mensaje;
   private LocalDateTime fechaCreacion;
+
   private EstadoNotificacion estadoNotificacion;
 
-  public Notificacion(Persona persona, String mensaje) {
+  public void actualizarEstado(EstadoNotificacion estadoNotificacion) {
+    this.estadoNotificacion = estadoNotificacion;
+  }
 
-    this.persona = persona;
+  public Notificacion(UUID personaId, String mensaje) {
+    this.id = UUID.randomUUID();
+    this.personaId = personaId;
     this.mensaje = mensaje;
     this.fechaCreacion = LocalDateTime.now(ZoneId.systemDefault());
     this.estadoNotificacion = EstadoNotificacion.PENDIENTE;
   }
 
-  public void notificar(NotificacionSender sender) {
-    List<MedioDeContacto> medios = this.ordenarMedios();
+  public void notificar(Persona persona, NotificacionSender sender) {
+    if (persona == null) {
+      this.estadoNotificacion = EstadoNotificacion.FALLIDA;
+      return;
+    }
+    List<MedioDeContacto> medios = this.ordenarMedios(persona);
 
     for (MedioDeContacto medio : medios) {
       try {
@@ -45,8 +55,8 @@ public class Notificacion implements Anonimizable {
     this.estadoNotificacion = EstadoNotificacion.FALLIDA;
   }
 
-  private List<MedioDeContacto> ordenarMedios() {
-    return this.persona.getMediosDeContacto().stream()
+  private List<MedioDeContacto> ordenarMedios(Persona persona) {
+    return persona.getMediosDeContacto().stream()
         .sorted(Comparator.comparing(MedioDeContacto::getEsPredeterminado).reversed())
         .toList();
   }
@@ -54,6 +64,5 @@ public class Notificacion implements Anonimizable {
   @Override
   public void anonimizar() {
     this.mensaje = Anonimizable.VALOR_STRING;
-    this.persona.anonimizar();
   }
 }

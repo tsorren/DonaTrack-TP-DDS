@@ -1,0 +1,26 @@
+{
+  "tipo": "HUMANA",
+  "tipoDocumento": "DNI",
+  "documento": "12345678",
+  "nombre": "Preprod",
+  "apellido": "CD",
+  "genero": "HOMBRE",
+  "fechaNacimiento": "2000-01-01",
+  "mediosDeContacto": [
+    {
+      "tipo": "CORREO",
+      "esPredeterminado": true,
+      "direccionCorreo": "juan.perez@example.com"
+    }
+  ],
+  "direccion": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "piso": null,
+    "departamento": null,
+    "codigoPostal": "1179",
+    "localidad": "CABA",
+    "provincia": "CABA",
+    "pais": "Argentina"
+  }
+}

@@ -5,9 +5,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.bienes.*;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donaciones.segmentaciones.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.categorias.Categoria;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
+import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.entities.donaciones.Bien;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.Estado;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
+import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
+import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
+import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -18,31 +27,36 @@ import org.junit.jupiter.api.Test;
 class DonacionIndependienteFragmentacionTest {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
-  private SubCategoria subcategoria;
-  private Bien bien;
+  private Donacion donacion;
+  private BienNormalizado bienNormalizado;
   private DonacionIndependiente donacionIndependiente;
 
   @BeforeEach
   void setUp() {
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donante donante = new Donante(humana.getId());
+    donacion = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    subcategoria = new SubCategoria(categoria, "Ropa de Invierno");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
 
-    bien =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, subcategoria);
+    Bien bienOriginal =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    bienNormalizado =
+        new BienNormalizado(
+            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 10);
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 15);
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 10);
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 15);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(item1);
     items.add(item2);
 
-    donacionIndependiente = new DonacionIndependiente(subcategoria, items);
+    donacionIndependiente = new DonacionIndependiente(donacion.getId(), items);
   }
 
   @Test
   void fragmentarse_cuandoPideMenosQuantidadDelTotal_debeLanzarExcepcion() {
-    // Cantidad total es 25
     BusinessStateException exception =
         assertThrows(
             BusinessStateException.class,
@@ -54,7 +68,6 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_cuandoPideMasQuantidadDelTotal_debeLanzarExcepcion() {
-    // Cantidad total es 25
     BusinessStateException exception =
         assertThrows(
             BusinessStateException.class,
@@ -66,7 +79,6 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_exitoso_debeRetornarNuevaDonacion() {
-    // Cantidad total es 25, pidiendo 10
     DonacionIndependiente donacionFragmentada = donacionIndependiente.fragmentarse(10);
 
     assertNotNull(donacionFragmentada);
@@ -76,8 +88,6 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_exitoso_itemsSeDistribuyenCorrectamente() {
-    // Cantidad total es 25 (10 + 15)
-    // Fragmentando 12: debe tomar 10 del primer item y 2 del segundo
     DonacionIndependiente donacionFragmentada = donacionIndependiente.fragmentarse(12);
 
     assertEquals(12, donacionFragmentada.getCantidad());
@@ -87,23 +97,21 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_conMultiplesItems_extraePorCompleto() {
-    // Crear donación con 3 items: 5, 8, 12 (total 25)
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 5);
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 8);
-    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bien, 12);
+    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 5);
+    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 8);
+    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bienNormalizado, 12);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(item1);
     items.add(item2);
     items.add(item3);
 
-    DonacionIndependiente donacion = new DonacionIndependiente(subcategoria, items);
+    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion.getId(), items);
 
-    // Fragmentando 13: debe tomar 5 + 8 (completos)
-    DonacionIndependiente fragmentada = donacion.fragmentarse(13);
+    DonacionIndependiente fragmentada = donacionLocal.fragmentarse(13);
 
     assertEquals(13, fragmentada.getCantidad());
-    assertEquals(12, donacion.getCantidad());
+    assertEquals(12, donacionLocal.getCantidad());
     assertEquals(2, fragmentada.getItems().size(), "Debe haber extraído 2 items completos");
   }
 
@@ -114,7 +122,7 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void agregarItem_conItemValido_debeAgregarse() {
-    ItemDonacionIndependiente nuevoItem = new ItemDonacionIndependiente(bien, 5);
+    ItemDonacionIndependiente nuevoItem = new ItemDonacionIndependiente(bienNormalizado, 5);
     int cantidadActual = donacionIndependiente.getCantidad();
 
     donacionIndependiente.agregarItem(nuevoItem);
@@ -139,24 +147,19 @@ class DonacionIndependienteFragmentacionTest {
   @Test
   void quitarItem_conItemValido_debieraQuitarse() {
     ItemDonacionIndependiente item = donacionIndependiente.getItems().getFirst();
-    int cantidadInicial = item.getCantidad();
+    int cantidadInicial = item.cantidad();
     int cantidadTotalInicial = donacionIndependiente.getCantidad();
 
     donacionIndependiente.quitarItem(item);
 
+    int diferencia = cantidadTotalInicial - cantidadInicial;
     assertEquals(
-        reveal(cantidadTotalInicial - cantidadInicial),
-        donacionIndependiente.getCantidad(),
-        "Debe disminuir la cantidad total");
-  }
-
-  private int reveal(int val) {
-    return val;
+        diferencia, donacionIndependiente.getCantidad(), "Debe disminuir la cantidad total");
   }
 
   @Test
   void quitarItem_conItemNoPerteneciente_debeLanzarExcepcion() {
-    ItemDonacionIndependiente itemExterno = new ItemDonacionIndependiente(bien, 5);
+    ItemDonacionIndependiente itemExterno = new ItemDonacionIndependiente(bienNormalizado, 5);
 
     ValidationException exception =
         assertThrows(

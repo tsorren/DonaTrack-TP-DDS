@@ -5,12 +5,11 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import grupo5.notificaciones.models.entities.medioDeContacto.Correo;
-import grupo5.notificaciones.models.entities.medioDeContacto.Telefono;
-import grupo5.notificaciones.models.entities.medioDeContacto.WhatsApp;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
-import grupo5.notificaciones.models.entities.persona.Persona;
+import grupo5.notificaciones.models.entities.personas.*;
+import java.util.ArrayList;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,11 +29,11 @@ class NotificacionRouterTest {
   private Persona persona;
   private Correo correo;
   private Telefono telefono;
-  private WhatsApp whatsapp;
+  private Telefono whatsapp;
 
   @BeforeEach
   void setUp() {
-    persona = new Persona();
+    persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Donante Test", TipoPersona.HUMANA);
 
     correo = new Correo();
     correo.setDireccionCorreo("donante@test.com");
@@ -45,12 +44,14 @@ class NotificacionRouterTest {
     telefono.setCodigoArea("11");
     telefono.setNumero("55556666");
     telefono.setEsPredeterminado(false);
+    telefono.setTipo(TipoTelefono.ESTANDAR);
 
-    whatsapp = new WhatsApp();
+    whatsapp = new Telefono();
     whatsapp.setCaracteristica("+54");
     whatsapp.setCodigoArea("11");
     whatsapp.setNumero("99998888");
     whatsapp.setEsPredeterminado(false);
+    whatsapp.setTipo(TipoTelefono.WHATSAPP);
   }
 
   @Test
@@ -58,8 +59,8 @@ class NotificacionRouterTest {
     persona.agregarMedioDeContacto(correo);
     when(correoApi.enviarMail(eq("donante@test.com"), anyString())).thenReturn(true);
 
-    Notificacion notificacion = new Notificacion(persona, "Tu donación fue asignada");
-    notificacion.notificar(router);
+    Notificacion notificacion = new Notificacion(persona.getId(), "Tu donación fue asignada");
+    notificacion.notificar(persona, router);
 
     assertEquals(EstadoNotificacion.ENVIADA, notificacion.getEstadoNotificacion());
     verify(correoApi, times(1)).enviarMail("donante@test.com", "Tu donación fue asignada");
@@ -73,8 +74,8 @@ class NotificacionRouterTest {
     persona.agregarMedioDeContacto(telefono);
     when(telefonoApi.enviarSms(eq("+541155556666"), anyString())).thenReturn(true);
 
-    Notificacion notificacion = new Notificacion(persona, "Tu donación fue asignada");
-    notificacion.notificar(router);
+    Notificacion notificacion = new Notificacion(persona.getId(), "Tu donación fue asignada");
+    notificacion.notificar(persona, router);
 
     assertEquals(EstadoNotificacion.ENVIADA, notificacion.getEstadoNotificacion());
     verify(telefonoApi, times(1)).enviarSms("+541155556666", "Tu donación fue asignada");
@@ -88,8 +89,8 @@ class NotificacionRouterTest {
     persona.agregarMedioDeContacto(whatsapp);
     when(whatsappApi.enviarWhatsApp(eq("+541199998888"), anyString())).thenReturn(true);
 
-    Notificacion notificacion = new Notificacion(persona, "Subiste de categoría");
-    notificacion.notificar(router);
+    Notificacion notificacion = new Notificacion(persona.getId(), "Subiste de categoría");
+    notificacion.notificar(persona, router);
 
     assertEquals(EstadoNotificacion.ENVIADA, notificacion.getEstadoNotificacion());
     verify(whatsappApi, times(1)).enviarWhatsApp("+541199998888", "Subiste de categoría");
@@ -104,8 +105,8 @@ class NotificacionRouterTest {
     when(correoApi.enviarMail(anyString(), anyString())).thenReturn(false);
     when(telefonoApi.enviarSms(eq("+541155556666"), anyString())).thenReturn(true);
 
-    Notificacion notificacion = new Notificacion(persona, "Tu donación fue asignada");
-    notificacion.notificar(router);
+    Notificacion notificacion = new Notificacion(persona.getId(), "Tu donación fue asignada");
+    notificacion.notificar(persona, router);
 
     assertEquals(EstadoNotificacion.ENVIADA, notificacion.getEstadoNotificacion());
     verify(correoApi, times(1)).enviarMail(anyString(), anyString());
@@ -119,8 +120,8 @@ class NotificacionRouterTest {
     persona.agregarMedioDeContacto(correo);
     when(correoApi.enviarMail(eq("donante@test.com"), anyString())).thenReturn(true);
 
-    Notificacion notificacion = new Notificacion(persona, "Mensaje de prueba");
-    notificacion.notificar(router);
+    Notificacion notificacion = new Notificacion(persona.getId(), "Mensaje de prueba");
+    notificacion.notificar(persona, router);
 
     assertEquals(EstadoNotificacion.ENVIADA, notificacion.getEstadoNotificacion());
     verify(correoApi, times(1)).enviarMail(anyString(), anyString());
@@ -134,8 +135,8 @@ class NotificacionRouterTest {
     when(correoApi.enviarMail(anyString(), anyString())).thenReturn(false);
     when(telefonoApi.enviarSms(anyString(), anyString())).thenReturn(false);
 
-    Notificacion notificacion = new Notificacion(persona, "Mensaje que no llegará");
-    notificacion.notificar(router);
+    Notificacion notificacion = new Notificacion(persona.getId(), "Mensaje que no llegará");
+    notificacion.notificar(persona, router);
 
     assertEquals(EstadoNotificacion.FALLIDA, notificacion.getEstadoNotificacion());
   }
@@ -148,16 +149,16 @@ class NotificacionRouterTest {
         .thenThrow(new RuntimeException("SMTP timeout"));
     when(telefonoApi.enviarSms(anyString(), anyString())).thenReturn(true);
 
-    Notificacion notificacion = new Notificacion(persona, "Mensaje con excepción");
-    notificacion.notificar(router);
+    Notificacion notificacion = new Notificacion(persona.getId(), "Mensaje con excepción");
+    notificacion.notificar(persona, router);
 
     assertEquals(EstadoNotificacion.ENVIADA, notificacion.getEstadoNotificacion());
   }
 
   @Test
   void notificar_cuandoPersonaSinMediosDeContacto_estadoDeberiaSerFallida() {
-    Notificacion notificacion = new Notificacion(persona, "Sin destinatario");
-    notificacion.notificar(router);
+    Notificacion notificacion = new Notificacion(persona.getId(), "Sin destinatario");
+    notificacion.notificar(persona, router);
 
     assertEquals(EstadoNotificacion.FALLIDA, notificacion.getEstadoNotificacion());
     verify(correoApi, never()).enviarMail(anyString(), anyString());

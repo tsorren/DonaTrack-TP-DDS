@@ -1,0 +1,68 @@
+package grupo5.donaciones.models.entities.necesidades;
+
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import lombok.Getter;
+
+@Getter
+public class NecesidadExtraordinaria extends Necesidad implements Asignable {
+  private List<DonacionIndependiente> donacionesAsignadas;
+
+  public NecesidadExtraordinaria(
+      UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
+    super(subcategoriaId, cantidadNecesitada, descripcion);
+    this.donacionesAsignadas = new ArrayList<>();
+  }
+
+  @Override
+  public TipoNecesidad getTipoNecesidad() {
+    return TipoNecesidad.EXTRAORDINARIA;
+  }
+
+  @Override
+  public NecesidadDTO toDTO() {
+    return super.toDTO(null);
+  }
+
+  @Override
+  public void asignarDonacion(DonacionIndependiente donacion) {
+    if (donacion == null) throw new ValidationException(ErrorCatalog.ASIGNAR_DONACION_NULA);
+    if (this.donacionesAsignadas.contains(donacion))
+      throw new ValidationException(ErrorCatalog.DONACION_YA_ASIGNADA);
+
+    this.donacionesAsignadas.add(donacion);
+  }
+
+  @Override
+  public void quitarDonacion(DonacionIndependiente donacion) {
+    if (!this.donacionesAsignadas.contains(donacion))
+      throw new ValidationException(ErrorCatalog.DONACION_NO_PERTENECE_A_NECESIDAD);
+
+    this.donacionesAsignadas.remove(donacion);
+  }
+
+  @Override
+  public Integer cantidadAcumulada() {
+    return this.donacionesAsignadas.stream().mapToInt(DonacionIndependiente::getCantidad).sum();
+  }
+
+  @Override
+  public boolean estaSatisfecha() {
+    return this.cantidadAcumulada() >= this.getCantidadNecesitada();
+  }
+
+  @Override
+  public boolean isActiva() {
+    return true;
+  }
+
+  @Override
+  public Necesidad obtenerNecesidad() {
+    return this;
+  }
+}

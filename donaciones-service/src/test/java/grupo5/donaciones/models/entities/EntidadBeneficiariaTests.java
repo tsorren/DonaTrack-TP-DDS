@@ -1,47 +1,38 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.beneficiarios.NecesidadExtraordinaria;
-import grupo5.donaciones.models.entities.bienes.Categoria;
-import grupo5.donaciones.models.entities.bienes.SubCategoria;
-import grupo5.donaciones.models.entities.bienes.Unidad;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class EntidadBeneficiariaTests {
-  private EntidadBeneficiaria entidad;
-  private NecesidadExtraordinaria necesidad;
+  private Juridica juridica;
+  private Humana representante;
+  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   @BeforeEach
   void setUp() {
-    Humana representante = new Humana("Juan", "Perez", LocalDate.now().minusYears(25));
-    Juridica juridica = new Juridica(representante);
-    entidad = new EntidadBeneficiaria(juridica);
-
-    Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    SubCategoria subcategoria = new SubCategoria(categoria, "Muebles Escolares");
-    necesidad = new NecesidadExtraordinaria(subcategoria, 30, "30 bancos y sillas para el aula");
+    representante = new Humana("Juan", "Perez", TEST_DATE.minusYears(25));
+    juridica = new Juridica(representante, "Empresa SA", TipoJuridico.EMPRESA, "Rubro");
   }
 
   @Test
-  void agregarNecesidad_deberiaIncrementarElTamanioDeLaLista() {
-    entidad.agregarNecesidad(necesidad);
+  void crearEntidadBeneficiaria_conJuridicaValida_deberiaInicializarCorrectamente() {
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica.getId());
 
-    assertEquals(1, entidad.getNecesidades().size());
-    assertTrue(entidad.getNecesidades().contains(necesidad));
+    assertNotNull(entidad.getId());
+    assertEquals(juridica.getId(), entidad.juridicaId());
   }
 
   @Test
-  void quitarNecesidad_deberiaReducirElTamanioDeLaLista() {
-    entidad.agregarNecesidad(necesidad);
-    entidad.quitarNecesidad(necesidad);
-
-    assertTrue(entidad.getNecesidades().isEmpty());
+  void crearEntidadBeneficiaria_conJuridicaNula_deberiaLanzarValidationException() {
+    assertThrows(ValidationException.class, () -> new EntidadBeneficiaria(null));
   }
 }

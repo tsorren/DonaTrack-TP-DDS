@@ -1,0 +1,180 @@
+{
+  "id": "1",
+  "name": "DonaTrack - Difusión de Insignias",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "insignia-ganada",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook - Insignia Ganada",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "notes": "Recibe el evento desde el backend cuando un donante gana una insignia.\nEspera: { donanteId, user, badge, description }"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Etapa 2: Construir el texto publicable para la red social\nconst data = $input.first().json.body;\n\nconst user = data.user || `Donante #${data.donanteId}`;\nconst badge = data.badge || 'Insignia';\nconst description = data.description || 'Logro desbloqueado en DonaTrack';\n\nconst postText = `🏅 ¡${user} acaba de obtener la insignia \"${badge}\" en DonaTrack!\\n\\n${description}\\n\\n#DonaTrack #Donaciones #Solidaridad`;\n\nreturn [{\n  json: {\n    donanteId: data.donanteId,\n    user,\n    badge,\n    description,\n    postText,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "2",
+      "name": "Construir Texto Publicable",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "notes": "Etapa 2: Formatea el mensaje que se publicaría en la red social"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Etapa 3: Simulación de generación de imagen\n// En producción, aquí se llamaría a una API como DALL-E, Stable Diffusion, etc.\n// Por ahora generamos una URL de imagen simulada.\n\nconst data = $input.first().json;\n\nconst imageUrl = `https://via.placeholder.com/800x400/FF6B35/FFFFFF?text=${encodeURIComponent(data.badge)}`;\n\nconsole.log(`[MOCK] Imagen generada para insignia '${data.badge}': ${imageUrl}`);\n\nreturn [{\n  json: {\n    ...data,\n    imageUrl,\n    imageGenerated: true\n  }\n}];"
+      },
+      "id": "3",
+      "name": "Generar Imagen (Mock)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "notes": "Etapa 3: Simula la generación de imagen asociada a la insignia.\nEn producción: llamar a DALL-E / Stable Diffusion / Canva API, etc."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://httpbin.org/post",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Mock-Social-Network",
+              "value": "DonaTrack-MockSocial"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "platform",
+              "value": "mock_social_network"
+            },
+            {
+              "name": "user_mention",
+              "value": "={{ $json.user }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.postText }}"
+            },
+            {
+              "name": "image_url",
+              "value": "={{ $json.imageUrl }}"
+            },
+            {
+              "name": "metadata",
+              "value": "={{ JSON.stringify({ donanteId: $json.donanteId, badge: $json.badge, timestamp: $json.timestamp }) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4",
+      "name": "Publicar en Red Social (Mock)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300],
+      "notes": "Etapa 4: Simula la publicación en red social enviando a httpbin.org.\nEn producción: reemplazar por nodo de Twitter/LinkedIn/Instagram con credenciales reales."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validar respuesta de la publicación simulada\nconst data = $input.first().json;\n\nconst publicado = data.url !== undefined; // httpbin devuelve la URL del request\n\nconsole.log(`[MOCK] Publicación en red social: ${publicado ? 'EXITOSA' : 'FALLIDA'}`);\n\nreturn [{\n  json: {\n    status: 'ok',\n    publicado,\n    mensaje: `Insignia '${$('Construir Texto Publicable').first().json.badge}' publicada correctamente (mock)`,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "5",
+      "name": "Confirmar Publicación",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "notes": "Registra el resultado de la publicación y prepara la respuesta al backend"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "6",
+      "name": "Responder al Backend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300],
+      "notes": "Responde al backend de DonaTrack confirmando que el flujo se procesó"
+    }
+  ],
+  "connections": {
+    "Webhook - Insignia Ganada": {
+      "main": [
+        [
+          {
+            "node": "Construir Texto Publicable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir Texto Publicable": {
+      "main": [
+        [
+          {
+            "node": "Generar Imagen (Mock)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Imagen (Mock)": {
+      "main": [
+        [
+          {
+            "node": "Publicar en Red Social (Mock)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar en Red Social (Mock)": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Publicación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar Publicación": {
+      "main": [
+        [
+          {
+            "node": "Responder al Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
