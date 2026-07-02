@@ -184,7 +184,7 @@ class DonacionesIndependientesServiceTest {
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.EN_TRASLADO, null, null, null, null, null);
+            TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -200,10 +200,14 @@ class DonacionesIndependientesServiceTest {
     donacion.planificarRuta(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(donacionRepositoryMock.findById(donacion.getDonacionOriginalId()))
+        .thenReturn(Optional.of(testDonacionOriginal));
+    when(donantesRepositoryMock.findById(testDonacionOriginal.getDonanteId()))
+        .thenReturn(Optional.of(testDonante));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null);
+            TipoEstadoDonacion.EN_TRASLADO, null, null, "http://mapa/ruta-1", null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -249,10 +253,14 @@ class DonacionesIndependientesServiceTest {
     donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(donacionRepositoryMock.findById(donacion.getDonacionOriginalId()))
+        .thenReturn(Optional.of(testDonacionOriginal));
+    when(donantesRepositoryMock.findById(testDonacionOriginal.getDonanteId()))
+        .thenReturn(Optional.of(testDonante));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGA_FALLIDA, "Dirección incorrecta", null, null, null, null);
+            TipoEstadoDonacion.ENTREGA_FALLIDA, "Dirección incorrecta", null, null, null, true);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
