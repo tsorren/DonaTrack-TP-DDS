@@ -19,7 +19,9 @@ class ItemDonacionTest {
 
   @BeforeEach
   void setUp() {
-    bien = new Bien("Abrigo de invierno", "abrigo.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    bien =
+        new Bien(
+            "Abrigo de invierno", "abrigo.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
   }
 
   @Test

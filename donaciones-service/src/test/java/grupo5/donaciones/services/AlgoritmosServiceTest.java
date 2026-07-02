@@ -150,7 +150,9 @@ class AlgoritmosServiceTest {
             "Campera",
             "img.png",
             java.time.LocalDate.now().plusYears(1),
-            grupo5.donaciones.models.entities.donaciones.Estado.NUEVO);
+            grupo5.donaciones.models.entities.donaciones.Estado.NUEVO,
+            1.0,
+            1.0);
     grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado bienNormalizado =
         new grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado(
             bien,

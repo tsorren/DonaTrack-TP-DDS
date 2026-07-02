@@ -12,37 +12,24 @@ import static org.hamcrest.Matchers.notNullValue;
 class DonationIntegrationIT extends BaseIT {
 
   @Test
-  void testRegistrarDonacion() {
-    // 1. Crear donante usando la plantilla base con overrides especificos para este test
-    Map<String, Object> donantePayload = fixture("personas/crear-persona-humana.json");
-    donantePayload.put("documento", "99998888");
-    donantePayload.put("nombre", "Donante");
-    donantePayload.put("apellido", "Preprod");
-    donantePayload.put("genero", "MUJER");
-    donantePayload.put("fechaNacimiento", "1990-10-10");
+  void testCrearDonacion() {
+    // 1. Crear persona
+    String personaId = apiCrearPersonaHumana("11112222", "Maria", "maria.gomez@example.com");
 
-    String donanteId =
-        given()
-            .contentType(ContentType.JSON)
-            .body(donantePayload)
-            .when()
-            .post(DONACIONES_URL + "/api/personas")
-            .then()
-            .statusCode(201)
-            .extract()
-            .path("id");
+    // 2. Crear donante en base a persona
+    String donanteId = apiCrearDonante(personaId);
 
-    // 2. Crear donacion usando la plantilla e inyectando el id dinamico del donante
+    // 3. Crear donacion usando la plantilla e inyectando el id dinamico del donante
     Map<String, Object> donacionPayload = fixture("donaciones/crear-donacion.json");
     donacionPayload.put("idDonante", donanteId);
 
     given()
-        .contentType(ContentType.JSON)
-        .body(donacionPayload)
-        .when()
-        .post(DONACIONES_URL + "/api/donaciones")
-        .then()
-        .statusCode(201)
-        .body("id", notNullValue());
+            .contentType(ContentType.JSON)
+            .body(donacionPayload)
+            .when()
+            .post(DONACIONES_URL + "/api/donaciones")
+            .then()
+            .statusCode(201)
+            .body("id", notNullValue());
   }
 }

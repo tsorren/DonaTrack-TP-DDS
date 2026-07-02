@@ -16,4 +16,12 @@ public record ItemDonacion(Bien bien, Integer cantidad) {
       throw new ValidationException(ErrorCatalog.ITEM_DONACION_CANTIDAD_INVALIDA);
     }
   }
+
+  public Double getPesoTotal() {
+    return bien.pesoUnitario() * cantidad;
+  }
+
+  public Double getVolumenTotal() {
+    return bien.volumenUnitario() * cantidad;
+  }
 }

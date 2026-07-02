@@ -45,7 +45,7 @@ class DonacionIndependienteMapperTest {
   @Test
   void toDTO_donacionValidaCompleta_deberiaMapearCorrectamente() {
     UUID originalId = UUID.randomUUID();
-    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO);
+    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
 
     UUID subcategoriaId = UUID.randomUUID();
     BienNormalizado bienNormalizado =
@@ -93,7 +93,7 @@ class DonacionIndependienteMapperTest {
   @Test
   void toDTO_sinSubcategoria_deberiaMapearSubcategoriaYCategoriaComoNull() {
     UUID originalId = UUID.randomUUID();
-    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO);
+    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, null, 0.9, EstadoNormalizacion.ACEPTADO);
     ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 3);
@@ -111,7 +111,7 @@ class DonacionIndependienteMapperTest {
   @Test
   void toDTO_subcategoriaInexistente_deberiaMapearSubcategoriaYCategoriaComoNull() {
     UUID originalId = UUID.randomUUID();
-    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO);
+    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
     UUID subcategoriaId = UUID.randomUUID();
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoriaId, 0.9, EstadoNormalizacion.ACEPTADO);
@@ -132,7 +132,7 @@ class DonacionIndependienteMapperTest {
   @Test
   void toDTO_subcategoriaExistenteSinCategoria_deberiaMapearCategoriaComoNull() {
     UUID originalId = UUID.randomUUID();
-    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO);
+    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
     UUID subcategoriaId = UUID.randomUUID();
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoriaId, 0.9, EstadoNormalizacion.ACEPTADO);
@@ -159,7 +159,7 @@ class DonacionIndependienteMapperTest {
   @Test
   void toDTO_categoriaExistenteConYSinTipoUnidad_deberiaMapearCorrectamente() {
     UUID originalId = UUID.randomUUID();
-    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO);
+    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
     UUID subcategoriaId = UUID.randomUUID();
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoriaId, 0.9, EstadoNormalizacion.ACEPTADO);
@@ -200,7 +200,7 @@ class DonacionIndependienteMapperTest {
   @Test
   void toDTO_conHistorialDeEstados_deberiaMapearHistorialCorrectamente() {
     UUID originalId = UUID.randomUUID();
-    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO);
+    Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, UUID.randomUUID(), 0.9, EstadoNormalizacion.ACEPTADO);
     ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 1);

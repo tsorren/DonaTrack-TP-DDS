@@ -40,7 +40,7 @@ class DonacionIndependienteFragmentacionTest {
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
 
     Bien bienOriginal =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     bienNormalizado =
         new BienNormalizado(
             bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);

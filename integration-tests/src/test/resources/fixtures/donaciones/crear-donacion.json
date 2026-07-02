@@ -6,7 +6,9 @@
       "descripcionBien": "arroz",
       "cantidad": 10,
       "estadoBien": "NUEVO",
-      "fechaVencimiento": "2027-12-31"
+      "fechaVencimiento": "2027-12-31",
+      "pesoUnitario": 1.0,
+      "volumenUnitario": 0.01
     }
   ],
   "nombreDeposito": "Deposito Central",

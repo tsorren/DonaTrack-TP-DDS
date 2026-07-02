@@ -55,7 +55,8 @@ class AsignableTests {
 
     periodoNecesidad = necesidadRecurrente.obtenerPeriodoActual();
 
-    Bien bienOriginal = new Bien("Arroz", "imagen.png", TEST_DATE.plusYears(1), Estado.NUEVO);
+    Bien bienOriginal =
+        new Bien("Arroz", "imagen.png", TEST_DATE.plusYears(1), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(
             bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
