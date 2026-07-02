@@ -284,9 +284,9 @@ public class CrossServiceCommunicationIT extends BaseIT {
         .statusCode(200);
 
     // 8. Transition DonacionIndependiente States
-    // Transition to EN_TRASLADO
+    // Transition to LISTA_PARA_ENTREGAR
     Map<String, Object> patchBody = new HashMap<>();
-    patchBody.put("estado", "EN_TRASLADO");
+    patchBody.put("estado", "LISTA_PARA_ENTREGAR");
     given()
         .contentType(ContentType.JSON)
         .body(patchBody)
@@ -296,8 +296,8 @@ public class CrossServiceCommunicationIT extends BaseIT {
         .then()
         .statusCode(200);
 
-    // Transition to LISTA_PARA_ENTREGAR
-    patchBody.put("estado", "LISTA_PARA_ENTREGAR");
+    // Transition to EN_TRASLADO
+    patchBody.put("estado", "EN_TRASLADO");
     given()
         .contentType(ContentType.JSON)
         .body(patchBody)
@@ -525,7 +525,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 7. Transition both DonacionIndependiente states to ENTREGADA
     for (String diId : List.of(diId1, diId2)) {
       Map<String, Object> patchBody = new HashMap<>();
-      patchBody.put("estado", "EN_TRASLADO");
+      patchBody.put("estado", "LISTA_PARA_ENTREGAR");
       given()
           .contentType(ContentType.JSON)
           .body(patchBody)
@@ -535,7 +535,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
           .then()
           .statusCode(200);
 
-      patchBody.put("estado", "LISTA_PARA_ENTREGAR");
+      patchBody.put("estado", "EN_TRASLADO");
       given()
           .contentType(ContentType.JSON)
           .body(patchBody)
