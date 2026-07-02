@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ICamionesService {
-  CamionResponseDTO crear(CamionRequestDTO dto);
 
-  List<CamionResponseDTO> listar();
+  CamionResponseDTO crear(CamionRequestDTO request);
 
-  CamionResponseDTO obtenerPorId(UUID id);
+  List<CamionResponseDTO> consultarTodos();
 
-  CamionResponseDTO cambiarEstado(UUID id, CambioEstadoCamionRequestDTO dto);
+  CamionResponseDTO consultarPorId(UUID id);
 
-  void eliminar(UUID id);
+  CamionResponseDTO cambiarEstado(UUID id, CambioEstadoCamionRequestDTO request);
+
+  void darDeBaja(UUID id);
 }
