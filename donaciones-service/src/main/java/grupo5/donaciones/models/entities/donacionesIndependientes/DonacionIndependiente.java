@@ -126,6 +126,10 @@ public class DonacionIndependiente implements AggregateRoot {
     this.estadoActual.retornar(this, actor);
   }
 
+  public void replanificar(String actor) {
+    this.estadoActual.replanificar(this, actor);
+  }
+
   public void vencer(String actor) {
     this.estadoActual.vencer(this, actor);
   }

@@ -123,6 +123,10 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       String actor, DonacionIndependiente donacion, String justificacion, Boolean replanificable) {
     donacion.registrarFalla(justificacion, actor);
 
+    if (Boolean.TRUE.equals(replanificable)) {
+      donacion.replanificar(actor);
+    }
+
     UUID donanteId = obtenerDonanteId(donacion);
     UUID personaDonanteId = obtenerPersonaDonanteId(donanteId);
     UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(donacion);
