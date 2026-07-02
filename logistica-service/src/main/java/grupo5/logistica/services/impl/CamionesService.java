@@ -54,10 +54,12 @@ public class CamionesService implements ICamionesService {
 
   @Override
   public CamionResponseDTO cambiarEstado(UUID id, CambioEstadoCamionRequestDTO request) {
-    Camion camion = buscarCamionActivo(id);
+    // Usa buscarCamion() sin filtro — el dominio valida si la transición es válida
+    // desde cualquier estado, incluyendo DESHABILITADO → DISPONIBLE (habilitar)
+    Camion camion =
+        camionRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
     switch (request.estado()) {
-      case EN_MANTENIMIENTO -> camion.mandarAMantenimiento();
       case DISPONIBLE -> camion.habilitar();
       case DESHABILITADO -> camion.deshabilitar();
       case EN_RUTA -> throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);

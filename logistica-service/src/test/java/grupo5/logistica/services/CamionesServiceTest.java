@@ -148,34 +148,13 @@ class CamionesServiceTest {
   // ===================== cambiarEstado() =====================
 
   @Test
-  void cambiarEstado_deberiaMandarAMantenimiento_cuandoEstadoEsEnMantenimiento() {
-    UUID id = UUID.randomUUID();
-    Camion camion = mock(Camion.class);
-    CambioEstadoCamionRequestDTO request =
-        new CambioEstadoCamionRequestDTO(EstadoCamion.EN_MANTENIMIENTO);
-
-    when(camion.getEstado()).thenReturn(EstadoCamion.DISPONIBLE);
-    when(camionRepository.findById(id)).thenReturn(Optional.of(camion));
-    when(camionMapper.toResponseDTO(camion))
-        .thenReturn(
-            new CamionResponseDTO(
-                id, "AB123CD", 10f, 2f, 5000f, EstadoCamion.EN_MANTENIMIENTO, null));
-
-    CamionResponseDTO resultado = camionesService.cambiarEstado(id, request);
-
-    verify(camion).mandarAMantenimiento();
-    verify(camionRepository).save(camion);
-    assertEquals(EstadoCamion.EN_MANTENIMIENTO, resultado.estado());
-  }
-
-  @Test
-  void cambiarEstado_deberiaHabilitar_cuandoEstadoEsDisponible() {
+  void cambiarEstado_deberiaHabilitar_cuandoCamionEstaDeshabilitado() {
     UUID id = UUID.randomUUID();
     Camion camion = mock(Camion.class);
     CambioEstadoCamionRequestDTO request =
         new CambioEstadoCamionRequestDTO(EstadoCamion.DISPONIBLE);
 
-    when(camion.getEstado()).thenReturn(EstadoCamion.EN_MANTENIMIENTO);
+    // No pasa por buscarCamionActivo — acepta DESHABILITADO
     when(camionRepository.findById(id)).thenReturn(Optional.of(camion));
     when(camionMapper.toResponseDTO(camion))
         .thenReturn(
@@ -204,7 +183,7 @@ class CamionesServiceTest {
   void cambiarEstado_deberiaLanzarExcepcion_cuandoCamionNoExiste() {
     UUID id = UUID.randomUUID();
     CambioEstadoCamionRequestDTO request =
-        new CambioEstadoCamionRequestDTO(EstadoCamion.EN_MANTENIMIENTO);
+        new CambioEstadoCamionRequestDTO(EstadoCamion.DESHABILITADO);
 
     when(camionRepository.findById(id)).thenReturn(Optional.empty());
 
