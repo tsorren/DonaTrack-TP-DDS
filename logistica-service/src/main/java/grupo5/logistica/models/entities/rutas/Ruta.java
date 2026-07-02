@@ -67,7 +67,7 @@ public class Ruta implements AggregateRoot {
     }
     this.entregas.add(entregaId);
   }
-  
+
   public List<UUID> obtenerEntregas() {
     return List.copyOf(this.entregas);
   }
