@@ -59,10 +59,7 @@ public class EntregaMapper {
     }
 
     return new CambioEstadoEntregaResponseDTO(
-        cambio.estadoAnterior()
-        cambio.estadoNuevo()
-        cambio.timeStamp()
-        cambio.actor());
+        cambio.estadoAnterior(), cambio.estadoNuevo(), cambio.timeStamp(), cambio.actor());
   }
 
   private void validarMagnitudes(CrearEntregaRequestDTO dto) {
