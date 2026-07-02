@@ -4,6 +4,4 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record EventoRutaAsignada(
-        UUID rutaId,
-        UUID donacionIndependienteId,
-        LocalDateTime fechaAsignacion) {}
+    UUID rutaId, UUID donacionIndependienteId, LocalDateTime fechaAsignacion) {}

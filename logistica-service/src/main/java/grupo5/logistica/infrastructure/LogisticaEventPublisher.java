@@ -22,11 +22,11 @@ public class LogisticaEventPublisher {
     this.rabbitTemplate = rabbitTemplate;
   }
 
-    public void publicarRutaAsignada(EventoRutaAsignada evento) {
-        log.info("Publicando RutaAsignadaEvent: rutaId={}", evento.rutaId());
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_RUTA_ASIGNADA, evento);
-    }
+  public void publicarRutaAsignada(EventoRutaAsignada evento) {
+    log.info("Publicando RutaAsignadaEvent: rutaId={}", evento.rutaId());
+    rabbitTemplate.convertAndSend(
+        RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY_RUTA_ASIGNADA, evento);
+  }
 
   public void publicarRutaIniciada(EventoRutaIniciada evento) {
     log.info("Publicando RutaIniciadaEvent: rutaId={}", evento.rutaId());

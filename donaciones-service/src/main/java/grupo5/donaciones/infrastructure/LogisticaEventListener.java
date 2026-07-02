@@ -26,19 +26,19 @@ public class LogisticaEventListener {
     this.donacionesIndependientesService = donacionesIndependientesService;
   }
 
-    @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_ASIGNADA)
-    public void onRutaAsignada(EventoRutaAsignada evento) {
-        log.info(
-                "Evento RutaAsignada recibido: rutaId={}, donacionId={}",
-                evento.rutaId(),
-                evento.donacionIndependienteId());
+  @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_ASIGNADA)
+  public void onRutaAsignada(EventoRutaAsignada evento) {
+    log.info(
+        "Evento RutaAsignada recibido: rutaId={}, donacionId={}",
+        evento.rutaId(),
+        evento.donacionIndependienteId());
 
-        aplicarCambioEstado(
-                evento.donacionIndependienteId(),
-                new CambioEstadoDonacionIndependienteRequestDTO(
-                        TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null),
-                "RutaAsignada");
-    }
+    aplicarCambioEstado(
+        evento.donacionIndependienteId(),
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null),
+        "RutaAsignada");
+  }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_INICIADA)
   public void onRutaIniciada(EventoRutaIniciada evento) {
