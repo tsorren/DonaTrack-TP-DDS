@@ -31,6 +31,11 @@ public class RabbitMQConfig {
 
   // --- Colas ---
   @Bean
+  public Queue queueRutaAsignada() {
+    return new Queue(QUEUE_RUTA_ASIGNADA, true);
+  }
+
+  @Bean
   public Queue queueRutaIniciada() {
     return new Queue(QUEUE_RUTA_INICIADA, true);
   }
@@ -46,6 +51,11 @@ public class RabbitMQConfig {
   }
 
   // --- Bindings
+  @Bean
+  public Binding bindingRutaAsignada(Queue queueRutaAsignada, TopicExchange logisticaExchange) {
+    return BindingBuilder.bind(queueRutaAsignada).to(logisticaExchange).with("ruta.asignada");
+  }
+
   @Bean
   public Binding bindingRutaIniciada(Queue queueRutaIniciada, TopicExchange logisticaExchange) {
     return BindingBuilder.bind(queueRutaIniciada).to(logisticaExchange).with("ruta.iniciada");
