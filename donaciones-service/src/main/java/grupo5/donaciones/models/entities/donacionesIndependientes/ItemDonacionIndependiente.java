@@ -4,13 +4,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class ItemDonacionIndependiente {
+public class ItemDonacionIndependiente implements ItemTransportable {
   @JsonIgnore private DonacionIndependiente donacionIndependiente;
   private BienNormalizado bien;
   private Integer cantidad;
@@ -42,5 +44,20 @@ public class ItemDonacionIndependiente {
     this.cantidad -= cantidadNecesitada;
 
     return new ItemDonacionIndependiente(this.bien, cantidadNecesitada);
+  }
+
+  @Override
+  public Unidad getUnidad() {
+    return this.bien.getSubcategoria().getCategoria().getTipoUnidad();
+  }
+
+  @Override
+  public UUID getSubcategoriaId() {
+    return this.bien.getSubcategoria().getId();
+  }
+
+  @Override
+  public Integer getCantidad() {
+    return this.cantidad;
   }
 }
