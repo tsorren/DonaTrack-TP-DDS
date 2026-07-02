@@ -1,6 +1,6 @@
 # Categorización de Bienes
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-13
 - Deciders: Decisión Grupal
 - Tags: categorizacion, normalizacion

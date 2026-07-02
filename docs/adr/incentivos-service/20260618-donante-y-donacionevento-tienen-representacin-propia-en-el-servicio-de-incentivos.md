@@ -1,5 +1,5 @@
 # Donante y DonacionEvento tienen representación propia en el servicio de incentivos
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-18
 - Deciders: Decisión Grupal
 

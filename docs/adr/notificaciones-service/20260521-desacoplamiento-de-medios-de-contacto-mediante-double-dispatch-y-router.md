@@ -1,6 +1,6 @@
 # Desacoplamiento de Medios de Contacto mediante Double Dispatch y Router
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-21
 - Deciders: Decisión Grupal
 
