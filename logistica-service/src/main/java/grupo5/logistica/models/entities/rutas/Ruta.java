@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,23 +27,21 @@ public class Ruta implements AggregateRoot {
   private LocalDateTime horaInicioReal;
   private LocalDateTime horaFinReal;
 
-  public Ruta(LocalDate fecha, UUID chofer, UUID camion) {
-    if (fecha == null || chofer == null || camion == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
+  public Ruta(LocalDate fecha, UUID choferId, UUID camionId) {
+    validarFecha(fecha);
+    validarIdentificador(choferId);
+    validarIdentificador(camionId);
+
     this.id = UUID.randomUUID();
     this.fecha = fecha;
-    this.choferId = chofer;
-    this.camionId = camion;
+    this.choferId = choferId;
+    this.camionId = camionId;
     this.estado = EstadoRuta.PENDIENTE;
     this.entregas = new ArrayList<>();
   }
 
   public void iniciarRuta() {
-    if (this.estado != EstadoRuta.PENDIENTE) {
-      throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
-    }
-    if (this.entregas.isEmpty()) {
+    if (this.estado != EstadoRuta.PENDIENTE || this.entregas.isEmpty()) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
     this.estado = EstadoRuta.EN_TRASLADO;
@@ -58,24 +57,38 @@ public class Ruta implements AggregateRoot {
     this.horaFinReal = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
-  public void agregarEntrega(UUID entrega) {
-    if (entrega == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
+  public void agregarEntrega(UUID entregaId) {
+    validarIdentificador(entregaId);
     if (this.estado != EstadoRuta.PENDIENTE) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
-    if (this.entregas.contains(entrega)) {
+    if (this.entregas.contains(entregaId)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
-    this.entregas.add(entrega);
-  }
-
-  public List<UUID> getEntregas() {
-    return List.copyOf(this.entregas);
+    this.entregas.add(entregaId);
   }
 
   public List<UUID> obtenerEntregas() {
     return List.copyOf(this.entregas);
+  }
+
+  public List<UUID> getEntregas() {
+    return obtenerEntregas();
+  }
+
+  public List<UUID> getEntregaIds() {
+    return obtenerEntregas();
+  }
+
+  private void validarFecha(LocalDate fecha) {
+    if (Objects.isNull(fecha)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+  }
+
+  private void validarIdentificador(UUID id) {
+    if (Objects.isNull(id)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
   }
 }
