@@ -7,32 +7,38 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
-public class PeriodoNecesidad implements Asignable {
+public record PeriodoNecesidad(
+    LocalDate fechaFin,
+    List<DonacionIndependiente> donacionesAsignadas,
+    Integer cantidadObjetivo,
+    NecesidadRecurrente necesidadRecurrente)
+    implements Asignable {
+
   private static final Logger logger = Logger.getLogger(PeriodoNecesidad.class.getName());
 
-  private LocalDate fechaFin;
-  private List<DonacionIndependiente> donacionesAsignadas;
-  private Integer cantidadObjetivo;
-  private NecesidadRecurrente necesidadRecurrente;
-
   public PeriodoNecesidad(LocalDate fechaFin, Integer cantidadObjetivo) {
-    this.fechaFin = fechaFin;
-    this.cantidadObjetivo = cantidadObjetivo;
-    this.donacionesAsignadas = new ArrayList<>();
+    this(fechaFin, new ArrayList<>(), cantidadObjetivo, null);
   }
 
-  public void asignarDonacion(DonacionIndependiente donacion) {
+  public PeriodoNecesidad asignarDonacion(DonacionIndependiente donacion) {
     if (donacion == null) throw new ValidationException(ErrorCatalog.PERIODO_DONACION_NULA);
-    this.donacionesAsignadas.add(donacion);
+    List<DonacionIndependiente> nuevasDonaciones = new ArrayList<>(this.donacionesAsignadas);
+    nuevasDonaciones.add(donacion);
+    return new PeriodoNecesidad(
+        this.fechaFin, nuevasDonaciones, this.cantidadObjetivo, this.necesidadRecurrente);
   }
 
-  public void quitarDonacion(DonacionIndependiente donacion) {
-    this.donacionesAsignadas.remove(donacion);
+  public PeriodoNecesidad quitarDonacion(DonacionIndependiente donacion) {
+    List<DonacionIndependiente> nuevasDonaciones = new ArrayList<>(this.donacionesAsignadas);
+    nuevasDonaciones.remove(donacion);
+    return new PeriodoNecesidad(
+        this.fechaFin, nuevasDonaciones, this.cantidadObjetivo, this.necesidadRecurrente);
+  }
+
+  public PeriodoNecesidad conNecesidadRecurrente(NecesidadRecurrente necesidadRecurrente) {
+    return new PeriodoNecesidad(
+        this.fechaFin, this.donacionesAsignadas, this.cantidadObjetivo, necesidadRecurrente);
   }
 
   public Integer cantidadAcumulada() {
@@ -54,7 +60,6 @@ public class PeriodoNecesidad implements Asignable {
     if (!this.estaSatisfecha()) {
       String msj = "El período cerró sin alcanzar la meta de " + this.cantidadObjetivo;
       logger.warning(msj);
-      // Idealmente acá se dispararía un evento de notificación
     }
   }
 

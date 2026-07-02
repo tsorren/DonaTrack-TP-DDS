@@ -10,6 +10,7 @@ public class Telefono extends MedioDeContacto {
   private String caracteristica;
   private String codigoArea;
   private String numero;
+  private TipoTelefono tipo = TipoTelefono.ESTANDAR;
 
   public String obtenerNumeroCompleto() {
     return this.caracteristica + this.codigoArea + this.numero;

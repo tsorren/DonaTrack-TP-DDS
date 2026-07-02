@@ -4,30 +4,28 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class NecesidadRecurrente extends Necesidad {
   private Period periodo;
   private List<PeriodoNecesidad> periodos;
   private Boolean activa;
 
   public NecesidadRecurrente(
-      Subcategoria subcategoria,
+      UUID subcategoriaId,
       Integer cantidadNecesitada,
       String descripcion,
       Period periodo,
       LocalDate fechaInicio) {
-    super(subcategoria, cantidadNecesitada, descripcion);
+    super(subcategoriaId, cantidadNecesitada, descripcion);
     if (periodo == null)
       throw new ValidationException(ErrorCatalog.NECESIDAD_RECURRENTE_SIN_PERIODO);
     if (fechaInicio == null) throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
@@ -37,7 +35,8 @@ public class NecesidadRecurrente extends Necesidad {
     this.periodos = new ArrayList<>();
 
     validarNecesidadRecurrente(fechaInicio);
-    this.periodos.add(new PeriodoNecesidad(fechaInicio.plus(this.periodo), cantidadNecesitada));
+    this.periodos.add(
+        new PeriodoNecesidad(fechaInicio.plus(this.periodo), List.of(), cantidadNecesitada, this));
   }
 
   private void validarNecesidadRecurrente(LocalDate fechaInicio) {
@@ -54,7 +53,7 @@ public class NecesidadRecurrente extends Necesidad {
 
   @Override
   public List<DonacionIndependiente> getDonacionesAsignadas() {
-    return obtenerPeriodoActual().getDonacionesAsignadas();
+    return obtenerPeriodoActual().donacionesAsignadas();
   }
 
   public PeriodoNecesidad obtenerPeriodoActual() {
@@ -67,14 +66,16 @@ public class NecesidadRecurrente extends Necesidad {
     if (actual == null) {
       throw new BusinessStateException(ErrorCatalog.SIN_PERIODO_ACTIVO);
     }
-    actual.asignarDonacion(donacionAsignada);
+    PeriodoNecesidad nuevoActual = actual.asignarDonacion(donacionAsignada);
+    this.periodos.set(this.periodos.size() - 1, nuevoActual);
   }
 
   @Override
   public void quitarDonacion(DonacionIndependiente donacion) {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     if (actual != null) {
-      actual.quitarDonacion(donacion);
+      PeriodoNecesidad nuevoActual = actual.quitarDonacion(donacion);
+      this.periodos.set(this.periodos.size() - 1, nuevoActual);
     }
   }
 
@@ -102,9 +103,10 @@ public class NecesidadRecurrente extends Necesidad {
     LocalDate nuevaFechaFin =
         periodos.isEmpty()
             ? LocalDate.now(ZoneId.systemDefault()).plus(this.periodo)
-            : obtenerPeriodoActual().getFechaFin().plus(this.periodo);
+            : obtenerPeriodoActual().fechaFin().plus(this.periodo);
 
-    this.periodos.add(new PeriodoNecesidad(nuevaFechaFin, super.getCantidadNecesitada()));
+    this.periodos.add(
+        new PeriodoNecesidad(nuevaFechaFin, List.of(), super.getCantidadNecesitada(), this));
   }
 
   public boolean getActiva() {
@@ -112,9 +114,19 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   @Override
+  public boolean isActiva() {
+    return getActiva();
+  }
+
+  @Override
+  public TipoNecesidad getTipoNecesidad() {
+    return TipoNecesidad.RECURRENTE;
+  }
+
+  @Override
   public NecesidadDTO toDTO() {
     PeriodoNecesidad actual = obtenerPeriodoActual();
-    LocalDate fechaFin = actual != null ? actual.getFechaFin() : null;
-    return super.toDTO("RECURRENTE", fechaFin);
+    LocalDate fechaFin = actual != null ? actual.fechaFin() : null;
+    return super.toDTO(fechaFin);
   }
 }

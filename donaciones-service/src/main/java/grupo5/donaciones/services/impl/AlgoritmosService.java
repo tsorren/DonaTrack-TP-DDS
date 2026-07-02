@@ -6,14 +6,14 @@ import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoCompatibilidadSemant
 import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoPrioridadSubAtendidos;
 import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
-import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.INecesidadesRepository;
-import grupo5.donaciones.models.repositories.impl.PropuestaRepository;
+import grupo5.donaciones.models.repositories.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,20 +29,38 @@ public class AlgoritmosService {
   private final List<AlgoritmoAsignacion> algoritmos;
   private final IDonacionesIndependientesRepository donacionRepository;
   private final INecesidadesRepository necesidadRepository;
-  private final PropuestaRepository propuestaRepository;
+  private final IPropuestasRepository propuestaRepository;
   private final NotificacionesFeignClient notificacionesFeignClient;
+  private final grupo5.donaciones.models.repositories.ISubcategoriasRepository
+      subcategoriasRepository;
+  private final IDonacionesRepository donacionOriginalRepository;
+  private final IDonantesRepository donantesRepository;
+  private final grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+      entidadesBeneficiariasRepository;
+  private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
   public AlgoritmosService(
       IDonacionesIndependientesRepository donacionRepository,
       INecesidadesRepository necesidadRepository,
-      PropuestaRepository propuestaRepository,
+      IPropuestasRepository propuestaRepository,
       ComparadorTexto comparadorTexto,
-      NotificacionesFeignClient notificacionesFeignClient) {
+      NotificacionesFeignClient notificacionesFeignClient,
+      grupo5.donaciones.models.repositories.ISubcategoriasRepository subcategoriasRepository,
+      IDonacionesRepository donacionOriginalRepository,
+      IDonantesRepository donantesRepository,
+      grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+          entidadesBeneficiariasRepository,
+      org.springframework.context.ApplicationEventPublisher eventPublisher) {
 
     this.donacionRepository = donacionRepository;
     this.necesidadRepository = necesidadRepository;
     this.propuestaRepository = propuestaRepository;
     this.notificacionesFeignClient = notificacionesFeignClient;
+    this.subcategoriasRepository = subcategoriasRepository;
+    this.donacionOriginalRepository = donacionOriginalRepository;
+    this.donantesRepository = donantesRepository;
+    this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
+    this.eventPublisher = eventPublisher;
 
     this.algoritmos =
         List.of(
@@ -53,16 +71,16 @@ public class AlgoritmosService {
   private static List<Propuesta> consolidar(
       List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
 
-    Set<Necesidad> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
+    Set<UUID> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
 
     for (Propuesta propuesta : propuesta1) {
-      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisface());
+      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisfaceId());
     }
 
     List<Propuesta> propuestasEnAmbos = new ArrayList<>();
 
     for (Propuesta propuesta : propuesta2) {
-      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisface())) {
+      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisfaceId())) {
         propuestasEnAmbos.add(propuesta);
       }
     }
@@ -79,26 +97,54 @@ public class AlgoritmosService {
 
   public List<Propuesta> ejecutar() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
-    List<Necesidad> necesidades = necesidadRepository.findByEstaSatisfechaFalse();
+
+    List<Necesidad> necesidades =
+        new ArrayList<>(necesidadRepository.findByEstaSatisfechaFalseActivaTrue());
+
+    long extraordinarias =
+        necesidades.stream()
+            .filter(
+                n ->
+                    !(n
+                        instanceof
+                        grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente))
+            .count();
+    long recurrentes = necesidades.size() - extraordinarias;
 
     log.info(
-        "Ejecutando algoritmo de asignación. Donaciones en depósito: {}, Necesidades insatisfechas: {}",
+        "Ejecutando algoritmo de asignación. Donaciones en depósito: {}, Necesidades totales: {} ({} extraordinarias, {} recurrentes activas)",
         donaciones.size(),
-        necesidades.size());
+        necesidades.size(),
+        extraordinarias,
+        recurrentes);
 
     for (DonacionIndependiente d : donaciones) {
       log.info(
           "Donación en depósito ID: {}, Subcategoría: {}, Cantidad: {}",
           d.getId(),
-          d.getSubcategoria() != null ? d.getSubcategoria().getNombre() : "null",
+          d.getSubcategoriaId() != null
+              ? subcategoriasRepository
+                  .findById(d.getSubcategoriaId())
+                  .map(s -> s.getNombre())
+                  .orElse("null")
+              : "null",
           d.getCantidad());
     }
 
     for (Necesidad n : necesidades) {
+      String subcatNombre = "null";
+      if (n.getSubcategoriaId() != null) {
+        subcatNombre =
+            subcategoriasRepository
+                .findById(n.getSubcategoriaId())
+                .map(grupo5.donaciones.models.entities.categorias.Subcategoria::getNombre)
+                .orElse("null");
+      }
       log.info(
-          "Necesidad insatisfecha ID: {}, Subcategoría: {}, Cantidad necesitada: {}, Cantidad acumulada: {}, Descripción: {}",
+          "Necesidad insatisfecha ID: {}, Tipo: {}, Subcategoría: {}, Cantidad necesitada: {}, Cantidad acumulada: {}, Descripción: {}",
           n.getId(),
-          n.getSubcategoria() != null ? n.getSubcategoria().getNombre() : "null",
+          n.getClass().getSimpleName(),
+          subcatNombre,
           n.getCantidadNecesitada(),
           n.cantidadAcumulada(),
           n.getDescripcion());
@@ -128,64 +174,77 @@ public class AlgoritmosService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
     switch (estado) {
-      case APROBADA -> {
-        propuesta.confirmar();
-        Necesidad necesidad = propuesta.getNecesidadQueSatisface();
-        if (necesidad != null) {
-          necesidadRepository.save(necesidad);
-        }
-        if (propuesta.getPosiblesFragmentaciones() != null) {
-          propuesta
-              .getPosiblesFragmentaciones()
-              .forEach(
-                  f -> {
-                    if (f.getDonacionOriginal() != null) {
-                      donacionRepository.save(f.getDonacionOriginal());
-                    }
-                  });
-        }
-        if (necesidad != null && necesidad.getDonacionesAsignadas() != null) {
-          necesidad.getDonacionesAsignadas().forEach(donacionRepository::save);
-        }
-
-        if (propuesta.getPosiblesFragmentaciones() != null) {
-          UUID idPersonaBeneficiaria =
-              (necesidad != null
-                      && necesidad.getEntidad() != null
-                      && necesidad.getEntidad().getJuridica() != null)
-                  ? necesidad.getEntidad().getJuridica().getId()
-                  : null;
-          propuesta
-              .getPosiblesFragmentaciones()
-              .forEach(
-                  f -> {
-                    if (f.getDonacionOriginal() != null
-                        && f.getDonacionOriginal().getDonacionOriginal() != null
-                        && f.getDonacionOriginal().getDonacionOriginal().getDonante() != null
-                        && f.getDonacionOriginal().getDonacionOriginal().getDonante().getPersona()
-                            != null) {
-                      UUID idPersonaDonante =
-                          f.getDonacionOriginal()
-                              .getDonacionOriginal()
-                              .getDonante()
-                              .getPersona()
-                              .getId();
-                      String detalle = f.getDonacionOriginal().getDescripcion();
-                      notificacionesFeignClient.enviarEvento(
-                          new EventoDonacionAsignadaDTO(
-                              idPersonaDonante,
-                              LocalDateTime.now(),
-                              idPersonaBeneficiaria,
-                              detalle));
-                    }
-                  });
-        }
-      }
+      case APROBADA -> aprobarPropuesta(propuesta);
       case DESCARTADA -> propuesta.rechazar();
       default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
     }
 
     propuestaRepository.save(propuesta);
+  }
+
+  private void aprobarPropuesta(Propuesta propuesta) {
+    propuesta.confirmar();
+    propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
+    propuesta.clearDomainEvents();
+
+    if (propuesta.getPosiblesFragmentaciones() == null) {
+      return;
+    }
+
+    Necesidad necesidad =
+        propuesta.getNecesidadQueSatisfaceId() != null
+            ? necesidadRepository.findById(propuesta.getNecesidadQueSatisfaceId()).orElse(null)
+            : null;
+
+    UUID idPersonaBeneficiaria = obtenerIdPersonaBeneficiaria(necesidad);
+
+    propuesta
+        .getPosiblesFragmentaciones()
+        .forEach(f -> notificarFragmentacion(f, idPersonaBeneficiaria));
+  }
+
+  private UUID obtenerIdPersonaBeneficiaria(Necesidad necesidad) {
+    if (necesidad == null || necesidad.getEntidadId() == null) {
+      return null;
+    }
+    return entidadesBeneficiariasRepository
+        .findById(necesidad.getEntidadId())
+        .map(grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria::juridicaId)
+        .orElse(null);
+  }
+
+  private void notificarFragmentacion(
+      grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion f,
+      UUID idPersonaBeneficiaria) {
+    if (f.getDonacionOriginalId() == null) {
+      return;
+    }
+
+    DonacionIndependiente di = donacionRepository.findById(f.getDonacionOriginalId()).orElse(null);
+    if (di == null || di.getDonacionOriginalId() == null) {
+      return;
+    }
+
+    Donacion donacion =
+        donacionOriginalRepository.findById(di.getDonacionOriginalId()).orElse(null);
+    if (donacion == null || donacion.getDonanteId() == null) {
+      return;
+    }
+
+    grupo5.donaciones.models.entities.donantes.Donante donante =
+        donantesRepository.findById(donacion.getDonanteId()).orElse(null);
+    if (donante == null) {
+      return;
+    }
+
+    UUID idPersonaDonante = donante.personaId();
+    String detalle = di.getDescripcion();
+    notificacionesFeignClient.enviarEvento(
+        new EventoDonacionAsignadaDTO(
+            idPersonaDonante,
+            LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaBeneficiaria,
+            detalle));
   }
 
   private AlgoritmoAsignacion algoritmoPorCompatibilidad() {

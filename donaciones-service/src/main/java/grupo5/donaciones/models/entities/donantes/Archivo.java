@@ -1,12 +1,12 @@
 package grupo5.donaciones.models.entities.donantes;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class Archivo implements AggregateRoot {
   private final UUID id;
   private String path;
@@ -16,6 +16,29 @@ public class Archivo implements AggregateRoot {
     this.id = UUID.randomUUID();
     this.path = path;
     this.estado = EstadoArchivo.PENDIENTE;
+  }
+
+  public void marcarComoProcesando() {
+    this.estado = EstadoArchivo.PROCESANDO;
+  }
+
+  public void marcarComoProcesado() {
+
+    if (this.estado != EstadoArchivo.PROCESANDO) {
+      throw new ValidationException(ErrorCatalog.ESTADO_ARCHIVO_INVALIDO);
+    }
+    this.estado = EstadoArchivo.PROCESADO;
+  }
+
+  public void marcarComoError() {
+    this.estado = EstadoArchivo.ERROR;
+  }
+
+  public void marcarComoCompletadoConErrores() {
+    if (this.estado != EstadoArchivo.PROCESANDO) {
+      throw new ValidationException(ErrorCatalog.ESTADO_ARCHIVO_INVALIDO);
+    }
+    this.estado = EstadoArchivo.PROCESADO_CON_ERRORES;
   }
 
   @Override

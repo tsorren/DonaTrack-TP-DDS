@@ -4,7 +4,7 @@ import grupo5.donaciones.dto.mediosDeContacto.*;
 import grupo5.donaciones.models.entities.personas.Correo;
 import grupo5.donaciones.models.entities.personas.MedioDeContacto;
 import grupo5.donaciones.models.entities.personas.Telefono;
-import grupo5.donaciones.models.entities.personas.WhatsApp;
+import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -22,9 +22,17 @@ public class MedioDeContactoMapper {
             yield correo;
           }
           case TelefonoInputDTO t -> populateTelefono(
-              new Telefono(), t.caracteristica(), t.codigoArea(), t.numero());
+              new Telefono(),
+              t.caracteristica(),
+              t.codigoArea(),
+              t.numero(),
+              TipoTelefono.ESTANDAR);
           case WhatsAppInputDTO w -> populateTelefono(
-              new WhatsApp(), w.caracteristica(), w.codigoArea(), w.numero());
+              new Telefono(),
+              w.caracteristica(),
+              w.codigoArea(),
+              w.numero(),
+              TipoTelefono.WHATSAPP);
         };
     medio.setEsPredeterminado(dto.esPredeterminado());
     return medio;
@@ -36,20 +44,26 @@ public class MedioDeContactoMapper {
     }
     return switch (entity) {
       case Correo c -> new CorreoOutputDTO(c.getEsPredeterminado(), c.getDireccionCorreo());
-      case WhatsApp w -> new WhatsAppOutputDTO(
-          w.getEsPredeterminado(), w.getCaracteristica(), w.getCodigoArea(), w.getNumero());
-      case Telefono t -> new TelefonoOutputDTO(
-          t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
+      case Telefono t -> {
+        if (t.getTipo() == TipoTelefono.WHATSAPP) {
+          yield new WhatsAppOutputDTO(
+              t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
+        } else {
+          yield new TelefonoOutputDTO(
+              t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
+        }
+      }
       default -> throw new IllegalArgumentException(
           "Tipo de medio de contacto no soportado: " + entity.getClass().getSimpleName());
     };
   }
 
   private static Telefono populateTelefono(
-      Telefono tel, String caracteristica, String codigoArea, String numero) {
+      Telefono tel, String caracteristica, String codigoArea, String numero, TipoTelefono tipo) {
     tel.setCaracteristica(caracteristica);
     tel.setCodigoArea(codigoArea);
     tel.setNumero(numero);
+    tel.setTipo(tipo);
     return tel;
   }
 }

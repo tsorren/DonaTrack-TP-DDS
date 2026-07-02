@@ -9,7 +9,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.notificaciones.dto.input.*;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
-import grupo5.notificaciones.services.NotificacionService;
+import grupo5.notificaciones.services.impl.NotificacionService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;

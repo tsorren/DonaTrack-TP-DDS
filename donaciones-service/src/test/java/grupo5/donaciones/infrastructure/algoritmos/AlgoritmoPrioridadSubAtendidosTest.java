@@ -19,6 +19,7 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
@@ -37,24 +38,27 @@ class AlgoritmoPrioridadSubAtendidosTest {
 
   @BeforeEach
   void setUp() {
-    Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donante donante = new Donante(humana.getId());
+    Donacion donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
-    subcategoriaOtra = new Subcategoria(categoria, "Ropa de Verano");
+    subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
+    subcategoriaOtra = new Subcategoria(categoria.getId(), "Ropa de Verano");
     Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
     BienNormalizado bienNormalizado =
-        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
     BienNormalizado bienNormalizadoOtro =
-        new BienNormalizado(bien, subcategoriaOtra, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoriaOtra.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionEnSubcategoria = new DonacionIndependiente(donacionOriginal, items);
+    donacionEnSubcategoria = new DonacionIndependiente(donacionOriginal.getId(), items);
 
     List<ItemDonacionIndependiente> itemsOtros = new ArrayList<>();
     itemsOtros.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
-    donacionEnOtraSubcategoria = new DonacionIndependiente(donacionOriginal, itemsOtros);
+    donacionEnOtraSubcategoria = new DonacionIndependiente(donacionOriginal.getId(), itemsOtros);
 
     algoritmo = new AlgoritmoPrioridadSubAtendidos();
   }
@@ -62,7 +66,7 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void filtrarDonaciones_cuandoMismaSubcategoria_debeIncluirla() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "necesito ropa de invierno");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "necesito ropa de invierno");
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacionEnSubcategoria);
 
@@ -75,7 +79,7 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void filtrarDonaciones_cuandoDistintaSubcategoria_debeExcluirla() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "necesito ropa de invierno");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "necesito ropa de invierno");
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacionEnOtraSubcategoria);
 
@@ -87,7 +91,7 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void filtrarDonaciones_conListaMixta_soloDebeRetornarLasDeMismaSubcategoria() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "necesito ropa de invierno");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "necesito ropa de invierno");
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacionEnSubcategoria);
     donaciones.add(donacionEnOtraSubcategoria);
@@ -101,19 +105,25 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void ordenarNecesidades_cuandoUnaEntidadTieneMayorPorcentajeSatisfecho_debeQuedarAlFinal() {
     Humana representante = new Humana("rep", "apellido", TEST_DATE);
-    EntidadBeneficiaria entidadMuyAtendida = new EntidadBeneficiaria(new Juridica(representante));
-    EntidadBeneficiaria entidadPocoAtendida = new EntidadBeneficiaria(new Juridica(representante));
+    Juridica juridicaMuyAtendida =
+        new Juridica(representante, "Empresa Muy Atendida", TipoJuridico.EMPRESA, "Rubro");
+    Juridica juridicaPocoAtendida =
+        new Juridica(representante, "Empresa Poco Atendida", TipoJuridico.EMPRESA, "Rubro");
+    EntidadBeneficiaria entidadMuyAtendida = new EntidadBeneficiaria(juridicaMuyAtendida.getId());
+    EntidadBeneficiaria entidadPocoAtendida = new EntidadBeneficiaria(juridicaPocoAtendida.getId());
 
     // Entidad muy atendida: tiene donaciones recientes asignadas a su necesidad
     NecesidadExtraordinaria necesidadActualMuyAtendida =
-        new NecesidadExtraordinaria(subcategoria, 10, "nueva necesidad de entidad muy atendida");
-    necesidadActualMuyAtendida.setEntidad(entidadMuyAtendida);
+        new NecesidadExtraordinaria(
+            subcategoria.getId(), 10, "nueva necesidad de entidad muy atendida");
+    necesidadActualMuyAtendida.asociarAEntidad(entidadMuyAtendida.getId());
     necesidadActualMuyAtendida.asignarDonacion(donacionEnSubcategoria);
 
     // Entidad poco atendida: sin donaciones asignadas
     NecesidadExtraordinaria necesidadActualPocoAtendida =
-        new NecesidadExtraordinaria(subcategoria, 5, "nueva necesidad de entidad poco atendida");
-    necesidadActualPocoAtendida.setEntidad(entidadPocoAtendida);
+        new NecesidadExtraordinaria(
+            subcategoria.getId(), 5, "nueva necesidad de entidad poco atendida");
+    necesidadActualPocoAtendida.asociarAEntidad(entidadPocoAtendida.getId());
 
     List<grupo5.donaciones.models.entities.necesidades.Necesidad> necesidades = new ArrayList<>();
     necesidades.add(necesidadActualMuyAtendida);
@@ -129,9 +139,9 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void ordenarNecesidades_cuandoNingunaTieneEntidad_debeRetornarLasMismas() {
     NecesidadExtraordinaria necesidad1 =
-        new NecesidadExtraordinaria(subcategoria, 5, "primera necesidad sin entidad");
+        new NecesidadExtraordinaria(subcategoria.getId(), 5, "primera necesidad sin entidad");
     NecesidadExtraordinaria necesidad2 =
-        new NecesidadExtraordinaria(subcategoria, 5, "segunda necesidad sin entidad");
+        new NecesidadExtraordinaria(subcategoria.getId(), 5, "segunda necesidad sin entidad");
 
     List<grupo5.donaciones.models.entities.necesidades.Necesidad> necesidades = new ArrayList<>();
     necesidades.add(necesidad1);
@@ -157,7 +167,7 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void filtrarDonaciones_conListaNula_debeLanzarExcepcion() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "necesito ropa de invierno");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "necesito ropa de invierno");
 
     ValidationException exception =
         assertThrows(ValidationException.class, () -> algoritmo.filtrarDonaciones(necesidad, null));

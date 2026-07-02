@@ -9,7 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import grupo5.donaciones.controllers.impl.AsignacionController;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
-import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.services.impl.PropuestaService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +37,7 @@ class AsignacionControllerTest {
 
   @Test
   void ejecutar_deberiaRetornarCreatedYPropuestas() throws Exception {
-    Propuesta propuestaMock = mock(Propuesta.class);
+    PropuestaDTO propuestaMock = mock(PropuestaDTO.class);
     when(propuestaService.ejecutarAsignacion()).thenReturn(List.of(propuestaMock));
 
     mockMvc

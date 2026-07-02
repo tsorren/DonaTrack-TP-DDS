@@ -19,7 +19,7 @@ class NormalizadorSemanticoTest {
   @BeforeEach
   void setUp() {
     Categoria categoria = new Categoria("Electronica", false, true, Unidad.UNIDADES);
-    subcategoriaElectronica = new Subcategoria(categoria, "celular");
+    subcategoriaElectronica = new Subcategoria(categoria.getId(), "celular");
     subcategoriaElectronica.agregarAlias("celu");
     subcategoriaElectronica.agregarAlias("movil");
     subcategoriaElectronica.agregarAlias("telefono");
@@ -65,7 +65,7 @@ class NormalizadorSemanticoTest {
   @Test
   void normalizar_conMultiplesSubcategorias_debeReemplazarTodosLosAliases() {
     Categoria categoria = new Categoria("Tecnologia", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoriaCompu = new Subcategoria(categoria, "computadora");
+    Subcategoria subcategoriaCompu = new Subcategoria(categoria.getId(), "computadora");
     subcategoriaCompu.agregarAlias("compu");
     subcategoriaCompu.agregarAlias("pc");
 

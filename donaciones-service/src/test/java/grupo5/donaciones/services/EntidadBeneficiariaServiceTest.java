@@ -40,7 +40,7 @@ class EntidadBeneficiariaServiceTest {
     Juridica juridica = mock(Juridica.class);
     when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
 
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica);
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridicaId);
 
     when(repository.save(any(EntidadBeneficiaria.class))).thenReturn(entidad);
 

@@ -1,6 +1,6 @@
 # Herencia de BaseRepositoryEnMemoria en los repositories en memoria
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-16
 - Deciders: Tadeo Sorrentino, Sofia Deane
 - Tags: repositories, patrones-de-diseño, common-lib

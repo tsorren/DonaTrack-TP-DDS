@@ -8,7 +8,9 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
-import grupo5.notificaciones.models.repositories.IPersonasRepository;
+import grupo5.notificaciones.models.repositories.INotificacionRepository;
+import grupo5.notificaciones.models.repositories.IPersonaRepository;
+import grupo5.notificaciones.services.impl.PersonasService;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -23,7 +25,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class PersonasServiceTest {
 
-  @Mock private IPersonasRepository repository;
+  @Mock private IPersonaRepository repository;
+  @Mock private INotificacionRepository notificacionRepository;
   @Mock private PersonaMapper mapper;
 
   @InjectMocks private PersonasService service;
@@ -50,6 +53,7 @@ class PersonasServiceTest {
   void anonimizar_siExiste_deberiaAnonimizarYGuardar() {
     UUID id = persona.getId();
     when(repository.findById(id)).thenReturn(Optional.of(persona));
+    when(notificacionRepository.findByPersonaId(id)).thenReturn(new ArrayList<>());
 
     service.anonimizar(id);
 

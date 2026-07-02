@@ -1,6 +1,6 @@
 # Criterio de Prioridad en AlgoritmoPrioridadSubAtendidos
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-15
 - Deciders: Sofia Deane
 - Tags: matchmaking, algoritmos, prioridad
