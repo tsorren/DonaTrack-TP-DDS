@@ -165,4 +165,9 @@ public class Entrega implements AggregateRoot {
         new CambioEstadoEntrega(anterior, nuevo, LocalDateTime.now(ZoneId.of("UTC")), actor);
     this.historialEstado.add(cambio);
   }
+
+  @Override
+  public UUID getId() {
+    return this.id;
+  }
 }

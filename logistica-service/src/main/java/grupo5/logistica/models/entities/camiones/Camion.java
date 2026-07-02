@@ -77,4 +77,9 @@ public class Camion implements AggregateRoot {
   public boolean estaDisponibleParaAsignar() {
     return this.estado == EstadoCamion.DISPONIBLE;
   }
+
+  @Override
+  public UUID getId() {
+    return this.id;
+  }
 }

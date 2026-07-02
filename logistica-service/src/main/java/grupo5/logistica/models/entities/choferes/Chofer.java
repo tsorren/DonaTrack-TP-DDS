@@ -55,4 +55,9 @@ public class Chofer implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }
+
+  @Override
+  public UUID getId() {
+    return this.id;
+  }
 }
