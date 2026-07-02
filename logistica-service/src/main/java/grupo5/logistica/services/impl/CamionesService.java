@@ -8,7 +8,7 @@ import grupo5.logistica.dto.camiones.CamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionResponseDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
-import grupo5.logistica.models.repositories.ICamionesRepository;
+import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.services.ICamionesService;
 import grupo5.logistica.services.mappers.CamionMapper;
 import java.util.List;
@@ -17,63 +17,73 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CamionesService implements ICamionesService {
-  private final ICamionesRepository camionesRepository;
+
+  private final ICamionRepository camionRepository;
   private final CamionMapper camionMapper;
+  private final ValidadorPatentes validadorPatentes;
 
-  public CamionesService(ICamionesRepository camionesRepository, CamionMapper camionMapper) {
-    this.camionesRepository = camionesRepository;
+  public CamionesService(
+      ICamionRepository camionRepository,
+      CamionMapper camionMapper,
+      ValidadorPatentes validadorPatentes) {
+    this.camionRepository = camionRepository;
     this.camionMapper = camionMapper;
+    this.validadorPatentes = validadorPatentes;
   }
 
   @Override
-  public CamionResponseDTO crear(CamionRequestDTO dto) {
-    if (dto == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
-    if (camionesRepository.findByPatente(dto.patente()).isPresent()) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
-    }
-
-    Camion camion = camionMapper.toEntity(dto);
-    return camionMapper.toResponseDTO(camionesRepository.save(camion));
+  public CamionResponseDTO crear(CamionRequestDTO request) {
+    validadorPatentes.validar(request.patente());
+    Camion camion = camionMapper.toDomain(request);
+    camionRepository.save(camion);
+    return camionMapper.toResponseDTO(camion);
   }
 
   @Override
-  public List<CamionResponseDTO> listar() {
-    return camionesRepository.findAll().stream().map(camionMapper::toResponseDTO).toList();
+  public List<CamionResponseDTO> consultarTodos() {
+    return camionRepository.findAll().stream()
+        .filter(c -> c.getEstado() != EstadoCamion.DESHABILITADO)
+        .map(camionMapper::toResponseDTO)
+        .toList();
   }
 
   @Override
-  public CamionResponseDTO obtenerPorId(UUID id) {
-    return camionMapper.toResponseDTO(buscarCamion(id));
+  public CamionResponseDTO consultarPorId(UUID id) {
+    return camionMapper.toResponseDTO(buscarCamionActivo(id));
   }
 
   @Override
-  public CamionResponseDTO cambiarEstado(UUID id, CambioEstadoCamionRequestDTO dto) {
-    if (dto == null || dto.estado() == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
+  public CamionResponseDTO cambiarEstado(UUID id, CambioEstadoCamionRequestDTO request) {
+    // Usa buscarCamion() sin filtro — el dominio valida si la transición es válida
+    // desde cualquier estado, incluyendo DESHABILITADO → DISPONIBLE (habilitar)
+    Camion camion =
+        camionRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
-    Camion camion = buscarCamion(id);
-    if (dto.estado() == EstadoCamion.DISPONIBLE) {
-      camion.habilitar();
-    } else if (dto.estado() == EstadoCamion.DESHABILITADO) {
-      camion.deshabilitar();
-    } else {
-      throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
+    switch (request.estado()) {
+      case DISPONIBLE -> camion.habilitar();
+      case DESHABILITADO -> camion.deshabilitar();
+      case EN_RUTA -> throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    return camionMapper.toResponseDTO(camionesRepository.save(camion));
+    camionRepository.save(camion);
+    return camionMapper.toResponseDTO(camion);
   }
 
   @Override
-  public void eliminar(UUID id) {
-    Camion camion = buscarCamion(id);
+  public void darDeBaja(UUID id) {
+    Camion camion = buscarCamionActivo(id);
     camion.deshabilitar();
-    camionesRepository.save(camion);
+    camionRepository.save(camion);
   }
 
-  private Camion buscarCamion(UUID id) {
-    return camionesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+  private Camion buscarCamionActivo(UUID id) {
+    Camion camion =
+        camionRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+
+    if (camion.getEstado() == EstadoCamion.DESHABILITADO) {
+      throw new RecursoNoEncontradoException(id);
+    }
+
+    return camion;
   }
 }

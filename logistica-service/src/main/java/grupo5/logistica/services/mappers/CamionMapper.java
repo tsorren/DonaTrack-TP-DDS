@@ -8,19 +8,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class CamionMapper {
 
-  public Camion toEntity(CamionRequestDTO dto) {
-    if (dto == null) {
-      return null;
-    }
-
+  public Camion toDomain(CamionRequestDTO dto) {
     return new Camion(dto.patente(), dto.capacidadVolumen(), dto.capacidadKG(), dto.altura());
   }
 
   public CamionResponseDTO toResponseDTO(Camion camion) {
-    if (camion == null) {
-      return null;
-    }
-
     return new CamionResponseDTO(
         camion.getId(),
         camion.getPatente(),
