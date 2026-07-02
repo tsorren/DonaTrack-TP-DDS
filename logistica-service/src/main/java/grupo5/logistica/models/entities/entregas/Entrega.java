@@ -54,8 +54,6 @@ public class Entrega implements AggregateRoot {
     this.confirmacionEntrega = false;
     this.pesoTotalKG = pesoTotalKG;
     this.volumenTotalM3 = volumenTotalM3;
-
-    registrarCambioEstado(null, EstadoEntrega.PENDIENTE, "ADMINISTRADOR");
   }
 
   public Entrega(
@@ -92,7 +90,6 @@ public class Entrega implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
-    this.confirmacionEntrega = true;
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
@@ -112,7 +109,6 @@ public class Entrega implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
     actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
-    this.confirmacionEntrega = false;
 
     mandarARevision("SISTEMA_LOGISTICA");
   }
@@ -132,7 +128,6 @@ public class Entrega implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
     actualizarEstado(EstadoEntrega.PENDIENTE, administrador);
-    this.confirmacionEntrega = false;
     this.horaArribo = null;
     this.horaSalida = null;
     this.idRuta = null;

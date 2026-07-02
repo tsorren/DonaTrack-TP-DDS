@@ -44,13 +44,13 @@ public class Ruta implements AggregateRoot {
     if (this.estado != EstadoRuta.PENDIENTE || this.entregas.isEmpty()) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
-    this.estado = EstadoRuta.INICIADA;
+    this.estado = EstadoRuta.EN_TRASLADO;
     this.horaInicioReal = LocalDateTime.now(ZoneId.of("UTC"));
     this.horaFinReal = null;
   }
 
   public void completarRuta() {
-    if (this.estado != EstadoRuta.INICIADA) {
+    if (this.estado != EstadoRuta.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
     this.estado = EstadoRuta.COMPLETADA;
@@ -67,7 +67,7 @@ public class Ruta implements AggregateRoot {
     }
     this.entregas.add(entregaId);
   }
-
+  
   public List<UUID> obtenerEntregas() {
     return List.copyOf(this.entregas);
   }
