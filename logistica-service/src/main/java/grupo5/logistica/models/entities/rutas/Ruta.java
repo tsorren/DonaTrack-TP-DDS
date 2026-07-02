@@ -78,4 +78,9 @@ public class Ruta implements AggregateRoot {
   public List<UUID> obtenerEntregas() {
     return List.copyOf(this.entregas);
   }
+
+  @Override
+  public UUID getId() {
+    return this.id;
+  }
 }

@@ -15,7 +15,7 @@ import lombok.Getter;
 @Getter
 public class Entrega implements AggregateRoot {
   private final UUID id;
-  private final UUID idRuta;
+  private UUID idRuta;
   private final UUID idDonacion;
   private final UUID idBeneficiaria;
   private final Direccion destino;
@@ -57,6 +57,22 @@ public class Entrega implements AggregateRoot {
 
   public List<CambioEstadoEntrega> getHistorialEstado() {
     return List.copyOf(this.historialEstado);
+  }
+
+  /**
+   * Asocia esta entrega a la ruta que la incluirá en el reparto. Una entrega se crea al momento de
+   * asignarse la donación a una entidad beneficiaria (aún sin ruta) y recién se vincula a una ruta
+   * concreta cuando el {@code GeneradorDeRutas} la agrupa junto a otras entregas para un camión
+   * determinado.
+   */
+  public void asignarRuta(UUID idRuta) {
+    if (idRuta == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (this.idRuta != null) {
+      throw new ValidationException(ErrorCatalog.ENTREGA_YA_ASIGNADA_A_RUTA);
+    }
+    this.idRuta = idRuta;
   }
 
   public void iniciarRuta(String chofer) {
@@ -148,5 +164,10 @@ public class Entrega implements AggregateRoot {
     CambioEstadoEntrega cambio =
         new CambioEstadoEntrega(anterior, nuevo, LocalDateTime.now(ZoneId.of("UTC")), actor);
     this.historialEstado.add(cambio);
+  }
+
+  @Override
+  public UUID getId() {
+    return this.id;
   }
 }
