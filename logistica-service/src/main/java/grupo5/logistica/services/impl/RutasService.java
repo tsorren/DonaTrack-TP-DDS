@@ -9,6 +9,7 @@ import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
 import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
 import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
 import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
 import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -33,18 +34,21 @@ public class RutasService implements IRutasService {
   private final ICamionRepository camionRepository;
   private final RutaMapper rutaMapper;
   private final LogisticaEventPublisher eventPublisher;
+  private final GeneradorDeURLSeguimiento generadorDeUrlSeguimiento;
 
   public RutasService(
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
-      ICamionRepository camionRepository,
+      ICamionRepository camionesRepository,
       RutaMapper rutaMapper,
-      LogisticaEventPublisher eventPublisher) {
+      LogisticaEventPublisher eventPublisher,
+      GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.camionRepository = camionRepository;
     this.rutaMapper = rutaMapper;
     this.eventPublisher = eventPublisher;
+    this.generadorDeUrlSeguimiento = generadorDeUrlSeguimiento;
   }
 
   @Override
@@ -122,6 +126,7 @@ public class RutasService implements IRutasService {
             donacionesIndependientesIds,
             LocalDateTime.now(ZoneId.of("UTC")),
             "urlMapa")); // TODO: resolver mapa de seguimiento
+    publicarRutaIniciada(ruta, camion, entregasDeRuta);
 
     return rutaMapper.toResponseDTO(ruta);
   }
@@ -144,6 +149,30 @@ public class RutasService implements IRutasService {
     return rutasRepository.findByCamionId(camionId).stream()
         .map(rutaMapper::toResponseDTO)
         .toList();
+  }
+
+  /**
+   * Arma y publica el evento de dominio de ruta iniciada, incluyendo la URL de seguimiento en
+   * tiempo real. Logística no invoca directamente a Donaciones ni a Notificaciones (req. de
+   * implementación de Entrega 3): es Donaciones quien escucha este evento y, por cada donación
+   * transportada, arma las notificaciones correspondientes (ver ADR de granularidad de eventos).
+   */
+  private void publicarRutaIniciada(Ruta ruta, Camion camion, List<Entrega> entregasDeRuta) {
+    String urlMapa = generadorDeUrlSeguimiento.generarUrl(ruta.getId());
+
+    List<UUID> donacionesIndependientesIds =
+        entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
+
+    EventoRutaIniciada evento =
+        new EventoRutaIniciada(
+            ruta.getId(),
+            camion.getId(),
+            camion.getPatente(),
+            donacionesIndependientesIds,
+            ruta.getHoraInicioReal(),
+            urlMapa);
+
+    eventPublisher.publicarRutaIniciada(evento);
   }
 
   private Ruta buscarRuta(UUID id) {
