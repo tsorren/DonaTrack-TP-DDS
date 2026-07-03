@@ -39,7 +39,7 @@ public class RutasService implements IRutasService {
   public RutasService(
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
-      ICamionRepository camionesRepository,
+      ICamionRepository camionRepository,
       RutaMapper rutaMapper,
       LogisticaEventPublisher eventPublisher,
       GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
