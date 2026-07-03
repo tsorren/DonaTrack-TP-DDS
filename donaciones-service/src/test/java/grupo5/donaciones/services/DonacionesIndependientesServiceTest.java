@@ -22,10 +22,12 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.impl.DonacionesIndependientesService;
 import java.time.LocalDate;
 import java.time.Month;
@@ -45,6 +47,7 @@ class DonacionesIndependientesServiceTest {
   private grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
       entidadesBeneficiariasRepositoryMock;
   private grupo5.donaciones.services.mappers.DonacionIndependienteMapper mapperMock;
+  private INecesidadesRepository necesidadRepositoryMock;
   private DonacionesIndependientesService service;
 
   private static final String ACTOR = "SISTEMA";
@@ -63,6 +66,7 @@ class DonacionesIndependientesServiceTest {
     entidadesBeneficiariasRepositoryMock =
         mock(grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository.class);
     mapperMock = mock(grupo5.donaciones.services.mappers.DonacionIndependienteMapper.class);
+    necesidadRepositoryMock = mock(INecesidadesRepository.class);
 
     when(mapperMock.toDTO(any(DonacionIndependiente.class)))
         .thenAnswer(
@@ -102,7 +106,8 @@ class DonacionesIndependientesServiceTest {
             donacionRepositoryMock,
             donantesRepositoryMock,
             entidadesBeneficiariasRepositoryMock,
-            mapperMock);
+            mapperMock,
+            necesidadRepositoryMock);
   }
 
   private DonacionIndependiente crearDonacionDePrueba() {
@@ -142,19 +147,40 @@ class DonacionesIndependientesServiceTest {
   void cambiarEstado_DeberiaTransicionarAAsignacionRealizada_CuandoEstadoActualEsEnDeposito() {
     DonacionIndependiente donacion = crearDonacionDePrueba();
     UUID id = donacion.getId();
+    UUID necesidadId = UUID.randomUUID();
+    Necesidad necesidad = mock(Necesidad.class);
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(necesidadRepositoryMock.findById(necesidadId)).thenReturn(Optional.of(necesidad));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, necesidadId, null, null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
     assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
     assertEquals(id, response.id());
+    assertEquals(necesidad, donacion.getAsignadaA());
     assertTrue(
         response.historial().stream().anyMatch(h -> "AsignacionRealizada".equals(h.estadoNuevo())));
     verify(repositoryMock, times(1)).save(donacion);
+  }
+
+  @Test
+  void cambiarEstado_DeberiaLanzarRecursoNoEncontradoException_CuandoNecesidadNoExiste() {
+    DonacionIndependiente donacion = crearDonacionDePrueba();
+    UUID id = donacion.getId();
+    UUID necesidadId = UUID.randomUUID();
+    when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(necesidadRepositoryMock.findById(necesidadId)).thenReturn(Optional.empty());
+
+    CambioEstadoDonacionIndependienteRequestDTO request =
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, necesidadId, null, null, null);
+
+    assertThrows(
+        RecursoNoEncontradoException.class, () -> service.cambiarEstado(id, request, ACTOR));
+    verify(repositoryMock, never()).save(any());
   }
 
   @Test

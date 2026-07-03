@@ -15,6 +15,7 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -33,6 +34,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       entidadesBeneficiariasRepository;
   private final grupo5.donaciones.services.mappers.DonacionIndependienteMapper
       donacionIndependienteMapper;
+  private final INecesidadesRepository necesidadRepository;
 
   public DonacionesIndependientesService(
       IDonacionesIndependientesRepository repositorio,
@@ -42,7 +44,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       IDonantesRepository donantesRepository,
       grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
           entidadesBeneficiariasRepository,
-      grupo5.donaciones.services.mappers.DonacionIndependienteMapper donacionIndependienteMapper) {
+      grupo5.donaciones.services.mappers.DonacionIndependienteMapper donacionIndependienteMapper,
+      INecesidadesRepository necesidadRepository) {
     this.repositorio = repositorio;
     this.incentivosFeignClient = incentivosFeignClient;
     this.notificacionesFeignClient = notificacionesFeignClient;
@@ -50,6 +53,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     this.donantesRepository = donantesRepository;
     this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
     this.donacionIndependienteMapper = donacionIndependienteMapper;
+    this.necesidadRepository = necesidadRepository;
   }
 
   @Override
@@ -62,7 +66,13 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     // Ver si asignacion realizada va aca o solo por el algoritmo
     // Agregar url de foto a necesidad al confirmar entrega
     switch (request.estado()) {
-      case TipoEstadoDonacion.ASIGNACION_REALIZADA -> donacion.asignar(actor, null);
+      case TipoEstadoDonacion.ASIGNACION_REALIZADA -> {
+        Necesidad necesidad =
+            necesidadRepository
+                .findById(request.necesidadId())
+                .orElseThrow(() -> new RecursoNoEncontradoException(request.necesidadId()));
+        donacion.asignar(actor, necesidad);
+      }
       case TipoEstadoDonacion.VENCIDA -> donacion.vencer(actor);
       case TipoEstadoDonacion.EN_TRASLADO -> donacion.planificarRuta(actor);
       case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(
