@@ -8,7 +8,7 @@ import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
 import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
 import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
 import grupo5.logistica.dto.rutas.RutaResponseDTO;
-import grupo5.logistica.infrastructure.GeneradorDeUrlSeguimiento;
+import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
 import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -30,7 +30,7 @@ public class RutasService implements IRutasService {
   private final ICamionesRepository camionesRepository;
   private final RutaMapper rutaMapper;
   private final LogisticaEventPublisher eventPublisher;
-  private final GeneradorDeUrlSeguimiento generadorDeUrlSeguimiento;
+  private final GeneradorDeURLSeguimiento generadorDeURLSeguimiento;
 
   public RutasService(
       IRutasRepository rutasRepository,
@@ -38,13 +38,13 @@ public class RutasService implements IRutasService {
       ICamionesRepository camionesRepository,
       RutaMapper rutaMapper,
       LogisticaEventPublisher eventPublisher,
-      GeneradorDeUrlSeguimiento generadorDeUrlSeguimiento) {
+      GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.camionesRepository = camionesRepository;
     this.rutaMapper = rutaMapper;
     this.eventPublisher = eventPublisher;
-    this.generadorDeUrlSeguimiento = generadorDeUrlSeguimiento;
+    this.generadorDeURLSeguimiento = generadorDeUrlSeguimiento;
   }
 
   @Override
@@ -132,7 +132,7 @@ public class RutasService implements IRutasService {
    * transportada, arma las notificaciones correspondientes (ver ADR de granularidad de eventos).
    */
   private void publicarRutaIniciada(Ruta ruta, Camion camion, List<Entrega> entregasDeRuta) {
-    String urlMapa = generadorDeUrlSeguimiento.generarUrl(ruta.getId());
+    String urlMapa = generadorDeURLSeguimiento.generarUrl(ruta.getId());
 
     List<UUID> donacionesIndependientesIds =
         entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
