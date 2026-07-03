@@ -3,10 +3,13 @@ package grupo5.logistica.services.impl;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
 import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
 import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
 import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.infrastructure.GeneradorDeUrlSeguimiento;
+import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
@@ -26,16 +29,22 @@ public class RutasService implements IRutasService {
   private final IEntregasRepository entregasRepository;
   private final ICamionesRepository camionesRepository;
   private final RutaMapper rutaMapper;
+  private final LogisticaEventPublisher eventPublisher;
+  private final GeneradorDeUrlSeguimiento generadorDeUrlSeguimiento;
 
   public RutasService(
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
       ICamionesRepository camionesRepository,
-      RutaMapper rutaMapper) {
+      RutaMapper rutaMapper,
+      LogisticaEventPublisher eventPublisher,
+      GeneradorDeUrlSeguimiento generadorDeUrlSeguimiento) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.camionesRepository = camionesRepository;
     this.rutaMapper = rutaMapper;
+    this.eventPublisher = eventPublisher;
+    this.generadorDeUrlSeguimiento = generadorDeUrlSeguimiento;
   }
 
   @Override
@@ -84,17 +93,18 @@ public class RutasService implements IRutasService {
     camion.asignarARuta(ruta.getId());
     ruta.iniciarRuta();
 
-    buscarEntregasDeRuta(ruta)
-        .forEach(
-            entrega -> {
-              entrega.iniciarRuta(dto.actor());
-              entregasRepository.save(entrega);
-            });
+    List<Entrega> entregasDeRuta = buscarEntregasDeRuta(ruta);
+    entregasDeRuta.forEach(
+        entrega -> {
+          entrega.iniciarRuta(dto.actor());
+          entregasRepository.save(entrega);
+        });
 
     camionesRepository.save(camion);
     rutasRepository.save(ruta);
-    // Punto futuro de integración: cuando se consolide RabbitMQ/broker,
-    // publicar acá el evento de ruta iniciada sin invocar Donaciones ni Notificaciones.
+
+    publicarRutaIniciada(ruta, camion, entregasDeRuta);
+
     return rutaMapper.toResponseDTO(ruta);
   }
 
@@ -113,6 +123,30 @@ public class RutasService implements IRutasService {
     return rutasRepository.findByCamionId(camionId).stream()
         .map(rutaMapper::toResponseDTO)
         .toList();
+  }
+
+  /**
+   * Arma y publica el evento de dominio de ruta iniciada, incluyendo la URL de seguimiento en
+   * tiempo real. Logística no invoca directamente a Donaciones ni a Notificaciones (req. de
+   * implementación de Entrega 3): es Donaciones quien escucha este evento y, por cada donación
+   * transportada, arma las notificaciones correspondientes (ver ADR de granularidad de eventos).
+   */
+  private void publicarRutaIniciada(Ruta ruta, Camion camion, List<Entrega> entregasDeRuta) {
+    String urlMapa = generadorDeUrlSeguimiento.generarUrl(ruta.getId());
+
+    List<UUID> donacionesIndependientesIds =
+        entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
+
+    EventoRutaIniciada evento =
+        new EventoRutaIniciada(
+            ruta.getId(),
+            camion.getId(),
+            camion.getPatente(),
+            donacionesIndependientesIds,
+            ruta.getHoraInicioReal(),
+            urlMapa);
+
+    eventPublisher.publicarRutaIniciada(evento);
   }
 
   private Ruta buscarRuta(UUID id) {
