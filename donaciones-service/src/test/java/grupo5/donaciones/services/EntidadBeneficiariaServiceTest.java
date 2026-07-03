@@ -13,6 +13,7 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.EntidadBeneficiariaService;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,5 +74,19 @@ class EntidadBeneficiariaServiceTest {
     EntidadBeneficiariaOutputDTO resultado = service.obtenerEntidad(id);
 
     assertEquals(dto, resultado);
+  }
+
+  @Test
+  void obtenerTodas_debeRetornarListaDeDTOs() {
+    EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
+    EntidadBeneficiariaOutputDTO dto = mock(EntidadBeneficiariaOutputDTO.class);
+
+    when(repository.findAll()).thenReturn(List.of(entidad));
+    when(mapper.toOutputDTO(entidad)).thenReturn(dto);
+
+    List<EntidadBeneficiariaOutputDTO> resultado = service.obtenerTodas();
+
+    assertEquals(1, resultado.size());
+    assertEquals(dto, resultado.getFirst());
   }
 }

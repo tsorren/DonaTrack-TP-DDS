@@ -128,4 +128,31 @@ class NecesidadesControllerTest {
         .andExpect(jsonPath("$.size()").value(1))
         .andExpect(jsonPath("$[0].descripcion").value("Leche"));
   }
+
+  @Test
+  void obtenerNecesidad_deberiaRetornarOkYDto() throws Exception {
+    UUID id = UUID.randomUUID();
+    UUID entidadId = UUID.randomUUID();
+    UUID subcategoriaId = UUID.randomUUID();
+
+    NecesidadDTO dto =
+        new NecesidadDTO(
+            id,
+            "EXTRAORDINARIA",
+            entidadId,
+            subcategoriaId,
+            5,
+            "Ropa abrigo",
+            false,
+            LocalDate.of(2026, Month.JUNE, 1),
+            null);
+
+    when(necesidadesService.obtenerPorId(id)).thenReturn(dto);
+
+    mockMvc
+        .perform(get("/api/necesidades/{id}", id))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(id.toString()))
+        .andExpect(jsonPath("$.descripcion").value("Ropa abrigo"));
+  }
 }
