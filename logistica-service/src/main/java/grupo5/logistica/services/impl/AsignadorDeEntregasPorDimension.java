@@ -62,7 +62,7 @@ public class AsignadorDeEntregasPorDimension implements AlgoritmoAsignadorDeEntr
     return asignaciones;
   }
 
-  private UUID buscarCamionDisponible(
+  private static UUID buscarCamionDisponible(
       Entrega entrega,
       Map<UUID, Float> pesoDisponiblePorCamion,
       Map<UUID, Float> volumenDisponiblePorCamion) {

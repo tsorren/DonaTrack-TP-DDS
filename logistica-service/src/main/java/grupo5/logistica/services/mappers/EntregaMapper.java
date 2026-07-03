@@ -61,7 +61,7 @@ public class EntregaMapper {
         cambio.estadoAnterior(), cambio.estadoNuevo(), cambio.timeStamp(), cambio.actor());
   }
 
-  private void validarMagnitudes(CrearEntregaRequestDTO dto) {
+  private static void validarMagnitudes(CrearEntregaRequestDTO dto) {
     if (dto.pesoTotalKG() == null || dto.volumenTotalM3() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }

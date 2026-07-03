@@ -9,6 +9,7 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -50,5 +51,9 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
         repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
     return mapper.toOutputDTO(entidad);
+  }
+
+  public List<EntidadBeneficiariaOutputDTO> obtenerTodas() {
+    return repository.findAll().stream().map(mapper::toOutputDTO).toList();
   }
 }

@@ -108,7 +108,7 @@ public class PlanificacionService implements IPlanificacionService {
     return rutasRepository.save(ruta).getId();
   }
 
-  private void validarSolicitud(SolicitudPlanificacionRequestDTO dto) {
+  private static void validarSolicitud(SolicitudPlanificacionRequestDTO dto) {
     if (dto == null || dto.entregaIds() == null || dto.entregaIds().isEmpty()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }

@@ -1,5 +1,6 @@
 package grupo5.donaciones.controllers.impl;
 
+import grupo5.donaciones.controllers.IPropuestasController;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.services.impl.PropuestaService;
@@ -12,15 +13,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/asignaciones/propuestas")
 @RequiredArgsConstructor
-public class PropuestasController {
+public class PropuestasController implements IPropuestasController {
 
   private final PropuestaService propuestaService;
 
+  @Override
   @GetMapping
   public ResponseEntity<List<PropuestaDTO>> listar() {
     return ResponseEntity.ok(propuestaService.listarPropuestas());
   }
 
+  @Override
   @PutMapping("/{id}/estado")
   public ResponseEntity<Void> actualizarEstado(
       @PathVariable UUID id, @RequestBody ActualizarEstadoRequestDTO request) {
