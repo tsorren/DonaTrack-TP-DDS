@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import grupo5.donaciones.controllers.impl.EntidadBeneficiariaController;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,5 +59,13 @@ class EntidadBeneficiariaControllerTest {
     when(service.obtenerEntidad(id)).thenReturn(mock(EntidadBeneficiariaOutputDTO.class));
 
     mockMvc.perform(get("/api/entidades/" + id)).andExpect(status().isOk());
+  }
+
+  @Test
+  void obtenerTodas_debeRetornarOk() throws Exception {
+
+    when(service.obtenerTodas()).thenReturn(List.of(mock(EntidadBeneficiariaOutputDTO.class)));
+
+    mockMvc.perform(get("/api/entidades")).andExpect(status().isOk());
   }
 }
