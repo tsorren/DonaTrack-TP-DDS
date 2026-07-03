@@ -3,10 +3,13 @@ package grupo5.logistica.services.impl;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.logistica.dto.eventos.EventoRutaAsignada;
+import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
 import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
 import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
 import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
@@ -15,6 +18,8 @@ import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.IRutasService;
 import grupo5.logistica.services.mappers.RutaMapper;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -26,16 +31,19 @@ public class RutasService implements IRutasService {
   private final IEntregasRepository entregasRepository;
   private final ICamionesRepository camionesRepository;
   private final RutaMapper rutaMapper;
+  private final LogisticaEventPublisher eventPublisher;
 
   public RutasService(
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
       ICamionesRepository camionesRepository,
-      RutaMapper rutaMapper) {
+      RutaMapper rutaMapper,
+      LogisticaEventPublisher eventPublisher) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.camionesRepository = camionesRepository;
     this.rutaMapper = rutaMapper;
+    this.eventPublisher = eventPublisher;
   }
 
   @Override
@@ -66,6 +74,11 @@ public class RutasService implements IRutasService {
     entrega.asignarRuta(ruta.getId());
     rutasRepository.save(ruta);
     entregasRepository.save(entrega);
+
+    eventPublisher.publicarRutaAsignada(
+        new EventoRutaAsignada(
+            ruta.getId(), entrega.getIdDonacion(), LocalDateTime.now(ZoneId.of("UTC"))));
+
     return rutaMapper.toResponseDTO(ruta);
   }
 
@@ -84,17 +97,27 @@ public class RutasService implements IRutasService {
     camion.asignarARuta(ruta.getId());
     ruta.iniciarRuta();
 
-    buscarEntregasDeRuta(ruta)
-        .forEach(
-            entrega -> {
-              entrega.iniciarRuta(dto.actor());
-              entregasRepository.save(entrega);
-            });
+    List<Entrega> entregasDeRuta = buscarEntregasDeRuta(ruta);
+    entregasDeRuta.forEach(
+        entrega -> {
+          entrega.iniciarRuta(dto.actor());
+          entregasRepository.save(entrega);
+        });
 
     camionesRepository.save(camion);
     rutasRepository.save(ruta);
-    // Punto futuro de integración: cuando se consolide RabbitMQ/broker,
-    // publicar acá el evento de ruta iniciada sin invocar Donaciones ni Notificaciones.
+
+    List<UUID> donacionesIndependientesIds =
+        entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
+    eventPublisher.publicarRutaIniciada(
+        new EventoRutaIniciada(
+            ruta.getId(),
+            camion.getId(),
+            camion.getPatente(),
+            donacionesIndependientesIds,
+            LocalDateTime.now(ZoneId.of("UTC")),
+            "urlMapa")); // TODO: resolver mapa de seguimiento
+
     return rutaMapper.toResponseDTO(ruta);
   }
 
