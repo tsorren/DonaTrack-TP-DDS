@@ -68,7 +68,7 @@ public class LogisticaEventListener {
     aplicarCambioEstado(
         evento.donacionIndependienteId(),
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGADA, null, null, null, null, null),
+            TipoEstadoDonacion.ENTREGADA, null, null, null, evento.patenteCamion(), null),
         "EntregaExitosa");
   }
 
@@ -82,7 +82,12 @@ public class LogisticaEventListener {
     aplicarCambioEstado(
         evento.donacionIndependienteId(),
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGA_FALLIDA, evento.justificacion(), null, null, null, null),
+            TipoEstadoDonacion.ENTREGA_FALLIDA,
+            evento.justificacion(),
+            null,
+            null,
+            null,
+            evento.replanificable()),
         "EntregaFallida");
   }
 
