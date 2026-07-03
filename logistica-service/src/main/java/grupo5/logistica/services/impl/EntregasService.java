@@ -16,7 +16,7 @@ import grupo5.logistica.dto.rutas.RutaResponseDTO;
 import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.repositories.ICamionesRepository;
+import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.services.IEntregasService;
 import grupo5.logistica.services.IRutasService;
@@ -31,19 +31,19 @@ import org.springframework.stereotype.Service;
 public class EntregasService implements IEntregasService {
   private final IEntregasRepository entregasRepository;
   private final IRutasService rutasService;
-  private final ICamionesRepository camionesRepository;
+  private final ICamionRepository camionRepository;
   private final EntregaMapper entregaMapper;
   private final LogisticaEventPublisher eventPublisher;
 
   public EntregasService(
       IEntregasRepository entregasRepository,
       IRutasService rutasService,
-      ICamionesRepository camionesRepository,
+      ICamionRepository camionRepository,
       EntregaMapper entregaMapper,
       LogisticaEventPublisher eventPublisher) {
     this.entregasRepository = entregasRepository;
     this.rutasService = rutasService;
-    this.camionesRepository = camionesRepository;
+    this.camionRepository = camionRepository;
     this.entregaMapper = entregaMapper;
     this.eventPublisher = eventPublisher;
   }
@@ -147,7 +147,7 @@ public class EntregasService implements IEntregasService {
 
   private Camion buscarCamionDeEntrega(Entrega entrega) {
     RutaResponseDTO ruta = rutasService.obtenerPorId(entrega.getIdRuta());
-    return camionesRepository
+    return camionRepository
         .findById(ruta.camionId())
         .orElseThrow(() -> new RecursoNoEncontradoException(ruta.camionId()));
   }
