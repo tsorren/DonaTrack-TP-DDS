@@ -6,7 +6,7 @@ import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.services.AlgoritmoAsignadorDeEntregas;
-import grupo5.logistica.services.AlgoritmoOrdenadorDeEntrega;
+import grupo5.logistica.services.AlgoritmoOrdenadorDeEntregas;
 import grupo5.logistica.services.IServicioExternoPlanificacion;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
  * <p>Aplica el patrón <b>Strategy</b> delegando en dos abstracciones intercambiables:
  *
  * <ul>
- *   <li>{@link AlgoritmoOrdenadorDeEntrega}: decide el orden de las entregas.
+ *   <li>{@link AlgoritmoOrdenadorDeEntregas}: decide el orden de las entregas.
  *   <li>{@link AlgoritmoAsignadorDeEntregas}: decide en qué camión entra cada entrega.
  * </ul>
  *
@@ -37,11 +37,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class GeneradorDeRutas implements IServicioExternoPlanificacion {
 
-  private final AlgoritmoOrdenadorDeEntrega ordenadorEntregas;
+  private final AlgoritmoOrdenadorDeEntregas ordenadorEntregas;
   private final AlgoritmoAsignadorDeEntregas asignadorDeEntregas;
 
   public GeneradorDeRutas(
-      AlgoritmoOrdenadorDeEntrega ordenadorEntregas,
+      AlgoritmoOrdenadorDeEntregas ordenadorEntregas,
       AlgoritmoAsignadorDeEntregas asignadorDeEntregas) {
     if (ordenadorEntregas == null || asignadorDeEntregas == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
