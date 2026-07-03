@@ -1,6 +1,7 @@
 package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.donaciones.config.AdminConstantes;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.models.entities.personas.Juridica;
@@ -83,5 +84,13 @@ public class PersonasService implements IPersonasService {
 
     // Sincronizar asincrónicamente con el servicio de notificaciones
     notificacionesAsyncService.anonimizarPersona(id);
+  }
+
+  @Override
+  public UUID obtenerIdPersonaAdministradora() {
+    return repository
+        .findByDocumento(AdminConstantes.DOCUMENTO_ADMIN)
+        .map(Persona::getId)
+        .orElse(null);
   }
 }
