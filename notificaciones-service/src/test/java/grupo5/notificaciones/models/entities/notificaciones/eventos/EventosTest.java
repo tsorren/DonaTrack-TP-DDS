@@ -1,6 +1,7 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -57,8 +58,7 @@ class EventosNotificablesTest {
 
     assertEquals(1, notificaciones.size());
 
-    assertEquals(
-        "Bienvenido a DonaTrack\nusuario: Usuario", notificaciones.getFirst().getMensaje());
+    assertEquals("Bienvenido a DonaTrack usuario: Usuario", notificaciones.getFirst().getMensaje());
 
     assertEquals(persona.getId(), notificaciones.getFirst().getPersonaId());
   }
@@ -93,16 +93,61 @@ class EventosNotificablesTest {
         new Persona(
             UUID.randomUUID(), new ArrayList<>(), "Comedor Esperanza", TipoPersona.JURIDICA);
 
-    DonacionRecibida evento = new DonacionRecibida(donante, beneficiario, "ropa", TEST_DATE_TIME);
+    DonacionRecibida evento =
+        new DonacionRecibida(donante, beneficiario, "ropa", "AB123CD", TEST_DATE_TIME);
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 
     assertEquals(2, notificaciones.size());
 
-    assertEquals(
-        "¡Gracias! Comedor Esperanza recibió tu donación de ropa",
-        notificaciones.get(0).getMensaje());
+    assertTrue(
+        notificaciones
+            .get(0)
+            .getMensaje()
+            .startsWith("¡Gracias! Comedor Esperanza recibió tu donación de ropa"));
+    assertTrue(notificaciones.get(0).getMensaje().contains("AB123CD"));
 
-    assertEquals("Ya llegó la donación ropa a tu sede", notificaciones.get(1).getMensaje());
+    assertTrue(
+        notificaciones.get(1).getMensaje().startsWith("Ya llegó la donación ropa a tu sede"));
+    assertTrue(notificaciones.get(1).getMensaje().contains("AB123CD"));
+  }
+
+  @Test
+  void generarNotificaciones_deberiaCrearMensajeConEnlaceEnDonacionEnCamino() {
+    Persona donante = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
+    Persona beneficiario =
+        new Persona(
+            UUID.randomUUID(), new ArrayList<>(), "Comedor Esperanza", TipoPersona.JURIDICA);
+
+    DonacionEnCamino evento =
+        new DonacionEnCamino(
+            donante, beneficiario, "ropa", "https://donatrack.app/mapa/123", TEST_DATE_TIME);
+
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+
+    assertEquals(2, notificaciones.size());
+    assertTrue(notificaciones.get(0).getMensaje().contains("https://donatrack.app/mapa/123"));
+    assertTrue(notificaciones.get(1).getMensaje().contains("https://donatrack.app/mapa/123"));
+  }
+
+  @Test
+  void generarNotificaciones_deberiaNotificarATresDestinatariosEnEntregaFallida() {
+    Persona donante = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
+    Persona beneficiario =
+        new Persona(
+            UUID.randomUUID(), new ArrayList<>(), "Comedor Esperanza", TipoPersona.JURIDICA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Administración", TipoPersona.HUMANA);
+
+    EntregaFallida evento =
+        new EntregaFallida(
+            donante, beneficiario, admin, "ropa", "Nadie respondió", true, TEST_DATE_TIME);
+
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+
+    assertEquals(3, notificaciones.size());
+    assertEquals(donante.getId(), notificaciones.get(0).getPersonaId());
+    assertEquals(beneficiario.getId(), notificaciones.get(1).getPersonaId());
+    assertEquals(admin.getId(), notificaciones.get(2).getPersonaId());
   }
 }

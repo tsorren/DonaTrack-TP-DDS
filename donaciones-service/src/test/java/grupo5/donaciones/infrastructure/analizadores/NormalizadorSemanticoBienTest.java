@@ -54,7 +54,7 @@ class NormalizadorSemanticoBienTest {
         new NormalizadorSemanticoBien(
             comparador, subcategoriaRepository, categoriasRepository, 1.0);
 
-    Bien bien = new Bien("una silla de madera para la escuela", "imagen.png", null, null);
+    Bien bien = new Bien("una silla de madera para la escuela", "imagen.png", null, null, 1.0, 1.0);
     donacion.agregarItem(new ItemDonacion(bien, 5));
 
     List<ItemDonacionNormalizado> resultado = normalizador.normalizar(donacion);
@@ -76,7 +76,7 @@ class NormalizadorSemanticoBienTest {
         new NormalizadorSemanticoBien(
             comparador, subcategoriaRepository, categoriasRepository, 1.0);
 
-    Bien bien = new Bien("silla de plastico", "imagen.png", null, null);
+    Bien bien = new Bien("silla de plastico", "imagen.png", null, null, 1.0, 1.0);
     donacion.agregarItem(new ItemDonacion(bien, 3));
 
     List<ItemDonacionNormalizado> resultado = normalizador.normalizar(donacion);
@@ -100,7 +100,7 @@ class NormalizadorSemanticoBienTest {
         new NormalizadorSemanticoBien(
             comparador, subcategoriaRepository, categoriasRepository, 0.5);
 
-    Bien bien = new Bien("silla de plastico", "imagen.png", null, null);
+    Bien bien = new Bien("silla de plastico", "imagen.png", null, null, 1.0, 1.0);
     donacion.agregarItem(new ItemDonacion(bien, 3));
 
     List<ItemDonacionNormalizado> resultado = normalizador.normalizar(donacion);
@@ -127,7 +127,7 @@ class NormalizadorSemanticoBienTest {
         new NormalizadorSemanticoBien(
             comparador, subcategoriaRepository, categoriasRepository, 0.5);
 
-    Bien bien = new Bien("manzana roja", "imagen.png", null, null);
+    Bien bien = new Bien("manzana roja", "imagen.png", null, null, 1.0, 1.0);
     donacion.agregarItem(new ItemDonacion(bien, 2));
 
     List<ItemDonacionNormalizado> resultado = normalizador.normalizar(donacion);
@@ -159,7 +159,7 @@ class NormalizadorSemanticoBienTest {
         new NormalizadorSemanticoBien(
             comparador, subcategoriaRepository, categoriasRepository, 1.0);
 
-    Bien bien = new Bien("silla de luz", "imagen.png", null, null);
+    Bien bien = new Bien("silla de luz", "imagen.png", null, null, 1.0, 1.0);
     donacion.agregarItem(new ItemDonacion(bien, 1));
 
     List<ItemDonacionNormalizado> resultado = normalizador.normalizar(donacion);
@@ -177,7 +177,7 @@ class NormalizadorSemanticoBienTest {
         new NormalizadorSemanticoBien(
             comparador, subcategoriaRepository, categoriasRepository, 1.0);
 
-    Bien bien = new Bien("silla", "imagen.png", null, null);
+    Bien bien = new Bien("silla", "imagen.png", null, null, 1.0, 1.0);
     donacion.agregarItem(new ItemDonacion(bien, 1));
 
     ValidationException exception =

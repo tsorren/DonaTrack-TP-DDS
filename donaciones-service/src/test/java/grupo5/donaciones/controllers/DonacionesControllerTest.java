@@ -54,7 +54,12 @@ class DonacionesControllerTest {
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     DonacionInputDTO input =
         new DonacionInputDTO(
-            UUID.randomUUID(), "descripcion", List.of(), "Deposito Central", dirDTO);
+            UUID.randomUUID(),
+            "descripcion",
+            List.of(),
+            "Deposito Central",
+            dirDTO,
+            LocalDateTime.now());
 
     DireccionOutputDTO dirOut =
         new DireccionOutputDTO(

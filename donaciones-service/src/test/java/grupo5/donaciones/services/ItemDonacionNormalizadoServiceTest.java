@@ -66,7 +66,7 @@ class ItemDonacionNormalizadoServiceTest {
             grupo5.donaciones.models.entities.categorias.Unidad.KILOGRAMO);
     subcategoria = new Subcategoria(categoria.getId(), "Arroz");
 
-    Bien bien = new Bien("Paquete de arroz", null, null, null);
+    Bien bien = new Bien("Paquete de arroz", null, null, null, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(
             bien, subcategoria.getId(), 0.4, EstadoNormalizacion.PENDIENTE_REVISION, false, false);

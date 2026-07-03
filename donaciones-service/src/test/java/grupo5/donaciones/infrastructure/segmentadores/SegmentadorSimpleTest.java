@@ -55,7 +55,7 @@ class SegmentadorSimpleTest {
     segmentador = new SegmentadorSimple(subcategoriasRepository);
 
     Bien abrigoInvierno =
-        new Bien("Abrigo de lana", "abrigo.png", TEST_DATE.plusMonths(6), Estado.NUEVO);
+        new Bien("Abrigo de lana", "abrigo.png", TEST_DATE.plusMonths(6), Estado.NUEVO, 1.0, 1.0);
     abrigoInviernoNuevo =
         new BienNormalizado(
             abrigoInvierno,
@@ -66,7 +66,8 @@ class SegmentadorSimpleTest {
             false);
 
     Bien polleraInvierno =
-        new Bien("Pollera de invierno", "pollera.png", TEST_DATE.plusMonths(2), Estado.USADO);
+        new Bien(
+            "Pollera de invierno", "pollera.png", TEST_DATE.plusMonths(2), Estado.USADO, 1.0, 1.0);
     polleraInviernoUsada =
         new BienNormalizado(
             polleraInvierno,
@@ -77,7 +78,7 @@ class SegmentadorSimpleTest {
             false);
 
     Bien manzanas =
-        new Bien("Manzanas rojas", "manzanas.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+        new Bien("Manzanas rojas", "manzanas.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     manzanasNormalizado =
         new BienNormalizado(
             manzanas, subcategoriaFrutas.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);

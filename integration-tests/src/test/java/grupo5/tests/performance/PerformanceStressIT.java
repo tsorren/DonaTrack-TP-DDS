@@ -28,12 +28,12 @@ class PerformanceStressIT extends BaseIT {
       long start = System.currentTimeMillis();
       try {
         String personaId = apiCrearPersonaHumana(documento, nombre, email);
-        apiCrearDonante(personaId);
-        apiCrearDonacion(personaId, "Donación stress " + i, "arroz", 1);
+        String donanteId = apiCrearDonante(personaId);
+        apiCrearDonacion(donanteId, "Donación stress " + i, "arroz", 1);
         long end = System.currentTimeMillis();
         latencies.add(end - start);
       } catch (Throwable t) {
-        System.err.println("Error creating donor/donation at iteration " + i + ": " + t.getMessage());
+        System.err.println("Error creating donante/donation at iteration " + i + ": " + t.getMessage());
         t.printStackTrace();
         errorCount++;
       }
@@ -45,16 +45,16 @@ class PerformanceStressIT extends BaseIT {
     // Report
     printPerformanceReport("Donor and Donation Creation", totalRequests, latencies, errorCount, totalDuration);
 
-    assertEquals(0, errorCount, "There should be no errors during sequential donor and donation creation performance test.");
+    assertEquals(0, errorCount, "There should be no errors during sequential donante and donation creation performance test.");
     double average = calculateAverage(latencies);
-    assertTrue(average < 500.0, "Average latency of donor + donation creation (" + average + " ms) should be below 500ms.");
+    assertTrue(average < 500.0, "Average latency of donante + donation creation (" + average + " ms) should be below 500ms.");
   }
 
   @Test
   void testDonationEventProcessingStress() {
-    // 1. Pre-register a donor to run stress tests on
-    String personaId = apiCrearPersonaHumana("79998888", "StressDonor", "stress.donor@example.com");
-    String donorId = apiCrearDonante(personaId);
+    // 1. Pre-register a donante to run stress tests on
+    String personaId = apiCrearPersonaHumana("79998888", "StressDonor", "stress.donante@example.com");
+    String donanteId = apiCrearDonante(personaId);
 
     // 2. Stress with 200 sequential calls to /api/incentivos/donaciones
     int totalRequests = 200;
@@ -66,7 +66,7 @@ class PerformanceStressIT extends BaseIT {
     for (int i = 0; i < totalRequests; i++) {
       long start = System.currentTimeMillis();
       try {
-        apiEnviarEventoDonacionIncentivos(donorId, "2026-06-01", 1);
+        apiEnviarEventoDonacionIncentivos(donanteId, "2026-06-01", 1);
         long end = System.currentTimeMillis();
         latencies.add(end - start);
       } catch (Throwable t) {
