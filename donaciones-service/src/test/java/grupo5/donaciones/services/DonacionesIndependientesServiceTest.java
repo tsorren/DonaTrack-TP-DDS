@@ -45,6 +45,7 @@ class DonacionesIndependientesServiceTest {
   private grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
       entidadesBeneficiariasRepositoryMock;
   private grupo5.donaciones.services.mappers.DonacionIndependienteMapper mapperMock;
+  private IPersonasService personasServiceMock;
   private DonacionesIndependientesService service;
 
   private static final String ACTOR = "SISTEMA";
@@ -63,6 +64,7 @@ class DonacionesIndependientesServiceTest {
     entidadesBeneficiariasRepositoryMock =
         mock(grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository.class);
     mapperMock = mock(grupo5.donaciones.services.mappers.DonacionIndependienteMapper.class);
+    personasServiceMock = mock(IPersonasService.class);
 
     when(mapperMock.toDTO(any(DonacionIndependiente.class)))
         .thenAnswer(
@@ -102,7 +104,8 @@ class DonacionesIndependientesServiceTest {
             donacionRepositoryMock,
             donantesRepositoryMock,
             entidadesBeneficiariasRepositoryMock,
-            mapperMock);
+            mapperMock,
+            personasServiceMock);
   }
 
   private DonacionIndependiente crearDonacionDePrueba() {
