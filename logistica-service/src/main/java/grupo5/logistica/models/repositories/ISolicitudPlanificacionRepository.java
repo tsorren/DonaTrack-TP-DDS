@@ -1,10 +1,6 @@
 package grupo5.logistica.models.repositories;
 
 import grupo5.common.repositories.CrudRepository;
-import grupo5.logistica.models.entities.planificacion.SolicitudPlanificacion;
-import java.util.Optional;
-import java.util.UUID;
+import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 
-public interface ISolicitudPlanificacionRepository extends CrudRepository<SolicitudPlanificacion> {
-  Optional<SolicitudPlanificacion> findByCorrelationId(UUID correlationId);
-}
+public interface ISolicitudPlanificacionRepository extends CrudRepository<SolicitudPlanificacion> {}
