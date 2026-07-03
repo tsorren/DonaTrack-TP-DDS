@@ -95,9 +95,4 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }
-
-  @Override
-  public UUID getId() {
-    return this.id;
-  }
 }

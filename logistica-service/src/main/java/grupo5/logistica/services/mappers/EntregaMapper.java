@@ -47,7 +47,6 @@ public class EntregaMapper {
         entrega.getHoraSalida(),
         entrega.getHoraArribo(),
         entrega.getFotoRecepcionUrl(),
-        entrega.getConfirmacionEntrega(),
         entrega.getPesoTotalKG(),
         entrega.getVolumenTotalM3(),
         entrega.getHistorialEstado().stream().map(this::toCambioEstadoResponseDTO).toList());

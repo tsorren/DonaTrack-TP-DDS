@@ -29,7 +29,6 @@ public class Entrega implements AggregateRoot {
   private LocalDateTime horaArribo;
   private LocalDateTime horaSalida;
   private String fotoRecepcionUrl;
-  private Boolean confirmacionEntrega;
   private final float pesoTotalKG;
   private final float volumenTotalM3;
 
@@ -52,7 +51,6 @@ public class Entrega implements AggregateRoot {
     this.destino = destino;
     this.estadoActual = EstadoEntrega.PENDIENTE;
     this.historialEstado = new ArrayList<>();
-    this.confirmacionEntrega = false;
     this.pesoTotalKG = pesoTotalKG;
     this.volumenTotalM3 = volumenTotalM3;
   }
@@ -102,7 +100,6 @@ public class Entrega implements AggregateRoot {
 
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
-    this.confirmacionEntrega = true;
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {
@@ -150,7 +147,6 @@ public class Entrega implements AggregateRoot {
     this.horaArribo = null;
     this.horaSalida = null;
     this.idRuta = null;
-    this.confirmacionEntrega = false;
   }
 
   public List<CambioEstadoEntrega> getHistorialEstado() {
@@ -167,11 +163,6 @@ public class Entrega implements AggregateRoot {
     CambioEstadoEntrega cambio =
         new CambioEstadoEntrega(anterior, nuevo, LocalDateTime.now(ZoneId.of("UTC")), actor);
     this.historialEstado.add(cambio);
-  }
-
-  @Override
-  public UUID getId() {
-    return this.id;
   }
 
   private void validarIdentificador(UUID id) {

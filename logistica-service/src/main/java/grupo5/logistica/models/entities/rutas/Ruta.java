@@ -86,11 +86,6 @@ public class Ruta implements AggregateRoot {
     return obtenerEntregas();
   }
 
-  @Override
-  public UUID getId() {
-    return this.id;
-  }
-
   private void validarFecha(LocalDate fecha) {
     if (Objects.isNull(fecha)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);

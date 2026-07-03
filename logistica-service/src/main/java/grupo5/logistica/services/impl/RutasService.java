@@ -10,7 +10,7 @@ import grupo5.logistica.dto.rutas.RutaResponseDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
-import grupo5.logistica.models.repositories.ICamionesRepository;
+import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.IRutasService;
@@ -25,13 +25,13 @@ public class RutasService implements IRutasService {
 
   private final IRutasRepository rutasRepository;
   private final IEntregasRepository entregasRepository;
-  private final ICamionesRepository camionesRepository;
+  private final ICamionRepository camionesRepository;
   private final RutaMapper rutaMapper;
 
   public RutasService(
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
-      ICamionesRepository camionesRepository,
+      ICamionRepository camionesRepository,
       RutaMapper rutaMapper) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
