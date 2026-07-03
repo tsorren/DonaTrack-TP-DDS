@@ -15,6 +15,7 @@ import lombok.Getter;
 
 @Getter
 public class Ruta implements AggregateRoot {
+
   private final UUID id;
   private final LocalDate fecha;
 
@@ -44,6 +45,7 @@ public class Ruta implements AggregateRoot {
     if (this.estado != EstadoRuta.PENDIENTE || this.entregas.isEmpty()) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
+
     this.estado = EstadoRuta.EN_TRASLADO;
     this.horaInicioReal = LocalDateTime.now(ZoneId.of("UTC"));
     this.horaFinReal = null;
@@ -53,18 +55,22 @@ public class Ruta implements AggregateRoot {
     if (this.estado != EstadoRuta.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
+
     this.estado = EstadoRuta.COMPLETADA;
     this.horaFinReal = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
   public void agregarEntrega(UUID entregaId) {
     validarIdentificador(entregaId);
+
     if (this.estado != EstadoRuta.PENDIENTE) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
+
     if (this.entregas.contains(entregaId)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+
     this.entregas.add(entregaId);
   }
 

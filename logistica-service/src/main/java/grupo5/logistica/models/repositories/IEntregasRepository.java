@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IEntregasRepository extends CrudRepository<Entrega> {
+
   List<Entrega> findByEstado(EstadoEntrega estado);
 
   List<Entrega> findByRutaId(UUID rutaId);
