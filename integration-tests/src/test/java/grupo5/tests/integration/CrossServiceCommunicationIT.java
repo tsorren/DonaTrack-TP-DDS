@@ -1,83 +1,64 @@
 package grupo5.tests.integration;
 
+import grupo5.tests.BaseIT;
+import io.restassured.http.ContentType;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.tests.BaseIT;
-import io.restassured.http.ContentType;
-import java.util.*;
-import org.junit.jupiter.api.Test;
-
-public class CrossServiceCommunicationIT extends BaseIT {
+class CrossServiceCommunicationIT extends BaseIT {
 
   // Polling helper to wait for async events with a timeout
   private void esperarAsync() {
-    try {
-      Thread.sleep(1500);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+    org.awaitility.Awaitility.await()
+        .pollDelay(java.time.Duration.ofMillis(1500))
+        .until(() -> true);
   }
 
   private void esperarHastaTotalDonacionesExitosas(String donanteId, int min, long timeoutMs) {
-    long start = System.currentTimeMillis();
-    while (System.currentTimeMillis() - start < timeoutMs) {
-      try {
-        Integer total =
-            given()
-                .when()
-                .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
-                .then()
-                .statusCode(200)
-                .extract()
-                .path("totalDonacionesExitosas");
-        if (total != null && total > min) {
-          return;
-        }
-      } catch (Exception e) {
-        // ignore and retry until timeout
-      }
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        break;
-      }
-    }
-    fail("Timeout waiting for totalDonacionesExitosas > " + min);
+    org.awaitility.Awaitility.await()
+        .atMost(java.time.Duration.ofMillis(timeoutMs))
+        .pollInterval(java.time.Duration.ofMillis(500))
+        .ignoreExceptions()
+        .until(() -> {
+          Integer total =
+              given()
+                  .when()
+                  .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
+                  .then()
+                  .statusCode(200)
+                  .extract()
+                  .path("totalDonacionesExitosas");
+          return total != null && total > min;
+        });
   }
 
   private void esperarHastaNotificaciones(String personaId, int minSize, long timeoutMs) {
-    long start = System.currentTimeMillis();
-    while (System.currentTimeMillis() - start < timeoutMs) {
-      try {
-        List<?> resp =
-            given()
-                .when()
-                .get(NOTIFICACIONES_URL + "/notificaciones/persona/" + personaId)
-                .then()
-                .statusCode(200)
-                .extract()
-                .as(List.class);
-        if (resp != null && resp.size() >= minSize) {
-          return;
-        }
-      } catch (Exception e) {
-        // ignore and retry
-      }
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-        break;
-      }
-    }
-    fail("Timeout waiting for notifications size >= " + minSize);
+    org.awaitility.Awaitility.await()
+        .atMost(java.time.Duration.ofMillis(timeoutMs))
+        .pollInterval(java.time.Duration.ofMillis(500))
+        .ignoreExceptions()
+        .until(() -> {
+          List<?> resp =
+              given()
+                  .when()
+                  .get(NOTIFICACIONES_URL + "/notificaciones/persona/" + personaId)
+                  .then()
+                  .statusCode(200)
+                  .extract()
+                  .as(List.class);
+          return resp != null && resp.size() >= minSize;
+        });
   }
 
   @Test
-  public void testPersonaReplicationLifecycle() {
+  void testPersonaReplicationLifecycle() {
     // 1. Create a persona in donaciones-service
     Map<String, Object> personaPayload = fixture("personas/crear-persona-humana.json");
     personaPayload.put("documento", "55554444");
@@ -148,19 +129,19 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testDonanteRegistrationAndWelcomeNotification() {
+  void testDonanteRegistrationAndWelcomeNotification() {
     // 1. Create a persona
     String personaId = apiCrearPersonaHumana("11112222", "Maria", "maria.gomez@example.com");
 
-    // 2. Register the persona as a donor
-    String donorId = apiCrearDonante(personaId);
+    // 2. Register the persona as a donante
+    String donanteId = apiCrearDonante(personaId);
 
-    assertNotNull(donorId);
+    assertNotNull(donanteId);
 
-    // 3. Verify donor metrics exist in incentivos-service
+    // 3. Verify donante metrics exist in incentivos-service
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
         .then()
         .statusCode(200)
         .body("totalDonacionesExitosas", equalTo(0))
@@ -178,44 +159,44 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testDonanteBaja() {
+  void testDonanteBaja() {
     // 1. Create a persona
     String personaId = apiCrearPersonaHumana("33332222", "Pedro", "pedro.sosa@example.com");
 
-    // 2. Register as a donor
-    String donorId = apiCrearDonante(personaId);
+    // 2. Register as a donante
+    String donanteId = apiCrearDonante(personaId);
 
     // Verify profile is created in incentives
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
         .then()
         .statusCode(200);
 
-    // 3. Perform delete (baja) of donor in donaciones-service
-    given().when().delete(DONACIONES_URL + "/api/donantes/" + donorId).then().statusCode(204);
+    // 3. Perform delete (baja) of donante in donaciones-service
+    given().when().delete(DONACIONES_URL + "/api/donantes/" + donanteId).then().statusCode(204);
 
     // 4. Verify profile is removed in incentives
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
         .then()
         .statusCode(anyOf(equalTo(400), equalTo(404)));
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testE2EDonationFlowAndSideEffects() {
+  void testE2EDonationFlowAndSideEffects() {
     // 1. Create Donante Persona & Donor
     String donantePersonaId = apiCrearPersonaHumana("88887777", "Ana", "ana.lopez@example.com");
-    String donorId = apiCrearDonante(donantePersonaId);
+    String donanteId = apiCrearDonante(donantePersonaId);
 
     // 2. Create Beneficiary Persona (Juridica) & EntidadBeneficiaria
     String benefPersonaId = apiCrearPersonaJuridica("30-11112222-3", "Comedor Solidario", "comedor@example.com");
     String entidadId = apiCrearEntidad(benefPersonaId);
 
     // 3. Load Donation (using subcategory arroz)
-    String donacionId = apiCrearDonacion(donantePersonaId, "Donación de arroz preprod", "arroz", 10);
+    String donacionId = apiCrearDonacion(donanteId, "Donación de arroz preprod", "arroz", 10);
     assertNotNull(donacionId);
     esperarAsync(); // wait for async processing of donation (normalization and segmentation)
 
@@ -223,7 +204,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     String subcategoryId =
         given()
             .when()
-            .get(DONACIONES_URL + "/api/necesidades/subcategorias")
+            .get(DONACIONES_URL + "/api/subcategorias")
             .then()
             .statusCode(200)
             .extract()
@@ -250,10 +231,11 @@ public class CrossServiceCommunicationIT extends BaseIT {
     assertFalse(propuestas.isEmpty());
 
     // Find the proposal matching our necessity description
+    // PropuestaDTO fields: id, estado, necesidad (NecesidadResumenDTO), fragmentaciones
     Map<String, Object> propuesta = null;
     for (Map<String, Object> p : propuestas) {
-      Map<String, Object> nec = (Map<String, Object>) p.get("necesidadQueSatisface");
-      if (nec != null && nec.get("descripcion").equals("Necesidad de arroz preprod")) {
+      Map<String, Object> nec = (Map<String, Object>) p.get("necesidad");
+      if (nec != null && "Necesidad de arroz preprod".equals(nec.get("descripcion"))) {
         propuesta = p;
         break;
       }
@@ -262,14 +244,16 @@ public class CrossServiceCommunicationIT extends BaseIT {
     assertNotNull(propuesta, "Propuesta no encontrada para la necesidad de arroz");
     String propuestaId = (String) propuesta.get("id");
 
-    // Get the DonacionIndependiente ID from posiblesFragmentaciones
+    // Get the DonacionIndependiente ID from fragmentaciones
+    // FragmentacionDTO fields: donacionOriginalId (UUID of DonacionIndependiente), cantidadNecesaria, descripcionDonacion
     List<Map<String, Object>> frags =
-        (List<Map<String, Object>>) propuesta.get("posiblesFragmentaciones");
+        (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertFalse(frags.isEmpty());
-    Map<String, Object> frag = frags.get(0);
-    Map<String, Object> donacionInd = (Map<String, Object>) frag.get("donacionOriginal");
-    String donacionIndependienteId = (String) donacionInd.get("id");
+    Map<String, Object> frag = frags.getFirst();
+    Map<String, Object> di = (Map<String, Object>) frag.get("donacionIndependiente");
+    assertNotNull(di);
+    String donacionIndependienteId = (String) di.get("id");
     assertNotNull(donacionIndependienteId);
 
     // 7. Approve Propuesta
@@ -318,26 +302,26 @@ public class CrossServiceCommunicationIT extends BaseIT {
         .then()
         .statusCode(200);
 
-    // 9. Verify Side-Effects in incentivos-service (puntos > 0)
-    esperarHastaTotalDonacionesExitosas(donorId, 0, 10000);
+    // 9. Verify Side Effects in incentivos-service (puntos > 0)
+    esperarHastaTotalDonacionesExitosas(donanteId, 0, 10000);
 
-    // 10. Verify Side-Effects in notificaciones-service
+    // 10. Verify Side Effects in notificaciones-service
     // Donante notifications: welcome (registrado), asignada, recibida
     esperarHastaNotificaciones(donantePersonaId, 3, 10000);
   }
 
   @Test
-  public void testRankingMensualYPosicion() {
+  void testRankingMensualYPosicion() {
     // 1. Create Persona and Donor
     String personaId = apiCrearPersonaHumana("99112233", "Raul", "raul.gomez@example.com");
-    String donorId = apiCrearDonante(personaId);
+    String donanteId = apiCrearDonante(personaId);
 
-    assertNotNull(donorId);
+    assertNotNull(donanteId);
 
     // 2. Submit consecutive monthly donations to complete MisionRacha (COLABORADOR, objetivo = 3)
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-04-01", 1);
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-05-01", 1);
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-06-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-04-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-05-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-06-01", 1);
 
     // 3. Calculate ranking for 2026-06
     given()
@@ -355,16 +339,16 @@ public class CrossServiceCommunicationIT extends BaseIT {
             .statusCode(200)
             .body("periodo", equalTo("2026-06"))
             .body("entradas", hasSize(greaterThanOrEqualTo(1)))
-            .body("entradas.find { it.donanteId == '" + donorId + "' }.misionesCompletadas", equalTo(1))
+            .body("entradas.find { it.donanteId == '" + donanteId + "' }.misionesCompletadas", equalTo(1))
             .extract()
-            .path("entradas.find { it.donanteId == '" + donorId + "' }.posicion");
+            .path("entradas.find { it.donanteId == '" + donanteId + "' }.posicion");
 
     assertTrue(actualPosicion >= 1);
 
     // 5. Query donante metrics to check position is updated
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/metricas")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
         .then()
         .statusCode(200)
         .body("posicionEnRanking", equalTo(actualPosicion))
@@ -380,22 +364,22 @@ public class CrossServiceCommunicationIT extends BaseIT {
   }
 
   @Test
-  public void testInsigniaVisibilityFlow() {
+  void testInsigniaVisibilityFlow() {
     // 1. Create Persona and Donor
     String personaId = apiCrearPersonaHumana("99112244", "Laura", "laura.perez@example.com");
-    String donorId = apiCrearDonante(personaId);
+    String donanteId = apiCrearDonante(personaId);
 
-    assertNotNull(donorId);
+    assertNotNull(donanteId);
 
     // 2. Submit consecutive monthly donations to complete MisionRacha
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-04-01", 1);
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-05-01", 1);
-    apiEnviarEventoDonacionIncentivos(donorId, "2026-06-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-04-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-05-01", 1);
+    apiEnviarEventoDonacionIncentivos(donanteId, "2026-06-01", 1);
 
     // 3. Verify insignia "Racha Inicial" is returned and is visible
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))
@@ -405,10 +389,10 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 4. Toggle visibility to false
     given()
         .when()
-        .patch(
+        .put(
             INCENTIVOS_URL
                 + "/api/incentivos/donantes/"
-                + donorId
+                + donanteId
                 + "/insignias/Racha Inicial/visibilidad?visible=false")
         .then()
         .statusCode(200);
@@ -416,7 +400,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 5. Verify insignia is no longer listed
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
         .then()
         .statusCode(200)
         .body("size()", equalTo(0));
@@ -424,10 +408,10 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 6. Toggle visibility to true
     given()
         .when()
-        .patch(
+        .put(
             INCENTIVOS_URL
                 + "/api/incentivos/donantes/"
-                + donorId
+                + donanteId
                 + "/insignias/Racha Inicial/visibilidad?visible=true")
         .then()
         .statusCode(200);
@@ -435,7 +419,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     // 7. Verify insignia is visible again
     given()
         .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donorId + "/insignias")
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))
@@ -445,10 +429,10 @@ public class CrossServiceCommunicationIT extends BaseIT {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testComplexE2EMultipleDonationsFlow() {
+  void testComplexE2EMultipleDonationsFlow() {
     // 1. Create Donante Persona & Donor
     String donantePersonaId = apiCrearPersonaHumana("77889900", "Carlos", "carlos.gimenez@example.com");
-    String donorId = apiCrearDonante(donantePersonaId);
+    String donanteId = apiCrearDonante(donantePersonaId);
 
     // 2. Create Beneficiary Persona (Juridica) & EntidadBeneficiaria
     String benefPersonaId = apiCrearPersonaJuridica("30-22223333-4", "Hogar de Dia", "hogar@example.com");
@@ -458,7 +442,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     String subcategoryId =
         given()
             .when()
-            .get(DONACIONES_URL + "/api/necesidades/subcategorias")
+            .get(DONACIONES_URL + "/api/subcategorias")
             .then()
             .statusCode(200)
             .extract()
@@ -470,8 +454,8 @@ public class CrossServiceCommunicationIT extends BaseIT {
     apiCrearNecesidad(entidadId, subcategoryId, 10, "Necesidad de arroz/fideos preprod");
 
     // 5. Load two separate donations (5 units of arroz, 5 units of fideos)
-    apiCrearDonacion(donantePersonaId, "Donación de arroz preprod complex", "arroz", 5);
-    apiCrearDonacion(donantePersonaId, "Donación de fideos preprod complex", "fideos", 5);
+    apiCrearDonacion(donanteId, "Donación de arroz preprod complex", "arroz", 5);
+    apiCrearDonacion(donanteId, "Donación de fideos preprod complex", "fideos", 5);
     esperarAsync(); // wait for async processing
 
     // 6. Execute Matching
@@ -489,10 +473,11 @@ public class CrossServiceCommunicationIT extends BaseIT {
     assertFalse(propuestas.isEmpty());
 
     // Find the proposal matching our necessity description
+    // PropuestaDTO fields: id, estado, necesidad (NecesidadResumenDTO), fragmentaciones
     Map<String, Object> propuesta = null;
     for (Map<String, Object> p : propuestas) {
-      Map<String, Object> nec = (Map<String, Object>) p.get("necesidadQueSatisface");
-      if (nec != null && nec.get("descripcion").equals("Necesidad de arroz/fideos preprod")) {
+      Map<String, Object> nec = (Map<String, Object>) p.get("necesidad");
+      if (nec != null && "Necesidad de arroz/fideos preprod".equals(nec.get("descripcion"))) {
         propuesta = p;
         break;
       }
@@ -501,7 +486,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     assertNotNull(propuesta, "Propuesta no encontrada para la necesidad de arroz/fideos");
     String propuestaId = (String) propuesta.get("id");
 
-    // Approve Propuesta (this confirms assignments and outputs fragmentations)
+    // Approve Propuesta (this confirms assignments and triggers notifications)
     Map<String, Object> approveBody = new HashMap<>();
     approveBody.put("estado", "APROBADA");
     given()
@@ -512,15 +497,16 @@ public class CrossServiceCommunicationIT extends BaseIT {
         .then()
         .statusCode(200);
 
-    // Get the DonacionIndependiente IDs from posiblesFragmentaciones
+    // Get the DonacionIndependiente IDs from fragmentaciones
+    // FragmentacionDTO fields: donacionOriginalId (UUID of DonacionIndependiente), cantidadNecesaria, descripcionDonacion
     List<Map<String, Object>> frags =
-        (List<Map<String, Object>>) propuesta.get("posiblesFragmentaciones");
+        (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertEquals(
         2, frags.size(), "Deberían haber 2 fragmentaciones para completar la necesidad de 10 unidades");
 
-    String diId1 = (String) ((Map<String, Object>) frags.get(0).get("donacionOriginal")).get("id");
-    String diId2 = (String) ((Map<String, Object>) frags.get(1).get("donacionOriginal")).get("id");
+    String diId1 = (String) ((Map<String, Object>) frags.get(0).get("donacionIndependiente")).get("id");
+    String diId2 = (String) ((Map<String, Object>) frags.get(1).get("donacionIndependiente")).get("id");
 
     // 7. Transition both DonacionIndependiente states to ENTREGADA
     for (String diId : List.of(diId1, diId2)) {
@@ -557,7 +543,7 @@ public class CrossServiceCommunicationIT extends BaseIT {
     }
 
     // 8. Verify metrics in incentivos-service (totalDonacionesExitosas == 2)
-    esperarHastaTotalDonacionesExitosas(donorId, 1, 10000);
+    esperarHastaTotalDonacionesExitosas(donanteId, 1, 10000);
 
     // 9. Verify notifications in notificaciones-service
     // Expected: welcome, 2 assignments, 2 deliveries = 5 notifications

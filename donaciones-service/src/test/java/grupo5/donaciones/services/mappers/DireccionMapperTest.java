@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
-import grupo5.donaciones.models.entities.personas.Direccion;
-import grupo5.donaciones.models.entities.personas.Localidad;
-import grupo5.donaciones.models.entities.personas.Pais;
-import grupo5.donaciones.models.entities.personas.Provincia;
+import grupo5.donaciones.models.entities.ubicaciones.Direccion;
+import grupo5.donaciones.models.entities.ubicaciones.Localidad;
+import grupo5.donaciones.models.entities.ubicaciones.Pais;
+import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,20 +29,20 @@ class DireccionMapperTest {
     Direccion entity = mapper.toEntity(dto);
 
     assertNotNull(entity);
-    assertEquals("Av. Corrientes", entity.getCalle());
-    assertEquals(1234, entity.getAltura());
-    assertEquals(5, entity.getPiso());
-    assertEquals("B", entity.getDepartamento());
-    assertEquals("1043", entity.getCodigoPostal());
+    assertEquals("Av. Corrientes", entity.calle());
+    assertEquals(1234, entity.altura());
+    assertEquals(5, entity.piso());
+    assertEquals("B", entity.departamento());
+    assertEquals("1043", entity.codigoPostal());
 
-    assertNotNull(entity.getLocalidad());
-    assertEquals("CABA", entity.getLocalidad().getNombre());
+    assertNotNull(entity.localidad());
+    assertEquals("CABA", entity.localidad().nombre());
 
-    assertNotNull(entity.getLocalidad().getProvincia());
-    assertEquals("Buenos Aires", entity.getLocalidad().getProvincia().getNombre());
+    assertNotNull(entity.localidad().provincia());
+    assertEquals("Buenos Aires", entity.localidad().provincia().nombre());
 
-    assertNotNull(entity.getLocalidad().getProvincia().getPais());
-    assertEquals("Argentina", entity.getLocalidad().getProvincia().getPais().getNombre());
+    assertNotNull(entity.localidad().provincia().pais());
+    assertEquals("Argentina", entity.localidad().provincia().pais().nombre());
   }
 
   @Test
@@ -52,16 +52,9 @@ class DireccionMapperTest {
 
   @Test
   void toOutputDTO_conDireccionCompleta_deberiaMapearCorrectamente() {
-    Pais pais = new Pais();
-    pais.setNombre("Argentina");
-
-    Provincia provincia = new Provincia();
-    provincia.setNombre("Buenos Aires");
-    provincia.setPais(pais);
-
-    Localidad localidad = new Localidad();
-    localidad.setNombre("La Plata");
-    localidad.setProvincia(provincia);
+    Pais pais = new Pais("Argentina");
+    Provincia provincia = new Provincia("Buenos Aires", pais);
+    Localidad localidad = new Localidad("La Plata", provincia);
 
     Direccion direccion = new Direccion("Calle 50", 120, null, null, "1900", localidad);
 
@@ -80,9 +73,7 @@ class DireccionMapperTest {
 
   @Test
   void toOutputDTO_conCamposNulos_deberiaRetornarDtoConCamposNulos() {
-    Localidad localidad = new Localidad();
-    localidad.setNombre("Alguna Localidad");
-    localidad.setProvincia(null);
+    Localidad localidad = new Localidad("Alguna Localidad", null);
 
     Direccion direccion = new Direccion("Calle Falsa", 123, null, null, "0000", localidad);
 

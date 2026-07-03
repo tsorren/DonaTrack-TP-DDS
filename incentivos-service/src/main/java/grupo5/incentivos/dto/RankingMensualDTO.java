@@ -8,6 +8,11 @@ import java.util.UUID;
 public record RankingMensualDTO(
     String periodo, List<EntradaRankingDTO> entradas, List<EntradaRankingDTO> podio) {
 
+  public RankingMensualDTO {
+    entradas = entradas != null ? List.copyOf(entradas) : List.of();
+    podio = podio != null ? List.copyOf(podio) : List.of();
+  }
+
   public static RankingMensualDTO desde(RankingMensual ranking) {
     return new RankingMensualDTO(
         ranking.getPeriodo().toString(),

@@ -1,7 +1,6 @@
 package grupo5.donaciones.models.entities.propuestas;
 
-import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
-import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,18 +8,6 @@ import lombok.Setter;
 @Setter
 public class PosibleFragmentacion {
   Long id;
-  DonacionIndependiente donacionOriginal;
+  UUID donacionOriginalId;
   Integer cantidadNecesaria;
-
-  public DonacionIndependiente confirmar(Necesidad necesidad, String actor) {
-    DonacionIndependiente donacionAsignar;
-    if (donacionOriginal.getCantidad() > cantidadNecesaria) {
-      donacionAsignar = donacionOriginal.fragmentarse(cantidadNecesaria);
-    } else {
-      donacionAsignar = donacionOriginal;
-    }
-    donacionAsignar.asignar(actor, necesidad);
-    necesidad.asignarDonacion(donacionAsignar);
-    return donacionAsignar;
-  }
 }

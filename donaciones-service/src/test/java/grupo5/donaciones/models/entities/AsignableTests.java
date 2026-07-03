@@ -36,26 +36,32 @@ class AsignableTests {
 
   @BeforeEach
   void setUp() {
-    Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donante donante = new Donante(humana.getId());
+    Donacion donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
-    Subcategoria subcategoria = new Subcategoria(categoria, "No Perecederos");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "No Perecederos");
 
     necesidadExtraordinaria =
-        new NecesidadExtraordinaria(subcategoria, 100, "Latas de atún para comedor");
+        new NecesidadExtraordinaria(subcategoria.getId(), 100, "Latas de atún para comedor");
 
     necesidadRecurrente =
         new NecesidadRecurrente(
-            subcategoria, 50, "Leche en polvo", Period.ofMonths(1), TEST_DATE.minusDays(15));
+            subcategoria.getId(),
+            50,
+            "Leche en polvo",
+            Period.ofMonths(1),
+            TEST_DATE.minusDays(15));
 
     periodoNecesidad = necesidadRecurrente.obtenerPeriodoActual();
-    periodoNecesidad.setNecesidadRecurrente(necesidadRecurrente);
 
-    Bien bienOriginal = new Bien("Arroz", "imagen.png", TEST_DATE.plusYears(1), Estado.NUEVO);
+    Bien bienOriginal =
+        new Bien("Arroz", "imagen.png", TEST_DATE.plusYears(1), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
-        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
     ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 10);
-    donacionIndependiente = new DonacionIndependiente(donacionOriginal, List.of(item));
+    donacionIndependiente = new DonacionIndependiente(donacionOriginal.getId(), List.of(item));
   }
 
   @Test
@@ -69,7 +75,7 @@ class AsignableTests {
 
   @Test
   void obtenerNecesidad_desdeDonacionAsignadaAExtraordinaria_devuelveLaNecesidadCorrecta() {
-    donacionIndependiente.setAsignadaA(necesidadExtraordinaria);
+    donacionIndependiente.asignar("SISTEMA", necesidadExtraordinaria);
     Necesidad resultado = donacionIndependiente.asignadaA().obtenerNecesidad();
     assertEquals(
         necesidadExtraordinaria, resultado, "Debería devolver la necesidad a la que fue asignada.");
@@ -93,7 +99,7 @@ class AsignableTests {
 
   @Test
   void obtenerNecesidad_desdeDonacionAsignadaAPeriodoRecurrente_devuelveLaNecesidadCorrecta() {
-    donacionIndependiente.setAsignadaA(periodoNecesidad);
+    donacionIndependiente.asignar("SISTEMA", periodoNecesidad);
     Necesidad resultado = donacionIndependiente.asignadaA().obtenerNecesidad();
     assertEquals(
         necesidadRecurrente,

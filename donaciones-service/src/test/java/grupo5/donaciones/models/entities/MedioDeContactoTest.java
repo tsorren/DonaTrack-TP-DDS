@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.donaciones.models.entities.personas.Correo;
 import grupo5.donaciones.models.entities.personas.Telefono;
-import grupo5.donaciones.models.entities.personas.WhatsApp;
+import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,7 +13,7 @@ class MedioDeContactoTest {
 
   private Correo correo;
   private Telefono telefono;
-  private WhatsApp whatsApp;
+  private Telefono whatsApp;
 
   @BeforeEach
   void setUp() {
@@ -24,11 +24,13 @@ class MedioDeContactoTest {
     telefono.setCaracteristica("+54");
     telefono.setCodigoArea("11");
     telefono.setNumero("12345678");
+    telefono.setTipo(TipoTelefono.ESTANDAR);
 
-    whatsApp = new WhatsApp();
+    whatsApp = new Telefono();
     whatsApp.setCaracteristica("+54");
     whatsApp.setCodigoArea("11");
     whatsApp.setNumero("87654321");
+    whatsApp.setTipo(TipoTelefono.WHATSAPP);
   }
 
   @Test

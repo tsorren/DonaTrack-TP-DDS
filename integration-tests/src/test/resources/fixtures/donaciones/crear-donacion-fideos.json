@@ -1,0 +1,25 @@
+{
+  "idDonante": null,
+  "descripcion": "Donación de fideos",
+  "items": [
+    {
+      "descripcionBien": "fideos",
+      "cantidad": 5,
+      "estadoBien": "NUEVO",
+      "fechaVencimiento": "2027-12-31",
+      "pesoUnitario": 0.5,
+      "volumenUnitario": 0.005
+    }
+  ],
+  "nombreDeposito": "Deposito Central",
+  "direccion": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "piso": null,
+    "departamento": null,
+    "codigoPostal": "1179",
+    "localidad": "CABA",
+    "provincia": "CABA",
+    "pais": "Argentina"
+  }
+}

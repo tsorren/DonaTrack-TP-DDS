@@ -5,10 +5,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StockDeDonaciones {
 
@@ -37,9 +34,16 @@ public class StockDeDonaciones {
 
   public void registrarReservas(Propuesta propuesta) {
     for (PosibleFragmentacion fragmentacion : propuesta.getPosiblesFragmentaciones()) {
-      DonacionIndependiente donacion = fragmentacion.getDonacionOriginal();
-      int restante = disponibleDe(donacion) - fragmentacion.getCantidadNecesaria();
-      cantidades.put(donacion, restante);
+      UUID donacionId = fragmentacion.getDonacionOriginalId();
+      if (donacionId == null) continue;
+      cantidades.entrySet().stream()
+          .filter(e -> e.getKey().getId().equals(donacionId))
+          .findFirst()
+          .ifPresent(
+              entry -> {
+                int restante = entry.getValue() - fragmentacion.getCantidadNecesaria();
+                cantidades.put(entry.getKey(), restante);
+              });
     }
   }
 }

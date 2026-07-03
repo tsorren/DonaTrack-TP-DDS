@@ -2,6 +2,7 @@ package grupo5.donaciones.models.repositories.impl;
 
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +18,40 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
   }
 
   @Override
+  public List<Necesidad> findByEstaSatisfechaFalseActivaTrue() {
+    return storage.values().stream()
+        .filter(n -> !n.estaSatisfecha())
+        .filter(Necesidad::isActiva)
+        .toList();
+  }
+
+  @Override
   public List<Necesidad> buscarNecesidadesPorEntidad(UUID entidadId) {
-    return storage.values().stream().filter(n -> entidadId.equals(n.getEntidad().getId())).toList();
+    return storage.values().stream().filter(n -> entidadId.equals(n.getEntidadId())).toList();
+  }
+
+  @Override
+  public List<Necesidad> findByActivaTrueAndSatisfechaFalse() {
+    return storage.values().stream()
+        .filter(Necesidad::isActiva)
+        .filter(n -> !n.estaSatisfecha())
+        .toList();
+  }
+
+  @Override
+  public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue() {
+    return storage.values().stream()
+        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.RECURRENTE)
+        .filter(Necesidad::isActiva)
+        .filter(n -> !n.estaSatisfecha())
+        .toList();
+  }
+
+  @Override
+  public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse() {
+    return storage.values().stream()
+        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.EXTRAORDINARIA)
+        .filter(n -> !n.estaSatisfecha())
+        .toList();
   }
 }

@@ -1,6 +1,6 @@
 # Uso de AliasSubcategoria en los Normalizadores Semánticos
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-15
 - Deciders: Sofia Deane
 - Tags: matchmaking, normalizacion, dominio

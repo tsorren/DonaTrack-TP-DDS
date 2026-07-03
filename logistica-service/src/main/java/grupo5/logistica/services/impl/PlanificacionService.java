@@ -1,140 +1,130 @@
 package grupo5.logistica.services.impl;
 
-import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
+import grupo5.logistica.dto.callback.RutaPlanificadaDTO;
+import grupo5.logistica.dto.callback.SolicitudPlanificacionRequestDTO;
+import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.planificacion.EstadoSolicitud;
+import grupo5.logistica.models.entities.planificacion.SolicitudPlanificacion;
 import grupo5.logistica.models.entities.rutas.Ruta;
-import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
-import grupo5.logistica.models.repositories.ICamionesRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.services.IPlanificacionService;
-import grupo5.logistica.services.IServicioExternoPlanificacion;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.ArrayList;
+import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
 import java.util.List;
-import java.util.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PlanificacionService implements IPlanificacionService {
-  private static final Logger log = LoggerFactory.getLogger(PlanificacionService.class);
 
+  private static final int MAX_ENTREGAS_POR_SOLICITUD = 100;
+
+  private final ISolicitudPlanificacionRepository solicitudesRepository;
   private final IRutasRepository rutasRepository;
-  private final IServicioExternoPlanificacion servicioExterno;
-  private final ISolicitudPlanificacionRepository solicitudRepo;
   private final IEntregasRepository entregasRepository;
-  private final ICamionesRepository camionesRepository;
-  private final int maxDonacionesPorLote;
-  private final String callbackUrl;
+  private final SolicitudPlanificacionMapper solicitudMapper;
 
   public PlanificacionService(
+      ISolicitudPlanificacionRepository solicitudesRepository,
       IRutasRepository rutasRepository,
-      IServicioExternoPlanificacion servicioExterno,
-      ISolicitudPlanificacionRepository solicitudRepo,
       IEntregasRepository entregasRepository,
-      ICamionesRepository camionesRepository,
-      @Value("${logistica.planificacion.max-donaciones-por-lote:100}") int maxDonacionesPorLote,
-      @Value("${logistica.planificacion.callback-url:/api/logistica/rutas/callback}")
-          String callbackUrl) {
+      SolicitudPlanificacionMapper solicitudMapper) {
+    this.solicitudesRepository = solicitudesRepository;
     this.rutasRepository = rutasRepository;
-    this.servicioExterno = servicioExterno;
-    this.solicitudRepo = solicitudRepo;
     this.entregasRepository = entregasRepository;
-    this.camionesRepository = camionesRepository;
-    this.maxDonacionesPorLote =
-        Math.min(maxDonacionesPorLote, SolicitudPlanificacion.MAX_DONACIONES_POR_LOTE);
-    this.callbackUrl = callbackUrl;
+    this.solicitudMapper = solicitudMapper;
+  }
+
+  @Override
+  public SolicitudPlanificacionResponseDTO crearSolicitud(SolicitudPlanificacionRequestDTO dto) {
+    validarSolicitud(dto);
+    dto.entregaIds().forEach(this::buscarEntrega);
+
+    SolicitudPlanificacion solicitud = solicitudMapper.toEntity(dto);
+    return solicitudMapper.toResponseDTO(solicitudesRepository.save(solicitud));
+  }
+
+  @Override
+  public SolicitudPlanificacionResponseDTO procesarCallback(CallbackPlanificacionRequestDTO dto) {
+    if (dto == null || dto.solicitudId() == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+
+    SolicitudPlanificacion solicitud = buscarSolicitud(dto.solicitudId());
+
+    if (solicitud.getEstado() == EstadoSolicitud.PROCESADA) {
+      return solicitudMapper.toResponseDTO(solicitud);
+    }
+
+    if ("ERROR".equalsIgnoreCase(dto.estado())) {
+      solicitud.marcarError(dto.motivoError());
+      return solicitudMapper.toResponseDTO(solicitudesRepository.save(solicitud));
+    }
+
+    if (dto.rutas() == null || dto.rutas().isEmpty()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+
+    List<UUID> rutasGeneradas = dto.rutas().stream().map(this::guardarRutaPlanificada).toList();
+
+    solicitud.procesarResultados(rutasGeneradas);
+    return solicitudMapper.toResponseDTO(solicitudesRepository.save(solicitud));
+  }
+
+  @Override
+  public SolicitudPlanificacionResponseDTO obtenerPorId(UUID id) {
+    return solicitudMapper.toResponseDTO(buscarSolicitud(id));
   }
 
   @Override
   public void solicitarPlanificacionParaSiguienteJornada() {
-    log.info("[SCHEDULER] Iniciando proceso automatico programado de planificacion...");
-
-    List<Entrega> entregasPendientes = obtenerEntregasPendientesDeRuta();
-    if (entregasPendientes.isEmpty()) {
-      log.info("No hay entregas pendientes de planificacion. No se generaran rutas.");
-      return;
-    }
-
-    List<Camion> camionesDisponibles = obtenerCamionesDisponibles();
-    if (camionesDisponibles.isEmpty()) {
-      log.warn(
-          "Hay {} entrega(s) pendiente(s) pero no hay camiones disponibles. Se pospone la"
-              + " planificacion al proximo ciclo.",
-          entregasPendientes.size());
-      return;
-    }
-
-    LocalDate fechaLote = LocalDate.now(ZoneId.of("UTC"));
-    for (List<Entrega> lote : particionarEnLotes(entregasPendientes, maxDonacionesPorLote)) {
-      procesarLote(lote, camionesDisponibles, fechaLote);
-    }
-
-    log.info("[SCHEDULER] Proceso automatico finalizado.");
+    // Punto de entrada del scheduler.
+    // Se conserva vacío por ahora para no romper la API/callback ya integrada en ENTREGA_3.
+    // La lógica automática se puede agregar después sobre este mismo service.
   }
 
-  private void procesarLote(List<Entrega> lote, List<Camion> camionesDisponibles, LocalDate fecha) {
-    SolicitudPlanificacion solicitud = new SolicitudPlanificacion(fecha, lote.size(), callbackUrl);
-    solicitudRepo.save(solicitud);
-    log.info(
-        "[SOLICITUD-PLANIFICACION-INICIO] id={} cantidadDonaciones={}",
-        solicitud.getId(),
-        lote.size());
+  private UUID guardarRutaPlanificada(RutaPlanificadaDTO dto) {
+    if (dto == null || dto.entregaIds() == null || dto.entregaIds().isEmpty()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
 
-    try {
-      List<Ruta> rutasGeneradas = servicioExterno.generarRutas(lote, camionesDisponibles);
+    Ruta ruta = new Ruta(dto.fecha(), dto.choferId(), dto.camionId());
 
-      rutasRepository.saveAll(rutasGeneradas);
-      entregasRepository.saveAll(lote);
-      marcarCamionesEnRuta(rutasGeneradas);
+    dto.entregaIds()
+        .forEach(
+            entregaId -> {
+              Entrega entrega = buscarEntrega(entregaId);
+              ruta.agregarEntrega(entrega.getId());
+              entrega.asignarRuta(ruta.getId());
+              entregasRepository.save(entrega);
+            });
 
-      solicitud.procesarResultados(rutasGeneradas.stream().map(Ruta::getId).toList());
-      solicitudRepo.save(solicitud);
-      log.info(
-          "[SOLICITUD-PLANIFICACION-OK] id={} rutasGeneradas={}",
-          solicitud.getId(),
-          rutasGeneradas.size());
-    } catch (Exception e) {
-      solicitud.marcarError(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
-      solicitudRepo.save(solicitud);
-      log.error(
-          "[SOLICITUD-PLANIFICACION-ERROR] id={} intentosFallidos={} motivo={}",
-          solicitud.getId(),
-          solicitud.getIntentosFallidos(),
-          solicitud.getMotivoError(),
-          e);
+    return rutasRepository.save(ruta).getId();
+  }
+
+  private void validarSolicitud(SolicitudPlanificacionRequestDTO dto) {
+    if (dto == null || dto.entregaIds() == null || dto.entregaIds().isEmpty()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+
+    if (dto.entregaIds().size() > MAX_ENTREGAS_POR_SOLICITUD) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }
 
-  private void marcarCamionesEnRuta(List<Ruta> rutasGeneradas) {
-    for (Ruta ruta : rutasGeneradas) {
-      Optional<Camion> camion = camionesRepository.findById(ruta.getCamionId());
-      camion.ifPresent(
-          c -> {
-            c.asignarARuta(ruta.getId());
-            camionesRepository.save(c);
-          });
-    }
+  private SolicitudPlanificacion buscarSolicitud(UUID id) {
+    return solicitudesRepository
+        .findById(id)
+        .orElseThrow(() -> new RecursoNoEncontradoException(id));
   }
 
-  private List<Entrega> obtenerEntregasPendientesDeRuta() {
-    return entregasRepository.findAll().stream().filter(e -> e.getIdRuta() == null).toList();
-  }
-
-  private List<Camion> obtenerCamionesDisponibles() {
-    return camionesRepository.findAll().stream().filter(Camion::estaDisponibleParaAsignar).toList();
-  }
-
-  private List<List<Entrega>> particionarEnLotes(List<Entrega> entregas, int tamanioLote) {
-    List<List<Entrega>> lotes = new ArrayList<>();
-    for (int i = 0; i < entregas.size(); i += tamanioLote) {
-      lotes.add(entregas.subList(i, Math.min(i + tamanioLote, entregas.size())));
-    }
-    return lotes;
+  private Entrega buscarEntrega(UUID id) {
+    return entregasRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
   }
 }

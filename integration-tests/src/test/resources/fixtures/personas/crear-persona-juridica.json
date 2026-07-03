@@ -3,8 +3,8 @@
   "tipoDocumento": "CUIT",
   "documento": "30-11112222-3",
   "razonSocial": "Comedor Solidario",
+  "tipoJuridico": "ONG",
   "rubro": "Comedor",
-  "fechaConstitucion": "2010-01-01",
   "representantes": [
     {
       "tipo": "HUMANA",

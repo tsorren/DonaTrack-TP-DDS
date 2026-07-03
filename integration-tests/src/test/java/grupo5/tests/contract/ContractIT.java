@@ -1,15 +1,15 @@
 package grupo5.tests.contract;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.notNullValue;
-
 import grupo5.tests.BaseIT;
 import org.junit.jupiter.api.Test;
 
-public class ContractIT extends BaseIT {
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.notNullValue;
+
+class ContractIT extends BaseIT {
 
   @Test
-  public void testNotificacionesPersonasContract() {
+  void testNotificacionesPersonasContract() {
     // donaciones-service espera que notificaciones-service tenga PUT /api/notificaciones/personas
     given()
         .when()
@@ -20,7 +20,7 @@ public class ContractIT extends BaseIT {
   }
 
   @Test
-  public void testIncentivosDonacionesContract() {
+  void testIncentivosDonacionesContract() {
     // donaciones-service espera que incentivos-service tenga POST /api/incentivos/donaciones
     given()
         .when()

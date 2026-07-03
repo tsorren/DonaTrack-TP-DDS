@@ -3,11 +3,10 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.personas.Direccion;
-import grupo5.donaciones.models.entities.personas.Localidad;
-import grupo5.donaciones.models.entities.personas.Pais;
-import grupo5.donaciones.models.entities.personas.Provincia;
-import grupo5.donaciones.models.privacidad.Anonimizable;
+import grupo5.donaciones.models.entities.ubicaciones.Direccion;
+import grupo5.donaciones.models.entities.ubicaciones.Localidad;
+import grupo5.donaciones.models.entities.ubicaciones.Pais;
+import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,25 +17,20 @@ class DireccionTest {
 
   @BeforeEach
   void setUp() {
-    Pais pais = new Pais();
-    pais.setNombre("Argentina");
-    Provincia provincia = new Provincia();
-    provincia.setNombre("Buenos Aires");
-    provincia.setPais(pais);
-    localidad = new Localidad();
-    localidad.setNombre("Buenos Aires");
-    localidad.setProvincia(provincia);
+    Pais pais = new Pais("Argentina");
+    Provincia provincia = new Provincia("Buenos Aires", pais);
+    localidad = new Localidad("Buenos Aires", provincia);
     direccion = new Direccion("Calle Principal", 123, 2, "A", "C1000", localidad);
   }
 
   @Test
   void crearDireccion_conDatosValidos_deberiaSuceder() {
-    assertEquals("Calle Principal", direccion.getCalle());
-    assertEquals(123, direccion.getAltura());
-    assertEquals(2, direccion.getPiso());
-    assertEquals("A", direccion.getDepartamento());
-    assertEquals("C1000", direccion.getCodigoPostal());
-    assertEquals(localidad, direccion.getLocalidad());
+    assertEquals("Calle Principal", direccion.calle());
+    assertEquals(123, direccion.altura());
+    assertEquals(2, direccion.piso());
+    assertEquals("A", direccion.departamento());
+    assertEquals("C1000", direccion.codigoPostal());
+    assertEquals(localidad, direccion.localidad());
   }
 
   @Test
@@ -108,23 +102,8 @@ class DireccionTest {
     Direccion direccionSinPiso =
         new Direccion("Calle Principal", 123, null, null, "C1000", localidad);
 
-    assertEquals(123, direccionSinPiso.getAltura());
-    assertNull(direccionSinPiso.getPiso());
-    assertNull(direccionSinPiso.getDepartamento());
-  }
-
-  @Test
-  void anonimizar_deberiaLimpiarDatos() {
-    direccion.anonimizar();
-
-    assertEquals(Anonimizable.VALOR_STRING, direccion.getCalle());
-    assertEquals(Anonimizable.VALOR_NUMERICO, direccion.getAltura());
-    assertEquals(Anonimizable.VALOR_STRING, direccion.getCodigoPostal());
-    assertEquals(Anonimizable.VALOR_STRING, direccion.getDepartamento());
-    assertEquals(Anonimizable.VALOR_NUMERICO, direccion.getPiso());
-    assertEquals(Anonimizable.VALOR_STRING, direccion.getLocalidad().getNombre());
-    assertEquals(Anonimizable.VALOR_STRING, direccion.getLocalidad().getProvincia().getNombre());
-    assertEquals(
-        Anonimizable.VALOR_STRING, direccion.getLocalidad().getProvincia().getPais().getNombre());
+    assertEquals(123, direccionSinPiso.altura());
+    assertNull(direccionSinPiso.piso());
+    assertNull(direccionSinPiso.departamento());
   }
 }

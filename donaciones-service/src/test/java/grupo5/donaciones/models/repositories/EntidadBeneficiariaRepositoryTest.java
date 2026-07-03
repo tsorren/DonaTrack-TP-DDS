@@ -2,13 +2,12 @@ package grupo5.donaciones.models.repositories;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.repositories.impl.EntidadesBeneficiariasRepositoryEnMemoria;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,8 +21,8 @@ class EntidadBeneficiariaRepositoryTest {
 
   @Test
   void guardar_y_buscar_por_id() {
-    Juridica juridica = mock(Juridica.class);
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica);
+    UUID juridicaId = UUID.randomUUID();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridicaId);
 
     repository.save(entidad);
 
@@ -35,8 +34,8 @@ class EntidadBeneficiariaRepositoryTest {
 
   @Test
   void findAll_debe_retornar_todo() {
-    EntidadBeneficiaria e1 = new EntidadBeneficiaria(mock(Juridica.class));
-    EntidadBeneficiaria e2 = new EntidadBeneficiaria(mock(Juridica.class));
+    EntidadBeneficiaria e1 = new EntidadBeneficiaria(UUID.randomUUID());
+    EntidadBeneficiaria e2 = new EntidadBeneficiaria(UUID.randomUUID());
 
     repository.save(e1);
     repository.save(e2);

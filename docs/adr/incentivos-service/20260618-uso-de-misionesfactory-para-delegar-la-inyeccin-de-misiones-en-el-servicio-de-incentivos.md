@@ -1,5 +1,5 @@
 # Uso de MisionesFactory para delegar la inyección de misiones en el servicio de incentivos
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-18
 - Deciders: Bernardo Estigarribia, Miranda Rossi
 

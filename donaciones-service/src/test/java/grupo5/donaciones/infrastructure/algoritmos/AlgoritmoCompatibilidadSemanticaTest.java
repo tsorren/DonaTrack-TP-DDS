@@ -38,31 +38,37 @@ class AlgoritmoCompatibilidadSemanticaTest {
 
   @BeforeEach
   void setUp() {
-    donacionOriginal = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donante donante = new Donante(humana.getId());
+    donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    subcategoria = new Subcategoria(categoria, "Muebles Escolares");
-    subcategoriaOtra = new Subcategoria(categoria, "Muebles de Oficina");
-    Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
+    subcategoriaOtra = new Subcategoria(categoria.getId(), "Muebles de Oficina");
+    Bien bien =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     bienNormalizadoOtro =
-        new BienNormalizado(bien, subcategoriaOtra, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoriaOtra.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     algoritmo =
         new AlgoritmoCompatibilidadSemantica(new ComparadorTexto(new NormalizadorBasicoTexto()));
   }
 
   private DonacionIndependiente crearDonacion(int cantidad, String descripcion) {
-    Bien bien = new Bien(descripcion, "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    Bien bien =
+        new Bien(descripcion, "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienConDescripcion =
-        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienConDescripcion, cantidad));
-    return new DonacionIndependiente(donacionOriginal, items);
+    return new DonacionIndependiente(donacionOriginal.getId(), items);
   }
 
   @Test
   void filtrarDonaciones_cuandoMismaSubcategoria_debeIncluirla() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "banco silla madera");
     DonacionIndependiente donacion = crearDonacion(5, "banco madera");
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacion);
@@ -75,11 +81,11 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @Test
   void filtrarDonaciones_cuandoDistintaSubcategoria_debeExcluirla() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "banco silla madera");
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
     DonacionIndependiente donacionOtraCategoria =
-        new DonacionIndependiente(donacionOriginal, items);
+        new DonacionIndependiente(donacionOriginal.getId(), items);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacionOtraCategoria);
@@ -92,7 +98,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @Test
   void filtrarDonaciones_debeOrdenarPorScoreSemanticoDescendente() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "banco escolar madera");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "banco escolar madera");
     DonacionIndependiente donacionConMasScore = crearDonacion(5, "banco madera");
     DonacionIndependiente donacionConMenosScore = crearDonacion(5, "banco plastico");
 
@@ -110,11 +116,11 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @Test
   void filtrarDonaciones_cuandoTodasSonDiferenteSubcategoria_debeRetornarVacia() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "banco silla madera");
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
-    DonacionIndependiente donacion1 = new DonacionIndependiente(donacionOriginal, items);
-    DonacionIndependiente donacion2 = new DonacionIndependiente(donacionOriginal, items);
+    DonacionIndependiente donacion1 = new DonacionIndependiente(donacionOriginal.getId(), items);
+    DonacionIndependiente donacion2 = new DonacionIndependiente(donacionOriginal.getId(), items);
 
     List<DonacionIndependiente> donaciones = new ArrayList<>();
     donaciones.add(donacion1);
@@ -139,7 +145,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
   @Test
   void filtrarDonaciones_conListaNula_debeLanzarExcepcion() {
     NecesidadExtraordinaria necesidad =
-        new NecesidadExtraordinaria(subcategoria, 3, "banco silla madera");
+        new NecesidadExtraordinaria(subcategoria.getId(), 3, "banco silla madera");
 
     ValidationException exception =
         assertThrows(ValidationException.class, () -> algoritmo.filtrarDonaciones(necesidad, null));

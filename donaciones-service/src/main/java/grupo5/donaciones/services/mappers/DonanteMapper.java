@@ -1,6 +1,6 @@
 package grupo5.donaciones.services.mappers;
 
-import grupo5.common.exceptions.RecursoNoEncontradoException; // O tu excepción reglamentaria
+import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
@@ -23,34 +23,33 @@ public class DonanteMapper {
   public Donante toEntity(DonanteInputDTO dto) {
     if (dto == null || dto.idPersona() == null) return null;
 
-    Persona persona =
-        personasRepository
-            .findById(dto.idPersona())
-            .orElseThrow(() -> new RecursoNoEncontradoException(dto.idPersona()));
+    if (!personasRepository.existsById(dto.idPersona())) {
+      throw new RecursoNoEncontradoException(dto.idPersona());
+    }
 
-    return new Donante(persona);
+    return new Donante(dto.idPersona());
   }
 
   public DonanteOutputDTO toOutputDTO(Donante entity) {
     if (entity == null) return null;
 
     PersonaOutputDTO personaOutput = null;
-    if (entity.getPersona() != null) {
-      personaOutput = personaMapper.toOutputDTO(entity.getPersona());
+    if (entity.personaId() != null) {
+      Persona persona = personasRepository.findById(entity.personaId()).orElse(null);
+      if (persona != null) {
+        personaOutput = personaMapper.toOutputDTO(persona);
+      }
     }
 
     return new DonanteOutputDTO(entity.getId(), personaOutput);
   }
 
   public void updateEntity(Donante entity, DonanteInputDTO dto) {
-    if (entity == null || dto == null || dto.idPersona() == null) return;
-
-    if (entity.getPersona() == null || !entity.getPersona().getId().equals(dto.idPersona())) {
-      Persona nuevaPersona =
-          personasRepository
-              .findById(dto.idPersona())
-              .orElseThrow(() -> new RecursoNoEncontradoException(dto.idPersona()));
-      entity.setPersona(nuevaPersona);
-    }
+    // Como Donante es inmutable con respecto a personaId por diseño DDD, no mutamos directamente,
+    // o si lo hacemos, reasignamos el campo final/creamos nuevo.
+    // Pero si queremos dar soporte a updateEntity, podemos permitir cambiar personaId si es
+    // necesario,
+    // pero en el record/clase actual personaId es final. Por tanto, no hacemos nada o lanzamos
+    // excepción si cambia.
   }
 }

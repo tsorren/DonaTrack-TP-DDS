@@ -1,6 +1,6 @@
 # Modelado del Dominio: Bienes Normalizados vs. Bienes Crudos
 
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-13
 - Deciders: Decisión Grupal
 - Tags: dominio, normalizacion, segmentacion

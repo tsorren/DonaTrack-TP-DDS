@@ -72,14 +72,14 @@ public class GeneradorDeRutas implements IServicioExternoPlanificacion {
         camiones.stream().filter(Camion::estaDisponibleParaAsignar).toList();
 
     List<Entrega> entregasOrdenadas = ordenadorEntregas.obtenerEntregasOrdenadas(entregas);
-    Map<Camion, List<Entrega>> asignacion =
+    Map<UUID, List<Entrega>> asignacion =
         asignadorDeEntregas.asignar(entregasOrdenadas, camionesDisponibles);
 
     LocalDate fechaReparto = LocalDate.now(ZoneId.of("UTC")).plusDays(1);
     List<Ruta> rutas = new ArrayList<>();
 
-    for (Map.Entry<Camion, List<Entrega>> entry : asignacion.entrySet()) {
-      Camion camion = entry.getKey();
+    for (Map.Entry<UUID, List<Entrega>> entry : asignacion.entrySet()) {
+      UUID camionId = entry.getKey();
       List<Entrega> entregasDelCamion = entry.getValue();
       if (entregasDelCamion.isEmpty()) {
         continue;
@@ -89,7 +89,7 @@ public class GeneradorDeRutas implements IServicioExternoPlanificacion {
       // conoce entregas y camiones); se utiliza un identificador placeholder que deberá ser
       // reemplazado por el chofer real antes de persistir la ruta (responsabilidad de una capa
       // superior, p. ej. PlanificadorDeEntregas o un futuro ChoferService).
-      Ruta ruta = new Ruta(fechaReparto, UUID.randomUUID(), camion.getId());
+      Ruta ruta = new Ruta(fechaReparto, UUID.randomUUID(), camionId);
       for (Entrega entrega : entregasDelCamion) {
         entrega.asignarRuta(ruta.getId());
         ruta.agregarEntrega(entrega.getId());

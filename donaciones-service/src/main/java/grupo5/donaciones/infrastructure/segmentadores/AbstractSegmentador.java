@@ -1,12 +1,12 @@
 package grupo5.donaciones.infrastructure.segmentadores;
 
-import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.ports.Segmentador;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public abstract class AbstractSegmentador<K> implements Segmentador {
@@ -35,11 +35,11 @@ public abstract class AbstractSegmentador<K> implements Segmentador {
   private static DonacionIndependiente crearDonacionIndependienteDesdeGrupo(
       List<ItemDonacionNormalizado> grupo) {
     ItemDonacionNormalizado primerItem = grupo.getFirst();
-    Donacion donacionOriginal = primerItem.getDonacionOriginal();
+    UUID donacionOriginalId = primerItem.getDonacionOriginalId();
 
     List<ItemDonacionIndependiente> itemsIndependientes = crearItemsIndependientes(grupo);
 
-    return new DonacionIndependiente(donacionOriginal, itemsIndependientes);
+    return new DonacionIndependiente(donacionOriginalId, itemsIndependientes);
   }
 
   private static List<ItemDonacionIndependiente> crearItemsIndependientes(

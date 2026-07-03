@@ -33,14 +33,17 @@ class DonacionIndependienteFragmentacionTest {
 
   @BeforeEach
   void setUp() {
-    donacion = new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donante donante = new Donante(humana.getId());
+    donacion = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
 
     Bien bienOriginal =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     bienNormalizado =
-        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 10);
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 15);
@@ -49,7 +52,7 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item1);
     items.add(item2);
 
-    donacionIndependiente = new DonacionIndependiente(donacion, items);
+    donacionIndependiente = new DonacionIndependiente(donacion.getId(), items);
   }
 
   @Test
@@ -103,7 +106,7 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item2);
     items.add(item3);
 
-    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion, items);
+    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion.getId(), items);
 
     DonacionIndependiente fragmentada = donacionLocal.fragmentarse(13);
 
@@ -144,7 +147,7 @@ class DonacionIndependienteFragmentacionTest {
   @Test
   void quitarItem_conItemValido_debieraQuitarse() {
     ItemDonacionIndependiente item = donacionIndependiente.getItems().getFirst();
-    int cantidadInicial = item.getCantidad();
+    int cantidadInicial = item.cantidad();
     int cantidadTotalInicial = donacionIndependiente.getCantidad();
 
     donacionIndependiente.quitarItem(item);

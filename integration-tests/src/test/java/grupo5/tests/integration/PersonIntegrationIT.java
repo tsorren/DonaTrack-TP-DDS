@@ -1,18 +1,19 @@
 package grupo5.tests.integration;
 
+import grupo5.tests.BaseIT;
+import io.restassured.http.ContentType;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
-import grupo5.tests.BaseIT;
-import io.restassured.http.ContentType;
-import java.util.Map;
-import org.junit.jupiter.api.Test;
-
-public class PersonIntegrationIT extends BaseIT {
+class PersonIntegrationIT extends BaseIT {
 
   @Test
-  public void testCrearPersonaReplicada() {
+  void testCrearPersonaReplicada() {
     Map<String, Object> payload = fixture("personas/crear-persona-humana.json");
 
     given()

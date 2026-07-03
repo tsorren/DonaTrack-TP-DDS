@@ -32,21 +32,24 @@ class StockDeDonacionesTest {
 
   @BeforeEach
   void setUp() {
-    Donacion donacionOriginal =
-        new Donacion(new Donante(new Humana("nombre", "apellido", TEST_DATE)));
+    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
+    Donante donante = new Donante(humana.getId());
+    Donacion donacionOriginal = new Donacion(donante.getId());
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
-    Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
+    Bien bien =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
-        new BienNormalizado(bien, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     List<ItemDonacionIndependiente> itemsDiez = new ArrayList<>();
     itemsDiez.add(new ItemDonacionIndependiente(bienNormalizado, 10));
-    donacionDiez = new DonacionIndependiente(donacionOriginal, itemsDiez);
+    donacionDiez = new DonacionIndependiente(donacionOriginal.getId(), itemsDiez);
 
     List<ItemDonacionIndependiente> itemsCinco = new ArrayList<>();
     itemsCinco.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionCinco = new DonacionIndependiente(donacionOriginal, itemsCinco);
+    donacionCinco = new DonacionIndependiente(donacionOriginal.getId(), itemsCinco);
   }
 
   @Test

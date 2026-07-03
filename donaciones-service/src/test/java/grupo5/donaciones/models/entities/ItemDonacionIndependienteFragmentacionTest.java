@@ -27,12 +27,13 @@ class ItemDonacionIndependienteFragmentacionTest {
   @BeforeEach
   void setUp() {
     Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria, "Ropa de Invierno");
+    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
 
     Bien bienOriginal =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     bienNormalizado =
-        new BienNormalizado(bienOriginal, subcategoria, 1.0, EstadoNormalizacion.ACEPTADO);
+        new BienNormalizado(
+            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
     itemDonacion = new ItemDonacionIndependiente(bienNormalizado, 20);
   }
@@ -65,9 +66,10 @@ class ItemDonacionIndependienteFragmentacionTest {
   @Test
   void fragmentarse_exitoso_disminuyeLaCantidadOriginal() {
     // Cantidad inicial 20, fragmentando 7
-    itemDonacion.fragmentarse(7);
+    ItemDonacionIndependiente fragmentado = itemDonacion.fragmentarse(7);
 
-    assertEquals(13, itemDonacion.getCantidad(), "Debe disminuir en 7");
+    assertEquals(7, fragmentado.cantidad(), "El fragmentado debe tener cantidad 7");
+    assertEquals(20, itemDonacion.cantidad(), "La cantidad original de la record no debe cambiar");
   }
 
   @Test
@@ -76,8 +78,8 @@ class ItemDonacionIndependienteFragmentacionTest {
     ItemDonacionIndependiente itemFragmentado = itemDonacion.fragmentarse(8);
 
     assertNotNull(itemFragmentado, "Debe retornar un item fragmentado");
-    assertEquals(8, itemFragmentado.getCantidad(), "El nuevo item debe tener cantidad 8");
-    assertEquals(12, itemDonacion.getCantidad(), "El item original debe reducirse a 12");
+    assertEquals(8, itemFragmentado.cantidad(), "El nuevo item debe tener cantidad 8");
+    assertEquals(20, itemDonacion.cantidad(), "El item original record no debe cambiar");
   }
 
   @Test
@@ -86,8 +88,8 @@ class ItemDonacionIndependienteFragmentacionTest {
     ItemDonacionIndependiente itemFragmentado = itemDonacion.fragmentarse(5);
 
     assertNotNull(itemFragmentado, "Debe haber un nuevo item fragmentado");
-    assertEquals(5, itemFragmentado.getCantidad(), "El nuevo item debe tener cantidad 5");
-    assertEquals(15, itemDonacion.getCantidad(), "El original debe tener cantidad 15");
+    assertEquals(5, itemFragmentado.cantidad(), "El nuevo item debe tener cantidad 5");
+    assertEquals(20, itemDonacion.cantidad(), "El original record no debe cambiar");
   }
 
   @Test
@@ -95,8 +97,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     ItemDonacionIndependiente itemFragmentado = itemDonacion.fragmentarse(5);
 
     assertNotNull(itemFragmentado);
-    assertEquals(
-        bienNormalizado, itemFragmentado.getBien(), "El nuevo item debe tener el mismo bien");
+    assertEquals(bienNormalizado, itemFragmentado.bien(), "El nuevo item debe tener el mismo bien");
   }
 
   @Test
@@ -104,10 +105,8 @@ class ItemDonacionIndependienteFragmentacionTest {
     // El item original tiene 20
     ItemDonacionIndependiente itemFragmentado = itemDonacion.fragmentarse(6);
 
-    // El item original debe tener 14, y el fragmentado 6
-    assertEquals(14, itemDonacion.getCantidad(), "El item original debe tener 14");
-    assertEquals(6, itemFragmentado.getCantidad(), "El fragmentado debe tener 6");
-    assertEquals(20, 14 + 6, "La suma debe ser 20");
+    assertEquals(20, itemDonacion.cantidad(), "El item original record no debe cambiar");
+    assertEquals(6, itemFragmentado.cantidad(), "El fragmentado debe tener 6");
   }
 
   @Test
@@ -165,18 +164,14 @@ class ItemDonacionIndependienteFragmentacionTest {
   @Test
   void fragmentarse_multipleFragmentaciones_preservaIntegridad() {
     // Inicio: 20
-    // Primera fragmentación: 5 -> itemDonacion tiene 15, nuevo tiene 5
+    // Primera fragmentación: 5 -> item1 tiene 5
     ItemDonacionIndependiente item1 = itemDonacion.fragmentarse(5);
-    assertEquals(15, itemDonacion.getCantidad());
-    assertEquals(5, item1.getCantidad());
+    assertEquals(20, itemDonacion.cantidad());
+    assertEquals(5, item1.cantidad());
 
-    // Segunda fragmentación: 7 -> itemDonacion tiene 8, nuevo tiene 7
+    // Segunda fragmentación: 7 -> item2 tiene 7
     ItemDonacionIndependiente item2 = itemDonacion.fragmentarse(7);
-    assertEquals(8, itemDonacion.getCantidad());
-    assertEquals(7, item2.getCantidad());
-
-    // Total debe ser 8 + 7 + 5 = 20
-    int cantidadTotal = itemDonacion.getCantidad() + item1.getCantidad() + item2.getCantidad();
-    assertEquals(20, cantidadTotal, "La cantidad total debe seguir siendo 20");
+    assertEquals(20, itemDonacion.cantidad());
+    assertEquals(7, item2.cantidad());
   }
 }

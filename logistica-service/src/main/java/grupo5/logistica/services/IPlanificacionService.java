@@ -1,11 +1,16 @@
 package grupo5.logistica.services;
 
-/**
- * Orquesta la planificacion diferida de entregas. El scheduler debe depender de este contrato y no
- * contener logica de negocio ni de persistencia.
- */
-public interface IPlanificacionService {
+import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
+import grupo5.logistica.dto.callback.SolicitudPlanificacionRequestDTO;
+import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
+import java.util.UUID;
 
-  /** Genera las solicitudes y rutas necesarias para la siguiente jornada operativa. */
+public interface IPlanificacionService {
+  SolicitudPlanificacionResponseDTO crearSolicitud(SolicitudPlanificacionRequestDTO dto);
+
+  SolicitudPlanificacionResponseDTO procesarCallback(CallbackPlanificacionRequestDTO dto);
+
+  SolicitudPlanificacionResponseDTO obtenerPorId(UUID id);
+
   void solicitarPlanificacionParaSiguienteJornada();
 }

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.notificaciones.dto.input.*;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
-import grupo5.notificaciones.services.NotificacionService;
+import grupo5.notificaciones.services.impl.NotificacionService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -99,7 +99,51 @@ class NotificacionControllerTest {
   void donacionRecibida_deberiaResponderOkYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionRecibidaDTO(
-            personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "ropa");
+            personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "ropa", "AB123CD");
+
+    mockMvc
+        .perform(
+            post("/notificaciones")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
+        .andExpect(status().isOk());
+
+    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+  }
+
+  @Test
+  void donacionEnCamino_deberiaResponderOkYProcesarEvento() throws Exception {
+    EventoNotificableDTO dto =
+        new EventoDonacionEnCaminoDTO(
+            personaMock.getId(),
+            TEST_DATE_TIME,
+            personaMock.getId(),
+            "ropa",
+            "https://donatrack.app/mapa/123");
+
+    mockMvc
+        .perform(
+            post("/notificaciones")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
+        .andExpect(status().isOk());
+
+    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+  }
+
+  @Test
+  void entregaFallida_deberiaResponderOkYProcesarEvento() throws Exception {
+    EventoNotificableDTO dto =
+        new EventoEntregaFallidaDTO(
+            personaMock.getId(),
+            TEST_DATE_TIME,
+            personaMock.getId(),
+            "ropa",
+            personaMock.getId(),
+            "Nadie respondió",
+            true);
 
     mockMvc
         .perform(
