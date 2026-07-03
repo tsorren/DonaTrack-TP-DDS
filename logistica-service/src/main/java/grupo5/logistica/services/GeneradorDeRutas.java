@@ -33,7 +33,7 @@ public class GeneradorDeRutas {
         .toList();
   }
 
-  private Ruta construirRuta(
+  private static Ruta construirRuta(
       LocalDate fecha, UUID choferId, UUID camionId, List<Entrega> entregasAsignadas) {
     Ruta ruta = new Ruta(fecha, choferId, camionId);
     entregasAsignadas.forEach(entrega -> ruta.agregarEntrega(entrega.getId()));

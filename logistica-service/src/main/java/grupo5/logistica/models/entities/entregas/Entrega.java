@@ -149,25 +149,25 @@ public class Entrega implements AggregateRoot {
     this.historialEstado.add(cambio);
   }
 
-  private void validarIdentificador(UUID id) {
+  private static void validarIdentificador(UUID id) {
     if (Objects.isNull(id)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
   }
 
-  private void validarDestino(Direccion destino) {
+  private static void validarDestino(Direccion destino) {
     if (Objects.isNull(destino)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
   }
 
-  private void validarMagnitudPositiva(float valor) {
+  private static void validarMagnitudPositiva(float valor) {
     if (valor <= 0) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }
 
-  private void validarActor(String actor) {
+  private static void validarActor(String actor) {
     if (Objects.isNull(actor) || actor.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
