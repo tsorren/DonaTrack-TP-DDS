@@ -30,19 +30,19 @@ public class RutasService implements IRutasService {
 
   private final IRutasRepository rutasRepository;
   private final IEntregasRepository entregasRepository;
-  private final ICamionRepository camionesRepository;
+  private final ICamionRepository camionRepository;
   private final RutaMapper rutaMapper;
   private final LogisticaEventPublisher eventPublisher;
 
   public RutasService(
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
-      ICamionesRepository camionesRepository,
+      ICamionRepository camionRepository,
       RutaMapper rutaMapper,
       LogisticaEventPublisher eventPublisher) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
-    this.camionesRepository = camionesRepository;
+    this.camionRepository = camionRepository;
     this.rutaMapper = rutaMapper;
     this.eventPublisher = eventPublisher;
   }
@@ -109,7 +109,7 @@ public class RutasService implements IRutasService {
           entregasRepository.save(entrega);
         });
 
-    camionesRepository.save(camion);
+    camionRepository.save(camion);
     rutasRepository.save(ruta);
 
     List<UUID> donacionesIndependientesIds =
@@ -134,7 +134,7 @@ public class RutasService implements IRutasService {
     ruta.completarRuta();
     camion.completarRuta();
 
-    camionesRepository.save(camion);
+    camionRepository.save(camion);
 
     return rutaMapper.toResponseDTO(rutasRepository.save(ruta));
   }
@@ -155,7 +155,7 @@ public class RutasService implements IRutasService {
   }
 
   private Camion buscarCamion(UUID id) {
-    return camionesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    return camionRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
   }
 
   private List<Entrega> buscarEntregasDeRuta(Ruta ruta) {
