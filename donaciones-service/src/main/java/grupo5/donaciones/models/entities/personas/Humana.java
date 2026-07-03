@@ -9,6 +9,7 @@ import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.UUID;
 import lombok.Getter;
 
 @Getter
@@ -28,6 +29,16 @@ public final class Humana extends Persona {
 
   public Humana(String nombre, String apellido, LocalDate fechaNacimiento, Genero genero) {
     super();
+    validarDatosHumanos(nombre, apellido, fechaNacimiento);
+    this.nombre = nombre;
+    this.apellido = apellido;
+    this.fechaNacimiento = fechaNacimiento;
+    this.genero = genero;
+  }
+
+  /** Constructor con id fijo, exclusivamente para seeding (para persona admin). */
+  public Humana(UUID id, String nombre, String apellido, LocalDate fechaNacimiento, Genero genero) {
+    super(id);
     validarDatosHumanos(nombre, apellido, fechaNacimiento);
     this.nombre = nombre;
     this.apellido = apellido;
