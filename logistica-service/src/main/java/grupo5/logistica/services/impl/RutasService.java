@@ -30,21 +30,21 @@ public class RutasService implements IRutasService {
   private final ICamionesRepository camionesRepository;
   private final RutaMapper rutaMapper;
   private final LogisticaEventPublisher eventPublisher;
-  private final GeneradorDeURLSeguimiento generadorDeURLSeguimiento;
+  private final GeneradorDeURLSeguimiento generadorDeUrlSeguimiento;
 
   public RutasService(
-      IRutasRepository rutasRepository,
-      IEntregasRepository entregasRepository,
-      ICamionesRepository camionesRepository,
-      RutaMapper rutaMapper,
-      LogisticaEventPublisher eventPublisher,
-      GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
+          IRutasRepository rutasRepository,
+          IEntregasRepository entregasRepository,
+          ICamionesRepository camionesRepository,
+          RutaMapper rutaMapper,
+          LogisticaEventPublisher eventPublisher,
+          GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.camionesRepository = camionesRepository;
     this.rutaMapper = rutaMapper;
     this.eventPublisher = eventPublisher;
-    this.generadorDeURLSeguimiento = generadorDeUrlSeguimiento;
+    this.generadorDeUrlSeguimiento = generadorDeUrlSeguimiento;
   }
 
   @Override
@@ -95,10 +95,10 @@ public class RutasService implements IRutasService {
 
     List<Entrega> entregasDeRuta = buscarEntregasDeRuta(ruta);
     entregasDeRuta.forEach(
-        entrega -> {
-          entrega.iniciarRuta(dto.actor());
-          entregasRepository.save(entrega);
-        });
+            entrega -> {
+              entrega.iniciarRuta(dto.actor());
+              entregasRepository.save(entrega);
+            });
 
     camionesRepository.save(camion);
     rutasRepository.save(ruta);
@@ -121,8 +121,8 @@ public class RutasService implements IRutasService {
   @Override
   public List<RutaResponseDTO> listarPorCamion(UUID camionId) {
     return rutasRepository.findByCamionId(camionId).stream()
-        .map(rutaMapper::toResponseDTO)
-        .toList();
+            .map(rutaMapper::toResponseDTO)
+            .toList();
   }
 
   /**
@@ -132,19 +132,19 @@ public class RutasService implements IRutasService {
    * transportada, arma las notificaciones correspondientes (ver ADR de granularidad de eventos).
    */
   private void publicarRutaIniciada(Ruta ruta, Camion camion, List<Entrega> entregasDeRuta) {
-    String urlMapa = generadorDeURLSeguimiento.generarUrl(ruta.getId());
+    String urlMapa = generadorDeUrlSeguimiento.generarUrl(ruta.getId());
 
     List<UUID> donacionesIndependientesIds =
-        entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
+            entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
 
     EventoRutaIniciada evento =
-        new EventoRutaIniciada(
-            ruta.getId(),
-            camion.getId(),
-            camion.getPatente(),
-            donacionesIndependientesIds,
-            ruta.getHoraInicioReal(),
-            urlMapa);
+            new EventoRutaIniciada(
+                    ruta.getId(),
+                    camion.getId(),
+                    camion.getPatente(),
+                    donacionesIndependientesIds,
+                    ruta.getHoraInicioReal(),
+                    urlMapa);
 
     eventPublisher.publicarRutaIniciada(evento);
   }
