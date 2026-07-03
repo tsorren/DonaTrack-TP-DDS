@@ -4,8 +4,8 @@ import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
 import java.util.UUID;
 
 public record NuevaEntregaRequest(
-    UUID donacionIndependienteId,
-    UUID entidadBeneficiariaId,
-    DireccionOutputDTO direccionOrigen,
-    DireccionOutputDTO direccionDestino,
-    String descripcion) {}
+    UUID idDonacion,
+    UUID idBeneficiaria,
+    DireccionOutputDTO destino,
+    Double pesoTotalKG,
+    Double volumenTotalM3) {}

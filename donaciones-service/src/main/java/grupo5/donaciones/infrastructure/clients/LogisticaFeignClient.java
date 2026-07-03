@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(
     name = "logistica-service",
-    url = "${donatrack.logistica.url}/api/logistica",
+    url = "${donatrack.logistica.url}/api/entregas",
     configuration = FeignRetryConfig.class)
 public interface LogisticaFeignClient {
 
-  @PostMapping("/entregas")
+  @PostMapping
   void registrarEntregaPendiente(@RequestBody NuevaEntregaRequest request);
 }

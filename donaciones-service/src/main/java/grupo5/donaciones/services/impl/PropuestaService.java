@@ -4,14 +4,12 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.NuevaEntregaRequest;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
-import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.mappers.DireccionMapper;
@@ -33,7 +31,6 @@ public class PropuestaService {
   private final grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
       donacionRepository;
   private final grupo5.donaciones.services.mappers.PropuestaMapper propuestaMapper;
-  private final IDonacionesRepository donacionesRepository;
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final IPersonasRepository personasRepository;
   private final DireccionMapper direccionMapper;
@@ -45,7 +42,6 @@ public class PropuestaService {
       grupo5.donaciones.models.repositories.INecesidadesRepository necesidadRepository,
       grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository donacionRepository,
       grupo5.donaciones.services.mappers.PropuestaMapper propuestaMapper,
-      IDonacionesRepository donacionesRepository,
       IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository,
       IPersonasRepository personasRepository,
       DireccionMapper direccionMapper,
@@ -55,7 +51,6 @@ public class PropuestaService {
     this.necesidadRepository = necesidadRepository;
     this.donacionRepository = donacionRepository;
     this.propuestaMapper = propuestaMapper;
-    this.donacionesRepository = donacionesRepository;
     this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
     this.personasRepository = personasRepository;
     this.direccionMapper = direccionMapper;
@@ -145,12 +140,6 @@ public class PropuestaService {
 
   private NuevaEntregaRequest construirSolicitudEntrega(
       DonacionIndependiente donacionAsignar, Necesidad necesidad) {
-    Donacion donacionOriginal =
-        donacionesRepository
-            .findById(donacionAsignar.getDonacionOriginalId())
-            .orElseThrow(
-                () -> new RecursoNoEncontradoException(donacionAsignar.getDonacionOriginalId()));
-
     EntidadBeneficiaria entidad =
         entidadesBeneficiariasRepository
             .findById(necesidad.getEntidadId())
@@ -164,8 +153,8 @@ public class PropuestaService {
     return new NuevaEntregaRequest(
         donacionAsignar.getId(),
         entidad.getId(),
-        direccionMapper.toOutputDTO(donacionOriginal.getDepositoRecepcion().direccion()),
         direccionMapper.toOutputDTO(persona.getDireccion()),
-        donacionAsignar.getDescripcion());
+        donacionAsignar.getPesoTotal(),
+        donacionAsignar.getVolumenTotal());
   }
 }

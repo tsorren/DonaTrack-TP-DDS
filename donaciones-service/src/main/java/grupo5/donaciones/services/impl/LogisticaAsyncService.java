@@ -24,7 +24,7 @@ public class LogisticaAsyncService {
     } catch (Exception e) {
       log.error(
           "Fallo al registrar entrega pendiente en logistica-service para donación {}: {}",
-          request.donacionIndependienteId(),
+          request.idDonacion(),
           e.getMessage(),
           e);
     }

@@ -7,15 +7,12 @@ import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.donaciones.Deposito;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
-import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.AlgoritmosService;
@@ -37,7 +34,6 @@ class PropuestaServiceTest {
   private grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
       donacionRepository;
   private PropuestaMapper propuestaMapper;
-  private IDonacionesRepository donacionesRepository;
   private IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private IPersonasRepository personasRepository;
   private DireccionMapper direccionMapper;
@@ -52,7 +48,6 @@ class PropuestaServiceTest {
     donacionRepository =
         mock(grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository.class);
     propuestaMapper = mock(PropuestaMapper.class);
-    donacionesRepository = mock(IDonacionesRepository.class);
     entidadesBeneficiariasRepository = mock(IEntidadesBeneficiariasRepository.class);
     personasRepository = mock(IPersonasRepository.class);
     direccionMapper = mock(DireccionMapper.class);
@@ -65,7 +60,6 @@ class PropuestaServiceTest {
             necesidadRepository,
             donacionRepository,
             propuestaMapper,
-            donacionesRepository,
             entidadesBeneficiariasRepository,
             personasRepository,
             direccionMapper,
@@ -199,7 +193,6 @@ class PropuestaServiceTest {
 
     UUID necesidadId = UUID.randomUUID();
     UUID donacionOriginalId = UUID.randomUUID();
-    UUID donacionRaizId = UUID.randomUUID();
     UUID entidadId = UUID.randomUUID();
     UUID juridicaId = UUID.randomUUID();
 
@@ -208,15 +201,9 @@ class PropuestaServiceTest {
     when(fragmentacion.getDonacionOriginalId()).thenReturn(donacionOriginalId);
     when(fragmentacion.getCantidadNecesaria()).thenReturn(5);
     when(donacionOriginal.getCantidad()).thenReturn(5);
-    when(donacionOriginal.getDonacionOriginalId()).thenReturn(donacionRaizId);
-    when(donacionOriginal.getDescripcion()).thenReturn("Fideos");
+    when(donacionOriginal.getPesoTotal()).thenReturn(12.5);
+    when(donacionOriginal.getVolumenTotal()).thenReturn(0.3);
     when(necesidad.getEntidadId()).thenReturn(entidadId);
-
-    Direccion direccionDeposito = mock(Direccion.class);
-    Donacion donacionRaiz = mock(Donacion.class);
-    when(donacionRaiz.getDepositoRecepcion())
-        .thenReturn(new Deposito("Depósito Central", direccionDeposito));
-    when(donacionesRepository.findById(donacionRaizId)).thenReturn(Optional.of(donacionRaiz));
 
     EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
     when(entidad.getId()).thenReturn(entidadId);
@@ -234,13 +221,13 @@ class PropuestaServiceTest {
 
     propuestaService.onPropuestaAprobada(event);
 
-    verify(direccionMapper).toOutputDTO(direccionDeposito);
     verify(direccionMapper).toOutputDTO(direccionPersona);
     verify(logisticaAsyncService)
         .registrarEntregaPendiente(
             argThat(
                 request ->
-                    request.entidadBeneficiariaId().equals(entidadId)
-                        && "Fideos".equals(request.descripcion())));
+                    request.idBeneficiaria().equals(entidadId)
+                        && request.pesoTotalKG().equals(12.5)
+                        && request.volumenTotalM3().equals(0.3)));
   }
 }

@@ -22,7 +22,7 @@ class LogisticaAsyncServiceTest {
   @Test
   void registrarEntregaPendiente_deberiaInvocarCliente_CuandoNoHayErrores() {
     NuevaEntregaRequest request =
-        new NuevaEntregaRequest(UUID.randomUUID(), UUID.randomUUID(), null, null, "Fideos");
+        new NuevaEntregaRequest(UUID.randomUUID(), UUID.randomUUID(), null, 12.5, 0.3);
 
     service.registrarEntregaPendiente(request);
 
@@ -32,7 +32,7 @@ class LogisticaAsyncServiceTest {
   @Test
   void registrarEntregaPendiente_deberiaCapturarExcepcionYNoPropagarla_CuandoClienteFalla() {
     NuevaEntregaRequest request =
-        new NuevaEntregaRequest(UUID.randomUUID(), UUID.randomUUID(), null, null, "Fideos");
+        new NuevaEntregaRequest(UUID.randomUUID(), UUID.randomUUID(), null, 12.5, 0.3);
     doThrow(new RuntimeException("Error de conexión"))
         .when(client)
         .registrarEntregaPendiente(request);
