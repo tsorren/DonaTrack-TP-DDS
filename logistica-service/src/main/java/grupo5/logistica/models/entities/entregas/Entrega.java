@@ -15,6 +15,7 @@ import lombok.Getter;
 
 @Getter
 public class Entrega implements AggregateRoot {
+
   private final UUID id;
   private UUID idRuta;
   private final UUID idDonacion;
@@ -28,7 +29,6 @@ public class Entrega implements AggregateRoot {
   private LocalDateTime horaArribo;
   private LocalDateTime horaSalida;
   private String fotoRecepcionUrl;
-  private Boolean confirmacionEntrega;
   private final float pesoTotalKG;
   private final float volumenTotalM3;
 
@@ -51,7 +51,6 @@ public class Entrega implements AggregateRoot {
     this.destino = destino;
     this.estadoActual = EstadoEntrega.PENDIENTE;
     this.historialEstado = new ArrayList<>();
-    this.confirmacionEntrega = false;
     this.pesoTotalKG = pesoTotalKG;
     this.volumenTotalM3 = volumenTotalM3;
   }
@@ -67,28 +66,38 @@ public class Entrega implements AggregateRoot {
     asignarRuta(idRuta);
   }
 
-  public void asignarRuta(UUID rutaId) {
-    validarIdentificador(rutaId);
+  public void asignarRuta(UUID idRuta) {
+    validarIdentificador(idRuta);
+
+    if (this.idRuta != null) {
+      throw new ValidationException(ErrorCatalog.ENTREGA_YA_ASIGNADA_A_RUTA);
+    }
+
     if (this.estadoActual != EstadoEntrega.PENDIENTE) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
-    this.idRuta = rutaId;
+
+    this.idRuta = idRuta;
   }
 
   public void iniciarRuta(String chofer) {
     validarActor(chofer);
+
     if (this.estadoActual != EstadoEntrega.PENDIENTE) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
+
     actualizarEstado(EstadoEntrega.EN_TRASLADO, chofer);
     this.horaSalida = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
   public void confirmarEntrega(String entidad) {
     validarActor(entidad);
+
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
+
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
   }
@@ -97,36 +106,43 @@ public class Entrega implements AggregateRoot {
     if (Objects.isNull(fotoURL) || fotoURL.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+
     if (this.estadoActual != EstadoEntrega.ENTREGADA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
+
     this.fotoRecepcionUrl = fotoURL.trim();
   }
 
   public void negarEntrega(String entidad) {
     validarActor(entidad);
+
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
-    actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
 
+    actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
     mandarARevision("SISTEMA_LOGISTICA");
   }
 
   private void mandarARevision(String actor) {
     validarActor(actor);
+
     if (this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
+
     actualizarEstado(EstadoEntrega.REVISION, actor);
   }
 
   public void regresarAlDeposito(String administrador) {
     validarActor(administrador);
+
     if (this.estadoActual != EstadoEntrega.REVISION
         && this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
+
     actualizarEstado(EstadoEntrega.PENDIENTE, administrador);
     this.horaArribo = null;
     this.horaSalida = null;
@@ -149,25 +165,25 @@ public class Entrega implements AggregateRoot {
     this.historialEstado.add(cambio);
   }
 
-  private void validarIdentificador(UUID id) {
+  private static void validarIdentificador(UUID id) {
     if (Objects.isNull(id)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
   }
 
-  private void validarDestino(Direccion destino) {
+  private static void validarDestino(Direccion destino) {
     if (Objects.isNull(destino)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
   }
 
-  private void validarMagnitudPositiva(float valor) {
+  private static void validarMagnitudPositiva(float valor) {
     if (valor <= 0) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }
 
-  private void validarActor(String actor) {
+  private static void validarActor(String actor) {
     if (Objects.isNull(actor) || actor.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }

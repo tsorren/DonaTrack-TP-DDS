@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class PlanificacionService implements IPlanificacionService {
+
   private static final int MAX_ENTREGAS_POR_SOLICITUD = 100;
 
   private final ISolicitudPlanificacionRepository solicitudesRepository;
@@ -63,6 +64,7 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     SolicitudPlanificacion solicitud = buscarSolicitud(dto.solicitudId());
+
     if (solicitud.getEstado() == EstadoSolicitud.PROCESADA) {
       return solicitudMapper.toResponseDTO(solicitud);
     }
@@ -77,6 +79,7 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     List<UUID> rutasGeneradas = dto.rutas().stream().map(this::guardarRutaPlanificada).toList();
+
     solicitud.procesarResultados(rutasGeneradas);
     return solicitudMapper.toResponseDTO(solicitudesRepository.save(solicitud));
   }
@@ -88,9 +91,9 @@ public class PlanificacionService implements IPlanificacionService {
 
   @Override
   public void solicitarPlanificacionParaSiguienteJornada() {
-    // La planificación automática queda como punto de entrada del scheduler.
-    // En esta etapa, las solicitudes concretas se crean desde crearSolicitud(...)
-    // con los ids de entregas recibidos por API.
+    // Punto de entrada del scheduler.
+    // Se conserva vacío por ahora para no romper la API/callback ya integrada en ENTREGA_3.
+    // La lógica automática se puede agregar después sobre este mismo service.
   }
 
   private UUID guardarRutaPlanificada(RutaPlanificadaDTO dto) {
@@ -121,10 +124,11 @@ public class PlanificacionService implements IPlanificacionService {
     return rutaId;
   }
 
-  private void validarSolicitud(SolicitudPlanificacionRequestDTO dto) {
+  private static void validarSolicitud(SolicitudPlanificacionRequestDTO dto) {
     if (dto == null || dto.entregaIds() == null || dto.entregaIds().isEmpty()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+
     if (dto.entregaIds().size() > MAX_ENTREGAS_POR_SOLICITUD) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }

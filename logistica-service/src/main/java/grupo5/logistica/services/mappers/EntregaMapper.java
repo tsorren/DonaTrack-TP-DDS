@@ -47,7 +47,6 @@ public class EntregaMapper {
         entrega.getHoraSalida(),
         entrega.getHoraArribo(),
         entrega.getFotoRecepcionUrl(),
-        entrega.getConfirmacionEntrega(),
         entrega.getPesoTotalKG(),
         entrega.getVolumenTotalM3(),
         entrega.getHistorialEstado().stream().map(this::toCambioEstadoResponseDTO).toList());
@@ -62,7 +61,7 @@ public class EntregaMapper {
         cambio.estadoAnterior(), cambio.estadoNuevo(), cambio.timeStamp(), cambio.actor());
   }
 
-  private void validarMagnitudes(CrearEntregaRequestDTO dto) {
+  private static void validarMagnitudes(CrearEntregaRequestDTO dto) {
     if (dto.pesoTotalKG() == null || dto.volumenTotalM3() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }

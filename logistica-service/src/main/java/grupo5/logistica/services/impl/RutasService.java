@@ -13,7 +13,7 @@ import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
-import grupo5.logistica.models.repositories.ICamionesRepository;
+import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.IRutasService;
@@ -27,9 +27,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RutasService implements IRutasService {
+
   private final IRutasRepository rutasRepository;
   private final IEntregasRepository entregasRepository;
-  private final ICamionesRepository camionesRepository;
+  private final ICamionRepository camionesRepository;
   private final RutaMapper rutaMapper;
   private final LogisticaEventPublisher eventPublisher;
 
@@ -70,8 +71,10 @@ public class RutasService implements IRutasService {
 
     Ruta ruta = buscarRuta(id);
     Entrega entrega = buscarEntrega(dto.entregaId());
+
     ruta.agregarEntrega(entrega.getId());
     entrega.asignarRuta(ruta.getId());
+
     rutasRepository.save(ruta);
     entregasRepository.save(entrega);
 
@@ -89,11 +92,13 @@ public class RutasService implements IRutasService {
     }
 
     Ruta ruta = buscarRuta(id);
+
     if (!Objects.equals(ruta.getChoferId(), dto.choferId())) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 
     Camion camion = buscarCamion(ruta.getCamionId());
+
     camion.asignarARuta(ruta.getId());
     ruta.iniciarRuta();
 
@@ -125,9 +130,12 @@ public class RutasService implements IRutasService {
   public RutaResponseDTO completar(UUID id) {
     Ruta ruta = buscarRuta(id);
     Camion camion = buscarCamion(ruta.getCamionId());
+
     ruta.completarRuta();
     camion.completarRuta();
+
     camionesRepository.save(camion);
+
     return rutaMapper.toResponseDTO(rutasRepository.save(ruta));
   }
 

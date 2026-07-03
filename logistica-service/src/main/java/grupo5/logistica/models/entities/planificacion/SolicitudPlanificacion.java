@@ -75,19 +75,19 @@ public class SolicitudPlanificacion implements AggregateRoot {
     return List.copyOf(this.rutasGeneradas);
   }
 
-  private void validarFecha(LocalDate fecha) {
+  private static void validarFecha(LocalDate fecha) {
     if (Objects.isNull(fecha)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
   }
 
-  private void validarCantidadDonaciones(Integer cantidadDonaciones) {
+  private static void validarCantidadDonaciones(Integer cantidadDonaciones) {
     if (Objects.isNull(cantidadDonaciones) || cantidadDonaciones <= 0) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }
 
-  private void validarCallbackUrl(String callbackUrl) {
+  private static void validarCallbackUrl(String callbackUrl) {
     if (Objects.isNull(callbackUrl) || callbackUrl.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }

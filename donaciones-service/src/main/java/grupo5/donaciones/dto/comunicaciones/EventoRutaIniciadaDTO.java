@@ -8,5 +8,5 @@ public record EventoRutaIniciadaDTO(
     LocalDateTime fecha,
     UUID idPersonaBeneficiaria,
     String detalleDonacion,
-    String urlMapa)
+    String enlaceSeguimiento)
     implements EventoNotificableDTO {}

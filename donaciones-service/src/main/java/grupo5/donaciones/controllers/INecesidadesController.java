@@ -12,4 +12,6 @@ public interface INecesidadesController {
 
   ResponseEntity<List<NecesidadDTO>> listarNecesidades(
       @RequestParam(required = false) UUID entidadId, @RequestParam(required = false) String tipo);
+
+  ResponseEntity<NecesidadDTO> obtenerNecesidad(UUID id);
 }
