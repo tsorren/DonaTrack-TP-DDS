@@ -6,14 +6,25 @@ import static org.mockito.Mockito.*;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
+import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
+import grupo5.donaciones.models.entities.donaciones.Deposito;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.AlgoritmosService;
+import grupo5.donaciones.services.impl.LogisticaAsyncService;
 import grupo5.donaciones.services.impl.PropuestaService;
+import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +37,11 @@ class PropuestaServiceTest {
   private grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
       donacionRepository;
   private PropuestaMapper propuestaMapper;
+  private IDonacionesRepository donacionesRepository;
+  private IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
+  private IPersonasRepository personasRepository;
+  private DireccionMapper direccionMapper;
+  private LogisticaAsyncService logisticaAsyncService;
   private PropuestaService propuestaService;
 
   @BeforeEach
@@ -36,6 +52,11 @@ class PropuestaServiceTest {
     donacionRepository =
         mock(grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository.class);
     propuestaMapper = mock(PropuestaMapper.class);
+    donacionesRepository = mock(IDonacionesRepository.class);
+    entidadesBeneficiariasRepository = mock(IEntidadesBeneficiariasRepository.class);
+    personasRepository = mock(IPersonasRepository.class);
+    direccionMapper = mock(DireccionMapper.class);
+    logisticaAsyncService = mock(LogisticaAsyncService.class);
 
     propuestaService =
         new PropuestaService(
@@ -43,7 +64,12 @@ class PropuestaServiceTest {
             asignacionRepository,
             necesidadRepository,
             donacionRepository,
-            propuestaMapper);
+            propuestaMapper,
+            donacionesRepository,
+            entidadesBeneficiariasRepository,
+            personasRepository,
+            direccionMapper,
+            logisticaAsyncService);
   }
 
   @Test
@@ -153,5 +179,68 @@ class PropuestaServiceTest {
     verify(necesidad).asignarDonacion(donacionOriginal);
     verify(donacionRepository, times(2)).save(donacionOriginal);
     verify(necesidadRepository).save(necesidad);
+  }
+
+  @Test
+  void onPropuestaAprobada_debeNotificarALogistica_CuandoSeResuelvenTodosLosDatos() {
+    Necesidad necesidad = mock(Necesidad.class);
+    grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion fragmentacion =
+        mock(grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion.class);
+    grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente
+        donacionOriginal =
+            mock(
+                grupo5
+                    .donaciones
+                    .models
+                    .entities
+                    .donacionesIndependientes
+                    .DonacionIndependiente
+                    .class);
+
+    UUID necesidadId = UUID.randomUUID();
+    UUID donacionOriginalId = UUID.randomUUID();
+    UUID donacionRaizId = UUID.randomUUID();
+    UUID entidadId = UUID.randomUUID();
+    UUID juridicaId = UUID.randomUUID();
+
+    when(necesidadRepository.findById(necesidadId)).thenReturn(Optional.of(necesidad));
+    when(donacionRepository.findById(donacionOriginalId)).thenReturn(Optional.of(donacionOriginal));
+    when(fragmentacion.getDonacionOriginalId()).thenReturn(donacionOriginalId);
+    when(fragmentacion.getCantidadNecesaria()).thenReturn(5);
+    when(donacionOriginal.getCantidad()).thenReturn(5);
+    when(donacionOriginal.getDonacionOriginalId()).thenReturn(donacionRaizId);
+    when(donacionOriginal.getDescripcion()).thenReturn("Fideos");
+    when(necesidad.getEntidadId()).thenReturn(entidadId);
+
+    Direccion direccionDeposito = mock(Direccion.class);
+    Donacion donacionRaiz = mock(Donacion.class);
+    when(donacionRaiz.getDepositoRecepcion())
+        .thenReturn(new Deposito("Depósito Central", direccionDeposito));
+    when(donacionesRepository.findById(donacionRaizId)).thenReturn(Optional.of(donacionRaiz));
+
+    EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
+    when(entidad.getId()).thenReturn(entidadId);
+    when(entidad.juridicaId()).thenReturn(juridicaId);
+    when(entidadesBeneficiariasRepository.findById(entidadId)).thenReturn(Optional.of(entidad));
+
+    Juridica persona = mock(Juridica.class);
+    Direccion direccionPersona = mock(Direccion.class);
+    when(persona.getDireccion()).thenReturn(direccionPersona);
+    when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(persona));
+
+    grupo5.donaciones.models.entities.propuestas.PropuestaAprobada event =
+        new grupo5.donaciones.models.entities.propuestas.PropuestaAprobada(
+            UUID.randomUUID(), necesidadId, List.of(fragmentacion), "actor");
+
+    propuestaService.onPropuestaAprobada(event);
+
+    verify(direccionMapper).toOutputDTO(direccionDeposito);
+    verify(direccionMapper).toOutputDTO(direccionPersona);
+    verify(logisticaAsyncService)
+        .registrarEntregaPendiente(
+            argThat(
+                request ->
+                    request.entidadBeneficiariaId().equals(entidadId)
+                        && "Fideos".equals(request.descripcion())));
   }
 }

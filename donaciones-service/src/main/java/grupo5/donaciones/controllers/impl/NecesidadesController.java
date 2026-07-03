@@ -39,4 +39,11 @@ public class NecesidadesController implements INecesidadesController {
     List<NecesidadDTO> lista = necesidadesService.listarConFiltros(entidadId, tipo);
     return ResponseEntity.ok(lista);
   }
+
+  // GET: mostrar una necesidad puntual
+  @Override
+  @GetMapping("/{id}")
+  public ResponseEntity<NecesidadDTO> obtenerNecesidad(@PathVariable UUID id) {
+    return ResponseEntity.ok(necesidadesService.obtenerPorId(id));
+  }
 }
