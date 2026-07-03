@@ -111,4 +111,35 @@ class DonacionesServiceTest {
     verify(donacionesRepository, never()).save(any());
     verify(mapper, never()).toOutputDTO(any());
   }
+
+  @Test
+  void listarDonaciones_deberiaRetornarTodasMapeadas() {
+    when(donacionesRepository.findAll()).thenReturn(List.of(donacion));
+    when(mapper.toOutputDTO(donacion)).thenReturn(outputDTO);
+
+    List<DonacionOutputDTO> result = service.listarDonaciones();
+
+    assertNotNull(result);
+    verify(mapper).toOutputDTO(donacion);
+  }
+
+  @Test
+  void obtenerDonacion_cuandoExiste_deberiaRetornarDTO() {
+    when(donacionesRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
+    when(mapper.toOutputDTO(donacion)).thenReturn(outputDTO);
+
+    DonacionOutputDTO result = service.obtenerDonacion(donacion.getId());
+
+    assertNotNull(result);
+    verify(mapper).toOutputDTO(donacion);
+  }
+
+  @Test
+  void obtenerDonacion_cuandoNoExiste_deberiaLanzarExcepcion() {
+    when(donacionesRepository.findById(donacion.getId())).thenReturn(Optional.empty());
+
+    assertThrows(
+        RecursoNoEncontradoException.class, () -> service.obtenerDonacion(donacion.getId()));
+    verify(mapper, never()).toOutputDTO(any());
+  }
 }

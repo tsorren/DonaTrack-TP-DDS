@@ -9,6 +9,7 @@ import lombok.Getter;
 
 @Getter
 public class Camion implements AggregateRoot {
+
   private final UUID id;
   private UUID rutaId;
   private final String patente;
@@ -36,6 +37,7 @@ public class Camion implements AggregateRoot {
     if (Objects.isNull(rutaId)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
+
     if (!estaDisponibleParaAsignar()) {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
@@ -74,19 +76,21 @@ public class Camion implements AggregateRoot {
     return this.estado == EstadoCamion.DISPONIBLE && Objects.isNull(this.rutaId);
   }
 
-  private void validarPatente(String patente) {
+  private static void validarPatente(String patente) {
     if (Objects.isNull(patente)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
+
     if (patente.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }
 
-  private void validarCapacidad(Float valor) {
+  private static void validarCapacidad(Float valor) {
     if (Objects.isNull(valor)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
+
     if (valor <= 0) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }

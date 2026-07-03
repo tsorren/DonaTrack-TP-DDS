@@ -13,7 +13,7 @@ import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
-import grupo5.logistica.models.repositories.ICamionesRepository;
+import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.IRutasService;
@@ -25,20 +25,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RutasService implements IRutasService {
+
   private final IRutasRepository rutasRepository;
   private final IEntregasRepository entregasRepository;
-  private final ICamionesRepository camionesRepository;
+  private final ICamionRepository camionesRepository;
   private final RutaMapper rutaMapper;
   private final LogisticaEventPublisher eventPublisher;
   private final GeneradorDeURLSeguimiento generadorDeUrlSeguimiento;
 
   public RutasService(
-          IRutasRepository rutasRepository,
-          IEntregasRepository entregasRepository,
-          ICamionesRepository camionesRepository,
-          RutaMapper rutaMapper,
-          LogisticaEventPublisher eventPublisher,
-          GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
+      IRutasRepository rutasRepository,
+      IEntregasRepository entregasRepository,
+      ICamionRepository camionesRepository,
+      RutaMapper rutaMapper,
+      LogisticaEventPublisher eventPublisher,
+      GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.camionesRepository = camionesRepository;
@@ -71,10 +72,13 @@ public class RutasService implements IRutasService {
 
     Ruta ruta = buscarRuta(id);
     Entrega entrega = buscarEntrega(dto.entregaId());
+
     ruta.agregarEntrega(entrega.getId());
     entrega.asignarRuta(ruta.getId());
+
     rutasRepository.save(ruta);
     entregasRepository.save(entrega);
+
     return rutaMapper.toResponseDTO(ruta);
   }
 
@@ -85,20 +89,22 @@ public class RutasService implements IRutasService {
     }
 
     Ruta ruta = buscarRuta(id);
+
     if (!Objects.equals(ruta.getChoferId(), dto.choferId())) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 
     Camion camion = buscarCamion(ruta.getCamionId());
+
     camion.asignarARuta(ruta.getId());
     ruta.iniciarRuta();
 
     List<Entrega> entregasDeRuta = buscarEntregasDeRuta(ruta);
     entregasDeRuta.forEach(
-            entrega -> {
-              entrega.iniciarRuta(dto.actor());
-              entregasRepository.save(entrega);
-            });
+        entrega -> {
+          entrega.iniciarRuta(dto.actor());
+          entregasRepository.save(entrega);
+        });
 
     camionesRepository.save(camion);
     rutasRepository.save(ruta);
@@ -112,17 +118,20 @@ public class RutasService implements IRutasService {
   public RutaResponseDTO completar(UUID id) {
     Ruta ruta = buscarRuta(id);
     Camion camion = buscarCamion(ruta.getCamionId());
+
     ruta.completarRuta();
     camion.completarRuta();
+
     camionesRepository.save(camion);
+
     return rutaMapper.toResponseDTO(rutasRepository.save(ruta));
   }
 
   @Override
   public List<RutaResponseDTO> listarPorCamion(UUID camionId) {
     return rutasRepository.findByCamionId(camionId).stream()
-            .map(rutaMapper::toResponseDTO)
-            .toList();
+        .map(rutaMapper::toResponseDTO)
+        .toList();
   }
 
   /**
@@ -135,16 +144,16 @@ public class RutasService implements IRutasService {
     String urlMapa = generadorDeUrlSeguimiento.generarUrl(ruta.getId());
 
     List<UUID> donacionesIndependientesIds =
-            entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
+        entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
 
     EventoRutaIniciada evento =
-            new EventoRutaIniciada(
-                    ruta.getId(),
-                    camion.getId(),
-                    camion.getPatente(),
-                    donacionesIndependientesIds,
-                    ruta.getHoraInicioReal(),
-                    urlMapa);
+        new EventoRutaIniciada(
+            ruta.getId(),
+            camion.getId(),
+            camion.getPatente(),
+            donacionesIndependientesIds,
+            ruta.getHoraInicioReal(),
+            urlMapa);
 
     eventPublisher.publicarRutaIniciada(evento);
   }

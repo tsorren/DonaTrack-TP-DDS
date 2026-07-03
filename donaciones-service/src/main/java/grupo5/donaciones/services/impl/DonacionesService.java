@@ -10,6 +10,8 @@ import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.services.IDonacionesService;
 import grupo5.donaciones.services.mappers.DonacionMapper;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,6 +46,18 @@ public class DonacionesService implements IDonacionesService {
 
     procesadorDonaciones.procesar(donacion);
 
+    return mapper.toOutputDTO(donacion);
+  }
+
+  @Override
+  public List<DonacionOutputDTO> listarDonaciones() {
+    return donacionesRepository.findAll().stream().map(mapper::toOutputDTO).toList();
+  }
+
+  @Override
+  public DonacionOutputDTO obtenerDonacion(UUID id) {
+    Donacion donacion =
+        donacionesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
     return mapper.toOutputDTO(donacion);
   }
 }

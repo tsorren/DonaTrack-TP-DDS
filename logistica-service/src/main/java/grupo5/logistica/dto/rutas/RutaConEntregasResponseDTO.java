@@ -8,12 +8,12 @@ import java.util.List;
 import java.util.UUID;
 
 public record RutaConEntregasResponseDTO(
-        UUID id,
-        LocalDate fecha,
-        List<EntregaResponseDTO> entregas,
-        UUID choferId,
-        UUID camionId,
-        EstadoRuta estado,
-        LocalDateTime horaInicioReal,
-        LocalDateTime horaFinReal,
-        String urlSeguimiento) {}
+    UUID id,
+    LocalDate fecha,
+    List<EntregaResponseDTO> entregas,
+    UUID choferId,
+    UUID camionId,
+    EstadoRuta estado,
+    LocalDateTime horaInicioReal,
+    LocalDateTime horaFinReal,
+    String urlSeguimiento) {}
