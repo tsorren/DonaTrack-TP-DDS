@@ -74,7 +74,7 @@ public class Camion implements AggregateRoot {
     return this.estado == EstadoCamion.DISPONIBLE && Objects.isNull(this.rutaId);
   }
 
-  private void validarPatente(String patente) {
+  private static void validarPatente(String patente) {
     if (Objects.isNull(patente)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
@@ -83,7 +83,7 @@ public class Camion implements AggregateRoot {
     }
   }
 
-  private void validarCapacidad(Float valor) {
+  private static void validarCapacidad(Float valor) {
     if (Objects.isNull(valor)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }

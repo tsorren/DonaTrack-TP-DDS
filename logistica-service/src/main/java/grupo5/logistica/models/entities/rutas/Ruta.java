@@ -80,13 +80,13 @@ public class Ruta implements AggregateRoot {
     return obtenerEntregas();
   }
 
-  private void validarFecha(LocalDate fecha) {
+  private static void validarFecha(LocalDate fecha) {
     if (Objects.isNull(fecha)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
   }
 
-  private void validarIdentificador(UUID id) {
+  private static void validarIdentificador(UUID id) {
     if (Objects.isNull(id)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
