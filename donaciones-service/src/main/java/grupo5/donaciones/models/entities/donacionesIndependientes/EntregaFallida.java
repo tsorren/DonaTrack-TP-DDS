@@ -11,4 +11,9 @@ public class EntregaFallida implements EstadoDonacion {
   public void retornar(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new EnDeposito(), null, actor);
   }
+
+  @Override
+  public void replanificar(DonacionIndependiente d, String actor) {
+    d.cambiarEstado(new AsignacionRealizada(), null, actor);
+  }
 }
