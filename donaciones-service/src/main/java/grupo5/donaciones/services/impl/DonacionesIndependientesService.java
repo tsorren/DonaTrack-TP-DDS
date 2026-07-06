@@ -18,6 +18,7 @@ import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.services.IPersonasService;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
@@ -35,6 +36,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       entidadesBeneficiariasRepository;
   private final grupo5.donaciones.services.mappers.DonacionIndependienteMapper
       donacionIndependienteMapper;
+  private final IPersonasService personasService;
 
   public DonacionesIndependientesService(
       IDonacionesIndependientesRepository repositorio,
@@ -44,7 +46,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       IDonantesRepository donantesRepository,
       grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
           entidadesBeneficiariasRepository,
-      grupo5.donaciones.services.mappers.DonacionIndependienteMapper donacionIndependienteMapper) {
+      grupo5.donaciones.services.mappers.DonacionIndependienteMapper donacionIndependienteMapper,
+      IPersonasService personasService) {
     this.repositorio = repositorio;
     this.incentivosFeignClient = incentivosFeignClient;
     this.notificacionesFeignClient = notificacionesFeignClient;
@@ -52,6 +55,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     this.donantesRepository = donantesRepository;
     this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
     this.donacionIndependienteMapper = donacionIndependienteMapper;
+    this.personasService = personasService;
   }
 
   @Override
@@ -130,7 +134,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     UUID donanteId = obtenerDonanteId(donacion);
     UUID personaDonanteId = obtenerPersonaDonanteId(donanteId);
     UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(donacion);
-    UUID idPersonaAdmin = null; // TODO: resolver persona administradora
+    UUID idPersonaAdmin = personasService.obtenerIdPersonaAdministradora();
 
     notificacionesFeignClient.enviarEvento(
         new EventoEntregaFallidaDTO(
