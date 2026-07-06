@@ -21,8 +21,8 @@ import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
-import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import grupo5.donaciones.services.IPersonasService;
+import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
@@ -39,10 +39,6 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final DonacionIndependienteMapper donacionIndependienteMapper;
   private final INecesidadesRepository necesidadRepository;
-  private final grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
-      entidadesBeneficiariasRepository;
-  private final grupo5.donaciones.services.mappers.DonacionIndependienteMapper
-      donacionIndependienteMapper;
   private final IPersonasService personasService;
 
   public DonacionesIndependientesService(
@@ -53,10 +49,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       IDonantesRepository donantesRepository,
       IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository,
       DonacionIndependienteMapper donacionIndependienteMapper,
-      INecesidadesRepository necesidadRepository) {
-      grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
-          entidadesBeneficiariasRepository,
-      grupo5.donaciones.services.mappers.DonacionIndependienteMapper donacionIndependienteMapper,
+      INecesidadesRepository necesidadRepository,
       IPersonasService personasService) {
     this.repositorio = repositorio;
     this.incentivosFeignClient = incentivosFeignClient;
@@ -105,6 +98,8 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
             .findById(request.necesidadId())
             .orElseThrow(() -> new RecursoNoEncontradoException(request.necesidadId()));
     donacion.asignar(actor, necesidad);
+  }
+
   private void procesarDonacionEnTraslado(
       String actor, DonacionIndependiente donacion, String urlMapa) {
     donacion.iniciarRecorrido(actor);
