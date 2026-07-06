@@ -188,4 +188,5 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
         .map(grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria::juridicaId)
         .orElse(null);
   }
+
 }
