@@ -16,7 +16,6 @@ public record EntregaResponseDTO(
     LocalDateTime horaSalida,
     LocalDateTime horaArribo,
     String fotoRecepcionUrl,
-    Boolean confirmacionEntrega,
     float pesoTotalKG,
     float volumenTotalM3,
     List<CambioEstadoEntregaResponseDTO> historialEstado) {}

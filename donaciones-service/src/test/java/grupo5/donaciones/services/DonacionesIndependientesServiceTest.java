@@ -7,6 +7,7 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.DonacionExitosaRequest;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallidaDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
@@ -48,6 +49,7 @@ class DonacionesIndependientesServiceTest {
       entidadesBeneficiariasRepositoryMock;
   private grupo5.donaciones.services.mappers.DonacionIndependienteMapper mapperMock;
   private INecesidadesRepository necesidadRepositoryMock;
+  private IPersonasService personasServiceMock;
   private DonacionesIndependientesService service;
 
   private static final String ACTOR = "SISTEMA";
@@ -67,6 +69,7 @@ class DonacionesIndependientesServiceTest {
         mock(grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository.class);
     mapperMock = mock(grupo5.donaciones.services.mappers.DonacionIndependienteMapper.class);
     necesidadRepositoryMock = mock(INecesidadesRepository.class);
+    personasServiceMock = mock(IPersonasService.class);
 
     when(mapperMock.toDTO(any(DonacionIndependiente.class)))
         .thenAnswer(
@@ -108,6 +111,7 @@ class DonacionesIndependientesServiceTest {
             entidadesBeneficiariasRepositoryMock,
             mapperMock,
             necesidadRepositoryMock);
+            personasServiceMock);
   }
 
   private DonacionIndependiente crearDonacionDePrueba() {
@@ -210,7 +214,7 @@ class DonacionesIndependientesServiceTest {
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.EN_TRASLADO, null, null, null, null, null);
+            TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -226,10 +230,14 @@ class DonacionesIndependientesServiceTest {
     donacion.planificarRuta(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(donacionRepositoryMock.findById(donacion.getDonacionOriginalId()))
+        .thenReturn(Optional.of(testDonacionOriginal));
+    when(donantesRepositoryMock.findById(testDonacionOriginal.getDonanteId()))
+        .thenReturn(Optional.of(testDonante));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null);
+            TipoEstadoDonacion.EN_TRASLADO, null, null, "http://mapa/ruta-1", null, null);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
@@ -268,22 +276,81 @@ class DonacionesIndependientesServiceTest {
 
   @Test
   void
-      cambiarEstado_DeberiaTransicionarAEntregaFallida_CuandoEstadoActualEsEnTrasladoYJustificacionEsValida() {
+      cambiarEstado_DeberiaTransicionarAEntregaFallida_CuandoEstadoActualEsEnTrasladoYJustificacionEsValidaYNoEsReplanificable() {
     DonacionIndependiente donacion = crearDonacionDePrueba();
     donacion.asignar(ACTOR, null);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(donacionRepositoryMock.findById(donacion.getDonacionOriginalId()))
+        .thenReturn(Optional.of(testDonacionOriginal));
+    when(donantesRepositoryMock.findById(testDonacionOriginal.getDonanteId()))
+        .thenReturn(Optional.of(testDonante));
 
     CambioEstadoDonacionIndependienteRequestDTO request =
         new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGA_FALLIDA, "Dirección incorrecta", null, null, null, null);
+            TipoEstadoDonacion.ENTREGA_FALLIDA, "Dirección incorrecta", null, null, null, false);
 
     DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
 
     assertInstanceOf(EntregaFallida.class, donacion.getEstadoActual());
     assertEquals("EntregaFallida", response.estadoActual());
+    verify(repositoryMock, times(1)).save(donacion);
+  }
+
+  @Test
+  void
+      cambiarEstado_DeberiaEnviarIdPersonaAdministradora_CuandoEstadoActualEsEnTrasladoYJustificacionEsValidaYNoEsReplanificable() {
+    DonacionIndependiente donacion = crearDonacionDePrueba();
+    donacion.asignar(ACTOR, null);
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
+    UUID id = donacion.getId();
+    UUID idPersonaAdmin = UUID.randomUUID();
+    when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(donacionRepositoryMock.findById(donacion.getDonacionOriginalId()))
+        .thenReturn(Optional.of(testDonacionOriginal));
+    when(donantesRepositoryMock.findById(testDonacionOriginal.getDonanteId()))
+        .thenReturn(Optional.of(testDonante));
+    when(personasServiceMock.obtenerIdPersonaAdministradora()).thenReturn(idPersonaAdmin);
+
+    CambioEstadoDonacionIndependienteRequestDTO request =
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.ENTREGA_FALLIDA, "Dirección incorrecta", null, null, null, false);
+
+    service.cambiarEstado(id, request, ACTOR);
+
+    verify(notificacionesFeignClientMock, times(1))
+        .enviarEvento(
+            argThat(
+                evento ->
+                    evento instanceof EventoEntregaFallidaDTO ef
+                        && idPersonaAdmin.equals(ef.idPersonaAdmin())));
+  }
+
+  @Test
+  void
+      cambiarEstado_DeberiaTransicionarAAsignacionRealizada_CuandoEstadoActualEsEnTrasladoYEsReplanificable() {
+    DonacionIndependiente donacion = crearDonacionDePrueba();
+    donacion.asignar(ACTOR, null);
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
+    UUID id = donacion.getId();
+    when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+    when(donacionRepositoryMock.findById(donacion.getDonacionOriginalId()))
+        .thenReturn(Optional.of(testDonacionOriginal));
+    when(donantesRepositoryMock.findById(testDonacionOriginal.getDonanteId()))
+        .thenReturn(Optional.of(testDonante));
+
+    CambioEstadoDonacionIndependienteRequestDTO request =
+        new CambioEstadoDonacionIndependienteRequestDTO(
+            TipoEstadoDonacion.ENTREGA_FALLIDA, "Dirección incorrecta", null, null, null, true);
+
+    DonacionIndependienteResponseDTO response = service.cambiarEstado(id, request, ACTOR);
+
+    assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
+    assertEquals("AsignacionRealizada", response.estadoActual());
     verify(repositoryMock, times(1)).save(donacion);
   }
 

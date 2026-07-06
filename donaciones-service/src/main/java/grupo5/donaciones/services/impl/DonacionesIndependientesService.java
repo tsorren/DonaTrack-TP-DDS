@@ -3,6 +3,8 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.DonacionExitosaRequest;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallidaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciadaDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
@@ -20,6 +22,7 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
+import grupo5.donaciones.services.IPersonasService;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
@@ -36,6 +39,11 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final DonacionIndependienteMapper donacionIndependienteMapper;
   private final INecesidadesRepository necesidadRepository;
+  private final grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+      entidadesBeneficiariasRepository;
+  private final grupo5.donaciones.services.mappers.DonacionIndependienteMapper
+      donacionIndependienteMapper;
+  private final IPersonasService personasService;
 
   public DonacionesIndependientesService(
       IDonacionesIndependientesRepository repositorio,
@@ -46,6 +54,10 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository,
       DonacionIndependienteMapper donacionIndependienteMapper,
       INecesidadesRepository necesidadRepository) {
+      grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
+          entidadesBeneficiariasRepository,
+      grupo5.donaciones.services.mappers.DonacionIndependienteMapper donacionIndependienteMapper,
+      IPersonasService personasService) {
     this.repositorio = repositorio;
     this.incentivosFeignClient = incentivosFeignClient;
     this.notificacionesFeignClient = notificacionesFeignClient;
@@ -54,6 +66,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
     this.donacionIndependienteMapper = donacionIndependienteMapper;
     this.necesidadRepository = necesidadRepository;
+    this.personasService = personasService;
   }
 
   @Override
@@ -68,13 +81,13 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     switch (request.estado()) {
       case TipoEstadoDonacion.ASIGNACION_REALIZADA -> asignarDonacion(actor, donacion, request);
       case TipoEstadoDonacion.VENCIDA -> donacion.vencer(actor);
-      case TipoEstadoDonacion.EN_TRASLADO -> donacion.planificarRuta(actor);
-      case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.iniciarRecorrido(
-          actor); // Aca notificamos tambien
+      case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.planificarRuta(actor);
+      case TipoEstadoDonacion.EN_TRASLADO -> procesarDonacionEnTraslado(
+          actor, donacion, request.urlMapa());
       case TipoEstadoDonacion.ENTREGADA -> procesarDonacionEntregada(
           actor, donacion, request.patenteCamion());
-      case TipoEstadoDonacion.ENTREGA_FALLIDA -> donacion.registrarFalla(
-          request.justificacion(), actor);
+      case TipoEstadoDonacion.ENTREGA_FALLIDA -> procesarEntregaFallida(
+          actor, donacion, request.justificacion(), request.replanificable());
       case TipoEstadoDonacion.EN_DEPOSITO -> donacion.retornar(actor);
       default -> throw new IllegalArgumentException("Estado inválido: " + request.estado());
     }
@@ -92,24 +105,32 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
             .findById(request.necesidadId())
             .orElseThrow(() -> new RecursoNoEncontradoException(request.necesidadId()));
     donacion.asignar(actor, necesidad);
+  private void procesarDonacionEnTraslado(
+      String actor, DonacionIndependiente donacion, String urlMapa) {
+    donacion.iniciarRecorrido(actor);
+
+    UUID donanteId = obtenerDonanteId(donacion);
+    UUID personaDonanteId = obtenerPersonaDonanteId(donanteId);
+    UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(donacion);
+
+    notificacionesFeignClient.enviarEvento(
+        new EventoRutaIniciadaDTO(
+            personaDonanteId,
+            LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaBeneficiaria,
+            donacion.getDescripcion(),
+            urlMapa));
   }
 
   private void procesarDonacionEntregada(
       String actor, DonacionIndependiente donacion, String patenteCamion) {
     donacion.confirmarEntrega(actor);
-    UUID donacionOriginalId = donacion.getDonacionOriginalId();
-    Donacion donacionOriginal =
-        donacionRepository
-            .findById(donacionOriginalId)
-            .orElseThrow(() -> new RecursoNoEncontradoException(donacionOriginalId));
-    UUID donanteId = donacionOriginal.getDonanteId();
-    Donante donante =
-        donantesRepository
-            .findById(donanteId)
-            .orElseThrow(() -> new RecursoNoEncontradoException(donanteId));
-    UUID personaDonanteId = donante.personaId();
+
+    UUID donanteId = obtenerDonanteId(donacion);
+    UUID personaDonanteId = obtenerPersonaDonanteId(donanteId);
     UUID organizacionId = obtenerOrganizacionId(donacion);
     UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(donacion);
+
     incentivosFeignClient.procesarDonacionExitosa(
         new DonacionExitosaRequest(donanteId, organizacionId));
 
@@ -120,6 +141,47 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
             idPersonaBeneficiaria,
             donacion.getDescripcion(),
             patenteCamion));
+  }
+
+  private void procesarEntregaFallida(
+      String actor, DonacionIndependiente donacion, String justificacion, Boolean replanificable) {
+    donacion.registrarFalla(justificacion, actor);
+
+    if (Boolean.TRUE.equals(replanificable)) {
+      donacion.replanificar(actor);
+    }
+
+    UUID donanteId = obtenerDonanteId(donacion);
+    UUID personaDonanteId = obtenerPersonaDonanteId(donanteId);
+    UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(donacion);
+    UUID idPersonaAdmin = personasService.obtenerIdPersonaAdministradora();
+
+    notificacionesFeignClient.enviarEvento(
+        new EventoEntregaFallidaDTO(
+            personaDonanteId,
+            LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaBeneficiaria,
+            donacion.getDescripcion(),
+            idPersonaAdmin,
+            justificacion,
+            replanificable));
+  }
+
+  private UUID obtenerDonanteId(DonacionIndependiente donacion) {
+    UUID donacionOriginalId = donacion.getDonacionOriginalId();
+    Donacion donacionOriginal =
+        donacionRepository
+            .findById(donacionOriginalId)
+            .orElseThrow(() -> new RecursoNoEncontradoException(donacionOriginalId));
+    return donacionOriginal.getDonanteId();
+  }
+
+  private UUID obtenerPersonaDonanteId(UUID donanteId) {
+    Donante donante =
+        donantesRepository
+            .findById(donanteId)
+            .orElseThrow(() -> new RecursoNoEncontradoException(donanteId));
+    return donante.personaId();
   }
 
   private static UUID obtenerOrganizacionId(DonacionIndependiente donacion) {

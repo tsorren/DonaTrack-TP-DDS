@@ -15,4 +15,5 @@ public record RutaConEntregasResponseDTO(
     UUID camionId,
     EstadoRuta estado,
     LocalDateTime horaInicioReal,
-    LocalDateTime horaFinReal) {}
+    LocalDateTime horaFinReal,
+    String urlSeguimiento) {}

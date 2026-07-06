@@ -35,6 +35,10 @@ public interface EstadoDonacion {
     lanzarTransicionInvalida();
   }
 
+  default void replanificar(DonacionIndependiente d, String actor) {
+    lanzarTransicionInvalida();
+  }
+
   default void vencer(DonacionIndependiente d, String actor) {
     lanzarTransicionInvalida();
   }

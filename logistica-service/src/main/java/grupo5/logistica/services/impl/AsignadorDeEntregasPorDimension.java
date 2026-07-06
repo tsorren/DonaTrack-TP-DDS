@@ -12,13 +12,25 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
+/**
+ * Implementación concreta de AlgoritmoAsignadorDeEntregas.
+ *
+ * <p>Asigna cada entrega al primer camión que tenga peso y volumen disponible. El criterio actual
+ * es first-fit: recorre las entregas en el orden recibido y, para cada una, recorre los camiones en
+ * el orden recibido.
+ *
+ * <p>Si ningún camión tiene capacidad suficiente, la entrega queda sin asignar en este ciclo.
+ */
 @Component
 public class AsignadorDeEntregasPorDimension implements AlgoritmoAsignadorDeEntregas {
 
   @Override
   public Map<UUID, List<Entrega>> asignar(List<Entrega> entregas, List<Camion> camiones) {
-    if (entregas == null || camiones == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    if (entregas == null) {
+      throw new ValidationException(ErrorCatalog.GENERADOR_RUTAS_ENTREGAS_NULAS);
+    }
+    if (camiones == null) {
+      throw new ValidationException(ErrorCatalog.GENERADOR_RUTAS_CAMIONES_NULOS);
     }
 
     Map<UUID, List<Entrega>> asignaciones = new LinkedHashMap<>();
@@ -35,19 +47,22 @@ public class AsignadorDeEntregasPorDimension implements AlgoritmoAsignadorDeEntr
     for (Entrega entrega : entregas) {
       UUID camionId =
           buscarCamionDisponible(entrega, pesoDisponiblePorCamion, volumenDisponiblePorCamion);
-      if (camionId != null) {
-        asignaciones.get(camionId).add(entrega);
-        pesoDisponiblePorCamion.put(
-            camionId, pesoDisponiblePorCamion.get(camionId) - entrega.getPesoTotalKG());
-        volumenDisponiblePorCamion.put(
-            camionId, volumenDisponiblePorCamion.get(camionId) - entrega.getVolumenTotalM3());
+
+      if (camionId == null) {
+        continue;
       }
+
+      asignaciones.get(camionId).add(entrega);
+      pesoDisponiblePorCamion.put(
+          camionId, pesoDisponiblePorCamion.get(camionId) - entrega.getPesoTotalKG());
+      volumenDisponiblePorCamion.put(
+          camionId, volumenDisponiblePorCamion.get(camionId) - entrega.getVolumenTotalM3());
     }
 
     return asignaciones;
   }
 
-  private UUID buscarCamionDisponible(
+  private static UUID buscarCamionDisponible(
       Entrega entrega,
       Map<UUID, Float> pesoDisponiblePorCamion,
       Map<UUID, Float> volumenDisponiblePorCamion) {

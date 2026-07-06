@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ValidadorPatentes {
 
-  private static final String REGEX_PATENTE = "^[A-Z]{3}[0-9]{3}$|^[A-Z]{2}[0-9]{3}[A-Z]{2}$";
+  private static final String REGEX_PATENTE = "^[A-Z]{3}\\d{3}$|^[A-Z]{2}\\d{3}[A-Z]{2}$";
 
   private final ICamionRepository camionRepository;
 
@@ -22,7 +22,7 @@ public class ValidadorPatentes {
     validarUnicidad(patente);
   }
 
-  private void validarFormato(String patente) {
+  private static void validarFormato(String patente) {
     if (patente == null || patente.isBlank()) {
       throw new ValidationException(ErrorCatalog.CAMION_PATENTE_VACIA);
     }

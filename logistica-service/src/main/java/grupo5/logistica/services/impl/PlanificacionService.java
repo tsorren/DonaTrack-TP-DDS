@@ -7,6 +7,8 @@ import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.RutaPlanificadaDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
+import grupo5.logistica.dto.eventos.EventoRutaAsignada;
+import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.planificacion.EstadoSolicitud;
 import grupo5.logistica.models.entities.planificacion.SolicitudPlanificacion;
@@ -16,28 +18,34 @@ import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.services.IPlanificacionService;
 import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PlanificacionService implements IPlanificacionService {
+
   private static final int MAX_ENTREGAS_POR_SOLICITUD = 100;
 
   private final ISolicitudPlanificacionRepository solicitudesRepository;
   private final IRutasRepository rutasRepository;
   private final IEntregasRepository entregasRepository;
   private final SolicitudPlanificacionMapper solicitudMapper;
+  private final LogisticaEventPublisher eventPublisher;
 
   public PlanificacionService(
       ISolicitudPlanificacionRepository solicitudesRepository,
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
-      SolicitudPlanificacionMapper solicitudMapper) {
+      SolicitudPlanificacionMapper solicitudMapper,
+      LogisticaEventPublisher eventPublisher) {
     this.solicitudesRepository = solicitudesRepository;
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.solicitudMapper = solicitudMapper;
+    this.eventPublisher = eventPublisher;
   }
 
   @Override
@@ -56,6 +64,7 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     SolicitudPlanificacion solicitud = buscarSolicitud(dto.solicitudId());
+
     if (solicitud.getEstado() == EstadoSolicitud.PROCESADA) {
       return solicitudMapper.toResponseDTO(solicitud);
     }
@@ -70,6 +79,7 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     List<UUID> rutasGeneradas = dto.rutas().stream().map(this::guardarRutaPlanificada).toList();
+
     solicitud.procesarResultados(rutasGeneradas);
     return solicitudMapper.toResponseDTO(solicitudesRepository.save(solicitud));
   }
@@ -81,9 +91,9 @@ public class PlanificacionService implements IPlanificacionService {
 
   @Override
   public void solicitarPlanificacionParaSiguienteJornada() {
-    // La planificación automática queda como punto de entrada del scheduler.
-    // En esta etapa, las solicitudes concretas se crean desde crearSolicitud(...)
-    // con los ids de entregas recibidos por API.
+    // Punto de entrada del scheduler.
+    // Se conserva vacío por ahora para no romper la API/callback ya integrada en ENTREGA_3.
+    // La lógica automática se puede agregar después sobre este mismo service.
   }
 
   private UUID guardarRutaPlanificada(RutaPlanificadaDTO dto) {
@@ -92,22 +102,33 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     Ruta ruta = new Ruta(dto.fecha(), dto.choferId(), dto.camionId());
-    dto.entregaIds()
-        .forEach(
-            entregaId -> {
-              Entrega entrega = buscarEntrega(entregaId);
-              ruta.agregarEntrega(entrega.getId());
-              entrega.asignarRuta(ruta.getId());
-              entregasRepository.save(entrega);
-            });
+    List<Entrega> entregasAsignadas =
+        dto.entregaIds().stream()
+            .map(
+                entregaId -> {
+                  Entrega entrega = buscarEntrega(entregaId);
+                  ruta.agregarEntrega(entrega.getId());
+                  entrega.asignarRuta(ruta.getId());
+                  return entregasRepository.save(entrega);
+                })
+            .toList();
 
-    return rutasRepository.save(ruta).getId();
+    UUID rutaId = rutasRepository.save(ruta).getId();
+
+    entregasAsignadas.forEach(
+        entrega ->
+            eventPublisher.publicarRutaAsignada(
+                new EventoRutaAsignada(
+                    rutaId, entrega.getIdDonacion(), LocalDateTime.now(ZoneId.of("UTC")))));
+
+    return rutaId;
   }
 
-  private void validarSolicitud(SolicitudPlanificacionRequestDTO dto) {
+  private static void validarSolicitud(SolicitudPlanificacionRequestDTO dto) {
     if (dto == null || dto.entregaIds() == null || dto.entregaIds().isEmpty()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+
     if (dto.entregaIds().size() > MAX_ENTREGAS_POR_SOLICITUD) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
