@@ -311,11 +311,12 @@ class AssignReviewerOrchestrator {
     const levels = config.levels || {};
     const altaDevs = levels.ALTA || [];
     const mediaDevs = levels.MEDIA || [];
+    const bajaDevs = levels.BAJA || [];
 
     let allowedReviewers = [];
     if (priority === 'BAJA') {
-      // BAJA tasks are reviewed by MEDIA or ALTA levels (Mids + Seniors)
-      allowedReviewers = [...altaDevs, ...mediaDevs];
+      // BAJA tasks are reviewed strictly by BAJA (Juniors) and MEDIA (Mids) levels, excluding ALTA (Seniors)
+      allowedReviewers = [...bajaDevs, ...mediaDevs];
     } else if (priority === 'MEDIA' || priority === 'ALTA') {
       // MEDIA and ALTA tasks are reviewed strictly by ALTA level (Seniors)
       allowedReviewers = [...altaDevs];

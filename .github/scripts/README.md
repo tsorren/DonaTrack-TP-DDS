@@ -40,13 +40,13 @@ Para cumplir con los principios SOLID y dejar el sistema preparado para futuras 
 ### A. Matriz de Reviews (Aprobación Jerárquica de PRs)
 Para garantizar la calidad y evitar sobrecargas, la asignación de revisores sigue estas reglas:
 
-| Prioridad de la PR | Pool de Revisores Habilitados | Integrantes del Pool (Seniors / Mids) |
+| Prioridad de la PR | Pool de Revisores Habilitados | Integrantes del Pool (Mids / Juniors) |
 | :--- | :--- | :--- |
-| **BAJA** | `MEDIA` + `ALTA` | `tsorren`, `BerEsti`, `MiriMiranda`, `belennn24`, `ndelorte`, `sofiadeane` |
+| **BAJA** | `BAJA` + `MEDIA` | `belennn24`, `ndelorte`, `sofiadeane`, `martinzaj`, `Anushig04`, `suarezcamila` |
 | **MEDIA** | `ALTA` | `tsorren`, `BerEsti`, `MiriMiranda` |
 | **ALTA** | `ALTA` | `tsorren`, `BerEsti`, `MiriMiranda` |
 
-*Los desarrolladores junior (pool `BAJA` puro: `martinzaj`, `Anushig04`, `suarezcamila`) quedan exentos de realizar reviews, garantizando que todo cambio de código sea auditado al menos por un perfil Mid.*
+*Los desarrolladores de nivel ALTA (Seniors: `tsorren`, `BerEsti`, `MiriMiranda`) quedan totalmente exentos de la asignación automática de reviews de PRs de tipo BAJA.*
 
 ### B. Matriz de Autoasignación de Tareas (Cron de Issues)
 Cuando el Cron Job detecta una issue abierta sin asignar, calcula el Round-Robin asignando al desarrollador correspondiente al nivel de la issue para repartir la carga operativa:
@@ -63,7 +63,7 @@ Cuando el Cron Job detecta una issue abierta sin asignar, calcula el Round-Robin
 
 Se introdujo el script de simulación [test_scripts.js](file:///C:/Users/rata/.gemini/antigravity/brain/bc3761f2-6141-4a18-a2b7-50eb9aecf698/scratch/test_scripts.js) (ubicado en el directorio de pruebas local / scratch) que simula el entorno de ejecución de GitHub Actions y valida que:
 1. Las issues adquieran su label y prioridad de proyectos al crearse.
-2. Las PRs `BAJA` se asignen a un Mid/Senior y las PRs `MEDIA`/`ALTA` obligatoriamente a un Senior.
+2. Las PRs `BAJA` se asignen a un Junior/Mid (excluyendo Seniors) y las PRs `MEDIA`/`ALTA` obligatoriamente a un Senior.
 3. Se omitan asignaciones si la PR ya posee revisores.
 4. Las notificaciones a Discord se construyan y resuelvan correctamente.
 5. El Cron diario balancee y asigne las issues a los desarrolladores de su nivel de prioridad emitiendo la alerta correspondiente en Discord.
