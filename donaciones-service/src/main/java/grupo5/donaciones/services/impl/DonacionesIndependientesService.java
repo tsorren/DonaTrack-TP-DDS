@@ -9,6 +9,7 @@ import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndepe
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
@@ -17,8 +18,11 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.IPersonasService;
+import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
@@ -32,10 +36,9 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
   private final NotificacionesFeignClient notificacionesFeignClient;
   private final IDonacionesRepository donacionRepository;
   private final IDonantesRepository donantesRepository;
-  private final grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
-      entidadesBeneficiariasRepository;
-  private final grupo5.donaciones.services.mappers.DonacionIndependienteMapper
-      donacionIndependienteMapper;
+  private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
+  private final DonacionIndependienteMapper donacionIndependienteMapper;
+  private final INecesidadesRepository necesidadRepository;
   private final IPersonasService personasService;
 
   public DonacionesIndependientesService(
@@ -44,9 +47,9 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
       NotificacionesFeignClient notificacionesFeignClient,
       IDonacionesRepository donacionRepository,
       IDonantesRepository donantesRepository,
-      grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository
-          entidadesBeneficiariasRepository,
-      grupo5.donaciones.services.mappers.DonacionIndependienteMapper donacionIndependienteMapper,
+      IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository,
+      DonacionIndependienteMapper donacionIndependienteMapper,
+      INecesidadesRepository necesidadRepository,
       IPersonasService personasService) {
     this.repositorio = repositorio;
     this.incentivosFeignClient = incentivosFeignClient;
@@ -55,6 +58,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     this.donantesRepository = donantesRepository;
     this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
     this.donacionIndependienteMapper = donacionIndependienteMapper;
+    this.necesidadRepository = necesidadRepository;
     this.personasService = personasService;
   }
 
@@ -68,7 +72,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     // Ver si asignacion realizada va aca o solo por el algoritmo
     // Agregar url de foto a necesidad al confirmar entrega
     switch (request.estado()) {
-      case TipoEstadoDonacion.ASIGNACION_REALIZADA -> donacion.asignar(actor, null);
+      case TipoEstadoDonacion.ASIGNACION_REALIZADA -> asignarDonacion(actor, donacion, request);
       case TipoEstadoDonacion.VENCIDA -> donacion.vencer(actor);
       case TipoEstadoDonacion.LISTA_PARA_ENTREGAR -> donacion.planificarRuta(actor);
       case TipoEstadoDonacion.EN_TRASLADO -> procesarDonacionEnTraslado(
@@ -83,6 +87,17 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
 
     repositorio.save(donacion);
     return donacionIndependienteMapper.toDTO(donacion);
+  }
+
+  private void asignarDonacion(
+      String actor,
+      DonacionIndependiente donacion,
+      CambioEstadoDonacionIndependienteRequestDTO request) {
+    Necesidad necesidad =
+        necesidadRepository
+            .findById(request.necesidadId())
+            .orElseThrow(() -> new RecursoNoEncontradoException(request.necesidadId()));
+    donacion.asignar(actor, necesidad);
   }
 
   private void procesarDonacionEnTraslado(
@@ -185,7 +200,7 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
     }
     return entidadesBeneficiariasRepository
         .findById(necesidad.getEntidadId())
-        .map(grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria::juridicaId)
+        .map(EntidadBeneficiaria::juridicaId)
         .orElse(null);
   }
 }

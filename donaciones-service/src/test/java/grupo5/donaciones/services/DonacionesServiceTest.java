@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -136,10 +137,10 @@ class DonacionesServiceTest {
 
   @Test
   void obtenerDonacion_cuandoNoExiste_deberiaLanzarExcepcion() {
-    when(donacionesRepository.findById(donacion.getId())).thenReturn(Optional.empty());
+    UUID id = donacion.getId();
+    when(donacionesRepository.findById(id)).thenReturn(Optional.empty());
 
-    assertThrows(
-        RecursoNoEncontradoException.class, () -> service.obtenerDonacion(donacion.getId()));
+    assertThrows(RecursoNoEncontradoException.class, () -> service.obtenerDonacion(id));
     verify(mapper, never()).toOutputDTO(any());
   }
 }
