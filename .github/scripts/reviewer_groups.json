@@ -1,0 +1,20 @@
+{
+  "levels": {
+    "ALTA": [
+      "tsorren",
+      "BerEsti",
+      "MiriMiranda"
+    ],
+    "MEDIA": [
+      "belennn24",
+      "ndelorte",
+      "sofiadeane"
+    ],
+    "BAJA": [
+      "martinzaj",
+      "Anushig04",
+      "suarezcamila"
+    ]
+  },
+  "default_group": "MEDIA"
+}
