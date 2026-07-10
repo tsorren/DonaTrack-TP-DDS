@@ -102,28 +102,36 @@ public class GeneradorDeRutas implements IServicioExternoPlanificacion {
       Camion camion = entry.getKey();
       List<Entrega> entregasDelCamion = entry.getValue();
 
-      if (!entregasDelCamion.isEmpty()) {
-        Chofer chofer = choferesDisponibles.poll();
+      if (entregasDelCamion.isEmpty()) {
+        continue;
+      }
 
-        if (chofer == null) {
-          log.warn(
-              "[GENERADOR_RUTAS] No hay choferes disponibles para el camión {} ({} entregas"
-                  + " pendientes de reasignación).",
-              camion.getId(),
-              entregasDelCamion.size());
-        } else {
-          Ruta ruta = new Ruta(fechaReparto, chofer.getId(), camion.getId());
+      Chofer chofer = choferesDisponibles.poll();
 
-          for (Entrega entrega : entregasDelCamion) {
-            entrega.asignarRuta(ruta.getId());
-            ruta.agregarEntrega(entrega.getId());
-          }
-
-          rutas.add(ruta);
-        }
+      if (chofer == null) {
+        log.warn(
+            "[GENERADOR_RUTAS] No hay choferes disponibles para el camión {} ({} entregas"
+                + " pendientes de reasignación).",
+            camion.getId(),
+            entregasDelCamion.size());
+      } else {
+        rutas.add(crearRuta(fechaReparto, chofer, camion, entregasDelCamion));
       }
     }
     return rutas;
+  }
+
+  private Ruta crearRuta(
+      LocalDate fechaReparto, Chofer chofer, Camion camion, List<Entrega> entregasDelCamion) {
+
+    Ruta ruta = new Ruta(fechaReparto, chofer.getId(), camion.getId());
+
+    for (Entrega entrega : entregasDelCamion) {
+      entrega.asignarRuta(ruta.getId());
+      ruta.agregarEntrega(entrega.getId());
+    }
+
+    return ruta;
   }
 
   private Deque<Chofer> obtenerChoferesDisponibles() {
