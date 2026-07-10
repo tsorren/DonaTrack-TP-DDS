@@ -1,5 +1,6 @@
 package grupo5.logistica.controllers.impl;
 
+import grupo5.logistica.controllers.IEntregasController;
 import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
 import grupo5.logistica.dto.entregas.ConfirmarRecepcionRequestDTO;
@@ -22,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/entregas")
-public class EntregasController {
+public class EntregasController implements IEntregasController {
   private final IEntregasService entregasService;
 
   public EntregasController(IEntregasService entregasService) {

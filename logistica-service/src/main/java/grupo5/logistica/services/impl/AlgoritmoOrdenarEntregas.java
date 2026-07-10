@@ -1,3 +1,3 @@
-package grupo5.logistica.services;
+package grupo5.logistica.services.impl;
 
 public class AlgoritmoOrdenarEntregas {}
