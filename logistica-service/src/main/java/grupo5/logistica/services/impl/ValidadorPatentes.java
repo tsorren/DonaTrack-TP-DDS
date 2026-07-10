@@ -4,10 +4,11 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.repositories.ICamionRepository;
+import grupo5.logistica.services.IValidadorPatentes;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ValidadorPatentes {
+public class ValidadorPatentes implements IValidadorPatentes {
 
   private static final String REGEX_PATENTE = "^[A-Z]{3}\\d{3}$|^[A-Z]{2}\\d{3}[A-Z]{2}$";
 
@@ -17,6 +18,7 @@ public class ValidadorPatentes {
     this.camionRepository = camionRepository;
   }
 
+  @Override
   public void validar(String patente) {
     validarFormato(patente);
     validarUnicidad(patente);
