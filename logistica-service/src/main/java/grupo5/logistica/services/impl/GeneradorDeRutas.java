@@ -101,27 +101,27 @@ public class GeneradorDeRutas implements IServicioExternoPlanificacion {
     for (Map.Entry<Camion, List<Entrega>> entry : asignacion.entrySet()) {
       Camion camion = entry.getKey();
       List<Entrega> entregasDelCamion = entry.getValue();
-      if (entregasDelCamion.isEmpty()) continue;
 
-      Chofer chofer = choferesDisponibles.poll();
-      if (chofer == null) {
-        // No hay más choferes disponibles: este camión queda sin ruta en este ciclo.
-        // Las entregas que le tocaban permanecen sin idRuta y se vuelven a evaluar en la
-        // próxima corrida del PlanificadorDeEntregas, igual que cuando falta capacidad de camión.
-        log.warn(
-            "[GENERADOR_RUTAS] No hay choferes disponibles para el camión {} ({} entregas"
-                + " pendientes de reasignación).",
-            camion.getId(),
-            entregasDelCamion.size());
-        continue;
-      }
+      if (!entregasDelCamion.isEmpty()) {
+        Chofer chofer = choferesDisponibles.poll();
 
-      Ruta ruta = new Ruta(fechaReparto, chofer.getId(), camion.getId());
-      for (Entrega entrega : entregasDelCamion) {
-        entrega.asignarRuta(ruta.getId());
-        ruta.agregarEntrega(entrega.getId());
+        if (chofer == null) {
+          log.warn(
+              "[GENERADOR_RUTAS] No hay choferes disponibles para el camión {} ({} entregas"
+                  + " pendientes de reasignación).",
+              camion.getId(),
+              entregasDelCamion.size());
+        } else {
+          Ruta ruta = new Ruta(fechaReparto, chofer.getId(), camion.getId());
+
+          for (Entrega entrega : entregasDelCamion) {
+            entrega.asignarRuta(ruta.getId());
+            ruta.agregarEntrega(entrega.getId());
+          }
+
+          rutas.add(ruta);
+        }
       }
-      rutas.add(ruta);
     }
     return rutas;
   }
