@@ -124,16 +124,6 @@ public class RutasService implements IRutasService {
     choferesRepository.save(chofer);
     rutasRepository.save(ruta);
 
-    List<UUID> donacionesIndependientesIds =
-        entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
-    eventPublisher.publicarRutaIniciada(
-        new EventoRutaIniciada(
-            ruta.getId(),
-            camion.getId(),
-            camion.getPatente(),
-            donacionesIndependientesIds,
-            LocalDateTime.now(ZoneId.of("UTC")),
-            "urlMapa")); // TODO: resolver mapa de seguimiento
     publicarRutaIniciada(ruta, camion, entregasDeRuta);
 
     return rutaMapper.toResponseDTO(ruta);
