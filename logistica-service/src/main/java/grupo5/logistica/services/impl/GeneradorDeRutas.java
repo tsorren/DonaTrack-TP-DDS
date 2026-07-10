@@ -62,13 +62,18 @@ public class GeneradorDeRutas implements IServicioExternoPlanificacion {
   @Async("proveedorExternoExecutor")
   public void generarRutas(
       SolicitudPlanificacion solicitud, List<Entrega> entregas, List<Camion> camiones) {
-    log.info(
-        "[GENERADOR_RUTAS] Procesando solicitud {} ({} entregas)...",
-        solicitud.getId(),
-        entregas.size());
+
     try {
+      int cantidadEntregas = entregas == null ? 0 : entregas.size();
+
+      log.info(
+          "[GENERADOR_RUTAS] Procesando solicitud {} ({} entregas)...",
+          solicitud.getId(),
+          cantidadEntregas);
+
       List<Ruta> rutas = calcularRutas(entregas, camiones);
       notificarExito(solicitud, rutas);
+
     } catch (Exception e) {
       log.error("[GENERADOR_RUTAS] Error procesando solicitud {}", solicitud.getId(), e);
       notificarError(solicitud, e);

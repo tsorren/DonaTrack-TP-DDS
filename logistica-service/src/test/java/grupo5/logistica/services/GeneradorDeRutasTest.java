@@ -127,22 +127,22 @@ class GeneradorDeRutasTest {
   // entregas null
   // ======================================================
 
-  /*  @Test
-    void generarRutas_deberiaEnviarErrorCuandoEntregasSonNull() {
+  @Test
+  void generarRutas_deberiaEnviarErrorCuandoEntregasSonNull() {
 
-      SolicitudPlanificacion solicitud = solicitudMock();
+    SolicitudPlanificacion solicitud = solicitudMock();
 
-      generador.generarRutas(solicitud, null, List.of());
+    generador.generarRutas(solicitud, null, List.of());
 
-      verify(restTemplate)
-          .postForEntity(
-              eq("http://localhost:8080/callback"),
-              argThat(
-                  (CallbackPlanificacionRequestDTO body) ->
-                      body.estado().equals("ERROR") && body.motivoError() != null),
-              eq(Void.class));
-    }
-  */
+    verify(restTemplate)
+        .postForEntity(
+            eq("http://localhost:8080/callback"),
+            argThat(
+                (CallbackPlanificacionRequestDTO body) ->
+                    body.estado().equals("ERROR") && body.motivoError() != null),
+            eq(Void.class));
+  }
+
   // ======================================================
   // camiones null
   // ======================================================
