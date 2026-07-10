@@ -121,7 +121,7 @@ public class GeneradorDeRutas implements IServicioExternoPlanificacion {
     return rutas;
   }
 
-  private Ruta crearRuta(
+  private static Ruta crearRuta(
       LocalDate fechaReparto, Chofer chofer, Camion camion, List<Entrega> entregasDelCamion) {
 
     Ruta ruta = new Ruta(fechaReparto, chofer.getId(), camion.getId());
