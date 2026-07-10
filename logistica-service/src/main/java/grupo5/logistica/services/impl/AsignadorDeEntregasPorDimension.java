@@ -59,7 +59,7 @@ public class AsignadorDeEntregasPorDimension implements AlgoritmoAsignadorDeEntr
     return asignacion;
   }
 
-  private Camion buscarCamionConCapacidad(
+  private static Camion buscarCamionConCapacidad(
       Entrega entrega, List<Camion> camiones, Map<Camion, float[]> capacidadRestante) {
     for (Camion camion : camiones) {
       float[] restante = capacidadRestante.get(camion);

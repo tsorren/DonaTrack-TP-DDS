@@ -11,6 +11,8 @@ import grupo5.logistica.services.impl.ValidadorPatentes;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ValidadorPatentesTest {
 
@@ -29,32 +31,12 @@ class ValidadorPatentesTest {
   // formato válido
   // =====================================================
 
-  @Test
-  void validar_deberiaAceptarPatenteFormatoViejo() {
-
+  @ParameterizedTest
+  @ValueSource(strings = {"ABC123", "AB123CD", " ab-123-cd "})
+  void validar_deberiaAceptarPatentesValidas(String patente) {
     when(camionRepository.findAll()).thenReturn(List.of());
 
-    assertDoesNotThrow(() -> validadorPatentes.validar("ABC123"));
-  }
-
-  @Test
-  void validar_deberiaAceptarPatenteFormatoNuevo() {
-
-    when(camionRepository.findAll()).thenReturn(List.of());
-
-    assertDoesNotThrow(() -> validadorPatentes.validar("AB123CD"));
-  }
-
-  // =====================================================
-  // normalización
-  // =====================================================
-
-  @Test
-  void validar_deberiaAceptarPatenteConEspaciosYMinusculas() {
-
-    when(camionRepository.findAll()).thenReturn(List.of());
-
-    assertDoesNotThrow(() -> validadorPatentes.validar(" ab-123-cd "));
+    assertDoesNotThrow(() -> validadorPatentes.validar(patente));
   }
 
   // =====================================================

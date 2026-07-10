@@ -118,17 +118,17 @@ class AlgoritmoAsignadorDeEntregaTest {
 
   @Test
   void asignar_deberiaLanzarExcepcionCuandoEntregasEsNull() {
-
     Camion camion = mock(Camion.class);
+    List<Camion> camiones = List.of(camion);
 
-    assertThrows(ValidationException.class, () -> asignador.asignar(null, List.of(camion)));
+    assertThrows(ValidationException.class, () -> asignador.asignar(null, camiones));
   }
 
   @Test
   void asignar_deberiaLanzarExcepcionCuandoCamionesEsNull() {
-
     Entrega entrega = mock(Entrega.class);
+    List<Entrega> entregas = List.of(entrega);
 
-    assertThrows(ValidationException.class, () -> asignador.asignar(List.of(entrega), null));
+    assertThrows(ValidationException.class, () -> asignador.asignar(entregas, null));
   }
 }

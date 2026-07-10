@@ -5,7 +5,6 @@ import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.dto.rutas.*;
 import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
 import grupo5.logistica.infrastructure.LogisticaEventPublisher;
@@ -18,7 +17,6 @@ import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.services.impl.RutasService;
 import grupo5.logistica.services.mappers.RutaMapper;
-import java.util.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -161,9 +159,9 @@ class RutaServiceTest {
 
   @Test
   void agregarEntrega_deberiaFallarSiRequestEsNull() {
+    UUID rutaId = UUID.randomUUID();
 
-    assertThrows(
-        ValidationException.class, () -> rutasService.agregarEntrega(UUID.randomUUID(), null));
+    assertThrows(ValidationException.class, () -> rutasService.agregarEntrega(rutaId, null));
 
     verifyNoInteractions(rutasRepository);
   }

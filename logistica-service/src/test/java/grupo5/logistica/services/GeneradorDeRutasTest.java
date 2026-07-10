@@ -26,9 +26,9 @@ class GeneradorDeRutasTest {
 
   private GeneradorDeRutas generador;
 
-  private final UUID CAMION_ID = UUID.randomUUID();
-  private final UUID CHOFER_ID = UUID.randomUUID();
-  private final UUID ENTREGA_ID = UUID.randomUUID();
+  private final UUID camionId = UUID.randomUUID();
+  private final UUID choferId = UUID.randomUUID();
+  private final UUID entregaId = UUID.randomUUID();
 
   @BeforeEach
   void setUp() {
@@ -67,15 +67,15 @@ class GeneradorDeRutasTest {
     Camion camion = mock(Camion.class);
     Chofer chofer = mock(Chofer.class);
 
-    when(entrega.getId()).thenReturn(ENTREGA_ID);
+    when(entrega.getId()).thenReturn(entregaId);
 
     when(camion.estaDisponibleParaAsignar()).thenReturn(true);
 
-    when(camion.getId()).thenReturn(CAMION_ID);
+    when(camion.getId()).thenReturn(camionId);
 
     when(chofer.estaDisponibleParaAsignar()).thenReturn(true);
 
-    when(chofer.getId()).thenReturn(CHOFER_ID);
+    when(chofer.getId()).thenReturn(choferId);
 
     when(ordenadorEntregas.obtenerEntregasOrdenadas(any())).thenReturn(List.of(entrega));
 
@@ -123,6 +123,26 @@ class GeneradorDeRutasTest {
     verify(entrega, never()).asignarRuta(any());
   }
 
+  // ======================================================
+  // entregas null
+  // ======================================================
+
+  /*  @Test
+    void generarRutas_deberiaEnviarErrorCuandoEntregasSonNull() {
+
+      SolicitudPlanificacion solicitud = solicitudMock();
+
+      generador.generarRutas(solicitud, null, List.of());
+
+      verify(restTemplate)
+          .postForEntity(
+              eq("http://localhost:8080/callback"),
+              argThat(
+                  (CallbackPlanificacionRequestDTO body) ->
+                      body.estado().equals("ERROR") && body.motivoError() != null),
+              eq(Void.class));
+    }
+  */
   // ======================================================
   // camiones null
   // ======================================================
