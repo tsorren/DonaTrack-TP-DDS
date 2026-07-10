@@ -24,19 +24,20 @@ package DIRECCION {
     - departamento: String
     - codigoPostal: String
     --
-    + Direccion(calle: String, altura: Integer, piso: Integer, departamento: String, codigoPostal: String, localidad: Localidad)
-    - validarDireccion(calle: String, altura: Integer, piso: Integer, departamento: String, localidad: Localidad): void
+    - validarDireccion(calle: String, altura: Integer, codigoPostal: String, localidad: Localidad): void
     + anonimizar(): void
   }
 
   class Localidad <<entity>> {
     - nombre: String
+    - provincia: Provincia
     --
     + anonimizar(): void
   }
 
   class Provincia <<entity>> {
     - nombre: String
+    - pais: Pais
   }
 
   class Pais <<entity>> {
@@ -81,7 +82,7 @@ package ENTREGA {
     - volumenTotalM3: float
     - pesoTotalKG: float
     --
-    + iniciarTraslado(chofer: Chofer): void
+    + iniciarRuta(chofer: String): void
     + confirmarEntrega(entidadBeneficiaria: String): void
     + negarEntrega(entidadBeneficiaria: String): void
     + adjuntarFotoRecepcion(fotoRecepcionUrl: String): void
@@ -89,6 +90,7 @@ package ENTREGA {
     + regresarAlDeposito(administrador: String): void
     - actualizarEstado(nuevoEstado: EstadoEntrega, actor: String): void
     - registrarCambioEstado(estadoAnterior: EstadoEntrega, estadoNuevo: EstadoEntrega, actor: String): void
+    + asignarRuta(idRuta: UUID): void
     - validarIdentificador(id: UUID): void
     - validarDestino(destino: Direccion): void
     - validarMagnitudPositiva(valor: Float): void
@@ -167,7 +169,7 @@ package INTERFACES {
   }
 
   interface AlgoritmoAsignadorDeEntregas <<interface>> {
-    + asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<UUID, List<Entrega>>
+    + asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<Camion, List<Entrega>>
   }
 
   class AlgoritmoOrdenadorSimple <<entity>> {
@@ -175,7 +177,8 @@ package INTERFACES {
   }
 
   class AsignadorDeEntregasPorDimension <<entity>> {
-    + asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<UUID, List<Entrega>>
+    + asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<Camion, List<Entrega>>
+    - buscarCamionConCapacidad(entrega: Entrega, camiones: List<Camion>, capacidadRestante Map<Camion, float[]>): Camion
   }
 
   class GeneradorDeRutas <<entity>> {
@@ -247,15 +250,11 @@ package SERVICES {
     - rutasRepository: IRutasRepository
     - entregasRepository: IEntregasRepository
     - solicitudMapper: SolicitudPlanificacionMapper
-    - rutaMapper: RutaMapper
-    - MAX_ENTREGAS_POR_SOLICITUD: int = 100
+    - eventPublisher: LogisticaEventPublisher
     --
-    + crearSolicitud(dto: SolicitudPlanificacionRequestDTO): SolicitudPlanificacionResponseDTO
     + procesarCallback(dto: CallbackPlanificacionRequestDTO): SolicitudPlanificacionResponseDTO
     + obtenerPorId(id: UUID): SolicitudPlanificacionResponseDTO
-    + solicitarPlanificacionParaSiguienteJornada(): void
     - guardarRutaPlanificada(dto: RutaPlanificadaDTO): UUID
-    - validarSolicitud(dto: SolicitudPlanificacionRequestDTO): void
     - buscarSolicitud(id: UUID): SolicitudPlanificacion
     - buscarEntrega(id: UUID): Entrega
   }
@@ -264,7 +263,10 @@ package SERVICES {
     - rutasRepository: IRutasRepository
     - entregasRepository: IEntregasRepository
     - camionesRepository: ICamionRepository
+    - choferesRepository: IChoferesRepository
     - rutaMapper: RutaMapper
+    - eventPublisher: LogisticaEventPublisher
+    - generadorDeurlSeguimiento
     --
     + listar(): List<RutaResponseDTO>
     + obtenerPorId(id: UUID): RutaResponseDTO
@@ -273,6 +275,7 @@ package SERVICES {
     + iniciar(id: UUID, dto: IniciarRutaRequestDTO): RutaResponseDTO
     + completar(id: UUID): RutaResponseDTO
     + listarPorCamion(camionId: UUID): List<RutaResponseDTO>
+    - publicarRutaIniciada(ruta: Ruta, camion: Camion, entregasEnRuta: List<Entrega>
     - buscarRuta(id: UUID): Ruta
     - buscarEntrega(id: UUID): Entrega
     - buscarCamion(id: UUID): Camion
@@ -281,7 +284,10 @@ package SERVICES {
 
   class EntregasService <<service>> {
     - entregasRepository: IEntregasRepository
+    - rutasService: IRutasService
+    - camionesRepository: ICamionRepository
     - entregaMapper: EntregaMapper
+    - eventPublisher: LogisticaEventPublisher
     --
     + crear(dto: CrearEntregaRequestDTO): EntregaResponseDTO
     + listar(): List<EntregaResponseDTO>
@@ -292,6 +298,7 @@ package SERVICES {
     + regresarAlDeposito(id: UUID, dto: RegresarAlDepositoRequestDTO): EntregaResponseDTO
     + obtenerHistorial(id: UUID): List<EntregaResponseDTO>
     - buscarEntrega(id: UUID): Entrega
+    - buscarCamionDeEntrega(entrega: Entrega): Camion
   }
 
   class CamionesService <<service>> {
@@ -305,6 +312,7 @@ package SERVICES {
     + cambiarEstado(id: UUID, request: CambioEstadoCamionRequestDTO): CamionResponseDTO
     + buscarCamionActivo(id: UUID): Camion
     + darDeBaja(id: UUID): void
+    - buscarCamionActivo(id: UUID): Camion
   }
 
   class ValidadorPatentes <<entity>> {
