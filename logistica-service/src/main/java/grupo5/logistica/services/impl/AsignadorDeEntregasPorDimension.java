@@ -5,27 +5,32 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.services.AlgoritmoAsignadorDeEntregas;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Implementación concreta de AlgoritmoAsignadorDeEntregas.
+ * Implementación concreta de {@link AlgoritmoAsignadorDeEntregas} que encaja las entregas en los
+ * camiones disponibles validando que la suma del peso y del volumen de las entregas asignadas a
+ * cada camión no supere su capacidad individual.
  *
- * <p>Asigna cada entrega al primer camión que tenga peso y volumen disponible. El criterio actual
- * es first-fit: recorre las entregas en el orden recibido y, para cada una, recorre los camiones en
- * el orden recibido.
+ * <p>Estrategia de encaje: para cada entrega (ya ordenada por el {@code
+ * AlgoritmoOrdenadorDeEntrega}), se recorren los camiones en el orden recibido y se la asigna al
+ * primero que tenga capacidad de peso y volumen suficiente (first-fit). Si ninguna camioneta
+ * dispone de capacidad, la entrega queda sin asignar en este ciclo y permanecerá pendiente para una
+ * próxima ejecución de planificación.
  *
- * <p>Si ningún camión tiene capacidad suficiente, la entrega queda sin asignar en este ciclo.
+ * <p><b>Nota de diseño:</b> la altura máxima del camión ({@code Camion#getAltura()}) es una
+ * restricción física relevante mencionada en el enunciado, pero {@code Entrega} no modela
+ * actualmente una altura por bien/entrega. Por lo tanto, hoy sólo se validan peso y volumen; la
+ * validación de altura queda como una extensión natural una vez que el dominio incorpore ese dato.
  */
 @Component
 public class AsignadorDeEntregasPorDimension implements AlgoritmoAsignadorDeEntregas {
 
   @Override
-  public Map<UUID, List<Entrega>> asignar(List<Entrega> entregas, List<Camion> camiones) {
+  public Map<Camion, List<Entrega>> asignar(List<Entrega> entregas, List<Camion> camiones) {
     if (entregas == null) {
       throw new ValidationException(ErrorCatalog.GENERADOR_RUTAS_ENTREGAS_NULAS);
     }
@@ -33,45 +38,35 @@ public class AsignadorDeEntregasPorDimension implements AlgoritmoAsignadorDeEntr
       throw new ValidationException(ErrorCatalog.GENERADOR_RUTAS_CAMIONES_NULOS);
     }
 
-    Map<UUID, List<Entrega>> asignaciones = new LinkedHashMap<>();
-    Map<UUID, Float> pesoDisponiblePorCamion = new LinkedHashMap<>();
-    Map<UUID, Float> volumenDisponiblePorCamion = new LinkedHashMap<>();
-
-    camiones.forEach(
-        camion -> {
-          asignaciones.put(camion.getId(), new ArrayList<>());
-          pesoDisponiblePorCamion.put(camion.getId(), camion.getCapacidadKG());
-          volumenDisponiblePorCamion.put(camion.getId(), camion.getCapacidadVolumen());
-        });
-
-    for (Entrega entrega : entregas) {
-      UUID camionId =
-          buscarCamionDisponible(entrega, pesoDisponiblePorCamion, volumenDisponiblePorCamion);
-
-      if (camionId == null) {
-        continue;
-      }
-
-      asignaciones.get(camionId).add(entrega);
-      pesoDisponiblePorCamion.put(
-          camionId, pesoDisponiblePorCamion.get(camionId) - entrega.getPesoTotalKG());
-      volumenDisponiblePorCamion.put(
-          camionId, volumenDisponiblePorCamion.get(camionId) - entrega.getVolumenTotalM3());
+    Map<Camion, List<Entrega>> asignacion = new LinkedHashMap<>();
+    Map<Camion, float[]> capacidadRestante = new LinkedHashMap<>();
+    for (Camion camion : camiones) {
+      capacidadRestante.put(
+          camion, new float[] {camion.getCapacidadKG(), camion.getCapacidadVolumen()});
     }
 
-    return asignaciones;
+    for (Entrega entrega : entregas) {
+      Camion camionElegido = buscarCamionConCapacidad(entrega, camiones, capacidadRestante);
+      if (camionElegido == null) {
+        continue;
+      }
+      float[] restante = capacidadRestante.get(camionElegido);
+      restante[0] -= entrega.getPesoTotalKG();
+      restante[1] -= entrega.getVolumenTotalM3();
+      asignacion.computeIfAbsent(camionElegido, c -> new java.util.ArrayList<>()).add(entrega);
+    }
+
+    return asignacion;
   }
 
-  private static UUID buscarCamionDisponible(
-      Entrega entrega,
-      Map<UUID, Float> pesoDisponiblePorCamion,
-      Map<UUID, Float> volumenDisponiblePorCamion) {
-    return pesoDisponiblePorCamion.entrySet().stream()
-        .filter(entry -> entry.getValue() >= entrega.getPesoTotalKG())
-        .filter(
-            entry -> volumenDisponiblePorCamion.get(entry.getKey()) >= entrega.getVolumenTotalM3())
-        .map(Map.Entry::getKey)
-        .findFirst()
-        .orElse(null);
+  private static Camion buscarCamionConCapacidad(
+      Entrega entrega, List<Camion> camiones, Map<Camion, float[]> capacidadRestante) {
+    for (Camion camion : camiones) {
+      float[] restante = capacidadRestante.get(camion);
+      if (restante[0] >= entrega.getPesoTotalKG() && restante[1] >= entrega.getVolumenTotalM3()) {
+        return camion;
+      }
+    }
+    return null;
   }
 }

@@ -12,9 +12,11 @@ import grupo5.logistica.dto.rutas.RutaResponseDTO;
 import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
 import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
+import grupo5.logistica.models.repositories.IChoferesRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.IRutasService;
@@ -32,6 +34,7 @@ public class RutasService implements IRutasService {
   private final IRutasRepository rutasRepository;
   private final IEntregasRepository entregasRepository;
   private final ICamionRepository camionRepository;
+  private final IChoferesRepository choferesRepository;
   private final RutaMapper rutaMapper;
   private final LogisticaEventPublisher eventPublisher;
   private final GeneradorDeURLSeguimiento generadorDeUrlSeguimiento;
@@ -40,12 +43,14 @@ public class RutasService implements IRutasService {
       IRutasRepository rutasRepository,
       IEntregasRepository entregasRepository,
       ICamionRepository camionRepository,
+      IChoferesRepository choferesRepository,
       RutaMapper rutaMapper,
       LogisticaEventPublisher eventPublisher,
       GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
     this.rutasRepository = rutasRepository;
     this.entregasRepository = entregasRepository;
     this.camionRepository = camionRepository;
+    this.choferesRepository = choferesRepository;
     this.rutaMapper = rutaMapper;
     this.eventPublisher = eventPublisher;
     this.generadorDeUrlSeguimiento = generadorDeUrlSeguimiento;
@@ -102,8 +107,10 @@ public class RutasService implements IRutasService {
     }
 
     Camion camion = buscarCamion(ruta.getCamionId());
+    Chofer chofer = buscarChofer(ruta.getChoferId());
 
     camion.asignarARuta(ruta.getId());
+    chofer.asignarARuta(ruta.getId());
     ruta.iniciarRuta();
 
     List<Entrega> entregasDeRuta = buscarEntregasDeRuta(ruta);
@@ -114,18 +121,9 @@ public class RutasService implements IRutasService {
         });
 
     camionRepository.save(camion);
+    choferesRepository.save(chofer);
     rutasRepository.save(ruta);
 
-    List<UUID> donacionesIndependientesIds =
-        entregasDeRuta.stream().map(Entrega::getIdDonacion).toList();
-    eventPublisher.publicarRutaIniciada(
-        new EventoRutaIniciada(
-            ruta.getId(),
-            camion.getId(),
-            camion.getPatente(),
-            donacionesIndependientesIds,
-            LocalDateTime.now(ZoneId.of("UTC")),
-            "urlMapa")); // TODO: resolver mapa de seguimiento
     publicarRutaIniciada(ruta, camion, entregasDeRuta);
 
     return rutaMapper.toResponseDTO(ruta);
@@ -135,11 +133,14 @@ public class RutasService implements IRutasService {
   public RutaResponseDTO completar(UUID id) {
     Ruta ruta = buscarRuta(id);
     Camion camion = buscarCamion(ruta.getCamionId());
+    Chofer chofer = buscarChofer(ruta.getChoferId());
 
     ruta.completarRuta();
     camion.completarRuta();
+    chofer.completarRuta();
 
     camionRepository.save(camion);
+    choferesRepository.save(chofer);
 
     return rutaMapper.toResponseDTO(rutasRepository.save(ruta));
   }
@@ -185,6 +186,10 @@ public class RutasService implements IRutasService {
 
   private Camion buscarCamion(UUID id) {
     return camionRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+  }
+
+  private Chofer buscarChofer(UUID id) {
+    return choferesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
   }
 
   private List<Entrega> buscarEntregasDeRuta(Ruta ruta) {

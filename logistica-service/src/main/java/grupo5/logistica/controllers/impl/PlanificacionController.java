@@ -1,11 +1,10 @@
 package grupo5.logistica.controllers.impl;
 
+import grupo5.logistica.controllers.IPlanificacionController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
-import grupo5.logistica.dto.callback.SolicitudPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.services.IPlanificacionService;
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,20 +13,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Las solicitudes de planificación se generan únicamente desde el scheduler interno ({@code
+ * PlanificadorDeEntregas}), en horarios de baja carga. Este controller no expone creación manual:
+ * sólo el callback del proveedor de rutas y la consulta de una solicitud ya existente.
+ */
 @RestController
 @RequestMapping("/api/logistica")
-public class PlanificacionController {
+public class PlanificacionController implements IPlanificacionController {
   private final IPlanificacionService planificacionService;
 
   public PlanificacionController(IPlanificacionService planificacionService) {
     this.planificacionService = planificacionService;
-  }
-
-  @PostMapping("/planificaciones")
-  public ResponseEntity<SolicitudPlanificacionResponseDTO> crearSolicitud(
-      @RequestBody SolicitudPlanificacionRequestDTO dto) {
-    return ResponseEntity.status(HttpStatus.ACCEPTED)
-        .body(planificacionService.crearSolicitud(dto));
   }
 
   @PostMapping("/callback/rutas")

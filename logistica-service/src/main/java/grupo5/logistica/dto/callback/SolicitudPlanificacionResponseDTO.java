@@ -1,13 +1,12 @@
 package grupo5.logistica.dto.callback;
 
-import grupo5.logistica.models.entities.planificacion.EstadoSolicitud;
+import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
 public record SolicitudPlanificacionResponseDTO(
     UUID id,
-    UUID correlationId,
     LocalDate fecha,
     EstadoSolicitud estado,
     Integer cantidadDonaciones,

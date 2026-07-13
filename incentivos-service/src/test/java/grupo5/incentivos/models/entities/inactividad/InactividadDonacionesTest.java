@@ -5,14 +5,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
-import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class InactividadDonacionesTest {
 
-  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
+  private static final LocalDate HOY = LocalDate.now();
 
   private DonanteIncentivos donanteConUltimaDonacion(UUID id, LocalDate fecha) {
     DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
