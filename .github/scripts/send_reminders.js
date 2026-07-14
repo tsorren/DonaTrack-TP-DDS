@@ -1,3 +1,5 @@
+const { DiscordNotifierChannel, UserResolver, PRInactivityNotificationFormatter } = require('./shared_notifier.js');
+
 class GitHubRepository {
   constructor(github, context) {
     this.github = github;
@@ -58,58 +60,15 @@ class PRInactivityFilter {
   }
 }
 
-class DiscordNotifier {
-  constructor(webhookUrl, userMapStr, limitHours) {
-    this.webhookUrl = webhookUrl;
-    this.userMap = this.parseUserMap(userMapStr);
-    this.limitHours = limitHours;
-  }
-
-  parseUserMap(str) {
-    if (!str) return {};
-    try {
-      return JSON.parse(str);
-    } catch (e) {
-      console.log(`Failed to parse DISCORD_USER_MAP secret: ${e.message}`);
-      return {};
-    }
-  }
-
-  async sendDiscordNotification(content) {
-    try {
-      await fetch(this.webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content })
-      });
-      console.log(`Notification sent: "${content}"`);
-    } catch (error) {
-      console.log(`Failed to post to Discord: ${error.message}`);
-    }
-  }
-
-  async sendReminder(pr, reviewers) {
-    if (reviewers.length > 0) {
-      const mentions = reviewers.map(reviewer => {
-        const discordId = this.userMap[reviewer.login];
-        return discordId ? `<@${discordId}>` : `@${reviewer.login}`;
-      }).join(", ");
-
-      const message = `⚠️ ${mentions}, la PR #${pr.number} ("${pr.title}") [ver aquí](${pr.html_url}) está esperando tu revisión hace más de ${this.limitHours} horas.`;
-      await this.sendDiscordNotification(message);
-    } else {
-      const message = `🚨 **Alerta:** La PR #${pr.number} ("${pr.title}") [ver aquí](${pr.html_url}) lleva más de ${this.limitHours} horas abierta y no tiene revisores asignados.`;
-      await this.sendDiscordNotification(message);
-    }
-  }
-}
-
 class PRRemindersOrchestrator {
-  constructor(githubRepo, filter, notifier, prState) {
+  constructor(githubRepo, filter, resolver, formatter, channel, prState, limitHours) {
     this.githubRepo = githubRepo;
     this.filter = filter;
-    this.notifier = notifier;
+    this.resolver = resolver;
+    this.formatter = formatter;
+    this.channel = channel;
     this.prState = prState;
+    this.limitHours = limitHours;
   }
 
   async run() {
@@ -123,7 +82,22 @@ class PRRemindersOrchestrator {
       if (shouldTrigger) {
         console.log(`PR #${pr.number} qualifies for reminder.`);
         const requestedReviewers = pr.requested_reviewers || [];
-        await this.notifier.sendReminder(pr, requestedReviewers);
+        const reviewerLogins = requestedReviewers.map(r => r.login);
+
+        const message = this.formatter.format({
+          prNumber: pr.number,
+          prTitle: pr.title,
+          prUrl: pr.html_url,
+          reviewers: reviewerLogins,
+          limitHours: this.limitHours
+        });
+
+        try {
+          await this.channel.send(message);
+          console.log(`Notification sent for PR #${pr.number}`);
+        } catch (err) {
+          console.log(`Failed to post to Discord: ${err.message}`);
+        }
       }
     }
     console.log("Reminder scan completed.");
@@ -146,8 +120,19 @@ module.exports = async ({ github, context }) => {
 
   const githubRepo = new GitHubRepository(github, context);
   const filter = new PRInactivityFilter(githubRepo, inactivityLimitMs);
-  const notifier = new DiscordNotifier(webhookUrl, userMapStr, limitHours);
 
-  const orchestrator = new PRRemindersOrchestrator(githubRepo, filter, notifier, prState);
+  const resolver = new UserResolver(userMapStr);
+  const formatter = new PRInactivityNotificationFormatter(resolver);
+  const channel = new DiscordNotifierChannel(webhookUrl);
+
+  const orchestrator = new PRRemindersOrchestrator(
+    githubRepo,
+    filter,
+    resolver,
+    formatter,
+    channel,
+    prState,
+    limitHours
+  );
   await orchestrator.run();
 };
