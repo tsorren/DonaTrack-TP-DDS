@@ -92,7 +92,7 @@ public class PlanificadorDeEntregas {
     return camionesRepository.findAll().stream().filter(Camion::estaDisponibleParaAsignar).toList();
   }
 
-  private List<List<Entrega>> particionarEnLotes(List<Entrega> entregas, int tamanioLote) {
+  private static List<List<Entrega>> particionarEnLotes(List<Entrega> entregas, int tamanioLote) {
     List<List<Entrega>> lotes = new ArrayList<>();
     for (int i = 0; i < entregas.size(); i += tamanioLote) {
       lotes.add(entregas.subList(i, Math.min(i + tamanioLote, entregas.size())));

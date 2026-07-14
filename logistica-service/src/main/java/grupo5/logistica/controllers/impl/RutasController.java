@@ -1,5 +1,6 @@
 package grupo5.logistica.controllers.impl;
 
+import grupo5.logistica.controllers.IRutasController;
 import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
 import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
 import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/rutas")
-public class RutasController {
+public class RutasController implements IRutasController {
   private final IRutasService rutasService;
 
   public RutasController(IRutasService rutasService) {

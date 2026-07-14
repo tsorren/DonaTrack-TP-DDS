@@ -62,13 +62,18 @@ public class GeneradorDeRutas implements IServicioExternoPlanificacion {
   @Async("proveedorExternoExecutor")
   public void generarRutas(
       SolicitudPlanificacion solicitud, List<Entrega> entregas, List<Camion> camiones) {
-    log.info(
-        "[GENERADOR_RUTAS] Procesando solicitud {} ({} entregas)...",
-        solicitud.getId(),
-        entregas.size());
+
     try {
+      int cantidadEntregas = entregas == null ? 0 : entregas.size();
+
+      log.info(
+          "[GENERADOR_RUTAS] Procesando solicitud {} ({} entregas)...",
+          solicitud.getId(),
+          cantidadEntregas);
+
       List<Ruta> rutas = calcularRutas(entregas, camiones);
       notificarExito(solicitud, rutas);
+
     } catch (Exception e) {
       log.error("[GENERADOR_RUTAS] Error procesando solicitud {}", solicitud.getId(), e);
       notificarError(solicitud, e);
@@ -96,29 +101,37 @@ public class GeneradorDeRutas implements IServicioExternoPlanificacion {
     for (Map.Entry<Camion, List<Entrega>> entry : asignacion.entrySet()) {
       Camion camion = entry.getKey();
       List<Entrega> entregasDelCamion = entry.getValue();
-      if (entregasDelCamion.isEmpty()) continue;
+
+      if (entregasDelCamion.isEmpty()) {
+        continue;
+      }
 
       Chofer chofer = choferesDisponibles.poll();
+
       if (chofer == null) {
-        // No hay más choferes disponibles: este camión queda sin ruta en este ciclo.
-        // Las entregas que le tocaban permanecen sin idRuta y se vuelven a evaluar en la
-        // próxima corrida del PlanificadorDeEntregas, igual que cuando falta capacidad de camión.
         log.warn(
             "[GENERADOR_RUTAS] No hay choferes disponibles para el camión {} ({} entregas"
                 + " pendientes de reasignación).",
             camion.getId(),
             entregasDelCamion.size());
-        continue;
+      } else {
+        rutas.add(crearRuta(fechaReparto, chofer, camion, entregasDelCamion));
       }
-
-      Ruta ruta = new Ruta(fechaReparto, chofer.getId(), camion.getId());
-      for (Entrega entrega : entregasDelCamion) {
-        entrega.asignarRuta(ruta.getId());
-        ruta.agregarEntrega(entrega.getId());
-      }
-      rutas.add(ruta);
     }
     return rutas;
+  }
+
+  private static Ruta crearRuta(
+      LocalDate fechaReparto, Chofer chofer, Camion camion, List<Entrega> entregasDelCamion) {
+
+    Ruta ruta = new Ruta(fechaReparto, chofer.getId(), camion.getId());
+
+    for (Entrega entrega : entregasDelCamion) {
+      entrega.asignarRuta(ruta.getId());
+      ruta.agregarEntrega(entrega.getId());
+    }
+
+    return ruta;
   }
 
   private Deque<Chofer> obtenerChoferesDisponibles() {

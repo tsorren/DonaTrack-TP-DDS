@@ -1,5 +1,6 @@
 package grupo5.logistica.controllers.impl;
 
+import grupo5.logistica.controllers.IPlanificacionController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.services.IPlanificacionService;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api/logistica")
-public class PlanificacionController {
+public class PlanificacionController implements IPlanificacionController {
   private final IPlanificacionService planificacionService;
 
   public PlanificacionController(IPlanificacionService planificacionService) {

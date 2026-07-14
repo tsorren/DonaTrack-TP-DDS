@@ -1,0 +1,40 @@
+' ============================================================
+' Estilo compartido de diagramas PlantUML - DonaTrack
+' Incluir con: !include ../_common/donatrack-style.puml
+' (ajustar la ruta relativa según la profundidad del diagrama)
+'
+' Convención de colores por estereotipo, matchea la paleta que
+' veníamos usando en Lucidchart:
+'   <<entity>>        -> rosa   (clases de dominio)
+'   <<enum>>           -> celeste
+'   <<interface>>       -> verde agua
+'   <<service>>          -> amarillo
+'   <<planificacion>>     -> violeta (casos especiales, ej. solicitudes async)
+' ============================================================
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam linetype ortho
+skinparam wrapWidth 200
+skinparam padding 2
+
+skinparam class {
+  BackgroundColor<<entity>> #F9D6EC
+  BorderColor<<entity>> #C0398E
+  BackgroundColor<<enum>> #DCEEFB
+  BorderColor<<enum>> #3B82C4
+  BackgroundColor<<interface>> #CFF5EA
+  BorderColor<<interface>> #2E9E7C
+  BackgroundColor<<service>> #FDEEBB
+  BorderColor<<service>> #C99A1E
+  BackgroundColor<<planificacion>> #EAD9F7
+  BorderColor<<planificacion>> #8B4FC4
+  ArrowColor #444444
+  FontColor #222222
+}
+
+skinparam package {
+  BackgroundColor #F5F5F5
+  BorderColor #999999
+  FontStyle bold
+}
