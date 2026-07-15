@@ -6,7 +6,6 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.Clock;
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
