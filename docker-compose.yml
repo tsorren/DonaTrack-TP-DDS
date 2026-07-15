@@ -54,9 +54,12 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
     depends_on:
-      - notificaciones-service
-      - incentivos-service
-      - rabbitmq
+      notificaciones-service:
+        condition: service_started
+      incentivos-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
     networks:
@@ -77,7 +80,8 @@ services:
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
     networks:
@@ -93,6 +97,12 @@ services:
       - RABBITMQ_DEFAULT_PASS=donatrack
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks:
       - donatrack-network
 
