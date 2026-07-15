@@ -1,8 +1,8 @@
-name: Auto Assign Reviewer
+name: Auto Assign & Notify Reviewer
 
 on:
   pull_request:
-    types: [opened, ready_for_review]
+    types: [opened, ready_for_review, edited, labeled, unlabeled, review_requested]
 
 jobs:
   assign-reviewer:
@@ -25,11 +25,32 @@ jobs:
       - name: Asignar Revisor
         uses: actions/github-script@v7
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          DISCORD_USER_MAP: ${{ secrets.DISCORD_USER_MAP }}
-          RECENT_PR_LIMIT: '50'
+          RECENT_PR_LIMIT: '15'
           BRANCH_PATTERN: '^E(\\d+)_req-(\\d+)-task(\\d+)$'
         with:
           script: |
             const script = require('./.github/scripts/assign_reviewer.js');
+            await script({github, context});
+
+  notify-discord:
+    needs: assign-reviewer
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Notificar a Discord
+        uses: actions/github-script@v7
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_USER_MAP: ${{ secrets.DISCORD_USER_MAP }}
+        with:
+          script: |
+            const script = require('./.github/scripts/notify_reviewer.js');
             await script({github, context});

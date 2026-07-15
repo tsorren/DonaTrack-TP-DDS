@@ -1,0 +1,32 @@
+name: Issue Triage & Priority
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  triage:
+    # Run only if the issue was opened or its title was edited
+    if: github.event.action == 'opened' || (github.event.action == 'edited' && github.event.changes.title)
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      repository-projects: write
+      contents: read
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Clasificar Issue
+        uses: actions/github-script@v7
+        env:
+          PROJECT_NUMBER: '1'
+        with:
+          script: |
+            const script = require('./.github/scripts/triage_issue.js');
+            await script({github, context});
