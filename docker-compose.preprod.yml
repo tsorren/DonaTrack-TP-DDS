@@ -104,7 +104,6 @@ services:
     environment:
       - PORT=8083
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
-      - RUTEADOR_EXTERNO_URL=${RUTEADOR_EXTERNO_URL:-http://localhost:8090}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
     depends_on:

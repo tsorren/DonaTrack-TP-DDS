@@ -5,14 +5,13 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.RutaPlanificadaDTO;
-import grupo5.logistica.dto.callback.SolicitudPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.dto.eventos.EventoRutaAsignada;
 import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.planificacion.EstadoSolicitud;
-import grupo5.logistica.models.entities.planificacion.SolicitudPlanificacion;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
+import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
@@ -24,10 +23,14 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
+/**
+ * Único punto de entrada de escritura de una {@link SolicitudPlanificacion} es el scheduler ({@code
+ * PlanificadorDeEntregas}), que la crea y dispara {@code IServicioExternoPlanificacion}
+ * directamente. Este service no crea solicitudes: sólo recibe el resultado de esa ejecución
+ * (callback) y permite consultarlas.
+ */
 @Service
 public class PlanificacionService implements IPlanificacionService {
-
-  private static final int MAX_ENTREGAS_POR_SOLICITUD = 100;
 
   private final ISolicitudPlanificacionRepository solicitudesRepository;
   private final IRutasRepository rutasRepository;
@@ -46,15 +49,6 @@ public class PlanificacionService implements IPlanificacionService {
     this.entregasRepository = entregasRepository;
     this.solicitudMapper = solicitudMapper;
     this.eventPublisher = eventPublisher;
-  }
-
-  @Override
-  public SolicitudPlanificacionResponseDTO crearSolicitud(SolicitudPlanificacionRequestDTO dto) {
-    validarSolicitud(dto);
-    dto.entregaIds().forEach(this::buscarEntrega);
-
-    SolicitudPlanificacion solicitud = solicitudMapper.toEntity(dto);
-    return solicitudMapper.toResponseDTO(solicitudesRepository.save(solicitud));
   }
 
   @Override
@@ -89,13 +83,6 @@ public class PlanificacionService implements IPlanificacionService {
     return solicitudMapper.toResponseDTO(buscarSolicitud(id));
   }
 
-  @Override
-  public void solicitarPlanificacionParaSiguienteJornada() {
-    // Punto de entrada del scheduler.
-    // Se conserva vacío por ahora para no romper la API/callback ya integrada en ENTREGA_3.
-    // La lógica automática se puede agregar después sobre este mismo service.
-  }
-
   private UUID guardarRutaPlanificada(RutaPlanificadaDTO dto) {
     if (dto == null || dto.entregaIds() == null || dto.entregaIds().isEmpty()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
@@ -122,16 +109,6 @@ public class PlanificacionService implements IPlanificacionService {
                     rutaId, entrega.getIdDonacion(), LocalDateTime.now(ZoneId.of("UTC")))));
 
     return rutaId;
-  }
-
-  private static void validarSolicitud(SolicitudPlanificacionRequestDTO dto) {
-    if (dto == null || dto.entregaIds() == null || dto.entregaIds().isEmpty()) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
-    }
-
-    if (dto.entregaIds().size() > MAX_ENTREGAS_POR_SOLICITUD) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
-    }
   }
 
   private SolicitudPlanificacion buscarSolicitud(UUID id) {
