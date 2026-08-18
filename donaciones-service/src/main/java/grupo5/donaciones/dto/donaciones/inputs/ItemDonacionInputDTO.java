@@ -8,4 +8,6 @@ public record ItemDonacionInputDTO(
     String fotoUrl,
     LocalDate fechaVencimiento,
     Estado estadoBien,
+    Double pesoUnitario,
+    Double volumenUnitario,
     Integer cantidad) {}

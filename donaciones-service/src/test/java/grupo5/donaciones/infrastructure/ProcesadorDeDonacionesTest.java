@@ -73,7 +73,7 @@ class ProcesadorDeDonacionesTest {
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
-    Bien bien = new Bien("Abrigo", null, null, null);
+    Bien bien = new Bien("Abrigo", null, null, null, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(
             bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, false, false);
@@ -102,7 +102,7 @@ class ProcesadorDeDonacionesTest {
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
-    Bien bien = new Bien("Abrigo", null, null, null);
+    Bien bien = new Bien("Abrigo", null, null, null, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(
             bien,

@@ -4,15 +4,22 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.time.Month;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class InactividadDonacionesTest {
 
-  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
+  private static final LocalDate HOY = LocalDate.now();
+
+  private InactividadDonaciones crearCriterio(int diasSinDonar) {
+    Clock fixedClock =
+        Clock.fixed(HOY.atStartOfDay(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
+    return new InactividadDonaciones(diasSinDonar, fixedClock);
+  }
 
   private DonanteIncentivos donanteConUltimaDonacion(UUID id, LocalDate fecha) {
     DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
@@ -29,7 +36,7 @@ class InactividadDonacionesTest {
 
   @Test
   void detectarInactivos_deberiaDetectarDonanteConUltimaDonacionMuyAntigua() {
-    InactividadDonaciones criterio = new InactividadDonaciones(30);
+    InactividadDonaciones criterio = crearCriterio(30);
     DonanteIncentivos inactivo = donanteConUltimaDonacion(UUID.randomUUID(), HOY.minusDays(60));
 
     List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of(inactivo));
@@ -39,7 +46,7 @@ class InactividadDonacionesTest {
 
   @Test
   void detectarInactivos_noDeberiaDetectarDonanteQueDonoReciente() {
-    InactividadDonaciones criterio = new InactividadDonaciones(30);
+    InactividadDonaciones criterio = crearCriterio(30);
     DonanteIncentivos activo = donanteConUltimaDonacion(UUID.randomUUID(), HOY.minusDays(5));
 
     List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of(activo));
@@ -49,7 +56,7 @@ class InactividadDonacionesTest {
 
   @Test
   void detectarInactivos_deberiaConsiderarInactivoAlDonanteQueNuncaDono() {
-    InactividadDonaciones criterio = new InactividadDonaciones(30);
+    InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
     DonanteIncentivos sinDonaciones = new DonanteIncentivos(id, id, "Nuevo");
 
@@ -60,7 +67,7 @@ class InactividadDonacionesTest {
 
   @Test
   void detectarInactivos_deberiaFiltrarCorrectamenteEntreMixDeActualesEInactivos() {
-    InactividadDonaciones criterio = new InactividadDonaciones(30);
+    InactividadDonaciones criterio = crearCriterio(30);
 
     UUID idActivo = new UUID(0L, 1L);
     UUID idInactivo = new UUID(0L, 2L);
@@ -80,7 +87,7 @@ class InactividadDonacionesTest {
 
   @Test
   void detectarInactivos_deberiaRetornarListaVaciaSiNoHayDonantes() {
-    InactividadDonaciones criterio = new InactividadDonaciones(30);
+    InactividadDonaciones criterio = crearCriterio(30);
 
     List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of());
 

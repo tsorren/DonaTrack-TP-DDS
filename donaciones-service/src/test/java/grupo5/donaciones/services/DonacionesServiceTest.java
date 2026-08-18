@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -69,7 +70,9 @@ class DonacionesServiceTest {
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
-    inputDTO = new DonacionInputDTO(persona.getId(), "desc", List.of(), "Deposito Test", dirDTO);
+    inputDTO =
+        new DonacionInputDTO(
+            donante.getId(), "desc", List.of(), "Deposito Test", dirDTO, LocalDateTime.now());
 
     DireccionOutputDTO dirOut =
         new DireccionOutputDTO(
@@ -89,8 +92,7 @@ class DonacionesServiceTest {
 
   @Test
   void cargarDonacion_cuandoPersonaExiste_deberiaGuardarYRetornarDTO() {
-    when(personasRepository.findById(persona.getId())).thenReturn(Optional.of(persona));
-    when(donantesRepository.findAll()).thenReturn(List.of(donante));
+    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.of(donante));
     when(mapper.toEntity(inputDTO, donante)).thenReturn(donacion);
     when(donacionesRepository.save(donacion)).thenReturn(donacion);
     when(mapper.toOutputDTO(donacion)).thenReturn(outputDTO);
@@ -103,11 +105,42 @@ class DonacionesServiceTest {
   }
 
   @Test
-  void cargarDonacion_cuandoPersonaNoExiste_deberiaLanzarExcepcion() {
-    when(personasRepository.findById(persona.getId())).thenReturn(Optional.empty());
+  void cargarDonacion_cuandoDonanteNoExiste_deberiaLanzarExcepcion() {
+    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.empty());
 
     assertThrows(RecursoNoEncontradoException.class, () -> service.cargarDonacion(inputDTO));
     verify(donacionesRepository, never()).save(any());
+    verify(mapper, never()).toOutputDTO(any());
+  }
+
+  @Test
+  void listarDonaciones_deberiaRetornarTodasMapeadas() {
+    when(donacionesRepository.findAll()).thenReturn(List.of(donacion));
+    when(mapper.toOutputDTO(donacion)).thenReturn(outputDTO);
+
+    List<DonacionOutputDTO> result = service.listarDonaciones();
+
+    assertNotNull(result);
+    verify(mapper).toOutputDTO(donacion);
+  }
+
+  @Test
+  void obtenerDonacion_cuandoExiste_deberiaRetornarDTO() {
+    when(donacionesRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
+    when(mapper.toOutputDTO(donacion)).thenReturn(outputDTO);
+
+    DonacionOutputDTO result = service.obtenerDonacion(donacion.getId());
+
+    assertNotNull(result);
+    verify(mapper).toOutputDTO(donacion);
+  }
+
+  @Test
+  void obtenerDonacion_cuandoNoExiste_deberiaLanzarExcepcion() {
+    UUID id = donacion.getId();
+    when(donacionesRepository.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(RecursoNoEncontradoException.class, () -> service.obtenerDonacion(id));
     verify(mapper, never()).toOutputDTO(any());
   }
 }

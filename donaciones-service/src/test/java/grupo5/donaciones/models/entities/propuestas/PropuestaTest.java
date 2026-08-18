@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,11 +36,13 @@ class PropuestaTest {
   @BeforeEach
   void setUp() {
     Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    Donante donante = new Donante(humana.getId());
-    Donacion donacionOriginal = new Donacion(donante.getId());
+    Donante donante = new Donante(humana);
+    UUID donanteId = donante.getId();
+    Donacion donacionOriginal = new Donacion(donanteId);
     Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
-    Bien bien = new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO);
+    Bien bien =
+        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(
             bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, true);

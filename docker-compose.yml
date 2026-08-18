@@ -52,11 +52,56 @@ services:
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
-      - notificaciones-service
-      - incentivos-service
+      notificaciones-service:
+        condition: service_started
+      incentivos-service:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
+    networks:
+      - donatrack-network
+
+  logistica-service:
+    image: donatrack/logistica-service:local
+    build:
+      context: .
+      dockerfile: logistica-service/Dockerfile
+      target: local
+    ports:
+      - "8083:8083"
+    environment:
+      - PORT=8083
+      - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - donatrack-network
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=donatrack
+      - RABBITMQ_DEFAULT_PASS=donatrack
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks:
       - donatrack-network
 
@@ -81,3 +126,4 @@ networks:
 
 volumes:
   n8n_data:
+  rabbitmq_data:

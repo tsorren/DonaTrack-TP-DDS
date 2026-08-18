@@ -2,6 +2,7 @@ package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -53,7 +54,12 @@ class DonacionesControllerTest {
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     DonacionInputDTO input =
         new DonacionInputDTO(
-            UUID.randomUUID(), "descripcion", List.of(), "Deposito Central", dirDTO);
+            UUID.randomUUID(),
+            "descripcion",
+            List.of(),
+            "Deposito Central",
+            dirDTO,
+            LocalDateTime.now());
 
     DireccionOutputDTO dirOut =
         new DireccionOutputDTO(
@@ -78,5 +84,35 @@ class DonacionesControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isCreated());
+  }
+
+  @Test
+  void listarDonaciones_deberiaRetornarStatusOk() throws Exception {
+    when(service.listarDonaciones()).thenReturn(List.of());
+
+    mockMvc.perform(get("/api/donaciones")).andExpect(status().isOk());
+  }
+
+  @Test
+  void obtenerDonacion_deberiaRetornarStatusOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    DireccionOutputDTO dirOut =
+        new DireccionOutputDTO(
+            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    DonacionOutputDTO output =
+        new DonacionOutputDTO(
+            id,
+            new grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO(
+                UUID.randomUUID(), UUID.randomUUID(), null),
+            List.of(),
+            "descripcion",
+            LocalDateTime.of(2026, Month.JUNE, 18, 0, 0),
+            dirOut,
+            EstadoDonacion.CARGADA,
+            List.of());
+
+    when(service.obtenerDonacion(id)).thenReturn(output);
+
+    mockMvc.perform(get("/api/donaciones/{id}", id)).andExpect(status().isOk());
   }
 }
