@@ -37,7 +37,9 @@ public class ProcesadorDeDonaciones {
 
   @Async
   public void procesar(Donacion donacion) {
+    // INICIO LOGICA DE NEGOCIO
     List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion);
+    // FIN LOGICA DE NEGOCIO
     logItemsNormalizados(itemsNormalizados);
 
     // Persistir todos los items normalizados
@@ -71,6 +73,8 @@ public class ProcesadorDeDonaciones {
 
   private void finalizarNormalizacion(
       Donacion donacion, List<ItemDonacionNormalizado> itemsNormalizados) {
+
+    // INICIO LOGICA DE NEGOCIO
     boolean tienePendientes =
         itemsNormalizados.stream()
             .anyMatch(
@@ -82,6 +86,8 @@ public class ProcesadorDeDonaciones {
     if (!tienePendientes) {
       log.info("Donación {} normalizada inmediatamente. Publicando evento.", donacion.getId());
       donacion.marcarNormalizada();
+
+      // FIN LOGICA DE NEGOCIO
       donacionRepository.save(donacion);
       eventPublisher.publishEvent(new DonacionNormalizadaEvent(donacion.getId()));
     } else {

@@ -53,12 +53,14 @@ public class ChoferService implements IChoferesService {
     Chofer chofer =
         choferesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
+    // INICIO LOGICA DE NEGOCIO
     switch (request.estado()) {
       case DISPONIBLE -> chofer.habilitar();
       case DESHABILITADO -> chofer.deshabilitar();
       case EN_RUTA -> throw new ValidationException(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA);
     }
 
+    // FIN LOGICA DE NEGOCIO
     choferesRepository.save(chofer);
     return choferMapper.toResponseDTO(chofer);
   }
