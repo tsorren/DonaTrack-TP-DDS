@@ -21,11 +21,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PropuestaService {
+public class PropuestaDeAsignacionService {
 
-  private static final Logger log = LoggerFactory.getLogger(PropuestaService.class);
+  private static final Logger log = LoggerFactory.getLogger(PropuestaDeAsignacionService.class);
 
-  private final AlgoritmosService algoritmosService;
+  private final AsignacionService asignacionService;
   private final IAsignacionesRepository asignacionRepository;
   private final grupo5.donaciones.models.repositories.INecesidadesRepository necesidadRepository;
   private final grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
@@ -36,8 +36,8 @@ public class PropuestaService {
   private final DireccionMapper direccionMapper;
   private final LogisticaAsyncService logisticaAsyncService;
 
-  public PropuestaService(
-      AlgoritmosService algoritmosService,
+  public PropuestaDeAsignacionService(
+      AsignacionService asignacionService,
       IAsignacionesRepository asignacionRepository,
       grupo5.donaciones.models.repositories.INecesidadesRepository necesidadRepository,
       grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository donacionRepository,
@@ -46,7 +46,7 @@ public class PropuestaService {
       IPersonasRepository personasRepository,
       DireccionMapper direccionMapper,
       LogisticaAsyncService logisticaAsyncService) {
-    this.algoritmosService = algoritmosService;
+    this.asignacionService = asignacionService;
     this.asignacionRepository = asignacionRepository;
     this.necesidadRepository = necesidadRepository;
     this.donacionRepository = donacionRepository;
@@ -58,7 +58,7 @@ public class PropuestaService {
   }
 
   public List<grupo5.donaciones.dto.propuestas.PropuestaDTO> ejecutarAsignacion() {
-    List<Propuesta> propuestas = algoritmosService.ejecutar();
+    List<Propuesta> propuestas = asignacionService.generarPropuestas();
 
     EjecucionAsignacionDTO ejecucion = new EjecucionAsignacionDTO();
     ejecucion.setFechaEjecucion(LocalDateTime.now(java.time.ZoneId.systemDefault()));
@@ -70,11 +70,11 @@ public class PropuestaService {
   }
 
   public List<grupo5.donaciones.dto.propuestas.PropuestaDTO> listarPropuestas() {
-    return algoritmosService.listarPropuestas().stream().map(propuestaMapper::toDTO).toList();
+    return asignacionService.listarPropuestas().stream().map(propuestaMapper::toDTO).toList();
   }
 
   public void actualizarEstado(UUID id, EstadoPropuesta estado) {
-    algoritmosService.actualizarEstadoPropuesta(id, estado);
+    asignacionService.actualizarEstadoPropuesta(id, estado);
   }
 
   public List<EjecucionAsignacionDTO> historialEjecuciones() {
@@ -83,6 +83,7 @@ public class PropuestaService {
 
   @org.springframework.context.event.EventListener
   public void onPropuestaAprobada(
+      // TODO: Modificar este metodo
       grupo5.donaciones.models.entities.propuestas.PropuestaAprobada event) {
     grupo5.donaciones.models.entities.necesidades.Necesidad necesidad =
         necesidadRepository

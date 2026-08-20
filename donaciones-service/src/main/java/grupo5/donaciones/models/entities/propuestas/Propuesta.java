@@ -64,11 +64,11 @@ public class Propuesta implements AggregateRoot {
     return this.estado != null && this.estado != EstadoPropuesta.DESCARTADA;
   }
 
-  public void confirmar() {
-    confirmar("SISTEMA");
-  }
+  public void aceptar(String actor) {
+    if (actor == null) {
+      actor = "SISTEMA";
+    }
 
-  public void confirmar(String actor) {
     if (necesidadQueSatisfaceId == null) {
       throw new ValidationException(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD);
     }

@@ -12,7 +12,7 @@ import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
-import grupo5.donaciones.services.impl.PropuestaService;
+import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ class PropuestasControllerTest {
 
   private MockMvc mockMvc;
 
-  @Mock private PropuestaService propuestaService;
+  @Mock private PropuestaDeAsignacionService propuestaDeAsignacionService;
 
   @InjectMocks private PropuestasController controller;
 
@@ -52,7 +52,7 @@ class PropuestasControllerTest {
         new PropuestaDTO(
             id, EstadoPropuesta.APROBADA, java.time.LocalDateTime.now(), necesidad, List.of());
 
-    when(propuestaService.listarPropuestas()).thenReturn(List.of(dto));
+    when(propuestaDeAsignacionService.listarPropuestas()).thenReturn(List.of(dto));
 
     mockMvc
         .perform(get("/api/asignaciones/propuestas"))
@@ -69,7 +69,7 @@ class PropuestasControllerTest {
     ActualizarEstadoRequestDTO request =
         new ActualizarEstadoRequestDTO(EstadoPropuesta.APROBADA, null);
 
-    doNothing().when(propuestaService).actualizarEstado(id, EstadoPropuesta.APROBADA);
+    doNothing().when(propuestaDeAsignacionService).actualizarEstado(id, EstadoPropuesta.APROBADA);
 
     mockMvc
         .perform(
@@ -78,6 +78,6 @@ class PropuestasControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
 
-    verify(propuestaService, times(1)).actualizarEstado(id, EstadoPropuesta.APROBADA);
+    verify(propuestaDeAsignacionService, times(1)).actualizarEstado(id, EstadoPropuesta.APROBADA);
   }
 }
