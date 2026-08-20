@@ -89,6 +89,9 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     Ruta ruta = new Ruta(dto.fecha(), dto.choferId(), dto.camionId());
+
+    // INICIO LOGICA DE NEGOCIO
+
     List<Entrega> entregasAsignadas =
         dto.entregaIds().stream()
             .map(
@@ -107,6 +110,8 @@ public class PlanificacionService implements IPlanificacionService {
             eventPublisher.publicarRutaAsignada(
                 new EventoRutaAsignada(
                     rutaId, entrega.getIdDonacion(), LocalDateTime.now(ZoneId.of("UTC")))));
+
+    // FIN LOGICA DE NEGOCIO
 
     return rutaId;
   }

@@ -59,11 +59,13 @@ public class CamionesService implements ICamionesService {
     Camion camion =
         camionRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
+    // INICIO LOGICA DE NEGOCIO
     switch (request.estado()) {
       case DISPONIBLE -> camion.habilitar();
       case DESHABILITADO -> camion.deshabilitar();
       case EN_RUTA -> throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
+    // FIN LOGICA DE NEGOCIO
 
     camionRepository.save(camion);
     return camionMapper.toResponseDTO(camion);

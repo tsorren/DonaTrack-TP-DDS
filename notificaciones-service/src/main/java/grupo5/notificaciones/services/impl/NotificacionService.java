@@ -35,6 +35,7 @@ public class NotificacionService {
     EventoNotificable evento = mapper.toEntity(dto);
 
     List<Notificacion> notificaciones = evento.generarNotificaciones();
+    repository.saveAll(notificaciones);
 
     for (Notificacion notificacion : notificaciones) {
       Persona persona = personaRepository.findById(notificacion.getPersonaId()).orElse(null);

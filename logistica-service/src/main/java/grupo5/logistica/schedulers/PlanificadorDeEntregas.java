@@ -62,10 +62,12 @@ public class PlanificadorDeEntregas {
       return;
     }
 
+    // INICIO LOGICA DE NEGOCIO
     LocalDate fechaLote = LocalDate.now(ZoneId.of("UTC"));
     for (List<Entrega> lote : particionarEnLotes(entregasPendientes, maxDonacionesPorLote)) {
       solicitarPlanificacionDeLote(lote, camionesDisponibles, fechaLote);
     }
+    // FIN LOGICA DE NEGOCIO
   }
 
   private void solicitarPlanificacionDeLote(
@@ -93,10 +95,13 @@ public class PlanificadorDeEntregas {
   }
 
   private static List<List<Entrega>> particionarEnLotes(List<Entrega> entregas, int tamanioLote) {
+    // INICIO LOGICA DE NEGOCIO
     List<List<Entrega>> lotes = new ArrayList<>();
     for (int i = 0; i < entregas.size(); i += tamanioLote) {
       lotes.add(entregas.subList(i, Math.min(i + tamanioLote, entregas.size())));
     }
+
+    // FIN LOGICA DE NEGOCIO
     return lotes;
   }
 }

@@ -63,7 +63,8 @@ public class IncentivosService implements IIncentivosService {
                           request.idDonante(),
                           request.idPersona(),
                           request.nombre(),
-                          misionFactory.crearMisionesEstandar());
+                          misionFactory
+                              .crearMisionesEstandar()); // Mover a dentro de DonanteIncentivos
                   repository.save(nuevo);
                   return nuevo;
                 });
@@ -89,9 +90,14 @@ public class IncentivosService implements IIncentivosService {
             .findById(request.donanteId())
             .orElseThrow(() -> new RecursoNoEncontradoException(request.donanteId()));
 
+    // INICIO LOGICA DE NEGOCIO
     Set<UUID> misionesCompletadasAntes = misionesCompletadasActuales(donante);
 
     donante.registrarDonacion(evento);
+
+    // Intentar Ascender
+
+    // FIN LOGICA DE NEGOCIO
 
     notificarYGuardar(donante, misionesCompletadasAntes);
   }
@@ -99,10 +105,14 @@ public class IncentivosService implements IIncentivosService {
   public void procesarDonacionExitosa(DonacionExitosaRequest request) {
     DonanteIncentivos donante = obtenerDonante(request.donanteId());
 
+    // INICIO LOGICA DE NEGOCIO
     Set<UUID> misionesCompletadasAntes = misionesCompletadasActuales(donante);
 
     donante.registrarDonacionExitosa(request.organizacionId());
 
+    // Intentar Ascender
+
+    // FIN LOGICA DE NEGOCIO
     notificarYGuardar(donante, misionesCompletadasAntes);
   }
 

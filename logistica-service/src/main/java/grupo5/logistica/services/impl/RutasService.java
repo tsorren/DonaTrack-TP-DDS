@@ -109,6 +109,8 @@ public class RutasService implements IRutasService {
     Camion camion = buscarCamion(ruta.getCamionId());
     Chofer chofer = buscarChofer(ruta.getChoferId());
 
+    // INICIO LOGICA DE NEGOCIO
+
     camion.asignarARuta(ruta.getId());
     chofer.asignarARuta(ruta.getId());
     ruta.iniciarRuta();
@@ -119,6 +121,8 @@ public class RutasService implements IRutasService {
           entrega.iniciarRuta(dto.actor());
           entregasRepository.save(entrega);
         });
+
+    // FIN LOGICA DE NEGOCIO
 
     camionRepository.save(camion);
     choferesRepository.save(chofer);
@@ -135,9 +139,12 @@ public class RutasService implements IRutasService {
     Camion camion = buscarCamion(ruta.getCamionId());
     Chofer chofer = buscarChofer(ruta.getChoferId());
 
+    // INICIO LOGICA DE NEGOCIO
     ruta.completarRuta();
     camion.completarRuta();
     chofer.completarRuta();
+
+    // FIN LOGICA DE NEGOCIO
 
     camionRepository.save(camion);
     choferesRepository.save(chofer);

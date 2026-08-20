@@ -37,6 +37,8 @@ public class NormalizadorSemanticoBien {
 
   public List<ItemDonacionNormalizado> normalizar(Donacion donacion) {
     List<Subcategoria> subcategorias = subcategoriaRepository.findAll();
+
+    // INICIO LOGICA DE NEGOCIO
     List<ItemDonacionNormalizado> itemsNormalizados = new ArrayList<>();
     donacion
         .getItems()
@@ -46,6 +48,7 @@ public class NormalizadorSemanticoBien {
                     new ItemDonacionNormalizado(
                         donacion.getId(), normalizarBien(i, subcategorias), i.cantidad())));
 
+    // FIN LOGICA DE NEGOCIO
     return itemsNormalizados;
   }
 
