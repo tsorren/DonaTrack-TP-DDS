@@ -22,9 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
-public class AlgoritmosService {
+public class AsignacionService {
 
-  private static final Logger log = LoggerFactory.getLogger(AlgoritmosService.class);
+  private static final Logger log = LoggerFactory.getLogger(AsignacionService.class);
 
   private final List<AlgoritmoAsignacion> algoritmos;
   private final IDonacionesIndependientesRepository donacionRepository;
@@ -39,7 +39,7 @@ public class AlgoritmosService {
       entidadesBeneficiariasRepository;
   private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
-  public AlgoritmosService(
+  public AsignacionService(
       IDonacionesIndependientesRepository donacionRepository,
       INecesidadesRepository necesidadRepository,
       IPropuestasRepository propuestaRepository,
@@ -95,7 +95,7 @@ public class AlgoritmosService {
     return todas;
   }
 
-  public List<Propuesta> ejecutar() {
+  public List<Propuesta> generarPropuestas() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
 
     List<Necesidad> necesidades =
@@ -183,7 +183,7 @@ public class AlgoritmosService {
   }
 
   private void aprobarPropuesta(Propuesta propuesta) {
-    propuesta.confirmar();
+    propuesta.aceptar();
     propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
     propuesta.clearDomainEvents();
 
@@ -200,7 +200,7 @@ public class AlgoritmosService {
 
     propuesta
         .getPosiblesFragmentaciones()
-        .forEach(f -> notificarFragmentacion(f, idPersonaBeneficiaria));
+        .forEach(f -> notificarAsignada(f, idPersonaBeneficiaria));
   }
 
   private UUID obtenerIdPersonaBeneficiaria(Necesidad necesidad) {
@@ -213,7 +213,7 @@ public class AlgoritmosService {
         .orElse(null);
   }
 
-  private void notificarFragmentacion(
+  private void notificarAsignada(
       grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion f,
       UUID idPersonaBeneficiaria) {
     if (f.getDonacionOriginalId() == null) {

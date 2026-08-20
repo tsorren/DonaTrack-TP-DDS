@@ -3,7 +3,7 @@ package grupo5.donaciones.controllers.impl;
 import grupo5.donaciones.controllers.IAsignacionController;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
-import grupo5.donaciones.services.impl.PropuestaService;
+import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,17 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AsignacionController implements IAsignacionController {
 
-  private final PropuestaService propuestaService;
+  private final PropuestaDeAsignacionService propuestaDeAsignacionService;
 
   @Override
   @PostMapping
   public ResponseEntity<List<PropuestaDTO>> ejecutar() {
-    return ResponseEntity.status(HttpStatus.CREATED).body(propuestaService.ejecutarAsignacion());
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(propuestaDeAsignacionService.ejecutarAsignacion());
   }
 
   @Override
   @GetMapping
   public ResponseEntity<List<EjecucionAsignacionDTO>> historial() {
-    return ResponseEntity.ok(propuestaService.historialEjecuciones());
+    return ResponseEntity.ok(propuestaDeAsignacionService.historialEjecuciones());
   }
 }
