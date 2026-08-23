@@ -3,8 +3,13 @@ package grupo5.logistica.models.entities.camiones;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
@@ -17,6 +22,9 @@ public class Camion implements AggregateRoot {
   private final Float altura;
   private final Float capacidadKG;
   private EstadoCamion estado;
+
+  @Getter(AccessLevel.NONE)
+  private final List<CambioEstadoCamion> historialEstado;
 
   public Camion(String patente, Float capacidadVolumen, Float capacidadKG, Float altura) {
     validarPatente(patente);
@@ -31,6 +39,7 @@ public class Camion implements AggregateRoot {
     this.capacidadKG = capacidadKG;
     this.altura = altura;
     this.estado = EstadoCamion.DISPONIBLE;
+    this.historialEstado = new ArrayList<>();
   }
 
   public void asignarARuta(UUID rutaId) {
@@ -42,7 +51,7 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoCamion.EN_RUTA;
+    actualizarEstado(EstadoCamion.EN_RUTA);
     this.rutaId = rutaId;
   }
 
@@ -51,7 +60,7 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoCamion.DISPONIBLE;
+    actualizarEstado(EstadoCamion.DISPONIBLE);
     this.rutaId = null;
   }
 
@@ -60,7 +69,7 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoCamion.DISPONIBLE;
+    actualizarEstado(EstadoCamion.DISPONIBLE);
   }
 
   public void deshabilitar() {
@@ -68,12 +77,23 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoCamion.DESHABILITADO;
+    actualizarEstado(EstadoCamion.DESHABILITADO);
     this.rutaId = null;
   }
 
   public boolean estaDisponibleParaAsignar() {
     return this.estado == EstadoCamion.DISPONIBLE && Objects.isNull(this.rutaId);
+  }
+
+  public List<CambioEstadoCamion> getHistorialEstado() {
+    return List.copyOf(historialEstado);
+  }
+
+  private void actualizarEstado(EstadoCamion estadoNuevo) {
+    EstadoCamion estadoAnterior = this.estado;
+    this.estado = estadoNuevo;
+    this.historialEstado.add(
+        new CambioEstadoCamion(estadoAnterior, estadoNuevo, LocalDateTime.now(ZoneId.of("UTC"))));
   }
 
   private static void validarPatente(String patente) {

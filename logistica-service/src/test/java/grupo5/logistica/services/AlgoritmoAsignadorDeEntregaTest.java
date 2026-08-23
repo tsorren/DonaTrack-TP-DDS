@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.services.impl.AsignadorDeEntregasPorDimension;
+import grupo5.logistica.models.entities.planificacion.AsignadorDeEntregasPorDimension;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;

@@ -6,11 +6,13 @@ import static org.mockito.Mockito.*;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.rutas.*;
-import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
-import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
+import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.*;
 import grupo5.logistica.models.repositories.ICamionRepository;
@@ -30,7 +32,7 @@ class RutaServiceTest {
   private ICamionRepository camionRepository;
   private IChoferesRepository choferesRepository;
   private RutaMapper rutaMapper;
-  private GeneradorDeURLSeguimiento generadorDeUrlSeguimiento;
+  private ComunicadorEventosLogistica comunicadorEventos;
 
   private RutasService rutasService;
 
@@ -42,8 +44,7 @@ class RutaServiceTest {
     camionRepository = mock(ICamionRepository.class);
     choferesRepository = mock(IChoferesRepository.class);
     rutaMapper = mock(RutaMapper.class);
-    LogisticaEventPublisher eventPublisher = mock(LogisticaEventPublisher.class);
-    generadorDeUrlSeguimiento = mock(GeneradorDeURLSeguimiento.class);
+    comunicadorEventos = mock(ComunicadorEventosLogistica.class);
 
     rutasService =
         new RutasService(
@@ -52,8 +53,7 @@ class RutaServiceTest {
             camionRepository,
             choferesRepository,
             rutaMapper,
-            eventPublisher,
-            generadorDeUrlSeguimiento);
+            comunicadorEventos);
   }
 
   // =====================================================
@@ -139,8 +139,11 @@ class RutaServiceTest {
     when(entregasRepository.findById(entregaId)).thenReturn(Optional.of(entrega));
 
     when(ruta.getId()).thenReturn(rutaId);
+    when(ruta.getEstado()).thenReturn(EstadoRuta.PENDIENTE);
+    when(ruta.getEntregaIds()).thenReturn(List.of());
 
     when(entrega.getId()).thenReturn(entregaId);
+    when(entrega.getEstadoActual()).thenReturn(EstadoEntrega.PENDIENTE);
 
     RutaResponseDTO response = mock(RutaResponseDTO.class);
 
@@ -192,6 +195,7 @@ class RutaServiceTest {
     when(ruta.getCamionId()).thenReturn(camionId);
 
     when(ruta.getChoferId()).thenReturn(choferId);
+    when(ruta.getEstado()).thenReturn(EstadoRuta.PENDIENTE);
 
     when(camionRepository.findById(camionId)).thenReturn(Optional.of(camion));
 
@@ -200,14 +204,17 @@ class RutaServiceTest {
     when(ruta.getEntregaIds()).thenReturn(List.of(entregaId));
 
     when(entregasRepository.findById(entregaId)).thenReturn(Optional.of(entrega));
+    when(entrega.getId()).thenReturn(entregaId);
+    when(entrega.getEstadoActual()).thenReturn(EstadoEntrega.PENDIENTE);
 
     when(camion.getId()).thenReturn(camionId);
+    when(camion.estaDisponibleParaAsignar()).thenReturn(true);
 
     when(camion.getPatente()).thenReturn("AB123CD");
+    when(chofer.getId()).thenReturn(choferId);
+    when(chofer.estaDisponibleParaAsignar()).thenReturn(true);
 
     when(rutaMapper.toResponseDTO(ruta)).thenReturn(mock(RutaResponseDTO.class));
-
-    when(generadorDeUrlSeguimiento.generarUrl(rutaId)).thenReturn("urlMapa");
 
     RutaResponseDTO resultado = rutasService.iniciar(rutaId, dto);
 
@@ -238,8 +245,14 @@ class RutaServiceTest {
     when(rutasRepository.findById(rutaId)).thenReturn(Optional.of(ruta));
 
     when(ruta.getChoferId()).thenReturn(UUID.randomUUID());
+    UUID camionId = UUID.randomUUID();
+    UUID choferId = UUID.randomUUID();
+    when(ruta.getCamionId()).thenReturn(camionId);
+    when(camionRepository.findById(camionId)).thenReturn(Optional.of(mock(Camion.class)));
+    when(choferesRepository.findById(choferId)).thenReturn(Optional.of(mock(Chofer.class)));
+    when(ruta.getEntregaIds()).thenReturn(List.of());
 
-    IniciarRutaRequestDTO request = new IniciarRutaRequestDTO(UUID.randomUUID(), "actor");
+    IniciarRutaRequestDTO request = new IniciarRutaRequestDTO(choferId, "actor");
 
     assertThrows(ValidationException.class, () -> rutasService.iniciar(rutaId, request));
   }
@@ -266,10 +279,16 @@ class RutaServiceTest {
     when(ruta.getCamionId()).thenReturn(camionId);
 
     when(ruta.getChoferId()).thenReturn(choferId);
+    when(ruta.getId()).thenReturn(rutaId);
+    when(ruta.getEstado()).thenReturn(EstadoRuta.EN_TRASLADO);
 
     when(camionRepository.findById(camionId)).thenReturn(Optional.of(camion));
 
     when(choferesRepository.findById(choferId)).thenReturn(Optional.of(chofer));
+    when(camion.getRutaId()).thenReturn(rutaId);
+    when(camion.getEstado()).thenReturn(EstadoCamion.EN_RUTA);
+    when(chofer.getRutaId()).thenReturn(rutaId);
+    when(chofer.getEstado()).thenReturn(EstadoChofer.EN_RUTA);
 
     when(rutasRepository.save(ruta)).thenReturn(ruta);
 
