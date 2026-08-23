@@ -10,19 +10,19 @@ import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
 import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
-import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
-import grupo5.logistica.dto.eventos.EventoEntregaFallida;
-import grupo5.logistica.dto.rutas.RutaResponseDTO;
-import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
+import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.GestorDeEntregas;
+import grupo5.logistica.models.entities.entregas.NoRecepcion;
+import grupo5.logistica.models.entities.entregas.RegresoDeposito;
+import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
+import grupo5.logistica.models.repositories.IRutasRepository;
+import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IEntregasService;
-import grupo5.logistica.services.IRutasService;
 import grupo5.logistica.services.mappers.EntregaMapper;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -30,22 +30,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class EntregasService implements IEntregasService {
   private final IEntregasRepository entregasRepository;
-  private final IRutasService rutasService;
+  private final IRutasRepository rutasRepository;
   private final ICamionRepository camionRepository;
   private final EntregaMapper entregaMapper;
-  private final LogisticaEventPublisher eventPublisher;
+  private final ComunicadorEventosLogistica comunicadorEventos;
 
   public EntregasService(
       IEntregasRepository entregasRepository,
-      IRutasService rutasService,
+      IRutasRepository rutasRepository,
       ICamionRepository camionRepository,
       EntregaMapper entregaMapper,
-      LogisticaEventPublisher eventPublisher) {
+      ComunicadorEventosLogistica comunicadorEventos) {
     this.entregasRepository = entregasRepository;
-    this.rutasService = rutasService;
+    this.rutasRepository = rutasRepository;
     this.camionRepository = camionRepository;
     this.entregaMapper = entregaMapper;
-    this.eventPublisher = eventPublisher;
+    this.comunicadorEventos = comunicadorEventos;
   }
 
   @Override
@@ -75,17 +75,12 @@ public class EntregasService implements IEntregasService {
     }
 
     Entrega entrega = buscarEntrega(id);
-    entrega.confirmarEntrega(dto.actor());
+    ConfirmacionRecepcion solicitud = entregaMapper.toSolicitud(entrega, dto);
+    GestorDeEntregas.cambiarEstado(solicitud);
     entregasRepository.save(entrega);
 
     Camion camion = buscarCamionDeEntrega(entrega);
-    eventPublisher.publicarEntregaExitosa(
-        new EventoEntregaExitosa(
-            entrega.getId(),
-            entrega.getIdDonacion(),
-            camion.getId(),
-            camion.getPatente(),
-            LocalDateTime.now(ZoneId.of("UTC"))));
+    comunicadorEventos.comunicarEntregaExitosa(entrega, camion);
 
     return entregaMapper.toResponseDTO(entrega);
   }
@@ -108,17 +103,11 @@ public class EntregasService implements IEntregasService {
     }
 
     Entrega entrega = buscarEntrega(id);
-    entrega.negarEntrega(dto.actor());
+    NoRecepcion solicitud = entregaMapper.toSolicitud(entrega, dto);
+    GestorDeEntregas.cambiarEstado(solicitud);
     entregasRepository.save(entrega);
 
-    boolean replanificable = dto.replanificable() == null || dto.replanificable();
-    eventPublisher.publicarEntregaFallida(
-        new EventoEntregaFallida(
-            entrega.getId(),
-            entrega.getIdDonacion(),
-            dto.justificacion(),
-            LocalDateTime.now(ZoneId.of("UTC")),
-            replanificable));
+    comunicadorEventos.comunicarEntregaFallida(solicitud);
 
     return entregaMapper.toResponseDTO(entrega);
   }
@@ -130,7 +119,8 @@ public class EntregasService implements IEntregasService {
     }
 
     Entrega entrega = buscarEntrega(id);
-    entrega.regresarAlDeposito(dto.actor());
+    RegresoDeposito solicitud = entregaMapper.toSolicitud(entrega, dto);
+    GestorDeEntregas.cambiarEstado(solicitud);
     return entregaMapper.toResponseDTO(entregasRepository.save(entrega));
   }
 
@@ -146,9 +136,12 @@ public class EntregasService implements IEntregasService {
   }
 
   private Camion buscarCamionDeEntrega(Entrega entrega) {
-    RutaResponseDTO ruta = rutasService.obtenerPorId(entrega.getIdRuta());
+    Ruta ruta =
+        rutasRepository
+            .findById(entrega.getIdRuta())
+            .orElseThrow(() -> new RecursoNoEncontradoException(entrega.getIdRuta()));
     return camionRepository
-        .findById(ruta.camionId())
-        .orElseThrow(() -> new RecursoNoEncontradoException(ruta.camionId()));
+        .findById(ruta.getCamionId())
+        .orElseThrow(() -> new RecursoNoEncontradoException(ruta.getCamionId()));
   }
 }

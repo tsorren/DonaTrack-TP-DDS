@@ -29,6 +29,13 @@ public class CamionRepository extends CrudRepositoryEnMemoria<Camion> implements
   }
 
   @Override
+  public List<Camion> findActivos() {
+    return storage.values().stream()
+        .filter(camion -> camion.getEstado() != EstadoCamion.DESHABILITADO)
+        .toList();
+  }
+
+  @Override
   public List<Camion> findDisponibles() {
     return storage.values().stream().filter(Camion::estaDisponibleParaAsignar).toList();
   }
