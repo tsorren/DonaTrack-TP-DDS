@@ -183,7 +183,7 @@ public class AsignacionService {
   }
 
   private void aprobarPropuesta(Propuesta propuesta) {
-    propuesta.aceptar();
+    propuesta.aceptar("SISTEMA");
     propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
     propuesta.clearDomainEvents();
 
