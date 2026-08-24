@@ -99,7 +99,7 @@ class AsignacionServiceTest {
 
     service.actualizarEstadoPropuesta(id, EstadoPropuesta.APROBADA);
 
-    verify(propuestaMock, times(1)).confirmar();
+    verify(propuestaMock, times(1)).aceptar("SISTEMA");
     verify(propuestaRepositoryMock, times(1)).save(propuestaMock);
   }
 
