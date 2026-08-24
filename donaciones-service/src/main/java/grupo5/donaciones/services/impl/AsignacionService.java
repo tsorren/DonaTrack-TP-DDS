@@ -93,6 +93,7 @@ public class AsignacionService {
     todas.addAll(propuesta2);
     return todas;
   }
+
   // fin ldn
 
   // TODO:  sacar logica de negocios d aca
@@ -166,7 +167,6 @@ public class AsignacionService {
     return resultado;
   }
 
-
   public List<Propuesta> listarPropuestas() {
     return propuestaRepository.findAll();
   }
@@ -187,7 +187,7 @@ public class AsignacionService {
   }
 
   private void aprobarPropuesta(Propuesta propuesta) {
-    propuesta.aceptar(); // TODO: resolver aceptar()
+    propuesta.confirmar();
     propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
     propuesta.clearDomainEvents();
 

@@ -64,6 +64,10 @@ public class Propuesta implements AggregateRoot {
     return this.estado != null && this.estado != EstadoPropuesta.DESCARTADA;
   }
 
+  public void confirmar() {
+    aceptar(null);
+  }
+
   public void aceptar(String actor) {
     if (actor == null) {
       actor = "SISTEMA";

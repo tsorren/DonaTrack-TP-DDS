@@ -71,11 +71,7 @@ public class ImportadorService implements IImportadorService {
         }
       }
 
-      if (erroresDeNegocio > 0) {
-        archivo.marcarComoCompletadoConErrores();
-      } else {
-        archivo.marcarComoProcesado();
-      }
+      archivo.finalizarProcesamiento(erroresDeNegocio);
       archivoRepository.save(archivo);
 
     } catch (Exception e) {
