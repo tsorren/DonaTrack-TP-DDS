@@ -60,6 +60,7 @@ class PlanificacionDominioTest {
                 new AlgoritmoOrdenadorSimple(), new AsignadorDeEntregasPorDimension())
             .procesarSolicitud(solicitud);
 
+    assertEquals(LocalDate.now(), respuesta.fecha());
     assertNull(entrega.getIdRuta());
 
     List<Ruta> rutas = generador.generarRutas(respuesta);

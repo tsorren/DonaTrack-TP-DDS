@@ -1,9 +1,9 @@
 package grupo5.logistica.models.entities;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.camiones.ValidadorPatentes;
 import java.util.List;
@@ -32,8 +32,6 @@ class ValidadorPatentesTest {
 
   @Test
   void validarRechazaDuplicadosAunqueElFormatoVisualDifiera() {
-    assertThrows(
-        BusinessStateException.class,
-        () -> ValidadorPatentes.validar("ab-123-cd", List.of("AB123CD")));
+    assertFalse(ValidadorPatentes.validar("ab-123-cd", List.of("AB123CD")));
   }
 }
