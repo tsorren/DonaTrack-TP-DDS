@@ -103,3 +103,5 @@ public class SubcategoriasService implements ISubcategoriasService {
     return subcategoriaMapper.toOutputDTO(entity);
   }
 }
+
+// refactor ok
