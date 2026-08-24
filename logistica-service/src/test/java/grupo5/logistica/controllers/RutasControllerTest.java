@@ -157,7 +157,7 @@ class RutasControllerTest {
   // ===================== POST /api/rutas/{id}/entregas =====================
 
   @Test
-  void agregarEntrega_deberiaRetornar200() throws Exception {
+  void agregarEntrega_deberiaRetornar201() throws Exception {
 
     AgregarEntregaRutaRequestDTO request = new AgregarEntregaRutaRequestDTO(ENTREGA_ID);
 
@@ -168,7 +168,7 @@ class RutasControllerTest {
             post("/api/rutas/" + ID + "/entregas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(ID.toString()));
   }
 

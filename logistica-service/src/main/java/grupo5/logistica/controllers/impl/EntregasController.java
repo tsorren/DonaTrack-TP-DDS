@@ -30,45 +30,53 @@ public class EntregasController implements IEntregasController {
     this.entregasService = entregasService;
   }
 
+  @Override
   @PostMapping
   public ResponseEntity<EntregaResponseDTO> crear(@RequestBody CrearEntregaRequestDTO dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(entregasService.crear(dto));
   }
 
+  @Override
   @GetMapping
   public ResponseEntity<List<EntregaResponseDTO>> listar() {
     return ResponseEntity.ok(entregasService.listar());
   }
 
+  @Override
   @GetMapping("/{id}")
   public ResponseEntity<EntregaResponseDTO> obtenerPorId(@PathVariable("id") UUID id) {
     return ResponseEntity.ok(entregasService.obtenerPorId(id));
   }
 
+  @Override
   @PatchMapping("/{id}/confirmar-recepcion")
   public ResponseEntity<EntregaResponseDTO> confirmarRecepcion(
       @PathVariable("id") UUID id, @RequestBody ConfirmarRecepcionRequestDTO dto) {
     return ResponseEntity.ok(entregasService.confirmarRecepcion(id, dto));
   }
 
+  @Override
   @PatchMapping("/{id}/foto-recepcion")
   public ResponseEntity<EntregaResponseDTO> adjuntarFotoRecepcion(
       @PathVariable("id") UUID id, @RequestBody AdjuntarFotoRecepcionRequestDTO dto) {
     return ResponseEntity.ok(entregasService.adjuntarFotoRecepcion(id, dto));
   }
 
+  @Override
   @PatchMapping("/{id}/no-recibida")
   public ResponseEntity<EntregaResponseDTO> reportarNoRecepcion(
       @PathVariable("id") UUID id, @RequestBody ReportarNoRecepcionRequestDTO dto) {
     return ResponseEntity.ok(entregasService.reportarNoRecepcion(id, dto));
   }
 
+  @Override
   @PatchMapping("/{id}/regresar-al-deposito")
   public ResponseEntity<EntregaResponseDTO> regresarAlDeposito(
       @PathVariable("id") UUID id, @RequestBody RegresarAlDepositoRequestDTO dto) {
     return ResponseEntity.ok(entregasService.regresarAlDeposito(id, dto));
   }
 
+  @Override
   @GetMapping("/{id}/historial")
   public ResponseEntity<List<CambioEstadoEntregaResponseDTO>> obtenerHistorial(
       @PathVariable("id") UUID id) {
