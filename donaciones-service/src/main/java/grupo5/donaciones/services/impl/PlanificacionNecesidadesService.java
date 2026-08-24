@@ -27,7 +27,7 @@ public class PlanificacionNecesidadesService implements IPlanificacionNecesidade
         necesidadRepository.save(recurrente);
       }
     }
-  }
+  } // TODO: esto se va al gestorNecesidades
 
   private static void crearPeriodoPara(NecesidadRecurrente necesidadRecurrente) {
     if (necesidadRecurrente.obtenerPeriodoActual() != null) {
@@ -35,4 +35,4 @@ public class PlanificacionNecesidadesService implements IPlanificacionNecesidade
     }
     necesidadRecurrente.generarNuevoPeriodo();
   }
-}
+} // TODO: esto se va al gestorNecesidades
