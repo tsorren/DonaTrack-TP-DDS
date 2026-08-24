@@ -178,7 +178,7 @@ class EntregasControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/entregas/" + ID + "/confirmar-recepcion")
+            patch("/api/entregas/" + ID + "/recepciones")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
@@ -196,7 +196,7 @@ class EntregasControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/entregas/" + ID + "/foto-recepcion")
+            patch("/api/entregas/" + ID + "/fotos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
@@ -214,7 +214,7 @@ class EntregasControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/entregas/" + ID + "/no-recibida")
+            patch("/api/entregas/" + ID + "/reportes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
@@ -231,7 +231,7 @@ class EntregasControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/entregas/" + ID + "/regresar-al-deposito")
+            patch("/api/entregas/" + ID + "/regresos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());

@@ -49,28 +49,28 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
-  @PatchMapping("/{id}/confirmar-recepcion")
+  @PatchMapping("/{id}/recepciones")
   public ResponseEntity<EntregaResponseDTO> confirmarRecepcion(
       @PathVariable("id") UUID id, @RequestBody ConfirmarRecepcionRequestDTO dto) {
     return ResponseEntity.ok(entregasService.confirmarRecepcion(id, dto));
   }
 
   @Override
-  @PatchMapping("/{id}/foto-recepcion")
+  @PatchMapping("/{id}/fotos")
   public ResponseEntity<EntregaResponseDTO> adjuntarFotoRecepcion(
       @PathVariable("id") UUID id, @RequestBody AdjuntarFotoRecepcionRequestDTO dto) {
     return ResponseEntity.ok(entregasService.adjuntarFotoRecepcion(id, dto));
   }
 
   @Override
-  @PatchMapping("/{id}/no-recibida")
+  @PatchMapping("/{id}/reportes")
   public ResponseEntity<EntregaResponseDTO> reportarNoRecepcion(
       @PathVariable("id") UUID id, @RequestBody ReportarNoRecepcionRequestDTO dto) {
     return ResponseEntity.ok(entregasService.reportarNoRecepcion(id, dto));
   }
 
   @Override
-  @PatchMapping("/{id}/regresar-al-deposito")
+  @PatchMapping("/{id}/regresos")
   public ResponseEntity<EntregaResponseDTO> regresarAlDeposito(
       @PathVariable("id") UUID id, @RequestBody RegresarAlDepositoRequestDTO dto) {
     return ResponseEntity.ok(entregasService.regresarAlDeposito(id, dto));

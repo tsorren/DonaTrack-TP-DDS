@@ -199,7 +199,7 @@ class RutasControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/rutas/" + ID + "/iniciar")
+            patch("/api/rutas/" + ID + "/inicio")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
@@ -216,7 +216,7 @@ class RutasControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/rutas/" + ID + "/iniciar")
+            patch("/api/rutas/" + ID + "/inicio")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
@@ -231,7 +231,7 @@ class RutasControllerTest {
 
     mockMvc
         .perform(
-            patch("/api/rutas/" + ID + "/iniciar")
+            patch("/api/rutas/" + ID + "/inicio")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound());
@@ -245,7 +245,7 @@ class RutasControllerTest {
     when(rutasService.completar(ID)).thenReturn(RESPONSE_DTO);
 
     mockMvc
-        .perform((RequestBuilder) patch("/api/rutas/" + ID + "/completar"))
+        .perform((RequestBuilder) patch("/api/rutas/" + ID + "/finalizacion"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(ID.toString()));
   }
@@ -256,7 +256,7 @@ class RutasControllerTest {
     when(rutasService.completar(ID)).thenThrow(new RecursoNoEncontradoException(ID));
 
     mockMvc
-        .perform((RequestBuilder) patch("/api/rutas/" + ID + "/completar"))
+        .perform((RequestBuilder) patch("/api/rutas/" + ID + "/finalizacion"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.details").value(ID.toString()));
   }
