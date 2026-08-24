@@ -59,14 +59,14 @@ public class RutasController implements IRutasController {
   }
 
   @Override
-  @PatchMapping("/{id}/iniciar")
+  @PatchMapping("/{id}/inicio")
   public ResponseEntity<RutaResponseDTO> iniciar(
       @PathVariable("id") UUID id, @RequestBody IniciarRutaRequestDTO dto) {
     return ResponseEntity.ok(rutasService.iniciar(id, dto));
   }
 
   @Override
-  @PatchMapping("/{id}/completar")
+  @PatchMapping("/{id}/finalizacion")
   public ResponseEntity<RutaResponseDTO> completar(@PathVariable("id") UUID id) {
     return ResponseEntity.ok(rutasService.completar(id));
   }
