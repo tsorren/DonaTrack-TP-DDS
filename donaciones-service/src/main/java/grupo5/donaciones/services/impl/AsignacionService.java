@@ -183,7 +183,7 @@ public class AsignacionService {
   }
 
   private void aprobarPropuesta(Propuesta propuesta) {
-    propuesta.aceptar();
+    propuesta.confirmar();
     propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
     propuesta.clearDomainEvents();
 
