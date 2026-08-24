@@ -72,7 +72,7 @@ public class AsignacionService {
       List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
 
     Set<UUID> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
-
+    // TODO:  sacar logica de negocios d aca
     for (Propuesta propuesta : propuesta1) {
       necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisfaceId());
     }
@@ -91,10 +91,11 @@ public class AsignacionService {
 
     List<Propuesta> todas = new ArrayList<>(propuesta1);
     todas.addAll(propuesta2);
-
     return todas;
   }
+  // fin ldn
 
+  // TODO:  sacar logica de negocios d aca
   public List<Propuesta> generarPropuestas() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
 
@@ -106,10 +107,11 @@ public class AsignacionService {
             .filter(
                 n ->
                     !(n
-                        instanceof
+                        instanceof // TODO: cambiar instanceof por un switch + anotaciones
                         grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente))
             .count();
     long recurrentes = necesidades.size() - extraordinarias;
+    // fin ldn
 
     log.info(
         "Ejecutando algoritmo de asignación. Donaciones en depósito: {}, Necesidades totales: {} ({} extraordinarias, {} recurrentes activas)",
@@ -149,7 +151,7 @@ public class AsignacionService {
           n.cantidadAcumulada(),
           n.getDescripcion());
     }
-
+    // TODO:  sacar logica de negocios d aca
     List<Propuesta> p1 = algoritmoPorCompatibilidad().ejecutar(necesidades, donaciones);
     List<Propuesta> p2 = algoritmoPorPrioridad().ejecutar(necesidades, donaciones);
 
@@ -158,10 +160,12 @@ public class AsignacionService {
 
     List<Propuesta> resultado = consolidar(p1, p2);
     log.info("Propuestas consolidadas finales: {}", resultado.size());
+    // fin ldn
 
     resultado.forEach(propuestaRepository::save);
     return resultado;
   }
+
 
   public List<Propuesta> listarPropuestas() {
     return propuestaRepository.findAll();
