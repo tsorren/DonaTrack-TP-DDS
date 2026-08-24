@@ -5,13 +5,13 @@ import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemanticoBien;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
-import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
@@ -90,7 +90,7 @@ class ProcesadorDeDonacionesTest {
     verify(normalizadorMock, times(1)).normalizar(donacion);
     verify(itemNormalizadoRepositoryMock, times(1)).saveAll(itemsNormalizados);
     verify(donacionRepositoryMock, times(1)).save(donacion);
-    verify(eventPublisherMock, times(1)).publishEvent(any(DonacionNormalizadaEvent.class));
+    verify(eventPublisherMock, times(1)).publishEvent(any(DonacionNormalizada.class));
   }
 
   @Test
@@ -124,6 +124,6 @@ class ProcesadorDeDonacionesTest {
     verify(normalizadorMock, times(1)).normalizar(donacion);
     verify(itemNormalizadoRepositoryMock, times(1)).saveAll(itemsNormalizados);
     verify(donacionRepositoryMock, never()).save(donacion);
-    verify(eventPublisherMock, never()).publishEvent(any(DonacionNormalizadaEvent.class));
+    verify(eventPublisherMock, never()).publishEvent(any(DonacionNormalizada.class));
   }
 }
