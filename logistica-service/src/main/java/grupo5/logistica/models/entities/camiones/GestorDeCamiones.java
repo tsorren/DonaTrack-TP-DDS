@@ -13,7 +13,10 @@ public final class GestorDeCamiones {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
-    ValidadorPatentes.validar(solicitud.patente(), solicitud.patentesExistentes());
+    if (!ValidadorPatentes.validar(solicitud.patente(), solicitud.patentesExistentes())) {
+      return Optional.empty();
+    }
+
     return Optional.of(
         new Camion(
             solicitud.patente(),

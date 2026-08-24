@@ -1,5 +1,7 @@
 package grupo5.logistica.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.logistica.dto.camiones.CambioEstadoCamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionRequestDTO;
@@ -31,7 +33,9 @@ public class CamionesService implements ICamionesService {
     List<String> patentesExistentes =
         camionRepository.findAll().stream().map(Camion::getPatente).toList();
     SolicitudNuevoCamion solicitud = camionMapper.toSolicitud(request, patentesExistentes);
-    Camion camion = GestorDeCamiones.procesarSolicitudNuevoCamion(solicitud).orElseThrow();
+    Camion camion =
+        GestorDeCamiones.procesarSolicitudNuevoCamion(solicitud)
+            .orElseThrow(() -> new BusinessStateException(ErrorCatalog.CAMION_PATENTE_DUPLICADA));
     camionRepository.save(camion);
     return camionMapper.toResponseDTO(camion);
   }

@@ -3,6 +3,7 @@ package grupo5.logistica.models.entities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.camiones.Camion;
@@ -15,6 +16,8 @@ import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.entregas.GestorDeEntregas;
+import grupo5.logistica.models.entities.entregas.NoRecepcion;
+import grupo5.logistica.models.entities.entregas.RegresoDeposito;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.GestorDeRutas;
 import grupo5.logistica.models.entities.rutas.Ruta;
@@ -45,6 +48,14 @@ class GestoresDeDominioTest {
   }
 
   @Test
+  void gestorDeCamionesNoCreaUnCamionCuandoLaPatenteYaExiste() {
+    assertTrue(
+        GestorDeCamiones.procesarSolicitudNuevoCamion(
+                new SolicitudNuevoCamion("AB123CD", 20f, 3f, 5000f, List.of("AB123CD")))
+            .isEmpty());
+  }
+
+  @Test
   void gestorDeEntregasProcesaLaSolicitudSinConocerDTOs() {
     Entrega entrega = crearEntrega();
     entrega.iniciarRuta("chofer");
@@ -54,6 +65,20 @@ class GestoresDeDominioTest {
 
     assertEquals(EstadoEntrega.ENTREGADA, entrega.getEstadoActual());
     assertEquals("https://foto.test/recepcion.jpg", entrega.getFotoRecepcionUrl());
+  }
+
+  @Test
+  void gestorDeEntregasResuelveTodasLasTransicionesDeLaInterfazSellada() {
+    Entrega entrega = crearEntrega();
+    entrega.iniciarRuta("chofer");
+
+    GestorDeEntregas.cambiarEstado(
+        new NoRecepcion(entrega, "beneficiaria", "domicilio cerrado", true));
+    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
+
+    GestorDeEntregas.cambiarEstado(new RegresoDeposito(entrega, "administrador"));
+    assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+    assertNull(entrega.getIdRuta());
   }
 
   @Test

@@ -12,20 +12,15 @@ public final class GestorDeEntregas {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
-    if (solicitud instanceof ConfirmacionRecepcion confirmacion) {
-      confirmacion.entrega().confirmarEntrega(confirmacion.actor());
-      if (confirmacion.fotoRecepcionUrl() != null && !confirmacion.fotoRecepcionUrl().isBlank()) {
-        confirmacion.entrega().adjuntarFotoRecepcion(confirmacion.fotoRecepcionUrl());
+    switch (solicitud) {
+      case ConfirmacionRecepcion confirmacion -> {
+        confirmacion.entrega().confirmarEntrega(confirmacion.actor());
+        if (confirmacion.fotoRecepcionUrl() != null && !confirmacion.fotoRecepcionUrl().isBlank()) {
+          confirmacion.entrega().adjuntarFotoRecepcion(confirmacion.fotoRecepcionUrl());
+        }
       }
-      return;
+      case NoRecepcion noRecepcion -> noRecepcion.entrega().negarEntrega(noRecepcion.actor());
+      case RegresoDeposito regreso -> regreso.entrega().regresarAlDeposito(regreso.actor());
     }
-
-    if (solicitud instanceof NoRecepcion noRecepcion) {
-      noRecepcion.entrega().negarEntrega(noRecepcion.actor());
-      return;
-    }
-
-    RegresoDeposito regreso = (RegresoDeposito) solicitud;
-    regreso.entrega().regresarAlDeposito(regreso.actor());
   }
 }

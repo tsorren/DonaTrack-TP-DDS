@@ -102,17 +102,18 @@ class PropuestaTest {
   }
 
   @Test
-  void confirmar_cuandoDonacionTieneMasCantidadDeLaNecesaria_debeFragmentarYAsignar() {
+  void aceptar_cuandoDonacionTieneMasCantidadDeLaNecesaria_debeFragmentarYAsignar() {
     Propuesta propuesta = new Propuesta();
     propuesta.asociarNecesidad(necesidad.getId());
     propuesta.setEstado(EstadoPropuesta.PENDIENTE);
     propuesta.agregarFragmentacion(donacionConSobrante, 5);
 
-    propuesta.confirmar();
+    propuesta.aceptar("SISTEMA");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
     assertEquals(1, propuesta.getDomainEvents().size());
     PropuestaAprobada event = (PropuestaAprobada) propuesta.getDomainEvents().getFirst();
+    assertEquals("SISTEMA", event.actor());
 
     // Simulate listener mutation
     String actor = event.actor();
@@ -137,17 +138,18 @@ class PropuestaTest {
   }
 
   @Test
-  void confirmar_cuandoDonacionTieneLaCantidadExacta_debeUsarLaDonacionDirectamente() {
+  void aceptar_cuandoDonacionTieneLaCantidadExacta_debeUsarLaDonacionDirectamente() {
     Propuesta propuesta = new Propuesta();
     propuesta.asociarNecesidad(necesidad.getId());
     propuesta.setEstado(EstadoPropuesta.PENDIENTE);
     propuesta.agregarFragmentacion(donacionExacta, 5);
 
-    propuesta.confirmar();
+    propuesta.aceptar("SISTEMA");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
     assertEquals(1, propuesta.getDomainEvents().size());
     PropuestaAprobada event = (PropuestaAprobada) propuesta.getDomainEvents().getFirst();
+    assertEquals("SISTEMA", event.actor());
 
     // Simulate listener mutation
     String actor = event.actor();
@@ -203,11 +205,12 @@ class PropuestaTest {
   }
 
   @Test
-  void confirmar_conNecesidadNula_debeLanzarExcepcion() {
+  void aceptar_conNecesidadNula_debeLanzarExcepcion() {
     Propuesta propuesta = new Propuesta();
     propuesta.agregarFragmentacion(donacionConSobrante, 5);
 
-    ValidationException exception = assertThrows(ValidationException.class, propuesta::confirmar);
+    ValidationException exception =
+        assertThrows(ValidationException.class, () -> propuesta.aceptar("SISTEMA"));
     assertEquals(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD, exception.getError());
   }
 }

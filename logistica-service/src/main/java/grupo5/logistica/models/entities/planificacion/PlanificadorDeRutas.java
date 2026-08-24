@@ -7,6 +7,7 @@ import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.PlanificacionSolicitada;
 import grupo5.logistica.models.entities.rutas.RespuestaPlanificacion;
+import java.time.LocalDate;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedHashMap;
@@ -59,10 +60,6 @@ public class PlanificadorDeRutas {
         });
 
     return new RespuestaPlanificacion(
-        UUID.randomUUID(),
-        solicitud.id(),
-        solicitud.fecha().plusDays(1),
-        rutasConChofer,
-        choferesPorCamion);
+        UUID.randomUUID(), solicitud.id(), LocalDate.now(), rutasConChofer, choferesPorCamion);
   }
 }
