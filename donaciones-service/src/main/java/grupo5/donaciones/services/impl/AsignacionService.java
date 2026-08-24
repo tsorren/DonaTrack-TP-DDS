@@ -93,6 +93,7 @@ public class AsignacionService {
     todas.addAll(propuesta2);
     return todas;
   }
+
   // fin ldn
 
   // TODO:  sacar logica de negocios d aca
@@ -165,7 +166,6 @@ public class AsignacionService {
     resultado.forEach(propuestaRepository::save);
     return resultado;
   }
-
 
   public List<Propuesta> listarPropuestas() {
     return propuestaRepository.findAll();
