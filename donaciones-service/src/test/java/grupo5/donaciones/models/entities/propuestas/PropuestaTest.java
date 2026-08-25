@@ -108,7 +108,7 @@ class PropuestaTest {
     propuesta.setEstado(EstadoPropuesta.PENDIENTE);
     propuesta.agregarFragmentacion(donacionConSobrante, 5);
 
-    propuesta.confirmar();
+    propuesta.aceptar("SISTEMA");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
     assertEquals(1, propuesta.getDomainEvents().size());
@@ -143,7 +143,7 @@ class PropuestaTest {
     propuesta.setEstado(EstadoPropuesta.PENDIENTE);
     propuesta.agregarFragmentacion(donacionExacta, 5);
 
-    propuesta.confirmar();
+    propuesta.aceptar("SISTEMA");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
     assertEquals(1, propuesta.getDomainEvents().size());
@@ -207,7 +207,8 @@ class PropuestaTest {
     Propuesta propuesta = new Propuesta();
     propuesta.agregarFragmentacion(donacionConSobrante, 5);
 
-    ValidationException exception = assertThrows(ValidationException.class, propuesta::confirmar);
+    ValidationException exception =
+        assertThrows(ValidationException.class, () -> propuesta.aceptar("SISTEMA"));
     assertEquals(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD, exception.getError());
   }
 }
