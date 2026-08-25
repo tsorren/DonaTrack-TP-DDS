@@ -1,25 +1,27 @@
 package grupo5.donaciones.services.impl;
 
 import grupo5.donaciones.models.entities.personas.Persona;
-import grupo5.donaciones.services.CriterioDuplicado;
-import java.util.List;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ValidadorPersonaDuplicada {
 
-  private final List<CriterioDuplicado> criterios;
+  private final IPersonasRepository personasRepository;
 
-  public ValidadorPersonaDuplicada(List<CriterioDuplicado> criterios) {
-    this.criterios = criterios;
+  public ValidadorPersonaDuplicada(IPersonasRepository personasRepository) {
+    this.personasRepository = personasRepository;
   }
 
+  /**
+   * Recorre el repositorio buscando una persona ya existente duplicada de {@code personaAImportar}.
+   * La decisión de qué significa "ser duplicada" vive en el dominio (ver {@link
+   * Persona#esDuplicadaDe}); esta clase solo resuelve el acceso a datos.
+   */
   public Optional<Persona> buscarDuplicado(Persona personaAImportar) {
-    return criterios.stream()
-        .map(criterio -> criterio.buscarCoincidencia(personaAImportar))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .findFirst(); // Retorna la primera coincidencia que encuentre
+    return personasRepository.findAll().stream()
+        .filter(personaExistente -> personaAImportar.esDuplicadaDe(personaExistente))
+        .findFirst();
   }
 }

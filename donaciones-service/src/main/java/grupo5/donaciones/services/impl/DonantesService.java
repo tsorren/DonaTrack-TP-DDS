@@ -70,7 +70,7 @@ public class DonantesService implements IDonantesService {
   }
 
   private static String obtenerNombrePersona(Persona persona) {
-    if (persona instanceof Humana humana) {
+    if (persona instanceof Humana humana) { // TODO: sacar el instance of y reemplazar x switch
       return humana.getNombre() + " " + humana.getApellido();
     } else if (persona instanceof Juridica juridica) {
       return juridica.getRazonSocial();

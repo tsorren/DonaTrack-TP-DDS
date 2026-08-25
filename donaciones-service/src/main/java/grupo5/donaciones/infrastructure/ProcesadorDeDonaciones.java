@@ -2,10 +2,9 @@ package grupo5.donaciones.infrastructure;
 
 import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemanticoBien;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
-import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
+import grupo5.donaciones.models.entities.itemsNormalizados.EvaluadorNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.ports.Segmentador;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
@@ -37,15 +36,11 @@ public class ProcesadorDeDonaciones {
 
   @Async
   public void procesar(Donacion donacion) {
-    // INICIO LOGICA DE NEGOCIO
     List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion);
-    // FIN LOGICA DE NEGOCIO
     logItemsNormalizados(itemsNormalizados);
 
-    // Persistir todos los items normalizados
     itemNormalizadoRepository.saveAll(itemsNormalizados);
 
-    // Verificar y finalizar
     finalizarNormalizacion(donacion, itemsNormalizados);
   }
 
@@ -73,23 +68,12 @@ public class ProcesadorDeDonaciones {
 
   private void finalizarNormalizacion(
       Donacion donacion, List<ItemDonacionNormalizado> itemsNormalizados) {
-
-    // INICIO LOGICA DE NEGOCIO
-    boolean tienePendientes =
-        itemsNormalizados.stream()
-            .anyMatch(
-                item ->
-                    item.getBien() != null
-                        && item.getBien().estadoNormalizacion()
-                            == EstadoNormalizacion.PENDIENTE_REVISION);
-
-    if (!tienePendientes) {
-      log.info("Donación {} normalizada inmediatamente. Publicando evento.", donacion.getId());
+    if (EvaluadorNormalizacion.estanTodosNormalizados(itemsNormalizados)) {
+      log.info("Donación {} normalizada inmediatamente. Publicando eventos.", donacion.getId());
       donacion.marcarNormalizada();
-
-      // FIN LOGICA DE NEGOCIO
       donacionRepository.save(donacion);
-      eventPublisher.publishEvent(new DonacionNormalizadaEvent(donacion.getId()));
+      donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+      donacion.clearDomainEvents();
     } else {
       log.info(
           "Donación {} tiene ítems pendientes de revisión. Queda en estado CARGADA.",
