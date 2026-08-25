@@ -1,16 +1,16 @@
 package grupo5.donaciones.services.impl;
 
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaDTO;
-import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoAsignacion;
-import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoCompatibilidadSemantica;
-import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoPrioridadSubAtendidos;
-import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.models.algoritmos.AlgoritmoAsignacion;
+import grupo5.donaciones.models.algoritmos.AlgoritmoCompatibilidadSemantica;
+import grupo5.donaciones.models.algoritmos.AlgoritmoPrioridadSubAtendidos;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.models.normalizacion.ComparadorTexto;
 import grupo5.donaciones.models.repositories.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

@@ -3,10 +3,10 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemantico;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.models.normalizacion.NormalizadorSemantico;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
