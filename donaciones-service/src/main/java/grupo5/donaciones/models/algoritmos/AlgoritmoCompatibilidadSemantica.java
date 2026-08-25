@@ -1,8 +1,8 @@
-package grupo5.donaciones.infrastructure.algoritmos;
+package grupo5.donaciones.models.algoritmos;
 
-import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.normalizacion.ComparadorTexto;
 import java.util.Comparator;
 import java.util.List;
 

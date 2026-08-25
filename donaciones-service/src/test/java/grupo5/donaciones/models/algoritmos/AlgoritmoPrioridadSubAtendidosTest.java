@@ -1,4 +1,4 @@
-package grupo5.donaciones.infrastructure.algoritmos;
+package grupo5.donaciones.models.algoritmos;
 
 import static org.junit.jupiter.api.Assertions.*;
 

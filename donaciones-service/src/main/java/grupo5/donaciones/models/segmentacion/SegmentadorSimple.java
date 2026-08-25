@@ -1,4 +1,4 @@
-package grupo5.donaciones.infrastructure.segmentadores;
+package grupo5.donaciones.models.segmentacion;
 
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;

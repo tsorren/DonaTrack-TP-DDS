@@ -3,7 +3,7 @@ package grupo5.donaciones.models.entities.propuestas;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoAsignacion;
+import grupo5.donaciones.models.algoritmos.AlgoritmoAsignacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.util.List;
