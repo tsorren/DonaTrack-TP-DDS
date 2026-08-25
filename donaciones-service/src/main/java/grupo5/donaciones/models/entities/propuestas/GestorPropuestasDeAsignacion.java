@@ -2,12 +2,12 @@ package grupo5.donaciones.models.entities.propuestas;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoAsignacion;
-import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoCompatibilidadSemantica;
-import grupo5.donaciones.infrastructure.algoritmos.AlgoritmoPrioridadSubAtendidos;
-import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
+import grupo5.donaciones.models.algoritmos.AlgoritmoAsignacion;
+import grupo5.donaciones.models.algoritmos.AlgoritmoCompatibilidadSemantica;
+import grupo5.donaciones.models.algoritmos.AlgoritmoPrioridadSubAtendidos;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.normalizacion.ComparadorTexto;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

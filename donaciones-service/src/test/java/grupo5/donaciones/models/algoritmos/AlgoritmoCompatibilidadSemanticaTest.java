@@ -1,11 +1,9 @@
-package grupo5.donaciones.infrastructure.algoritmos;
+package grupo5.donaciones.models.algoritmos;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
-import grupo5.donaciones.infrastructure.analizadores.NormalizadorBasicoTexto;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -19,6 +17,8 @@ import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.normalizacion.ComparadorTexto;
+import grupo5.donaciones.models.normalizacion.NormalizadorBasicoTexto;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
