@@ -17,8 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class NotificacionService {
   private final INotificacionRepository repository;
-  private final IPersonaRepository personaRepository;
-  private final NotificacionSender sender;
+  private IPersonaRepository personaRepository = null;
+  private NotificacionSender sender = null;
   private final EventoMapper mapper;
   private final ApplicationEventPublisher eventPublisher;
 
