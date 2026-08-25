@@ -5,6 +5,7 @@ import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class PropuestaDeAsignacionController implements IPropuestaDeAsignacionCo
   @Override
   @PutMapping("/propuestas/{id}/estado")
   public ResponseEntity<Void> actualizarEstado(
-      @PathVariable UUID id, @RequestBody ActualizarEstadoRequestDTO request) {
+      @PathVariable UUID id, @Valid @RequestBody ActualizarEstadoRequestDTO request) {
     service.actualizarEstado(id, request.estado());
     return ResponseEntity.ok().build();
   }

@@ -589,3 +589,73 @@ La suite de pruebas de `donaciones-service` presentaba fuertes acoplamientos a l
 - [x] Verificada la suite completa de `donaciones-service`: **369 tests pasando (0 fallos, 0 errores)**.
 - [x] Ejecución limpia del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
 - [x] Formateo validado: `mvn spotless:check` (**CLEAN**).
+
+---
+
+Oleada 9:
+# PR — Oleada 9: Validación por Capas, Respuestas HTTP Clásicas, Manejo Robusto de Excepciones y Trazabilidad Integral (`TraceID`)
+
+## Problema
+1. **Falta de Validación Declarativa en la Entrada**: Los DTOs de entrada carecían de anotaciones Jakarta Bean Validation (`@NotNull`, `@NotBlank`, `@Positive`, `@NotEmpty`, `@Valid`), permitiendo que datos inconsistentes o vacíos atravesaran el boundary hacia los servicios de aplicación.
+2. **Validaciones Imperativas Manuales en Controladores**: Controladores como `DonantesController` realizaban comprobaciones manuales de strings (`if (input.path() == null) ...`), devolviendo códigos de error sin payload estandarizado.
+3. **Omisión de Manejo de Excepciones de Validación en `GlobalExceptionHandler`**: Excepciones nativas de Spring como `MethodArgumentNotValidException`, `MissingRequestHeaderException` o `HttpMessageNotReadableException` no contaban con handlers dedicados, cayendo en errores 500 genéricos o respuestas sin formato homogéneo.
+4. **Pérdida de Trazabilidad en Respuestas y Clientes Distribuidos**: `ErrorResponse` no incluía el identificador de correlación `traceId`, y las respuestas HTTP no devolvían el header `X-Trace-Id`. Las llamadas Feign salientes no propagaban automáticamente el contexto de trazas a los microservicios downstream.
+
+## Evidencia
+- Requests con campos faltantes provocaban excepciones en cascada en la capa de servicios o dominio, o devolvían HTTP 500 no informativo.
+- Los logs del servidor contenían `traceId` en MDC pero los clientes HTTP no tenían forma de correlacionar un error 400/404/500 con los logs.
+
+## Objetivo
+1. **Validación por Capas con Segregación Estricta de Responsabilidades**:
+   - **Capa Web (Boundary / DTOs / Controllers)**: Validación sintáctica y estructural declarativa mediante Jakarta Bean Validation (`@NotBlank`, `@NotNull`, `@Positive`, `@NotEmpty`, `@Valid`) y anotación `@Valid` en todos los `@RequestBody` de los controladores.
+   - **Capa de Aplicación (Services)**: Asume que los DTOs ya fueron filtrados sintácticamente; se enfoca en validación de existencia (`RecursoNoEncontradoException` $\rightarrow$ 404), duplicados y orquestación.
+   - **Capa de Dominio (Entities & Aggregates)**: Protege invariantes intrínsecas de estado y transiciones del State Pattern (`ValidationException` $\rightarrow$ 400, `BusinessStateException` $\rightarrow$ 409).
+2. **Respuestas HTTP Clásicas y Limpias**:
+   - Uso consistente de `201 CREATED` para `POST` de creación, `202 ACCEPTED` para procesos asincrónicos en segundo plano (`POST /api/donantes/archivos`), `200 OK` para consultas y actualizaciones, y `204 NO CONTENT` para eliminaciones.
+   - Eliminación total de chequeos imperativos manuales en controllers.
+3. **Manejo Global de Errores y Errores Estructurados por Campo**:
+   - `FieldErrorDTO(String field, String message, Object rejectedValue)` para detallar fallos de validación específicos por campo.
+   - Handlers en `GlobalExceptionHandler` para `MethodArgumentNotValidException`, `ConstraintViolationException`, `MissingRequestHeaderException`, `MissingServletRequestParameterException`, `HttpMessageNotReadableException`, `FeignException`.
+4. **Trazabilidad Integral (`TraceID`)**:
+   - `ErrorResponse` enriquecido con `traceId` resuelto automáticamente desde `MDC` o `Tracer`.
+   - `TraceResponseHeaderFilter` inyectando `X-Trace-Id` en el response header de cada petición HTTP.
+   - `FeignTraceRequestInterceptor` propagando `X-Trace-Id` a llamadas HTTP downstream entre microservicios.
+
+## Fuera de scope
+- Modificación de contratos de negocio de dominio o reglas de scoring de algoritmos.
+
+## Tests
+- **Nuevas Suites en `common-lib`**:
+  - `GlobalExceptionHandlerTest`: Verificación de todos los mapeos de status codes (400, 404, 409, 500, 502/Feign), extracción de `fieldErrors` y presencia de `traceId`.
+  - `TraceResponseHeaderFilterTest`: Verificación de inyección de header `X-Trace-Id` y sincronización con MDC.
+  - `ErrorResponseTest`: Verificación de serialización y resolución de `traceId`.
+- **Nuevas y Refactorizadas Suites en `donaciones-service`**:
+  - `CategoriasControllerTest`: Casos positivos (200, 201) y negativos (400 con `errors[0].field`).
+  - `DonantesControllerTest`: Cobertura completa de 201 Created, 202 Accepted, 204 No Content y 400 Bad Request.
+  - `DonacionesControllerTest`, `DonacionesIndependientesControllerTest`, `ItemDonacionNormalizadoControllerTest`, `NecesidadesControllerTest`, `PersonasControllerTest`, `PropuestaDeAsignacionControllerTest`, `SubcategoriasControllerTest`, `EntidadBeneficiariaControllerTest`.
+- **Resultados**:
+  - `common-lib`: **24 tests pasando (0 fallos, 0 errores)**.
+  - `donaciones-service`: **379 tests pasando (0 fallos, 0 errores)**.
+  - **Reactor Multi-Módulo completo**: **7/7 módulos pasando exitosamente (`BUILD SUCCESS`)**.
+
+## Diseño resultante
+- **Arquitectura de Validaciones Pura**: Separación clara entre validación de frontera (Bean Validation), validación de casos de uso (Application Services) y protección de invariantes (Domain Entities).
+- **Consistencia de API REST y Problem Details**: Respuestas de error auto-descriptivas, con códigos de catálogo, detalles a nivel de campo y correlación vía `traceId`.
+- **Trazabilidad Distribuida de Extremo a Extremo**: Propagación bidireccional de `X-Trace-Id` en HTTP y Feign.
+
+## IA utilizada
+- Diagnóstico de validaciones y diseño de mejoras para errores estructurados a nivel de campo y trazabilidad Feign.
+- Implementación de `TraceResponseHeaderFilter`, `FeignTraceRequestInterceptor`, `FieldErrorDTO`, `ErrorResponse` y `GlobalExceptionHandler`.
+- Enriquecimiento de todos los DTOs y Controladores con `@Valid` y códigos de estado clásicos.
+- Validación completa y pruebas unitarias con Spotless y reactor Maven.
+
+## Verificación humana
+- [x] Verificado el filtro `TraceResponseHeaderFilter` y la presencia del header `X-Trace-Id` en las respuestas HTTP.
+- [x] Verificado `FeignTraceRequestInterceptor` para propagación de trazas distribuidas.
+- [x] Verificada la inclusión del array `errors` con `FieldErrorDTO` en `ErrorResponse` ante `MethodArgumentNotValidException`.
+- [x] Verificada la eliminación de comprobaciones imperativas en controllers (`DonantesController`).
+- [x] Verificados los códigos HTTP clásicos: `201 Created`, `202 Accepted`, `200 OK`, `204 No Content`, `400 Bad Request`, `404 Not Found`, `409 Conflict`.
+- [x] Verificada la suite completa de `donaciones-service`: **379 tests pasando (0 fallos, 0 errores)**.
+- [x] Verificada la suite completa de `common-lib`: **24 tests pasando (0 fallos, 0 errores)**.
+- [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
+- [x] Formateo Spotless validado: `mvn spotless:check` (**CLEAN**).
