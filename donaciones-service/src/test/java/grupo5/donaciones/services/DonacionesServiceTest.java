@@ -13,6 +13,7 @@ import grupo5.donaciones.infrastructure.ProcesadorDeDonaciones;
 import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionCargada;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
@@ -36,6 +37,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class DonacionesServiceTest {
@@ -46,6 +48,7 @@ class DonacionesServiceTest {
   @Mock private IDonantesService donantesService;
   @Mock private DonacionMapper mapper;
   @Mock private ProcesadorDeDonaciones procesadorDonaciones;
+  @Mock private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks private DonacionesService service;
 
@@ -101,6 +104,8 @@ class DonacionesServiceTest {
 
     assertNotNull(result);
     verify(donacionesRepository).save(donacion);
+    verify(eventPublisher, times(1)).publishEvent(any(DonacionCargada.class));
+    verify(procesadorDonaciones).procesar(donacion);
     verify(mapper).toOutputDTO(donacion);
   }
 
@@ -110,6 +115,7 @@ class DonacionesServiceTest {
 
     assertThrows(RecursoNoEncontradoException.class, () -> service.cargarDonacion(inputDTO));
     verify(donacionesRepository, never()).save(any());
+    verify(eventPublisher, never()).publishEvent(any());
     verify(mapper, never()).toOutputDTO(any());
   }
 
