@@ -1,13 +1,7 @@
 package grupo5.logistica.controllers.impl;
 
 import grupo5.logistica.controllers.IEntregasController;
-import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
-import grupo5.logistica.dto.entregas.ConfirmarRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
-import grupo5.logistica.dto.entregas.EntregaResponseDTO;
-import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
-import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
+import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.services.IEntregasService;
 import java.util.List;
 import java.util.UUID;
@@ -49,10 +43,10 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
-  @PatchMapping("/{id}/recepciones")
-  public ResponseEntity<EntregaResponseDTO> confirmarRecepcion(
-      @PathVariable("id") UUID id, @RequestBody ConfirmarRecepcionRequestDTO dto) {
-    return ResponseEntity.ok(entregasService.confirmarRecepcion(id, dto));
+  @PatchMapping("/{id}/estado")
+  public ResponseEntity<EntregaResponseDTO> cambiarEstado(
+      @PathVariable("id") UUID id, @RequestBody CambioEstadoEntregaRequestDTO request) {
+    return ResponseEntity.ok(entregasService.cambiarEstado(id, request));
   }
 
   @Override
@@ -60,20 +54,6 @@ public class EntregasController implements IEntregasController {
   public ResponseEntity<EntregaResponseDTO> adjuntarFotoRecepcion(
       @PathVariable("id") UUID id, @RequestBody AdjuntarFotoRecepcionRequestDTO dto) {
     return ResponseEntity.ok(entregasService.adjuntarFotoRecepcion(id, dto));
-  }
-
-  @Override
-  @PatchMapping("/{id}/reportes")
-  public ResponseEntity<EntregaResponseDTO> reportarNoRecepcion(
-      @PathVariable("id") UUID id, @RequestBody ReportarNoRecepcionRequestDTO dto) {
-    return ResponseEntity.ok(entregasService.reportarNoRecepcion(id, dto));
-  }
-
-  @Override
-  @PatchMapping("/{id}/regresos")
-  public ResponseEntity<EntregaResponseDTO> regresarAlDeposito(
-      @PathVariable("id") UUID id, @RequestBody RegresarAlDepositoRequestDTO dto) {
-    return ResponseEntity.ok(entregasService.regresarAlDeposito(id, dto));
   }
 
   @Override

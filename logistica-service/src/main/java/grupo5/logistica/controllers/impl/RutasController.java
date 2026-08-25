@@ -1,10 +1,7 @@
 package grupo5.logistica.controllers.impl;
 
 import grupo5.logistica.controllers.IRutasController;
-import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
-import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
-import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
-import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.dto.rutas.*;
 import grupo5.logistica.services.IRutasService;
 import java.util.List;
 import java.util.UUID;
@@ -59,15 +56,9 @@ public class RutasController implements IRutasController {
   }
 
   @Override
-  @PatchMapping("/{id}/inicio")
-  public ResponseEntity<RutaResponseDTO> iniciar(
-      @PathVariable("id") UUID id, @RequestBody IniciarRutaRequestDTO dto) {
-    return ResponseEntity.ok(rutasService.iniciar(id, dto));
-  }
-
-  @Override
-  @PatchMapping("/{id}/finalizacion")
-  public ResponseEntity<RutaResponseDTO> completar(@PathVariable("id") UUID id) {
-    return ResponseEntity.ok(rutasService.completar(id));
+  @PatchMapping("/{id}/estado")
+  public ResponseEntity<RutaResponseDTO> cambiarEstado(
+      @PathVariable("id") UUID id, @RequestBody CambioEstadoRutaRequestDTO request) {
+    return ResponseEntity.ok(rutasService.cambiarEstado(id, request));
   }
 }
