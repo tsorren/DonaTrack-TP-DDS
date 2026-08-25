@@ -1,4 +1,4 @@
-package grupo5.incentivos.models.entities.donante.metricas;
+package grupo5.incentivos.models.entities.metricas;
 
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;

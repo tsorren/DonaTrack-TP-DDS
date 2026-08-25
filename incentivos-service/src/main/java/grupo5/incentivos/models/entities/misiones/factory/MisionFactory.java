@@ -1,16 +1,16 @@
-package grupo5.incentivos.services;
+package grupo5.incentivos.models.entities.misiones.factory;
 
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
-import grupo5.incentivos.models.entities.donante.insignias.Insignia;
-import grupo5.incentivos.models.entities.donante.misiones.*;
+import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.misiones.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.stereotype.Component;
 
-@Component
-public class MisionFactory implements IMisionFactory {
+public final class MisionFactory {
 
-  public List<Mision> crearMisionesEstandar() {
+  private MisionFactory() {}
+
+  public static List<Mision> crearMisionesEstandar() {
     List<Mision> misiones = new ArrayList<>();
 
     // === CATEGORÍA COLABORADOR ===

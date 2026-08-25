@@ -1,4 +1,4 @@
-package grupo5.incentivos.models.entities.donante.misiones;
+package grupo5.incentivos.models.entities.misiones;
 
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;

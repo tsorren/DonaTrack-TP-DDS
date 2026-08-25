@@ -1,4 +1,4 @@
-package grupo5.incentivos.models.entities.donante.insignias;
+package grupo5.incentivos.models.entities.insignias;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;

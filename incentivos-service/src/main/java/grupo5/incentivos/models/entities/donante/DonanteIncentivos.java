@@ -4,9 +4,10 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
-import grupo5.incentivos.models.entities.donante.insignias.Insignia;
-import grupo5.incentivos.models.entities.donante.metricas.Metricas;
-import grupo5.incentivos.models.entities.donante.misiones.Mision;
+import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.metricas.Metricas;
+import grupo5.incentivos.models.entities.misiones.Mision;
+import grupo5.incentivos.models.entities.misiones.factory.MisionFactory;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class DonanteIncentivos implements AggregateRoot {
   }
 
   public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre) {
-    this(idDonante, idPersona, nombre, new ArrayList<>());
+    this(idDonante, idPersona, nombre, MisionFactory.crearMisionesEstandar());
   }
 
   public void cambiarNombre(String nombre) {

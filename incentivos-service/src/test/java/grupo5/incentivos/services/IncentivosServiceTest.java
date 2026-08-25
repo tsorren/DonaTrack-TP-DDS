@@ -13,10 +13,11 @@ import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.donante.insignias.Insignia;
-import grupo5.incentivos.models.entities.donante.misiones.MisionDonacionesExitosas;
-import grupo5.incentivos.models.entities.donante.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
+import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
+import grupo5.incentivos.models.entities.misiones.MisionRacha;
+import grupo5.incentivos.models.entities.misiones.factory.MisionFactory;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import java.time.LocalDate;
 import java.time.Month;
@@ -37,18 +38,16 @@ class IncentivosServiceTest {
 
   private IncentivosService service;
   private DonanteIncentivosRepository repository;
-  private MisionFactory misionFactory;
 
   private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
 
   @BeforeEach
   void setUp() {
     repository = new DonanteIncentivosRepository();
-    misionFactory = new MisionFactory();
     List<CriterioInactividad> criterios = List.of();
     service =
         new IncentivosService(
-            repository, misionFactory, notificacionesClient, rankingService, n8nClient, criterios);
+            repository, notificacionesClient, rankingService, n8nClient, criterios);
   }
 
   @Test

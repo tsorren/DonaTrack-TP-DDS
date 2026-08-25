@@ -1,6 +1,6 @@
 package grupo5.incentivos.dto;
 
-import grupo5.incentivos.models.entities.donante.insignias.Insignia;
+import grupo5.incentivos.models.entities.insignias.Insignia;
 import java.time.LocalDate;
 
 public record InsigniaDTO(

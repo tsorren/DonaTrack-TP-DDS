@@ -9,10 +9,10 @@ import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.CambioCategoria;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import grupo5.incentivos.models.entities.donante.insignias.Insignia;
-import grupo5.incentivos.models.entities.donante.misiones.Mision;
-import grupo5.incentivos.models.entities.donante.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
+import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.misiones.Mision;
+import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -31,7 +31,6 @@ public class IncentivosService implements IIncentivosService {
   private static final Logger log = LoggerFactory.getLogger(IncentivosService.class);
 
   private final IDonanteIncentivosRepository repository;
-  private final IMisionFactory misionFactory;
   private final NotificacionesClient notificacionesClient;
   private final IRankingService rankingService;
   private final N8nClient n8nClient;
@@ -39,13 +38,11 @@ public class IncentivosService implements IIncentivosService {
 
   public IncentivosService(
       IDonanteIncentivosRepository repository,
-      IMisionFactory misionFactory,
       NotificacionesClient notificacionesClient,
       IRankingService rankingService,
       N8nClient n8nClient,
       List<CriterioInactividad> criterios) {
     this.repository = repository;
-    this.misionFactory = misionFactory;
     this.notificacionesClient = notificacionesClient;
     this.rankingService = rankingService;
     this.n8nClient = n8nClient;
@@ -60,11 +57,7 @@ public class IncentivosService implements IIncentivosService {
                 () -> {
                   DonanteIncentivos nuevo =
                       new DonanteIncentivos(
-                          request.idDonante(),
-                          request.idPersona(),
-                          request.nombre(),
-                          misionFactory
-                              .crearMisionesEstandar()); // Mover a dentro de DonanteIncentivos
+                          request.idDonante(), request.idPersona(), request.nombre());
                   repository.save(nuevo);
                   return nuevo;
                 });
