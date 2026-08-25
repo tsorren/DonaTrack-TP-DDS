@@ -3,19 +3,9 @@ package grupo5.logistica.services.impl;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
-import grupo5.logistica.dto.entregas.ConfirmarRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
-import grupo5.logistica.dto.entregas.EntregaResponseDTO;
-import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
-import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
+import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
-import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
-import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.entregas.GestorDeEntregas;
-import grupo5.logistica.models.entities.entregas.NoRecepcion;
-import grupo5.logistica.models.entities.entregas.RegresoDeposito;
+import grupo5.logistica.models.entities.entregas.*;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -69,23 +59,6 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
-  public EntregaResponseDTO confirmarRecepcion(UUID id, ConfirmarRecepcionRequestDTO dto) {
-    if (dto == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
-
-    Entrega entrega = buscarEntrega(id);
-    ConfirmacionRecepcion solicitud = entregaMapper.toSolicitud(entrega, dto);
-    GestorDeEntregas.cambiarEstado(solicitud);
-    entregasRepository.save(entrega);
-
-    Camion camion = buscarCamionDeEntrega(entrega);
-    comunicadorEventos.comunicarEntregaExitosa(entrega, camion);
-
-    return entregaMapper.toResponseDTO(entrega);
-  }
-
-  @Override
   public EntregaResponseDTO adjuntarFotoRecepcion(UUID id, AdjuntarFotoRecepcionRequestDTO dto) {
     if (dto == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -97,31 +70,45 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
-  public EntregaResponseDTO reportarNoRecepcion(UUID id, ReportarNoRecepcionRequestDTO dto) {
-    if (dto == null) {
+  public EntregaResponseDTO cambiarEstado(UUID id, CambioEstadoEntregaRequestDTO request) {
+    if (request == null || request.estado() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
     Entrega entrega = buscarEntrega(id);
-    NoRecepcion solicitud = entregaMapper.toSolicitud(entrega, dto);
+    SolicitudTransicionEntrega solicitud;
+
+    switch (request.estado()) {
+      case ENTREGADA -> {
+        var dto = new ConfirmarRecepcionRequestDTO(request.actor());
+        solicitud = entregaMapper.toSolicitud(entrega, dto);
+      }
+      case NO_RECIBIDA -> {
+        var dto =
+            new ReportarNoRecepcionRequestDTO(
+                request.justificacion(), request.actor(), request.replanificable());
+        solicitud = entregaMapper.toSolicitud(entrega, dto);
+      }
+      case PENDIENTE -> {
+        var dto = new RegresarAlDepositoRequestDTO(request.actor());
+        solicitud = entregaMapper.toSolicitud(entrega, dto);
+      }
+      case EN_TRASLADO, REVISION -> throw new ValidationException(
+          ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+      default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+
     GestorDeEntregas.cambiarEstado(solicitud);
     entregasRepository.save(entrega);
 
-    comunicadorEventos.comunicarEntregaFallida(solicitud);
-
-    return entregaMapper.toResponseDTO(entrega);
-  }
-
-  @Override
-  public EntregaResponseDTO regresarAlDeposito(UUID id, RegresarAlDepositoRequestDTO dto) {
-    if (dto == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    if (solicitud instanceof ConfirmacionRecepcion) {
+      Camion camion = buscarCamionDeEntrega(entrega);
+      comunicadorEventos.comunicarEntregaExitosa(entrega, camion);
+    } else if (solicitud instanceof NoRecepcion noRecepcion) {
+      comunicadorEventos.comunicarEntregaFallida(noRecepcion);
     }
 
-    Entrega entrega = buscarEntrega(id);
-    RegresoDeposito solicitud = entregaMapper.toSolicitud(entrega, dto);
-    GestorDeEntregas.cambiarEstado(solicitud);
-    return entregaMapper.toResponseDTO(entregasRepository.save(entrega));
+    return entregaMapper.toResponseDTO(entrega);
   }
 
   @Override
