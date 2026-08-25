@@ -14,18 +14,13 @@ public interface IEntregasController {
 
   ResponseEntity<EntregaResponseDTO> obtenerPorId(@PathVariable("id") UUID id);
 
-  ResponseEntity<EntregaResponseDTO> confirmarRecepcion(
-      @PathVariable("id") UUID id, @RequestBody ConfirmarRecepcionRequestDTO dto);
-
   ResponseEntity<EntregaResponseDTO> adjuntarFotoRecepcion(
       @PathVariable("id") UUID id, @RequestBody AdjuntarFotoRecepcionRequestDTO dto);
 
-  ResponseEntity<EntregaResponseDTO> reportarNoRecepcion(
-      @PathVariable("id") UUID id, @RequestBody ReportarNoRecepcionRequestDTO dto);
-
-  ResponseEntity<EntregaResponseDTO> regresarAlDeposito(
-      @PathVariable("id") UUID id, @RequestBody RegresarAlDepositoRequestDTO dto);
-
   ResponseEntity<List<CambioEstadoEntregaResponseDTO>> obtenerHistorial(
       @PathVariable("id") UUID id);
+
+  // endpoint unificado restful
+  ResponseEntity<EntregaResponseDTO> cambiarEstado(
+      @PathVariable("id") UUID id, @RequestBody CambioEstadoEntregaRequestDTO dto);
 }
