@@ -5,6 +5,7 @@ import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.services.IPersonasService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,8 @@ public class PersonasController implements IPersonasController {
 
   @Override
   @PostMapping
-  public ResponseEntity<PersonaOutputDTO> crearPersona(@RequestBody PersonaInputDTO persona) {
+  public ResponseEntity<PersonaOutputDTO> crearPersona(
+      @Valid @RequestBody PersonaInputDTO persona) {
     PersonaOutputDTO creada = service.crearPersona(persona);
     return ResponseEntity.status(HttpStatus.CREATED).body(creada);
   }
@@ -47,7 +49,7 @@ public class PersonasController implements IPersonasController {
   @Override
   @PutMapping("/{id}")
   public ResponseEntity<PersonaOutputDTO> actualizarPersona(
-      @PathVariable UUID id, @RequestBody PersonaInputDTO persona) {
+      @PathVariable UUID id, @Valid @RequestBody PersonaInputDTO persona) {
     PersonaOutputDTO actualizada = service.actualizarPersona(id, persona);
     return ResponseEntity.ok(actualizada);
   }

@@ -3,6 +3,7 @@ package grupo5.donaciones.controllers.impl;
 import grupo5.donaciones.controllers.INecesidadesController;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.services.INecesidadesService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class NecesidadesController implements INecesidadesController {
 
   @Override
   @PostMapping
-  public ResponseEntity<NecesidadDTO> crearNecesidad(@RequestBody NecesidadDTO dto) {
+  public ResponseEntity<NecesidadDTO> crearNecesidad(@Valid @RequestBody NecesidadDTO dto) {
     NecesidadDTO creada = necesidadesService.guardar(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(creada);
   }
