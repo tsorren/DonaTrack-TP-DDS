@@ -71,4 +71,65 @@ public abstract sealed class Persona implements Anonimizable, AggregateRoot
 
     medioDeContacto.setEsPredeterminado(true);
   }
+
+  /**
+   * Determina si esta persona es duplicada de {@code otra}, comparando documento y medios de
+   * contacto. Reemplaza al Strategy de Criterios (RF Oleada 1 - Persona): la comparación par a par
+   * es una regla de dominio y vive en la entidad; recorrer el repositorio en busca de candidatos
+   * sigue siendo responsabilidad de la capa de aplicación (ver ValidadorPersonaDuplicada).
+   */
+  public Boolean esDuplicadaDe(Persona otra) {
+    if (otra == null) {
+      return false;
+    }
+    return coincideEnDocumento(otra) || compartenMedioDeContacto(otra);
+  }
+
+  private boolean coincideEnDocumento(Persona otra) {
+    return this.documento != null
+        && !this.documento.isBlank()
+        && this.documento.equals(otra.documento);
+  }
+
+  private boolean compartenMedioDeContacto(Persona otra) {
+    if (this.mediosDeContacto.isEmpty() || otra.mediosDeContacto.isEmpty()) {
+      return false;
+    }
+    for (MedioDeContacto medioPropio : this.mediosDeContacto) {
+      for (MedioDeContacto medioAjeno : otra.mediosDeContacto) {
+        if (coincidenMedios(medioPropio, medioAjeno)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static boolean coincidenMedios(MedioDeContacto medio1, MedioDeContacto medio2) {
+    // Si ambos son Correos
+    if (medio1 instanceof Correo correo1 && medio2 instanceof Correo correo2) {
+      String val1 = correo1.getDireccionCorreo();
+      String val2 = correo2.getDireccionCorreo();
+      if (val1 == null || val2 == null) return false;
+
+      return val1.trim().equalsIgnoreCase(val2.trim());
+    }
+
+    // Si ambos son Telefonos (al usar instanceof Telefono, también incluye automáticamente a
+    // WhatsApp)
+    if (medio1 instanceof Telefono tel1 && medio2 instanceof Telefono tel2) {
+      String val1 = tel1.obtenerNumeroCompleto();
+      String val2 = tel2.obtenerNumeroCompleto();
+      if (val1 == null || val2 == null) return false;
+
+      String limpio1 = val1.replaceAll("\\D", "");
+      String limpio2 = val2.replaceAll("\\D", "");
+
+      return !limpio1.isEmpty()
+          && !limpio2.isEmpty()
+          && (limpio1.endsWith(limpio2) || limpio2.endsWith(limpio1));
+    }
+
+    return false;
+  }
 }

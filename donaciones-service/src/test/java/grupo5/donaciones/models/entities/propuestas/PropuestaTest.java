@@ -2,6 +2,8 @@ package grupo5.donaciones.models.entities.propuestas;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.events.EventoDeDominio;
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.categorias.Categoria;
@@ -83,13 +85,34 @@ class PropuestaTest {
   }
 
   @Test
-  void rechazar_debeSetearEstadoDescartado() {
+  void rechazar_cuandoEstadoEsPendiente_debeSetearEstadoDescartado() {
     Propuesta propuesta = new Propuesta();
     propuesta.setEstado(EstadoPropuesta.PENDIENTE);
 
     propuesta.rechazar();
 
     assertEquals(EstadoPropuesta.DESCARTADA, propuesta.getEstado());
+  }
+
+  @Test
+  void rechazar_cuandoYaEstaAprobada_debeLanzarExcepcion() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.aceptar("actor");
+
+    BusinessStateException exception =
+        assertThrows(BusinessStateException.class, propuesta::rechazar);
+    assertEquals(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA, exception.getError());
+  }
+
+  @Test
+  void rechazar_cuandoYaEstaDescartada_debeLanzarExcepcion() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.rechazar();
+
+    BusinessStateException exception =
+        assertThrows(BusinessStateException.class, propuesta::rechazar);
+    assertEquals(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA, exception.getError());
   }
 
   @Test
@@ -102,17 +125,58 @@ class PropuestaTest {
   }
 
   @Test
-  void confirmar_cuandoDonacionTieneMasCantidadDeLaNecesaria_debeFragmentarYAsignar() {
+  void aceptar_conActorExplicito_debeRegistrarActorEnEvento() {
     Propuesta propuesta = new Propuesta();
     propuesta.asociarNecesidad(necesidad.getId());
-    propuesta.setEstado(EstadoPropuesta.PENDIENTE);
     propuesta.agregarFragmentacion(donacionConSobrante, 5);
 
-    propuesta.confirmar();
+    propuesta.aceptar("admin-user");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
     assertEquals(1, propuesta.getDomainEvents().size());
-    PropuestaAprobada event = (PropuestaAprobada) propuesta.getDomainEvents().getFirst();
+    PropuestaAprobada event = propuesta.getDomainEvents().getFirst();
+    assertEquals("admin-user", event.getActor());
+    assertEquals("admin-user", event.actor());
+    assertInstanceOf(EventoDeDominio.class, event);
+    assertNotNull(event.getId());
+    assertNotNull(event.getTimestamp());
+  }
+
+  @Test
+  void aceptar_conActorNulo_debeAsignarSistemaComoActorPorDefecto() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.agregarFragmentacion(donacionConSobrante, 5);
+
+    propuesta.aceptar(null);
+
+    assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
+    assertEquals("SISTEMA", propuesta.getDomainEvents().getFirst().getActor());
+  }
+
+  @Test
+  void aceptar_conActorVacioOEnBlanco_debeAsignarSistemaComoActorPorDefecto() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.agregarFragmentacion(donacionConSobrante, 5);
+
+    propuesta.aceptar("   ");
+
+    assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
+    assertEquals("SISTEMA", propuesta.getDomainEvents().getFirst().getActor());
+  }
+
+  @Test
+  void aceptar_cuandoDonacionTieneMasCantidadDeLaNecesaria_debeFragmentarYAsignar() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.agregarFragmentacion(donacionConSobrante, 5);
+
+    propuesta.aceptar("admin");
+
+    assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
+    assertEquals(1, propuesta.getDomainEvents().size());
+    PropuestaAprobada event = propuesta.getDomainEvents().getFirst();
 
     // Simulate listener mutation
     String actor = event.actor();
@@ -137,17 +201,16 @@ class PropuestaTest {
   }
 
   @Test
-  void confirmar_cuandoDonacionTieneLaCantidadExacta_debeUsarLaDonacionDirectamente() {
+  void aceptar_cuandoDonacionTieneLaCantidadExacta_debeUsarLaDonacionDirectamente() {
     Propuesta propuesta = new Propuesta();
     propuesta.asociarNecesidad(necesidad.getId());
-    propuesta.setEstado(EstadoPropuesta.PENDIENTE);
     propuesta.agregarFragmentacion(donacionExacta, 5);
 
-    propuesta.confirmar();
+    propuesta.aceptar("admin");
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
     assertEquals(1, propuesta.getDomainEvents().size());
-    PropuestaAprobada event = (PropuestaAprobada) propuesta.getDomainEvents().getFirst();
+    PropuestaAprobada event = propuesta.getDomainEvents().getFirst();
 
     // Simulate listener mutation
     String actor = event.actor();
@@ -169,6 +232,38 @@ class PropuestaTest {
     assertEquals(1, necesidad.getDonacionesAsignadas().size());
     assertSame(donacionExacta, necesidad.getDonacionesAsignadas().getFirst());
     assertInstanceOf(AsignacionRealizada.class, donacionExacta.getEstadoActual());
+  }
+
+  @Test
+  void aceptar_cuandoYaEstaAprobada_debeLanzarExcepcion() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.aceptar("actor");
+
+    BusinessStateException exception =
+        assertThrows(BusinessStateException.class, () -> propuesta.aceptar("otro-actor"));
+    assertEquals(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA, exception.getError());
+  }
+
+  @Test
+  void aceptar_cuandoYaEstaDescartada_debeLanzarExcepcion() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.rechazar();
+
+    BusinessStateException exception =
+        assertThrows(BusinessStateException.class, () -> propuesta.aceptar("actor"));
+    assertEquals(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA, exception.getError());
+  }
+
+  @Test
+  void aceptar_conNecesidadNula_debeLanzarExcepcion() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.agregarFragmentacion(donacionConSobrante, 5);
+
+    ValidationException exception =
+        assertThrows(ValidationException.class, () -> propuesta.aceptar("actor"));
+    assertEquals(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD, exception.getError());
   }
 
   @Test
@@ -203,11 +298,29 @@ class PropuestaTest {
   }
 
   @Test
-  void confirmar_conNecesidadNula_debeLanzarExcepcion() {
+  void getDomainEvents_debeRetornarListaInmodificable() {
     Propuesta propuesta = new Propuesta();
-    propuesta.agregarFragmentacion(donacionConSobrante, 5);
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.aceptar("actor");
 
-    ValidationException exception = assertThrows(ValidationException.class, propuesta::confirmar);
-    assertEquals(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD, exception.getError());
+    List<PropuestaAprobada> events = propuesta.getDomainEvents();
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            events.add(
+                new PropuestaAprobada(UUID.randomUUID(), UUID.randomUUID(), List.of(), "hacker")));
+  }
+
+  @Test
+  void clearDomainEvents_debeLimpiarLaListaDeEventos() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.aceptar("actor");
+
+    assertEquals(1, propuesta.getDomainEvents().size());
+
+    propuesta.clearDomainEvents();
+
+    assertEquals(0, propuesta.getDomainEvents().size());
   }
 }
