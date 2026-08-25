@@ -3,13 +3,12 @@ package grupo5.incentivos.services;
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.ranking.EntradaRanking;
+import grupo5.incentivos.models.entities.ranking.GestorDeRankings;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import grupo5.incentivos.models.repositories.IRankingRepository;
 import java.time.YearMonth;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,28 +30,8 @@ public class RankingService implements IRankingService {
   public RankingMensualDTO calcularYPersistir(YearMonth periodo) {
     rankingRepository.findByPeriodo(periodo).ifPresent(rankingRepository::delete);
     List<DonanteIncentivos> todos = donanteRepository.findAll();
-    RankingMensual ranking = new RankingMensual(periodo);
-    AtomicInteger posicion = new AtomicInteger(1);
 
-    // INICIO LOGICA DE NEGOCIO
-
-    todos.stream()
-        .map(
-            d ->
-                new EntradaRanking(
-                    0,
-                    d.getId(),
-                    d.getNombre(),
-                    d.misionesCompletadasEnMes(periodo.getYear(), periodo.getMonthValue())))
-        .filter(e -> e.getMisionesCompletadas() > 0)
-        .sorted(Comparator.comparingLong(EntradaRanking::getMisionesCompletadas).reversed())
-        .forEach(
-            entrada -> {
-              entrada.setPosicion(posicion.getAndIncrement());
-              ranking.agregarEntrada(entrada);
-            });
-
-    // FIN LOGICA DE NEGOCIO
+    RankingMensual ranking = GestorDeRankings.calcular(todos, periodo);
 
     rankingRepository.save(ranking);
     return RankingMensualDTO.desde(ranking);

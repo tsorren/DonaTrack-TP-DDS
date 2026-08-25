@@ -17,7 +17,6 @@ import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
-import grupo5.incentivos.models.entities.misiones.factory.MisionFactory;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import java.time.LocalDate;
 import java.time.Month;
