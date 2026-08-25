@@ -35,7 +35,12 @@ public class SolicitudPlanificacion implements AggregateRoot {
   private String motivoError;
 
   public SolicitudPlanificacion(LocalDate fecha, Integer cantidadDonaciones, String callbackUrl) {
-    if (fecha == null || cantidadDonaciones == null || callbackUrl == null) {
+    this(UUID.randomUUID(), fecha, cantidadDonaciones, callbackUrl);
+  }
+
+  public SolicitudPlanificacion(
+      UUID id, LocalDate fecha, Integer cantidadDonaciones, String callbackUrl) {
+    if (id == null || fecha == null || cantidadDonaciones == null || callbackUrl == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
     if (callbackUrl.trim().isEmpty()) {
@@ -48,7 +53,7 @@ public class SolicitudPlanificacion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.SOLICITUD_PLANIFICACION_LOTE_EXCEDIDO);
     }
 
-    this.id = UUID.randomUUID();
+    this.id = id;
     this.fecha = fecha;
     this.cantidadDonaciones = cantidadDonaciones;
     this.callbackUrl = callbackUrl;

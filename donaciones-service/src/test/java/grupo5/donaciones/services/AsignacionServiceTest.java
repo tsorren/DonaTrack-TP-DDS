@@ -9,7 +9,7 @@ import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.*;
-import grupo5.donaciones.services.impl.AlgoritmosService;
+import grupo5.donaciones.services.impl.AsignacionService;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
-class AlgoritmosServiceTest {
+class AsignacionServiceTest {
 
   private IDonacionesIndependientesRepository donacionRepositoryMock;
   private INecesidadesRepository necesidadRepositoryMock;
@@ -34,7 +34,7 @@ class AlgoritmosServiceTest {
       entidadesBeneficiariasRepositoryMock;
   private org.springframework.context.ApplicationEventPublisher eventPublisherMock;
 
-  private AlgoritmosService service;
+  private AsignacionService service;
 
   @BeforeEach
   void setUp() {
@@ -52,7 +52,7 @@ class AlgoritmosServiceTest {
     eventPublisherMock = mock(org.springframework.context.ApplicationEventPublisher.class);
 
     service =
-        new AlgoritmosService(
+        new AsignacionService(
             donacionRepositoryMock,
             necesidadRepositoryMock,
             propuestaRepositoryMock,
@@ -71,7 +71,7 @@ class AlgoritmosServiceTest {
     when(necesidadRepositoryMock.findByEstaSatisfechaFalseActivaTrue())
         .thenReturn(Collections.emptyList());
 
-    List<Propuesta> resultado = service.ejecutar();
+    List<Propuesta> resultado = service.generarPropuestas();
 
     assertNotNull(resultado);
     verify(donacionRepositoryMock, times(1)).findEnDeposito();
@@ -99,7 +99,7 @@ class AlgoritmosServiceTest {
 
     service.actualizarEstadoPropuesta(id, EstadoPropuesta.APROBADA);
 
-    verify(propuestaMock, times(1)).confirmar();
+    verify(propuestaMock, times(1)).aceptar("SISTEMA");
     verify(propuestaRepositoryMock, times(1)).save(propuestaMock);
   }
 

@@ -6,10 +6,12 @@ import static org.mockito.Mockito.*;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.*;
-import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.NoRecepcion;
+import grupo5.logistica.models.entities.entregas.RegresoDeposito;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
+import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.impl.EntregasService;
 import grupo5.logistica.services.mappers.EntregaMapper;
 import java.util.List;
@@ -22,20 +24,24 @@ class EntregaServiceTest {
 
   private IEntregasRepository entregasRepository;
   private EntregaMapper entregaMapper;
-  private LogisticaEventPublisher eventPublisher;
+  private ComunicadorEventosLogistica comunicadorEventos;
   private EntregasService entregasService;
 
   @BeforeEach
   void setUp() {
     entregasRepository = mock(IEntregasRepository.class);
-    IRutasService rutasService = mock(IRutasService.class);
+    IRutasRepository rutasRepository = mock(IRutasRepository.class);
     ICamionRepository camionRepository = mock(ICamionRepository.class);
     entregaMapper = mock(EntregaMapper.class);
-    eventPublisher = mock(LogisticaEventPublisher.class);
+    comunicadorEventos = mock(ComunicadorEventosLogistica.class);
 
     entregasService =
         new EntregasService(
-            entregasRepository, rutasService, camionRepository, entregaMapper, eventPublisher);
+            entregasRepository,
+            rutasRepository,
+            camionRepository,
+            entregaMapper,
+            comunicadorEventos);
   }
 
   // ===================== crear() =====================
@@ -170,17 +176,19 @@ class EntregaServiceTest {
         new ReportarNoRecepcionRequestDTO("actor", "No estaba", true);
 
     EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
+    NoRecepcion solicitud = new NoRecepcion(entrega, "actor", "No estaba", true);
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
 
     when(entregasRepository.save(entrega)).thenReturn(entrega);
 
+    when(entregaMapper.toSolicitud(entrega, request)).thenReturn(solicitud);
     when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
     EntregaResponseDTO resultado = entregasService.reportarNoRecepcion(id, request);
 
     verify(entrega).negarEntrega("actor");
-    verify(eventPublisher).publicarEntregaFallida(any());
+    verify(comunicadorEventos).comunicarEntregaFallida(solicitud);
 
     assertEquals(dto, resultado);
   }
@@ -197,11 +205,13 @@ class EntregaServiceTest {
     RegresarAlDepositoRequestDTO request = new RegresarAlDepositoRequestDTO("chofer");
 
     EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
+    RegresoDeposito solicitud = new RegresoDeposito(entrega, "chofer");
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
 
     when(entregasRepository.save(entrega)).thenReturn(entrega);
 
+    when(entregaMapper.toSolicitud(entrega, request)).thenReturn(solicitud);
     when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
     EntregaResponseDTO resultado = entregasService.regresarAlDeposito(id, request);

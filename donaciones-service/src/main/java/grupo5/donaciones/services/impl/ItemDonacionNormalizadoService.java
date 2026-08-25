@@ -62,6 +62,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
 
     BienNormalizado original = item.getBien();
 
+    // INICIO LOGICA DE NEGOCIO
     if (dto.estadoNormalizacion() == EstadoNormalizacion.RECHAZADO
         && dto.subcategoriaId() != null) {
       reclasificarManual(item, original, dto);
@@ -69,6 +70,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
       actualizarEstandar(item, original, dto);
     }
 
+    // FIN LOGICA DE NEGOCIO
     itemNormalizadoRepository.save(item);
 
     if (item.getDonacionOriginalId() != null) {
@@ -157,6 +159,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
                         && i.getDonacionOriginalId().equals(donacionId))
             .toList();
 
+    // INICIO LOGICA DE NEGOCIO
     boolean tienePendientes =
         itemsDeDonacion.stream()
             .anyMatch(
@@ -164,6 +167,8 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
 
     if (!tienePendientes) {
       donacion.marcarNormalizada();
+
+      // FIN LOGICA DE NEGOCIO
       donacionRepository.save(donacion);
       log.info(
           "Todos los ítems de la donación {} fueron revisados. Donación cambia a estado NORMALIZADA y se emite evento.",

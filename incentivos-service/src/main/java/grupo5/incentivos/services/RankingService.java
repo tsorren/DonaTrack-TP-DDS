@@ -34,6 +34,8 @@ public class RankingService implements IRankingService {
     RankingMensual ranking = new RankingMensual(periodo);
     AtomicInteger posicion = new AtomicInteger(1);
 
+    // INICIO LOGICA DE NEGOCIO
+
     todos.stream()
         .map(
             d ->
@@ -49,6 +51,8 @@ public class RankingService implements IRankingService {
               entrada.setPosicion(posicion.getAndIncrement());
               ranking.agregarEntrada(entrada);
             });
+
+    // FIN LOGICA DE NEGOCIO
 
     rankingRepository.save(ranking);
     return RankingMensualDTO.desde(ranking);
