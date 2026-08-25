@@ -1,25 +1,28 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.exceptions.BusinessStateException;
-import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
-import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.donaciones.Bien;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donaciones.Estado;
-import grupo5.donaciones.models.entities.donacionesIndependientes.*;
-import grupo5.donaciones.models.entities.donacionesIndependientes.events.*;
-import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
-import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
+import grupo5.donaciones.fixtures.NecesidadMother;
+import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
+import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.EnDeposito;
+import grupo5.donaciones.models.entities.donacionesIndependientes.EnTraslado;
+import grupo5.donaciones.models.entities.donacionesIndependientes.EntregaFallida;
+import grupo5.donaciones.models.entities.donacionesIndependientes.Entregada;
+import grupo5.donaciones.models.entities.donacionesIndependientes.ListaParaEntregar;
+import grupo5.donaciones.models.entities.donacionesIndependientes.SolicitudCambioEstadoDonacionIndependiente;
+import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.entities.donacionesIndependientes.Vencida;
+import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionAsignada;
+import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionRecibida;
+import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoRutaIniciada;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
-import grupo5.donaciones.models.entities.personas.Humana;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,29 +30,14 @@ import org.junit.jupiter.api.Test;
 class DonacionIndependienteEstadosTest {
 
   private static final String ACTOR = "SISTEMA";
-  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private DonacionIndependiente donacion;
   private NecesidadExtraordinaria receptor;
 
   @BeforeEach
   void setUp() {
-    Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
-    Donante donante = new Donante(humana.getId());
-    Donacion donacionOriginal = new Donacion(donante.getId());
-
-    Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
-    Bien bien = new Bien("Abrigo", "abrigo.png", TEST_DATE.plusMonths(6), Estado.NUEVO, 1.0, 1.0);
-    BienNormalizado bienNormalizado =
-        new BienNormalizado(
-            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
-
-    ItemDonacionNormalizado itemNormalizado =
-        new ItemDonacionNormalizado(donacionOriginal.getId(), bienNormalizado, 5);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(itemNormalizado.getBien(), 5);
-
-    donacion = new DonacionIndependiente(donacionOriginal.getId(), List.of(item));
+    donacion = DonacionIndependienteMother.crearConCantidad(5);
+    receptor = NecesidadMother.extraordinaria(UUID.randomUUID(), 10);
   }
 
   @Test

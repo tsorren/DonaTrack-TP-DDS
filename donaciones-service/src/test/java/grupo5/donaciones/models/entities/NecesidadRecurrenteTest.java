@@ -7,68 +7,40 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
-import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.donaciones.Bien;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donaciones.Estado;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
+import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
-import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
-import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Period;
-import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class NecesidadRecurrenteTest {
+
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private NecesidadRecurrente necesidad;
-  private DonacionIndependiente d1;
-  private DonacionIndependiente d2;
-  private Subcategoria subcategoria;
-  private Categoria categoria;
+  private DonacionIndependiente d40;
+  private DonacionIndependiente d100;
+  private UUID subcategoriaId;
 
   @BeforeEach
   void setUp() {
-    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    Donante donante = new Donante(humana.getId());
-    Donacion donacion = new Donacion(donante.getId());
-    categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
+    subcategoriaId = UUID.randomUUID();
     necesidad =
-        new NecesidadRecurrente(
-            subcategoria.getId(),
-            100,
-            "30 bancos y sillas para el aula",
-            Period.ofWeeks(1),
-            TEST_DATE.minusDays(5));
+        NecesidadMother.recurrenteConFecha(
+            subcategoriaId, 100, TEST_DATE.minusDays(5), Period.ofWeeks(1));
 
-    Bien bienOriginal =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
-    BienNormalizado bien =
-        new BienNormalizado(
-            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
-
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bien, 40);
-
-    d1 = new DonacionIndependiente(donacion.getId(), List.of(item1));
-
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bien, 100);
-
-    d2 = new DonacionIndependiente(donacion.getId(), List.of(item2));
+    d40 = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 40);
+    d100 = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 100);
   }
 
   @Test
   void estaSatisfecha_cuandoNoAlcanzaObjetivo_deberiaSerFalse() {
-    necesidad.asignarDonacion(d1); // Suma 40 de 100
+    necesidad.asignarDonacion(d40);
 
     assertFalse(necesidad.estaSatisfecha());
     assertEquals(40, necesidad.cantidadAcumulada());
@@ -76,14 +48,14 @@ class NecesidadRecurrenteTest {
 
   @Test
   void estaSatisfecha_cuandoAlcanzaObjetivo_deberiaSerTrue() {
-    necesidad.asignarDonacion(d2); // Suma 100 de 100
+    necesidad.asignarDonacion(d100);
 
     assertTrue(necesidad.estaSatisfecha());
   }
 
   @Test
   void generarNuevoPeriodo_deberiaComenzarConCantidadesEnCeroYGuardarElHistorico() {
-    necesidad.asignarDonacion(d2);
+    necesidad.asignarDonacion(d100);
     assertTrue(necesidad.estaSatisfecha());
     assertEquals(100, necesidad.cantidadAcumulada());
 
@@ -91,19 +63,14 @@ class NecesidadRecurrenteTest {
 
     assertFalse(necesidad.estaSatisfecha());
     assertEquals(0, necesidad.cantidadAcumulada());
-
     assertEquals(2, necesidad.getPeriodos().size());
   }
 
   @Test
   void hayQueGenerarNuevo_cuandoPeriodoVencio_deberiaSerTrue() {
     NecesidadRecurrente necesidadVencida =
-        new NecesidadRecurrente(
-            subcategoria.getId(),
-            100,
-            "Test de vencimiento",
-            Period.ofWeeks(1),
-            TEST_DATE.minusDays(10));
+        NecesidadMother.recurrenteConFecha(
+            subcategoriaId, 100, TEST_DATE.minusDays(10), Period.ofWeeks(1));
 
     assertTrue(necesidadVencida.hayQueGenerarNuevo(TEST_DATE));
   }
@@ -118,11 +85,7 @@ class NecesidadRecurrenteTest {
     necesidad.getPeriodos().clear();
 
     BusinessStateException excepcion =
-        assertThrows(
-            BusinessStateException.class,
-            () -> {
-              necesidad.asignarDonacion(d2);
-            });
+        assertThrows(BusinessStateException.class, () -> necesidad.asignarDonacion(d100));
 
     assertEquals(ErrorCatalog.SIN_PERIODO_ACTIVO, excepcion.getError());
   }
@@ -136,7 +99,7 @@ class NecesidadRecurrenteTest {
   @Test
   void renovarPeriodoSiCorresponde_cuandoPeriodoVencio_deberiaRetornarTrueYCrearNuevoPeriodo() {
     LocalDate fechaFutura = TEST_DATE.plusDays(10);
-    necesidad.asignarDonacion(d1);
+    necesidad.asignarDonacion(d40);
 
     assertTrue(necesidad.renovarPeriodoSiCorresponde(fechaFutura));
 
