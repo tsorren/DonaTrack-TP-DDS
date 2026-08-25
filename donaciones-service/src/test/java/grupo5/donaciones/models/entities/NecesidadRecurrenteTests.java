@@ -124,4 +124,31 @@ class NecesidadRecurrenteTests {
 
     assertEquals(ErrorCatalog.SIN_PERIODO_ACTIVO, excepcion.getError());
   }
+
+  @Test
+  void renovarPeriodoSiCorresponde_cuandoPeriodoAunEstaVigente_deberiaRetornarFalse() {
+    assertFalse(necesidad.renovarPeriodoSiCorresponde(TEST_DATE));
+    assertEquals(1, necesidad.getPeriodos().size());
+  }
+
+  @Test
+  void renovarPeriodoSiCorresponde_cuandoPeriodoVencio_deberiaRetornarTrueYCrearNuevoPeriodo() {
+    LocalDate fechaFutura = TEST_DATE.plusDays(10);
+    necesidad.asignarDonacion(d1);
+
+    assertTrue(necesidad.renovarPeriodoSiCorresponde(fechaFutura));
+
+    assertEquals(2, necesidad.getPeriodos().size());
+    assertEquals(0, necesidad.cantidadAcumulada());
+    assertFalse(necesidad.estaSatisfecha());
+  }
+
+  @Test
+  void renovarPeriodoSiCorresponde_cuandoNoTienePeriodos_deberiaRetornarTrueYCrearPeriodo() {
+    necesidad.getPeriodos().clear();
+
+    assertTrue(necesidad.renovarPeriodoSiCorresponde(TEST_DATE));
+
+    assertEquals(1, necesidad.getPeriodos().size());
+  }
 }
