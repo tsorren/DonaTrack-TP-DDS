@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LectorCSVMejorado implements CargadorDonantes {
+public class LectorDonantesCSV implements CargadorDonantes {
 
-  private static final Logger log = LoggerFactory.getLogger(LectorCSVMejorado.class);
+  private static final Logger log = LoggerFactory.getLogger(LectorDonantesCSV.class);
   public static final String BOM =
       "\uFEFF"; // Carácter BOM invisible al inicio de algunos archivos UTF-8
 

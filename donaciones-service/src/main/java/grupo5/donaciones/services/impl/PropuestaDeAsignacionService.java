@@ -10,6 +10,7 @@ import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.propuestas.EjecucionAsignacion;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.GestorPropuestasDeAsignacion;
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
@@ -23,9 +24,8 @@ import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
 import grupo5.donaciones.services.mappers.DireccionMapper;
+import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +47,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   private final IPropuestasRepository propuestaRepository;
   private final IAsignacionesRepository asignacionRepository;
   private final PropuestaMapper propuestaMapper;
+  private final EjecucionAsignacionMapper ejecucionMapper;
   private final ApplicationEventPublisher eventPublisher;
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final IPersonasRepository personasRepository;
@@ -61,9 +62,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     List<Propuesta> propuestas = gestorPropuestas.generarPropuestas(necesidades, donaciones);
     propuestas.forEach(propuestaRepository::save);
 
-    EjecucionAsignacionDTO ejecucion = new EjecucionAsignacionDTO();
-    ejecucion.setFechaEjecucion(LocalDateTime.now(ZoneId.systemDefault()));
-    ejecucion.setCantidadPropuestasGeneradas(propuestas.size());
+    EjecucionAsignacion ejecucion = new EjecucionAsignacion(propuestas.size());
     asignacionRepository.save(ejecucion);
 
     return propuestas.stream().map(propuestaMapper::toDTO).toList();
@@ -94,7 +93,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
 
   @Override
   public List<EjecucionAsignacionDTO> historialEjecuciones() {
-    return asignacionRepository.obtenerHistorial();
+    return asignacionRepository.obtenerHistorial().stream().map(ejecucionMapper::toDTO).toList();
   }
 
   @EventListener

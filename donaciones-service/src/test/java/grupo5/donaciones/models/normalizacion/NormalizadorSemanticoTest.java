@@ -1,12 +1,12 @@
-package grupo5.donaciones.models.entities;
+package grupo5.donaciones.models.normalizacion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import grupo5.donaciones.models.entities.categorias.AliasSubcategoria;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.normalizacion.NormalizadorSemantico;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,8 +69,7 @@ class NormalizadorSemanticoTest {
     subcategoriaCompu.agregarAlias("compu");
     subcategoriaCompu.agregarAlias("pc");
 
-    List<grupo5.donaciones.models.entities.categorias.AliasSubcategoria> todosLosAliases =
-        new ArrayList<>();
+    List<AliasSubcategoria> todosLosAliases = new ArrayList<>();
     todosLosAliases.addAll(subcategoriaElectronica.getAliases());
     todosLosAliases.addAll(subcategoriaCompu.getAliases());
     normalizador = new NormalizadorSemantico(todosLosAliases);

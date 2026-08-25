@@ -1,0 +1,521 @@
+Comentarios de oleadas previas:
+
+Oleada 1:
+FIX-00 y RF Archivo:
+baseline compilable y decision de finalizacion en dominio
+
+FIX-00: agrega Propuesta.confirmar() como unica API publica de aprobacion, delegando a aceptar(null). Corrige llamada sin argumentos en AsignacionService que impedia compilar el modulo.
+
+RF-Archivo: mueve la decision PROCESADO vs PROCESADO_CON_ERRORES desde ImportadorService hacia Archivo.finalizarProcesamiento(int erroresDeNegocio), alineando el codigo con el Diagrama de Clases. El service pasa de decidir el estado a informar el resultado; la entidad decide su propio ciclo de vida.
+
+RF-Persona:
+## Problema
+
+La decisión de si dos personas son la misma (duplicados al importar un CSV de donantes) vivía
+fuera de la entidad `Persona`, repartida en un Strategy de aplicación
+(`CriterioDuplicado` + `CriterioPorDocumento` + `CriterioPorMedioDeContacto` +
+`ValidadorPersonaDuplicada`). Además existía `IValidadorPersonaDuplicada`, una interfaz sin
+ninguna implementación (código huérfano).
+
+## Evidencia
+
+El diagrama de clases actualizado (`diagrama-de-clases-donaciones.puml`) define
+`esDuplicadaDe(Persona): Boolean` directamente en `Persona`, `Humana` y `Juridica`, sin ningún
+Strategy de comparación — es decir, la comparación par a par es una regla de dominio que debe
+vivir en la entidad (Tell-Don't-Ask), no en un servicio de aplicación.
+
+## Objetivo
+
+- Mover la lógica de comparación (documento exacto + medio de contacto: correo case-insensitive,
+  teléfono por sufijo de dígitos incluyendo WhatsApp) a `Persona.esDuplicadaDe(Persona)`.
+- `Humana`/`Juridica` overridean el método delegando en `super.esDuplicadaDe(...)` — por ahora no
+  agregan criterios propios del subtipo (ver "Fuera de scope").
+- Adelgazar `ValidadorPersonaDuplicada`: ya no orquesta una lista de Strategies, solo recorre
+  `IPersonasRepository` preguntándole a cada persona existente si es duplicada de la que se
+  importa.
+- Eliminar `CriterioDuplicado`, `CriterioPorDocumento`, `CriterioPorMedioDeContacto` e
+  `IValidadorPersonaDuplicada` (Strategy reemplazada / interfaz huérfana).
+
+## Fuera de scope
+
+- No se agregaron criterios de duplicado nuevos por subtipo (p. ej. `Humana` comparando
+  nombre+apellido+fechaNacimiento, `Juridica` por razón social). No existen hoy y definirlos
+  implica una decisión de negocio no validada — candidato a un RF propio si se necesita.
+- No se tocó `ImportadorService` (su única dependencia pública, `buscarDuplicado(Persona)`,
+  mantiene la misma firma).
+
+## Tests
+
+- Characterization tests escritos primero contra el código viejo (`CriterioPorDocumentoTest`,
+  `CriterioPorMedioDeContactoTest`, `ValidadorPersonaDuplicadaTest` orquestando Strategies),
+  confirmados en verde antes de mover nada.
+- Portados a `PersonaTest` (comparación documento/correo/teléfono, guards de null/blank,
+  `Juridica` delega correctamente) y a `ValidadorPersonaDuplicadaTest` reescrito para la firma
+  nueva (`IPersonasRepository`).
+- `HumanaTest`/`JuridicaTest` corridos sin cambios para confirmar que no rompí nada existente.
+
+## Diseño resultante
+
+`Persona.esDuplicadaDe` concentra la regla de dominio (documento O medio de contacto en común).
+`ValidadorPersonaDuplicada` queda como el único punto de acceso a datos (recorre el repositorio),
+sin decidir qué significa "ser duplicada". Se evaluaron 3 alternativas (modelo rico puro / mantener
+Strategy / híbrido) — se eligió modelo rico puro por alinear con el DC y por YAGNI (hoy no hay
+ningún requisito de criterios de duplicado configurables/plugables).
+
+## IA utilizada
+
+Análisis del DC y del código actual, comparación de alternativas de diseño, generación de
+characterization tests, implementación del refactor y de los tests nuevos.
+
+
+RF-Propuesta:
+### Problema
+Existía ambigüedad en la API de aprobación de `Propuesta` (`confirmar` vs `aceptar`), ausencia de guardas de transición de estado en el Aggregate Root y una lista no tipada (`List<Object>`) de domain events que no heredaba de un contrato transversal.
+
+### Evidencia
+- `Propuesta.java` exponía `confirmar()` que omitía el actor de auditoría.
+- `domainEvents` utilizaba `List<Object>`.
+- No se impedían transiciones inválidas desde estados finales (`APROBADA` o `DESCARTADA`).
+
+### Objetivo
+- Consolidar a `Propuesta` como el Aggregate Root de referencia del patrón Domain Events.
+- Crear la clase abstracta transversal `EventoDeDominio` en `common-lib` (`id`, `timestamp`) y hacer que `PropuestaAprobada` herede de ella.
+- Estandarizar la API de aprobación exclusivamente en `aceptar(String actor)`.
+- Tipar la colección como `List<PropuestaAprobada>` y asegurar inmutabilidad al exponerla (`Collections.unmodifiableList`).
+
+### Fuera de Scope
+- Refactor de `PosibleFragmentacion.confirmar()` (Oleada 4).
+- Extracción de `GestorPropuestasDeAsignacion` y `consolidar()` (Oleada 4).
+- Modificaciones al listener `onPropuestaAprobada` o integración con logística.
+
+### Tests
+- `PropuestaTest`: 100% de cobertura sobre transiciones de estado, guardas `PENDIENTE`, asignación de actor (`explícito`, `nulo`, `en blanco`), inmutabilidad de la lista y ciclo de `clearDomainEvents`.
+- `AsignacionServiceTest`: verificación de interacción con `aceptar("SISTEMA")`.
+- Suite completa `mvn clean test` pasando en verde en todos los módulos.
+
+### Diseño Resultante
+`Propuesta` es un Aggregate Root puro sin acoplamiento a frameworks. Maneja su ciclo de vida y registra `PropuestaAprobada` (que extiende `EventoDeDominio`). El Application Service persiste la entidad, publica los eventos en el bus de Spring y finalmente invoca `clearDomainEvents()`.
+
+### Verificación
+- Formateo: `mvn spotless:check` ✅
+- Build y tests: `mvn clean test` (Reactor Build Success) ✅
+
+Oleada 2:
+# Oleada 2: Refactor de Domain Events en `Donacion` y Desduplicación de Normalización (RF-04 y RF-05)
+
+## Problema
+
+1. **Falta de Domain Events internos en Aggregate Root**:
+   [`Donacion`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/Donacion.java) no gestionaba sus propios eventos de dominio durante sus transiciones de estado (`CARGADA`, `NORMALIZADA`, `SEGMENTADA`). Las notificaciones se disparaban mediante eventos de aplicación ad-hoc creados y publicados manualmente desde servicios e infraestructura (`eventPublisher.publishEvent(new DonacionNormalizadaEvent(...))`).
+2. **Duplicación de Regla de Negocio (Normalización)**:
+   La regla para evaluar si una donación completó su normalización (verificar que no queden ítems en `PENDIENTE_REVISION`) estaba duplicada con idéntica lógica imperativa en dos clases: [`ProcesadorDeDonaciones`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/infrastructure/ProcesadorDeDonaciones.java) e [`ItemDonacionNormalizadoService`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/services/impl/ItemDonacionNormalizadoService.java).
+3. **Violación de *Tell, Don't Ask***:
+   [`ItemDonacionNormalizado`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/ItemDonacionNormalizado.java) actuaba como una entidad anémica donde los servicios navegaban sus atributos internos (`item.getBien().estadoNormalizacion() == PENDIENTE_REVISION`) para tomar decisiones.
+
+---
+
+## Evidencia
+
+- **Diagrama de Clases ([`donaciones-clases.puml`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/lucid/donaciones-clases.puml))**:
+  - `Donacion` contiene `- eventos: List<EventoDonacion>`, `- registrarEvento(EventoDonacion)` y `+ limpiarEventos(): void`.
+  - Los eventos heredan de una base común (`EventoDonacion`).
+- **Código Previo**:
+  ```java
+  // Duplicado en ProcesadorDeDonaciones L78-86 e ItemDonacionNormalizadoService L163-177:
+  boolean tienePendientes = items.stream()
+      .anyMatch(i -> i.getBien().estadoNormalizacion() == EstadoNormalizacion.PENDIENTE_REVISION);
+  if (!tienePendientes) {
+      donacion.marcarNormalizada();
+      donacionRepository.save(donacion);
+      eventPublisher.publishEvent(new DonacionNormalizadaEvent(donacionId));
+  }
+  ```
+
+---
+
+## Objetivo
+
+1. **Implementar Domain Events en [`Donacion`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/Donacion.java) (RF-04)**:
+   - Crear jerarquía [`EventoDonacion`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/EventoDonacion.java) (`DonacionCargada`, [`DonacionNormalizada`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionNormalizada.java), [`DonacionSegmentada`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionSegmentada.java)) extendiendo de [`EventoDeDominio`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/common-lib/src/main/java/grupo5/common/events/EventoDeDominio.java) de `common-lib`.
+   - Encapsular `domainEvents` en `Donacion` con `getDomainEvents()` inmodificable y `clearDomainEvents()`.
+   - Reemplazar `IllegalStateException` por `BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA)`.
+2. **Encapsular y Desduplicar la Normalización (RF-05)**:
+   - Añadir métodos de comportamiento semántico en [`ItemDonacionNormalizado`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/ItemDonacionNormalizado.java): `estaPendienteDeRevision()`, `estaResuelto()`, `estaAceptado()`.
+   - Crear la política de dominio [`EvaluadorNormalizacion.estanTodosNormalizados(items)`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/EvaluadorNormalizacion.java).
+   - Eliminar `DonacionNormalizadaEvent` y suscribir [`SegmentacionEventListener`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/infrastructure/events/SegmentacionEventListener.java) directamente al domain event [`DonacionNormalizada`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionNormalizada.java).
+   - Unificar el ciclo en Application Services: mutar entidad $\rightarrow$ guardar $\rightarrow$ publicar eventos $\rightarrow$ limpiar eventos.
+
+---
+
+## Fuera de scope
+
+- **Máquina de estados de `DonacionIndependiente`**: Se mantiene intacta para la Oleada 3.
+- **Creación de `SolicitudCambioEstadoDonacionIndependiente`**: Diferido a la Oleada 3.
+- **Algoritmos de asignación y `PosibleFragmentacion`**: Diferido a la Oleada 4.
+- **Reubicación de paquetes de infraestructura**: Diferido a la Oleada 6.
+- **Inmutabilidad de `Bien`**: Se preservó como Value Object crudo inmutable respetando el ADR de 2026-06-13.
+
+---
+
+## Tests
+
+1. **[`DonacionTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/models/entities/donaciones/DonacionTest.java)**:
+   - Validación de creación e inicialización con `DonacionCargada`.
+   - Transiciones válidas e inválidas de estados (`CARGADA` $\rightarrow$ `NORMALIZADA` $\rightarrow$ `SEGMENTADA`).
+   - Inmutabilidad de la lista de `domainEvents` y limpieza con `clearDomainEvents()`.
+   - Invariantes de agregación y remoción de `ItemDonacion`.
+2. **[`EvaluadorNormalizacionTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/models/entities/itemsNormalizados/EvaluadorNormalizacionTest.java)**:
+   - Evaluación de listas con ítems pendientes (retorna `false`).
+   - Evaluación de listas con todos los ítems resueltos/aceptados/rechazados (retorna `true`).
+   - Comportamiento de métodos semánticos en `ItemDonacionNormalizado`.
+3. **Tests de Servicios y Listeners Actualizados**:
+   - [`ProcesadorDeDonacionesTest`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/infrastructure/ProcesadorDeDonacionesTest.java), [`ItemDonacionNormalizadoServiceTest`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/services/ItemDonacionNormalizadoServiceTest.java), [`SegmentacionEventListenerTest`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/infrastructure/SegmentacionEventListenerTest.java), [`DonacionesServiceTest`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/services/DonacionesServiceTest.java).
+
+---
+
+## Diseño resultante
+
+- **Aggregate Root con límites claros**: `Donacion` solo es responsable de su ciclo de vida y la emisión de sus eventos (`DonacionCargada`, `DonacionNormalizada`, `DonacionSegmentada`), sin acoplarse a normalizadores semánticos de infraestructura.
+- **Separación de responsabilidades y Desduplicación**: `EvaluadorNormalizacion` centraliza la regla de negocio pura aplicable tanto al pipeline automático inicial como a la revisión manual del administrador.
+- **Tell, Don't Ask**: `ItemDonacionNormalizado` encapsula el conocimiento sobre su estado de revisión.
+- **Coreografía desacoplada por eventos**: `SegmentacionEventListener` reacciona de forma transparente a `DonacionNormalizada` sin importar si la normalización fue inmediata o manual.
+
+---
+
+## IA utilizada
+
+- **Análisis arquitectónico**: Evaluación de diagramas UML, ADRs históricos de inmutabilidad de bienes y comparación de flujos automáticos vs manuales bajo DDD.
+- **Diseño e Implementación**: Creación de la jerarquía de eventos de dominio, encapsulación en Aggregate Root y extracción de `EvaluadorNormalizacion`.
+- **Generación de Pruebas**: Construcción de suites de caracterización unitaria (`DonacionTest`, `EvaluadorNormalizacionTest`) y actualización de mock verifications.
+- **Formateo y Verificación**: Ejecución y corrección con `mvn spotless:apply` y validación del build multi-módulo (`mvn clean test`).
+
+---
+
+## Verificación humana
+
+- Verificación de la jerarquía de eventos heredando de `EventoDeDominio` en `common-lib`.
+- Validación de que `Bien` permanece como record inmutable y la mutabilidad/estado reside en `BienNormalizado`/`ItemDonacionNormalizado`.
+- Comprobación de que la regla `estanTodosNormalizados` no quedó duplicada y se invoca homogéneamente en los dos flujos.
+- Ejecución limpia de la suite de pruebas multi-módulo del reactor (`BUILD SUCCESS`, 0 errores, 0 fallos).
+
+Oleada 3:
+# Oleada 3: Domain Events de `DonacionIndependiente` y `SolicitudCambioEstadoDonacionIndependiente` (RF-06 y RF-07)
+
+## Problema
+- `DonacionIndependiente` no registraba eventos de dominio internamente y no disponía del método `cambiarEstado(SolicitudCambioEstadoDonacionIndependiente)`.
+- `DonacionesIndependientesService` contenía un switch anémico de 6 ramas que acoplaba el caso de uso con 9 dependencias (repositorios de donantes, personas, entidades y clientes Feign de incentivos y notificaciones), orquestando llamadas remotas síncronas en medio de la transición de estado.
+
+## Evidencia
+- En `donaciones-clases.puml` (L375-404 y L613-642), se especifica `SolicitudCambioEstadoDonacionIndependiente`, `DonacionIndependiente.cambiarEstado(solicitud)` y la jerarquía `EventoDonacionIndependiente` (`EventoDonacionAsignada`, `EventoRutaIniciada`, `EventoDonacionRecibida`, `EventoDonacionFallida`).
+- El código previo delegaba la lógica de negocio y llamadas externas directamente en el switch del servicio de aplicación.
+
+## Objetivo
+1. Crear la jerarquía `EventoDonacionIndependiente` heredando de `EventoDeDominio` (`common-lib`) y gestionar los `domainEvents` dentro de `DonacionIndependiente`.
+2. Crear el parameter object de dominio `SolicitudCambioEstadoDonacionIndependiente` y delegar las transiciones a los estados concretos del patrón State.
+3. Extraer las llamadas remotas hacia `DonacionIndependienteNotificacionesListener`, reduciendo las dependencias del Application Service de 9 a 4.
+
+## Fuera de scope
+- Lógica de asignación y algoritmos (`StockDeDonaciones`, `PosibleFragmentacion.confirmar`) diferida a la Oleada 4.
+- Mapeos de DTOs en `Necesidad` diferida a la Oleada 5.
+
+## Tests
+- `DonacionIndependienteEstadosTest`: Transiciones completas con `SolicitudCambioEstadoDonacionIndependiente`, invariantes y verificación de domain events.
+- `DonacionIndependienteNotificacionesListenerTest`: Validación de eventos de integración con Feign.
+- `DonacionesIndependientesServiceTest`: Validación de casos de uso y publicación de eventos.
+
+## Diseño resultante
+- Separación clara entre Domain Events (hechos del dominio) e Integration DTOs (payloads de comunicación remota).
+- State Pattern enriquecido en el aggregate root, encapsulando invariantes y transiciones.
+- Application Service delgado y desacoplado, enfocado puramente en orquestación de repositorios y publicación de eventos.
+
+## IA utilizada
+- Análisis de diagramas PlantUML y diagnóstico de responsabilidades en `DonacionesIndependientesService`.
+- Diseño e implementación de eventos de dominio, `SolicitudCambioEstadoDonacionIndependiente` y el EventListener desacoplado.
+- Generación y adaptación de pruebas unitarias (`DonacionIndependienteEstadosTest`, `DonacionIndependienteNotificacionesListenerTest`, `DonacionesIndependientesServiceTest`).
+- Formateo con `mvn spotless:apply` y verificación de compilación multi-módulo (`mvn clean test`).
+
+## Verificación humana
+- Validación de que los estados concretos transicionan correctamente y registran sus eventos correspondientes.
+- Comprobación de que `DonacionesIndependientesService` no invoca directamente clientes Feign.
+- Verificación de ejecución exitosa en todo el reactor (BUILD SUCCESS, 0 fallos, 0 errores).
+
+Oleada 4:
+# Oleada 4: Asignación y Propuestas — Unificación de Services, Controllers y `PosibleFragmentacion.confirmar`
+
+## Problema
+- `PosibleFragmentacion` era una clase anémica sin métodos de comportamiento; la lógica de decisión sobre si fragmentar o no una donación residía en el Application Service / EventListener.
+- `AsignacionService` y `PropuestaDeAsignacionService` duplicaban responsabilidades de orquestación, contenían lógica de consolidación pura en métodos estáticos privados y creaban niveles innecesarios de indirección.
+- Los controladores `AsignacionController` y `PropuestasController` estaban fragmentados bajo la misma raíz `/api/asignaciones/*`.
+
+## Evidencia
+- En `donaciones-clases.puml` (L532-568), `PosibleFragmentacion` define el método `+ confirmar(necesidad: Necesidad, actor: String): DonacionIndependiente`, y `GestorPropuestasDeAsignacion` encapsula los algoritmos de matching y `consolidar(p1, p2)`.
+- El código previo delegaba la fragmentación en `PropuestaDeAsignacionService.onPropuestaAprobada` y el matching en `AsignacionService`.
+
+## Objetivo
+1. Trasladar la decisión de negocio de fragmentación a `PosibleFragmentacion.confirmar(necesidad, actor)`.
+2. Crear `GestorPropuestasDeAsignacion` como Domain Service puro de matchmaking y consolidación.
+3. Unificar `AsignacionService` y `PropuestaDeAsignacionService` en un único Application Service (`PropuestaDeAsignacionService` / `IPropuestaDeAsignacionService`), eliminando `AsignacionService.java`.
+4. Unificar `AsignacionController` y `PropuestasController` en `PropuestaDeAsignacionController` / `IPropuestaDeAsignacionController` bajo `@RequestMapping("/api/asignaciones")`.
+
+## Fuera de scope
+- Planificación y generación de períodos de `NecesidadRecurrente` (Oleada 5).
+- Reorganización de paquetes de infraestructura (Oleada 6).
+
+## Tests
+- `PosibleFragmentacionTest`: Validación exhaustiva del método de dominio `confirmar` con y sin fragmentación y guardas.
+- `GestorPropuestasDeAsignacionTest`: Pruebas de reglas de consolidación de propuestas (intersección, unión y listas vacías).
+- `PropuestaDeAsignacionServiceTest`: Pruebas del servicio de aplicación unificado y consumo de eventos.
+- `PropuestaDeAsignacionControllerTest`: Pruebas unitarias de los 4 endpoints REST unificados.
+
+## Diseño resultante
+- Dominio rico con `PosibleFragmentacion` y `GestorPropuestasDeAsignacion` como Domain Service.
+- Application Service delgado y sin duplicación, enfocado en persistencia y orquestación.
+- Controlador web unificado con 100% de compatibilidad en rutas y contratos REST.
+
+## IA utilizada
+- Diagnóstico de responsabilidades y diseño de unificación de servicios y controladores.
+- Implementación de `PosibleFragmentacion.confirmar` y `GestorPropuestasDeAsignacion`.
+- Refactorización y unificación de `PropuestaDeAsignacionService` y `PropuestaDeAsignacionController`.
+- Generación de tests unitarios y validación en todo el reactor multi-módulo (`mvn clean test`).
+
+## Verificación humana
+- Validación de que `PosibleFragmentacion.confirmar` muta y asigna las entidades adecuadamente.
+- Comprobación de que no quedan clases huérfanas de asignaciones previas (`AsignacionService`, `AsignacionController`, etc.).
+- Verificación de ejecución exitosa en todo el reactor (BUILD SUCCESS, 0 fallos, 0 errores).# Oleada 4: Asignación y Propuestas — Unificación de Services, Controllers y `PosibleFragmentacion.confirmar`
+
+## Problema
+- `PosibleFragmentacion` era una clase anémica sin métodos de comportamiento; la lógica de decisión sobre si fragmentar o no una donación residía en el Application Service / EventListener.
+- `AsignacionService` y `PropuestaDeAsignacionService` duplicaban responsabilidades de orquestación, contenían lógica de consolidación pura en métodos estáticos privados y creaban niveles innecesarios de indirección.
+- Los controladores `AsignacionController` y `PropuestasController` estaban fragmentados bajo la misma raíz `/api/asignaciones/*`.
+
+## Evidencia
+- En `donaciones-clases.puml` (L532-568), `PosibleFragmentacion` define el método `+ confirmar(necesidad: Necesidad, actor: String): DonacionIndependiente`, y `GestorPropuestasDeAsignacion` encapsula los algoritmos de matching y `consolidar(p1, p2)`.
+- El código previo delegaba la fragmentación en `PropuestaDeAsignacionService.onPropuestaAprobada` y el matching en `AsignacionService`.
+
+## Objetivo
+1. Trasladar la decisión de negocio de fragmentación a `PosibleFragmentacion.confirmar(necesidad, actor)`.
+2. Crear `GestorPropuestasDeAsignacion` como Domain Service puro de matchmaking y consolidación.
+3. Unificar `AsignacionService` y `PropuestaDeAsignacionService` en un único Application Service (`PropuestaDeAsignacionService` / `IPropuestaDeAsignacionService`), eliminando `AsignacionService.java`.
+4. Unificar `AsignacionController` y `PropuestasController` en `PropuestaDeAsignacionController` / `IPropuestaDeAsignacionController` bajo `@RequestMapping("/api/asignaciones")`.
+
+## Fuera de scope
+- Planificación y generación de períodos de `NecesidadRecurrente` (Oleada 5).
+- Reorganización de paquetes de infraestructura (Oleada 6).
+
+## Tests
+- `PosibleFragmentacionTest`: Validación exhaustiva del método de dominio `confirmar` con y sin fragmentación y guardas.
+- `GestorPropuestasDeAsignacionTest`: Pruebas de reglas de consolidación de propuestas (intersección, unión y listas vacías).
+- `PropuestaDeAsignacionServiceTest`: Pruebas del servicio de aplicación unificado y consumo de eventos.
+- `PropuestaDeAsignacionControllerTest`: Pruebas unitarias de los 4 endpoints REST unificados.
+
+## Diseño resultante
+- Dominio rico con `PosibleFragmentacion` y `GestorPropuestasDeAsignacion` como Domain Service.
+- Application Service delgado y sin duplicación, enfocado en persistencia y orquestación.
+- Controlador web unificado con 100% de compatibilidad en rutas y contratos REST.
+
+## IA utilizada
+- Diagnóstico de responsabilidades y diseño de unificación de servicios y controladores.
+- Implementación de `PosibleFragmentacion.confirmar` y `GestorPropuestasDeAsignacion`.
+- Refactorización y unificación de `PropuestaDeAsignacionService` y `PropuestaDeAsignacionController`.
+- Generación de tests unitarios y validación en todo el reactor multi-módulo (`mvn clean test`).
+
+## Verificación humana
+- Validación de que `PosibleFragmentacion.confirmar` muta y asigna las entidades adecuadamente.
+- Comprobación de que no quedan clases huérfanas de asignaciones previas (`AsignacionService`, `AsignacionController`, etc.).
+- Verificación de ejecución exitosa en todo el reactor (BUILD SUCCESS, 0 fallos, 0 errores).
+
+Oleada 5:
+# PR — Oleada 5: Planificación de Necesidades Recurrentes y Enriquecimiento de Dominio (DDD)
+
+## Problema
+Inicialmente existía una mezcla de responsabilidades en la planificación periódica de necesidades:
+1. El scheduler (`PlanificadorDeNecesidades`) delegaba en `PlanificacionNecesidadesService`, pero la lógica de renovación de períodos estaba delegada en una clase utilitaria anémica (`GestorNecesidades`).
+2. `GestorNecesidades` violaba el principio de encapsulación (*Tell, Don't Ask*) y la Ley de Demeter al consultar el período actual de `NecesidadRecurrente`, mutarlo externamente invocando `.finalizo()` y luego solicitar la creación de un nuevo período.
+3. Además, `GestorNecesidades` estaba anotado con `@Component`, acoplando indebidamente la capa de dominio a frameworks de infraestructura (Spring).
+
+## Evidencia
+- **Código anterior:** `GestorNecesidades` iteraba la colección de necesidades, preguntaba `necesidad.hayQueGenerarNuevo(fecha)`, obtenía el período con `necesidad.obtenerPeriodoActual().finalizo()` y forzaba `necesidad.generarNuevoPeriodo()`.
+- **Divergencia de diseño:** Aunque el plan inicial planteaba conservar `GestorNecesidades` como un mediador entre el servicio de aplicación y el dominio, el análisis de DDD demostró que la gestión de períodos es una invariante exclusiva de la raíz de agregado `NecesidadRecurrente`.
+
+## Objetivo
+- **Enriquecer la entidad de dominio (`NecesidadRecurrente`):** Agregar el método de negocio `renovarPeriodoSiCorresponde(LocalDate fechaActual)` que valida si el período venció, finaliza el período anterior y genera el nuevo ciclo en un solo paso cohesivo y atómico.
+- **Eliminar `GestorNecesidades`:** Suprimir la clase intermediaria anémica y desacoplar completamente el paquete de dominio de anotaciones de Spring (`@Component`).
+- **Adelgazar `PlanificacionNecesidadesService`:** Reducir el servicio de aplicación a su rol puro de orquestador (recuperar necesidades activas, filtrar aquellas que mutaron mediante `renovarPeriodoSiCorresponde` y persistirlas en el repositorio).
+- **Mantener el Scheduler delgado:** `PlanificadorDeNecesidades` solo actúa como disparador temporal del caso de uso.
+
+## Fuera de scope
+- No se modificaron las reglas de cálculo o asignación de donaciones en `PeriodoNecesidad`.
+- No se alteró la estructura de persistencia ni la interfaz `INecesidadesRepository`.
+- No se realizaron reorganizaciones de paquetes (reservado para la Oleada 6).
+
+## Tests
+La suite de pruebas protege exhaustivamente el nuevo flujo y las reglas de negocio:
+- **`NecesidadRecurrenteTests`:**
+  - `renovarPeriodoSiCorresponde_cuandoPeriodoAunEstaVigente_deberiaRetornarFalse()`: valida que no se modifique el agregado si no venció.
+  - `renovarPeriodoSiCorresponde_cuandoPeriodoVencio_deberiaRetornarTrueYCrearNuevoPeriodo()`: valida la finalización del período vencido, la creación del nuevo período con acumuladores en cero y la preservación del histórico.
+  - `renovarPeriodoSiCorresponde_cuandoNoTienePeriodos_deberiaRetornarTrueYCrearPeriodo()`: valida la inicialización si no existían períodos.
+- **`PlanificacionNecesidadesServiceTest`:**
+  - Valida que el servicio consulte las necesidades recurrentes activas y no satisfechas.
+  - Valida que únicamente se invoque `necesidadRepository.save(...)` para aquellas entidades que fueron efectivamente modificadas/renovadas.
+
+## Diseño resultante
+- **Arquitectura en capas limpia:**
+  $$\text{Scheduler (Trigger)} \longrightarrow \text{Application Service (Orquestación/Persistencia)} \longrightarrow \text{NecesidadRecurrente (Lógica de Dominio)}$$
+- **Protección de Invariantes y Encapsulación:** `NecesidadRecurrente` controla su propio ciclo de vida y la consistencia de sus `PeriodoNecesidad`, garantizando un modelo de dominio rico (*Rich Domain Model*).
+- **Pureza del Dominio:** La capa de entidades queda constituida únicamente por POJOs puros de Java sin dependencias de infraestructura ni de Spring.
+
+## IA utilizada
+- **Análisis de Diseño:** Evaluación comparativa entre `@Component`, métodos estáticos y métodos de instancia/entidad bajo los lineamientos de DDD.
+- **Implementación y Refactor:** Creación del método en la entidad, refactorización de `PlanificacionNecesidadesService` y eliminación de clases redundantes.
+- **Generación y actualización de Tests:** Actualización de las suites unitarias de aplicación y dominio.
+
+## Verificación humana
+- [x] Verificado el cumplimiento de *Tell, Don't Ask* en `NecesidadRecurrente`.
+- [x] Verificada la eliminación total de dependencias de Spring en el paquete de entidades de necesidades.
+- [x] Ejecución completa de la suite Maven: `mvn test` (**314 tests pasando, 0 fallos, 0 errores**).
+- [x] Verificación de formateo de código mediante Spotless.
+
+Oleada 6:
+RF-Oleada6: reorganizacion de paquetes - mover logica de dominio fuera de infrastructure
+- Mover infrastructure.algoritmos.* -> models.algoritmos.*
+  AlgoritmoAsignacion, AlgoritmoCompatibilidadSemantica,
+  AlgoritmoPrioridadSubAtendidos, StockDeDonaciones
+- Mover infrastructure.analizadores.{Normalizador,NormalizadorBasicoTexto,
+  NormalizadorSemantico,ComparadorTexto} -> models.normalizacion.*
+- Mover infrastructure.segmentadores.* -> models.segmentacion.*
+  AbstractSegmentador, SegmentadorSimple, SegmentadorComplejo
+- Actualizar imports en AsignacionService y NormalizadorSemanticoBien
+- Actualizar package y imports de todos los tests afectados
+- infrastructure/ queda solo con: clients, events, csv, seeder,
+  messaging, NormalizadorSemanticoBien
+
+Sin cambios funcionales. Suite: 316 PASS, 0 FAIL.
+
+
+# PR — Oleada 6: Reorganización de Paquetes — Extracción de Lógica de Dominio fuera de Infrastructure
+
+## Problema
+Componentes con lógica pura de negocio y algoritmos de dominio se encontraban alojados dentro del paquete `infrastructure`:
+1. **Algoritmos de Asignación y Matching:** Residían en `infrastructure.algoritmos`.
+2. **Normalizadores y Comparadores de Texto:** Residían en `infrastructure.analizadores`.
+3. **Segmentadores de Bienes:** Residían en `infrastructure.segmentadores`.
+
+Tener estas clases en `infrastructure` violaba la separación de capas de Arquitectura Limpia/Hexagonal y DDD, ya que son POJOs puros con reglas de negocio del dominio que no dependen de frameworks, bases de datos ni clientes externos.
+
+## Evidencia
+- En el Diagrama de Clases objetivo (`donaciones-clases.puml`), los algoritmos de asignación, las estrategias de segmentación y los comparadores semánticos forman parte integral del modelo de dominio.
+- Las clases `AlgoritmoAsignacion`, `NormalizadorSemantico`, `SegmentadorSimple`, etc., no tenían dependencias de Spring ni de infraestructura externa, siendo candidatos directos para migrar a `models.*`.
+
+## Objetivo
+- **Reorganizar paquetes de Dominio:**
+  - `infrastructure.algoritmos.*` $\longrightarrow$ `grupo5.donaciones.models.algoritmos.*` (`AlgoritmoAsignacion`, `AlgoritmoCompatibilidadSemantica`, `AlgoritmoPrioridadSubAtendidos`, `StockDeDonaciones`).
+  - `infrastructure.analizadores.*` (lógica pura) $\longrightarrow$ `grupo5.donaciones.models.normalizacion.*` (`Normalizador`, `NormalizadorBasicoTexto`, `NormalizadorSemantico`, `ComparadorTexto`).
+  - `infrastructure.segmentadores.*` $\longrightarrow$ `grupo5.donaciones.models.segmentacion.*` (`AbstractSegmentador`, `SegmentadorSimple`, `SegmentadorComplejo`).
+- **Preservar componentes de infraestructura legítimos:** `NormalizadorSemanticoBien` permanece en `infrastructure.analizadores` por ser un `@Component` de Spring acoplado a repositorios y properties.
+- **Sincronización y Resolución de Conflictos:** Merge con `E4_refactor_donaciones` (Oleadas 1 a 5), resolviendo el conflicto por la eliminación de `AsignacionService` (unificado en la Oleada 4) y actualizando los imports en `GestorPropuestasDeAsignacion`.
+- **Migración de Tests:** Reubicar todos los tests unitarios bajo sus paquetes espejo en `src/test/java/.../models/*`.
+
+## Fuera de scope
+- No se introdujeron cambios funcionales ni de comportamiento en los algoritmos ni normalizadores (*Zero behavioral regression*).
+- Limpieza de interfaces legacy huérfanas o métodos muertos (reservado para la Oleada 7).
+
+## Tests
+- Se ejecutaron todos los tests unitarios migrados (`StockDeDonacionesTest`, `AlgoritmoCompatibilidadSemanticaTest`, `AlgoritmoPrioridadSubAtendidosTest`, `NormalizadorSemanticoTest`, `SegmentadorSimpleTest`, `SegmentadorComplejoTest`, etc.).
+- Se validaron las interacciones con `GestorPropuestasDeAsignacionTest` y `NormalizadorSemanticoBienTest`.
+- Suite completa multi-módulo ejecutada exitosamente: **314 tests pasando en `donaciones-service`**, 546+ tests en el reactor general (0 fallos, 0 errores).
+
+## Diseño resultante
+- **Capa de Dominio enriquecida y limpia:** Los subpaquetes de `models/` (`algoritmos`, `normalizacion`, `segmentacion`, `entities`, `repositories`, `ports`) concentran toda la lógica pura de negocio.
+- **Capa de Infraestructura acotada:** `infrastructure/` queda exclusivamente reservada para adaptadores de entrada/salida: clientes Feign (`clients/`), listeners de eventos (`events/`), seeders (`CatalogDataInitializer`), lectores de archivos (`csv/`) y beans de orquestación técnica (`NormalizadorSemanticoBien`, `ProcesadorDeDonaciones`).
+
+## IA utilizada
+- Diagnóstico de dependencias e identificación de clases de dominio dentro de `infrastructure`.
+- Resolución de conflictos *delete/modify* contra `E4_refactor_donaciones` (Oleada 4 y 5).
+- Reubicación de paquetes, actualización de imports y migración de suites de prueba.
+- Verificación cruzada con `mvn spotless:check` y `mvn clean test`.
+
+## Verificación humana
+- [x] Verificado que `models.algoritmos`, `models.normalizacion` y `models.segmentacion` son POJOs puros sin anotaciones de Spring.
+- [x] Verificada la correcta integración con las clases unificadas de la Oleada 4 (`GestorPropuestasDeAsignacion`) y Oleada 5 (`NecesidadRecurrente`).
+- [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
+- [x] Verificación de formateo con Spotless: `mvn spotless:check` (**CLEAN**).
+
+---
+
+Oleada 7:
+# PR — Oleada 7: Cierre Integral de Refactor — Persistencia Pura, Normalización DDD, Declaratividad y Estandarización de Calidad
+
+## Problema
+Al finalizar las oleadas 1 a 6, se identificaron cuatro grupos de deudas técnicas arquitectónicas y de diseño:
+1. **Persistencia Antipatrón DTO en Repositorio de Asignaciones**: `IAsignacionesRepository` persistía `EjecucionAsignacionDTO` en lugar de una entidad del modelo de dominio, violando la pureza de la capa de persistencia en DDD.
+2. **Normalización Acoplada a Infraestructura**: `NormalizadorSemanticoBien` permanecía en `infrastructure.analizadores` como `@Component` inyectando repositorios y `@Value`, mientras que `ProcesadorDeDonaciones` retenía dependencias huérfanas (`Segmentador`, `donacionesIndependientesRepository`, `incentivosFeignClient`). Asimismo, `ItemDonacionNormalizadoService` utilizaba filtrado imperativo en lugar del comportamiento de dominio `estaPendienteDeRevision()`.
+3. **Nombres No Declarativos y Ruptura de Contratos / Colisiones**:
+   - `LectorCSVMejorado` utilizaba versionado informal en el nombre y se inyectaba directamente como clase concreta en `ImportadorService` en lugar de utilizar el puerto `CargadorDonantes`.
+   - `EstadoDonacion.java` en `donacionesIndependientes` colisionaba con el enum `EstadoDonacion` de `donaciones`, dificultando la declaratividad y comprensión.
+   - `IDonacionesIndependientesController` no existía como interfaz, rompiendo la convención arquitectónica del servicio.
+   - `IArchivoDonantesService` e `IDonantesController` carecían de los métodos para la carga asincrónica de archivos de donantes.
+4. **Residuos Legacy y Tests Desalineados**: Existían carpetas y archivos huérfanos (`routes/`, `.gitkeep` innecesarios), nombres de tests en plural (`*Tests.java`), comentarios residuales (`// refactor ok`), FQCN en inyecciones e imports con comodín (`*`).
+
+## Evidencia
+- En `donaciones-clases.puml` (L532-642), se especifica la entidad de dominio `EjecucionAsignacion` (`UUID id`, `LocalDateTime fechaEjecucion`, `Integer cantidadPropuestasGeneradas`), el puerto de dominio `CargadorDonantes` y la interfaz de estado `EstadoDonacionIndependiente`.
+- El repositorio `IAsignacionesRepository` operaba con DTOs en lugar de entidades.
+- `NormalizadorSemanticoBien` contenía delimitadores `// INICIO LOGICA DE NEGOCIO` y `// FIN LOGICA DE NEGOCIO`, evidenciando que era lógica de dominio atrapada en un adapter de Spring.
+
+## Objetivo
+1. **Persistencia Pura (Componente A)**:
+   - Crear entidad de dominio `EjecucionAsignacion` en `models.entities.propuestas`.
+   - Refactorizar `IAsignacionesRepository` y `AsignacionesRepositoryEnMemoria` para almacenar `EjecucionAsignacion`.
+   - Crear `EjecucionAsignacionMapper` y desacoplar `PropuestaDeAsignacionService`.
+2. **Normalización DDD (Componente B)**:
+   - Migrar `NormalizadorSemanticoBien` a `grupo5.donaciones.models.normalizacion` como Domain Service POJO puro sin anotaciones de Spring ni repositorios inyectados.
+   - Limpiar `ProcesadorDeDonaciones` eliminando dependencias huérfanas y delegando en el domain service puro.
+   - Aplicar *Tell, Don't Ask* en `ItemDonacionNormalizadoService.obtenerPendientes()` delegando en `ItemDonacionNormalizado::estaPendienteDeRevision`.
+3. **Declaratividad y Nombres (Componente C)**:
+   - Renombrar `LectorCSVMejorado` $\longrightarrow$ `LectorDonantesCSV` e inyectar el puerto `CargadorDonantes` en `ImportadorService`.
+   - Renombrar `EstadoDonacion` $\longrightarrow$ `EstadoDonacionIndependiente` y actualizar todos los estados concretos y referencias.
+   - Crear e implementar `IDonacionesIndependientesController`.
+   - Completar contratos en `IArchivoDonantesService` e `IDonantesController`.
+4. **Limpieza Legacy y Estandarización de Tests (Componente D)**:
+   - Eliminar directorio `routes/`, `models/entities/gitkeep` y `.gitkeep` redundantes.
+   - Eliminar comentarios `// refactor ok` en `CategoriasService` y `SubcategoriasService`.
+   - Reemplazar FQCNs e imports con comodín por imports explícitos.
+   - Estandarizar nombres de tests a singular (`AsignableTest`, `EntidadBeneficiariaTest`, `NecesidadExtraordinariaTest`, `NecesidadRecurrenteTest`).
+   - Crear suites completas de prueba para `ArchivoDonantesServiceTest` e `ImportadorServiceTest`.
+
+## Fuera de scope
+- Modificaciones al contrato de APIs externas o esquemas de persistencia relacional fuera de `donaciones-service`.
+
+## Tests
+- **Suites de Dominio Actualizadas/Creadas**:
+  - `NormalizadorSemanticoBienTest`: Casos de scoring semántico, umbrales y guardas en `models.normalizacion`.
+  - `NormalizadorSemanticoTest`: Alias y normalización canónica en `models.normalizacion`.
+  - `AsignableTest`, `EntidadBeneficiariaTest`, `NecesidadExtraordinariaTest`, `NecesidadRecurrenteTest`: Estandarizados y con cobertura de invariantes de negocio.
+  - `DonacionIndependienteEstadosTest`: Máquina de estados con `EstadoDonacionIndependiente`.
+- **Suites de Servicios y Controladores**:
+  - `PropuestaDeAsignacionServiceTest`: Integración con entidad `EjecucionAsignacion` y mapper.
+  - `ProcesadorDeDonacionesTest`: Integración desacoplada con el Domain Service.
+  - `ArchivoDonantesServiceTest` e `ImportadorServiceTest`: Importación asincrónica, mapeo de donantes y detección de duplicados.
+  - `LectorDonantesCSVTest`: Lectura de CSVs válidos, vacíos, desordenados y dataset con BOM UTF-8.
+- **Resultado en `donaciones-service`**: **366 tests pasando, 0 fallos, 0 errores**.
+- **Resultado en todo el Reactor Multi-Módulo**: **7/7 módulos pasando exitosamente (`BUILD SUCCESS`)**.
+
+## Diseño resultante
+- **DDD Estricto y Pureza de Repositorios**: Todos los repositorios operan exclusivamente sobre entidades de dominio y aggregates (`EjecucionAsignacion`, `Donacion`, `Necesidad`, `Persona`, `Donante`, `ItemDonacionNormalizado`, etc.).
+- **Desacoplamiento Total de Infraestructura**: `NormalizadorSemanticoBien` es un Domain Service puro y reutilizable sin conocimiento del framework ni de la base de datos.
+- **Declaratividad y Consistencia**: Eliminación de ambigüedades de nombrado (`EstadoDonacionIndependiente`, `LectorDonantesCSV`), desacoplamiento mediante puertos (`CargadorDonantes`) y 100% de controladores alineados con sus contratos de interfaz.
+- **Código Limpio y Libre de Smells**: Eliminación de imports wildcard, FQCNs en campos y archivos legacy huérfanos.
+
+## IA utilizada
+- Diagnóstico exhaustivo de consistencia contra `donaciones-clases.puml` y principios DDD.
+- Refactorización guiada de persistencia pura, migración de domain services y resolución de colisiones de nombres.
+- Estandarización de nombres y generación de tests unitarios faltantes.
+- Formateo con Spotless (`mvn spotless:apply`) y validación de compilación y pruebas en todo el reactor Maven (`mvn clean test`).
+
+## Verificación humana
+- [x] Verificado que `IAsignacionesRepository` persiste `EjecucionAsignacion` y no un DTO.
+- [x] Verificado que `NormalizadorSemanticoBien` es un POJO de dominio puro sin `@Component`, `@Value` ni repositorios inyectados.
+- [x] Verificado que `ImportadorService` inyecta el puerto `CargadorDonantes` y la clase implementadora se llama `LectorDonantesCSV`.
+- [x] Verificado que `EstadoDonacionIndependiente` resolvió la colisión con `EstadoDonacion`.
+- [x] Verificada la existencia e implementación de `IDonacionesIndependientesController`.
+- [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos, 0 fallos, 0 errores**).
+- [x] Verificación de formateo con Spotless: `mvn spotless:check` (**CLEAN**).

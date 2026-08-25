@@ -1,6 +1,13 @@
 package grupo5.donaciones.services.mappers;
 
-import grupo5.donaciones.dto.mediosDeContacto.*;
+import grupo5.donaciones.dto.mediosDeContacto.CorreoInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.CorreoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.TelefonoInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.TelefonoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.WhatsAppInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.WhatsAppOutputDTO;
 import grupo5.donaciones.models.entities.personas.Correo;
 import grupo5.donaciones.models.entities.personas.MedioDeContacto;
 import grupo5.donaciones.models.entities.personas.Telefono;

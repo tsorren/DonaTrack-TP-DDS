@@ -3,7 +3,7 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 
-public interface EstadoDonacion {
+public interface EstadoDonacionIndependiente {
 
   TipoEstadoDonacion getTipo();
 

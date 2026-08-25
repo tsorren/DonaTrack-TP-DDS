@@ -4,8 +4,22 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.comunicaciones.MedioDeContactoReplicaDTO;
 import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
-import grupo5.donaciones.dto.personas.*;
-import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.dto.personas.HumanaInputDTO;
+import grupo5.donaciones.dto.personas.HumanaOutputDTO;
+import grupo5.donaciones.dto.personas.JuridicaInputDTO;
+import grupo5.donaciones.dto.personas.JuridicaOutputDTO;
+import grupo5.donaciones.dto.personas.PersonaInputDTO;
+import grupo5.donaciones.dto.personas.PersonaOutputDTO;
+import grupo5.donaciones.models.entities.personas.Correo;
+import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.MedioDeContacto;
+import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.Telefono;
+import grupo5.donaciones.models.entities.personas.TipoDocumento;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
+import grupo5.donaciones.models.entities.personas.TipoPersona;
+import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import grupo5.donaciones.models.entities.personas.factories.PersonaFactory;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -41,7 +55,7 @@ public class PersonaMapper {
   private Juridica toJuridicaEntity(JuridicaInputDTO j) {
     Humana representante =
         (j.representantes() != null && !j.representantes().isEmpty())
-            ? toHumanaEntity(j.representantes().get(0))
+            ? toHumanaEntity(j.representantes().getFirst())
             : null;
     TipoJuridico tipo = j.tipoJuridico() != null ? j.tipoJuridico() : TipoJuridico.ONG;
     Juridica juridica =
