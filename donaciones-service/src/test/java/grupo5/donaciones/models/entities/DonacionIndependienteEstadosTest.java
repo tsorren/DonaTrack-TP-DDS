@@ -10,6 +10,7 @@ import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.*;
+import grupo5.donaciones.models.entities.donacionesIndependientes.events.*;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
@@ -19,6 +20,7 @@ import grupo5.donaciones.models.entities.personas.Humana;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +30,6 @@ class DonacionIndependienteEstadosTest {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private DonacionIndependiente donacion;
-
   private NecesidadExtraordinaria receptor;
 
   @BeforeEach
@@ -54,12 +55,16 @@ class DonacionIndependienteEstadosTest {
   @Test
   void nuevaDonacionIndependiente_comienzaEnEstadoEnDeposito() {
     assertInstanceOf(EnDeposito.class, donacion.getEstadoActual());
+    assertTrue(donacion.getDomainEvents().isEmpty());
   }
 
   @Test
-  void asignar_desdeEnDeposito_transicionaCorrectamente() {
+  void asignar_desdeEnDeposito_transicionaCorrectamenteYEmiteEvento() {
     donacion.asignar(ACTOR, receptor);
     assertEquals(1, donacion.getHistorial().size());
+    assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
+    assertEquals(1, donacion.getDomainEvents().size());
+    assertInstanceOf(EventoDonacionAsignada.class, donacion.getDomainEvents().getFirst());
   }
 
   @Test
@@ -114,6 +119,7 @@ class DonacionIndependienteEstadosTest {
   void vencer_desdeEnDeposito_transicionaCorrectamente() {
     donacion.vencer(ACTOR);
     assertFalse(donacion.getHistorial().isEmpty());
+    assertInstanceOf(Vencida.class, donacion.getEstadoActual());
   }
 
   @Test
@@ -127,5 +133,59 @@ class DonacionIndependienteEstadosTest {
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     assertThrows(Exception.class, () -> donacion.registrarFalla(null, ACTOR));
+  }
+
+  @Test
+  void cambiarEstado_conSolicitudCompleta_ejecutaTransicionYRegistraEventos() {
+    // 1. Asignar
+    SolicitudCambioEstadoDonacionIndependiente solAsignar =
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, ACTOR);
+    donacion.cambiarEstado(solAsignar);
+    assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
+    assertEquals(1, donacion.getDomainEvents().size());
+    assertInstanceOf(EventoDonacionAsignada.class, donacion.getDomainEvents().getFirst());
+
+    // 2. Planificar Ruta
+    SolicitudCambioEstadoDonacionIndependiente solPlanificar =
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.LISTA_PARA_ENTREGAR, ACTOR);
+    donacion.cambiarEstado(solPlanificar);
+    assertInstanceOf(ListaParaEntregar.class, donacion.getEstadoActual());
+
+    // 3. Iniciar Recorrido
+    SolicitudCambioEstadoDonacionIndependiente solTraslado =
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.EN_TRASLADO, null, null, "http://mapa/ruta", null, null, ACTOR);
+    donacion.cambiarEstado(solTraslado);
+    assertInstanceOf(EnTraslado.class, donacion.getEstadoActual());
+    assertEquals(2, donacion.getDomainEvents().size());
+    assertInstanceOf(EventoRutaIniciada.class, donacion.getDomainEvents().get(1));
+
+    // 4. Confirmar Entrega
+    SolicitudCambioEstadoDonacionIndependiente solEntrega =
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "ABC-123", null, ACTOR);
+    donacion.cambiarEstado(solEntrega);
+    assertInstanceOf(Entregada.class, donacion.getEstadoActual());
+    assertEquals(3, donacion.getDomainEvents().size());
+    assertInstanceOf(EventoDonacionRecibida.class, donacion.getDomainEvents().get(2));
+
+    // Limpieza
+    donacion.clearDomainEvents();
+    assertTrue(donacion.getDomainEvents().isEmpty());
+  }
+
+  @Test
+  void getDomainEvents_retornaListaInmodificable() {
+    donacion.asignar(ACTOR, receptor);
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            donacion
+                .getDomainEvents()
+                .add(
+                    new EventoDonacionAsignada(
+                        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())));
   }
 }
