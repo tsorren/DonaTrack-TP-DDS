@@ -27,12 +27,14 @@ public class PlanificacionController implements IPlanificacionController {
     this.planificacionService = planificacionService;
   }
 
-  @PostMapping("/callback/rutas")
+  @Override
+  @PostMapping("/resultados")
   public ResponseEntity<SolicitudPlanificacionResponseDTO> procesarCallback(
       @RequestBody CallbackPlanificacionRequestDTO dto) {
     return ResponseEntity.ok(planificacionService.procesarCallback(dto));
   }
 
+  @Override
   @GetMapping("/planificaciones/{id}")
   public ResponseEntity<SolicitudPlanificacionResponseDTO> obtenerPorId(
       @PathVariable("id") UUID id) {

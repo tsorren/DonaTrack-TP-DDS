@@ -3,13 +3,11 @@ package grupo5.logistica.services.impl;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
-import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
-import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
-import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.dto.rutas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.GestorDeRutas;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
@@ -84,47 +82,43 @@ public class RutasService implements IRutasService {
   }
 
   @Override
-  public RutaResponseDTO iniciar(UUID id, IniciarRutaRequestDTO dto) {
-    if (dto == null) {
+  public List<RutaResponseDTO> listarPorCamion(UUID camionId) {
+    return rutasRepository.findByCamionId(camionId).stream()
+        .map(rutaMapper::toResponseDTO)
+        .toList();
+  }
+
+  @Override
+  public RutaResponseDTO cambiarEstado(UUID id, CambioEstadoRutaRequestDTO request) {
+    if (request == null || request.estado() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
     Ruta ruta = buscarRuta(id);
 
+    UUID choferIdToUse = request.choferId() != null ? request.choferId() : ruta.getChoferId();
+    Chofer chofer = buscarChofer(choferIdToUse);
     Camion camion = buscarCamion(ruta.getCamionId());
-    Chofer chofer = buscarChofer(dto.choferId());
-    List<Entrega> entregasDeRuta = buscarEntregasDeRuta(ruta);
-    GestorDeRutas.iniciarRuta(ruta, chofer, camion, entregasDeRuta, dto.actor());
 
-    entregasDeRuta.forEach(entregasRepository::save);
-    camionRepository.save(camion);
-    choferesRepository.save(chofer);
+    List<Entrega> entregas = null;
+    if (request.estado() == EstadoRuta.EN_TRASLADO) {
+      entregas = buscarEntregasDeRuta(ruta);
+    }
+
+    GestorDeRutas.cambiarEstado(ruta, chofer, camion, entregas, request.estado(), request.actor());
+
     rutasRepository.save(ruta);
+    choferesRepository.save(chofer);
+    camionRepository.save(camion);
+    if (entregas != null) {
+      entregas.forEach(entregasRepository::save);
+    }
 
-    comunicadorEventos.comunicarRutaIniciada(ruta, camion, entregasDeRuta);
+    if (request.estado() == EstadoRuta.EN_TRASLADO) {
+      comunicadorEventos.comunicarRutaIniciada(ruta, camion, entregas);
+    }
 
     return rutaMapper.toResponseDTO(ruta);
-  }
-
-  @Override
-  public RutaResponseDTO completar(UUID id) {
-    Ruta ruta = buscarRuta(id);
-    Camion camion = buscarCamion(ruta.getCamionId());
-    Chofer chofer = buscarChofer(ruta.getChoferId());
-
-    GestorDeRutas.completarRuta(ruta, chofer, camion);
-
-    camionRepository.save(camion);
-    choferesRepository.save(chofer);
-
-    return rutaMapper.toResponseDTO(rutasRepository.save(ruta));
-  }
-
-  @Override
-  public List<RutaResponseDTO> listarPorCamion(UUID camionId) {
-    return rutasRepository.findByCamionId(camionId).stream()
-        .map(rutaMapper::toResponseDTO)
-        .toList();
   }
 
   private Ruta buscarRuta(UUID id) {
