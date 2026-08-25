@@ -11,4 +11,10 @@ public class AsignacionRealizada implements EstadoDonacion {
   public void planificarRuta(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new ListaParaEntregar(), null, actor);
   }
+
+  @Override
+  public void planificarRuta(
+      DonacionIndependiente d, SolicitudCambioEstadoDonacionIndependiente solicitud) {
+    planificarRuta(d, solicitud != null ? solicitud.getActor() : "SISTEMA");
+  }
 }

@@ -3,12 +3,12 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.itemsNormalizados.inputs.ItemDonacionNormalizadoPatchDTO;
 import grupo5.donaciones.dto.itemsNormalizados.outputs.ItemDonacionNormalizadoOutputDTO;
-import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
+import grupo5.donaciones.models.entities.itemsNormalizados.EvaluadorNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
@@ -159,21 +159,14 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
                         && i.getDonacionOriginalId().equals(donacionId))
             .toList();
 
-    // INICIO LOGICA DE NEGOCIO
-    boolean tienePendientes =
-        itemsDeDonacion.stream()
-            .anyMatch(
-                i -> i.getBien().estadoNormalizacion() == EstadoNormalizacion.PENDIENTE_REVISION);
-
-    if (!tienePendientes) {
+    if (EvaluadorNormalizacion.estanTodosNormalizados(itemsDeDonacion)) {
       donacion.marcarNormalizada();
-
-      // FIN LOGICA DE NEGOCIO
       donacionRepository.save(donacion);
+      donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+      donacion.clearDomainEvents();
       log.info(
-          "Todos los ítems de la donación {} fueron revisados. Donación cambia a estado NORMALIZADA y se emite evento.",
+          "Todos los ítems de la donación {} fueron revisados. Donación cambia a estado NORMALIZADA y se emiten eventos.",
           donacionId);
-      eventPublisher.publishEvent(new DonacionNormalizadaEvent(donacionId));
     }
   }
 
