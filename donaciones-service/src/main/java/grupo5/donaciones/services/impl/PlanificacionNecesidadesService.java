@@ -1,6 +1,5 @@
 package grupo5.donaciones.services.impl;
 
-import grupo5.donaciones.models.entities.necesidades.GestorNecesidades;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.IPlanificacionNecesidadesService;
@@ -13,23 +12,19 @@ import org.springframework.stereotype.Service;
 public class PlanificacionNecesidadesService implements IPlanificacionNecesidadesService {
 
   private final INecesidadesRepository necesidadRepository;
-  private final GestorNecesidades gestorNecesidades;
 
-  public PlanificacionNecesidadesService(
-      INecesidadesRepository necesidadRepository, GestorNecesidades gestorNecesidades) {
+  public PlanificacionNecesidadesService(INecesidadesRepository necesidadRepository) {
     this.necesidadRepository = necesidadRepository;
-    this.gestorNecesidades = gestorNecesidades;
   }
 
   @Override
   public void generarNuevosPeriodosParaNecesidadesRecurrentes() {
-    List<NecesidadRecurrente> necesidades =
+    LocalDate hoy = LocalDate.now(ZoneId.systemDefault());
+    List<NecesidadRecurrente> modificadas =
         necesidadRepository.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue().stream()
             .map(n -> (NecesidadRecurrente) n)
+            .filter(n -> n.renovarPeriodoSiCorresponde(hoy))
             .toList();
-
-    List<NecesidadRecurrente> modificadas =
-        gestorNecesidades.generarNuevosPeriodos(necesidades, LocalDate.now(ZoneId.systemDefault()));
 
     modificadas.forEach(necesidadRepository::save);
   }

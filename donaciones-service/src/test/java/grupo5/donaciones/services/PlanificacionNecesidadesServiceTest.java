@@ -2,7 +2,6 @@ package grupo5.donaciones.services;
 
 import static org.mockito.Mockito.*;
 
-import grupo5.donaciones.models.entities.necesidades.GestorNecesidades;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
@@ -20,31 +19,27 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PlanificacionNecesidadesServiceTest {
 
   @Mock private INecesidadesRepository necesidadRepository;
-  @Mock private GestorNecesidades gestorNecesidades;
 
   @InjectMocks private PlanificacionNecesidadesService planificacionNecesidadesService;
 
   @Test
-  void generarNuevos_deberiaDelegar_AlGestor_YPersistirLasRetornadas() {
+  void generarNuevos_cuandoCorrespondeRenovar_deberiaPersistirNecesidad() {
     NecesidadRecurrente necesidadRecurrente = mock(NecesidadRecurrente.class);
     when(necesidadRepository.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue())
         .thenReturn(Collections.singletonList(necesidadRecurrente));
-    when(gestorNecesidades.generarNuevosPeriodos(any(), any(LocalDate.class)))
-        .thenReturn(List.of(necesidadRecurrente));
+    when(necesidadRecurrente.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(true);
 
     planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
 
-    verify(gestorNecesidades, times(1)).generarNuevosPeriodos(any(), any(LocalDate.class));
     verify(necesidadRepository, times(1)).save(necesidadRecurrente);
   }
 
   @Test
-  void generarNuevos_cuandoGestorNoRetornaNada_noDeberiaGuardar() {
+  void generarNuevos_cuandoNoCorrespondeRenovar_noDeberiaGuardar() {
     NecesidadRecurrente necesidadRecurrente = mock(NecesidadRecurrente.class);
     when(necesidadRepository.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue())
         .thenReturn(Collections.singletonList(necesidadRecurrente));
-    when(gestorNecesidades.generarNuevosPeriodos(any(), any(LocalDate.class)))
-        .thenReturn(Collections.emptyList());
+    when(necesidadRecurrente.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(false);
 
     planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
 
@@ -52,29 +47,16 @@ class PlanificacionNecesidadesServiceTest {
   }
 
   @Test
-  void generarNuevos_deberiaGuardar_ExactamenteLasRetornadasPorElGestor() {
-    NecesidadRecurrente necesidadRecurrente = mock(NecesidadRecurrente.class);
-    when(necesidadRepository.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue())
-        .thenReturn(Collections.singletonList(necesidadRecurrente));
-    when(gestorNecesidades.generarNuevosPeriodos(any(), any(LocalDate.class)))
-        .thenReturn(List.of(necesidadRecurrente));
-
-    planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
-
-    verify(necesidadRepository, times(1)).save(necesidadRecurrente);
-    verify(necesidadRepository, never()).save(argThat(n -> n != necesidadRecurrente));
-  }
-
-  @Test
-  void generarNuevos_conVariasNecesidades_soloGuardaLasRetornadasPorGestor() {
+  void generarNuevos_conVariasNecesidades_soloGuardaLasQueFueronRenovadas() {
     NecesidadRecurrente necesidadA = mock(NecesidadRecurrente.class);
     NecesidadRecurrente necesidadB = mock(NecesidadRecurrente.class);
     NecesidadRecurrente necesidadC = mock(NecesidadRecurrente.class);
     when(necesidadRepository.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue())
         .thenReturn(
             List.of((Necesidad) necesidadA, (Necesidad) necesidadB, (Necesidad) necesidadC));
-    when(gestorNecesidades.generarNuevosPeriodos(any(), any(LocalDate.class)))
-        .thenReturn(List.of(necesidadA, necesidadC));
+    when(necesidadA.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(true);
+    when(necesidadB.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(false);
+    when(necesidadC.renovarPeriodoSiCorresponde(any(LocalDate.class))).thenReturn(true);
 
     planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
 

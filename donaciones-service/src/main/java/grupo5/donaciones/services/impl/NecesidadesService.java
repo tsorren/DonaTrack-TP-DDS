@@ -16,13 +16,14 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
-// TODO:
 @Service
 public class NecesidadesService implements INecesidadesService {
 
   private final INecesidadesRepository necesidadRepository;
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final ISubcategoriasRepository subcategoriaRepository;
+
+  // TODO: agregar punto de entrada al gestor
 
   public NecesidadesService(
       INecesidadesRepository necesidadRepository,
