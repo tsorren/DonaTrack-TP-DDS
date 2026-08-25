@@ -54,10 +54,8 @@ class NotificacionRepositoryEnMemoriaTest {
 
     Persona persona2 = crearPersona();
 
-    Notificacion notificacionPersona1 =
-        new Notificacion(persona1, "Mensaje para persona 1");
-    Notificacion notificacionPersona2 =
-        new Notificacion(persona2, "Mensaje para persona 2");
+    Notificacion notificacionPersona1 = new Notificacion(persona1, "Mensaje para persona 1");
+    Notificacion notificacionPersona2 = new Notificacion(persona2, "Mensaje para persona 2");
 
     repository.save(notificacionPersona1);
     repository.save(notificacionPersona2);

@@ -11,24 +11,24 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NotificacionGestor {
-    private final INotificacionRepository repository;
-    private final NotificacionSender sender;
+  private final INotificacionRepository repository;
+  private final NotificacionSender sender;
 
-    public NotificacionGestor(INotificacionRepository repository, NotificacionSender sender) {
-        this.repository = repository;
-        this.sender = sender;
-    }
+  public NotificacionGestor(INotificacionRepository repository, NotificacionSender sender) {
+    this.repository = repository;
+    this.sender = sender;
+  }
 
-    @EventListener                                     // "Escucha creaciones de notificaciones"
-    public void onNotificacionesCreadas(NotificacionesCreadasEvent event) {
-        notificarPendientes();
-    }
+  @EventListener // "Escucha creaciones de notificaciones"
+  public void onNotificacionesCreadas(NotificacionesCreadasEvent event) {
+    notificarPendientes();
+  }
 
-    public void notificarPendientes() {                 // "Obtener notificaciones pendientes de la BD" + "Notificar"
-        List<Notificacion> pendientes = repository.findByEstado(EstadoNotificacion.PENDIENTE);
-        for (Notificacion notificacion : pendientes) {
-            notificacion.notificar(sender);                  // único método de dominio, ya sin buscar Persona aparte
-            repository.save(notificacion);
-        }
+  public void notificarPendientes() { // "Obtener notificaciones pendientes de la BD" + "Notificar"
+    List<Notificacion> pendientes = repository.findByEstado(EstadoNotificacion.PENDIENTE);
+    for (Notificacion notificacion : pendientes) {
+      notificacion.notificar(sender); // único método de dominio, ya sin buscar Persona aparte
+      repository.save(notificacion);
     }
+  }
 }

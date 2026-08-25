@@ -2,7 +2,6 @@ package grupo5.notificaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import grupo5.notificaciones.dto.NotificacionDTO;
@@ -16,9 +15,7 @@ import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotifi
 import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
-import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
-import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.services.events.NotificacionesCreadasEvent;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import grupo5.notificaciones.services.mappers.EventoMapper;
@@ -26,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,7 +62,8 @@ class NotificacionServiceTest {
   @Test
   void procesar_conEventoDeUnDestinatario_deberiaResolverPersonaNotificarYGuardar() {
     Persona donante = personaConCorreoQueSiempreEnvia("Juan");
-    EventoDonanteInactivoDTO dto = new EventoDonanteInactivoDTO(donante.getId(), TEST_DATE_TIME, 21);
+    EventoDonanteInactivoDTO dto =
+        new EventoDonanteInactivoDTO(donante.getId(), TEST_DATE_TIME, 21);
     EventoNotificable evento = new DonanteInactivo(donante, 21, TEST_DATE_TIME);
 
     when(mapper.toEntity(dto)).thenReturn(evento);
@@ -88,18 +85,18 @@ class NotificacionServiceTest {
     Persona admin = personaConCorreoQueSiempreEnvia("Admin");
 
     EventoEntregaFallidaDTO dto =
-            new EventoEntregaFallidaDTO(
-                    donante.getId(),
-                    TEST_DATE_TIME,
-                    beneficiario.getId(),
-                    "ropa",
-                    admin.getId(),
-                    "Nadie respondió",
-                    true);
+        new EventoEntregaFallidaDTO(
+            donante.getId(),
+            TEST_DATE_TIME,
+            beneficiario.getId(),
+            "ropa",
+            admin.getId(),
+            "Nadie respondió",
+            true);
 
     EventoNotificable evento =
-            new EntregaFallida(
-                    donante, beneficiario, admin, "ropa", "Nadie respondió", true, TEST_DATE_TIME);
+        new EntregaFallida(
+            donante, beneficiario, admin, "ropa", "Nadie respondió", true, TEST_DATE_TIME);
 
     when(mapper.toEntity(dto)).thenReturn(evento);
 
@@ -112,11 +109,11 @@ class NotificacionServiceTest {
     assertEquals(3, captor.getValue().size());
   }
 
-
   @Test
   void obtenerPorPersona_deberiaMeapearEntidadesADTO() {
     Persona persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
-    Notificacion notificacion = new Notificacion(persona, "Hola, tenés novedades");   // antes: personaId
+    Notificacion notificacion =
+        new Notificacion(persona, "Hola, tenés novedades"); // antes: personaId
 
     when(repository.findByPersonaId(persona.getId())).thenReturn(List.of(notificacion));
 

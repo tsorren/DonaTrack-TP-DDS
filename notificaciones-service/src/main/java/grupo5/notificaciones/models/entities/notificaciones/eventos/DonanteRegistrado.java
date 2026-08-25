@@ -23,8 +23,7 @@ public class DonanteRegistrado extends EventoNotificable {
   @Override
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacion =
-        new Notificacion(
-            this.getPersona(), "Bienvenido a DonaTrack " + credencialesDeAcceso);
+        new Notificacion(this.getPersona(), "Bienvenido a DonaTrack " + credencialesDeAcceso);
 
     return List.of(notificacion);
   }

@@ -11,7 +11,6 @@ import grupo5.notificaciones.services.events.NotificacionesCreadasEvent;
 import grupo5.notificaciones.services.mappers.EventoMapper;
 import java.util.List;
 import java.util.UUID;
-
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -24,13 +23,14 @@ public class NotificacionService {
   private final ApplicationEventPublisher eventPublisher;
 
   public NotificacionService(
-          INotificacionRepository repository,
-          EventoMapper mapper, ApplicationEventPublisher eventPublisher) {
+      INotificacionRepository repository,
+      EventoMapper mapper,
+      ApplicationEventPublisher eventPublisher) {
     this.repository = repository;
     this.personaRepository = personaRepository;
     this.sender = sender;
     this.mapper = mapper;
-      this.eventPublisher = eventPublisher;
+    this.eventPublisher = eventPublisher;
   }
 
   public void procesar(EventoNotificableDTO dto) {
