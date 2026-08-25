@@ -85,6 +85,12 @@ public final class Juridica extends Persona {
     return TipoPersona.JURIDICA;
   }
 
+  /** Ver {@link Persona#esDuplicadaDe}. Juridica no agrega criterios propios por ahora. */
+  @Override
+  public Boolean esDuplicadaDe(Persona otra) {
+    return super.esDuplicadaDe(otra);
+  }
+
   @Override
   public void anonimizar() {
     this.razonSocial = Anonimizable.VALOR_STRING;

@@ -72,6 +72,12 @@ public final class Humana extends Persona {
     return TipoPersona.HUMANA;
   }
 
+  /** Ver {@link Persona#esDuplicadaDe}. Humana no agrega criterios propios por ahora. */
+  @Override
+  public Boolean esDuplicadaDe(Persona otra) {
+    return super.esDuplicadaDe(otra);
+  }
+
   @Override
   public void anonimizar() {
     this.nombre = Anonimizable.VALOR_STRING;
