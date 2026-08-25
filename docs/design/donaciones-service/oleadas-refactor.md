@@ -593,17 +593,19 @@ La suite de pruebas de `donaciones-service` presentaba fuertes acoplamientos a l
 ---
 
 Oleada 9:
-# PR — Oleada 9: Validación por Capas, Respuestas HTTP Clásicas, Manejo Robusto de Excepciones y Trazabilidad Integral (`TraceID`)
+# PR — Oleada 9: Validación por Capas, Respuestas HTTP Clásicas, Manejo Robusto de Excepciones, Trazabilidad Integral (`TraceID`) y Preservación del Desacoplamiento
 
 ## Problema
 1. **Falta de Validación Declarativa en la Entrada**: Los DTOs de entrada carecían de anotaciones Jakarta Bean Validation (`@NotNull`, `@NotBlank`, `@Positive`, `@NotEmpty`, `@Valid`), permitiendo que datos inconsistentes o vacíos atravesaran el boundary hacia los servicios de aplicación.
 2. **Validaciones Imperativas Manuales en Controladores**: Controladores como `DonantesController` realizaban comprobaciones manuales de strings (`if (input.path() == null) ...`), devolviendo códigos de error sin payload estandarizado.
 3. **Omisión de Manejo de Excepciones de Validación en `GlobalExceptionHandler`**: Excepciones nativas de Spring como `MethodArgumentNotValidException`, `MissingRequestHeaderException` o `HttpMessageNotReadableException` no contaban con handlers dedicados, cayendo en errores 500 genéricos o respuestas sin formato homogéneo.
 4. **Pérdida de Trazabilidad en Respuestas y Clientes Distribuidos**: `ErrorResponse` no incluía el identificador de correlación `traceId`, y las respuestas HTTP no devolvían el header `X-Trace-Id`. Las llamadas Feign salientes no propagaban automáticamente el contexto de trazas a los microservicios downstream.
+5. **Riesgo de Acoplamiento en Tests de Frontera**: Los tests de controladores requerían una fábrica centralizada de DTOs (`DTOFixtures`) para evitar constructores directos repetitivos y frágiles en los escenarios de validación.
 
 ## Evidencia
 - Requests con campos faltantes provocaban excepciones en cascada en la capa de servicios o dominio, o devolvían HTTP 500 no informativo.
 - Los logs del servidor contenían `traceId` en MDC pero los clientes HTTP no tenían forma de correlacionar un error 400/404/500 con los logs.
+- Varias suites de controladores instanciaban DTOs manualmente con constructores complejos en lugar de usar fixtures centralizados.
 
 ## Objetivo
 1. **Validación por Capas con Segregación Estricta de Responsabilidades**:
@@ -620,6 +622,10 @@ Oleada 9:
    - `ErrorResponse` enriquecido con `traceId` resuelto automáticamente desde `MDC` o `Tracer`.
    - `TraceResponseHeaderFilter` inyectando `X-Trace-Id` en el response header de cada petición HTTP.
    - `FeignTraceRequestInterceptor` propagando `X-Trace-Id` a llamadas HTTP downstream entre microservicios.
+5. **Preservación y Fortalecimiento del Desacoplamiento de la Oleada 8**:
+   - Expansión de `DTOFixtures` para cubrir todos los DTOs de entrada del microservicio.
+   - Uso sistemático de `DTOFixtures` en los 10 controladores REST con `MockMvcBuilders.standaloneSetup`, configurando `GlobalExceptionHandler` y `TraceResponseHeaderFilter`.
+   - Aislamiento estricto de frontera (*Boundary Isolation*) y preservación de *Tell, Don't Ask*.
 
 ## Fuera de scope
 - Modificación de contratos de negocio de dominio o reglas de scoring de algoritmos.
@@ -629,25 +635,34 @@ Oleada 9:
   - `GlobalExceptionHandlerTest`: Verificación de todos los mapeos de status codes (400, 404, 409, 500, 502/Feign), extracción de `fieldErrors` y presencia de `traceId`.
   - `TraceResponseHeaderFilterTest`: Verificación de inyección de header `X-Trace-Id` y sincronización con MDC.
   - `ErrorResponseTest`: Verificación de serialización y resolución de `traceId`.
-- **Nuevas y Refactorizadas Suites en `donaciones-service`**:
-  - `CategoriasControllerTest`: Casos positivos (200, 201) y negativos (400 con `errors[0].field`).
-  - `DonantesControllerTest`: Cobertura completa de 201 Created, 202 Accepted, 204 No Content y 400 Bad Request.
-  - `DonacionesControllerTest`, `DonacionesIndependientesControllerTest`, `ItemDonacionNormalizadoControllerTest`, `NecesidadesControllerTest`, `PersonasControllerTest`, `PropuestaDeAsignacionControllerTest`, `SubcategoriasControllerTest`, `EntidadBeneficiariaControllerTest`.
+- **Nuevas y Refactorizadas Suites en `donaciones-service` (10/10 Controladores)**:
+  - `CategoriasControllerTest`: Casos 200, 201 y 400 (`errors[0].field == 'nombre'`).
+  - `SubcategoriasControllerTest`: Casos 200, 201 y 400 (`errors[0].field == 'nombre'`).
+  - `DonacionesControllerTest`: Casos 200, 201 y 400 (`errors[0].field == 'items'`).
+  - `DonacionesIndependientesControllerTest`: Casos 200, 400 (header faltante / estado nulo), 404 y 409.
+  - `DonantesControllerTest`: Casos 200, 201, 202, 204 y 400 (`idPersona` / `path`).
+  - `EntidadBeneficiariaControllerTest`: Casos 200, 201 y 400 (`juridicaId`).
+  - `ItemDonacionNormalizadoControllerTest`: Casos 200 y 400 (`estadoNormalizacion`).
+  - `NecesidadesControllerTest`: Casos 200, 201 y 400 (`cantidadNecesitada`).
+  - `PersonasControllerTest`: Casos 200, 201, 204 y 400 (`nombre`).
+  - `PropuestaDeAsignacionControllerTest`: Casos 200, 201 y 400 (`estado`).
 - **Resultados**:
   - `common-lib`: **24 tests pasando (0 fallos, 0 errores)**.
-  - `donaciones-service`: **379 tests pasando (0 fallos, 0 errores)**.
+  - `donaciones-service`: **385 tests pasando (0 fallos, 0 errores)** (+16 tests respecto a Oleada 8).
   - **Reactor Multi-Módulo completo**: **7/7 módulos pasando exitosamente (`BUILD SUCCESS`)**.
 
 ## Diseño resultante
 - **Arquitectura de Validaciones Pura**: Separación clara entre validación de frontera (Bean Validation), validación de casos de uso (Application Services) y protección de invariantes (Domain Entities).
 - **Consistencia de API REST y Problem Details**: Respuestas de error auto-descriptivas, con códigos de catálogo, detalles a nivel de campo y correlación vía `traceId`.
 - **Trazabilidad Distribuida de Extremo a Extremo**: Propagación bidireccional de `X-Trace-Id` en HTTP y Feign.
+- **Ecosistema de Testing Desacoplado**: Todas las pruebas consumen Mothers y `DTOFixtures`, garantizando nula fragilidad (*Low Test Fragility*) ante evoluciones del modelo.
 
 ## IA utilizada
 - Diagnóstico de validaciones y diseño de mejoras para errores estructurados a nivel de campo y trazabilidad Feign.
 - Implementación de `TraceResponseHeaderFilter`, `FeignTraceRequestInterceptor`, `FieldErrorDTO`, `ErrorResponse` y `GlobalExceptionHandler`.
 - Enriquecimiento de todos los DTOs y Controladores con `@Valid` y códigos de estado clásicos.
-- Validación completa y pruebas unitarias con Spotless y reactor Maven.
+- Expansión de `DTOFixtures` y refactorización desacoplada de los 10 controladores REST.
+- Validación completa, pruebas unitarias y de integración con Spotless y reactor Maven.
 
 ## Verificación humana
 - [x] Verificado el filtro `TraceResponseHeaderFilter` y la presencia del header `X-Trace-Id` en las respuestas HTTP.
@@ -655,7 +670,9 @@ Oleada 9:
 - [x] Verificada la inclusión del array `errors` con `FieldErrorDTO` en `ErrorResponse` ante `MethodArgumentNotValidException`.
 - [x] Verificada la eliminación de comprobaciones imperativas en controllers (`DonantesController`).
 - [x] Verificados los códigos HTTP clásicos: `201 Created`, `202 Accepted`, `200 OK`, `204 No Content`, `400 Bad Request`, `404 Not Found`, `409 Conflict`.
-- [x] Verificada la suite completa de `donaciones-service`: **379 tests pasando (0 fallos, 0 errores)**.
+- [x] Verificada la expansión completa de `DTOFixtures.java` para todos los DTOs de entrada.
+- [x] Verificado el desacoplamiento en los 10 tests de controladores usando `DTOFixtures` y standalone MockMvc.
+- [x] Verificada la suite completa de `donaciones-service`: **385 tests pasando (0 fallos, 0 errores)**.
 - [x] Verificada la suite completa de `common-lib`: **24 tests pasando (0 fallos, 0 errores)**.
 - [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
 - [x] Formateo Spotless validado: `mvn spotless:check` (**CLEAN**).
