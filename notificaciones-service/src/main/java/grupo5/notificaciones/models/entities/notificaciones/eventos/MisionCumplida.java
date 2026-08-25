@@ -27,7 +27,7 @@ public class MisionCumplida extends EventoNotificable {
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacion =
         new Notificacion(
-            this.getPersona().getId(),
+            this.getPersona(),
             "Completaste la misión " + nombreMision + ". Recompensa: " + recompensa);
 
     return List.of(notificacion);

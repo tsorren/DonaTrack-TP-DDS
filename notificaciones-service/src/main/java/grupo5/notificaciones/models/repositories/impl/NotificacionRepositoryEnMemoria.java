@@ -21,7 +21,7 @@ public class NotificacionRepositoryEnMemoria extends CrudRepositoryEnMemoria<Not
   @Override
   public List<Notificacion> findByPersonaId(UUID personaId) {
     return this.findAll().stream()
-        .filter(n -> n.getPersonaId() != null && n.getPersonaId().equals(personaId))
+        .filter(n -> n.getPersona() != null && n.getPersona().getId().equals(personaId))
         .toList();
   }
 }

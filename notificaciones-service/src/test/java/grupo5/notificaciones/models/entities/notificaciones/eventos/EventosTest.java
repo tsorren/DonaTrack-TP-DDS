@@ -60,7 +60,7 @@ class EventosNotificablesTest {
 
     assertEquals("Bienvenido a DonaTrack usuario: Usuario", notificaciones.getFirst().getMensaje());
 
-    assertEquals(persona.getId(), notificaciones.getFirst().getPersonaId());
+    assertEquals(persona, notificaciones.getFirst().getPersona());
   }
 
   @Test
@@ -146,8 +146,8 @@ class EventosNotificablesTest {
     List<Notificacion> notificaciones = evento.generarNotificaciones();
 
     assertEquals(3, notificaciones.size());
-    assertEquals(donante.getId(), notificaciones.get(0).getPersonaId());
-    assertEquals(beneficiario.getId(), notificaciones.get(1).getPersonaId());
-    assertEquals(admin.getId(), notificaciones.get(2).getPersonaId());
+    assertEquals(donante, notificaciones.get(0).getPersona());
+    assertEquals(beneficiario, notificaciones.get(1).getPersona());
+    assertEquals(admin, notificaciones.get(2).getPersona());
   }
 }

@@ -8,3 +8,4 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class PersonaRepositoryEnMemoria extends CrudRepositoryEnMemoria<Persona>
     implements IPersonaRepository {}
+

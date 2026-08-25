@@ -4,13 +4,15 @@ import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
-import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
+import grupo5.notificaciones.services.events.NotificacionesCreadasEvent;
 import grupo5.notificaciones.services.mappers.EventoMapper;
 import java.util.List;
 import java.util.UUID;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,16 +21,16 @@ public class NotificacionService {
   private final IPersonaRepository personaRepository;
   private final NotificacionSender sender;
   private final EventoMapper mapper;
+  private final ApplicationEventPublisher eventPublisher;
 
   public NotificacionService(
-      INotificacionRepository repository,
-      IPersonaRepository personaRepository,
-      NotificacionSender sender,
-      EventoMapper mapper) {
+          INotificacionRepository repository,
+          EventoMapper mapper, ApplicationEventPublisher eventPublisher) {
     this.repository = repository;
     this.personaRepository = personaRepository;
     this.sender = sender;
     this.mapper = mapper;
+      this.eventPublisher = eventPublisher;
   }
 
   public void procesar(EventoNotificableDTO dto) {
@@ -37,11 +39,7 @@ public class NotificacionService {
     List<Notificacion> notificaciones = evento.generarNotificaciones();
     repository.saveAll(notificaciones);
 
-    for (Notificacion notificacion : notificaciones) {
-      Persona persona = personaRepository.findById(notificacion.getPersonaId()).orElse(null);
-      notificacion.notificar(persona, sender);
-      repository.save(notificacion);
-    }
+    eventPublisher.publishEvent(new NotificacionesCreadasEvent(this));
   }
 
   public List<NotificacionDTO> obtenerPorPersona(UUID personaId) {

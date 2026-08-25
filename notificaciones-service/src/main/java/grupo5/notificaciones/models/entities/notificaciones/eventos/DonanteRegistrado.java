@@ -24,7 +24,7 @@ public class DonanteRegistrado extends EventoNotificable {
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacion =
         new Notificacion(
-            this.getPersona().getId(), "Bienvenido a DonaTrack " + credencialesDeAcceso);
+            this.getPersona(), "Bienvenido a DonaTrack " + credencialesDeAcceso);
 
     return List.of(notificacion);
   }

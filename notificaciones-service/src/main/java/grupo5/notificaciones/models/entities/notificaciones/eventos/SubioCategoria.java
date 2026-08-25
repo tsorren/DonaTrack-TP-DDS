@@ -26,7 +26,7 @@ public class SubioCategoria extends EventoNotificable {
   @Override
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacion =
-        new Notificacion(this.getPersona().getId(), "Subiste a la categoría " + categoriaNueva);
+        new Notificacion(this.getPersona(), "Subiste a la categoría " + categoriaNueva);
 
     return List.of(notificacion);
   }
