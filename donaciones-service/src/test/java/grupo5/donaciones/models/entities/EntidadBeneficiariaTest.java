@@ -1,6 +1,8 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
@@ -12,7 +14,7 @@ import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class EntidadBeneficiariaTests {
+class EntidadBeneficiariaTest {
   private Juridica juridica;
   private Humana representante;
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);

@@ -16,15 +16,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class LectorCSVMejoradoTest {
+class LectorDonantesCSVTest {
 
-  private LectorCSVMejorado lectorCSV;
+  private LectorDonantesCSV lectorCSV;
 
   @TempDir Path tempDir;
 
   @BeforeEach
   void setUp() {
-    lectorCSV = new LectorCSVMejorado();
+    lectorCSV = new LectorDonantesCSV();
   }
 
   @Test

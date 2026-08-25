@@ -20,9 +20,9 @@ public class DonacionIndependiente implements AggregateRoot {
   private final UUID id;
   private UUID donacionOriginalId;
   private List<ItemDonacionIndependiente> items;
-  private EstadoDonacion estadoActual;
+  private EstadoDonacionIndependiente estadoActual;
 
-  void setEstadoActual(EstadoDonacion estadoActual) {
+  void setEstadoActual(EstadoDonacionIndependiente estadoActual) {
     this.estadoActual = estadoActual;
   }
 
@@ -165,7 +165,7 @@ public class DonacionIndependiente implements AggregateRoot {
   }
 
   // Llamado únicamente por los estados concretos
-  void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion, String actor) {
+  void cambiarEstado(EstadoDonacionIndependiente nuevoEstado, String justificacion, String actor) {
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
     this.estadoActual = nuevoEstado;
