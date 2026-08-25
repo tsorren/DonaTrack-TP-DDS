@@ -9,6 +9,7 @@ import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
+import grupo5.donaciones.models.normalizacion.ComparadorTexto;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.util.ArrayList;

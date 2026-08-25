@@ -1,4 +1,4 @@
-package grupo5.donaciones.infrastructure.segmentadores;
+package grupo5.donaciones.models.segmentacion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

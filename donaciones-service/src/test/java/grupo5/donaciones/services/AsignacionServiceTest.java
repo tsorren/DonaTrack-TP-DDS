@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaDTO;
-import grupo5.donaciones.infrastructure.analizadores.ComparadorTexto;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
+import grupo5.donaciones.models.normalizacion.ComparadorTexto;
 import grupo5.donaciones.models.repositories.*;
 import grupo5.donaciones.services.impl.AsignacionService;
 import java.util.Collections;

@@ -15,6 +15,8 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.normalizacion.ComparadorTexto;
+import grupo5.donaciones.models.normalizacion.NormalizadorBasicoTexto;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.impl.SubcategoriasRepositoryEnMemoria;
 import java.time.LocalDate;
