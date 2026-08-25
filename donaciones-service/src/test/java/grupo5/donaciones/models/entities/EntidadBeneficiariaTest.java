@@ -5,24 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
-import grupo5.donaciones.models.entities.personas.TipoJuridico;
-import java.time.LocalDate;
-import java.time.Month;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class EntidadBeneficiariaTest {
+
   private Juridica juridica;
-  private Humana representante;
-  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   @BeforeEach
   void setUp() {
-    representante = new Humana("Juan", "Perez", TEST_DATE.minusYears(25));
-    juridica = new Juridica(representante, "Empresa SA", TipoJuridico.EMPRESA, "Rubro");
+    juridica = PersonaMother.empresaSA();
   }
 
   @Test
