@@ -8,7 +8,6 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
@@ -101,7 +100,8 @@ public class Propuesta implements AggregateRoot {
   }
 
   public List<PropuestaAprobada> getDomainEvents() {
-    return Collections.unmodifiableList(this.domainEvents);
+    // Copia defensiva: ver el comentario equivalente en Donacion.getDomainEvents().
+    return List.copyOf(this.domainEvents);
   }
 
   public void clearDomainEvents() {
