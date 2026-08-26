@@ -5,6 +5,7 @@ import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.services.ISubcategoriasService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class SubcategoriasController implements ISubcategoriasController {
 
   @Override
   @PostMapping
-  public ResponseEntity<SubcategoriaOutputDTO> crear(@RequestBody SubcategoriaInputDTO dto) {
+  public ResponseEntity<SubcategoriaOutputDTO> crear(@Valid @RequestBody SubcategoriaInputDTO dto) {
     SubcategoriaOutputDTO creada = subcategoriasService.crear(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(creada);
   }
@@ -45,7 +46,7 @@ public class SubcategoriasController implements ISubcategoriasController {
   @Override
   @PutMapping("/{id}")
   public ResponseEntity<SubcategoriaOutputDTO> modificar(
-      @PathVariable UUID id, @RequestBody SubcategoriaInputDTO dto) {
+      @PathVariable UUID id, @Valid @RequestBody SubcategoriaInputDTO dto) {
     SubcategoriaOutputDTO modificada = subcategoriasService.modificar(id, dto);
     return ResponseEntity.ok(modificada);
   }
@@ -67,7 +68,7 @@ public class SubcategoriasController implements ISubcategoriasController {
   @Override
   @PostMapping("/{id}/aliases")
   public ResponseEntity<SubcategoriaOutputDTO> agregarAlias(
-      @PathVariable UUID id, @RequestBody AliasSubcategoriaInputDTO dto) {
+      @PathVariable UUID id, @Valid @RequestBody AliasSubcategoriaInputDTO dto) {
     SubcategoriaOutputDTO actualizada = subcategoriasService.agregarAlias(id, dto);
     return ResponseEntity.ok(actualizada);
   }

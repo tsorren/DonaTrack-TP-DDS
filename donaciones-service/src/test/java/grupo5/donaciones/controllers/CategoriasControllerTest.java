@@ -7,10 +7,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.logging.TraceResponseHeaderFilter;
 import grupo5.donaciones.controllers.impl.CategoriasController;
 import grupo5.donaciones.dto.categorias.CategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.CategoriaOutputDTO;
@@ -41,7 +44,11 @@ class CategoriasControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .addFilters(new TraceResponseHeaderFilter())
+            .build();
     objectMapper = new ObjectMapper();
   }
 
@@ -57,12 +64,30 @@ class CategoriasControllerTest {
     mockMvc
         .perform(
             post("/api/categorias")
+                .header("X-Trace-Id", "trace-test-001")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isCreated())
+        .andExpect(header().string("X-Trace-Id", "trace-test-001"))
         .andExpect(jsonPath("$.id").value(id.toString()))
         .andExpect(jsonPath("$.nombre").value("Alimentos"))
         .andExpect(jsonPath("$.unidad").value("KILOGRAMO"));
+  }
+
+  @Test
+  void crear_conNombreVacio_DeberiaRetornarBadRequestConFieldErrors() throws Exception {
+    CategoriaInputDTO input = new CategoriaInputDTO("", false, true, Unidad.KILOGRAMO);
+
+    mockMvc
+        .perform(
+            post("/api/categorias")
+                .header("X-Trace-Id", "trace-test-002")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+        .andExpect(status().isBadRequest())
+        .andExpect(header().string("X-Trace-Id", "trace-test-002"))
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
+        .andExpect(jsonPath("$.errors[0].field").value("nombre"));
   }
 
   @Test
