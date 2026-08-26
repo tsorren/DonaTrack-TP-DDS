@@ -3,26 +3,23 @@ package grupo5.donaciones.models.entities;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
-import grupo5.donaciones.models.entities.personas.TipoDocumento;
-import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.privacidad.Anonimizable;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AnonimizacionesTest {
+class AnonimizacionTest {
+
   private Humana persona;
   private Juridica juridica;
 
   @BeforeEach
   void setUp() {
-    persona = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
-    persona.actualizarDocumento(TipoDocumento.DNI, "12345678");
-    juridica = new Juridica(persona, "Empresa SA", TipoJuridico.EMPRESA, "Rubro");
+    persona = PersonaMother.juanPerez();
+    juridica = PersonaMother.empresaSA();
   }
 
   @Test

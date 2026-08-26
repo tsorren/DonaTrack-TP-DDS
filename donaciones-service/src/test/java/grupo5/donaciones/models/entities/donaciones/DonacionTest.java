@@ -1,16 +1,20 @@
 package grupo5.donaciones.models.entities.donaciones;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import grupo5.common.events.EventoDeDominio;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.fixtures.BienMother;
+import grupo5.donaciones.fixtures.DonacionMother;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionCargada;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionSegmentada;
 import grupo5.donaciones.models.entities.donaciones.events.EventoDonacion;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +28,7 @@ class DonacionTest {
   @BeforeEach
   void setUp() {
     donanteId = UUID.randomUUID();
-    donacion = new Donacion(donanteId);
+    donacion = DonacionMother.simple(donanteId);
   }
 
   @Test
@@ -51,9 +55,7 @@ class DonacionTest {
 
   @Test
   void agregarItem_conItemValido_debeAgregarALaLista() {
-    Bien bien =
-        new Bien(
-            "Mesa de madera", "foto.png", LocalDate.now().plusYears(1), Estado.NUEVO, 10.0, 0.5);
+    Bien bien = BienMother.mueble("Mesa de madera");
     ItemDonacion item = new ItemDonacion(bien, 2);
 
     donacion.agregarItem(item);
@@ -71,9 +73,7 @@ class DonacionTest {
 
   @Test
   void agregarItem_conItemYaAgregado_debeLanzarExcepcion() {
-    Bien bien =
-        new Bien(
-            "Mesa de madera", "foto.png", LocalDate.now().plusYears(1), Estado.NUEVO, 10.0, 0.5);
+    Bien bien = BienMother.mueble("Mesa de madera");
     ItemDonacion item = new ItemDonacion(bien, 2);
     donacion.agregarItem(item);
 
@@ -84,9 +84,7 @@ class DonacionTest {
 
   @Test
   void quitarItem_conItemExistente_debeRemoverDeLista() {
-    Bien bien =
-        new Bien(
-            "Mesa de madera", "foto.png", LocalDate.now().plusYears(1), Estado.NUEVO, 10.0, 0.5);
+    Bien bien = BienMother.mueble("Mesa de madera");
     ItemDonacion item = new ItemDonacion(bien, 2);
     donacion.agregarItem(item);
     assertEquals(1, donacion.getItems().size());
@@ -97,9 +95,7 @@ class DonacionTest {
 
   @Test
   void quitarItem_conItemNoExistente_debeLanzarExcepcion() {
-    Bien bien =
-        new Bien(
-            "Mesa de madera", "foto.png", LocalDate.now().plusYears(1), Estado.NUEVO, 10.0, 0.5);
+    Bien bien = BienMother.mueble("Mesa de madera");
     ItemDonacion item = new ItemDonacion(bien, 2);
 
     ValidationException ex =
