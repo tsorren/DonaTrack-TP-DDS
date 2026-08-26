@@ -974,39 +974,122 @@ Al auditar el progreso global del refactor y de cara a la implementación de per
 
 ---
 
+# Oleada 14: Cierre Exhaustivo de Gaps Arquitectónicos, Pureza de Dominio, Estandarización de Excepciones y Testing Desacoplado
+
+## Problema
+Tras la auditoría exhaustiva del código fuente contra el checklist de 13 oleadas del [Plan Genérico de Refactor](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/plan-generico-refactor-servicios.md), se identificaron deudas residuales puntuales en `donaciones-service` y `common-lib`:
+1. **Pureza de Dominio Incompleta**: La clase `SegmentadorComplejo` en `models/segmentacion/` retenía la anotación `@Component` de Spring e inyectaba repositorios directamente en lugar de ser un POJO ensamblado en `DomainServicesConfig`.
+2. **Inconsistencia en Anotación de Repositorios**: `NecesidadesRepositoryEnMemoria` usaba `@Component` en vez de la convención `@Repository`.
+3. **Guardas con Excepciones Genéricas**: `EnTraslado.registrarFalla`, los constructores de `Deposito` y `Donante`, y `AsignacionesRepositoryEnMemoria.save` lanzaban `IllegalArgumentException` con mensajes en texto plano sin usar `ValidationException` ni constantes de `ErrorCatalog`.
+4. **Interfaces Faltantes en Application Services**: `LogisticaAsyncService` y `NotificacionesAsyncService` en `services/impl/` no exponían interfaces.
+5. **Cobertura Incompleta de Object Mothers en Tests**: Suites de tests (`PropuestaTest`, `PosibleFragmentacionTest`, `ProcesadorDeDonacionesTest`, `SegmentadorComplejoTest`, `SegmentadorSimpleTest`, `DonacionMapperTest`, `ImportadorServiceTest`) seguían instanciando entidades manualmente mediante constructores posicionales directos.
+6. **Snapshot Defensivo Faltante**: El Aggregate Root `Propuesta` carecía de test unitario de reentrancia para verificar la inmutabilidad de su lista de eventos de dominio ante `clearDomainEvents()`.
+
+## Evidencia
+- `SegmentadorComplejo.java`: `@Component` residual en línea 15.
+- `EnTraslado.java`: `throw new IllegalArgumentException("La justificación es obligatoria...")` en línea 47.
+- `Deposito.java`: `throw new IllegalArgumentException(...)` en líneas 8 y 11.
+- `Donante.java`: `throw new IllegalArgumentException(...)` en línea 16.
+- `AsignacionesRepositoryEnMemoria.java`: `throw new IllegalArgumentException(...)` en línea 19.
+- `PropuestaTest.java`: `@BeforeEach` con 9 constructores posicionales directos manuales sin Object Mothers.
+
+## Objetivo
+1. Desanotar `SegmentadorComplejo` y ensamblarlo explícitamente en `DomainServicesConfig`.
+2. Incorporar códigos `ERR-VAL-209`, `ERR-VAL-210`, `ERR-VAL-412` en `ErrorCatalog.java` y migrar todas las guardas a `ValidationException`.
+3. Estandarizar `ILogisticaAsyncService` e `INotificacionesAsyncService`.
+4. Migrar el 100% de los constructores posicionales directos en tests a las Object Mothers (`PersonaMother`, `DonacionIndependienteMother`, `NecesidadMother`, etc.).
+5. Añadir test de snapshot defensivo contra mutaciones posteriores en `PropuestaTest`.
+
+## Archivos Afectados
+- `common-lib/src/main/java/grupo5/common/exceptions/ErrorCatalog.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/segmentacion/SegmentadorComplejo.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/config/DomainServicesConfig.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/repositories/impl/NecesidadesRepositoryEnMemoria.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/donacionesIndependientes/EnTraslado.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/Deposito.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/donantes/Donante.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/repositories/impl/AsignacionesRepositoryEnMemoria.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/services/ILogisticaAsyncService.java` [NUEVO]
+- `donaciones-service/src/main/java/grupo5/donaciones/services/impl/LogisticaAsyncService.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/services/INotificacionesAsyncService.java` [NUEVO]
+- `donaciones-service/src/main/java/grupo5/donaciones/services/impl/NotificacionesAsyncService.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/fixtures/PersonaMother.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/entities/propuestas/PropuestaTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/entities/propuestas/PosibleFragmentacionTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/segmentacion/SegmentadorComplejoTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/segmentacion/SegmentadorSimpleTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/infrastructure/ProcesadorDeDonacionesTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/services/DonacionesIndependientesServiceTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/services/ImportadorServiceTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/services/mappers/DonacionMapperTest.java`
+
+## Tests
+- Suite completa del reactor multi-módulo ejecutada exitosamente:
+  - **390 tests en `donaciones-service`** (389 preexistentes + 1 nuevo test de snapshot defensivo en `PropuestaTest`).
+  - **27 tests en `common-lib`**.
+  - **167 tests en `logistica-service`**.
+  - **23 tests en `incentivos-service`**.
+  - **7 tests en `notificaciones-service`**.
+  - **Total: 614 tests pasando (0 fallos, 0 errores, 0 skipped)**.
+
+## Diseño resultante
+- **Pureza Absoluta de Dominio**: Ninguna clase de dominio en `models/` contiene anotaciones de Spring. El ensamble se gestiona centralizadamente en `DomainServicesConfig`.
+- **Estandarización Rigurosa de Errores**: Todas las guardas de entidades y estados lanzan excepciones tipadas con códigos del catálogo (`ErrorCatalog`), asegurando respuestas HTTP consistentes (`400 Bad Request` / `409 Conflict`).
+- **Desacoplamiento Total en Testing**: Las suites de tests consumen exclusivamente Object Mothers (`PersonaMother`, `DonacionIndependienteMother`, etc.), aislando los tests unitarios de cambios futuros en constructores internos.
+
+## Verificación humana
+- [x] Verificado el bean `Segmentador` en `DomainServicesConfig.java`.
+- [x] Verificada la eliminación de `@Component` en `SegmentadorComplejo.java`.
+- [x] Verificados los nuevos códigos de catálogo en `ErrorCatalog.java`.
+- [x] Verificado el test de reentrancia en `PropuestaTest.java`.
+- [x] Verificación de formateo con Spotless: `mvn spotless:check` (**CLEAN**).
+- [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos, 0 fallos, 0 errores**).
+
+---
+
 Generalización del refactor en plan genérico exhaustivo:
 
-# Generalización: Plan Genérico de Refactor por Oleadas v3
+# Generalización: Plan Genérico de Refactor por Oleadas v4
 
-Tras completar las 13 oleadas del refactor de `donaciones-service`, se generalizaron las lecciones aprendidas en un plan genérico exhaustivo aplicable a los demás microservicios (`logistica-service`, `incentivos-service`, `notificaciones-service`).
+Tras completar las 14 oleadas del refactor de `donaciones-service`, se generalizaron las lecciones aprendidas en un plan genérico exhaustivo aplicable a los demás microservicios (`logistica-service`, `incentivos-service`, `notificaciones-service`).
 
 ## Documento de referencia
 
 👉 [`plan-generico-refactor-servicios.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/plan-generico-refactor-servicios.md)
 
-## Principio de exhaustividad
+## Principio de exhaustividad y barrido mecánico
 
-El plan v3 incorpora un principio fundamental aprendido de las oleadas 11–13: **cada oleada debe aplicarse a TODOS los elementos del microservicio que cumplan la condición**, no solo a un ejemplo representativo. Esto se implementa mediante:
+El plan v4 incorpora un principio fundamental aprendido a lo largo de las 14 oleadas: **cada oleada debe auditar y transformar el 100% de los elementos del microservicio**, respaldado por comandos de barrido mecánico (grep/find) en lugar de revisiones manuales aisladas:
 
 - **Fase 0 con inventario completo**: Tabla de tracking de TODAS las entidades, agregados, services, controllers, DTOs, schedulers e interfaces del servicio.
+- **Barrido mecánico (Grep Checks)** en cada oleada que verifica ausencia de `@Component` en `models/`, ausencia de `IllegalArgumentException` en lógica de negocio, y ausencia de constructores directos en tests.
 - **Checklists de completitud** en cada oleada que exigen cobertura al 100% antes de cerrar la PR.
 - **No-regresión acumulativa**: Cada oleada verifica que TODAS las oleadas anteriores siguen funcionando.
 
-## 5 lecciones retroalimentadas desde oleadas 11–13 hacia oleadas tempranas
+## 8 lecciones retroalimentadas desde oleadas 11–14 hacia oleadas tempranas
 
 Estas correcciones, que en `donaciones-service` se descubrieron tardíamente y requirieron oleadas adicionales de hardening, ahora se incorporan **desde el día 1** en el plan genérico:
 
-1. **`List.copyOf()` desde oleada 2** (no `Collections.unmodifiableList`): Previene `ConcurrentModificationException` cuando EventListeners síncronos mutan la entidad durante la iteración de eventos.
-   - *Descubierto en*: Oleada 12, Eje A (reentrancia en `Donacion`, `DonacionIndependiente`, `Propuesta`).
+1. **`List.copyOf()` y test de reentrancia desde oleada 2**: Retornar `List.copyOf()` en `getDomainEvents()` para prevenir `ConcurrentModificationException`, y exigir un test de snapshot defensivo canónico (`clearDomainEvents()` no muta el snapshot tomado).
+   - *Descubierto en*: Oleada 12 (Eje A) y Oleada 14 (cobertura canónica en `Propuesta`).
 
-2. **Guardas estrictas en State Pattern desde oleada 3**: Cada estado concreto debe rechazar inmediatamente transiciones con datos incompletos (`null`). No usar condicionales permisivos (`if (x != null)`).
-   - *Descubierto en*: Oleada 12, Eje B (invariante rota en `EnDeposito.asignar` permitía asignación sin necesidad).
+2. **Guardas estrictas en State Pattern y constructores desde oleada 3**: Toda invariante (transición de estado o constructor de entidad/record) debe lanzar `ValidationException(ErrorCatalog.CODIGO)`. Queda prohibido el uso de `IllegalArgumentException` crudo en `models/`.
+   - *Descubierto en*: Oleada 12 (Eje B) y Oleada 14 (guardas en `EnTraslado`, `Deposito`, `Donante`).
 
-3. **Domain Services sin `@Component` desde oleada 4**: Crear POJOs puros y ensamblarlos en `DomainServicesConfig.java` (`@Configuration`).
-   - *Descubierto en*: Oleada 12, Eje C (`NormalizadorBasicoTexto`, `ComparadorTexto`, `GestorPropuestasDeAsignacion` mantenían `@Component`/`@Autowired`).
+3. **Domain Services sin `@Component` y barrido grep desde oleada 4**: Todo Domain Service es un POJO puro ensamblado en `DomainServicesConfig.java` (`@Configuration`). Verificar con `grep -rn "@Component" src/main/java/**/models/`.
+   - *Descubierto en*: Oleada 12 (Eje C) y Oleada 14 (desanotación de `SegmentadorComplejo` en `models/segmentacion/`).
 
-4. **Convención ✅/📝 desde Fase 0**: Todo ítem marcado ✅ debe tener diff de Git real. Usar 📝 para análisis/diseño sin código.
-   - *Descubierto en*: Oleada 13, Eje A (ítems de Oleada 10 como `Desacoplamiento Asignable → UUIDs` marcados ✅ sin código implementado).
+4. **Convención de interfaces y ubicación de servicios `@Async` desde oleada 7**: Todo servicio en `services/impl/` DEBE implementar una interfaz `IService`. Si es un wrapper técnico puro, ubicarlo en `infrastructure/clients/`.
+   - *Descubierto en*: Oleada 14 (`ILogisticaAsyncService`, `INotificacionesAsyncService`).
 
-5. **No exponer `ex.getMessage()` de Feign desde oleada 9**: Los mensajes crudos de `FeignException` contienen headers internos, URLs y stack traces. Usar mensaje genérico sanitizado.
-   - *Descubierto en*: Oleada 11, Etapa 0 (fuga de información sensible en `GlobalExceptionHandler.handleFeignException`).
+5. **Migración al 100% de tests a Object Mothers desde oleada 8**: No basta con crear las Mothers; se debe erradicar el 100% de constructores posicionales directos en suites de prueba preexistentes (mappers, procesadores, algoritmos).
+   - *Descubierto en*: Oleada 14 (refactor integral en `PropuestaTest`, `DonacionMapperTest`, `ProcesadorDeDonacionesTest`, etc.).
+
+6. **Convención ✅/📝 desde Fase 0**: Todo ítem marcado ✅ debe tener diff de Git real. Usar 📝 para análisis/diseño sin código.
+   - *Descubierto en*: Oleada 13 (Eje A).
+
+7. **No exponer `ex.getMessage()` de Feign desde oleada 9**: Los mensajes crudos de `FeignException` contienen headers internos y URLs. Usar mensaje genérico sanitizado.
+   - *Descubierto en*: Oleada 11 (Etapa 0).
+
+8. **Nombres de tests en singular y formato Spotless**: Todo test debe terminar en `*Test.java` (nunca `*Tests.java`) y validar formato limpio con `mvn spotless:check`.
+   - *Descubierto en*: Oleadas 7 y 14.

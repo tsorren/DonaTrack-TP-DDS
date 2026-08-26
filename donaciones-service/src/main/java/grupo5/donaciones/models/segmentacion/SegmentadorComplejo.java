@@ -10,9 +10,7 @@ import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.time.LocalDate;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
 @RequiredArgsConstructor
 public class SegmentadorComplejo extends AbstractSegmentador<SegmentadorComplejo.GroupingKey> {
 

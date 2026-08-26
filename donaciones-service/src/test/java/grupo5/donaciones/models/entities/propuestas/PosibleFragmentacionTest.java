@@ -3,24 +3,12 @@ package grupo5.donaciones.models.entities.propuestas;
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
-import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.donaciones.Bien;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donaciones.Estado;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
+import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
-import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
-import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
-import grupo5.donaciones.models.entities.personas.Humana;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,24 +19,9 @@ class PosibleFragmentacionTest {
 
   @BeforeEach
   void setUp() {
-    Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
-    Donante donante = new Donante(humana.getId());
-    Donacion donacion = new Donacion(donante.getId());
-
-    Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
-    Bien bien =
-        new Bien("Abrigo", "abrigo.png", LocalDate.of(2027, Month.JUNE, 1), Estado.NUEVO, 1.0, 1.0);
-    BienNormalizado bienNormalizado =
-        new BienNormalizado(
-            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
-
-    ItemDonacionNormalizado itemNormalizado =
-        new ItemDonacionNormalizado(donacion.getId(), bienNormalizado, 10);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(itemNormalizado.getBien(), 10);
-
-    donacionOriginal = new DonacionIndependiente(donacion.getId(), List.of(item));
-    necesidad = new NecesidadExtraordinaria(subcategoria.getId(), 5, "Abrigos para comedor");
+    UUID subcategoriaId = UUID.randomUUID();
+    donacionOriginal = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 10);
+    necesidad = NecesidadMother.extraordinaria(subcategoriaId, 5);
   }
 
   @Test

@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.repositories.impl;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.propuestas.EjecucionAsignacion;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import java.util.ArrayList;
@@ -16,7 +18,7 @@ public class AsignacionesRepositoryEnMemoria implements IAsignacionesRepository 
   @Override
   public EjecucionAsignacion save(EjecucionAsignacion aggregate) {
     if (aggregate == null || aggregate.getId() == null) {
-      throw new IllegalArgumentException("Aggregate or its ID cannot be null");
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
     storage.put(aggregate.getId(), aggregate);
     return aggregate;
