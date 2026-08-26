@@ -2,7 +2,12 @@ package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
@@ -12,6 +17,7 @@ import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.propuestas.EjecucionAsignacion;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.models.entities.propuestas.GestorPropuestasDeAsignacion;
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
@@ -27,6 +33,7 @@ import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import grupo5.donaciones.services.impl.LogisticaAsyncService;
 import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import grupo5.donaciones.services.mappers.DireccionMapper;
+import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +50,7 @@ class PropuestaDeAsignacionServiceTest {
   private IPropuestasRepository propuestaRepository;
   private IAsignacionesRepository asignacionRepository;
   private PropuestaMapper propuestaMapper;
+  private EjecucionAsignacionMapper ejecucionMapper;
   private ApplicationEventPublisher eventPublisher;
   private IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private IPersonasRepository personasRepository;
@@ -58,6 +66,7 @@ class PropuestaDeAsignacionServiceTest {
     propuestaRepository = mock(IPropuestasRepository.class);
     asignacionRepository = mock(IAsignacionesRepository.class);
     propuestaMapper = mock(PropuestaMapper.class);
+    ejecucionMapper = mock(EjecucionAsignacionMapper.class);
     eventPublisher = mock(ApplicationEventPublisher.class);
     entidadesBeneficiariasRepository = mock(IEntidadesBeneficiariasRepository.class);
     personasRepository = mock(IPersonasRepository.class);
@@ -72,6 +81,7 @@ class PropuestaDeAsignacionServiceTest {
             propuestaRepository,
             asignacionRepository,
             propuestaMapper,
+            ejecucionMapper,
             eventPublisher,
             entidadesBeneficiariasRepository,
             personasRepository,
@@ -98,7 +108,7 @@ class PropuestaDeAsignacionServiceTest {
     assertEquals(dto, resultado.getFirst());
 
     verify(propuestaRepository).save(propuesta);
-    verify(asignacionRepository).save(any(EjecucionAsignacionDTO.class));
+    verify(asignacionRepository).save(any(EjecucionAsignacion.class));
   }
 
   @Test
@@ -164,15 +174,18 @@ class PropuestaDeAsignacionServiceTest {
   }
 
   @Test
-  void historialEjecuciones_debeRetornarLoDelRepositorio() {
+  void historialEjecuciones_debeRetornarLoDelRepositorioMapeado() {
+    EjecucionAsignacion entity = mock(EjecucionAsignacion.class);
     EjecucionAsignacionDTO dto = mock(EjecucionAsignacionDTO.class);
-    when(asignacionRepository.obtenerHistorial()).thenReturn(List.of(dto));
+    when(asignacionRepository.obtenerHistorial()).thenReturn(List.of(entity));
+    when(ejecucionMapper.toDTO(entity)).thenReturn(dto);
 
     List<EjecucionAsignacionDTO> resultado = service.historialEjecuciones();
 
     assertEquals(1, resultado.size());
     assertEquals(dto, resultado.getFirst());
     verify(asignacionRepository).obtenerHistorial();
+    verify(ejecucionMapper).toDTO(entity);
   }
 
   @Test

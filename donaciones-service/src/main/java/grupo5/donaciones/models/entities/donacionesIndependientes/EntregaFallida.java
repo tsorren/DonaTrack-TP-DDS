@@ -1,6 +1,6 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
-public class EntregaFallida implements EstadoDonacion {
+public class EntregaFallida implements EstadoDonacionIndependiente {
 
   @Override
   public TipoEstadoDonacion getTipo() {

@@ -3,7 +3,7 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionAsignada;
 import java.util.UUID;
 
-public class EnDeposito implements EstadoDonacion {
+public class EnDeposito implements EstadoDonacionIndependiente {
 
   @Override
   public TipoEstadoDonacion getTipo() {

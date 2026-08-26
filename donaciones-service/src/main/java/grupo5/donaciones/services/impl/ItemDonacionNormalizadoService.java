@@ -41,11 +41,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
   public List<ItemDonacionNormalizadoOutputDTO> obtenerPendientes() {
     log.info("Obteniendo todos los ítems de donación normalizados pendientes de revisión");
     return itemNormalizadoRepository.findAll().stream()
-        .filter(
-            item ->
-                item.getBien() != null
-                    && item.getBien().estadoNormalizacion()
-                        == EstadoNormalizacion.PENDIENTE_REVISION)
+        .filter(ItemDonacionNormalizado::estaPendienteDeRevision)
         .map(mapper::toOutputDTO)
         .toList();
   }

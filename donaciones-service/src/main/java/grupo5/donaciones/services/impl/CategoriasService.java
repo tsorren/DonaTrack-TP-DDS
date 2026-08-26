@@ -86,5 +86,3 @@ public class CategoriasService implements ICategoriasService {
         .toList();
   }
 }
-
-// refactor ok
