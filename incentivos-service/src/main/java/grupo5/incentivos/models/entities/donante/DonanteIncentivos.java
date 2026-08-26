@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
 import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
+import grupo5.incentivos.models.entities.donante.eventos.EventoDonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.metricas.Metricas;
@@ -13,6 +14,7 @@ import grupo5.incentivos.models.entities.misiones.factory.MisionFactory;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -30,7 +32,7 @@ public class DonanteIncentivos implements AggregateRoot {
   private List<Insignia> insignias;
   private Metricas metricas;
 
-  private final List<Object> eventosDominio = new ArrayList<>();
+  private final transient List<EventoDonanteIncentivos> domainEvents = new ArrayList<>();
 
   public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre, List<Mision> misiones) {
     if (idPersona == null) {
@@ -100,14 +102,16 @@ public class DonanteIncentivos implements AggregateRoot {
     }
   }
 
-  private void registrarEvento(Object evento) {
-    this.eventosDominio.add(evento);
+  private void registrarEvento(EventoDonanteIncentivos evento) {
+    this.domainEvents.add(evento);
   }
 
-  public List<Object> pullEventosDominio() {
-    List<Object> copia = List.copyOf(this.eventosDominio);
-    this.eventosDominio.clear();
-    return copia;
+  public List<EventoDonanteIncentivos> getDomainEvents() {
+    return Collections.unmodifiableList(this.domainEvents);
+  }
+
+  public void clearDomainEvents() {
+    this.domainEvents.clear();
   }
 
   public void otorgarInsignia(Insignia insignia) {

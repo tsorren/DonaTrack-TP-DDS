@@ -116,7 +116,8 @@ public class IncentivosService implements IIncentivosService {
 
   private void despacharEventosYGuardar(DonanteIncentivos donante) {
     repository.save(donante);
-    donante.pullEventosDominio().forEach(eventPublisher::publishEvent);
+    donante.getDomainEvents().forEach(eventPublisher::publishEvent);
+    donante.clearDomainEvents();
   }
 
   public DonanteIncentivos obtenerDonante(UUID donanteId) {
