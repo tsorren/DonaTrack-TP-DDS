@@ -19,7 +19,13 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.ports.Segmentador;
-import grupo5.donaciones.models.repositories.*;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +46,7 @@ class SegmentacionEventListenerTest {
   @Mock private IncentivosFeignClient incentivosFeignClient;
   @Mock private ICategoriasRepository categoriasRepository;
   @Mock private ISubcategoriasRepository subcategoriasRepository;
-  @Mock private grupo5.donaciones.models.repositories.IPersonasRepository personasRepository;
+  @Mock private IPersonasRepository personasRepository;
   @Mock private IDonantesRepository donantesRepository;
   @Mock private ApplicationEventPublisher eventPublisher;
 
