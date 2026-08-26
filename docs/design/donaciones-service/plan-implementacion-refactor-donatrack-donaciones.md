@@ -832,7 +832,23 @@ OLEADA 6
         │
         ▼
 OLEADA 7
-└── Limpieza legacy
+└── Limpieza legacy y persistencia pura
+        │
+        ▼
+OLEADA 8
+└── Refactor profundo de testing (Object Mothers / Tell Don't Ask)
+        │
+        ▼
+OLEADA 9
+└── Validación por capas, HTTP clásico y TraceID distribuido
+        │
+        ▼
+OLEADA 10
+├── Desacoplamiento de Agregados (Eliminación Asignable / UUIDs)
+├── Strategy de Almacenamiento (FileSystem vs MinIO S3)
+├── Concurrencia (CAS en memoria vs Optimistic Locking)
+├── Privacidad sin polución (Crypto-Shredding)
+└── Documento complementario (decisiones_futuras_en_oleada_10.md)
         │
         ▼
 Integración completa
@@ -866,7 +882,10 @@ GestorNecesidades                   ✅
 Application Services delgados       ✅
 Listeners delgados                  ✅
 Schedulers delgados                 ✅
-Tests verdes                         ✅
+Desacoplamiento Asignable -> UUIDs  ✅
+Strategy FileSystem / MinIO         ✅
+Crypto-shredding modelado           ✅
+Tests verdes (385 tests)            ✅
 ```
 
 La auditoría inicial y la auditoría final deberían permitir explicar claramente:
