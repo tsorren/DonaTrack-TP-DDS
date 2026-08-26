@@ -30,7 +30,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
+import java.util.Set;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 class GlobalExceptionHandlerTest {
 
   private GlobalExceptionHandler handler;
@@ -149,6 +153,27 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
+  void handleFeignException_noDeberiaExponerElMensajeCrudoDelServicioRemoto() {
+    Request request =
+        Request.create(
+            Request.HttpMethod.POST,
+            "http://localhost:8083/api/entregas",
+            Collections.emptyMap(),
+            null,
+            new RequestTemplate());
+    FeignException.NotFound ex =
+        new FeignException.NotFound(
+            "[404] during POST to http://localhost:8083/api/entregas: [{\"secreto\":\"dato interno\"}]",
+            request,
+            null,
+            null);
+
+    ResponseEntity<ErrorResponse> response = handler.handleFeignException(ex);
+
+    assertNotNull(response.getBody());
+    assertFalse(response.getBody().details().contains("dato interno"));
+  }
+  @Test
   void handleInfrastructure_deberiaRetornarInternalServerError() {
     InfrastructureException ex =
         new InfrastructureException(
@@ -171,3 +196,37 @@ class GlobalExceptionHandlerTest {
     assertEquals(ErrorCatalog.ERROR_INTERNO.getCode(), response.getBody().code());
   }
 }
+
+  @Test
+  void handleHandlerMethodValidation_deberiaRetornarBadRequest() {
+    HandlerMethodValidationException ex = mock(HandlerMethodValidationException.class);
+
+    ResponseEntity<ErrorResponse> response = handler.handleHandlerMethodValidation(ex);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), response.getBody().code());
+    assertEquals("Parámetros de solicitud no válidos.", response.getBody().details());
+  }
+
+  @Test
+  void handleConstraintViolation_deberiaRetornarBadRequestConFieldErrors() {
+    Path propertyPath = mock(Path.class);
+    when(propertyPath.toString()).thenReturn("cantidad");
+    ConstraintViolation<?> violation = mock(ConstraintViolation.class);
+    when(violation.getPropertyPath()).thenReturn(propertyPath);
+    when(violation.getMessage()).thenReturn("debe ser mayor a cero");
+    when(violation.getInvalidValue()).thenReturn(-1);
+
+    ConstraintViolationException ex =
+        new ConstraintViolationException("Violación de restricciones", Set.of(violation));
+
+    ResponseEntity<ErrorResponse> response = handler.handleConstraintViolation(ex);
+
+    assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertNotNull(response.getBody().errors());
+    assertEquals(1, response.getBody().errors().size());
+    assertEquals("cantidad", response.getBody().errors().get(0).field());
+    assertEquals("debe ser mayor a cero", response.getBody().errors().get(0).message());
+  }
