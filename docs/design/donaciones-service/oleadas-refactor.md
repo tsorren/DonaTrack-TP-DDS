@@ -519,3 +519,73 @@ Al finalizar las oleadas 1 a 6, se identificaron cuatro grupos de deudas técnic
 - [x] Verificada la existencia e implementación de `IDonacionesIndependientesController`.
 - [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos, 0 fallos, 0 errores**).
 - [x] Verificación de formateo con Spotless: `mvn spotless:check` (**CLEAN**).
+
+---
+
+Oleada 8:
+# PR — Oleada 8: Refactor Profundo de Testing — Desacoplamiento de Entidades, Object Mothers / Test Builders, Tell Don't Ask y Clasificación Arquitectónica
+
+## Problema
+La suite de pruebas de `donaciones-service` presentaba fuertes acoplamientos a la implementación concreta de las entidades de dominio:
+1. **Acoplamiento por Constructores y Boilerplate Masivo**: Para instanciar una simple `DonacionIndependiente`, `Necesidad` o `Donacion`, los tests invocaban directamente constructores posicionales con 6 a 10 parámetros, requiriendo 15-20 líneas de setup en cada `@BeforeEach`. Cualquier cambio en la estructura interna de una entidad rompía decenas de pruebas en cascada (*Fragile Tests Antipattern*).
+2. **Violación de *Tell, Don't Ask* en Aserciones**: Múltiples tests inspeccionaban getters internos anidados para validar estados de negocio en lugar de interrogar métodos semánticos o eventos de dominio observables.
+3. **Falta de Fixtures y DTOs Centralizados**: Duplicación masiva de creación de DTOs y objetos auxiliares a lo largo de las capas de servicios y controladores.
+4. **Nombres No Estandarizados**: Existían suites nombradas en plural (`AnonimizacionesTest`, `DonacionesServiceApplicationTests`).
+
+## Evidencia
+- En tests como `DonacionIndependienteEstadosTest`, `DonacionIndependienteFragmentacionTest`, `NecesidadExtraordinariaTest`, `NecesidadRecurrenteTest`, `AlgoritmoPrioridadSubAtendidosTest`, `AlgoritmoCompatibilidadSemanticaTest`, `StockDeDonacionesTest`, más del 60% del código correspondía a inicializaciones repetitivas de personas, donantes, categorías, subcategorías, bienes y bienes normalizados.
+
+## Objetivo
+1. **Crear Infraestructura de Test Fixtures (*Object Mother & Test Data Builders*)**:
+   - `PersonaMother` / `PersonaBuilder` (personas humanas, jurídicas, direcciones válidas, medios de contacto).
+   - `CategoriaMother` / `SubcategoriaMother` (categorías canónicas y subcategorías con alias).
+   - `BienMother` / `BienNormalizadoMother` (alimentos perecederos, ropa, muebles, con estados y vencimientos).
+   - `DonanteMother` (donantes humanos y jurídicos).
+   - `DonacionMother` (donaciones simples, con ítems, normalizadas y segmentadas).
+   - `DonacionIndependienteMother` (donaciones independientes en cada estado del ciclo de vida: `enDeposito`, `asignada`, `listaParaEntregar`, `enTraslado`, `entregada`, `entregaFallida`, `vencida`).
+   - `NecesidadMother` (necesidades extraordinarias y recurrentes con períodos y frecuencias configuradas).
+   - `PropuestaMother` (propuestas de asignación y fragmentaciones).
+   - `DTOFixtures` (DTOs de entrada y salida para controladores y servicios).
+2. **Aplicar *Tell, Don't Ask* y Aserciones Semánticas**:
+   - Verificar transiciones a través de comandos semánticos y eventos de dominio (`getDomainEvents()`).
+   - Usar métodos semánticos de negocio (`estaSatisfecha()`, `estaPendienteDeRevision()`, `renovarPeriodoSiCorresponde()`).
+3. **Refactorizar Capas de Dominio, Algoritmos, Servicios y Controladores**:
+   - Reemplazar toda la construcción manual en los tests por las Mothers y Fixtures centralizadas.
+   - Expandir la cobertura de controladores REST (`CategoriasControllerTest`, etc.).
+4. **Estandarización de Nomenclatura**:
+   - Renombrar `AnonimizacionesTest` $\longrightarrow$ `AnonimizacionTest`.
+   - Renombrar `DonacionesServiceApplicationTests` $\longrightarrow$ `DonacionesServiceApplicationTest`.
+
+## Fuera de scope
+- Alteraciones de contratos REST o lógica de producción.
+
+## Tests
+- **Suites Refactorizadas**:
+  - `DonacionIndependienteEstadosTest`, `DonacionIndependienteFragmentacionTest`, `DonacionTest`.
+  - `NecesidadExtraordinariaTest`, `NecesidadRecurrenteTest`, `AsignableTest`, `EntidadBeneficiariaTest`.
+  - `AnonimizacionTest`, `HumanaTest`, `JuridicaTest`, `PersonaTest`.
+  - `AlgoritmoCompatibilidadSemanticaTest`, `AlgoritmoPrioridadSubAtendidosTest`, `StockDeDonacionesTest`.
+  - `DonacionesServiceTest`, `DonacionesIndependientesServiceTest`, `PropuestaDeAsignacionServiceTest`.
+  - `CategoriasControllerTest`, `DonacionesControllerTest`, `DonacionesIndependientesControllerTest`.
+  - `DonacionesServiceApplicationTest`.
+- **Resultado en `donaciones-service`**: **369 tests pasando (0 fallos, 0 errores, 0 skipped)**.
+- **Resultado en todo el Reactor Multi-Módulo**: **7/7 módulos en verde (`BUILD SUCCESS`)**.
+
+## Diseño resultante
+- **Desacoplamiento Máximo**: Los tests no conocen los detalles internos ni constructores kilométricos de las entidades; se comunican a través de Mothers declarativas.
+- **Legibilidad BDD/DDD (*DAMP over DRY in Scenarios, DRY in Fixtures*)**: Los tests se leen como especificaciones de requerimientos de negocio.
+- **Resistencia al Cambio (*Robust Testing Architecture*)**: Si el modelo de dominio evoluciona, solo se adaptan las Mothers correspondientes, manteniendo intactos los cientos de tests del microservicio.
+
+## IA utilizada
+- Investigación y diseño del marco de testing desacoplado (Object Mother / Test Builders / Tell Don't Ask).
+- Implementación de la infraestructura de fixtures en `src/test/java/grupo5/donaciones/fixtures/`.
+- Refactorización exhaustiva de las suites de prueba de dominio, algoritmos, servicios y controladores.
+- Formateo con Spotless (`mvn spotless:apply`) y validación en todo el reactor multi-módulo (`mvn clean test`).
+
+## Verificación humana
+- [x] Verificada la existencia y uso de las Mothers en `src/test/java/grupo5/donaciones/fixtures/`.
+- [x] Verificado el principio *Tell, Don't Ask* en las aserciones de estado y eventos de dominio.
+- [x] Verificada la unificación a nombres en singular de todas las suites (`AnonimizacionTest`, `DonacionesServiceApplicationTest`).
+- [x] Verificada la suite completa de `donaciones-service`: **369 tests pasando (0 fallos, 0 errores)**.
+- [x] Ejecución limpia del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
+- [x] Formateo validado: `mvn spotless:check` (**CLEAN**).

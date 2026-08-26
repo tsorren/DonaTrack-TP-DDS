@@ -2,30 +2,32 @@ package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO;
+import grupo5.donaciones.fixtures.DTOFixtures;
+import grupo5.donaciones.fixtures.DonacionMother;
+import grupo5.donaciones.fixtures.DonanteMother;
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.infrastructure.ProcesadorDeDonaciones;
-import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionCargada;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.entities.ubicaciones.Direccion;
-import grupo5.donaciones.models.entities.ubicaciones.Localidad;
-import grupo5.donaciones.models.entities.ubicaciones.Pais;
-import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.DonacionesService;
 import grupo5.donaciones.services.mappers.DonacionMapper;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
@@ -52,7 +54,6 @@ class DonacionesServiceTest {
 
   @InjectMocks private DonacionesService service;
 
-  private Humana persona;
   private Donante donante;
   private Donacion donacion;
   private DonacionInputDTO inputDTO;
@@ -60,31 +61,17 @@ class DonacionesServiceTest {
 
   @BeforeEach
   void setUp() {
-    persona = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
+    Humana persona = PersonaMother.juanPerez();
+    donante = DonanteMother.paraPersona(persona);
+    donacion = DonacionMother.simple(donante.getId());
 
-    donante = new Donante(persona.getId());
-    Pais pais = new Pais("Argentina");
-    Provincia provincia = new Provincia("Buenos Aires", pais);
-    Localidad localidad = new Localidad("CABA", provincia);
-    Direccion direccion = new Direccion("Calle Falsa", 123, null, null, "1000", localidad);
-    Deposito deposito = new Deposito("Deposito Test", direccion);
-    donacion = new Donacion(donante.getId(), deposito);
+    inputDTO = DTOFixtures.donacionInput(donante.getId());
 
-    DireccionInputDTO dirDTO =
-        new DireccionInputDTO(
-            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
-    inputDTO =
-        new DonacionInputDTO(
-            donante.getId(), "desc", List.of(), "Deposito Test", dirDTO, LocalDateTime.now());
-
-    DireccionOutputDTO dirOut =
-        new DireccionOutputDTO(
-            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    DireccionOutputDTO dirOut = DTOFixtures.direccionOutput();
     outputDTO =
         new DonacionOutputDTO(
             donacion.getId(),
-            new grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO(
-                donante.getId(), persona.getId(), null),
+            new DonanteResumenDTO(donante.getId(), persona.getId(), null),
             List.of(),
             "desc",
             LocalDateTime.of(2026, Month.JUNE, 18, 0, 0),
