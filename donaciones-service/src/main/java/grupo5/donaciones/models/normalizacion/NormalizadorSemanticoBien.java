@@ -47,7 +47,7 @@ public class NormalizadorSemanticoBien {
     return itemsNormalizados;
   }
 
-  public BienNormalizado normalizarBien(
+  private BienNormalizado normalizarBien(
       ItemDonacion item,
       List<Subcategoria> subcategorias,
       Map<UUID, Categoria> categoriasPorId,
