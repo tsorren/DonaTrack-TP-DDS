@@ -191,7 +191,7 @@ public class GlobalExceptionHandler {
             new ErrorResponse(
                 ex,
                 ErrorCatalog.ERROR_INTERNO.getCode(),
-                "Error en la comunicación con el servicio remoto: " + ex.getMessage()));
+                "Error en la comunicación con el servicio remoto."));
   }
 
   @ExceptionHandler(InfrastructureException.class)
