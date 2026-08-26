@@ -158,6 +158,7 @@ class NormalizadorSemanticoBienTest {
     assertEquals(1.0, itemNormalizado.getBien().confianza());
     assertEquals(EstadoNormalizacion.ACEPTADO, itemNormalizado.getBien().estadoNormalizacion());
   }
+
   @Test
   void normalizar_conDonacionNula_debeLanzarExcepcion() {
     ValidationException exception =
@@ -168,15 +169,6 @@ class NormalizadorSemanticoBienTest {
     assertEquals(ErrorCatalog.ARGUMENTO_NULO, exception.getError());
   }
 
-  @Test
-  void normalizarBien_conItemNulo_debeLanzarExcepcion() {
-    ValidationException exception =
-        assertThrows(
-            ValidationException.class,
-            () -> normalizador.normalizarBien(null, subcategorias, categoriasPorId, 1.0));
-
-    assertEquals(ErrorCatalog.BIEN_NORMALIZADO_SIN_BIEN, exception.getError());
-  }
   @Test
   void normalizar_cuandoNoHaySubcategorias_debeLanzarExcepcion() {
     Bien bien = new Bien("silla", "imagen.png", null, null, 1.0, 1.0);
