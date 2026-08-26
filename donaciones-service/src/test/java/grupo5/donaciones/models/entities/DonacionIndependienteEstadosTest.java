@@ -185,7 +185,8 @@ class DonacionIndependienteEstadosTest {
     // Regresión de #762: pedir ASIGNACION_REALIZADA sin una Necesidad dejaría el agregado
     // "asignado" sin asignadaA ni necesidadId en el evento — un estado inconsistente.
     SolicitudCambioEstadoDonacionIndependiente solicitudSinNecesidad =
-        new SolicitudCambioEstadoDonacionIndependiente(TipoEstadoDonacion.ASIGNACION_REALIZADA, ACTOR);
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, ACTOR);
 
     ValidationException ex =
         assertThrows(
