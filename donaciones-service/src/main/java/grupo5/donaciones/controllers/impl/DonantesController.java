@@ -7,6 +7,7 @@ import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,7 @@ public class DonantesController implements IDonantesController {
 
   @Override
   @PostMapping
-  public ResponseEntity<DonanteOutputDTO> crearDonante(@RequestBody DonanteInputDTO dto) {
+  public ResponseEntity<DonanteOutputDTO> crearDonante(@Valid @RequestBody DonanteInputDTO dto) {
     DonanteOutputDTO nuevoDonante = donantesService.crearDonante(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(nuevoDonante);
   }
@@ -65,11 +66,7 @@ public class DonantesController implements IDonantesController {
   @Override
   @PostMapping("/archivos")
   public ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(
-      @RequestBody ArchivoInputDTO input) {
-    if (input.path() == null || input.path().isBlank()) {
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-    }
-
+      @Valid @RequestBody ArchivoInputDTO input) {
     ArchivoOutputDTO responseBody = archivoDonantesService.cargarArchivoDonantes(input);
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
   }

@@ -5,10 +5,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.logging.TraceResponseHeaderFilter;
 import grupo5.donaciones.controllers.impl.PropuestaDeAsignacionController;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
+import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
 import java.time.LocalDateTime;
@@ -33,7 +36,11 @@ class PropuestaDeAsignacionControllerTest {
     objectMapper.findAndRegisterModules();
 
     PropuestaDeAsignacionController controller = new PropuestaDeAsignacionController(serviceMock);
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .addFilters(new TraceResponseHeaderFilter())
+            .build();
   }
 
   @Test
@@ -43,6 +50,7 @@ class PropuestaDeAsignacionControllerTest {
     mockMvc
         .perform(post("/api/asignaciones/ejecuciones"))
         .andExpect(status().isCreated())
+        .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$").isArray());
 
     verify(serviceMock, times(1)).ejecutarAsignacion();
@@ -60,6 +68,7 @@ class PropuestaDeAsignacionControllerTest {
     mockMvc
         .perform(get("/api/asignaciones/ejecuciones"))
         .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$[0].cantidadPropuestasGeneradas").value(3));
 
     verify(serviceMock, times(1)).historialEjecuciones();
@@ -76,6 +85,7 @@ class PropuestaDeAsignacionControllerTest {
     mockMvc
         .perform(get("/api/asignaciones/propuestas"))
         .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$[0].id").value(propId.toString()));
 
     verify(serviceMock, times(1)).listarPropuestas();
@@ -85,15 +95,31 @@ class PropuestaDeAsignacionControllerTest {
   void actualizarEstado_deberiaRetornar200() throws Exception {
     UUID propId = UUID.randomUUID();
     ActualizarEstadoRequestDTO requestDTO =
-        new ActualizarEstadoRequestDTO(EstadoPropuesta.APROBADA, null);
+        DTOFixtures.actualizarEstadoPropuestaInput(EstadoPropuesta.APROBADA);
 
     mockMvc
         .perform(
             put("/api/asignaciones/propuestas/" + propId + "/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDTO)))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"));
 
     verify(serviceMock, times(1)).actualizarEstado(propId, EstadoPropuesta.APROBADA);
+  }
+
+  @Test
+  void actualizarEstado_conEstadoNulo_deberiaRetornarBadRequest() throws Exception {
+    UUID propId = UUID.randomUUID();
+    ActualizarEstadoRequestDTO requestDTO = new ActualizarEstadoRequestDTO(null, null);
+
+    mockMvc
+        .perform(
+            put("/api/asignaciones/propuestas/" + propId + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDTO)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
+        .andExpect(jsonPath("$.errors[0].field").value("estado"));
   }
 }

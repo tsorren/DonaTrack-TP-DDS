@@ -2,6 +2,7 @@ package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,9 +11,11 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.logging.TraceResponseHeaderFilter;
 import grupo5.donaciones.controllers.impl.DonacionesIndependientesController;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import java.util.List;
@@ -45,6 +48,7 @@ class DonacionesIndependientesControllerTest {
     mockMvc =
         MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new GlobalExceptionHandler())
+            .addFilters(new TraceResponseHeaderFilter())
             .build();
     objectMapper = new ObjectMapper();
   }
@@ -53,8 +57,7 @@ class DonacionesIndependientesControllerTest {
   void cambiarEstado_DeberiaRetornarOk_CuandoTransicionEsExitosa() throws Exception {
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
+        DTOFixtures.cambioEstadoDIInput(TipoEstadoDonacion.ASIGNACION_REALIZADA);
     DonacionIndependienteResponseDTO response =
         new DonacionIndependienteResponseDTO(
             id,
@@ -81,6 +84,7 @@ class DonacionesIndependientesControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$.id").value(id.toString()))
         .andExpect(jsonPath("$.estadoActual").value("AsignacionRealizada"))
         .andExpect(jsonPath("$.historial[0].estadoNuevo").value("AsignacionRealizada"));
@@ -88,26 +92,41 @@ class DonacionesIndependientesControllerTest {
 
   @Test
   void cambiarEstado_DeberiaRetornarBadRequest_CuandoFaltaHeaderActor() throws Exception {
-    MockMvc mockMvcWithoutAdvice = MockMvcBuilders.standaloneSetup(controller).build();
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
+        DTOFixtures.cambioEstadoDIInput(TipoEstadoDonacion.ASIGNACION_REALIZADA);
 
-    mockMvcWithoutAdvice
+    mockMvc
         .perform(
             patch("/donaciones-independientes/" + id + "/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void cambiarEstado_DeberiaRetornarBadRequest_CuandoEstadoEsNulo() throws Exception {
+    UUID id = UUID.randomUUID();
+    CambioEstadoDonacionIndependienteRequestDTO request =
+        new CambioEstadoDonacionIndependienteRequestDTO(null, null, null, null, null, null);
+
+    mockMvc
+        .perform(
+            patch("/donaciones-independientes/" + id + "/estado")
+                .header("X-Actor", ACTOR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
+        .andExpect(jsonPath("$.errors[0].field").value("estado"));
   }
 
   @Test
   void cambiarEstado_DeberiaRetornarNotFound_CuandoRecursoNoExiste() throws Exception {
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, null, null, null, null, null);
+        DTOFixtures.cambioEstadoDIInput(TipoEstadoDonacion.ASIGNACION_REALIZADA);
 
     when(service.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenThrow(new RecursoNoEncontradoException(id));
@@ -119,6 +138,7 @@ class DonacionesIndependientesControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound())
+        .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$.details").value(id.toString()));
   }
 
@@ -126,8 +146,7 @@ class DonacionesIndependientesControllerTest {
   void cambiarEstado_DeberiaRetornarConflict_CuandoTransicionEsInvalida() throws Exception {
     UUID id = UUID.randomUUID();
     CambioEstadoDonacionIndependienteRequestDTO request =
-        new CambioEstadoDonacionIndependienteRequestDTO(
-            TipoEstadoDonacion.ENTREGADA, null, null, null, null, null);
+        DTOFixtures.cambioEstadoDIInput(TipoEstadoDonacion.ENTREGADA);
 
     when(service.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenThrow(new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA));
@@ -139,6 +158,7 @@ class DonacionesIndependientesControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isConflict())
+        .andExpect(header().exists("X-Trace-Id"))
         .andExpect(
             jsonPath("$.code").value(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA.getCode()));
   }
@@ -162,6 +182,7 @@ class DonacionesIndependientesControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest())
+        .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
   }
 }

@@ -4,6 +4,7 @@ import grupo5.donaciones.controllers.ICategoriasController;
 import grupo5.donaciones.dto.categorias.CategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.CategoriaOutputDTO;
 import grupo5.donaciones.services.ICategoriasService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,7 @@ public class CategoriasController implements ICategoriasController {
 
   @Override
   @PostMapping
-  public ResponseEntity<CategoriaOutputDTO> crear(@RequestBody CategoriaInputDTO dto) {
+  public ResponseEntity<CategoriaOutputDTO> crear(@Valid @RequestBody CategoriaInputDTO dto) {
     CategoriaOutputDTO categoria = categoriasService.crear(dto);
     return ResponseEntity.status(HttpStatus.CREATED).body(categoria);
   }
@@ -44,7 +45,7 @@ public class CategoriasController implements ICategoriasController {
   @Override
   @PutMapping("/{id}")
   public ResponseEntity<CategoriaOutputDTO> modificar(
-      @PathVariable UUID id, @RequestBody CategoriaInputDTO dto) {
+      @PathVariable UUID id, @Valid @RequestBody CategoriaInputDTO dto) {
     CategoriaOutputDTO modificada = categoriasService.modificar(id, dto);
     return ResponseEntity.ok(modificada);
   }
