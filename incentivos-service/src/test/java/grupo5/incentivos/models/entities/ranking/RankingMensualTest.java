@@ -31,10 +31,12 @@ class RankingMensualTest {
 
   @Test
   void donante_deberiaMostrarMisionesCompletadasEnMes() {
-    DonanteIncentivos donante = new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Test");
-
     MisionDonacionesExitosas mision = new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 1);
-    donante.getMisiones().add(mision);
+    // Se usa el constructor con lista explícita de misiones: el constructor por defecto
+    // ya trae misiones estándar de MisionFactory, y getMisionActiva() habría evaluado
+    // esa misión estándar en vez de la que arma este test.
+    DonanteIncentivos donante =
+        new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Test", List.of(mision));
 
     EventoDonacion evento =
         EventoDonacion.builder()
@@ -54,11 +56,11 @@ class RankingMensualTest {
 
   @Test
   void donante_deberiaAscenderDeCategoriaAlCompletarTodasLasMisionesDeCategoria() {
-    DonanteIncentivos donante = new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Test");
-    assertEquals(CategoriaDonante.COLABORADOR, donante.getCategoria());
-
     MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
-    donante.getMisiones().add(racha);
+    // Idem: se pasa la única misión explícitamente para que sea la misión activa.
+    DonanteIncentivos donante =
+        new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Test", List.of(racha));
+    assertEquals(CategoriaDonante.COLABORADOR, donante.getCategoria());
 
     EventoDonacion evento =
         EventoDonacion.builder()
@@ -69,9 +71,8 @@ class RankingMensualTest {
             .build();
 
     donante.registrarDonacion(evento);
-    boolean ascendio = donante.intentarAscenso();
 
-    assertTrue(ascendio);
+    // El ascenso ocurre automáticamente al completarse la última misión de la categoría.
     assertEquals(CategoriaDonante.SOSTENEDOR, donante.getCategoria());
   }
 }

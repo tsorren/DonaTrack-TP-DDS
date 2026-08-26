@@ -2,17 +2,17 @@ package grupo5.incentivos.services;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.incentivos.dto.*;
-import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
+import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
+import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
@@ -25,15 +25,17 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class IncentivosServiceTest {
 
   @Mock private NotificacionesClient notificacionesClient;
   @Mock private RankingService rankingService;
-  @Mock private N8nClient n8nClient;
+  @Mock private ApplicationEventPublisher eventPublisher;
 
   private IncentivosService service;
   private DonanteIncentivosRepository repository;
@@ -46,7 +48,7 @@ class IncentivosServiceTest {
     List<CriterioInactividad> criterios = List.of();
     service =
         new IncentivosService(
-            repository, notificacionesClient, rankingService, n8nClient, criterios);
+            repository, notificacionesClient, rankingService, criterios, eventPublisher);
   }
 
   @Test
@@ -104,74 +106,71 @@ class IncentivosServiceTest {
   @Test
   void procesarDonacion_deberiaNotificarAscensoAlSubirCategoria() {
     UUID id = new UUID(0L, 44L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
     MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
-    donante.getMisiones().add(racha);
+    // Constructor con lista explícita: evita que getMisionActiva() elija alguna
+    // de las misiones estándar que trae el constructor por defecto.
+    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(racha));
     repository.save(donante);
 
     service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
-    verify(notificacionesClient, atLeastOnce())
-        .notificarAscensoCategoria(any(), anyString(), anyString());
+    verify(eventPublisher, atLeastOnce()).publishEvent(any(AscensoDonante.class));
   }
 
   @Test
   void procesarDonacion_deberiaNotificarN8nCuandoSeCompletaMisionConInsignia() {
     UUID id = new UUID(0L, 10L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
     MisionRacha mision = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
     mision.setInsignia(new Insignia("Racha", "desc", "/img.png"));
-    donante.getMisiones().add(mision);
+    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(mision));
     repository.save(donante);
 
     service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
-    verify(n8nClient, atLeastOnce())
-        .publicarInsigniaGanada(any(), anyString(), anyString(), anyString());
+    ArgumentCaptor<MisionCompletada> captor = ArgumentCaptor.forClass(MisionCompletada.class);
+    verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
+    assertTrue(captor.getAllValues().stream().anyMatch(e -> e.insignia() != null));
   }
 
   @Test
   void procesarDonacion_noDeberiaNotificarN8nSiLaMisionNoSeCompletaAun() {
     UUID id = new UUID(0L, 11L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
     MisionRacha mision = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
-    donante.getMisiones().add(mision);
+    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(mision));
     repository.save(donante);
 
     service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
 
-    verify(n8nClient, never()).publicarInsigniaGanada(any(), any(), any(), any());
+    verify(eventPublisher, never()).publishEvent(any(MisionCompletada.class));
   }
 
   @Test
   void procesarDonacionExitosa_deberiaNotificarCuandoSeCompletaUnaMision() {
     UUID id = new UUID(0L, 42L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
     MisionDonacionesExitosas mision = new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 1);
     Insignia insignia = new Insignia("Primera Entrega", "Primera donación exitosa", "/img.png");
     mision.setInsignia(insignia);
-    donante.getMisiones().add(mision);
+    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(mision));
     repository.save(donante);
 
     service.procesarDonacionExitosa(new DonacionExitosaRequest(id, new UUID(0L, 99L)));
 
-    verify(notificacionesClient, atLeastOnce())
-        .notificarMisionCumplida(any(), anyString(), anyString());
+    verify(eventPublisher, atLeastOnce()).publishEvent(any(MisionCompletada.class));
   }
 
   @Test
   void procesarDonacionExitosa_deberiaNotificarN8nCuandoSeCompletaMisionConInsignia() {
     UUID id = new UUID(0L, 20L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
     MisionDonacionesExitosas mision = new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 1);
     mision.setInsignia(new Insignia("Primera Entrega", "desc", "/img.png"));
-    donante.getMisiones().add(mision);
+    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(mision));
     repository.save(donante);
 
     service.procesarDonacionExitosa(new DonacionExitosaRequest(id, new UUID(0L, 100L)));
 
-    verify(n8nClient, atLeastOnce())
-        .publicarInsigniaGanada(any(), anyString(), anyString(), anyString());
+    ArgumentCaptor<MisionCompletada> captor = ArgumentCaptor.forClass(MisionCompletada.class);
+    verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
+    assertTrue(captor.getAllValues().stream().anyMatch(e -> e.insignia() != null));
   }
 
   @Test
