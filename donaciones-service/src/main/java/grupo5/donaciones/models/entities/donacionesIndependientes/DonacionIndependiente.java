@@ -178,7 +178,8 @@ public class DonacionIndependiente implements AggregateRoot {
   }
 
   public List<EventoDonacionIndependiente> getDomainEvents() {
-    return Collections.unmodifiableList(this.domainEvents);
+    // Copia defensiva: ver el comentario equivalente en Donacion.getDomainEvents().
+    return List.copyOf(this.domainEvents);
   }
 
   public void clearDomainEvents() {

@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionAsignada;
 import java.util.UUID;
 
@@ -24,10 +26,14 @@ public class EnDeposito implements EstadoDonacionIndependiente {
   @Override
   public void asignar(
       DonacionIndependiente d, SolicitudCambioEstadoDonacionIndependiente solicitud) {
-    if (solicitud != null && solicitud.getNecesidad() != null) {
-      d.asignarReceptor(solicitud.getNecesidad());
+    // La necesidad es obligatoria para pasar a ASIGNACION_REALIZADA: sin ella, la donación
+    // quedaría "asignada" sin registrar a qué necesidad satisface (asignadaA y el necesidadId
+    // del EventoDonacionAsignada quedarían nulos, dejando el agregado en un estado inconsistente).
+    if (solicitud == null || solicitud.getNecesidad() == null) {
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD);
     }
-    asignar(d, solicitud != null ? solicitud.getActor() : "SISTEMA");
+    d.asignarReceptor(solicitud.getNecesidad());
+    asignar(d, solicitud.getActor());
   }
 
   @Override

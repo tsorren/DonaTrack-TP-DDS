@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -165,5 +166,21 @@ class DonacionTest {
     donacion.clearDomainEvents();
 
     assertEquals(0, donacion.getDomainEvents().size());
+  }
+
+  @Test
+  void getDomainEvents_debeSerUnaCopiaInmuneAMutacionesPosteriores() {
+    // Regresión de #761: si getDomainEvents() devolviera una vista en vivo (como antes, con
+    // Collections.unmodifiableList), un listener reentrante que mute domainEvents mientras se
+    // itera esta lista (p. ej. SegmentacionEventListener llamando marcarSegmentada() dentro del
+    // manejo síncrono de DonacionNormalizada) provocaría ConcurrentModificationException.
+    donacion.marcarNormalizada();
+    List<EventoDonacion> snapshot = donacion.getDomainEvents();
+    int cantidadEnElSnapshot = snapshot.size();
+
+    donacion.marcarSegmentada(); // muta domainEvents "en vivo" después de tomar el snapshot
+
+    assertEquals(cantidadEnElSnapshot, snapshot.size());
+    assertDoesNotThrow(() -> snapshot.forEach(e -> {}));
   }
 }
