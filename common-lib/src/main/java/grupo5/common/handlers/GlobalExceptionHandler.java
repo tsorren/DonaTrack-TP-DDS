@@ -76,8 +76,9 @@ public class GlobalExceptionHandler {
                 details,
                 fieldErrors));
   }
-
-  // PENDIENTE 4a
+  // Preparación anticipada: hoy ningún controller de donaciones-service tiene @Validated a nivel
+  // de clase, así que este handler no tiene ningún camino de ejecución real todavía. Se agrega
+  // ahora para que esté listo cuando algún endpoint valide @RequestParam/@PathVariable.
   @ExceptionHandler(HandlerMethodValidationException.class)
   public ResponseEntity<ErrorResponse> handleHandlerMethodValidation(
       HandlerMethodValidationException ex) {
