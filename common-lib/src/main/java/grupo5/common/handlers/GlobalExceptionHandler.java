@@ -76,7 +76,7 @@ public class GlobalExceptionHandler {
                 details,
                 fieldErrors));
   }
-
+  // PENDIENTE 4a
   @ExceptionHandler(HandlerMethodValidationException.class)
   public ResponseEntity<ErrorResponse> handleHandlerMethodValidation(
       HandlerMethodValidationException ex) {
@@ -92,7 +92,7 @@ public class GlobalExceptionHandler {
                 ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
                 "Parámetros de solicitud no válidos."));
   }
-
+  // PENDIENTE 4b
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
     List<FieldErrorDTO> fieldErrors =
@@ -185,7 +185,7 @@ public class GlobalExceptionHandler {
         ErrorCatalog.ERROR_INTERNO.getCode(),
         statusCode,
         ex.getMessage());
-
+    // PENDIENTE 3
     return ResponseEntity.status(status)
         .body(
             new ErrorResponse(

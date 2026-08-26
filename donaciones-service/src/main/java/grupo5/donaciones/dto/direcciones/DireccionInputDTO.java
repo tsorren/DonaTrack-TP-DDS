@@ -1,5 +1,6 @@
 package grupo5.donaciones.dto.direcciones;
 
+// PENDIENTE 1
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
