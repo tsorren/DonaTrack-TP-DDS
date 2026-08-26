@@ -77,6 +77,11 @@ public class EntregasService implements IEntregasService {
 
     Entrega entrega = buscarEntrega(id);
 
+    // Crear solicitud con mapper
+    // Llamar gestor
+    // Persistir
+    // Comunicar eventos (HAY QUE GENERAR LOS EVENTOS EN EL DOMINIO)
+
     switch (request.estado()) {
       case ENTREGADA -> procesarEntregaEntregada(request.actor(), entrega);
       case NO_RECIBIDA -> procesarEntregaNoRecibida(
@@ -99,7 +104,7 @@ public class EntregasService implements IEntregasService {
   }
 
   private void procesarEntregaEntregada(String actor, Entrega entrega) {
-    ConfirmacionRecepcion solicitud = new ConfirmacionRecepcion(entrega, actor, null);
+    SolicitudTransicionEntrega solicitud = new ConfirmacionRecepcion(entrega, actor, null);
 
     GestorDeEntregas.cambiarEstado(solicitud);
 
