@@ -676,3 +676,87 @@ Oleada 9:
 - [x] Verificada la suite completa de `common-lib`: **24 tests pasando (0 fallos, 0 errores)**.
 - [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
 - [x] Formateo Spotless validado: `mvn spotless:check` (**CLEAN**).
+
+---
+
+Oleada 10:
+# PR — Oleada 10: Análisis y Preparación Integral para Persistencia Real (JPA/Hibernate, PostgreSQL y MinIO)
+
+## Problema
+De cara a la futura migración desde repositorios en memoria hacia persistencia relacional con PostgreSQL, ORM con JPA/Hibernate 6 y almacenamiento de objetos S3 con MinIO, una auditoría 360° sobre `donaciones-service` identificó 7 deudas técnicas estructurales y de diseño que impedirían un mapeo limpio si no se corrigen previamente en el dominio y aplicación:
+1. **Violaciones de Límites de Agregados e Interfaz `Asignable` Artificial**: `DonacionIndependiente` retenía `@JsonIgnore private Asignable asignadaA;` (acoplamiento por objeto en memoria); `NecesidadExtraordinaria` y `PeriodoNecesidad` almacenaban colecciones directas `List<DonacionIndependiente>` con referencias circulares; y `PosibleFragmentacion` retenía una instancia mutable `donacionOriginal`.
+2. **Acoplamiento al Sistema de Archivos Local**: `Archivo.path` almacenaba rutas absolutas rígidas de disco y `LectorDonantesCSV` leía directamente con `FileReader`, siendo incompatible con contenedores Docker y almacenamiento S3 en la nube.
+3. **Ghost Objects y Polución de Constructores**: `Persona.java` instanciaba forzadamente `new Telefono()` vacío con campos en `null` por defecto, violando restricciones `NOT NULL` de base de datos. Asimismo, los constructores de entidades mezclaban la creación de negocio (que emite eventos de dominio) con la rehidratación técnica de persistencia.
+4. **Polución de Contratos por Privacidad (`Anonimizable`)**: Las entidades implementaban `Anonimizable` con mutaciones destructivas imperativas (`nombre = "ANONIMIZADO"`), ensuciando el modelo y dificultando la auditoría sin resolver el Derecho de Supresión (Art. 16 Ley 25.326).
+5. **Ausencia de Control de Concurrencia**: Inexistencia de campos de versión en agregados transaccionales de inventario (`DonacionIndependiente`, `Necesidad`, `Propuesta`), exponiendo al sistema a sobreescrituras ciegas (*Lost Updates*).
+6. **Riesgo de Doble Escritura (*Dual-Write*)**: La publicación síncrona de eventos en memoria no estaba alineada con los límites transaccionales de base de datos ni con el envío asíncrono a RabbitMQ.
+
+## Evidencia
+- En `donaciones-clases.puml`, la interfaz `Asignable` no existe; el diseño objetivo modela referencias explícitas por `UUID` (`necesidadId`, `entidadBeneficiariaId`).
+- En `Persona.java:L27,L34`, `this.mediosDeContacto.add(new Telefono())` creaba registros nulos artificiales.
+- En `NecesidadExtraordinaria.java:L14` y `PeriodoNecesidad.java:L13`, la lista `List<DonacionIndependiente>` provocaba riesgo de N+1 y memory ballooning.
+- En `ADR 20260519-privacidad-de-usuarios.md`, se preveía la necesidad de revisar la interfaz `Anonimizable` para desacoplar el modelo y garantizar integridad referencial histórica.
+
+## Objetivo
+1. **Desacoplar Agregados por Identificadores Explícitos (DDD)**:
+   - Eliminar la interfaz `Asignable` y el campo `asignadaA` en `DonacionIndependiente`, reemplazándolos por `UUID necesidadId` y `UUID entidadBeneficiariaId`.
+   - Eliminar `List<DonacionIndependiente>` dentro de `NecesidadExtraordinaria` y `PeriodoNecesidad`, gestionando `cantidadAcumulada` escalar y consultas delegadas al repositorio.
+   - Hacer a `PosibleFragmentacion` puramente stateless respecto a la donación original, recibiéndola por parámetro en `confirmar(donacionOriginal, necesidad, actor)`.
+2. **Patrón Strategy de Almacenamiento y Lectores (FileSystem vs MinIO)**:
+   - Diseñar el puerto de dominio `CargadorDonantes` con soporte dual: `LectorDonantesFileSystemStrategy` (para desarrollo local, fixtures y tests unitarios) y `LectorDonantesMinioStrategy` (para ingesta streaming desde buckets MinIO S3).
+   - Conceptualizar `Archivo.path` como `objectKey` e introducir el puerto `StoragePort`.
+3. **Limpieza de Entidades y Reconstitución Limpia**:
+   - Eliminar el *Ghost Object* `new Telefono()` en `Persona`.
+   - Separar métodos de Creación de Negocio (`crear(...)` con eventos de dominio) de constructores de Reconstitución Técnica (hidratación sin eventos falsos).
+   - Diseñar `EstadoDonacionIndependienteFactory` para mapear las 7 clases del State Pattern bidireccionalmente contra `TipoEstadoDonacion` (columna SQL).
+4. **Alternativas de Privacidad y Crypto-Shredding**:
+   - Eliminar la interfaz técnica `Anonimizable` de `Persona`, `Donante`, `EntidadBeneficiaria` y `MedioDeContacto`.
+   - Modelar el ciclo de vida mediante `EstadoPersona` (`ACTIVA`, `ANONIMIZADA`) y el método de negocio `darDeBajaPorPrivacidad(actor, motivo)` que emite `PersonaAnonimizada`.
+   - Diseñar el puerto `CryptoPort` para permitir a futuro la destrucción de la clave DEK (*Crypto-Shredding*), volviendo los datos cifrados en PostgreSQL matemáticamente irrecuperables sin romper FKs ni auditoría histórica.
+5. **Control de Concurrencia y Consistencia Eventual**:
+   - Analizar y preparar campos de `version: Long` para Optimistic Concurrency Control (OCC) en base de datos y simulación CAS en repositorios en memoria.
+   - Diseñar el patrón Transactional Outbox (`outbox_events`) para eliminar el problema de la doble escritura entre PostgreSQL y RabbitMQ.
+6. **Marco de Verificación de No-Regresión para Oleadas 8 y 9**:
+   - Blindar el 100% de los Object Mothers, fixtures, aserciones *Tell, Don't Ask*, Bean Validation declarativa, códigos HTTP clásicos (201, 202, 200, 204, 400, 404, 409), respuestas estructuradas `FieldErrorDTO` y trazabilidad `traceId` en HTTP y Feign.
+
+## Fuera de scope
+- **Cero anotaciones JPA prematuras en producción**: No se introducen `@Entity`, `@Table`, `@Column` ni `@Embeddable` en esta oleada.
+- **Cero dependencias de base de datos física**: No se agregan drivers de PostgreSQL ni SDK de MinIO en los `pom.xml`.
+- **Persistencia física diferida**: Todo el detalle de implementación de esquemas relacionales DDL, JPA Converters, Testcontainers, scripts de migración y configuración de buckets se encuentra formalmente documentado en el archivo complementario:
+  👉 [`decisiones_futuras_en_oleada_10.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/decisiones_futuras_en_oleada_10.md).
+
+## Tests / Plan de Validación y No-Regresión
+- **Protección de la Oleada 8**:
+  - `PersonaMother`, `DonacionMother`, `DonacionIndependienteMother`, `NecesidadMother`, `PropuestaMother` adaptadas a métodos de creación limpios y referencias por UUID sin romper tests preexistentes.
+  - Aserciones semánticas verificando invariantes y eventos de dominio (`getDomainEvents()`).
+  - Nomenclatura singular en todas las suites de prueba (`LectorDonantesStrategyTest`, etc.).
+- **Protección de la Oleada 9**:
+  - Validación declarativa Jakarta Bean Validation (`@NotNull`, `@NotBlank`, `@Positive`, `@Valid`) en todos los DTOs de entrada.
+  - Verificación de status codes clásicos (`201 Created`, `202 Accepted` en archivos, `200 OK`, `204 No Content`, `400`, `404`, `409 Conflict`).
+  - Manejo de `FieldErrorDTO` y propagación de `traceId` en MDC, headers `X-Trace-Id` y clientes Feign.
+- **Línea Base de Validación**:
+  - `donaciones-service`: **385 tests pasando (0 fallos, 0 errores)**.
+  - `common-lib`: **24 tests pasando (0 fallos, 0 errores)**.
+  - Reactor Multi-Módulo: **7/7 módulos pasando exitosamente (`BUILD SUCCESS`)**.
+
+## Diseño resultante
+- **Dominio Puro y Preparado para Persistencia**: Agregados desacoplados con límites estrictos, referencias por `UUID`, colecciones protegidas y ausencia de ghost objects.
+- **Almacenamiento Desacoplado**: Strategy dual de carga de datos que convive con el sistema de archivos local y habilita la conexión transparente con MinIO S3.
+- **Arquitectura de Privacidad Escalable**: Supresión legal mediante Crypto-shredding y eventos de dominio sin ensuciar las entidades de negocio.
+- **Concurrencia y Transacciones Robustas**: Bloqueo optimista preparado y diseño de Transactional Outbox para consistencia eventual inter-microservicios.
+
+## IA utilizada
+- Auditoría integral 360° de los 10 agregados del microservicio de donaciones.
+- Diagnóstico de acoplamientos contra `donaciones-clases.puml` y diseño de eliminación de `Asignable`.
+- Diseño del patrón Strategy para almacenamiento dual (FileSystem vs MinIO) y análisis de concurrencia CAS vs OCC.
+- Elaboración del documento de arquitectura complementario [`decisiones_futuras_en_oleada_10.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/decisiones_futuras_en_oleada_10.md).
+
+## Verificación humana
+- [x] Verificada la eliminación conceptual de `Asignable` y el desacoplamiento por `UUID` en `DonacionIndependiente` y `Necesidad`.
+- [x] Verificado el patrón Strategy para `CargadorDonantes` con preservación del lector sobre FileSystem local.
+- [x] Verificado el análisis de concurrencia (`AtomicLong`/CAS en memoria vs `@Version Long` en PostgreSQL).
+- [x] Verificada la estrategia de Crypto-Shredding y eliminación de la interfaz `Anonimizable`.
+- [x] Verificada la no-regresión de todas las capacidades de las Oleadas 8 y 9.
+- [x] Verificada la existencia y completitud de [`decisiones_futuras_en_oleada_10.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/decisiones_futuras_en_oleada_10.md).
+- [x] Ejecución limpia del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
+- [x] Formateo Spotless validado: `mvn spotless:check` (**CLEAN**).
