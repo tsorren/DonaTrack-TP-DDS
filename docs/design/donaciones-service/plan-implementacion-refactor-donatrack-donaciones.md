@@ -173,11 +173,15 @@ Debe trabajar en otro contexto/chat:
 ```text
 No modifiques código.
 
-Revisá este diff contra:
+Corré el git diff real de esta oleada (no leas solo la bitácora) contra:
 - DC actualizado;
 - spec del RF;
 - tests existentes;
 - arquitectura objetivo.
+
+Para cada ítem que la bitácora marque ✅ o "refactorizado", verificá contra el diff real que el
+archivo:línea citado existe y prueba lo que se afirma. Si no lo prueba, es un hallazgo a reportar,
+no un detalle menor.
 
 Buscá:
 - regresiones;
@@ -185,7 +189,8 @@ Buscá:
 - cambios fuera de scope;
 - sobreingeniería;
 - falta de tests;
-- acoplamientos nuevos.
+- acoplamientos nuevos;
+- desalineación entre la bitácora y el diff real (ver sección 16, "Trazabilidad de la bitácora").
 ```
 
 La revisión humana sigue siendo obligatoria.
@@ -741,6 +746,25 @@ Ejemplos:
 
 ¿Qué revisó el integrante antes de aprobar el PR?
 
+## Trazabilidad de la bitácora (Etapa 5, agregado 2026-08-26)
+
+Causa raíz detectada en el análisis cruzado de Oleadas 7-10: en 3 de 4 oleadas la bitácora declaraba
+trabajo como hecho ("refactorizado", ✅) sin que el diff real lo respaldara (cita de líneas del DC que
+no contienen lo afirmado, suites declaradas "refactorizadas" sin ningún diff, checkmarks de diseño
+conceptual marcados igual que trabajo terminado). Corregir cada caso puntual no alcanza — hace falta
+una regla de proceso:
+
+1. **Todo ítem marcado ✅ o "refactorizado" en la bitácora tiene que citar el archivo:línea real que
+   lo prueba.** Si no se puede citar una línea concreta, no se marca ✅.
+2. **Convención de símbolos** — no todos los ítems de una bitácora significan lo mismo:
+   - `✅` = implementado, con diff real y tests verdes que lo prueban.
+   - `📝` (o `🔵`) = diseño/análisis conceptual, documentado pero **sin** cambio de código todavía
+     (por ejemplo, un documento de decisiones futuras). Nunca usar `✅` para esto — se confunde con
+     "terminado" y una oleada futura puede asumir erróneamente que ya está resuelto.
+3. **El Reviewer tiene que correr el `git diff` real de la oleada contra lo que declara la bitácora
+   antes de aprobar** — no alcanza con leer el texto. Ver `## Agente del Reviewer` en la sección 4:
+   el prompt de revisión ya lo exige explícitamente.
+
 ---
 
 # 17. Regla de tamaño de PR
@@ -882,11 +906,16 @@ GestorNecesidades                   ✅
 Application Services delgados       ✅
 Listeners delgados                  ✅
 Schedulers delgados                 ✅
-Desacoplamiento Asignable -> UUIDs  ✅
-Strategy FileSystem / MinIO         ✅
-Crypto-shredding modelado           ✅
+Desacoplamiento Asignable -> UUIDs  📝 (diseñado en Oleada 10, no implementado)
+Strategy FileSystem / MinIO         📝 (diseñado en Oleada 10, no implementado)
+Crypto-shredding modelado           📝 (diseñado en Oleada 10, no implementado)
 Tests verdes (385 tests)            ✅
 ```
+
+> Corrección de Etapa 5 (2026-08-26): estos 3 ítems estaban marcados ✅ pese a ser solo diseño
+> conceptual documentado en `decisiones_futuras_en_oleada_10.md`, sin ningún cambio de código —
+> señalado tanto en la revisión de Oleada 10 como por un segundo revisor (ndelorte) de forma
+> independiente. Ver la convención de símbolos en la sección 16.
 
 La auditoría inicial y la auditoría final deberían permitir explicar claramente:
 

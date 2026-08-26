@@ -3,20 +3,12 @@ package grupo5.donaciones.models.normalizacion;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
-@Component
 public class ComparadorTexto {
 
   private final Normalizador normalizador;
 
-  // Inyección de dependencias por constructor
-  @Autowired
-  public ComparadorTexto(
-      @Qualifier("normalizadorBasicoTexto")
-          Normalizador normalizador) { // Cambiado a "normalizadorBasicoTexto"
+  public ComparadorTexto(Normalizador normalizador) {
     this.normalizador = normalizador;
   }
 

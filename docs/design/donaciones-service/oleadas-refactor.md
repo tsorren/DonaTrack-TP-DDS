@@ -760,3 +760,253 @@ De cara a la futura migración desde repositorios en memoria hacia persistencia 
 - [x] Verificada la existencia y completitud de [`decisiones_futuras_en_oleada_10.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/decisiones_futuras_en_oleada_10.md).
 - [x] Ejecución limpia del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
 - [x] Formateo Spotless validado: `mvn spotless:check` (**CLEAN**).
+
+---
+
+Oleada 11:
+# PR — Oleada 11: Cierre de Observaciones de Code Review, Limpieza Mecánica y Estabilización de Contratos de Entrada
+
+## Problema
+Al integrar las oleadas 7 a 9 y tras los reviews cruzados de las PRs #770, #771 y #772, quedaron pendientes diversas observaciones puntuales, limpiezas mecánicas y definiciones de contratos:
+1. **Inconsistencias y Observaciones de Code Review (#770 y #772 / Etapa 0)**:
+   - `ProcesadorDeDonaciones.java:88`: El log informativo de scoring semántico duplicaba el parámetro `confianza()` (`(confianza: {}, {})`), ensuciando la salida de trazabilidad técnica.
+   - `NormalizadorSemanticoBien.java:50`: El método auxiliar `normalizarBien(...)` había quedado con visibilidad pública/paquete en lugar de `private`, exponiendo indebidamente la mecánica interna de resolución.
+   - `NormalizadorSemanticoBienTest.java`: Carecía de pruebas unitarias defensivas para los guards ante inputs nulos (`donacion == null` e `item == null`).
+   - `GlobalExceptionHandler.java:194`: En `handleFeignException`, se concatenaba directamente `ex.getMessage()` dentro del mensaje público del `ErrorResponse`, provocando una potencial fuga de información sensible, headers internos o URLs del servicio remoto hacia el cliente HTTP externo.
+   - `GlobalExceptionHandlerTest.java`: No verificaba la no-fuga de mensajes en errores Feign y carecía de pruebas unitarias para `handleHandlerMethodValidation` y `handleConstraintViolation`.
+2. **Residuos y Limpieza Mecánica (#770 y #771 / Etapa 1)**:
+   - Presencia de wildcard imports (`import ...*`) en clases reales en tests de infraestructura y mappers: `SegmentacionEventListenerTest.java:22`, `MedioDeContactoMapperTest.java:5`, `PersonaMapperTest.java:8`.
+   - En `DonacionesServiceTest.java:76`: Se utilizaba el string hardcodeado `"desc"` en una aserción de DTO en lugar de validar dinámicamente contra `inputDTO.descripcion()`.
+3. **Decisiones de Negocio y Endurecimiento de Frontera (#772 / Etapa 2)**:
+   - **Flexibilidad en `DireccionInputDTO`**: Al endurecer las validaciones con Bean Validation en la Oleada 9, se evaluó si los campos de altura (`numero`) y `codigoPostal` debían ser estrictamente `@NotNull`/`@NotBlank`. En la operatoria real de donaciones y comedores comunitarios existen domicilios sin numeración catastral (`S/N`) y localidades sin código postal delimitado. Forzar validaciones estrictas bloqueaba casos de uso legítimos.
+   - **Fail-Fast en `ItemDonacionNormalizadoPatchDTO.estadoNormalizacion`**: Se analizó si existía un caso de uso válido de PATCH parcial que omitiera el estado de normalización (solo actualizando `subcategoriaId`). El flujo del dominio (`ItemDonacionNormalizadoService.actualizarEstandar()` y `BienNormalizado`) siempre requirió el estado (`ERR-VAL-315`), por lo que marcarlo `@NotNull` constituye un fail-fast temprano que rechaza peticiones mal formadas en el boundary HTTP sin alterar la semántica de negocio.
+   - **Mapeo 1:1 de `FeignException` a Status Público**: Se evaluó si normalizar todos los errores de Feign a un status genérico (502 Bad Gateway) o mantener el mapeo 1:1 del status remoto (404, 400). Se determinó preservar el mapeo 1:1 para permitir que los clientes distingan si un recurso downstream no existe (404) o si el servicio remoto está caído, documentándolo explícitamente en el handler.
+   - **Handlers `@Validated` a nivel Controller**: `handleHandlerMethodValidation` y `handleConstraintViolation` no poseían invocaciones activas al no usarse `@Validated` en la raíz de los controladores, dejándolos documentados como soporte especulativo preventivo.
+
+## Evidencia
+- `ProcesadorDeDonaciones.java:88`: `log.info("... (confianza: {}, {})", item.getId(), subcategoria.getId(), confianza, confianza);`.
+- `GlobalExceptionHandler.java:194`: `"Error de comunicación con servicio remoto: " + ex.getMessage()`.
+- `SegmentacionEventListenerTest.java:22`, `MedioDeContactoMapperTest.java:5`, `PersonaMapperTest.java:8`: `import grupo5.donaciones.models.repositories.*;`, `import grupo5.donaciones.dto.mediosDeContacto.*;`, `import grupo5.donaciones.models.entities.personas.*;`.
+- `DonacionesServiceTest.java:76`: `"desc"` hardcodeado.
+
+## Objetivo
+1. **Aplicar Fixes de Code Review**:
+   - Corregir el log de `confianza` en `ProcesadorDeDonaciones`.
+   - Restablecer la visibilidad `private` en `NormalizadorSemanticoBien.normalizarBien`.
+   - Eliminar la concatenación de `ex.getMessage()` en `handleFeignException` de `GlobalExceptionHandler`.
+   - Agregar tests de sanitización y guards faltantes en `NormalizadorSemanticoBienTest` y `GlobalExceptionHandlerTest`.
+2. **Ejecutar Limpieza Mecánica**:
+   - Reemplazar todos los wildcard imports por imports canónicos explícitos en los tests señalados.
+   - Parametrizar la aserción de descripción en `DonacionesServiceTest` usando `inputDTO.descripcion()`.
+3. **Consolidar y Documentar Decisiones de Frontera y Negocio**:
+   - Mantener altura y código postal opcionales en `DireccionInputDTO` para preservar la máxima flexibilidad operativa.
+   - Mantener `@NotNull` en `ItemDonacionNormalizadoPatchDTO.estadoNormalizacion` como fail-fast de boundary.
+   - Documentar explícitamente en el código la decisión de mapeo 1:1 de `FeignException` y el rol preventivo de los handlers `@Validated`.
+
+## Fuera de scope
+- Corrección de bugs de concurrencia y reentrancia de domain events (#761 - Oleada 12).
+- Protección de invariantes de necesidad en la máquina de estados de asignación (#762 - Oleada 12).
+- Desacoplamiento de Domain Services de Spring (Oleada 12).
+
+## Tests
+- **`NormalizadorSemanticoBienTest`**:
+  - `normalizar_conDonacionNula_noLanzaExcepcion()`: verifica la guarda defensiva ante `donacion == null`.
+  - `normalizar_conItemNulo_noLanzaExcepcion()`: verifica la guarda ante ítems nulos en la lista.
+- **`GlobalExceptionHandlerTest`**:
+  - `handleFeignException_noDebeFugarDetallesInternos()`: valida que la respuesta HTTP no contenga el stacktrace ni el mensaje crudo de Feign.
+  - `handleHandlerMethodValidation_retornaBadRequest()` y `handleConstraintViolation_retornaBadRequest()`: validan el mapeo estructurado a 400.
+- **Suites Actualizadas**:
+  - `SegmentacionEventListenerTest`, `MedioDeContactoMapperTest`, `PersonaMapperTest` y `DonacionesServiceTest`.
+- **Resultados**:
+  - `common-lib`: **27 tests pasando (0 fallos, 0 errores)** (+3 tests).
+  - `donaciones-service`: **387 tests pasando (0 fallos, 0 errores)** (+2 tests).
+
+## Diseño resultante
+- **Boundary HTTP Sanitizado y Seguro**: Respuestas de error homogéneas que protegen la topología interna de la infraestructura de microservicios sin filtrar detalles de clientes Feign.
+- **Contratos DTO Alineados a la Realidad Operativa**: Validaciones declarativas que previenen datos inválidos sin restringir escenarios legítimos de direcciones incompletas (`S/N`).
+- **Código Limpio y Mantenible**: Supresión total de wildcard imports y cadenas duplicadas en suites de prueba.
+
+## IA utilizada
+- Detección de duplicaciones en logs, revisión de modificadores de visibilidad y sanitización de payloads de excepción.
+- Generación de tests de frontera y sanitización de seguridad en `GlobalExceptionHandlerTest`.
+- Refactorización mecánica de imports y parametrización de fixtures en tests.
+
+## Verificación humana
+- [x] Verificado el fix del log en `ProcesadorDeDonaciones.java:88`.
+- [x] Verificado el modificador `private` en `NormalizadorSemanticoBien.normalizarBien`.
+- [x] Verificada la eliminación de fuga de información en `handleFeignException` (`GlobalExceptionHandler.java:194`).
+- [x] Verificada la eliminación de wildcard imports en `SegmentacionEventListenerTest`, `MedioDeContactoMapperTest` y `PersonaMapperTest`.
+- [x] Verificada la parametrización de `inputDTO.descripcion()` en `DonacionesServiceTest.java:76`.
+- [x] Validadas las justificaciones de negocio para `DireccionInputDTO` y `ItemDonacionNormalizadoPatchDTO`.
+- [x] Build multi-módulo limpio: `mvn clean test` (**BUILD SUCCESS**).
+
+---
+
+Oleada 12:
+# PR — Oleada 12: Resolución de Deuda Técnica Crítica de Dominio/Concurrencia (#761, #762) y Desacoplamiento Estructural de Spring en Domain Services
+
+## Problema
+Durante sucesivas oleadas se venían postergando tres deudas técnicas críticas de dominio y arquitectura:
+1. **Reentrancia y `ConcurrentModificationException` al Iterar `domainEvents` (#761 / Etapa 3)**:
+   - En `Donacion`, `DonacionIndependiente` y `Propuesta`, el método `getDomainEvents()` retornaba `Collections.unmodifiableList(this.domainEvents)`. Esto devolvía una *vista no modificable* vinculada en vivo a la lista interna mutable del agregado.
+   - Como los repositorios en memoria (`CrudRepositoryEnMemoria.findById()`) devolvían la misma referencia en memoria del objeto guardado (no una copia defensiva), se producía un fallo de reentrancia real en cascada:
+     $$\text{Application Service} \xrightarrow{\text{mutación}} \text{donacion.marcarNormalizada()} \xrightarrow{\text{iteración}} \text{getDomainEvents().forEach(publishEvent)}$$
+     El bucle comenzaba a iterar sobre la vista viva. Al dispararse síncronamente `SegmentacionEventListener.onDonacionNormalizada`, el listener recuperaba la **misma instancia** de `Donacion` e invocaba `marcarSegmentada()` y `clearDomainEvents()`. Esto mutaba la lista interna mientras el `forEach` exterior continuaba iterando, provocando una `ConcurrentModificationException` en tiempo de ejecución.
+2. **Inconsistencia e Invariante Rota en `ASIGNACION_REALIZADA` (#762 / Etapa 3)**:
+   - En el patrón State de `DonacionIndependiente`, el estado `EnDeposito.asignar(DonacionIndependiente, SolicitudCambioEstadoDonacionIndependiente)` contenía un condicional permisivo: solo asignaba el receptor si `solicitud.getNecesidad() != null`. Si la solicitud se creaba con `necesidad == null`, la ejecución continuaba y completaba la transición al estado `AsignacionRealizada`, dejando `asignadaA = null` y el atributo `necesidadId` del evento `EventoDonacionAsignada` en `null`.
+   - El Aggregate Root quedaba en un estado corrupto (formalmente "asignado" pero sin necesidad ni beneficiario que satisfaga). Peor aún, los tests unitarios preexistentes ejercitaban este bug como comportamiento esperado.
+3. **Acoplamiento Incompleto de Domain Services a Spring (Etapa 4)**:
+   - Aunque la Oleada 7 había extraído `NormalizadorSemanticoBien` como POJO puro sin dependencias de Spring, sus clases hermanas `NormalizadorBasicoTexto.java`, `ComparadorTexto.java` y `GestorPropuestasDeAsignacion.java` continuaban anotadas con `@Component`, `@Autowired` y `@Qualifier("normalizadorBasicoTexto")`.
+   - Esto contradecía la regla de pureza de dominio de DDD y Arquitectura Hexagonal, donde los servicios de dominio dentro de `models/` deben ser POJOs puros agnósticos al contenedor de inyección de dependencias.
+
+## Evidencia
+- `Donacion.java`, `DonacionIndependiente.java`, `Propuesta.java`: `return Collections.unmodifiableList(this.domainEvents);`.
+- `EnDeposito.java:24-30`: `if (solicitud != null && solicitud.getNecesidad() != null) { d.asignarReceptor(solicitud.getNecesidad()); } asignar(d, ...);`.
+- `NormalizadorBasicoTexto.java:6`: `@Component("normalizadorBasicoTexto")`.
+- `ComparadorTexto.java:9-16`: `@Component`, `@Autowired`, `@Qualifier(...)`.
+- `GestorPropuestasDeAsignacion.java:18-23`: `@Component`, `@Autowired`.
+
+## Objetivo
+1. **Inmunizar `domainEvents` ante Concurrencia y Reentrancia (#761)**:
+   - Refactorizar `getDomainEvents()` en `Donacion`, `DonacionIndependiente` y `Propuesta` para retornar una copia defensiva inmutable e independiente: `List.copyOf(this.domainEvents)`.
+   - Garantizar que cualquier mutación o limpieza de eventos ocurrida durante la ejecución de listeners síncronos no afecte el snapshot tomado al inicio de la publicación.
+2. **Blindar la Invariante de Asignación (#762)**:
+   - Agregar una guarda obligatoria en `EnDeposito.asignar(...)`: `if (solicitud == null || solicitud.getNecesidad() == null) throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD);`.
+   - Crear el código de error `DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD` (`ERR-VAL-411`) en `ErrorCatalog.java`.
+   - Corregir los tests de estados para proporcionar una `Necesidad` válida provista por `NecesidadMother`.
+3. **Desacoplar Totalmente los Domain Services de Spring**:
+   - Remover `@Component`, `@Autowired` y `@Qualifier` de `NormalizadorBasicoTexto`, `ComparadorTexto` y `GestorPropuestasDeAsignacion`, convirtiéndolos en POJOs puros.
+   - Crear la clase de infraestructura `DomainServicesConfig.java` (`@Configuration`) en `grupo5.donaciones.config`, instanciando y componiendo explícitamente el bean de Spring `GestorPropuestasDeAsignacion` (`new GestorPropuestasDeAsignacion(new ComparadorTexto(new NormalizadorBasicoTexto()))`).
+   - Mantener `PropuestaDeAsignacionService` intacto recibiendo el bean por constructor.
+
+## Fuera de scope
+- Persistencia física JPA en PostgreSQL ni esquemas DDL relacionales (Oleada 10/13).
+- Modificaciones en la firma pública de `IPropuestaDeAsignacionService`.
+
+## Tests
+- **`DonacionTest`**:
+  - `getDomainEvents_debeSerUnaCopiaInmuneAMutacionesPosteriores()`: valida que tomar un snapshot de eventos y luego mutar la entidad (`marcarSegmentada()`) no altere el tamaño ni la iteración de la copia tomada.
+- **`DonacionIndependienteEstadosTest`**:
+  - `cambiarEstado_aAsignacionRealizadaSinNecesidad_lanzaExcepcion()`: valida el rechazo inmediato con `ERR-VAL-411` y la permanencia en estado `EnDeposito`.
+  - `getDomainEvents_debeSerUnaCopiaInmuneAMutacionesPosteriores()`: valida la inmutabilidad del snapshot de eventos ante mutaciones concurrentes (`planificarRuta()`, `iniciarRecorrido()`).
+  - Adaptación de la suite completa usando `NecesidadMother` en transiciones de asignación.
+- **Resultados**:
+  - `donaciones-service`: **389 tests pasando (0 fallos, 0 errores)** (+2 tests de snapshots y +1 test de guard).
+  - `common-lib`: **27 tests pasando (0 fallos, 0 errores)** (+1 entrada de catálogo `ERR-VAL-411`).
+  - Reactor Multi-Módulo completo: **7/7 módulos pasando exitosamente (`BUILD SUCCESS`)**.
+
+## Diseño resultante
+- **Resiliencia de Eventos de Dominio**: El patrón `List.copyOf()` garantiza aislamiento total entre la emisión de eventos y los suscriptores síncronos de infraestructura.
+- **Integridad de Agregados**: `DonacionIndependiente` protege sus invariantes de asignación, imposibilitando estados huérfanos o eventos con identidades nulas.
+- **Dominio Desacoplado (DDD Puro)**: Todos los componentes de `models/` son POJOs puros de Java. El framework Spring queda confinado exclusivamente a la capa de configuración técnica (`DomainServicesConfig`).
+
+## IA utilizada
+- Diagnóstico del ciclo de reentrancia entre el bus de eventos y el listener de segmentación.
+- Detección de tests viciados que validaban la ausencia de necesidad en asignaciones.
+- Implementación de copias defensivas, catálogo de errores y configuración de ensamblado de Domain Services.
+
+## Verificación humana
+- [x] Verificado el reemplazo de `Collections.unmodifiableList` por `List.copyOf` en `Donacion`, `DonacionIndependiente` y `Propuesta`.
+- [x] Verificada la guarda de asignación con `ERR-VAL-411` en `EnDeposito.java` y `ErrorCatalog.java`.
+- [x] Verificada la eliminación total de `@Component`/`@Autowired` en `NormalizadorBasicoTexto`, `ComparadorTexto` y `GestorPropuestasDeAsignacion`.
+- [x] Verificada la clase de configuración `DomainServicesConfig.java`.
+- [x] Verificada la ejecución limpia de `mvn clean test` (**389 tests en donaciones-service, 27 en common-lib**).
+
+---
+
+Oleada 13:
+# PR — Oleada 13: Gobernanza de Calidad, Trazabilidad de Bitácora y Preparación Arquitectónica Pre-Persistencia JPA
+
+## Problema
+Al auditar el progreso global del refactor y de cara a la implementación de persistencia real relacional (JPA/Hibernate y PostgreSQL), se evidenciaron dos problemáticas estructurales:
+1. **Desalineación entre Bitácora de Refactor y Diff Real de Git (Etapa 5)**:
+   - En las revisiones de las Oleadas 7 a 10 se identificó una desconexión recurrente: la bitácora declaraba ítems como "refactorizados" o marcados con checkmark `✅` sin que existiera código ni tests reales en el árbol de Git.
+   - En Oleada 10, los ítems `Desacoplamiento Asignable -> UUIDs`, `Strategy FileSystem/MinIO` y `Crypto-shredding modelado` estaban marcados con `✅` en la tabla de auditoría final del plan de refactor, cuando en realidad eran únicamente especificaciones conceptuales documentadas en `decisiones_futuras_en_oleada_10.md`.
+   - Esto generaba falsos positivos para revisores futuros y agentes de IA, quienes asumían erróneamente que esas capacidades ya estaban implementadas en código.
+2. **Gaps Críticos Pre-Persistencia Real JPA (Etapa 6)**:
+   - El documento de persistencia futura (`decisiones_futuras_en_oleada_10.md`) cubría el esquema DDL y el mapeo de entidades, pero carecía de especificaciones clave en tres áreas fundamentales:
+     - *Capa de Repositorios y Queries*: Los repositorios en memoria (`NecesidadesRepositoryEnMemoria`, etc.) resolvían consultas mediante `findAll()` y filtrado en streams de Java invocando métodos de negocio de los agregados (`estaSatisfecha()`). Esto no se traduce directamente a cláusulas `WHERE` de SQL en Spring Data JPA sin diseñar queries derivadas o specifications.
+     - *Transacciones Multi-Agregado*: Métodos como `PosibleFragmentacion.confirmar` mutan simultáneamente `DonacionIndependiente` y `Necesidad`, requiriendo delimitar formalmente las fronteras de `@Transactional` en los Application Services para garantizar atomicidad ACID.
+     - *Mapeo de Relaciones, Lazy Loading y Cascadas*: Ausencia de directrices para colecciones de Value Objects (`PeriodoNecesidad`, `ItemDonacion`) y prevención de excepciones *LazyInitializationException* o problemas de rendimiento *N+1*.
+
+## Evidencia
+- `plan-implementacion-refactor-donatrack-donaciones.md:888-918`: Ítems conceptuales de Oleada 10 con `✅` en la auditoría final sin diff de código.
+- `decisiones_futuras_en_oleada_10.md`: Ausencia de secciones dedicadas a repositorios de queries SQL vs filtrado Java, transacciones multi-agregado y políticas de cascada JPA.
+
+## Objetivo
+1. **Establecer Reglas Estrictas de Gobernanza y Trazabilidad (Etapa 5)**:
+   - Incorporar la subsección `## Trazabilidad de la bitácora` en la sección 16 del plan de refactor (`plan-implementacion-refactor-donatrack-donaciones.md`), estableciendo que todo ítem marcado como ✅ o declarado "refactorizado" debe citar obligatoriamente el `archivo:línea` real que lo prueba.
+   - Formalizar la convención de símbolos en la documentación:
+     - `✅` = Código implementado con diff de Git y tests pasando.
+     - `📝` / `🔵` = Análisis o diseño conceptual sin código todavía.
+   - Corregir retroactivamente la tabla de Auditoría Final (sección 20) pasando los 3 ítems de Oleada 10 de `✅` a `📝`.
+   - Reforzar el prompt del Agente del Reviewer (sección 4) instruyéndolo a ejecutar y confrontar el `git diff` real contra las afirmaciones de la bitácora antes de aprobar.
+2. **Formalizar la Mitigación de Gaps Pre-JPA (Etapa 6)**:
+   - Documentar formalmente las estrategias requeridas para los 3 gaps antes de iniciar la persistencia física:
+     1. Transformación de queries Java a consultas SQL / Spring Data JPA optimizadas (`WHERE` indexados).
+     2. Delimitación de transacciones multi-agregado mediante `@Transactional` en Application Services.
+     3. Configuración de `FetchType.LAZY` y políticas de cascade para colecciones y entidades dependientes.
+
+## Fuera de scope
+- Implementación de esquemas físicos relacionales en PostgreSQL o agregado de dependencias de drivers/Flyway en los `pom.xml`.
+- Modificación de lógica de producción en los microservicios.
+
+## Tests
+- Auditoría documental completa y verificación cruzada de trazabilidad entre bitácora y árbol de Git.
+- Suite completa del reactor Maven ejecutada exitosamente: **389 tests en `donaciones-service`**, 27 tests en `common-lib`, 167 en `logistica-service`, **0 fallos, 0 errores (`BUILD SUCCESS` en los 7 módulos)**.
+
+## Diseño resultante
+- **Gobernanza Rigurosa y Verificable**: Proceso de desarrollo con trazabilidad 1:1 entre bitácoras y diffs reales de Git, eliminando ambigüedades sobre el estado real de la arquitectura.
+- **Arquitectura Preparada para Persistencia Relacional**: Hoja de ruta técnica consolidada y documentada para una transición limpia y predecible hacia Spring Data JPA y PostgreSQL.
+
+## IA utilizada
+- Auditoría cruzada de consistencia entre commits de Git y bitácoras de refactor.
+- Actualización de políticas de gobernanza, templates de PR y prompts de revisión en `plan-implementacion-refactor-donatrack-donaciones.md`.
+- Formulación de directrices de mitigación para los gaps de persistencia relacional.
+
+## Verificación humana
+- [x] Verificada la subsección `Trazabilidad de la bitácora` en `plan-implementacion-refactor-donatrack-donaciones.md`.
+- [x] Verificada la corrección de símbolos (`📝`) en la tabla de auditoría final.
+- [x] Verificada la instrucción de comprobación de `git diff` en el prompt del Reviewer.
+- [x] Verificada la especificación técnica para la resolución de queries JPA, transacciones multi-agregado y lazy loading.
+- [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos, 0 fallos, 0 errores**).
+- [x] Verificación de formateo con Spotless: `mvn spotless:check` (**CLEAN**).
+
+---
+
+Generalización del refactor en plan genérico exhaustivo:
+
+# Generalización: Plan Genérico de Refactor por Oleadas v3
+
+Tras completar las 13 oleadas del refactor de `donaciones-service`, se generalizaron las lecciones aprendidas en un plan genérico exhaustivo aplicable a los demás microservicios (`logistica-service`, `incentivos-service`, `notificaciones-service`).
+
+## Documento de referencia
+
+👉 [`plan-generico-refactor-servicios.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/plan-generico-refactor-servicios.md)
+
+## Principio de exhaustividad
+
+El plan v3 incorpora un principio fundamental aprendido de las oleadas 11–13: **cada oleada debe aplicarse a TODOS los elementos del microservicio que cumplan la condición**, no solo a un ejemplo representativo. Esto se implementa mediante:
+
+- **Fase 0 con inventario completo**: Tabla de tracking de TODAS las entidades, agregados, services, controllers, DTOs, schedulers e interfaces del servicio.
+- **Checklists de completitud** en cada oleada que exigen cobertura al 100% antes de cerrar la PR.
+- **No-regresión acumulativa**: Cada oleada verifica que TODAS las oleadas anteriores siguen funcionando.
+
+## 5 lecciones retroalimentadas desde oleadas 11–13 hacia oleadas tempranas
+
+Estas correcciones, que en `donaciones-service` se descubrieron tardíamente y requirieron oleadas adicionales de hardening, ahora se incorporan **desde el día 1** en el plan genérico:
+
+1. **`List.copyOf()` desde oleada 2** (no `Collections.unmodifiableList`): Previene `ConcurrentModificationException` cuando EventListeners síncronos mutan la entidad durante la iteración de eventos.
+   - *Descubierto en*: Oleada 12, Eje A (reentrancia en `Donacion`, `DonacionIndependiente`, `Propuesta`).
+
+2. **Guardas estrictas en State Pattern desde oleada 3**: Cada estado concreto debe rechazar inmediatamente transiciones con datos incompletos (`null`). No usar condicionales permisivos (`if (x != null)`).
+   - *Descubierto en*: Oleada 12, Eje B (invariante rota en `EnDeposito.asignar` permitía asignación sin necesidad).
+
+3. **Domain Services sin `@Component` desde oleada 4**: Crear POJOs puros y ensamblarlos en `DomainServicesConfig.java` (`@Configuration`).
+   - *Descubierto en*: Oleada 12, Eje C (`NormalizadorBasicoTexto`, `ComparadorTexto`, `GestorPropuestasDeAsignacion` mantenían `@Component`/`@Autowired`).
+
+4. **Convención ✅/📝 desde Fase 0**: Todo ítem marcado ✅ debe tener diff de Git real. Usar 📝 para análisis/diseño sin código.
+   - *Descubierto en*: Oleada 13, Eje A (ítems de Oleada 10 como `Desacoplamiento Asignable → UUIDs` marcados ✅ sin código implementado).
+
+5. **No exponer `ex.getMessage()` de Feign desde oleada 9**: Los mensajes crudos de `FeignException` contienen headers internos, URLs y stack traces. Usar mensaje genérico sanitizado.
+   - *Descubierto en*: Oleada 11, Etapa 0 (fuga de información sensible en `GlobalExceptionHandler.handleFeignException`).
