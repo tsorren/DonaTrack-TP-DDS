@@ -15,8 +15,12 @@ import grupo5.common.exceptions.InfrastructureException;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.responses.ErrorResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,11 +34,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Path;
-import java.util.Set;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+
 class GlobalExceptionHandlerTest {
 
   private GlobalExceptionHandler handler;
@@ -173,6 +174,7 @@ class GlobalExceptionHandlerTest {
     assertNotNull(response.getBody());
     assertFalse(response.getBody().details().contains("dato interno"));
   }
+
   @Test
   void handleInfrastructure_deberiaRetornarInternalServerError() {
     InfrastructureException ex =
@@ -195,7 +197,6 @@ class GlobalExceptionHandlerTest {
     assertNotNull(response.getBody());
     assertEquals(ErrorCatalog.ERROR_INTERNO.getCode(), response.getBody().code());
   }
-}
 
   @Test
   void handleHandlerMethodValidation_deberiaRetornarBadRequest() {
@@ -230,3 +231,4 @@ class GlobalExceptionHandlerTest {
     assertEquals("cantidad", response.getBody().errors().get(0).field());
     assertEquals("debe ser mayor a cero", response.getBody().errors().get(0).message());
   }
+}
