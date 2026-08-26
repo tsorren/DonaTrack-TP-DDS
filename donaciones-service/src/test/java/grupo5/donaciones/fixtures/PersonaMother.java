@@ -21,6 +21,10 @@ public final class PersonaMother {
 
   private PersonaMother() {}
 
+  public static Humana humanaValida() {
+    return juanPerez();
+  }
+
   public static Humana juanPerez() {
     Humana h = new Humana("Juan", "Pérez", FECHA_DEFECTO, Genero.HOMBRE);
     h.actualizarDocumento(TipoDocumento.DNI, "12345678");
