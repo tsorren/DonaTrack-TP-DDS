@@ -112,7 +112,11 @@ public class Donacion implements AggregateRoot {
   }
 
   public List<EventoDonacion> getDomainEvents() {
-    return Collections.unmodifiableList(this.domainEvents);
+    // Copia defensiva (no una vista) para evitar ConcurrentModificationException si, mientras se
+    // itera esta lista para publicar eventos, un listener reentrante muta domainEvents sobre esta
+    // misma instancia (p. ej. SegmentacionEventListener llamando marcarSegmentada()/
+    // clearDomainEvents() dentro del manejo síncrono de un evento previo).
+    return List.copyOf(this.domainEvents);
   }
 
   public void clearDomainEvents() {

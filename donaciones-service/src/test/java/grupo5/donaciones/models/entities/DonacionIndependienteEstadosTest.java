@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -7,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
@@ -128,7 +131,7 @@ class DonacionIndependienteEstadosTest {
     // 1. Asignar
     SolicitudCambioEstadoDonacionIndependiente solAsignar =
         new SolicitudCambioEstadoDonacionIndependiente(
-            TipoEstadoDonacion.ASIGNACION_REALIZADA, ACTOR);
+            TipoEstadoDonacion.ASIGNACION_REALIZADA, receptor, ACTOR);
     donacion.cambiarEstado(solAsignar);
     assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
     assertEquals(1, donacion.getDomainEvents().size());
@@ -175,5 +178,36 @@ class DonacionIndependienteEstadosTest {
                 .add(
                     new EventoDonacionAsignada(
                         UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())));
+  }
+
+  @Test
+  void cambiarEstado_aAsignacionRealizadaSinNecesidad_lanzaExcepcion() {
+    // Regresión de #762: pedir ASIGNACION_REALIZADA sin una Necesidad dejaría el agregado
+    // "asignado" sin asignadaA ni necesidadId en el evento — un estado inconsistente.
+    SolicitudCambioEstadoDonacionIndependiente solicitudSinNecesidad =
+        new SolicitudCambioEstadoDonacionIndependiente(TipoEstadoDonacion.ASIGNACION_REALIZADA, ACTOR);
+
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class, () -> donacion.cambiarEstado(solicitudSinNecesidad));
+
+    assertEquals(ErrorCatalog.DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD, ex.getError());
+    assertInstanceOf(EnDeposito.class, donacion.getEstadoActual());
+  }
+
+  @Test
+  void getDomainEvents_debeSerUnaCopiaInmuneAMutacionesPosteriores() {
+    // Regresión de #761: si getDomainEvents() devolviera una vista en vivo, mutar domainEvents
+    // después de tomar el snapshot (p. ej. desde un listener reentrante) rompería la iteración
+    // en curso con ConcurrentModificationException.
+    donacion.asignar(ACTOR, receptor);
+    var snapshot = donacion.getDomainEvents();
+    int cantidadEnElSnapshot = snapshot.size();
+
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR); // agrega EventoRutaIniciada a domainEvents "en vivo"
+
+    assertEquals(cantidadEnElSnapshot, snapshot.size());
+    assertDoesNotThrow(() -> snapshot.forEach(e -> {}));
   }
 }
