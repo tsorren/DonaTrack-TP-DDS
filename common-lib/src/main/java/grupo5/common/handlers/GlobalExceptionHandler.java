@@ -76,6 +76,7 @@ public class GlobalExceptionHandler {
                 details,
                 fieldErrors));
   }
+
   // Preparación anticipada: hoy ningún controller de donaciones-service tiene @Validated a nivel
   // de clase, así que este handler no tiene ningún camino de ejecución real todavía. Se agrega
   // ahora para que esté listo cuando algún endpoint valide @RequestParam/@PathVariable.
@@ -94,6 +95,7 @@ public class GlobalExceptionHandler {
                 ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
                 "Parámetros de solicitud no válidos."));
   }
+
   // Preparación anticipada: mismo caso que handleHandlerMethodValidation — sin @Validated a nivel
   // de clase en ningún controller todavía, este handler no tiene camino de ejecución real hoy.
   @ExceptionHandler(ConstraintViolationException.class)
