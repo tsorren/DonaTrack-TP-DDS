@@ -4,9 +4,7 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.incentivos.dto.*;
-import grupo5.incentivos.infrastructure.N8nClient;
 import grupo5.incentivos.infrastructure.NotificacionesClient;
-import grupo5.incentivos.models.entities.donante.CambioCategoria;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
@@ -18,11 +16,11 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,22 +29,22 @@ public class IncentivosService implements IIncentivosService {
   private static final Logger log = LoggerFactory.getLogger(IncentivosService.class);
 
   private final IDonanteIncentivosRepository repository;
-  private final NotificacionesClient notificacionesClient;
   private final IRankingService rankingService;
-  private final N8nClient n8nClient;
   private final List<CriterioInactividad> criterios;
+  private final ApplicationEventPublisher eventPublisher;
+  private final NotificacionesClient notificacionesClient;
 
   public IncentivosService(
       IDonanteIncentivosRepository repository,
       NotificacionesClient notificacionesClient,
       IRankingService rankingService,
-      N8nClient n8nClient,
-      List<CriterioInactividad> criterios) {
+      List<CriterioInactividad> criterios,
+      ApplicationEventPublisher eventPublisher) {
     this.repository = repository;
     this.notificacionesClient = notificacionesClient;
     this.rankingService = rankingService;
-    this.n8nClient = n8nClient;
     this.criterios = criterios;
+    this.eventPublisher = eventPublisher;
   }
 
   public DonanteRegistradoDTO registrarDonante(RegistrarDonanteRequest request) {
@@ -83,30 +81,14 @@ public class IncentivosService implements IIncentivosService {
             .findById(request.donanteId())
             .orElseThrow(() -> new RecursoNoEncontradoException(request.donanteId()));
 
-    // INICIO LOGICA DE NEGOCIO
-    Set<UUID> misionesCompletadasAntes = misionesCompletadasActuales(donante);
-
     donante.registrarDonacion(evento);
-
-    // Intentar Ascender
-
-    // FIN LOGICA DE NEGOCIO
-
-    notificarYGuardar(donante, misionesCompletadasAntes);
+    despacharEventosYGuardar(donante);
   }
 
   public void procesarDonacionExitosa(DonacionExitosaRequest request) {
     DonanteIncentivos donante = obtenerDonante(request.donanteId());
-
-    // INICIO LOGICA DE NEGOCIO
-    Set<UUID> misionesCompletadasAntes = misionesCompletadasActuales(donante);
-
     donante.registrarDonacionExitosa(request.organizacionId());
-
-    // Intentar Ascender
-
-    // FIN LOGICA DE NEGOCIO
-    notificarYGuardar(donante, misionesCompletadasAntes);
+    despacharEventosYGuardar(donante);
   }
 
   public void procesarInactividad() {
@@ -132,43 +114,9 @@ public class IncentivosService implements IIncentivosService {
     }
   }
 
-  private Set<UUID> misionesCompletadasActuales(DonanteIncentivos donante) {
-    return donante.getMisiones().stream()
-        .filter(Mision::isCompletada)
-        .map(Mision::getId)
-        .collect(Collectors.toSet());
-  }
-
-  private void notificarYGuardar(DonanteIncentivos donante, Set<UUID> misionesCompletadasAntes) {
-    donante.getMisiones().stream()
-        .filter(Mision::isCompletada)
-        .filter(m -> !misionesCompletadasAntes.contains(m.getId()))
-        .forEach(mision -> notificarMisionCompletada(donante, mision));
-
-    if (donante.intentarAscenso()) {
-      CambioCategoria ultimoCambio = donante.getHistorialCategorias().getLast();
-      notificacionesClient.notificarAscensoCategoria(
-          donante.getIdPersona(),
-          ultimoCambio.getNueva().name(),
-          ultimoCambio.getAnterior().name());
-    }
-
+  private void despacharEventosYGuardar(DonanteIncentivos donante) {
     repository.save(donante);
-  }
-
-  private void notificarMisionCompletada(DonanteIncentivos donante, Mision mision) {
-    Insignia insignia = mision.getInsignia();
-    String recompensa = insignia != null ? insignia.nombre() : "Sin recompensa";
-    notificacionesClient.notificarMisionCumplida(
-        donante.getIdPersona(), mision.getNombre(), recompensa);
-    // Disparar flujo n8n para publicar la insignia ganada
-    if (insignia != null) {
-      n8nClient.publicarInsigniaGanada(
-          donante.getId(),
-          "Donante " + donante.getNombre(),
-          insignia.nombre(),
-          insignia.descripcion());
-    }
+    donante.pullEventosDominio().forEach(eventPublisher::publishEvent);
   }
 
   public DonanteIncentivos obtenerDonante(UUID donanteId) {
