@@ -94,8 +94,8 @@ public class GlobalExceptionHandler {
                 ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
                 "Parámetros de solicitud no válidos."));
   }
-
-  // PENDIENTE 4b
+  // Preparación anticipada: mismo caso que handleHandlerMethodValidation — sin @Validated a nivel
+  // de clase en ningún controller todavía, este handler no tiene camino de ejecución real hoy.
   @ExceptionHandler(ConstraintViolationException.class)
   public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
     List<FieldErrorDTO> fieldErrors =
