@@ -85,7 +85,7 @@ public class ProcesadorDeDonaciones {
               : "null",
           subcatNombre,
           item.getBien() != null ? item.getBien().confianza() : "null",
-          item.getBien() != null ? item.getBien().confianza() : "null");
+          item.getBien() != null ? item.getBien().estadoNormalizacion() : "null");
     }
   }
 
