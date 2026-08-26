@@ -5,23 +5,30 @@ import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
+import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
-import grupo5.donaciones.services.impl.ArchivoDonantesService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/donantes")
 public class DonantesController implements IDonantesController {
 
   private final IDonantesService donantesService;
-  private final ArchivoDonantesService archivoDonantesService;
+  private final IArchivoDonantesService archivoDonantesService;
 
   public DonantesController(
-      IDonantesService donantesService, ArchivoDonantesService archivoDonantesService) {
+      IDonantesService donantesService, IArchivoDonantesService archivoDonantesService) {
     this.donantesService = donantesService;
     this.archivoDonantesService = archivoDonantesService;
   }
@@ -55,6 +62,7 @@ public class DonantesController implements IDonantesController {
     return ResponseEntity.noContent().build();
   }
 
+  @Override
   @PostMapping("/archivos")
   public ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(
       @RequestBody ArchivoInputDTO input) {

@@ -4,7 +4,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoD
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionRecibida;
 import java.util.UUID;
 
-public class EnTraslado implements EstadoDonacion {
+public class EnTraslado implements EstadoDonacionIndependiente {
 
   @Override
   public TipoEstadoDonacion getTipo() {

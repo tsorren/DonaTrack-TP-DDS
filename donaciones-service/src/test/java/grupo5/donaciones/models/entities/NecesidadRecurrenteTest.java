@@ -1,6 +1,9 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
@@ -24,7 +27,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class NecesidadRecurrenteTests {
+class NecesidadRecurrenteTest {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private NecesidadRecurrente necesidad;
@@ -35,7 +38,6 @@ class NecesidadRecurrenteTests {
 
   @BeforeEach
   void setUp() {
-
     Humana humana = new Humana("nombre", "apellido", TEST_DATE);
     Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante.getId());

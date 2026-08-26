@@ -1,42 +1,65 @@
 package grupo5.donaciones.infrastructure;
 
-import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemanticoBien;
-import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
+import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.EvaluadorNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
-import grupo5.donaciones.models.ports.Segmentador;
-import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.normalizacion.NormalizadorSemanticoBien;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.util.List;
-import lombok.RequiredArgsConstructor;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class ProcesadorDeDonaciones {
 
   private static final Logger log = LoggerFactory.getLogger(ProcesadorDeDonaciones.class);
 
-  private final NormalizadorSemanticoBien normalizador;
-  private final Segmentador segmentador;
+  private final NormalizadorSemanticoBien normalizadorSemantico;
   private final IDonacionesRepository donacionRepository;
-  private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
-  private final IncentivosFeignClient incentivosFeignClient;
   private final IItemDonacionNormalizadoRepository itemNormalizadoRepository;
   private final ISubcategoriasRepository subcategoriasRepository;
+  private final ICategoriasRepository categoriasRepository;
   private final ApplicationEventPublisher eventPublisher;
+  private final double umbralAceptacion;
+
+  public ProcesadorDeDonaciones(
+      IDonacionesRepository donacionRepository,
+      IItemDonacionNormalizadoRepository itemNormalizadoRepository,
+      ISubcategoriasRepository subcategoriasRepository,
+      ICategoriasRepository categoriasRepository,
+      ApplicationEventPublisher eventPublisher,
+      @Value("${donatrack.normalizacion.umbral-aceptacion:0.6}") double umbralAceptacion) {
+    this.normalizadorSemantico = new NormalizadorSemanticoBien();
+    this.donacionRepository = donacionRepository;
+    this.itemNormalizadoRepository = itemNormalizadoRepository;
+    this.subcategoriasRepository = subcategoriasRepository;
+    this.categoriasRepository = categoriasRepository;
+    this.eventPublisher = eventPublisher;
+    this.umbralAceptacion = umbralAceptacion;
+  }
 
   @Async
   public void procesar(Donacion donacion) {
-    List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion);
+    List<Subcategoria> subcategorias = subcategoriasRepository.findAll();
+    Map<UUID, Categoria> categoriasPorId =
+        categoriasRepository.findAll().stream()
+            .collect(Collectors.toMap(Categoria::getId, c -> c, (a, b) -> a));
+
+    List<ItemDonacionNormalizado> itemsNormalizados =
+        normalizadorSemantico.normalizar(
+            donacion, subcategorias, categoriasPorId, umbralAceptacion);
     logItemsNormalizados(itemsNormalizados);
 
     itemNormalizadoRepository.saveAll(itemsNormalizados);

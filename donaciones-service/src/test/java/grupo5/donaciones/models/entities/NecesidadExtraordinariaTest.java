@@ -23,7 +23,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class NecesidadExtraordinariaTests {
+class NecesidadExtraordinariaTest {
   private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private NecesidadExtraordinaria necesidad;
@@ -33,7 +33,6 @@ class NecesidadExtraordinariaTests {
 
   @BeforeEach
   void setUp() {
-
     Humana humana = new Humana("nombre", "apellido", TEST_DATE);
     Donante donante = new Donante(humana.getId());
     Donacion donacionOriginal = new Donacion(donante.getId());

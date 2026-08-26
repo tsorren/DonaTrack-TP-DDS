@@ -1,5 +1,6 @@
 package grupo5.donaciones.services.mappers;
 
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
@@ -8,7 +9,11 @@ import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonanteResumenDTO;
 import grupo5.donaciones.dto.donaciones.outputs.ItemDonacionOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
-import grupo5.donaciones.models.entities.donaciones.*;
+import grupo5.donaciones.models.entities.donaciones.Bien;
+import grupo5.donaciones.models.entities.donaciones.CambioEstadoDonacion;
+import grupo5.donaciones.models.entities.donaciones.Deposito;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
@@ -42,7 +47,7 @@ public class DonacionMapper {
 
   public Donacion toEntity(DonacionInputDTO dto, Donante donante) {
     if (donante == null) {
-      throw new ValidationException(grupo5.common.exceptions.ErrorCatalog.DONACION_SIN_DONANTE);
+      throw new ValidationException(ErrorCatalog.DONACION_SIN_DONANTE);
     }
     return toEntity(dto, donante.getId());
   }
