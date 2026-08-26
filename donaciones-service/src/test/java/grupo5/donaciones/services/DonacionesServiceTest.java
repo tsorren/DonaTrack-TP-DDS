@@ -73,7 +73,7 @@ class DonacionesServiceTest {
             donacion.getId(),
             new DonanteResumenDTO(donante.getId(), persona.getId(), null),
             List.of(),
-            "desc",
+            inputDTO.descripcion(),
             LocalDateTime.of(2026, Month.JUNE, 18, 0, 0),
             dirOut,
             EstadoDonacion.CARGADA,
