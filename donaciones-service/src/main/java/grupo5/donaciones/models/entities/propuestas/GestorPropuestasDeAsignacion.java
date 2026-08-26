@@ -15,16 +15,13 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
-@Component
 public class GestorPropuestasDeAsignacion {
 
   private static final Logger log = LoggerFactory.getLogger(GestorPropuestasDeAsignacion.class);
 
   private final List<AlgoritmoAsignacion> algoritmos;
 
-  @org.springframework.beans.factory.annotation.Autowired
   public GestorPropuestasDeAsignacion(ComparadorTexto comparadorTexto) {
     this(
         List.of(
