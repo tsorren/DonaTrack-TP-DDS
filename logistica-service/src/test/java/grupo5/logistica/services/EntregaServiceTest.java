@@ -174,16 +174,12 @@ class EntregaServiceTest {
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, "actor", null, null);
     EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
-    ConfirmacionRecepcion solicitud = new ConfirmacionRecepcion(entrega, "actor", null);
 
     Ruta ruta = mock(Ruta.class);
     Camion camion = mock(Camion.class);
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
-    when(entregaMapper.toSolicitud(eq(entrega), any(ConfirmarRecepcionRequestDTO.class)))
-        .thenReturn(solicitud);
 
-    // Mocks para buscar el camión de la entrega
     when(entrega.getIdRuta()).thenReturn(UUID.randomUUID());
     when(rutasRepository.findById(any())).thenReturn(Optional.of(ruta));
     when(ruta.getCamionId()).thenReturn(UUID.randomUUID());
@@ -194,6 +190,9 @@ class EntregaServiceTest {
 
     EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
 
+    // Como GestorDeEntregas se ejecuta estáticamente con el objeto de dominio que instanció el
+    // Service,
+    // el Gestor afectará a nuestro mock 'entrega', permitiéndonos verificar la llamada:
     verify(entrega).confirmarEntrega("actor");
     verify(comunicadorEventos).comunicarEntregaExitosa(entrega, camion);
     assertEquals(dto, resultado);
@@ -206,18 +205,17 @@ class EntregaServiceTest {
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.NO_RECIBIDA, "actor", "Motivo", false);
     EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
-    NoRecepcion solicitud = new NoRecepcion(entrega, "actor", "Motivo", false);
+
+    NoRecepcion solicitudEsperada = new NoRecepcion(entrega, "actor", "Motivo", false);
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
-    when(entregaMapper.toSolicitud(eq(entrega), any(ReportarNoRecepcionRequestDTO.class)))
-        .thenReturn(solicitud);
     when(entregasRepository.save(entrega)).thenReturn(entrega);
     when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
     EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
 
     verify(entrega).negarEntrega("actor");
-    verify(comunicadorEventos).comunicarEntregaFallida(solicitud);
+    verify(comunicadorEventos).comunicarEntregaFallida(solicitudEsperada);
     assertEquals(dto, resultado);
   }
 
@@ -228,11 +226,8 @@ class EntregaServiceTest {
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.PENDIENTE, "actor", null, null);
     EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
-    RegresoDeposito solicitud = new RegresoDeposito(entrega, "actor");
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
-    when(entregaMapper.toSolicitud(eq(entrega), any(RegresarAlDepositoRequestDTO.class)))
-        .thenReturn(solicitud);
     when(entregasRepository.save(entrega)).thenReturn(entrega);
     when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
