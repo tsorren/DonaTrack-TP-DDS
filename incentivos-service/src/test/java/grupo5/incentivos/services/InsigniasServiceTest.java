@@ -3,11 +3,10 @@ package grupo5.incentivos.services;
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.BusinessStateException;
-import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.dto.InsigniaDTO;
+import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.insignias.Insignia;
-import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import java.util.List;
 import java.util.UUID;
@@ -26,44 +25,69 @@ class InsigniasServiceTest {
   }
 
   @Test
-  void obtenerInsignias_deberiaRetornarListaVaciaSinInsignias() {
-    UUID id = new UUID(0L, 51L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
+  void obtenerInsignias_cuandoDonanteNoTieneInsignias_deberiaRetornarListaVacia() {
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
     repository.save(donante);
 
-    List<InsigniaDTO> insignias = service.obtenerInsignias(id);
+    List<InsigniaDTO> insignias = service.obtenerInsignias(donanteId);
 
-    assertNotNull(insignias);
     assertTrue(insignias.isEmpty());
   }
 
   @Test
-  void configurarVisibilidadInsignia_deberiaOcultarInsignia() {
-    UUID id = new UUID(0L, 30L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
-    donante.otorgarInsignia(new Insignia("Explorador", "desc", "/img.png"));
+  void obtenerInsignias_cuandoDonanteTieneInsignias_deberiaRetornarTodasConSuEstadoDeVisibilidad() {
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    Insignia ins1 = new Insignia("Insignia 1", "Desc", "url1");
+    Insignia ins2 = new Insignia("Insignia 2", "Desc", "url2");
+    donante.otorgarInsignia(ins1);
+    donante.otorgarInsignia(ins2);
+    donante.configurarVisibilidadInsignia("Insignia 2", false);
     repository.save(donante);
 
-    service.configurarVisibilidadInsignia(id, "Explorador", false);
+    List<InsigniaDTO> insignias = service.obtenerInsignias(donanteId);
 
-    InsigniaGanada insignia =
-        repository.findById(id).orElseThrow().getInsignias().stream()
-            .filter(i -> i.nombre().equals("Explorador"))
-            .findFirst()
-            .orElseThrow();
-    assertFalse(insignia.visible());
+    assertEquals(2, insignias.size());
+    InsigniaDTO dto1 =
+        insignias.stream().filter(i -> "Insignia 1".equals(i.nombre())).findFirst().orElseThrow();
+    InsigniaDTO dto2 =
+        insignias.stream().filter(i -> "Insignia 2".equals(i.nombre())).findFirst().orElseThrow();
+
+    assertTrue(dto1.visible());
+    assertFalse(dto2.visible());
   }
 
   @Test
-  void configurarVisibilidadInsignia_deberiaLanzarExcepcionSiInsigniaNoExiste() {
-    UUID id = new UUID(0L, 31L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
+  void configurarVisibilidad_cuandoInsigniaExiste_deberiaActualizarVisibilidad() {
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    Insignia ins = new Insignia("Insignia 1", "Desc", "url1");
+    donante.otorgarInsignia(ins);
     repository.save(donante);
 
-    BusinessStateException ex =
-        assertThrows(
-            BusinessStateException.class,
-            () -> service.configurarVisibilidadInsignia(id, "NoExiste", false));
-    assertEquals(ErrorCatalog.INSIGNIA_NO_ENCONTRADA, ex.getError());
+    service.configurarVisibilidadInsignia(donanteId, "Insignia 1", false);
+
+    DonanteIncentivos guardado = repository.findById(donanteId).orElseThrow();
+    assertFalse(guardado.getInsignias().getFirst().visible());
+  }
+
+  @Test
+  void configurarVisibilidad_cuandoDonanteNoExiste_deberiaLanzarExcepcion() {
+    UUID donanteId = UUID.randomUUID();
+    assertThrows(
+        BusinessStateException.class,
+        () -> service.configurarVisibilidadInsignia(donanteId, "Insignia 1", false));
+  }
+
+  @Test
+  void configurarVisibilidad_cuandoInsigniaNoExiste_deberiaLanzarExcepcion() {
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    repository.save(donante);
+
+    assertThrows(
+        BusinessStateException.class,
+        () -> service.configurarVisibilidadInsignia(donanteId, "Insignia Inexistente", false));
   }
 }

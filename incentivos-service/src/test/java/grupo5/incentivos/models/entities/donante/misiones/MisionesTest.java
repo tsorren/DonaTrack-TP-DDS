@@ -4,10 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
+import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
+import grupo5.incentivos.fixtures.MisionMotherTest;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionCompletitud;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
@@ -17,7 +19,6 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,25 +30,16 @@ class MisionesTest {
 
   @BeforeEach
   void setUp() {
-    donante = new DonanteIncentivos(new UUID(0L, 1L), new UUID(0L, 1L), "Test");
-  }
-
-  private EventoDonacion eventoEn(int anio, int mes) {
-    return EventoDonacion.builder()
-        .donacionId(new UUID(0L, 1L))
-        .fecha(LocalDate.of(anio, mes, 15))
-        .cantidadBienes(5)
-        .categorias(List.of("arroz"))
-        .build();
+    donante = DonanteIncentivosMotherTest.colaboradorSinMisiones();
   }
 
   @Test
   void racha_deberiaCompletarseConMesesConsecutivos() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
 
-    racha.evaluarProgreso(donante, eventoEn(2026, 1));
-    racha.evaluarProgreso(donante, eventoEn(2026, 2));
-    racha.evaluarProgreso(donante, eventoEn(2026, 3));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 2, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 3, 15));
 
     assertTrue(racha.isCompletada());
     assertEquals(3, racha.getProgresoActual());
@@ -55,12 +47,12 @@ class MisionesTest {
 
   @Test
   void racha_deberiaResetearseAlSaltarUnMes() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
 
-    racha.evaluarProgreso(donante, eventoEn(2026, 1));
-    racha.evaluarProgreso(donante, eventoEn(2026, 2));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 2, 15));
 
-    racha.evaluarProgreso(donante, eventoEn(2026, 4));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 4, 15));
 
     assertFalse(racha.isCompletada());
     assertEquals(1, racha.getProgresoActual());
@@ -68,11 +60,11 @@ class MisionesTest {
 
   @Test
   void racha_noDeberiaContarDosDonacionesDelMismoMes() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
 
-    racha.evaluarProgreso(donante, eventoEn(2026, 1));
-    racha.evaluarProgreso(donante, eventoEn(2026, 1)); // mismo mes
-    racha.evaluarProgreso(donante, eventoEn(2026, 2));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 1, 20)); // mismo mes
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 2, 15));
 
     assertFalse(racha.isCompletada());
     assertEquals(2, racha.getProgresoActual());
@@ -80,41 +72,23 @@ class MisionesTest {
 
   @Test
   void completitud_deberiaContarSubcategoriasUnicas() {
-    MisionCompletitud mision = new MisionCompletitud(CategoriaDonante.COLABORADOR, 3);
+    MisionCompletitud mision = MisionMotherTest.completitud(CategoriaDonante.COLABORADOR, 3);
 
-    EventoDonacion e1 =
-        EventoDonacion.builder()
-            .donacionId(new UUID(0L, 1L))
-            .fecha(HOY)
-            .cantidadBienes(1)
-            .categorias(List.of("arroz"))
-            .build();
-    EventoDonacion e2 =
-        EventoDonacion.builder()
-            .donacionId(new UUID(0L, 2L))
-            .fecha(HOY)
-            .cantidadBienes(1)
-            .categorias(List.of("ropa"))
-            .build();
-    EventoDonacion e3 =
-        EventoDonacion.builder()
-            .donacionId(new UUID(0L, 3L))
-            .fecha(HOY)
-            .cantidadBienes(1)
-            .categorias(List.of("arroz"))
-            .build();
-    EventoDonacion e4 =
-        EventoDonacion.builder()
-            .donacionId(new UUID(0L, 4L))
-            .fecha(HOY)
-            .cantidadBienes(1)
-            .categorias(List.of("sillas"))
-            .build();
+    mision.evaluarProgreso(donante, EventoDonacionMotherTest.conCategorias(HOY, List.of("arroz")));
+    mision.evaluarProgreso(donante, EventoDonacionMotherTest.conCategorias(HOY, List.of("ropa")));
+    mision.evaluarProgreso(donante, EventoDonacionMotherTest.conCategorias(HOY, List.of("arroz")));
+    mision.evaluarProgreso(donante, EventoDonacionMotherTest.conCategorias(HOY, List.of("sillas")));
 
-    mision.evaluarProgreso(donante, e1);
-    mision.evaluarProgreso(donante, e2);
-    mision.evaluarProgreso(donante, e3);
-    mision.evaluarProgreso(donante, e4);
+    assertTrue(mision.isCompletada());
+    assertEquals(3, mision.getProgresoActual());
+  }
+
+  @Test
+  void completitud_conMultiplesCategoriasEnMismaDonacion_deberiaContabilizarTodasLasUnicas() {
+    MisionCompletitud mision = MisionMotherTest.completitud(CategoriaDonante.COLABORADOR, 3);
+
+    mision.evaluarProgreso(
+        donante, EventoDonacionMotherTest.conCategorias(HOY, List.of("arroz", "leche", "fideos")));
 
     assertTrue(mision.isCompletada());
     assertEquals(3, mision.getProgresoActual());
@@ -122,33 +96,40 @@ class MisionesTest {
 
   @Test
   void habilDonador_deberiaCompletarseConUnaGranDonacion() {
-    MisionHabilDonador mision = new MisionHabilDonador(CategoriaDonante.SOSTENEDOR, 50);
+    MisionHabilDonador mision = MisionMotherTest.habilDonador(CategoriaDonante.SOSTENEDOR, 50);
 
-    EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(new UUID(0L, 1L))
-            .fecha(HOY)
-            .cantidadBienes(55)
-            .categorias(List.of("fideos"))
-            .build();
-
+    EventoDonacion evento = EventoDonacionMotherTest.conCantidadBienes(HOY, 55);
     mision.evaluarProgreso(donante, evento);
 
     assertTrue(mision.isCompletada());
   }
 
   @Test
+  void habilDonador_conExactamenteElUmbral_deberiaCompletarse() {
+    MisionHabilDonador mision = MisionMotherTest.habilDonador(CategoriaDonante.SOSTENEDOR, 50);
+
+    EventoDonacion evento = EventoDonacionMotherTest.conCantidadBienes(HOY, 50);
+    mision.evaluarProgreso(donante, evento);
+
+    assertTrue(mision.isCompletada());
+  }
+
+  @Test
+  void habilDonador_conUnBienMenosDelUmbral_noDeberiaCompletarse() {
+    MisionHabilDonador mision = MisionMotherTest.habilDonador(CategoriaDonante.SOSTENEDOR, 50);
+
+    EventoDonacion evento = EventoDonacionMotherTest.conCantidadBienes(HOY, 49);
+    mision.evaluarProgreso(donante, evento);
+
+    assertFalse(mision.isCompletada());
+  }
+
+  @Test
   void habilDonador_noDeberiaCompletarseConDonacionesPequenias() {
-    MisionHabilDonador mision = new MisionHabilDonador(CategoriaDonante.SOSTENEDOR, 50);
+    MisionHabilDonador mision = MisionMotherTest.habilDonador(CategoriaDonante.SOSTENEDOR, 50);
 
     for (int i = 0; i < 10; i++) {
-      EventoDonacion evento =
-          EventoDonacion.builder()
-              .donacionId(new UUID(0L, (long) i))
-              .fecha(HOY)
-              .cantidadBienes(5)
-              .categorias(List.of("fideos"))
-              .build();
+      EventoDonacion evento = EventoDonacionMotherTest.conCantidadBienes(HOY, 5);
       mision.evaluarProgreso(donante, evento);
     }
 
@@ -157,11 +138,9 @@ class MisionesTest {
 
   @Test
   void donacionesExitosas_soloDeberiaContarExitosas() {
-    MisionDonacionesExitosas mision =
-        new MisionDonacionesExitosas(CategoriaDonante.TRANSFORMADOR, 3);
+    MisionDonacionesExitosas mision = MisionMotherTest.exitosas(CategoriaDonante.TRANSFORMADOR, 3);
 
     mision.evaluarProgresoExitoso(donante);
-    // donacion no exitosa: no se llama evaluarProgresoExitoso
     mision.evaluarProgresoExitoso(donante);
     mision.evaluarProgresoExitoso(donante);
 
@@ -170,8 +149,8 @@ class MisionesTest {
   }
 
   @Test
-  void mision_deberiaCalcularPorcentajeCorrectamente() {
-    MisionDonacionesExitosas mision = new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 4);
+  void mision_deberiaCalcularPorcentajeYDistanciaCorrectamente() {
+    MisionDonacionesExitosas mision = MisionMotherTest.exitosas(CategoriaDonante.COLABORADOR, 4);
 
     mision.evaluarProgresoExitoso(donante);
     mision.evaluarProgresoExitoso(donante);
@@ -182,12 +161,11 @@ class MisionesTest {
 
   @Test
   void racha_deberiaResetearseAlVerificarVigenciaSiPasoMasDeUnMesSinDonar() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
 
-    racha.evaluarProgreso(donante, eventoEn(2026, 1));
-    racha.evaluarProgreso(donante, eventoEn(2026, 2)); // progreso = 2
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 2, 15));
 
-    // No dona en marzo. El job corre en abril:
     racha.verificarVigencia(YearMonth.of(2026, Month.APRIL));
 
     assertFalse(racha.isCompletada());
@@ -196,11 +174,10 @@ class MisionesTest {
 
   @Test
   void racha_noDeberiaResetearseAlVerificarVigenciaEnElMesSiguienteAlUltimoDonado() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
 
-    racha.evaluarProgreso(donante, eventoEn(2026, 3)); // progreso = 1
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 3, 15));
 
-    // El job corre en abril (mes inmediatamente siguiente): la racha todavía puede continuar
     racha.verificarVigencia(YearMonth.of(2026, Month.APRIL));
 
     assertFalse(racha.isCompletada());
@@ -209,13 +186,12 @@ class MisionesTest {
 
   @Test
   void racha_noDeberiaModificarseAlVerificarVigenciaSiYaEstaCompletada() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
+    MisionRacha racha = MisionMotherTest.rachaColaborador(2);
 
-    racha.evaluarProgreso(donante, eventoEn(2026, 1));
-    racha.evaluarProgreso(donante, eventoEn(2026, 2));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 2, 15));
     assertTrue(racha.isCompletada());
 
-    // Aunque pasen meses sin donar, una misión completada no se toca
     racha.verificarVigencia(YearMonth.of(2026, Month.JUNE));
 
     assertTrue(racha.isCompletada());
@@ -224,12 +200,11 @@ class MisionesTest {
 
   @Test
   void mision_deberiaOtorgarInsigniaAlCompletarse() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
-    Insignia insignia = new Insignia("Perseverante", "2 meses seguidos", "/img.png");
-    racha.setInsignia(insignia);
+    MisionRacha racha =
+        MisionMotherTest.rachaConInsignia(CategoriaDonante.COLABORADOR, 2, "Perseverante");
 
-    racha.evaluarProgreso(donante, eventoEn(2026, 1));
-    racha.evaluarProgreso(donante, eventoEn(2026, 2));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 2, 15));
 
     assertTrue(racha.isCompletada());
     assertNotNull(racha.getFechaCompletada());
@@ -293,7 +268,7 @@ class MisionesTest {
 
   @Test
   void setInsignia_deberiaLanzarExcepcionConInsigniaNula() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
     ValidationException ex = assertThrows(ValidationException.class, () -> racha.setInsignia(null));
     assertEquals(ErrorCatalog.INSIGNIA_NULA, ex.getError());
   }

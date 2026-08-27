@@ -3,12 +3,13 @@ package grupo5.incentivos.services;
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.BusinessStateException;
-import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.incentivos.dto.DonanteRegistradoDTO;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.RegistrarDonanteRequest;
-import grupo5.incentivos.models.entities.donante.CategoriaDonante;
+import grupo5.incentivos.fixtures.IncentivosFixturesTest;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,49 +26,72 @@ class GestionDonanteServiceTest {
   }
 
   @Test
-  void registrarDonante_deberiaCrearPerfilConMisiones() {
+  void registrarDonante_cuandoEsNuevo_deberiaGuardarloYRetornarDTO() {
     UUID id = UUID.randomUUID();
-    service.registrarDonante(new RegistrarDonanteRequest(id, UUID.randomUUID(), "Test"));
+    RegistrarDonanteRequest request = IncentivosFixturesTest.registrarDonante(id);
 
-    DonanteIncentivos donante = repository.findById(id).orElseThrow();
+    DonanteRegistradoDTO response = service.registrarDonante(request);
 
-    assertNotNull(donante);
-    assertEquals(CategoriaDonante.COLABORADOR, donante.getCategoria());
-    assertFalse(donante.getMisiones().isEmpty());
+    assertNotNull(response);
+    assertEquals(id, response.donanteId());
+    assertTrue(repository.findById(id).isPresent());
   }
 
   @Test
-  void registrarDonante_deberiaSerIdempotente() {
+  void registrarDonante_cuandoYaExiste_deberiaSerIdempotente() {
     UUID id = UUID.randomUUID();
-    service.registrarDonante(new RegistrarDonanteRequest(id, UUID.randomUUID(), "Test"));
-    service.registrarDonante(new RegistrarDonanteRequest(id, UUID.randomUUID(), "Test"));
+    RegistrarDonanteRequest request = IncentivosFixturesTest.registrarDonante(id);
 
+    service.registrarDonante(request);
+    DonanteRegistradoDTO response = service.registrarDonante(request);
+
+    assertNotNull(response);
+    assertEquals(id, response.donanteId());
     assertEquals(1, repository.findAll().size());
   }
 
   @Test
-  void modificarDonante_deberiaActualizarNombre() {
+  void modificarDonante_cuandoExiste_deberiaActualizarNombre() {
     UUID id = UUID.randomUUID();
-    service.registrarDonante(new RegistrarDonanteRequest(id, UUID.randomUUID(), "Inicial"));
+    service.registrarDonante(
+        IncentivosFixturesTest.registrarDonante(id, UUID.randomUUID(), "Inicial"));
 
-    service.modificarDonante(id, new ModificarDonanteRequest("Modificado"));
+    service.modificarDonante(id, IncentivosFixturesTest.modificarDonante("Modificado"));
+
+    DonanteIncentivos guardado = repository.findById(id).orElseThrow();
+    assertEquals("Modificado", guardado.getNombre());
+  }
+
+  @Test
+  void modificarDonante_cuandoNoExiste_deberiaLanzarExcepcion() {
+    UUID id = UUID.randomUUID();
+    ModificarDonanteRequest request = IncentivosFixturesTest.modificarDonante("Nuevo");
+
+    assertThrows(BusinessStateException.class, () -> service.modificarDonante(id, request));
+  }
+
+  @Test
+  void obtenerDonante_cuandoExiste_deberiaRetornarEntidad() {
+    UUID id = UUID.randomUUID();
+    service.registrarDonante(IncentivosFixturesTest.registrarDonante(id, id, "Test"));
 
     DonanteIncentivos donante = service.obtenerDonante(id);
-    assertEquals("Modificado", donante.getNombre());
+
+    assertNotNull(donante);
+    assertEquals(id, donante.getId());
+    assertEquals("Test", donante.getNombre());
   }
 
   @Test
-  void obtenerDonante_deberiaLanzarExcepcionSiNoExiste() {
-    UUID uuid = new UUID(0L, 999L);
-    BusinessStateException ex =
-        assertThrows(BusinessStateException.class, () -> service.obtenerDonante(uuid));
-    assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
+  void obtenerDonante_cuandoNoExiste_deberiaLanzarExcepcion() {
+    UUID id = UUID.randomUUID();
+    assertThrows(BusinessStateException.class, () -> service.obtenerDonante(id));
   }
 
   @Test
-  void darDeBaja_deberiaEliminarAlDonante() {
-    UUID id = new UUID(0L, 40L);
-    service.registrarDonante(new RegistrarDonanteRequest(id, id, "Test"));
+  void darDeBaja_cuandoExiste_deberiaEliminarDelRepositorio() {
+    UUID id = UUID.randomUUID();
+    service.registrarDonante(IncentivosFixturesTest.registrarDonante(id, id, "Test"));
 
     service.darDeBaja(id);
 
@@ -75,18 +99,20 @@ class GestionDonanteServiceTest {
   }
 
   @Test
-  void darDeBaja_deberiaLanzarExcepcionSiDonanteNoExiste() {
-    UUID uuid = new UUID(0L, 999L);
-    assertThrows(BusinessStateException.class, () -> service.darDeBaja(uuid));
+  void darDeBaja_cuandoNoExiste_deberiaLanzarExcepcion() {
+    UUID id = UUID.randomUUID();
+    assertThrows(BusinessStateException.class, () -> service.darDeBaja(id));
   }
 
   @Test
-  void listarTodos_deberiaRetornarTodosLosDonantes() {
+  void listarTodos_deberiaRetornarTodosLosRegistrados() {
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
-    service.registrarDonante(new RegistrarDonanteRequest(id1, id1, "Donante 1"));
-    service.registrarDonante(new RegistrarDonanteRequest(id2, id2, "Donante 2"));
+    service.registrarDonante(IncentivosFixturesTest.registrarDonante(id1, id1, "Donante 1"));
+    service.registrarDonante(IncentivosFixturesTest.registrarDonante(id2, id2, "Donante 2"));
 
-    assertEquals(2, service.listarTodos().size());
+    List<DonanteIncentivos> list = service.listarTodos();
+
+    assertEquals(2, list.size());
   }
 }

@@ -2,7 +2,6 @@ package grupo5.incentivos.services;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.MisionDTO;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
@@ -38,10 +37,7 @@ public class MisionesDonacionService implements IMisionesDonacionService {
             .fecha(request.fecha())
             .build();
 
-    DonanteIncentivos donante =
-        repository
-            .findById(request.donanteId())
-            .orElseThrow(() -> new RecursoNoEncontradoException(request.donanteId()));
+    DonanteIncentivos donante = obtenerDonante(request.donanteId());
 
     donante.registrarDonacion(evento);
     despacharEventosYGuardar(donante);

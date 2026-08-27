@@ -121,6 +121,10 @@ public class DonanteIncentivos implements AggregateRoot {
     if (insignia == null) {
       throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
     }
+    boolean yaExiste = this.insignias.stream().anyMatch(i -> i.nombre().equals(insignia.nombre()));
+    if (yaExiste) {
+      return;
+    }
     InsigniaGanada nuevaInsignia =
         new InsigniaGanada(
             insignia.nombre(),
@@ -129,6 +133,10 @@ public class DonanteIncentivos implements AggregateRoot {
             true,
             LocalDate.now(ZoneId.systemDefault()));
     this.insignias.add(nuevaInsignia);
+  }
+
+  public List<InsigniaGanada> insigniasVisibles() {
+    return this.insignias.stream().filter(InsigniaGanada::visible).toList();
   }
 
   public void configurarVisibilidadInsignia(String nombre, boolean visible) {

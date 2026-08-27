@@ -10,6 +10,10 @@ public class GestorDeRankings {
 
   public RankingMensual calcular(List<DonanteIncentivos> todos, YearMonth periodo) {
     RankingMensual ranking = new RankingMensual(periodo);
+    if (todos == null || todos.isEmpty()) {
+      return ranking;
+    }
+
     AtomicInteger posicion = new AtomicInteger(1);
 
     List<DonanteIncentivos> donantesConMisiones =
@@ -19,7 +23,8 @@ public class GestorDeRankings {
                 Comparator.comparingLong(
                         (DonanteIncentivos d) ->
                             d.misionesCompletadasEnMes(periodo.getYear(), periodo.getMonthValue()))
-                    .reversed())
+                    .reversed()
+                    .thenComparing(DonanteIncentivos::getId))
             .toList();
 
     for (DonanteIncentivos d : donantesConMisiones) {

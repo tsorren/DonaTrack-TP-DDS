@@ -4,15 +4,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.incentivos.dto.DonacionExitosaRequest;
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.incentivos.dto.MisionDTO;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
+import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
+import grupo5.incentivos.fixtures.IncentivosFixturesTest;
+import grupo5.incentivos.fixtures.MisionMotherTest;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
 import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
-import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
@@ -32,12 +35,10 @@ import org.springframework.context.ApplicationEventPublisher;
 @ExtendWith(MockitoExtension.class)
 class MisionesDonacionServiceTest {
 
-  @Mock private ApplicationEventPublisher eventPublisher;
-
   private MisionesDonacionService service;
   private DonanteIncentivosRepository repository;
 
-  private static final LocalDate HOY = LocalDate.of(2026, Month.JUNE, 17);
+  @Mock private ApplicationEventPublisher eventPublisher;
 
   @BeforeEach
   void setUp() {
@@ -47,94 +48,150 @@ class MisionesDonacionServiceTest {
 
   @Test
   void procesarDonacion_deberiaRegistrarElEventoEnLasMetricas() {
-    UUID id = new UUID(0L, 1L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
+    NuevaDonacionRequest request =
+        IncentivosFixturesTest.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
 
-    DonanteIncentivos actualizado = repository.findById(id).orElseThrow();
-    assertEquals(1, actualizado.getMetricas().getTotalDonacionesHistoricas());
+    service.procesarDonacion(request);
+
+    DonanteIncentivos guardado = repository.findById(donanteId).orElseThrow();
+    assertTrue(guardado.tuvoActividadEnMes(YearMonth.of(2026, Month.MAY)));
   }
 
   @Test
-  void procesarDonacion_deberiaLanzarExcepcionSiDonanteNoExiste() {
-    UUID id = new UUID(0L, 99L);
-    NuevaDonacionRequest request = new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY);
-    assertThrows(RecursoNoEncontradoException.class, () -> service.procesarDonacion(request));
+  void procesarDonacion_cuandoDonanteNoExiste_deberiaLanzarExcepcion() {
+    UUID donanteId = UUID.randomUUID();
+    NuevaDonacionRequest request = IncentivosFixturesTest.nuevaDonacion(donanteId);
+
+    assertThrows(BusinessStateException.class, () -> service.procesarDonacion(request));
   }
 
   @Test
-  void procesarDonacion_deberiaNotificarAscensoAlSubirCategoria() {
-    UUID id = new UUID(0L, 44L);
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(racha));
+  void procesarDonacion_cuandoCompletaCategoria_deberiaPublicarAscensoDonante() {
+    UUID donanteId = UUID.randomUUID();
+    MisionRacha racha = MisionMotherTest.rachaColaborador(1);
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(racha));
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
+    NuevaDonacionRequest request =
+        IncentivosFixturesTest.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
 
-    verify(eventPublisher, atLeastOnce()).publishEvent(any(AscensoDonante.class));
-  }
+    service.procesarDonacion(request);
 
-  @Test
-  void procesarDonacion_deberiaNotificarCuandoSeCompletaMisionConInsignia() {
-    UUID id = new UUID(0L, 10L);
-    MisionRacha mision = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
-    mision.setInsignia(new Insignia("Racha", "desc", "/img.png"));
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(mision));
-    repository.save(donante);
-
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
-
-    ArgumentCaptor<MisionCompletada> captor = ArgumentCaptor.forClass(MisionCompletada.class);
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
     verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
-    assertTrue(captor.getAllValues().stream().anyMatch(e -> e.insignia() != null));
+
+    boolean publicoAscenso =
+        captor.getAllValues().stream().anyMatch(e -> e instanceof AscensoDonante);
+    assertTrue(publicoAscenso);
   }
 
   @Test
-  void procesarDonacion_noDeberiaNotificarSiLaMisionNoSeCompletaAun() {
-    UUID id = new UUID(0L, 11L);
-    MisionRacha mision = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(mision));
+  void procesarDonacion_cuandoCompletaMisionConInsignia_deberiaPublicarMisionCompletada() {
+    UUID donanteId = UUID.randomUUID();
+    MisionRacha racha =
+        MisionMotherTest.rachaConInsignia(CategoriaDonante.COLABORADOR, 1, "Racha de Bronce");
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(racha));
     repository.save(donante);
 
-    service.procesarDonacion(new NuevaDonacionRequest(id, List.of("arroz"), 1, HOY));
+    NuevaDonacionRequest request =
+        IncentivosFixturesTest.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
 
-    verify(eventPublisher, never()).publishEvent(any(MisionCompletada.class));
+    service.procesarDonacion(request);
+
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
+
+    boolean publicoMision =
+        captor.getAllValues().stream()
+            .anyMatch(
+                e ->
+                    e instanceof MisionCompletada mc
+                        && mc.insignia() != null
+                        && "Racha de Bronce".equals(mc.insignia().nombre()));
+    assertTrue(publicoMision);
   }
 
   @Test
-  void procesarDonacionExitosa_deberiaNotificarCuandoSeCompletaUnaMision() {
-    UUID id = new UUID(0L, 42L);
-    MisionDonacionesExitosas mision = new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 1);
-    Insignia insignia = new Insignia("Primera Entrega", "Primera donación exitosa", "/img.png");
-    mision.setInsignia(insignia);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test", List.of(mision));
+  void procesarDonacion_cuandoNoCompletaMision_noDeberiaPublicarEventos() {
+    UUID donanteId = UUID.randomUUID();
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(racha));
     repository.save(donante);
 
-    service.procesarDonacionExitosa(new DonacionExitosaRequest(id, new UUID(0L, 99L)));
+    NuevaDonacionRequest request =
+        IncentivosFixturesTest.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
 
-    verify(eventPublisher, atLeastOnce()).publishEvent(any(MisionCompletada.class));
+    service.procesarDonacion(request);
+
+    verify(eventPublisher, never()).publishEvent(any());
   }
 
   @Test
-  void obtenerMisiones_deberiaRetornarLasMisionesDelDonante() {
-    UUID id = new UUID(0L, 50L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
+  void procesarDonacionExitosa_cuandoCompletaMision_deberiaPublicarMisionCompletada() {
+    UUID donanteId = UUID.randomUUID();
+    MisionDonacionesExitosas exitosas = MisionMotherTest.exitosas(CategoriaDonante.COLABORADOR, 1);
+    DonanteIncentivos donante =
+        DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(exitosas));
     repository.save(donante);
 
-    List<MisionDTO> misiones = service.obtenerMisiones(id);
+    service.procesarDonacionExitosa(IncentivosFixturesTest.donacionExitosa(donanteId));
 
-    assertNotNull(misiones);
-    assertFalse(misiones.isEmpty());
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
+
+    boolean publicoMision =
+        captor.getAllValues().stream().anyMatch(e -> e instanceof MisionCompletada);
+    assertTrue(publicoMision);
   }
 
   @Test
-  void verificarRachasVencidas_deberiaProcesarTodosLosDonantes() {
-    UUID id = new UUID(0L, 51L);
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
+  void procesarDonacionExitosa_cuandoNoTieneMisionesDeExitosas_noDeberiaPublicarEventos() {
+    UUID donanteId = UUID.randomUUID();
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(racha));
     repository.save(donante);
 
-    assertDoesNotThrow(() -> service.verificarRachasVencidas(YearMonth.of(2026, Month.JULY)));
+    service.procesarDonacionExitosa(IncentivosFixturesTest.donacionExitosa(donanteId));
+
+    verify(eventPublisher, never()).publishEvent(any());
+  }
+
+  @Test
+  void obtenerMisiones_deberiaRetornarListaDeMisionesDelDonante() {
+    UUID donanteId = UUID.randomUUID();
+    Mision mision = MisionMotherTest.rachaColaborador(3);
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(mision));
+    repository.save(donante);
+
+    List<MisionDTO> list = service.obtenerMisiones(donanteId);
+
+    assertEquals(1, list.size());
+    assertEquals(mision.getNombre(), list.get(0).nombre());
+  }
+
+  @Test
+  void verificarRachasVencidas_deberiaProcesarTodosLosDonantesDelRepositorio() {
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    MisionRacha r1 = MisionMotherTest.rachaColaborador(3);
+    MisionRacha r2 = MisionMotherTest.rachaColaborador(3);
+
+    DonanteIncentivos d1 = DonanteIncentivosMotherTest.conMisiones(id1, List.of(r1));
+    d1.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 1, 15));
+
+    DonanteIncentivos d2 = DonanteIncentivosMotherTest.conMisiones(id2, List.of(r2));
+    d2.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 3, 15));
+
+    repository.save(d1);
+    repository.save(d2);
+
+    service.verificarRachasVencidas(YearMonth.of(2026, Month.APRIL));
+
+    assertEquals(0, r1.getProgresoActual()); // Venció por saltarse marzo
+    assertEquals(1, r2.getProgresoActual()); // Sigue vigente (donó en marzo)
   }
 }

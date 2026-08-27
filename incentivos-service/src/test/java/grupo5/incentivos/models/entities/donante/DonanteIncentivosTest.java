@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
+import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
+import grupo5.incentivos.fixtures.MisionMotherTest;
 import grupo5.incentivos.models.entities.donante.eventos.EventoDonanteIncentivos;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
-import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
@@ -25,25 +27,16 @@ class DonanteIncentivosTest {
 
   @BeforeEach
   void setUp() {
-    donante = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test");
-  }
-
-  private EventoDonacion eventoEn(int anio, int mes) {
-    return EventoDonacion.builder()
-        .donacionId(UUID.randomUUID())
-        .fecha(LocalDate.of(anio, mes, 15))
-        .cantidadBienes(5)
-        .categorias(List.of("alimentos"))
-        .build();
+    donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE, ID_PERSONA, "Test");
   }
 
   @Test
   void verificarRachas_deberiaResetearProgresoSiRachaVencida() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
-    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of(racha));
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
+    DonanteIncentivos d = DonanteIncentivosMotherTest.conMisiones(ID_DONANTE, List.of(racha));
 
-    d.registrarDonacion(eventoEn(2026, 1));
-    d.registrarDonacion(eventoEn(2026, 2));
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 2, 15));
     assertEquals(2, racha.getProgresoActual());
 
     // Corre el job en abril (se salteó marzo)
@@ -55,10 +48,10 @@ class DonanteIncentivosTest {
 
   @Test
   void verificarRachas_noDeberiaAfectarMisionVigente() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
-    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of(racha));
+    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
+    DonanteIncentivos d = DonanteIncentivosMotherTest.conMisiones(ID_DONANTE, List.of(racha));
 
-    d.registrarDonacion(eventoEn(2026, 3));
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 3, 15));
     assertEquals(1, racha.getProgresoActual());
 
     // Corre el job en abril (mes consecutivo válido)
@@ -70,11 +63,11 @@ class DonanteIncentivosTest {
 
   @Test
   void verificarRachas_noDeberiaModificarMisionYaCompletada() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 2);
-    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of(racha));
+    MisionRacha racha = MisionMotherTest.rachaColaborador(2);
+    DonanteIncentivos d = DonanteIncentivosMotherTest.conMisiones(ID_DONANTE, List.of(racha));
 
-    d.registrarDonacion(eventoEn(2026, 1));
-    d.registrarDonacion(eventoEn(2026, 2));
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 2, 15));
     assertTrue(racha.isCompletada());
 
     d.verificarRachas(YearMonth.of(2026, Month.JUNE));
@@ -85,15 +78,14 @@ class DonanteIncentivosTest {
 
   @Test
   void misionesCompletadas_deberiaContabilizarSoloMisionesCompletadas() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
-    MisionDonacionesExitosas exitosas =
-        new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 5);
+    MisionRacha racha = MisionMotherTest.rachaColaborador(1);
+    MisionDonacionesExitosas exitosas = MisionMotherTest.exitosas(CategoriaDonante.COLABORADOR, 5);
     DonanteIncentivos d =
-        new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of(racha, exitosas));
+        DonanteIncentivosMotherTest.conMisiones(ID_DONANTE, List.of(racha, exitosas));
 
     assertEquals(0, d.misionesCompletadas());
 
-    d.registrarDonacion(eventoEn(2026, 5));
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 15));
 
     assertTrue(racha.isCompletada());
     assertFalse(exitosas.isCompletada());
@@ -102,11 +94,11 @@ class DonanteIncentivosTest {
 
   @Test
   void tuvoActividadEnMes_deberiaIndicarSiHuboDonacionesEnElPeriodo() {
-    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of());
+    DonanteIncentivos d = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE);
 
     assertFalse(d.tuvoActividadEnMes(YearMonth.of(2026, Month.MAY)));
 
-    d.registrarDonacion(eventoEn(2026, 5));
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 15));
 
     assertTrue(d.tuvoActividadEnMes(YearMonth.of(2026, Month.MAY)));
     assertFalse(d.tuvoActividadEnMes(YearMonth.of(2026, Month.JUNE)));
@@ -114,7 +106,7 @@ class DonanteIncentivosTest {
 
   @Test
   void otorgarInsignia_y_configurarVisibilidad_deberianFuncionarCorrectamente() {
-    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of());
+    DonanteIncentivos d = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE);
     Insignia insignia = new Insignia("Compromiso", "Descripción", "http://img.png");
 
     d.otorgarInsignia(insignia);
@@ -128,18 +120,27 @@ class DonanteIncentivosTest {
   }
 
   @Test
-  void getDomainEvents_debeRetornarCopiaInmutableEInmuneAMutacionesPosteriores() {
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
-    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of(racha));
+  void otorgarInsignia_cuandoInsigniaYaFueOtorgada_noDeberiaDuplicar() {
+    DonanteIncentivos d = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE);
+    Insignia insignia = new Insignia("Compromiso", "Descripción", "http://img.png");
 
-    // Evento que completa la misión y registra eventos
-    d.registrarDonacion(eventoEn(2026, 5));
+    d.otorgarInsignia(insignia);
+    d.otorgarInsignia(insignia);
+
+    assertEquals(1, d.getInsignias().size());
+  }
+
+  @Test
+  void getDomainEvents_debeRetornarCopiaInmutableEInmuneAMutacionesPosteriores() {
+    MisionRacha racha = MisionMotherTest.rachaColaborador(1);
+    DonanteIncentivos d = DonanteIncentivosMotherTest.conMisiones(ID_DONANTE, List.of(racha));
+
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 15));
 
     List<EventoDonanteIncentivos> snapshot = d.getDomainEvents();
     assertFalse(snapshot.isEmpty(), "El agregado debe haber registrado eventos de dominio");
     int eventosIniciales = snapshot.size();
 
-    // Mutación posterior sobre el agregado
     d.clearDomainEvents();
 
     assertTrue(
@@ -174,14 +175,14 @@ class DonanteIncentivosTest {
 
   @Test
   void otorgarInsignia_deberiaLanzarExcepcionSiInsigniaEsNula() {
-    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of());
+    DonanteIncentivos d = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE);
     ValidationException ex = assertThrows(ValidationException.class, () -> d.otorgarInsignia(null));
     assertEquals(ErrorCatalog.INSIGNIA_NULA, ex.getError());
   }
 
   @Test
   void configurarVisibilidadInsignia_deberiaLanzarExcepcionSiInsigniaNoExiste() {
-    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of());
+    DonanteIncentivos d = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE);
     BusinessStateException ex =
         assertThrows(
             BusinessStateException.class,

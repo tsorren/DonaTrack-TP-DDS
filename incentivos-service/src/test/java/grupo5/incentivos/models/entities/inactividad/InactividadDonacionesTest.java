@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
+import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -23,23 +24,13 @@ class InactividadDonacionesTest {
     return new InactividadDonaciones(diasSinDonar, fixedClock);
   }
 
-  private DonanteIncentivos donanteConUltimaDonacion(UUID id, LocalDate fecha) {
-    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Test");
-    EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(UUID.randomUUID())
-            .fecha(fecha)
-            .cantidadBienes(1)
-            .categorias(List.of("arroz"))
-            .build();
-    donante.getMetricas().registrarDonacion(evento);
-    return donante;
-  }
-
   @Test
   void detectarInactivos_deberiaDetectarDonanteConUltimaDonacionMuyAntigua() {
     InactividadDonaciones criterio = crearCriterio(30);
-    DonanteIncentivos inactivo = donanteConUltimaDonacion(UUID.randomUUID(), HOY.minusDays(60));
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos inactivo =
+        DonanteIncentivosMotherTest.conDonacion(
+            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(60)));
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(inactivo));
 
@@ -53,7 +44,10 @@ class InactividadDonacionesTest {
   @Test
   void detectarInactivos_noDeberiaDetectarDonanteQueDonoReciente() {
     InactividadDonaciones criterio = crearCriterio(30);
-    DonanteIncentivos activo = donanteConUltimaDonacion(UUID.randomUUID(), HOY.minusDays(5));
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos activo =
+        DonanteIncentivosMotherTest.conDonacion(
+            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(5)));
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(activo));
 
@@ -61,10 +55,37 @@ class InactividadDonacionesTest {
   }
 
   @Test
+  void detectarInactivos_enElLimiteExactoDeDias_noDeberiaConsiderarseInactivo() {
+    InactividadDonaciones criterio = crearCriterio(30);
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos activoEnLimite =
+        DonanteIncentivosMotherTest.conDonacion(
+            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(30)));
+
+    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(activoEnLimite));
+
+    assertTrue(resultado.isEmpty());
+  }
+
+  @Test
+  void detectarInactivos_conUnDiaMasDelLimite_deberiaConsiderarseInactivo() {
+    InactividadDonaciones criterio = crearCriterio(30);
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos inactivo =
+        DonanteIncentivosMotherTest.conDonacion(
+            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(31)));
+
+    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(inactivo));
+
+    assertEquals(1, resultado.size());
+    assertEquals(31, resultado.getFirst().diasInactivo());
+  }
+
+  @Test
   void detectarInactivos_deberiaConsiderarInactivoAlDonanteQueNuncaDono() {
     InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
-    DonanteIncentivos sinDonaciones = new DonanteIncentivos(id, id, "Nuevo");
+    DonanteIncentivos sinDonaciones = DonanteIncentivosMotherTest.colaboradorSinMisiones(id);
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(sinDonaciones));
 
@@ -81,10 +102,14 @@ class InactividadDonacionesTest {
     UUID idInactivo = new UUID(0L, 2L);
     UUID idSinDonaciones = new UUID(0L, 3L);
 
-    DonanteIncentivos activo = donanteConUltimaDonacion(idActivo, HOY.minusDays(10));
-    DonanteIncentivos inactivo = donanteConUltimaDonacion(idInactivo, HOY.minusDays(45));
+    DonanteIncentivos activo =
+        DonanteIncentivosMotherTest.conDonacion(
+            idActivo, EventoDonacionMotherTest.enFecha(HOY.minusDays(10)));
+    DonanteIncentivos inactivo =
+        DonanteIncentivosMotherTest.conDonacion(
+            idInactivo, EventoDonacionMotherTest.enFecha(HOY.minusDays(45)));
     DonanteIncentivos sinDonaciones =
-        new DonanteIncentivos(idSinDonaciones, idSinDonaciones, "Nuevo");
+        DonanteIncentivosMotherTest.colaboradorSinMisiones(idSinDonaciones);
 
     List<DonanteInactivo> resultado =
         criterio.detectarInactivos(List.of(activo, inactivo, sinDonaciones));
@@ -114,5 +139,31 @@ class InactividadDonacionesTest {
     ValidationException ex =
         assertThrows(ValidationException.class, () -> new InactividadDonaciones(-5));
     assertEquals(ErrorCatalog.INACTIVIDAD_DIAS_INVALIDOS, ex.getError());
+  }
+
+  @Test
+  void gestorDeInactivos_conMultiplesCriterios_deberiaDeduplicarPorPersonaReteniendoMaximoDias() {
+    GestorDeInactivos gestor = new GestorDeInactivos();
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos inactivo =
+        DonanteIncentivosMotherTest.conDonacion(
+            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(50)));
+
+    InactividadDonaciones crit30 = crearCriterio(30);
+    InactividadDonaciones crit45 = crearCriterio(45);
+
+    List<DonanteInactivo> inactivos =
+        gestor.procesarInactividad(List.of(crit30, crit45), List.of(inactivo));
+
+    assertEquals(1, inactivos.size());
+    assertEquals(50, inactivos.getFirst().diasInactivo());
+  }
+
+  @Test
+  void gestorDeInactivos_conListasNulasOVacias_deberiaRetornarListaVacia() {
+    GestorDeInactivos gestor = new GestorDeInactivos();
+
+    assertTrue(gestor.procesarInactividad(null, null).isEmpty());
+    assertTrue(gestor.procesarInactividad(List.of(), List.of()).isEmpty());
   }
 }
