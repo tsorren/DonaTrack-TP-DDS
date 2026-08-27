@@ -35,7 +35,7 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
             .findById(input.juridicaId())
             .orElseThrow(() -> new RecursoNoEncontradoException(input.juridicaId()));
 
-    if (!(persona instanceof Juridica)) {
+    if (!(persona instanceof Juridica)) { // TODO: sacar el instanceof
       throw new grupo5.common.exceptions.ValidationException(
           grupo5.common.exceptions.ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
     }

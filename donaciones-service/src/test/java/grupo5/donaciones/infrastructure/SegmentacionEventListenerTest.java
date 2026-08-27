@@ -5,13 +5,13 @@ import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.comunicaciones.NuevaDonacionRequest;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
-import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.infrastructure.events.SegmentacionEventListener;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
@@ -19,7 +19,13 @@ import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.ports.Segmentador;
-import grupo5.donaciones.models.repositories.*;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 class SegmentacionEventListenerTest {
@@ -39,8 +46,9 @@ class SegmentacionEventListenerTest {
   @Mock private IncentivosFeignClient incentivosFeignClient;
   @Mock private ICategoriasRepository categoriasRepository;
   @Mock private ISubcategoriasRepository subcategoriasRepository;
-  @Mock private grupo5.donaciones.models.repositories.IPersonasRepository personasRepository;
+  @Mock private IPersonasRepository personasRepository;
   @Mock private IDonantesRepository donantesRepository;
+  @Mock private ApplicationEventPublisher eventPublisher;
 
   @InjectMocks private SegmentacionEventListener listener;
 
@@ -94,7 +102,7 @@ class SegmentacionEventListenerTest {
     when(donantesRepository.findById(donante.getId())).thenReturn(Optional.of(donante));
     when(personasRepository.findById(humana.getId())).thenReturn(Optional.of(humana));
 
-    listener.onDonacionNormalizada(new DonacionNormalizadaEvent(donacion.getId()));
+    listener.onDonacionNormalizada(new DonacionNormalizada(donacion.getId(), donante.getId()));
 
     assertTrue(itemAceptado.isSegmentado());
     assertFalse(itemRechazado.isSegmentado());
@@ -113,7 +121,7 @@ class SegmentacionEventListenerTest {
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
     when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemRechazado));
 
-    listener.onDonacionNormalizada(new DonacionNormalizadaEvent(donacion.getId()));
+    listener.onDonacionNormalizada(new DonacionNormalizada(donacion.getId(), donante.getId()));
 
     assertEquals(EstadoDonacion.SEGMENTADA, donacion.getEstadoActual());
 
