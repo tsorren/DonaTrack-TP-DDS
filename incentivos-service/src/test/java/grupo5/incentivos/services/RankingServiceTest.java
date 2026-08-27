@@ -3,11 +3,12 @@ package grupo5.incentivos.services;
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.incentivos.dto.RankingMensualDTO;
-import grupo5.incentivos.infrastructure.N8nClient;
+import grupo5.incentivos.infrastructure.IN8nClient;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
+import grupo5.incentivos.models.entities.ranking.GestorDeRankings;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
@@ -28,7 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RankingServiceTest {
 
-  @Mock private N8nClient n8nClient;
+  @Mock private IN8nClient n8nClient;
 
   private IDonanteIncentivosRepository donanteRepository;
   private IRankingRepository rankingRepository;
@@ -40,7 +41,8 @@ class RankingServiceTest {
   void setUp() {
     donanteRepository = new DonanteIncentivosRepository();
     rankingRepository = new RankingRepository();
-    rankingService = new RankingService(donanteRepository, rankingRepository, n8nClient);
+    rankingService =
+        new RankingService(donanteRepository, rankingRepository, n8nClient, new GestorDeRankings());
   }
 
   @Test

@@ -6,7 +6,7 @@ import java.util.List;
 
 public class GestorDeInactivos {
 
-  public static List<DonanteInactivo> procesarInactividad(
+  public List<DonanteInactivo> procesarInactividad(
       List<CriterioInactividad> criterios, List<DonanteIncentivos> todos) {
     List<DonanteInactivo> inactivos = new ArrayList<>();
     for (CriterioInactividad criterio : criterios) {

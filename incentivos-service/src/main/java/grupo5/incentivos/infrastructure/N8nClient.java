@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
-public class N8nClient {
+public class N8nClient implements IN8nClient {
 
   private static final Logger log = LoggerFactory.getLogger(N8nClient.class);
 
