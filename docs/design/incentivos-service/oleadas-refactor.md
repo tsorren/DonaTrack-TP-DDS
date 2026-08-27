@@ -542,3 +542,66 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Configuración de infraestructura de trazabilidad distribuida con Spring Boot Component Scanning y MDC en Schedulers.
 - Construcción de suites de pruebas con `jakarta.validation.Validator` y `@WebMvcTest` con `MockMvc`.
 
+---
+
+## Oleada 10 — Preparación Conceptual para Persistencia Real 📝
+
+> **Nota de Gobernanza**: Esta oleada es estrictamente analítica y de diseño técnico (`📝`), asegurando que la capa de dominio permanezca limpia, desacoplada y preparada para la fase de persistencia física relacional en PostgreSQL 15+ con JPA/Hibernate 6.
+
+### Problema
+- **Inexistencia de Estrategia ORM**: El microservicio carecía de definiciones formales sobre cómo persistir la jerarquía polimórfica de misiones (`Mision`), los Value Objects embebidos (`Metricas`, `InsigniaGanada`) y las proyecciones de ranking (`RankingMensual`).
+- **Riesgo de Cuello de Botella en Memoria**: Cargar colecciones no acotadas de historial de donaciones (`List<EventoDonacion>`) dentro del componente embebido `Metricas` en cada lectura del donante amenazaba el rendimiento en entornos de alta concurrencia.
+- **Riesgo de Doble Escritura (*Dual-Write*)**: La publicación de eventos de dominio (`AscensoDonante`, `MisionCompletada`) hacia `notificaciones-service` o brokers de mensajería dentro de transacciones de base de datos podía generar inconsistencias si la transacción hacía rollback después del dispatch externo.
+
+### Evidencia
+- Ausencia de documentos técnicos DDL y ORM en `docs/design/`.
+- `DonanteIncentivos` y `RankingMensual` operando exclusivamente con repositorios en memoria sin esquema relacional formal.
+
+### Objetivo
+1. Diseñar el mapeo ORM JPA/Hibernate 6 para todos los agregados, jerarquías polimórficas y Value Objects.
+2. Definir la estrategia de herencia `@Inheritance(strategy = SINGLE_TABLE)` para la jerarquía `Mision`.
+3. Optimizar el almacenamiento de `Metricas` mediante aplanamiento escalar en `@Embeddable`.
+4. Diseñar el esquema relacional DDL completo en PostgreSQL 15+ con índices, claves foráneas y restricciones `CHECK`.
+5. Diseñar el patrón Transactional Outbox con la tabla `outbox_events` y relay asíncrono.
+6. Especificar la estrategia de Crypto-Shredding para supresión de datos personales (GDPR / Ley 25.326).
+7. Diseñar la suite de integración de persistencia con Testcontainers (`PostgreSQLContainer`).
+
+### Qué se hizo
+1. **Auditoría de Agregados y Mapeo ORM**:
+   - `DonanteIncentivos` (AR): `@Embedded Metricas`, `@OneToMany` para `Mision` (`CascadeType.ALL`, `orphanRemoval = true`, `FetchType.LAZY`), `@ElementCollection` para `InsigniasGanadas`. Concurrencia optimista con campo `version: Long` (`@Version`).
+   - `RankingMensual` (AR): Mapeo de `periodo` (`YearMonth`) con `AttributeConverter` a `VARCHAR(7)` con restricción `UNIQUE`. `@ElementCollection` para `EntradaRanking`.
+   - `Mision` (Jerarquía Polimórfica): Estrategia `@Inheritance(strategy = SINGLE_TABLE)` con discriminador `@DiscriminatorColumn(tipo_mision)`. Mapeo `@ElementCollection` para categorías en `MisionCompletitud`.
+2. **Optimización de Rendimiento en `Metricas`**:
+   - Aplanamiento escalar de `Metricas` (`total_donaciones`, `donaciones_consecutivas`, `max_donaciones_consecutivas`, `total_donaciones_exitosas`, `ultima_donacion_fecha`) en la tabla `donante_incentivos`, evitando sobrecarga de memoria al leer donantes.
+3. **Esquema Relacional DDL (PostgreSQL 15+)**:
+   - Tablas `donante_incentivos`, `mision`, `mision_categorias_necesarias`, `mision_categorias_donadas`, `donante_insignia_ganada`, `donante_historial_donacion`, `ranking_mensual`, `ranking_mensual_posicion` y `outbox_events`.
+   - Índices compuestos, claves foráneas con cascada apropiada y restricciones de unicidad e integridad (`CHECK > 0`).
+4. **Patrón Transactional Outbox**:
+   - Tabla `outbox_events` con despacho seguro mediante `SELECT FOR UPDATE SKIP LOCKED` y serialización JSONB de eventos de dominio (`AscensoDonante`, `MisionCompletada`).
+5. **Privacidad y Crypto-Shredding**:
+   - Anonimización por destrucción de clave criptográfica (DEK) asociada al `personaId` del donante, garantizando el derecho de supresión sin romper integridad referencial ni alterar las estadísticas históricas de rankings.
+6. **Estrategia de Testcontainers**:
+   - Especificación de suite `@DataJpaTest` con contenedor efímero `PostgreSQLContainer` para validación de converters, herencia `SINGLE_TABLE` y concurrencia optimista.
+7. **Documento de Referencia Técnica**:
+   - Creado [`docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md).
+
+### Fuera de scope
+- Cierre final de code review y sanitización de seguridad (Oleadas 11+12).
+- Barrido mecánico obligatorio y auditoría final de Domain Events (Oleadas 11+12).
+
+### Tests / Verificación
+- **Suite completa**:
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **166 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (`BUILD SUCCESS`).
+  - `mvn clean test` (reactor completo): ✅ **7/7 módulos exitosos, 100% en verde** (`BUILD SUCCESS`).
+  - `mvn spotless:check`: ✅ **100% de archivos limpios en todo el repositorio**.
+
+### Diseño resultante
+- `incentivos-service` cuenta con una arquitectura de persistencia relacional física completamente diseñada, optimizada para alto rendimiento, con transaccionalidad ACID atómica, consistencia eventual garantizada mediante Transactional Outbox, cumplimiento de normativas de privacidad (Crypto-Shredding) y cero acoplamientos invasivos en el dominio puro.
+
+### IA utilizada
+- Modelado de esquemas relacionales DDL avanzados y diseño de herencia polimórfica en JPA.
+- Análisis de rendimiento para aplanamiento escalar de Value Objects y colecciones históricas.
+- Diseño de diagramas de arquitectura Mermaid (clases, secuencias de outbox y crypto-shredding).
+- Elaboración de planes de testing de integración con Testcontainers.
+
+
