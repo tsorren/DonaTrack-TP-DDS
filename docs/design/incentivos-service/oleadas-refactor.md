@@ -131,3 +131,42 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Refactorización de algoritmos de ordenamiento y cómputo de posiciones inmutables en `GestorDeRankings`.
 - Generación de tests unitarios focalizados en el comportamiento de dominio.
 - Verificación cruzada con la suite de regresión y formateo Spotless.
+
+---
+
+## Oleada 2: Domain Events y Seguridad de Concurrencia
+
+### Problema
+`DonanteIncentivos` implementa el patrón Domain Events para registrar transiciones clave (`AscensoDonante`, `MisionCompletada`). No obstante:
+1. **Riesgo crítico de reentrancia en `getDomainEvents()`**: Exponía `Collections.unmodifiableList(this.domainEvents)`. Este método no crea una copia independiente de la colección sino un wrapper de solo lectura sobre la lista mutable subyacente. Si un listener síncrono o un flujo de orquestación invoca `clearDomainEvents()` o genera nuevos eventos mientras se itera la lista, se lanza `ConcurrentModificationException`.
+2. **Ausencia de test canónico de reentrancia**: La suite carecía de un test de regresión que verificara la inmutabilidad y el aislamiento del snapshot devuelto frente a mutaciones posteriores en el Aggregate Root.
+3. **Formalización sobre `RankingMensual`**: Se requería formalizar la decisión arquitectónica de que `RankingMensual` no requiere infraestructura de eventos de dominio.
+
+### Evidencia
+- `DonanteIncentivos.java` L.113: `return Collections.unmodifiableList(this.domainEvents);`.
+- Ausencia de tests de reentrancia e inmutabilidad de snapshot en `DonanteIncentivosTest`.
+
+### Objetivo
+1. **Defensa ante Concurrencia y Reentrancia**: Modificar `DonanteIncentivos.getDomainEvents()` para retornar `List.copyOf(this.domainEvents)`.
+2. **Test Canónico de Reentrancia**: Incorporar a `DonanteIncentivosTest` un test canónico que confirme que el snapshot de eventos permanece intacto tras invocar `clearDomainEvents()`.
+3. **Decisión de Diseño Documentada (📝)**: Registrar formalmente que `RankingMensual` no requiere Domain Events por ser un agregado de cálculo/proyección batch.
+
+### Fuera de scope
+- Erradicación de `IllegalArgumentException` y adopción de `ValidationException(ErrorCatalog)` (Oleada 3).
+- Descomposición SRP de `IncentivosService` (Oleada 4).
+
+### Tests / Verificación
+- **Test canónico agregado**:
+  - `DonanteIncentivosTest.getDomainEvents_debeRetornarCopiaInmutableEInmuneAMutacionesPosteriores`: ✅ Confirma snapshot intacto tras `clearDomainEvents()` y rechazo a mutaciones con `UnsupportedOperationException`.
+- **Suite completa**:
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **63 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (`BUILD SUCCESS`).
+  - `mvn spotless:check -f incentivos-service/pom.xml`: ✅ 60 archivos limpios.
+
+### Diseño resultante
+- `DonanteIncentivos` garantiza aislamiento total de sus eventos de dominio: cada llamada a `getDomainEvents()` entrega un snapshot inmutable e independiente (`List.copyOf`). El Application Service puede iterar, publicar o procesar los eventos de forma segura mientras el ciclo de vida del agregado continúa de forma desacoplada.
+- `RankingMensual` queda formalizado como Aggregate Root proyectado sin eventos de dominio internos; su persistencia y notificación externa son gestionadas directamente por el servicio orquestador (`RankingService`).
+
+### IA utilizada
+- Identificación de vulnerabilidades de concurrencia y vistas mutables en Domain Events.
+- Implementación de pruebas canónicas de reentrancia e inmutabilidad de snapshots.
+- Verificación automatizada con Maven y Spotless.

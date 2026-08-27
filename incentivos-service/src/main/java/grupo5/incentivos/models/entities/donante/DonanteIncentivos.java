@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -110,7 +109,7 @@ public class DonanteIncentivos implements AggregateRoot {
   }
 
   public List<EventoDonanteIncentivos> getDomainEvents() {
-    return Collections.unmodifiableList(this.domainEvents);
+    return List.copyOf(this.domainEvents);
   }
 
   public void clearDomainEvents() {

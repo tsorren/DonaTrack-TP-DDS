@@ -2,6 +2,7 @@ package grupo5.incentivos.models.entities.donante;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.incentivos.models.entities.donante.eventos.EventoDonanteIncentivos;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
@@ -121,5 +122,32 @@ class DonanteIncentivosTest {
     d.configurarVisibilidadInsignia("Compromiso", false);
 
     assertFalse(d.getInsignias().getFirst().visible());
+  }
+
+  @Test
+  void getDomainEvents_debeRetornarCopiaInmutableEInmuneAMutacionesPosteriores() {
+    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
+    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of(racha));
+
+    // Evento que completa la misión y registra eventos
+    d.registrarDonacion(eventoEn(2026, 5));
+
+    List<EventoDonanteIncentivos> snapshot = d.getDomainEvents();
+    assertFalse(snapshot.isEmpty(), "El agregado debe haber registrado eventos de dominio");
+    int eventosIniciales = snapshot.size();
+
+    // Mutación posterior sobre el agregado
+    d.clearDomainEvents();
+
+    assertTrue(
+        d.getDomainEvents().isEmpty(), "La lista interna del agregado debe haberse limpiado");
+    assertEquals(
+        eventosIniciales,
+        snapshot.size(),
+        "El snapshot tomado previamente no debe mutar tras clearDomainEvents()");
+    assertThrows(
+        UnsupportedOperationException.class,
+        () -> snapshot.add(null),
+        "El snapshot debe ser una lista inmutable");
   }
 }
