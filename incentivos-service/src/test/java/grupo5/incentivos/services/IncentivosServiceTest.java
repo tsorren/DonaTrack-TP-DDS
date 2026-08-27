@@ -15,6 +15,7 @@ import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
 import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
 import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
@@ -190,7 +191,7 @@ class IncentivosServiceTest {
 
     service.configurarVisibilidadInsignia(id, "Explorador", false);
 
-    Insignia insignia =
+    InsigniaGanada insignia =
         repository.findById(id).orElseThrow().getInsignias().stream()
             .filter(i -> i.nombre().equals("Explorador"))
             .findFirst()

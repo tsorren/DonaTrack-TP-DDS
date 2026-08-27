@@ -1,5 +1,7 @@
 package grupo5.incentivos.models.entities.inactividad;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -17,7 +19,7 @@ public class InactividadDonaciones extends CriterioInactividad {
 
   public InactividadDonaciones(int diasSinDonar, Clock clock) {
     if (diasSinDonar <= 0) {
-      throw new IllegalArgumentException("Los días de inactividad deben ser mayores a cero");
+      throw new ValidationException(ErrorCatalog.INACTIVIDAD_DIAS_INVALIDOS);
     }
     this.diasSinDonar = diasSinDonar;
     this.clock = clock;

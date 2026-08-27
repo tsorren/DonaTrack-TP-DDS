@@ -8,6 +8,7 @@ import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
 import grupo5.incentivos.models.entities.donante.eventos.EventoDonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
 import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
@@ -31,7 +32,7 @@ public class DonanteIncentivos implements AggregateRoot {
   private CategoriaDonante categoria;
   private List<CambioCategoria> historialCategorias;
   private List<Mision> misiones;
-  private List<Insignia> insignias;
+  private List<InsigniaGanada> insignias;
   private Metricas metricas;
 
   private final transient List<EventoDonanteIncentivos> domainEvents = new ArrayList<>();
@@ -120,28 +121,21 @@ public class DonanteIncentivos implements AggregateRoot {
     if (insignia == null) {
       throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
     }
-    Insignia nuevaInsignia =
-        new Insignia(
+    InsigniaGanada nuevaInsignia =
+        new InsigniaGanada(
             insignia.nombre(),
             insignia.descripcion(),
             insignia.imagenUrl(),
-            insignia.visible(),
+            true,
             LocalDate.now(ZoneId.systemDefault()));
     this.insignias.add(nuevaInsignia);
   }
 
   public void configurarVisibilidadInsignia(String nombre, boolean visible) {
     for (int i = 0; i < this.insignias.size(); i++) {
-      Insignia current = this.insignias.get(i);
+      InsigniaGanada current = this.insignias.get(i);
       if (current.nombre().equals(nombre)) {
-        this.insignias.set(
-            i,
-            new Insignia(
-                current.nombre(),
-                current.descripcion(),
-                current.imagenUrl(),
-                visible,
-                current.fechaObtenida()));
+        this.insignias.set(i, current.conVisibilidad(visible));
         return;
       }
     }

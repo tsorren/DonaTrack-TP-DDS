@@ -5,10 +5,8 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.YearMonth;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class MisionRacha extends Mision {
 
   private YearMonth ultimoMesDonado;
@@ -36,18 +34,15 @@ public class MisionRacha extends Mision {
     YearMonth mesEvento = YearMonth.from(evento.getFecha());
 
     if (this.ultimoMesDonado == null) {
-
       this.ultimoMesDonado = mesEvento;
       return 1;
     }
 
     if (mesEvento.equals(this.ultimoMesDonado)) {
-
       return this.getProgresoActual();
     }
 
     if (mesEvento.equals(this.ultimoMesDonado.plusMonths(1))) {
-
       this.ultimoMesDonado = mesEvento;
       return this.getProgresoActual() + 1;
     }

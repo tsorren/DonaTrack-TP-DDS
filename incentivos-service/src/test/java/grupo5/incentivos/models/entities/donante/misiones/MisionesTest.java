@@ -2,10 +2,13 @@ package grupo5.incentivos.models.entities.donante.misiones;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionCompletitud;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionHabilDonador;
@@ -232,5 +235,66 @@ class MisionesTest {
     assertNotNull(racha.getFechaCompletada());
     assertEquals(1, donante.getInsignias().size());
     assertEquals("Perseverante", donante.getInsignias().getFirst().nombre());
+  }
+
+  @Test
+  void constructor_deberiaLanzarExcepcionConNombreNuloOVacio() {
+    ValidationException ex1 =
+        assertThrows(
+            ValidationException.class,
+            () ->
+                new Mision(null, "desc", CategoriaDonante.COLABORADOR, 3) {
+                  @Override
+                  protected Integer calcularNuevoProgreso(
+                      DonanteIncentivos donante, EventoDonacion evento) {
+                    return 0;
+                  }
+                });
+    assertEquals(ErrorCatalog.MISION_NOMBRE_INVALIDO, ex1.getError());
+
+    ValidationException ex2 =
+        assertThrows(
+            ValidationException.class,
+            () ->
+                new Mision("   ", "desc", CategoriaDonante.COLABORADOR, 3) {
+                  @Override
+                  protected Integer calcularNuevoProgreso(
+                      DonanteIncentivos donante, EventoDonacion evento) {
+                    return 0;
+                  }
+                });
+    assertEquals(ErrorCatalog.MISION_NOMBRE_INVALIDO, ex2.getError());
+  }
+
+  @Test
+  void constructor_deberiaLanzarExcepcionConObjetivoInvalido() {
+    ValidationException ex1 =
+        assertThrows(
+            ValidationException.class, () -> new MisionRacha(CategoriaDonante.COLABORADOR, 0));
+    assertEquals(ErrorCatalog.MISION_OBJETIVO_INVALIDO, ex1.getError());
+
+    ValidationException ex2 =
+        assertThrows(
+            ValidationException.class, () -> new MisionRacha(CategoriaDonante.COLABORADOR, -2));
+    assertEquals(ErrorCatalog.MISION_OBJETIVO_INVALIDO, ex2.getError());
+
+    ValidationException ex3 =
+        assertThrows(
+            ValidationException.class, () -> new MisionRacha(CategoriaDonante.COLABORADOR, null));
+    assertEquals(ErrorCatalog.MISION_OBJETIVO_INVALIDO, ex3.getError());
+  }
+
+  @Test
+  void constructor_deberiaLanzarExcepcionConCategoriaNula() {
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> new MisionRacha(null, 3));
+    assertEquals(ErrorCatalog.MISION_SIN_CATEGORIA, ex.getError());
+  }
+
+  @Test
+  void setInsignia_deberiaLanzarExcepcionConInsigniaNula() {
+    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+    ValidationException ex = assertThrows(ValidationException.class, () -> racha.setInsignia(null));
+    assertEquals(ErrorCatalog.INSIGNIA_NULA, ex.getError());
   }
 }

@@ -1,5 +1,7 @@
 package grupo5.incentivos.models.entities.misiones;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
@@ -7,10 +9,8 @@ import grupo5.incentivos.models.entities.insignias.Insignia;
 import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public abstract class Mision {
 
   private final UUID id;
@@ -27,10 +27,13 @@ public abstract class Mision {
   protected Mision(
       String nombre, String descripcion, CategoriaDonante categoria, Integer objetivo) {
     if (nombre == null || nombre.trim().isEmpty()) {
-      throw new IllegalArgumentException("La mision debe tener un nombre.");
+      throw new ValidationException(ErrorCatalog.MISION_NOMBRE_INVALIDO);
+    }
+    if (categoria == null) {
+      throw new ValidationException(ErrorCatalog.MISION_SIN_CATEGORIA);
     }
     if (objetivo == null || objetivo <= 0) {
-      throw new IllegalArgumentException("El objetivo de la mision debe ser mayor a cero.");
+      throw new ValidationException(ErrorCatalog.MISION_OBJETIVO_INVALIDO);
     }
     this.id = UUID.randomUUID();
     this.nombre = nombre;
@@ -39,6 +42,21 @@ public abstract class Mision {
     this.objetivo = objetivo;
     this.progresoActual = 0;
     this.completada = false;
+  }
+
+  public void setNumeroMision(Integer numeroMision) {
+    this.numeroMision = numeroMision;
+  }
+
+  public void setInsignia(Insignia insignia) {
+    if (insignia == null) {
+      throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
+    }
+    this.insignia = insignia;
+  }
+
+  protected void setProgresoActual(Integer progresoActual) {
+    this.progresoActual = progresoActual;
   }
 
   public void evaluarProgreso(DonanteIncentivos donante, EventoDonacion evento) {

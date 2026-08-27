@@ -1,8 +1,11 @@
 package grupo5.incentivos.models.entities.ranking;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
@@ -74,5 +77,20 @@ class RankingMensualTest {
 
     // El ascenso ocurre automáticamente al completarse la última misión de la categoría.
     assertEquals(CategoriaDonante.SOSTENEDOR, donante.getCategoria());
+  }
+
+  @Test
+  void constructor_deberiaLanzarExcepcionConPeriodoNulo() {
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> new RankingMensual(null));
+    assertEquals(ErrorCatalog.RANKING_PERIODO_NULO, ex.getError());
+  }
+
+  @Test
+  void agregarEntrada_deberiaLanzarExcepcionConEntradaNula() {
+    RankingMensual ranking = new RankingMensual(YearMonth.of(2026, Month.MAY));
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> ranking.agregarEntrada(null));
+    assertEquals(ErrorCatalog.RANKING_ENTRADA_NULA, ex.getError());
   }
 }

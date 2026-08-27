@@ -2,6 +2,9 @@ package grupo5.incentivos.models.entities.donante;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.models.entities.donante.eventos.EventoDonanteIncentivos;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
@@ -149,5 +152,40 @@ class DonanteIncentivosTest {
         UnsupportedOperationException.class,
         () -> snapshot.add(null),
         "El snapshot debe ser una lista inmutable");
+  }
+
+  @Test
+  void constructor_deberiaLanzarExcepcionConIdDonanteNulo() {
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class,
+            () -> new DonanteIncentivos(null, ID_PERSONA, "Test", List.of()));
+    assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_ID_NULO, ex.getError());
+  }
+
+  @Test
+  void constructor_deberiaLanzarExcepcionConIdPersonaNulo() {
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class,
+            () -> new DonanteIncentivos(ID_DONANTE, null, "Test", List.of()));
+    assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_ID_NULO, ex.getError());
+  }
+
+  @Test
+  void otorgarInsignia_deberiaLanzarExcepcionSiInsigniaEsNula() {
+    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of());
+    ValidationException ex = assertThrows(ValidationException.class, () -> d.otorgarInsignia(null));
+    assertEquals(ErrorCatalog.INSIGNIA_NULA, ex.getError());
+  }
+
+  @Test
+  void configurarVisibilidadInsignia_deberiaLanzarExcepcionSiInsigniaNoExiste() {
+    DonanteIncentivos d = new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", List.of());
+    BusinessStateException ex =
+        assertThrows(
+            BusinessStateException.class,
+            () -> d.configurarVisibilidadInsignia("Inexistente", false));
+    assertEquals(ErrorCatalog.INSIGNIA_NO_ENCONTRADA, ex.getError());
   }
 }

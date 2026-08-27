@@ -2,6 +2,8 @@ package grupo5.incentivos.models.entities.inactividad;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.Clock;
@@ -102,11 +104,15 @@ class InactividadDonacionesTest {
 
   @Test
   void constructor_deberiaLanzarExcepcionConDiasCero() {
-    assertThrows(IllegalArgumentException.class, () -> new InactividadDonaciones(0));
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> new InactividadDonaciones(0));
+    assertEquals(ErrorCatalog.INACTIVIDAD_DIAS_INVALIDOS, ex.getError());
   }
 
   @Test
   void constructor_deberiaLanzarExcepcionConDiasNegativos() {
-    assertThrows(IllegalArgumentException.class, () -> new InactividadDonaciones(-5));
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> new InactividadDonaciones(-5));
+    assertEquals(ErrorCatalog.INACTIVIDAD_DIAS_INVALIDOS, ex.getError());
   }
 }

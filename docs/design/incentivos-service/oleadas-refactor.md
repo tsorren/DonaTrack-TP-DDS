@@ -170,3 +170,74 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Identificación de vulnerabilidades de concurrencia y vistas mutables en Domain Events.
 - Implementación de pruebas canónicas de reentrancia e inmutabilidad de snapshots.
 - Verificación automatizada con Maven y Spotless.
+
+---
+
+## Oleada 3: Parameter Objects, Guardas Estrictas, Eliminación de `@Setter` y Separación `Insignia`/`InsigniaGanada`
+
+### Problema
+1. **Violación de Pureza de Dominio con Excepciones Crudas**: Diversas clases de dominio (`Mision`, `RankingMensual`, `InactividadDonaciones`) lanzaban `IllegalArgumentException` directa ante argumentos inválidos o nulos, violando el principio arquitectónico de 0 excepciones crudas y rompiendo la coherencia con el catálogo unificado de errores (`ErrorCatalog`).
+2. **Mutabilidad Externa y Violación de Encapsulamiento**: La jerarquía completa de `Mision` (`Mision`, `MisionRacha`, `MisionCompletitud`, `MisionDonacionesExitosas`, `MisionHabilDonador`) y la entidad embebida `Metricas` exponían anotaciones `@Setter` públicas, permitiendo mutaciones de estado descontroladas desde clases externas sin pasar por los métodos de comportamiento.
+3. **Ambigüedad Conceptual en `Insignia`**: Se utilizaba un único record mutable/inconsistente tanto para la plantilla de recompensa de una misión (`Mision.insignia`) como para la insignia en posesión del donante (`DonanteIncentivos.insignias`), generando riesgo de que la configuración de visibilidad del usuario fuera sobreescrita por la plantilla.
+4. **Value Objects sin Guardas de Invariantes**: `EventoDonacion` permitía la construcción de instancias sin fecha o con cantidades no positivas.
+
+### Evidencia
+- `Mision.java`: L.30, L.33 lanzaban `IllegalArgumentException` y poseía `@Setter` a nivel de clase.
+- `RankingMensual.java`: L.18 y L.27 lanzaban `IllegalArgumentException`.
+- `InactividadDonaciones.java`: L.20 lanzaba `IllegalArgumentException`.
+- `Metricas.java`: anotada con `@Setter` público.
+- `Insignia.java`: un solo record mezclaba plantilla y estado poseído con visibilidad mutable.
+- `InactividadDonacionesTest.java`: verificaba `IllegalArgumentException.class`.
+
+### Objetivo
+1. **Incorporar Códigos de Error al `ErrorCatalog` (`common-lib`)**:
+   - `MISION_NOMBRE_INVALIDO("ERR-VAL-711")`
+   - `MISION_OBJETIVO_INVALIDO("ERR-VAL-712")`
+   - `RANKING_PERIODO_NULO("ERR-VAL-713")`
+   - `RANKING_ENTRADA_NULA("ERR-VAL-714")`
+   - `INACTIVIDAD_DIAS_INVALIDOS("ERR-VAL-715")`
+2. **Erradicar `IllegalArgumentException` del Dominio**:
+   - Reemplazar por `throw new ValidationException(ErrorCatalog.X)` en `Mision`, `RankingMensual` e `InactividadDonaciones`.
+3. **Eliminar `@Setter` en `Metricas` y Jerarquía de `Mision`**:
+   - Encapsular mutaciones de progreso y estado en métodos protegidos (`completar()`, `setProgresoActual()`) y semánticos (`setNumeroMision()`, `setInsignia()`).
+   - Confinar las actualizaciones de `Metricas` a métodos de comportamiento (`registrarDonacion`, `registrarDonacionExitosa`, `registrarOrganizacionAyudada`).
+4. **Separación de Responsabilidades `Insignia` (plantilla) e `InsigniaGanada` (poseída)**:
+   - Crear `InsigniaGanada` con métodos inmutables de evolución de visibilidad (`ocultada()`, `mostrada()`, `conVisibilidad(boolean)`).
+   - Reducir `Insignia` a plantilla inmutable (`nombre`, `descripcion`, `imagenUrl`).
+   - Migrar `DonanteIncentivos.insignias` a `List<InsigniaGanada>`.
+   - Sobrecargar `InsigniaDTO.desde()` para soportar ambas representaciones limpiamente.
+5. **Guardas Estrictas en `EventoDonacion`**:
+   - Validar `fecha` obligatoria y `cantidadBienes` positiva con copia defensiva inmutable de categorías (`List.copyOf`).
+
+### Fuera de scope
+- Descomposición SRP de `IncentivosService` en 5 Application Services especializados (Oleada 4).
+- Creación de `DomainServicesConfig` y desestatización de `GestorDeInactivos`/`GestorDeRankings` (Oleada 4).
+- Construcción de Object Mothers centralizados (Oleada 8).
+- Validaciones declarativas en DTOs y `@Valid` en controllers (Oleada 9).
+
+### Tests / Verificación
+- **Tests actualizados y nuevos**:
+  - `InactividadDonacionesTest`: actualizado para validar `ValidationException` con `ErrorCatalog.INACTIVIDAD_DIAS_INVALIDOS`.
+  - `MisionesTest`: agregados tests de guardas para nombre nulo/vacío, objetivo inválido, categoría nula e insignia nula.
+  - `RankingMensualTest`: agregados tests de guardas para periodo nulo y entrada nula.
+  - `DonanteIncentivosTest`: agregados tests para IDs nulos, insignia nula e insignia inexistente.
+  - `InsigniaTest`: nueva suite unitaria para inmutabilidad y validaciones de `Insignia` e `InsigniaGanada`.
+  - `EventoDonacionTest`: nueva suite unitaria para constructor y builder con guardas de invariantes.
+- **Barridos mecánicos**:
+  - `grep -rnE "throw new Illegal(Argument|State)Exception" src/main/java/**/models/`: ✅ **0 matches**.
+  - `grep -rn "@Setter" src/main/java/**/models/`: ✅ **0 matches**.
+- **Suite completa**:
+  - `mvn clean test -f common-lib/pom.xml`: ✅ **27 tests ejecutados, 0 fallos, 0 errores** (`BUILD SUCCESS`).
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **82 tests ejecutados, 0 fallos, 0 errores** (`BUILD SUCCESS`).
+  - `mvn spotless:check`: ✅ **100% de archivos limpios** en ambos módulos.
+
+### Diseño resultante
+- El modelo de dominio de `incentivos-service` alcanza pureza total frente a excepciones crudas: todas las violaciones se comunican a través de `ValidationException` o `BusinessStateException` mapeadas al catálogo general.
+- Se elimina la exposición de setters mutables: las entidades preservan invariantes internas y solo mutan su estado a través de comportamiento semántico y controlado.
+- La distinción formal entre `Insignia` (plantilla inmutable de misión) e `InsigniaGanada` (recompensa en posesión del donante) resuelve la inconsistencia latente de visibilidad, garantizando que las preferencias del usuario permanezcan inalteradas independientemente de re-procesamientos de misiones.
+
+### IA utilizada
+- Detección exhaustiva de constructores con excepciones crudas y setters expuestos.
+- Rediseño inmutable de Value Objects y records de insignias.
+- Generación de tests unitarios de caracterización y verificación de guardas.
+- Verificación cruzada con Maven, JaCoCo y Spotless.
