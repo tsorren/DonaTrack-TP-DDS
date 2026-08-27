@@ -1,5 +1,7 @@
-package grupo5.incentivos.infrastructure;
+package grupo5.incentivos.infrastructure.adapters;
 
+import grupo5.incentivos.infrastructure.IN8nClient;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -9,15 +11,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
-public class N8nClient implements IN8nClient {
+public class N8nClientAdapter implements IN8nClient {
 
-  private static final Logger log = LoggerFactory.getLogger(N8nClient.class);
+  private static final Logger log = LoggerFactory.getLogger(N8nClientAdapter.class);
 
   private final WebClient webClient;
   private final String insigniaWebhookUrl;
   private final String rankingWebhookUrl;
 
-  public N8nClient(
+  public N8nClientAdapter(
       @Value("${n8n.webhook.insignia-url}") String insigniaWebhookUrl,
       @Value("${n8n.webhook.ranking-url}") String rankingWebhookUrl) {
     this.webClient = WebClient.builder().build();
@@ -25,10 +27,7 @@ public class N8nClient implements IN8nClient {
     this.rankingWebhookUrl = rankingWebhookUrl;
   }
 
-  /**
-   * Dispara el flujo de n8n cuando un donante gana una insignia. n8n se encarga de generar la
-   * imagen y "publicar" en red social (mockeado).
-   */
+  @Override
   public void publicarInsigniaGanada(
       UUID donanteId, String nombreDonante, String nombreInsignia, String descripcionInsignia) {
 
@@ -60,11 +59,8 @@ public class N8nClient implements IN8nClient {
                     error.getMessage()));
   }
 
-  /**
-   * Notifica a n8n que el ranking mensual fue calculado, para que publique los destacados (mock de
-   * red social).
-   */
-  public void notificarRankingCalculado(String periodo, java.util.List<Map<String, Object>> top3) {
+  @Override
+  public void notificarRankingCalculado(String periodo, List<Map<String, Object>> top3) {
 
     Map<String, Object> payload =
         Map.of(

@@ -1,4 +1,4 @@
-package grupo5.incentivos.infrastructure;
+package grupo5.incentivos.infrastructure.clients;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;

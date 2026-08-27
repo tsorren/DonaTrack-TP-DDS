@@ -1,4 +1,4 @@
-package grupo5.incentivos.jobs;
+package grupo5.incentivos.infrastructure.schedulers;
 
 import grupo5.incentivos.services.IRankingService;
 import java.time.YearMonth;
@@ -26,7 +26,6 @@ public class RankingMensualJob {
       rankingService.calcularYNotificar(periodoActual);
     } catch (Exception e) {
       log.error("Error en el job de ranking mensual para {}: {}", periodoActual, e.getMessage(), e);
-      // tirar mensaje de error
     }
   }
 }

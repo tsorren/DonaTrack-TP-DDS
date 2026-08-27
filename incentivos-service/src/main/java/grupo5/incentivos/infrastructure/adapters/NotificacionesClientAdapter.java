@@ -1,5 +1,7 @@
-package grupo5.incentivos.infrastructure;
+package grupo5.incentivos.infrastructure.adapters;
 
+import grupo5.incentivos.infrastructure.INotificacionesClient;
+import grupo5.incentivos.infrastructure.clients.NotificacionesFeignClient;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
@@ -9,42 +11,45 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NotificacionesClient implements INotificacionesClient {
+public class NotificacionesClientAdapter implements INotificacionesClient {
 
-  private static final Logger log = LoggerFactory.getLogger(NotificacionesClient.class);
+  private static final Logger log = LoggerFactory.getLogger(NotificacionesClientAdapter.class);
 
   private final NotificacionesFeignClient feignClient;
 
-  public NotificacionesClient(NotificacionesFeignClient feignClient) {
+  public NotificacionesClientAdapter(NotificacionesFeignClient feignClient) {
     this.feignClient = feignClient;
   }
 
+  @Override
   @Async
-  public void notificarMisionCumplida(UUID donanteId, String nombreMision, String recompensa) {
+  public void notificarMisionCumplida(UUID idPersona, String nombreMision, String recompensa) {
     enviar(
         new EventoMisionCumplidaRequest(
-            donanteId, LocalDateTime.now(ZoneId.systemDefault()), nombreMision, recompensa),
+            idPersona, LocalDateTime.now(ZoneId.systemDefault()), nombreMision, recompensa),
         "MISION_CUMPLIDA",
-        donanteId);
+        idPersona);
   }
 
+  @Override
   @Async
   public void notificarAscensoCategoria(
-      UUID donanteId, String categoriaNueva, String categoriaVieja) {
+      UUID idPersona, String categoriaNueva, String categoriaVieja) {
     enviar(
         new EventoSubioCategoriaRequest(
-            donanteId, LocalDateTime.now(ZoneId.systemDefault()), categoriaNueva, categoriaVieja),
+            idPersona, LocalDateTime.now(ZoneId.systemDefault()), categoriaNueva, categoriaVieja),
         "SUBIO_CATEGORIA",
-        donanteId);
+        idPersona);
   }
 
+  @Override
   @Async
-  public void notificarInactividad(UUID donanteId, int diasInactivo) {
+  public void notificarInactividad(UUID idPersona, int diasInactivo) {
     enviar(
         new EventoDonanteInactivoRequest(
-            donanteId, LocalDateTime.now(ZoneId.systemDefault()), diasInactivo),
+            idPersona, LocalDateTime.now(ZoneId.systemDefault()), diasInactivo),
         "DONANTE_INACTIVO",
-        donanteId);
+        idPersona);
   }
 
   private void enviar(Object evento, String tipoEvento, UUID donanteId) {

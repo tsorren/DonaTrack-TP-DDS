@@ -357,3 +357,50 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Generación de tests unitarios con captura de argumentos (`ArgumentCaptor`) para verificación temporal de `YearMonth`.
 - Pruebas de resiliencia y verificación de no-propagación de excepciones.
 - Verificación cruzada y formateo automático con Spotless.
+
+---
+
+## Oleadas 6+7: Reorganización de Infraestructura, Eliminación de Wildcard Imports y Limpieza General
+
+### Problema
+1. **Falta de Sub-empaquetado Semántico en Infraestructura**: Los adaptadores de infraestructura (`NotificacionesClient`, `N8nClient`) y clientes Feign convivían en la raíz de `infrastructure/` sin separar clientes declarativos de adaptadores. Además, los componentes de scheduling residían en un paquete raíz no estándar (`jobs/`) en lugar de ubicarse bajo `infrastructure.schedulers`.
+2. **Presencia de Wildcard Imports en Producción**: Clases de producción como `RankingController`, `MisionFactory` y `CrudRepositoryEnMemoria` utilizaban `import .*`, reduciendo la claridad de dependencias y violando las normas de estilo de DonaTrack.
+3. **Inconsistencia de Nomenclatura en Tests**: Existía un archivo de test nombrado en plural (`IncentivosServiceApplicationTests.java`) en discordancia con el estándar del proyecto (`*Test.java`).
+
+### Evidencia
+- `src/main/java/grupo5/incentivos/infrastructure/NotificacionesClient.java` y `N8nClient.java` en raíz de infraestructura.
+- `src/main/java/grupo5/incentivos/jobs/` fuera del árbol de infraestructura.
+- `RankingController.java` (`import org.springframework.web.bind.annotation.*`).
+- `MisionFactory.java` (`import grupo5.incentivos.models.entities.misiones.*`).
+- `CrudRepositoryEnMemoria.java` en `common-lib` (`import java.util.*`).
+- `IncentivosServiceApplicationTests.java` (sufijo `Tests`).
+
+### Objetivo
+1. **Reorganizar la Capa de Infraestructura**:
+   - `infrastructure/adapters/`: [`NotificacionesClientAdapter.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/adapters/NotificacionesClientAdapter.java) y [`N8nClientAdapter.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/adapters/N8nClientAdapter.java).
+   - `infrastructure/clients/`: [`NotificacionesFeignClient.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/clients/NotificacionesFeignClient.java).
+   - `infrastructure/schedulers/`: Reubicar [`InactividadJob.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/InactividadJob.java), [`RachaJob.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/RachaJob.java) y [`RankingMensualJob.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/RankingMensualJob.java) (así como sus suites de tests unitarios correspondientes).
+2. **Erradicar el 100% de Wildcard Imports**: Reemplazar por imports explícitos clase por clase en `RankingController`, `MisionFactory` y `CrudRepositoryEnMemoria`.
+3. **Estandarizar Nomenclatura de Tests**: Renombrar a singular [`IncentivosServiceApplicationTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/IncentivosServiceApplicationTest.java).
+
+### Fuera de scope
+- Construcción de Object Mothers centralizados (Oleada 8).
+- Validaciones declarativas con anotaciones `@Valid` en controllers y DTOs (Oleada 9).
+
+### Tests / Verificación
+- **Barridos mecánicos**:
+  - `find src/test -name "*Tests.java"`: ✅ **0 matches** (100% estandarizado en singular `*Test.java`).
+  - `grep -rn "import .*\.\*" src/main/java/`: ✅ **0 matches** en `incentivos-service` y `common-lib`.
+- **Suite completa**:
+  - `mvn clean test -f common-lib/pom.xml`: ✅ **27 tests ejecutados, 0 fallos, 0 errores** (`BUILD SUCCESS`).
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **90 tests ejecutados, 0 fallos, 0 errores** (`BUILD SUCCESS`).
+  - `mvn spotless:check`: ✅ **100% de archivos limpios** en ambos módulos (`common-lib` 28 archivos, `incentivos-service` 87 archivos).
+
+### Diseño resultante
+- La estructura de paquetes del microservicio refleja cabalmente una arquitectura limpia: las dependencias externas y llamadas a servicios remotos se encuentran explícitamente contenidas en adaptadores (`adapters`) y clientes (`clients`), mientras que los disparadores programados residen en `schedulers`.
+- El código fuente no contiene imports comodín, optimizando el análisis estático y previniendo colisiones de nombres inadvertidas.
+
+### IA utilizada
+- Reorganización semántica de paquetes y actualización de declaraciones de paquete e imports.
+- Reemplazo preciso de wildcard imports por tipos explícitos.
+- Barridos automatizados mediante herramientas de búsqueda y comprobación cruzada de builds.

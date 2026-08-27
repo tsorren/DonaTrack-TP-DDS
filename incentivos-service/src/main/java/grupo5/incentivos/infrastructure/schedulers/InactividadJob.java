@@ -1,4 +1,4 @@
-package grupo5.incentivos.jobs;
+package grupo5.incentivos.infrastructure.schedulers;
 
 import grupo5.incentivos.services.IInactividadService;
 import org.springframework.scheduling.annotation.Scheduled;

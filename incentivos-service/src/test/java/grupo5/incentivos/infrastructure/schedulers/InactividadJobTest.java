@@ -1,4 +1,4 @@
-package grupo5.incentivos.jobs;
+package grupo5.incentivos.infrastructure.schedulers;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
