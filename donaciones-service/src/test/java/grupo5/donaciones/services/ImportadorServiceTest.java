@@ -22,8 +22,6 @@ import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.impl.ImportadorService;
 import grupo5.donaciones.services.impl.ValidadorPersonaDuplicada;
 import grupo5.donaciones.services.mappers.PersonaMapper;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,7 +68,7 @@ class ImportadorServiceTest {
         Map.of("TipoPersona", "HUMANA", "Nombre", "Juan", "Apellido", "Perez");
     when(lectorCSV.cargarDonantes(archivo.getPath())).thenReturn(List.of(fila));
 
-    Humana personaMock = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
+    Humana personaMock = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
     when(personaMapper.mapToPersona(fila)).thenReturn(personaMock);
     when(validadorDuplicados.buscarDuplicado(personaMock)).thenReturn(Optional.empty());
 
@@ -106,8 +104,8 @@ class ImportadorServiceTest {
         Map.of("TipoPersona", "HUMANA", "Nombre", "Juan", "Apellido", "Perez");
     when(lectorCSV.cargarDonantes(archivo.getPath())).thenReturn(List.of(fila));
 
-    Humana personaMock = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
-    Humana personaExistente = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
+    Humana personaMock = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
+    Humana personaExistente = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
 
     when(personaMapper.mapToPersona(fila)).thenReturn(personaMock);
     when(validadorDuplicados.buscarDuplicado(personaMock))

@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionFallida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionRecibida;
 import java.util.UUID;
@@ -44,8 +46,7 @@ public class EnTraslado implements EstadoDonacionIndependiente {
   public void registrarFalla(
       DonacionIndependiente d, String justificacion, Boolean replanificable, String actor) {
     if (justificacion == null || justificacion.isBlank()) {
-      throw new IllegalArgumentException(
-          "La justificación es obligatoria para registrar una entrega fallida.");
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_FALLA_SIN_JUSTIFICACION);
     }
     d.cambiarEstado(new EntregaFallida(), justificacion, actor);
     UUID necesidadId =

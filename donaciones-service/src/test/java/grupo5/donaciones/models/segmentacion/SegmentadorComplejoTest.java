@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -39,7 +40,7 @@ class SegmentadorComplejoTest {
 
   @BeforeEach
   void setUp() {
-    Humana humana = new Humana("Juan", "Pérez", LocalDate.of(1990, Month.JANUARY, 1));
+    Humana humana = PersonaMother.humanaValida();
     Donante donante = new Donante(humana.getId());
     donacion = new Donacion(donante.getId());
 

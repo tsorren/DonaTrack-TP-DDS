@@ -18,10 +18,12 @@ Estos principios aplican a **todas** las oleadas en **todos** los servicios:
 | **Aggregate Root con Domain Events** | El agregado registra eventos internamente; el Application Service persiste → publica → limpia |
 | **Application Service delgado** | Solo orquesta: recuperar datos → ejecutar dominio → persistir → publicar/comunicar |
 | **Dominio puro (sin frameworks)** | Las entidades y Domain Services son POJOs sin `@Component`, `@Value` ni dependencias de Spring |
+| **Cero `IllegalArgumentException` en dominio** | Toda guarda en entidades, State Patterns y constructores de records debe lanzar `ValidationException(ErrorCatalog.X)` o `BusinessStateException` |
 | **Tests primero, refactor después** | Characterization tests antes de mover código; suite verde obligatoria en cada paso |
 | **PR pequeño y explicable** | Cada RF debe poder explicarse en ~10 minutos |
 | **Gobernanza y trazabilidad** | Todo ítem marcado ✅ debe tener código + tests en Git. Usar 📝 para diseño/análisis sin código |
 | **Copias defensivas en Domain Events** | `getDomainEvents()` retorna `List.copyOf()`, no vista mutable, para inmunidad ante reentrancia |
+| **Barrido mecánico automatizado** | Cada oleada se audita con comandos grep/find determinísticos para garantizar cobertura al 100% |
 | **Exhaustividad verificable** | Cada oleada debe inventariar TODOS los elementos afectados y verificar cobertura al 100% |
 | **No-regresión acumulativa** | Al cerrar cada oleada, ejecutar la suite completa y verificar que TODAS las oleadas anteriores siguen funcionando |
 
@@ -34,12 +36,12 @@ graph TD
     F0["Fase 0: Auditoría exhaustiva + Baseline verde + Inventario completo"]
     O1["Oleada 1: Tell Don't Ask — TODAS las entidades con lógica dispersa"]
     O2["Oleada 2: Domain Events — TODOS los Aggregate Roots"]
-    O3["Oleada 3: Parameter Objects + State Pattern — TODOS los agregados con transiciones"]
+    O3["Oleada 3: Parameter Objects + State Pattern — TODOS los agregados con transiciones y constructores"]
     O4["Oleada 4: Unificación de TODOS los services duplicados + Domain Services puros"]
     O5["Oleada 5: Scheduling — TODOS los procesos periódicos"]
     O6["Oleada 6: Reorganización — TODO el dominio fuera de infrastructure"]
-    O7["Oleada 7: Limpieza exhaustiva — TODOS los residuos legacy"]
-    O8["Oleada 8: Object Mothers — TODAS las entidades + TODOS los DTOs"]
+    O7["Oleada 7: Limpieza exhaustiva — TODOS los residuos legacy e interfaces"]
+    O8["Oleada 8: Object Mothers — TODAS las entidades + TODOS los DTOs en el 100% de tests"]
     O9["Oleada 9: Validación — TODOS los DTOs + TODOS los controllers + TraceID"]
     O10["Oleada 10: Preparación persistencia — TODOS los agregados auditados"]
     O11["Oleada 11: Code review — TODOS los hallazgos cerrados"]
@@ -170,13 +172,32 @@ DESPUÉS: Entidad registra evento internamente → Service persiste → obtiene 
    b. Agregar `List<Evento>` + `getDomainEvents()` con **`List.copyOf()`** + `clearDomainEvents()`
    c. En **cada transición de estado** del agregado, registrar el evento correspondiente
    d. Reemplazar `IllegalStateException` por `BusinessStateException(ErrorCatalog.CODIGO)` donde corresponda
-   e. Agregar test de reentrancia: tomar snapshot → mutar entidad → verificar que el snapshot no cambió
+   e. Agregar test canónico de reentrancia de eventos
 3. **Recorrer TODOS los Services e infraestructura** buscando publicación ad-hoc de eventos (`eventPublisher.publishEvent(new ...)`) y reemplazar por el patrón de dominio
 4. **Recorrer TODAS las entidades hijas** buscando violaciones de Tell Don't Ask (`entity.getX().getY() == Z`) y reemplazar por métodos semánticos (`entity.preguntaSemántica()`)
 5. Si hay reglas de negocio duplicadas en múltiples Services, extraer a una **política de dominio pura** (ej: `EvaluadorX.condicion(items)`)
 
 > [!WARNING]
 > `getDomainEvents()` **debe retornar `List.copyOf()`**, no `Collections.unmodifiableList()`. La vista no-modificable sigue vinculada a la lista interna mutable, y si un EventListener síncrono modifica la entidad durante la iteración (ej: `clearDomainEvents()`), se produce `ConcurrentModificationException`. Aplicar esto en TODOS los agregados desde el día 1.
+
+#### Snippet Canónico para Tests de Reentrancia (Obligatorio en cada suite de Aggregate Root)
+```java
+@Test
+void getDomainEvents_debeSerUnaCopiaInmuneAMutacionesPosteriores() {
+  // 1. Ejecutar acción de dominio que genere eventos
+  entidad.ejecutarAccion(parametros);
+
+  // 2. Tomar snapshot de eventos
+  List<EventoDeDominio> snapshot = entidad.getDomainEvents();
+  assertEquals(1, snapshot.size());
+
+  // 3. Mutar la entidad o limpiar eventos posteriormente
+  entidad.clearDomainEvents();
+
+  // 4. Verificar que el snapshot tomado no fue alterado por la mutación
+  assertEquals(1, snapshot.size(), "El snapshot tomado no debe mutar tras clearDomainEvents()");
+}
+```
 
 ### Checklist de completitud
 - [ ] Listé TODOS los Aggregate Roots del servicio
@@ -185,15 +206,15 @@ DESPUÉS: Entidad registra evento internamente → Service persiste → obtiene 
 - [ ] Eliminé TODA publicación ad-hoc de eventos desde Services/infraestructura
 - [ ] Para CADA entidad hija: no hay `getX().getY() == Z` — solo métodos semánticos
 - [ ] Reglas duplicadas extraídas a políticas de dominio puras
-- [ ] Tests de reentrancia para CADA Aggregate Root
+- [ ] Test canónico de reentrancia implementado para CADA Aggregate Root
 - [ ] Suite completa en verde + no-regresión de oleada 1
 
 ---
 
-## Oleada 3 — Parameter Objects y guardas estrictas en TODOS los agregados con transiciones de estado
+## Oleada 3 — Parameter Objects y guardas estrictas en TODOS los agregados y constructores
 
 ### Idea principal
-Para **cada agregado que tenga transiciones de estado** (State Pattern, enums, máquinas de estado), crear parameter objects de dominio, blindar invariantes con guardas estrictas, y extraer llamadas remotas a EventListeners.
+Para **cada agregado con transiciones de estado** (State Pattern, enums, máquinas de estado) y para **CADA constructor de Entity o Record/Value Object**, crear parameter objects de dominio, blindar invariantes con guardas estrictas y excepciones tipadas (`ValidationException` / `BusinessStateException`), y extraer llamadas remotas a EventListeners.
 
 ### Patrón de cambio
 ```
@@ -202,19 +223,20 @@ DESPUÉS: Controller → DTO → Mapper → ParameterObject de dominio → Aggre
 ```
 
 ### Proceso exhaustivo
-1. **Recorrer el inventario** y listar TODOS los agregados con transiciones de estado (State Pattern, enums de estado, o cualquier máquina de estados)
-2. Para **cada agregado con transiciones**:
-   a. Crear un parameter object de dominio que encapsule la solicitud de cambio de estado
-   b. Delegar la decisión de transición a los estados concretos del State Pattern (si aplica)
-   c. **Auditar CADA estado concreto** del State Pattern buscando:
-      - Condicionales permisivos (`if (x != null)`) antes de transiciones → reemplazar por **guardas obligatorias** (`if (x == null) throw ValidationException`)
-      - Parámetros requeridos que se aceptan como `null` → rechazar inmediatamente
-      - Transiciones que dejan el agregado en estado inconsistente
-   d. Agregar códigos de error al catálogo en `common-lib` para cada guarda
+1. **Auditoría de Invariantes en Constructores de Clases y Records**:
+   - En **CADA entidad y record**: reemplazar validaciones que lancen `IllegalArgumentException` por `ValidationException(ErrorCatalog.CODIGO)`.
+   - Comprobar ausencia total de excepciones crudas en el paquete de modelos:
+     ```bash
+     grep -rnE "throw new Illegal(Argument|State)Exception" src/main/java/**/models/
+     ```
+2. Para **cada agregado con State Pattern**:
+   - Crear parameter object tipado para cada transición.
+   - Convertir transiciones permisivas en estrictas: validar precondiciones (`null`, campos vacíos) antes de mutar y rechazar con `ValidationException(ErrorCatalog.CODIGO)`.
+   - Extraer llamadas HTTP/remotas fuera de los estados hacia EventListeners desacoplados.
 3. **Recorrer TODOS los Application Services** buscando:
-   - Switches/if-else anémicos sobre tipos de transición → reemplazar por parameter objects
-   - Llamadas remotas (Feign, mensajería) mezcladas con lógica de transición → extraer a **EventListeners** dedicados
-4. Verificar que CADA Application Service adelgazado tenga como máximo 4-5 dependencias
+   - Switches/if-else anémicos sobre tipos de transición → reemplazar por parameter objects.
+   - Llamadas remotas (Feign, mensajería) mezcladas con lógica de transición → extraer a **EventListeners** dedicados.
+4. Verificar que CADA Application Service adelgazado tenga como máximo 4-5 dependencias.
 
 > [!CAUTION]
 > **Los tests existentes pueden estar validando bugs como comportamiento correcto.** Si un test ejercita una transición sin datos requeridos (ej: asignación sin necesidad) y pasa, el test está viciado. Hay que reescribirlo con las guardas correctas.
@@ -226,7 +248,8 @@ Integration DTO  = payload enviado a otro microservicio (externo, en EventListen
 ```
 
 ### Checklist de completitud
-- [ ] Listé TODOS los agregados con transiciones de estado
+- [ ] Listé TODOS los agregados con transiciones de estado y constructores de entidades/records
+- [ ] Para CADA constructor de Entity/Record: lanza `ValidationException(ErrorCatalog.X)` (0 `IllegalArgumentException`)
 - [ ] Para CADA agregado: tiene parameter object de dominio
 - [ ] Para CADA estado concreto del State Pattern: audité todas sus guardas — no hay condicionales permisivos
 - [ ] Para CADA guarda: tiene código de error en el catálogo
@@ -258,8 +281,13 @@ DESPUÉS: DomainService POJO puro encapsula reglas → Application Service únic
    - Controllers sin interfaz → crear la interfaz
 3. Para **cada Domain Service creado**:
    - Verificar que sea POJO puro: **sin `@Component`, sin `@Autowired`, sin `@Qualifier`, sin `@Value`**
-   - Crear `DomainServicesConfig.java` (`@Configuration`) que instancie y componga explícitamente los beans
+   - Crear o actualizar `DomainServicesConfig.java` (`@Configuration`) que instancie y componga explícitamente los beans
    - Los Application Services reciben el bean por constructor — sin cambio en su firma
+4. **Barrido mecánico de pureza**:
+   ```bash
+   # Debe retornar CERO matches en models/ (salvo @Repository en repositorios en memoria si están en ese paquete)
+   grep -rnE "@Component|@Autowired|@Qualifier|@Value" src/main/java/**/models/
+   ```
 
 > [!IMPORTANT]
 > **Crear Domain Services sin anotaciones de Spring desde el día 1**. Si quedan con `@Component`/`@Autowired`, se acumula deuda técnica que habrá que limpiar en oleada 12.
@@ -267,7 +295,7 @@ DESPUÉS: DomainService POJO puro encapsula reglas → Application Service únic
 ### Checklist de completitud
 - [ ] Audité TODOS los Application Services — no hay pares duplicados
 - [ ] Extraje TODA la lógica pura a Domain Services POJOs
-- [ ] NINGÚN Domain Service en `models/` tiene `@Component`, `@Autowired` ni `@Qualifier`
+- [ ] NINGÚN Domain Service en `models/` tiene `@Component`, `@Autowired`, `@Qualifier` ni `@Value`
 - [ ] Existe `DomainServicesConfig.java` que ensambla TODOS los Domain Services
 - [ ] Audité TODOS los Controllers — no hay pares fragmentados
 - [ ] TODOS los Controllers tienen su interfaz
@@ -327,7 +355,7 @@ Mover **TODO** el dominio que esté en `infrastructure/` al paquete correcto. So
 
 ---
 
-## Oleada 7 — Limpieza exhaustiva: legacy, naming, persistencia pura
+## Oleada 7 — Limpieza exhaustiva: legacy, naming, persistencia pura e interfaces
 
 ### Idea principal
 Recorrer **TODO** el código del servicio buscando deuda técnica residual en 4 dimensiones.
@@ -338,56 +366,63 @@ Recorrer **TODO** el código del servicio buscando deuda técnica residual en 4 
 Recorrer TODOS los repositorios:
 - [ ] ¿Algún repositorio persiste DTOs en vez de entidades? → Crear entidad + mapper
 - [ ] ¿Algún repositorio expone métodos que no corresponden a la interfaz de dominio?
+- [ ] Estandarizar convención: TODOS los repositorios en memoria usan `@Repository` (nunca `@Component`)
 
 #### Componente B — Domain Services puros
 Recorrer TODOS los domain services en `models/`:
-- [ ] ¿Alguno tiene `@Component`, `@Value`, o inyecta repositorios? → Migrar a POJO puro
+- [ ] ¿Alguno tiene `@Component`, `@Value`, o inyecta repositorios? → Migrar a POJO puro y registrar en `DomainServicesConfig`
 - [ ] ¿Alguno tiene delimitadores como `// INICIO LOGICA DE NEGOCIO`? → Es dominio atrapado en infra
 
-#### Componente C — Declaratividad y naming
+#### Componente C — Declaratividad, interfaces y ubicación
 Recorrer TODAS las clases del servicio:
 - [ ] ¿Alguna tiene versionado informal en el nombre (ej: `XMejorado`, `XNuevo`, `XV2`)? → Renombrar
 - [ ] ¿Hay colisiones de nombres entre paquetes (ej: dos clases `Estado` en paquetes distintos)? → Resolver
-- [ ] ¿Algún Controller no tiene interfaz? → Crear
-- [ ] ¿Algún Service no tiene interfaz? → Crear
+- [ ] ¿Algún Controller no tiene interfaz? → Crear `I...Controller`
+- [ ] ¿Algún Service en `services/impl/` no tiene interfaz? → Crear `I...Service` (aplica a TODOS los servicios, incluidos `@Async` / wrappers de clientes Feign)
+- [ ] Si una clase es solo un adaptador técnico puro, mover a `infrastructure/clients/` o `infrastructure/adapters/`
 - [ ] ¿Alguna interfaz tiene métodos faltantes respecto a la implementación? → Completar
 
-#### Componente D — Limpieza de código
+#### Componente D — Limpieza de código y estandarización
 Recorrer TODO el proyecto:
 - [ ] Eliminar `.gitkeep` innecesarios y directorios vacíos
 - [ ] Eliminar comentarios residuales (`// refactor ok`, `// TODO`, `// FIXME` ya resueltos)
 - [ ] Reemplazar imports wildcard (`import ...*`) por imports explícitos en TODAS las clases
 - [ ] Reemplazar FQCNs en campos/parámetros por imports
-- [ ] Estandarizar nombres de tests a singular (`XTest`, no `XTests`)
+- [ ] Estandarizar nombres de tests a singular (`XTest`, no `XTests`). Barrido mecánico:
+  ```bash
+  # Debe retornar CERO archivos
+  find src/test -name "*Tests.java"
+  ```
 - [ ] Eliminar métodos muertos e interfaces sin implementación
 
 > [!CAUTION]
 > No eliminar automáticamente algo solo porque no aparezca en el DC. Primero verificar si corresponde a un requisito válido que el diagrama no representa.
 
 ### Checklist de completitud
-- [ ] TODOS los repositorios operan sobre entidades de dominio
+- [ ] TODOS los repositorios operan sobre entidades de dominio y usan `@Repository`
 - [ ] TODOS los domain services son POJOs puros
 - [ ] CERO colisiones de nombres, CERO naming informal
-- [ ] TODOS los Controllers y Services tienen interfaz completa
+- [ ] TODOS los Controllers y Services (incluidos `@Async`) tienen interfaz completa
 - [ ] CERO imports wildcard, CERO FQCNs, CERO archivos huérfanos
-- [ ] TODOS los tests nombrados en singular
+- [ ] TODOS los tests nombrados en singular (`*Test.java`)
 - [ ] Suite completa en verde + no-regresión de oleadas 1-6
 
 ---
 
-## Oleada 8 — Object Mothers para TODAS las entidades y DTOs
+## Oleada 8 — Object Mothers para TODAS las entidades y DTOs (100% de suites)
 
 ### Idea principal
-Crear infraestructura de testing desacoplada que cubra **TODAS** las entidades y DTOs del servicio, no solo las principales.
+Crear infraestructura de testing desacoplada que cubra **TODAS** las entidades y DTOs del servicio, y erradicar constructores posicionales directos en **TODAS** las suites de test (preexistentes y nuevas).
 
 ### Proceso exhaustivo
 1. **Recorrer el inventario de Fase 0** y para **cada entidad del dominio** crear una Object Mother que:
    - Provea instancias válidas en cada estado del ciclo de vida del agregado
    - Centralice la construcción, eliminando constructores posicionales repetidos
+   - Provea métodos canónicos (ej: `PersonaMother.humanaValida()`, `DonacionIndependienteMother.enDeposito(...)`)
    - Use Builders si la entidad tiene más de 5 parámetros
 2. Para **cada DTO de entrada y salida** del servicio, crear fixtures centralizados en `DTOFixtures`
-3. **Recorrer TODOS los tests existentes** y:
-   - Reemplazar TODA construcción manual por Mothers y Fixtures
+3. **Barrido y Refactor del 100% de los Tests Existentes**:
+   - Reemplazar TODA construcción manual (`new Entidad(...)`, `new DTO(...)`) en suites de mappers, algoritmos, procesadores y servicios por Mothers y Fixtures
    - Reemplazar TODAS las aserciones sobre getters internos por aserciones sobre métodos semánticos y eventos de dominio
    - Estandarizar nombres de tests a singular
 4. Expandir cobertura de Controllers REST si hay tests faltantes
@@ -397,7 +432,7 @@ Crear infraestructura de testing desacoplada que cubra **TODAS** las entidades y
 ### Checklist de completitud
 - [ ] CADA entidad del dominio tiene su Object Mother
 - [ ] CADA DTO tiene su fixture en `DTOFixtures`
-- [ ] CERO tests con constructores posicionales directos — TODOS usan Mothers
+- [ ] CERO tests con constructores posicionales directos en TODO `src/test/` — TODOS usan Mothers
 - [ ] CERO aserciones sobre getters anidados — TODOS usan métodos semánticos o eventos
 - [ ] TODOS los Controllers tienen tests
 - [ ] Suite completa en verde + no-regresión de oleadas 1-7
@@ -574,14 +609,20 @@ Para **cada clase** en el paquete `models/`:
 | `@Value` | ¿Lee propiedades de Spring? | Remover y recibir valor por constructor |
 | Repositorios inyectados | ¿Inyecta repositorios directamente? | Evaluar si es domain service o application service mal ubicado |
 
+Comando de barrido mecánico obligatorio:
+```bash
+# Debe retornar CERO matches en models/
+grep -rnE "@Component|@Autowired|@Qualifier|@Value" src/main/java/**/models/
+```
+
 ### Checklist de completitud
 - [ ] Para CADA Aggregate Root: `getDomainEvents()` retorna `List.copyOf()`
-- [ ] Para CADA Aggregate Root: existe test de reentrancia
+- [ ] Para CADA Aggregate Root: existe test canónico de snapshot de reentrancia
 - [ ] Para CADA estado concreto de CADA State Pattern: auditadas todas las guardas
 - [ ] CERO condicionales permisivos (`if (x != null)`) antes de transiciones
-- [ ] Para CADA guarda: existe código en `ErrorCatalog`
+- [ ] Para CADA guarda y constructor de entidad/record: existe código en `ErrorCatalog` (CERO `IllegalArgumentException`)
 - [ ] CERO tests viciados que validen estados inconsistentes
-- [ ] CERO anotaciones de Spring (`@Component`, `@Autowired`, `@Qualifier`, `@Value`) en NINGUNA clase de `models/`
+- [ ] CERO anotaciones de Spring (`@Component`, `@Autowired`, `@Qualifier`, `@Value`) en NINGUNA clase de `models/` (verificado con grep)
 - [ ] Existe `DomainServicesConfig.java` que ensambla TODOS los Domain Services
 - [ ] Suite completa en verde + no-regresión de TODAS las oleadas anteriores (1-11)
 
@@ -642,22 +683,27 @@ DC actualizado  VS  Código final  VS  Diffs de Git  VS  Inventario de Fase 0
 ```
 TODOS los Aggregate Roots tienen Domain Events          ✅ (verificar c/u)
 TODOS los getDomainEvents() retornan List.copyOf()      ✅ (verificar c/u)
+TODOS los Aggregate Roots tienen test de snapshot       ✅ (verificar c/u)
 TODOS los estados del State Pattern tienen guardas       ✅ (verificar c/u)
+CERO IllegalArgumentException en models/                ✅ (verificar c/u)
 Tell, Don't Ask en TODAS las entidades                   ✅ (verificar c/u)
 TODOS los Application Services delgados                  ✅ (verificar c/u)
-TODOS los Domain Services puros (en @Configuration)      ✅ (verificar c/u)
+TODOS los Domain Services puros (en @Configuration)      ✅ (verificar c/u con grep)
 TODOS los Listeners/Schedulers delgados                  ✅ (verificar c/u)
 TODOS los paquetes organizados por capa                  ✅ (verificar c/u)
-TODOS los repositorios persisten entidades               ✅ (verificar c/u)
+TODOS los repositorios persisten entidades y usan @Repo  ✅ (verificar c/u)
 TODAS las entidades tienen Object Mother                 ✅ (verificar c/u)
+CERO constructores posicionales directos en tests       ✅ (verificar c/u)
 TODOS los DTOs tienen validación declarativa             ✅ (verificar c/u)
 TODOS los Controllers usan HTTP clásico + TraceID        ✅ (verificar c/u)
 CERO fugas de info en payloads de error                  ✅ (verificar c/u)
+TODOS los tests nombrados en singular (*Test.java)      ✅ (verificar c/u)
 TODA la bitácora alineada con Git                        ✅ (verificar c/u)
 TODAS las decisiones de frontera documentadas            ✅ (verificar c/u)
 Preparación para JPA/PostgreSQL                          📝
 Gaps pre-JPA documentados (queries/tx/lazy)              📝
-Tests verdes en todo el reactor                          ✅
+Tests verdes en todo el reactor (mvn clean test)         ✅
+Formato Spotless limpio (mvn spotless:check)             ✅
 ```
 
 ---
@@ -682,13 +728,16 @@ Tests verdes en todo el reactor                          ✅
 | **Oleada 12** | `List.copyOf()` y guardas de State Pattern previenen bugs de producción |
 | **Oleada 13** | Sin gobernanza ✅/📝, no se puede distinguir qué está implementado de qué es solo diseño |
 
-### 5 reglas a aplicar desde la oleada 1
+### 8 reglas a aplicar desde el día 1
 
-1. **`List.copyOf()` desde el día 1** — incorporar al template de Domain Events en oleada 2
-2. **Guardas estrictas en State Pattern desde el día 1** — incorporar al template de oleada 3
-3. **Domain Services sin `@Component` desde el día 1** — incorporar a oleada 4
-4. **Convención ✅/📝 desde el día 1** — incorporar a Fase 0
-5. **No exponer `ex.getMessage()` de Feign desde el día 1** — incorporar a oleada 9
+1. **`List.copyOf()` y test canónico de snapshot desde oleada 2**: Retornar siempre copia inmodificable y verificar que `clearDomainEvents()` no muta snapshots previos.
+2. **Guardas estrictas en State Pattern y constructores desde oleada 3**: Toda precondición debe lanzar `ValidationException(ErrorCatalog.X)`. CERO `IllegalArgumentException` en `models/`.
+3. **Domain Services sin `@Component` y barrido grep desde oleada 4**: POJOs puros ensamblados en `DomainServicesConfig.java`. Barrer con `grep -rn "@Component" src/main/java/**/models/`.
+4. **Interfaces obligatorias y ubicación en oleada 7**: Todo servicio en `services/impl/` (incluidos `@Async`) debe implementar `IService`. Adaptadores técnicos puros en `infrastructure/clients/`.
+5. **Migración al 100% de tests a Object Mothers en oleada 8**: Erradicar constructores posicionales directos en TODO `src/test/` (mappers, procesadores, algoritmos).
+6. **Convención ✅/📝 desde Fase 0**: Todo ítem marcado ✅ debe tener diff de Git real. Usar 📝 para análisis/diseño sin código.
+7. **No exponer `ex.getMessage()` de Feign desde oleada 9**: Mensajes crudos de `FeignException` contienen URLs y headers internos. Usar respuesta sanitizada.
+8. **Nombres de tests en singular y formato Spotless**: Todo archivo debe terminar en `*Test.java` (nunca `*Tests.java`) y pasar `mvn spotless:check`.
 
 ---
 
@@ -698,25 +747,8 @@ Para adaptar este plan a **logística**, **incentivos** o **notificaciones**:
 
 1. **Ejecutar Fase 0** con el DC específico del servicio — crear el inventario completo
 2. **Usar el inventario como tabla de tracking** a lo largo de TODAS las oleadas
-3. **Mapear cada oleada** verificando cobertura contra el inventario:
-
-| Oleada | Pregunta clave — EXHAUSTIVA |
-|---|---|
-| 1 | ¿Para CADA entidad del inventario: la lógica de negocio vive en la entidad? |
-| 2 | ¿Para CADA Aggregate Root: tiene Domain Events con `List.copyOf()`? |
-| 3 | ¿Para CADA estado de CADA State Pattern: tiene guardas estrictas? |
-| 4 | ¿Para CADA Application Service: es delgado y sin duplicación? ¿CADA Domain Service es POJO puro? |
-| 5 | ¿Para CADA scheduler: es un trigger puro? |
-| 6 | ¿NINGÚN POJO de dominio queda en `infrastructure/`? |
-| 7 | ¿CERO deuda legacy en naming, imports, DTOs en repos, interfaces faltantes? |
-| 8 | ¿CADA entidad tiene Mother? ¿CADA DTO tiene fixture? ¿CERO constructores directos en tests? |
-| 9 | ¿CADA DTO validado? ¿CADA controller con `@Valid` + HTTP clásico? ¿TraceID completo? |
-| 10 | ¿CADA agregado auditado para persistencia? ¿TODAS las decisiones como 📝? |
-| 11 | ¿CERO observaciones de CR abiertas? ¿CERO fugas de info? ¿TODAS las decisiones de frontera documentadas? |
-| 12 | ¿CADA `getDomainEvents()` usa `List.copyOf()`? ¿CADA estado tiene guardas? ¿CERO `@Component` en `models/`? |
-| 13 | ¿TODA la bitácora alineada con Git? ¿TODOS los gaps pre-JPA documentados? |
-
+3. **Mapear cada oleada** verificando cobertura contra el inventario y ejecutando los comandos de barrido mecánico (grep/find)
 4. **Omitir oleadas** que no apliquen (ej: si el servicio no tiene schedulers, skip oleada 5)
 5. **Consolidar oleadas** según la tabla para servicios pequeños
 6. **Reutilizar common-lib** para `EventoDeDominio`, `ErrorResponse`, `GlobalExceptionHandler`, `TraceFilter`, `FeignTraceRequestInterceptor`, `ErrorCatalog`, etc.
-7. **Al cerrar CADA oleada**: ejecutar suite completa y verificar no-regresión de TODAS las oleadas anteriores
+7. **Al cerrar CADA oleada**: ejecutar suite completa (`mvn test`) y `mvn spotless:check` verificando no-regresión de TODAS las oleadas anteriores

@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDIResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
@@ -278,7 +279,7 @@ class DonacionesIndependientesServiceTest {
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.ENTREGA_FALLIDA, "", null, null, null, null);
 
-    assertThrows(IllegalArgumentException.class, () -> service.cambiarEstado(id, request, ACTOR));
+    assertThrows(ValidationException.class, () -> service.cambiarEstado(id, request, ACTOR));
     verify(repositoryMock, never()).save(any());
   }
 
