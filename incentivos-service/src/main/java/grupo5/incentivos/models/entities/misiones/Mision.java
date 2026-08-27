@@ -7,6 +7,7 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -98,5 +99,9 @@ public abstract class Mision {
 
   public void evaluarProgresoExitoso(DonanteIncentivos donante) {
     // por defecto no hace nada
+  }
+
+  public void verificarVigencia(YearMonth mesActual) {
+    // Por defecto no realiza ninguna acción de vigencia temporal
   }
 }

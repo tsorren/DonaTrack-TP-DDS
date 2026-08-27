@@ -8,8 +8,6 @@ import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
@@ -53,7 +51,7 @@ public class DonantesService implements IDonantesService {
               .findById(guardado.personaId())
               .orElseThrow(() -> new RecursoNoEncontradoException(guardado.personaId()));
 
-      String nombre = obtenerNombrePersona(persona);
+      String nombre = persona.getNombreCompleto();
       incentivosFeignClient.registrarDonante(
           guardado.getId(), new RegistrarDonanteRequest(guardado.getId(), persona.getId(), nombre));
 
@@ -68,15 +66,6 @@ public class DonantesService implements IDonantesService {
     }
 
     return donanteMapper.toOutputDTO(guardado);
-  }
-
-  private static String obtenerNombrePersona(Persona persona) {
-    if (persona instanceof Humana humana) { // TODO: sacar el instance of y reemplazar x switch
-      return humana.getNombre() + " " + humana.getApellido();
-    } else if (persona instanceof Juridica juridica) {
-      return juridica.getRazonSocial();
-    }
-    return "Anónimo";
   }
 
   @Override

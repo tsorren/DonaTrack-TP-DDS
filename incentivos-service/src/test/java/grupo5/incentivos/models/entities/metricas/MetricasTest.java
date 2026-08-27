@@ -2,7 +2,7 @@ package grupo5.incentivos.models.entities.metricas;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
+import grupo5.incentivos.fixtures.EventoDonacionMother;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -34,7 +34,7 @@ class MetricasTest {
   @Test
   void registrarDonacion_deberiaIncrementarHistoricasYActualizarUltimaFecha() {
     LocalDate fecha = LocalDate.of(2026, 5, 10);
-    EventoDonacion evento = EventoDonacionMotherTest.enFecha(fecha);
+    EventoDonacion evento = EventoDonacionMother.enFecha(fecha);
 
     metricas.registrarDonacion(evento);
 
@@ -60,9 +60,9 @@ class MetricasTest {
 
   @Test
   void donacionesPorPeriodo_y_donacionesEnMes_deberianCalcularCorrectamente() {
-    metricas.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 1));
-    metricas.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 15));
-    metricas.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 6, 1));
+    metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 1));
+    metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 15));
+    metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 6, 1));
 
     Map<YearMonth, Long> porPeriodo = metricas.donacionesPorPeriodo();
     assertEquals(2L, porPeriodo.get(YearMonth.of(2026, 5)));
@@ -74,12 +74,12 @@ class MetricasTest {
 
   @Test
   void getHistorialDonaciones_debeRetornarCopiaInmutable() {
-    metricas.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 1));
+    metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 1));
     List<EventoDonacion> historial = metricas.getHistorialDonaciones();
 
     assertThrows(
         UnsupportedOperationException.class,
-        () -> historial.add(EventoDonacionMotherTest.enFecha(2026, 5, 2)));
+        () -> historial.add(EventoDonacionMother.enFecha(2026, 5, 2)));
   }
 
   @Test

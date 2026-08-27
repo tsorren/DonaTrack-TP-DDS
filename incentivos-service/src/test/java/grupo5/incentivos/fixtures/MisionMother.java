@@ -7,9 +7,9 @@ import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionHabilDonador;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 
-public final class MisionMotherTest {
+public final class MisionMother {
 
-  private MisionMotherTest() {}
+  private MisionMother() {}
 
   public static MisionRacha rachaColaborador(int meses) {
     return new MisionRacha(CategoriaDonante.COLABORADOR, meses);

@@ -26,7 +26,7 @@ public class GestorDeRankings {
                     .reversed()
                     .thenComparing(
                         Comparator.comparingLong(
-                                (DonanteIncentivos d) -> d.getMetricas().donacionesEnMes(periodo))
+                                (DonanteIncentivos d) -> d.donacionesEnMes(periodo))
                             .reversed())
                     .thenComparing(DonanteIncentivos::getId))
             .toList();

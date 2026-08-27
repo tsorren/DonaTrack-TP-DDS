@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.MisionDTO;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
-import grupo5.incentivos.fixtures.IncentivosFixturesTest;
+import grupo5.incentivos.fixtures.IncentivosFixtures;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.services.IMisionesDonacionService;
 import java.util.List;
@@ -33,7 +33,7 @@ class MisionesDonacionControllerTest {
 
   @Test
   void procesarDonacion_deberiaRetornarStatus200Ok() {
-    NuevaDonacionRequest request = IncentivosFixturesTest.nuevaDonacion(UUID.randomUUID());
+    NuevaDonacionRequest request = IncentivosFixtures.nuevaDonacion(UUID.randomUUID());
 
     ResponseEntity<Void> response = controller.procesarDonacion(request);
 
@@ -43,7 +43,7 @@ class MisionesDonacionControllerTest {
 
   @Test
   void procesarDonacionExitosa_deberiaRetornarStatus200Ok() {
-    DonacionExitosaRequest request = IncentivosFixturesTest.donacionExitosa(UUID.randomUUID());
+    DonacionExitosaRequest request = IncentivosFixtures.donacionExitosa(UUID.randomUUID());
 
     ResponseEntity<Void> response = controller.procesarDonacionExitosa(request);
 

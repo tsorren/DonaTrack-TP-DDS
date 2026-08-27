@@ -884,6 +884,69 @@ Tras la auditoría crítica integral del microservicio, se detectaron 5 oportuni
 - [x] Formato Spotless 100% compliant (`mvn spotless:check`).
 - [x] `diagrama-de-clases-incentivos.puml`, `oleadas-refactor.md` y `plan-refactor-incentivos.md` 100% sincronizados y sellados.
 
+---
+
+## Oleada 14: Centralización de Domain Events (`AgregadoConEventos`), Polimorfismo en Misiones, Tell Don't Ask y Normalización de Fixtures
+
+### Problema
+Tras el merge de `E4_refactor` (incorporando las Oleadas 14 y 15 de `donaciones-service` y la abstracción centralizada `AgregadoConEventos` en `common-lib`), se identificaron deudas arquitectónicas residuales y oportunidades de alineación en `incentivos-service`:
+1. **Duplicación de Infraestructura de Domain Events**: `DonanteIncentivos` implementaba `AggregateRoot` directamente y mantenía una lista mutable `domainEvents` con métodos manuales de snapshot y limpieza, además de usar el modificador `transient` en una entidad de dominio no serializable.
+2. **Violación de Polimorfismo y Uso de `instanceof` en Misiones**: `DonanteIncentivos.verificarRachas` utilizaba `m instanceof MisionRacha` y casteo manual `(MisionRacha) m` en lugar de despachar la verificación de vigencia de forma polimórfica a la jerarquía de `Mision`.
+3. **Violación de *Tell, Don't Ask* en Métricas e Inactividad**: `GestorDeRankings` penetraba en la entidad embebida `Metricas` (`d.getMetricas().donacionesEnMes(periodo)`), e `InactividadDonaciones` duplicaba lógica ternaria para resolver la fecha de referencia entre `donante.getMetricas().getUltimaDonacion()` y `donante.getFechaRegistro()`. Asimismo, `MisionCompletitud` presentaba el atributo `categoriasdonadas` en minúsculas.
+4. **Sufijo `*Test` Incorrecto en Clases Fixture**: Las clases de ayuda y Object Mothers en `grupo5.incentivos.fixtures` (`DonanteIncentivosMotherTest`, `EventoDonacionMotherTest`, `MisionMotherTest`, `RankingMensualMotherTest`, `IncentivosFixturesTest`) estaban nombradas con sufijo `*Test`, provocando que Surefire y SonarCloud las ejecutasen como suites de test vacías (0 tests ejecutados).
+
+### Evidencia
+- `DonanteIncentivos.java`: Declaraba `private final transient List<EventoDonanteIncentivos> domainEvents` y bucle con `m instanceof MisionRacha`.
+- `GestorDeRankings.java:29`: `(DonanteIncentivos d) -> d.getMetricas().donacionesEnMes(periodo)`.
+- `InactividadDonaciones.java:40, 48`: Ternarios duplicados penetrando en `donante.getMetricas().getUltimaDonacion()`.
+- `MisionCompletitud.java:14`: `private final Set<String> categoriasdonadas`.
+- `src/test/java/grupo5/incentivos/fixtures/`: 5 archivos nombrados con sufijo `*Test.java`.
+
+### Objetivo
+1. **Heredar de `AgregadoConEventos`**: Extender `AgregadoConEventos<EventoDonanteIncentivos>` en `DonanteIncentivos`, eliminando la lista `domainEvents` local, los métodos duplicados y el modificador `transient`.
+2. **Polimorfismo en `Mision` (*Tell, Don't Ask*)**: Declarar `public void verificarVigencia(YearMonth mesActual)` con implementación vacía por defecto en `Mision` y sobreescribirla en `MisionRacha`. Refactorizar `DonanteIncentivos.verificarRachas` para iterar y delegar polimórficamente sin `instanceof` ni casteos.
+3. **Enriquecer `DonanteIncentivos`**: Incorporar `donacionesEnMes(YearMonth)` y `fechaUltimaActividad()` en `DonanteIncentivos`, actualizando `GestorDeRankings` e `InactividadDonaciones`. Normalizar `MisionCompletitud.categoriasDonadas`.
+4. **Normalizar Fixtures**: Renombrar las 5 clases fixture a `*Mother` / `IncentivosFixtures` y actualizar el 100% de los tests consumidores.
+5. **Añadir Tests de Caracterización**: Cobertura para los nuevos métodos del agregado y para la preservación de estado en misiones no-racha durante la verificación de vigencia.
+
+### Fuera de scope
+- Modificaciones en endpoints REST, DTOs de entrada/salida o contratos externos.
+- Persistencia física relacional JPA / PostgreSQL (fase posterior).
+
+### Tests / Verificación
+- **Nuevas Pruebas Unitarias Agregadas en `DonanteIncentivosTest`**:
+  - `donacionesEnMes_deberiaRetornarCantidadCorrectaPorPeriodo`: ✅ Valida delegación de cómputo mensual.
+  - `fechaUltimaActividad_sinDonaciones_deberiaRetornarFechaRegistro`: ✅ Valida fallback a fecha de alta.
+  - `fechaUltimaActividad_conDonacion_deberiaRetornarFechaUltimaDonacion`: ✅ Valida fecha de última actividad.
+  - `verificarRachas_conMisionesNoRacha_noDebeAlterarEstado`: ✅ Valida despacho polimórfico seguro y preservación de progreso.
+- **Resultados de Ejecución**:
+  - `incentivos-service`: ✅ **189 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (+4 tests, `BUILD SUCCESS`).
+  - Reactor Completo (7 módulos): ✅ **7/7 módulos en verde** (`BUILD SUCCESS`).
+  - Spotless: ✅ **100% compliant** (`mvn spotless:check`).
+  - Barrido de Fixtures: ✅ **0 clases con sufijo `*Test` en `fixtures/`**.
+  - Barrido de `instanceof`: ✅ **0 `instanceof` en `models/entities/`**.
+
+### Diseño resultante
+- **Arquitectura DDD Pura y Centralizada**: `DonanteIncentivos` reutiliza la abstracción estándar `AgregadoConEventos` de `common-lib`.
+- **Modelo de Dominio Polimórfico y Rico**: La verificación temporal de misiones es polimórfica y desacoplada de tipos concretos; las interacciones con métricas e inactividad se realizan mediante métodos de negocio del Aggregate Root (*Tell, Don't Ask*).
+- **Convenciones de Testing Canónicas**: Las Object Mothers y Fixtures se encuentran estrictamente desacopladas de las suites de prueba ejecutables.
+
+### IA utilizada
+- Diagnóstico post-merge de consistencia contra `common-lib` y `donaciones-service`.
+- Refactorización orientada a polimorfismo para erradicación de `instanceof`.
+- Automatización de renombrado de fixtures y actualización masiva de referencias.
+- Verificación continua con Maven, Spotless y análisis estático.
+
+### Verificación humana
+- [x] Verificada la herencia `DonanteIncentivos extends AgregadoConEventos<EventoDonanteIncentivos>`.
+- [x] Verificado el método polimórfico `verificarVigencia` en `Mision` y `MisionRacha`.
+- [x] Verificada la eliminación total de `instanceof` en `models/entities/`.
+- [x] Verificada la delegación *Tell, Don't Ask* en `GestorDeRankings` e `InactividadDonaciones`.
+- [x] Verificado el renombrado de fixtures (`DonanteIncentivosMother`, `EventoDonacionMother`, `MisionMother`, `RankingMensualMother`, `IncentivosFixtures`).
+- [x] 189 tests en verde en `incentivos-service` y 7/7 módulos en verde en el reactor multi-módulo.
+- [x] Formato Spotless 100% compliant (`mvn spotless:check`).
+
+
 
 
 

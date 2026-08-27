@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.incentivos.dto.InsigniaDTO;
-import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
@@ -27,7 +27,7 @@ class InsigniasServiceTest {
   @Test
   void obtenerInsignias_cuandoDonanteNoTieneInsignias_deberiaRetornarListaVacia() {
     UUID donanteId = UUID.randomUUID();
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
     repository.save(donante);
 
     List<InsigniaDTO> insignias = service.obtenerInsignias(donanteId);
@@ -38,7 +38,7 @@ class InsigniasServiceTest {
   @Test
   void obtenerInsignias_cuandoDonanteTieneInsignias_deberiaRetornarTodasConSuEstadoDeVisibilidad() {
     UUID donanteId = UUID.randomUUID();
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
     Insignia ins1 = new Insignia("Insignia 1", "Desc", "url1");
     Insignia ins2 = new Insignia("Insignia 2", "Desc", "url2");
     donante.otorgarInsignia(ins1);
@@ -61,7 +61,7 @@ class InsigniasServiceTest {
   @Test
   void obtenerInsignias_conSoloVisiblesTrue_deberiaRetornarSoloInsigniasVisibles() {
     UUID donanteId = UUID.randomUUID();
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
     Insignia ins1 = new Insignia("Insignia 1", "Desc", "url1");
     Insignia ins2 = new Insignia("Insignia 2", "Desc", "url2");
     donante.otorgarInsignia(ins1);
@@ -79,7 +79,7 @@ class InsigniasServiceTest {
   @Test
   void configurarVisibilidad_cuandoInsigniaExiste_deberiaActualizarVisibilidad() {
     UUID donanteId = UUID.randomUUID();
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
     Insignia ins = new Insignia("Insignia 1", "Desc", "url1");
     donante.otorgarInsignia(ins);
     repository.save(donante);
@@ -101,7 +101,7 @@ class InsigniasServiceTest {
   @Test
   void configurarVisibilidad_cuandoInsigniaNoExiste_deberiaLanzarExcepcion() {
     UUID donanteId = UUID.randomUUID();
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
     repository.save(donante);
 
     assertThrows(

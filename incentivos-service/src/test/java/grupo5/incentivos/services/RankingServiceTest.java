@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import grupo5.incentivos.dto.RankingMensualDTO;
-import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
 import grupo5.incentivos.infrastructure.IN8nClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.ranking.GestorDeRankings;
@@ -48,11 +48,11 @@ class RankingServiceTest {
     UUID id3 = UUID.randomUUID();
 
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id1, "Donante 1", mayo, 2);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(id1, "Donante 1", mayo, 2);
     DonanteIncentivos d2 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id2, "Donante 2", mayo, 5);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(id2, "Donante 2", mayo, 5);
     DonanteIncentivos d3 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id3, "Donante 3", mayo, 1);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(id3, "Donante 3", mayo, 1);
 
     donanteRepository.save(d1);
     donanteRepository.save(d2);
@@ -76,9 +76,9 @@ class RankingServiceTest {
     UUID id2 = UUID.randomUUID();
 
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id1, "Donante 1", mayo, 3);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(id1, "Donante 1", mayo, 3);
     DonanteIncentivos d2 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id2, "Donante 2", mayo, 0);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(id2, "Donante 2", mayo, 0);
 
     donanteRepository.save(d1);
     donanteRepository.save(d2);
@@ -93,7 +93,7 @@ class RankingServiceTest {
   void calcularYPersistir_deberiaRetornarVacioSiNadieTieneMisiones() {
     YearMonth mayo = YearMonth.of(2026, 5);
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(
             UUID.randomUUID(), "Donante 1", mayo, 0);
     donanteRepository.save(d1);
 
@@ -108,7 +108,7 @@ class RankingServiceTest {
     YearMonth mayo = YearMonth.of(2026, 5);
     for (int i = 1; i <= 5; i++) {
       donanteRepository.save(
-          DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+          DonanteIncentivosMother.conMisionesCompletadasEnMes(
               UUID.randomUUID(), "Donante " + i, mayo, i));
     }
 
@@ -122,7 +122,7 @@ class RankingServiceTest {
   void calcularYNotificar_deberiaNotificarAn8n() {
     YearMonth mayo = YearMonth.of(2026, 5);
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(
             UUID.randomUUID(), "Donante 1", mayo, 3);
     donanteRepository.save(d1);
 
@@ -136,7 +136,7 @@ class RankingServiceTest {
     YearMonth mayo = YearMonth.of(2026, 5);
     UUID id = UUID.randomUUID();
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id, "Donante 1", mayo, 3);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(id, "Donante 1", mayo, 3);
     donanteRepository.save(d1);
     service.calcularYPersistir(mayo);
 
@@ -158,7 +158,7 @@ class RankingServiceTest {
   void obtenerPosicionDonante_porPeriodo_cuandoDonanteNoParticipo_deberiaRetornarVacio() {
     YearMonth mayo = YearMonth.of(2026, 5);
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(
             UUID.randomUUID(), "Donante 1", mayo, 3);
     donanteRepository.save(d1);
     service.calcularYPersistir(mayo);
@@ -173,7 +173,7 @@ class RankingServiceTest {
     YearMonth mayo = YearMonth.of(2026, 5);
     UUID id = UUID.randomUUID();
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id, "Donante 1", mayo, 3);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(id, "Donante 1", mayo, 3);
     donanteRepository.save(d1);
     service.calcularYPersistir(mayo);
 
@@ -196,9 +196,9 @@ class RankingServiceTest {
     YearMonth mayo = YearMonth.of(2026, 5);
 
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(UUID.randomUUID(), "D1", abril, 2);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(UUID.randomUUID(), "D1", abril, 2);
     DonanteIncentivos d2 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(UUID.randomUUID(), "D2", mayo, 4);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(UUID.randomUUID(), "D2", mayo, 4);
     donanteRepository.save(d1);
     donanteRepository.save(d2);
 
@@ -222,9 +222,9 @@ class RankingServiceTest {
     YearMonth mayo = YearMonth.of(2026, 5);
 
     DonanteIncentivos d1 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(UUID.randomUUID(), "D1", abril, 2);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(UUID.randomUUID(), "D1", abril, 2);
     DonanteIncentivos d2 =
-        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(UUID.randomUUID(), "D2", mayo, 4);
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(UUID.randomUUID(), "D2", mayo, 4);
     donanteRepository.save(d1);
     donanteRepository.save(d2);
 

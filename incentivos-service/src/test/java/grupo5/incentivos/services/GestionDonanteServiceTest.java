@@ -6,7 +6,7 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.incentivos.dto.DonanteRegistradoDTO;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.RegistrarDonanteRequest;
-import grupo5.incentivos.fixtures.IncentivosFixturesTest;
+import grupo5.incentivos.fixtures.IncentivosFixtures;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import java.util.List;
@@ -28,7 +28,7 @@ class GestionDonanteServiceTest {
   @Test
   void registrarDonante_cuandoEsNuevo_deberiaGuardarloYRetornarDTO() {
     UUID id = UUID.randomUUID();
-    RegistrarDonanteRequest request = IncentivosFixturesTest.registrarDonante(id);
+    RegistrarDonanteRequest request = IncentivosFixtures.registrarDonante(id);
 
     DonanteRegistradoDTO response = service.registrarDonante(request);
 
@@ -40,7 +40,7 @@ class GestionDonanteServiceTest {
   @Test
   void registrarDonante_cuandoYaExiste_deberiaSerIdempotente() {
     UUID id = UUID.randomUUID();
-    RegistrarDonanteRequest request = IncentivosFixturesTest.registrarDonante(id);
+    RegistrarDonanteRequest request = IncentivosFixtures.registrarDonante(id);
 
     service.registrarDonante(request);
     DonanteRegistradoDTO response = service.registrarDonante(request);
@@ -53,9 +53,8 @@ class GestionDonanteServiceTest {
   @Test
   void modificarDonante_cuandoExiste_deberiaActualizarNombre() {
     UUID id = UUID.randomUUID();
-    service.registrarDonante(
-        IncentivosFixturesTest.registrarDonante(id, UUID.randomUUID(), "Inicial"));
-    ModificarDonanteRequest request = IncentivosFixturesTest.modificarDonante("Modificado");
+    service.registrarDonante(IncentivosFixtures.registrarDonante(id, UUID.randomUUID(), "Inicial"));
+    ModificarDonanteRequest request = IncentivosFixtures.modificarDonante("Modificado");
 
     service.modificarDonante(id, request);
 
@@ -66,7 +65,7 @@ class GestionDonanteServiceTest {
   @Test
   void modificarDonante_cuandoNoExiste_deberiaLanzarExcepcion() {
     UUID id = UUID.randomUUID();
-    ModificarDonanteRequest request = IncentivosFixturesTest.modificarDonante("Nuevo");
+    ModificarDonanteRequest request = IncentivosFixtures.modificarDonante("Nuevo");
 
     assertThrows(BusinessStateException.class, () -> service.modificarDonante(id, request));
   }
@@ -74,7 +73,7 @@ class GestionDonanteServiceTest {
   @Test
   void obtenerDonante_cuandoExiste_deberiaRetornarEntidad() {
     UUID id = UUID.randomUUID();
-    RegistrarDonanteRequest request = IncentivosFixturesTest.registrarDonante(id, id, "Test");
+    RegistrarDonanteRequest request = IncentivosFixtures.registrarDonante(id, id, "Test");
     service.registrarDonante(request);
 
     DonanteIncentivos donante = service.obtenerDonante(id);
@@ -93,7 +92,7 @@ class GestionDonanteServiceTest {
   @Test
   void darDeBaja_cuandoExiste_deberiaEliminarDelRepositorio() {
     UUID id = UUID.randomUUID();
-    service.registrarDonante(IncentivosFixturesTest.registrarDonante(id, id, "Test"));
+    service.registrarDonante(IncentivosFixtures.registrarDonante(id, id, "Test"));
 
     service.darDeBaja(id);
 
@@ -110,8 +109,8 @@ class GestionDonanteServiceTest {
   void listarTodos_deberiaRetornarTodosLosRegistrados() {
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
-    service.registrarDonante(IncentivosFixturesTest.registrarDonante(id1, id1, "Donante 1"));
-    service.registrarDonante(IncentivosFixturesTest.registrarDonante(id2, id2, "Donante 2"));
+    service.registrarDonante(IncentivosFixtures.registrarDonante(id1, id1, "Donante 1"));
+    service.registrarDonante(IncentivosFixtures.registrarDonante(id2, id2, "Donante 2"));
 
     List<DonanteIncentivos> list = service.listarTodos();
 

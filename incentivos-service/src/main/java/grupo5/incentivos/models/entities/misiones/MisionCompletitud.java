@@ -11,7 +11,7 @@ import lombok.Getter;
 @Getter
 public class MisionCompletitud extends Mision {
 
-  private final Set<String> categoriasdonadas = new HashSet<>();
+  private final Set<String> categoriasDonadas = new HashSet<>();
 
   public MisionCompletitud(CategoriaDonante categoria, Integer subcategoriasObjetivo) {
     super(
@@ -26,10 +26,10 @@ public class MisionCompletitud extends Mision {
     if (evento.getCategorias() != null) {
       for (String cat : evento.getCategorias()) {
         if (cat != null && !cat.trim().isEmpty()) {
-          this.categoriasdonadas.add(cat.trim().toLowerCase(Locale.ROOT));
+          this.categoriasDonadas.add(cat.trim().toLowerCase(Locale.ROOT));
         }
       }
     }
-    return this.categoriasdonadas.size();
+    return this.categoriasDonadas.size();
   }
 }

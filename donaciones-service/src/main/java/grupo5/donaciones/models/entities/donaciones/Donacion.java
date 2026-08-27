@@ -1,9 +1,9 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionCargada;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionSegmentada;
@@ -18,7 +18,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class Donacion implements AggregateRoot {
+public class Donacion extends AgregadoConEventos<EventoDonacion> {
   private final UUID id;
 
   @Setter(AccessLevel.PACKAGE)
@@ -39,8 +39,6 @@ public class Donacion implements AggregateRoot {
   private EstadoDonacion estadoActual;
   private final List<CambioEstadoDonacion> historialEstados;
 
-  private final transient List<EventoDonacion> domainEvents = new ArrayList<>();
-
   public Donacion(
       UUID donanteId, Deposito depositoRecepcion, String descripcion, LocalDateTime fecha) {
     if (donanteId == null) {
@@ -54,7 +52,7 @@ public class Donacion implements AggregateRoot {
     this.items = new ArrayList<>();
     this.estadoActual = EstadoDonacion.CARGADA;
     this.historialEstados = new ArrayList<>();
-    this.domainEvents.add(new DonacionCargada(this.id, this.donanteId));
+    this.registrarEvento(new DonacionCargada(this.id, this.donanteId));
   }
 
   public Donacion(UUID donanteId, Deposito depositoRecepcion) {
@@ -91,7 +89,7 @@ public class Donacion implements AggregateRoot {
       throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
     }
     avanzarEstado(EstadoDonacion.NORMALIZADA);
-    this.domainEvents.add(new DonacionNormalizada(this.id, this.donanteId));
+    this.registrarEvento(new DonacionNormalizada(this.id, this.donanteId));
   }
 
   public void marcarSegmentada() {
@@ -99,7 +97,7 @@ public class Donacion implements AggregateRoot {
       throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
     }
     avanzarEstado(EstadoDonacion.SEGMENTADA);
-    this.domainEvents.add(new DonacionSegmentada(this.id, this.donanteId));
+    this.registrarEvento(new DonacionSegmentada(this.id, this.donanteId));
   }
 
   private void avanzarEstado(EstadoDonacion nuevoEstado) {
@@ -109,17 +107,5 @@ public class Donacion implements AggregateRoot {
 
   public List<CambioEstadoDonacion> getHistorialEstados() {
     return Collections.unmodifiableList(historialEstados);
-  }
-
-  public List<EventoDonacion> getDomainEvents() {
-    // Copia defensiva (no una vista) para evitar ConcurrentModificationException si, mientras se
-    // itera esta lista para publicar eventos, un listener reentrante muta domainEvents sobre esta
-    // misma instancia (p. ej. SegmentacionEventListener llamando marcarSegmentada()/
-    // clearDomainEvents() dentro del manejo síncrono de un evento previo).
-    return List.copyOf(this.domainEvents);
-  }
-
-  public void clearDomainEvents() {
-    this.domainEvents.clear();
   }
 }

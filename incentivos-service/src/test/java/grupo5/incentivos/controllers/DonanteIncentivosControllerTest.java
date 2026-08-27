@@ -8,7 +8,7 @@ import static org.mockito.Mockito.*;
 import grupo5.incentivos.dto.DonanteRegistradoDTO;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.RegistrarDonanteRequest;
-import grupo5.incentivos.fixtures.IncentivosFixturesTest;
+import grupo5.incentivos.fixtures.IncentivosFixtures;
 import grupo5.incentivos.services.IGestionDonanteService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +36,7 @@ class DonanteIncentivosControllerTest {
     UUID donanteId = UUID.randomUUID();
     UUID personaId = UUID.randomUUID();
     RegistrarDonanteRequest request =
-        IncentivosFixturesTest.registrarDonante(donanteId, personaId, "Carlos");
+        IncentivosFixtures.registrarDonante(donanteId, personaId, "Carlos");
     DonanteRegistradoDTO responseDto = new DonanteRegistradoDTO(donanteId, "COLABORADOR");
 
     when(gestionDonanteService.registrarDonante(any())).thenReturn(responseDto);
@@ -61,7 +61,7 @@ class DonanteIncentivosControllerTest {
   @Test
   void modificarDonante_deberiaRetornarStatus200Ok() {
     UUID donanteId = UUID.randomUUID();
-    ModificarDonanteRequest request = IncentivosFixturesTest.modificarDonante("Nuevo Nombre");
+    ModificarDonanteRequest request = IncentivosFixtures.modificarDonante("Nuevo Nombre");
 
     ResponseEntity<Void> response = controller.modificarDonante(donanteId, request);
 

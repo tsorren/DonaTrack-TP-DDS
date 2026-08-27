@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
-import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
+import grupo5.incentivos.fixtures.EventoDonacionMother;
 import grupo5.incentivos.infrastructure.INotificacionesClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
@@ -46,8 +46,8 @@ class InactividadServiceTest {
   void procesarInactividad_deberiaNotificarDonantesInactivosIdentificados() {
     UUID id = UUID.randomUUID();
     DonanteIncentivos inactivo =
-        DonanteIncentivosMotherTest.conDonacion(
-            id, EventoDonacionMotherTest.enFecha(LocalDate.now().minusDays(40)));
+        DonanteIncentivosMother.conDonacion(
+            id, EventoDonacionMother.enFecha(LocalDate.now().minusDays(40)));
     repository.save(inactivo);
 
     service.procesarInactividad();
@@ -59,8 +59,8 @@ class InactividadServiceTest {
   void procesarInactividad_cuandoNoHayInactivos_noDeberiaEnviarNotificaciones() {
     UUID id = UUID.randomUUID();
     DonanteIncentivos activo =
-        DonanteIncentivosMotherTest.conDonacion(
-            id, EventoDonacionMotherTest.enFecha(LocalDate.now().minusDays(5)));
+        DonanteIncentivosMother.conDonacion(
+            id, EventoDonacionMother.enFecha(LocalDate.now().minusDays(5)));
     repository.save(activo);
 
     service.procesarInactividad();
@@ -74,11 +74,11 @@ class InactividadServiceTest {
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     DonanteIncentivos inactivo1 =
-        DonanteIncentivosMotherTest.conDonacion(
-            id1, EventoDonacionMotherTest.enFecha(LocalDate.now().minusDays(40)));
+        DonanteIncentivosMother.conDonacion(
+            id1, EventoDonacionMother.enFecha(LocalDate.now().minusDays(40)));
     DonanteIncentivos inactivo2 =
-        DonanteIncentivosMotherTest.conDonacion(
-            id2, EventoDonacionMotherTest.enFecha(LocalDate.now().minusDays(50)));
+        DonanteIncentivosMother.conDonacion(
+            id2, EventoDonacionMother.enFecha(LocalDate.now().minusDays(50)));
     repository.save(inactivo1);
     repository.save(inactivo2);
 

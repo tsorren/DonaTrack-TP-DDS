@@ -39,7 +39,7 @@ public class TraceResponseHeaderFilter extends OncePerRequestFilter {
     }
   }
 
-  private String resolveTraceId(HttpServletRequest request) {
+  private static String resolveTraceId(HttpServletRequest request) {
     String mdcTraceId = MDC.get(MDC_TRACE_KEY);
     if (mdcTraceId != null && !mdcTraceId.isBlank()) {
       return mdcTraceId;

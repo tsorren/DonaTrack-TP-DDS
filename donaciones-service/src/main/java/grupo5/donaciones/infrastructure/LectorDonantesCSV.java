@@ -2,6 +2,7 @@ package grupo5.donaciones.infrastructure;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.InfrastructureException;
+import grupo5.donaciones.models.entities.donantes.DonanteParser;
 import grupo5.donaciones.models.ports.CargadorDonantes;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -23,6 +23,16 @@ public class LectorDonantesCSV implements CargadorDonantes {
   private static final Logger log = LoggerFactory.getLogger(LectorDonantesCSV.class);
   public static final String BOM =
       "\uFEFF"; // Carácter BOM invisible al inicio de algunos archivos UTF-8
+
+  private final DonanteParser donanteParser;
+
+  public LectorDonantesCSV(DonanteParser donanteParser) {
+    this.donanteParser = donanteParser != null ? donanteParser : new DonanteParser();
+  }
+
+  public LectorDonantesCSV() {
+    this(new DonanteParser());
+  }
 
   @Override
   public List<Map<String, String>> cargarDonantes(String rutaArchivo) {
@@ -63,7 +73,7 @@ public class LectorDonantesCSV implements CargadorDonantes {
       return;
     }
     try {
-      filasMapeadas.add(procesarLinea(linea, cabecera));
+      filasMapeadas.add(donanteParser.procesarLinea(linea, cabecera));
     } catch (IllegalArgumentException e) {
       log.warn(
           "Línea {} ignorada por error de formato: '{}'. Motivo: {}",
@@ -71,18 +81,5 @@ public class LectorDonantesCSV implements CargadorDonantes {
           linea,
           e.getMessage());
     }
-  }
-
-  private Map<String, String> procesarLinea(String linea, String[] cabecera) {
-    String[] datos = linea.split(",");
-    if (datos.length != cabecera.length) {
-      throw new IllegalArgumentException("El número de columnas no coincide con la cabecera.");
-    }
-
-    Map<String, String> filaMap = new HashMap<>();
-    for (int j = 0; j < cabecera.length; j++) {
-      filaMap.put(cabecera[j], datos[j].trim());
-    }
-    return filaMap;
   }
 }

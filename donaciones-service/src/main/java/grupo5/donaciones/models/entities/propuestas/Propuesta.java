@@ -1,9 +1,9 @@
 package grupo5.donaciones.models.entities.propuestas;
 
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -13,14 +13,12 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class Propuesta implements AggregateRoot {
+public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   private UUID id;
   private UUID necesidadQueSatisfaceId;
   private List<PosibleFragmentacion> posiblesFragmentaciones;
   private EstadoPropuesta estado;
   private LocalDateTime fechaCreacion;
-
-  private final transient List<PropuestaAprobada> domainEvents = new ArrayList<>();
 
   public Propuesta() {
     this.id = UUID.randomUUID();
@@ -82,7 +80,7 @@ public class Propuesta implements AggregateRoot {
     String actorFinal = (actor == null || actor.isBlank()) ? "SISTEMA" : actor;
 
     this.estado = EstadoPropuesta.APROBADA;
-    this.domainEvents.add(
+    this.registrarEvento(
         new PropuestaAprobada(
             this.id,
             this.necesidadQueSatisfaceId,
@@ -97,14 +95,5 @@ public class Propuesta implements AggregateRoot {
       throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
     }
     this.estado = EstadoPropuesta.DESCARTADA;
-  }
-
-  public List<PropuestaAprobada> getDomainEvents() {
-    // Copia defensiva: ver el comentario equivalente en Donacion.getDomainEvents().
-    return List.copyOf(this.domainEvents);
-  }
-
-  public void clearDomainEvents() {
-    this.domainEvents.clear();
   }
 }

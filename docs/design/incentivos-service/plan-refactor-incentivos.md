@@ -218,6 +218,7 @@ graph TD
     O11["✅ Oleada 11: Code Review, Higiene de Logs, Null-Safety en Domain Services, Aserciones Dinámicas y DTOs"]
     O12["✅ Oleada 12: Hardening Final de Dominio, Consistencia Temporal (Event Time) e Infraestructura @Async"]
     O13["✅ Oleada 13: Gobernanza Final, Gaps de Persistencia Relacional, Escalabilidad y Sincronización PlantUML"]
+    O14["✅ Oleada 14: Centralización de Domain Events (AgregadoConEventos), Polimorfismo en Misiones, Tell Don't Ask y Normalización de Fixtures"]
 
     F0 --> O1
     O1 --> O2
@@ -231,6 +232,7 @@ graph TD
     O10 --> O11
     O11 --> O12
     O12 --> O13
+    O13 --> O14
 ```
 
 ---
@@ -1082,6 +1084,35 @@ git grep "import .*\.\*" src/
 
 ---
 
+### Oleada 14 — Centralización de Domain Events (`AgregadoConEventos`), Polimorfismo en Misiones, Tell Don't Ask y Normalización de Fixtures
+
+#### RF-INC-14.1: Herencia de `AgregadoConEventos<E>` en `DonanteIncentivos`
+- **Problema**: `DonanteIncentivos` duplicaba la gestión de la colección `domainEvents` y métodos de registro/limpieza, manteniendo un modificador `transient` innecesario.
+- **Solución**: Hacer que `DonanteIncentivos` extienda de `AgregadoConEventos<EventoDonanteIncentivos>` de `common-lib`, heredando `registrarEvento(E)`, `getDomainEvents()` (retorna copia inmutable `List.copyOf`) y `clearDomainEvents()`.
+
+#### RF-INC-14.2: Polimorfismo en Verificación Temporal de Misiones (`Mision.verificarVigencia`)
+- **Problema**: `DonanteIncentivos.verificarRachas` utilizaba `m instanceof MisionRacha` y cast explícito `(MisionRacha) m`.
+- **Solución**: Declarar `public void verificarVigencia(YearMonth mesActual) {}` en `Mision` y sobreescribirlo en `MisionRacha`. Simplificar `DonanteIncentivos.verificarRachas` a una iteración polimórfica directa sin `instanceof`.
+
+#### RF-INC-14.3: Cumplimiento de "Tell, Don't Ask" y Corrección de Atributo en Misiones
+- **Problema**: `GestorDeRankings` e `InactividadDonaciones` accedían internamente a `metricas` del donante y duplicaban la resolución de última actividad. `MisionCompletitud` presentaba `categoriasdonadas` con casing incorrecto.
+- **Solución**: Exponer `donacionesEnMes(YearMonth)` y `fechaUltimaActividad()` en `DonanteIncentivos`, delegando desde los servicios. Renombrar a `categoriasDonadas`.
+
+#### RF-INC-14.4: Normalización de Nombres de Fixtures
+- **Problema**: Las 5 clases en `grupo5.incentivos.fixtures` tenían sufijo `*Test.java`, ejecutándose como suites vacías en Maven Surefire.
+- **Solución**: Renombrar a `DonanteIncentivosMother`, `EventoDonacionMother`, `MisionMother`, `RankingMensualMother` e `IncentivosFixtures`, actualizando todos los tests.
+
+**Checklist Oleada 14:**
+- [x] `DonanteIncentivos` extiende `AgregadoConEventos<EventoDonanteIncentivos>`
+- [x] `Mision` declara `verificarVigencia(YearMonth)` polimórfico y se erradica `instanceof`
+- [x] `donacionesEnMes` y `fechaUltimaActividad` expuestos en `DonanteIncentivos`
+- [x] Atributo `categoriasDonadas` corregido en `MisionCompletitud`
+- [x] 5 Object Mothers / Fixtures normalizados sin sufijo `*Test`
+- [x] 189 tests unitarios en verde en `incentivos-service`
+- [x] 7/7 módulos en verde en el reactor completo y Spotless 100% compliant
+
+---
+
 ## Consolidaciones aplicadas respecto al plan genérico
 
 | Consolidación | Oleadas | Justificación |
@@ -1091,9 +1122,11 @@ git grep "import .*\.\*" src/
 | **Oleada 12** | Hardening de dominio, consistencia temporal e infraestructura pre-JPA | Propagación de fechas en insignias, normalización de categorías y pool de hilos para `@Async`. |
 | **Oleada 5** reducida | Solo tests de jobs | Los tres jobs ya son triggers puros — no requieren refactor estructural. |
 | **Post-Auditoría** | Hardening final integral de dominio y trazabilidad | Falsos positivos de inactividad, rachas históricas, TaskDecorator MDC y ShedLock/Outbox en Oleada 10. |
+| **Oleada 14** | Centralización de Domain Events, Polimorfismo y Normalización de Fixtures | Integración de `AgregadoConEventos`, eliminación de `instanceof`, Tell Don't Ask y normalización de suites de prueba. |
 
 ## Branch
 
 ```
-E4_refactor_incentivos_oleada_12
+E4_refactor_incentivos_oleada_14
 ```
+

@@ -12,6 +12,7 @@ import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.Test;
 class PersonaTest {
 
   private static Humana humana() {
-    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, 1, 1));
+    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
     humana.limpiarMediosDeContacto();
     return humana;
   }
@@ -159,7 +160,7 @@ class PersonaTest {
 
   @Test
   void esDuplicadaDe_enJuridica_deberiaDelegarEnLaMismaLogicaQuePersona() {
-    Humana representante = new Humana("Ana", "Gomez", LocalDate.of(1985, 5, 15));
+    Humana representante = new Humana("Ana", "Gomez", LocalDate.of(1985, Month.MAY, 15));
     Juridica juridica = new Juridica(representante, "Empresa SA", TipoJuridico.EMPRESA, "Rubro");
     juridica.actualizarDocumento(TipoDocumento.CUIT, "30-11122233-4");
     Juridica otra = new Juridica(representante, "Otra SA", TipoJuridico.EMPRESA, "Rubro");

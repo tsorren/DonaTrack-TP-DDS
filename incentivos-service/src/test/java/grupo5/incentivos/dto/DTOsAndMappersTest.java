@@ -2,10 +2,10 @@ package grupo5.incentivos.dto;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
-import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
-import grupo5.incentivos.fixtures.MisionMotherTest;
-import grupo5.incentivos.fixtures.RankingMensualMotherTest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
+import grupo5.incentivos.fixtures.EventoDonacionMother;
+import grupo5.incentivos.fixtures.MisionMother;
+import grupo5.incentivos.fixtures.RankingMensualMother;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.Insignia;
@@ -24,7 +24,7 @@ class DTOsAndMappersTest {
   @Test
   void donanteRegistradoDTO_desde_deberiaMapearCorrectamente() {
     UUID id = UUID.randomUUID();
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(id);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(id);
 
     DonanteRegistradoDTO dto = DonanteRegistradoDTO.desde(donante);
 
@@ -59,8 +59,8 @@ class DTOsAndMappersTest {
   @Test
   void metricasDonanteDTO_desde_deberiaMapearMetricasConYMisionActiva() {
     UUID id = UUID.randomUUID();
-    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(id, List.of(racha));
+    MisionRacha racha = MisionMother.rachaColaborador(3);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(id, List.of(racha));
 
     MetricasDonanteDTO dto = MetricasDonanteDTO.desde(donante, 1, 0, Map.of("2026-05", 2L));
 
@@ -75,7 +75,7 @@ class DTOsAndMappersTest {
   @Test
   void misionDTO_desde_deberiaMapearCorrectamente() {
     MisionRacha racha =
-        MisionMotherTest.rachaConInsignia(
+        MisionMother.rachaConInsignia(
             grupo5.incentivos.models.entities.donante.CategoriaDonante.COLABORADOR,
             2,
             "Racha Bronce");
@@ -92,7 +92,7 @@ class DTOsAndMappersTest {
   @Test
   void rankingMensualDTO_desde_deberiaMapearRankingYEntradas() {
     YearMonth mayo = YearMonth.of(2026, 5);
-    RankingMensual ranking = RankingMensualMotherTest.conNEntradas(mayo, 4);
+    RankingMensual ranking = RankingMensualMother.conNEntradas(mayo, 4);
 
     RankingMensualDTO dto = RankingMensualDTO.desde(ranking);
 
@@ -113,7 +113,7 @@ class DTOsAndMappersTest {
     assertEquals(3, resumen.donantesMesAnterior());
 
     UUID donacionId = UUID.randomUUID();
-    EventoDonacion evento = EventoDonacionMotherTest.enFecha(LocalDate.of(2026, 6, 17));
+    EventoDonacion evento = EventoDonacionMother.enFecha(LocalDate.of(2026, 6, 17));
 
     assertNotNull(evento);
     assertEquals(LocalDate.of(2026, 6, 17), evento.getFecha());

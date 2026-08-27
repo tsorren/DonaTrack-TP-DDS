@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
-import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
+import grupo5.incentivos.fixtures.EventoDonacionMother;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -29,8 +29,7 @@ class InactividadDonacionesTest {
     InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
     DonanteIncentivos inactivo =
-        DonanteIncentivosMotherTest.conDonacion(
-            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(60)));
+        DonanteIncentivosMother.conDonacion(id, EventoDonacionMother.enFecha(HOY.minusDays(60)));
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(inactivo));
 
@@ -46,8 +45,7 @@ class InactividadDonacionesTest {
     InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
     DonanteIncentivos activo =
-        DonanteIncentivosMotherTest.conDonacion(
-            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(5)));
+        DonanteIncentivosMother.conDonacion(id, EventoDonacionMother.enFecha(HOY.minusDays(5)));
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(activo));
 
@@ -59,8 +57,7 @@ class InactividadDonacionesTest {
     InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
     DonanteIncentivos activoEnLimite =
-        DonanteIncentivosMotherTest.conDonacion(
-            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(30)));
+        DonanteIncentivosMother.conDonacion(id, EventoDonacionMother.enFecha(HOY.minusDays(30)));
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(activoEnLimite));
 
@@ -72,8 +69,7 @@ class InactividadDonacionesTest {
     InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
     DonanteIncentivos inactivo =
-        DonanteIncentivosMotherTest.conDonacion(
-            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(31)));
+        DonanteIncentivosMother.conDonacion(id, EventoDonacionMother.enFecha(HOY.minusDays(31)));
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(inactivo));
 
@@ -85,8 +81,7 @@ class InactividadDonacionesTest {
   void detectarInactivos_noDeberiaDetectarDonanteRecienRegistradoSinDonaciones() {
     InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
-    DonanteIncentivos recienRegistrado =
-        DonanteIncentivosMotherTest.colaboradorRegistradoEn(id, HOY);
+    DonanteIncentivos recienRegistrado = DonanteIncentivosMother.colaboradorRegistradoEn(id, HOY);
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(recienRegistrado));
 
@@ -100,7 +95,7 @@ class InactividadDonacionesTest {
     InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
     DonanteIncentivos registroAntiguo =
-        DonanteIncentivosMotherTest.colaboradorRegistradoEn(id, HOY.minusDays(45));
+        DonanteIncentivosMother.colaboradorRegistradoEn(id, HOY.minusDays(45));
 
     List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(registroAntiguo));
 
@@ -118,14 +113,13 @@ class InactividadDonacionesTest {
     UUID idSinDonacionesAntiguo = new UUID(0L, 3L);
 
     DonanteIncentivos activo =
-        DonanteIncentivosMotherTest.conDonacion(
-            idActivo, EventoDonacionMotherTest.enFecha(HOY.minusDays(10)));
+        DonanteIncentivosMother.conDonacion(
+            idActivo, EventoDonacionMother.enFecha(HOY.minusDays(10)));
     DonanteIncentivos inactivo =
-        DonanteIncentivosMotherTest.conDonacion(
-            idInactivo, EventoDonacionMotherTest.enFecha(HOY.minusDays(45)));
+        DonanteIncentivosMother.conDonacion(
+            idInactivo, EventoDonacionMother.enFecha(HOY.minusDays(45)));
     DonanteIncentivos sinDonacionesAntiguo =
-        DonanteIncentivosMotherTest.colaboradorRegistradoEn(
-            idSinDonacionesAntiguo, HOY.minusDays(40));
+        DonanteIncentivosMother.colaboradorRegistradoEn(idSinDonacionesAntiguo, HOY.minusDays(40));
 
     List<DonanteInactivo> resultado =
         criterio.detectarInactivos(List.of(activo, inactivo, sinDonacionesAntiguo));
@@ -162,8 +156,7 @@ class InactividadDonacionesTest {
     GestorDeInactivos gestor = new GestorDeInactivos();
     UUID id = UUID.randomUUID();
     DonanteIncentivos inactivo =
-        DonanteIncentivosMotherTest.conDonacion(
-            id, EventoDonacionMotherTest.enFecha(HOY.minusDays(50)));
+        DonanteIncentivosMother.conDonacion(id, EventoDonacionMother.enFecha(HOY.minusDays(50)));
 
     InactividadDonaciones crit30 = crearCriterio(30);
     InactividadDonaciones crit45 = crearCriterio(45);
