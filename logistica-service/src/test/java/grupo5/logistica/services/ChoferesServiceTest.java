@@ -61,15 +61,11 @@ class ChoferesServiceTest {
   // ===================== consultarTodos() =====================
 
   @Test
-  void consultarTodos_deberiaFiltrarChoferesDeshabilitados() {
+  void consultarTodos_deberiaConsultarSoloActivos() {
 
     Chofer disponible = mock(Chofer.class);
-    Chofer deshabilitado = mock(Chofer.class);
 
-    when(disponible.getEstado()).thenReturn(EstadoChofer.DISPONIBLE);
-    when(deshabilitado.getEstado()).thenReturn(EstadoChofer.DESHABILITADO);
-
-    when(choferesRepository.findAll()).thenReturn(List.of(disponible, deshabilitado));
+    when(choferesRepository.findActivos()).thenReturn(List.of(disponible));
 
     ChoferResponseDTO dto =
         new ChoferResponseDTO(
@@ -86,7 +82,7 @@ class ChoferesServiceTest {
   @Test
   void consultarTodos_deberiaRetornarListaVacia_cuandoNoHayChoferes() {
 
-    when(choferesRepository.findAll()).thenReturn(List.of());
+    when(choferesRepository.findActivos()).thenReturn(List.of());
 
     List<ChoferResponseDTO> resultado = choferService.consultarTodos();
 
@@ -162,7 +158,7 @@ class ChoferesServiceTest {
 
     choferService.cambiarEstado(id, request);
 
-    verify(chofer).habilitar();
+    verify(chofer).cambiarEstado(EstadoChofer.DISPONIBLE);
     verify(choferesRepository).save(chofer);
   }
 
@@ -180,7 +176,7 @@ class ChoferesServiceTest {
 
     choferService.cambiarEstado(id, request);
 
-    verify(chofer).deshabilitar();
+    verify(chofer).cambiarEstado(EstadoChofer.DESHABILITADO);
     verify(choferesRepository).save(chofer);
   }
 
@@ -195,6 +191,7 @@ class ChoferesServiceTest {
         new CambioEstadoChoferRequestDTO(EstadoChofer.EN_RUTA, null);
 
     when(choferesRepository.findById(id)).thenReturn(Optional.of(chofer));
+    doThrow(new ValidationException(null)).when(chofer).cambiarEstado(EstadoChofer.EN_RUTA);
 
     assertThrows(ValidationException.class, () -> choferService.cambiarEstado(id, request));
 
@@ -216,7 +213,7 @@ class ChoferesServiceTest {
 
     choferService.darDeBaja(id);
 
-    verify(chofer).deshabilitar();
+    verify(chofer).cambiarEstado(EstadoChofer.DESHABILITADO);
     verify(choferesRepository).save(chofer);
   }
 

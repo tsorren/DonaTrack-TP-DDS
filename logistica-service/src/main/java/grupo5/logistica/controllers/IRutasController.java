@@ -1,9 +1,6 @@
 package grupo5.logistica.controllers;
 
-import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
-import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
-import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
-import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.dto.rutas.*;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
@@ -20,8 +17,6 @@ public interface IRutasController {
   ResponseEntity<RutaResponseDTO> agregarEntrega(
       @PathVariable("id") UUID id, @RequestBody AgregarEntregaRutaRequestDTO dto);
 
-  ResponseEntity<RutaResponseDTO> iniciar(
-      @PathVariable("id") UUID id, @RequestBody IniciarRutaRequestDTO dto);
-
-  ResponseEntity<RutaResponseDTO> completar(@PathVariable("id") UUID id);
+  ResponseEntity<RutaResponseDTO> cambiarEstado(
+      @PathVariable("id") UUID id, @RequestBody CambioEstadoRutaRequestDTO dto);
 }

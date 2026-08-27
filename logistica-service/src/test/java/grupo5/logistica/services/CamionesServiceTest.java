@@ -11,9 +11,9 @@ import grupo5.logistica.dto.camiones.CamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionResponseDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.SolicitudNuevoCamion;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.services.impl.CamionesService;
-import grupo5.logistica.services.impl.ValidadorPatentes;
 import grupo5.logistica.services.mappers.CamionMapper;
 import java.util.List;
 import java.util.Optional;
@@ -25,15 +25,13 @@ class CamionesServiceTest {
 
   private ICamionRepository camionRepository;
   private CamionMapper camionMapper;
-  private ValidadorPatentes validadorPatentes;
   private CamionesService camionesService;
 
   @BeforeEach
   void setUp() {
     camionRepository = mock(ICamionRepository.class);
     camionMapper = mock(CamionMapper.class);
-    validadorPatentes = mock(ValidadorPatentes.class);
-    camionesService = new CamionesService(camionRepository, camionMapper, validadorPatentes);
+    camionesService = new CamionesService(camionRepository, camionMapper);
   }
 
   // ===================== crear() =====================
@@ -41,18 +39,18 @@ class CamionesServiceTest {
   @Test
   void crear_deberiaGuardarYDevolverDTO_cuandoDatosValidos() {
     CamionRequestDTO request = new CamionRequestDTO("AB123CD", 10f, 2f, 5000f);
-    Camion camion = mock(Camion.class);
+    SolicitudNuevoCamion solicitud = new SolicitudNuevoCamion("AB123CD", 10f, 2f, 5000f, List.of());
     CamionResponseDTO responseDTO =
         new CamionResponseDTO(
             UUID.randomUUID(), "AB123CD", 10f, 2f, 5000f, EstadoCamion.DISPONIBLE, null);
 
-    when(camionMapper.toDomain(request)).thenReturn(camion);
-    when(camionMapper.toResponseDTO(camion)).thenReturn(responseDTO);
+    when(camionRepository.findAll()).thenReturn(List.of());
+    when(camionMapper.toSolicitud(request, List.of())).thenReturn(solicitud);
+    when(camionMapper.toResponseDTO(any(Camion.class))).thenReturn(responseDTO);
 
     CamionResponseDTO resultado = camionesService.crear(request);
 
-    verify(validadorPatentes).validar("AB123CD");
-    verify(camionRepository).save(camion);
+    verify(camionRepository).save(any(Camion.class));
     assertEquals("AB123CD", resultado.patente());
     assertEquals(EstadoCamion.DISPONIBLE, resultado.estado());
   }
@@ -60,8 +58,11 @@ class CamionesServiceTest {
   @Test
   void crear_deberiaLanzarExcepcion_cuandoPatenteConFormatoInvalido() {
     CamionRequestDTO request = new CamionRequestDTO("INVALIDA", 10f, 2f, 5000f);
+    SolicitudNuevoCamion solicitud =
+        new SolicitudNuevoCamion("INVALIDA", 10f, 2f, 5000f, List.of());
 
-    doThrow(new ValidationException(null)).when(validadorPatentes).validar("INVALIDA");
+    when(camionRepository.findAll()).thenReturn(List.of());
+    when(camionMapper.toSolicitud(request, List.of())).thenReturn(solicitud);
 
     assertThrows(ValidationException.class, () -> camionesService.crear(request));
     verify(camionRepository, never()).save(any());
@@ -70,8 +71,13 @@ class CamionesServiceTest {
   @Test
   void crear_deberiaLanzarExcepcion_cuandoPatenteDuplicada() {
     CamionRequestDTO request = new CamionRequestDTO("AB123CD", 10f, 2f, 5000f);
+    Camion existente = mock(Camion.class);
+    SolicitudNuevoCamion solicitud =
+        new SolicitudNuevoCamion("AB123CD", 10f, 2f, 5000f, List.of("AB123CD"));
 
-    doThrow(new BusinessStateException(null)).when(validadorPatentes).validar("AB123CD");
+    when(existente.getPatente()).thenReturn("AB123CD");
+    when(camionRepository.findAll()).thenReturn(List.of(existente));
+    when(camionMapper.toSolicitud(request, List.of("AB123CD"))).thenReturn(solicitud);
 
     assertThrows(BusinessStateException.class, () -> camionesService.crear(request));
     verify(camionRepository, never()).save(any());
@@ -80,13 +86,10 @@ class CamionesServiceTest {
   // ===================== consultarTodos() =====================
 
   @Test
-  void consultarTodos_deberiaFiltrarDeshabilitados() {
+  void consultarTodos_deberiaConsultarSoloActivos() {
     Camion disponible = mock(Camion.class);
-    Camion deshabilitado = mock(Camion.class);
 
-    when(disponible.getEstado()).thenReturn(EstadoCamion.DISPONIBLE);
-    when(deshabilitado.getEstado()).thenReturn(EstadoCamion.DESHABILITADO);
-    when(camionRepository.findAll()).thenReturn(List.of(disponible, deshabilitado));
+    when(camionRepository.findActivos()).thenReturn(List.of(disponible));
 
     CamionResponseDTO dto =
         new CamionResponseDTO(
@@ -101,7 +104,7 @@ class CamionesServiceTest {
 
   @Test
   void consultarTodos_deberiaRetornarListaVacia_cuandoNoHayCamiones() {
-    when(camionRepository.findAll()).thenReturn(List.of());
+    when(camionRepository.findActivos()).thenReturn(List.of());
 
     List<CamionResponseDTO> resultado = camionesService.consultarTodos();
 
