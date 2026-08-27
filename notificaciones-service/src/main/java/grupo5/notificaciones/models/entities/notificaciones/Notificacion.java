@@ -17,15 +17,15 @@ import lombok.Getter;
 @Getter
 public class Notificacion implements Anonimizable, AggregateRoot {
   private UUID id;
-  private Persona persona; // antes: UUID personaId
+  private UUID personaId;
   private String mensaje;
   private LocalDateTime fechaCreacion;
   private EstadoNotificacion estadoNotificacion;
-  private List<CambioEstadoNotificacion> historialEstado; // NUEVO
+  private List<CambioEstadoNotificacion> historialEstado;
 
-  public Notificacion(Persona persona, String mensaje) { // antes recibía UUID
+  public Notificacion(UUID personaId, String mensaje) {
     this.id = UUID.randomUUID();
-    this.persona = persona;
+    this.personaId = personaId;
     this.mensaje = mensaje;
     this.fechaCreacion = LocalDateTime.now(ZoneId.systemDefault());
     this.historialEstado = new ArrayList<>();
@@ -41,13 +41,12 @@ public class Notificacion implements Anonimizable, AggregateRoot {
             anterior, nuevoEstado, LocalDateTime.now(ZoneId.systemDefault())));
   }
 
-  public void notificar(
-      NotificacionSender sender) { // antes: notificar(Persona persona, NotificacionSender sender)
-    if (this.persona == null) {
+  public void notificar(Persona persona, NotificacionSender sender) {
+    if (persona == null) {
       this.actualizarEstado(EstadoNotificacion.FALLIDA);
       return;
     }
-    List<MedioDeContacto> medios = this.ordenarMedios(); // ya no recibe persona por parámetro
+    List<MedioDeContacto> medios = this.ordenarMedios(persona);
 
     for (MedioDeContacto medio : medios) {
       try {
@@ -63,7 +62,7 @@ public class Notificacion implements Anonimizable, AggregateRoot {
     this.actualizarEstado(EstadoNotificacion.FALLIDA);
   }
 
-  public List<MedioDeContacto> ordenarMedios() { // pasa a público, usa this.persona
+  public List<MedioDeContacto> ordenarMedios(Persona persona) {
     return persona.getMediosDeContacto().stream()
         .sorted(Comparator.comparing(MedioDeContacto::getEsPredeterminado).reversed())
         .toList();

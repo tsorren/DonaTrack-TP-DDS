@@ -75,7 +75,7 @@ class NotificacionServiceTest {
     verify(eventPublisher, times(1)).publishEvent(any(NotificacionesCreadasEvent.class));
 
     assertEquals(1, captor.getValue().size());
-    assertEquals(donante, captor.getValue().get(0).getPersona());
+    assertEquals(donante.getId(), captor.getValue().get(0).getPersonaId());
   }
 
   @Test
@@ -113,7 +113,7 @@ class NotificacionServiceTest {
   void obtenerPorPersona_deberiaMeapearEntidadesADTO() {
     Persona persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
     Notificacion notificacion =
-        new Notificacion(persona, "Hola, tenés novedades"); // antes: personaId
+        new Notificacion(persona.getId(), "Hola, tenés novedades"); // antes: personaId
 
     when(repository.findByPersonaId(persona.getId())).thenReturn(List.of(notificacion));
 
