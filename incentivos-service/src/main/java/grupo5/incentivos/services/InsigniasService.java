@@ -4,6 +4,7 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.dto.InsigniaDTO;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
+import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.util.List;
 import java.util.UUID;
@@ -20,7 +21,15 @@ public class InsigniasService implements IInsigniasService {
 
   @Override
   public List<InsigniaDTO> obtenerInsignias(UUID donanteId) {
-    return obtenerDonante(donanteId).getInsignias().stream().map(InsigniaDTO::desde).toList();
+    return obtenerInsignias(donanteId, null);
+  }
+
+  @Override
+  public List<InsigniaDTO> obtenerInsignias(UUID donanteId, Boolean soloVisibles) {
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    List<InsigniaGanada> insignias =
+        Boolean.TRUE.equals(soloVisibles) ? donante.insigniasVisibles() : donante.getInsignias();
+    return insignias.stream().map(InsigniaDTO::desde).toList();
   }
 
   @Override

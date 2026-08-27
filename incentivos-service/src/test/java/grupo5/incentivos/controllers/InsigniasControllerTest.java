@@ -34,13 +34,28 @@ class InsigniasControllerTest {
     List<InsigniaDTO> dtos =
         List.of(new InsigniaDTO("Insignia 1", "Desc", "/icon.png", true, LocalDate.now()));
 
-    when(insigniasService.obtenerInsignias(donanteId)).thenReturn(dtos);
+    when(insigniasService.obtenerInsignias(donanteId, null)).thenReturn(dtos);
 
-    ResponseEntity<List<InsigniaDTO>> response = controller.obtenerInsignias(donanteId);
+    ResponseEntity<List<InsigniaDTO>> response = controller.obtenerInsignias(donanteId, null);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(dtos, response.getBody());
-    verify(insigniasService, times(1)).obtenerInsignias(donanteId);
+    verify(insigniasService, times(1)).obtenerInsignias(donanteId, null);
+  }
+
+  @Test
+  void obtenerInsignias_conSoloVisibles_deberiaDelegarAlServicio() {
+    UUID donanteId = UUID.randomUUID();
+    List<InsigniaDTO> dtos =
+        List.of(new InsigniaDTO("Insignia 1", "Desc", "/icon.png", true, LocalDate.now()));
+
+    when(insigniasService.obtenerInsignias(donanteId, true)).thenReturn(dtos);
+
+    ResponseEntity<List<InsigniaDTO>> response = controller.obtenerInsignias(donanteId, true);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(dtos, response.getBody());
+    verify(insigniasService, times(1)).obtenerInsignias(donanteId, true);
   }
 
   @Test

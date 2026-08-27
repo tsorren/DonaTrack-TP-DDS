@@ -444,7 +444,7 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
    - Resiliencia ante caídas del cliente de notificaciones en `InactividadService`.
 5. **Auditoría Crítica y Alineación de Casos de Uso Reales**:
    - **Consulta de Posición por Periodo**: Implementada en `IRankingService`, `RankingService` y `RankingController` (`GET /api/incentivos/ranking/posicion/{donanteId}?periodo=YYYY-MM`), resolviendo la limitación de solo poder consultar el último ranking.
-   - **Gestión Integral de Insignias**: Eliminado el filtro restrictivo en `InsigniasService.obtenerInsignias` para retornar todas las insignias con su bandera booleana `visible`, permitiendo la administración y reactivación de insignias desde el frontend.
+   - **Gestión Integral y Contrato Dual de Insignias**: Soporte para parámetro opcional `soloVisibles` en `IInsigniasService`, `InsigniasService`, `IInsigniasController` e `InsigniasController`. `GET /api/incentivos/donantes/{donanteId}/insignias?soloVisibles=true` retorna únicamente las insignias visibles (`donante.insigniasVisibles()`) para perfiles públicos/showcase, mientras que la consulta estándar sin parámetro o con `soloVisibles=false` retorna todas las insignias con su bandera `visible` para administración y reactivación en paneles de gestión privada.
    - **Unificación de Excepciones**: Estandarizado `BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO)` en todos los flujos de servicios.
    - **Determinismo y Deduplicación**: Desempate determinista por ID en `GestorDeRankings` y deduplicación de alertas por persona en `GestorDeInactivos`.
 

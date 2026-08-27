@@ -8,5 +8,7 @@ public interface IInsigniasService {
 
   List<InsigniaDTO> obtenerInsignias(UUID donanteId);
 
+  List<InsigniaDTO> obtenerInsignias(UUID donanteId, Boolean soloVisibles);
+
   void configurarVisibilidadInsignia(UUID donanteId, String nombreInsignia, boolean visible);
 }

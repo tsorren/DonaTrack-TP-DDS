@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 public interface IInsigniasController {
 
-  ResponseEntity<List<InsigniaDTO>> obtenerInsignias(@PathVariable UUID donanteId);
+  ResponseEntity<List<InsigniaDTO>> obtenerInsignias(
+      @PathVariable UUID donanteId, @RequestParam(required = false) Boolean soloVisibles);
 
   ResponseEntity<Void> configurarVisibilidad(
       @PathVariable UUID donanteId,

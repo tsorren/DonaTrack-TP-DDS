@@ -59,6 +59,24 @@ class InsigniasServiceTest {
   }
 
   @Test
+  void obtenerInsignias_conSoloVisiblesTrue_deberiaRetornarSoloInsigniasVisibles() {
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    Insignia ins1 = new Insignia("Insignia 1", "Desc", "url1");
+    Insignia ins2 = new Insignia("Insignia 2", "Desc", "url2");
+    donante.otorgarInsignia(ins1);
+    donante.otorgarInsignia(ins2);
+    donante.configurarVisibilidadInsignia("Insignia 2", false);
+    repository.save(donante);
+
+    List<InsigniaDTO> visibles = service.obtenerInsignias(donanteId, true);
+
+    assertEquals(1, visibles.size());
+    assertEquals("Insignia 1", visibles.getFirst().nombre());
+    assertTrue(visibles.getFirst().visible());
+  }
+
+  @Test
   void configurarVisibilidad_cuandoInsigniaExiste_deberiaActualizarVisibilidad() {
     UUID donanteId = UUID.randomUUID();
     DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
