@@ -23,6 +23,8 @@ public class CommonAsyncAutoConfiguration implements AsyncConfigurer {
   }
 
   @Override
+  @Bean(name = "taskExecutor")
+  @ConditionalOnMissingBean(name = "taskExecutor")
   public Executor getAsyncExecutor() {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(4);
@@ -31,6 +33,7 @@ public class CommonAsyncAutoConfiguration implements AsyncConfigurer {
     executor.setThreadNamePrefix("donatrack-async-");
     executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
     executor.setWaitForTasksToCompleteOnShutdown(true);
+    executor.setAwaitTerminationSeconds(30);
     executor.setTaskDecorator(mdcTaskDecorator());
     executor.initialize();
     return executor;
