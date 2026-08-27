@@ -6,6 +6,9 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.*;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
+import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -77,11 +80,6 @@ public class EntregasService implements IEntregasService {
 
     Entrega entrega = buscarEntrega(id);
 
-    // Crear solicitud con mapper
-    // Llamar gestor
-    // Persistir
-    // Comunicar eventos (HAY QUE GENERAR LOS EVENTOS EN EL DOMINIO)
-
     switch (request.estado()) {
       case ENTREGADA -> procesarEntregaEntregada(request.actor(), entrega);
       case NO_RECIBIDA -> procesarEntregaNoRecibida(
@@ -93,6 +91,8 @@ public class EntregasService implements IEntregasService {
     }
 
     entregasRepository.save(entrega);
+    publicarEventos(entrega);
+    entrega.clearDomainEvents();
     return entregaMapper.toResponseDTO(entrega);
   }
 
@@ -107,9 +107,6 @@ public class EntregasService implements IEntregasService {
     SolicitudTransicionEntrega solicitud = new ConfirmacionRecepcion(entrega, actor, null);
 
     GestorDeEntregas.cambiarEstado(solicitud);
-
-    Camion camion = buscarCamionDeEntrega(entrega);
-    comunicadorEventos.comunicarEntregaExitosa(entrega, camion);
   }
 
   private void procesarEntregaNoRecibida(
@@ -119,13 +116,21 @@ public class EntregasService implements IEntregasService {
     NoRecepcion solicitud = new NoRecepcion(entrega, actor, justificacion, esReplanificable);
 
     GestorDeEntregas.cambiarEstado(solicitud);
-
-    comunicadorEventos.comunicarEntregaFallida(solicitud);
   }
 
   private void procesarEntregaPendiente(String actor, Entrega entrega) {
     RegresoDeposito solicitud = new RegresoDeposito(entrega, actor);
     GestorDeEntregas.cambiarEstado(solicitud);
+  }
+
+  private void publicarEventos(Entrega entrega) {
+    for (EventoEntrega evento : entrega.getDomainEvents()) {
+      switch (evento) {
+        case EntregaConfirmada confirmada -> comunicadorEventos.comunicarEntregaExitosa(
+            confirmada, buscarCamionDeEntrega(entrega));
+        case EntregaFallida fallida -> comunicadorEventos.comunicarEntregaFallida(fallida);
+      }
+    }
   }
 
   private Entrega buscarEntrega(UUID id) {

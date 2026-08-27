@@ -8,6 +8,8 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.*;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -19,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 
 class EntregaServiceTest {
 
@@ -177,6 +180,8 @@ class EntregaServiceTest {
 
     Ruta ruta = mock(Ruta.class);
     Camion camion = mock(Camion.class);
+    EntregaConfirmada evento =
+        new EntregaConfirmada(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
 
@@ -184,6 +189,7 @@ class EntregaServiceTest {
     when(rutasRepository.findById(any())).thenReturn(Optional.of(ruta));
     when(ruta.getCamionId()).thenReturn(UUID.randomUUID());
     when(camionRepository.findById(any())).thenReturn(Optional.of(camion));
+    when(entrega.getDomainEvents()).thenReturn(List.of(evento));
 
     when(entregasRepository.save(entrega)).thenReturn(entrega);
     when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
@@ -194,7 +200,10 @@ class EntregaServiceTest {
     // Service,
     // el Gestor afectará a nuestro mock 'entrega', permitiéndonos verificar la llamada:
     verify(entrega).confirmarEntrega("actor");
-    verify(comunicadorEventos).comunicarEntregaExitosa(entrega, camion);
+    InOrder orden = inOrder(entregasRepository, comunicadorEventos, entrega);
+    orden.verify(entregasRepository).save(entrega);
+    orden.verify(comunicadorEventos).comunicarEntregaExitosa(evento, camion);
+    orden.verify(entrega).clearDomainEvents();
     assertEquals(dto, resultado);
   }
 
@@ -206,16 +215,21 @@ class EntregaServiceTest {
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.NO_RECIBIDA, "actor", "Motivo", false);
     EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
 
-    NoRecepcion solicitudEsperada = new NoRecepcion(entrega, "actor", "Motivo", false);
+    EntregaFallida evento =
+        new EntregaFallida(UUID.randomUUID(), UUID.randomUUID(), "Motivo", false);
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
     when(entregasRepository.save(entrega)).thenReturn(entrega);
     when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
+    when(entrega.getDomainEvents()).thenReturn(List.of(evento));
 
     EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
 
-    verify(entrega).negarEntrega("actor");
-    verify(comunicadorEventos).comunicarEntregaFallida(solicitudEsperada);
+    verify(entrega).negarEntrega("actor", "Motivo", false);
+    InOrder orden = inOrder(entregasRepository, comunicadorEventos, entrega);
+    orden.verify(entregasRepository).save(entrega);
+    orden.verify(comunicadorEventos).comunicarEntregaFallida(evento);
+    orden.verify(entrega).clearDomainEvents();
     assertEquals(dto, resultado);
   }
 

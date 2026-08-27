@@ -6,7 +6,8 @@ import grupo5.logistica.dto.eventos.EventoRutaAsignada;
 import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.entregas.NoRecepcion;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.services.ComunicadorEventosLogistica;
 import java.time.LocalDateTime;
@@ -47,26 +48,25 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
   }
 
   @Override
-  public void comunicarEntregaExitosa(Entrega entrega, Camion camion) {
+  public void comunicarEntregaExitosa(EntregaConfirmada evento, Camion camion) {
     eventPublisher.publicarEntregaExitosa(
         new EventoEntregaExitosa(
-            entrega.getId(),
-            entrega.getIdDonacion(),
+            evento.getEntregaId(),
+            evento.getDonacionId(),
             camion.getId(),
             camion.getPatente(),
-            ahora()));
+            evento.getTimestamp()));
   }
 
   @Override
-  public void comunicarEntregaFallida(NoRecepcion solicitud) {
-    Entrega entrega = solicitud.entrega();
+  public void comunicarEntregaFallida(EntregaFallida evento) {
     eventPublisher.publicarEntregaFallida(
         new EventoEntregaFallida(
-            entrega.getId(),
-            entrega.getIdDonacion(),
-            solicitud.justificacion(),
-            ahora(),
-            solicitud.replanificable()));
+            evento.getEntregaId(),
+            evento.getDonacionId(),
+            evento.getJustificacion(),
+            evento.getTimestamp(),
+            evento.isReplanificable()));
   }
 
   private static LocalDateTime ahora() {
