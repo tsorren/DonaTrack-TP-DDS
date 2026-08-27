@@ -313,3 +313,47 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Segregación de endpoints REST manteniendo idénticas las rutas de URI y parámetros de consulta.
 - Migración y generación de suites de tests unitarios aisladas por cada servicio especializado.
 - Verificación cruzada con Maven, JaCoCo y Spotless.
+
+---
+
+## Oleada 5: Tests de Schedulers (Jobs)
+
+### Problema
+1. **Ausencia de Pruebas Unitarias en Componentes Batch (`jobs/`)**: Los tres componentes de scheduling (`InactividadJob`, `RachaJob`, `RankingMensualJob`) no disponían de cobertura de tests unitarios que garantizaran la correcta delegación hacia los Application Services correspondientes (`IInactividadService`, `IMisionesDonacionService`, `IRankingService`).
+2. **Falta de Validación de Resiliencia ante Fallos en Schedulers**: No existía una prueba explícita que verificara que los errores no controlados (como caídas de n8n o fallos de infraestructura) capturados en `RankingMensualJob` fuesen adecuadamente atrapados y no propagasen excepciones que pudiesen comprometer los threads de Spring TaskScheduler.
+
+### Evidencia
+- Directorio `src/test/java/grupo5/incentivos/jobs/` inexistente.
+- Cero pruebas unitarias para `InactividadJob.java`, `RachaJob.java` y `RankingMensualJob.java`.
+
+### Objetivo
+1. **Implementar `InactividadJobTest`**:
+   - Validar que `job.ejecutar()` invoca exactamente una vez a `IInactividadService.procesarInactividad()`.
+2. **Implementar `RachaJobTest`**:
+   - Validar que `job.verificarRachasVencidas()` pasa el `YearMonth` correspondiente al mes en curso (`ZoneId.systemDefault()`) a `IMisionesDonacionService.verificarRachasVencidas(YearMonth)`.
+3. **Implementar `RankingMensualJobTest`**:
+   - Validar que `job.ejecutarRankingMensual()` pasa el periodo actual a `IRankingService.calcularYNotificar(YearMonth)`.
+   - Validar que ante cualquier `RuntimeException` lanzada por el servicio de ranking, el job maneja la excepción internamente (`assertDoesNotThrow`) sin interrumpir la ejecución.
+
+### Fuera de scope
+- Reorganización de infraestructura (`infrastructure/adapters/`, `infrastructure/schedulers/`) (Oleada 6+7).
+- Eliminación de wildcard imports restantes (Oleada 6+7).
+- Construcción de Object Mothers centralizados (Oleada 8).
+
+### Tests / Verificación
+- **Suites unitarias creadas**:
+  - `InactividadJobTest`: ✅ 1 test (delegación a `procesarInactividad`).
+  - `RachaJobTest`: ✅ 1 test (pasaje de `YearMonth` actual a `verificarRachasVencidas`).
+  - `RankingMensualJobTest`: ✅ 2 tests (cálculo/notificación con periodo actual y manejo resiliente ante fallos de servicio).
+- **Suite completa**:
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **90 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (`BUILD SUCCESS`).
+  - `mvn spotless:check -f incentivos-service/pom.xml`: ✅ **87 archivos limpios** (100% compliant).
+
+### Diseño resultante
+- La capa de schedulers (`jobs/`) cuenta ahora con cobertura de pruebas unitarias 100% aislada con Mockito, asegurando que cualquier cambio futuro en los contratos de los servicios especializados sea detectado inmediatamente por la suite de integración continua.
+- Se garantiza contractualmente la resiliencia en la ejecución periódica de jobs batch.
+
+### IA utilizada
+- Generación de tests unitarios con captura de argumentos (`ArgumentCaptor`) para verificación temporal de `YearMonth`.
+- Pruebas de resiliencia y verificación de no-propagación de excepciones.
+- Verificación cruzada y formateo automático con Spotless.
