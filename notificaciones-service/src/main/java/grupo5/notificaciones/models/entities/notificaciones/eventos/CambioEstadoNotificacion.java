@@ -2,7 +2,9 @@ package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import java.time.LocalDateTime;
+import lombok.Getter;
 
+@Getter
 public class CambioEstadoNotificacion {
   private final EstadoNotificacion estadoAnterior;
   private final EstadoNotificacion estadoNuevo;
