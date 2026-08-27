@@ -170,14 +170,10 @@ class DonacionIndependienteEstadosTest {
   @Test
   void getDomainEvents_retornaListaInmodificable() {
     donacion.asignar(ACTOR, receptor);
-    assertThrows(
-        UnsupportedOperationException.class,
-        () ->
-            donacion
-                .getDomainEvents()
-                .add(
-                    new EventoDonacionAsignada(
-                        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID())));
+    var events = donacion.getDomainEvents();
+    var nuevoEvento =
+        new EventoDonacionAsignada(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+    assertThrows(UnsupportedOperationException.class, () -> events.add(nuevoEvento));
   }
 
   @Test

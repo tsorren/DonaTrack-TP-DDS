@@ -21,7 +21,7 @@ public class ValidadorPersonaDuplicada {
    */
   public Optional<Persona> buscarDuplicado(Persona personaAImportar) {
     return personasRepository.findAll().stream()
-        .filter(personaExistente -> personaAImportar.esDuplicadaDe(personaExistente))
+        .filter(personaAImportar::esDuplicadaDe)
         .findFirst();
   }
 }

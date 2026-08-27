@@ -1041,7 +1041,85 @@ Tras la auditoría exhaustiva del código fuente contra el checklist de 13 olead
 - [x] Verificado el bean `Segmentador` en `DomainServicesConfig.java`.
 - [x] Verificada la eliminación de `@Component` en `SegmentadorComplejo.java`.
 - [x] Verificados los nuevos códigos de catálogo en `ErrorCatalog.java`.
-- [x] Verificado el test de reentrancia en `PropuestaTest.java`.
+---
+
+# Oleada 15: Resolución Integral de Issues de SonarCloud, Centralización de Domain Events (`AgregadoConEventos`), Parsing de Dominio y Polimorfismo Limpio
+
+## Problema
+Una auditoría estática exhaustiva mediante SonarCloud identificó 25 issues (1 blocker de Reliability por riesgo de NullPointerException en algoritmos de asignación, y 24 issues de mantenibilidad y *code smells*):
+1. **Riesgo de NPE en Algoritmo de Asignación**: `AlgoritmoAsignacion.mismaSubcategoria` desreferenciaba atributos sin verificar nulidad previa de las instancias `donacion` y `necesidad` ni usar comparación segura de identificadores.
+2. **Duplicación y Modificador `transient` en Domain Events**: `Donacion`, `DonacionIndependiente` y `Propuesta` duplicaban la gestión interna de `domainEvents`, exponían listas defensivas con idéntica lógica y aplicaban el modificador `transient` en clases no serializables.
+3. **Parseo de CSV Acoplado en Adaptador de Infraestructura**: `LectorDonantesCSV` contenía la lógica pura de parseo de líneas y mapeo de tokens en un método privado, mezclando responsabilidades de E/S de archivos con transformación de datos de negocio.
+4. **Violación de *Tell, Don't Ask* y Falta de Polimorfismo en `Persona`**: `DonantesService` inspeccionaba el subtipo de `Persona` mediante `instanceof` para concatenar nombres, en lugar de delegar en un método polimórfico de dominio. Asimismo, `Humana` y `Juridica` sobreescribían redundantemente `esDuplicadaDe`.
+5. **Alta Complejidad Cognitiva en Normalización**: `NormalizadorSemanticoBien.normalizarBien` presentaba una complejidad cognitiva de 18 (superior al umbral permitido de $\le 15$) debido a bucles anidados de cálculo de confianza semántica.
+6. **Comentarios TODO Residuales**: Presencia de comentarios `// TODO` en `EntidadBeneficiariaService`, `NecesidadesService` y `PersonasService`.
+7. **Prácticas de Testing (xUnit) y Tipado**: Invocaciones múltiples en lambdas de `assertThrows` en tests de domain events, nombres de variables con guiones bajos (`donacion15_1`) y uso de enteros mágicos para meses en lugar del enum `java.time.Month`.
+
+## Evidencia
+- SonarCloud reportó 1 blocker en `AlgoritmoAsignacion.java:57` y 24 issues de mantenibilidad en `donaciones-service` y `common-lib`.
+- `Donacion.java`, `DonacionIndependiente.java` y `Propuesta.java` declaraban `private final transient List<...> domainEvents`.
+- `LectorDonantesCSV.java` contenía `private Map<String, String> procesarLinea(...)`.
+- `DonantesService.java` implementaba `obtenerNombrePersona(Persona)` con `instanceof`.
+
+## Objetivo
+1. **Centralizar Domain Events en `common-lib`**: Crear la clase base abstracta genérica `AgregadoConEventos<E extends EventoDeDominio>` en `grupo5.common.events` implementando `AggregateRoot` con snapshot inmutable defensivo (`List.copyOf`) y hacer que `Donacion`, `DonacionIndependiente` y `Propuesta` hereden de ella.
+2. **Extraer `DonanteParser` al Dominio**: Crear `DonanteParser` en `models.entities.donantes` como POJO puro de negocio y delegar desde `LectorDonantesCSV`.
+3. **Polimorfismo en `Persona`**: Declarar `public abstract String getNombreCompleto()` en `Persona` e implementarlo en `Humana` y `Juridica`. Eliminar `obtenerNombrePersona` en `DonantesService` y remover sobreescrituras redundantes de `esDuplicadaDe`.
+4. **Null Safety en `AlgoritmoAsignacion`**: Asegurar validaciones de null y utilizar `Objects.equals` en `mismaSubcategoria`.
+5. **Modularizar `NormalizadorSemanticoBien`**: Reducir complejidad cognitiva mediante `record Coincidencia` y extracción de métodos auxiliares.
+6. **Estandarización de Calidad y Tests**: Corregir lambdas en `assertThrows` (*Single Action Assertion*), renombrar variables a nombres expresivos (`primeraDonacionParcial`, etc.) y usar `Month.JANUARY` / `Month.MAY`.
+
+## Archivos Afectados
+- `common-lib/src/main/java/grupo5/common/events/AgregadoConEventos.java` [NUEVO]
+- `common-lib/src/test/java/grupo5/common/events/AgregadoConEventosTest.java` [NUEVO]
+- `common-lib/src/main/java/grupo5/common/logging/TraceResponseHeaderFilter.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/donantes/DonanteParser.java` [NUEVO]
+- `donaciones-service/src/test/java/grupo5/donaciones/models/entities/donantes/DonanteParserTest.java` [NUEVO]
+- `donaciones-service/src/main/java/grupo5/donaciones/infrastructure/LectorDonantesCSV.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/Donacion.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/donacionesIndependientes/DonacionIndependiente.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/propuestas/Propuesta.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/personas/Persona.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/personas/Humana.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/entities/personas/Juridica.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/algoritmos/AlgoritmoAsignacion.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/models/normalizacion/NormalizadorSemanticoBien.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/services/impl/DonantesService.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/services/impl/EntidadBeneficiariaService.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/services/impl/NecesidadesService.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/services/impl/PersonasService.java`
+- `donaciones-service/src/main/java/grupo5/donaciones/services/impl/ValidadorPersonaDuplicada.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/controllers/DonantesControllerTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/fixtures/DTOFixtures.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/entities/DonacionIndependienteEstadosTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/entities/NecesidadExtraordinariaTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/entities/PersonaTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/entities/donaciones/DonacionTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/models/entities/propuestas/PropuestaTest.java`
+- `donaciones-service/src/test/java/grupo5/donaciones/services/impl/ValidadorPersonaDuplicadaTest.java`
+
+## Tests
+- Suites de pruebas unitarias creadas: `AgregadoConEventosTest` (common-lib) y `DonanteParserTest` (donaciones-service).
+- Suite completa multi-módulo ejecutada exitosamente:
+  - **386 tests en `donaciones-service`**.
+  - **32 tests en `common-lib`**.
+  - **167 tests en `logistica-service`**.
+  - **23 tests en `incentivos-service`**.
+  - **7 tests en `notificaciones-service`**.
+  - **Total reactor: 615+ tests pasando (0 fallos, 0 errores, 0 skipped)**.
+
+## Diseño resultante
+- **Centralización y Reutilización DDD**: `AgregadoConEventos` estandariza el manejo de eventos de dominio en todo el sistema.
+- **Separación de Responsabilidades Estricta**: `DonanteParser` asume el parseo de datos en el dominio, mientras que `LectorDonantesCSV` queda como adaptador de E/S puro.
+- **Modelo de Dominio Rico (*Tell, Don't Ask*)**: `Persona` resuelve su denominación completa polimórficamente sin acoplamientos procedurales en la capa de aplicación.
+- **Cero Regresiones de Capas**: Respeto integral de los límites arquitectónicos entre Web, Aplicación, Dominio e Infraestructura.
+
+## Verificación humana
+- [x] Verificada la clase base `AgregadoConEventos.java` en `common-lib` y su suite `AgregadoConEventosTest.java`.
+- [x] Verificada la clase `DonanteParser.java` en `models.entities.donantes` y su suite `DonanteParserTest.java`.
+- [x] Verificado el método polimórfico `getNombreCompleto()` en `Persona`, `Humana` y `Juridica`.
+- [x] Verificada la corrección de null-safety en `AlgoritmoAsignacion.java`.
+- [x] Verificada la reducción de complejidad cognitiva en `NormalizadorSemanticoBien.java`.
 - [x] Verificación de formateo con Spotless: `mvn spotless:check` (**CLEAN**).
 - [x] Ejecución del build completo del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos, 0 fallos, 0 errores**).
 

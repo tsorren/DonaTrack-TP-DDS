@@ -9,6 +9,7 @@ import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ class ValidadorPersonaDuplicadaTest {
   }
 
   private static Humana humanaConDocumento(String documento) {
-    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, 1, 1));
+    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
     humana.actualizarDocumento(TipoDocumento.DNI, documento);
     return humana;
   }

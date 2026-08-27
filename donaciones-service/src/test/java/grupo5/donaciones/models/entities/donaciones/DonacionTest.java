@@ -154,9 +154,8 @@ class DonacionTest {
   @Test
   void getDomainEvents_debeRetornarListaInmodificable() {
     List<EventoDonacion> events = donacion.getDomainEvents();
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> events.add(new DonacionCargada(UUID.randomUUID(), UUID.randomUUID())));
+    EventoDonacion nuevoEvento = new DonacionCargada(UUID.randomUUID(), UUID.randomUUID());
+    assertThrows(UnsupportedOperationException.class, () -> events.add(nuevoEvento));
   }
 
   @Test

@@ -62,7 +62,7 @@ public class PersonasService implements IPersonasService {
 
     mapper.updateEntity(persona, input);
 
-    if (persona instanceof Juridica juridica) { // TODO: sacar instanceof si se puede
+    if (persona instanceof Juridica juridica) {
       juridica.getRepresentantes().forEach(repository::save);
     }
 

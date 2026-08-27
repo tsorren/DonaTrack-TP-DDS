@@ -7,6 +7,7 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class AlgoritmoAsignacion {
 
@@ -52,9 +53,10 @@ public abstract class AlgoritmoAsignacion {
   }
 
   protected boolean mismaSubcategoria(DonacionIndependiente donacion, Necesidad necesidad) {
-    return donacion.getSubcategoriaId() != null
-        && necesidad.getSubcategoriaId() != null
-        && donacion.getSubcategoriaId().equals(necesidad.getSubcategoriaId());
+    return donacion != null
+        && necesidad != null
+        && donacion.getSubcategoriaId() != null
+        && Objects.equals(donacion.getSubcategoriaId(), necesidad.getSubcategoriaId());
   }
 
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
