@@ -8,7 +8,7 @@ public final class ValidadorPatentes {
 
   private static final String REGEX_PATENTE = "^[A-Z]{3}\\d{3}$|^[A-Z]{2}\\d{3}[A-Z]{2}$";
 
-  private ValidadorPatentes() {}
+  public ValidadorPatentes() {}
 
   public static boolean validar(String patente, List<String> patentesExistentes) {
     validarFormato(patente);

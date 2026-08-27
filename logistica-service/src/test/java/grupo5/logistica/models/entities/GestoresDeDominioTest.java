@@ -56,6 +56,38 @@ class GestoresDeDominioTest {
   }
 
   @Test
+  void gestorDeCamionesNoRegistraHistorialCuandoLaTransicionEsInvalida() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeCamiones.cambiarEstado(camion, EstadoCamion.EN_RUTA));
+
+    assertTrue(camion.getHistorialEstado().isEmpty());
+  }
+
+  @Test
+  void choferCambiarEstadoDelegaYConservaElHistorial() {
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+
+    chofer.cambiarEstado(EstadoChofer.DESHABILITADO);
+    chofer.cambiarEstado(EstadoChofer.DISPONIBLE);
+
+    assertEquals(EstadoChofer.DISPONIBLE, chofer.getEstado());
+    assertEquals(2, chofer.getHistorialEstados().size());
+    assertEquals(EstadoChofer.DESHABILITADO, chofer.getHistorialEstados().getFirst().estadoNuevo());
+  }
+
+  @Test
+  void choferCambiarEstadoNoRegistraHistorialCuandoLaTransicionEsInvalida() {
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+
+    assertThrows(ValidationException.class, () -> chofer.cambiarEstado(EstadoChofer.EN_RUTA));
+
+    assertTrue(chofer.getHistorialEstados().isEmpty());
+  }
+
+  @Test
   void gestorDeEntregasProcesaLaSolicitudSinConocerDTOs() {
     Entrega entrega = crearEntrega();
     entrega.iniciarRuta("chofer");
