@@ -705,12 +705,12 @@ grep -rn "import .*\.\*" src/main/java/
 ```
 
 **Checklist Oleadas 6+7:**
-- [ ] `NotificacionesClient` y `N8nClient` reubicados en subcarpeta semántica
-- [ ] Wildcard imports eliminados en todos los archivos de producción
-- [ ] `.gitkeep` eliminado si innecesario
-- [ ] `IIncentivosController` e `IRankingController` completos
-- [ ] `find src/test -name "*Tests.java"` → CERO
-- [ ] Suite verde + no-regresión oleadas 1-5
+- [x] `NotificacionesClient` y `N8nClient` reubicados en subcarpeta semántica
+- [x] Wildcard imports eliminados en todos los archivos de producción
+- [x] `.gitkeep` eliminado si innecesario
+- [x] `IIncentivosController` e `IRankingController` completos
+- [x] `find src/test -name "*Tests.java"` → CERO
+- [x] Suite verde + no-regresión oleadas 1-5
 
 ---
 
