@@ -4,14 +4,19 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.logging.TraceResponseHeaderFilter;
 import grupo5.donaciones.controllers.impl.DonacionesController;
 import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
+import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
 import grupo5.donaciones.services.IDonacionesService;
@@ -42,7 +47,11 @@ class DonacionesControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .addFilters(new TraceResponseHeaderFilter())
+            .build();
     objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
   }
@@ -52,11 +61,13 @@ class DonacionesControllerTest {
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
             "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    ItemDonacionInputDTO itemInput =
+        new ItemDonacionInputDTO("Arroz 1kg", null, null, null, 1.0, 0.002, 10);
     DonacionInputDTO input =
         new DonacionInputDTO(
             UUID.randomUUID(),
             "descripcion",
-            List.of(),
+            List.of(itemInput),
             "Deposito Central",
             dirDTO,
             LocalDateTime.now());
@@ -83,7 +94,32 @@ class DonacionesControllerTest {
             post("/api/donaciones")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
-        .andExpect(status().isCreated());
+        .andExpect(status().isCreated())
+        .andExpect(header().exists("X-Trace-Id"));
+  }
+
+  @Test
+  void cargarDonacion_conItemsVacios_deberiaRetornarBadRequest() throws Exception {
+    DireccionInputDTO dirDTO =
+        new DireccionInputDTO(
+            "Calle Falsa", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    DonacionInputDTO input =
+        new DonacionInputDTO(
+            UUID.randomUUID(),
+            "descripcion",
+            List.of(),
+            "Deposito Central",
+            dirDTO,
+            LocalDateTime.now());
+
+    mockMvc
+        .perform(
+            post("/api/donaciones")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
+        .andExpect(jsonPath("$.errors[0].field").value("items"));
   }
 
   @Test

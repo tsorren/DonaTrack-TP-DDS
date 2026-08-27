@@ -73,6 +73,11 @@ public final class Humana extends Persona {
   }
 
   @Override
+  public String getNombreCompleto() {
+    return this.nombre + " " + this.apellido;
+  }
+
+  @Override
   public void anonimizar() {
     this.nombre = Anonimizable.VALOR_STRING;
     this.apellido = Anonimizable.VALOR_STRING;

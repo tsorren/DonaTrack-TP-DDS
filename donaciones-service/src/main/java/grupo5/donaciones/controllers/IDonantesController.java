@@ -1,5 +1,7 @@
 package grupo5.donaciones.controllers;
 
+import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
+import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import java.util.List;
@@ -14,4 +16,6 @@ public interface IDonantesController {
   ResponseEntity<DonanteOutputDTO> obtenerDonante(UUID id);
 
   ResponseEntity<Void> eliminarDonante(UUID id);
+
+  ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(ArchivoInputDTO input);
 }
