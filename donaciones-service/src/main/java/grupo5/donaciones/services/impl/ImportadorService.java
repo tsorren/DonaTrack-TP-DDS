@@ -5,9 +5,12 @@ import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
-import grupo5.donaciones.infrastructure.LectorCSVMejorado;
 import grupo5.donaciones.models.entities.donantes.Archivo;
-import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.TipoPersona;
+import grupo5.donaciones.models.ports.CargadorDonantes;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
@@ -26,7 +29,7 @@ import org.springframework.stereotype.Service;
 public class ImportadorService implements IImportadorService {
 
   private final IArchivoDonantesRepository archivoRepository;
-  private final LectorCSVMejorado lectorCSV;
+  private final CargadorDonantes lectorCSV;
   private final PersonaMapper personaMapper;
   private final ValidadorPersonaDuplicada validadorDuplicados;
   private final IPersonasService personaService;
@@ -35,7 +38,7 @@ public class ImportadorService implements IImportadorService {
 
   public ImportadorService(
       IArchivoDonantesRepository archivoRepository,
-      LectorCSVMejorado lectorCSV,
+      CargadorDonantes lectorCSV,
       PersonaMapper personaMapper,
       ValidadorPersonaDuplicada validadorDuplicados,
       IPersonasService personaService,
@@ -71,11 +74,7 @@ public class ImportadorService implements IImportadorService {
         }
       }
 
-      if (erroresDeNegocio > 0) {
-        archivo.marcarComoCompletadoConErrores();
-      } else {
-        archivo.marcarComoProcesado();
-      }
+      archivo.finalizarProcesamiento(erroresDeNegocio);
       archivoRepository.save(archivo);
 
     } catch (Exception e) {

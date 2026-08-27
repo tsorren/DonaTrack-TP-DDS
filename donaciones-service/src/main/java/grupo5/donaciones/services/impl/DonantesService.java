@@ -12,6 +12,7 @@ import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.mappers.DonanteMapper;
 import java.time.LocalDateTime;
@@ -26,14 +27,14 @@ public class DonantesService implements IDonantesService {
   private final DonanteMapper donanteMapper;
   private final IncentivosFeignClient incentivosFeignClient;
   private final NotificacionesFeignClient notificacionesFeignClient;
-  private final grupo5.donaciones.models.repositories.IPersonasRepository personasRepository;
+  private final IPersonasRepository personasRepository;
 
   public DonantesService(
       IDonantesRepository donantesRepository,
       DonanteMapper donanteMapper,
       IncentivosFeignClient incentivosFeignClient,
       NotificacionesFeignClient notificacionesFeignClient,
-      grupo5.donaciones.models.repositories.IPersonasRepository personasRepository) {
+      IPersonasRepository personasRepository) {
     this.donantesRepository = donantesRepository;
     this.donanteMapper = donanteMapper;
     this.incentivosFeignClient = incentivosFeignClient;
@@ -70,7 +71,7 @@ public class DonantesService implements IDonantesService {
   }
 
   private static String obtenerNombrePersona(Persona persona) {
-    if (persona instanceof Humana humana) {
+    if (persona instanceof Humana humana) { // TODO: sacar el instance of y reemplazar x switch
       return humana.getNombre() + " " + humana.getApellido();
     } else if (persona instanceof Juridica juridica) {
       return juridica.getRazonSocial();
