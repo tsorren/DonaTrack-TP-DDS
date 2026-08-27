@@ -55,11 +55,12 @@ class GestionDonanteServiceTest {
     UUID id = UUID.randomUUID();
     service.registrarDonante(
         IncentivosFixturesTest.registrarDonante(id, UUID.randomUUID(), "Inicial"));
+    ModificarDonanteRequest request = IncentivosFixturesTest.modificarDonante("Modificado");
 
-    service.modificarDonante(id, IncentivosFixturesTest.modificarDonante("Modificado"));
+    service.modificarDonante(id, request);
 
     DonanteIncentivos guardado = repository.findById(id).orElseThrow();
-    assertEquals("Modificado", guardado.getNombre());
+    assertEquals(request.nombre(), guardado.getNombre());
   }
 
   @Test
@@ -73,13 +74,14 @@ class GestionDonanteServiceTest {
   @Test
   void obtenerDonante_cuandoExiste_deberiaRetornarEntidad() {
     UUID id = UUID.randomUUID();
-    service.registrarDonante(IncentivosFixturesTest.registrarDonante(id, id, "Test"));
+    RegistrarDonanteRequest request = IncentivosFixturesTest.registrarDonante(id, id, "Test");
+    service.registrarDonante(request);
 
     DonanteIncentivos donante = service.obtenerDonante(id);
 
     assertNotNull(donante);
     assertEquals(id, donante.getId());
-    assertEquals("Test", donante.getNombre());
+    assertEquals(request.nombre(), donante.getNombre());
   }
 
   @Test

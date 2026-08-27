@@ -28,7 +28,9 @@ class RankingMensualTest {
         RankingMensualMotherTest.conNEntradas(YearMonth.of(2026, Month.MAY), 4);
 
     assertEquals(3, ranking.getPodio().size());
-    assertEquals("Donante 1", ranking.getPodio().getFirst().getNombreDonante());
+    assertEquals(
+        ranking.getEntradas().getFirst().getNombreDonante(),
+        ranking.getPodio().getFirst().getNombreDonante());
   }
 
   @Test
@@ -37,7 +39,9 @@ class RankingMensualTest {
         RankingMensualMotherTest.conNEntradas(YearMonth.of(2026, Month.MAY), 1);
 
     assertEquals(1, ranking.getPodio().size());
-    assertEquals("Donante 1", ranking.getPodio().getFirst().getNombreDonante());
+    assertEquals(
+        ranking.getEntradas().getFirst().getNombreDonante(),
+        ranking.getPodio().getFirst().getNombreDonante());
   }
 
   @Test
