@@ -475,3 +475,70 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Refactorización de suites de pruebas para eliminar manipulaciones directas de colecciones internas.
 - Generación de pruebas exhaustivas para controladores REST, listeners de eventos, adaptadores y DTOs.
 - Verificación mecánica con herramientas de análisis de patrones (`ripgrep`), validación continua con Maven y formateo con Spotless.
+
+---
+
+## Oleada 9 — Validación en DTOs, Controladores REST, Códigos HTTP y Trazabilidad Distribuida
+
+### Problema
+- **Bordes HTTP Desprotegidos**: Los DTOs de entrada carecían de anotaciones declarativas Jakarta Bean Validation (`@NotNull`, `@NotBlank`, `@Size`, `@NotEmpty`, `@Positive`, `@PastOrPresent`), permitiendo que cargas útiles incompletas, con cadenas en blanco o con fechas en el futuro llegaran hasta la lógica de negocio.
+- **Falta de Validación Automática en Controladores**: Los controladores REST no estaban anotados con `@Validated` ni los `@RequestBody` con `@Valid`, omitiendo la interceptación automática de errores por Spring MVC.
+- **Puntos Ciegos en el Manejador Global de Excepciones**: Excepciones de conversión de tipos en paths (`MethodArgumentTypeMismatchException`, ej. UUIDs malformados) y errores de parseo de fechas (`DateTimeParseException`) no estaban explícitamente capturados en `GlobalExceptionHandler`, provocando errores HTTP 500 en lugar de respuestas limpias HTTP 400 Bad Request.
+- **Trazabilidad Desconectada**: La aplicación no escaneaba el paquete compartido `grupo5`, impidiendo que los filtros de encabezados `X-Trace-Id` (`TraceResponseHeaderFilter`), interceptores Feign salientes (`FeignTraceRequestInterceptor`) y el manejador global fueran auto-configurados. Además, los jobs en background carecían de inicialización de `traceId` en el MDC.
+
+### Evidencia
+- Requests con campos nulos o nombres vacíos no eran rechazados en la capa web.
+- `IncentivosServiceApplication` anotado con `@SpringBootApplication` sin `scanBasePackages = "grupo5"`.
+- Respuestas 500 al enviar UUIDs malformados en `@PathVariable` o periodos inválidos en `@RequestParam`.
+
+### Objetivo
+1. Implementar validaciones declarativas Jakarta Bean Validation en todos los DTOs de solicitud (`RegistrarDonanteRequest`, `NuevaDonacionRequest`, `DonacionExitosaRequest`, `ModificarDonanteRequest`).
+2. Anotar los 5 controladores REST segregados y sus interfaces con `@Valid` y `@Validated`.
+3. Estandarizar códigos HTTP semánticos (201 Created, 200 OK, 204 No Content, 400 Bad Request, 404 Not Found, 409 Conflict).
+4. Robustecer `GlobalExceptionHandler` en `common-lib` para capturar `MethodArgumentTypeMismatchException` y `DateTimeParseException`.
+5. Habilitar escaneo de componentes compartidos (`scanBasePackages = "grupo5"`) e inicialización contextual de MDC en los schedulers de background.
+6. Diseñar suites de pruebas de validación unitaria (`DTOValidationTest`) e integración web (`ControllersWebMvcValidationTest`).
+
+### Qué se hizo
+1. **Validaciones Declarativas en DTOs**:
+   - `RegistrarDonanteRequest`: `@NotNull` en `idDonante` e `idPersona`, `@NotBlank` y `@Size(min = 2, max = 100)` en `nombre`.
+   - `NuevaDonacionRequest`: `@NotNull` en `donanteId` y `fecha`, `@PastOrPresent` en `fecha`, `@NotEmpty` en `categorias` con validación de elementos no vacíos y con límite de longitud (`List<@NotBlank @Size(max = 50) String>`), y `@Positive` en `cantidadBienes`.
+   - `DonacionExitosaRequest`: `@NotNull` en `donanteId` y `organizacionId`.
+   - `ModificarDonanteRequest`: `@NotBlank` y `@Size(min = 2, max = 100)` en `nombre`.
+2. **Controladores REST y Códigos HTTP**:
+   - Agregado `@Valid` en todos los `@RequestBody` y `@Validated` a nivel de clase en `DonanteIncentivosController`, `MisionesDonacionController`, `InsigniasController`, `MetricasIncentivosController` y `RankingController`.
+   - Agregada validación de consistencia entre `@PathVariable UUID donanteId` y `@RequestBody.idDonante()` en `DonanteIncentivosController.registrarDonante`.
+   - Validación de regex con `@Pattern(regexp = "^\\d{4}-(0[1-9]|1[0-2])$")` en el parámetro `periodo` de `RankingController`.
+   - Códigos de respuesta: `201 Created` en registro, `200 OK` en transacciones/consultas, `204 No Content` en bajas y rankings vacíos.
+3. **Robustecimiento de `GlobalExceptionHandler` en `common-lib`**:
+   - Implementado handler para `MethodArgumentTypeMismatchException` retornando 400 Bad Request con detalle del parámetro y tipo esperado.
+   - Implementado handler para `DateTimeParseException` retornando 400 Bad Request con detalle del formato inválido.
+4. **Trazabilidad Distribuida (`X-Trace-Id`)**:
+   - Configurado `@SpringBootApplication(scanBasePackages = "grupo5")` en `IncentivosServiceApplication`.
+   - Inyección contextual de `MDC.put("traceId", UUID.randomUUID().toString().replace("-", ""))` con limpieza en bloque `finally` en `InactividadJob`, `RachaJob` y `RankingMensualJob`.
+5. **Nuevas Suites de Testing**:
+   - `DTOValidationTest`: 11 casos de prueba cubriendo límites, nulos, blancos, colecciones vacías y fechas futuras con `ValidatorFactory`.
+   - `ControllersWebMvcValidationTest`: 11 casos de integración WebMvc con `MockMvc` validando respuestas HTTP 201, 200, 204, 400 (Bean Validation, TypeMismatch, DateParse, Path vs Body), 404 y verificación de la cabecera `X-Trace-Id`.
+
+### Fuera de scope
+- Preparación para persistencia JPA / Hibernate (Oleada 10).
+- Estrategias de herencia y mapeo relacional de misiones e insignias (Oleada 10).
+
+### Tests / Verificación
+- **Pruebas de Validación y Controladores**:
+  - `DTOValidationTest`: ✅ 11 tests en verde.
+  - `ControllersWebMvcValidationTest`: ✅ 11 tests en verde.
+- **Suite completa**:
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **166 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (`BUILD SUCCESS`).
+  - `mvn clean test` (reactor completo): ✅ **7/7 módulos exitosos, 100% en verde** (`BUILD SUCCESS`).
+  - `mvn spotless:check`: ✅ **100% de archivos limpios en todo el repositorio**.
+
+### Diseño resultante
+- El microservicio `incentivos-service` cuenta con una arquitectura de bordes HTTP totalmente blindada bajo el principio de "Defense in Depth", con validaciones declarativas automáticas en DTOs, validaciones de parámetros en controladores, respuestas de error uniformes con códigos HTTP estándar y trazabilidad distribuida end-to-end con `X-Trace-Id`.
+
+### IA utilizada
+- Análisis crítico de puntos ciegos y vectores de mejora en la capa de transporte HTTP y manejo global de excepciones.
+- Generación de restricciones declarativas Jakarta Bean Validation y validaciones temporales con `@PastOrPresent`.
+- Configuración de infraestructura de trazabilidad distribuida con Spring Boot Component Scanning y MDC en Schedulers.
+- Construcción de suites de pruebas con `jakarta.validation.Validator` y `@WebMvcTest` con `MockMvc`.
+

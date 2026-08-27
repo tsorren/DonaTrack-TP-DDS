@@ -872,11 +872,11 @@ public record DonacionExitosaRequest(
 public record ModificarDonanteRequest(@NotBlank String nombre) {}
 ```
 
-#### RF-INC-9.2: `@Valid` en todos los `@RequestBody`
+#### RF-INC-9.2: `@Valid` y `@Validated` en todos los `@RequestBody` y Controladores Especializados
 
-Agregar `@Valid` en `IncentivosController` y `RankingController` para todos los `@RequestBody`.
+Agregar `@Valid` en los controladores REST segregados (`DonanteIncentivosController`, `MisionesDonacionController`, `InsigniasController`, `MetricasIncentivosController`, `RankingController`) y sus respectivas interfaces para todos los `@RequestBody`, y `@Validated` a nivel de clase para validación declarativa de parámetros.
 
-#### RF-INC-9.3: Verificar GlobalExceptionHandler de common-lib
+#### RF-INC-9.3: Verificar GlobalExceptionHandler de common-lib y Trazabilidad Distribuida
 
 Confirmar que cubre:
 
@@ -884,22 +884,29 @@ Confirmar que cubre:
 |---|---|
 | `MethodArgumentNotValidException` | 400 |
 | `ValidationException` | 400 |
-| `BusinessStateException` | 409 |
+| `MethodArgumentTypeMismatchException` | 400 |
+| `DateTimeParseException` | 400 |
+| `HandlerMethodValidationException` | 400 |
+| `ConstraintViolationException` | 400 |
+| `BusinessStateException` (Recursos no encontrados) | 404 |
+| `BusinessStateException` (Conflictos de estado) | 409 |
 | `RecursoNoEncontradoException` | 404 |
-| `FeignException` (sin `ex.getMessage()`) | Mapeo 1:1 |
+| `FeignException` (sin `ex.getMessage()`) | Mapeo 1:1 / 502 |
 
-#### RF-INC-9.4: Tests de controllers
+Además, `IncentivosServiceApplication` configurado con `@SpringBootApplication(scanBasePackages = "grupo5")` activa `TraceResponseHeaderFilter` inyectando `X-Trace-Id` en toda respuesta HTTP y `FeignTraceRequestInterceptor` propagando el header downstream.
 
-- `IncentivosControllerTest`: 400 para campos nulos, 404 para donante inexistente, 409 para transición inválida.
-- `RankingControllerTest`: 200 y casos de ranking vacío (204).
+#### RF-INC-9.4: Tests de validación y controllers WebMvc
+
+- `DTOValidationTest`: Pruebas unitarias directas con `ValidatorFactory` para todos los DTOs y casos de borde (nulos, blancos, longitudes `@Size`, fechas futuras `@PastOrPresent`, colecciones vacías `@NotEmpty`, cantidades `@Positive`).
+- `ControllersWebMvcValidationTest`: 400 para payloads inválidos/inconsistencias de path vs body/parámetros malformados, 201 Created para alta de donantes, 200 OK para operaciones exitosas, 204 No Content para bajas y rankings vacíos, 404 Not Found para entidades inexistentes, y verificación de presencia del header `X-Trace-Id`.
 
 **Checklist Oleada 9:**
-- [ ] Todos los DTOs de entrada con validaciones declarativas
-- [ ] Todos los `@RequestBody` con `@Valid`
-- [ ] `GlobalExceptionHandler` cubre los 7 casos listados
-- [ ] `FeignException` no expone `ex.getMessage()`
-- [ ] Tests de controller para 400, 404, 409
-- [ ] Suite verde + no-regresión oleadas 1-8
+- [x] Todos los DTOs de entrada con validaciones declarativas
+- [x] Todos los `@RequestBody` con `@Valid`
+- [x] `GlobalExceptionHandler` cubre los 7 casos listados
+- [x] `FeignException` no expone `ex.getMessage()`
+- [x] Tests de controller para 400, 404, 409
+- [x] Suite verde + no-regresión oleadas 1-8
 
 ---
 

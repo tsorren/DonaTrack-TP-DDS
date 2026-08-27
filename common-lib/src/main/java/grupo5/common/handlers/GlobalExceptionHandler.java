@@ -9,6 +9,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.common.responses.ErrorResponse;
 import grupo5.common.responses.FieldErrorDTO;
 import jakarta.validation.ConstraintViolationException;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -208,6 +210,44 @@ public class GlobalExceptionHandler {
         ex.getMessage(),
         ex);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorResponse(ex));
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatch(
+      MethodArgumentTypeMismatchException ex) {
+    String paramName = ex.getName();
+    String requiredType =
+        ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "desconocido";
+    String detail =
+        String.format(
+            "El parámetro '%s' debe ser de tipo '%s'. Valor recibido: '%s'",
+            paramName, requiredType, ex.getValue());
+
+    log.warn(
+        "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Type mismatch: {}",
+        ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
+        ex.getClass().getSimpleName(),
+        detail);
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
+  }
+
+  @ExceptionHandler(DateTimeParseException.class)
+  public ResponseEntity<ErrorResponse> handleDateTimeParseException(DateTimeParseException ex) {
+    String detail =
+        String.format(
+            "Formato de fecha/periodo inválido: '%s'. Verifique la sintaxis esperada.",
+            ex.getParsedString());
+
+    log.warn(
+        "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Date time parse error: {}",
+        ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
+        ex.getClass().getSimpleName(),
+        detail);
+
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
   }
 
   @ExceptionHandler(IllegalArgumentException.class)

@@ -4,9 +4,11 @@ import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.MisionDTO;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
 import grupo5.incentivos.services.IMisionesDonacionService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/incentivos")
+@Validated
 public class MisionesDonacionController implements IMisionesDonacionController {
 
   private final IMisionesDonacionService misionesDonacionService;
@@ -26,14 +29,15 @@ public class MisionesDonacionController implements IMisionesDonacionController {
 
   @Override
   @PostMapping("/donaciones")
-  public ResponseEntity<Void> procesarDonacion(@RequestBody NuevaDonacionRequest request) {
+  public ResponseEntity<Void> procesarDonacion(@Valid @RequestBody NuevaDonacionRequest request) {
     misionesDonacionService.procesarDonacion(request);
     return ResponseEntity.ok().build();
   }
 
   @Override
   @PostMapping("/donaciones/exitosa")
-  public ResponseEntity<Void> procesarDonacionExitosa(@RequestBody DonacionExitosaRequest request) {
+  public ResponseEntity<Void> procesarDonacionExitosa(
+      @Valid @RequestBody DonacionExitosaRequest request) {
     misionesDonacionService.procesarDonacionExitosa(request);
     return ResponseEntity.ok().build();
   }
