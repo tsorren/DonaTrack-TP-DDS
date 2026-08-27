@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   notificaciones-service:
     image: donatrack/notificaciones-service:local
@@ -51,12 +49,15 @@ services:
       - PORT=8080
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
+      - LOGISTICA_SERVICE_URL=http://logistica-service:8083
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
     depends_on:
       notificaciones-service:
         condition: service_started
       incentivos-service:
+        condition: service_started
+      logistica-service:
         condition: service_started
       rabbitmq:
         condition: service_healthy
