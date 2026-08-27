@@ -85,10 +85,9 @@ public final class Juridica extends Persona {
     return TipoPersona.JURIDICA;
   }
 
-  /** Ver {@link Persona#esDuplicadaDe}. Juridica no agrega criterios propios por ahora. */
   @Override
-  public Boolean esDuplicadaDe(Persona otra) {
-    return super.esDuplicadaDe(otra);
+  public String getNombreCompleto() {
+    return this.razonSocial;
   }
 
   @Override

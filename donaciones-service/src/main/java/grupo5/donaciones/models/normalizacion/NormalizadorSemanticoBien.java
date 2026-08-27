@@ -52,42 +52,19 @@ public class NormalizadorSemanticoBien {
       List<Subcategoria> subcategorias,
       Map<UUID, Categoria> categoriasPorId,
       double umbralAceptacion) {
-    if (item == null || item.bien() == null) {
-      throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_BIEN);
-    }
-    if (subcategorias == null || subcategorias.isEmpty()) {
-      throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_SUBCATEGORIA);
-    }
+    validarEntrada(item, subcategorias);
 
     Bien bien = item.bien();
-    String descripcion = bien.descripcion();
-
-    Subcategoria subcategoriaElegida = subcategorias.getFirst();
-    double mejorConfianza = 0.0;
-
-    for (Subcategoria subcategoria : subcategorias) {
-      for (AliasSubcategoria aliasObj : subcategoria.getAliases()) {
-        String alias = aliasObj.alias();
-        int palabrasEnComun = comparador.contarPalabrasEnComun(descripcion, alias);
-        int palabrasAlias = comparador.contarPalabrasEnComun(alias, alias);
-
-        double confianzaActual = palabrasAlias > 0 ? (double) palabrasEnComun / palabrasAlias : 0.0;
-
-        if (confianzaActual > mejorConfianza) {
-          mejorConfianza = confianzaActual;
-          subcategoriaElegida = subcategoria;
-        }
-      }
-    }
+    Coincidencia mejor = buscarMejorCoincidencia(bien.descripcion(), subcategorias);
 
     EstadoNormalizacion estado =
-        mejorConfianza >= umbralAceptacion
+        mejor.confianza() >= umbralAceptacion
             ? EstadoNormalizacion.ACEPTADO
             : EstadoNormalizacion.PENDIENTE_REVISION;
 
     Categoria categoria =
-        (subcategoriaElegida.getCategoriaId() != null && categoriasPorId != null)
-            ? categoriasPorId.get(subcategoriaElegida.getCategoriaId())
+        (mejor.subcategoria().getCategoriaId() != null && categoriasPorId != null)
+            ? categoriasPorId.get(mejor.subcategoria().getCategoriaId())
             : null;
 
     boolean conVencimiento =
@@ -95,6 +72,40 @@ public class NormalizadorSemanticoBien {
     boolean conUso = categoria != null && Boolean.TRUE.equals(categoria.getConUso());
 
     return new BienNormalizado(
-        bien, subcategoriaElegida.getId(), mejorConfianza, estado, conVencimiento, conUso);
+        bien, mejor.subcategoria().getId(), mejor.confianza(), estado, conVencimiento, conUso);
   }
+
+  private static void validarEntrada(ItemDonacion item, List<Subcategoria> subcategorias) {
+    if (item == null || item.bien() == null) {
+      throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_BIEN);
+    }
+    if (subcategorias == null || subcategorias.isEmpty()) {
+      throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_SUBCATEGORIA);
+    }
+  }
+
+  private Coincidencia buscarMejorCoincidencia(
+      String descripcion, List<Subcategoria> subcategorias) {
+    Subcategoria subcategoriaElegida = subcategorias.getFirst();
+    double mejorConfianza = 0.0;
+
+    for (Subcategoria subcategoria : subcategorias) {
+      for (AliasSubcategoria aliasObj : subcategoria.getAliases()) {
+        double confianzaActual = calcularConfianza(descripcion, aliasObj.alias());
+        if (confianzaActual > mejorConfianza) {
+          mejorConfianza = confianzaActual;
+          subcategoriaElegida = subcategoria;
+        }
+      }
+    }
+    return new Coincidencia(subcategoriaElegida, mejorConfianza);
+  }
+
+  private double calcularConfianza(String descripcion, String alias) {
+    int palabrasEnComun = comparador.contarPalabrasEnComun(descripcion, alias);
+    int palabrasAlias = comparador.contarPalabrasEnComun(alias, alias);
+    return palabrasAlias > 0 ? (double) palabrasEnComun / palabrasAlias : 0.0;
+  }
+
+  private record Coincidencia(Subcategoria subcategoria, double confianza) {}
 }

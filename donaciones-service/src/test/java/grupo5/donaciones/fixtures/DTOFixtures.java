@@ -25,6 +25,7 @@ import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +53,7 @@ public final class DTOFixtures {
         nombre,
         apellido,
         null,
-        LocalDate.of(1990, 1, 1));
+        LocalDate.of(1990, Month.JANUARY, 1));
   }
 
   public static HumanaInputDTO humanaInput() {

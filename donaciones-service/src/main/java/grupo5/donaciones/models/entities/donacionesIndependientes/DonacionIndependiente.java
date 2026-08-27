@@ -1,10 +1,10 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Asignable;
 import java.time.LocalDateTime;
@@ -16,7 +16,7 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class DonacionIndependiente implements AggregateRoot {
+public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionIndependiente> {
   private final UUID id;
   private UUID donacionOriginalId;
   private List<ItemDonacionIndependiente> items;
@@ -29,8 +29,6 @@ public class DonacionIndependiente implements AggregateRoot {
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
   @JsonIgnore private Asignable asignadaA;
-
-  private final transient List<EventoDonacionIndependiente> domainEvents = new ArrayList<>();
 
   public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
     this.id = UUID.randomUUID();
@@ -169,21 +167,6 @@ public class DonacionIndependiente implements AggregateRoot {
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
     this.estadoActual = nuevoEstado;
-  }
-
-  public void registrarEvento(EventoDonacionIndependiente evento) {
-    if (evento != null) {
-      this.domainEvents.add(evento);
-    }
-  }
-
-  public List<EventoDonacionIndependiente> getDomainEvents() {
-    // Copia defensiva: ver el comentario equivalente en Donacion.getDomainEvents().
-    return List.copyOf(this.domainEvents);
-  }
-
-  public void clearDomainEvents() {
-    this.domainEvents.clear();
   }
 
   public List<CambioEstado> getHistorial() {

@@ -14,38 +14,38 @@ import org.junit.jupiter.api.Test;
 class NecesidadExtraordinariaTest {
 
   private NecesidadExtraordinaria necesidad;
-  private DonacionIndependiente donacion15_1;
-  private DonacionIndependiente donacion15_2;
-  private DonacionIndependiente donacion15_3;
+  private DonacionIndependiente primeraDonacionParcial;
+  private DonacionIndependiente segundaDonacionParcial;
+  private DonacionIndependiente terceraDonacionParcial;
 
   @BeforeEach
   void setUp() {
     UUID subcategoriaId = UUID.randomUUID();
     necesidad = NecesidadMother.extraordinaria(subcategoriaId, 30);
 
-    donacion15_1 = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 15);
-    donacion15_2 = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 15);
-    donacion15_3 = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 15);
+    primeraDonacionParcial = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 15);
+    segundaDonacionParcial = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 15);
+    terceraDonacionParcial = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 15);
   }
 
   @Test
   void estaSatisfecha_cuandoCantidadAcumuladaEsMenor_deberiaSerFalse() {
-    necesidad.asignarDonacion(donacion15_1);
+    necesidad.asignarDonacion(primeraDonacionParcial);
     assertFalse(necesidad.estaSatisfecha());
   }
 
   @Test
   void estaSatisfecha_cuandoCantidadAcumuladaIgual_deberiaSerTrue() {
-    necesidad.asignarDonacion(donacion15_1);
-    necesidad.asignarDonacion(donacion15_2);
+    necesidad.asignarDonacion(primeraDonacionParcial);
+    necesidad.asignarDonacion(segundaDonacionParcial);
     assertTrue(necesidad.estaSatisfecha());
   }
 
   @Test
   void estaSatisfecha_cuandoCantidadAcumuladaEsMayor_deberiaSerTrue() {
-    necesidad.asignarDonacion(donacion15_1);
-    necesidad.asignarDonacion(donacion15_2);
-    necesidad.asignarDonacion(donacion15_3);
+    necesidad.asignarDonacion(primeraDonacionParcial);
+    necesidad.asignarDonacion(segundaDonacionParcial);
+    necesidad.asignarDonacion(terceraDonacionParcial);
     assertTrue(necesidad.estaSatisfecha());
   }
 }

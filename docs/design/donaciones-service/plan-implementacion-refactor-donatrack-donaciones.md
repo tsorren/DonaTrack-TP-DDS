@@ -875,6 +875,20 @@ OLEADA 10
 └── Documento complementario (decisiones_futuras_en_oleada_10.md)
         │
         ▼
+OLEADA 11–14
+├── Hardening de seguridad, reentrancia y desanotación de Domain Services
+├── Trazabilidad estricta de bitácora
+└── Erradicación completa de constructores manuales en tests
+        │
+        ▼
+OLEADA 15
+├── Resolución de 25 issues de SonarCloud (Blocker NPE & Code Smells)
+├── Centralización de Domain Events (AgregadoConEventos en common-lib)
+├── DonanteParser en Dominio & Desacoplamiento de LectorDonantesCSV
+├── Polimorfismo en Persona (getNombreCompleto / Tell, Don't Ask)
+└── Modularización de NormalizadorSemanticoBien (Complejidad Cognitiva <= 15)
+        │
+        ▼
 Integración completa
         │
         ▼
@@ -896,20 +910,23 @@ Código final
 Validar al menos:
 
 ```text
-Donacion Domain Events              ✅
-DonacionIndependiente Domain Events ✅
-Archivo.finalizarProcesamiento      ✅
-Persona.esDuplicadaDe               ✅
-PosibleFragmentacion.confirmar      ✅
-GestorPropuestas                    ✅
-GestorNecesidades                   ✅
-Application Services delgados       ✅
-Listeners delgados                  ✅
-Schedulers delgados                 ✅
-Desacoplamiento Asignable -> UUIDs  📝 (diseñado en Oleada 10, no implementado)
-Strategy FileSystem / MinIO         📝 (diseñado en Oleada 10, no implementado)
-Crypto-shredding modelado           📝 (diseñado en Oleada 10, no implementado)
-Tests verdes (385 tests)            ✅
+Donacion Domain Events (AgregadoConEventos)  ✅
+DonacionIndependiente Domain Events         ✅
+Propuesta Domain Events (AgregadoConEventos)✅
+DonanteParser en Dominio                    ✅
+Archivo.finalizarProcesamiento              ✅
+Persona.esDuplicadaDe                       ✅
+Persona.getNombreCompleto (Polimórfico)     ✅
+PosibleFragmentacion.confirmar              ✅
+GestorPropuestas                            ✅
+GestorNecesidades                           ✅
+Application Services delgados               ✅
+Listeners delgados                          ✅
+Schedulers delgados                         ✅
+Desacoplamiento Asignable -> UUIDs          📝 (diseñado en Oleada 10, no implementado)
+Strategy FileSystem / MinIO                 📝 (diseñado en Oleada 10, no implementado)
+Crypto-shredding modelado                   📝 (diseñado en Oleada 10, no implementado)
+Tests verdes (386 tests donaciones-service) ✅
 ```
 
 > Corrección de Etapa 5 (2026-08-26): estos 3 ítems estaban marcados ✅ pese a ser solo diseño
