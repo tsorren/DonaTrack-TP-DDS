@@ -11,7 +11,7 @@ public class MisionHabilDonador extends Mision {
   public MisionHabilDonador(CategoriaDonante categoria, Integer cantidadBienesObjetivo) {
     super(
         "Habil Donador",
-        "Realiza una donacion con mas de " + cantidadBienesObjetivo + " bienes",
+        "Realiza una donacion con al menos " + cantidadBienesObjetivo + " bienes",
         categoria,
         cantidadBienesObjetivo);
   }

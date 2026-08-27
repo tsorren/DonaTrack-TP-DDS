@@ -75,7 +75,7 @@ public abstract class Mision {
     this.completada = true;
     this.fechaCompletada = fecha;
     if (this.insignia != null) {
-      donante.otorgarInsignia(this.insignia);
+      donante.otorgarInsignia(this.insignia, fecha);
     }
   }
 

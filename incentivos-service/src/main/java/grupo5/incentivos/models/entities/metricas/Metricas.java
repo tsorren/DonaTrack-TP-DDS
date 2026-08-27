@@ -59,6 +59,14 @@ public class Metricas {
         .collect(Collectors.groupingBy(e -> YearMonth.from(e.getFecha()), Collectors.counting()));
   }
 
+  public List<EventoDonacion> getHistorialDonaciones() {
+    return List.copyOf(this.historialDonaciones);
+  }
+
+  public Set<UUID> getOrganizacionesAyudadas() {
+    return Set.copyOf(this.organizacionesAyudadas);
+  }
+
   public long donacionesEnMes(YearMonth periodo) {
     return historialDonaciones.stream()
         .filter(e -> YearMonth.from(e.getFecha()).equals(periodo))

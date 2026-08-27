@@ -1003,13 +1003,13 @@ git grep "import .*\.\*" src/
 ```
 
 **Checklist Oleada 12:**
-- [ ] `DonanteIncentivos.otorgarInsignia(Insignia, LocalDate)` implementado y consumido por `Mision.completar`
-- [ ] `MisionCompletitud` con normalización `trim().toLowerCase()` en subcategorías
-- [ ] `MisionHabilDonador` con coherencia semántica en descripción y objetivo
-- [ ] `ThreadPoolTaskExecutor` configurado para `@Async` en infraestructura
-- [ ] Suite de pruebas actualizada y ampliada para validar fechas en insignias y normalización
-- [ ] Barridos mecánicos limpios (0 wildcard imports, 0 Spring en models)
-- [ ] Suite verde + no-regresión oleadas 1-11
+- [x] `DonanteIncentivos.otorgarInsignia(Insignia, LocalDate)` implementado y consumido por `Mision.completar`
+- [x] `MisionCompletitud` con normalización `trim().toLowerCase()` en subcategorías
+- [x] `MisionHabilDonador` con coherencia semántica en descripción y objetivo
+- [x] `ThreadPoolTaskExecutor` configurado para `@Async` en infraestructura
+- [x] Suite de pruebas actualizada y ampliada para validar fechas en insignias y normalización
+- [x] Barridos mecánicos limpios (0 wildcard imports, 0 Spring en models)
+- [x] Suite verde + no-regresión oleadas 1-11
 
 ---
 

@@ -670,5 +670,84 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - [x] Build multi-módulo limpio: `mvn clean test` (**BUILD SUCCESS** en 7/7 módulos).
 - [x] Formato Spotless limpio: `mvn spotless:check` (**BUILD SUCCESS**).
 
+---
+
+## Oleada 12: Hardening Final de Dominio, Consistencia Temporal e Infraestructura Pre-JPA
+
+### Problema
+1. **Desacople Temporal e Inconsistencia en Insignias Ganadas (Event Time vs. Processing Time)**: `DonanteIncentivos.otorgarInsignia(Insignia)` estampaba ciegamente `LocalDate.now(ZoneId.systemDefault())`. Cuando `Mision.completar(donante, fecha)` se ejecutaba a partir de un `EventoDonacion` con fecha de negocio ($F$), dicha fecha se descartaba y la `InsigniaGanada` quedaba registrada con el reloj del servidor en tiempo de procesamiento, provocando inconsistencias en reprocesamientos de eventos históricos o diferidos.
+2. **Sensibilidad a Mayúsculas y Espacios en `MisionCompletitud` (Falta de Normalización Canónica)**: Las categorías de bienes donados ingresaban sin sanitizar; cadenas como `" Alimentos "`, `"alimentos"` y `"ALIMENTOS"` eran tratadas como categorías distintas en el `Set<String>`, permitiendo avances artificiales de la misión.
+3. **Discrepancia Semántica en Umbrales de `MisionHabilDonador`**: La descripción textual indicaba `"más de X bienes"` ($> X$), mientras que la regla de negocio evaluaba $\ge X$.
+4. **Fuga de Referencias Mutables en `Metricas`**: Los getters de Lombok exponían las referencias directas a `historialDonaciones` y `organizacionesAyudadas`, permitiendo que consumidores externos mutaran las colecciones internas del agregado.
+5. **Riesgo de Agotamiento de Hilos en Despacho Asíncrono (`SimpleAsyncTaskExecutor`)**: `@EnableAsync` sin un `TaskExecutor` explícito creaba hilos de sistema operativo no acotados ante ráfagas de eventos de notificación, arriesgando fallos de memoria nativa.
+
+### Evidencia
+- `DonanteIncentivos.java`: `new InsigniaGanada(..., LocalDate.now(ZoneId.systemDefault()));`.
+- `Mision.java`: `donante.otorgarInsignia(this.insignia);` (sin propagar la fecha de completitud).
+- `MisionCompletitud.java`: `this.categoriasdonadas.addAll(evento.getCategorias());` (sin `trim().toLowerCase(Locale.ROOT)`).
+- `MisionHabilDonador.java` y `MisionFactory.java`: Descripción con `"más de X bienes"`.
+- `IncentivosServiceApplication.java`: `@EnableAsync` a nivel de aplicación sin pool acotado ni configuración de rechazo.
+
+### Objetivo
+1. **Propagación de Fecha en Insignias Ganadas**:
+   - Sobrecargar `DonanteIncentivos.otorgarInsignia(Insignia, LocalDate fecha)` con fallback defensivo a `LocalDate.now()`.
+   - Propagar `fecha` desde `Mision.completar(donante, fecha)` hacia `donante.otorgarInsignia(this.insignia, fecha)`.
+2. **Canonicalización Léxica en `MisionCompletitud`**:
+   - Aplicar `cat.trim().toLowerCase(Locale.ROOT)` y filtrado de cadenas vacías/nulas en `MisionCompletitud`.
+3. **Alineación Semántica en `MisionHabilDonador`**:
+   - Homogeneizar descripciones a `"Realiza una donacion con al menos X bienes"` ("Una donación con al menos 50 bienes").
+4. **Encapsulamiento Defensivo en `Metricas`**:
+   - Sobrescribir getters para retornar `List.copyOf(this.historialDonaciones)` y `Set.copyOf(this.organizacionesAyudadas)`.
+5. **Aislamiento y Backpressure en Infraestructura Asíncrona (`AsyncConfig`)**:
+   - Crear [`AsyncConfig.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/config/AsyncConfig.java) declarando `@Bean(name = "notificacionesTaskExecutor") ThreadPoolTaskExecutor` con límites estrictos (`corePoolSize=2`, `maxPoolSize=10`, `queueCapacity=500`, `CallerRunsPolicy` y prefijo `async-notif-`).
+   - Enrutar `@Async("notificacionesTaskExecutor")` en `NotificacionesClientAdapter`.
+6. **Auditoría de Invariantes y Estado Terminal (`TRANSFORMADOR`)**:
+   - Incorporar tests de estabilidad para donantes en categoría máxima que completan todas sus misiones y continúan donando.
+
+### Fuera de scope
+- Implementación de esquema JPA, entidades `@Entity` y tablas PostgreSQL (Oleada 13 / Fase Física).
+- Implementación de relay de Transactional Outbox (Post-JPA).
+
+### Tests / Verificación
+- **Nuevas Pruebas Unitarias Agregadas**:
+  - `DonanteIncentivosTest`:
+    - `otorgarInsignia_conFechaEspecifica_debeAsignarFechaCorrecta()`: ✅ Verifica que la insignia ganada guarde la fecha del evento.
+    - `otorgarInsignia_conFechaNula_debeAsignarFechaActual()`: ✅ Verifica fallback seguro ante nulo.
+    - `configurarVisibilidadInsignia_conNombreNuloOVacio_debeLanzarExcepcion()`: ✅ Guard defensivo validado.
+    - `donanteEnCategoriaMaxima_debeRegistrarDonacionesSinErrores()`: ✅ Estabilidad de estado terminal verificada.
+  - `MisionesTest`:
+    - `misionCompletitud_conCategoriasConEspaciosYMayusculas_debeNormalizarSinDuplicar()`: ✅ Normalización con `Locale.ROOT`.
+    - `misionCompletar_debePropagarFechaDeDonacionAInsigniaGanada()`: ✅ Propagación end-to-end de fecha de misión a insignia.
+  - `MetricasTest` *(NEW)*:
+    - 6 tests unitarios cubriendo cálculo de métricas, inicialización, actualización y **copias defensivas inmutables** (`UnsupportedOperationException` en listas/sets retornados).
+  - `AsyncConfigTest` *(NEW)*:
+    - 1 test unitario verificando la configuración del pool (`core=2`, `max=10`, `queue=500`, prefijo `async-notif-`).
+- **Resultados de Ejecución**:
+  - `incentivos-service`: ✅ **181 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (`BUILD SUCCESS`).
+  - Reactor Completo (7 módulos): ✅ **7/7 módulos en verde** (`BUILD SUCCESS` en `donatrack`, `common-lib`, `donaciones-service`, `notificaciones-service`, `incentivos-service`, `logistica-service`, `integration-tests`).
+  - Spotless: ✅ **100% compliant** en todos los módulos (`BUILD SUCCESS`).
+  - Pureza de dominio: ✅ **0 wildcard imports**, **0 anotaciones Spring en models**, **0 plural tests**.
+
+### Diseño resultante
+- **Consistencia Temporal Determinista**: Las insignias ganadas capturan fielmente el *Event Time* de la donación que las ameritó, permitiendo reprocesamiento y auditoría fidedigna.
+- **Dominio Robusto e Inmutable**: Normalización léxica en misiones, umbrales semánticamente alineados, copias inmutables en métricas y manejo seguro de donantes en estados máximos de gamificación.
+- **Infraestructura Asíncrona Resiliente**: El microservicio cuenta con un pool acotado de ejecución asíncrona con política `CallerRunsPolicy`, garantizando que ráfagas de notificaciones no agoten los recursos del sistema operativo y apliquen backpressure natural.
+
+### IA utilizada
+- Diagnóstico crítico de consistencia temporal (*Event Time* vs *Processing Time*) y canonicalización léxica con `Locale.ROOT`.
+- Diseño del ejecutor asíncrono acotado con política de rechazo `CallerRunsPolicy`.
+- Implementación de suites de prueba de caracterización y copias defensivas inmutables.
+- Verificación multi-módulo continua con Maven y formateo con Spotless.
+
+### Verificación humana
+- [x] Verificada la sobrecarga de `otorgarInsignia(Insignia, LocalDate)` y su propagación en `Mision.completar`.
+- [x] Verificada la normalización `trim().toLowerCase(Locale.ROOT)` en `MisionCompletitud`.
+- [x] Verificada la inmutabilidad de colecciones en `Metricas.getHistorialDonaciones()` y `Metricas.getOrganizacionesAyudadas()`.
+- [x] Verificada la configuración de `AsyncConfig` con `ThreadPoolTaskExecutor` acotado.
+- [x] Verificada la estabilidad del agregado `DonanteIncentivos` en categoría `TRANSFORMADOR`.
+- [x] 181 tests en verde en `incentivos-service` y 7/7 módulos en verde en el reactor general.
+- [x] Formato Spotless 100% compliant (`mvn spotless:check`).
+
+
 
 
