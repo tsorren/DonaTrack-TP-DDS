@@ -313,28 +313,29 @@ class NotificacionTest {
   // ==================== Casos borde (Fase 0) ====================
 
   @Test
-  void ordenarMedios_conEsPredeterminadoNulo_deberiaLanzarNullPointerException() {
-    // Caracteriza el riesgo real señalado en la Fase 0 y asignado a RF-07 (Oleada 9.5):
-    // Comparator.comparing(MedioDeContacto::getEsPredeterminado) explota si algún medio tiene
-    // esPredeterminado == null. No se corrige en esta oleada — Oleada 9.5 la tiene asignada
-    // explícitamente. Este test documenta el comportamiento actual (con el bug) en la suite, no
-    // solo en un documento; cuando se resuelva RF-07 este test va a fallar y hay que actualizarlo
-    // para reflejar el comportamiento corregido, no borrarlo.
+  void ordenarMedios_conEsPredeterminadoNulo_deberiaTratarloComoNoPredeterminado() {
+    // RF-07 (Oleada 9.5): guard agregado en ordenarMedios() — antes explotaba con
+    // NullPointerException (Comparator.comparing sobre un Boolean nulo), ahora Boolean.TRUE.equals
+    // trata el null como "no predeterminado", igual que ya hacía MedioDeContactoMapper.toEntity()
+    // para el mapeo inverso. Ambos medios quedan "no predeterminados" y empatan: por el criterio de
+    // desempate explícito (orden de alta, sort estable), correoConNull queda primero.
     Correo correoConNull = MedioDeContactoMother.correoConEsPredeterminadoNulo();
     Correo correoNormal = MedioDeContactoMother.correo();
     Persona destinatario = PersonaMother.conMedios(correoConNull, correoNormal);
     Notificacion notificacion = NotificacionMother.pendiente(destinatario);
 
-    assertThrows(NullPointerException.class, () -> notificacion.ordenarMedios(destinatario));
+    List<MedioDeContacto> ordenados = notificacion.ordenarMedios(destinatario);
+
+    assertEquals(List.of(correoConNull, correoNormal), ordenados);
   }
 
   @Test
   void ordenarMedios_conDosMediosDelMismoTipoAmbosPredeterminados_noDeberiaExplotar() {
     // Estado inconsistente que la propia ADR de "Medios de Contacto" advertía como posible: dos
-    // Telefono (uno ESTANDAR, uno WHATSAPP) marcados predeterminados a la vez. No hay desempate
-    // secundario explícito (catálogo transversal del plan v2, también RF-07/Oleada 9.5) — el sort
-    // de Java es estable, así que hoy el orden entre empatados es el orden de alta. Se documenta
-    // el comportamiento actual, no se corrige acá.
+    // Telefono (uno ESTANDAR, uno WHATSAPP) marcados predeterminados a la vez. Desempate explícito
+    // (RF-07, Oleada 9.5): Stream.sorted() está garantizado estable, así que el orden entre
+    // empatados es el orden de alta — comportamiento documentado como criterio deliberado, no
+    // accidental.
     Telefono estandarPredeterminado =
         MedioDeContactoMother.telefonoPredeterminado(TipoTelefono.ESTANDAR);
     Telefono whatsappPredeterminado =

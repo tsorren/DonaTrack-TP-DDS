@@ -46,10 +46,13 @@ public final class MedioDeContactoMother {
   /**
    * Medio con {@code esPredeterminado == null} — estado que hoy solo se alcanza sin pasar por
    * {@code marcarComoPredeterminado()}/{@code desmarcarComoPredeterminado()} (ej. si algo asignara
-   * el campo directamente); se usa para documentar el riesgo de NPE de RF-07 (Oleada 9.5) en {@code
-   * Notificacion.ordenarMedios()}. El constructor de {@code MedioDeContacto} ya deja {@code
+   * el campo directamente); no es alcanzable a través de {@code MedioDeContactoMapper} (que siempre
+   * invoca uno de los dos métodos), pero se prueba igual porque el contrato del getter sigue siendo
+   * {@code Boolean} nullable. El constructor de {@code MedioDeContacto} ya deja {@code
    * esPredeterminado = false} por defecto, así que para llegar a {@code null} hay que forzarlo —
-   * acá se hace con un subtipo anónimo mínimo en vez de reflection.
+   * acá se hace con un subtipo anónimo mínimo en vez de reflection. Se usa para probar el guard de
+   * {@code Notificacion.ordenarMedios()} (RF-07, Oleada 9.5): trata el {@code null} como "no
+   * predeterminado" en vez de explotar con {@code NullPointerException}.
    */
   public static Correo correoConEsPredeterminadoNulo() {
     Correo correo =

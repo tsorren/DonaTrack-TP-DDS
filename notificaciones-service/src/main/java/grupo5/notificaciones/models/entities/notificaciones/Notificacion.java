@@ -94,8 +94,20 @@ public class Notificacion implements Anonimizable, AggregateRoot {
   }
 
   public List<MedioDeContacto> ordenarMedios(Persona persona) {
+    // Guard de esPredeterminado == null (RF-07, Oleada 9.5): Boolean.TRUE.equals(...) nunca lanza
+    // NullPointerException, a diferencia de
+    // Comparator.comparing(MedioDeContacto::getEsPredeterminado)
+    // sobre un Boolean nulo. Un null se trata como "no predeterminado" — mismo criterio que ya usa
+    // MedioDeContactoMapper.toEntity() para el mapeo inverso.
+    // Desempate explícito: Stream.sorted() está garantizado estable, así que dos medios empatados
+    // en
+    // esPredeterminado conservan el orden de alta (posición en Persona.mediosDeContacto) — se deja
+    // como criterio deliberado y documentado, no como un accidente de la implementación del sort.
     return persona.getMediosDeContacto().stream()
-        .sorted(Comparator.comparing(MedioDeContacto::getEsPredeterminado).reversed())
+        .sorted(
+            Comparator.comparing(
+                    (MedioDeContacto m) -> Boolean.TRUE.equals(m.getEsPredeterminado()))
+                .reversed())
         .toList();
   }
 

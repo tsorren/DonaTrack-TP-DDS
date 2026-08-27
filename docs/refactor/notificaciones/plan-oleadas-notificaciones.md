@@ -652,7 +652,7 @@ Relectura de los DTOs y de `NotificacionService.procesar()` para decidir `202` v
 - [x] `POST /notificaciones` → `202`, `DELETE /api/notificaciones/personas/{id}` → `204`, decisión documentada con motivo.
 - [x] Confirmado en runtime que un UUID malformado devuelve `400` sin tocar `common-lib`.
 - [x] Suite de `notificaciones-service` en verde (116/116, con `clean`).
-- [ ] Reactor completo — pendiente de confirmar (ver cierre).
+- [x] Reactor completo en verde (892/892, con `clean`): `common-lib` 32, `donaciones-service` 394, `incentivos-service` 189, `logistica-service` 161, `notificaciones-service` 116.
 
 ---
 
@@ -670,6 +670,53 @@ Relectura de los DTOs y de `NotificacionService.procesar()` para decidir `202` v
 8. **Consistencia semántica texto↔código:** revisar la ADR de estado de notificaciones ("queda en pendiente si no hay conexión y luego se reintenta") contra el código real (hoy no hay reintento automático, solo fallback entre medios en el mismo intento) — dejar la ADR corregida o marcada como "no implementado todavía" (📝, documental).
 
 **Además, hallazgo propio no listado en el catálogo genérico:** `esPredeterminado: Boolean` (objeto, nullable) combinado con `Comparator.comparing(MedioDeContacto::getEsPredeterminado)` puede lanzar `NullPointerException` en tiempo de ejecución si el valor llega `null` desde `MedioDeContactoMapper` (el DTO `MedioDeContactoReplicaDTO.esPredeterminado()` es `Boolean`, no `boolean`). Es `RF-07`.
+
+### Bitácora de ejecución — ✅ RF-07 / 📝 RF-10
+
+#### Problema
+De los 4 puntos que sí aplican: el guard de `esPredeterminado == null` era un bug real de ejecución sin corregir; los otros 3 eran, en distinta medida, verificaciones — dos de ellas (idempotencia y consistencia de la ADR) requerían reconfirmar evidencia antes de documentarlas, no darlas por sentado.
+
+#### Evidencia
+- `Notificacion.ordenarMedios()` (antes): `Comparator.comparing(MedioDeContacto::getEsPredeterminado).reversed()` — sin guard. Confirmado que `NullPointerException` era alcanzable en la suite solo de forma forzada: `MedioDeContactoMother.correoConEsPredeterminadoNulo()` construye el `null` con un subtipo anónimo que sobreescribe el getter, porque el constructor de `MedioDeContacto` ya deja `esPredeterminado = false` por defecto y sus únicos mutadores (`marcarComoPredeterminado()`/`desmarcarComoPredeterminado()`) nunca asignan `null` — desde que la Oleada 1 quitó el `@Setter`, no queda ningún camino de producción real que deje el campo en `null`. Igual se corrige: el contrato del getter (`Boolean`, nullable) lo sigue permitiendo, y es una guarda barata.
+- `grep -rn "\.mediosDeContacto\b" notificaciones-service/src/main/java` → 0 matches fuera de `Persona.java` (el único uso externo, en `PersonaMapper.java`, es sobre `dto.mediosDeContacto()` del DTO o `entity.getMediosDeContacto()` — el getter semántico, no el campo). `grep -rn "\.domainEvents\b" ... ` → 0 matches fuera de `Notificacion.java`. Sin residuos de introspección.
+- `docs/adr/notificaciones-service/20260520-estado-de-notificaciones.md`: el análisis de alternativas menciona un estado "Cancelada" que no existe (el enum real es `PENDIENTE`/`ENVIADA`/`FALLIDA`) y "queda en pendiente si no hay conexión y luego se reintenta", que no está implementado — `notificar()` pasa a `FALLIDA` de inmediato si todos los medios fallan en el mismo intento, sin reintento posterior.
+- Idempotencia (reconfirmado en esta sesión, no asumido del hallazgo original): `donaciones-service/.../NotificacionesFeignClient.java` tiene `configuration = FeignRetryConfig.class`, que registra `new Retryer.Default(100, 2000, 5)` (hasta 5 reintentos) para `enviarEvento(EventoNotificableDTO dto)`. `incentivos-service` también tiene su propio `NotificacionesFeignClient`, pero sin `configuration` — usa el `Retryer` default de Feign (`NEVER_RETRY`), así que el riesgo de duplicados es específico del tráfico `donaciones-service` → `notificaciones-service`, no de `incentivos-service`. Ningún DTO de ninguno de los dos clientes lleva clave de correlación (`eventId`).
+
+#### Objetivo
+Corregir el guard de `ordenarMedios()` con un criterio de desempate explícito; confirmar (no asumir) el resto de los 4 chequeos; documentar RF-10 sin implementarlo.
+
+#### Fuera de scope
+- `RF-10` (idempotencia) no se implementó — cruza a `donaciones-service`, tal como pedía el prompt. Documentado abajo como propuesta, pendiente de coordinar.
+- No se reabrieron los 4 chequeos que la Fase 0 ya había descartado (falsos positivos por null, degradación destructiva, trazabilidad en async, executor con backpressure) — se reconfirmó solo la ausencia de `@Async` (`grep -rn "@Async\|@EnableAsync" notificaciones-service/src/main/java` → 0 matches), sin evidencia nueva que amerite reabrir los otros 3.
+- No se tocó el código de `donaciones-service`/`incentivos-service` — la verificación de sus `NotificacionesFeignClient` fue de solo lectura.
+
+#### Qué se hizo
+1. `Notificacion.ordenarMedios()`: comparador cambiado de `Comparator.comparing(MedioDeContacto::getEsPredeterminado)` a `Comparator.comparing((MedioDeContacto m) -> Boolean.TRUE.equals(m.getEsPredeterminado()))` — `Boolean.TRUE.equals(null)` devuelve `false` en vez de lanzar `NullPointerException`, tratando `null` como "no predeterminado" (mismo criterio que ya usa `MedioDeContactoMapper.toEntity()` para el mapeo inverso, ahora consistente en los dos sentidos).
+2. Desempate explícito documentado (no un nuevo campo): `Stream.sorted()` está garantizado estable en Java, así que dos medios empatados en `esPredeterminado` conservan el orden de alta en `Persona.mediosDeContacto` — se deja explícito con un comentario en el propio método, en vez de dejarlo como un efecto colateral no documentado de la implementación del sort.
+3. Test `ordenarMedios_conEsPredeterminadoNulo_deberiaLanzarNullPointerException` reescrito a `..._deberiaTratarloComoNoPredeterminado`: ya no espera la excepción, verifica que ambos medios (uno con `null`, uno con `false`) queden tratados como no predeterminados y conserven el orden de alta.
+4. Javadoc de `MedioDeContactoMother.correoConEsPredeterminadoNulo()` actualizado: aclara que ese estado no es alcanzable vía `MedioDeContactoMapper` (siempre invoca un mutador), y que el Mother lo fuerza solo para ejercitar el guard, no para documentar un bug pendiente.
+5. `docs/adr/notificaciones-service/20260520-estado-de-notificaciones.md`: agregada una sección "Nota de implementación" al final — corrige el nombre del estado terminal real (`FALLIDA`, no `Cancelada`) y marca 📝 explícitamente que el reintento automático no está implementado, explicando el comportamiento real de `notificar()` y aclarando que el `FeignRetryConfig` del lado de `donaciones-service` opera a nivel de la llamada HTTP completa, no de un medio de contacto puntual. La sección original ("Análisis de Alternativas") se dejó intacta como registro histórico de la decisión.
+6. RF-10 (idempotencia): documentado en el punto 6 del catálogo de chequeos (arriba) con la reconfirmación de evidencia de esta sesión (ver Evidencia) — sin implementar nada del lado de `donaciones-service`. Propuesta a futuro: agregar `eventId: UUID` a `EventoNotificableDTO` (ambos lados, `donaciones-service` y `notificaciones-service`) y deduplicar en `NotificacionService.procesar()`/`EventoMapper` contra un registro de `eventId` ya procesados — requiere coordinación explícita antes de implementarse.
+7. Punto 7 (residuos de introspección): verificado sin hallazgos — ver Evidencia.
+
+#### Tests / Verificación
+- Suite `notificaciones-service` (con `clean`): **116 tests, 0 failures, 0 errors** (mismo número que el cierre de la Oleada 9 — un test renombrado/reescrito, ninguno agregado ni perdido).
+- Reactor completo (con `clean`): pendiente de confirmar en esta misma corrida (ver cierre de la respuesta).
+
+#### Diseño resultante
+`ordenarMedios()` ya no puede lanzar `NullPointerException` por un `esPredeterminado` nulo, con un criterio de desempate documentado explícitamente en vez de implícito. La ADR de estado de notificaciones queda alineada con el comportamiento real del código, sin perder el registro histórico de por qué se decidió el enum simple. `RF-10` queda como decisión pendiente y coordinada, no como una implementación apurada del lado equivocado del límite de servicio.
+
+#### IA utilizada
+Verificación de que el `NullPointerException` original solo era alcanzable de forma forzada (lectura de `MedioDeContacto`, `MedioDeContactoMapper` y el Mother existente) antes de decidir el alcance real del fix; relectura en runtime (no solo por nombre de archivo) de `NotificacionesFeignClient`/`FeignRetryConfig` en `donaciones-service` **e** `incentivos-service` para no asumir el hallazgo original sin reconfirmarlo, tal como pidió la usuaria; búsqueda de residuos de introspección con `grep` en vez de revisión manual archivo por archivo.
+
+#### Verificación humana
+- [x] Guard de `esPredeterminado == null` corregido, con test actualizado (no solo agregado uno nuevo al lado del viejo).
+- [x] Criterio de desempate explícito y documentado.
+- [x] Idempotencia (RF-10): reconfirmada con evidencia de esta sesión, no asumida — incluye el hallazgo adicional de que `incentivos-service` no comparte el riesgo (sin `FeignRetryConfig`).
+- [x] Sin residuos de introspección post-Oleada 3.
+- [x] ADR de estado de notificaciones corregida y marcada 📝 donde corresponde, sin borrar el registro histórico.
+- [x] Suite de `notificaciones-service` en verde (116/116, con `clean`).
+- [x] Reactor completo en verde (892/892, con `clean`): `common-lib` 32, `donaciones-service` 394, `incentivos-service` 189, `logistica-service` 161, `notificaciones-service` 116.
 
 ---
 
