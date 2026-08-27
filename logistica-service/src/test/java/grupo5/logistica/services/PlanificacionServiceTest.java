@@ -33,6 +33,7 @@ import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.services.impl.PlanificacionService;
 import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +93,7 @@ class PlanificacionServiceTest {
 
   @Test
   void iniciarPlanificacionConEntregasPeroSinCamionesTerminaSinSolicitar() {
-    when(entregasRepository.findSinRuta()).thenReturn(List.of(mock(Entrega.class)));
+    when(entregasRepository.findSinRuta()).thenReturn(List.of(EntregaMother.pendiente()));
     when(camionesRepository.findDisponibles()).thenReturn(List.of());
     when(choferesRepository.findDisponibles())
         .thenReturn(List.of(new Chofer("Ada", "Lovelace", "LIC-1", "1111")));
@@ -106,7 +107,7 @@ class PlanificacionServiceTest {
   @Test
   void iniciarPlanificacionConSetentaEntregasYLoteDeCincuentaCreaDosLotesDeCincuentaYVeinte() {
     List<Entrega> entregas =
-        IntStream.range(0, 70).mapToObj(indice -> mock(Entrega.class)).toList();
+        IntStream.range(0, 70).mapToObj(i -> EntregaMother.pendiente()).toList();
     when(entregasRepository.findSinRuta()).thenReturn(entregas);
     when(camionesRepository.findDisponibles())
         .thenReturn(List.of(new Camion("AB123CD", 20f, 5000f, 3f)));
@@ -127,7 +128,7 @@ class PlanificacionServiceTest {
   @Test
   void iniciarPlanificacionConUnLoteGuardaSolicitudYLlamaAlClienteExterno() {
     List<Entrega> entregas =
-        IntStream.range(0, 10).mapToObj(indice -> mock(Entrega.class)).toList();
+        IntStream.range(0, 10).mapToObj(i -> EntregaMother.pendiente()).toList();
     when(entregasRepository.findSinRuta()).thenReturn(entregas);
     when(camionesRepository.findDisponibles())
         .thenReturn(List.of(new Camion("AB123CD", 20f, 5000f, 3f)));
@@ -191,6 +192,26 @@ class PlanificacionServiceTest {
     assertEquals(entrega.getId(), eventoCaptor.getValue().getEntregaId());
     assertEquals(0, rutaCaptor.getValue().getDomainEvents().size());
     assertEquals(rutaCaptor.getValue().getId(), entrega.getIdRuta());
+    assertEquals(response, resultado);
+  }
+
+  @Test
+  void procesarCallbackSobreUnaSolicitudYaProcesadaDevuelveSinReprocesar() {
+    UUID solicitudId = UUID.randomUUID();
+    SolicitudPlanificacion procesada =
+        new SolicitudPlanificacion(solicitudId, LocalDate.now(), 1, "http://logistica");
+    procesada.procesarResultados(List.of(UUID.randomUUID()));
+    CallbackPlanificacionRequestDTO callback =
+        new CallbackPlanificacionRequestDTO(solicitudId, List.of(), "OK", null);
+    SolicitudPlanificacionResponseDTO response = mock(SolicitudPlanificacionResponseDTO.class);
+    when(solicitudesRepository.findById(solicitudId)).thenReturn(Optional.of(procesada));
+    when(solicitudMapper.toResponseDTO(procesada)).thenReturn(response);
+
+    SolicitudPlanificacionResponseDTO resultado = service.procesarCallback(callback);
+
+    verify(rutasRepository, never()).save(any());
+    verify(entregasRepository, never()).save(any());
+    verify(comunicadorEventos, never()).comunicarRutaAsignada(any(), any());
     assertEquals(response, resultado);
   }
 
