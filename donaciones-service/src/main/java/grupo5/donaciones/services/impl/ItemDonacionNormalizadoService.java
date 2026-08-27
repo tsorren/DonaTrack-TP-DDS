@@ -155,20 +155,8 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
                         && i.getDonacionOriginalId().equals(donacionId))
             .toList();
 
-<<<<<<< HEAD
-    // INICIO LOGICA DE NEGOCIO
-    boolean tienePendientes =
-        itemsDeDonacion.stream()
-            .anyMatch(
-                i -> i.getBien().estadoNormalizacion() == EstadoNormalizacion.PENDIENTE_REVISION);
-
-    if (!tienePendientes) {
-=======
     if (EvaluadorNormalizacion.estanTodosNormalizados(itemsDeDonacion)) {
->>>>>>> c157e6e3625f7aab65222bbcdb0be485471ebbfb
       donacion.marcarNormalizada();
-
-      // FIN LOGICA DE NEGOCIO
       donacionRepository.save(donacion);
       donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
       donacion.clearDomainEvents();

@@ -52,11 +52,6 @@ public class ProcesadorDeDonaciones {
 
   @Async
   public void procesar(Donacion donacion) {
-<<<<<<< HEAD
-    // INICIO LOGICA DE NEGOCIO
-    List<ItemDonacionNormalizado> itemsNormalizados = normalizador.normalizar(donacion);
-    // FIN LOGICA DE NEGOCIO
-=======
     List<Subcategoria> subcategorias = subcategoriasRepository.findAll();
     Map<UUID, Categoria> categoriasPorId =
         categoriasRepository.findAll().stream()
@@ -65,7 +60,6 @@ public class ProcesadorDeDonaciones {
     List<ItemDonacionNormalizado> itemsNormalizados =
         normalizadorSemantico.normalizar(
             donacion, subcategorias, categoriasPorId, umbralAceptacion);
->>>>>>> c157e6e3625f7aab65222bbcdb0be485471ebbfb
     logItemsNormalizados(itemsNormalizados);
 
     itemNormalizadoRepository.saveAll(itemsNormalizados);
@@ -97,26 +91,9 @@ public class ProcesadorDeDonaciones {
 
   private void finalizarNormalizacion(
       Donacion donacion, List<ItemDonacionNormalizado> itemsNormalizados) {
-<<<<<<< HEAD
-
-    // INICIO LOGICA DE NEGOCIO
-    boolean tienePendientes =
-        itemsNormalizados.stream()
-            .anyMatch(
-                item ->
-                    item.getBien() != null
-                        && item.getBien().estadoNormalizacion()
-                            == EstadoNormalizacion.PENDIENTE_REVISION);
-
-    if (!tienePendientes) {
-      log.info("Donación {} normalizada inmediatamente. Publicando evento.", donacion.getId());
-=======
     if (EvaluadorNormalizacion.estanTodosNormalizados(itemsNormalizados)) {
       log.info("Donación {} normalizada inmediatamente. Publicando eventos.", donacion.getId());
->>>>>>> c157e6e3625f7aab65222bbcdb0be485471ebbfb
       donacion.marcarNormalizada();
-
-      // FIN LOGICA DE NEGOCIO
       donacionRepository.save(donacion);
       donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
       donacion.clearDomainEvents();

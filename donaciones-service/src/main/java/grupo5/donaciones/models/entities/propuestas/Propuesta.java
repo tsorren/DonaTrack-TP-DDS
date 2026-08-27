@@ -69,19 +69,11 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   }
 
   public void aceptar(String actor) {
-<<<<<<< HEAD
-    if (actor == null) {
-      actor = "SISTEMA";
-    }
-
-    if (necesidadQueSatisfaceId == null) {
-=======
     if (this.estado != EstadoPropuesta.PENDIENTE) {
       throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
     }
 
     if (this.necesidadQueSatisfaceId == null) {
->>>>>>> c157e6e3625f7aab65222bbcdb0be485471ebbfb
       throw new ValidationException(ErrorCatalog.PROPUESTA_CONFIRMAR_SIN_NECESIDAD);
     }
 

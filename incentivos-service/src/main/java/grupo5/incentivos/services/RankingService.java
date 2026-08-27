@@ -40,29 +40,7 @@ public class RankingService implements IRankingService {
     rankingRepository.findByPeriodo(periodo).ifPresent(rankingRepository::delete);
     List<DonanteIncentivos> todos = donanteRepository.findAll();
 
-<<<<<<< HEAD
-    // INICIO LOGICA DE NEGOCIO
-
-    todos.stream()
-        .map(
-            d ->
-                new EntradaRanking(
-                    0,
-                    d.getId(),
-                    d.getNombre(),
-                    d.misionesCompletadasEnMes(periodo.getYear(), periodo.getMonthValue())))
-        .filter(e -> e.getMisionesCompletadas() > 0)
-        .sorted(Comparator.comparingLong(EntradaRanking::getMisionesCompletadas).reversed())
-        .forEach(
-            entrada -> {
-              entrada.setPosicion(posicion.getAndIncrement());
-              ranking.agregarEntrada(entrada);
-            });
-=======
     RankingMensual ranking = gestorDeRankings.calcular(todos, periodo);
->>>>>>> c157e6e3625f7aab65222bbcdb0be485471ebbfb
-
-    // FIN LOGICA DE NEGOCIO
 
     rankingRepository.save(ranking);
     return RankingMensualDTO.desde(ranking);

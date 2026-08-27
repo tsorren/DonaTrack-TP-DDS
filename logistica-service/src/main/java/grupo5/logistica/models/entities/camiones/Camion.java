@@ -51,10 +51,8 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    EstadoCamion anterior = this.estado;
-    this.estado = EstadoCamion.EN_RUTA;
+    actualizarEstado(EstadoCamion.EN_RUTA);
     this.rutaId = rutaId;
-    registrarCambioEstado(anterior, EstadoCamion.EN_RUTA);
   }
 
   public void completarRuta() {
@@ -62,10 +60,8 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    EstadoCamion anterior = this.estado;
-    this.estado = EstadoCamion.DISPONIBLE;
+    actualizarEstado(EstadoCamion.DISPONIBLE);
     this.rutaId = null;
-    registrarCambioEstado(anterior, EstadoCamion.DISPONIBLE);
   }
 
   public void habilitar() {
@@ -73,9 +69,7 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    EstadoCamion anterior = this.estado;
-    this.estado = EstadoCamion.DISPONIBLE;
-    registrarCambioEstado(anterior, EstadoCamion.DISPONIBLE);
+    actualizarEstado(EstadoCamion.DISPONIBLE);
   }
 
   public void deshabilitar() {
@@ -83,10 +77,8 @@ public class Camion implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
     }
 
-    EstadoCamion anterior = this.estado;
-    this.estado = EstadoCamion.DESHABILITADO;
+    actualizarEstado(EstadoCamion.DESHABILITADO);
     this.rutaId = null;
-    registrarCambioEstado(anterior, EstadoCamion.DESHABILITADO);
   }
 
   public boolean estaDisponibleParaAsignar() {
@@ -94,12 +86,14 @@ public class Camion implements AggregateRoot {
   }
 
   public List<CambioEstadoCamion> getHistorialEstado() {
-    return List.copyOf(this.historialEstado);
+    return List.copyOf(historialEstado);
   }
 
-  private void registrarCambioEstado(EstadoCamion anterior, EstadoCamion nuevo) {
+  private void actualizarEstado(EstadoCamion estadoNuevo) {
+    EstadoCamion estadoAnterior = this.estado;
+    this.estado = estadoNuevo;
     this.historialEstado.add(
-        new CambioEstadoCamion(anterior, nuevo, LocalDateTime.now(ZoneId.of("UTC"))));
+        new CambioEstadoCamion(estadoAnterior, estadoNuevo, LocalDateTime.now(ZoneId.of("UTC"))));
   }
 
   private static void validarPatente(String patente) {
