@@ -6,30 +6,17 @@ import grupo5.common.events.EventoDeDominio;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
-import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.models.entities.donaciones.Bien;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donaciones.Estado;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
+import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
-import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
-import grupo5.donaciones.models.entities.personas.Humana;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class PropuestaTest {
-  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
   private NecesidadExtraordinaria necesidad;
   private DonacionIndependiente donacionConSobrante;
@@ -37,27 +24,10 @@ class PropuestaTest {
 
   @BeforeEach
   void setUp() {
-    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    Donante donante = new Donante(humana);
-    UUID donanteId = donante.getId();
-    Donacion donacionOriginal = new Donacion(donanteId);
-    Categoria categoria = new Categoria("Mueble", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Muebles Escolares");
-    Bien bien =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
-    BienNormalizado bienNormalizado =
-        new BienNormalizado(
-            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, true);
-
-    necesidad = new NecesidadExtraordinaria(subcategoria.getId(), 5, "bancos para el aula");
-
-    List<ItemDonacionIndependiente> itemsDiez = new ArrayList<>();
-    itemsDiez.add(new ItemDonacionIndependiente(bienNormalizado, 10));
-    donacionConSobrante = new DonacionIndependiente(donacionOriginal.getId(), itemsDiez);
-
-    List<ItemDonacionIndependiente> itemsCinco = new ArrayList<>();
-    itemsCinco.add(new ItemDonacionIndependiente(bienNormalizado, 5));
-    donacionExacta = new DonacionIndependiente(donacionOriginal.getId(), itemsCinco);
+    UUID subcategoriaId = UUID.randomUUID();
+    necesidad = NecesidadMother.extraordinaria(subcategoriaId, 5);
+    donacionConSobrante = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 10);
+    donacionExacta = DonacionIndependienteMother.crearParaSubcategoria(subcategoriaId, 5);
   }
 
   @Test
@@ -322,5 +292,21 @@ class PropuestaTest {
     propuesta.clearDomainEvents();
 
     assertEquals(0, propuesta.getDomainEvents().size());
+  }
+
+  @Test
+  void getDomainEvents_debeSerUnaCopiaInmuneAMutacionesPosteriores() {
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.aceptar("actor");
+
+    List<PropuestaAprobada> snapshot = propuesta.getDomainEvents();
+    assertEquals(1, snapshot.size());
+
+    // La limpieza o mutación posterior no debe alterar la copia defensiva
+    propuesta.clearDomainEvents();
+
+    assertEquals(
+        1, snapshot.size(), "El snapshot defensivo tomado no debe mutar tras clearDomainEvents()");
   }
 }

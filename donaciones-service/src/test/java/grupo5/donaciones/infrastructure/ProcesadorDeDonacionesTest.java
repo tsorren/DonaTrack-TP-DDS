@@ -8,6 +8,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -22,8 +23,6 @@ import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +58,7 @@ class ProcesadorDeDonacionesTest {
 
   @Test
   void procesar_conTodosAceptados_deberiaNormalizarYPublicarEvento() {
-    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
+    Humana humana = PersonaMother.humanaValida();
     Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante.getId());
 
@@ -83,7 +82,7 @@ class ProcesadorDeDonacionesTest {
 
   @Test
   void procesar_conPendientesDeRevision_deberiaGuardarNormalizacionesYQuedarEnCargada() {
-    Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
+    Humana humana = PersonaMother.humanaValida();
     Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante.getId());
 
