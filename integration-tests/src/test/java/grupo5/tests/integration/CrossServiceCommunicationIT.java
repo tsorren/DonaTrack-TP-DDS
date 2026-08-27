@@ -397,10 +397,19 @@ class CrossServiceCommunicationIT extends BaseIT {
         .then()
         .statusCode(200);
 
-    // 5. Verify insignia is no longer listed
+    // 5. Verify insignia is marked visible=false in management endpoint, and omitted in soloVisibles=true
     given()
         .when()
         .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
+        .then()
+        .statusCode(200)
+        .body("size()", equalTo(1))
+        .body("[0].nombre", equalTo("Racha Inicial"))
+        .body("[0].visible", equalTo(false));
+
+    given()
+        .when()
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias?soloVisibles=true")
         .then()
         .statusCode(200)
         .body("size()", equalTo(0));
@@ -416,10 +425,19 @@ class CrossServiceCommunicationIT extends BaseIT {
         .then()
         .statusCode(200);
 
-    // 7. Verify insignia is visible again
+    // 7. Verify insignia is visible again in both endpoints
     given()
         .when()
         .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
+        .then()
+        .statusCode(200)
+        .body("size()", equalTo(1))
+        .body("[0].nombre", equalTo("Racha Inicial"))
+        .body("[0].visible", equalTo(true));
+
+    given()
+        .when()
+        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias?soloVisibles=true")
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))

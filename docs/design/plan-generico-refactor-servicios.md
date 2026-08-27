@@ -409,32 +409,39 @@ Recorrer TODO el proyecto:
 
 ---
 
-## Oleada 8 — Object Mothers para TODAS las entidades y DTOs (100% de suites)
+## Oleada 8 — Object Mothers, "Tell, Don't Ask", Desacoplamiento y Cobertura Total (100% de suites)
 
 ### Idea principal
-Crear infraestructura de testing desacoplada que cubra **TODAS** las entidades y DTOs del servicio, y erradicar constructores posicionales directos en **TODAS** las suites de test (preexistentes y nuevas).
+Crear infraestructura de testing desacoplada y basada en el principio **"Tell, Don't Ask"** que cubra **TODAS** las entidades, servicios, controladores, adaptadores, schedulers y DTOs del servicio, erradicando constructores posicionales directos y manipulaciones de estado interno en **TODAS** las suites de test (preexistentes y nuevas).
 
 ### Proceso exhaustivo
 1. **Recorrer el inventario de Fase 0** y para **cada entidad del dominio** crear una Object Mother que:
    - Provea instancias válidas en cada estado del ciclo de vida del agregado
    - Centralice la construcción, eliminando constructores posicionales repetidos
-   - Provea métodos canónicos (ej: `PersonaMother.humanaValida()`, `DonacionIndependienteMother.enDeposito(...)`)
+   - Provea métodos canónicos con intencionalidad de negocio (ej: `PersonaMother.humanaValida()`, `DonacionIndependienteMother.enDeposito(...)`, `DonanteMother.colaboradorSinMisiones()`)
    - Use Builders si la entidad tiene más de 5 parámetros
-2. Para **cada DTO de entrada y salida** del servicio, crear fixtures centralizados en `DTOFixtures`
-3. **Barrido y Refactor del 100% de los Tests Existentes**:
-   - Reemplazar TODA construcción manual (`new Entidad(...)`, `new DTO(...)`) en suites de mappers, algoritmos, procesadores y servicios por Mothers y Fixtures
-   - Reemplazar TODAS las aserciones sobre getters internos por aserciones sobre métodos semánticos y eventos de dominio
-   - Estandarizar nombres de tests a singular
-4. Expandir cobertura de Controllers REST si hay tests faltantes
+2. Para **cada DTO de entrada y salida** del servicio, crear fixtures centralizados en `DTOFixtures` / `*FixturesTest`
+3. **Aplicar el principio "Tell, Don't Ask" en el 100% de los Tests**:
+   - Eliminar TODA mutación o acceso a colecciones/estructuras internas desde los tests (ej: `agregado.getLista().add(...)`, `agregado.getMetricas().registrar(...)`).
+   - Las pruebas invocan métodos de comportamiento en el agregado (`agregado.ejecutarAccion(evento)`) y validan el resultado mediante consultas semánticas públicas (`agregado.estaCompletado()`, `agregado.getEstado()`, `agregado.insigniasVisibles()`).
+4. **Cobertura Total de Capas y Casos Borde**:
+   - Dominio (Entidades, VOs, Criterios, Gestores, Factory): umbrales exactos ($N-1$ vs $N$), saltos de periodos, idempotencia, estados terminales/máximos.
+   - Servicios de Aplicación y Listeners: escenarios nominales, excepciones de catálogo (`ErrorCatalog`), idempotencia y resiliencia ante fallos externos.
+   - Controladores REST: cobertura de todos los endpoints, status codes clásicos (200, 201, 204) y serialización.
+   - Infraestructura y Schedulers: adaptadores con Feign/WebClient, schedulers tolerantes a fallos y configuraciones `@Bean`.
+   - DTOs y Mappers: fidelidad de mapeo y casos nulos/vacíos.
+5. **Barrido y Refactor del 100% de los Tests Existentes**:
+   - Reemplazar TODA construcción manual (`new Entidad(...)`, `new DTO(...)`) por Mothers y Fixtures
+   - Estandarizar nombres de tests a singular (`*Test.java`)
 
 > **DAMP over DRY en escenarios, DRY en fixtures**: Los tests se leen como especificaciones de negocio; la construcción de datos se centraliza.
 
 ### Checklist de completitud
 - [ ] CADA entidad del dominio tiene su Object Mother
-- [ ] CADA DTO tiene su fixture en `DTOFixtures`
+- [ ] CADA DTO tiene su fixture en `DTOFixtures` / `*FixturesTest`
 - [ ] CERO tests con constructores posicionales directos en TODO `src/test/` — TODOS usan Mothers
-- [ ] CERO aserciones sobre getters anidados — TODOS usan métodos semánticos o eventos
-- [ ] TODOS los Controllers tienen tests
+- [ ] CERO aserciones o mutaciones sobre getters anidados/colecciones internas — TODOS usan métodos semánticos o eventos ("Tell, Don't Ask")
+- [ ] TODOS los Controllers, Services, Listeners, Adaptadores y Schedulers tienen tests unitarios con cobertura de casos borde
 - [ ] Suite completa en verde + no-regresión de oleadas 1-7
 
 ---
