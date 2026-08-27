@@ -18,6 +18,8 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import grupo5.logistica.testutils.CamionMother;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -25,6 +27,23 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class PlanificacionDominioTest {
+
+  @Test
+  void planificarCienEntregasJustoEnElMaximoGeneraUnaSolicitud() {
+    GeneradorDeRutas generador = new GeneradorDeRutas(new GeneradorLotesSimple());
+    List<Entrega> entregas = IntStream.range(0, 100).mapToObj(i -> crearEntrega()).toList();
+
+    List<PlanificacionSolicitada> solicitudes =
+        generador.planificar(
+            entregas,
+            List.of(new Camion("AB123CD", 2000f, 10000f, 3f)),
+            List.of(new Chofer("Ada", "Lovelace", "LIC-1", "1111")),
+            LocalDate.now(),
+            100);
+
+    assertEquals(1, solicitudes.size());
+    assertEquals(100, solicitudes.getFirst().entregas().size());
+  }
 
   @Test
   void planificarParteCientoUnaEntregasEnDosSolicitudes() {
@@ -63,10 +82,21 @@ class PlanificacionDominioTest {
     assertEquals(LocalDate.now(), respuesta.fecha());
     assertNull(entrega.getIdRuta());
 
-    List<Ruta> rutas = generador.generarRutas(respuesta);
+    List<Ruta> rutas = generador.calcularRutas(respuesta);
 
     assertEquals(1, rutas.size());
     assertEquals(rutas.getFirst().getId(), entrega.getIdRuta());
+  }
+
+  @Test
+  void asignadorAceptaUnCamionEnElLimiteExactoDePesoYVolumen() {
+    Entrega entrega = EntregaMother.conDimensiones(5000f, 20f);
+    Camion camion = CamionMother.conCapacidad(20f, 5000f, 3f);
+
+    var asignacion =
+        new AsignadorDeEntregasPorDimension().asignar(List.of(entrega), List.of(camion));
+
+    assertEquals(List.of(entrega), asignacion.get(camion));
   }
 
   private static Entrega crearEntrega() {

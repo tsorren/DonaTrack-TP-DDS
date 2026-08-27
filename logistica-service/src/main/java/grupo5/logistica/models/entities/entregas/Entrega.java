@@ -1,8 +1,11 @@
 package grupo5.logistica.models.entities.entregas;
 
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
+import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,7 +17,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
-public class Entrega implements AggregateRoot {
+public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   private final UUID id;
   private UUID idRuta;
@@ -100,6 +103,7 @@ public class Entrega implements AggregateRoot {
 
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
+    registrarEvento(new EntregaConfirmada(this.id, this.idDonacion, this.idRuta));
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {
@@ -114,7 +118,7 @@ public class Entrega implements AggregateRoot {
     this.fotoRecepcionUrl = fotoURL.trim();
   }
 
-  public void negarEntrega(String entidad) {
+  public void negarEntrega(String entidad, String justificacion, boolean replanificable) {
     validarActor(entidad);
 
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
@@ -122,6 +126,7 @@ public class Entrega implements AggregateRoot {
     }
 
     actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
+    registrarEvento(new EntregaFallida(this.id, this.idDonacion, justificacion, replanificable));
     mandarARevision("SISTEMA_LOGISTICA");
   }
 

@@ -11,6 +11,7 @@ import grupo5.logistica.models.entities.planificacion.AsignadorDeEntregasPorDime
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class AlgoritmoAsignadorDeEntregaTest {
@@ -130,5 +131,18 @@ class AlgoritmoAsignadorDeEntregaTest {
     List<Entrega> entregas = List.of(entrega);
 
     assertThrows(ValidationException.class, () -> asignador.asignar(entregas, null));
+  }
+
+  /**
+   * Deuda reconocida: AsignadorDeEntregasPorDimension no valida la restricción de altura del camión
+   * porque Entrega todavía no modela el campo alturaM. Ver Javadoc de
+   * AsignadorDeEntregasPorDimension. Habilitar este test cuando Entrega exponga su dimensión de
+   * altura y el asignador implemente la restricción correspondiente.
+   */
+  @Test
+  @Disabled("Deuda: Entrega no modela altura — ver Javadoc de AsignadorDeEntregasPorDimension")
+  void asignar_deberiaRechazarEntregaMasAltaQueElCamion() {
+    // cuando Entrega tenga alturaM, probar que una entrega cuya altura supera la del camión
+    // queda sin asignar aunque peso y volumen entren.
   }
 }

@@ -10,6 +10,7 @@ import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import grupo5.logistica.models.entities.camiones.GestorDeCamiones;
 import grupo5.logistica.models.entities.camiones.SolicitudNuevoCamion;
+import grupo5.logistica.models.entities.camiones.ValidadorPatentes;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.services.ICamionesService;
 import grupo5.logistica.services.mappers.CamionMapper;
@@ -22,17 +23,21 @@ public class CamionesService implements ICamionesService {
 
   private final ICamionRepository camionRepository;
   private final CamionMapper camionMapper;
+  private final ValidadorPatentes validadorPatentes;
 
-  public CamionesService(ICamionRepository camionRepository, CamionMapper camionMapper) {
+  public CamionesService(
+      ICamionRepository camionRepository,
+      CamionMapper camionMapper,
+      ValidadorPatentes validadorPatentes) {
     this.camionRepository = camionRepository;
     this.camionMapper = camionMapper;
+    this.validadorPatentes = validadorPatentes;
   }
 
   @Override
   public CamionResponseDTO crear(CamionRequestDTO request) {
-    List<String> patentesExistentes =
-        camionRepository.findAll().stream().map(Camion::getPatente).toList();
-    SolicitudNuevoCamion solicitud = camionMapper.toSolicitud(request, patentesExistentes);
+    validadorPatentes.validar(request.patente());
+    SolicitudNuevoCamion solicitud = camionMapper.toSolicitud(request, List.of());
     Camion camion =
         GestorDeCamiones.procesarSolicitudNuevoCamion(solicitud)
             .orElseThrow(() -> new BusinessStateException(ErrorCatalog.CAMION_PATENTE_DUPLICADA));

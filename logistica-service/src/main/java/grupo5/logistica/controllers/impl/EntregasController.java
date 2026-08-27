@@ -1,12 +1,18 @@
 package grupo5.logistica.controllers.impl;
 
 import grupo5.logistica.controllers.IEntregasController;
-import grupo5.logistica.dto.entregas.*;
+import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
+import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
+import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.services.IEntregasService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Validated
 @RestController
 @RequestMapping("/api/entregas")
 public class EntregasController implements IEntregasController {
@@ -26,7 +33,7 @@ public class EntregasController implements IEntregasController {
 
   @Override
   @PostMapping
-  public ResponseEntity<EntregaResponseDTO> crear(@RequestBody CrearEntregaRequestDTO dto) {
+  public ResponseEntity<EntregaResponseDTO> crear(@Valid @RequestBody CrearEntregaRequestDTO dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(entregasService.crear(dto));
   }
 
@@ -45,14 +52,14 @@ public class EntregasController implements IEntregasController {
   @Override
   @PatchMapping("/{id}/estado")
   public ResponseEntity<EntregaResponseDTO> cambiarEstado(
-      @PathVariable("id") UUID id, @RequestBody CambioEstadoEntregaRequestDTO request) {
+      @PathVariable("id") UUID id, @Valid @RequestBody CambioEstadoEntregaRequestDTO request) {
     return ResponseEntity.ok(entregasService.cambiarEstado(id, request));
   }
 
   @Override
   @PatchMapping("/{id}/fotos")
   public ResponseEntity<EntregaResponseDTO> adjuntarFotoRecepcion(
-      @PathVariable("id") UUID id, @RequestBody AdjuntarFotoRecepcionRequestDTO dto) {
+      @PathVariable("id") UUID id, @Valid @RequestBody AdjuntarFotoRecepcionRequestDTO dto) {
     return ResponseEntity.ok(entregasService.adjuntarFotoRecepcion(id, dto));
   }
 

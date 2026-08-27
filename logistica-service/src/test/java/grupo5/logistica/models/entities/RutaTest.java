@@ -6,6 +6,9 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRuta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -26,7 +29,8 @@ class RutaTest {
     assertEquals(choferId, ruta.getChoferId());
     assertEquals(camionId, ruta.getCamionId());
     assertEquals(EstadoRuta.PENDIENTE, ruta.getEstado());
-    assertTrue(ruta.getEntregas().isEmpty());
+    assertTrue(ruta.getEntregaIds().isEmpty());
+    assertFalse(ruta.tieneSeguimientoDisponible());
   }
 
   @Test
@@ -55,8 +59,8 @@ class RutaTest {
 
     ruta.agregarEntrega(entregaId);
 
-    assertEquals(1, ruta.getEntregas().size());
-    assertTrue(ruta.getEntregas().contains(entregaId));
+    assertEquals(1, ruta.getEntregaIds().size());
+    assertTrue(ruta.getEntregaIds().contains(entregaId));
   }
 
   @Test
@@ -89,6 +93,7 @@ class RutaTest {
     assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
     assertNotNull(ruta.getHoraInicioReal());
     assertNull(ruta.getHoraFinReal());
+    assertTrue(ruta.tieneSeguimientoDisponible());
   }
 
   @Test
@@ -109,6 +114,7 @@ class RutaTest {
 
     assertEquals(EstadoRuta.COMPLETADA, ruta.getEstado());
     assertNotNull(ruta.getHoraFinReal());
+    assertTrue(ruta.tieneSeguimientoDisponible());
   }
 
   @Test
@@ -125,8 +131,56 @@ class RutaTest {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(UUID.randomUUID());
 
-    List<UUID> entregas = ruta.getEntregas();
+    List<UUID> entregas = ruta.getEntregaIds();
     UUID nuevaEntregaId = UUID.randomUUID();
     assertThrows(UnsupportedOperationException.class, () -> entregas.add(nuevaEntregaId));
+  }
+
+  @Test
+  void agregarEntregaRegistraEventoDeDominio() {
+    Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
+    UUID entregaId = UUID.randomUUID();
+
+    ruta.agregarEntrega(entregaId);
+
+    EventoRutaAsignada evento =
+        assertInstanceOf(EventoRutaAsignada.class, ruta.getDomainEvents().getFirst());
+    assertEquals(ruta.getId(), evento.getRutaId());
+    assertEquals(entregaId, evento.getEntregaId());
+    assertNotNull(evento.getId());
+    assertNotNull(evento.getTimestamp());
+  }
+
+  @Test
+  void iniciarRutaRegistraEventoConSnapshotDeEntregas() {
+    UUID camionId = UUID.randomUUID();
+    UUID entregaId = UUID.randomUUID();
+    Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), camionId);
+    ruta.agregarEntrega(entregaId);
+    ruta.clearDomainEvents();
+
+    ruta.iniciarRuta();
+
+    EventoRutaIniciada evento =
+        assertInstanceOf(EventoRutaIniciada.class, ruta.getDomainEvents().getFirst());
+    assertEquals(ruta.getId(), evento.getRutaId());
+    assertEquals(camionId, evento.getCamionId());
+    assertEquals(List.of(entregaId), evento.getEntregaIds());
+    assertEquals(ruta.getHoraInicioReal(), evento.getFechaInicio());
+    assertThrows(
+        UnsupportedOperationException.class, () -> evento.getEntregaIds().add(UUID.randomUUID()));
+  }
+
+  @Test
+  void snapshotDeEventosEsInmutableYNoCambiaAlLimpiarLaRuta() {
+    Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
+    ruta.agregarEntrega(UUID.randomUUID());
+    List<EventoRuta> snapshot = ruta.getDomainEvents();
+
+    ruta.clearDomainEvents();
+
+    assertEquals(1, snapshot.size());
+    assertTrue(ruta.getDomainEvents().isEmpty());
+    assertThrows(UnsupportedOperationException.class, () -> snapshot.add(snapshot.getFirst()));
   }
 }

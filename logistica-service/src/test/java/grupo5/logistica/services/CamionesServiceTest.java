@@ -12,6 +12,7 @@ import grupo5.logistica.dto.camiones.CamionResponseDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import grupo5.logistica.models.entities.camiones.SolicitudNuevoCamion;
+import grupo5.logistica.models.entities.camiones.ValidadorPatentes;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.services.impl.CamionesService;
 import grupo5.logistica.services.mappers.CamionMapper;
@@ -31,7 +32,9 @@ class CamionesServiceTest {
   void setUp() {
     camionRepository = mock(ICamionRepository.class);
     camionMapper = mock(CamionMapper.class);
-    camionesService = new CamionesService(camionRepository, camionMapper);
+    camionesService =
+        new CamionesService(
+            camionRepository, camionMapper, new ValidadorPatentes(camionRepository));
   }
 
   // ===================== crear() =====================
@@ -44,7 +47,6 @@ class CamionesServiceTest {
         new CamionResponseDTO(
             UUID.randomUUID(), "AB123CD", 10f, 2f, 5000f, EstadoCamion.DISPONIBLE, null);
 
-    when(camionRepository.findAll()).thenReturn(List.of());
     when(camionMapper.toSolicitud(request, List.of())).thenReturn(solicitud);
     when(camionMapper.toResponseDTO(any(Camion.class))).thenReturn(responseDTO);
 
@@ -58,11 +60,6 @@ class CamionesServiceTest {
   @Test
   void crear_deberiaLanzarExcepcion_cuandoPatenteConFormatoInvalido() {
     CamionRequestDTO request = new CamionRequestDTO("INVALIDA", 10f, 2f, 5000f);
-    SolicitudNuevoCamion solicitud =
-        new SolicitudNuevoCamion("INVALIDA", 10f, 2f, 5000f, List.of());
-
-    when(camionRepository.findAll()).thenReturn(List.of());
-    when(camionMapper.toSolicitud(request, List.of())).thenReturn(solicitud);
 
     assertThrows(ValidationException.class, () -> camionesService.crear(request));
     verify(camionRepository, never()).save(any());
@@ -71,13 +68,7 @@ class CamionesServiceTest {
   @Test
   void crear_deberiaLanzarExcepcion_cuandoPatenteDuplicada() {
     CamionRequestDTO request = new CamionRequestDTO("AB123CD", 10f, 2f, 5000f);
-    Camion existente = mock(Camion.class);
-    SolicitudNuevoCamion solicitud =
-        new SolicitudNuevoCamion("AB123CD", 10f, 2f, 5000f, List.of("AB123CD"));
-
-    when(existente.getPatente()).thenReturn("AB123CD");
-    when(camionRepository.findAll()).thenReturn(List.of(existente));
-    when(camionMapper.toSolicitud(request, List.of("AB123CD"))).thenReturn(solicitud);
+    when(camionRepository.findByPatente("AB123CD")).thenReturn(Optional.of(mock(Camion.class)));
 
     assertThrows(BusinessStateException.class, () -> camionesService.crear(request));
     verify(camionRepository, never()).save(any());

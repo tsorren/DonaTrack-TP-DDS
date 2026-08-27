@@ -28,47 +28,30 @@ public final class GestorDeRutas {
     entrega.asignarRuta(ruta.getId());
   }
 
-  public static void cambiarEstado(
-      Ruta ruta,
-      Chofer chofer,
-      Camion camion,
-      List<Entrega> entregas,
-      EstadoRuta estadoNuevo,
-      String actor) {
-    if (estadoNuevo == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
-
-    switch (estadoNuevo) {
-      case EN_TRASLADO -> iniciarRuta(ruta, chofer, camion, entregas, actor);
-      case COMPLETADA -> completarRuta(ruta, chofer, camion);
-      case PENDIENTE -> throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
-    }
-  }
-
   public static void iniciarRuta(
-      Ruta ruta, Chofer chofer, Camion camion, List<Entrega> entregas, String actor) {
-    validarColaboradores(ruta, chofer, camion);
+      Ruta ruta, Camion camion, Chofer chofer, List<Entrega> entregas, String actor) {
+    validarInicioRuta(ruta, camion, chofer);
     if (entregas == null || entregas.isEmpty() || actor == null || actor.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
-    if (ruta.getEstado() != EstadoRuta.PENDIENTE
-        || !chofer.estaDisponibleParaAsignar()
-        || !camion.estaDisponibleParaAsignar()
-        || !Objects.equals(ruta.getChoferId(), chofer.getId())
-        || !Objects.equals(ruta.getCamionId(), camion.getId())
-        || !ruta.getEntregaIds().equals(entregas.stream().map(Entrega::getId).toList())
+    if (!ruta.getEntregaIds().equals(entregas.stream().map(Entrega::getId).toList())
         || entregas.stream().anyMatch(e -> e.getEstadoActual() != EstadoEntrega.PENDIENTE)) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
 
-    camion.asignarARuta(ruta.getId());
-    chofer.asignarARuta(ruta.getId());
-    ruta.iniciarRuta();
+    iniciarRuta(ruta, camion, chofer);
     entregas.forEach(entrega -> entrega.iniciarRuta(actor));
   }
 
-  public static void completarRuta(Ruta ruta, Chofer chofer, Camion camion) {
+  public static void iniciarRuta(Ruta ruta, Camion camion, Chofer chofer) {
+    validarInicioRuta(ruta, camion, chofer);
+
+    camion.asignarARuta(ruta.getId());
+    chofer.asignarARuta(ruta.getId());
+    ruta.iniciarRuta();
+  }
+
+  public static void completarRuta(Ruta ruta, Camion camion, Chofer chofer) {
     validarColaboradores(ruta, chofer, camion);
     if (ruta.getEstado() != EstadoRuta.EN_TRASLADO
         || !Objects.equals(ruta.getId(), chofer.getRutaId())
@@ -84,6 +67,17 @@ public final class GestorDeRutas {
   private static void validarColaboradores(Ruta ruta, Chofer chofer, Camion camion) {
     if (ruta == null || chofer == null || camion == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+  }
+
+  private static void validarInicioRuta(Ruta ruta, Camion camion, Chofer chofer) {
+    validarColaboradores(ruta, chofer, camion);
+    if (ruta.getEstado() != EstadoRuta.PENDIENTE
+        || !chofer.estaDisponibleParaAsignar()
+        || !camion.estaDisponibleParaAsignar()
+        || !Objects.equals(ruta.getChoferId(), chofer.getId())
+        || !Objects.equals(ruta.getCamionId(), camion.getId())) {
+      throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
   }
 }

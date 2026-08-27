@@ -7,9 +7,11 @@ import grupo5.logistica.dto.rutas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.GestorDeRutas;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRuta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IChoferesRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -75,8 +77,8 @@ public class RutasService implements IRutasService {
 
     rutasRepository.save(ruta);
     entregasRepository.save(entrega);
-
-    comunicadorEventos.comunicarRutaAsignada(ruta, entrega);
+    publicarEventos(ruta, null, List.of(entrega));
+    ruta.clearDomainEvents();
 
     return rutaMapper.toResponseDTO(ruta);
   }
@@ -112,26 +114,46 @@ public class RutasService implements IRutasService {
     Camion camion = buscarCamion(ruta.getCamionId());
     List<Entrega> entregas = buscarEntregasDeRuta(ruta);
 
-    GestorDeRutas.cambiarEstado(
-        ruta, chofer, camion, entregas, EstadoRuta.EN_TRASLADO, request.actor());
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, entregas, request.actor());
 
     rutasRepository.save(ruta);
     choferesRepository.save(chofer);
     camionRepository.save(camion);
     entregas.forEach(entregasRepository::save);
 
-    comunicadorEventos.comunicarRutaIniciada(ruta, camion, entregas);
+    publicarEventos(ruta, camion, entregas);
+    ruta.clearDomainEvents();
   }
 
   private void procesarRutaCompletada(Ruta ruta, CambioEstadoRutaRequestDTO request) {
     Chofer chofer = buscarChofer(ruta.getChoferId());
     Camion camion = buscarCamion(ruta.getCamionId());
 
-    GestorDeRutas.cambiarEstado(ruta, chofer, camion, null, EstadoRuta.COMPLETADA, request.actor());
+    GestorDeRutas.completarRuta(ruta, camion, chofer);
 
     rutasRepository.save(ruta);
     choferesRepository.save(chofer);
     camionRepository.save(camion);
+    publicarEventos(ruta, camion, List.of());
+    ruta.clearDomainEvents();
+  }
+
+  private void publicarEventos(Ruta ruta, Camion camion, List<Entrega> entregas) {
+    for (EventoRuta evento : ruta.getDomainEvents()) {
+      switch (evento) {
+        case EventoRutaAsignada asignada -> comunicadorEventos.comunicarRutaAsignada(
+            asignada, buscarEntregaEnContexto(asignada.getEntregaId(), entregas));
+        case EventoRutaIniciada iniciada -> comunicadorEventos.comunicarRutaIniciada(
+            iniciada, camion, entregas);
+      }
+    }
+  }
+
+  private static Entrega buscarEntregaEnContexto(UUID entregaId, List<Entrega> entregas) {
+    return entregas.stream()
+        .filter(entrega -> entrega.getId().equals(entregaId))
+        .findFirst()
+        .orElseThrow(() -> new RecursoNoEncontradoException(entregaId));
   }
 
   private Ruta buscarRuta(UUID id) {

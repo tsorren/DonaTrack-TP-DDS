@@ -19,7 +19,10 @@ public final class GestorDeEntregas {
           confirmacion.entrega().adjuntarFotoRecepcion(confirmacion.fotoRecepcionUrl());
         }
       }
-      case NoRecepcion noRecepcion -> noRecepcion.entrega().negarEntrega(noRecepcion.actor());
+      case NoRecepcion noRecepcion -> noRecepcion
+          .entrega()
+          .negarEntrega(
+              noRecepcion.actor(), noRecepcion.justificacion(), noRecepcion.replanificable());
       case RegresoDeposito regreso -> regreso.entrega().regresarAlDeposito(regreso.actor());
     }
   }

@@ -56,6 +56,38 @@ class GestoresDeDominioTest {
   }
 
   @Test
+  void gestorDeCamionesNoRegistraHistorialCuandoLaTransicionEsInvalida() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeCamiones.cambiarEstado(camion, EstadoCamion.EN_RUTA));
+
+    assertTrue(camion.getHistorialEstado().isEmpty());
+  }
+
+  @Test
+  void choferCambiarEstadoDelegaYConservaElHistorial() {
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+
+    chofer.cambiarEstado(EstadoChofer.DESHABILITADO);
+    chofer.cambiarEstado(EstadoChofer.DISPONIBLE);
+
+    assertEquals(EstadoChofer.DISPONIBLE, chofer.getEstado());
+    assertEquals(2, chofer.getHistorialEstados().size());
+    assertEquals(EstadoChofer.DESHABILITADO, chofer.getHistorialEstados().getFirst().estadoNuevo());
+  }
+
+  @Test
+  void choferCambiarEstadoNoRegistraHistorialCuandoLaTransicionEsInvalida() {
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+
+    assertThrows(ValidationException.class, () -> chofer.cambiarEstado(EstadoChofer.EN_RUTA));
+
+    assertTrue(chofer.getHistorialEstados().isEmpty());
+  }
+
+  @Test
   void gestorDeEntregasProcesaLaSolicitudSinConocerDTOs() {
     Entrega entrega = crearEntrega();
     entrega.iniciarRuta("chofer");
@@ -89,7 +121,7 @@ class GestoresDeDominioTest {
     Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
     GestorDeRutas.agregarEntrega(ruta, entrega);
 
-    GestorDeRutas.iniciarRuta(ruta, chofer, camion, List.of(entrega), "Ada Lovelace");
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
 
     assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
     assertEquals(EstadoCamion.EN_RUTA, camion.getEstado());
@@ -112,12 +144,26 @@ class GestoresDeDominioTest {
         ValidationException.class,
         () ->
             GestorDeRutas.iniciarRuta(
-                ruta, chofer, camion, List.of(crearEntrega()), "Ada Lovelace"));
+                ruta, camion, chofer, List.of(crearEntrega()), "Ada Lovelace"));
 
     assertEquals(EstadoRuta.PENDIENTE, ruta.getEstado());
     assertEquals(EstadoCamion.DISPONIBLE, camion.getEstado());
     assertEquals(EstadoChofer.DISPONIBLE, chofer.getEstado());
     assertNull(camion.getRutaId());
+  }
+
+  @Test
+  void gestorDeRutasCoordinaRutaCamionYChoferConElContratoMinimo() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    ruta.agregarEntrega(UUID.randomUUID());
+
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer);
+
+    assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
+    assertEquals(ruta.getId(), camion.getRutaId());
+    assertEquals(ruta.getId(), chofer.getRutaId());
   }
 
   private static Entrega crearEntrega() {

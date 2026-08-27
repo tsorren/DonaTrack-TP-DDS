@@ -1,4 +1,4 @@
-package grupo5.logistica.infrastructure;
+package grupo5.logistica.infrastructure.clients;
 
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.RutaPlanificadaDTO;

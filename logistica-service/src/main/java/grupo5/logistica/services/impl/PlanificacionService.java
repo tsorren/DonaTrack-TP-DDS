@@ -13,6 +13,7 @@ import grupo5.logistica.models.entities.rutas.GeneradorDeRutas;
 import grupo5.logistica.models.entities.rutas.PlanificacionSolicitada;
 import grupo5.logistica.models.entities.rutas.RespuestaPlanificacion;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.models.repositories.ICamionRepository;
@@ -126,7 +127,7 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     RespuestaPlanificacion respuesta = mapearRespuesta(dto);
-    List<Ruta> rutas = generadorDeRutas.generarRutas(respuesta);
+    List<Ruta> rutas = generadorDeRutas.calcularRutas(respuesta);
     persistirPlanificacion(rutas, respuesta);
 
     solicitud.procesarResultados(rutas.stream().map(Ruta::getId).toList());
@@ -190,11 +191,26 @@ public class PlanificacionService implements IPlanificacionService {
 
     rutas.forEach(rutasRepository::save);
     entregasPorId.values().forEach(entregasRepository::save);
-    rutas.forEach(
-        ruta ->
-            ruta.getEntregaIds().stream()
-                .map(entregasPorId::get)
-                .forEach(entrega -> comunicadorEventos.comunicarRutaAsignada(ruta, entrega)));
+    rutas.forEach(ruta -> publicarAsignaciones(ruta, entregasPorId));
+  }
+
+  private void publicarAsignaciones(Ruta ruta, Map<UUID, Entrega> entregasPorId) {
+    ruta.getDomainEvents().stream()
+        .filter(EventoRutaAsignada.class::isInstance)
+        .map(EventoRutaAsignada.class::cast)
+        .forEach(
+            evento ->
+                comunicadorEventos.comunicarRutaAsignada(
+                    evento, obtenerEntregaAsignada(evento.getEntregaId(), entregasPorId)));
+    ruta.clearDomainEvents();
+  }
+
+  private static Entrega obtenerEntregaAsignada(UUID entregaId, Map<UUID, Entrega> entregasPorId) {
+    Entrega entrega = entregasPorId.get(entregaId);
+    if (entrega == null) {
+      throw new RecursoNoEncontradoException(entregaId);
+    }
+    return entrega;
   }
 
   private SolicitudPlanificacion buscarSolicitud(UUID id) {

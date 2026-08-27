@@ -12,6 +12,8 @@ import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
 import grupo5.logistica.models.repositories.*;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -142,6 +144,8 @@ class RutaServiceTest {
 
     when(entrega.getId()).thenReturn(entregaId);
     when(entrega.getEstadoActual()).thenReturn(EstadoEntrega.PENDIENTE);
+    EventoRutaAsignada evento = new EventoRutaAsignada(rutaId, entregaId);
+    when(ruta.getDomainEvents()).thenReturn(List.of(evento));
 
     RutaResponseDTO response = mock(RutaResponseDTO.class);
 
@@ -154,6 +158,8 @@ class RutaServiceTest {
 
     verify(rutasRepository).save(ruta);
     verify(entregasRepository).save(entrega);
+    verify(comunicadorEventos).comunicarRutaAsignada(evento, entrega);
+    verify(ruta).clearDomainEvents();
 
     assertEquals(response, resultado);
   }
@@ -204,6 +210,9 @@ class RutaServiceTest {
     when(camion.estaDisponibleParaAsignar()).thenReturn(true);
     when(chofer.getId()).thenReturn(choferId);
     when(chofer.estaDisponibleParaAsignar()).thenReturn(true);
+    EventoRutaIniciada evento =
+        new EventoRutaIniciada(rutaId, camionId, List.of(entregaId), java.time.LocalDateTime.now());
+    when(ruta.getDomainEvents()).thenReturn(List.of(evento));
 
     when(rutaMapper.toResponseDTO(ruta)).thenReturn(mock(RutaResponseDTO.class));
 
@@ -212,7 +221,8 @@ class RutaServiceTest {
     verify(ruta).iniciarRuta();
     verify(entrega).iniciarRuta("actor");
     verify(rutasRepository).save(ruta);
-    verify(comunicadorEventos).comunicarRutaIniciada(eq(ruta), eq(camion), anyList());
+    verify(comunicadorEventos).comunicarRutaIniciada(eq(evento), eq(camion), anyList());
+    verify(ruta).clearDomainEvents();
     assertNotNull(resultado);
   }
 
@@ -247,6 +257,7 @@ class RutaServiceTest {
 
     verify(ruta).completarRuta();
     verify(rutasRepository).save(ruta);
+    verify(ruta).clearDomainEvents();
     assertNotNull(resultado);
   }
 }

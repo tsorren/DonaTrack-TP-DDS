@@ -80,16 +80,12 @@ class ChoferesControllerTest {
   void crear_deberiaRetornar400_cuandoLicenciaEsInvalida() throws Exception {
     ChoferRequestDTO request = new ChoferRequestDTO("Juan", "Perez", "", "1122334455");
 
-    when(choferesService.crear(any()))
-        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
-
     mockMvc
         .perform(
             post("/api/choferes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
+        .andExpect(status().isBadRequest());
   }
 
   // ===================== GET /api/choferes =====================

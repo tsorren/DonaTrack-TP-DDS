@@ -12,7 +12,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class AlgoritmoOrdenarEntregasTest {
+class AlgoritmoOrdenadorDeEntregaTest {
 
   private AlgoritmoOrdenadorSimple algoritmo;
 

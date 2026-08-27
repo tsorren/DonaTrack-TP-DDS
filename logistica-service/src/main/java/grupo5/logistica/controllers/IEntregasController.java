@@ -1,6 +1,10 @@
 package grupo5.logistica.controllers;
 
-import grupo5.logistica.dto.entregas.*;
+import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
+import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
+import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;

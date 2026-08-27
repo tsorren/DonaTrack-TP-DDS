@@ -1,8 +1,11 @@
 package grupo5.logistica.models.entities.rutas;
 
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRuta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,7 +17,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
-public class Ruta implements AggregateRoot {
+public class Ruta extends AgregadoConEventos<EventoRuta> {
 
   private final UUID id;
   private final LocalDate fecha;
@@ -54,6 +57,8 @@ public class Ruta implements AggregateRoot {
     actualizarEstado(EstadoRuta.EN_TRASLADO);
     this.horaInicioReal = LocalDateTime.now(ZoneId.of("UTC"));
     this.horaFinReal = null;
+    registrarEvento(
+        new EventoRutaIniciada(this.id, this.camionId, this.entregas, this.horaInicioReal));
   }
 
   public void completarRuta() {
@@ -77,18 +82,15 @@ public class Ruta implements AggregateRoot {
     }
 
     this.entregas.add(entregaId);
-  }
-
-  public List<UUID> obtenerEntregas() {
-    return List.copyOf(this.entregas);
-  }
-
-  public List<UUID> getEntregas() {
-    return obtenerEntregas();
+    registrarEvento(new EventoRutaAsignada(this.id, entregaId));
   }
 
   public List<UUID> getEntregaIds() {
-    return obtenerEntregas();
+    return List.copyOf(this.entregas);
+  }
+
+  public boolean tieneSeguimientoDisponible() {
+    return this.estado != EstadoRuta.PENDIENTE;
   }
 
   public List<CambioEstadoRuta> getHistorialEstado() {
