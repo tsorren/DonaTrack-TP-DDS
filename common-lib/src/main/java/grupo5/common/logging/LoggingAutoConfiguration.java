@@ -1,8 +1,11 @@
 package grupo5.common.logging;
 
+import feign.RequestInterceptor;
 import io.micrometer.tracing.Tracer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -20,6 +23,19 @@ public class LoggingAutoConfiguration {
   @ConditionalOnBean(Tracer.class)
   public ScheduledJobLoggingAspect scheduledJobLoggingAspect(Tracer tracer) {
     return new ScheduledJobLoggingAspect(tracer);
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  public TraceResponseHeaderFilter traceResponseHeaderFilter() {
+    return new TraceResponseHeaderFilter();
+  }
+
+  @Bean
+  @ConditionalOnClass(RequestInterceptor.class)
+  @ConditionalOnMissingBean
+  public FeignTraceRequestInterceptor feignTraceRequestInterceptor() {
+    return new FeignTraceRequestInterceptor();
   }
 
   @Configuration
