@@ -2,16 +2,13 @@ package grupo5.logistica.infrastructure;
 
 import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
 import grupo5.logistica.dto.eventos.EventoEntregaFallida;
-import grupo5.logistica.dto.eventos.EventoRutaAsignada;
-import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
-import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
 import grupo5.logistica.services.ComunicadorEventosLogistica;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -29,22 +26,24 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
   }
 
   @Override
-  public void comunicarRutaAsignada(Ruta ruta, Entrega entrega) {
+  public void comunicarRutaAsignada(EventoRutaAsignada evento, Entrega entrega) {
     eventPublisher.publicarRutaAsignada(
-        new EventoRutaAsignada(ruta.getId(), entrega.getIdDonacion(), ahora()));
+        new grupo5.logistica.dto.eventos.EventoRutaAsignada(
+            evento.getRutaId(), entrega.getIdDonacion(), evento.getTimestamp()));
   }
 
   @Override
-  public void comunicarRutaIniciada(Ruta ruta, Camion camion, List<Entrega> entregas) {
+  public void comunicarRutaIniciada(
+      EventoRutaIniciada evento, Camion camion, List<Entrega> entregas) {
     List<UUID> donacionesIds = entregas.stream().map(Entrega::getIdDonacion).toList();
     eventPublisher.publicarRutaIniciada(
-        new EventoRutaIniciada(
-            ruta.getId(),
+        new grupo5.logistica.dto.eventos.EventoRutaIniciada(
+            evento.getRutaId(),
             camion.getId(),
             camion.getPatente(),
             donacionesIds,
-            ruta.getHoraInicioReal(),
-            generadorDeUrlSeguimiento.generarUrl(ruta.getId())));
+            evento.getFechaInicio(),
+            generadorDeUrlSeguimiento.generarUrl(evento.getRutaId())));
   }
 
   @Override
@@ -67,9 +66,5 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
             evento.getJustificacion(),
             evento.getTimestamp(),
             evento.isReplanificable()));
-  }
-
-  private static LocalDateTime ahora() {
-    return LocalDateTime.now(ZoneId.of("UTC"));
   }
 }

@@ -11,6 +11,10 @@ import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -63,5 +67,54 @@ class ComunicadorEventosLogisticaRabbitTest {
     assertEquals("Domicilio cerrado", payload.justificacion());
     assertEquals(evento.getTimestamp(), payload.fechaFalla());
     assertFalse(payload.replanificable());
+  }
+
+  @Test
+  void mapeaRutaAsignadaAPayloadRabbitConElTimestampDelEventoDeDominio() {
+    UUID rutaId = UUID.randomUUID();
+    UUID entregaId = UUID.randomUUID();
+    UUID donacionId = UUID.randomUUID();
+    EventoRutaAsignada evento = new EventoRutaAsignada(rutaId, entregaId);
+    grupo5.logistica.models.entities.entregas.Entrega entrega =
+        mock(grupo5.logistica.models.entities.entregas.Entrega.class);
+    when(entrega.getIdDonacion()).thenReturn(donacionId);
+
+    comunicador.comunicarRutaAsignada(evento, entrega);
+
+    ArgumentCaptor<grupo5.logistica.dto.eventos.EventoRutaAsignada> captor =
+        ArgumentCaptor.forClass(grupo5.logistica.dto.eventos.EventoRutaAsignada.class);
+    verify(eventPublisher).publicarRutaAsignada(captor.capture());
+    assertEquals(rutaId, captor.getValue().rutaId());
+    assertEquals(donacionId, captor.getValue().donacionIndependienteId());
+    assertEquals(evento.getTimestamp(), captor.getValue().fechaAsignacion());
+  }
+
+  @Test
+  void mapeaRutaIniciadaAPayloadRabbitConLaFechaDelEventoDeDominio() {
+    UUID rutaId = UUID.randomUUID();
+    UUID camionId = UUID.randomUUID();
+    UUID entregaId = UUID.randomUUID();
+    UUID donacionId = UUID.randomUUID();
+    LocalDateTime fechaInicio = LocalDateTime.now();
+    EventoRutaIniciada evento =
+        new EventoRutaIniciada(rutaId, camionId, List.of(entregaId), fechaInicio);
+    Camion camion = mock(Camion.class);
+    grupo5.logistica.models.entities.entregas.Entrega entrega =
+        mock(grupo5.logistica.models.entities.entregas.Entrega.class);
+    when(camion.getId()).thenReturn(camionId);
+    when(camion.getPatente()).thenReturn("AA123BB");
+    when(entrega.getIdDonacion()).thenReturn(donacionId);
+    when(generadorDeUrlSeguimiento.generarUrl(rutaId)).thenReturn("https://mapa/ruta");
+
+    comunicador.comunicarRutaIniciada(evento, camion, List.of(entrega));
+
+    ArgumentCaptor<grupo5.logistica.dto.eventos.EventoRutaIniciada> captor =
+        ArgumentCaptor.forClass(grupo5.logistica.dto.eventos.EventoRutaIniciada.class);
+    verify(eventPublisher).publicarRutaIniciada(captor.capture());
+    assertEquals(rutaId, captor.getValue().rutaId());
+    assertEquals(camionId, captor.getValue().camionId());
+    assertEquals(List.of(donacionId), captor.getValue().donacionesIndependientesIds());
+    assertEquals(fechaInicio, captor.getValue().fechaInicio());
+    assertEquals("https://mapa/ruta", captor.getValue().urlMapa());
   }
 }

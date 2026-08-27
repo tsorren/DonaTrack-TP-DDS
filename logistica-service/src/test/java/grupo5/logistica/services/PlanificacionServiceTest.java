@@ -2,6 +2,7 @@ package grupo5.logistica.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -21,6 +22,7 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IChoferesRepository;
@@ -127,9 +129,14 @@ class PlanificacionServiceTest {
     SolicitudPlanificacionResponseDTO resultado = service.procesarCallback(callback);
 
     ArgumentCaptor<Ruta> rutaCaptor = ArgumentCaptor.forClass(Ruta.class);
+    ArgumentCaptor<EventoRutaAsignada> eventoCaptor =
+        ArgumentCaptor.forClass(EventoRutaAsignada.class);
     verify(rutasRepository).save(rutaCaptor.capture());
     verify(entregasRepository).save(entrega);
-    verify(comunicadorEventos).comunicarRutaAsignada(rutaCaptor.getValue(), entrega);
+    verify(comunicadorEventos).comunicarRutaAsignada(eventoCaptor.capture(), eq(entrega));
+    assertEquals(rutaCaptor.getValue().getId(), eventoCaptor.getValue().getRutaId());
+    assertEquals(entrega.getId(), eventoCaptor.getValue().getEntregaId());
+    assertEquals(0, rutaCaptor.getValue().getDomainEvents().size());
     assertEquals(rutaCaptor.getValue().getId(), entrega.getIdRuta());
     assertEquals(response, resultado);
   }
