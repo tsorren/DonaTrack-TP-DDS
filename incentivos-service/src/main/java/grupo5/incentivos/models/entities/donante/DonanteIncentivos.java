@@ -10,8 +10,10 @@ import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
+import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.misiones.factory.MisionFactory;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -168,5 +170,20 @@ public class DonanteIncentivos implements AggregateRoot {
     return this.misiones.stream()
         .filter(m -> m.isCompletada() && m.fueCompletadaEnMes(anio, mes))
         .count();
+  }
+
+  public void verificarRachas(YearMonth mesActual) {
+    this.misiones.stream()
+        .filter(m -> m instanceof MisionRacha && !m.isCompletada())
+        .map(m -> (MisionRacha) m)
+        .forEach(r -> r.verificarVigencia(mesActual));
+  }
+
+  public int misionesCompletadas() {
+    return (int) this.misiones.stream().filter(Mision::isCompletada).count();
+  }
+
+  public boolean tuvoActividadEnMes(YearMonth mes) {
+    return this.metricas.donacionesEnMes(mes) > 0;
   }
 }

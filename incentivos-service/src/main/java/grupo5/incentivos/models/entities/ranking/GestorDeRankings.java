@@ -12,21 +12,21 @@ public class GestorDeRankings {
     RankingMensual ranking = new RankingMensual(periodo);
     AtomicInteger posicion = new AtomicInteger(1);
 
-    todos.stream()
-        .map(
-            d ->
-                new EntradaRanking(
-                    0,
-                    d.getId(),
-                    d.getNombre(),
-                    d.misionesCompletadasEnMes(periodo.getYear(), periodo.getMonthValue())))
-        .filter(e -> e.getMisionesCompletadas() > 0)
-        .sorted(Comparator.comparingLong(EntradaRanking::getMisionesCompletadas).reversed())
-        .forEach(
-            entrada -> {
-              entrada.setPosicion(posicion.getAndIncrement());
-              ranking.agregarEntrada(entrada);
-            });
+    List<DonanteIncentivos> donantesConMisiones =
+        todos.stream()
+            .filter(d -> d.misionesCompletadasEnMes(periodo.getYear(), periodo.getMonthValue()) > 0)
+            .sorted(
+                Comparator.comparingLong(
+                        (DonanteIncentivos d) ->
+                            d.misionesCompletadasEnMes(periodo.getYear(), periodo.getMonthValue()))
+                    .reversed())
+            .toList();
+
+    for (DonanteIncentivos d : donantesConMisiones) {
+      long misiones = d.misionesCompletadasEnMes(periodo.getYear(), periodo.getMonthValue());
+      ranking.agregarEntrada(
+          new EntradaRanking(posicion.getAndIncrement(), d.getId(), d.getNombre(), misiones));
+    }
     return ranking;
   }
 }

@@ -29,15 +29,11 @@ public class MisionDonacionesExitosas extends Mision {
     this.setProgresoActual(this.getProgresoActual() + 1);
 
     if (this.getProgresoActual() >= this.getObjetivo()) {
-      this.setCompletada(true);
       LocalDate fecha =
           (fechaUltimoDonacion != null)
               ? fechaUltimoDonacion
               : LocalDate.now(ZoneId.systemDefault());
-      this.setFechaCompletada(fecha);
-      if (this.getInsignia() != null) {
-        donante.otorgarInsignia(this.getInsignia());
-      }
+      completar(donante, fecha);
     }
   }
 

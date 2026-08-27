@@ -61,3 +61,73 @@ Se consolidó la arquitectura objetivo del microservicio documentada en:
 - Comparación contra el plan genérico de refactor de DonaTrack y las lecciones aprendidas en `donaciones-service`.
 - Generación de modelos PlantUML conformes a la guía de estilos de arquitectura.
 - Formalización del plan de ejecución y estructura de bitácora.
+
+---
+
+## Oleada 1: Tell, Don't Ask en Agregados y Misiones
+
+### Problema
+Existían múltiples violaciones al principio Tell, Don't Ask donde los servicios de aplicación interrogaban el estado interno de las entidades para tomar decisiones de negocio, acoplando la lógica y favoreciendo el diseño anémico:
+1. **Introspección y casteo de misiones en el servicio**: `IncentivosService.verificarRachasVencidas()` iteraba sobre todas las misiones del donante, filtraba con `instanceof MisionRacha` y ejecutaba el casteo manual en vez de solicitarle al agregado `DonanteIncentivos` que verifique sus propias rachas.
+2. **Consultas anémicas sobre misiones y métricas**: `IncentivosService.obtenerMetricas()` calculaba `misionesCompletadas` recorriendo la lista de misiones con un stream externo, y `obtenerResumenSistema()` consultaba `d.getMetricas().donacionesEnMes(...) > 0` directamente sobre el objeto embebido de métricas.
+3. **Mutación externa en `EntradaRanking`**: `GestorDeRankings` creaba `EntradaRanking` con posición dummy `0` y luego mutaba la posición mediante `entrada.setPosicion(posicion.getAndIncrement())`, requiriendo un setter público mutable.
+4. **Duplicación de lógica de completitud en `MisionDonacionesExitosas`**: La lógica de marcar `completada=true`, registrar la fecha de completitud y otorgar la insignia estaba duplicada en `MisionDonacionesExitosas.evaluarProgresoExitoso()` respecto a `Mision.evaluarProgreso()`.
+5. **Inconsistencia de visibilidad en `Insignia`**: Se analizó la ambigüedad conceptual donde `Insignia` como plantilla de misión no debe mezclarse con la insignia ganada por el usuario. Se aprobó formalmente la **Opción A** (separación en `Insignia` plantilla e `InsigniaGanada` poseída) para implementar en la Oleada 3.
+
+### Evidencia
+- `IncentivosService.java`:
+  - L.206-213: bucle con `instanceof MisionRacha` y cast `(MisionRacha) m`.
+  - L.132-133: `(int) donante.getMisiones().stream().filter(Mision::isCompletada).count();`.
+  - L.173-176: `d.getMetricas().donacionesEnMes(mesActual) > 0`.
+- `GestorDeRankings.java` L.18-28: `new EntradaRanking(0, ...)` seguido de `entrada.setPosicion(...)`.
+- `EntradaRanking.java`: `@Setter` público en toda la clase con atributos mutables.
+- `MisionDonacionesExitosas.java` L.26-42: bloque repetido de `setCompletada(true)`, `setFechaCompletada(...)` y `donante.otorgarInsignia(...)`.
+
+### Objetivo
+1. **Enriquecer `DonanteIncentivos`**:
+   - Agregar `public void verificarRachas(YearMonth mesActual)`.
+   - Agregar `public int misionesCompletadas()`.
+   - Agregar `public boolean tuvoActividadEnMes(YearMonth mes)`.
+2. **Adelgazar `IncentivosService`**:
+   - Reemplazar el bucle de introspección por `todos.forEach(d -> d.verificarRachas(mesActual))`.
+   - Delegar el conteo de misiones en `donante.misionesCompletadas()`.
+   - Delegar la verificación de actividad mensual en `d.tuvoActividadEnMes(...)`.
+3. **Inmutabilidad en `EntradaRanking`**:
+   - Eliminar `@Setter` y el método `setPosicion()`, estableciendo todos los campos como `final`.
+   - Calcular la posición previamente en `GestorDeRankings` e instanciar `EntradaRanking` con su posición definitiva.
+4. **Unificar ciclo de completitud en `Mision`**:
+   - Extraer `protected void completar(DonanteIncentivos donante, LocalDate fecha)` en `Mision`.
+   - Reutilizar `completar(donante, fecha)` en `MisionDonacionesExitosas.evaluarProgresoExitoso()`.
+5. **Añadir tests unitarios dedicados**:
+   - Crear `DonanteIncentivosTest` para validar exhaustivamente los nuevos métodos de comportamiento del Aggregate Root.
+
+### Fuera de scope
+- Descomposición SRP de `IncentivosService` en 5 Application Services especializados (Oleada 4).
+- Eliminación de `IllegalArgumentException` y migración a `ValidationException(ErrorCatalog)` (Oleada 3).
+- Implementación de `InsigniaGanada` (Oleada 3).
+- Corrección de `Collections.unmodifiableList` a `List.copyOf` en domain events (Oleada 2).
+
+### Tests / Verificación
+- **Tests unitarios nuevos**:
+  - `DonanteIncentivosTest`:
+    - `verificarRachas_deberiaResetearProgresoSiRachaVencida`: ✅ Valida reseteo de racha ante mes salteado.
+    - `verificarRachas_noDeberiaAfectarMisionVigente`: ✅ Valida preservación de racha en mes consecutivo.
+    - `verificarRachas_noDeberiaModificarMisionYaCompletada`: ✅ Valida inmutabilidad de misiones completadas.
+    - `misionesCompletadas_deberiaContabilizarSoloMisionesCompletadas`: ✅ Valida conteo exacto de misiones logradas.
+    - `tuvoActividadEnMes_deberiaIndicarSiHuboDonacionesEnElPeriodo`: ✅ Valida detección de actividad mensual.
+    - `otorgarInsignia_y_configurarVisibilidad_deberianFuncionarCorrectamente`: ✅ Valida visibilidad de insignias.
+- **Suite completa**:
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **62 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (`BUILD SUCCESS`).
+  - `mvn spotless:check -f incentivos-service/pom.xml`: ✅ 60 archivos limpios sin desalineaciones de formato.
+
+### Diseño resultante
+- El Aggregate Root `DonanteIncentivos` recupera su rol como guardián de las reglas de negocio de gamificación, coordinando sus misiones y evaluando su actividad sin permitir anomia en la capa de servicios.
+- `IncentivosService` se convierte en un orquestador más delgado que despacha acciones al modelo de dominio sin interrogar estructuras internas ni realizar filtrados por tipo (`instanceof`).
+- `EntradaRanking` se consolida como una entidad inmutable cuyos valores quedan fijados al momento del cómputo del ranking.
+- La jerarquía de `Mision` encapsula la mutación de estado y el otorgamiento de insignias en su método protegido `completar()`.
+
+### IA utilizada
+- Detección estática de violaciones a Tell Don't Ask en los Application Services.
+- Refactorización de algoritmos de ordenamiento y cómputo de posiciones inmutables en `GestorDeRankings`.
+- Generación de tests unitarios focalizados en el comportamiento de dominio.
+- Verificación cruzada con la suite de regresión y formateo Spotless.

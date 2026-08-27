@@ -49,11 +49,15 @@ public abstract class Mision {
     this.progresoActual = calcularNuevoProgreso(donante, evento);
 
     if (this.progresoActual >= this.objetivo) {
-      this.completada = true;
-      this.fechaCompletada = evento.getFecha();
-      if (this.insignia != null) {
-        donante.otorgarInsignia(this.insignia);
-      }
+      completar(donante, evento.getFecha());
+    }
+  }
+
+  protected void completar(DonanteIncentivos donante, LocalDate fecha) {
+    this.completada = true;
+    this.fechaCompletada = fecha;
+    if (this.insignia != null) {
+      donante.otorgarInsignia(this.insignia);
     }
   }
 

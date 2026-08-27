@@ -12,7 +12,6 @@ import grupo5.incentivos.models.entities.inactividad.DonanteInactivo;
 import grupo5.incentivos.models.entities.inactividad.GestorDeInactivos;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
-import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -129,8 +128,7 @@ public class IncentivosService implements IIncentivosService {
   public MetricasDonanteDTO obtenerMetricas(UUID donanteId) {
     DonanteIncentivos donante = obtenerDonante(donanteId);
     Integer posicion = rankingService.obtenerPosicionDonante(donanteId).orElse(null);
-    int misionesCompletadas =
-        (int) donante.getMisiones().stream().filter(Mision::isCompletada).count();
+    int misionesCompletadas = donante.misionesCompletadas();
     Map<String, Long> evolucion =
         donante.getMetricas().donacionesPorPeriodo().entrySet().stream()
             .collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue));
@@ -171,9 +169,9 @@ public class IncentivosService implements IIncentivosService {
     YearMonth mesAnterior = mesActual.minusMonths(1);
 
     int donantesMesActual =
-        (int) todos.stream().filter(d -> d.getMetricas().donacionesEnMes(mesActual) > 0).count();
+        (int) todos.stream().filter(d -> d.tuvoActividadEnMes(mesActual)).count();
     int donantesMesAnterior =
-        (int) todos.stream().filter(d -> d.getMetricas().donacionesEnMes(mesAnterior) > 0).count();
+        (int) todos.stream().filter(d -> d.tuvoActividadEnMes(mesAnterior)).count();
 
     long totalMisiones =
         todos.stream().flatMap(d -> d.getMisiones().stream()).filter(Mision::isCompletada).count();
@@ -204,12 +202,7 @@ public class IncentivosService implements IIncentivosService {
 
   public void verificarRachasVencidas(YearMonth mesActual) {
     List<DonanteIncentivos> todos = repository.findAll();
-    todos.forEach(
-        donante ->
-            donante.getMisiones().stream()
-                .filter(m -> m instanceof MisionRacha && !m.isCompletada())
-                .map(m -> (MisionRacha) m)
-                .forEach(r -> r.verificarVigencia(mesActual)));
+    todos.forEach(donante -> donante.verificarRachas(mesActual));
     repository.saveAll(todos);
   }
 
