@@ -11,10 +11,13 @@ class InsigniaTest {
 
   @Test
   void insignia_deberiaConstruirseCorrectamenteConCamposValidos() {
-    Insignia insignia = new Insignia("Racha Inicial", "3 meses", "/img.png");
-    assertEquals("Racha Inicial", insignia.nombre());
-    assertEquals("3 meses", insignia.descripcion());
-    assertEquals("/img.png", insignia.imagenUrl());
+    String nombre = "Racha Inicial";
+    String descripcion = "3 meses";
+    String imagenUrl = "/img.png";
+    Insignia insignia = new Insignia(nombre, descripcion, imagenUrl);
+    assertEquals(nombre, insignia.nombre());
+    assertEquals(descripcion, insignia.descripcion());
+    assertEquals(imagenUrl, insignia.imagenUrl());
   }
 
   @Test
@@ -30,11 +33,14 @@ class InsigniaTest {
 
   @Test
   void insigniaGanada_deberiaConstruirseCorrectamente() {
+    String nombre = "Racha";
+    String descripcion = "desc";
+    String imagenUrl = "/img.png";
     LocalDate fecha = LocalDate.of(2026, 6, 1);
-    InsigniaGanada ganada = new InsigniaGanada("Racha", "desc", "/img.png", true, fecha);
-    assertEquals("Racha", ganada.nombre());
-    assertEquals("desc", ganada.descripcion());
-    assertEquals("/img.png", ganada.imagenUrl());
+    InsigniaGanada ganada = new InsigniaGanada(nombre, descripcion, imagenUrl, true, fecha);
+    assertEquals(nombre, ganada.nombre());
+    assertEquals(descripcion, ganada.descripcion());
+    assertEquals(imagenUrl, ganada.imagenUrl());
     assertTrue(ganada.visible());
     assertEquals(fecha, ganada.fechaObtenida());
   }

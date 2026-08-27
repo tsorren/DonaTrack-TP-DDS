@@ -29,7 +29,7 @@ class DTOsAndMappersTest {
     DonanteRegistradoDTO dto = DonanteRegistradoDTO.desde(donante);
 
     assertEquals(id, dto.donanteId());
-    assertEquals("COLABORADOR", dto.categoria());
+    assertEquals(donante.getCategoria().name(), dto.categoria());
   }
 
   @Test
@@ -38,7 +38,7 @@ class DTOsAndMappersTest {
     InsigniaDTO dtoPlantilla = InsigniaDTO.desde(plantilla);
 
     assertNotNull(dtoPlantilla);
-    assertEquals("Insignia Plantilla", dtoPlantilla.nombre());
+    assertEquals(plantilla.nombre(), dtoPlantilla.nombre());
     assertTrue(dtoPlantilla.visible());
     assertNull(dtoPlantilla.fechaObtenida());
 
@@ -48,9 +48,9 @@ class DTOsAndMappersTest {
     InsigniaDTO dtoGanada = InsigniaDTO.desde(ganada);
 
     assertNotNull(dtoGanada);
-    assertEquals("Insignia Ganada", dtoGanada.nombre());
+    assertEquals(ganada.nombre(), dtoGanada.nombre());
     assertFalse(dtoGanada.visible());
-    assertEquals(LocalDate.of(2026, 5, 10), dtoGanada.fechaObtenida());
+    assertEquals(ganada.fechaObtenida(), dtoGanada.fechaObtenida());
 
     assertNull(InsigniaDTO.desde((Insignia) null));
     assertNull(InsigniaDTO.desde((InsigniaGanada) null));
@@ -84,9 +84,9 @@ class DTOsAndMappersTest {
 
     assertNotNull(dto);
     assertEquals(racha.getNombre(), dto.nombre());
-    assertEquals(2, dto.objetivo());
+    assertEquals(racha.getObjetivo(), dto.objetivo());
     assertNotNull(dto.insignia());
-    assertEquals("Racha Bronce", dto.insignia().nombre());
+    assertEquals(racha.getInsignia().nombre(), dto.insignia().nombre());
   }
 
   @Test
@@ -97,7 +97,7 @@ class DTOsAndMappersTest {
     RankingMensualDTO dto = RankingMensualDTO.desde(ranking);
 
     assertNotNull(dto);
-    assertEquals("2026-05", dto.periodo());
+    assertEquals(mayo.toString(), dto.periodo());
     assertEquals(4, dto.entradas().size());
     assertEquals(3, dto.podio().size());
     assertEquals(1, dto.podio().getFirst().posicion());

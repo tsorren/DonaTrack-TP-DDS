@@ -604,4 +604,71 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Diseño de diagramas de arquitectura Mermaid (clases, secuencias de outbox y crypto-shredding).
 - Elaboración de planes de testing de integración con Testcontainers.
 
+---
+
+## Oleada 11: Cierre Exhaustivo de Code Review, Higiene de Logs, Sanitización de Seguridad y Estabilización de Contratos de Entrada
+
+### Problema
+1. **Fragilidad y "Magic Strings" en Suites de Pruebas (Violación de DAMP over DRY)**: Diversos tests unitarios (`GestionDonanteServiceTest`, `DTOsAndMappersTest`, `RankingMensualTest`, `InsigniaTest`) empleaban literales de texto hardcodeados en sus aserciones (`assertEquals("Modificado", ...)`, `assertEquals("COLABORADOR", ...)`, `assertEquals("2026-05", ...)`), generando fragilidad ante refactors de fixtures y violando la práctica de comparar dinámicamente contra los objetos de entrada o entidades.
+2. **Gaps de Pruebas Defensivas en Domain Services POJOs (Principio de Mínimo Asombro - POLA)**: Aunque `GestorDeRankings`, `GestorDeInactivos` e `InactividadDonaciones` operaban como POJOs puros libres de frameworks, carecían de pruebas unitarias explícitas que validaran su comportamiento determinista ante inputs nulos o colecciones vacías (`calcular(null, ...)`, `procesarInactividad(null, null)`).
+3. **Auditoría de Higiene en Logs y Aislamiento de Clientes Externos (Bulkhead Pattern)**: Era necesario auditar y formalizar que los adaptadores de infraestructura (`NotificacionesClientAdapter`, `N8nClientAdapter`) y jobs batch (`RankingMensualJob`, `InactividadJob`, `RachaJob`) aíslen fallas externas sin propagar excepciones que comprometan el flujo principal del donante, garantizando que los logs no filtren información sensible ni stacktraces crudos innecesarios.
+4. **Formalización de Decisiones de Negocio en DTOs y Fronteras REST (Defense in Depth)**: Se requería documentar exhaustivamente las justificaciones operativas de cada restricción declarativa (`@NotNull`, `@NotBlank`, `@Size`, `@NotEmpty`, `@Positive`, `@PastOrPresent`) y la consistencia de contratos HTTP (validación path vs body, regex en periodos, soporte opcional de `soloVisibles`).
+
+### Evidencia
+- `GestionDonanteServiceTest.java`: `assertEquals("Modificado", guardado.getNombre());` y `assertEquals("Test", donante.getNombre());`.
+- `DTOsAndMappersTest.java`: `assertEquals("COLABORADOR", dto.categoria());`, `assertEquals("Insignia Plantilla", dtoPlantilla.nombre());`, `assertEquals("2026-05", dto.periodo());`.
+- `RankingMensualTest.java`: `assertEquals("Donante 1", ranking.getPodio().getFirst().getNombreDonante());`.
+- `DomainServicesConfigTest.java`: Únicamente verificaba instanciación de beans no nulos sin pruebas de defensividad ante nulls/vacíos.
+
+### Objetivo
+1. **Parametrización Dinámica en Aserciones de Tests**:
+   - Reemplazar magic strings por accesos dinámicos a las propiedades de los DTOs y entidades (`request.nombre()`, `donante.getCategoria().name()`, `plantilla.nombre()`, `mayo.toString()`, etc.).
+2. **Guards Defensivos y Tests de Null-Safety en Domain Services**:
+   - Agregar pruebas unitarias exhaustivas en `DomainServicesConfigTest` validando que `GestorDeRankings` y `GestorDeInactivos` retornen colecciones/proyecciones vacías seguras ante inputs nulos o listas vacías.
+3. **Auditoría de Higiene de Logs y Aislamiento de Integraciones Remotas**:
+   - Verificar la no-fuga de datos sensibles en adaptadores de notificación y WebClient n8n, garantizando que caídas transitorias de servicios externos se registren con logs estructurados sin interrumpir el flujo del donante.
+4. **Consolidar la Matriz de Invariantes y No-Regresión Lógica (Oleadas 0 a 10)**:
+   - Registrar formalmente las salvaguardas que garantizan que ninguna regla de negocio conquistada en oleadas previas sea alterada.
+5. **Documentar Decisiones de Frontera y Justificaciones de DTOs**:
+   - Explicar las razones operativas de los campos obligatorios vs opcionales en `RegistrarDonanteRequest`, `NuevaDonacionRequest`, `DonacionExitosaRequest` y `ModificarDonanteRequest`.
+
+### Fuera de scope
+- Auditoría exhaustiva final de State Pattern y hardening pre-JPA (Oleada 12).
+- Verificación final de gobernanza y cierre de gaps de persistencia relacional (Oleada 13).
+
+### Tests / Verificación
+- **Suites Actualizadas y Nuevas**:
+  - `GestionDonanteServiceTest`: ✅ Aserciones dinámicas con `request.nombre()`.
+  - `DTOsAndMappersTest`: ✅ Aserciones dinámicas con enums y propiedades de records.
+  - `InsigniaTest`: ✅ Variables locales parametrizadas en validaciones de insignias.
+  - `RankingMensualTest`: ✅ Aserción dinámica en podios de ranking.
+  - `DomainServicesConfigTest`: ✅ 3 tests unitarios (instanciación de beans, null-safety en `GestorDeRankings` y combinaciones de nulls/vacíos en `GestorDeInactivos`).
+- **Barridos Mecánicos**:
+  - `git grep "import .*\.\*"`: ✅ **0 matches** (100% imports explícitos).
+  - `git grep -E "@(Component|Autowired|Qualifier|Value)" src/main/java/**/models/entities/`: ✅ **0 matches** (100% pureza de dominio).
+  - `Get-ChildItem -Path src/test -Filter "*Tests.java"`: ✅ **0 matches** (100% singular `*Test.java`).
+- **Suite completa**:
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **170 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (`BUILD SUCCESS`).
+  - `mvn clean test` (reactor completo): ✅ **7/7 módulos exitosos, 100% en verde** (`BUILD SUCCESS`).
+  - `mvn spotless:check`: ✅ **100% de archivos limpios en todo el repositorio**.
+
+### Diseño resultante
+- **Robustez y Resiliencia en Dominio e Infraestructura**: Los Domain Services son inmunes a inputs nulos o listas vacías, retornando resultados neutros seguros bajo el Principio de Mínimo Asombro. Las llamadas a sistemas externos permanecen desacopladas y aisladas de fallos.
+- **Tests Limpios y Mantenibles**: Se erradican las aserciones frágiles atadas a literales duplicados, asegurando que las suites de pruebas operen como especificaciones dinámicas y expresivas del comportamiento del sistema.
+- **Fronteras HTTP Blindadas y Justificadas**: Las validaciones declarativas Jakarta Bean Validation y los contratos de controladores quedan formalmente justificados en función de la realidad operativa de DonaTrack.
+
+### IA utilizada
+- Detección de magic strings en aserciones de pruebas y parametrización dinámica con DTOs.
+- Diseño e implementación de pruebas defensivas de null-safety en Domain Services.
+- Verificación mecánica con herramientas de análisis de patrones (`ripgrep`), validación continua con Maven y formateo con Spotless.
+
+### Verificación humana
+- [x] Verificada la parametrización dinámica de aserciones en `GestionDonanteServiceTest`, `DTOsAndMappersTest`, `InsigniaTest` y `RankingMensualTest`.
+- [x] Verificada la cobertura defensiva de null-safety en `DomainServicesConfigTest`.
+- [x] Verificada la ausencia de wildcard imports, FQCNs y anotaciones Spring en `models/entities/`.
+- [x] Verificada la matriz de invariantes y no-regresión de Oleadas 0 a 10.
+- [x] Build multi-módulo limpio: `mvn clean test` (**BUILD SUCCESS** en 7/7 módulos).
+- [x] Formato Spotless limpio: `mvn spotless:check` (**BUILD SUCCESS**).
+
+
 

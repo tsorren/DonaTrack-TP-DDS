@@ -214,8 +214,9 @@ graph TD
     O67["Oleadas 6+7 combinadas: Reorganizar infrastructure/ + eliminar wildcard imports + .gitkeep"]
     O8["Oleada 8: Object Mothers — DonanteIncentivos, Mision, RankingMensual, EventoDonacion, DTOFixtures"]
     O9["Oleada 9: @Valid en DTOs + controllers + códigos HTTP + GlobalExceptionHandler verificado + tests de controller"]
-    O10["Oleada 10: Análisis JPA — separar constructores + campo version + estrategia herencia Mision"]
-    O1112["Oleadas 11+12 combinadas: Hardening — grep @Component en models/ + List.copyOf() + code review"]
+    O10["Oleada 10: Análisis JPA 📝 — separar constructores + campo version + estrategia herencia Mision"]
+    O11["Oleada 11: Code Review, Higiene de Logs, Null-Safety en Domain Services, Aserciones Dinámicas y Robustez de Contratos"]
+    O12["Oleada 12: Hardening Final y State Pattern Pre-JPA"]
     O13["Oleada 13: Gobernanza checksum ✅/📝 + decisiones_futuras_en_oleada_10.md + mvn clean test verde"]
 
     F0 --> O1
@@ -227,8 +228,9 @@ graph TD
     O67 --> O8
     O8 --> O9
     O9 --> O10
-    O10 --> O1112
-    O1112 --> O13
+    O10 --> O11
+    O11 --> O12
+    O12 --> O13
 ```
 
 ---
@@ -932,9 +934,21 @@ Todo ítem de esta oleada es `📝` (solo diseño/análisis):
 
 ---
 
-### Oleadas 11+12 — Hardening (combinadas)
+### Oleada 11 — Cierre Exhaustivo de Code Review, Higiene de Logs, Sanitización de Seguridad y Estabilización de Contratos
 
-> **Justificación de combinación**: Code review aplicado con rigor desde oleada 1; sin acumulación masiva de observaciones.
+#### Etapa 0 — Code Review, Higiene de Logs y Guards Defensivos en Domain Services
+- **Principle of Least Astonishment (POLA)** & **Postel's Law**: Pruebas de null-safety y listas vacías en Domain Services POJOs (`GestorDeRankings`, `GestorDeInactivos`, `InactividadDonaciones`).
+- **Encapsulamiento e Information Hiding**: Métodos de soporte estrictamente `private` o `protected`.
+- **Bulkhead Pattern & Fault Isolation**: Los adaptadores de infraestructura (`NotificacionesClientAdapter`, `N8nClientAdapter`) capturan errores y no interrumpen el flujo principal del donante.
+- **Higiene de Logs y Seguridad**: Supresión de fugas de PII y no exposición de stacktraces innecesarios en niveles `warn`.
+
+#### Etapa 1 — Limpieza Mecánica y Parametrización Dinámica en Tests
+- **DAMP over DRY en Tests**: Eliminación de "magic strings" en aserciones (`assertEquals("Modificado", ...)`, `assertEquals("COLABORADOR", ...)`) migrando a accesos dinámicos a las propiedades de DTOs, entidades y enums.
+- **Barridos Mecánicos**: Confirmar 0 wildcard imports, 0 FQCNs, tests en singular (`*Test.java`) y 0 anotaciones Spring en `models/entities/`.
+
+#### Etapa 2 — Decisiones de Frontera y Justificación de DTOs
+- **Defense in Depth**: Justificación formal de restricciones declarativas en `RegistrarDonanteRequest`, `NuevaDonacionRequest`, `DonacionExitosaRequest` y `ModificarDonanteRequest`.
+- **Robustez de Contratos**: Validación de consistencia Path vs Body en registro de donantes, regex `YYYY-MM` en periodos, contrato dual de insignias (`soloVisibles`) y respuestas semánticas.
 
 **Barrido mecánico obligatorio:**
 ```bash
@@ -942,22 +956,76 @@ Todo ítem de esta oleada es `📝` (solo diseño/análisis):
 grep -rnE "@Component|@Autowired|@Qualifier|@Value" src/main/java/**/models/
 # Verificar List.copyOf() en todos los getDomainEvents()
 grep -rn "getDomainEvents" src/main/java/
+# Verificar 0 wildcard imports
+git grep "import .*\.\*" src/
 ```
 
-- Verificar `List.copyOf()` en `DonanteIncentivos`.
-- Verificar test canónico de reentrancia en `DonanteIncentivos`.
-- Cerrar todas las observaciones de code review pendientes.
-- Verificar ausencia de `FeignException` con `ex.getMessage()` expuesto.
+**Checklist Oleada 11:**
+- [x] Parametrización dinámica en aserciones de tests (`GestionDonanteServiceTest`, `DTOsAndMappersTest`, `InsigniaTest`, `RankingMensualTest`)
+- [x] Cobertura defensiva de null-safety y listas vacías en `DomainServicesConfigTest`
+- [x] Auditoría de higiene en logs y aislamiento de fallas en clientes externos
+- [x] Matriz de invariantes y no-regresión de Oleadas 0 a 10 consolidada
+- [x] Barridos mecánicos (0 wildcard imports, 0 FQCNs, 0 anotaciones Spring en models, tests en singular)
+- [x] Suite verde (170 tests) y Spotless 100% compliant
+- [x] Bitácora `oleadas-refactor.md` actualizada con la sección completa de Oleada 11
 
 ---
 
-### Oleada 13 — Gobernanza, Bitácora `oleadas-refactor.md` y Gaps pre-JPA
+### Oleada 12 — Hardening Final de Dominio, Consistencia Temporal e Infraestructura Pre-JPA
 
-- **Bitácora viva**: Verificar que **TODAS** las oleadas (0 a 12) estén debidamente registradas y completadas en [`docs/design/incentivos-service/oleadas-refactor.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/incentivos-service/oleadas-refactor.md) siguiendo la estructura estándar (Problema, Evidencia, Objetivo, Fuera de scope, Tests, Diseño resultante, IA utilizada).
+#### RF-INC-12.1: Consistencia Temporal y Propagación de Fechas en Insignias Ganadas
+- **Problema**: `DonanteIncentivos.otorgarInsignia(Insignia)` estampa `LocalDate.now(ZoneId.systemDefault())`, descartando la fecha del evento de donación que provocó la completitud de la misión recibida en `Mision.completar(donante, fecha)`. Esto produce inconsistencia temporal si se procesan eventos históricos o diferidos.
+- **Solución**: Sobrecargar y refactorizar `DonanteIncentivos.otorgarInsignia(Insignia plantilla, LocalDate fechaObtencion)` y hacer que `Mision.completar(donante, fecha)` propague la fecha del evento a la `InsigniaGanada`. Mantener el método `otorgarInsignia(Insignia plantilla)` delegando a `LocalDate.now()` como fallback para altas directas.
+
+#### RF-INC-12.2: Normalización de Subcategorías en `MisionCompletitud`
+- **Problema**: `Set<String> categoriasdonadas` almacena cadenas sin sanitizar; entradas como `"Alimentos"` y `"alimentos"` se contabilizan como dos subcategorías distintas.
+- **Solución**: Aplicar `trim().toLowerCase(Locale.ROOT)` sobre cada categoría antes de ingresarla al conjunto de cómputo de progreso.
+
+#### RF-INC-12.3: Consistencia Semántica entre Descripción y Regla en `MisionHabilDonador`
+- **Problema**: La descripción textual indica `"más de X bienes"` ($> X$), mientras que la regla de negocio evalúa `>= X`.
+- **Solución**: Homogeneizar la descripción y la regla para que reflejen con exactitud la especificación de negocio ($>= X$ o $> X$).
+
+#### RF-INC-12.4: Blindaje Operativo del Ejecutor Asíncrono (`@Async`) en Infraestructura
+- **Problema**: `@EnableAsync` utiliza el ejecutor por defecto `SimpleAsyncTaskExecutor`, creando un hilo no reutilizable por invocación y arriesgando agotamiento de hilos del SO ante ráfagas.
+- **Solución**: Declarar en configuración un `@Bean(name = "notificacionesTaskExecutor") ThreadPoolTaskExecutor` con límites acotados (`corePoolSize = 2`, `maxPoolSize = 10`, `queueCapacity = 500`, `setThreadNamePrefix("async-notif-")`).
+
+#### RF-INC-12.5: Auditoría Final de State Pattern y Ciclo de Vida en `DonanteIncentivos`
+- **Verificación**: Evaluar el comportamiento del agregado en categoría máxima (`TRANSFORMADOR`) cuando no restan misiones activas por completar, garantizando estabilidad ante futuros eventos de donación.
+
+**Barrido mecánico obligatorio:**
+```bash
+# Debe retornar CERO matches en models/
+grep -rnE "@Component|@Autowired|@Qualifier|@Value" src/main/java/**/models/
+# Verificar List.copyOf() en todos los getDomainEvents()
+grep -rn "getDomainEvents" src/main/java/
+# Verificar 0 wildcard imports
+git grep "import .*\.\*" src/
+```
+
+**Checklist Oleada 12:**
+- [ ] `DonanteIncentivos.otorgarInsignia(Insignia, LocalDate)` implementado y consumido por `Mision.completar`
+- [ ] `MisionCompletitud` con normalización `trim().toLowerCase()` en subcategorías
+- [ ] `MisionHabilDonador` con coherencia semántica en descripción y objetivo
+- [ ] `ThreadPoolTaskExecutor` configurado para `@Async` en infraestructura
+- [ ] Suite de pruebas actualizada y ampliada para validar fechas en insignias y normalización
+- [ ] Barridos mecánicos limpios (0 wildcard imports, 0 Spring en models)
+- [ ] Suite verde + no-regresión oleadas 1-11
+
+---
+
+### Oleada 13 — Gobernanza, Gaps de Persistencia Relacional y Escalabilidad
+
+#### RF-INC-13.1: Estrategia de Cómputo de Ranking Escalable (SQL Aggregation vs. Heap Memory)
+- **Documentación Técnica**: Formalizar en `decisiones_futuras_en_oleada_10.md` la estrategia de migración desde `findAll()` en memoria hacia consultas agregadas nativas (`SELECT ... GROUP BY donante_id ORDER BY COUNT(*) DESC`) o vistas materializadas indexadas en PostgreSQL 15+, evitando sobrecarga de memoria heap ante 500k+ donantes.
+
+#### RF-INC-13.2: Garantías de Entrega At-Least-Once mediante Transactional Outbox
+- **Documentación Técnica**: Especificar el reemplazo del despacho directo *Fire-and-Forget* (`WebClient.subscribe()`) por la inserción atómica en `outbox_events` y relay asíncrono con reintentos exponenciales y Dead Letter Queue (DLQ).
+
+#### RF-INC-13.3: Bitácora Exhaustiva `oleadas-refactor.md` y Checksum de Gobernanza
+- **Bitácora viva**: Verificar que **TODAS** las oleadas (0 a 13) estén debidamente registradas y completadas en [`docs/design/incentivos-service/oleadas-refactor.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/incentivos-service/oleadas-refactor.md) siguiendo la estructura estándar (Problema, Evidencia, Objetivo, Fuera de scope, Tests, Diseño resultante, IA utilizada, Verificación humana).
 - Auditar toda la documentación de este plan y de la bitácora: CERO ítems mal marcados (confrontar `git diff` contra bitácora).
-- Completar `docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md` con estrategias de queries, transacciones y lazy loading.
-- Ejecutar suite completa: `mvn clean test` verde.
-- Ejecutar `mvn spotless:check` verde.
+- Ejecutar suite completa: `mvn clean test` verde en el reactor completo (7/7 módulos).
+- Ejecutar `mvn spotless:check` verde (100% compliant).
 
 ---
 
@@ -966,7 +1034,8 @@ grep -rn "getDomainEvents" src/main/java/
 | Consolidación | Oleadas | Justificación |
 |---|---|---|
 | **Oleadas 6+7** | Reorganización y limpieza | Infraestructura limpia; deuda legacy mínima (solo imports wildcard y `.gitkeep`). |
-| **Oleadas 11+12** | Hardening post-review | Code review aplicado con rigor desde oleada 1. |
+| **Oleada 11** | Code review, higiene de logs, sanitización de seguridad y estabilización de contratos | Cierre riguroso de deuda de logging, null-safety en domain services y parametrización de tests. |
+| **Oleada 12** | Hardening de dominio, consistencia temporal e infraestructura pre-JPA | Propagación de fechas en insignias, normalización de categorías y pool de hilos para `@Async`. |
 | **Oleada 5** reducida | Solo tests de jobs | Los tres jobs ya son triggers puros — no requieren refactor estructural. |
 
 ## Branch
