@@ -1,11 +1,15 @@
 package grupo5.logistica.dto.rutas;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 public record DireccionDTO(
-    String calle,
-    Integer altura,
+    @NotBlank String calle,
+    @NotNull @Positive Integer altura,
     Integer piso,
     String departamento,
-    String codigoPostal,
-    String localidad,
-    String provincia,
-    String pais) {}
+    @NotBlank String codigoPostal,
+    @NotBlank String localidad,
+    @NotBlank String provincia,
+    @NotBlank String pais) {}

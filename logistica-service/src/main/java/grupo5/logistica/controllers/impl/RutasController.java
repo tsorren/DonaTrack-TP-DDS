@@ -1,12 +1,17 @@
 package grupo5.logistica.controllers.impl;
 
 import grupo5.logistica.controllers.IRutasController;
-import grupo5.logistica.dto.rutas.*;
+import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
+import grupo5.logistica.dto.rutas.CambioEstadoRutaRequestDTO;
+import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
+import grupo5.logistica.dto.rutas.RutaResponseDTO;
 import grupo5.logistica.services.IRutasService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Validated
 @RestController
 @RequestMapping("/api/rutas")
 public class RutasController implements IRutasController {
@@ -51,14 +57,14 @@ public class RutasController implements IRutasController {
   @Override
   @PostMapping("/{id}/entregas")
   public ResponseEntity<RutaResponseDTO> agregarEntrega(
-      @PathVariable("id") UUID id, @RequestBody AgregarEntregaRutaRequestDTO dto) {
+      @PathVariable("id") UUID id, @Valid @RequestBody AgregarEntregaRutaRequestDTO dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(rutasService.agregarEntrega(id, dto));
   }
 
   @Override
   @PatchMapping("/{id}/estado")
   public ResponseEntity<RutaResponseDTO> cambiarEstado(
-      @PathVariable("id") UUID id, @RequestBody CambioEstadoRutaRequestDTO request) {
+      @PathVariable("id") UUID id, @Valid @RequestBody CambioEstadoRutaRequestDTO request) {
     return ResponseEntity.ok(rutasService.cambiarEstado(id, request));
   }
 }

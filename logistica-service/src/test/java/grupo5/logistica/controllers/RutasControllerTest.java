@@ -174,9 +174,6 @@ class RutasControllerTest {
 
     AgregarEntregaRutaRequestDTO request = new AgregarEntregaRutaRequestDTO(null);
 
-    when(rutasService.agregarEntrega(eq(ID), any()))
-        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_NULO));
-
     mockMvc
         .perform(
             post("/api/rutas/" + ID + "/entregas")

@@ -9,9 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.common.exceptions.ValidationException;
 import grupo5.common.handlers.GlobalExceptionHandler;
 import grupo5.logistica.controllers.impl.PlanificacionController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
@@ -84,8 +82,6 @@ class PlanificacionControllerTest {
   void procesarCallback_deberiaRetornar400_cuandoCallbackEsInvalido() throws Exception {
     CallbackPlanificacionRequestDTO request =
         new CallbackPlanificacionRequestDTO(null, null, null, null);
-    when(planificacionService.procesarCallback(any()))
-        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_NULO));
 
     mockMvc
         .perform(
