@@ -13,6 +13,7 @@ import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,11 @@ class DTOsAndMappersTest {
 
     InsigniaGanada ganada =
         new InsigniaGanada(
-            "Insignia Ganada", "Desc Ganada", "/icono2.png", false, LocalDate.of(2026, 5, 10));
+            "Insignia Ganada",
+            "Desc Ganada",
+            "/icono2.png",
+            false,
+            LocalDate.of(2026, Month.MAY, 10));
     InsigniaDTO dtoGanada = InsigniaDTO.desde(ganada);
 
     assertNotNull(dtoGanada);
@@ -91,7 +96,7 @@ class DTOsAndMappersTest {
 
   @Test
   void rankingMensualDTO_desde_deberiaMapearRankingYEntradas() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     RankingMensual ranking = RankingMensualMother.conNEntradas(mayo, 4);
 
     RankingMensualDTO dto = RankingMensualDTO.desde(ranking);
@@ -112,10 +117,9 @@ class DTOsAndMappersTest {
     assertEquals(5, resumen.donantesMesActual());
     assertEquals(3, resumen.donantesMesAnterior());
 
-    UUID donacionId = UUID.randomUUID();
-    EventoDonacion evento = EventoDonacionMother.enFecha(LocalDate.of(2026, 6, 17));
+    EventoDonacion evento = EventoDonacionMother.enFecha(LocalDate.of(2026, Month.JUNE, 17));
 
     assertNotNull(evento);
-    assertEquals(LocalDate.of(2026, 6, 17), evento.getFecha());
+    assertEquals(LocalDate.of(2026, Month.JUNE, 17), evento.getFecha());
   }
 }

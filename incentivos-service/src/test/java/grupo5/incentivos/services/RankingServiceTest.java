@@ -12,6 +12,7 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.ranking.GestorDeRankings;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
 import grupo5.incentivos.models.repositories.RankingRepository;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +43,7 @@ class RankingServiceTest {
 
   @Test
   void calcularYPersistir_deberiaOrdenarPorMisionesCompletadasDescendente() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     UUID id3 = UUID.randomUUID();
@@ -71,7 +72,7 @@ class RankingServiceTest {
 
   @Test
   void calcularYPersistir_deberiaExcluirDonantesConCeroMisionesEnElMes() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
 
@@ -91,7 +92,7 @@ class RankingServiceTest {
 
   @Test
   void calcularYPersistir_deberiaRetornarVacioSiNadieTieneMisiones() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     DonanteIncentivos d1 =
         DonanteIncentivosMother.conMisionesCompletadasEnMes(
             UUID.randomUUID(), "Donante 1", mayo, 0);
@@ -105,7 +106,7 @@ class RankingServiceTest {
 
   @Test
   void calcularYPersistir_podioDeberiaLimitarseATresDonantes() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     for (int i = 1; i <= 5; i++) {
       donanteRepository.save(
           DonanteIncentivosMother.conMisionesCompletadasEnMes(
@@ -120,7 +121,7 @@ class RankingServiceTest {
 
   @Test
   void calcularYNotificar_deberiaNotificarAn8n() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     DonanteIncentivos d1 =
         DonanteIncentivosMother.conMisionesCompletadasEnMes(
             UUID.randomUUID(), "Donante 1", mayo, 3);
@@ -133,7 +134,7 @@ class RankingServiceTest {
 
   @Test
   void obtenerPosicionDonante_porPeriodo_cuandoDonanteParticipo_deberiaRetornarPosicion() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     UUID id = UUID.randomUUID();
     DonanteIncentivos d1 =
         DonanteIncentivosMother.conMisionesCompletadasEnMes(id, "Donante 1", mayo, 3);
@@ -149,14 +150,14 @@ class RankingServiceTest {
   @Test
   void obtenerPosicionDonante_porPeriodo_cuandoNoHayRanking_deberiaRetornarVacio() {
     Optional<Integer> posicion =
-        service.obtenerPosicionDonante(UUID.randomUUID(), YearMonth.of(2026, 5));
+        service.obtenerPosicionDonante(UUID.randomUUID(), YearMonth.of(2026, Month.MAY));
 
     assertTrue(posicion.isEmpty());
   }
 
   @Test
   void obtenerPosicionDonante_porPeriodo_cuandoDonanteNoParticipo_deberiaRetornarVacio() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     DonanteIncentivos d1 =
         DonanteIncentivosMother.conMisionesCompletadasEnMes(
             UUID.randomUUID(), "Donante 1", mayo, 3);
@@ -170,7 +171,7 @@ class RankingServiceTest {
 
   @Test
   void obtenerPosicionDonante_ultimoRanking_cuandoDonanteParticipo_deberiaRetornarPosicion() {
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
     UUID id = UUID.randomUUID();
     DonanteIncentivos d1 =
         DonanteIncentivosMother.conMisionesCompletadasEnMes(id, "Donante 1", mayo, 3);
@@ -192,8 +193,8 @@ class RankingServiceTest {
 
   @Test
   void obtenerUltimoRanking_deberiaRetornarElMasReciente() {
-    YearMonth abril = YearMonth.of(2026, 4);
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth abril = YearMonth.of(2026, Month.APRIL);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
 
     DonanteIncentivos d1 =
         DonanteIncentivosMother.conMisionesCompletadasEnMes(UUID.randomUUID(), "D1", abril, 2);
@@ -218,8 +219,8 @@ class RankingServiceTest {
 
   @Test
   void obtenerHistorial_deberiaRetornarTodosLosRankings() {
-    YearMonth abril = YearMonth.of(2026, 4);
-    YearMonth mayo = YearMonth.of(2026, 5);
+    YearMonth abril = YearMonth.of(2026, Month.APRIL);
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
 
     DonanteIncentivos d1 =
         DonanteIncentivosMother.conMisionesCompletadasEnMes(UUID.randomUUID(), "D1", abril, 2);

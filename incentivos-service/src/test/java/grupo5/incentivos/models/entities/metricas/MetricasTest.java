@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.incentivos.fixtures.EventoDonacionMother;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,7 @@ class MetricasTest {
 
   @Test
   void registrarDonacion_deberiaIncrementarHistoricasYActualizarUltimaFecha() {
-    LocalDate fecha = LocalDate.of(2026, 5, 10);
+    LocalDate fecha = LocalDate.of(2026, Month.MAY, 10);
     EventoDonacion evento = EventoDonacionMother.enFecha(fecha);
 
     metricas.registrarDonacion(evento);
@@ -65,21 +66,20 @@ class MetricasTest {
     metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 6, 1));
 
     Map<YearMonth, Long> porPeriodo = metricas.donacionesPorPeriodo();
-    assertEquals(2L, porPeriodo.get(YearMonth.of(2026, 5)));
-    assertEquals(1L, porPeriodo.get(YearMonth.of(2026, 6)));
+    assertEquals(2L, porPeriodo.get(YearMonth.of(2026, Month.MAY)));
+    assertEquals(1L, porPeriodo.get(YearMonth.of(2026, Month.JUNE)));
 
-    assertEquals(2L, metricas.donacionesEnMes(YearMonth.of(2026, 5)));
-    assertEquals(0L, metricas.donacionesEnMes(YearMonth.of(2026, 4)));
+    assertEquals(2L, metricas.donacionesEnMes(YearMonth.of(2026, Month.MAY)));
+    assertEquals(0L, metricas.donacionesEnMes(YearMonth.of(2026, Month.APRIL)));
   }
 
   @Test
   void getHistorialDonaciones_debeRetornarCopiaInmutable() {
     metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 1));
     List<EventoDonacion> historial = metricas.getHistorialDonaciones();
+    EventoDonacion eventoExtra = EventoDonacionMother.enFecha(2026, 5, 2);
 
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> historial.add(EventoDonacionMother.enFecha(2026, 5, 2)));
+    assertThrows(UnsupportedOperationException.class, () -> historial.add(eventoExtra));
   }
 
   @Test
@@ -87,7 +87,8 @@ class MetricasTest {
     UUID org = UUID.randomUUID();
     metricas.registrarDonacionExitosa(org);
     var organizaciones = metricas.getOrganizacionesAyudadas();
+    UUID orgExtra = UUID.randomUUID();
 
-    assertThrows(UnsupportedOperationException.class, () -> organizaciones.add(UUID.randomUUID()));
+    assertThrows(UnsupportedOperationException.class, () -> organizaciones.add(orgExtra));
   }
 }

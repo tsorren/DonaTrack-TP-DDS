@@ -85,7 +85,7 @@ class MisionesDonacionServiceTest {
     verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
 
     boolean publicoAscenso =
-        captor.getAllValues().stream().anyMatch(e -> e instanceof AscensoDonante);
+        captor.getAllValues().stream().anyMatch(AscensoDonante.class::isInstance);
     assertTrue(publicoAscenso);
   }
 
@@ -143,7 +143,7 @@ class MisionesDonacionServiceTest {
     verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
 
     boolean publicoMision =
-        captor.getAllValues().stream().anyMatch(e -> e instanceof MisionCompletada);
+        captor.getAllValues().stream().anyMatch(MisionCompletada.class::isInstance);
     assertTrue(publicoMision);
   }
 

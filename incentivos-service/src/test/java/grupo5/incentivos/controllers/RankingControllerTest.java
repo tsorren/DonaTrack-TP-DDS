@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.fixtures.RankingMensualMother;
 import grupo5.incentivos.services.IRankingService;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -70,12 +71,12 @@ class RankingControllerTest {
   void calcularRanking_conPeriodoEspecificado_deberiaPasarElPeriodo() {
     RankingMensualDTO dto = RankingMensualDTO.desde(RankingMensualMother.vacioDeMayo2026());
 
-    when(rankingService.calcularYPersistir(YearMonth.of(2026, 5))).thenReturn(dto);
+    when(rankingService.calcularYPersistir(YearMonth.of(2026, Month.MAY))).thenReturn(dto);
 
     ResponseEntity<RankingMensualDTO> response = controller.calcularRanking("2026-05");
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    verify(rankingService, times(1)).calcularYPersistir(YearMonth.of(2026, 5));
+    verify(rankingService, times(1)).calcularYPersistir(YearMonth.of(2026, Month.MAY));
   }
 
   @Test
@@ -93,14 +94,15 @@ class RankingControllerTest {
   @Test
   void obtenerPosicionDonante_conPeriodo_cuandoExiste_deberiaRetornar200OkYPosicion() {
     UUID donanteId = UUID.randomUUID();
-    when(rankingService.obtenerPosicionDonante(donanteId, YearMonth.of(2026, 5)))
+    when(rankingService.obtenerPosicionDonante(donanteId, YearMonth.of(2026, Month.MAY)))
         .thenReturn(Optional.of(3));
 
     ResponseEntity<Integer> response = controller.obtenerPosicionDonante(donanteId, "2026-05");
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(3, response.getBody());
-    verify(rankingService, times(1)).obtenerPosicionDonante(donanteId, YearMonth.of(2026, 5));
+    verify(rankingService, times(1))
+        .obtenerPosicionDonante(donanteId, YearMonth.of(2026, Month.MAY));
   }
 
   @Test
