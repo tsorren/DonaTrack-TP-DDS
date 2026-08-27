@@ -23,8 +23,6 @@ public class NecesidadesService implements INecesidadesService {
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final ISubcategoriasRepository subcategoriaRepository;
 
-  // TODO: agregar punto de entrada al gestor
-
   public NecesidadesService(
       INecesidadesRepository necesidadRepository,
       IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository,

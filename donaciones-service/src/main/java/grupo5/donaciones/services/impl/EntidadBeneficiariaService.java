@@ -1,10 +1,13 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
@@ -30,14 +33,13 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   }
 
   public EntidadBeneficiariaOutputDTO crearEntidad(EntidadBeneficiariaInputDTO input) {
-    grupo5.donaciones.models.entities.personas.Persona persona =
+    Persona persona =
         personasRepository
             .findById(input.juridicaId())
             .orElseThrow(() -> new RecursoNoEncontradoException(input.juridicaId()));
 
-    if (!(persona instanceof Juridica)) { // TODO: sacar el instanceof
-      throw new grupo5.common.exceptions.ValidationException(
-          grupo5.common.exceptions.ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
+    if (!(persona instanceof Juridica)) {
+      throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
     }
 
     EntidadBeneficiaria guardada = repository.save(new EntidadBeneficiaria(input.juridicaId()));

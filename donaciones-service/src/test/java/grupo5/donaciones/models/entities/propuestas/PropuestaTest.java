@@ -274,11 +274,9 @@ class PropuestaTest {
     propuesta.aceptar("actor");
 
     List<PropuestaAprobada> events = propuesta.getDomainEvents();
-    assertThrows(
-        UnsupportedOperationException.class,
-        () ->
-            events.add(
-                new PropuestaAprobada(UUID.randomUUID(), UUID.randomUUID(), List.of(), "hacker")));
+    PropuestaAprobada nuevoEvento =
+        new PropuestaAprobada(UUID.randomUUID(), UUID.randomUUID(), List.of(), "hacker");
+    assertThrows(UnsupportedOperationException.class, () -> events.add(nuevoEvento));
   }
 
   @Test

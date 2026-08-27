@@ -72,10 +72,9 @@ public final class Humana extends Persona {
     return TipoPersona.HUMANA;
   }
 
-  /** Ver {@link Persona#esDuplicadaDe}. Humana no agrega criterios propios por ahora. */
   @Override
-  public Boolean esDuplicadaDe(Persona otra) {
-    return super.esDuplicadaDe(otra);
+  public String getNombreCompleto() {
+    return this.nombre + " " + this.apellido;
   }
 
   @Override

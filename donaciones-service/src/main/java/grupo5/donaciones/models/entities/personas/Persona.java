@@ -49,6 +49,8 @@ public abstract sealed class Persona implements Anonimizable, AggregateRoot
 
   public abstract TipoPersona getTipoPersona();
 
+  public abstract String getNombreCompleto();
+
   public void agregarMedioDeContacto(MedioDeContacto medioDeContacto) {
     if (medioDeContacto != null) {
       mediosDeContacto.add(medioDeContacto);

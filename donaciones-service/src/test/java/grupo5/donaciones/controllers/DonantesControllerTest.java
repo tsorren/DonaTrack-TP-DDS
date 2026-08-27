@@ -24,6 +24,7 @@ import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +75,7 @@ class DonantesControllerTest {
             "Juan",
             "Pérez",
             Genero.HOMBRE,
-            LocalDate.of(1990, 1, 1));
+            LocalDate.of(1990, Month.JANUARY, 1));
     DonanteOutputDTO output = new DonanteOutputDTO(donanteId, personaOutput);
 
     when(donantesService.crearDonante(any(DonanteInputDTO.class))).thenReturn(output);
