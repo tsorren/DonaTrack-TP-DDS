@@ -206,18 +206,18 @@ Cero validaciones declarativas en DTOs. Sin `@Valid` en controllers.
 ```mermaid
 graph TD
     F0["✅ Fase 0: Auditoría completada"]
-    O1["Oleada 1: Tell Don't Ask — verificarRachas() + misionesCompletadas() + resumen sistema + EntradaRanking sin setPosicion()"]
-    O2["Oleada 2: Domain Events — List.copyOf() en DonanteIncentivos + test de reentrancia (RankingMensual no requiere eventos por diseño)"]
-    O3["Oleada 3: Guardas estrictas — 0 IllegalArgumentException + eliminar @Setter en Mision + ErrorCatalog entries"]
-    O4["Oleada 4: Descomposición SRP de IncentivosService + DomainServicesConfig + GestorDeInactivos/Rankings instanciables + interfaces INotificacionesClient/IN8nClient"]
-    O5["Oleada 5: Jobs — tests unitarios de InactividadJob, RachaJob, RankingMensualJob"]
-    O67["Oleadas 6+7 combinadas: Reorganizar infrastructure/ + eliminar wildcard imports + .gitkeep"]
-    O8["Oleada 8: Object Mothers — DonanteIncentivos, Mision, RankingMensual, EventoDonacion, DTOFixtures"]
-    O9["Oleada 9: @Valid en DTOs + controllers + códigos HTTP + GlobalExceptionHandler verificado + tests de controller"]
-    O10["Oleada 10: Análisis JPA 📝 — separar constructores + campo version + estrategia herencia Mision"]
-    O11["Oleada 11: Code Review, Higiene de Logs, Null-Safety en Domain Services, Aserciones Dinámicas y Robustez de Contratos"]
-    O12["Oleada 12: Hardening Final y State Pattern Pre-JPA"]
-    O13["Oleada 13: Gobernanza checksum ✅/📝 + decisiones_futuras_en_oleada_10.md + mvn clean test verde"]
+    O1["✅ Oleada 1: Tell Don't Ask — verificarRachas() + misionesCompletadas() + resumen sistema + EntradaRanking sin setPosicion()"]
+    O2["✅ Oleada 2: Domain Events — List.copyOf() en DonanteIncentivos + test de reentrancia"]
+    O3["✅ Oleada 3: Guardas estrictas — 0 IllegalArgumentException + eliminar @Setter en Mision + ErrorCatalog"]
+    O4["✅ Oleada 4: Descomposición SRP de IncentivosService + DomainServicesConfig + GestorDeInactivos/Rankings"]
+    O5["✅ Oleada 5: Jobs — tests unitarios de InactividadJob, RachaJob, RankingMensualJob"]
+    O67["✅ Oleadas 6+7 combinadas: Reorganizar infrastructure/ + eliminar wildcard imports + .gitkeep"]
+    O8["✅ Oleada 8: Object Mothers — DonanteIncentivos, Mision, RankingMensual, EventoDonacion, DTOFixtures"]
+    O9["✅ Oleada 9: @Valid en DTOs + controllers + códigos HTTP + GlobalExceptionHandler verificado + tests"]
+    O10["✅ Oleada 10: Análisis JPA DDL 📝 — separar constructores + campo version + estrategia herencia Mision"]
+    O11["✅ Oleada 11: Code Review, Higiene de Logs, Null-Safety en Domain Services, Aserciones Dinámicas y DTOs"]
+    O12["✅ Oleada 12: Hardening Final de Dominio, Consistencia Temporal (Event Time) e Infraestructura @Async"]
+    O13["✅ Oleada 13: Gobernanza Final, Gaps de Persistencia Relacional, Escalabilidad y Sincronización PlantUML"]
 
     F0 --> O1
     O1 --> O2
@@ -1027,6 +1027,59 @@ git grep "import .*\.\*" src/
 - Ejecutar suite completa: `mvn clean test` verde en el reactor completo (7/7 módulos).
 - Ejecutar `mvn spotless:check` verde (100% compliant).
 
+**Checklist Oleada 13:**
+- [x] Especificación de SQL Ranking Aggregation e índices parciales en `decisiones_futuras_en_oleada_10.md`
+- [x] Documentación de resiliencia con `@Retryable`, `FetchType.LAZY` y Outbox con DLQ y purga programada
+- [x] Sincronización completa de `diagrama-de-clases-incentivos.puml` con la arquitectura real
+- [x] Bitácora `oleadas-refactor.md` actualizada con la sección exhaustiva de Oleada 13
+- [x] Matriz de no-regresión de Oleadas 0 a 12 auditada y 100% verde
+- [x] Suite completa: `mvn clean test` verde en los 7 módulos del reactor
+- [x] `mvn spotless:check` 100% compliant en todo el repositorio
+- [x] Sellado definitivo del plan maestro `plan-refactor-incentivos.md`
+
+---
+
+### Fase Post-Auditoría — Hardening Integral de Dominio y Ampliación de Persistencia Distribuida
+
+#### RF-INC-PA.1: Prevención de Falsos Positivos de Inactividad en Donantes Nuevos
+- **Problema**: `InactividadDonaciones.esInactivo` evaluaba `ultimaDonacion == null || ultimaDonacion.isBefore(umbral)`. Un donante registrado recientemente sin donaciones registradas (`ultimaDonacion == null`) era catalogado erróneamente como inactivo en su primer día.
+- **Solución**: Incorporar el campo inmutable `fechaRegistro: LocalDate` en `DonanteIncentivos` y proveer un constructor completo de reconstitución/hidratación. En `InactividadDonaciones`, utilizar `fechaReferencia = donante.getMetricas().getUltimaDonacion() != null ? donante.getMetricas().getUltimaDonacion() : donante.getFechaRegistro()`. Si la fecha de referencia no supera el umbral de inactividad, el donante se considera activo.
+
+#### RF-INC-PA.2: Blindaje contra Eventos Desordenados e Históricos en `MisionRacha`
+- **Problema**: `MisionRacha.calcularNuevoProgreso` reseteaba el progreso a 1 y reasignaba `ultimoMesDonado` si el evento recibido correspondía a un mes anterior al último mes ya computado.
+- **Solución**: Agregar la guarda `if (this.ultimoMesDonado != null && mesEvento.isBefore(this.ultimoMesDonado)) { return this.getProgresoActual(); }`, garantizando que eventos diferidos no destruyan ni degraden una racha ya conquistada.
+
+#### RF-INC-PA.3: Propagación de Trazabilidad Asíncrona (`MDC` / `X-Trace-Id`)
+- **Problema**: `AsyncConfig` configuraba el `ThreadPoolTaskExecutor` sin un `TaskDecorator`, provocando la pérdida del `traceId` en los hilos de trabajo asíncronos utilizados por `NotificacionesClientAdapter`.
+- **Solución**: Configurar `setTaskDecorator` en `notificacionesTaskExecutor` para clonar el contexto `MDC.getCopyOfContextMap()` desde el hilo despachador hacia el hilo de trabajo con limpieza garantizada en bloque `finally`.
+
+#### RF-INC-PA.4: Cumplimiento Estricto de "Tell, Don't Ask" en Métricas y Resumen
+- **Problema**: `MetricasIncentivosService` penetraba colecciones internas de misiones y accedía directamente a `metricas.donacionesPorPeriodo()`.
+- **Solución**: Exponer `donacionesPorPeriodo()` en `DonanteIncentivos` y utilizar `donante.misionesCompletadas()`.
+
+#### RF-INC-PA.5: Criterio de Desempate Determinista en `GestorDeRankings`
+- **Problema**: Ante empate de misiones completadas en el mes, `GestorDeRankings` desempataba únicamente por `UUID`, omitiendo el esfuerzo global de donaciones del período.
+- **Solución**: Incorporar `thenComparing(Comparator.comparingLong(d -> d.getMetricas().donacionesEnMes(periodo)).reversed())` antes del desempate final por `getId()`.
+
+#### RF-INC-PA.6: Ampliación de Decisiones de Persistencia Distribuida (Oleada 10)
+- **Documentación Técnica**: Formalizar en `decisiones_futuras_en_oleada_10.md` las especificaciones de:
+  - **Sección 11.3**: Contrato de Ingesta Idempotente con `@NotNull UUID donacionId` y `UNIQUE (donacion_id)`.
+  - **Sección 12**: Coordinación de Schedulers en Clúster con **ShedLock** (`@SchedulerLock`) sobre PostgreSQL.
+  - **Sección 13**: Integración de Webhooks n8n Mediante **Transactional Outbox** (reemplazo de `WebClient.subscribe()`).
+  - **Sección 14**: Proyecciones SQL Nativas para evolución histórica de donaciones.
+  - **Sección 15**: Seguridad Perimetral y Control de Acceso a Nivel de Recurso con Claims JWT.
+  - **Sección 16**: Modelo de Concurrencia y Progresión de Misiones (Paralelismo vs. Serialidad).
+
+**Checklist Post-Auditoría:**
+- [x] `fechaRegistro` incorporada en `DonanteIncentivos` y evaluada en `InactividadDonaciones`
+- [x] `MisionRacha` blindada contra eventos anteriores a `ultimoMesDonado`
+- [x] `TaskDecorator` con propagación de `MDC` en `AsyncConfig` y probado concurrentemente
+- [x] "Tell, Don't Ask" estricto en `MetricasIncentivosService`
+- [x] Desempate por donaciones del mes implementado en `GestorDeRankings`
+- [x] Secciones 11.3 a 16 agregadas en `decisiones_futuras_en_oleada_10.md`
+- [x] 185 tests unitarios en verde en `incentivos-service` (99.00% cobertura de líneas)
+- [x] 7/7 módulos en verde en el reactor completo y Spotless 100% compliant
+
 ---
 
 ## Consolidaciones aplicadas respecto al plan genérico
@@ -1037,9 +1090,10 @@ git grep "import .*\.\*" src/
 | **Oleada 11** | Code review, higiene de logs, sanitización de seguridad y estabilización de contratos | Cierre riguroso de deuda de logging, null-safety en domain services y parametrización de tests. |
 | **Oleada 12** | Hardening de dominio, consistencia temporal e infraestructura pre-JPA | Propagación de fechas en insignias, normalización de categorías y pool de hilos para `@Async`. |
 | **Oleada 5** reducida | Solo tests de jobs | Los tres jobs ya son triggers puros — no requieren refactor estructural. |
+| **Post-Auditoría** | Hardening final integral de dominio y trazabilidad | Falsos positivos de inactividad, rachas históricas, TaskDecorator MDC y ShedLock/Outbox en Oleada 10. |
 
 ## Branch
 
 ```
-E4_refactor-incentivos-service
+E4_refactor_incentivos_oleada_12
 ```

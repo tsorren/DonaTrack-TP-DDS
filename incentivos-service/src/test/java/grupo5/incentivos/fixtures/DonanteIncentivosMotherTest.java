@@ -37,6 +37,15 @@ public final class DonanteIncentivosMotherTest {
     return new DonanteIncentivos(id, personaId, nombre, List.of());
   }
 
+  public static DonanteIncentivos colaboradorRegistradoEn(UUID id, LocalDate fechaRegistro) {
+    return new DonanteIncentivos(id, id, "Test", fechaRegistro);
+  }
+
+  public static DonanteIncentivos colaboradorRegistradoEn(
+      UUID id, UUID personaId, String nombre, LocalDate fechaRegistro) {
+    return new DonanteIncentivos(id, personaId, nombre, fechaRegistro);
+  }
+
   public static DonanteIncentivos colaboradorConMisionRacha(int mesesObjetivo) {
     return new DonanteIncentivos(
         UUID.randomUUID(),

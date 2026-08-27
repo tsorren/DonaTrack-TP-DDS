@@ -404,3 +404,243 @@ class IncentivosPersistenceIT {
   }
 }
 ```
+
+---
+
+## 6. Estrategia de Cómputo de Ranking Escalable en PostgreSQL (SQL Aggregation vs. Heap Memory)
+
+### 6.1. Problema de Rendimiento y Memoria Heap con `findAll()`
+Actualmente, el cálculo en memoria de rankings itera sobre la totalidad de los donantes (`List<DonanteIncentivos> todos`). En producción con 500.000+ donantes registrados:
+- Cargar todos los agregados completos a la memoria heap genera pausas masivas de Garbage Collection (Stop-The-World) y riesgo inminente de `OutOfMemoryError`.
+- La complejidad espacial en JVM es $O(N)$.
+
+### 6.2. Solución: Cómputo Nativo en Base de Datos con Funciones de Ventana
+El cálculo mensual se delega al motor relacional PostgreSQL mediante una única consulta SQL de agregación e inserción directa:
+
+```sql
+INSERT INTO ranking_mensual_posicion (
+    id, ranking_id, donante_id, nombre_donante, posicion, misiones_completadas, donaciones_totales
+)
+SELECT 
+    gen_random_uuid(),
+    :rankingId,
+    d.id,
+    d.nombre,
+    ROW_NUMBER() OVER (
+        ORDER BY 
+            (SELECT COUNT(*) FROM mision m WHERE m.donante_id = d.id AND m.completada = TRUE) DESC,
+            (SELECT COUNT(*) FROM donante_historial_donacion h WHERE h.donante_id = d.id AND TO_CHAR(h.fecha, 'YYYY-MM') = :periodo) DESC,
+            d.created_at ASC
+    ) as posicion,
+    (SELECT COUNT(*) FROM mision m WHERE m.donante_id = d.id AND m.completada = TRUE),
+    (SELECT COUNT(*) FROM donante_historial_donacion h WHERE h.donante_id = d.id AND TO_CHAR(h.fecha, 'YYYY-MM') = :periodo)
+FROM donante_incentivos d;
+```
+
+* **Complejidad en Heap JVM**: $O(1)$ (cero entidades cargadas en memoria).
+* **Aprovechamiento de Índices**: Utiliza los índices `idx_mision_tipo_completada` e `idx_donante_historial_donante`.
+
+---
+
+## 7. Índices Parciales y Optimización de Almacenamiento en PostgreSQL 15+
+
+### 7.1. Índice Parcial para `outbox_events`
+Para evitar indexar millones de filas históricas en estado `PROCESADO`, se define un índice parcial:
+
+```sql
+CREATE INDEX idx_outbox_pendientes_parcial 
+ON outbox_events(created_at) 
+WHERE estado = 'PENDIENTE';
+```
+
+* **Beneficio**: El índice mantiene un tamaño mínimo ($< 1$ MB) conteniendo solo los eventos pendientes ($< 100$), garantizando que el polling del relay (`SELECT ... FOR UPDATE SKIP LOCKED`) responda en $< 1$ ms independientemente de los millones de eventos históricos acumulados.
+
+---
+
+## 8. Concurrencia Optimista (`@Version`) y Políticas de Reintento (`@Retryable`)
+
+### 8.1. Manejo de Colisiones Concurrentes
+Cuando múltiples eventos de donación simultáneos (ej: ráfagas desde RabbitMQ) impactan sobre el mismo donante, Hibernate detecta el conflicto de versión mediante el campo `@Version version` y lanza `OptimisticLockException` / `ObjectOptimisticLockingFailureException`.
+
+### 8.2. Integración de Spring Retry
+Para evitar la pérdida de eventos y no forzar reintentos manuales al cliente, la capa de aplicación se blindará con Spring Retry y backoff exponencial:
+
+```java
+@Service
+public class GestionDonanteService implements IGestionDonanteService {
+
+  @Retryable(
+      retryFor = {ObjectOptimisticLockingFailureException.class, OptimisticLockException.class},
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 100, multiplier = 2))
+  @Transactional
+  public void registrarDonacion(UUID donanteId, EventoDonacion evento) {
+    DonanteIncentivosEntity donante = donanteRepository.findById(donanteId)
+        .orElseThrow(() -> new NotFoundException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO));
+    donante.registrarDonacion(evento);
+    donanteRepository.save(donante);
+  }
+}
+```
+
+---
+
+## 9. Carga Diferida (`FetchType.LAZY`) y Prevención de Producto Cartesiano
+
+### 9.1. Regla Estricta: `FetchType.LAZY` en Colecciones
+- Todas las relaciones `@OneToMany` (`List<MisionEntity>`) y `@ElementCollection` (`List<InsigniaGanadaEmbeddable>`) se configuran obligatoriamente como `FetchType.LAZY`.
+- Esto previene la excepción `MultipleBagFetchException` de Hibernate y evita productos cartesianos de $M \times N$ filas al cargar donantes.
+
+### 9.2. Grafo de Entidades para Lecturas Específicas
+Para casos de uso donde se requiere el aggregate root completo en una única consulta:
+
+```java
+@Repository
+public interface DonanteIncentivosJpaRepository extends JpaRepository<DonanteIncentivosEntity, UUID> {
+
+  @EntityGraph(attributePaths = {"misiones", "insignias"})
+  Optional<DonanteIncentivosEntity> findWithDetailsById(UUID id);
+}
+```
+
+---
+
+## 10. Ciclo de Vida de Outbox Relay, Dead Letter Queue (DLQ) y Purga Automática
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDIENTE: Mutación en Aggregate (Commit Atómico)
+    PENDIENTE --> PROCESADO: Worker despacha evento con éxito
+    PENDIENTE --> ERROR: Fallo en broker / red
+    ERROR --> PENDIENTE: Reintento con backoff (intentos < 5)
+    ERROR --> DEAD_LETTER: Superado límite de reintentos (>= 5)
+    DEAD_LETTER --> [*]: Alerta en Observabilidad y Cuarentena
+    PROCESADO --> [*]: Purga automática tras 14 días
+```
+
+### 10.1. Job de Purga Programada (`OutboxCleanupJob`)
+Para mantener acotado el tamaño de la tabla `outbox_events` y optimizar los backups de base de datos:
+
+```sql
+DELETE FROM outbox_events 
+WHERE estado = 'PROCESADO' 
+  AND processed_at < CURRENT_TIMESTAMP - INTERVAL '14 days';
+```
+
+---
+
+## 11. Idempotencia en Consumo y Observabilidad Micrometer
+
+### 11.1. Deduplicación de Mensajes
+Para garantizar que la ingesta asíncrona (*At-Least-Once*) sea estrictamente idempotente:
+- Restricción de clave natural única: `UNIQUE (donacion_id)` en la tabla `donante_historial_donacion`.
+- Opcionalmente, tabla de control `consumed_messages (message_id UUID PRIMARY KEY, consumer_name VARCHAR(100), consumed_at TIMESTAMP WITH TIME ZONE)`.
+
+### 11.2. Métricas de Negocio con Micrometer
+Instrumentación de métricas para dashboards en Grafana / Prometheus:
+- `Counter.builder("incentivos.misiones.completadas").tag("categoria", ...).tag("tipo", ...).register(meterRegistry)`
+- `Counter.builder("incentivos.donantes.ascensos").tag("categoria_nueva", ...).register(meterRegistry)`
+- `Timer.builder("incentivos.ranking.calculo.duration").register(meterRegistry)`
+
+### 11.3. Contrato de Ingesta Idempotente con `donacionId`
+* **Problema en Sistemas Distribuidos**: En redes con reintentos automáticos (Feign / RabbitMQ), peticiones repetidas a `/donaciones` y `/donaciones/exitosa` sin identificador de transacción provocarían cómputo doble de métricas y medallas duplicadas.
+* **Diseño para la Fase Física**:
+  - Actualizar `NuevaDonacionRequest` y `DonacionExitosaRequest` para requerir `@NotNull UUID donacionId`.
+  - Actualizar sincronizadamente `IncentivosFeignClient` en `donaciones-service`.
+  - Persistencia física: la tabla `donante_historial_donacion` incorporará `CONSTRAINT uq_donante_donacion UNIQUE (donacion_id)`. Ante inserción duplicada, PostgreSQL arroja `UniqueConstraintViolationException` que el servicio capturará para responder `200 OK` de forma idempotente sin re-procesar.
+
+---
+
+## 12. Coordinación de Tareas Programadas en Clúster (ShedLock)
+
+```mermaid
+graph TD
+    subgraph "Instancias de incentivos-service (K8s Pods / Docker)"
+        Pod1["Pod 1<br>(InactividadJob / RankingMensualJob)"]
+        Pod2["Pod 2<br>(InactividadJob / RankingMensualJob)"]
+    end
+
+    subgraph "PostgreSQL 15+"
+        LockTable[("Tabla shedlock<br>(lock_until, locked_at, locked_by)")]
+    end
+
+    Pod1 -->|"Adquiere Lock (Éxito)"| LockTable
+    Pod2 -.->|"Lock Ocupado (Skip)"| LockTable
+```
+
+### 12.1. Mitigación de Ejecución Duplicada en Schedulers
+* **Problema**: Cuando `incentivos-service` se despliega con múltiples réplicas (alta disponibilidad), los cron jobs nativos `@Scheduled` (`InactividadJob`, `RachaJob`, `RankingMensualJob`) se disparan concurrentemente en todos los pods a la misma hora, duplicando cálculos de rankings y notificaciones.
+* **Solución**: Integrar **ShedLock** con backend relacional PostgreSQL:
+
+```sql
+CREATE TABLE shedlock (
+    name VARCHAR(64) PRIMARY KEY,
+    lock_until TIMESTAMP WITH TIME ZONE NOT NULL,
+    locked_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    locked_by VARCHAR(255) NOT NULL
+);
+```
+
+```java
+@Component
+public class RankingMensualJob {
+
+  @Scheduled(cron = "0 59 23 L * *")
+  @SchedulerLock(name = "RankingMensualJob_ejecutar", lockAtLeastFor = "PT5M", lockAtMostFor = "PT30M")
+  public void ejecutarRankingMensual() { ... }
+}
+```
+
+---
+
+## 13. Integración de Webhooks n8n Mediante Transactional Outbox
+
+### 13.1. Reemplazo de `WebClient.subscribe()` Fire-and-Forget
+* **Problema**: `N8nClientAdapter` despacha llamadas HTTP reactivas con `.subscribe()` sin reintentos exponenciales ni almacenamiento de contingencia. Si n8n sufre una caída transitoria o sobrecarga, las notificaciones de insignias y rankings se pierden silenciosamente.
+* **Solución**:
+  - En la fase JPA, las publicaciones a n8n se enrutan a través de la tabla `outbox_events` con `event_type = 'PUBLICAR_INSIGNIA_N8N'` y `'NOTIFICAR_RANKING_N8N'`.
+  - El `OutboxEventRelay` asíncrono se encarga de realizar las llamadas HTTP hacia los webhooks de n8n, aplicando reintentos exponenciales con `backoff`, circuit breaker y cuarentena en DLQ tras 5 fallos.
+
+---
+
+## 14. Proyecciones SQL Nativas para Evolución de Métricas Históricas
+
+### 14.1. Cómputo de `donacionesPorPeriodo()` en Base de Datos
+* **Problema**: Al aplanar `Metricas` a columnas escalares en `donante_incentivos` para evitar cargar colecciones históricas en memoria, `MetricasIncentivosService.obtenerMetricas()` ya no debe iterar sobre `historialDonaciones`.
+* **Solución**: Definir una proyección JPA nativa:
+
+```java
+@Repository
+public interface DonanteHistorialDonacionJpaRepository extends JpaRepository<DonanteHistorialEntity, UUID> {
+
+  @Query(value = """
+      SELECT TO_CHAR(h.fecha, 'YYYY-MM') AS periodo, COUNT(*) AS cantidad
+      FROM donante_historial_donacion h
+      WHERE h.donante_id = :donanteId
+      GROUP BY TO_CHAR(h.fecha, 'YYYY-MM')
+      ORDER BY periodo ASC
+      """, nativeQuery = true)
+  List<PeriodoConteoProjection> obtenerEvolucionDonacionesPorPeriodo(@Param("donanteId") UUID donanteId);
+}
+```
+
+---
+
+## 15. Seguridad Perimetral y Control de Acceso a Nivel de Recurso (JWT)
+
+### 15.1. Validación de Identidad en Endpoints de Perfil e Insignias
+* **Regla de Seguridad**: Endpoints como `PUT /donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad` y `PATCH /donantes/{donanteId}` validarán en el `SecurityFilterChain` (OAuth2 Resource Server / JWT) que:
+  1. El claim `sub` / `personaId` del token JWT coincida con el `idPersona` del donante correspondiente al `donanteId` solicitado.
+  2. O bien el token contenga el rol administrativo `ROLE_ADMIN`.
+* **Manejo de Errores**: Intentos de mutación sobre recursos ajenos retornarán `403 Forbidden` (`ErrorCatalog.ACCESO_DENEGADO`).
+
+---
+
+## 16. Modelo de Concurrencia y Progresión de Misiones
+
+### 16.1. Evaluación Paralela vs. Serial dentro de una Misma Categoría
+* **Decisión de Gamificación**:
+  - Actualmente, `DonanteIncentivos.getMisionActiva()` evalúa una sola misión por categoría en orden secuencial (`min(numeroMision)`).
+  - Para la fase física, se define la opción de **evaluación en paralelo** (`donante.getMisionesActivas()`), permitiendo que eventos de donación simultáneos impacten sobre la misión de racha y la de completitud a la vez sin pérdida de progreso intermedio.
+
+

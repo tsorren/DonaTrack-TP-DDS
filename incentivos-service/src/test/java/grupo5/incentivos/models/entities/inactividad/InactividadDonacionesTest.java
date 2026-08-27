@@ -82,16 +82,31 @@ class InactividadDonacionesTest {
   }
 
   @Test
-  void detectarInactivos_deberiaConsiderarInactivoAlDonanteQueNuncaDono() {
+  void detectarInactivos_noDeberiaDetectarDonanteRecienRegistradoSinDonaciones() {
     InactividadDonaciones criterio = crearCriterio(30);
     UUID id = UUID.randomUUID();
-    DonanteIncentivos sinDonaciones = DonanteIncentivosMotherTest.colaboradorSinMisiones(id);
+    DonanteIncentivos recienRegistrado =
+        DonanteIncentivosMotherTest.colaboradorRegistradoEn(id, HOY);
 
-    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(sinDonaciones));
+    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(recienRegistrado));
+
+    assertTrue(
+        resultado.isEmpty(),
+        "Un donante registrado hoy sin donaciones no debe considerarse inactivo");
+  }
+
+  @Test
+  void detectarInactivos_deberiaConsiderarInactivoAlDonanteQueNuncaDonoYRegistroAntiguo() {
+    InactividadDonaciones criterio = crearCriterio(30);
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos registroAntiguo =
+        DonanteIncentivosMotherTest.colaboradorRegistradoEn(id, HOY.minusDays(45));
+
+    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(registroAntiguo));
 
     assertEquals(1, resultado.size());
     assertEquals(id, resultado.get(0).idDonante());
-    assertEquals(30, resultado.get(0).diasInactivo());
+    assertEquals(45, resultado.get(0).diasInactivo());
   }
 
   @Test
@@ -100,7 +115,7 @@ class InactividadDonacionesTest {
 
     UUID idActivo = new UUID(0L, 1L);
     UUID idInactivo = new UUID(0L, 2L);
-    UUID idSinDonaciones = new UUID(0L, 3L);
+    UUID idSinDonacionesAntiguo = new UUID(0L, 3L);
 
     DonanteIncentivos activo =
         DonanteIncentivosMotherTest.conDonacion(
@@ -108,11 +123,12 @@ class InactividadDonacionesTest {
     DonanteIncentivos inactivo =
         DonanteIncentivosMotherTest.conDonacion(
             idInactivo, EventoDonacionMotherTest.enFecha(HOY.minusDays(45)));
-    DonanteIncentivos sinDonaciones =
-        DonanteIncentivosMotherTest.colaboradorSinMisiones(idSinDonaciones);
+    DonanteIncentivos sinDonacionesAntiguo =
+        DonanteIncentivosMotherTest.colaboradorRegistradoEn(
+            idSinDonacionesAntiguo, HOY.minusDays(40));
 
     List<DonanteInactivo> resultado =
-        criterio.detectarInactivos(List.of(activo, inactivo, sinDonaciones));
+        criterio.detectarInactivos(List.of(activo, inactivo, sinDonacionesAntiguo));
 
     assertEquals(2, resultado.size());
     assertFalse(resultado.stream().anyMatch(d -> d.idDonante().equals(idActivo)));

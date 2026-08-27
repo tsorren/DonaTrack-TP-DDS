@@ -305,4 +305,26 @@ class MisionesTest {
     assertEquals(1, donante.getInsignias().size());
     assertEquals(fechaDonacion, donante.getInsignias().getFirst().fechaObtenida());
   }
+
+  @Test
+  void racha_conEventoDiferidoDeMesAnterior_noDeberiaResetearProgresoAvanzado() {
+    MisionRacha racha = MisionMotherTest.rachaColaborador(5);
+
+    // Donaciones en Enero, Febrero, Marzo -> Progreso 3
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 2, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 3, 15));
+    assertEquals(3, racha.getProgresoActual());
+
+    // Evento diferido recibido de Febrero (mes anterior al último registrado Marzo)
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 2, 28));
+
+    // El progreso debe mantenerse intacto en 3 y no resetearse a 1
+    assertEquals(3, racha.getProgresoActual());
+    assertFalse(racha.isCompletada());
+
+    // Donación en Abril -> Continúa la racha a 4
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(2026, 4, 15));
+    assertEquals(4, racha.getProgresoActual());
+  }
 }

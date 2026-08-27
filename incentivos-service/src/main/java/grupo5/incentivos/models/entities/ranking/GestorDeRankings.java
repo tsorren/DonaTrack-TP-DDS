@@ -24,6 +24,10 @@ public class GestorDeRankings {
                         (DonanteIncentivos d) ->
                             d.misionesCompletadasEnMes(periodo.getYear(), periodo.getMonthValue()))
                     .reversed()
+                    .thenComparing(
+                        Comparator.comparingLong(
+                                (DonanteIncentivos d) -> d.getMetricas().donacionesEnMes(periodo))
+                            .reversed())
                     .thenComparing(DonanteIncentivos::getId))
             .toList();
 

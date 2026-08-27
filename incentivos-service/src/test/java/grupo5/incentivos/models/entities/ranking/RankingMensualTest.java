@@ -111,6 +111,34 @@ class RankingMensualTest {
   }
 
   @Test
+  void gestorDeRankings_conEmpateDeMisiones_deberiaDesempatarPorDonacionesTotalesEnMes() {
+    GestorDeRankings gestor = new GestorDeRankings();
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
+    UUID idConMenosDonaciones = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    UUID idConMasDonaciones = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
+    // Ambos donantes completaron 1 misión en Mayo
+    DonanteIncentivos dMenos =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+            idConMenosDonaciones, "Donante 1", mayo, 1);
+    DonanteIncentivos dMas =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+            idConMasDonaciones, "Donante 2", mayo, 1);
+
+    // dMas realiza 3 donaciones adicionales en Mayo
+    dMas.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 20));
+    dMas.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 21));
+    dMas.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 5, 22));
+
+    RankingMensual ranking = gestor.calcular(List.of(dMenos, dMas), mayo);
+
+    assertEquals(2, ranking.getEntradas().size());
+    // dMas debe estar en la 1° posición a pesar de tener un UUID mayor
+    assertEquals(idConMasDonaciones, ranking.getEntradas().get(0).getDonanteId());
+    assertEquals(idConMenosDonaciones, ranking.getEntradas().get(1).getDonanteId());
+  }
+
+  @Test
   void gestorDeRankings_conListaNulaOVacia_deberiaRetornarRankingVacio() {
     GestorDeRankings gestor = new GestorDeRankings();
     YearMonth mayo = YearMonth.of(2026, Month.MAY);

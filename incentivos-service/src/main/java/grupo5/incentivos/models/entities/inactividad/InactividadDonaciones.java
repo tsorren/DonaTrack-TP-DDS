@@ -36,16 +36,22 @@ public class InactividadDonaciones extends CriterioInactividad {
   }
 
   private static boolean esInactivo(DonanteIncentivos donante, LocalDate umbral) {
-    LocalDate ultimaDonacion = donante.getMetricas().getUltimaDonacion();
-    return ultimaDonacion == null || ultimaDonacion.isBefore(umbral);
+    LocalDate fechaReferencia =
+        donante.getMetricas().getUltimaDonacion() != null
+            ? donante.getMetricas().getUltimaDonacion()
+            : donante.getFechaRegistro();
+    return fechaReferencia != null && fechaReferencia.isBefore(umbral);
   }
 
   private DonanteInactivo aDonanteInactivo(DonanteIncentivos donante, LocalDate hoy) {
-    LocalDate ultimaDonacion = donante.getMetricas().getUltimaDonacion();
-    // Si nunca donó no hay fecha de referencia real: reportamos el umbral configurado
-    // como piso de días inactivo en lugar de inventar un número.
+    LocalDate fechaReferencia =
+        donante.getMetricas().getUltimaDonacion() != null
+            ? donante.getMetricas().getUltimaDonacion()
+            : donante.getFechaRegistro();
     int diasInactivo =
-        ultimaDonacion == null ? diasSinDonar : (int) ChronoUnit.DAYS.between(ultimaDonacion, hoy);
+        fechaReferencia != null
+            ? (int) ChronoUnit.DAYS.between(fechaReferencia, hoy)
+            : diasSinDonar;
     return crear(donante, diasInactivo, hoy);
   }
 }

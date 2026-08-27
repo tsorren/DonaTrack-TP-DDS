@@ -24,4 +24,26 @@ class AsyncConfigTest {
 
     pool.shutdown();
   }
+
+  @Test
+  void notificacionesTaskExecutor_deberiaPropagarMdcContextoAHiloDeTrabajo() throws Exception {
+    AsyncConfig config = new AsyncConfig();
+    ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) config.notificacionesTaskExecutor();
+
+    org.slf4j.MDC.put("traceId", "trace-12345");
+    java.util.concurrent.CompletableFuture<String> future =
+        new java.util.concurrent.CompletableFuture<>();
+
+    executor.execute(
+        () -> {
+          String traceIdEnWorker = org.slf4j.MDC.get("traceId");
+          future.complete(traceIdEnWorker);
+        });
+
+    String traceIdCapturado = future.get(5, java.util.concurrent.TimeUnit.SECONDS);
+    org.slf4j.MDC.clear();
+
+    assertEquals("trace-12345", traceIdCapturado);
+    executor.shutdown();
+  }
 }

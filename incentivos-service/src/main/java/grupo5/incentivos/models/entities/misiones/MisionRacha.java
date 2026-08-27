@@ -38,6 +38,10 @@ public class MisionRacha extends Mision {
       return 1;
     }
 
+    if (mesEvento.isBefore(this.ultimoMesDonado)) {
+      return this.getProgresoActual();
+    }
+
     if (mesEvento.equals(this.ultimoMesDonado)) {
       return this.getProgresoActual();
     }
