@@ -216,7 +216,7 @@ graph TD
     O9["Oleada 9: @Valid en DTOs + controllers + códigos HTTP + GlobalExceptionHandler verificado + tests de controller"]
     O10["Oleada 10: Análisis JPA — separar constructores + campo version + estrategia herencia Mision"]
     O1112["Oleadas 11+12 combinadas: Hardening — grep @Component en models/ + List.copyOf() + code review"]
-    O13["Oleada 13: Gobernanza checksum ✅/📝 + decisiones-jpa-incentivos.md + mvn clean test verde"]
+    O13["Oleada 13: Gobernanza checksum ✅/📝 + decisiones_futuras_en_oleada_10.md + mvn clean test verde"]
 
     F0 --> O1
     O1 --> O2
@@ -914,15 +914,21 @@ Además, `IncentivosServiceApplication` configurado con `@SpringBootApplication(
 
 Todo ítem de esta oleada es `📝` (solo diseño/análisis):
 
-1. `DonanteIncentivos`: Agregar método estático `crear(idPersona, nombre)` separado del constructor de reconstitución. Campo `private Long version`. Documentar `@Embedded Metricas`, `@OneToMany Misiones` (estrategia lazy), `@OneToMany Insignias`.
+1. **`DonanteIncentivos`**: Separar método estático de creación `crear(idPersona, nombre)` del constructor de reconstitución JPA. Campo de concurrencia optimista `private Long version` (`@Version`). Mapeo `@Embedded Metricas`, `@OneToMany Misiones` (`CascadeType.ALL`, `orphanRemoval = true`, `FetchType.LAZY`), `@ElementCollection` para `InsigniasGanadas`.
+2. **`RankingMensual`**: Separar método `crear(periodo, posiciones)` del constructor de reconstitución. Campo `version: Long`. `@ElementCollection` para `EntradaRanking`.
+3. **Jerarquía `Mision`**: Estrategia `@Inheritance(strategy = SINGLE_TABLE)` con `@DiscriminatorColumn(tipo_mision)`. Mapeo `@ElementCollection` para `categoriasDonadas` y `categoriasNecesarias` en `MisionCompletitud`. Campo `version: Long` en clase base.
+4. **`Metricas`**: Aplanamiento escalar a nivel `@Embeddable` (`totalDonaciones`, `donacionesConsecutivas`, `maxDonacionesConsecutivas`, `totalDonacionesExitosas`, `ultimaDonacionFecha`) para evitar cuellos de botella de memoria en carga de historiales extensos.
+5. **Transactional Outbox y Privacidad**: Diseño de tabla `outbox_events` para eventos (`AscensoDonante`, `MisionCompletada`) y estrategia de Crypto-Shredding para derecho al olvido.
+6. **Documentación Formal**: Consolidada en [`docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md).
 
-2. `RankingMensual`: Separar constructores. Campo `version`. `@OneToMany EntradaRanking`.
-
-3. Jerarquía `Mision`: Estrategia `SINGLE_TABLE` (recomendada sobre `JOINED` por rendimiento). `MisionCompletitud.categoriasdonadas` → `@ElementCollection`. Campo `version` en `Mision` base.
-
-4. `Metricas.historialDonaciones`: Evaluar si reemplazar `List<EventoDonacion>` por contadores escalares (`totalDonaciones`, `ultimaDonacion`) para evitar colección grande en carga.
-
-5. Documentar en [`docs/design/decisiones-jpa-incentivos.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/decisiones-jpa-incentivos.md).
+**Checklist Oleada 10:**
+- [x] 📝 Auditoría de límites y referencias en todos los agregados (CERO punteros directos entre ARs)
+- [x] 📝 Estrategia de herencia SINGLE_TABLE para jerarquía Mision documentada
+- [x] 📝 Aplanamiento de Metricas y optimización de colecciones de historial documentada
+- [x] 📝 Esquema relacional DDL PostgreSQL 15+ completo diseñado con índices y restricciones
+- [x] 📝 Patrón Transactional Outbox y estrategia de Crypto-Shredding especificados
+- [x] 📝 Documentación técnica de referencia completada en decisiones_futuras_en_oleada_10.md
+- [x] Suite verde + no-regresión oleadas 1-9
 
 ---
 
@@ -949,7 +955,7 @@ grep -rn "getDomainEvents" src/main/java/
 
 - **Bitácora viva**: Verificar que **TODAS** las oleadas (0 a 12) estén debidamente registradas y completadas en [`docs/design/incentivos-service/oleadas-refactor.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/incentivos-service/oleadas-refactor.md) siguiendo la estructura estándar (Problema, Evidencia, Objetivo, Fuera de scope, Tests, Diseño resultante, IA utilizada).
 - Auditar toda la documentación de este plan y de la bitácora: CERO ítems mal marcados (confrontar `git diff` contra bitácora).
-- Completar `docs/design/decisiones-jpa-incentivos.md` con estrategias de queries, transacciones y lazy loading.
+- Completar `docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md` con estrategias de queries, transacciones y lazy loading.
 - Ejecutar suite completa: `mvn clean test` verde.
 - Ejecutar `mvn spotless:check` verde.
 
