@@ -3,6 +3,7 @@ package grupo5.incentivos.services;
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.infrastructure.IN8nClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
+import grupo5.incentivos.models.entities.ranking.EntradaRanking;
 import grupo5.incentivos.models.entities.ranking.GestorDeRankings;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
@@ -74,6 +75,17 @@ public class RankingService implements IRankingService {
                     .filter(e -> e.donanteId().equals(donanteId))
                     .findFirst()
                     .map(RankingMensualDTO.EntradaRankingDTO::posicion));
+  }
+
+  @Override
+  public Optional<Integer> obtenerPosicionDonante(UUID donanteId, YearMonth periodo) {
+    return obtenerRankingPorPeriodo(periodo)
+        .flatMap(
+            r ->
+                r.getEntradas().stream()
+                    .filter(e -> e.getDonanteId().equals(donanteId))
+                    .findFirst()
+                    .map(EntradaRanking::getPosicion));
   }
 
   @Override

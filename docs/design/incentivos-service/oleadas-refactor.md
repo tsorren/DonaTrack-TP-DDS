@@ -404,3 +404,74 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Reorganización semántica de paquetes y actualización de declaraciones de paquete e imports.
 - Reemplazo preciso de wildcard imports por tipos explícitos.
 - Barridos automatizados mediante herramientas de búsqueda y comprobación cruzada de builds.
+
+---
+
+## Oleada 8: Object Mothers, "Tell, Don't Ask", Desacoplamiento Arquitectónico y Cobertura Total (100% de Capas)
+
+### Problema
+1. **Construcción Dispersa y Posicional en Tests**: Las suites de pruebas instanciaban entidades de dominio (`DonanteIncentivos`, `EventoDonacion`, `RankingMensual`, `Mision`) y DTOs de forma manual y posicional (`new DonanteIncentivos(...)`, `new NuevaDonacionRequest(...)`), generando fragilidad ante futuros cambios en constructores.
+2. **Violaciones del Principio "Tell, Don't Ask" en Suites de Pruebas**: Varios tests manipulaban colecciones o estructuras internas de las entidades desde el exterior (`donante.getMisiones().add(...)`, `donante.getMetricas().registrarDonacion(...)`), acoplándose a los detalles de implementación en lugar de interactuar mediante métodos de comportamiento del agregado.
+3. **Gaps de Cobertura en Capas Críticas**: No existían tests unitarios para los 5 Controladores REST (`DonanteIncentivosController`, `MisionesDonacionController`, `InsigniasController`, `MetricasIncentivosController`, `RankingController`), el listener de notificaciones (`NotificacionesIncentivosListener`), los adaptadores de infraestructura (`NotificacionesClientAdapter`, `N8nClientAdapter`), las configuraciones `@Bean` (`DomainServicesConfig`, `InactividadConfig`) ni los métodos de mapeo de DTOs (`DTOsAndMappersTest`).
+4. **Casos Borde no Cubiertos**: Faltaban pruebas para situaciones límite como donaciones repetidas en el mismo mes en rachas, saltos de 2+ meses, misiones ya completadas que no deben resetearse, donantes en categoría máxima (`HEROE`), idempotencia en asignación de insignias, umbrales exactos ($N-1$ vs $N$) en grandes donaciones, y podios con menos de 3 donantes en rankings.
+
+### Evidencia
+- `InactividadDonacionesTest`: utilizaba `donante.getMetricas().registrarDonacion(...)`.
+- `RankingServiceTest`: utilizaba `donante.getMisiones().add(...)` y constructores posicionales directos.
+- Ausencia de tests para controllers, listeners, adaptadores y DTOs en `src/test/java/`.
+
+### Objetivo
+1. **Crear Object Mothers y Fixtures Centralizados en `grupo5.incentivos.fixtures`**:
+   - [`DonanteIncentivosMotherTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/DonanteIncentivosMotherTest.java): métodos canónicos para donantes colaboradores, con misiones activas, rachas y misiones completadas en meses específicos.
+   - [`MisionMotherTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/MisionMotherTest.java): métodos para las 4 subclases de `Mision` (`racha`, `exitosas`, `completitud`, `habilDonador`) con y sin insignias.
+   - [`RankingMensualMotherTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/RankingMensualMotherTest.java): creación de rankings mensuales vacíos o poblados con $N$ entradas.
+   - [`EventoDonacionMotherTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/EventoDonacionMotherTest.java): eventos parametrizados por fecha, categorías y cantidad de bienes.
+   - [`IncentivosFixturesTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/IncentivosFixturesTest.java): fábrica para requests de entrada (`RegistrarDonanteRequest`, `NuevaDonacionRequest`, `DonacionExitosaRequest`, `ModificarDonanteRequest`).
+2. **Aplicar "Tell, Don't Ask" en el 100% de los Tests**:
+   - Erradicar mutaciones y accesos a listas internas; ordenar al agregado ejecutar acciones (`donante.registrarDonacion(...)`, `donante.otorgarInsignia(...)`) y consultar estado semántico (`donante.getCategoria()`, `donante.misionesCompletadas()`, `donante.insigniasVisibles()`).
+   - Hacer idempotente `DonanteIncentivos.otorgarInsignia(insignia)` e incorporar el método `insigniasVisibles()`.
+3. **Alcanzar Cobertura Total (100% de Componentes del Microservicio)**:
+   - Suites creadas para Controllers: `DonanteIncentivosControllerTest`, `MisionesDonacionControllerTest`, `InsigniasControllerTest`, `MetricasIncentivosControllerTest`, `RankingControllerTest`.
+   - Suites creadas para Servicios/Listeners: `NotificacionesIncentivosListenerTest` y refactor exhaustivo de los 6 Application Services.
+   - Suites creadas para Infraestructura y Configs: `NotificacionesClientAdapterTest`, `N8nClientAdapterTest`, `DomainServicesConfigTest`, `InactividadConfigTest`.
+   - Suites creadas para DTOs/Mappers: `DTOsAndMappersTest`.
+4. **Cubrir Casos Borde Rigurosos**:
+   - Inmutabilidad de rachas completadas ante periodos vencidos posteriores.
+   - Categorías duplicadas en `MisionCompletitud` que no cuentan doble.
+   - Umbrales exactos de bienes ($N-1$ vs $N$) en `MisionHabilDonador`.
+   - Donante en categoría máxima `HEROE` que no falla al completar misiones.
+   - Podios seguros en `RankingMensual` con 0, 1, 2, 3 y 4+ donantes.
+   - Resiliencia ante caídas del cliente de notificaciones en `InactividadService`.
+5. **Auditoría Crítica y Alineación de Casos de Uso Reales**:
+   - **Consulta de Posición por Periodo**: Implementada en `IRankingService`, `RankingService` y `RankingController` (`GET /api/incentivos/ranking/posicion/{donanteId}?periodo=YYYY-MM`), resolviendo la limitación de solo poder consultar el último ranking.
+   - **Gestión Integral y Contrato Dual de Insignias**: Soporte para parámetro opcional `soloVisibles` en `IInsigniasService`, `InsigniasService`, `IInsigniasController` e `InsigniasController`. `GET /api/incentivos/donantes/{donanteId}/insignias?soloVisibles=true` retorna únicamente las insignias visibles (`donante.insigniasVisibles()`) para perfiles públicos/showcase, mientras que la consulta estándar sin parámetro o con `soloVisibles=false` retorna todas las insignias con su bandera `visible` para administración y reactivación en paneles de gestión privada.
+   - **Unificación de Excepciones**: Estandarizado `BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO)` en todos los flujos de servicios.
+   - **Determinismo y Deduplicación**: Desempate determinista por ID en `GestorDeRankings` y deduplicación de alertas por persona en `GestorDeInactivos`.
+
+### Fuera de scope
+- Validaciones declarativas Jakarta Bean Validation (`@Valid`, `@NotNull`, `@NotBlank`) en DTOs y controllers (Oleada 9).
+- Propagación de trazabilidad distribuida `X-Trace-Id` (Oleada 9).
+
+### Tests / Verificación
+- **Barridos mecánicos**:
+  - `grep -rn "new DonanteIncentivos(" src/test/java/**/services/`: ✅ **0 matches**.
+  - `grep -rn "new NuevaDonacionRequest(" src/test/java/**/services/`: ✅ **0 matches**.
+  - `grep -rn "new RegistrarDonanteRequest(" src/test/java/**/services/`: ✅ **0 matches**.
+  - `grep -rn "getMisiones().add(" src/test/`: ✅ **0 matches** (100% Tell, Don't Ask).
+  - `grep -rn "getMetricas().registrarDonacion(" src/test/`: ✅ **0 matches** (100% Tell, Don't Ask).
+  - `find src/test -name "*Tests.java"`: ✅ **0 matches**.
+- **Suite completa**:
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **144 tests ejecutados, 0 fallos, 0 errores, 0 omitidos** (`BUILD SUCCESS`).
+  - `mvn clean test` (reactor completo): ✅ **7/7 módulos exitosos, 100% en verde** (`BUILD SUCCESS`).
+  - `mvn spotless:check -f incentivos-service/pom.xml`: ✅ **103 archivos limpios** (100% compliant con Google Java Format).
+
+### Diseño resultante
+- Todas las suites de pruebas de `incentivos-service` se encuentran totalmente desacopladas de las representaciones internas de las entidades, actuando como especificaciones vivas de comportamiento bajo la convención AAA (Arrange-Act-Assert) y el principio "Tell, Don't Ask".
+- El microservicio alcanza cobertura integral en todas sus capas arquitectónicas (Dominio, Aplicación, Controladores, Infraestructura, Schedulers, Configuración y DTOs) con contratos de negocio que soportan todos los casos de uso reales del sistema.
+
+### IA utilizada
+- Diseño e implementación de Object Mothers y Test Data Builders canónicos.
+- Auditoría crítica y corrección de compromisos asumidos en tests para robustecer el código de producción.
+- Refactorización de suites de pruebas para eliminar manipulaciones directas de colecciones internas.
+- Generación de pruebas exhaustivas para controladores REST, listeners de eventos, adaptadores y DTOs.
+- Verificación mecánica con herramientas de análisis de patrones (`ripgrep`), validación continua con Maven y formateo con Spotless.

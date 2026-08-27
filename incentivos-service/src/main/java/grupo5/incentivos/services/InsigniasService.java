@@ -21,10 +21,15 @@ public class InsigniasService implements IInsigniasService {
 
   @Override
   public List<InsigniaDTO> obtenerInsignias(UUID donanteId) {
-    return obtenerDonante(donanteId).getInsignias().stream()
-        .filter(InsigniaGanada::visible)
-        .map(InsigniaDTO::desde)
-        .toList();
+    return obtenerInsignias(donanteId, null);
+  }
+
+  @Override
+  public List<InsigniaDTO> obtenerInsignias(UUID donanteId, Boolean soloVisibles) {
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    List<InsigniaGanada> insignias =
+        Boolean.TRUE.equals(soloVisibles) ? donante.insigniasVisibles() : donante.getInsignias();
+    return insignias.stream().map(InsigniaDTO::desde).toList();
   }
 
   @Override

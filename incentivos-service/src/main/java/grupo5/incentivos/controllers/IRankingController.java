@@ -2,7 +2,9 @@ package grupo5.incentivos.controllers;
 
 import grupo5.incentivos.dto.RankingMensualDTO;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 public interface IRankingController {
@@ -11,4 +13,7 @@ public interface IRankingController {
   ResponseEntity<List<RankingMensualDTO>> obtenerHistorial();
 
   ResponseEntity<RankingMensualDTO> calcularRanking(@RequestParam(required = false) String periodo);
+
+  ResponseEntity<Integer> obtenerPosicionDonante(
+      @PathVariable UUID donanteId, @RequestParam(required = false) String periodo);
 }

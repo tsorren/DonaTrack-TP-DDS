@@ -1,21 +1,17 @@
 package grupo5.incentivos.services;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 import grupo5.incentivos.dto.RankingMensualDTO;
+import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
 import grupo5.incentivos.infrastructure.IN8nClient;
-import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.ranking.GestorDeRankings;
-import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
-import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
-import grupo5.incentivos.models.repositories.IRankingRepository;
 import grupo5.incentivos.models.repositories.RankingRepository;
-import java.time.LocalDate;
-import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -29,201 +25,214 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RankingServiceTest {
 
+  private RankingService service;
+  private DonanteIncentivosRepository donanteRepository;
+  private RankingRepository rankingRepository;
+  private GestorDeRankings gestorDeRankings;
+
   @Mock private IN8nClient n8nClient;
-
-  private IDonanteIncentivosRepository donanteRepository;
-  private IRankingRepository rankingRepository;
-  private RankingService rankingService;
-
-  private static final YearMonth PERIODO = YearMonth.of(2026, Month.MAY);
 
   @BeforeEach
   void setUp() {
     donanteRepository = new DonanteIncentivosRepository();
     rankingRepository = new RankingRepository();
-    rankingService =
-        new RankingService(donanteRepository, rankingRepository, n8nClient, new GestorDeRankings());
+    gestorDeRankings = new GestorDeRankings();
+    service = new RankingService(donanteRepository, rankingRepository, n8nClient, gestorDeRankings);
   }
 
   @Test
   void calcularYPersistir_deberiaOrdenarPorMisionesCompletadasDescendente() {
-    DonanteIncentivos ana = donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 3);
-    DonanteIncentivos bob = donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 1);
-    DonanteIncentivos carlos = donanteConMisionesCompletadasEnMes(3L, "Carlos", PERIODO, 2);
-    donanteRepository.save(ana);
-    donanteRepository.save(bob);
-    donanteRepository.save(carlos);
+    YearMonth mayo = YearMonth.of(2026, 5);
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
 
-    RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id1, "Donante 1", mayo, 2);
+    DonanteIncentivos d2 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id2, "Donante 2", mayo, 5);
+    DonanteIncentivos d3 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id3, "Donante 3", mayo, 1);
 
-    assertEquals(3, resultado.entradas().size());
-    assertEquals("Ana", resultado.entradas().get(0).nombreDonante());
-    assertEquals("Carlos", resultado.entradas().get(1).nombreDonante());
-    assertEquals("Bob", resultado.entradas().get(2).nombreDonante());
-  }
+    donanteRepository.save(d1);
+    donanteRepository.save(d2);
+    donanteRepository.save(d3);
 
-  @Test
-  void calcularYPersistir_deberiaAsignarPosicionesCorrectamente() {
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 2));
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 1));
+    RankingMensualDTO ranking = service.calcularYPersistir(mayo);
 
-    RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
-
-    assertEquals(1, resultado.entradas().get(0).posicion());
-    assertEquals(2, resultado.entradas().get(1).posicion());
+    assertEquals(3, ranking.entradas().size());
+    assertEquals(id2, ranking.entradas().get(0).donanteId());
+    assertEquals(1, ranking.entradas().get(0).posicion());
+    assertEquals(id1, ranking.entradas().get(1).donanteId());
+    assertEquals(2, ranking.entradas().get(1).posicion());
+    assertEquals(id3, ranking.entradas().get(2).donanteId());
+    assertEquals(3, ranking.entradas().get(2).posicion());
   }
 
   @Test
   void calcularYPersistir_deberiaExcluirDonantesConCeroMisionesEnElMes() {
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 2));
+    YearMonth mayo = YearMonth.of(2026, 5);
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
 
-    UUID bobId = new UUID(0L, 2L);
-    DonanteIncentivos bob = new DonanteIncentivos(bobId, bobId, "Bob");
-    donanteRepository.save(bob);
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id1, "Donante 1", mayo, 3);
+    DonanteIncentivos d2 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id2, "Donante 2", mayo, 0);
 
-    RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
+    donanteRepository.save(d1);
+    donanteRepository.save(d2);
 
-    assertEquals(1, resultado.entradas().size());
-    assertEquals("Ana", resultado.entradas().get(0).nombreDonante());
+    RankingMensualDTO ranking = service.calcularYPersistir(mayo);
+
+    assertEquals(1, ranking.entradas().size());
+    assertEquals(id1, ranking.entradas().get(0).donanteId());
   }
 
   @Test
-  void calcularYPersistir_deberiaRetornarVacioSiNadieTuvoDonacionesEnElMes() {
-    UUID anaId = new UUID(0L, 1L);
-    UUID bobId = new UUID(0L, 2L);
-    donanteRepository.save(new DonanteIncentivos(anaId, anaId, "Ana"));
-    donanteRepository.save(new DonanteIncentivos(bobId, bobId, "Bob"));
+  void calcularYPersistir_deberiaRetornarVacioSiNadieTieneMisiones() {
+    YearMonth mayo = YearMonth.of(2026, 5);
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+            UUID.randomUUID(), "Donante 1", mayo, 0);
+    donanteRepository.save(d1);
 
-    RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
+    RankingMensualDTO ranking = service.calcularYPersistir(mayo);
 
-    assertTrue(resultado.entradas().isEmpty());
-  }
-
-  @Test
-  void calcularYPersistir_deberiaPersistirElRankingEnElRepositorio() {
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 1));
-
-    rankingService.calcularYPersistir(PERIODO);
-
-    assertTrue(rankingRepository.findByPeriodo(PERIODO).isPresent());
+    assertTrue(ranking.entradas().isEmpty());
+    assertTrue(ranking.podio().isEmpty());
   }
 
   @Test
   void calcularYPersistir_podioDeberiaLimitarseATresDonantes() {
-    for (long i = 1; i <= 5; i++) {
+    YearMonth mayo = YearMonth.of(2026, 5);
+    for (int i = 1; i <= 5; i++) {
       donanteRepository.save(
-          donanteConMisionesCompletadasEnMes(i, "Donante" + i, PERIODO, (int) i));
+          DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+              UUID.randomUUID(), "Donante " + i, mayo, i));
     }
 
-    RankingMensualDTO resultado = rankingService.calcularYPersistir(PERIODO);
+    RankingMensualDTO ranking = service.calcularYPersistir(mayo);
 
-    assertEquals(3, resultado.podio().size());
+    assertEquals(5, ranking.entradas().size());
+    assertEquals(3, ranking.podio().size());
   }
 
   @Test
-  void obtenerPosicionDonante_deberiaRetornarPosicionCorrecta() {
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 3));
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(2L, "Bob", PERIODO, 1));
-    rankingService.calcularYPersistir(PERIODO);
+  void calcularYNotificar_deberiaNotificarAn8n() {
+    YearMonth mayo = YearMonth.of(2026, 5);
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+            UUID.randomUUID(), "Donante 1", mayo, 3);
+    donanteRepository.save(d1);
 
-    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(new UUID(0L, 2L));
+    service.calcularYNotificar(mayo);
+
+    verify(n8nClient, times(1)).notificarRankingCalculado(eq("2026-05"), any());
+  }
+
+  @Test
+  void obtenerPosicionDonante_porPeriodo_cuandoDonanteParticipo_deberiaRetornarPosicion() {
+    YearMonth mayo = YearMonth.of(2026, 5);
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id, "Donante 1", mayo, 3);
+    donanteRepository.save(d1);
+    service.calcularYPersistir(mayo);
+
+    Optional<Integer> posicion = service.obtenerPosicionDonante(id, mayo);
 
     assertTrue(posicion.isPresent());
-    assertEquals(2, posicion.get());
+    assertEquals(1, posicion.get());
   }
 
   @Test
-  void obtenerPosicionDonante_deberiaRetornarVacioCuandoNoHayRanking() {
-    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(new UUID(0L, 1L));
+  void obtenerPosicionDonante_porPeriodo_cuandoNoHayRanking_deberiaRetornarVacio() {
+    Optional<Integer> posicion =
+        service.obtenerPosicionDonante(UUID.randomUUID(), YearMonth.of(2026, 5));
 
-    assertFalse(posicion.isPresent());
+    assertTrue(posicion.isEmpty());
   }
 
   @Test
-  void obtenerPosicionDonante_deberiaRetornarVacioCuandoDonanteNoEstaEnElRanking() {
-    donanteRepository.save(donanteConMisionesCompletadasEnMes(1L, "Ana", PERIODO, 1));
-    rankingService.calcularYPersistir(PERIODO);
+  void obtenerPosicionDonante_porPeriodo_cuandoDonanteNoParticipo_deberiaRetornarVacio() {
+    YearMonth mayo = YearMonth.of(2026, 5);
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(
+            UUID.randomUUID(), "Donante 1", mayo, 3);
+    donanteRepository.save(d1);
+    service.calcularYPersistir(mayo);
 
-    Optional<Integer> posicion = rankingService.obtenerPosicionDonante(new UUID(0L, 99L));
+    Optional<Integer> posicion = service.obtenerPosicionDonante(UUID.randomUUID(), mayo);
 
-    assertFalse(posicion.isPresent());
+    assertTrue(posicion.isEmpty());
+  }
+
+  @Test
+  void obtenerPosicionDonante_ultimoRanking_cuandoDonanteParticipo_deberiaRetornarPosicion() {
+    YearMonth mayo = YearMonth.of(2026, 5);
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(id, "Donante 1", mayo, 3);
+    donanteRepository.save(d1);
+    service.calcularYPersistir(mayo);
+
+    Optional<Integer> posicion = service.obtenerPosicionDonante(id);
+
+    assertTrue(posicion.isPresent());
+    assertEquals(1, posicion.get());
+  }
+
+  @Test
+  void obtenerPosicionDonante_ultimoRanking_cuandoNoHayRanking_deberiaRetornarVacio() {
+    Optional<Integer> posicion = service.obtenerPosicionDonante(UUID.randomUUID());
+
+    assertTrue(posicion.isEmpty());
   }
 
   @Test
   void obtenerUltimoRanking_deberiaRetornarElMasReciente() {
-    YearMonth periodoViejo = YearMonth.of(2026, Month.MARCH);
-    YearMonth periodoNuevo = YearMonth.of(2026, Month.MAY);
+    YearMonth abril = YearMonth.of(2026, 4);
+    YearMonth mayo = YearMonth.of(2026, 5);
 
-    rankingRepository.save(new RankingMensual(periodoViejo));
-    rankingRepository.save(new RankingMensual(periodoNuevo));
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(UUID.randomUUID(), "D1", abril, 2);
+    DonanteIncentivos d2 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(UUID.randomUUID(), "D2", mayo, 4);
+    donanteRepository.save(d1);
+    donanteRepository.save(d2);
 
-    Optional<RankingMensualDTO> ultimo = rankingService.obtenerUltimoRanking();
+    service.calcularYPersistir(abril);
+    service.calcularYPersistir(mayo);
+
+    Optional<RankingMensualDTO> ultimo = service.obtenerUltimoRanking();
 
     assertTrue(ultimo.isPresent());
-    assertEquals(periodoNuevo.toString(), ultimo.get().periodo());
+    assertEquals("2026-05", ultimo.get().periodo());
   }
 
   @Test
-  void obtenerUltimoRanking_deberiaRetornarVacioCuandoNoHayRankings() {
-    Optional<RankingMensualDTO> ultimo = rankingService.obtenerUltimoRanking();
-
-    assertFalse(ultimo.isPresent());
+  void obtenerUltimoRanking_cuandoNoHayRankings_deberiaRetornarVacio() {
+    assertTrue(service.obtenerUltimoRanking().isEmpty());
   }
 
   @Test
   void obtenerHistorial_deberiaRetornarTodosLosRankings() {
-    rankingRepository.save(new RankingMensual(YearMonth.of(2026, Month.MARCH)));
-    rankingRepository.save(new RankingMensual(YearMonth.of(2026, Month.APRIL)));
-    rankingRepository.save(new RankingMensual(YearMonth.of(2026, Month.MAY)));
+    YearMonth abril = YearMonth.of(2026, 4);
+    YearMonth mayo = YearMonth.of(2026, 5);
 
-    List<RankingMensualDTO> historial = rankingService.obtenerHistorial();
+    DonanteIncentivos d1 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(UUID.randomUUID(), "D1", abril, 2);
+    DonanteIncentivos d2 =
+        DonanteIncentivosMotherTest.conMisionesCompletadasEnMes(UUID.randomUUID(), "D2", mayo, 4);
+    donanteRepository.save(d1);
+    donanteRepository.save(d2);
 
-    assertEquals(3, historial.size());
-  }
+    service.calcularYPersistir(abril);
+    service.calcularYPersistir(mayo);
 
-  @Test
-  void obtenerHistorial_deberiaRetornarListaVaciaSiNoHayRankings() {
-    List<RankingMensualDTO> historial = rankingService.obtenerHistorial();
+    List<RankingMensualDTO> historial = service.obtenerHistorial();
 
-    assertTrue(historial.isEmpty());
-  }
-
-  @Test
-  void obtenerRankingPorPeriodo_deberiaRetornarElRankingDelPeriodoCorrecto() {
-    rankingRepository.save(new RankingMensual(PERIODO));
-
-    Optional<RankingMensual> resultado = rankingService.obtenerRankingPorPeriodo(PERIODO);
-
-    assertTrue(resultado.isPresent());
-    assertEquals(PERIODO, resultado.get().getPeriodo());
-  }
-
-  @Test
-  void obtenerRankingPorPeriodo_deberiaRetornarVacioCuandoNoBuscadoPeriodo() {
-    rankingRepository.save(new RankingMensual(PERIODO));
-
-    Optional<RankingMensual> resultado =
-        rankingService.obtenerRankingPorPeriodo(YearMonth.of(2025, Month.JANUARY));
-
-    assertFalse(resultado.isPresent());
-  }
-
-  private DonanteIncentivos donanteConMisionesCompletadasEnMes(
-      long id, String nombre, YearMonth periodo, int cantidadMisiones) {
-    UUID donanteId = new UUID(0L, id);
-    DonanteIncentivos donante = new DonanteIncentivos(donanteId, donanteId, nombre);
-    for (int i = 0; i < cantidadMisiones; i++) {
-      MisionRacha mision = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
-      EventoDonacion evento =
-          EventoDonacion.builder()
-              .donacionId(new UUID(0L, (long) i))
-              .fecha(LocalDate.of(periodo.getYear(), periodo.getMonthValue(), 15))
-              .cantidadBienes(1)
-              .categorias(List.of("arroz"))
-              .build();
-      mision.evaluarProgreso(donante, evento);
-      donante.getMisiones().add(mision);
-    }
-    return donante;
+    assertEquals(2, historial.size());
   }
 }

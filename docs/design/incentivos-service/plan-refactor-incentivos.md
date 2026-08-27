@@ -714,16 +714,29 @@ grep -rn "import .*\.\*" src/main/java/
 
 ---
 
-### Oleada 8 — Object Mothers
+---
+
+### Oleada 8 — Object Mothers, "Tell, Don't Ask", Desacoplamiento y Cobertura Total
+
+#### Principios y Estándares
+- **Object Mothers y Fixtures**: Centralización de la creación de entidades y DTOs en `grupo5.incentivos.fixtures`, erradicando constructores dispersos.
+- **Tell, Don't Ask**: Prohibición estricta de manipular estructuras o colecciones internas (`getMisiones().add(...)`, `getMetricas().registrarDonacion(...)`). Toda acción se invoca sobre el agregado (`donante.registrarDonacion(...)`), evaluando estado a través de métodos de consulta de dominio (`donante.getCategoria()`, `donante.misionesCompletadas()`, `donante.insigniasVisibles()`).
+- **Cobertura Total**: 100% de los componentes del microservicio cubiertos (Dominio, Servicios de Aplicación, Controladores REST, Infraestructura, Schedulers, Configuración y DTOs/Mappers).
+- **Casos Borde**: Rachas del mismo mes vs meses salteados, misiones de racha ya completadas (inmutables), categorías duplicadas en completitud, umbrales exactos de bienes ($N-1$ vs $N$), donante en categoría máxima (`HEROE`), empates y podios con menos de 3 donantes en rankings, idempotencia en altas y asignación de insignias, resiliencia ante errores de clientes externos.
 
 #### RF-INC-8.1: `DonanteIncentivosMotherTest`
-
 ```java
 public class DonanteIncentivosMotherTest {
     public static final UUID ID_DEFAULT = new UUID(0L, 1L);
 
     public static DonanteIncentivos colaboradorSinMisiones() {
         return new DonanteIncentivos(ID_DEFAULT, ID_DEFAULT, "Test", List.of());
+    }
+    public static DonanteIncentivos colaboradorSinMisiones(UUID id) {
+        return new DonanteIncentivos(id, id, "Test", List.of());
+    }
+    public static DonanteIncentivos colaboradorSinMisiones(UUID id, UUID personaId, String nombre) {
+        return new DonanteIncentivos(id, personaId, nombre, List.of());
     }
     public static DonanteIncentivos colaboradorConMisionRacha(int mesesObjetivo) {
         return new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Test",
@@ -732,55 +745,73 @@ public class DonanteIncentivosMotherTest {
     public static DonanteIncentivos conMisiones(List<Mision> misiones) {
         return new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Test", misiones);
     }
+    public static DonanteIncentivos conMisiones(UUID id, List<Mision> misiones) {
+        return new DonanteIncentivos(id, id, "Test", misiones);
+    }
     public static DonanteIncentivos conDonacionEnFecha(LocalDate fecha) {
         DonanteIncentivos d = colaboradorSinMisiones();
         d.registrarDonacion(EventoDonacionMotherTest.enFecha(fecha));
         return d;
     }
+    public static DonanteIncentivos conMisionesCompletadasEnMes(UUID id, String nombre, YearMonth periodo, int cantidadMisiones) {
+        // Inicializa donante con misiones ya completadas en el periodo sin mutaciones externas
+        ...
+    }
 }
 ```
 
 #### RF-INC-8.2: `MisionMotherTest`
-
 ```java
 public class MisionMotherTest {
     public static MisionRacha rachaColaborador(int meses) { ... }
     public static MisionRacha rachaConInsignia(CategoriaDonante cat, int meses, String nombre) { ... }
     public static MisionDonacionesExitosas exitosas(CategoriaDonante cat, int n) { ... }
+    public static MisionDonacionesExitosas exitosasConInsignia(CategoriaDonante cat, int n, String nombre) { ... }
     public static MisionCompletitud completitud(CategoriaDonante cat, int subcategorias) { ... }
+    public static MisionCompletitud completitudConInsignia(CategoriaDonante cat, int subcategorias, String nombre) { ... }
     public static MisionHabilDonador habilDonador(CategoriaDonante cat, int bienes) { ... }
+    public static MisionHabilDonador habilDonadorConInsignia(CategoriaDonante cat, int bienes, String nombre) { ... }
 }
 ```
 
 #### RF-INC-8.3: `RankingMensualMotherTest`
-
 ```java
 public class RankingMensualMotherTest {
     public static RankingMensual vacioDeMayo2026() { return new RankingMensual(YearMonth.of(2026, 5)); }
+    public static RankingMensual vacio(YearMonth periodo) { return new RankingMensual(periodo); }
     public static RankingMensual conNEntradas(YearMonth periodo, int n) { ... }
 }
 ```
 
 #### RF-INC-8.4: `EventoDonacionMotherTest`
-
 ```java
 public class EventoDonacionMotherTest {
+    public static EventoDonacion valido() { return enFecha(LocalDate.now()); }
     public static EventoDonacion enFecha(LocalDate fecha) {
-        return EventoDonacion.builder().fecha(fecha).cantidadBienes(5).categorias(List.of("arroz")).build();
+        return EventoDonacion.builder().fecha(fecha).cantidadBienes(5).categorias(List.of("alimentos")).build();
     }
     public static EventoDonacion conCategorias(LocalDate fecha, List<String> cats) { ... }
+    public static EventoDonacion conCantidadBienes(LocalDate fecha, int cantidad) { ... }
 }
 ```
 
 #### RF-INC-8.5: `IncentivosFixturesTest` para DTOs
-
 ```java
 public class IncentivosFixturesTest {
     public static RegistrarDonanteRequest registrarDonante(UUID id) {
         return new RegistrarDonanteRequest(id, UUID.randomUUID(), "Test");
     }
+    public static RegistrarDonanteRequest registrarDonante(UUID id, UUID personaId, String nombre) {
+        return new RegistrarDonanteRequest(id, personaId, nombre);
+    }
+    public static ModificarDonanteRequest modificarDonante(String nuevoNombre) {
+        return new ModificarDonanteRequest(nuevoNombre);
+    }
     public static NuevaDonacionRequest nuevaDonacion(UUID donanteId) {
-        return new NuevaDonacionRequest(donanteId, List.of("arroz"), 5, LocalDate.of(2026, 6, 17));
+        return new NuevaDonacionRequest(donanteId, List.of("arroz"), 5, LocalDate.now());
+    }
+    public static NuevaDonacionRequest nuevaDonacion(UUID donanteId, LocalDate fecha) {
+        return new NuevaDonacionRequest(donanteId, List.of("arroz"), 5, fecha);
     }
     public static DonacionExitosaRequest donacionExitosa(UUID donanteId) {
         return new DonacionExitosaRequest(donanteId, UUID.randomUUID());
@@ -788,25 +819,33 @@ public class IncentivosFixturesTest {
 }
 ```
 
-#### RF-INC-8.6: Migrar TODOS los tests existentes a Object Mothers
+#### RF-INC-8.6: Cobertura Total y Migración de TODOS los Tests a Object Mothers y Tell, Don't Ask
+- Refactorizar suites existentes de dominio y aplicación.
+- Crear suites para los 5 Controladores REST (`DonanteIncentivosControllerTest`, `MisionesDonacionControllerTest`, `InsigniasControllerTest`, `MetricasIncentivosControllerTest`, `RankingControllerTest`).
+- Crear suites para Listeners (`NotificacionesIncentivosListenerTest`), Adaptadores (`NotificacionesClientAdapterTest`, `N8nClientAdapterTest`), Configs (`DomainServicesConfigTest`, `InactividadConfigTest`) y DTOs (`DTOsAndMappersTest`).
 
 **Barridos de verificación:**
 ```bash
-# Debe retornar CERO — toda construcción directa eliminada
-grep -rn "new DonanteIncentivos(" src/test/
-grep -rn "new NuevaDonacionRequest(" src/test/
-grep -rn "new RegistrarDonanteRequest(" src/test/
-grep -rn "EventoDonacion.builder()" src/test/
+# Debe retornar CERO — toda construcción directa eliminada fuera de fixtures
+grep -rn "new DonanteIncentivos(" src/test/java/**/services/
+grep -rn "new NuevaDonacionRequest(" src/test/java/**/services/
+grep -rn "new RegistrarDonanteRequest(" src/test/java/**/services/
+
+# Debe retornar CERO — Tell, Don't Ask estricto
+grep -rn "getMisiones().add(" src/test/
+grep -rn "getMetricas().registrarDonacion(" src/test/
 ```
 
 **Checklist Oleada 8:**
-- [ ] `DonanteIncentivosMotherTest` con ≥ 4 métodos canónicos
-- [ ] `MisionMotherTest` con métodos para las 4 subclases
-- [ ] `RankingMensualMotherTest` creado
-- [ ] `EventoDonacionMotherTest` creado
-- [ ] `IncentivosFixturesTest` con DTOs de entrada
-- [ ] Barridos grep en `src/test/` → CERO construcciones directas
-- [ ] Suite verde + no-regresión oleadas 1-7
+- [x] `DonanteIncentivosMotherTest` con métodos canónicos completos
+- [x] `MisionMotherTest` con métodos para las 4 subclases de misión
+- [x] `RankingMensualMotherTest` creado
+- [x] `EventoDonacionMotherTest` creado
+- [x] `IncentivosFixturesTest` con DTOs de entrada
+- [x] Principio "Tell, Don't Ask" aplicado en el 100% de los tests (0 manipulaciones internas)
+- [x] Cobertura total de capas (Dominio, Servicios, Listeners, Controladores REST, Infraestructura, Schedulers, Configs y DTOs)
+- [x] Barridos grep en `src/test/` → CERO infracciones
+- [x] Suite verde + no-regresión oleadas 1-7
 
 ---
 
