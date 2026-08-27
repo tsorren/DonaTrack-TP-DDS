@@ -96,29 +96,42 @@ public class RutasService implements IRutasService {
 
     Ruta ruta = buscarRuta(id);
 
+    switch (request.estado()) {
+      case EN_TRASLADO -> procesarRutaEnTraslado(ruta, request);
+      case COMPLETADA -> procesarRutaCompletada(ruta, request);
+      case PENDIENTE -> throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
+      default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+
+    return rutaMapper.toResponseDTO(ruta);
+  }
+
+  private void procesarRutaEnTraslado(Ruta ruta, CambioEstadoRutaRequestDTO request) {
     UUID choferIdToUse = request.choferId() != null ? request.choferId() : ruta.getChoferId();
     Chofer chofer = buscarChofer(choferIdToUse);
     Camion camion = buscarCamion(ruta.getCamionId());
+    List<Entrega> entregas = buscarEntregasDeRuta(ruta);
 
-    List<Entrega> entregas = null;
-    if (request.estado() == EstadoRuta.EN_TRASLADO) {
-      entregas = buscarEntregasDeRuta(ruta);
-    }
-
-    GestorDeRutas.cambiarEstado(ruta, chofer, camion, entregas, request.estado(), request.actor());
+    GestorDeRutas.cambiarEstado(
+        ruta, chofer, camion, entregas, EstadoRuta.EN_TRASLADO, request.actor());
 
     rutasRepository.save(ruta);
     choferesRepository.save(chofer);
     camionRepository.save(camion);
-    if (entregas != null) {
-      entregas.forEach(entregasRepository::save);
-    }
+    entregas.forEach(entregasRepository::save);
 
-    if (request.estado() == EstadoRuta.EN_TRASLADO) {
-      comunicadorEventos.comunicarRutaIniciada(ruta, camion, entregas);
-    }
+    comunicadorEventos.comunicarRutaIniciada(ruta, camion, entregas);
+  }
 
-    return rutaMapper.toResponseDTO(ruta);
+  private void procesarRutaCompletada(Ruta ruta, CambioEstadoRutaRequestDTO request) {
+    Chofer chofer = buscarChofer(ruta.getChoferId());
+    Camion camion = buscarCamion(ruta.getCamionId());
+
+    GestorDeRutas.cambiarEstado(ruta, chofer, camion, null, EstadoRuta.COMPLETADA, request.actor());
+
+    rutasRepository.save(ruta);
+    choferesRepository.save(chofer);
+    camionRepository.save(camion);
   }
 
   private Ruta buscarRuta(UUID id) {

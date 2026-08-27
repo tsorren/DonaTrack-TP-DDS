@@ -76,38 +76,23 @@ public class EntregasService implements IEntregasService {
     }
 
     Entrega entrega = buscarEntrega(id);
-    SolicitudTransicionEntrega solicitud;
+
+    // Crear solicitud con mapper
+    // Llamar gestor
+    // Persistir
+    // Comunicar eventos (HAY QUE GENERAR LOS EVENTOS EN EL DOMINIO)
 
     switch (request.estado()) {
-      case ENTREGADA -> {
-        var dto = new ConfirmarRecepcionRequestDTO(request.actor());
-        solicitud = entregaMapper.toSolicitud(entrega, dto);
-      }
-      case NO_RECIBIDA -> {
-        var dto =
-            new ReportarNoRecepcionRequestDTO(
-                request.justificacion(), request.actor(), request.replanificable());
-        solicitud = entregaMapper.toSolicitud(entrega, dto);
-      }
-      case PENDIENTE -> {
-        var dto = new RegresarAlDepositoRequestDTO(request.actor());
-        solicitud = entregaMapper.toSolicitud(entrega, dto);
-      }
+      case ENTREGADA -> procesarEntregaEntregada(request.actor(), entrega);
+      case NO_RECIBIDA -> procesarEntregaNoRecibida(
+          request.actor(), entrega, request.justificacion(), request.replanificable());
+      case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
       case EN_TRASLADO, REVISION -> throw new ValidationException(
           ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 
-    GestorDeEntregas.cambiarEstado(solicitud);
     entregasRepository.save(entrega);
-
-    if (solicitud instanceof ConfirmacionRecepcion) {
-      Camion camion = buscarCamionDeEntrega(entrega);
-      comunicadorEventos.comunicarEntregaExitosa(entrega, camion);
-    } else if (solicitud instanceof NoRecepcion noRecepcion) {
-      comunicadorEventos.comunicarEntregaFallida(noRecepcion);
-    }
-
     return entregaMapper.toResponseDTO(entrega);
   }
 
@@ -116,6 +101,31 @@ public class EntregasService implements IEntregasService {
     return buscarEntrega(id).getHistorialEstado().stream()
         .map(entregaMapper::toCambioEstadoResponseDTO)
         .toList();
+  }
+
+  private void procesarEntregaEntregada(String actor, Entrega entrega) {
+    SolicitudTransicionEntrega solicitud = new ConfirmacionRecepcion(entrega, actor, null);
+
+    GestorDeEntregas.cambiarEstado(solicitud);
+
+    Camion camion = buscarCamionDeEntrega(entrega);
+    comunicadorEventos.comunicarEntregaExitosa(entrega, camion);
+  }
+
+  private void procesarEntregaNoRecibida(
+      String actor, Entrega entrega, String justificacion, Boolean replanificable) {
+
+    boolean esReplanificable = replanificable == null || replanificable;
+    NoRecepcion solicitud = new NoRecepcion(entrega, actor, justificacion, esReplanificable);
+
+    GestorDeEntregas.cambiarEstado(solicitud);
+
+    comunicadorEventos.comunicarEntregaFallida(solicitud);
+  }
+
+  private void procesarEntregaPendiente(String actor, Entrega entrega) {
+    RegresoDeposito solicitud = new RegresoDeposito(entrega, actor);
+    GestorDeEntregas.cambiarEstado(solicitud);
   }
 
   private Entrega buscarEntrega(UUID id) {
