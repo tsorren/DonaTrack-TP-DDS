@@ -1,9 +1,7 @@
 package grupo5.logistica.config;
 
-import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
-import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskDecorator;
@@ -16,7 +14,7 @@ import org.springframework.web.client.RestTemplate;
 public class AsyncConfig {
 
   @Bean(name = "proveedorExternoExecutor")
-  public Executor proveedorExternoExecutor() {
+  public Executor proveedorExternoExecutor(TaskDecorator taskDecorator) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(2);
     executor.setMaxPoolSize(5);
@@ -27,28 +25,11 @@ public class AsyncConfig {
     // planificacion a cambio de frenar temporalmente al scheduler, lo cual es aceptable porque
     // el scheduler corre en horarios de baja carga y la perdida silenciosa de lotes seria peor.
     executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-    // TaskDecorator: copia el contexto MDC del hilo del scheduler al hilo async de
-    // ProveedorExternoPlanificacionSimulado, para que el traceId de la solicitud HTTP que
-    // disparo la planificacion no se pierda en los logs del hilo de ruteo.
-    executor.setTaskDecorator(mdcPropagatingDecorator());
+    // TaskDecorator: inyectado desde common-lib (MdcTaskDecorator) para que el traceId no se
+    // pierda en los logs del hilo de ruteo asincrono.
+    executor.setTaskDecorator(taskDecorator);
     executor.initialize();
     return executor;
-  }
-
-  private static TaskDecorator mdcPropagatingDecorator() {
-    return runnable -> {
-      Map<String, String> mdcContext = MDC.getCopyOfContextMap();
-      return () -> {
-        try {
-          if (mdcContext != null) {
-            MDC.setContextMap(mdcContext);
-          }
-          runnable.run();
-        } finally {
-          MDC.clear();
-        }
-      };
-    };
   }
 
   @Bean
