@@ -43,7 +43,6 @@ package DONANTE {
     - insignias: List<InsigniaGanada>
     - historialCategorias: List<CambioCategoria>
     - metricas: Metricas
-    - domainEvents: List<EventoDonanteIncentivos>
     --
     + DonanteIncentivos(id: UUID, idPersona: UUID, nombre: String, misiones: List<Mision>)
     + DonanteIncentivos(id: UUID, idPersona: UUID, nombre: String, categoria: CategoriaDonante, fechaRegistro: LocalDate, historialCategorias: List<CambioCategoria>, misiones: List<Mision>, insignias: List<InsigniaGanada>, metricas: Metricas)
@@ -51,17 +50,16 @@ package DONANTE {
     + verificarRachas(mesActual: YearMonth): void
     + misionesCompletadas(): int
     + tuvoActividadEnMes(mes: YearMonth): boolean
+    + donacionesEnMes(mes: YearMonth): long
+    + fechaUltimaActividad(): LocalDate
     + donacionesPorPeriodo(): Map<YearMonth, Long>
     + ascender(): void
     + otorgarInsignia(plantilla: Insignia): void
     + otorgarInsignia(plantilla: Insignia, fechaObtencion: LocalDate): void
     + insigniasVisibles(): List<InsigniaGanada>
     + configurarVisibilidadInsignia(nombre: String, visible: boolean): void
-    + getDomainEvents(): List<EventoDonanteIncentivos>
-    + clearDomainEvents(): void
     - evaluarMisiones(evento: EventoDonacion): void
     - siguienteCategoria(): CategoriaDonante
-    - registrarEvento(evento: EventoDonanteIncentivos): void
   }
 
   DonanteIncentivos "1" *-- "many" CambioCategoria
@@ -138,6 +136,7 @@ package MISIONES {
     + reiniciarProgreso(): void
     + getPorcentajeProgreso(): int
     + getDistanciaAlObjetivo(): int
+    + verificarVigencia(mesActual: YearMonth): void
     # completar(donante: DonanteIncentivos, fecha: LocalDate): void
     # {abstract} calcularNuevoProgreso(donante: DonanteIncentivos, evento: EventoDonacion): Integer
   }
@@ -151,7 +150,7 @@ package MISIONES {
   }
 
   class MisionCompletitud <<entity>> {
-    - categoriasdonadas: Set<String>
+    - categoriasDonadas: Set<String>
     --
     + MisionCompletitud(categoria: CategoriaDonante, subcategoriasRequeridas: int)
     + evaluarProgreso(donante: DonanteIncentivos, evento: EventoDonacion): void
@@ -188,6 +187,14 @@ package MISIONES {
 
 ' ==================== DOMAIN EVENTS ====================
 package EVENTOS {
+  abstract class "AgregadoConEventos<E>" <<aggregate_root>> {
+    - domainEvents: List<E>
+    --
+    + registrarEvento(evento: E): void
+    + getDomainEvents(): List<E>
+    + clearDomainEvents(): void
+  }
+
   abstract class EventoDonanteIncentivos <<entity>> {
     - id: UUID
     - timestamp: LocalDateTime
@@ -216,6 +223,7 @@ package EVENTOS {
 
   EventoDonanteIncentivos <|-- AscensoDonante
   EventoDonanteIncentivos <|-- MisionCompletada
+  "AgregadoConEventos<E>" <|-- DonanteIncentivos
   DonanteIncentivos ..> EventoDonanteIncentivos : registra
 }
 

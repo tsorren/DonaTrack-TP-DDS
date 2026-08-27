@@ -8,9 +8,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-public final class IncentivosFixturesTest {
+public final class IncentivosFixtures {
 
-  private IncentivosFixturesTest() {}
+  private IncentivosFixtures() {}
 
   public static RegistrarDonanteRequest registrarDonante(UUID id) {
     return new RegistrarDonanteRequest(id, UUID.randomUUID(), "Test");

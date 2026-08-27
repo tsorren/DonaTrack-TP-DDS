@@ -19,6 +19,7 @@ public class MisionRacha extends Mision {
         mesesConsecutivosObjetivo);
   }
 
+  @Override
   public void verificarVigencia(YearMonth mesActual) {
     if (this.isCompletada() || this.ultimoMesDonado == null) {
       return;

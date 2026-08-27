@@ -7,10 +7,10 @@ import static org.mockito.Mockito.*;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.incentivos.dto.MisionDTO;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
-import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
-import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
-import grupo5.incentivos.fixtures.IncentivosFixturesTest;
-import grupo5.incentivos.fixtures.MisionMotherTest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
+import grupo5.incentivos.fixtures.EventoDonacionMother;
+import grupo5.incentivos.fixtures.IncentivosFixtures;
+import grupo5.incentivos.fixtures.MisionMother;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
@@ -49,11 +49,11 @@ class MisionesDonacionServiceTest {
   @Test
   void procesarDonacion_deberiaRegistrarElEventoEnLasMetricas() {
     UUID donanteId = UUID.randomUUID();
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
     repository.save(donante);
 
     NuevaDonacionRequest request =
-        IncentivosFixturesTest.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
 
     service.procesarDonacion(request);
 
@@ -64,7 +64,7 @@ class MisionesDonacionServiceTest {
   @Test
   void procesarDonacion_cuandoDonanteNoExiste_deberiaLanzarExcepcion() {
     UUID donanteId = UUID.randomUUID();
-    NuevaDonacionRequest request = IncentivosFixturesTest.nuevaDonacion(donanteId);
+    NuevaDonacionRequest request = IncentivosFixtures.nuevaDonacion(donanteId);
 
     assertThrows(BusinessStateException.class, () -> service.procesarDonacion(request));
   }
@@ -72,12 +72,12 @@ class MisionesDonacionServiceTest {
   @Test
   void procesarDonacion_cuandoCompletaCategoria_deberiaPublicarAscensoDonante() {
     UUID donanteId = UUID.randomUUID();
-    MisionRacha racha = MisionMotherTest.rachaColaborador(1);
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(racha));
+    MisionRacha racha = MisionMother.rachaColaborador(1);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(racha));
     repository.save(donante);
 
     NuevaDonacionRequest request =
-        IncentivosFixturesTest.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
 
     service.procesarDonacion(request);
 
@@ -93,12 +93,12 @@ class MisionesDonacionServiceTest {
   void procesarDonacion_cuandoCompletaMisionConInsignia_deberiaPublicarMisionCompletada() {
     UUID donanteId = UUID.randomUUID();
     MisionRacha racha =
-        MisionMotherTest.rachaConInsignia(CategoriaDonante.COLABORADOR, 1, "Racha de Bronce");
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(racha));
+        MisionMother.rachaConInsignia(CategoriaDonante.COLABORADOR, 1, "Racha de Bronce");
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(racha));
     repository.save(donante);
 
     NuevaDonacionRequest request =
-        IncentivosFixturesTest.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
 
     service.procesarDonacion(request);
 
@@ -118,12 +118,12 @@ class MisionesDonacionServiceTest {
   @Test
   void procesarDonacion_cuandoNoCompletaMision_noDeberiaPublicarEventos() {
     UUID donanteId = UUID.randomUUID();
-    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(racha));
+    MisionRacha racha = MisionMother.rachaColaborador(3);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(racha));
     repository.save(donante);
 
     NuevaDonacionRequest request =
-        IncentivosFixturesTest.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
 
     service.procesarDonacion(request);
 
@@ -133,12 +133,11 @@ class MisionesDonacionServiceTest {
   @Test
   void procesarDonacionExitosa_cuandoCompletaMision_deberiaPublicarMisionCompletada() {
     UUID donanteId = UUID.randomUUID();
-    MisionDonacionesExitosas exitosas = MisionMotherTest.exitosas(CategoriaDonante.COLABORADOR, 1);
-    DonanteIncentivos donante =
-        DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(exitosas));
+    MisionDonacionesExitosas exitosas = MisionMother.exitosas(CategoriaDonante.COLABORADOR, 1);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(exitosas));
     repository.save(donante);
 
-    service.procesarDonacionExitosa(IncentivosFixturesTest.donacionExitosa(donanteId));
+    service.procesarDonacionExitosa(IncentivosFixtures.donacionExitosa(donanteId));
 
     ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
     verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
@@ -151,11 +150,11 @@ class MisionesDonacionServiceTest {
   @Test
   void procesarDonacionExitosa_cuandoNoTieneMisionesDeExitosas_noDeberiaPublicarEventos() {
     UUID donanteId = UUID.randomUUID();
-    MisionRacha racha = MisionMotherTest.rachaColaborador(3);
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(racha));
+    MisionRacha racha = MisionMother.rachaColaborador(3);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(racha));
     repository.save(donante);
 
-    service.procesarDonacionExitosa(IncentivosFixturesTest.donacionExitosa(donanteId));
+    service.procesarDonacionExitosa(IncentivosFixtures.donacionExitosa(donanteId));
 
     verify(eventPublisher, never()).publishEvent(any());
   }
@@ -163,8 +162,8 @@ class MisionesDonacionServiceTest {
   @Test
   void obtenerMisiones_deberiaRetornarListaDeMisionesDelDonante() {
     UUID donanteId = UUID.randomUUID();
-    Mision mision = MisionMotherTest.rachaColaborador(3);
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(mision));
+    Mision mision = MisionMother.rachaColaborador(3);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(mision));
     repository.save(donante);
 
     List<MisionDTO> list = service.obtenerMisiones(donanteId);
@@ -177,14 +176,14 @@ class MisionesDonacionServiceTest {
   void verificarRachasVencidas_deberiaProcesarTodosLosDonantesDelRepositorio() {
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
-    MisionRacha r1 = MisionMotherTest.rachaColaborador(3);
-    MisionRacha r2 = MisionMotherTest.rachaColaborador(3);
+    MisionRacha r1 = MisionMother.rachaColaborador(3);
+    MisionRacha r2 = MisionMother.rachaColaborador(3);
 
-    DonanteIncentivos d1 = DonanteIncentivosMotherTest.conMisiones(id1, List.of(r1));
-    d1.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 1, 15));
+    DonanteIncentivos d1 = DonanteIncentivosMother.conMisiones(id1, List.of(r1));
+    d1.registrarDonacion(EventoDonacionMother.enFecha(2026, 1, 15));
 
-    DonanteIncentivos d2 = DonanteIncentivosMotherTest.conMisiones(id2, List.of(r2));
-    d2.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 3, 15));
+    DonanteIncentivos d2 = DonanteIncentivosMother.conMisiones(id2, List.of(r2));
+    d2.registrarDonacion(EventoDonacionMother.enFecha(2026, 3, 15));
 
     repository.save(d1);
     repository.save(d2);

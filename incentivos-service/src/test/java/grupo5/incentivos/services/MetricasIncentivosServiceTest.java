@@ -7,9 +7,9 @@ import static org.mockito.Mockito.when;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.incentivos.dto.MetricasDonanteDTO;
 import grupo5.incentivos.dto.ResumenSistemaDTO;
-import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
-import grupo5.incentivos.fixtures.EventoDonacionMotherTest;
-import grupo5.incentivos.fixtures.MisionMotherTest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
+import grupo5.incentivos.fixtures.EventoDonacionMother;
+import grupo5.incentivos.fixtures.MisionMother;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
@@ -41,9 +41,9 @@ class MetricasIncentivosServiceTest {
   @Test
   void obtenerMetricas_cuandoDonanteTienePosicionEnRanking_deberiaIncluirlaEnDTO() {
     UUID donanteId = UUID.randomUUID();
-    MisionDonacionesExitosas mision = MisionMotherTest.exitosas(CategoriaDonante.COLABORADOR, 1);
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.conMisiones(donanteId, List.of(mision));
-    donante.registrarDonacion(EventoDonacionMotherTest.enFecha(LocalDate.now()));
+    MisionDonacionesExitosas mision = MisionMother.exitosas(CategoriaDonante.COLABORADOR, 1);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(mision));
+    donante.registrarDonacion(EventoDonacionMother.enFecha(LocalDate.now()));
     donante.registrarDonacionExitosa(new UUID(0L, 1L));
     repository.save(donante);
 
@@ -59,7 +59,7 @@ class MetricasIncentivosServiceTest {
   @Test
   void obtenerMetricas_cuandoDonanteNoTieneRanking_deberiaTenerPosicionNula() {
     UUID donanteId = UUID.randomUUID();
-    DonanteIncentivos donante = DonanteIncentivosMotherTest.colaboradorSinMisiones(donanteId);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
     repository.save(donante);
 
     when(rankingService.obtenerPosicionDonante(any())).thenReturn(Optional.empty());
@@ -80,10 +80,10 @@ class MetricasIncentivosServiceTest {
   void obtenerResumenSistema_deberiaCalcularTotalesGlobales() {
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
-    DonanteIncentivos d1 = DonanteIncentivosMotherTest.colaboradorSinMisiones(id1);
-    DonanteIncentivos d2 = DonanteIncentivosMotherTest.colaboradorSinMisiones(id2);
-    d1.registrarDonacion(EventoDonacionMotherTest.enFecha(LocalDate.now()));
-    d2.registrarDonacion(EventoDonacionMotherTest.enFecha(LocalDate.now()));
+    DonanteIncentivos d1 = DonanteIncentivosMother.colaboradorSinMisiones(id1);
+    DonanteIncentivos d2 = DonanteIncentivosMother.colaboradorSinMisiones(id2);
+    d1.registrarDonacion(EventoDonacionMother.enFecha(LocalDate.now()));
+    d2.registrarDonacion(EventoDonacionMother.enFecha(LocalDate.now()));
     repository.save(d1);
     repository.save(d2);
 

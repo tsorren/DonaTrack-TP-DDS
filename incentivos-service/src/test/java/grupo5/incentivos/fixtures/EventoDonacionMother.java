@@ -4,9 +4,9 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.util.List;
 
-public final class EventoDonacionMotherTest {
+public final class EventoDonacionMother {
 
-  private EventoDonacionMotherTest() {}
+  private EventoDonacionMother() {}
 
   public static EventoDonacion valido() {
     return enFecha(LocalDate.now());

@@ -1,9 +1,9 @@
 package grupo5.incentivos.models.entities.donante;
 
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
 import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
 import grupo5.incentivos.models.entities.donante.eventos.EventoDonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
@@ -11,7 +11,6 @@ import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
-import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.misiones.factory.MisionFactory;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -25,7 +24,7 @@ import java.util.function.Consumer;
 import lombok.Getter;
 
 @Getter
-public class DonanteIncentivos implements AggregateRoot {
+public class DonanteIncentivos extends AgregadoConEventos<EventoDonanteIncentivos> {
 
   private final UUID id;
   private final UUID idPersona;
@@ -36,8 +35,6 @@ public class DonanteIncentivos implements AggregateRoot {
   private List<Mision> misiones;
   private List<InsigniaGanada> insignias;
   private Metricas metricas;
-
-  private final transient List<EventoDonanteIncentivos> domainEvents = new ArrayList<>();
 
   public DonanteIncentivos(
       UUID idDonante,
@@ -144,18 +141,6 @@ public class DonanteIncentivos implements AggregateRoot {
     }
   }
 
-  private void registrarEvento(EventoDonanteIncentivos evento) {
-    this.domainEvents.add(evento);
-  }
-
-  public List<EventoDonanteIncentivos> getDomainEvents() {
-    return List.copyOf(this.domainEvents);
-  }
-
-  public void clearDomainEvents() {
-    this.domainEvents.clear();
-  }
-
   public void otorgarInsignia(Insignia insignia) {
     otorgarInsignia(insignia, LocalDate.now(ZoneId.systemDefault()));
   }
@@ -219,9 +204,8 @@ public class DonanteIncentivos implements AggregateRoot {
 
   public void verificarRachas(YearMonth mesActual) {
     this.misiones.stream()
-        .filter(m -> m instanceof MisionRacha && !m.isCompletada())
-        .map(m -> (MisionRacha) m)
-        .forEach(r -> r.verificarVigencia(mesActual));
+        .filter(m -> !m.isCompletada())
+        .forEach(m -> m.verificarVigencia(mesActual));
   }
 
   public int misionesCompletadas() {
@@ -230,6 +214,16 @@ public class DonanteIncentivos implements AggregateRoot {
 
   public boolean tuvoActividadEnMes(YearMonth mes) {
     return this.metricas.donacionesEnMes(mes) > 0;
+  }
+
+  public long donacionesEnMes(YearMonth mes) {
+    return this.metricas.donacionesEnMes(mes);
+  }
+
+  public LocalDate fechaUltimaActividad() {
+    return this.metricas.getUltimaDonacion() != null
+        ? this.metricas.getUltimaDonacion()
+        : this.fechaRegistro;
   }
 
   public Map<YearMonth, Long> donacionesPorPeriodo() {

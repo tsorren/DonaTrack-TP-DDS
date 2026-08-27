@@ -5,9 +5,9 @@ import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import java.time.YearMonth;
 import java.util.UUID;
 
-public final class RankingMensualMotherTest {
+public final class RankingMensualMother {
 
-  private RankingMensualMotherTest() {}
+  private RankingMensualMother() {}
 
   public static RankingMensual vacioDeMayo2026() {
     return new RankingMensual(YearMonth.of(2026, 5));

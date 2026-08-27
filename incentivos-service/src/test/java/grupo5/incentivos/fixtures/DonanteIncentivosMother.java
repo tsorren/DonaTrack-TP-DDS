@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-public final class DonanteIncentivosMotherTest {
+public final class DonanteIncentivosMother {
 
   public static final UUID ID_DEFAULT = new UUID(0L, 1L);
 
-  private DonanteIncentivosMotherTest() {}
+  private DonanteIncentivosMother() {}
 
   public static DonanteIncentivos colaboradorSinMisiones() {
     return new DonanteIncentivos(ID_DEFAULT, ID_DEFAULT, "Test", List.of());
@@ -51,7 +51,7 @@ public final class DonanteIncentivosMotherTest {
         UUID.randomUUID(),
         UUID.randomUUID(),
         "Test",
-        List.of(MisionMotherTest.rachaColaborador(mesesObjetivo)));
+        List.of(MisionMother.rachaColaborador(mesesObjetivo)));
   }
 
   public static DonanteIncentivos conMisiones(List<Mision> misiones) {
@@ -69,7 +69,7 @@ public final class DonanteIncentivosMotherTest {
 
   public static DonanteIncentivos conDonacionEnFecha(LocalDate fecha) {
     DonanteIncentivos d = colaboradorSinMisiones();
-    d.registrarDonacion(EventoDonacionMotherTest.enFecha(fecha));
+    d.registrarDonacion(EventoDonacionMother.enFecha(fecha));
     return d;
   }
 

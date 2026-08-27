@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import grupo5.incentivos.dto.RankingMensualDTO;
-import grupo5.incentivos.fixtures.RankingMensualMotherTest;
+import grupo5.incentivos.fixtures.RankingMensualMother;
 import grupo5.incentivos.services.IRankingService;
 import java.time.YearMonth;
 import java.util.List;
@@ -33,7 +33,7 @@ class RankingControllerTest {
 
   @Test
   void obtenerUltimoRanking_cuandoExiste_deberiaRetornarStatus200OkYBody() {
-    RankingMensualDTO dto = RankingMensualDTO.desde(RankingMensualMotherTest.vacioDeMayo2026());
+    RankingMensualDTO dto = RankingMensualDTO.desde(RankingMensualMother.vacioDeMayo2026());
 
     when(rankingService.obtenerUltimoRanking()).thenReturn(Optional.of(dto));
 
@@ -56,7 +56,7 @@ class RankingControllerTest {
   @Test
   void obtenerHistorial_deberiaRetornarStatus200OkYLista() {
     List<RankingMensualDTO> historial =
-        List.of(RankingMensualDTO.desde(RankingMensualMotherTest.vacioDeMayo2026()));
+        List.of(RankingMensualDTO.desde(RankingMensualMother.vacioDeMayo2026()));
 
     when(rankingService.obtenerHistorial()).thenReturn(historial);
 
@@ -68,7 +68,7 @@ class RankingControllerTest {
 
   @Test
   void calcularRanking_conPeriodoEspecificado_deberiaPasarElPeriodo() {
-    RankingMensualDTO dto = RankingMensualDTO.desde(RankingMensualMotherTest.vacioDeMayo2026());
+    RankingMensualDTO dto = RankingMensualDTO.desde(RankingMensualMother.vacioDeMayo2026());
 
     when(rankingService.calcularYPersistir(YearMonth.of(2026, 5))).thenReturn(dto);
 
@@ -80,7 +80,7 @@ class RankingControllerTest {
 
   @Test
   void calcularRanking_sinPeriodo_deberiaUsarMesActual() {
-    RankingMensualDTO dto = RankingMensualDTO.desde(RankingMensualMotherTest.vacioDeMayo2026());
+    RankingMensualDTO dto = RankingMensualDTO.desde(RankingMensualMother.vacioDeMayo2026());
 
     when(rankingService.calcularYPersistir(any(YearMonth.class))).thenReturn(dto);
 
