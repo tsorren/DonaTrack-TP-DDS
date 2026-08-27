@@ -16,6 +16,7 @@ import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -137,7 +138,12 @@ public class IncentivosService implements IIncentivosService {
   }
 
   public List<MisionDTO> obtenerMisiones(UUID donanteId) {
-    return obtenerDonante(donanteId).getMisiones().stream().map(MisionDTO::desde).toList();
+    return obtenerDonante(donanteId).getMisiones().stream()
+        .sorted(
+            Comparator.comparing(
+                Mision::getNumeroMision, Comparator.nullsLast(Comparator.naturalOrder())))
+        .map(MisionDTO::desde)
+        .toList();
   }
 
   public List<InsigniaDTO> obtenerInsignias(UUID donanteId) {

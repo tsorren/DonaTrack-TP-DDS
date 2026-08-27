@@ -15,12 +15,14 @@ public final class MisionFactory {
 
     // === CATEGORÍA COLABORADOR ===
     MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 3);
+    racha.setNumeroMision(1);
     racha.setInsignia(
         new Insignia(
             "Racha Inicial", "3 meses consecutivos donando", "/insignias/racha-colaborador.png"));
     misiones.add(racha);
 
     MisionCompletitud completitud = new MisionCompletitud(CategoriaDonante.COLABORADOR, 3);
+    completitud.setNumeroMision(2);
     completitud.setInsignia(
         new Insignia(
             "Explorador", "Donaciones en 3 categorías distintas", "/insignias/explorador.png"));
@@ -28,12 +30,14 @@ public final class MisionFactory {
 
     // === CATEGORÍA SOSTENEDOR ===
     MisionHabilDonador habil = new MisionHabilDonador(CategoriaDonante.SOSTENEDOR, 50);
+    habil.setNumeroMision(3);
     habil.setInsignia(
         new Insignia(
             "Gran Aporte", "Una donación con más de 50 bienes", "/insignias/gran-aporte.png"));
     misiones.add(habil);
 
     MisionRacha rachaSostenedor = new MisionRacha(CategoriaDonante.SOSTENEDOR, 6);
+    rachaSostenedor.setNumeroMision(4);
     rachaSostenedor.setInsignia(
         new Insignia("Constancia", "6 meses consecutivos donando", "/insignias/constancia.png"));
     misiones.add(rachaSostenedor);
@@ -41,6 +45,7 @@ public final class MisionFactory {
     // === CATEGORÍA TRANSFORMADOR ===
     MisionDonacionesExitosas exitosas =
         new MisionDonacionesExitosas(CategoriaDonante.TRANSFORMADOR, 10);
+    exitosas.setNumeroMision(5);
     exitosas.setInsignia(
         new Insignia(
             "Impacto Real", "10 donaciones confirmadas recibidas", "/insignias/impacto-real.png"));
@@ -48,6 +53,7 @@ public final class MisionFactory {
 
     MisionCompletitud completitudTransformador =
         new MisionCompletitud(CategoriaDonante.TRANSFORMADOR, 8);
+    completitudTransformador.setNumeroMision(6);
     completitudTransformador.setInsignia(
         new Insignia(
             "Diversidad Solidaria",

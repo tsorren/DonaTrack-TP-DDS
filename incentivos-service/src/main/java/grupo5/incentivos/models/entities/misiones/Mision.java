@@ -14,6 +14,7 @@ import lombok.Setter;
 public abstract class Mision {
 
   private final UUID id;
+  private Integer numeroMision;
   private String nombre;
   private String descripcion;
   private CategoriaDonante categoria;

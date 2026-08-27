@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -157,7 +158,9 @@ public class DonanteIncentivos implements AggregateRoot {
   public Mision getMisionActiva() {
     return this.misiones.stream()
         .filter(m -> m.getCategoria() == this.categoria && !m.isCompletada())
-        .findFirst()
+        .min(
+            Comparator.comparing(
+                Mision::getNumeroMision, Comparator.nullsLast(Comparator.naturalOrder())))
         .orElse(null);
   }
 
