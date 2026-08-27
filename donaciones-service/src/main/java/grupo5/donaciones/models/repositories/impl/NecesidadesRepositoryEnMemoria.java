@@ -6,9 +6,9 @@ import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
+@Repository
 public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Necesidad>
     implements INecesidadesRepository {
 

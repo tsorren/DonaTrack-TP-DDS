@@ -1,8 +1,6 @@
 package grupo5.logistica.services.impl;
 
-import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.choferes.CambioEstadoChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferResponseDTO;
@@ -35,10 +33,7 @@ public class ChoferService implements IChoferesService {
 
   @Override
   public List<ChoferResponseDTO> consultarTodos() {
-    return choferesRepository.findAll().stream()
-        .filter(c -> c.getEstado() != EstadoChofer.DESHABILITADO)
-        .map(choferMapper::toResponseDTO)
-        .toList();
+    return choferesRepository.findActivos().stream().map(choferMapper::toResponseDTO).toList();
   }
 
   @Override
@@ -48,19 +43,10 @@ public class ChoferService implements IChoferesService {
 
   @Override
   public ChoferResponseDTO cambiarEstado(UUID id, CambioEstadoChoferRequestDTO request) {
-    // Sin filtro de activo: el dominio valida si la transición es válida, incluyendo
-    // DESHABILITADO -> DISPONIBLE (habilitar).
     Chofer chofer =
         choferesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
-    // INICIO LOGICA DE NEGOCIO
-    switch (request.estado()) {
-      case DISPONIBLE -> chofer.habilitar();
-      case DESHABILITADO -> chofer.deshabilitar();
-      case EN_RUTA -> throw new ValidationException(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA);
-    }
-
-    // FIN LOGICA DE NEGOCIO
+    chofer.cambiarEstado(request.estado());
     choferesRepository.save(chofer);
     return choferMapper.toResponseDTO(chofer);
   }
@@ -68,7 +54,7 @@ public class ChoferService implements IChoferesService {
   @Override
   public void darDeBaja(UUID id) {
     Chofer chofer = buscarChoferActivo(id);
-    chofer.deshabilitar();
+    chofer.cambiarEstado(EstadoChofer.DESHABILITADO);
     choferesRepository.save(chofer);
   }
 

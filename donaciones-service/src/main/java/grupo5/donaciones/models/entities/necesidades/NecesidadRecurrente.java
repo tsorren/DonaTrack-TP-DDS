@@ -99,6 +99,18 @@ public class NecesidadRecurrente extends Necesidad {
     return !obtenerPeriodoActual().estaEnPeriodo(fechaActual);
   }
 
+  public boolean renovarPeriodoSiCorresponde(LocalDate fechaActual) {
+    if (!hayQueGenerarNuevo(fechaActual)) {
+      return false;
+    }
+    PeriodoNecesidad actual = obtenerPeriodoActual();
+    if (actual != null) {
+      actual.finalizo();
+    }
+    generarNuevoPeriodo();
+    return true;
+  }
+
   public void generarNuevoPeriodo() {
     LocalDate nuevaFechaFin =
         periodos.isEmpty()

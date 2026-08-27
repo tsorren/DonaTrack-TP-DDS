@@ -6,7 +6,7 @@ import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.services.impl.AlgoritmoOrdenarSimple;
+import grupo5.logistica.models.entities.planificacion.AlgoritmoOrdenadorSimple;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,11 +14,11 @@ import org.junit.jupiter.api.Test;
 
 class AlgoritmoOrdenarEntregasTest {
 
-  private AlgoritmoOrdenarSimple algoritmo;
+  private AlgoritmoOrdenadorSimple algoritmo;
 
   @BeforeEach
   void setUp() {
-    algoritmo = new AlgoritmoOrdenarSimple();
+    algoritmo = new AlgoritmoOrdenadorSimple();
   }
 
   // ===================== obtenerEntregasOrdenadas() =====================

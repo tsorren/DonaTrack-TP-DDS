@@ -5,9 +5,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.logging.TraceResponseHeaderFilter;
 import grupo5.donaciones.controllers.impl.ItemDonacionNormalizadoController;
 import grupo5.donaciones.dto.itemsNormalizados.inputs.ItemDonacionNormalizadoPatchDTO;
 import grupo5.donaciones.dto.itemsNormalizados.outputs.ItemDonacionNormalizadoOutputDTO;
@@ -38,7 +42,11 @@ class ItemDonacionNormalizadoControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .addFilters(new TraceResponseHeaderFilter())
+            .build();
     objectMapper = new ObjectMapper();
   }
 
@@ -57,7 +65,10 @@ class ItemDonacionNormalizadoControllerTest {
 
     when(service.obtenerPendientes()).thenReturn(List.of(output));
 
-    mockMvc.perform(get("/api/items-normalizados/pendientes")).andExpect(status().isOk());
+    mockMvc
+        .perform(get("/api/items-normalizados/pendientes"))
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 
   @Test
@@ -84,6 +95,22 @@ class ItemDonacionNormalizadoControllerTest {
             patch("/api/items-normalizados/{id}", randomId)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(patchInput)))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"));
+  }
+
+  @Test
+  void actualizarEstado_conEstadoNulo_deberiaRetornarBadRequest() throws Exception {
+    UUID randomId = UUID.randomUUID();
+    ItemDonacionNormalizadoPatchDTO patchInput = new ItemDonacionNormalizadoPatchDTO(null, null);
+
+    mockMvc
+        .perform(
+            patch("/api/items-normalizados/{id}", randomId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(patchInput)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
+        .andExpect(jsonPath("$.errors[0].field").value("estadoNormalizacion"));
   }
 }

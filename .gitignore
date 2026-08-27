@@ -46,3 +46,4 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/docs/rf local docs/

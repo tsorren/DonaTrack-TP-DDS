@@ -25,6 +25,10 @@ public class Ruta implements AggregateRoot {
   private final UUID choferId;
   private final UUID camionId;
   private EstadoRuta estado;
+
+  @Getter(AccessLevel.NONE)
+  private final List<CambioEstadoRuta> historialEstado;
+
   private LocalDateTime horaInicioReal;
   private LocalDateTime horaFinReal;
 
@@ -39,6 +43,7 @@ public class Ruta implements AggregateRoot {
     this.camionId = camionId;
     this.estado = EstadoRuta.PENDIENTE;
     this.entregas = new ArrayList<>();
+    this.historialEstado = new ArrayList<>();
   }
 
   public void iniciarRuta() {
@@ -46,7 +51,7 @@ public class Ruta implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoRuta.EN_TRASLADO;
+    actualizarEstado(EstadoRuta.EN_TRASLADO);
     this.horaInicioReal = LocalDateTime.now(ZoneId.of("UTC"));
     this.horaFinReal = null;
   }
@@ -56,7 +61,7 @@ public class Ruta implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoRuta.COMPLETADA;
+    actualizarEstado(EstadoRuta.COMPLETADA);
     this.horaFinReal = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
@@ -84,6 +89,17 @@ public class Ruta implements AggregateRoot {
 
   public List<UUID> getEntregaIds() {
     return obtenerEntregas();
+  }
+
+  public List<CambioEstadoRuta> getHistorialEstado() {
+    return List.copyOf(historialEstado);
+  }
+
+  private void actualizarEstado(EstadoRuta estadoNuevo) {
+    EstadoRuta estadoAnterior = this.estado;
+    this.estado = estadoNuevo;
+    this.historialEstado.add(
+        new CambioEstadoRuta(estadoAnterior, estadoNuevo, LocalDateTime.now(ZoneId.of("UTC"))));
   }
 
   private static void validarFecha(LocalDate fecha) {
