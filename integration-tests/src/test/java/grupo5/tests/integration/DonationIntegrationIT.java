@@ -1,35 +1,43 @@
 package grupo5.tests.integration;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import grupo5.tests.BaseIT;
-import io.restassured.http.ContentType;
+import grupo5.tests.builders.DonacionTestDataBuilder;
+import grupo5.tests.builders.PersonaTestDataBuilder;
+import grupo5.tests.dto.DonacionTestDTO;
+import grupo5.tests.dto.PersonaTestDTO;
+import grupo5.tests.utils.PollingUtils;
+import grupo5.tests.utils.TestIdGenerator;
+import java.util.UUID;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.notNullValue;
-
+@Tag("integration")
 class DonationIntegrationIT extends BaseIT {
 
   @Test
   void testCrearDonacion() {
     // 1. Crear persona
-    String personaId = apiCrearPersonaHumana("11112222", "Maria", "maria.gomez@example.com");
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Maria")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("maria"))
+            .build();
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
 
-    // 2. Crear donante en base a persona
-    String donanteId = apiCrearDonante(personaId);
+    // 2. Esperar replicación y crear donante
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+    UUID donanteId = donacionesClient.crearDonanteOk(personaId);
 
-    // 3. Crear donacion usando la plantilla e inyectando el id dinamico del donante
-    Map<String, Object> donacionPayload = fixture("donaciones/crear-donacion.json");
-    donacionPayload.put("idDonante", donanteId);
+    // 3. Crear donación con ítem aislado
+    DonacionTestDTO donacion =
+        DonacionTestDataBuilder.deAlimento(TestIdGenerator.uniqueItemName("arroz it"), 5)
+            .conDonante(donanteId)
+            .build();
 
-    given()
-            .contentType(ContentType.JSON)
-            .body(donacionPayload)
-            .when()
-            .post(DONACIONES_URL + "/api/donaciones")
-            .then()
-            .statusCode(201)
-            .body("id", notNullValue());
+    UUID donacionId = donacionesClient.crearDonacionOk(donacion);
+    assertNotNull(donacionId);
   }
 }
