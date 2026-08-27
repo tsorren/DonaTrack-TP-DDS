@@ -179,7 +179,7 @@ class ChoferTest {
   @Test
   void testHistorialVacioAlCrear() {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
-    assertTrue(chofer.getHistorialEstado().isEmpty());
+    assertTrue(chofer.getHistorialEstados().isEmpty());
   }
 
   // ========================= HISTORIAL: asignarARuta =========================
@@ -189,7 +189,7 @@ class ChoferTest {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     chofer.asignarARuta(UUID.randomUUID());
 
-    List<CambioEstadoChofer> historial = chofer.getHistorialEstado();
+    List<CambioEstadoChofer> historial = chofer.getHistorialEstados();
     assertEquals(1, historial.size());
     assertEquals(EstadoChofer.DISPONIBLE, historial.get(0).estadoAnterior());
     assertEquals(EstadoChofer.EN_RUTA, historial.get(0).estadoNuevo());
@@ -204,7 +204,7 @@ class ChoferTest {
     chofer.asignarARuta(UUID.randomUUID());
     chofer.completarRuta();
 
-    List<CambioEstadoChofer> historial = chofer.getHistorialEstado();
+    List<CambioEstadoChofer> historial = chofer.getHistorialEstados();
     assertEquals(2, historial.size());
     assertEquals(EstadoChofer.EN_RUTA, historial.get(1).estadoAnterior());
     assertEquals(EstadoChofer.DISPONIBLE, historial.get(1).estadoNuevo());
@@ -217,7 +217,7 @@ class ChoferTest {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     chofer.deshabilitar();
 
-    List<CambioEstadoChofer> historial = chofer.getHistorialEstado();
+    List<CambioEstadoChofer> historial = chofer.getHistorialEstados();
     assertEquals(1, historial.size());
     assertEquals(EstadoChofer.DISPONIBLE, historial.get(0).estadoAnterior());
     assertEquals(EstadoChofer.DESHABILITADO, historial.get(0).estadoNuevo());
@@ -229,7 +229,7 @@ class ChoferTest {
     chofer.deshabilitar();
     chofer.habilitar();
 
-    List<CambioEstadoChofer> historial = chofer.getHistorialEstado();
+    List<CambioEstadoChofer> historial = chofer.getHistorialEstados();
     assertEquals(2, historial.size());
     assertEquals(EstadoChofer.DESHABILITADO, historial.get(1).estadoAnterior());
     assertEquals(EstadoChofer.DISPONIBLE, historial.get(1).estadoNuevo());
@@ -245,7 +245,7 @@ class ChoferTest {
     chofer.asignarARuta(UUID.randomUUID());
     chofer.completarRuta();
 
-    List<CambioEstadoChofer> historial = chofer.getHistorialEstado();
+    List<CambioEstadoChofer> historial = chofer.getHistorialEstados();
     assertEquals(4, historial.size());
     assertEquals(EstadoChofer.DISPONIBLE, historial.get(0).estadoAnterior());
     assertEquals(EstadoChofer.DESHABILITADO, historial.get(0).estadoNuevo());
@@ -264,7 +264,7 @@ class ChoferTest {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     chofer.asignarARuta(UUID.randomUUID());
 
-    List<CambioEstadoChofer> historial = chofer.getHistorialEstado();
+    List<CambioEstadoChofer> historial = chofer.getHistorialEstados();
     assertThrows(UnsupportedOperationException.class, () -> historial.add(null));
   }
 
@@ -273,13 +273,13 @@ class ChoferTest {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     chofer.asignarARuta(UUID.randomUUID());
 
-    List<CambioEstadoChofer> snapshot = chofer.getHistorialEstado();
+    List<CambioEstadoChofer> snapshot = chofer.getHistorialEstados();
     assertEquals(1, snapshot.size());
 
     chofer.completarRuta();
 
     assertEquals(1, snapshot.size()); // snapshot no se modifica
-    assertEquals(2, chofer.getHistorialEstado().size());
+    assertEquals(2, chofer.getHistorialEstados().size());
   }
 
   // ========================= HISTORIAL: transiciones fallidas no registran
@@ -290,6 +290,6 @@ class ChoferTest {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     assertThrows(ValidationException.class, chofer::habilitar); // ya está DISPONIBLE
 
-    assertTrue(chofer.getHistorialEstado().isEmpty());
+    assertTrue(chofer.getHistorialEstados().isEmpty());
   }
 }
