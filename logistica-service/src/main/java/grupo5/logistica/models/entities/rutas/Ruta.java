@@ -85,16 +85,12 @@ public class Ruta extends AgregadoConEventos<EventoRuta> {
     registrarEvento(new EventoRutaAsignada(this.id, entregaId));
   }
 
-  public List<UUID> obtenerEntregas() {
+  public List<UUID> getEntregaIds() {
     return List.copyOf(this.entregas);
   }
 
-  public List<UUID> getEntregas() {
-    return obtenerEntregas();
-  }
-
-  public List<UUID> getEntregaIds() {
-    return obtenerEntregas();
+  public boolean tieneSeguimientoDisponible() {
+    return this.estado != EstadoRuta.PENDIENTE;
   }
 
   public List<CambioEstadoRuta> getHistorialEstado() {

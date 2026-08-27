@@ -29,7 +29,8 @@ class RutaTest {
     assertEquals(choferId, ruta.getChoferId());
     assertEquals(camionId, ruta.getCamionId());
     assertEquals(EstadoRuta.PENDIENTE, ruta.getEstado());
-    assertTrue(ruta.getEntregas().isEmpty());
+    assertTrue(ruta.getEntregaIds().isEmpty());
+    assertFalse(ruta.tieneSeguimientoDisponible());
   }
 
   @Test
@@ -58,8 +59,8 @@ class RutaTest {
 
     ruta.agregarEntrega(entregaId);
 
-    assertEquals(1, ruta.getEntregas().size());
-    assertTrue(ruta.getEntregas().contains(entregaId));
+    assertEquals(1, ruta.getEntregaIds().size());
+    assertTrue(ruta.getEntregaIds().contains(entregaId));
   }
 
   @Test
@@ -92,6 +93,7 @@ class RutaTest {
     assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
     assertNotNull(ruta.getHoraInicioReal());
     assertNull(ruta.getHoraFinReal());
+    assertTrue(ruta.tieneSeguimientoDisponible());
   }
 
   @Test
@@ -112,6 +114,7 @@ class RutaTest {
 
     assertEquals(EstadoRuta.COMPLETADA, ruta.getEstado());
     assertNotNull(ruta.getHoraFinReal());
+    assertTrue(ruta.tieneSeguimientoDisponible());
   }
 
   @Test
@@ -128,7 +131,7 @@ class RutaTest {
     Ruta ruta = new Ruta(LocalDate.now(), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(UUID.randomUUID());
 
-    List<UUID> entregas = ruta.getEntregas();
+    List<UUID> entregas = ruta.getEntregaIds();
     UUID nuevaEntregaId = UUID.randomUUID();
     assertThrows(UnsupportedOperationException.class, () -> entregas.add(nuevaEntregaId));
   }
