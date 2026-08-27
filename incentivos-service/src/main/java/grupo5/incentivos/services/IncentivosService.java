@@ -10,7 +10,7 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
 import grupo5.incentivos.models.entities.inactividad.DonanteInactivo;
 import grupo5.incentivos.models.entities.inactividad.GestorDeInactivos;
-import grupo5.incentivos.models.entities.insignias.Insignia;
+import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
@@ -146,7 +146,7 @@ public class IncentivosService implements IIncentivosService {
 
   public List<InsigniaDTO> obtenerInsignias(UUID donanteId) {
     return obtenerDonante(donanteId).getInsignias().stream()
-        .filter(Insignia::visible)
+        .filter(InsigniaGanada::visible)
         .map(InsigniaDTO::desde)
         .toList();
   }

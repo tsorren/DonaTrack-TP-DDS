@@ -6,10 +6,8 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class MisionDonacionesExitosas extends Mision {
 
   private LocalDate fechaUltimoDonacion;

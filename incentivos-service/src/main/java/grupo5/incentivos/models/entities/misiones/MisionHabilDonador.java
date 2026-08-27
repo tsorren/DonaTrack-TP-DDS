@@ -4,10 +4,8 @@ import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class MisionHabilDonador extends Mision {
 
   public MisionHabilDonador(CategoriaDonante categoria, Integer cantidadBienesObjetivo) {

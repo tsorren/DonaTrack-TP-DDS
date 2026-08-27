@@ -519,15 +519,15 @@ public void configurarVisibilidadInsignia(String nombre, boolean visible) {
 **Impacto en `InsigniaDTO`:** Cambiar `Insignia` → `InsigniaGanada` en `InsigniaDTO.desde(InsigniaGanada g)`.
 
 **Checklist Oleada 3:**
-- [ ] Códigos en `ErrorCatalog`: `MISION_NOMBRE_INVALIDO`, `MISION_OBJETIVO_INVALIDO`, `RANKING_PERIODO_NULO`, `RANKING_ENTRADA_NULA`, `INACTIVIDAD_DIAS_INVALIDOS`
-- [ ] `Mision` constructor sin `IllegalArgumentException`
-- [ ] `RankingMensual` sin `IllegalArgumentException`
-- [ ] `InactividadDonaciones` sin `IllegalArgumentException`
-- [ ] `@Setter` eliminado de `Mision` y subclases (setters internos → `protected`)
-- [ ] Tests actualizados (ya no esperan `IllegalArgumentException` en dominio)
-- [ ] Barrido grep → CERO matches en `models/`
-- [ ] RF-INC-3.6: `InsigniaGanada` creada + `DonanteIncentivos` migrado + `configurarVisibilidadInsignia()` opera sobre `InsigniaGanada`
-- [ ] Suite verde + no-regresión oleadas 1-2
+- [x] Códigos en `ErrorCatalog`: `MISION_NOMBRE_INVALIDO`, `MISION_OBJETIVO_INVALIDO`, `RANKING_PERIODO_NULO`, `RANKING_ENTRADA_NULA`, `INACTIVIDAD_DIAS_INVALIDOS`
+- [x] `Mision` constructor sin `IllegalArgumentException`
+- [x] `RankingMensual` sin `IllegalArgumentException`
+- [x] `InactividadDonaciones` sin `IllegalArgumentException`
+- [x] `@Setter` eliminado de `Mision` y subclases (setters internos → `protected`)
+- [x] Tests actualizados (ya no esperan `IllegalArgumentException` en dominio)
+- [x] Barrido grep → CERO matches en `models/`
+- [x] RF-INC-3.6: `InsigniaGanada` creada + `DonanteIncentivos` migrado + `configurarVisibilidadInsignia()` opera sobre `InsigniaGanada`
+- [x] Suite verde + no-regresión oleadas 1-2
 
 ---
 

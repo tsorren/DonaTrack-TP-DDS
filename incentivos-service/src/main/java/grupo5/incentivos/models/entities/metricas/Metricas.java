@@ -4,13 +4,16 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class Metricas {
 
   private Integer totalDonacionesHistoricas;
