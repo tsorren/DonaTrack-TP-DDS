@@ -39,9 +39,13 @@ class InactividadDonacionesTest {
     InactividadDonaciones criterio = crearCriterio(30);
     DonanteIncentivos inactivo = donanteConUltimaDonacion(UUID.randomUUID(), HOY.minusDays(60));
 
-    List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of(inactivo));
+    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(inactivo));
 
     assertEquals(1, resultado.size());
+    assertEquals(inactivo.getId(), resultado.getFirst().idDonante());
+    assertEquals(inactivo.getIdPersona(), resultado.getFirst().idPersona());
+    assertEquals(60, resultado.getFirst().diasInactivo());
+    assertEquals(HOY, resultado.getFirst().fecha());
   }
 
   @Test
@@ -49,7 +53,7 @@ class InactividadDonacionesTest {
     InactividadDonaciones criterio = crearCriterio(30);
     DonanteIncentivos activo = donanteConUltimaDonacion(UUID.randomUUID(), HOY.minusDays(5));
 
-    List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of(activo));
+    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(activo));
 
     assertTrue(resultado.isEmpty());
   }
@@ -60,9 +64,11 @@ class InactividadDonacionesTest {
     UUID id = UUID.randomUUID();
     DonanteIncentivos sinDonaciones = new DonanteIncentivos(id, id, "Nuevo");
 
-    List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of(sinDonaciones));
+    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of(sinDonaciones));
 
     assertEquals(1, resultado.size());
+    assertEquals(id, resultado.get(0).idDonante());
+    assertEquals(30, resultado.get(0).diasInactivo());
   }
 
   @Test
@@ -78,18 +84,18 @@ class InactividadDonacionesTest {
     DonanteIncentivos sinDonaciones =
         new DonanteIncentivos(idSinDonaciones, idSinDonaciones, "Nuevo");
 
-    List<DonanteIncentivos> resultado =
+    List<DonanteInactivo> resultado =
         criterio.detectarInactivos(List.of(activo, inactivo, sinDonaciones));
 
     assertEquals(2, resultado.size());
-    assertFalse(resultado.stream().anyMatch(d -> d.getId().equals(idActivo)));
+    assertFalse(resultado.stream().anyMatch(d -> d.idDonante().equals(idActivo)));
   }
 
   @Test
   void detectarInactivos_deberiaRetornarListaVaciaSiNoHayDonantes() {
     InactividadDonaciones criterio = crearCriterio(30);
 
-    List<DonanteIncentivos> resultado = criterio.detectarInactivos(List.of());
+    List<DonanteInactivo> resultado = criterio.detectarInactivos(List.of());
 
     assertTrue(resultado.isEmpty());
   }

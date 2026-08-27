@@ -8,6 +8,8 @@ import grupo5.incentivos.infrastructure.NotificacionesClient;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.inactividad.CriterioInactividad;
+import grupo5.incentivos.models.entities.inactividad.DonanteInactivo;
+import grupo5.incentivos.models.entities.inactividad.GestorDeInactivos;
 import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
@@ -95,23 +97,19 @@ public class IncentivosService implements IIncentivosService {
     log.info("Iniciando chequeo diario de inactividad con {} criterio(s)", criterios.size());
     List<DonanteIncentivos> todos = repository.findAll();
 
-    for (CriterioInactividad criterio : criterios) {
-      List<DonanteIncentivos> inactivos = criterio.detectarInactivos(todos);
-      log.info(
-          "Criterio [{}] detectó {} donante(s) inactivo(s)",
-          criterio.getClass().getSimpleName(),
-          inactivos.size());
+    List<DonanteInactivo> inactivos = GestorDeInactivos.procesarInactividad(criterios, todos);
 
-      inactivos.forEach(
-          donante -> {
-            try {
-              notificacionesClient.notificarInactividad(donante.getIdPersona(), 20);
-              log.info("Notificación de inactividad enviada al donante {}", donante.getId());
-            } catch (Exception e) {
-              log.warn("No se pudo notificar al donante {}: {}", donante.getId(), e.getMessage());
-            }
-          });
-    }
+    inactivos.forEach(
+        inactivo -> {
+          try {
+            notificacionesClient.notificarInactividad(
+                inactivo.idPersona(), inactivo.diasInactivo());
+            log.info("Notificación de inactividad enviada al donante {}", inactivo.idDonante());
+          } catch (Exception e) {
+            log.warn(
+                "No se pudo notificar al donante {}: {}", inactivo.idDonante(), e.getMessage());
+          }
+        });
   }
 
   private void despacharEventosYGuardar(DonanteIncentivos donante) {
