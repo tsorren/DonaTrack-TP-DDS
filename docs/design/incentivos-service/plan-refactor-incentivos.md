@@ -666,10 +666,10 @@ Tests unitarios con mock de los services:
 - `RankingMensualJobTest`: verifica que `calcularYNotificar()` recibe el periodo correcto y que excepciones se logean y no se propagan.
 
 **Checklist Oleada 5:**
-- [ ] `InactividadJobTest` implementado
-- [ ] `RachaJobTest` implementado
-- [ ] `RankingMensualJobTest` implementado
-- [ ] Suite verde + no-regresión oleadas 1-4
+- [x] `InactividadJobTest` implementado
+- [x] `RachaJobTest` implementado
+- [x] `RankingMensualJobTest` implementado
+- [x] Suite verde + no-regresión oleadas 1-4
 
 ---
 
