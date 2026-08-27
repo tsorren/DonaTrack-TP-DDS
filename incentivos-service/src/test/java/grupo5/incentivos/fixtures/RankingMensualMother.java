@@ -2,6 +2,7 @@ package grupo5.incentivos.fixtures;
 
 import grupo5.incentivos.models.entities.ranking.EntradaRanking;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ public final class RankingMensualMother {
   private RankingMensualMother() {}
 
   public static RankingMensual vacioDeMayo2026() {
-    return new RankingMensual(YearMonth.of(2026, 5));
+    return new RankingMensual(YearMonth.of(2026, Month.MAY));
   }
 
   public static RankingMensual vacio(YearMonth periodo) {

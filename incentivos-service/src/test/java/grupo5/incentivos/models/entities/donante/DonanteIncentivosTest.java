@@ -177,7 +177,7 @@ class DonanteIncentivosTest {
   void otorgarInsignia_conFechaEspecifica_debeAsignarFechaCorrecta() {
     DonanteIncentivos d = DonanteIncentivosMother.colaboradorSinMisiones(ID_DONANTE);
     Insignia insignia = new Insignia("Racha Pasada", "3 meses", "http://img.png");
-    java.time.LocalDate fecha = java.time.LocalDate.of(2026, 5, 10);
+    LocalDate fecha = LocalDate.of(2026, Month.MAY, 10);
 
     d.otorgarInsignia(insignia, fecha);
 

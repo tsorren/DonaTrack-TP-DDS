@@ -295,7 +295,7 @@ class MisionesTest {
   void misionCompletar_debePropagarFechaDeDonacionAInsigniaGanada() {
     MisionRacha racha =
         MisionMother.rachaConInsignia(CategoriaDonante.COLABORADOR, 1, "Racha Veloz");
-    LocalDate fechaDonacion = LocalDate.of(2026, 3, 20);
+    LocalDate fechaDonacion = LocalDate.of(2026, Month.MARCH, 20);
 
     racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(fechaDonacion));
 

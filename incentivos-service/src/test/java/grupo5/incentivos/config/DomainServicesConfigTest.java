@@ -7,6 +7,7 @@ import grupo5.incentivos.models.entities.inactividad.DonanteInactivo;
 import grupo5.incentivos.models.entities.inactividad.GestorDeInactivos;
 import grupo5.incentivos.models.entities.ranking.GestorDeRankings;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -24,7 +25,7 @@ class DomainServicesConfigTest {
   @Test
   void gestorDeRankings_conInputsNulosOVacios_debeRetornarRankingVacioDeFormaSegura() {
     GestorDeRankings gestor = new GestorDeRankings();
-    YearMonth periodo = YearMonth.of(2026, 5);
+    YearMonth periodo = YearMonth.of(2026, Month.MAY);
 
     RankingMensual rankingConNull = gestor.calcular(null, periodo);
     assertNotNull(rankingConNull);

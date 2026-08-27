@@ -2,7 +2,6 @@ package grupo5.incentivos.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import grupo5.incentivos.dto.DonanteRegistradoDTO;
@@ -66,6 +65,6 @@ class DonanteIncentivosControllerTest {
     ResponseEntity<Void> response = controller.modificarDonante(donanteId, request);
 
     assertEquals(HttpStatus.OK, response.getStatusCode());
-    verify(gestionDonanteService, times(1)).modificarDonante(eq(donanteId), eq(request));
+    verify(gestionDonanteService, times(1)).modificarDonante(donanteId, request);
   }
 }

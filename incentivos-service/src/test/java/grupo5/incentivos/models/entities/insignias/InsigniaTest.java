@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import java.time.LocalDate;
+import java.time.Month;
 import org.junit.jupiter.api.Test;
 
 class InsigniaTest {
@@ -36,7 +37,7 @@ class InsigniaTest {
     String nombre = "Racha";
     String descripcion = "desc";
     String imagenUrl = "/img.png";
-    LocalDate fecha = LocalDate.of(2026, 6, 1);
+    LocalDate fecha = LocalDate.of(2026, Month.JUNE, 1);
     InsigniaGanada ganada = new InsigniaGanada(nombre, descripcion, imagenUrl, true, fecha);
     assertEquals(nombre, ganada.nombre());
     assertEquals(descripcion, ganada.descripcion());
@@ -47,16 +48,17 @@ class InsigniaTest {
 
   @Test
   void insigniaGanada_deberiaLanzarExcepcionConNombreNuloOVacio() {
+    LocalDate ahora = LocalDate.now();
     ValidationException ex =
         assertThrows(
             ValidationException.class,
-            () -> new InsigniaGanada(null, "desc", "/img.png", true, LocalDate.now()));
+            () -> new InsigniaGanada(null, "desc", "/img.png", true, ahora));
     assertEquals(ErrorCatalog.INSIGNIA_SIN_NOMBRE, ex.getError());
   }
 
   @Test
   void insigniaGanada_ocultadaYVisible_deberianEvolucionarInmutablemente() {
-    LocalDate fecha = LocalDate.of(2026, 6, 1);
+    LocalDate fecha = LocalDate.of(2026, Month.JUNE, 1);
     InsigniaGanada visible = new InsigniaGanada("Racha", "desc", "/img.png", true, fecha);
     InsigniaGanada ocultada = visible.ocultada();
 
