@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class GestorDeRankings {
 
-  public static RankingMensual calcular(List<DonanteIncentivos> todos, YearMonth periodo) {
+  public RankingMensual calcular(List<DonanteIncentivos> todos, YearMonth periodo) {
     RankingMensual ranking = new RankingMensual(periodo);
     AtomicInteger posicion = new AtomicInteger(1);
 

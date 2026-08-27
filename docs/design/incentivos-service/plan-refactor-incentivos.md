@@ -644,16 +644,16 @@ grep -rnE "@Component|@Autowired|@Qualifier|@Value" src/main/java/**/models/
 ```
 
 **Checklist Oleada 4:**
-- [ ] `IncentivosService` descompuesto en 5 Application Services delgados (`GestionDonanteService`, `MisionesDonacionService`, `InsigniasService`, `MetricasIncentivosService`, `InactividadService`) con sus respectivas interfaces
-- [ ] `IncentivosController` y Jobs (`InactividadJob`, `RachaJob`) actualizados para consumir los nuevos servicios especializados
-- [ ] `GestorDeInactivos` instanciable + `InactividadService` lo recibe por constructor
-- [ ] `GestorDeRankings` instanciable + `RankingService` lo recibe por constructor
-- [ ] `DomainServicesConfig` ensambla `GestorDeInactivos` y `GestorDeRankings`
-- [ ] `INotificacionesClient` creada e implementada por `NotificacionesClient`
-- [ ] `IN8nClient` creada e implementada por `N8nClient`
-- [ ] `NotificacionesIncentivosListener` e `InactividadService` inyectan por interfaz
-- [ ] Barrido grep `models/` → CERO matches
-- [ ] Suite verde + no-regresión oleadas 1-3
+- [x] `IncentivosService` descompuesto en 5 Application Services delgados (`GestionDonanteService`, `MisionesDonacionService`, `InsigniasService`, `MetricasIncentivosService`, `InactividadService`) con sus respectivas interfaces
+- [x] `IncentivosController` segregado en 4 controllers REST y Jobs (`InactividadJob`, `RachaJob`) actualizados para consumir los nuevos servicios especializados
+- [x] `GestorDeInactivos` instanciable + `InactividadService` lo recibe por constructor
+- [x] `GestorDeRankings` instanciable + `RankingService` lo recibe por constructor
+- [x] `DomainServicesConfig` ensambla `GestorDeInactivos` y `GestorDeRankings`
+- [x] `INotificacionesClient` creada e implementada por `NotificacionesClient`
+- [x] `IN8nClient` creada e implementada por `N8nClient`
+- [x] `NotificacionesIncentivosListener` e `InactividadService` inyectan por interfaz
+- [x] Barrido grep `models/` → CERO matches
+- [x] Suite verde + no-regresión oleadas 1-3
 
 ---
 

@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NotificacionesClient {
+public class NotificacionesClient implements INotificacionesClient {
 
   private static final Logger log = LoggerFactory.getLogger(NotificacionesClient.class);
 

@@ -1,7 +1,7 @@
 package grupo5.incentivos.services;
 
-import grupo5.incentivos.infrastructure.N8nClient;
-import grupo5.incentivos.infrastructure.NotificacionesClient;
+import grupo5.incentivos.infrastructure.IN8nClient;
+import grupo5.incentivos.infrastructure.INotificacionesClient;
 import grupo5.incentivos.models.entities.donante.eventos.AscensoDonante;
 import grupo5.incentivos.models.entities.donante.eventos.MisionCompletada;
 import grupo5.incentivos.models.entities.insignias.Insignia;
@@ -17,8 +17,8 @@ public class NotificacionesIncentivosListener {
 
   private static final Logger log = LoggerFactory.getLogger(NotificacionesIncentivosListener.class);
 
-  private final NotificacionesClient notificacionesClient;
-  private final N8nClient n8nClient;
+  private final INotificacionesClient notificacionesClient;
+  private final IN8nClient n8nClient;
 
   @EventListener
   public void onMisionCompletada(MisionCompletada evento) {

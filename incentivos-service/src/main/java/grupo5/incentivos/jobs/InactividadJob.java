@@ -1,15 +1,15 @@
 package grupo5.incentivos.jobs;
 
-import grupo5.incentivos.services.IIncentivosService;
+import grupo5.incentivos.services.IInactividadService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class InactividadJob {
 
-  private final IIncentivosService service;
+  private final IInactividadService service;
 
-  public InactividadJob(IIncentivosService service) {
+  public InactividadJob(IInactividadService service) {
     this.service = service;
   }
 

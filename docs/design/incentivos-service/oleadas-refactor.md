@@ -241,3 +241,75 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 - Rediseño inmutable de Value Objects y records de insignias.
 - Generación de tests unitarios de caracterización y verificación de guardas.
 - Verificación cruzada con Maven, JaCoCo y Spotless.
+
+---
+
+## Oleada 4: Descomposición SRP de Application Services, Domain Services Puros y Segregación de Controladores REST
+
+### Problema
+1. **Monolito de Application Service (`IncentivosService`)**: Concentraba 5 responsabilidades de negocio divergentes (gestión de perfil del donante, procesamiento transaccional de donaciones y reglas de misiones, administración de visibilidad de insignias, analítica y reportes de administración, y detección/notificación de inactividad), violando el principio de responsabilidad única (SRP) e introduciendo acoplamiento innecesario.
+2. **Controlador REST Concentrador (`IncentivosController`)**: Un único controlador REST inyectaba `IIncentivosService` y manejaba 10 endpoints de diferentes áreas temáticas (donantes, donaciones, misiones, insignias y métricas/resumen).
+3. **Domain Services No Gestionados y Estáticos**: `GestorDeRankings` y `GestorDeInactivos` poseían métodos estáticos no instanciables, imposibilitando la inyección de dependencias limpia y el desacoplamiento para pruebas unitarias.
+4. **Clientes de Infraestructura sin Contratos Formales**: `NotificacionesClient` y `N8nClient` eran clases concretas consumidas directamente por los servicios y listeners sin abstracciones de interfaz (`INotificacionesClient`, `IN8nClient`).
+
+### Evidencia
+- `IncentivosService.java`: 213 líneas, 5 dependencias heterogéneas (`IDonanteIncentivosRepository`, `IRankingService`, `List<CriterioInactividad>`, `ApplicationEventPublisher`, `NotificacionesClient`).
+- `IncentivosController.java`: acoplaba todos los endpoints a `IIncentivosService`.
+- `GestorDeInactivos.java` / `GestorDeRankings.java`: métodos `public static`.
+- `NotificacionesClient.java` / `N8nClient.java`: clases concretas sin interfaz.
+
+### Objetivo
+1. **Descomponer `IncentivosService` en 5 Application Services Delgados**:
+   - `GestionDonanteService` (`IGestionDonanteService`): Perfil y ciclo de vida (registro, modificación, baja, consulta).
+   - `MisionesDonacionService` (`IMisionesDonacionService`): Procesamiento de donaciones normales/exitosas, misiones y verificación de rachas.
+   - `InsigniasService` (`IInsigniasService`): Consulta y visibilidad de insignias ganadas.
+   - `MetricasIncentivosService` (`IMetricasIncentivosService`): Métricas de donante y resumen del sistema.
+   - `InactividadService` (`IInactividadService`): Detección y notificación diaria de inactividad.
+2. **Segregar `IncentivosController` en 4 Controladores REST Especializados** (preservando 100% de los contratos HTTP):
+   - `DonanteIncentivosController` (`IDonanteIncentivosController`): `POST`, `PATCH`, `DELETE` en `/api/incentivos/donantes/{donanteId}`.
+   - `MisionesDonacionController` (`IMisionesDonacionController`): `POST /donaciones`, `POST /donaciones/exitosa`, `GET /donantes/{donanteId}/misiones`.
+   - `InsigniasController` (`IInsigniasController`): `GET /donantes/{donanteId}/insignias`, `PUT /donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad`.
+   - `MetricasIncentivosController` (`IMetricasIncentivosController`): `GET /donantes/{donanteId}/metricas`, `GET /admin/resumen`.
+3. **Desestatizar Domain Services y Registrar en `DomainServicesConfig`**:
+   - Convertir `GestorDeInactivos` y `GestorDeRankings` en POJOs con métodos de instancia.
+   - Crear `DomainServicesConfig` con beans `@Bean` para mantener el paquete `models/` libre de anotaciones de framework.
+4. **Contratos de Infraestructura**:
+   - Crear `INotificacionesClient` e `IN8nClient` e implementarlos en `NotificacionesClient` y `N8nClient`.
+5. **Alineación de Jobs y Listeners**:
+   - `InactividadJob` → inyecta `IInactividadService`.
+   - `RachaJob` → inyecta `IMisionesDonacionService`.
+   - `NotificacionesIncentivosListener` → inyecta `INotificacionesClient` e `IN8nClient`.
+   - `RankingService` → inyecta `GestorDeRankings` e `IN8nClient`.
+6. **Desacoplar la Suite de Tests**:
+   - Reemplazar `IncentivosServiceTest` por 5 suites unitarias enfocadas (`GestionDonanteServiceTest`, `MisionesDonacionServiceTest`, `InsigniasServiceTest`, `MetricasIncentivosServiceTest`, `InactividadServiceTest`) y actualizar `RankingServiceTest`.
+
+### Fuera de scope
+- Erradicación de `Optional.get()` y `orElseThrow()` ciegos en capas de aplicación (Oleada 5).
+- Tratamiento de excepciones de infraestructura con `RemoteServiceUnavailableException` (Oleada 6).
+- Unificación del scheduler y resilience (Oleada 7).
+
+### Tests / Verificación
+- **Suites unitarias ejecutadas**:
+  - `GestionDonanteServiceTest`: ✅ 6 tests (registro idempotente, modificación, baja, errores de inexistencia, listado).
+  - `MisionesDonacionServiceTest`: ✅ 7 tests (métricas tras donación, error de recurso no encontrado, eventos de ascenso, eventos de misión completada con/sin insignia, consulta de misiones, verificación de rachas).
+  - `InsigniasServiceTest`: ✅ 3 tests (listado vacío, configuración de visibilidad, error de insignia no encontrada).
+  - `MetricasIncentivosServiceTest`: ✅ 2 tests (cálculo de métricas con posición en ranking, resumen global del sistema).
+  - `InactividadServiceTest`: ✅ 2 tests (detección y notificación a cliente, resiliencia ante excepciones remotas).
+  - `RankingServiceTest`: ✅ 15 tests actualizados con `GestorDeRankings` instanciado e `IN8nClient`.
+- **Barridos mecánicos**:
+  - `grep -rnE "@(Component|Autowired|Qualifier|Value|Service|Repository)" models/entities/`: ✅ **0 matches**.
+- **Suite completa**:
+  - `mvn clean test -f incentivos-service/pom.xml`: ✅ **86 tests ejecutados, 0 fallos, 0 errores** (`BUILD SUCCESS`).
+  - `mvn spotless:check -f incentivos-service/pom.xml`: ✅ **84 archivos limpios** (100% compliant).
+
+### Diseño resultante
+- Se consolida una arquitectura de servicios limpia, altamente cohesiva y desacoplada: cada Application Service posee una única razón para cambiar y declara exclusivamente las dependencias que necesita.
+- La capa de presentación REST queda organizada por capacidades de dominio sin modificar en absoluto los contratos, rutas ni respuestas expuestas a los consumidores HTTP.
+- Los Domain Services actúan como lógica pura de dominio ejecutable en memoria, mientras que su ciclo de vida como beans es administrado externamente por `DomainServicesConfig`.
+- Los clientes de infraestructura quedan protegidos por interfaces explícitas, facilitando tests con mocks limpios y previniendo el acoplamiento a clientes concretos.
+
+### IA utilizada
+- Descomposición modular de interfaces y clases de servicios respetando la granularidad funcional.
+- Segregación de endpoints REST manteniendo idénticas las rutas de URI y parámetros de consulta.
+- Migración y generación de suites de tests unitarios aisladas por cada servicio especializado.
+- Verificación cruzada con Maven, JaCoCo y Spotless.
