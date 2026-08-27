@@ -127,7 +127,7 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     RespuestaPlanificacion respuesta = mapearRespuesta(dto);
-    List<Ruta> rutas = generadorDeRutas.generarRutas(respuesta);
+    List<Ruta> rutas = generadorDeRutas.calcularRutas(respuesta);
     persistirPlanificacion(rutas, respuesta);
 
     solicitud.procesarResultados(rutas.stream().map(Ruta::getId).toList());

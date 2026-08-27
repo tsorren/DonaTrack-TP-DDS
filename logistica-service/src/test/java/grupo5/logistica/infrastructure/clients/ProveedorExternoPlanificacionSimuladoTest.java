@@ -1,4 +1,4 @@
-package grupo5.logistica.infrastructure;
+package grupo5.logistica.infrastructure.clients;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.argThat;

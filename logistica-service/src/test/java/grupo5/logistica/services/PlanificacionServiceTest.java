@@ -1,9 +1,11 @@
 package grupo5.logistica.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -73,14 +75,38 @@ class PlanificacionServiceTest {
             comunicadorEventos,
             planificadorExterno,
             new GeneradorDeRutas(new GeneradorLotesSimple()),
-            100,
+            50,
             "http://logistica");
   }
 
   @Test
-  void iniciarPlanificacionOrquestaDosLotesSinResolverElDominio() {
+  void iniciarPlanificacionSinEntregasPendientesNoHaceNada() {
+    when(entregasRepository.findSinRuta()).thenReturn(List.of());
+
+    service.iniciarPlanificacion();
+
+    verify(camionesRepository, never()).findDisponibles();
+    verify(solicitudesRepository, never()).save(any());
+    verify(planificadorExterno, never()).solicitarPlanificacion(any(), any());
+  }
+
+  @Test
+  void iniciarPlanificacionConEntregasPeroSinCamionesTerminaSinSolicitar() {
+    when(entregasRepository.findSinRuta()).thenReturn(List.of(mock(Entrega.class)));
+    when(camionesRepository.findDisponibles()).thenReturn(List.of());
+    when(choferesRepository.findDisponibles())
+        .thenReturn(List.of(new Chofer("Ada", "Lovelace", "LIC-1", "1111")));
+
+    service.iniciarPlanificacion();
+
+    verify(solicitudesRepository, never()).save(any());
+    verify(planificadorExterno, never()).solicitarPlanificacion(any(), any());
+  }
+
+  @Test
+  void iniciarPlanificacionConSetentaEntregasYLoteDeCincuentaCreaDosLotesDeCincuentaYVeinte() {
     List<Entrega> entregas =
-        IntStream.range(0, 101).mapToObj(indice -> mock(Entrega.class)).toList();
+        IntStream.range(0, 70).mapToObj(indice -> mock(Entrega.class)).toList();
     when(entregasRepository.findSinRuta()).thenReturn(entregas);
     when(camionesRepository.findDisponibles())
         .thenReturn(List.of(new Camion("AB123CD", 20f, 5000f, 3f)));
@@ -94,8 +120,35 @@ class PlanificacionServiceTest {
     verify(solicitudesRepository, times(2)).save(any(SolicitudPlanificacion.class));
     verify(planificadorExterno, times(2))
         .solicitarPlanificacion(any(SolicitudPlanificacion.class), captor.capture());
-    assertEquals(100, captor.getAllValues().getFirst().entregas().size());
-    assertEquals(1, captor.getAllValues().getLast().entregas().size());
+    assertEquals(50, captor.getAllValues().getFirst().entregas().size());
+    assertEquals(20, captor.getAllValues().getLast().entregas().size());
+  }
+
+  @Test
+  void iniciarPlanificacionConUnLoteGuardaSolicitudYLlamaAlClienteExterno() {
+    List<Entrega> entregas =
+        IntStream.range(0, 10).mapToObj(indice -> mock(Entrega.class)).toList();
+    when(entregasRepository.findSinRuta()).thenReturn(entregas);
+    when(camionesRepository.findDisponibles())
+        .thenReturn(List.of(new Camion("AB123CD", 20f, 5000f, 3f)));
+    when(choferesRepository.findDisponibles())
+        .thenReturn(List.of(new Chofer("Ada", "Lovelace", "LIC-1", "1111")));
+
+    service.iniciarPlanificacion();
+
+    ArgumentCaptor<SolicitudPlanificacion> solicitudCaptor =
+        ArgumentCaptor.forClass(SolicitudPlanificacion.class);
+    ArgumentCaptor<PlanificacionSolicitada> planificacionCaptor =
+        ArgumentCaptor.forClass(PlanificacionSolicitada.class);
+    verify(solicitudesRepository).save(solicitudCaptor.capture());
+    verify(planificadorExterno)
+        .solicitarPlanificacion(eq(solicitudCaptor.getValue()), planificacionCaptor.capture());
+    assertNotNull(solicitudCaptor.getValue().getId());
+    assertEquals(10, solicitudCaptor.getValue().getCantidadDonaciones());
+    assertEquals(
+        "http://logistica/api/logistica/callback/rutas",
+        solicitudCaptor.getValue().getCallbackUrl());
+    assertEquals(10, planificacionCaptor.getValue().entregas().size());
   }
 
   @Test

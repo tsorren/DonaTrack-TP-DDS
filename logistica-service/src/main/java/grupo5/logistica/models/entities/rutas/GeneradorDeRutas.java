@@ -46,7 +46,7 @@ public class GeneradorDeRutas {
         .toList();
   }
 
-  public List<Ruta> generarRutas(RespuestaPlanificacion respuesta) {
+  public List<Ruta> calcularRutas(RespuestaPlanificacion respuesta) {
     if (respuesta == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
@@ -58,10 +58,15 @@ public class GeneradorDeRutas {
         continue;
       }
 
-      Ruta ruta = new Ruta(respuesta.fecha(), chofer.getId(), asignacion.getKey().getId());
-      asignacion.getValue().forEach(entrega -> GestorDeRutas.agregarEntrega(ruta, entrega));
-      rutas.add(ruta);
+      rutas.add(crearRuta(respuesta.fecha(), chofer, asignacion.getKey(), asignacion.getValue()));
     }
     return List.copyOf(rutas);
+  }
+
+  private static Ruta crearRuta(
+      LocalDate fecha, Chofer chofer, Camion camion, List<Entrega> entregas) {
+    Ruta ruta = new Ruta(fecha, chofer.getId(), camion.getId());
+    entregas.forEach(entrega -> GestorDeRutas.agregarEntrega(ruta, entrega));
+    return ruta;
   }
 }

@@ -63,7 +63,7 @@ class PlanificacionDominioTest {
     assertEquals(LocalDate.now(), respuesta.fecha());
     assertNull(entrega.getIdRuta());
 
-    List<Ruta> rutas = generador.generarRutas(respuesta);
+    List<Ruta> rutas = generador.calcularRutas(respuesta);
 
     assertEquals(1, rutas.size());
     assertEquals(rutas.getFirst().getId(), entrega.getIdRuta());
