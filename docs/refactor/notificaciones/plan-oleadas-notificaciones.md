@@ -604,6 +604,56 @@ Verificación de que `NotificacionTest.java`/`MedioDeContactoMapperTest.java` ya
 2. `@Valid` en `NotificacionController.procesarEvento` y en `PersonasController.sincronizar`.
 3. Ajustar códigos HTTP: `POST /notificaciones` → `201 Created` (o `202 Accepted`, a decidir según se considere el procesamiento síncrono o fire-and-forget desde la óptica del llamador); `DELETE /api/notificaciones/personas/{id}` → `204 No Content`.
 
+### Bitácora de ejecución — ✅ RF-09
+
+#### Problema
+Los 10 DTOs de entrada/réplica no tenían ninguna anotación de Bean Validation; ningún controller usaba `@Valid`; `POST /notificaciones` y `DELETE /api/notificaciones/personas/{id}` devolvían `200 OK` en vez de un código semánticamente correcto.
+
+#### Evidencia
+- `grep -rE "@(NotNull|NotBlank|Positive|PastOrPresent)" notificaciones-service/src/main/java/grupo5/notificaciones/dto/` → 0 matches (antes).
+- `NotificacionController.procesarEvento`/`PersonasController.sincronizar`: sin `@Valid` (antes).
+- `NotificacionController.procesarEvento` → `ResponseEntity.ok().build()`; `PersonasController.anonimizar` → `ResponseEntity.ok().build()` (antes).
+- `common-lib`'s `GlobalExceptionHandler` ya tenía `@ExceptionHandler(MethodArgumentTypeMismatchException.class)` y `@ExceptionHandler(DateTimeParseException.class)` desde antes de esta oleada — confirmado con `grep -n "@ExceptionHandler" common-lib/.../GlobalExceptionHandler.java`, sin necesidad de tocar `common-lib`.
+
+#### Objetivo
+Cerrar `RF-09` sin invadir `common-lib` (ya tiene lo que hace falta) ni el resto del dominio.
+
+#### Fuera de scope
+- Los campos condicionales de `MedioDeContactoReplicaDTO` (`direccionCorreo`/`caracteristica`/`codigoArea`/`numero`) quedan sin anotación: son obligatorios según el `tipo` (un `CORREO` no tiene teléfono, un `TELEFONO`/`WHATSAPP` no tiene correo), y expresar "obligatorio si tipo == X" requiere un validador cruzado a medida que no se pidió en esta oleada. Ese caso puntual de formato por tipo ya lo resuelve `MedioDeContactoMapper` (RF-05, Oleada 3). Documentado con un comentario en el propio DTO para que no se lea como un olvido.
+- `esPredeterminado: Boolean` en `MedioDeContactoReplicaDTO` queda sin `@NotNull`: `null` es un valor válido y manejado explícitamente desde la Oleada 1 (`MedioDeContactoMapper` lo trata como "no predeterminado").
+- No se tocó `common-lib` — el hallazgo original sobre `MethodArgumentTypeMismatchException`/`DateTimeParseException` era incorrecto (ver Evidencia); no había nada que coordinar.
+
+#### Qué se hizo
+1. Agregada la dependencia explícita `spring-boot-starter-validation` al `pom.xml` de `notificaciones-service` — ya llegaba transitivamente vía `common-lib` (que sí la declara), pero se la deja explícita siguiendo el mismo patrón que `logistica-service` (que también la declara aunque dependa de `common-lib`), para no depender silenciosamente de una transitividad.
+2. Bean Validation en los 8 DTOs de `dto/input/*`: `idPersonaDonante`/`idPersonaBeneficiaria`/`idPersonaAdmin` → `@NotNull`; `fecha` → `@NotNull @PastOrPresent`; `detalleDonacion`/`enlaceSeguimiento`/`patenteCamion`/`credencialesDeAcceso`/`motivo`/`nombreMision`/`recompensa`/`categoriaNueva`/`categoriaVieja` → `@NotBlank`; `diasInactivo` → `@NotNull @Positive`; `replanificable` queda sin anotación (es `boolean` primitivo, no puede ser `null`). Mensajes en español, mismo estilo que `donaciones-service`/`incentivos-service` (`@NotNull(message = "...")`).
+3. `PersonaReplicaDTO`: `id`/`tipoPersona` → `@NotNull`; `denominacion` → `@NotBlank`; `mediosDeContacto` → `List<@Valid MedioDeContactoReplicaDTO>` (cascada de validación sobre cada medio, mismo patrón que `HumanaInputDTO.mediosDeContacto` en `donaciones-service`).
+4. `MedioDeContactoReplicaDTO`: solo `tipo` → `@NotBlank` (ver Fuera de scope para el resto).
+5. `@Valid` agregado en `NotificacionController.procesarEvento(@Valid @RequestBody EventoNotificableDTO dto)` y `PersonasController.sincronizar(@Valid @RequestBody PersonaReplicaDTO dto)`.
+6. `POST /notificaciones` → `202 Accepted`: se descartó `201 Created` porque `evento.generarNotificaciones()` puede devolver 0..N `Notificacion` (ej. `EntregaFallida` genera notificación al admin y al donante) — no hay un único recurso/Location que devolver: el endpoint acepta un evento de dominio, no crea "un" recurso identificable de punta a punta.
+7. `DELETE /api/notificaciones/personas/{id}` → `204 No Content` (`ResponseEntity.noContent().build()`).
+8. Tests actualizados: `NotificacionControllerTest` (6 aserciones `isOk()` → `isAccepted()`, métodos renombrados a `..._deberiaResponderAceptadoY...`); `PersonasControllerTest` (`anonimizar_deberiaRetornarStatusOk` → `anonimizar_deberiaRetornarNoContent`, `isOk()` → `isNoContent()`; agregado `.setControllerAdvice(new GlobalExceptionHandler())` en el `standaloneSetup`, porque a diferencia de `NotificacionControllerTest` — que usa `@WebMvcTest` y levanta el `GlobalExceptionHandler` autoconfigurado — el `standaloneSetup` no registra automáticamente ningún `@ControllerAdvice`; mismo patrón que `RutasControllerTest` en `logistica-service`).
+9. Tests nuevos: `NotificacionControllerTest.procesarEvento_conDetalleDonacionEnBlanco_deberiaResponderBadRequest` y `.obtenerPorPersona_conPersonaIdMalformado_deberiaResponderBadRequest`; `PersonasControllerTest.sincronizar_conDenominacionEnBlanco_deberiaResponderBadRequest`, `.anonimizar_conIdMalformado_deberiaResponderBadRequest`, `.obtenerPersona_conIdMalformado_deberiaResponderBadRequest` — los 3 últimos confirman en runtime (no solo por lectura de código) que un UUID malformado en un `@PathVariable` ya devuelve `400` vía el `GlobalExceptionHandler` de `common-lib`, sin cambios ahí.
+10. `mvn spotless:apply` sobre `notificaciones-service` para corregir el wrapping de una línea nueva — sin cambios semánticos.
+
+#### Tests / Verificación
+- Suite `notificaciones-service` (con `clean`): **116 tests, 0 failures, 0 errors** (111 antes de esta oleada + 5 tests nuevos).
+- Reactor completo (con `clean`): pendiente de confirmar en esta misma corrida (ver cierre de la respuesta).
+- Confirmado en el log de ejecución: `MethodArgumentNotValidException` y `MethodArgumentTypeMismatchException` resueltos por `GlobalExceptionHandler` sin ningún cambio en `common-lib` (líneas de log `[EXCEPTION: MethodArgumentTypeMismatchException]`/`[EXCEPTION: MethodArgumentNotValidException]` con código `ERR-CSR-003`, status 400).
+
+#### Diseño resultante
+Los 10 DTOs de entrada validan sus invariantes de formato antes de llegar a la capa de servicios; los 2 controllers devuelven códigos HTTP semánticamente correctos (`202`/`204`); no se tocó `common-lib` porque ya tenía todo lo necesario.
+
+#### IA utilizada
+Relectura de los DTOs y de `NotificacionService.procesar()` para decidir `202` vs `201` con evidencia (cardinalidad 0..N de `generarNotificaciones()`); búsqueda del patrón de estilo ya usado en `donaciones-service`/`incentivos-service` para las anotaciones (mensajes en español, `List<@Valid X>`) en vez de inventar un estilo nuevo; confirmación en runtime (no solo estática) de que `common-lib` ya resuelve `MethodArgumentTypeMismatchException`.
+
+#### Verificación humana
+- [x] Los 10 DTOs con Bean Validation (8 de `dto/input/*` + `PersonaReplicaDTO` + `MedioDeContactoReplicaDTO`).
+- [x] `@Valid` en los 2 controllers.
+- [x] `POST /notificaciones` → `202`, `DELETE /api/notificaciones/personas/{id}` → `204`, decisión documentada con motivo.
+- [x] Confirmado en runtime que un UUID malformado devuelve `400` sin tocar `common-lib`.
+- [x] Suite de `notificaciones-service` en verde (116/116, con `clean`).
+- [ ] Reactor completo — pendiente de confirmar (ver cierre).
+
 ---
 
 ## Oleada 9.5 — Hardening de bordes temporales, concurrencia e idempotencia
