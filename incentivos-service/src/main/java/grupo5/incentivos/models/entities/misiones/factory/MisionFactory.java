@@ -37,7 +37,7 @@ public final class MisionFactory {
     habil.setNumeroMision(3);
     habil.setInsignia(
         new Insignia(
-            "Gran Aporte", "Una donación con más de 50 bienes", "/insignias/gran-aporte.png"));
+            "Gran Aporte", "Una donación con al menos 50 bienes", "/insignias/gran-aporte.png"));
     misiones.add(habil);
 
     MisionRacha rachaSostenedor = new MisionRacha(CategoriaDonante.SOSTENEDOR, 6);

@@ -22,7 +22,7 @@ public class NotificacionesClientAdapter implements INotificacionesClient {
   }
 
   @Override
-  @Async
+  @Async("notificacionesTaskExecutor")
   public void notificarMisionCumplida(UUID idPersona, String nombreMision, String recompensa) {
     enviar(
         new EventoMisionCumplidaRequest(
@@ -32,7 +32,7 @@ public class NotificacionesClientAdapter implements INotificacionesClient {
   }
 
   @Override
-  @Async
+  @Async("notificacionesTaskExecutor")
   public void notificarAscensoCategoria(
       UUID idPersona, String categoriaNueva, String categoriaVieja) {
     enviar(
@@ -43,7 +43,7 @@ public class NotificacionesClientAdapter implements INotificacionesClient {
   }
 
   @Override
-  @Async
+  @Async("notificacionesTaskExecutor")
   public void notificarInactividad(UUID idPersona, int diasInactivo) {
     enviar(
         new EventoDonanteInactivoRequest(

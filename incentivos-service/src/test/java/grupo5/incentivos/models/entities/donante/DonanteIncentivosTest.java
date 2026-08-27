@@ -2,7 +2,6 @@ package grupo5.incentivos.models.entities.donante;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.fixtures.DonanteIncentivosMotherTest;
@@ -174,19 +173,57 @@ class DonanteIncentivosTest {
   }
 
   @Test
-  void otorgarInsignia_deberiaLanzarExcepcionSiInsigniaEsNula() {
+  void otorgarInsignia_conFechaEspecifica_debeAsignarFechaCorrecta() {
     DonanteIncentivos d = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE);
-    ValidationException ex = assertThrows(ValidationException.class, () -> d.otorgarInsignia(null));
-    assertEquals(ErrorCatalog.INSIGNIA_NULA, ex.getError());
+    Insignia insignia = new Insignia("Racha Pasada", "3 meses", "http://img.png");
+    java.time.LocalDate fecha = java.time.LocalDate.of(2026, 5, 10);
+
+    d.otorgarInsignia(insignia, fecha);
+
+    assertEquals(1, d.getInsignias().size());
+    assertEquals(fecha, d.getInsignias().getFirst().fechaObtenida());
   }
 
   @Test
-  void configurarVisibilidadInsignia_deberiaLanzarExcepcionSiInsigniaNoExiste() {
+  void otorgarInsignia_conFechaNula_debeAsignarFechaActual() {
     DonanteIncentivos d = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE);
-    BusinessStateException ex =
+    Insignia insignia = new Insignia("Compromiso", "Descripción", "http://img.png");
+
+    d.otorgarInsignia(insignia, null);
+
+    assertEquals(1, d.getInsignias().size());
+    assertNotNull(d.getInsignias().getFirst().fechaObtenida());
+  }
+
+  @Test
+  void configurarVisibilidadInsignia_conNombreNuloOVacio_debeLanzarExcepcion() {
+    DonanteIncentivos d = DonanteIncentivosMotherTest.colaboradorSinMisiones(ID_DONANTE);
+
+    ValidationException ex1 =
+        assertThrows(ValidationException.class, () -> d.configurarVisibilidadInsignia(null, false));
+    assertEquals(ErrorCatalog.INSIGNIA_SIN_NOMBRE, ex1.getError());
+
+    ValidationException ex2 =
         assertThrows(
-            BusinessStateException.class,
-            () -> d.configurarVisibilidadInsignia("Inexistente", false));
-    assertEquals(ErrorCatalog.INSIGNIA_NO_ENCONTRADA, ex.getError());
+            ValidationException.class, () -> d.configurarVisibilidadInsignia("   ", false));
+    assertEquals(ErrorCatalog.INSIGNIA_SIN_NOMBRE, ex2.getError());
+  }
+
+  @Test
+  void donanteEnCategoriaMaxima_debeRegistrarDonacionesSinErrores() {
+    DonanteIncentivos d = DonanteIncentivosMotherTest.conMisiones(ID_DONANTE, List.of());
+    // Ascendemos artificialmente al donante a TRANSFORMADOR
+    while (d.getCategoria() != CategoriaDonante.TRANSFORMADOR) {
+      d.ascender();
+    }
+    assertEquals(CategoriaDonante.TRANSFORMADOR, d.getCategoria());
+    assertNull(d.getMisionActiva());
+
+    // Se registra una nueva donación
+    d.registrarDonacion(EventoDonacionMotherTest.enFecha(2026, 6, 1));
+    d.registrarDonacionExitosa(UUID.randomUUID());
+
+    assertEquals(1, d.getMetricas().getTotalDonacionesHistoricas());
+    assertEquals(1, d.getMetricas().getTotalDonacionesExitosas());
   }
 }

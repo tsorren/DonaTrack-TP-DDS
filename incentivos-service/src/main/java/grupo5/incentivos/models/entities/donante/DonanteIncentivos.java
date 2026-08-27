@@ -118,6 +118,10 @@ public class DonanteIncentivos implements AggregateRoot {
   }
 
   public void otorgarInsignia(Insignia insignia) {
+    otorgarInsignia(insignia, LocalDate.now(ZoneId.systemDefault()));
+  }
+
+  public void otorgarInsignia(Insignia insignia, LocalDate fechaObtencion) {
     if (insignia == null) {
       throw new ValidationException(ErrorCatalog.INSIGNIA_NULA);
     }
@@ -125,13 +129,11 @@ public class DonanteIncentivos implements AggregateRoot {
     if (yaExiste) {
       return;
     }
+    LocalDate fechaFinal =
+        fechaObtencion != null ? fechaObtencion : LocalDate.now(ZoneId.systemDefault());
     InsigniaGanada nuevaInsignia =
         new InsigniaGanada(
-            insignia.nombre(),
-            insignia.descripcion(),
-            insignia.imagenUrl(),
-            true,
-            LocalDate.now(ZoneId.systemDefault()));
+            insignia.nombre(), insignia.descripcion(), insignia.imagenUrl(), true, fechaFinal);
     this.insignias.add(nuevaInsignia);
   }
 
@@ -140,6 +142,9 @@ public class DonanteIncentivos implements AggregateRoot {
   }
 
   public void configurarVisibilidadInsignia(String nombre, boolean visible) {
+    if (nombre == null || nombre.trim().isEmpty()) {
+      throw new ValidationException(ErrorCatalog.INSIGNIA_SIN_NOMBRE);
+    }
     for (int i = 0; i < this.insignias.size(); i++) {
       InsigniaGanada current = this.insignias.get(i);
       if (current.nombre().equals(nombre)) {

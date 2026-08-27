@@ -4,6 +4,7 @@ import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import lombok.Getter;
 
@@ -23,7 +24,11 @@ public class MisionCompletitud extends Mision {
   @Override
   protected Integer calcularNuevoProgreso(DonanteIncentivos donante, EventoDonacion evento) {
     if (evento.getCategorias() != null) {
-      this.categoriasdonadas.addAll(evento.getCategorias());
+      for (String cat : evento.getCategorias()) {
+        if (cat != null && !cat.trim().isEmpty()) {
+          this.categoriasdonadas.add(cat.trim().toLowerCase(Locale.ROOT));
+        }
+      }
     }
     return this.categoriasdonadas.size();
   }

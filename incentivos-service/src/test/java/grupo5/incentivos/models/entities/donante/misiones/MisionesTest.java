@@ -272,4 +272,37 @@ class MisionesTest {
     ValidationException ex = assertThrows(ValidationException.class, () -> racha.setInsignia(null));
     assertEquals(ErrorCatalog.INSIGNIA_NULA, ex.getError());
   }
+
+  @Test
+  void misionCompletitud_conCategoriasConEspaciosYMayusculas_debeNormalizarSinDuplicar() {
+    MisionCompletitud mision = MisionMotherTest.completitud(CategoriaDonante.COLABORADOR, 2);
+
+    mision.evaluarProgreso(
+        donante,
+        EventoDonacionMotherTest.conCategorias(
+            HOY, List.of("  Alimentos  ", "alimentos", "ALIMENTOS")));
+
+    assertEquals(1, mision.getProgresoActual());
+    assertFalse(mision.isCompletada());
+
+    mision.evaluarProgreso(
+        donante, EventoDonacionMotherTest.conCategorias(HOY, List.of("  Ropa  ")));
+
+    assertEquals(2, mision.getProgresoActual());
+    assertTrue(mision.isCompletada());
+  }
+
+  @Test
+  void misionCompletar_debePropagarFechaDeDonacionAInsigniaGanada() {
+    MisionRacha racha =
+        MisionMotherTest.rachaConInsignia(CategoriaDonante.COLABORADOR, 1, "Racha Veloz");
+    LocalDate fechaDonacion = LocalDate.of(2026, 3, 20);
+
+    racha.evaluarProgreso(donante, EventoDonacionMotherTest.enFecha(fechaDonacion));
+
+    assertTrue(racha.isCompletada());
+    assertEquals(fechaDonacion, racha.getFechaCompletada());
+    assertEquals(1, donante.getInsignias().size());
+    assertEquals(fechaDonacion, donante.getInsignias().getFirst().fechaObtenida());
+  }
 }
