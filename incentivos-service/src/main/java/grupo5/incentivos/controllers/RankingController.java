@@ -2,12 +2,14 @@ package grupo5.incentivos.controllers;
 
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.services.IRankingService;
+import jakarta.validation.constraints.Pattern;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/incentivos/ranking")
+@Validated
 public class RankingController implements IRankingController {
 
   private final IRankingService rankingService;
@@ -43,7 +46,11 @@ public class RankingController implements IRankingController {
   @Override
   @PostMapping("/calcular")
   public ResponseEntity<RankingMensualDTO> calcularRanking(
-      @RequestParam(required = false) String periodo) {
+      @RequestParam(required = false)
+          @Pattern(
+              regexp = "^\\d{4}-(0[1-9]|1[0-2])$",
+              message = "El periodo debe tener formato YYYY-MM")
+          String periodo) {
     YearMonth yearMonth =
         periodo != null ? YearMonth.parse(periodo) : YearMonth.now(ZoneId.systemDefault());
     return ResponseEntity.ok(rankingService.calcularYPersistir(yearMonth));
@@ -52,7 +59,12 @@ public class RankingController implements IRankingController {
   @Override
   @GetMapping("/posicion/{donanteId}")
   public ResponseEntity<Integer> obtenerPosicionDonante(
-      @PathVariable UUID donanteId, @RequestParam(required = false) String periodo) {
+      @PathVariable UUID donanteId,
+      @RequestParam(required = false)
+          @Pattern(
+              regexp = "^\\d{4}-(0[1-9]|1[0-2])$",
+              message = "El periodo debe tener formato YYYY-MM")
+          String periodo) {
     Optional<Integer> posicion =
         periodo != null
             ? rankingService.obtenerPosicionDonante(donanteId, YearMonth.parse(periodo))
