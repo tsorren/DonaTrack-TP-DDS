@@ -5,7 +5,6 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.dto.MetricasDonanteDTO;
 import grupo5.incentivos.dto.ResumenSistemaDTO;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
 import java.time.ZoneId;
@@ -33,7 +32,7 @@ public class MetricasIncentivosService implements IMetricasIncentivosService {
     Integer posicion = rankingService.obtenerPosicionDonante(donanteId).orElse(null);
     int misionesCompletadas = donante.misionesCompletadas();
     Map<String, Long> evolucion =
-        donante.getMetricas().donacionesPorPeriodo().entrySet().stream()
+        donante.donacionesPorPeriodo().entrySet().stream()
             .collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue));
     return MetricasDonanteDTO.desde(donante, posicion, misionesCompletadas, evolucion);
   }
@@ -49,8 +48,7 @@ public class MetricasIncentivosService implements IMetricasIncentivosService {
     int donantesMesAnterior =
         (int) todos.stream().filter(d -> d.tuvoActividadEnMes(mesAnterior)).count();
 
-    long totalMisiones =
-        todos.stream().flatMap(d -> d.getMisiones().stream()).filter(Mision::isCompletada).count();
+    long totalMisiones = todos.stream().mapToLong(DonanteIncentivos::misionesCompletadas).sum();
     long misionesMesActual =
         todos.stream()
             .mapToLong(
@@ -63,7 +61,7 @@ public class MetricasIncentivosService implements IMetricasIncentivosService {
 
     Map<String, Long> evolucion =
         todos.stream()
-            .flatMap(d -> d.getMetricas().donacionesPorPeriodo().entrySet().stream())
+            .flatMap(d -> d.donacionesPorPeriodo().entrySet().stream())
             .collect(Collectors.toMap(e -> e.getKey().toString(), Map.Entry::getValue, Long::sum));
 
     return new ResumenSistemaDTO(

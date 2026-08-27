@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
 import lombok.Getter;
@@ -28,6 +29,7 @@ public class DonanteIncentivos implements AggregateRoot {
 
   private final UUID id;
   private final UUID idPersona;
+  private final LocalDate fechaRegistro;
   private String nombre;
   private CategoriaDonante categoria;
   private List<CambioCategoria> historialCategorias;
@@ -37,22 +39,59 @@ public class DonanteIncentivos implements AggregateRoot {
 
   private final transient List<EventoDonanteIncentivos> domainEvents = new ArrayList<>();
 
-  public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre, List<Mision> misiones) {
+  public DonanteIncentivos(
+      UUID idDonante,
+      UUID idPersona,
+      String nombre,
+      CategoriaDonante categoria,
+      LocalDate fechaRegistro,
+      List<CambioCategoria> historialCategorias,
+      List<Mision> misiones,
+      List<InsigniaGanada> insignias,
+      Metricas metricas) {
     if (idPersona == null) {
       throw new ValidationException(ErrorCatalog.DONANTE_INCENTIVOS_ID_NULO);
     }
-
     if (idDonante == null) {
       throw new ValidationException(ErrorCatalog.DONANTE_INCENTIVOS_ID_NULO);
     }
     this.id = idDonante;
     this.idPersona = idPersona;
     this.nombre = nombre;
-    this.categoria = CategoriaDonante.COLABORADOR;
-    this.historialCategorias = new ArrayList<>();
+    this.categoria = categoria != null ? categoria : CategoriaDonante.COLABORADOR;
+    this.fechaRegistro =
+        fechaRegistro != null ? fechaRegistro : LocalDate.now(ZoneId.systemDefault());
+    this.historialCategorias =
+        historialCategorias != null ? new ArrayList<>(historialCategorias) : new ArrayList<>();
     this.misiones = misiones != null ? new ArrayList<>(misiones) : new ArrayList<>();
-    this.insignias = new ArrayList<>();
-    this.metricas = new Metricas();
+    this.insignias = insignias != null ? new ArrayList<>(insignias) : new ArrayList<>();
+    this.metricas = metricas != null ? metricas : new Metricas();
+  }
+
+  public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre, List<Mision> misiones) {
+    this(
+        idDonante,
+        idPersona,
+        nombre,
+        CategoriaDonante.COLABORADOR,
+        LocalDate.now(ZoneId.systemDefault()),
+        new ArrayList<>(),
+        misiones,
+        new ArrayList<>(),
+        new Metricas());
+  }
+
+  public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre, LocalDate fechaRegistro) {
+    this(
+        idDonante,
+        idPersona,
+        nombre,
+        CategoriaDonante.COLABORADOR,
+        fechaRegistro,
+        new ArrayList<>(),
+        MisionFactory.crearMisionesEstandar(),
+        new ArrayList<>(),
+        new Metricas());
   }
 
   public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre) {
@@ -191,5 +230,9 @@ public class DonanteIncentivos implements AggregateRoot {
 
   public boolean tuvoActividadEnMes(YearMonth mes) {
     return this.metricas.donacionesEnMes(mes) > 0;
+  }
+
+  public Map<YearMonth, Long> donacionesPorPeriodo() {
+    return this.metricas.donacionesPorPeriodo();
   }
 }
