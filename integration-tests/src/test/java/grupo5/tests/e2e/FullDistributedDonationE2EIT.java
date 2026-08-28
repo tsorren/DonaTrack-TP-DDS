@@ -96,7 +96,8 @@ class FullDistributedDonationE2EIT extends BaseIT {
     // Usamos la primera fragmentacion para verificar la entrega en logistica
     UUID donacionIndependienteId =
         UUID.fromString(
-            (String) ((Map<String, Object>) frags.getFirst().get("donacionIndependiente")).get("id"));
+            (String)
+                ((Map<String, Object>) frags.getFirst().get("donacionIndependiente")).get("id"));
 
     // 6. Aprobar propuesta en donaciones-service
     // Esto dispara la llamada asíncrona Feign hacia logistica-service (POST /api/entregas)
