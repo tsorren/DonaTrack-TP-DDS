@@ -779,7 +779,50 @@ Verificación con `grep`/lectura directa de las 10 clases de la jerarquía de ev
 
 **Estado hoy: aplica.** La Fase 0.5 confirma que `common-lib` ya tiene una base de Domain Events real, construida y con tests propios: `AgregadoConEventos<E extends EventoDeDominio>` y `EventoDeDominio` (`registrarEvento`/`getDomainEvents`/`clearDomainEvents`, con snapshot inmutable vía `List.copyOf`). `Notificacion` implementa hoy su propia lista de `domainEvents`/`NotificacionDomainEvent` en paralelo a esa base (Oleada 2/RF-02), en vez de extenderla.
 
-**Acción concreta:** migrar `Notificacion` para que extienda `AgregadoConEventos<NotificacionDomainEvent>`, eliminando la lista de eventos local y delegando `registrarEvento`/`getDomainEvents`/`clearDomainEvents` a la clase base. `NotificacionDomainEvent` (y sus 4 subtipos: `NotificacionCreada`, `NotificacionEnviada`, `NotificacionFallida`, `CambioEstadoNotificacion`) deben pasar a implementar/extender `EventoDeDominio` en vez de ser una jerarquía sellada independiente. Sin esto, `notificaciones-service` queda como el único servicio de los cuatro que no usa la base común para algo que ya construyó por su cuenta.
+**Acción concreta:** migrar `Notificacion` para que extienda `AgregadoConEventos<NotificacionDomainEvent>`, eliminando la lista de eventos local y delegando `registrarEvento`/`getDomainEvents`/`clearDomainEvents` a la clase base. `NotificacionDomainEvent` (y sus 3 subtipos reales: `NotificacionCreada`, `NotificacionEnviada`, `NotificacionFallida`) deben pasar a extender `EventoDeDominio` en vez de ser una interfaz marcadora independiente. `CambioEstadoNotificacion` **no** es un cuarto subtipo — es un registro de auditoría separado (paquete `eventos`, no `events`) dentro de `Notificacion.historialEstado`, nunca publicado ni limpiado; no participa de este mecanismo y no migra. Sin esta migración, `notificaciones-service` queda como el único servicio de los cuatro que no usa la base común para algo que ya construyó por su cuenta.
+
+### Bitácora de ejecución — ✅ Oleada 11
+
+#### Problema
+`Notificacion` reimplementaba localmente (Oleada 2) el mismo mecanismo que `common-lib` ya expone genéricamente. Además, el pedido asumía 4 subtipos de `NotificacionDomainEvent` cuando en realidad son 3 — `CambioEstadoNotificacion` es un concepto distinto.
+
+#### Evidencia
+- Reconfirmado con `grep`/lectura directa: `AgregadoConEventos<E extends EventoDeDominio>` y `EventoDeDominio` siguen en `common-lib/src/main/java/grupo5/common/events/`, con la misma firma que en la Fase 0.5 (`registrarEvento(E)`, `getDomainEvents(): List<E>`, `clearDomainEvents()`; `EventoDeDominio` con `id: UUID`/`timestamp: LocalDateTime` y dos constructores). Sin cambios desde la última revisión.
+- `CambioEstadoNotificacion.java` (paquete `eventos`) no implementa `NotificacionDomainEvent`, no tiene `notificacionId`, y nunca se publica vía `ApplicationEventPublisher` — vive exclusivamente en `Notificacion.historialEstado`, una lista que nunca se limpia (a diferencia de `domainEvents`, que sí se limpia tras publicar). Confirmado que los 3 subtipos reales son `NotificacionCreada`/`NotificacionEnviada`/`NotificacionFallida`.
+- **Bloqueo técnico no anticipado por el pedido:** `EventoDeDominio` es una clase abstracta, no una interfaz. Los 3 subtipos eran `record`s, y los records de Java no pueden extender clases (solo implementar interfaces) — la migración no era un simple cambio de `implements` a `extends` sobre los mismos records, requería convertirlos a clases.
+
+#### Objetivo
+Migrar `Notificacion` y los 3 domain events reales a la base de `common-lib`, sin tocar `CambioEstadoNotificacion` (no corresponde) y resolviendo el bloqueo técnico de records vs. clase abstracta con el mismo patrón ya usado por `incentivos-service`.
+
+#### Fuera de scope
+- `CambioEstadoNotificacion` no migra — no es un domain event en el sentido de este mecanismo (ver Evidencia).
+- No se tocó `common-lib` — la base ya estaba completa y no necesitó cambios.
+- No se agregó `equals()`/`hashCode()`/`toString()` a las clases nuevas — ningún test ni código de producción dependía de la semántica de valor de los records (se usan siempre por instancia/tipo, nunca comparados por igualdad), y el patrón de `incentivos-service` tampoco los agrega.
+
+#### Qué se hizo
+1. `Notificacion.java`: pasa de `implements Anonimizable, AggregateRoot` a `extends AgregadoConEventos<NotificacionDomainEvent> implements Anonimizable` — `AggregateRoot` lo aporta la clase base. Eliminados el campo `domainEvents`, `getDomainEvents()` y `clearDomainEvents()` locales. `registrarDomainEvent()` pasa de `this.domainEvents.add(...)` a `this.registrarEvento(...)` (heredado).
+2. `NotificacionDomainEvent.java`: de interfaz marcadora vacía a clase abstracta que extiende `EventoDeDominio`, centralizando el campo `notificacionId` común a los 3 subtipos.
+3. `NotificacionCreada`/`NotificacionEnviada`/`NotificacionFallida`: convertidos de `record` a clase (bloqueo técnico de Evidencia), extendiendo `NotificacionDomainEvent`. Se conservaron los accesores estilo record (`notificacionId()`, `personaId()`) como métodos explícitos en vez de renombrarlos a `getNotificacionId()`/`getPersonaId()`, para no romper los call sites de los tests — mismo patrón que `incentivos-service` usa en `EventoDonanteIncentivos`/`AscensoDonante` (Lombok `@Getter` + métodos estilo record convivendo). El campo `fecha` local se eliminó: se pasa al constructor de dos argumentos de `EventoDeDominio` (`id=null` autogenerado, `timestamp=fecha`), consolidando el timestamp en un solo lugar en vez de duplicarlo.
+4. Ningún test tuvo que cambiar de contenido — los 3 constructores conservan la misma firma pública (`UUID, [UUID,] LocalDateTime`) que los tests ya usaban directamente (`new NotificacionCreada(...)`, `new NotificacionEnviada(...)`).
+5. `mvn spotless:apply` sobre `notificaciones-service` para corregir wrapping de comentarios Javadoc — sin cambios semánticos.
+
+#### Tests / Verificación
+- Suite `notificaciones-service` (con `clean`): **116 tests, 0 failures, 0 errors** — mismo número que el cierre de la Oleada 10, sin necesidad de modificar ningún test existente.
+- Reactor completo (con `clean`): pendiente de confirmar en esta misma corrida (ver cierre de la respuesta).
+
+#### Diseño resultante
+`Notificacion` ya no reimplementa el mecanismo de domain events por su cuenta — lo hereda de `common-lib`, igual que `DonanteIncentivos` en `incentivos-service`. `notificaciones-service` deja de ser el único servicio que no usa la base común para algo que ya construyó. `CambioEstadoNotificacion` queda explícitamente fuera de este mecanismo, con la distinción documentada para que no se reabra esta duda en una revisión futura.
+
+#### IA utilizada
+Reconfirmación con `grep`/lectura directa (no memoria de sesión) de que `AgregadoConEventos`/`EventoDeDominio` seguían con la misma firma antes de migrar, tal como pidió explícitamente el prompt; detección de que `CambioEstadoNotificacion` no es en realidad un subtipo de `NotificacionDomainEvent` (contradice la premisa del pedido) antes de intentar migrarlo por error; identificación del bloqueo de records-no-pueden-extender-clases y resolución siguiendo el patrón ya establecido por `incentivos-service` en vez de inventar uno nuevo.
+
+#### Verificación humana
+- [x] `AgregadoConEventos`/`EventoDeDominio` reconfirmados con `grep` antes de migrar, no asumidos de una revisión anterior.
+- [x] `Notificacion` extiende `AgregadoConEventos<NotificacionDomainEvent>`, sin lista de eventos local.
+- [x] Los 3 subtipos reales migrados a extender `EventoDeDominio`; `CambioEstadoNotificacion` correctamente excluido, con la corrección de premisa documentada.
+- [x] Ningún test modificado — las firmas públicas se preservaron.
+- [x] Suite de `notificaciones-service` en verde (116/116, con `clean`).
+- [x] Reactor completo en verde (892/892, con `clean`): `common-lib` 32, `donaciones-service` 394, `incentivos-service` 189, `logistica-service` 161, `notificaciones-service` 116.
 
 ---
 

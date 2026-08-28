@@ -1,6 +1,6 @@
 package grupo5.notificaciones.models.entities.notificaciones;
 
-import grupo5.common.repositories.AggregateRoot;
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.CambioEstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.events.NotificacionCreada;
 import grupo5.notificaciones.models.entities.notificaciones.events.NotificacionDomainEvent;
@@ -19,8 +19,12 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 
+// Oleada 11: extiende AgregadoConEventos<NotificacionDomainEvent> (common-lib) en vez de
+// mantener su propia lista de domainEvents — registrarEvento()/getDomainEvents()/
+// clearDomainEvents() vienen heredados; AggregateRoot también lo aporta la clase base.
 @Getter
-public class Notificacion implements Anonimizable, AggregateRoot {
+public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
+    implements Anonimizable {
   private UUID id;
   private UUID personaId;
   private String mensaje;
@@ -29,9 +33,6 @@ public class Notificacion implements Anonimizable, AggregateRoot {
 
   @Getter(AccessLevel.NONE)
   private List<CambioEstadoNotificacion> historialEstado;
-
-  @Getter(AccessLevel.NONE)
-  private final transient List<NotificacionDomainEvent> domainEvents = new ArrayList<>();
 
   public Notificacion(UUID personaId, String mensaje) {
     this.id = UUID.randomUUID();
@@ -47,14 +48,6 @@ public class Notificacion implements Anonimizable, AggregateRoot {
     return List.copyOf(this.historialEstado);
   }
 
-  public List<NotificacionDomainEvent> getDomainEvents() {
-    return List.copyOf(this.domainEvents);
-  }
-
-  public void clearDomainEvents() {
-    this.domainEvents.clear();
-  }
-
   public void actualizarEstado(EstadoNotificacion nuevoEstado) {
     EstadoNotificacion anterior = this.estadoNotificacion;
     this.estadoNotificacion = nuevoEstado;
@@ -65,10 +58,10 @@ public class Notificacion implements Anonimizable, AggregateRoot {
 
   private void registrarDomainEvent(EstadoNotificacion nuevoEstado, LocalDateTime timestamp) {
     switch (nuevoEstado) {
-      case PENDIENTE -> this.domainEvents.add(
+      case PENDIENTE -> this.registrarEvento(
           new NotificacionCreada(this.id, this.personaId, timestamp));
-      case ENVIADA -> this.domainEvents.add(new NotificacionEnviada(this.id, timestamp));
-      case FALLIDA -> this.domainEvents.add(new NotificacionFallida(this.id, timestamp));
+      case ENVIADA -> this.registrarEvento(new NotificacionEnviada(this.id, timestamp));
+      case FALLIDA -> this.registrarEvento(new NotificacionFallida(this.id, timestamp));
     }
   }
 
