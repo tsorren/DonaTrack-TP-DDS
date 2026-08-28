@@ -210,29 +210,28 @@ class CrossServiceCommunicationIT extends BaseIT {
     List<Map<String, Object>> frags = (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertFalse(frags.isEmpty());
-    Map<String, Object> di = (Map<String, Object>) frags.getFirst().get("donacionIndependiente");
-    assertNotNull(di);
-    UUID donacionIndependienteId = UUID.fromString((String) di.get("id"));
 
     // 7. Aprobar Propuesta
     donacionesClient.actualizarEstadoPropuesta(propuestaId, "APROBADA").then().statusCode(200);
 
-    // 8. Transiciones de estado de DonacionIndependiente
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(
-            donacionIndependienteId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
-
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(donacionIndependienteId, "EN_TRASLADO", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
-
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(donacionIndependienteId, "ENTREGADA", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
+    // 8. Transiciones de estado de DonacionIndependiente para TODAS las fragmentaciones
+    for (Map<String, Object> frag : frags) {
+      UUID diId =
+          UUID.fromString(
+              (String) ((Map<String, Object>) frag.get("donacionIndependiente")).get("id"));
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "EN_TRASLADO", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "ENTREGADA", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+    }
 
     // 9. Verificar efectos secundarios en incentivos-service
     PollingUtils.esperarTotalDonacionesExitosas(incentivosClient, donanteId, 0);
@@ -430,15 +429,11 @@ class CrossServiceCommunicationIT extends BaseIT {
     assertEquals(
         2, frags.size(), "Deberían haber 2 fragmentaciones para completar las 10 unidades");
 
-    UUID diId1 =
-        UUID.fromString(
-            (String) ((Map<String, Object>) frags.get(0).get("donacionIndependiente")).get("id"));
-    UUID diId2 =
-        UUID.fromString(
-            (String) ((Map<String, Object>) frags.get(1).get("donacionIndependiente")).get("id"));
-
-    // 6. Transición de ambas donaciones independientes a ENTREGADA
-    for (UUID diId : List.of(diId1, diId2)) {
+    // 6. Transición de todas las donaciones independientes a ENTREGADA
+    for (Map<String, Object> frag : frags) {
+      UUID diId =
+          UUID.fromString(
+              (String) ((Map<String, Object>) frag.get("donacionIndependiente")).get("id"));
       donacionesClient
           .cambiarEstadoDonacionIndependiente(diId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
           .then()

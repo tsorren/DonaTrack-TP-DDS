@@ -33,7 +33,7 @@ class DonationIntegrationIT extends BaseIT {
 
     // 3. Crear donación con ítem aislado
     DonacionTestDTO donacion =
-        DonacionTestDataBuilder.deAlimento(TestIdGenerator.uniqueItemName("arroz it"), 5)
+        DonacionTestDataBuilder.deAlimento(TestIdGenerator.uniqueItemName("pantalon"), 5)
             .conDonante(donanteId)
             .build();
 

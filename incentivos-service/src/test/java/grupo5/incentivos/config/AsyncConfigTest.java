@@ -2,6 +2,7 @@ package grupo5.incentivos.config;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.common.logging.MdcTaskDecorator;
 import java.util.concurrent.Executor;
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -11,7 +12,7 @@ class AsyncConfigTest {
   @Test
   void notificacionesTaskExecutor_deberiaConfigurarPoolCorrectamente() {
     AsyncConfig config = new AsyncConfig();
-    Executor executor = config.notificacionesTaskExecutor();
+    Executor executor = config.notificacionesTaskExecutor(new MdcTaskDecorator());
 
     assertNotNull(executor);
     assertInstanceOf(ThreadPoolTaskExecutor.class, executor);
@@ -28,7 +29,8 @@ class AsyncConfigTest {
   @Test
   void notificacionesTaskExecutor_deberiaPropagarMdcContextoAHiloDeTrabajo() throws Exception {
     AsyncConfig config = new AsyncConfig();
-    ThreadPoolTaskExecutor executor = (ThreadPoolTaskExecutor) config.notificacionesTaskExecutor();
+    ThreadPoolTaskExecutor executor =
+        (ThreadPoolTaskExecutor) config.notificacionesTaskExecutor(new MdcTaskDecorator());
 
     org.slf4j.MDC.put("traceId", "trace-12345");
     java.util.concurrent.CompletableFuture<String> future =
