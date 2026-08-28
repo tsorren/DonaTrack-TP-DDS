@@ -43,14 +43,16 @@ public record BienNormalizado(
       throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_ESTADO);
     }
 
-    if (conVencimiento && bienOriginal.fechaVencimiento() == null) {
-      throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_REQUERIDO);
-    }
-    if (!conVencimiento && bienOriginal.fechaVencimiento() != null) {
-      throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_NO_PERMITIDO);
-    }
-    if (conEstado && bienOriginal.estado() == null) {
-      throw new ValidationException(ErrorCatalog.BIEN_ESTADO_REQUERIDO);
+    if (estadoNormalizacion == EstadoNormalizacion.ACEPTADO) {
+      if (conVencimiento && bienOriginal.fechaVencimiento() == null) {
+        throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_REQUERIDO);
+      }
+      if (!conVencimiento && bienOriginal.fechaVencimiento() != null) {
+        throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_NO_PERMITIDO);
+      }
+      if (conEstado && bienOriginal.estado() == null) {
+        throw new ValidationException(ErrorCatalog.BIEN_ESTADO_REQUERIDO);
+      }
     }
   }
 
