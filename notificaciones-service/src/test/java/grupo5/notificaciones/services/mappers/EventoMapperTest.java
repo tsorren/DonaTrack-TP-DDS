@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.input.*;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.*;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -171,6 +172,8 @@ class EventoMapperTest {
 
     EventoDonanteInactivoDTO dto = new EventoDonanteInactivoDTO(idInexistente, TEST_DATE_TIME, 21);
 
-    assertThrows(IllegalArgumentException.class, () -> mapper.toEntity(dto));
+    // Oleada 3 (RF-05): antes IllegalArgumentException cruda, ahora ValidationException +
+    // ErrorCatalog.RECURSO_NO_ENCONTRADO, mismo criterio que PersonasService.
+    assertThrows(ValidationException.class, () -> mapper.toEntity(dto));
   }
 }

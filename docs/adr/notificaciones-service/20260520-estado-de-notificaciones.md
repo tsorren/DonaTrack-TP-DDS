@@ -59,3 +59,19 @@ transiciones entre estados
 #### Contras
 
 * Excede nuestro conocimiento actual, puede ser aplicada en el futuro o en otras capas
+
+## Nota de implementación (Oleada 9.5, RF-07/RF-10)
+
+El enum implementado es `PENDIENTE`/`ENVIADA`/`FALLIDA` (no `Cancelada`, como decía el análisis de
+alternativas de más arriba — se deja esa sección sin tocar por ser el registro histórico de la
+decisión, y se corrige acá el nombre real del estado terminal).
+
+📝 **"Queda en pendiente si no hay conexión y luego se reintenta" no está implementado.** El
+comportamiento real de `Notificacion.notificar()` es: dentro de un mismo intento, recorre los
+medios ordenados (predeterminado primero) y hace fallback al siguiente si el actual lanza excepción
+o devuelve `false`; si todos los medios fallan, pasa a `FALLIDA` de inmediato — no hay reintento
+automático posterior ni un mecanismo que vuelva a intentar una notificación ya `FALLIDA`. La
+responsabilidad de reintentar, si existe, está del lado del llamador (`FeignRetryConfig` en
+`donaciones-service`, ver Oleada 9.5 en el plan de oleadas) y opera a nivel de la llamada HTTP
+completa, no a nivel de "un medio de contacto" — un reintento ahí reprocesaría el evento entero,
+no reanudaría una `Notificacion` `FALLIDA` puntual (riesgo de duplicados documentado como `RF-10`).

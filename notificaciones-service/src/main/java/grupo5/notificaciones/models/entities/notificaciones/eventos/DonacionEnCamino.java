@@ -3,13 +3,11 @@ package grupo5.notificaciones.models.entities.notificaciones.eventos;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class DonacionEnCamino extends EventoDeDonacion {
 
-  private String enlaceSeguimiento;
+  private final String enlaceSeguimiento;
 
   public DonacionEnCamino(
       Persona persona,
@@ -17,14 +15,9 @@ public class DonacionEnCamino extends EventoDeDonacion {
       String detalleDonacion,
       String enlaceSeguimiento,
       LocalDateTime fecha) {
-    this.setPersona(persona);
-    this.setEntidadBeneficiaria(entidadBeneficiaria);
-    this.setDetalleDonacion(detalleDonacion);
-    this.setFecha(fecha);
+    super(persona, entidadBeneficiaria, detalleDonacion, fecha);
     this.enlaceSeguimiento = enlaceSeguimiento;
   }
-
-  public DonacionEnCamino() {}
 
   @Override
   protected String armarMensajeDonante() {
