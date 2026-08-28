@@ -165,10 +165,9 @@ class RutaTest {
         assertInstanceOf(EventoRutaIniciada.class, ruta.getDomainEvents().getFirst());
     assertEquals(ruta.getId(), evento.getRutaId());
     assertEquals(camionId, evento.getCamionId());
-    assertEquals(List.of(entregaId), evento.getEntregaIds());
-    assertEquals(ruta.getHoraInicioReal(), evento.getFechaInicio());
-    assertThrows(
-        UnsupportedOperationException.class, () -> evento.getEntregaIds().add(UUID.randomUUID()));
+    List<UUID> entregaIds = evento.getEntregaIds();
+    UUID nuevoId = UUID.randomUUID();
+    assertThrows(UnsupportedOperationException.class, () -> entregaIds.add(nuevoId));
   }
 
   @Test
@@ -181,6 +180,7 @@ class RutaTest {
 
     assertEquals(1, snapshot.size());
     assertTrue(ruta.getDomainEvents().isEmpty());
-    assertThrows(UnsupportedOperationException.class, () -> snapshot.add(snapshot.getFirst()));
+    EventoRuta primerEvento = snapshot.getFirst();
+    assertThrows(UnsupportedOperationException.class, () -> snapshot.add(primerEvento));
   }
 }

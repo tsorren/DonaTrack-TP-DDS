@@ -249,6 +249,7 @@ class EntregaTest {
     assertEquals(1, snapshot.size());
     assertInstanceOf(EntregaConfirmada.class, snapshot.getFirst());
     assertTrue(entrega.getDomainEvents().isEmpty());
-    assertThrows(UnsupportedOperationException.class, () -> snapshot.add(snapshot.getFirst()));
+    EventoEntrega primerEvento = snapshot.getFirst();
+    assertThrows(UnsupportedOperationException.class, () -> snapshot.add(primerEvento));
   }
 }

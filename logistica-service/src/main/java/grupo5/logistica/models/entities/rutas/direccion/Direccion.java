@@ -55,12 +55,14 @@ public final class Direccion {
     return localidad;
   }
 
+  private static final String VALOR_ANONIMIZADO = "ANONIMIZADO";
+
   public void anonimizar() {
-    this.calle = "ANONIMIZADO";
+    this.calle = VALOR_ANONIMIZADO;
     this.altura = 1;
     this.piso = 0;
-    this.departamento = "ANONIMIZADO";
-    this.codigoPostal = "ANONIMIZADO";
+    this.departamento = VALOR_ANONIMIZADO;
+    this.codigoPostal = VALOR_ANONIMIZADO;
     this.localidad.anonimizar();
   }
 

@@ -140,7 +140,9 @@ class MedioDeContactoMapperTest {
     MedioDeContacto anonimo =
         new MedioDeContacto() {
           @Override
-          public void anonimizar() {}
+          public void anonimizar() {
+            // No-op: clase anónima de prueba para simular tipo de medio de contacto no soportado
+          }
         };
 
     assertThrows(IllegalArgumentException.class, () -> mapper.toOutputDTO(anonimo));

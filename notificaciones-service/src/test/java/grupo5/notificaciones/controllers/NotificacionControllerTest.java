@@ -1,6 +1,9 @@
 package grupo5.notificaciones.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,7 +19,6 @@ import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -60,7 +62,7 @@ class NotificacionControllerTest {
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
@@ -76,7 +78,7 @@ class NotificacionControllerTest {
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
@@ -93,7 +95,7 @@ class NotificacionControllerTest {
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
@@ -110,7 +112,7 @@ class NotificacionControllerTest {
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
@@ -131,7 +133,7 @@ class NotificacionControllerTest {
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
@@ -154,7 +156,7 @@ class NotificacionControllerTest {
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
@@ -171,7 +173,7 @@ class NotificacionControllerTest {
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
         .andExpect(status().isBadRequest());
 
-    Mockito.verify(notificacionService, Mockito.never()).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, never()).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test

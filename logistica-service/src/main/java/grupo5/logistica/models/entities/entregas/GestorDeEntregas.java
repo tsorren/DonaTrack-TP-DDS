@@ -12,18 +12,18 @@ public final class GestorDeEntregas {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
+    // spotless:off
     switch (solicitud) {
-      case ConfirmacionRecepcion confirmacion -> {
-        confirmacion.entrega().confirmarEntrega(confirmacion.actor());
-        if (confirmacion.fotoRecepcionUrl() != null && !confirmacion.fotoRecepcionUrl().isBlank()) {
-          confirmacion.entrega().adjuntarFotoRecepcion(confirmacion.fotoRecepcionUrl());
+      case ConfirmacionRecepcion(var entrega, var actor, var fotoRecepcionUrl) -> {
+        entrega.confirmarEntrega(actor);
+        if (fotoRecepcionUrl != null && !fotoRecepcionUrl.isBlank()) {
+          entrega.adjuntarFotoRecepcion(fotoRecepcionUrl);
         }
       }
-      case NoRecepcion noRecepcion -> noRecepcion
-          .entrega()
-          .negarEntrega(
-              noRecepcion.actor(), noRecepcion.justificacion(), noRecepcion.replanificable());
-      case RegresoDeposito regreso -> regreso.entrega().regresarAlDeposito(regreso.actor());
+      case NoRecepcion(var entrega, var actor, var justificacion, var replanificable) ->
+          entrega.negarEntrega(actor, justificacion, replanificable);
+      case RegresoDeposito(var entrega, var actor) -> entrega.regresarAlDeposito(actor);
     }
+    // spotless:on
   }
 }

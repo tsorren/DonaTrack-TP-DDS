@@ -92,7 +92,7 @@ public class RutasService implements IRutasService {
 
   @Override
   public RutaResponseDTO cambiarEstado(UUID id, CambioEstadoRutaRequestDTO request) {
-    if (request == null || request.estado() == null) {
+    if (request == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
@@ -100,7 +100,7 @@ public class RutasService implements IRutasService {
 
     switch (request.estado()) {
       case EN_TRASLADO -> procesarRutaEnTraslado(ruta, request);
-      case COMPLETADA -> procesarRutaCompletada(ruta, request);
+      case COMPLETADA -> procesarRutaCompletada(ruta);
       case PENDIENTE -> throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
@@ -125,7 +125,7 @@ public class RutasService implements IRutasService {
     ruta.clearDomainEvents();
   }
 
-  private void procesarRutaCompletada(Ruta ruta, CambioEstadoRutaRequestDTO request) {
+  private void procesarRutaCompletada(Ruta ruta) {
     Chofer chofer = buscarChofer(ruta.getChoferId());
     Camion camion = buscarCamion(ruta.getCamionId());
 
@@ -141,10 +141,11 @@ public class RutasService implements IRutasService {
   private void publicarEventos(Ruta ruta, Camion camion, List<Entrega> entregas) {
     for (EventoRuta evento : ruta.getDomainEvents()) {
       switch (evento) {
-        case EventoRutaAsignada asignada -> comunicadorEventos.comunicarRutaAsignada(
-            asignada, buscarEntregaEnContexto(asignada.getEntregaId(), entregas));
-        case EventoRutaIniciada iniciada -> comunicadorEventos.comunicarRutaIniciada(
-            iniciada, camion, entregas);
+        case EventoRutaAsignada asignada ->
+            comunicadorEventos.comunicarRutaAsignada(
+                asignada, buscarEntregaEnContexto(asignada.getEntregaId(), entregas));
+        case EventoRutaIniciada iniciada ->
+            comunicadorEventos.comunicarRutaIniciada(iniciada, camion, entregas);
       }
     }
   }

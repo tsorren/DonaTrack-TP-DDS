@@ -119,8 +119,9 @@ class ChoferTest {
     Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
     chofer.asignarARuta(UUID.randomUUID());
 
+    UUID otraRutaId = UUID.randomUUID();
     ValidationException exception =
-        assertThrows(ValidationException.class, () -> chofer.asignarARuta(UUID.randomUUID()));
+        assertThrows(ValidationException.class, () -> chofer.asignarARuta(otraRutaId));
     assertEquals(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA, exception.getError());
   }
 

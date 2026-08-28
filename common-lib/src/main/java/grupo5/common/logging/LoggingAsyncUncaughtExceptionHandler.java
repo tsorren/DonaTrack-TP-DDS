@@ -17,13 +17,15 @@ public class LoggingAsyncUncaughtExceptionHandler implements AsyncUncaughtExcept
 
   @Override
   public void handleUncaughtException(Throwable throwable, Method method, Object... params) {
-    log.error(
-        "[ASYNC-ERROR] Excepción no capturada en método asíncrono '{}' de clase '{}' con parámetros"
-            + " {}: {}",
-        method.getName(),
-        method.getDeclaringClass().getSimpleName(),
-        Arrays.toString(params),
-        throwable.getMessage(),
-        throwable);
+    if (log.isErrorEnabled()) {
+      log.error(
+          "[ASYNC-ERROR] Excepción no capturada en método asíncrono '{}' de clase '{}' con parámetros"
+              + " {}: {}",
+          method.getName(),
+          method.getDeclaringClass().getSimpleName(),
+          Arrays.toString(params),
+          throwable.getMessage(),
+          throwable);
+    }
   }
 }
