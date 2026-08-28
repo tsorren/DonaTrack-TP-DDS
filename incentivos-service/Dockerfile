@@ -13,28 +13,28 @@ COPY . .
 # Compilar el proyecto (sin tests)
 # -pl: Solo tu servicio
 # -am: También sus dependencias (common-lib)
-RUN mvn clean package -pl ${SERVICE_NAME} -am -DskipTests
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -pl ${SERVICE_NAME} -am -DskipTests
 
 
 # ==============================================================================
 # Etapa 2: Imagen final - CI (Copia el JAR pre-compilado de GitHub Actions)
 # ==============================================================================
-FROM eclipse-temurin:21-jre AS ci
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+FROM eclipse-temurin:21-jre-alpine AS ci
+RUN apk add --no-cache curl
 WORKDIR /app
 
 ARG JAR_FILE
 COPY ${JAR_FILE} app.jar
 
-EXPOSE 8080
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 
 # ==============================================================================
 # Etapa 3: Imagen final - Desarrollo local (Por defecto, compila desde builder)
 # ==============================================================================
-FROM eclipse-temurin:21-jre AS local
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+FROM eclipse-temurin:21-jre-alpine AS local
+RUN apk add --no-cache curl
 WORKDIR /app
 
 # nombre del directorio físico del servicio,
@@ -43,5 +43,5 @@ ARG SERVICE_NAME=incentivos-service
 # Copiar el JAR compilado desde la etapa anterior
 COPY --from=builder /app/${SERVICE_NAME}/target/*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "app.jar"]

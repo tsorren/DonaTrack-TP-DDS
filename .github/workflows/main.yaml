@@ -89,6 +89,7 @@ jobs:
       notificaciones-service: ${{ steps.filter.outputs.notificaciones-service }}
       incentivos-service: ${{ steps.filter.outputs.incentivos-service }}
       logistica-service: ${{ steps.filter.outputs.logistica-service }}
+      docker-files: ${{ steps.filter.outputs.docker-files }}
       any-service: ${{ steps.check.outputs.any-service }}
       services-matrix: ${{ steps.matrix.outputs.matrix }}
       docker-matrix: ${{ steps.docker-matrix.outputs.matrix }}
@@ -111,6 +112,14 @@ jobs:
               - 'incentivos-service/**'
             logistica-service:
               - 'logistica-service/**'
+            docker-files:
+              - 'docker-compose*.yml'
+              - 'docker-compose*.yaml'
+              - '**/Dockerfile*'
+              - '.dockerignore'
+              - '**/docker/**'
+              - 'n8n/**'
+              - 'integration-tests/**'
 
       - name: Verificar si algún servicio cambió
         id: check
@@ -119,30 +128,32 @@ jobs:
                 "${{ steps.filter.outputs.donaciones-service }}" == "true" || \
                 "${{ steps.filter.outputs.notificaciones-service }}" == "true" || \
                 "${{ steps.filter.outputs.incentivos-service }}" == "true" || \
-                "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
+                "${{ steps.filter.outputs.logistica-service }}" == "true" || \
+                "${{ steps.filter.outputs.docker-files }}" == "true" ]]; then
             echo "any-service=true" >> "$GITHUB_OUTPUT"
           else
             echo "any-service=false" >> "$GITHUB_OUTPUT"
           fi
 
       # Genera la matrix dinámica de servicios a construir.
-      # Si common-lib cambió, se construyen todos (dependencia transversal).
+      # Si common-lib o docker-files cambió, se construyen todos (dependencia transversal).
       - name: Generar matrix de servicios
         id: matrix
         run: |
           SERVICES=()
           COMMON="${{ steps.filter.outputs.common-lib }}"
+          DOCKER="${{ steps.filter.outputs.docker-files }}"
 
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
             SERVICES+=('{"service":"donaciones-service"}')
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
             SERVICES+=('{"service":"notificaciones-service"}')
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
             SERVICES+=('{"service":"incentivos-service"}')
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
             SERVICES+=('{"service":"logistica-service"}')
           fi
 
@@ -161,25 +172,26 @@ jobs:
         run: |
           DOCKER_SERVICES=()
           COMMON="${{ steps.filter.outputs.common-lib }}"
+          DOCKER="${{ steps.filter.outputs.docker-files }}"
 
           # Fallback corregido y unificado directamente de manera segura
           DOCKER_FINAL=()
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
             if [[ -f "donaciones-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"donaciones-service"}')
             fi
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
             if [[ -f "notificaciones-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"notificaciones-service"}')
             fi
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
             if [[ -f "incentivos-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"incentivos-service"}')
             fi
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
             if [[ -f "logistica-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"logistica-service"}')
             fi
@@ -619,25 +631,32 @@ jobs:
       - name: Provisionar Entorno de Pre-Producción (Docker Compose)
         run: |
           docker compose -f docker-compose.preprod.yml up --build --wait -d
-          echo "Importando workflows en n8n..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Insignias.JSON || true
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || true
-          echo "Publicando (activando) workflows..."
+          echo "✅ Contenedores base levantados y healthy."
+
+      - name: Importar y Activar Workflows en n8n
+        run: |
+          echo "📥 Importando workflows en n8n..."
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Insignias.JSON || true
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || true
+          
+          echo "🚀 Activando workflows en n8n..."
           docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1 || true
           docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2 || true
-          echo "Reiniciando n8n..."
+          
+          echo "🔄 Reiniciando n8n para registrar webhooks..."
           docker compose -f docker-compose.preprod.yml restart n8n
-          echo "Esperando que n8n se recupere..."
-          attempt=0
+          
+          echo "⏳ Esperando disponibilidad de n8n tras reinicio..."
+          attempts=0
           until curl -s -f http://localhost:5678/healthz >/dev/null; do
-            attempt=$((attempt+1))
-            if [ $attempt -ge 30 ]; then
-              echo "ERROR: n8n no se recuperó tras reinicio."
+            attempts=$((attempts+1))
+            if [ $attempts -ge 30 ]; then
+              echo "❌ Error: n8n no se recuperó tras reinicio."
               exit 1
             fi
-            sleep 2
+            sleep 1
           done
-          echo "n8n listo y activo."
+          echo "✅ n8n listo y con workflows activos."
 
       - name: Esperar endpoints /v3/api-docs disponibles
         run: |
@@ -674,13 +693,21 @@ jobs:
             -Dincentivos.url=http://localhost:8082 \
             -Dlogistica.url=http://localhost:8083
 
-      - name: 3. Ejecutar Pruebas de Rendimiento
+      - name: Generar Reporte Detallado de Fallos y Diagnóstico
+        if: always()
         run: |
-          mvn test -pl integration-tests -DskipTests=false -Dgroups=performance \
-            -Ddonaciones.url=http://localhost:8080 \
-            -Dnotificaciones.url=http://localhost:8081 \
-            -Dincentivos.url=http://localhost:8082 \
-            -Dlogistica.url=http://localhost:8083
+          echo "🔍 Analizando logs de microservicios..."
+          python scripts/analyze_preprod_logs.py --run "$EXECUTION_ID" --export-report || true
+          echo "📊 Generando reporte detallado de tests..."
+          python scripts/report_test_failures.py || true
+
+      - name: Subir Reportes de Surefire (Integration Tests)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-integration-tests
+          path: integration-tests/target/surefire-reports/
+          retention-days: 14
 
       - name: Recolectar Logs de Contenedores y Archivos de Logs
         if: always()
