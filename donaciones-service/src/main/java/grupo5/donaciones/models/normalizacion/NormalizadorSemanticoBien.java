@@ -57,11 +57,6 @@ public class NormalizadorSemanticoBien {
     Bien bien = item.bien();
     Coincidencia mejor = buscarMejorCoincidencia(bien.descripcion(), subcategorias);
 
-    EstadoNormalizacion estado =
-        mejor.confianza() >= umbralAceptacion
-            ? EstadoNormalizacion.ACEPTADO
-            : EstadoNormalizacion.PENDIENTE_REVISION;
-
     Categoria categoria =
         (mejor.subcategoria().getCategoriaId() != null && categoriasPorId != null)
             ? categoriasPorId.get(mejor.subcategoria().getCategoriaId())
@@ -70,6 +65,16 @@ public class NormalizadorSemanticoBien {
     boolean conVencimiento =
         categoria != null && Boolean.TRUE.equals(categoria.getConVencimiento());
     boolean conUso = categoria != null && Boolean.TRUE.equals(categoria.getConUso());
+
+    boolean cumpleRestricciones =
+        (!conVencimiento || bien.fechaVencimiento() != null)
+            && (conVencimiento || bien.fechaVencimiento() == null)
+            && (!conUso || bien.estado() != null);
+
+    EstadoNormalizacion estado =
+        (mejor.confianza() >= umbralAceptacion && cumpleRestricciones)
+            ? EstadoNormalizacion.ACEPTADO
+            : EstadoNormalizacion.PENDIENTE_REVISION;
 
     return new BienNormalizado(
         bien, mejor.subcategoria().getId(), mejor.confianza(), estado, conVencimiento, conUso);

@@ -1,0 +1,474 @@
+{
+  "info": {
+    "_postman_id": "donatrack-flujo-02-necesidades",
+    "name": "Flujo 2 - Necesidades: Extraordinaria vs Recurrente (donaciones-service)",
+    "description": "Autocontenido (crea su propia Entidad Beneficiaria y Subcategoría). Cubre los dos tipos de Necesidad y el bug conocido: RECURRENTE sin fechaInicio/fechaFin tira 500 (NPE no controlada) en vez de 400.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "categoriaId",
+      "value": ""
+    },
+    {
+      "key": "subcategoriaId",
+      "value": ""
+    },
+    {
+      "key": "personaJuridicaId",
+      "value": ""
+    },
+    {
+      "key": "entidadId",
+      "value": ""
+    },
+    {
+      "key": "necesidadExtraordinariaId",
+      "value": ""
+    },
+    {
+      "key": "necesidadRecurrenteId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Setup",
+      "item": [
+        {
+          "name": "1. Crear Categoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('categoriaId', json.id);",
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Higiene QA\",\n  \"conUso\": false,\n  \"conVencimiento\": false,\n  \"unidad\": \"UNIDADES\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/categorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Crear Subcategoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('subcategoriaId', json.id);",
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Jabón QA\",\n  \"idCategoria\": \"{{categoriaId}}\",\n  \"aliases\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subcategorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subcategorias"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Crear Persona Jurídica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('personaJuridicaId', json.id);",
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"JURIDICA\",\n  \"tipoDocumento\": \"CUIT\",\n  \"documento\": \"30-{{$timestamp}}-3\",\n  \"razonSocial\": \"Entidad Necesidades QA {{$timestamp}}\",\n  \"tipoJuridico\": \"ONG\",\n  \"rubro\": \"Comedor\",\n  \"representantes\": [\n    {\n      \"tipo\": \"HUMANA\",\n      \"tipoDocumento\": \"DNI\",\n      \"documento\": \"{{$timestamp}}\",\n      \"nombre\": \"Representante\",\n      \"apellido\": \"QA\",\n      \"genero\": \"MUJER\",\n      \"fechaNacimiento\": \"1980-01-01\",\n      \"mediosDeContacto\": []\n    }\n  ],\n  \"mediosDeContacto\": [],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/personas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "personas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Crear Entidad Beneficiaria",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('entidadId', json.id);",
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juridicaId\": \"{{personaJuridicaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/entidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entidades"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Necesidad Extraordinaria",
+      "item": [
+        {
+          "name": "1. Crear Necesidad Extraordinaria",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('necesidadExtraordinariaId', json.id);",
+                  "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad extraordinaria QA\",\n  \"fechaInicio\": \"2026-06-18\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Obtener Necesidad por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Está siempre activa', function () { pm.expect(pm.response.json().activa).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/necesidades/{{necesidadExtraordinariaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "necesidades",
+                "{{necesidadExtraordinariaId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Necesidad Recurrente",
+      "item": [
+        {
+          "name": "1. Crear Necesidad Recurrente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('necesidadRecurrenteId', json.id);",
+                  "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 20,\n  \"descripcion\": \"Necesidad recurrente QA\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaFin\": \"2026-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. [Negativo] Recurrente con fechaInicio futura",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 5,\n  \"descripcion\": \"Necesidad recurrente con fecha futura\",\n  \"fechaInicio\": \"2099-01-01\",\n  \"fechaFin\": \"2099-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "necesidades"
+              ]
+            },
+            "description": "FECHA_INICIO_FUTURA — regla de dominio."
+          }
+        },
+        {
+          "name": "3. [Bug conocido] Recurrente sin fechas → 500, no 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('BUG: hoy responde 500 (debería ser 400)', function () { pm.response.to.have.status(500); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 5,\n  \"descripcion\": \"Necesidad recurrente sin fechas\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "necesidades"
+              ]
+            },
+            "description": "Hoy tira NullPointerException no controlada (Period.between con fechaInicio/fechaFin null) → 500. Este test documenta el bug: si algún día lo arreglan, este test empieza a fallar (esperando 500) y hay que actualizarlo a 400. Ver Mapa de Flujos DonaTrack, sección Hallazgos transversales."
+          }
+        },
+        {
+          "name": "4. [Negativo] tipo inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 Bad Request', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"recurrente\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 5,\n  \"descripcion\": \"tipo en minúscula\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaFin\": \"2026-12-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/necesidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "necesidades"
+              ]
+            },
+            "description": "tipo es String libre, no enum Jakarta — el switch interno es case-sensitive."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Filtros",
+      "item": [
+        {
+          "name": "1. Listar Necesidades filtradas por entidad y tipo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 OK', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/necesidades?entidadId={{entidadId}}&tipo=EXTRAORDINARIA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "necesidades"
+              ],
+              "query": [
+                {
+                  "key": "entidadId",
+                  "value": "{{entidadId}}"
+                },
+                {
+                  "key": "tipo",
+                  "value": "EXTRAORDINARIA"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -6,11 +6,15 @@ import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(
+    name = "donatrack.catalogo.seed-enabled",
+    havingValue = "true",
+    matchIfMissing = true)
 public class CatalogDataInitializer implements CommandLineRunner {
 
   private static final Logger log = LoggerFactory.getLogger(CatalogDataInitializer.class);

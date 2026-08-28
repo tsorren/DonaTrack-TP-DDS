@@ -52,19 +52,26 @@ public class ProcesadorDeDonaciones {
 
   @Async
   public void procesar(Donacion donacion) {
-    List<Subcategoria> subcategorias = subcategoriasRepository.findAll();
-    Map<UUID, Categoria> categoriasPorId =
-        categoriasRepository.findAll().stream()
-            .collect(Collectors.toMap(Categoria::getId, c -> c, (a, b) -> a));
+    try {
+      List<Subcategoria> subcategorias = subcategoriasRepository.findAll();
+      Map<UUID, Categoria> categoriasPorId =
+          categoriasRepository.findAll().stream()
+              .collect(Collectors.toMap(Categoria::getId, c -> c, (a, b) -> a));
 
-    List<ItemDonacionNormalizado> itemsNormalizados =
-        normalizadorSemantico.normalizar(
-            donacion, subcategorias, categoriasPorId, umbralAceptacion);
-    logItemsNormalizados(itemsNormalizados);
+      List<ItemDonacionNormalizado> itemsNormalizados =
+          normalizadorSemantico.normalizar(
+              donacion, subcategorias, categoriasPorId, umbralAceptacion);
+      logItemsNormalizados(itemsNormalizados);
 
-    itemNormalizadoRepository.saveAll(itemsNormalizados);
+      itemNormalizadoRepository.saveAll(itemsNormalizados);
 
-    finalizarNormalizacion(donacion, itemsNormalizados);
+      finalizarNormalizacion(donacion, itemsNormalizados);
+    } catch (Exception e) {
+      log.error(
+          "Error al procesar la normalización de la donación ID: {}",
+          donacion != null ? donacion.getId() : null,
+          e);
+    }
   }
 
   private void logItemsNormalizados(List<ItemDonacionNormalizado> itemsNormalizados) {

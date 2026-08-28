@@ -207,4 +207,46 @@ class NormalizadorSemanticoBienTest {
 
     assertEquals(ErrorCatalog.BIEN_NORMALIZADO_SIN_SUBCATEGORIA, exception.getError());
   }
+
+  @Test
+  void
+      normalizar_cuandoNoHayCoincidenciaPeroTieneVencimientoYCategoriaNoPermite_debeRetornarPendienteRevisionSinLanzarExcepcion() {
+    Subcategoria subEscolares = new Subcategoria(categoria.getId(), "Muebles Escolares");
+    subEscolares.agregarAlias("silla");
+    subcategorias.add(subEscolares);
+
+    Bien bien =
+        new Bien(
+            "Articulo Inclasificable", "imagen.png", null, LocalDate.of(2027, 12, 31), 1.0, 1.0);
+    donacion.agregarItem(new ItemDonacion(bien, 2));
+
+    List<ItemDonacionNormalizado> resultado =
+        normalizador.normalizar(donacion, subcategorias, categoriasPorId, 0.5);
+
+    assertEquals(1, resultado.size());
+    ItemDonacionNormalizado itemNormalizado = resultado.getFirst();
+    assertEquals(
+        EstadoNormalizacion.PENDIENTE_REVISION, itemNormalizado.getBien().estadoNormalizacion());
+  }
+
+  @Test
+  void
+      normalizar_cuandoCoincideSemanticaPeroFaltaVencimientoRequerido_debeRetornarPendienteRevision() {
+    Categoria categoriaAlimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
+    Subcategoria subArroz = new Subcategoria(categoriaAlimentos.getId(), "Arroz");
+    subArroz.agregarAlias("arroz");
+
+    List<Subcategoria> subs = List.of(subArroz);
+    Map<UUID, Categoria> cats = Map.of(categoriaAlimentos.getId(), categoriaAlimentos);
+
+    Bien bienSinVencimiento = new Bien("arroz largo fino", "imagen.png", null, null, 1.0, 1.0);
+    donacion.agregarItem(new ItemDonacion(bienSinVencimiento, 2));
+
+    List<ItemDonacionNormalizado> resultado = normalizador.normalizar(donacion, subs, cats, 0.5);
+
+    assertEquals(1, resultado.size());
+    ItemDonacionNormalizado itemNormalizado = resultado.getFirst();
+    assertEquals(
+        EstadoNormalizacion.PENDIENTE_REVISION, itemNormalizado.getBien().estadoNormalizacion());
+  }
 }
