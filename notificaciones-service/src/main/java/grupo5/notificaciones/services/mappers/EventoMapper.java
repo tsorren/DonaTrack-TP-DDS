@@ -45,14 +45,14 @@ public class EventoMapper {
         yield new DonacionRecibida(
             donante, beneficiario, rec.detalleDonacion(), rec.patenteCamion(), rec.fecha());
       }
-      case EventoDonanteRegistradoDTO reg -> new DonanteRegistrado(
-          donante, reg.credencialesDeAcceso(), reg.fecha());
-      case EventoDonanteInactivoDTO inac -> new DonanteInactivo(
-          donante, inac.diasInactivo(), inac.fecha());
-      case EventoMisionCumplidaDTO mis -> new MisionCumplida(
-          donante, mis.nombreMision(), mis.recompensa(), mis.fecha());
-      case EventoSubioCategoriaDTO cat -> new SubioCategoria(
-          donante, cat.categoriaVieja(), cat.categoriaNueva(), cat.fecha());
+      case EventoDonanteRegistradoDTO reg ->
+          new DonanteRegistrado(donante, reg.credencialesDeAcceso(), reg.fecha());
+      case EventoDonanteInactivoDTO inac ->
+          new DonanteInactivo(donante, inac.diasInactivo(), inac.fecha());
+      case EventoMisionCumplidaDTO mis ->
+          new MisionCumplida(donante, mis.nombreMision(), mis.recompensa(), mis.fecha());
+      case EventoSubioCategoriaDTO cat ->
+          new SubioCategoria(donante, cat.categoriaVieja(), cat.categoriaNueva(), cat.fecha());
       case EventoDonacionEnCaminoDTO dec -> {
         Persona beneficiario = buscarPersona(dec.idPersonaBeneficiaria());
         yield new DonacionEnCamino(

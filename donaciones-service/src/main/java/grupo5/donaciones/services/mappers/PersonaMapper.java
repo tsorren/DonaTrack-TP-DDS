@@ -242,8 +242,9 @@ public class PersonaMapper {
 
   private static MedioDeContactoReplicaDTO toMedioReplicaDTO(MedioDeContacto m) {
     return switch (m) {
-      case Correo c -> new MedioDeContactoReplicaDTO(
-          "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
+      case Correo c ->
+          new MedioDeContactoReplicaDTO(
+              "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
       case Telefono t -> {
         String tipoStr = t.getTipo() == TipoTelefono.WHATSAPP ? "WHATSAPP" : "TELEFONO";
         yield new MedioDeContactoReplicaDTO(
@@ -254,8 +255,9 @@ public class PersonaMapper {
             t.getCodigoArea(),
             t.getNumero());
       }
-      default -> throw new IllegalArgumentException(
-          "Medio de contacto no soportado: " + m.getClass().getSimpleName());
+      default ->
+          throw new IllegalArgumentException(
+              "Medio de contacto no soportado: " + m.getClass().getSimpleName());
     };
   }
 }

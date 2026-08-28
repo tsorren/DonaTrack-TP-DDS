@@ -140,11 +140,10 @@ class GestoresDeDominioTest {
     Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
     GestorDeRutas.agregarEntrega(ruta, entrega);
 
+    List<Entrega> entregas = List.of(crearEntrega());
     assertThrows(
         ValidationException.class,
-        () ->
-            GestorDeRutas.iniciarRuta(
-                ruta, camion, chofer, List.of(crearEntrega()), "Ada Lovelace"));
+        () -> GestorDeRutas.iniciarRuta(ruta, camion, chofer, entregas, "Ada Lovelace"));
 
     assertEquals(EstadoRuta.PENDIENTE, ruta.getEstado());
     assertEquals(EstadoCamion.DISPONIBLE, camion.getEstado());

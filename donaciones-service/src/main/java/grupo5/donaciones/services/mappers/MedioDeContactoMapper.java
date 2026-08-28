@@ -28,18 +28,20 @@ public class MedioDeContactoMapper {
             correo.setDireccionCorreo(c.direccionCorreo());
             yield correo;
           }
-          case TelefonoInputDTO t -> populateTelefono(
-              new Telefono(),
-              t.caracteristica(),
-              t.codigoArea(),
-              t.numero(),
-              TipoTelefono.ESTANDAR);
-          case WhatsAppInputDTO w -> populateTelefono(
-              new Telefono(),
-              w.caracteristica(),
-              w.codigoArea(),
-              w.numero(),
-              TipoTelefono.WHATSAPP);
+          case TelefonoInputDTO t ->
+              populateTelefono(
+                  new Telefono(),
+                  t.caracteristica(),
+                  t.codigoArea(),
+                  t.numero(),
+                  TipoTelefono.ESTANDAR);
+          case WhatsAppInputDTO w ->
+              populateTelefono(
+                  new Telefono(),
+                  w.caracteristica(),
+                  w.codigoArea(),
+                  w.numero(),
+                  TipoTelefono.WHATSAPP);
         };
     medio.setEsPredeterminado(dto.esPredeterminado());
     return medio;
@@ -60,8 +62,9 @@ public class MedioDeContactoMapper {
               t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
         }
       }
-      default -> throw new IllegalArgumentException(
-          "Tipo de medio de contacto no soportado: " + entity.getClass().getSimpleName());
+      default ->
+          throw new IllegalArgumentException(
+              "Tipo de medio de contacto no soportado: " + entity.getClass().getSimpleName());
     };
   }
 

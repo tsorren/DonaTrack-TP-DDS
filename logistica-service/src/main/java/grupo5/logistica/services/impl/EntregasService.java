@@ -82,11 +82,12 @@ public class EntregasService implements IEntregasService {
 
     switch (request.estado()) {
       case ENTREGADA -> procesarEntregaEntregada(request.actor(), entrega);
-      case NO_RECIBIDA -> procesarEntregaNoRecibida(
-          request.actor(), entrega, request.justificacion(), request.replanificable());
+      case NO_RECIBIDA ->
+          procesarEntregaNoRecibida(
+              request.actor(), entrega, request.justificacion(), request.replanificable());
       case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
-      case EN_TRASLADO, REVISION -> throw new ValidationException(
-          ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+      case EN_TRASLADO, REVISION ->
+          throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 
@@ -103,13 +104,13 @@ public class EntregasService implements IEntregasService {
         .toList();
   }
 
-  private void procesarEntregaEntregada(String actor, Entrega entrega) {
+  private static void procesarEntregaEntregada(String actor, Entrega entrega) {
     SolicitudTransicionEntrega solicitud = new ConfirmacionRecepcion(entrega, actor, null);
 
     GestorDeEntregas.cambiarEstado(solicitud);
   }
 
-  private void procesarEntregaNoRecibida(
+  private static void procesarEntregaNoRecibida(
       String actor, Entrega entrega, String justificacion, Boolean replanificable) {
 
     boolean esReplanificable = replanificable == null || replanificable;
@@ -118,7 +119,7 @@ public class EntregasService implements IEntregasService {
     GestorDeEntregas.cambiarEstado(solicitud);
   }
 
-  private void procesarEntregaPendiente(String actor, Entrega entrega) {
+  private static void procesarEntregaPendiente(String actor, Entrega entrega) {
     RegresoDeposito solicitud = new RegresoDeposito(entrega, actor);
     GestorDeEntregas.cambiarEstado(solicitud);
   }
@@ -126,8 +127,8 @@ public class EntregasService implements IEntregasService {
   private void publicarEventos(Entrega entrega) {
     for (EventoEntrega evento : entrega.getDomainEvents()) {
       switch (evento) {
-        case EntregaConfirmada confirmada -> comunicadorEventos.comunicarEntregaExitosa(
-            confirmada, buscarCamionDeEntrega(entrega));
+        case EntregaConfirmada confirmada ->
+            comunicadorEventos.comunicarEntregaExitosa(confirmada, buscarCamionDeEntrega(entrega));
         case EntregaFallida fallida -> comunicadorEventos.comunicarEntregaFallida(fallida);
       }
     }
