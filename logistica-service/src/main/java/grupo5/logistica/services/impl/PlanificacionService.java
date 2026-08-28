@@ -160,11 +160,6 @@ public class PlanificacionService implements IPlanificacionService {
 
     for (RutaPlanificadaDTO ruta : dto.rutas()) {
       if (ruta == null
-          || ruta.camionId() == null
-          || ruta.choferId() == null
-          || ruta.fecha() == null
-          || ruta.entregaIds() == null
-          || ruta.entregaIds().isEmpty()
           || (fecha != null && !fecha.equals(ruta.fecha()))
           || !camionesAsignados.add(ruta.camionId())
           || !choferesAsignados.add(ruta.choferId())

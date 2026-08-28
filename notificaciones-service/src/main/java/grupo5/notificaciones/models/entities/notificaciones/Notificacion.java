@@ -58,8 +58,8 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
 
   private void registrarDomainEvent(EstadoNotificacion nuevoEstado, LocalDateTime timestamp) {
     switch (nuevoEstado) {
-      case PENDIENTE -> this.registrarEvento(
-          new NotificacionCreada(this.id, this.personaId, timestamp));
+      case PENDIENTE ->
+          this.registrarEvento(new NotificacionCreada(this.id, this.personaId, timestamp));
       case ENVIADA -> this.registrarEvento(new NotificacionEnviada(this.id, timestamp));
       case FALLIDA -> this.registrarEvento(new NotificacionFallida(this.id, timestamp));
     }

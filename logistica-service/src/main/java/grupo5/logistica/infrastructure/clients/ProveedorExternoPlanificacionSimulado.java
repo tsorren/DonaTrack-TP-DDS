@@ -2,6 +2,7 @@ package grupo5.logistica.infrastructure.clients;
 
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.RutaPlanificadaDTO;
+import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.planificacion.PlanificadorDeRutas;
 import grupo5.logistica.models.entities.rutas.PlanificacionSolicitada;
 import grupo5.logistica.models.entities.rutas.RespuestaPlanificacion;
@@ -55,7 +56,7 @@ public class ProveedorExternoPlanificacionSimulado implements IServicioExternoPl
                         asignacion.getKey().getId(),
                         respuesta.choferesPorCamion().get(asignacion.getKey()).getId(),
                         respuesta.fecha(),
-                        asignacion.getValue().stream().map(entrega -> entrega.getId()).toList()))
+                        asignacion.getValue().stream().map(Entrega::getId).toList()))
             .toList();
     return new CallbackPlanificacionRequestDTO(
         respuesta.idPlanificacionSolicitada(), rutas, "OK", null);
