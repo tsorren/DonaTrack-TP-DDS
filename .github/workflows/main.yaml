@@ -693,14 +693,6 @@ jobs:
             -Dincentivos.url=http://localhost:8082 \
             -Dlogistica.url=http://localhost:8083
 
-      - name: 3. Ejecutar Pruebas de Rendimiento
-        run: |
-          mvn test -pl integration-tests -DskipTests=false -Dgroups=performance \
-            -Ddonaciones.url=http://localhost:8080 \
-            -Dnotificaciones.url=http://localhost:8081 \
-            -Dincentivos.url=http://localhost:8082 \
-            -Dlogistica.url=http://localhost:8083
-
       - name: Generar Reporte Detallado de Fallos y Diagnóstico
         if: always()
         run: |

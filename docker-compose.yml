@@ -10,6 +10,9 @@ services:
     environment:
       - PORT=8081
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - SPRING_MAIN_LAZY_INITIALIZATION=false
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     volumes:
       - ./logs:/app/logs
@@ -37,12 +40,10 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
       - N8N_RANKING_WEBHOOK_URL=http://n8n:5678/webhook/ranking-calculado
+      - SPRING_MAIN_LAZY_INITIALIZATION=false
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
-    depends_on:
-      notificaciones-service:
-        condition: service_healthy
-      n8n:
-        condition: service_healthy
     volumes:
       - ./logs:/app/logs
     healthcheck:
@@ -71,14 +72,11 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
       - SEED_CATALOGO_ENABLED=false
+      - SPRING_MAIN_LAZY_INITIALIZATION=false
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
-      notificaciones-service:
-        condition: service_healthy
-      incentivos-service:
-        condition: service_healthy
-      logistica-service:
-        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     volumes:
@@ -106,6 +104,9 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
+      - SPRING_MAIN_LAZY_INITIALIZATION=false
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
       rabbitmq:
@@ -148,6 +149,10 @@ services:
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - N8N_SECURE_COOKIE=false
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      - N8N_METRICS_ENABLED=false
+      - NODE_OPTIONS=--max-old-space-size=384
     volumes:
       - ./n8n:/etc/n8n/workflows
     healthcheck:
