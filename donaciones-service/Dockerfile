@@ -13,7 +13,7 @@ COPY . .
 # Compilar el proyecto (sin tests)
 # -pl: Solo tu servicio
 # -am: También sus dependencias (common-lib)
-RUN mvn clean package -pl ${SERVICE_NAME} -am -DskipTests
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -pl ${SERVICE_NAME} -am -DskipTests
 
 
 # ==============================================================================

@@ -10,14 +10,16 @@ services:
     environment:
       - PORT=8081
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     volumes:
       - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 20
-      start_period: 60s
+      start_period: 30s
+      start_interval: 1s
     networks:
       - donatrack-network
 
@@ -35,6 +37,7 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
       - N8N_RANKING_WEBHOOK_URL=http://n8n:5678/webhook/ranking-calculado
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
       notificaciones-service:
         condition: service_healthy
@@ -45,9 +48,10 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 20
-      start_period: 60s
+      start_period: 30s
+      start_interval: 1s
     networks:
       - donatrack-network
 
@@ -67,6 +71,7 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
       - SEED_CATALOGO_ENABLED=false
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
       notificaciones-service:
         condition: service_healthy
@@ -81,9 +86,10 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 20
-      start_period: 60s
+      start_period: 30s
+      start_interval: 1s
     networks:
       - donatrack-network
 
@@ -100,6 +106,7 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -108,9 +115,10 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 20
-      start_period: 60s
+      start_period: 30s
+      start_interval: 1s
     networks:
       - donatrack-network
 
@@ -125,9 +133,10 @@ services:
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 20
-      start_period: 30s
+      start_period: 20s
+      start_interval: 1s
     networks:
       - donatrack-network
 
@@ -142,12 +151,14 @@ services:
       - N8N_SECURE_COOKIE=false
     volumes:
       - ./n8n:/etc/n8n/workflows
+    command: /bin/sh -c "n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Insignias.JSON && n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON && n8n publish:workflow --id=1 && n8n publish:workflow --id=2 && n8n start"
     healthcheck:
       test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:5678/healthz', (res) => { res.resume(); process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))\""]
       interval: 5s
-      timeout: 5s
+      timeout: 3s
       retries: 20
-      start_period: 30s
+      start_period: 20s
+      start_interval: 1s
     networks:
       - donatrack-network
 

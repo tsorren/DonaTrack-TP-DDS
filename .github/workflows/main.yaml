@@ -619,25 +619,7 @@ jobs:
       - name: Provisionar Entorno de Pre-Producción (Docker Compose)
         run: |
           docker compose -f docker-compose.preprod.yml up --build --wait -d
-          echo "Importando workflows en n8n..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Insignias.JSON || true
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || true
-          echo "Publicando (activando) workflows..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1 || true
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2 || true
-          echo "Reiniciando n8n..."
-          docker compose -f docker-compose.preprod.yml restart n8n
-          echo "Esperando que n8n se recupere..."
-          attempt=0
-          until curl -s -f http://localhost:5678/healthz >/dev/null; do
-            attempt=$((attempt+1))
-            if [ $attempt -ge 30 ]; then
-              echo "ERROR: n8n no se recuperó tras reinicio."
-              exit 1
-            fi
-            sleep 2
-          done
-          echo "n8n listo y activo."
+          echo "✅ Entorno de Pre-Producción y n8n listos y activos."
 
       - name: Esperar endpoints /v3/api-docs disponibles
         run: |
