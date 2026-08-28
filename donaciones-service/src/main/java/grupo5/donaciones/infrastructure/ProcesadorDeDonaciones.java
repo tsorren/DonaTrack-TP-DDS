@@ -95,8 +95,9 @@ public class ProcesadorDeDonaciones {
       log.info("Donación {} normalizada inmediatamente. Publicando eventos.", donacion.getId());
       donacion.marcarNormalizada();
       donacionRepository.save(donacion);
-      donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+      var eventos = donacion.getDomainEvents();
       donacion.clearDomainEvents();
+      eventos.forEach(eventPublisher::publishEvent);
     } else {
       log.info(
           "Donación {} tiene ítems pendientes de revisión. Queda en estado CARGADA.",

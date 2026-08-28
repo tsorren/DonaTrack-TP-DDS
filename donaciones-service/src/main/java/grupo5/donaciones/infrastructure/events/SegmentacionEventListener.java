@@ -66,8 +66,9 @@ public class SegmentacionEventListener {
           event.donacionId());
       donacion.marcarSegmentada();
       donacionRepository.save(donacion);
-      donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+      var eventos = donacion.getDomainEvents();
       donacion.clearDomainEvents();
+      eventos.forEach(eventPublisher::publishEvent);
       return;
     }
 
@@ -95,8 +96,9 @@ public class SegmentacionEventListener {
     // Cambiar estado de donación original a SEGMENTADA
     donacion.marcarSegmentada();
     donacionRepository.save(donacion);
-    donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+    var eventos = donacion.getDomainEvents();
     donacion.clearDomainEvents();
+    eventos.forEach(eventPublisher::publishEvent);
     log.info("Donación original ID {} movida a SEGMENTADA.", donacion.getId());
   }
 
