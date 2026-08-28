@@ -72,6 +72,7 @@ services:
       - LOGISTICA_SERVICE_URL=http://logistica-service:8083
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
+      - SEED_CATALOGO_ENABLED=true
     depends_on:
       notificaciones-service:
         condition: service_healthy
