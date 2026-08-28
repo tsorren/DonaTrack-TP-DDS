@@ -132,6 +132,32 @@ class NormalizadorSemanticoBienTest {
   }
 
   @Test
+  void normalizar_cuandoNoHayCoincidenciaYElFallbackNoAdmiteVencimiento_debeCrearPendiente() {
+    Subcategoria fallback = new Subcategoria(categoria.getId(), "Muebles");
+    fallback.agregarAlias("mesa");
+    subcategorias.add(fallback);
+
+    Bien bien =
+        new Bien(
+            "articulo inclasificable",
+            "imagen.png",
+            LocalDate.of(2027, Month.DECEMBER, 31),
+            null,
+            1.0,
+            1.0);
+    donacion.agregarItem(new ItemDonacion(bien, 2));
+
+    List<ItemDonacionNormalizado> resultado =
+        normalizador.normalizar(donacion, subcategorias, categoriasPorId, 0.5);
+
+    assertEquals(1, resultado.size());
+    assertEquals(
+        EstadoNormalizacion.PENDIENTE_REVISION,
+        resultado.getFirst().getBien().estadoNormalizacion());
+    assertEquals(0.0, resultado.getFirst().getBien().confianza());
+  }
+
+  @Test
   void normalizar_conMultiplesSubcategorias_debeElegirLaDeMejorConfianza() {
     Subcategoria subOficina = new Subcategoria(categoria.getId(), "Muebles de Oficina");
     subOficina.agregarAlias("silla de madera");

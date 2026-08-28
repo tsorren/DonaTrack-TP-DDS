@@ -43,16 +43,18 @@ public record BienNormalizado(
       throw new ValidationException(ErrorCatalog.BIEN_NORMALIZADO_SIN_ESTADO);
     }
 
-    if (estadoNormalizacion == EstadoNormalizacion.ACEPTADO) {
+    // La subcategoría de un bien pendiente es solo un candidato provisional. Sus reglas de
+    // vencimiento se validan recién cuando la normalización queda resuelta.
+    if (estadoNormalizacion != EstadoNormalizacion.PENDIENTE_REVISION) {
       if (conVencimiento && bienOriginal.fechaVencimiento() == null) {
         throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_REQUERIDO);
       }
       if (!conVencimiento && bienOriginal.fechaVencimiento() != null) {
         throw new ValidationException(ErrorCatalog.BIEN_VENCIMIENTO_NO_PERMITIDO);
       }
-      if (conEstado && bienOriginal.estado() == null) {
-        throw new ValidationException(ErrorCatalog.BIEN_ESTADO_REQUERIDO);
-      }
+    }
+    if (conEstado && bienOriginal.estado() == null) {
+      throw new ValidationException(ErrorCatalog.BIEN_ESTADO_REQUERIDO);
     }
   }
 

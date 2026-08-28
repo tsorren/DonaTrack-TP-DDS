@@ -158,8 +158,9 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
     if (EvaluadorNormalizacion.estanTodosNormalizados(itemsDeDonacion)) {
       donacion.marcarNormalizada();
       donacionRepository.save(donacion);
-      donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+      var eventos = donacion.getDomainEvents();
       donacion.clearDomainEvents();
+      eventos.forEach(eventPublisher::publishEvent);
       log.info(
           "Todos los ítems de la donación {} fueron revisados. Donación cambia a estado NORMALIZADA y se emiten eventos.",
           donacionId);

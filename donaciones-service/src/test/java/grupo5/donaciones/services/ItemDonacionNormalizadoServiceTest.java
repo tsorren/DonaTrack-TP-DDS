@@ -2,6 +2,7 @@ package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
@@ -57,6 +58,7 @@ class ItemDonacionNormalizadoServiceTest {
         new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, java.time.Month.MAY, 15));
     Donante donante = new Donante(humana.getId());
     donacion = new Donacion(donante.getId());
+    donacion.clearDomainEvents();
 
     Categoria categoria =
         new Categoria(
@@ -115,6 +117,15 @@ class ItemDonacionNormalizadoServiceTest {
         .thenReturn(Optional.of(subcategoria));
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
     when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
+    doAnswer(
+            invocation -> {
+              assertTrue(
+                  donacion.getDomainEvents().isEmpty(),
+                  "El evento debe retirarse del agregado antes de publicarse");
+              return null;
+            })
+        .when(eventPublisher)
+        .publishEvent(any(DonacionNormalizada.class));
 
     ItemDonacionNormalizadoPatchDTO patchDTO =
         new ItemDonacionNormalizadoPatchDTO(EstadoNormalizacion.ACEPTADO, null);
