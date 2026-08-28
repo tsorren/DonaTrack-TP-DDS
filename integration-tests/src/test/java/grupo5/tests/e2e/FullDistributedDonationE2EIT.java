@@ -43,6 +43,7 @@ class FullDistributedDonationE2EIT extends BaseIT {
             .conRazonSocial(TestIdGenerator.uniqueName("Comedor Esperanza"))
             .build();
     UUID benefPersonaId = donacionesClient.crearPersonaOk(personaJuridica);
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, benefPersonaId);
     UUID entidadId = donacionesClient.crearEntidadOk(benefPersonaId);
 
     // 3. Crear Donación con ítem único
