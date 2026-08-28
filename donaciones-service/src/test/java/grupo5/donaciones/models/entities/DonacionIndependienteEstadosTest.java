@@ -207,4 +207,12 @@ class DonacionIndependienteEstadosTest {
     assertEquals(cantidadEnElSnapshot, snapshot.size());
     assertDoesNotThrow(() -> snapshot.forEach(e -> {}));
   }
+
+  @Test
+  void asignar_sinReceptor_lanzaExcepcion() {
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> donacion.asignar(ACTOR, null));
+    assertEquals(ErrorCatalog.DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD, ex.getError());
+    assertInstanceOf(EnDeposito.class, donacion.getEstadoActual());
+  }
 }

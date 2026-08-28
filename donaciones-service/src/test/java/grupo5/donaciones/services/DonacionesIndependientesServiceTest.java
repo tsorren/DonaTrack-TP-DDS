@@ -47,6 +47,7 @@ class DonacionesIndependientesServiceTest {
   private INecesidadesRepository necesidadRepositoryMock;
   private DonacionIndependienteMapper mapperMock;
   private ApplicationEventPublisher eventPublisherMock;
+  private Necesidad receptorMock;
   private DonacionesIndependientesService service;
 
   private static final String ACTOR = "SISTEMA";
@@ -57,6 +58,7 @@ class DonacionesIndependientesServiceTest {
     necesidadRepositoryMock = mock(INecesidadesRepository.class);
     mapperMock = mock(DonacionIndependienteMapper.class);
     eventPublisherMock = mock(ApplicationEventPublisher.class);
+    receptorMock = mock(Necesidad.class);
 
     when(mapperMock.toDTO(any(DonacionIndependiente.class)))
         .thenAnswer(
@@ -165,7 +167,7 @@ class DonacionesIndependientesServiceTest {
   void
       cambiarEstado_DeberiaTransicionarAListaParaEntregar_CuandoEstadoActualEsAsignacionRealizada() {
     DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
-    donacion.asignar(ACTOR, null);
+    donacion.asignar(ACTOR, receptorMock);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
 
@@ -183,7 +185,7 @@ class DonacionesIndependientesServiceTest {
   @Test
   void cambiarEstado_DeberiaTransicionarAEnTraslado_CuandoEstadoActualEsListaParaEntregar() {
     DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
-    donacion.asignar(ACTOR, null);
+    donacion.asignar(ACTOR, receptorMock);
     donacion.planificarRuta(ACTOR);
     UUID id = donacion.getId();
     when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
@@ -203,7 +205,7 @@ class DonacionesIndependientesServiceTest {
   @Test
   void cambiarEstado_DeberiaTransicionarAEntregada_CuandoEstadoActualEsEnTraslado() {
     DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
-    donacion.asignar(ACTOR, null);
+    donacion.asignar(ACTOR, receptorMock);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
@@ -225,7 +227,7 @@ class DonacionesIndependientesServiceTest {
   void
       cambiarEstado_DeberiaTransicionarAEntregaFallida_CuandoEstadoActualEsEnTrasladoYJustificacionEsValidaYNoEsReplanificable() {
     DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
-    donacion.asignar(ACTOR, null);
+    donacion.asignar(ACTOR, receptorMock);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
@@ -247,7 +249,7 @@ class DonacionesIndependientesServiceTest {
   void
       cambiarEstado_DeberiaTransicionarAAsignacionRealizada_CuandoEstadoActualEsEnTrasladoYEsReplanificable() {
     DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
-    donacion.asignar(ACTOR, null);
+    donacion.asignar(ACTOR, receptorMock);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
@@ -269,7 +271,7 @@ class DonacionesIndependientesServiceTest {
   void
       cambiarEstado_DeberiaLanzarIllegalArgumentException_CuandoEstadoActualEsEnTrasladoYJustificacionEsInvalida() {
     DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
-    donacion.asignar(ACTOR, null);
+    donacion.asignar(ACTOR, receptorMock);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     UUID id = donacion.getId();
@@ -286,7 +288,7 @@ class DonacionesIndependientesServiceTest {
   @Test
   void cambiarEstado_DeberiaTransicionarAEnDeposito_CuandoEstadoActualEsEntregaFallida() {
     DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
-    donacion.asignar(ACTOR, null);
+    donacion.asignar(ACTOR, receptorMock);
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     donacion.registrarFalla("motivo test", ACTOR);

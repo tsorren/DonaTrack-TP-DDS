@@ -210,29 +210,30 @@ class CrossServiceCommunicationIT extends BaseIT {
     List<Map<String, Object>> frags = (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertFalse(frags.isEmpty());
-    Map<String, Object> di = (Map<String, Object>) frags.getFirst().get("donacionIndependiente");
-    assertNotNull(di);
-    UUID donacionIndependienteId = UUID.fromString((String) di.get("id"));
-
     // 7. Aprobar Propuesta
     donacionesClient.actualizarEstadoPropuesta(propuestaId, "APROBADA").then().statusCode(200);
 
-    // 8. Transiciones de estado de DonacionIndependiente
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(
-            donacionIndependienteId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
+    // 8. Transiciones de estado de DonacionIndependiente para todas las fragmentaciones
+    for (Map<String, Object> frag : frags) {
+      Map<String, Object> di = (Map<String, Object>) frag.get("donacionIndependiente");
+      assertNotNull(di);
+      UUID diId = UUID.fromString((String) di.get("id"));
 
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(donacionIndependienteId, "EN_TRASLADO", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
 
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(donacionIndependienteId, "ENTREGADA", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "EN_TRASLADO", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "ENTREGADA", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+    }
 
     // 9. Verificar efectos secundarios en incentivos-service
     PollingUtils.esperarTotalDonacionesExitosas(incentivosClient, donanteId, 0);

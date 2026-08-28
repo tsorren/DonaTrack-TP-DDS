@@ -21,6 +21,13 @@ public class DonacionTestDataBuilder {
     return b;
   }
 
+  public static DonacionTestDataBuilder deRopa(String descripcionBien, int cantidad) {
+    DonacionTestDataBuilder b = new DonacionTestDataBuilder();
+    b.items.add(
+        new ItemDonacionTestDTO(descripcionBien, null, null, "NUEVO", 0.5, 0.005, cantidad));
+    return b;
+  }
+
   public DonacionTestDataBuilder conDonante(UUID donanteId) {
     this.idDonante = donanteId;
     return this;

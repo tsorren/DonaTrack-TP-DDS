@@ -78,8 +78,16 @@ public class DonacionIndependienteNotificacionesListener {
       UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(event.getIdNecesidad());
       String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
 
-      incentivosFeignClient.procesarDonacionExitosa(
-          new DonacionExitosaRequest(donanteId, organizacionId));
+      if (donanteId != null && organizacionId != null) {
+        incentivosFeignClient.procesarDonacionExitosa(
+            new DonacionExitosaRequest(donanteId, organizacionId));
+      } else {
+        log.warn(
+            "No se puede registrar donación exitosa en incentivos para donación {}: donanteId={}, organizacionId={}",
+            event.getDonacionIndependienteId(),
+            donanteId,
+            organizacionId);
+      }
 
       notificacionesFeignClient.enviarEvento(
           new EventoDonacionRecibidaDTO(

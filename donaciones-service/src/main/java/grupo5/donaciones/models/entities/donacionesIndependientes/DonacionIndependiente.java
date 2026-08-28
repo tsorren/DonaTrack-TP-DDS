@@ -126,6 +126,9 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   }
 
   public void asignar(String actor, Asignable receptor) {
+    if (receptor == null) {
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD);
+    }
     this.asignadaA = receptor;
     this.estadoActual.asignar(this, actor);
   }
