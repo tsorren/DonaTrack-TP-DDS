@@ -725,14 +725,53 @@ Verificación de que el `NullPointerException` original solo era alcanzable de f
 | Eje | Aplicación a notificaciones-service |
 |---|---|
 | **Límites de Agregados** | `Notificacion` ya referencia a `Persona` por `personaId: UUID` en vez de por objeto — el límite entre los dos agregados está resuelto por diseño; `notificar(Persona persona, ...)`/`ordenarMedios(Persona persona)` reciben la `Persona` como parámetro en vez de guardarla, y el lookup real se hace en `NotificacionGestor` vía `IPersonaRepository`. No requiere trabajo adicional en esta oleada más que confirmar que la persistencia futura respete este límite (tabla `notificacion` con columna `persona_id`, sin FK a nivel de agregado). |
-| **Estrategia ORM** | Jerarquía `MedioDeContacto`/`Correo`/`Telefono`: candidata a `SINGLE_TABLE` con discriminador (`tipo`). Jerarquía `EventoNotificable`/`EventoDeDonacion` (+7 subclases): **no se persiste** — son políticas transitorias, no requieren mapeo ORM; documentar esta decisión explícitamente para que nadie intente mapearlas "por consistencia" con el resto del dominio. |
-| **Constructores limpios** | Cada subclase de evento ya tiene un constructor de negocio (con parámetros) y uno vacío (`DonacionAsignada()`, etc.) — verificar si ese constructor vacío es una hidratación técnica real o un residuo de deserialización JSON no utilizado; documentar cuál es cuál. |
+| **Estrategia ORM** | Jerarquía `MedioDeContacto`/`Correo`/`Telefono`: candidata a `SINGLE_TABLE` con discriminador (`tipo_medio`). Jerarquía `EventoNotificable`/`EventoDeDonacion` (+8 subclases): **no se persiste** — son políticas transitorias, no requieren mapeo ORM; documentar esta decisión explícitamente para que nadie intente mapearlas "por consistencia" con el resto del dominio. |
+| **Constructores limpios** | Verificado: ninguna de las 8 subclases de evento, ni las 2 clases base, tiene un constructor vacío — cada una tiene exactamente un constructor de negocio, con guardas de obligatoriedad en las 2 clases base (RF-06, Oleada 3). No hay ningún residuo de deserialización que limpiar. |
 | **Idempotencia de ingesta** | Depende de `RF-10` (Oleada 9.5) — especificar cómo se deduplica por `eventId` una vez que el campo exista en los DTOs. |
 | **Coordinación distribuida** | No aplica — no hay schedulers en este servicio. |
 | **Esquema relacional** | A diseñar cuando se ejecute esta oleada: tabla `notificacion` (con `historial_estado` como tabla hija o columna JSON, a decidir), tabla `persona` + `medio_de_contacto` (con discriminador). |
 | **No-regresión** | Verificar que Oleadas 8 y 9 (mothers, fixtures, validación) sigan funcionando tras cualquier cambio de esta oleada. |
 
 > Nota: cero anotaciones JPA prematuras, cero dependencias de base de datos física — esta oleada es de análisis y documentación (📝) hasta que se decida ejecutar la migración física.
+
+### Bitácora de ejecución — 📝 análisis
+
+#### Problema
+Documentar las decisiones de persistencia real sin implementarlas. Dos premisas del pedido no coincidían con el código: "revertir a `UUID personaId`" (ya es así) y "constructor vacío" en la jerarquía de eventos (no existe ninguno).
+
+#### Evidencia
+- `Notificacion.java`: `private UUID personaId;`, sin campo `Persona persona` ni comentario `// antes: UUID personaId`.
+- `grep -n "public Donacion.*()\|protected Evento.*()"` sobre las 10 clases de la jerarquía de eventos → 0 matches de constructor sin argumentos; las 10 tienen exactamente un constructor de negocio.
+- Jerarquía de eventos: 8 subclases concretas confirmadas por listado de archivos (`DonacionAsignada`, `DonacionEnCamino`, `DonacionRecibida`, `DonanteInactivo`, `DonanteRegistrado`, `EntregaFallida`, `MisionCumplida`, `SubioCategoria`), no 7.
+
+#### Objetivo
+Producir `docs/design/notificaciones-service/decisiones_futuras_en_oleada_10.md` (mismo estilo que el equivalente de `donaciones-service`) con: mapeo ORM, esquema DDL, estrategia de deduplicación por `eventId` (sin implementar), y confirmación de que las oleadas anteriores no sufrieron regresión.
+
+#### Fuera de scope
+- No se agregó ninguna anotación JPA ni dependencia de base de datos.
+- No se implementó la deduplicación por `eventId` (RF-10) — queda documentada como propuesta, pendiente de coordinar con `donaciones-service`/`incentivos-service`.
+- No se tocó ningún archivo de `src/main`/`src/test`.
+
+#### Qué se hizo
+1. Corregidas las dos premisas del pedido con evidencia (ver Evidencia) directamente en la tabla de esta oleada, en vez de ejecutar un "revertir" sobre algo que ya está resuelto o "documentar cuál constructor es cuál" sobre constructores que no existen.
+2. Creado `docs/design/notificaciones-service/decisiones_futuras_en_oleada_10.md`: mapeo `SINGLE_TABLE` para `MedioDeContacto`/`Correo`/`Telefono`, no-persistencia explícita de la jerarquía de eventos, esquema DDL completo (`persona`, `medio_de_contacto`, `notificacion`, `notificacion_historial_estado`, y la tabla de deduplicación comentada como propuesta), y la justificación de tabla hija vs. columna JSON para `historial_estado`.
+
+#### Tests / Verificación
+- Sin cambios de código — no aplica cobertura nueva.
+- Suite `notificaciones-service` (con `clean`): **116 tests, 0 failures, 0 errors** — mismo número que el cierre de la Oleada 9.5.
+- Reactor completo (con `clean`): **892 tests, 0 failures, 0 errors** — `common-lib` 32, `donaciones-service` 394, `incentivos-service` 189, `logistica-service` 161, `notificaciones-service` 116. Sin regresión.
+
+#### Diseño resultante
+Documento de referencia listo para cuando se decida ejecutar la migración física, sin deuda de diseño abierta: los límites de agregado ya están resueltos en el código actual, la jerarquía de eventos queda explícitamente fuera del alcance de persistencia, y la deduplicación por evento tiene una propuesta concreta a la espera de coordinación entre servicios.
+
+#### IA utilizada
+Verificación con `grep`/lectura directa de las 10 clases de la jerarquía de eventos y de `Notificacion.java` antes de aceptar las premisas del pedido; redacción del esquema DDL siguiendo el estilo ya usado en `decisiones_futuras_en_oleada_10.md` de `donaciones-service`, escalado al tamaño real del dominio de notificaciones (sin las secciones de MinIO/crypto-shredding, que no aplican acá).
+
+#### Verificación humana
+- [x] Premisas del pedido verificadas contra el código, corregidas con evidencia en vez de ejecutadas literalmente.
+- [x] Documento de decisiones creado con el mismo estilo que el de `donaciones-service`.
+- [x] Cero anotaciones JPA, cero dependencias de base de datos física.
+- [x] Sin cambios funcionales — reactor completo en verde, mismos números que el cierre de la Oleada 9.5 (892/892).
 
 ---
 
