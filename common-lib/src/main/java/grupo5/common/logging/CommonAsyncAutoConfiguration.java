@@ -2,19 +2,17 @@ package grupo5.common.logging;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
-import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskDecorator;
-import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @AutoConfiguration(after = LoggingAutoConfiguration.class)
 @ConditionalOnClass(EnableAsync.class)
-public class CommonAsyncAutoConfiguration implements AsyncConfigurer {
+public class CommonAsyncAutoConfiguration {
 
   @Bean
   @ConditionalOnMissingBean(TaskDecorator.class)
@@ -22,10 +20,9 @@ public class CommonAsyncAutoConfiguration implements AsyncConfigurer {
     return new MdcTaskDecorator();
   }
 
-  @Override
   @Bean(name = "taskExecutor")
   @ConditionalOnMissingBean(name = "taskExecutor")
-  public Executor getAsyncExecutor() {
+  public Executor taskExecutor(TaskDecorator taskDecorator) {
     ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize(4);
     executor.setMaxPoolSize(20);
@@ -34,13 +31,8 @@ public class CommonAsyncAutoConfiguration implements AsyncConfigurer {
     executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
     executor.setWaitForTasksToCompleteOnShutdown(true);
     executor.setAwaitTerminationSeconds(30);
-    executor.setTaskDecorator(mdcTaskDecorator());
+    executor.setTaskDecorator(taskDecorator);
     executor.initialize();
     return executor;
-  }
-
-  @Override
-  public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-    return new LoggingAsyncUncaughtExceptionHandler();
   }
 }
