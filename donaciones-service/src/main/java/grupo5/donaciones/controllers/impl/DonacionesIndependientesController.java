@@ -5,8 +5,10 @@ import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndepe
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +24,18 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
 
   public DonacionesIndependientesController(IDonacionesIndependientesService service) {
     this.service = service;
+  }
+
+  @Override
+  @GetMapping
+  public ResponseEntity<List<DonacionIndependienteResponseDTO>> obtenerTodas() {
+    return ResponseEntity.ok(service.obtenerTodas());
+  }
+
+  @Override
+  @GetMapping("/{id}")
+  public ResponseEntity<DonacionIndependienteResponseDTO> obtener(@PathVariable UUID id) {
+    return ResponseEntity.ok(service.obtener(id));
   }
 
   @Override

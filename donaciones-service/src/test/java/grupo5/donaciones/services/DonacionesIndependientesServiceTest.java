@@ -317,4 +317,35 @@ class DonacionesIndependientesServiceTest {
     assertThrows(BusinessStateException.class, () -> service.cambiarEstado(id, request, ACTOR));
     verify(repositoryMock, never()).save(any());
   }
+
+  @Test
+  void obtenerTodas_DeberiaRetornarListaDeDTOs() {
+    DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
+    when(repositoryMock.findAll()).thenReturn(List.of(donacion));
+
+    List<DonacionIndependienteResponseDTO> resultado = service.obtenerTodas();
+
+    assertEquals(1, resultado.size());
+    assertEquals(donacion.getId(), resultado.get(0).id());
+  }
+
+  @Test
+  void obtener_DeberiaRetornarDTO_CuandoExiste() {
+    DonacionIndependiente donacion = DonacionIndependienteMother.enDeposito(5);
+    UUID id = donacion.getId();
+    when(repositoryMock.findById(id)).thenReturn(Optional.of(donacion));
+
+    DonacionIndependienteResponseDTO resultado = service.obtener(id);
+
+    assertEquals(id, resultado.id());
+    assertEquals("EnDeposito", resultado.estadoActual());
+  }
+
+  @Test
+  void obtener_DeberiaLanzarRecursoNoEncontradoException_CuandoNoExiste() {
+    UUID id = UUID.randomUUID();
+    when(repositoryMock.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(RecursoNoEncontradoException.class, () -> service.obtener(id));
+  }
 }

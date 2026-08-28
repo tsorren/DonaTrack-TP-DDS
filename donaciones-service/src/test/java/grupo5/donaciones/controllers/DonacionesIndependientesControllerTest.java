@@ -1,6 +1,7 @@
 package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -184,5 +185,70 @@ class DonacionesIndependientesControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
+  }
+
+  @Test
+  void obtenerTodas_DeberiaRetornarOkYLista() throws Exception {
+    UUID id = UUID.randomUUID();
+    DonacionIndependienteResponseDTO response =
+        new DonacionIndependienteResponseDTO(
+            id,
+            UUID.randomUUID(),
+            "Descripcion",
+            "EnDeposito",
+            java.time.LocalDateTime.now(),
+            List.of(),
+            List.of(),
+            5);
+
+    when(service.obtenerTodas()).thenReturn(List.of(response));
+
+    mockMvc
+        .perform(get("/donaciones-independientes"))
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"))
+        .andExpect(jsonPath("$.size()").value(1))
+        .andExpect(jsonPath("$[0].id").value(id.toString()))
+        .andExpect(jsonPath("$[0].descripcion").value("Descripcion"))
+        .andExpect(jsonPath("$[0].estadoActual").value("EnDeposito"))
+        .andExpect(jsonPath("$[0].cantidad").value(5));
+  }
+
+  @Test
+  void obtener_DeberiaRetornarOkYDto() throws Exception {
+    UUID id = UUID.randomUUID();
+    DonacionIndependienteResponseDTO response =
+        new DonacionIndependienteResponseDTO(
+            id,
+            UUID.randomUUID(),
+            "Descripcion",
+            "EnDeposito",
+            java.time.LocalDateTime.now(),
+            List.of(),
+            List.of(),
+            5);
+
+    when(service.obtener(id)).thenReturn(response);
+
+    mockMvc
+        .perform(get("/donaciones-independientes/{id}", id))
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"))
+        .andExpect(jsonPath("$.id").value(id.toString()))
+        .andExpect(jsonPath("$.descripcion").value("Descripcion"))
+        .andExpect(jsonPath("$.estadoActual").value("EnDeposito"))
+        .andExpect(jsonPath("$.cantidad").value(5));
+  }
+
+  @Test
+  void obtener_DeberiaRetornarNotFound_CuandoNoExiste() throws Exception {
+    UUID id = UUID.randomUUID();
+    when(service.obtener(id)).thenThrow(new RecursoNoEncontradoException(id));
+
+    mockMvc
+        .perform(get("/donaciones-independientes/{id}", id))
+        .andExpect(status().isNotFound())
+        .andExpect(header().exists("X-Trace-Id"))
+        .andExpect(jsonPath("$.details").value(id.toString()));
   }
 }
