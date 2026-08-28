@@ -138,10 +138,9 @@ services:
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
-      timeout: 3s
+      timeout: 5s
       retries: 20
-      start_period: 20s
-      start_interval: 1s
+      start_period: 30s
     networks:
       - preprod-network
 
@@ -156,7 +155,6 @@ services:
       - N8N_SECURE_COOKIE=false
     volumes:
       - ./n8n:/etc/n8n/workflows
-    command: /bin/sh -c "n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Insignias.JSON && n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON && n8n publish:workflow --id=1 && n8n publish:workflow --id=2 && n8n start"
     healthcheck:
       test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:5678/healthz', (res) => { res.resume(); process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))\""]
       interval: 5s

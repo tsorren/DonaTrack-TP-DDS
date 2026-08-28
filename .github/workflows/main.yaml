@@ -631,7 +631,32 @@ jobs:
       - name: Provisionar Entorno de Pre-Producción (Docker Compose)
         run: |
           docker compose -f docker-compose.preprod.yml up --build --wait -d
-          echo "✅ Entorno de Pre-Producción y n8n listos y activos."
+          echo "✅ Contenedores base levantados y healthy."
+
+      - name: Importar y Activar Workflows en n8n
+        run: |
+          echo "📥 Importando workflows en n8n..."
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Insignias.JSON || true
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || true
+          
+          echo "🚀 Activando workflows en n8n..."
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1 || true
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2 || true
+          
+          echo "🔄 Reiniciando n8n para registrar webhooks..."
+          docker compose -f docker-compose.preprod.yml restart n8n
+          
+          echo "⏳ Esperando disponibilidad de n8n tras reinicio..."
+          attempts=0
+          until curl -s -f http://localhost:5678/healthz >/dev/null; do
+            attempts=$((attempts+1))
+            if [ $attempts -ge 30 ]; then
+              echo "❌ Error: n8n no se recuperó tras reinicio."
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "✅ n8n listo y con workflows activos."
 
       - name: Esperar endpoints /v3/api-docs disponibles
         run: |
@@ -675,6 +700,22 @@ jobs:
             -Dnotificaciones.url=http://localhost:8081 \
             -Dincentivos.url=http://localhost:8082 \
             -Dlogistica.url=http://localhost:8083
+
+      - name: Generar Reporte Detallado de Fallos y Diagnóstico
+        if: always()
+        run: |
+          echo "🔍 Analizando logs de microservicios..."
+          python scripts/analyze_preprod_logs.py --run "$EXECUTION_ID" --export-report || true
+          echo "📊 Generando reporte detallado de tests..."
+          python scripts/report_test_failures.py || true
+
+      - name: Subir Reportes de Surefire (Integration Tests)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-integration-tests
+          path: integration-tests/target/surefire-reports/
+          retention-days: 14
 
       - name: Recolectar Logs de Contenedores y Archivos de Logs
         if: always()
