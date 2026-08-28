@@ -93,9 +93,10 @@ class FullDistributedDonationE2EIT extends BaseIT {
     List<Map<String, Object>> frags = (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertFalse(frags.isEmpty());
-    Map<String, Object> di = (Map<String, Object>) frags.getFirst().get("donacionIndependiente");
-    assertNotNull(di);
-    UUID donacionIndependienteId = UUID.fromString((String) di.get("id"));
+    // Usamos la primera fragmentacion para verificar la entrega en logistica
+    UUID donacionIndependienteId =
+        UUID.fromString(
+            (String) ((Map<String, Object>) frags.getFirst().get("donacionIndependiente")).get("id"));
 
     // 6. Aprobar propuesta en donaciones-service
     // Esto dispara la llamada asíncrona Feign hacia logistica-service (POST /api/entregas)
@@ -112,22 +113,24 @@ class FullDistributedDonationE2EIT extends BaseIT {
         .statusCode(200)
         .body("estadoActual", equalTo("PENDIENTE"));
 
-    // 8. Transiciones de estado de la donación independiente hacia entrega exitosa
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(
-            donacionIndependienteId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
-
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(donacionIndependienteId, "EN_TRASLADO", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
-
-    donacionesClient
-        .cambiarEstadoDonacionIndependiente(donacionIndependienteId, "ENTREGADA", "TRANSPORTISTA")
-        .then()
-        .statusCode(200);
+    // 8. Transiciones de estado para TODAS las fragmentaciones hacia entrega exitosa
+    for (Map<String, Object> frag : frags) {
+      UUID diId =
+          UUID.fromString(
+              (String) ((Map<String, Object>) frag.get("donacionIndependiente")).get("id"));
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "EN_TRASLADO", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "ENTREGADA", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+    }
 
     // 9. Verificar side-effects downstream (Incentivos y Notificaciones)
     PollingUtils.esperarTotalDonacionesExitosas(incentivosClient, donanteId, 0);
