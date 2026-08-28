@@ -1,6 +1,10 @@
 package grupo5.notificaciones.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,7 +19,6 @@ import java.util.ArrayList;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -47,7 +50,7 @@ class NotificacionControllerTest {
   }
 
   @Test
-  void registrarDonante_deberiaResponderOkYProcesarEvento() throws Exception {
+  void registrarDonante_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonanteRegistradoDTO(personaMock.getId(), TEST_DATE_TIME, "user123");
 
@@ -57,13 +60,13 @@ class NotificacionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
-        .andExpect(status().isOk());
+        .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
-  void donanteInactivo_deberiaResponderOkYProcesarEvento() throws Exception {
+  void donanteInactivo_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonanteInactivoDTO(personaMock.getId(), TEST_DATE_TIME, 30);
 
@@ -73,13 +76,13 @@ class NotificacionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
-        .andExpect(status().isOk());
+        .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
-  void donacionAsignada_deberiaResponderOkYProcesarEvento() throws Exception {
+  void donacionAsignada_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionAsignadaDTO(
             personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "10kg de arroz");
@@ -90,13 +93,13 @@ class NotificacionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
-        .andExpect(status().isOk());
+        .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
-  void donacionRecibida_deberiaResponderOkYProcesarEvento() throws Exception {
+  void donacionRecibida_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionRecibidaDTO(
             personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "ropa", "AB123CD");
@@ -107,13 +110,13 @@ class NotificacionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
-        .andExpect(status().isOk());
+        .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
-  void donacionEnCamino_deberiaResponderOkYProcesarEvento() throws Exception {
+  void donacionEnCamino_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionEnCaminoDTO(
             personaMock.getId(),
@@ -128,13 +131,13 @@ class NotificacionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
-        .andExpect(status().isOk());
+        .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
   }
 
   @Test
-  void entregaFallida_deberiaResponderOkYProcesarEvento() throws Exception {
+  void entregaFallida_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoEntregaFallidaDTO(
             personaMock.getId(),
@@ -151,8 +154,34 @@ class NotificacionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
-        .andExpect(status().isOk());
+        .andExpect(status().isAccepted());
 
-    Mockito.verify(notificacionService, Mockito.times(1)).procesar(any(EventoNotificableDTO.class));
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
+  }
+
+  @Test
+  void procesarEvento_conDetalleDonacionEnBlanco_deberiaResponderBadRequest() throws Exception {
+    // RF-09 (Oleada 9): Bean Validation en el DTO de entrada, sin llegar a NotificacionService.
+    EventoNotificableDTO dto =
+        new EventoDonacionAsignadaDTO(personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "");
+
+    mockMvc
+        .perform(
+            post("/notificaciones")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
+        .andExpect(status().isBadRequest());
+
+    verify(notificacionService, never()).procesar(any(EventoNotificableDTO.class));
+  }
+
+  @Test
+  void obtenerPorPersona_conPersonaIdMalformado_deberiaResponderBadRequest() throws Exception {
+    // RF-09 (Oleada 9): el GlobalExceptionHandler de common-lib ya maneja
+    // MethodArgumentTypeMismatchException — no hace falta agregar nada en este servicio.
+    mockMvc
+        .perform(get("/notificaciones/persona/no-es-un-uuid"))
+        .andExpect(status().isBadRequest());
   }
 }

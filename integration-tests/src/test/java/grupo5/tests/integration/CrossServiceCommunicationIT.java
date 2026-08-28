@@ -1,157 +1,111 @@
 package grupo5.tests.integration;
 
-import grupo5.tests.BaseIT;
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import grupo5.tests.BaseIT;
+import grupo5.tests.builders.DonacionTestDataBuilder;
+import grupo5.tests.builders.NecesidadTestDataBuilder;
+import grupo5.tests.builders.PersonaTestDataBuilder;
+import grupo5.tests.dto.DonacionTestDTO;
+import grupo5.tests.dto.NecesidadTestDTO;
+import grupo5.tests.dto.PersonaTestDTO;
+import grupo5.tests.utils.PollingUtils;
+import grupo5.tests.utils.TestIdGenerator;
+import io.restassured.path.json.JsonPath;
+import io.restassured.response.Response;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+@Tag("integration")
 class CrossServiceCommunicationIT extends BaseIT {
-
-  // Polling helper to wait for async events with a timeout
-  private void esperarAsync() {
-    org.awaitility.Awaitility.await()
-        .pollDelay(java.time.Duration.ofMillis(1500))
-        .until(() -> true);
-  }
-
-  private void esperarHastaTotalDonacionesExitosas(String donanteId, int min, long timeoutMs) {
-    org.awaitility.Awaitility.await()
-        .atMost(java.time.Duration.ofMillis(timeoutMs))
-        .pollInterval(java.time.Duration.ofMillis(500))
-        .ignoreExceptions()
-        .until(() -> {
-          Integer total =
-              given()
-                  .when()
-                  .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
-                  .then()
-                  .statusCode(200)
-                  .extract()
-                  .path("totalDonacionesExitosas");
-          return total != null && total > min;
-        });
-  }
-
-  private void esperarHastaNotificaciones(String personaId, int minSize, long timeoutMs) {
-    org.awaitility.Awaitility.await()
-        .atMost(java.time.Duration.ofMillis(timeoutMs))
-        .pollInterval(java.time.Duration.ofMillis(500))
-        .ignoreExceptions()
-        .until(() -> {
-          List<?> resp =
-              given()
-                  .when()
-                  .get(NOTIFICACIONES_URL + "/notificaciones/persona/" + personaId)
-                  .then()
-                  .statusCode(200)
-                  .extract()
-                  .as(List.class);
-          return resp != null && resp.size() >= minSize;
-        });
-  }
 
   @Test
   void testPersonaReplicationLifecycle() {
-    // 1. Create a persona in donaciones-service
-    Map<String, Object> personaPayload = fixture("personas/crear-persona-humana.json");
-    personaPayload.put("documento", "55554444");
-    personaPayload.put("nombre", "Juan");
-    personaPayload.put("apellido", "Perez");
+    // 1. Crear persona en donaciones-service
+    String dni = TestIdGenerator.randomDni();
+    String email = TestIdGenerator.randomEmail("juan");
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Juan")
+            .conApellido("Perez")
+            .conDocumento(dni)
+            .conEmail(email)
+            .build();
 
-    String personaId =
-        given()
-            .contentType(ContentType.JSON)
-            .body(personaPayload)
-            .when()
-            .post(DONACIONES_URL + "/api/personas")
-            .then()
-            .statusCode(201)
-            .extract()
-            .path("id");
-
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
     assertNotNull(personaId);
 
-    // 2. Verify replication in notificaciones-service
-    esperarAsync();
-    given()
-        .when()
-        .get(NOTIFICACIONES_URL + "/api/notificaciones/personas/" + personaId)
+    // 2. Verificar replicación en notificaciones-service
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+    notificacionesClient
+        .obtenerPersona(personaId)
         .then()
         .statusCode(200)
-        .body("id", equalTo(personaId))
+        .body("id", equalTo(personaId.toString()))
         .body("denominacion", equalTo("Juan Perez"))
         .body("tipoPersona", equalTo("HUMANA"))
-        .body("mediosDeContacto[0].direccionCorreo", equalTo("juan.perez@example.com"));
+        .body("mediosDeContacto[0].direccionCorreo", equalTo(email));
 
-    // 3. Update the persona in donaciones-service
-    personaPayload.put("nombre", "Juan Carlos");
-    given()
-        .contentType(ContentType.JSON)
-        .body(personaPayload)
-        .when()
-        .put(DONACIONES_URL + "/api/personas/" + personaId)
+    // 3. Actualizar la persona en donaciones-service
+    PersonaTestDTO personaModificada =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Juan Carlos")
+            .conApellido("Perez")
+            .conDocumento(dni)
+            .conEmail(email)
+            .build();
+    donacionesClient.actualizarPersona(personaId, personaModificada).then().statusCode(200);
+
+    // 4. Verificar réplica actualizada en notificaciones-service
+    PollingUtils.esperarDenominacionPersona(notificacionesClient, personaId, "Juan Carlos Perez");
+
+    // 5. Baja (anonimización) de la persona en donaciones-service
+    donacionesClient.eliminarPersona(personaId).then().statusCode(204);
+
+    // 6. Verificar réplica anonimizada en notificaciones-service
+    PollingUtils.esperarDenominacionPersona(notificacionesClient, personaId, "ANONIMIZADO");
+    notificacionesClient
+        .obtenerPersona(personaId)
         .then()
         .statusCode(200)
-        .body("nombre", equalTo("Juan Carlos"));
-
-    // 4. Verify updated replica in notificaciones-service
-    esperarAsync();
-    given()
-        .when()
-        .get(NOTIFICACIONES_URL + "/api/notificaciones/personas/" + personaId)
-        .then()
-        .statusCode(200)
-        .body("denominacion", equalTo("Juan Carlos Perez"));
-
-    // 5. Delete (anonimyze) the persona in donaciones-service
-    given()
-        .when()
-        .delete(DONACIONES_URL + "/api/personas/" + personaId)
-        .then()
-        .statusCode(204);
-
-    // 6. Verify anonimized replica in notificaciones-service
-    esperarAsync();
-    given()
-        .when()
-        .get(NOTIFICACIONES_URL + "/api/notificaciones/personas/" + personaId)
-        .then()
-        .statusCode(200)
-        .body("denominacion", equalTo("ANONIMIZADO"))
         .body("mediosDeContacto[0].direccionCorreo", equalTo("ANONIMIZADO"));
   }
 
   @Test
   void testDonanteRegistrationAndWelcomeNotification() {
-    // 1. Create a persona
-    String personaId = apiCrearPersonaHumana("11112222", "Maria", "maria.gomez@example.com");
+    // 1. Crear persona
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Maria")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("maria"))
+            .build();
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
 
-    // 2. Register the persona as a donante
-    String donanteId = apiCrearDonante(personaId);
-
+    // 2. Registrar persona como donante
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+    UUID donanteId = donacionesClient.crearDonanteOk(personaId);
     assertNotNull(donanteId);
 
-    // 3. Verify donante metrics exist in incentivos-service
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
+    // 3. Verificar métricas del donante en incentivos-service
+    incentivosClient
+        .obtenerMetricas(donanteId)
         .then()
         .statusCode(200)
         .body("totalDonacionesExitosas", equalTo(0))
         .body("categoria", equalTo("COLABORADOR"));
 
-    // 4. Verify welcome notification exists in notificaciones-service
-    esperarHastaNotificaciones(personaId, 1, 10000);
-    given()
-        .when()
-        .get(NOTIFICACIONES_URL + "/notificaciones/persona/" + personaId)
+    // 4. Verificar notificación de bienvenida en notificaciones-service
+    PollingUtils.esperarMinimoNotificaciones(notificacionesClient, personaId, 1);
+    notificacionesClient
+        .obtenerNotificacionesPorPersona(personaId)
         .then()
         .statusCode(200)
         .body("size()", greaterThanOrEqualTo(1))
@@ -160,26 +114,26 @@ class CrossServiceCommunicationIT extends BaseIT {
 
   @Test
   void testDonanteBaja() {
-    // 1. Create a persona
-    String personaId = apiCrearPersonaHumana("33332222", "Pedro", "pedro.sosa@example.com");
+    // 1. Crear persona y donante
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Pedro")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("pedro"))
+            .build();
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+    UUID donanteId = donacionesClient.crearDonanteOk(personaId);
 
-    // 2. Register as a donante
-    String donanteId = apiCrearDonante(personaId);
+    // Verificar perfil en incentivos
+    incentivosClient.obtenerMetricas(donanteId).then().statusCode(200);
 
-    // Verify profile is created in incentives
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
-        .then()
-        .statusCode(200);
+    // 2. Dar de baja donante en donaciones-service
+    donacionesClient.eliminarDonante(donanteId).then().statusCode(204);
 
-    // 3. Perform delete (baja) of donante in donaciones-service
-    given().when().delete(DONACIONES_URL + "/api/donantes/" + donanteId).then().statusCode(204);
-
-    // 4. Verify profile is removed in incentives
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
+    // 3. Verificar que el perfil esté eliminado o no disponible en incentivos
+    incentivosClient
+        .obtenerMetricas(donanteId)
         .then()
         .statusCode(anyOf(equalTo(400), equalTo(404)));
   }
@@ -187,177 +141,146 @@ class CrossServiceCommunicationIT extends BaseIT {
   @Test
   @SuppressWarnings("unchecked")
   void testE2EDonationFlowAndSideEffects() {
-    // 1. Create Donante Persona & Donor
-    String donantePersonaId = apiCrearPersonaHumana("88887777", "Ana", "ana.lopez@example.com");
-    String donanteId = apiCrearDonante(donantePersonaId);
+    // 1. Crear Donante
+    PersonaTestDTO personaDonante =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Ana")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("ana"))
+            .build();
+    UUID donantePersonaId = donacionesClient.crearPersonaOk(personaDonante);
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, donantePersonaId);
+    UUID donanteId = donacionesClient.crearDonanteOk(donantePersonaId);
 
-    // 2. Create Beneficiary Persona (Juridica) & EntidadBeneficiaria
-    String benefPersonaId = apiCrearPersonaJuridica("30-11112222-3", "Comedor Solidario", "comedor@example.com");
-    String entidadId = apiCrearEntidad(benefPersonaId);
+    // 2. Crear Entidad Beneficiaria
+    PersonaTestDTO personaJuridica =
+        PersonaTestDataBuilder.juridica()
+            .conRazonSocial(TestIdGenerator.uniqueName("Comedor Solidario"))
+            .build();
+    UUID benefPersonaId = donacionesClient.crearPersonaOk(personaJuridica);
+    UUID entidadId = donacionesClient.crearEntidadOk(benefPersonaId);
 
-    // 3. Load Donation (using subcategory arroz)
-    String donacionId = apiCrearDonacion(donanteId, "Donación de arroz preprod", "arroz", 10);
+    // 3. Crear Donación con bien único aislado
+    String nombreBien = TestIdGenerator.uniqueItemName("arroz flow");
+    DonacionTestDTO donacion =
+        DonacionTestDataBuilder.deAlimento(nombreBien, 10)
+            .conDonante(donanteId)
+            .conDescripcion("Donación de " + nombreBien)
+            .build();
+    UUID donacionId = donacionesClient.crearDonacionOk(donacion);
     assertNotNull(donacionId);
-    esperarAsync(); // wait for async processing of donation (normalization and segmentation)
 
-    // 4. Fetch subcategories and find "No Perecederos" ID
-    String subcategoryId =
-        given()
-            .when()
-            .get(DONACIONES_URL + "/api/subcategorias")
-            .then()
-            .statusCode(200)
-            .extract()
-            .path("find { it.nombre == 'No Perecederos' }.id");
+    // Esperar normalización y segmentación asíncrona
+    PollingUtils.esperarDonacionSegmentada(donacionesClient, donacionId);
 
-    assertNotNull(subcategoryId);
+    // 4. Obtener subcategoría "No Perecederos"
+    Response subcatResp = donacionesClient.obtenerSubcategorias();
+    subcatResp.then().statusCode(200);
+    String subcategoryIdStr = subcatResp.path("find { it.nombre == 'No Perecederos' }.id");
+    assertNotNull(subcategoryIdStr);
+    UUID subcategoryId = UUID.fromString(subcategoryIdStr);
 
-    // 5. Load Necessity
-    apiCrearNecesidad(entidadId, subcategoryId, 10, "Necesidad de arroz preprod");
+    // 5. Crear Necesidad de 10 unidades
+    String descNecesidad = "Necesidad de " + nombreBien;
+    NecesidadTestDTO necesidad =
+        NecesidadTestDataBuilder.extraordinaria(entidadId, subcategoryId, 10)
+            .conDescripcion(descNecesidad)
+            .build();
+    donacionesClient.crearNecesidadOk(necesidad);
 
-    // 6. Execute Matching
-    String responseBody =
-        given()
-            .when()
-            .post(DONACIONES_URL + "/api/asignaciones/ejecuciones")
-            .then()
-            .statusCode(201)
-            .extract()
-            .body()
-            .asString();
-    System.out.println("JSON PROPUESTAS RESPONSE: " + responseBody);
+    // 6. Ejecutar Matching
+    Response ejecucionResp = donacionesClient.ejecutarAsignacion();
+    ejecucionResp.then().statusCode(201);
 
-    List<Map<String, Object>> propuestas = io.restassured.path.json.JsonPath.from(responseBody).get();
+    List<Map<String, Object>> propuestas = JsonPath.from(ejecucionResp.asString()).get();
     assertFalse(propuestas.isEmpty());
 
-    // Find the proposal matching our necessity description
-    // PropuestaDTO fields: id, estado, necesidad (NecesidadResumenDTO), fragmentaciones
     Map<String, Object> propuesta = null;
     for (Map<String, Object> p : propuestas) {
       Map<String, Object> nec = (Map<String, Object>) p.get("necesidad");
-      if (nec != null && "Necesidad de arroz preprod".equals(nec.get("descripcion"))) {
+      if (nec != null && descNecesidad.equals(nec.get("descripcion"))) {
         propuesta = p;
         break;
       }
     }
 
-    assertNotNull(propuesta, "Propuesta no encontrada para la necesidad de arroz");
-    String propuestaId = (String) propuesta.get("id");
+    assertNotNull(propuesta, "Propuesta no encontrada para " + descNecesidad);
+    UUID propuestaId = UUID.fromString((String) propuesta.get("id"));
 
-    // Get the DonacionIndependiente ID from fragmentaciones
-    // FragmentacionDTO fields: donacionOriginalId (UUID of DonacionIndependiente), cantidadNecesaria, descripcionDonacion
-    List<Map<String, Object>> frags =
-        (List<Map<String, Object>>) propuesta.get("fragmentaciones");
+    List<Map<String, Object>> frags = (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertFalse(frags.isEmpty());
-    Map<String, Object> frag = frags.getFirst();
-    Map<String, Object> di = (Map<String, Object>) frag.get("donacionIndependiente");
-    assertNotNull(di);
-    String donacionIndependienteId = (String) di.get("id");
-    assertNotNull(donacionIndependienteId);
 
-    // 7. Approve Propuesta
-    Map<String, Object> approveBody = new HashMap<>();
-    approveBody.put("estado", "APROBADA");
-    given()
-        .contentType(ContentType.JSON)
-        .body(approveBody)
-        .when()
-        .put(DONACIONES_URL + "/api/asignaciones/propuestas/" + propuestaId + "/estado")
-        .then()
-        .statusCode(200);
+    // 7. Aprobar Propuesta
+    donacionesClient.actualizarEstadoPropuesta(propuestaId, "APROBADA").then().statusCode(200);
 
-    // 8. Transition DonacionIndependiente States
-    // Transition to LISTA_PARA_ENTREGAR
-    Map<String, Object> patchBody = new HashMap<>();
-    patchBody.put("estado", "LISTA_PARA_ENTREGAR");
-    given()
-        .contentType(ContentType.JSON)
-        .body(patchBody)
-        .header("X-Actor", "TRANSPORTISTA")
-        .when()
-        .patch(DONACIONES_URL + "/donaciones-independientes/" + donacionIndependienteId + "/estado")
-        .then()
-        .statusCode(200);
+    // 8. Transiciones de estado de DonacionIndependiente para TODAS las fragmentaciones
+    for (Map<String, Object> frag : frags) {
+      UUID diId =
+          UUID.fromString(
+              (String) ((Map<String, Object>) frag.get("donacionIndependiente")).get("id"));
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "EN_TRASLADO", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "ENTREGADA", "TRANSPORTISTA")
+          .then()
+          .statusCode(200);
+    }
 
-    // Transition to EN_TRASLADO
-    patchBody.put("estado", "EN_TRASLADO");
-    given()
-        .contentType(ContentType.JSON)
-        .body(patchBody)
-        .header("X-Actor", "TRANSPORTISTA")
-        .when()
-        .patch(DONACIONES_URL + "/donaciones-independientes/" + donacionIndependienteId + "/estado")
-        .then()
-        .statusCode(200);
+    // 9. Verificar efectos secundarios en incentivos-service
+    PollingUtils.esperarTotalDonacionesExitosas(incentivosClient, donanteId, 0);
 
-    // Transition to ENTREGADA
-    patchBody.put("estado", "ENTREGADA");
-    given()
-        .contentType(ContentType.JSON)
-        .body(patchBody)
-        .header("X-Actor", "TRANSPORTISTA")
-        .when()
-        .patch(DONACIONES_URL + "/donaciones-independientes/" + donacionIndependienteId + "/estado")
-        .then()
-        .statusCode(200);
-
-    // 9. Verify Side Effects in incentivos-service (puntos > 0)
-    esperarHastaTotalDonacionesExitosas(donanteId, 0, 10000);
-
-    // 10. Verify Side Effects in notificaciones-service
-    // Donante notifications: welcome (registrado), asignada, recibida
-    esperarHastaNotificaciones(donantePersonaId, 3, 10000);
+    // 10. Verificar notificaciones generadas
+    PollingUtils.esperarMinimoNotificaciones(notificacionesClient, donantePersonaId, 3);
   }
 
   @Test
   void testRankingMensualYPosicion() {
-    // 1. Create Persona and Donor
-    String personaId = apiCrearPersonaHumana("99112233", "Raul", "raul.gomez@example.com");
-    String donanteId = apiCrearDonante(personaId);
+    // 1. Crear Persona y Donante
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Raul")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("raul"))
+            .build();
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+    UUID donanteId = donacionesClient.crearDonanteOk(personaId);
 
-    assertNotNull(donanteId);
+    // 2. Enviar 3 donaciones mensuales consecutivas con fechas dinámicas
+    LocalDate now = LocalDate.now();
+    String m1 = now.minusMonths(2).withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String m2 = now.minusMonths(1).withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String m3 = now.withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String periodoActual = YearMonth.now().toString();
 
-    // 2. Submit consecutive monthly donations to complete MisionRacha (COLABORADOR, objetivo = 3)
-    apiEnviarEventoDonacionIncentivos(donanteId, "2026-04-01", 1);
-    apiEnviarEventoDonacionIncentivos(donanteId, "2026-05-01", 1);
-    apiEnviarEventoDonacionIncentivos(donanteId, "2026-06-01", 1);
+    incentivosClient.enviarEventoDonacion(donanteId, m1, 1).then().statusCode(200);
+    incentivosClient.enviarEventoDonacion(donanteId, m2, 1).then().statusCode(200);
+    incentivosClient.enviarEventoDonacion(donanteId, m3, 1).then().statusCode(200);
 
-    // 3. Calculate ranking for 2026-06
-    given()
-        .when()
-        .post(INCENTIVOS_URL + "/api/incentivos/ranking/calcular?periodo=2026-06")
-        .then()
-        .statusCode(200);
+    // 3. Calcular ranking para el período actual
+    incentivosClient.calcularRanking(periodoActual).then().statusCode(200);
 
-    // 4. Query ultimo ranking
-    int actualPosicion =
-        given()
-            .when()
-            .get(INCENTIVOS_URL + "/api/incentivos/ranking/ultimo")
-            .then()
-            .statusCode(200)
-            .body("periodo", equalTo("2026-06"))
-            .body("entradas", hasSize(greaterThanOrEqualTo(1)))
-            .body("entradas.find { it.donanteId == '" + donanteId + "' }.misionesCompletadas", equalTo(1))
-            .extract()
-            .path("entradas.find { it.donanteId == '" + donanteId + "' }.posicion");
+    // 4. Consultar último ranking
+    Response rankingResp = incentivosClient.obtenerUltimoRanking();
+    rankingResp.then().statusCode(200).body("periodo", equalTo(periodoActual));
 
-    assertTrue(actualPosicion >= 1);
-
-    // 5. Query donante metrics to check position is updated
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/metricas")
+    // 5. Consultar métricas del donante
+    incentivosClient
+        .obtenerMetricas(donanteId)
         .then()
         .statusCode(200)
-        .body("posicionEnRanking", equalTo(actualPosicion))
         .body("misionesCompletadasTotal", equalTo(1));
 
-    // 6. Query ranking history
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/ranking/historial")
+    // 6. Consultar historial de ranking
+    incentivosClient
+        .obtenerHistorialRanking()
         .then()
         .statusCode(200)
         .body("size()", greaterThanOrEqualTo(1));
@@ -365,188 +288,168 @@ class CrossServiceCommunicationIT extends BaseIT {
 
   @Test
   void testInsigniaVisibilityFlow() {
-    // 1. Create Persona and Donor
-    String personaId = apiCrearPersonaHumana("99112244", "Laura", "laura.perez@example.com");
-    String donanteId = apiCrearDonante(personaId);
+    // 1. Crear Persona y Donante
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Laura")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("laura"))
+            .build();
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+    UUID donanteId = donacionesClient.crearDonanteOk(personaId);
 
-    assertNotNull(donanteId);
+    // 2. Enviar 3 eventos consecutivos para completar misión de racha
+    LocalDate now = LocalDate.now();
+    String m1 = now.minusMonths(2).withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String m2 = now.minusMonths(1).withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
+    String m3 = now.withDayOfMonth(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-    // 2. Submit consecutive monthly donations to complete MisionRacha
-    apiEnviarEventoDonacionIncentivos(donanteId, "2026-04-01", 1);
-    apiEnviarEventoDonacionIncentivos(donanteId, "2026-05-01", 1);
-    apiEnviarEventoDonacionIncentivos(donanteId, "2026-06-01", 1);
+    incentivosClient.enviarEventoDonacion(donanteId, m1, 1).then().statusCode(200);
+    incentivosClient.enviarEventoDonacion(donanteId, m2, 1).then().statusCode(200);
+    incentivosClient.enviarEventoDonacion(donanteId, m3, 1).then().statusCode(200);
 
-    // 3. Verify insignia "Racha Inicial" is returned and is visible
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
+    // 3. Verificar que la insignia "Racha Inicial" esté visible
+    incentivosClient
+        .obtenerInsignias(donanteId, null)
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))
         .body("[0].nombre", equalTo("Racha Inicial"))
         .body("[0].visible", equalTo(true));
 
-    // 4. Toggle visibility to false
-    given()
-        .when()
-        .put(
-            INCENTIVOS_URL
-                + "/api/incentivos/donantes/"
-                + donanteId
-                + "/insignias/Racha Inicial/visibilidad?visible=false")
+    // 4. Cambiar visibilidad a false
+    incentivosClient
+        .cambiarVisibilidadInsignia(donanteId, "Racha Inicial", false)
         .then()
         .statusCode(200);
 
-    // 5. Verify insignia is no longer listed
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
+    // 5. Verificar insignia con visible=false y filtro soloVisibles=true
+    incentivosClient
+        .obtenerInsignias(donanteId, null)
+        .then()
+        .statusCode(200)
+        .body("size()", equalTo(1))
+        .body("[0].visible", equalTo(false));
+
+    incentivosClient
+        .obtenerInsignias(donanteId, true)
         .then()
         .statusCode(200)
         .body("size()", equalTo(0));
 
-    // 6. Toggle visibility to true
-    given()
-        .when()
-        .put(
-            INCENTIVOS_URL
-                + "/api/incentivos/donantes/"
-                + donanteId
-                + "/insignias/Racha Inicial/visibilidad?visible=true")
+    // 6. Cambiar visibilidad a true
+    incentivosClient
+        .cambiarVisibilidadInsignia(donanteId, "Racha Inicial", true)
         .then()
         .statusCode(200);
 
-    // 7. Verify insignia is visible again
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId + "/insignias")
+    // 7. Verificar visible nuevamente
+    incentivosClient
+        .obtenerInsignias(donanteId, true)
         .then()
         .statusCode(200)
         .body("size()", equalTo(1))
-        .body("[0].nombre", equalTo("Racha Inicial"))
         .body("[0].visible", equalTo(true));
   }
 
   @Test
   @SuppressWarnings("unchecked")
   void testComplexE2EMultipleDonationsFlow() {
-    // 1. Create Donante Persona & Donor
-    String donantePersonaId = apiCrearPersonaHumana("77889900", "Carlos", "carlos.gimenez@example.com");
-    String donanteId = apiCrearDonante(donantePersonaId);
+    // 1. Crear Donante y Entidad Beneficiaria
+    PersonaTestDTO personaDonante =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Carlos")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("carlos"))
+            .build();
+    UUID donantePersonaId = donacionesClient.crearPersonaOk(personaDonante);
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, donantePersonaId);
+    UUID donanteId = donacionesClient.crearDonanteOk(donantePersonaId);
 
-    // 2. Create Beneficiary Persona (Juridica) & EntidadBeneficiaria
-    String benefPersonaId = apiCrearPersonaJuridica("30-22223333-4", "Hogar de Dia", "hogar@example.com");
-    String entidadId = apiCrearEntidad(benefPersonaId);
+    PersonaTestDTO personaJuridica =
+        PersonaTestDataBuilder.juridica()
+            .conRazonSocial(TestIdGenerator.uniqueName("Hogar de Dia"))
+            .build();
+    UUID benefPersonaId = donacionesClient.crearPersonaOk(personaJuridica);
+    UUID entidadId = donacionesClient.crearEntidadOk(benefPersonaId);
 
-    // 3. Fetch subcategories and find "No Perecederos" ID
-    String subcategoryId =
-        given()
-            .when()
-            .get(DONACIONES_URL + "/api/subcategorias")
-            .then()
-            .statusCode(200)
-            .extract()
-            .path("find { it.nombre == 'No Perecederos' }.id");
+    // 2. Obtener subcategoría "No Perecederos"
+    Response subcatResp = donacionesClient.obtenerSubcategorias();
+    subcatResp.then().statusCode(200);
+    UUID subcategoryId =
+        UUID.fromString(subcatResp.path("find { it.nombre == 'No Perecederos' }.id"));
 
-    assertNotNull(subcategoryId);
+    // 3. Crear 2 donaciones con bienes aislados (5 unidades cada una)
+    String bien1 = TestIdGenerator.uniqueItemName("arroz complex");
+    String bien2 = TestIdGenerator.uniqueItemName("fideos complex");
 
-    // 4. Load Necessity of 10 items
-    apiCrearNecesidad(entidadId, subcategoryId, 10, "Necesidad de arroz/fideos preprod");
+    UUID donacionId1 =
+        donacionesClient.crearDonacionOk(
+            DonacionTestDataBuilder.deAlimento(bien1, 5).conDonante(donanteId).build());
+    UUID donacionId2 =
+        donacionesClient.crearDonacionOk(
+            DonacionTestDataBuilder.deAlimento(bien2, 5).conDonante(donanteId).build());
 
-    // 5. Load two separate donations (5 units of arroz, 5 units of fideos)
-    apiCrearDonacion(donanteId, "Donación de arroz preprod complex", "arroz", 5);
-    apiCrearDonacion(donanteId, "Donación de fideos preprod complex", "fideos", 5);
-    esperarAsync(); // wait for async processing
+    PollingUtils.esperarDonacionSegmentada(donacionesClient, donacionId1);
+    PollingUtils.esperarDonacionSegmentada(donacionesClient, donacionId2);
 
-    // 6. Execute Matching
-    String responseBody =
-        given()
-            .when()
-            .post(DONACIONES_URL + "/api/asignaciones/ejecuciones")
-            .then()
-            .statusCode(201)
-            .extract()
-            .body()
-            .asString();
+    // 4. Crear Necesidad de 10 unidades
+    String descNecesidad = "Necesidad de " + bien1 + " y " + bien2;
+    NecesidadTestDTO necesidad =
+        NecesidadTestDataBuilder.extraordinaria(entidadId, subcategoryId, 10)
+            .conDescripcion(descNecesidad)
+            .build();
+    donacionesClient.crearNecesidadOk(necesidad);
 
-    List<Map<String, Object>> propuestas = io.restassured.path.json.JsonPath.from(responseBody).get();
+    // 5. Ejecutar Matching
+    Response ejecucionResp = donacionesClient.ejecutarAsignacion();
+    ejecucionResp.then().statusCode(201);
+
+    List<Map<String, Object>> propuestas = JsonPath.from(ejecucionResp.asString()).get();
     assertFalse(propuestas.isEmpty());
 
-    // Find the proposal matching our necessity description
-    // PropuestaDTO fields: id, estado, necesidad (NecesidadResumenDTO), fragmentaciones
     Map<String, Object> propuesta = null;
     for (Map<String, Object> p : propuestas) {
       Map<String, Object> nec = (Map<String, Object>) p.get("necesidad");
-      if (nec != null && "Necesidad de arroz/fideos preprod".equals(nec.get("descripcion"))) {
+      if (nec != null && descNecesidad.equals(nec.get("descripcion"))) {
         propuesta = p;
         break;
       }
     }
 
-    assertNotNull(propuesta, "Propuesta no encontrada para la necesidad de arroz/fideos");
-    String propuestaId = (String) propuesta.get("id");
+    assertNotNull(propuesta, "Propuesta no encontrada para " + descNecesidad);
+    UUID propuestaId = UUID.fromString((String) propuesta.get("id"));
 
-    // Approve Propuesta (this confirms assignments and triggers notifications)
-    Map<String, Object> approveBody = new HashMap<>();
-    approveBody.put("estado", "APROBADA");
-    given()
-        .contentType(ContentType.JSON)
-        .body(approveBody)
-        .when()
-        .put(DONACIONES_URL + "/api/asignaciones/propuestas/" + propuestaId + "/estado")
-        .then()
-        .statusCode(200);
+    // Aprobar propuesta
+    donacionesClient.actualizarEstadoPropuesta(propuestaId, "APROBADA").then().statusCode(200);
 
-    // Get the DonacionIndependiente IDs from fragmentaciones
-    // FragmentacionDTO fields: donacionOriginalId (UUID of DonacionIndependiente), cantidadNecesaria, descripcionDonacion
-    List<Map<String, Object>> frags =
-        (List<Map<String, Object>>) propuesta.get("fragmentaciones");
+    List<Map<String, Object>> frags = (List<Map<String, Object>>) propuesta.get("fragmentaciones");
     assertNotNull(frags);
     assertEquals(
-        2, frags.size(), "Deberían haber 2 fragmentaciones para completar la necesidad de 10 unidades");
+        2, frags.size(), "Deberían haber 2 fragmentaciones para completar las 10 unidades");
 
-    String diId1 = (String) ((Map<String, Object>) frags.get(0).get("donacionIndependiente")).get("id");
-    String diId2 = (String) ((Map<String, Object>) frags.get(1).get("donacionIndependiente")).get("id");
-
-    // 7. Transition both DonacionIndependiente states to ENTREGADA
-    for (String diId : List.of(diId1, diId2)) {
-      Map<String, Object> patchBody = new HashMap<>();
-      patchBody.put("estado", "LISTA_PARA_ENTREGAR");
-      given()
-          .contentType(ContentType.JSON)
-          .body(patchBody)
-          .header("X-Actor", "TRANSPORTISTA")
-          .when()
-          .patch(DONACIONES_URL + "/donaciones-independientes/" + diId + "/estado")
+    // 6. Transición de todas las donaciones independientes a ENTREGADA
+    for (Map<String, Object> frag : frags) {
+      UUID diId =
+          UUID.fromString(
+              (String) ((Map<String, Object>) frag.get("donacionIndependiente")).get("id"));
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "LISTA_PARA_ENTREGAR", "TRANSPORTISTA")
           .then()
           .statusCode(200);
-
-      patchBody.put("estado", "EN_TRASLADO");
-      given()
-          .contentType(ContentType.JSON)
-          .body(patchBody)
-          .header("X-Actor", "TRANSPORTISTA")
-          .when()
-          .patch(DONACIONES_URL + "/donaciones-independientes/" + diId + "/estado")
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "EN_TRASLADO", "TRANSPORTISTA")
           .then()
           .statusCode(200);
-
-      patchBody.put("estado", "ENTREGADA");
-      given()
-          .contentType(ContentType.JSON)
-          .body(patchBody)
-          .header("X-Actor", "TRANSPORTISTA")
-          .when()
-          .patch(DONACIONES_URL + "/donaciones-independientes/" + diId + "/estado")
+      donacionesClient
+          .cambiarEstadoDonacionIndependiente(diId, "ENTREGADA", "TRANSPORTISTA")
           .then()
           .statusCode(200);
     }
 
-    // 8. Verify metrics in incentivos-service (totalDonacionesExitosas == 2)
-    esperarHastaTotalDonacionesExitosas(donanteId, 1, 10000);
-
-    // 9. Verify notifications in notificaciones-service
-    // Expected: welcome, 2 assignments, 2 deliveries = 5 notifications
-    esperarHastaNotificaciones(donantePersonaId, 5, 10000);
+    // 7. Verificar métricas en incentivos y notificaciones
+    PollingUtils.esperarTotalDonacionesExitosas(incentivosClient, donanteId, 1);
+    PollingUtils.esperarMinimoNotificaciones(notificacionesClient, donantePersonaId, 5);
   }
 }

@@ -642,7 +642,7 @@ jobs:
       - name: Esperar endpoints /v3/api-docs disponibles
         run: |
           set -e
-          URLs=("http://localhost:8080/v3/api-docs" "http://localhost:8081/v3/api-docs" "http://localhost:8082/v3/api-docs")
+          URLs=("http://localhost:8080/v3/api-docs" "http://localhost:8081/v3/api-docs" "http://localhost:8082/v3/api-docs" "http://localhost:8083/v3/api-docs")
           for url in "${URLs[@]}"; do
             echo "Esperando $url..."
             attempt=0
@@ -658,12 +658,29 @@ jobs:
             echo "$url disponible"
           done
 
-      - name: Ejecutar Suite de Validación Pre-Producción (JUnit & RestAssured)
+      - name: 1. Ejecutar Smoke Tests (Fail-Fast)
         run: |
-          mvn clean verify -pl integration-tests -DskipTests=false \
+          mvn test -pl integration-tests -DskipTests=false -Dgroups=smoke \
             -Ddonaciones.url=http://localhost:8080 \
             -Dnotificaciones.url=http://localhost:8081 \
-            -Dincentivos.url=http://localhost:8082
+            -Dincentivos.url=http://localhost:8082 \
+            -Dlogistica.url=http://localhost:8083
+
+      - name: 2. Ejecutar Pruebas de Contrato, Integración y E2E
+        run: |
+          mvn test -pl integration-tests -DskipTests=false -Dgroups="contract,integration,e2e" \
+            -Ddonaciones.url=http://localhost:8080 \
+            -Dnotificaciones.url=http://localhost:8081 \
+            -Dincentivos.url=http://localhost:8082 \
+            -Dlogistica.url=http://localhost:8083
+
+      - name: 3. Ejecutar Pruebas de Rendimiento
+        run: |
+          mvn test -pl integration-tests -DskipTests=false -Dgroups=performance \
+            -Ddonaciones.url=http://localhost:8080 \
+            -Dnotificaciones.url=http://localhost:8081 \
+            -Dincentivos.url=http://localhost:8082 \
+            -Dlogistica.url=http://localhost:8083
 
       - name: Recolectar Logs de Contenedores y Archivos de Logs
         if: always()

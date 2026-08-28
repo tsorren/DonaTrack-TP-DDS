@@ -5,15 +5,13 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class EntregaFallida extends EventoDeDonacion {
   private static final String SEPARADOR_MOTIVO = ". Motivo: ";
-  private Persona administracion;
-  private String motivo;
-  private boolean replanificable;
+  private final Persona administracion;
+  private final String motivo;
+  private final boolean replanificable;
 
   public EntregaFallida(
       Persona persona,
@@ -23,16 +21,11 @@ public class EntregaFallida extends EventoDeDonacion {
       String motivo,
       boolean replanificable,
       LocalDateTime fecha) {
-    this.setPersona(persona);
-    this.setEntidadBeneficiaria(entidadBeneficiaria);
-    this.setDetalleDonacion(detalleDonacion);
-    this.setFecha(fecha);
+    super(persona, entidadBeneficiaria, detalleDonacion, fecha);
     this.administracion = administracion;
     this.motivo = motivo;
     this.replanificable = replanificable;
   }
-
-  public EntregaFallida() {}
 
   @Override
   public List<Notificacion> generarNotificaciones() {

@@ -76,8 +76,9 @@ public class NecesidadesService implements INecesidadesService {
                 periodo,
                 dto.fechaInicio());
           }
-          case "EXTRAORDINARIA" -> new NecesidadExtraordinaria(
-              dto.idSubcategoria(), dto.cantidadNecesitada(), dto.descripcion());
+          case "EXTRAORDINARIA" ->
+              new NecesidadExtraordinaria(
+                  dto.idSubcategoria(), dto.cantidadNecesitada(), dto.descripcion());
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
     if (dto.idEntidad() != null) {

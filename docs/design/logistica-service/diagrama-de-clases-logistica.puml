@@ -1,17 +1,45 @@
 @startuml diagrama-de-clases-logistica
 !include ../common/donatrack-style.puml
 
-title Servicio de Logística - Dominio y Capas
+title Servicio de Logística - Dominio
 
 ' ==================== CHOFER ====================
 package CHOFER {
+  enum EstadoChofer <<enum>> {
+    DISPONIBLE
+    EN_RUTA
+    DESHABILITADO
+  }
+
+  class CambioEstadoChofer <<entity>> {
+    - estadoAnterior: EstadoChofer
+    - estadoNuevo: EstadoChofer
+    - timestamp: LocalDateTime
+  }
+
   class Chofer <<entity>> {
     - id: UUID
     - nombre: String
     - apellido: String
     - licencia: String
     - telefonoContacto: String
+    - estado: EstadoChofer
+    - historialEstados: List<CambioEstadoChofer>
+    --
+    + cambiarEstado(estado: EstadoChofer): void
+    + actualizarLicencia(licencia: String): void
+    + actualizarTelefContacto(telefono: String): void
+    + asignarRuta(ruta: Ruta): void
+    + completarRuta(): void
+    + habilitar(): void
+    + deshabilitar(): void
+    + estaDisponibleParaAsignar(): Boolean
+    - validarEstado(nombre: String, apellido: String, licencia: String, telefono: String): void
   }
+
+  Chofer --> EstadoChofer
+  Chofer --> CambioEstadoChofer
+  CambioEstadoChofer --> EstadoChofer
 }
 
 ' ==================== DIRECCION ====================
@@ -24,7 +52,8 @@ package DIRECCION {
     - departamento: String
     - codigoPostal: String
     --
-    - validarDireccion(calle: String, altura: Integer, codigoPostal: String, localidad: Localidad): void
+    + Direccion(calle: String, altura: Integer, piso: Integer, departamento: String, codigoPostal: String, localidad: Localidad)
+    - {static} validarDireccion(calle: String, altura: Integer, codigoPostal: String, localidad: Localidad): void
     + anonimizar(): void
   }
 
@@ -38,6 +67,8 @@ package DIRECCION {
   class Provincia <<entity>> {
     - nombre: String
     - pais: Pais
+    --
+    + anonimizar(): void
   }
 
   class Pais <<entity>> {
@@ -81,6 +112,7 @@ package ENTREGA {
     - fotoRecepcionUrl: String
     - volumenTotalM3: float
     - pesoTotalKG: float
+    - domainEvents: List<EventoEntrega>
     --
     + iniciarRuta(chofer: String): void
     + confirmarEntrega(entidadBeneficiaria: String): void
@@ -95,10 +127,66 @@ package ENTREGA {
     - validarDestino(destino: Direccion): void
     - validarMagnitudPositiva(valor: Float): void
     - validarActor(actor: String): void
+    + getDomainEvents(): List<EventoEntrega>
+    + clearDomainEvents(): void
+    - registrarEvento(evento: EventoEntrega): void
   }
 
   Entrega --> CambioEstadoEntrega
   Entrega --> EstadoEntrega
+  CambioEstadoEntrega --> EstadoEntrega
+
+  abstract class EventoEntrega <<entity>> {
+    - entregaId: UUID
+    - ocurrioEn: LocalDateTime
+  }
+
+  class EventoRutaAsignada <<entity>> {
+    - rutaId: UUID
+    - donacionId: UUID
+  }
+
+  class EventoEntregaExitosa <<entity>> {
+    - donacionId: UUID
+  }
+
+  class EventoEntregaFallida <<entity>> {
+    - donacionId: UUID
+    - justificacion: String
+    - replanificable: Boolean
+  }
+
+  EventoEntrega <|-- EventoRutaAsignada
+  EventoEntrega <|-- EventoEntregaExitosa
+  EventoEntrega <|-- EventoEntregaFallida
+  Entrega *-- EventoEntrega
+
+  interface SolicitudTransicionEntrega <<Sealed Interface>> {
+    - actor: String
+    - entrega: Entrega
+  }
+
+  class ConfirmacionRecepcion <<entity>> {
+    - fotoRecepcionUrl: String
+  }
+
+  class NoRecepcion <<entity>> {
+    - justificacion: String
+    - replanificable: Boolean
+  }
+
+  class RegresoDeposito <<entity>> {
+  }
+
+  class GestorDeEntregas <<entity>> {
+    + cambiarEstado(solicitud: SolicitudTransicionEntrega): void
+  }
+
+  ConfirmacionRecepcion ..|> SolicitudTransicionEntrega
+  NoRecepcion ..|> SolicitudTransicionEntrega
+  RegresoDeposito ..|> SolicitudTransicionEntrega
+  GestorDeEntregas --> SolicitudTransicionEntrega
+  GestorDeEntregas --> Entrega
 }
 
 ' ==================== RUTAS ====================
@@ -109,6 +197,12 @@ package RUTAS {
     COMPLETADA
   }
 
+  class CambioEstadoRuta <<entity>> {
+    - estadoAnterior: EstadoRuta
+    - estadoNuevo: EstadoRuta
+    - timestamp: LocalDateTime
+  }
+
   class Ruta <<entity>> {
     - id: UUID
     - fecha: LocalDate
@@ -116,16 +210,39 @@ package RUTAS {
     - choferId: UUID
     - camionId: UUID
     - estado: EstadoRuta
+    - historialEstado: List<CambioEstadoRuta>
     - horaInicioReal: LocalDateTime
     - horaFinReal: LocalDateTime
+    - domainEvents: List<EventoRutaIniciada>
     --
     + iniciarRuta(): void
     + completarRuta(): void
     + agregarEntrega(entregaId: UUID): void
     + obtenerEntregas(): List<UUID>
+    + getDomainEvents(): List<EventoRutaIniciada>
+    + clearDomainEvents(): void
+    - registrarEvento(evento: EventoRutaIniciada): void
+  }
+
+  class EventoRutaIniciada <<entity>> {
+    - rutaId: UUID
+    - camionId: UUID
+    - entregaIds: List<UUID>
+    - ocurrioEn: LocalDateTime
+  }
+
+  class GestorDeRutas <<entity>> {
+    + cambiarEstado(ruta: Ruta, chofer: Chofer, estado: EstadoRuta): void
+    - iniciarRuta(ruta: Ruta, chofer: Chofer): void
+    - completarRuta(ruta: Ruta, chofer: Chofer): void
   }
 
   Ruta --> EstadoRuta
+  Ruta --> CambioEstadoRuta
+  CambioEstadoRuta --> EstadoRuta
+  Ruta *-- EventoRutaIniciada
+  GestorDeRutas --> Ruta
+  GestorDeRutas --> Chofer
 }
 
 ' ==================== CAMIONES ====================
@@ -136,6 +253,12 @@ package CAMIONES {
     DESHABILITADO
   }
 
+  class CambioEstadoCamion <<entity>> {
+    - estadoAnterior: EstadoCamion
+    - estadoNuevo: EstadoCamion
+    - timestamp: LocalDateTime
+  }
+
   class Camion <<entity>> {
     - id: UUID
     - rutaActual: UUID
@@ -144,17 +267,47 @@ package CAMIONES {
     - alturaM: Float
     - capacidadKG: Float
     - estado: EstadoCamion
+    - historialEstado: List<CambioEstadoCamion>
     --
     + asignarRuta(rutaId: UUID): void
     + completarRuta(): void
     + habilitar(): void
     + deshabilitar(): void
     + estaDisponibleParaAsignar(): boolean
-    + validarPatente(patente: String): void
+    + {static} validarPatente(patente: String): void
     - validarCapacidad(valor: Float): void
   }
 
+  class GestorDeCamiones <<entity>> {
+    - validadorPatentes: ValidadorPatentes
+    --
+    + procesarSolicitudNuevoCamion(solicitud: SolicitudNuevoCamion): Optional<Camion>
+    + cambiarEstado(camion: Camion, estado: EstadoCamion): void
+    - validarPatente(patente: String, patentesExistentes: List<String>): Boolean
+  }
+
+  class SolicitudNuevoCamion <<entity>> {
+    - patente: String
+    - capacidadVolumen: Float
+    - altura: Float
+    - capacidadKG: Float
+    - patentesExistentes: List<String>
+  }
+
+  class ValidadorPatentes <<entity>> {
+    - camionRepository: ICamionRepository
+    --
+    + validar(patente: String): void
+    + validarFormato(patente: String): void
+    + validarUnicidad(patente: String): void
+  }
+
   Camion --> EstadoCamion
+  Camion --> CambioEstadoCamion
+  CambioEstadoCamion --> EstadoCamion
+  GestorDeCamiones --> SolicitudNuevoCamion
+  GestorDeCamiones --> Camion
+  GestorDeCamiones *-- ValidadorPatentes
 }
 
 ' relaciones cruzadas entre RUTAS, CHOFER y CAMIONES (por id, no por referencia de objeto)
@@ -162,14 +315,14 @@ Chofer --> Ruta
 Camion --> Ruta
 Ruta --* Entrega
 
-' ==================== INTERFACES (algoritmos de planificación) ====================
-package INTERFACES {
+' ==================== PLANIFICADOR_EXTERNO ====================
+package PLANIFICADOR_EXTERNO {
   interface AlgoritmoOrdenadorDeEntregas <<interface>> {
     + obtenerEntregasOrdenadas(entregas: List<Entrega>): List<Entrega>
   }
 
   interface AlgoritmoAsignadorDeEntregas <<interface>> {
-    + asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<Camion, List<Entrega>>
+    + asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<UUID, List<Entrega>>
   }
 
   class AlgoritmoOrdenadorSimple <<entity>> {
@@ -177,164 +330,58 @@ package INTERFACES {
   }
 
   class AsignadorDeEntregasPorDimension <<entity>> {
-    + asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<Camion, List<Entrega>>
-    - buscarCamionConCapacidad(entrega: Entrega, camiones: List<Camion>, capacidadRestante Map<Camion, float[]>): Camion
+    - asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<UUID, List<Entrega>>
   }
 
-  class GeneradorDeRutas <<entity>> {
+  class PlanificadorDeRutas <<entity>> {
     - ordenadorEntregas: AlgoritmoOrdenadorDeEntregas
     - asignadorDeEntregas: AlgoritmoAsignadorDeEntregas
     --
-    + generarRutas(entregas: List<Entrega>, camiones: List<Camion>, fecha: LocalDate, choferId: UUID): List<Ruta>
+    + procesarSolicitud(solicitud: PlanificacionSolicitada): RespuestaPlanificacion
   }
 
-  AlgoritmoOrdenadorDeEntregas ..> AlgoritmoOrdenadorSimple
-  AlgoritmoAsignadorDeEntregas ..> AsignadorDeEntregasPorDimension
-  GeneradorDeRutas ..|> AlgoritmoOrdenadorDeEntregas
-  GeneradorDeRutas ..|> AlgoritmoAsignadorDeEntregas
-}
-
-' ==================== INFRASTRUCTURE ====================
-package INFRASTRUCTURE {
-  interface RuteadorExternoClient <<interface>> {
-    + solicitarPlanificacion(request: RuteadorRequestDTO): void
-  }
-
-  class RuteadorExternoMockClient <<entity>> {
-    + solicitarPlanificacion(request: RuteadorRequestDTO): void
-  }
-
-  class LogisticaEventPublisher <<entity>> {
-    - rabbitTemplate: RabbitTemplate
-    --
-    + publicarRutaAsignada(evento: EventoRutaAsignada): void
-    + publicarRutaIniciada(evento: EventoRutaIniciada): void
-    + publicarEntregaExitosa(evento: EventoEntregaExitosa): void
-    + publicarEntregaFallida(evento: EventoEntregaFallida): void
-  }
-
-  RuteadorExternoMockClient ..|> RuteadorExternoClient
-}
-
-' ==================== SERVICES ====================
-package SERVICES {
-  enum EstadoSolicitud <<enum>> {
-    PENDIENTE
-    PROCESADA
-    ERROR
-  }
-
-  class SolicitudPlanificacion <<planificacion>> {
+  class PlanificacionSolicitada <<entity>> {
     - id: UUID
     - fecha: LocalDate
-    - estado: EstadoSolicitud
-    - cantidadDonaciones: Integer
-    - callbackUrl: String
-    - rutasGeneradas: List<UUID>
-    - intentosFallidos: Integer
-    - motivoError: String
-    --
-    + procesarResultados(rutasGeneradas: List<UUID>): void
-    + marcarError(motivo: String): void
-    + reintentar(): void
+    - maximoPorLote: Integer
+    - lotesEntregas: List<List<Entrega>>
+    - camionesDisponibles: List<Camion>
   }
 
-  class PlanificadorDeEntregas <<planificacion>> {
-    - planificacionService: IPlanificacionService
-    --
-    + ejecutar(): void
+  class RespuestaPlanificacion <<entity>> {
+    - id: UUID
+    - idPlanificacionSolicitada: UUID
+    - fecha: LocalDate
+    - datos: Map<Camion, List<Entrega>>
   }
 
-  class PlanificacionService <<service>> {
-    - solicitudesRepository: ISolicitudPlanificacionRepository
-    - rutasRepository: IRutasRepository
-    - entregasRepository: IEntregasRepository
-    - solicitudMapper: SolicitudPlanificacionMapper
-    - eventPublisher: LogisticaEventPublisher
-    --
-    + procesarCallback(dto: CallbackPlanificacionRequestDTO): SolicitudPlanificacionResponseDTO
-    + obtenerPorId(id: UUID): SolicitudPlanificacionResponseDTO
-    - guardarRutaPlanificada(dto: RutaPlanificadaDTO): UUID
-    - buscarSolicitud(id: UUID): SolicitudPlanificacion
-    - buscarEntrega(id: UUID): Entrega
+  interface GeneradorLotes <<interface>> {
+    + particionarEnLotes(entregas: List<Entrega>): List<List<Entrega>>
   }
 
-  class RutasService <<service>> {
-    - rutasRepository: IRutasRepository
-    - entregasRepository: IEntregasRepository
-    - camionesRepository: ICamionRepository
-    - choferesRepository: IChoferesRepository
-    - rutaMapper: RutaMapper
-    - eventPublisher: LogisticaEventPublisher
-    - generadorDeurlSeguimiento
-    --
-    + listar(): List<RutaResponseDTO>
-    + obtenerPorId(id: UUID): RutaResponseDTO
-    + obtenerConEntregas(id: UUID): RutaConEntregasResponseDTO
-    + agregarEntrega(id: UUID, dto: AgregarEntregaRutaRequestDTO): RutaResponseDTO
-    + iniciar(id: UUID, dto: IniciarRutaRequestDTO): RutaResponseDTO
-    + completar(id: UUID): RutaResponseDTO
-    + listarPorCamion(camionId: UUID): List<RutaResponseDTO>
-    - publicarRutaIniciada(ruta: Ruta, camion: Camion, entregasEnRuta: List<Entrega>
-    - buscarRuta(id: UUID): Ruta
-    - buscarEntrega(id: UUID): Entrega
-    - buscarCamion(id: UUID): Camion
-    - buscarEntregasDeRuta(ruta: Ruta): List<Entrega>
+  class GeneradorLotesSimple <<entity>> {
+    + particionarEnLotes(entregas: List<Entrega>): List<List<Entrega>>
   }
 
-  class EntregasService <<service>> {
-    - entregasRepository: IEntregasRepository
-    - rutasService: IRutasService
-    - camionesRepository: ICamionRepository
-    - entregaMapper: EntregaMapper
-    - eventPublisher: LogisticaEventPublisher
+  class GeneradorDeRutas <<entity>> {
+    - {static} MAX_ENTREGAS_POR_SOLICITUD: int = 100
+    - generadorLotes: GeneradorLotes
     --
-    + crear(dto: CrearEntregaRequestDTO): EntregaResponseDTO
-    + listar(): List<EntregaResponseDTO>
-    + obtenerPorId(id: UUID): EntregaResponseDTO
-    + confirmarRecepcion(id: UUID, dto: ConfirmarRecepcionRequestDTO): EntregaResponseDTO
-    + adjuntarFotoRecepcion(id: UUID, dto: AdjuntarFotoRecepcionRequestDTO): EntregaResponseDTO
-    + reportarNoRecepcion(id: UUID, dto: ReportarNoRecepcionRequestDTO): EntregaResponseDTO
-    + regresarAlDeposito(id: UUID, dto: RegresarAlDepositoRequestDTO): EntregaResponseDTO
-    + obtenerHistorial(id: UUID): List<EntregaResponseDTO>
-    - buscarEntrega(id: UUID): Entrega
-    - buscarCamionDeEntrega(entrega: Entrega): Camion
+    + planificar(entregas: List<Entrega>, camiones: List<Camion>): List<PlanificacionSolicitada>
+    + generarRutas(respuesta: RespuestaPlanificacion): List<Ruta>
+    - generarLotes(entregas: List<Entrega>): List<List<Entrega>>
   }
 
-  class CamionesService <<service>> {
-    - camionRepository: ICamionRepository
-    - camionMapper: CamionMapper
-    - validadorPatentes: ValidadorPatentes
-    --
-    + crear(request: CamionRequestDTO): CamionResponseDTO
-    + consultarTodos(): List<CamionResponseDTO>
-    + consultarPorId(id: UUID): CamionResponseDTO
-    + cambiarEstado(id: UUID, request: CambioEstadoCamionRequestDTO): CamionResponseDTO
-    + buscarCamionActivo(id: UUID): Camion
-    + darDeBaja(id: UUID): void
-    - buscarCamionActivo(id: UUID): Camion
-  }
-
-  class ValidadorPatentes <<entity>> {
-    - camionRepository: ICamionRepository
-    --
-    + validar(patente: String): void
-    - validarFormato(patente: String): void
-    - validarUnicidad(patente: String): void
-  }
-
-  SolicitudPlanificacion --> EstadoSolicitud
-  PlanificadorDeEntregas --* RutasService
-
-  PlanificacionService ..|> SolicitudPlanificacion
-  PlanificacionService --> LogisticaEventPublisher
-
-  RutasService --> GeneradorDeRutas
-  RutasService --> LogisticaEventPublisher
-
-  EntregasService --> LogisticaEventPublisher
-
-  CamionesService --> ValidadorPatentes
+  AlgoritmoOrdenadorDeEntregas <|.. AlgoritmoOrdenadorSimple
+  AlgoritmoAsignadorDeEntregas <|.. AsignadorDeEntregasPorDimension
+  PlanificadorDeRutas *-- AlgoritmoOrdenadorDeEntregas
+  PlanificadorDeRutas *-- AlgoritmoAsignadorDeEntregas
+  PlanificadorDeRutas --> PlanificacionSolicitada
+  PlanificadorDeRutas --> RespuestaPlanificacion
+  GeneradorLotes <|.. GeneradorLotesSimple
+  GeneradorDeRutas --> GeneradorLotes
+  GeneradorDeRutas --> PlanificacionSolicitada
+  GeneradorDeRutas --> RespuestaPlanificacion
 }
 
 @enduml

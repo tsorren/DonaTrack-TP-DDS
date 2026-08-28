@@ -4,6 +4,7 @@ import grupo5.logistica.controllers.IPlanificacionController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.services.IPlanificacionService;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,12 +28,14 @@ public class PlanificacionController implements IPlanificacionController {
     this.planificacionService = planificacionService;
   }
 
-  @PostMapping("/callback/rutas")
+  @Override
+  @PostMapping("/resultados")
   public ResponseEntity<SolicitudPlanificacionResponseDTO> procesarCallback(
-      @RequestBody CallbackPlanificacionRequestDTO dto) {
+      @Valid @RequestBody CallbackPlanificacionRequestDTO dto) {
     return ResponseEntity.ok(planificacionService.procesarCallback(dto));
   }
 
+  @Override
   @GetMapping("/planificaciones/{id}")
   public ResponseEntity<SolicitudPlanificacionResponseDTO> obtenerPorId(
       @PathVariable("id") UUID id) {

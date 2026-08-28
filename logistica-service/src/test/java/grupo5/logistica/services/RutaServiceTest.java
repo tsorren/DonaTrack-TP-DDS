@@ -6,12 +6,14 @@ import static org.mockito.Mockito.*;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.rutas.*;
-import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
-import grupo5.logistica.infrastructure.LogisticaEventPublisher;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
 import grupo5.logistica.models.repositories.*;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -30,7 +32,7 @@ class RutaServiceTest {
   private ICamionRepository camionRepository;
   private IChoferesRepository choferesRepository;
   private RutaMapper rutaMapper;
-  private GeneradorDeURLSeguimiento generadorDeUrlSeguimiento;
+  private ComunicadorEventosLogistica comunicadorEventos;
 
   private RutasService rutasService;
 
@@ -42,8 +44,7 @@ class RutaServiceTest {
     camionRepository = mock(ICamionRepository.class);
     choferesRepository = mock(IChoferesRepository.class);
     rutaMapper = mock(RutaMapper.class);
-    LogisticaEventPublisher eventPublisher = mock(LogisticaEventPublisher.class);
-    generadorDeUrlSeguimiento = mock(GeneradorDeURLSeguimiento.class);
+    comunicadorEventos = mock(ComunicadorEventosLogistica.class);
 
     rutasService =
         new RutasService(
@@ -52,8 +53,7 @@ class RutaServiceTest {
             camionRepository,
             choferesRepository,
             rutaMapper,
-            eventPublisher,
-            generadorDeUrlSeguimiento);
+            comunicadorEventos);
   }
 
   // =====================================================
@@ -139,8 +139,13 @@ class RutaServiceTest {
     when(entregasRepository.findById(entregaId)).thenReturn(Optional.of(entrega));
 
     when(ruta.getId()).thenReturn(rutaId);
+    when(ruta.getEstado()).thenReturn(EstadoRuta.PENDIENTE);
+    when(ruta.getEntregaIds()).thenReturn(List.of());
 
     when(entrega.getId()).thenReturn(entregaId);
+    when(entrega.getEstadoActual()).thenReturn(EstadoEntrega.PENDIENTE);
+    EventoRutaAsignada evento = new EventoRutaAsignada(rutaId, entregaId);
+    when(ruta.getDomainEvents()).thenReturn(List.of(evento));
 
     RutaResponseDTO response = mock(RutaResponseDTO.class);
 
@@ -153,6 +158,8 @@ class RutaServiceTest {
 
     verify(rutasRepository).save(ruta);
     verify(entregasRepository).save(entrega);
+    verify(comunicadorEventos).comunicarRutaAsignada(evento, entrega);
+    verify(ruta).clearDomainEvents();
 
     assertEquals(response, resultado);
   }
@@ -167,12 +174,11 @@ class RutaServiceTest {
   }
 
   // =====================================================
-  // iniciar()
+  // cambiarEstado()
   // =====================================================
 
   @Test
-  void iniciar_deberiaIniciarRutaCorrectamente() {
-
+  void cambiarEstado_deberiaIniciarRuta_cuandoEstadoEsEnTraslado() {
     UUID rutaId = UUID.randomUUID();
     UUID camionId = UUID.randomUUID();
     UUID choferId = UUID.randomUUID();
@@ -183,74 +189,45 @@ class RutaServiceTest {
     Chofer chofer = mock(Chofer.class);
     Entrega entrega = mock(Entrega.class);
 
-    IniciarRutaRequestDTO dto = new IniciarRutaRequestDTO(choferId, "TEST");
+    CambioEstadoRutaRequestDTO dto =
+        new CambioEstadoRutaRequestDTO(EstadoRuta.EN_TRASLADO, choferId, "actor");
 
     when(rutasRepository.findById(rutaId)).thenReturn(Optional.of(ruta));
-
     when(ruta.getId()).thenReturn(rutaId);
-
     when(ruta.getCamionId()).thenReturn(camionId);
-
     when(ruta.getChoferId()).thenReturn(choferId);
-
-    when(camionRepository.findById(camionId)).thenReturn(Optional.of(camion));
-
-    when(choferesRepository.findById(choferId)).thenReturn(Optional.of(chofer));
-
+    when(ruta.getEstado()).thenReturn(EstadoRuta.PENDIENTE);
     when(ruta.getEntregaIds()).thenReturn(List.of(entregaId));
 
+    when(camionRepository.findById(camionId)).thenReturn(Optional.of(camion));
+    when(choferesRepository.findById(choferId)).thenReturn(Optional.of(chofer));
+
     when(entregasRepository.findById(entregaId)).thenReturn(Optional.of(entrega));
+    when(entrega.getId()).thenReturn(entregaId);
+    when(entrega.getEstadoActual()).thenReturn(EstadoEntrega.PENDIENTE);
 
     when(camion.getId()).thenReturn(camionId);
-
-    when(camion.getPatente()).thenReturn("AB123CD");
+    when(camion.estaDisponibleParaAsignar()).thenReturn(true);
+    when(chofer.getId()).thenReturn(choferId);
+    when(chofer.estaDisponibleParaAsignar()).thenReturn(true);
+    EventoRutaIniciada evento =
+        new EventoRutaIniciada(rutaId, camionId, List.of(entregaId), java.time.LocalDateTime.now());
+    when(ruta.getDomainEvents()).thenReturn(List.of(evento));
 
     when(rutaMapper.toResponseDTO(ruta)).thenReturn(mock(RutaResponseDTO.class));
 
-    when(generadorDeUrlSeguimiento.generarUrl(rutaId)).thenReturn("urlMapa");
-
-    RutaResponseDTO resultado = rutasService.iniciar(rutaId, dto);
-
-    verify(camion).asignarARuta(rutaId);
-
-    verify(chofer).asignarARuta(rutaId);
+    RutaResponseDTO resultado = rutasService.cambiarEstado(rutaId, dto);
 
     verify(ruta).iniciarRuta();
-
-    verify(entrega).iniciarRuta("TEST");
-
-    verify(camionRepository).save(camion);
-
-    verify(choferesRepository).save(chofer);
-
+    verify(entrega).iniciarRuta("actor");
     verify(rutasRepository).save(ruta);
-
+    verify(comunicadorEventos).comunicarRutaIniciada(eq(evento), eq(camion), anyList());
+    verify(ruta).clearDomainEvents();
     assertNotNull(resultado);
   }
 
   @Test
-  void iniciar_deberiaFallarSiChoferNoCoincide() {
-
-    UUID rutaId = UUID.randomUUID();
-
-    Ruta ruta = mock(Ruta.class);
-
-    when(rutasRepository.findById(rutaId)).thenReturn(Optional.of(ruta));
-
-    when(ruta.getChoferId()).thenReturn(UUID.randomUUID());
-
-    IniciarRutaRequestDTO request = new IniciarRutaRequestDTO(UUID.randomUUID(), "actor");
-
-    assertThrows(ValidationException.class, () -> rutasService.iniciar(rutaId, request));
-  }
-
-  // =====================================================
-  // completar()
-  // =====================================================
-
-  @Test
-  void completar_deberiaCompletarRutaCamionYChofer() {
-
+  void cambiarEstado_deberiaCompletarRuta_cuandoEstadoEsCompletada() {
     UUID rutaId = UUID.randomUUID();
     UUID camionId = UUID.randomUUID();
     UUID choferId = UUID.randomUUID();
@@ -259,32 +236,29 @@ class RutaServiceTest {
     Camion camion = mock(Camion.class);
     Chofer chofer = mock(Chofer.class);
 
-    RutaResponseDTO dto = mock(RutaResponseDTO.class);
+    CambioEstadoRutaRequestDTO dto =
+        new CambioEstadoRutaRequestDTO(EstadoRuta.COMPLETADA, null, "actor");
 
     when(rutasRepository.findById(rutaId)).thenReturn(Optional.of(ruta));
-
     when(ruta.getCamionId()).thenReturn(camionId);
-
     when(ruta.getChoferId()).thenReturn(choferId);
+    when(ruta.getId()).thenReturn(rutaId);
+    when(ruta.getEstado()).thenReturn(EstadoRuta.EN_TRASLADO);
 
     when(camionRepository.findById(camionId)).thenReturn(Optional.of(camion));
-
     when(choferesRepository.findById(choferId)).thenReturn(Optional.of(chofer));
 
-    when(rutasRepository.save(ruta)).thenReturn(ruta);
+    when(camion.getRutaId()).thenReturn(rutaId);
+    when(chofer.getRutaId()).thenReturn(rutaId);
 
-    when(rutaMapper.toResponseDTO(ruta)).thenReturn(dto);
+    RutaResponseDTO response = mock(RutaResponseDTO.class);
+    when(rutaMapper.toResponseDTO(ruta)).thenReturn(response);
 
-    RutaResponseDTO resultado = rutasService.completar(rutaId);
+    RutaResponseDTO resultado = rutasService.cambiarEstado(rutaId, dto);
 
     verify(ruta).completarRuta();
-
-    verify(camion).completarRuta();
-
-    verify(chofer).completarRuta();
-
     verify(rutasRepository).save(ruta);
-
-    assertEquals(dto, resultado);
+    verify(ruta).clearDomainEvents();
+    assertNotNull(resultado);
   }
 }

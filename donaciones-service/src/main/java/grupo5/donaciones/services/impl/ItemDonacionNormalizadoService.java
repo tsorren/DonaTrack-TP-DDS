@@ -3,12 +3,12 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.itemsNormalizados.inputs.ItemDonacionNormalizadoPatchDTO;
 import grupo5.donaciones.dto.itemsNormalizados.outputs.ItemDonacionNormalizadoOutputDTO;
-import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
+import grupo5.donaciones.models.entities.itemsNormalizados.EvaluadorNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
@@ -41,11 +41,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
   public List<ItemDonacionNormalizadoOutputDTO> obtenerPendientes() {
     log.info("Obteniendo todos los ítems de donación normalizados pendientes de revisión");
     return itemNormalizadoRepository.findAll().stream()
-        .filter(
-            item ->
-                item.getBien() != null
-                    && item.getBien().estadoNormalizacion()
-                        == EstadoNormalizacion.PENDIENTE_REVISION)
+        .filter(ItemDonacionNormalizado::estaPendienteDeRevision)
         .map(mapper::toOutputDTO)
         .toList();
   }
@@ -62,6 +58,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
 
     BienNormalizado original = item.getBien();
 
+    // INICIO LOGICA DE NEGOCIO
     if (dto.estadoNormalizacion() == EstadoNormalizacion.RECHAZADO
         && dto.subcategoriaId() != null) {
       reclasificarManual(item, original, dto);
@@ -69,6 +66,7 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
       actualizarEstandar(item, original, dto);
     }
 
+    // FIN LOGICA DE NEGOCIO
     itemNormalizadoRepository.save(item);
 
     if (item.getDonacionOriginalId() != null) {
@@ -157,18 +155,15 @@ public class ItemDonacionNormalizadoService implements IItemDonacionNormalizadoS
                         && i.getDonacionOriginalId().equals(donacionId))
             .toList();
 
-    boolean tienePendientes =
-        itemsDeDonacion.stream()
-            .anyMatch(
-                i -> i.getBien().estadoNormalizacion() == EstadoNormalizacion.PENDIENTE_REVISION);
-
-    if (!tienePendientes) {
+    if (EvaluadorNormalizacion.estanTodosNormalizados(itemsDeDonacion)) {
       donacion.marcarNormalizada();
       donacionRepository.save(donacion);
+      var eventos = donacion.getDomainEvents();
+      donacion.clearDomainEvents();
+      eventos.forEach(eventPublisher::publishEvent);
       log.info(
-          "Todos los ítems de la donación {} fueron revisados. Donación cambia a estado NORMALIZADA y se emite evento.",
+          "Todos los ítems de la donación {} fueron revisados. Donación cambia a estado NORMALIZADA y se emiten eventos.",
           donacionId);
-      eventPublisher.publishEvent(new DonacionNormalizadaEvent(donacionId));
     }
   }
 

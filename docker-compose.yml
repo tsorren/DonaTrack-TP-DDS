@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   notificaciones-service:
     image: donatrack/notificaciones-service:local
@@ -14,6 +12,12 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
     volumes:
       - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
     networks:
       - donatrack-network
 
@@ -32,10 +36,18 @@ services:
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
       - N8N_RANKING_WEBHOOK_URL=http://n8n:5678/webhook/ranking-calculado
     depends_on:
-      - notificaciones-service
-      - n8n
+      notificaciones-service:
+        condition: service_healthy
+      n8n:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
     networks:
       - donatrack-network
 
@@ -51,17 +63,27 @@ services:
       - PORT=8080
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
+      - LOGISTICA_SERVICE_URL=http://logistica-service:8083
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
+      - SEED_CATALOGO_ENABLED=false
     depends_on:
       notificaciones-service:
-        condition: service_started
+        condition: service_healthy
       incentivos-service:
-        condition: service_started
+        condition: service_healthy
+      logistica-service:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     volumes:
       - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
     networks:
       - donatrack-network
 
@@ -83,6 +105,12 @@ services:
         condition: service_healthy
     volumes:
       - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
     networks:
       - donatrack-network
 
@@ -94,8 +122,6 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=donatrack
       - RABBITMQ_DEFAULT_PASS=donatrack
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
@@ -115,15 +141,16 @@ services:
       - N8N_PROTOCOL=http
       - N8N_SECURE_COOKIE=false
     volumes:
-      - n8n_data:/home/node/.n8n
       - ./n8n:/etc/n8n/workflows
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:5678/healthz', (res) => { res.resume(); process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     networks:
       - donatrack-network
 
 networks:
   donatrack-network:
     driver: bridge
-
-volumes:
-  n8n_data:
-  rabbitmq_data:

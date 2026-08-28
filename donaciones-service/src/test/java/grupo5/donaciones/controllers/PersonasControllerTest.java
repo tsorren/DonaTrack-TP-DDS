@@ -2,13 +2,18 @@ package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.logging.TraceResponseHeaderFilter;
 import grupo5.donaciones.controllers.impl.PersonasController;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
+import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
@@ -37,24 +42,18 @@ class PersonasControllerTest {
 
   @BeforeEach
   void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(controller)
+            .setControllerAdvice(new GlobalExceptionHandler())
+            .addFilters(new TraceResponseHeaderFilter())
+            .build();
     objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
   }
 
   @Test
   void crearPersona_deberiaRetornarStatusCreated() throws Exception {
-    HumanaInputDTO input =
-        new HumanaInputDTO(
-            TipoPersona.HUMANA,
-            TipoDocumento.DNI,
-            "12345678",
-            null,
-            java.util.Collections.emptyList(),
-            "Juan",
-            "Perez",
-            Genero.HOMBRE,
-            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
+    HumanaInputDTO input = DTOFixtures.humanaInput();
     PersonaOutputDTO output =
         new grupo5.donaciones.dto.personas.HumanaOutputDTO(
             TipoPersona.HUMANA,
@@ -74,23 +73,28 @@ class PersonasControllerTest {
             post("/api/personas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
-        .andExpect(status().isCreated());
+        .andExpect(status().isCreated())
+        .andExpect(header().exists("X-Trace-Id"));
+  }
+
+  @Test
+  void crearPersona_conNombreVacio_deberiaRetornarBadRequest() throws Exception {
+    HumanaInputDTO input = DTOFixtures.humanaInput("", "Perez", "12345678");
+
+    mockMvc
+        .perform(
+            post("/api/personas")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
+        .andExpect(jsonPath("$.errors[0].field").value("nombre"));
   }
 
   @Test
   void actualizarPersona_deberiaRetornarStatusOk() throws Exception {
     UUID id = UUID.randomUUID();
-    HumanaInputDTO input =
-        new HumanaInputDTO(
-            TipoPersona.HUMANA,
-            TipoDocumento.DNI,
-            "12345678",
-            null,
-            java.util.Collections.emptyList(),
-            "Juan",
-            "Perez",
-            Genero.HOMBRE,
-            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
+    HumanaInputDTO input = DTOFixtures.humanaInput();
     PersonaOutputDTO output =
         new grupo5.donaciones.dto.personas.HumanaOutputDTO(
             TipoPersona.HUMANA,
@@ -110,7 +114,8 @@ class PersonasControllerTest {
             put("/api/personas/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 
   @Test
@@ -118,6 +123,9 @@ class PersonasControllerTest {
     UUID id = UUID.randomUUID();
     doNothing().when(service).eliminarPersona(id);
 
-    mockMvc.perform(delete("/api/personas/" + id)).andExpect(status().isNoContent());
+    mockMvc
+        .perform(delete("/api/personas/" + id))
+        .andExpect(status().isNoContent())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 }

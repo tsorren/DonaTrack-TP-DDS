@@ -1,0 +1,204 @@
+{
+  "info": {
+    "_postman_id": "donatrack-flujo-01-catalogo-personas",
+    "name": "Flujo 1 - Catálogo y Personas (donaciones-service)",
+    "description": "Flujo autocontenido: crea una Categoría → Subcategoría (con alias) → Persona Humana (donante) → Donante → Persona Jurídica (entidad) → Entidad Beneficiaria. Es la base de datos mínima que necesitan los flujos 2, 3, 4 y 8 — correlo primero si vas a testear el resto a mano y querés IDs frescos.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "categoriaId", "value": "" },
+    { "key": "subcategoriaId", "value": "" },
+    { "key": "personaDonanteId", "value": "" },
+    { "key": "donanteId", "value": "" },
+    { "key": "personaJuridicaId", "value": "" },
+    { "key": "entidadId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Crear Categoría (Alimentos)",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "var json = pm.response.json();",
+            "pm.collectionVariables.set('categoriaId', json.id);",
+            "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });",
+            "pm.test('Tiene id', function () { pm.expect(json.id).to.be.a('string'); });"
+          ],
+          "type": "text/javascript"
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Alimentos QA\",\n  \"conUso\": false,\n  \"conVencimiento\": true,\n  \"unidad\": \"UNIDADES\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/categorias", "host": ["{{baseUrl}}"], "path": ["api", "categorias"] }
+      }
+    },
+    {
+      "name": "2. Crear Subcategoría (Fideos Larga Vida)",
+      "description": "El nombre y el alias importan: el flujo 3 y 4 crean donaciones con una descripcionBien que coincide con esto a propósito, para forzar la auto-normalización semántica (umbral 0.6).",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "var json = pm.response.json();",
+            "pm.collectionVariables.set('subcategoriaId', json.id);",
+            "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });"
+          ],
+          "type": "text/javascript"
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Fideos Larga Vida\",\n  \"idCategoria\": \"{{categoriaId}}\",\n  \"aliases\": [\n    { \"alias\": \"fideos\" }\n  ]\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/subcategorias", "host": ["{{baseUrl}}"], "path": ["api", "subcategorias"] }
+      }
+    },
+    {
+      "name": "3. Crear Persona Humana (futuro donante)",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "var json = pm.response.json();",
+            "pm.collectionVariables.set('personaDonanteId', json.id);",
+            "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });"
+          ],
+          "type": "text/javascript"
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"tipoDocumento\": \"DNI\",\n  \"documento\": \"{{$timestamp}}\",\n  \"nombre\": \"QA\",\n  \"apellido\": \"Donante\",\n  \"genero\": \"HOMBRE\",\n  \"fechaNacimiento\": \"1995-05-15\",\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"CORREO\",\n      \"esPredeterminado\": true,\n      \"direccionCorreo\": \"qa.donante.{{$timestamp}}@example.com\"\n    }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/personas", "host": ["{{baseUrl}}"], "path": ["api", "personas"] }
+      }
+    },
+    {
+      "name": "4. Crear Donante",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "var json = pm.response.json();",
+            "pm.collectionVariables.set('donanteId', json.idDonante);",
+            "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });",
+            "pm.test('Tiene idDonante', function () { pm.expect(json.idDonante).to.be.a('string'); });"
+          ],
+          "type": "text/javascript"
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idPersona\": \"{{personaDonanteId}}\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/donantes", "host": ["{{baseUrl}}"], "path": ["api", "donantes"] }
+      }
+    },
+    {
+      "name": "5. Crear Persona Jurídica (futura entidad)",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "var json = pm.response.json();",
+            "pm.collectionVariables.set('personaJuridicaId', json.id);",
+            "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });"
+          ],
+          "type": "text/javascript"
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"JURIDICA\",\n  \"tipoDocumento\": \"CUIT\",\n  \"documento\": \"30-{{$timestamp}}-3\",\n  \"razonSocial\": \"Comedor QA {{$timestamp}}\",\n  \"tipoJuridico\": \"ONG\",\n  \"rubro\": \"Comedor\",\n  \"representantes\": [\n    {\n      \"tipo\": \"HUMANA\",\n      \"tipoDocumento\": \"DNI\",\n      \"documento\": \"{{$timestamp}}\",\n      \"nombre\": \"Representante\",\n      \"apellido\": \"QA\",\n      \"genero\": \"MUJER\",\n      \"fechaNacimiento\": \"1980-01-01\",\n      \"mediosDeContacto\": []\n    }\n  ],\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"CORREO\",\n      \"esPredeterminado\": true,\n      \"direccionCorreo\": \"qa.comedor.{{$timestamp}}@example.com\"\n    }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/personas", "host": ["{{baseUrl}}"], "path": ["api", "personas"] }
+      }
+    },
+    {
+      "name": "6. Crear Entidad Beneficiaria",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "var json = pm.response.json();",
+            "pm.collectionVariables.set('entidadId', json.id);",
+            "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });"
+          ],
+          "type": "text/javascript"
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"juridicaId\": \"{{personaJuridicaId}}\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/entidades", "host": ["{{baseUrl}}"], "path": ["api", "entidades"] }
+      }
+    },
+    {
+      "name": "7. [Negativo] Persona Jurídica sin representantes",
+      "description": "JURIDICA_SIN_REPRESENTANTE_INICIAL — regla de dominio, no de bean validation. El DTO no exige el array, pero el constructor de Juridica sí.",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 400 Bad Request', function () { pm.response.to.have.status(400); });"
+          ],
+          "type": "text/javascript"
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"tipo\": \"JURIDICA\",\n  \"tipoDocumento\": \"CUIT\",\n  \"documento\": \"30-{{$timestamp}}-4\",\n  \"razonSocial\": \"Comedor Sin Representante {{$timestamp}}\",\n  \"tipoJuridico\": \"ONG\",\n  \"rubro\": \"Comedor\",\n  \"representantes\": [],\n  \"mediosDeContacto\": [],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/personas", "host": ["{{baseUrl}}"], "path": ["api", "personas"] }
+      }
+    },
+    {
+      "name": "8. [Negativo] Entidad Beneficiaria con persona Humana",
+      "description": "ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA — usa personaDonanteId (Humana) donde se espera una Jurídica.",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "exec": [
+            "pm.test('Status 400 Bad Request', function () { pm.response.to.have.status(400); });"
+          ],
+          "type": "text/javascript"
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"juridicaId\": \"{{personaDonanteId}}\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/entidades", "host": ["{{baseUrl}}"], "path": ["api", "entidades"] }
+      }
+    }
+  ]
+}
