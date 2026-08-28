@@ -5,23 +5,18 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class SubioCategoria extends EventoNotificable {
-  private String categoriaVieja;
-  private String categoriaNueva;
+  private final String categoriaVieja;
+  private final String categoriaNueva;
 
   public SubioCategoria(
       Persona persona, String categoriaVieja, String categoriaNueva, LocalDateTime fecha) {
-    this.setPersona(persona);
-    this.setFecha(fecha);
+    super(persona, fecha);
     this.categoriaVieja = categoriaVieja;
     this.categoriaNueva = categoriaNueva;
   }
-
-  public SubioCategoria() {}
 
   @Override
   public List<Notificacion> generarNotificaciones() {

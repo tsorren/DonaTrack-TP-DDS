@@ -1,12 +1,10 @@
-package grupo5.notificaciones.models.entities.medioDeContacto;
+package grupo5.notificaciones.models.entities.personas;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-import grupo5.notificaciones.models.entities.personas.Correo;
-import grupo5.notificaciones.models.entities.personas.Telefono;
-import grupo5.notificaciones.models.entities.personas.TipoTelefono;
 import grupo5.notificaciones.models.ports.Anonimizable;
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import org.junit.jupiter.api.BeforeEach;
@@ -109,5 +107,26 @@ class MedioDeContactoTest {
     assertEquals(Anonimizable.VALOR_STRING, whatsapp.getCaracteristica());
     assertEquals(Anonimizable.VALOR_STRING, whatsapp.getCodigoArea());
     assertEquals(Anonimizable.VALOR_STRING, whatsapp.getNumero());
+  }
+
+  @Test
+  void alConstruirse_deberiaEmpezarNoPredeterminado() {
+    assertFalse(correo.getEsPredeterminado());
+  }
+
+  @Test
+  void marcarComoPredeterminado_deberiaDejarEsPredeterminadoEnTrue() {
+    correo.marcarComoPredeterminado();
+
+    assertTrue(correo.getEsPredeterminado());
+  }
+
+  @Test
+  void desmarcarComoPredeterminado_deberiaDejarEsPredeterminadoEnFalse() {
+    correo.marcarComoPredeterminado();
+
+    correo.desmarcarComoPredeterminado();
+
+    assertFalse(correo.getEsPredeterminado());
   }
 }
