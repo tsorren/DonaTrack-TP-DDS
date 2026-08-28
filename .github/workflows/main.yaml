@@ -89,6 +89,7 @@ jobs:
       notificaciones-service: ${{ steps.filter.outputs.notificaciones-service }}
       incentivos-service: ${{ steps.filter.outputs.incentivos-service }}
       logistica-service: ${{ steps.filter.outputs.logistica-service }}
+      docker-files: ${{ steps.filter.outputs.docker-files }}
       any-service: ${{ steps.check.outputs.any-service }}
       services-matrix: ${{ steps.matrix.outputs.matrix }}
       docker-matrix: ${{ steps.docker-matrix.outputs.matrix }}
@@ -111,6 +112,14 @@ jobs:
               - 'incentivos-service/**'
             logistica-service:
               - 'logistica-service/**'
+            docker-files:
+              - 'docker-compose*.yml'
+              - 'docker-compose*.yaml'
+              - '**/Dockerfile*'
+              - '.dockerignore'
+              - '**/docker/**'
+              - 'n8n/**'
+              - 'integration-tests/**'
 
       - name: Verificar si algún servicio cambió
         id: check
@@ -119,30 +128,32 @@ jobs:
                 "${{ steps.filter.outputs.donaciones-service }}" == "true" || \
                 "${{ steps.filter.outputs.notificaciones-service }}" == "true" || \
                 "${{ steps.filter.outputs.incentivos-service }}" == "true" || \
-                "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
+                "${{ steps.filter.outputs.logistica-service }}" == "true" || \
+                "${{ steps.filter.outputs.docker-files }}" == "true" ]]; then
             echo "any-service=true" >> "$GITHUB_OUTPUT"
           else
             echo "any-service=false" >> "$GITHUB_OUTPUT"
           fi
 
       # Genera la matrix dinámica de servicios a construir.
-      # Si common-lib cambió, se construyen todos (dependencia transversal).
+      # Si common-lib o docker-files cambió, se construyen todos (dependencia transversal).
       - name: Generar matrix de servicios
         id: matrix
         run: |
           SERVICES=()
           COMMON="${{ steps.filter.outputs.common-lib }}"
+          DOCKER="${{ steps.filter.outputs.docker-files }}"
 
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
             SERVICES+=('{"service":"donaciones-service"}')
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
             SERVICES+=('{"service":"notificaciones-service"}')
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
             SERVICES+=('{"service":"incentivos-service"}')
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
             SERVICES+=('{"service":"logistica-service"}')
           fi
 
@@ -161,25 +172,26 @@ jobs:
         run: |
           DOCKER_SERVICES=()
           COMMON="${{ steps.filter.outputs.common-lib }}"
+          DOCKER="${{ steps.filter.outputs.docker-files }}"
 
           # Fallback corregido y unificado directamente de manera segura
           DOCKER_FINAL=()
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.donaciones-service }}" == "true" ]]; then
             if [[ -f "donaciones-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"donaciones-service"}')
             fi
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.notificaciones-service }}" == "true" ]]; then
             if [[ -f "notificaciones-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"notificaciones-service"}')
             fi
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.incentivos-service }}" == "true" ]]; then
             if [[ -f "incentivos-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"incentivos-service"}')
             fi
           fi
-          if [[ "$COMMON" == "true" || "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
+          if [[ "$COMMON" == "true" || "$DOCKER" == "true" || "${{ steps.filter.outputs.logistica-service }}" == "true" ]]; then
             if [[ -f "logistica-service/Dockerfile" ]]; then
               DOCKER_FINAL+=('{"service":"logistica-service"}')
             fi
