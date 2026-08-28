@@ -251,7 +251,8 @@ class RutaServiceTest {
     when(camion.getRutaId()).thenReturn(rutaId);
     when(chofer.getRutaId()).thenReturn(rutaId);
 
-    when(rutaMapper.toResponseDTO(ruta)).thenReturn(mock(RutaResponseDTO.class));
+    RutaResponseDTO response = mock(RutaResponseDTO.class);
+    when(rutaMapper.toResponseDTO(ruta)).thenReturn(response);
 
     RutaResponseDTO resultado = rutasService.cambiarEstado(rutaId, dto);
 

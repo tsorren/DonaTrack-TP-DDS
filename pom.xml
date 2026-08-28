@@ -132,8 +132,9 @@
                 <version>${spotless.version}</version>
                 <configuration>
                     <java>
+                        <toggleOffOn />
                         <googleJavaFormat>
-                            <version>1.17.0</version>
+                            <version>1.22.0</version>
                             <style>GOOGLE</style>
                         </googleJavaFormat>
                     </java>

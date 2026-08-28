@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
-// TODO:
 @Service
 public class NecesidadesService implements INecesidadesService {
 
@@ -77,8 +76,9 @@ public class NecesidadesService implements INecesidadesService {
                 periodo,
                 dto.fechaInicio());
           }
-          case "EXTRAORDINARIA" -> new NecesidadExtraordinaria(
-              dto.idSubcategoria(), dto.cantidadNecesitada(), dto.descripcion());
+          case "EXTRAORDINARIA" ->
+              new NecesidadExtraordinaria(
+                  dto.idSubcategoria(), dto.cantidadNecesitada(), dto.descripcion());
           default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
         };
     if (dto.idEntidad() != null) {

@@ -106,7 +106,8 @@ class ValidacionHttpTest {
   @Test
   void crearCamion_conDatosValidos_retorna201() throws Exception {
     CamionRequestDTO request = new CamionRequestDTO("AB123CD", 20f, 3f, 5000f);
-    when(camionesService.crear(any())).thenReturn(mock(CamionResponseDTO.class));
+    CamionResponseDTO response = mock(CamionResponseDTO.class);
+    when(camionesService.crear(any())).thenReturn(response);
 
     camionMvc
         .perform(
@@ -119,7 +120,8 @@ class ValidacionHttpTest {
   @Test
   void crearChofer_conDatosValidos_retorna201() throws Exception {
     ChoferRequestDTO request = new ChoferRequestDTO("Ada", "Lovelace", "LIC-1", "1111");
-    when(choferesService.crear(any())).thenReturn(mock(ChoferResponseDTO.class));
+    ChoferResponseDTO response = mock(ChoferResponseDTO.class);
+    when(choferesService.crear(any())).thenReturn(response);
 
     choferMvc
         .perform(
@@ -237,7 +239,8 @@ class ValidacionHttpTest {
             "Calle", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
     CrearEntregaRequestDTO request =
         new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), dir, 10f, 2f);
-    when(entregasService.crear(any())).thenReturn(mock(EntregaResponseDTO.class));
+    EntregaResponseDTO response = mock(EntregaResponseDTO.class);
+    when(entregasService.crear(any())).thenReturn(response);
 
     entregaMvc
         .perform(
@@ -250,7 +253,8 @@ class ValidacionHttpTest {
   @Test
   void agregarEntregaARuta_conDatosValidos_retorna201() throws Exception {
     AgregarEntregaRutaRequestDTO request = new AgregarEntregaRutaRequestDTO(UUID.randomUUID());
-    when(rutasService.agregarEntrega(any(), any())).thenReturn(mock(RutaResponseDTO.class));
+    RutaResponseDTO response = mock(RutaResponseDTO.class);
+    when(rutasService.agregarEntrega(any(), any())).thenReturn(response);
 
     rutaMvc
         .perform(

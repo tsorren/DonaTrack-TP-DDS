@@ -33,19 +33,21 @@ class SolicitudPlanificacionTest {
     rutas.clear();
     assertEquals(EstadoSolicitud.PROCESADA, solicitud.getEstado());
     assertEquals(1, solicitud.getRutasGeneradas().size());
-    assertThrows(UnsupportedOperationException.class, () -> solicitud.getRutasGeneradas().clear());
+    List<UUID> rutasGeneradas = solicitud.getRutasGeneradas();
+    assertThrows(UnsupportedOperationException.class, rutasGeneradas::clear);
   }
 
   @Test
   void procesarResultadosRechazaNuloYEstadosQueNoSeanPendiente() {
     SolicitudPlanificacion pendiente = SolicitudPlanificacionMother.pendiente();
     assertThrows(ValidationException.class, () -> pendiente.procesarResultados(null));
-    assertThrows(
-        ValidationException.class,
-        () -> SolicitudPlanificacionMother.enError().procesarResultados(List.of()));
-    assertThrows(
-        ValidationException.class,
-        () -> SolicitudPlanificacionMother.procesada().procesarResultados(List.of()));
+
+    SolicitudPlanificacion enError = SolicitudPlanificacionMother.enError();
+    List<UUID> rutasVacias = List.of();
+    assertThrows(ValidationException.class, () -> enError.procesarResultados(rutasVacias));
+
+    SolicitudPlanificacion procesada = SolicitudPlanificacionMother.procesada();
+    assertThrows(ValidationException.class, () -> procesada.procesarResultados(rutasVacias));
   }
 
   @Test
@@ -63,9 +65,9 @@ class SolicitudPlanificacionTest {
     SolicitudPlanificacion pendiente = SolicitudPlanificacionMother.pendiente();
     assertThrows(ValidationException.class, () -> pendiente.marcarError(null));
     assertThrows(ValidationException.class, () -> pendiente.marcarError("  "));
-    assertThrows(
-        ValidationException.class,
-        () -> SolicitudPlanificacionMother.procesada().marcarError("tarde"));
+
+    SolicitudPlanificacion procesada = SolicitudPlanificacionMother.procesada();
+    assertThrows(ValidationException.class, () -> procesada.marcarError("tarde"));
   }
 
   @Test
@@ -79,10 +81,11 @@ class SolicitudPlanificacionTest {
 
   @Test
   void reintentarRechazaEstadosQueNoSeanError() {
-    assertThrows(
-        ValidationException.class, () -> SolicitudPlanificacionMother.pendiente().reintentar());
-    assertThrows(
-        ValidationException.class, () -> SolicitudPlanificacionMother.procesada().reintentar());
+    SolicitudPlanificacion pendiente = SolicitudPlanificacionMother.pendiente();
+    assertThrows(ValidationException.class, pendiente::reintentar);
+
+    SolicitudPlanificacion procesada = SolicitudPlanificacionMother.procesada();
+    assertThrows(ValidationException.class, procesada::reintentar);
   }
 
   @Test

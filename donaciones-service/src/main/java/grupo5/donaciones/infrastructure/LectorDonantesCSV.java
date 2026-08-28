@@ -27,11 +27,7 @@ public class LectorDonantesCSV implements CargadorDonantes {
   private final DonanteParser donanteParser;
 
   public LectorDonantesCSV() {
-    this(new DonanteParser());
-  }
-
-  LectorDonantesCSV(DonanteParser donanteParser) {
-    this.donanteParser = donanteParser != null ? donanteParser : new DonanteParser();
+    this.donanteParser = new DonanteParser();
   }
 
   @Override

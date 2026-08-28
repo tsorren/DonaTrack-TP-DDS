@@ -129,9 +129,8 @@ class NotificacionTest {
     assertEquals(1, snapshot.size(), "el snapshot tomado antes de la transición no debe crecer");
     assertEquals(
         2, notificacion.getDomainEvents().size(), "un snapshot nuevo sí ve el evento nuevo");
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> snapshot.add(new NotificacionEnviada(notificacion.getId(), null)));
+    NotificacionEnviada nuevoEvento = new NotificacionEnviada(notificacion.getId(), null);
+    assertThrows(UnsupportedOperationException.class, () -> snapshot.add(nuevoEvento));
   }
 
   @Test

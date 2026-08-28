@@ -168,7 +168,9 @@ class MedioDeContactoMapperTest {
           }
 
           @Override
-          public void anonimizar() {}
+          public void anonimizar() {
+            // No-op: clase anónima de prueba para simular tipo de medio de contacto no soportado
+          }
         };
 
     assertThrows(ValidationException.class, () -> mapper.toReplicaDTO(medioNoSoportado));
