@@ -70,4 +70,11 @@ public class DonantesController implements IDonantesController {
     ArchivoOutputDTO responseBody = archivoDonantesService.cargarArchivoDonantes(input);
     return ResponseEntity.status(HttpStatus.ACCEPTED).body(responseBody);
   }
+
+  @Override
+  @GetMapping("/archivos/{id}")
+  public ResponseEntity<ArchivoOutputDTO> obtenerArchivoDonantes(@PathVariable("id") UUID id) {
+    ArchivoOutputDTO responseBody = archivoDonantesService.obtenerPorId(id);
+    return ResponseEntity.ok(responseBody);
+  }
 }

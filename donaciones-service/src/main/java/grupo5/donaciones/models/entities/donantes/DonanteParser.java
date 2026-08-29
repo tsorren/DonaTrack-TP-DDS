@@ -16,7 +16,7 @@ public class DonanteParser {
 
     Map<String, String> filaMap = new HashMap<>();
     for (int j = 0; j < cabecera.length; j++) {
-      filaMap.put(cabecera[j], datos[j].trim());
+      filaMap.put(cabecera[j].trim(), datos[j].trim());
     }
     return filaMap;
   }

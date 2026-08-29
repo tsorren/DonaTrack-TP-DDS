@@ -32,6 +32,19 @@ public final class NecesidadMother {
         subcategoriaId, cantidad, "Necesidad recurrente semanal", Period.ofWeeks(1), FECHA_INICIO);
   }
 
+  public static NecesidadRecurrente recurrenteSemanal(
+      UUID entidadId, UUID subcategoriaId, int cantidad) {
+    NecesidadRecurrente nec =
+        new NecesidadRecurrente(
+            subcategoriaId,
+            cantidad,
+            "Necesidad recurrente semanal",
+            Period.ofWeeks(1),
+            FECHA_INICIO);
+    nec.asociarAEntidad(entidadId);
+    return nec;
+  }
+
   public static NecesidadRecurrente recurrenteMensual(UUID subcategoriaId, int cantidad) {
     return new NecesidadRecurrente(
         subcategoriaId, cantidad, "Necesidad recurrente mensual", Period.ofMonths(1), FECHA_INICIO);

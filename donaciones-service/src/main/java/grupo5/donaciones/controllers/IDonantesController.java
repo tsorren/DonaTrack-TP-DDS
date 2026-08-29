@@ -18,4 +18,6 @@ public interface IDonantesController {
   ResponseEntity<Void> eliminarDonante(UUID id);
 
   ResponseEntity<ArchivoOutputDTO> cargarArchivoDonantes(ArchivoInputDTO input);
+
+  ResponseEntity<ArchivoOutputDTO> obtenerArchivoDonantes(UUID id);
 }

@@ -14,4 +14,8 @@ public interface INecesidadesController {
       @RequestParam(required = false) UUID entidadId, @RequestParam(required = false) String tipo);
 
   ResponseEntity<NecesidadDTO> obtenerNecesidad(UUID id);
+
+  ResponseEntity<NecesidadDTO> actualizarNecesidad(UUID id, NecesidadDTO dto);
+
+  ResponseEntity<Void> eliminarNecesidad(UUID id);
 }

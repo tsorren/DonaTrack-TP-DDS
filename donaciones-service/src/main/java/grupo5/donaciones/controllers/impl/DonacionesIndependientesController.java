@@ -3,6 +3,7 @@ package grupo5.donaciones.controllers.impl;
 import grupo5.donaciones.controllers.IDonacionesIndependientesController;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,8 +30,11 @@ public class DonacionesIndependientesController implements IDonacionesIndependie
 
   @Override
   @GetMapping
-  public ResponseEntity<List<DonacionIndependienteResponseDTO>> obtenerTodas() {
-    return ResponseEntity.ok(service.obtenerTodas());
+  public ResponseEntity<List<DonacionIndependienteResponseDTO>> obtenerTodas(
+      @RequestParam(required = false) TipoEstadoDonacion estado,
+      @RequestParam(required = false) UUID subcategoriaId,
+      @RequestParam(required = false) UUID donanteId) {
+    return ResponseEntity.ok(service.obtenerConFiltros(estado, subcategoriaId, donanteId));
   }
 
   @Override

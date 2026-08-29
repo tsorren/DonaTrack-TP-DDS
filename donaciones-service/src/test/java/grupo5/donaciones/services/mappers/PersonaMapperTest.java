@@ -130,4 +130,47 @@ class PersonaMapperTest {
     assertEquals("Juan Perez", replica.denominacion());
     assertEquals(TipoPersona.HUMANA, replica.tipoPersona());
   }
+
+  @Test
+  void mapToPersona_conFilaCSVHumanaReal_deberiaMapearNombreApellidoYContactos() {
+    java.util.Map<String, String> fila =
+        java.util.Map.of(
+            "TipoPersona", "HUMANA",
+            "TipoDoc", "DNI",
+            "Documento", "40123456",
+            "Nombre/Razón Social", "Ana Navarro",
+            "Email", "ana.navarro@example.com",
+            "Teléfono", "+54 11 5181-9600");
+
+    Persona entity = mapper.mapToPersona(fila);
+
+    assertTrue(entity instanceof Humana);
+    Humana humana = (Humana) entity;
+    assertEquals("Ana", humana.getNombre());
+    assertEquals("Navarro", humana.getApellido());
+    assertEquals("40123456", humana.getDocumento());
+    assertEquals(TipoDocumento.DNI, humana.getTipoDocumento());
+    assertEquals(2, humana.getMediosDeContacto().size());
+  }
+
+  @Test
+  void mapToPersona_conFilaCSVJuridicaReal_deberiaMapearRazonSocialYContactos() {
+    java.util.Map<String, String> fila =
+        java.util.Map.of(
+            "TipoPersona", "JURIDICA",
+            "TipoDoc", "CUIT",
+            "Documento", "30-71234567-8",
+            "Nombre/Razón Social", "Santa Fe Industrial Fundación",
+            "Email", "contacto@santafefundacion.org",
+            "Teléfono", "+54 342 455-1234");
+
+    Persona entity = mapper.mapToPersona(fila);
+
+    assertTrue(entity instanceof Juridica);
+    Juridica juridica = (Juridica) entity;
+    assertEquals("Santa Fe Industrial Fundación", juridica.getRazonSocial());
+    assertEquals("30-71234567-8", juridica.getDocumento());
+    assertEquals(TipoDocumento.CUIT, juridica.getTipoDocumento());
+    assertEquals(2, juridica.getMediosDeContacto().size());
+  }
 }

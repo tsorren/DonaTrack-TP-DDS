@@ -3,8 +3,10 @@ package grupo5.donaciones.controllers;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -100,5 +102,30 @@ class EntidadBeneficiariaControllerTest {
         .perform(get("/api/entidades"))
         .andExpect(status().isOk())
         .andExpect(header().exists("X-Trace-Id"));
+  }
+
+  @Test
+  void actualizarEntidad_debeRetornarOk() throws Exception {
+    UUID id = UUID.randomUUID();
+    UUID juridicaId = UUID.randomUUID();
+    EntidadBeneficiariaInputDTO input = DTOFixtures.entidadBeneficiariaInput(juridicaId);
+
+    when(service.actualizarEntidad(any(UUID.class), any(EntidadBeneficiariaInputDTO.class)))
+        .thenReturn(mock(EntidadBeneficiariaOutputDTO.class));
+
+    mockMvc
+        .perform(
+            put("/api/entidades/" + id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"));
+  }
+
+  @Test
+  void eliminarEntidad_debeRetornarNoContent() throws Exception {
+    UUID id = UUID.randomUUID();
+
+    mockMvc.perform(delete("/api/entidades/" + id)).andExpect(status().isNoContent());
   }
 }

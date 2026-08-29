@@ -48,6 +48,14 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
   }
 
   @Override
+  public List<Necesidad> findByActivaTrueAndRecurrenteTrue() {
+    return storage.values().stream()
+        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.RECURRENTE)
+        .filter(Necesidad::isActiva)
+        .toList();
+  }
+
+  @Override
   public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse() {
     return storage.values().stream()
         .filter(n -> n.getTipoNecesidad() == TipoNecesidad.EXTRAORDINARIA)

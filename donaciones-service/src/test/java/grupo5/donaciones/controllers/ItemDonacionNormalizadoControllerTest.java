@@ -113,4 +113,28 @@ class ItemDonacionNormalizadoControllerTest {
         .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
         .andExpect(jsonPath("$.errors[0].field").value("estadoNormalizacion"));
   }
+
+  @Test
+  void obtenerPorId_deberiaRetornarStatusOk() throws Exception {
+    UUID randomId = UUID.randomUUID();
+    ItemDonacionNormalizadoOutputDTO output =
+        new ItemDonacionNormalizadoOutputDTO(
+            randomId,
+            UUID.randomUUID(),
+            "Comida",
+            5,
+            null,
+            0.8,
+            EstadoNormalizacion.ACEPTADO,
+            false);
+
+    when(service.obtener(randomId)).thenReturn(output);
+
+    mockMvc
+        .perform(get("/api/items-normalizados/{id}", randomId))
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"))
+        .andExpect(jsonPath("$.id").value(randomId.toString()))
+        .andExpect(jsonPath("$.descripcionBienOriginal").value("Comida"));
+  }
 }

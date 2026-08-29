@@ -1,6 +1,7 @@
 package grupo5.donaciones.services.impl;
 
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
@@ -15,6 +16,7 @@ import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
+import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,7 @@ public class ImportadorService implements IImportadorService {
   private final IArchivoDonantesRepository archivoRepository;
   private final CargadorDonantes lectorCSV;
   private final PersonaMapper personaMapper;
+  private final MedioDeContactoMapper medioDeContactoMapper;
   private final ValidadorPersonaDuplicada validadorDuplicados;
   private final IPersonasService personaService;
   private final IDonantesService donantesService;
@@ -40,12 +43,14 @@ public class ImportadorService implements IImportadorService {
       IArchivoDonantesRepository archivoRepository,
       CargadorDonantes lectorCSV,
       PersonaMapper personaMapper,
+      MedioDeContactoMapper medioDeContactoMapper,
       ValidadorPersonaDuplicada validadorDuplicados,
       IPersonasService personaService,
       IDonantesService donantesService) {
     this.archivoRepository = archivoRepository;
     this.lectorCSV = lectorCSV;
     this.personaMapper = personaMapper;
+    this.medioDeContactoMapper = medioDeContactoMapper;
     this.validadorDuplicados = validadorDuplicados;
     this.personaService = personaService;
     this.donantesService = donantesService;
@@ -108,9 +113,16 @@ public class ImportadorService implements IImportadorService {
   }
 
   // lo que esta en null es porque no viene en el csv
-  private static PersonaInputDTO transformarAPersonaInputDTO(
-      Persona persona, Map<String, String> fila) {
-    String tipoPersonaStr = fila.getOrDefault("TipoPersona", "").trim().toUpperCase();
+  private PersonaInputDTO transformarAPersonaInputDTO(Persona persona, Map<String, String> fila) {
+    String tipoPersonaStr =
+        fila.getOrDefault("TIPO_PERSONA", fila.getOrDefault("TipoPersona", ""))
+            .trim()
+            .toUpperCase();
+
+    List<MedioDeContactoInputDTO> mediosDeContacto =
+        persona.getMediosDeContacto() != null
+            ? persona.getMediosDeContacto().stream().map(medioDeContactoMapper::toInputDTO).toList()
+            : List.of();
 
     if ("JURIDICA".equals(tipoPersonaStr) && persona instanceof Juridica juridica) {
       return new JuridicaInputDTO(
@@ -118,7 +130,7 @@ public class ImportadorService implements IImportadorService {
           juridica.getTipoDocumento(),
           juridica.getDocumento(),
           null,
-          List.of(),
+          mediosDeContacto,
           juridica.getRazonSocial(),
           juridica.getTipo(),
           juridica.getRubro(),
@@ -129,7 +141,7 @@ public class ImportadorService implements IImportadorService {
           humana.getTipoDocumento(),
           humana.getDocumento(),
           null,
-          List.of(),
+          mediosDeContacto,
           humana.getNombre(),
           humana.getApellido(),
           humana.getGenero(),

@@ -2,8 +2,10 @@ package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -167,5 +169,43 @@ class NecesidadesControllerTest {
         .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$.id").value(id.toString()))
         .andExpect(jsonPath("$.descripcion").value("Ropa abrigo"));
+  }
+
+  @Test
+  void actualizarNecesidad_deberiaRetornarOkYDto() throws Exception {
+    UUID id = UUID.randomUUID();
+    UUID entidadId = UUID.randomUUID();
+    UUID subcategoriaId = UUID.randomUUID();
+
+    NecesidadDTO dto =
+        new NecesidadDTO(
+            id,
+            "EXTRAORDINARIA",
+            entidadId,
+            subcategoriaId,
+            10,
+            "Ropa abrigo actualizada",
+            false,
+            LocalDate.of(2026, Month.JUNE, 1),
+            null);
+
+    when(necesidadesService.actualizar(any(UUID.class), any(NecesidadDTO.class))).thenReturn(dto);
+
+    mockMvc
+        .perform(
+            put("/api/necesidades/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(id.toString()))
+        .andExpect(jsonPath("$.descripcion").value("Ropa abrigo actualizada"))
+        .andExpect(jsonPath("$.cantidadNecesitada").value(10));
+  }
+
+  @Test
+  void eliminarNecesidad_deberiaRetornarNoContent() throws Exception {
+    UUID id = UUID.randomUUID();
+
+    mockMvc.perform(delete("/api/necesidades/{id}", id)).andExpect(status().isNoContent());
   }
 }

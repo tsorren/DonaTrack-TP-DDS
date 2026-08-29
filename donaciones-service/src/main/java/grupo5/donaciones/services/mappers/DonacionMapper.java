@@ -108,7 +108,10 @@ public class DonacionMapper {
         items,
         donacion.getDescripcion(),
         donacion.getFecha(),
-        direccionMapper.toOutputDTO(donacion.getDepositoRecepcion().direccion()),
+        (donacion.getDepositoRecepcion() != null
+                && donacion.getDepositoRecepcion().direccion() != null)
+            ? direccionMapper.toOutputDTO(donacion.getDepositoRecepcion().direccion())
+            : null,
         donacion.getEstadoActual(),
         historial);
   }

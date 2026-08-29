@@ -4,7 +4,6 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
-import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -45,15 +44,7 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
   }
 
   private static int contarDonacionesRecientes(Necesidad necesidad, LocalDateTime desde) {
-    if (!(necesidad instanceof NecesidadExtraordinaria extraordinaria)) return 0;
-    List<DonacionIndependiente> asignadas = extraordinaria.getDonacionesAsignadas();
-    if (asignadas == null) return 0;
-    int contador = 0;
-    for (DonacionIndependiente donacion : asignadas) {
-      if (donacion.getFechaRegistro().isAfter(desde)) {
-        contador++;
-      }
-    }
-    return contador;
+    if (necesidad == null || desde == null) return 0;
+    return necesidad.contarDonacionesAsignadasDesde(desde);
   }
 }

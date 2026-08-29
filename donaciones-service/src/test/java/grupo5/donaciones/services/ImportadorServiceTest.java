@@ -21,6 +21,7 @@ import grupo5.donaciones.models.ports.CargadorDonantes;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.impl.ImportadorService;
 import grupo5.donaciones.services.impl.ValidadorPersonaDuplicada;
+import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ class ImportadorServiceTest {
   private IArchivoDonantesRepository archivoRepository;
   private CargadorDonantes lectorCSV;
   private PersonaMapper personaMapper;
+  private MedioDeContactoMapper medioDeContactoMapper;
   private ValidadorPersonaDuplicada validadorDuplicados;
   private IPersonasService personaService;
   private IDonantesService donantesService;
@@ -44,6 +46,7 @@ class ImportadorServiceTest {
     archivoRepository = mock(IArchivoDonantesRepository.class);
     lectorCSV = mock(CargadorDonantes.class);
     personaMapper = mock(PersonaMapper.class);
+    medioDeContactoMapper = new MedioDeContactoMapper();
     validadorDuplicados = mock(ValidadorPersonaDuplicada.class);
     personaService = mock(IPersonasService.class);
     donantesService = mock(IDonantesService.class);
@@ -53,6 +56,7 @@ class ImportadorServiceTest {
             archivoRepository,
             lectorCSV,
             personaMapper,
+            medioDeContactoMapper,
             validadorDuplicados,
             personaService,
             donantesService);

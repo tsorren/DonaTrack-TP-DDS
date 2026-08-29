@@ -6,6 +6,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -53,7 +54,9 @@ public class NecesidadRecurrente extends Necesidad {
 
   @Override
   public List<DonacionIndependiente> getDonacionesAsignadas() {
-    return obtenerPeriodoActual().donacionesAsignadas();
+    return obtenerPeriodoActual() != null
+        ? obtenerPeriodoActual().donacionesAsignadas()
+        : List.of();
   }
 
   public PeriodoNecesidad obtenerPeriodoActual() {
@@ -128,6 +131,22 @@ public class NecesidadRecurrente extends Necesidad {
   @Override
   public boolean isActiva() {
     return getActiva();
+  }
+
+  @Override
+  public void desactivar() {
+    this.activa = false;
+  }
+
+  @Override
+  public int contarDonacionesAsignadasDesde(LocalDateTime desde) {
+    if (this.periodos == null || desde == null) return 0;
+    return this.periodos.stream()
+        .filter(p -> p.donacionesAsignadas() != null)
+        .flatMap(p -> p.donacionesAsignadas().stream())
+        .filter(d -> d.getFechaRegistro() != null && d.getFechaRegistro().isAfter(desde))
+        .mapToInt(d -> 1)
+        .sum();
   }
 
   @Override
