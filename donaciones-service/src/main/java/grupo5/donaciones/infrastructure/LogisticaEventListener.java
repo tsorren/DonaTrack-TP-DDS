@@ -8,7 +8,9 @@ import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -21,6 +23,11 @@ public class LogisticaEventListener {
   private static final String ACTOR = "logistica-service";
 
   private final IDonacionesIndependientesService donacionesIndependientesService;
+
+  // Deduplica reentregas de RabbitMQ: cada transición (origenEvento + donacionId) se aplica
+  // una sola vez, evitando que un mismo mensaje re-entregado dispare una BusinessStateException
+  // silenciosa por intentar avanzar un estado ya alcanzado.
+  private final Set<String> transicionesProcesadas = ConcurrentHashMap.newKeySet();
 
   public LogisticaEventListener(IDonacionesIndependientesService donacionesIndependientesService) {
     this.donacionesIndependientesService = donacionesIndependientesService;
@@ -93,9 +100,19 @@ public class LogisticaEventListener {
 
   private void aplicarCambioEstado(
       UUID donacionId, CambioEstadoDonacionIndependienteRequestDTO request, String origenEvento) {
+    String claveTransicion = origenEvento + ":" + donacionId;
+    if (!transicionesProcesadas.add(claveTransicion)) {
+      log.info(
+          "Evento {} para donación {} ya fue procesado, se ignora la re-entrega.",
+          origenEvento,
+          donacionId);
+      return;
+    }
+
     try {
       donacionesIndependientesService.cambiarEstado(donacionId, request, ACTOR);
     } catch (Exception e) {
+      transicionesProcesadas.remove(claveTransicion);
       log.error(
           "Error al procesar donación {} en evento {} (estado destino={}): {}",
           donacionId,
