@@ -56,8 +56,9 @@ class EntidadBeneficiariaControllerTest {
   void crearEntidad_debeRetornarCreated() throws Exception {
     UUID juridicaId = UUID.randomUUID();
     EntidadBeneficiariaInputDTO input = DTOFixtures.entidadBeneficiariaInput(juridicaId);
+    EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
 
-    when(service.crearEntidad(any())).thenReturn(mock(EntidadBeneficiariaOutputDTO.class));
+    when(service.crearEntidad(any())).thenReturn(outputMock);
 
     mockMvc
         .perform(
@@ -85,8 +86,9 @@ class EntidadBeneficiariaControllerTest {
   @Test
   void obtenerEntidad_debeRetornarOk() throws Exception {
     UUID id = UUID.randomUUID();
+    EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
 
-    when(service.obtenerEntidad(id)).thenReturn(mock(EntidadBeneficiariaOutputDTO.class));
+    when(service.obtenerEntidad(id)).thenReturn(outputMock);
 
     mockMvc
         .perform(get("/api/entidades/" + id))
@@ -96,7 +98,8 @@ class EntidadBeneficiariaControllerTest {
 
   @Test
   void obtenerTodas_debeRetornarOk() throws Exception {
-    when(service.obtenerTodas()).thenReturn(List.of(mock(EntidadBeneficiariaOutputDTO.class)));
+    EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
+    when(service.obtenerTodas()).thenReturn(List.of(outputMock));
 
     mockMvc
         .perform(get("/api/entidades"))
@@ -109,9 +112,10 @@ class EntidadBeneficiariaControllerTest {
     UUID id = UUID.randomUUID();
     UUID juridicaId = UUID.randomUUID();
     EntidadBeneficiariaInputDTO input = DTOFixtures.entidadBeneficiariaInput(juridicaId);
+    EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
 
     when(service.actualizarEntidad(any(UUID.class), any(EntidadBeneficiariaInputDTO.class)))
-        .thenReturn(mock(EntidadBeneficiariaOutputDTO.class));
+        .thenReturn(outputMock);
 
     mockMvc
         .perform(

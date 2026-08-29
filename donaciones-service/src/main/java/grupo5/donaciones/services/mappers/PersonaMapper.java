@@ -175,88 +175,110 @@ public class PersonaMapper {
   }
 
   public Persona mapToPersona(Map<String, String> fila) {
+    String tipo = obtenerTipoPersona(fila);
+    String nombreRazonSocial = obtenerNombreRazonSocial(fila);
+
+    Persona persona =
+        "JURIDICA".equals(tipo)
+            ? crearPersonaJuridica(nombreRazonSocial)
+            : crearPersonaHumana(fila, nombreRazonSocial);
+
+    asignarDocumento(persona, fila);
+    asignarMediosDeContacto(persona, fila);
+    return persona;
+  }
+
+  private String obtenerTipoPersona(Map<String, String> fila) {
     String tipo = obtenerValor(fila, "TIPO_PERSONA", "TipoPersona", "tipoPersona", "tipo_persona");
-    if (tipo == null || tipo.isBlank()) {
-      tipo = "HUMANA";
-    }
-    tipo = tipo.trim().toUpperCase();
+    return (tipo == null || tipo.isBlank()) ? "HUMANA" : tipo.trim().toUpperCase();
+  }
 
-    Persona persona;
+  private String obtenerNombreRazonSocial(Map<String, String> fila) {
+    return obtenerValor(
+        fila,
+        "NOMBRE_RAZON_SOCIAL",
+        "Nombre/Razón Social",
+        "Nombre/Razon Social",
+        "Nombre / Razón Social",
+        "RAZON_SOCIAL",
+        "Razon Social",
+        "NOMBRE",
+        "Nombre");
+  }
 
-    String nombreRazonSocial =
-        obtenerValor(
-            fila,
-            "NOMBRE_RAZON_SOCIAL",
-            "Nombre/Razón Social",
-            "Nombre/Razon Social",
-            "Nombre / Razón Social",
-            "RAZON_SOCIAL",
-            "Razon Social",
-            "NOMBRE",
-            "Nombre");
+  private Persona crearPersonaJuridica(String nombreRazonSocial) {
+    String razonSocial =
+        (nombreRazonSocial != null && !nombreRazonSocial.isBlank())
+            ? nombreRazonSocial
+            : "Empresa S.A.";
+    Humana representanteDefault =
+        new Humana("Representante", "Legal", LocalDate.now(ZoneId.systemDefault()));
+    return PersonaFactory.crearJuridica(
+        razonSocial, TipoJuridico.EMPRESA, "Rubro CSV", representanteDefault);
+  }
 
-    if ("JURIDICA".equals(tipo)) {
-      String razonSocial =
-          (nombreRazonSocial != null && !nombreRazonSocial.isBlank())
-              ? nombreRazonSocial
-              : "Empresa S.A.";
-      Humana representanteDefault =
-          new Humana("Representante", "Legal", LocalDate.now(ZoneId.systemDefault()));
-      persona =
-          PersonaFactory.crearJuridica(
-              razonSocial, TipoJuridico.EMPRESA, "Rubro CSV", representanteDefault);
-    } else {
-      String nombre = obtenerValor(fila, "NOMBRE", "Nombre", "nombre");
-      String apellido = obtenerValor(fila, "APELLIDO", "Apellido", "apellido");
+  private Persona crearPersonaHumana(Map<String, String> fila, String nombreRazonSocial) {
+    String[] nombreApellido = resolverNombreYApellido(fila, nombreRazonSocial);
+    LocalDate fecha = parsearFechaNacimiento(fila);
+    return PersonaFactory.crearHumana(nombreApellido[0], nombreApellido[1], fecha, null);
+  }
 
-      if ((nombre == null || nombre.isBlank())
-          && (nombreRazonSocial != null && !nombreRazonSocial.isBlank())) {
-        int lastSpace = nombreRazonSocial.lastIndexOf(' ');
-        if (lastSpace > 0) {
-          nombre = nombreRazonSocial.substring(0, lastSpace).trim();
-          apellido = nombreRazonSocial.substring(lastSpace + 1).trim();
-        } else {
-          nombre = nombreRazonSocial;
-          apellido = "-";
-        }
+  private String[] resolverNombreYApellido(Map<String, String> fila, String nombreRazonSocial) {
+    String nombre = obtenerValor(fila, "NOMBRE", "Nombre", "nombre");
+    String apellido = obtenerValor(fila, "APELLIDO", "Apellido", "apellido");
+
+    if ((nombre == null || nombre.isBlank())
+        && (nombreRazonSocial != null && !nombreRazonSocial.isBlank())) {
+      int lastSpace = nombreRazonSocial.lastIndexOf(' ');
+      if (lastSpace > 0) {
+        nombre = nombreRazonSocial.substring(0, lastSpace).trim();
+        apellido = nombreRazonSocial.substring(lastSpace + 1).trim();
+      } else {
+        nombre = nombreRazonSocial;
+        apellido = "-";
       }
-
-      if (nombre == null || nombre.isBlank()) {
-        nombre = "Donante";
-      }
-      if (apellido == null || apellido.isBlank()) {
-        apellido = "Anonimo";
-      }
-
-      LocalDate fecha = null;
-      String fechaStr =
-          obtenerValor(fila, "FECHA_NACIMIENTO", "FechaNacimiento", "Fecha Nacimiento");
-      if (fechaStr != null && !fechaStr.isBlank()) {
-        fecha = LocalDate.parse(fechaStr.trim());
-      }
-
-      persona = PersonaFactory.crearHumana(nombre, apellido, fecha, null);
     }
 
+    String nombreFinal = (nombre != null && !nombre.isBlank()) ? nombre : "Donante";
+    String apellidoFinal = (apellido != null && !apellido.isBlank()) ? apellido : "Anonimo";
+    return new String[] {nombreFinal, apellidoFinal};
+  }
+
+  private LocalDate parsearFechaNacimiento(Map<String, String> fila) {
+    String fechaStr = obtenerValor(fila, "FECHA_NACIMIENTO", "FechaNacimiento", "Fecha Nacimiento");
+    if (fechaStr != null && !fechaStr.isBlank()) {
+      return LocalDate.parse(fechaStr.trim());
+    }
+    return null;
+  }
+
+  private void asignarDocumento(Persona persona, Map<String, String> fila) {
     String tipoDocStr =
         obtenerValor(
             fila, "TIPO_DOCUMENTO", "TIPO_DOC", "TipoDoc", "tipoDoc", "TipoDoc.", "Tipo Documento");
     String documento =
         obtenerValor(fila, DOCUMENTO_KEY, "Documento", "documento", "Doc", "Nro Documento");
 
-    if (documento != null && !documento.isBlank()) {
-      if (tipoDocStr != null && !tipoDocStr.isBlank()) {
-        try {
-          persona.actualizarDocumento(
-              TipoDocumento.valueOf(tipoDocStr.trim().toUpperCase()), documento.trim());
-        } catch (IllegalArgumentException e) {
-          persona.actualizarDocumento(null, documento.trim());
-        }
-      } else {
-        persona.actualizarDocumento(null, documento.trim());
-      }
+    if (documento == null || documento.isBlank()) {
+      return;
     }
 
+    TipoDocumento tipoDoc = parsearTipoDocumento(tipoDocStr);
+    persona.actualizarDocumento(tipoDoc, documento.trim());
+  }
+
+  private TipoDocumento parsearTipoDocumento(String tipoDocStr) {
+    if (tipoDocStr == null || tipoDocStr.isBlank()) {
+      return null;
+    }
+    try {
+      return TipoDocumento.valueOf(tipoDocStr.trim().toUpperCase());
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private void asignarMediosDeContacto(Persona persona, Map<String, String> fila) {
     persona.limpiarMediosDeContacto();
 
     String email = obtenerValor(fila, "EMAIL", "Email", "email", "Correo", "correo");
@@ -277,8 +299,6 @@ public class PersonaMapper {
       }
       persona.agregarMedioDeContacto(tel);
     }
-
-    return persona;
   }
 
   private static String obtenerValor(Map<String, String> fila, String... claves) {

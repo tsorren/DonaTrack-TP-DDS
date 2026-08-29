@@ -54,13 +54,14 @@ public class NecesidadRecurrente extends Necesidad {
 
   @Override
   public List<DonacionIndependiente> getDonacionesAsignadas() {
-    return obtenerPeriodoActual() != null
-        ? obtenerPeriodoActual().donacionesAsignadas()
+    PeriodoNecesidad actual = obtenerPeriodoActual();
+    return actual != null && actual.donacionesAsignadas() != null
+        ? actual.donacionesAsignadas()
         : List.of();
   }
 
   public PeriodoNecesidad obtenerPeriodoActual() {
-    if (this.periodos.isEmpty()) return null;
+    if (this.periodos == null || this.periodos.isEmpty()) return null;
     return this.periodos.get(this.periodos.size() - 1);
   }
 
@@ -96,10 +97,11 @@ public class NecesidadRecurrente extends Necesidad {
 
   public boolean hayQueGenerarNuevo(LocalDate fechaActual) {
     if (this.activa != null && !this.activa) return false;
-    if (this.periodos.isEmpty()) return true;
+    PeriodoNecesidad actual = obtenerPeriodoActual();
+    if (actual == null) return true;
 
     // crear un período nuevo si "hoy" es posterior a la fecha de vencimiento
-    return !obtenerPeriodoActual().estaEnPeriodo(fechaActual);
+    return !actual.estaEnPeriodo(fechaActual);
   }
 
   public boolean renovarPeriodoSiCorresponde(LocalDate fechaActual) {
@@ -115,10 +117,11 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   public void generarNuevoPeriodo() {
+    PeriodoNecesidad actual = obtenerPeriodoActual();
     LocalDate nuevaFechaFin =
-        periodos.isEmpty()
+        (actual == null || actual.fechaFin() == null)
             ? LocalDate.now(ZoneId.systemDefault()).plus(this.periodo)
-            : obtenerPeriodoActual().fechaFin().plus(this.periodo);
+            : actual.fechaFin().plus(this.periodo);
 
     this.periodos.add(
         new PeriodoNecesidad(nuevaFechaFin, List.of(), super.getCantidadNecesitada(), this));
