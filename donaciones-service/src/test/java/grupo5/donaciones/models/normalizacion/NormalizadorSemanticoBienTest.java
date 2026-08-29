@@ -217,7 +217,12 @@ class NormalizadorSemanticoBienTest {
 
     Bien bien =
         new Bien(
-            "Articulo Inclasificable", "imagen.png", LocalDate.of(2027, 12, 31), null, 1.0, 1.0);
+            "Articulo Inclasificable",
+            "imagen.png",
+            LocalDate.of(2027, Month.DECEMBER, 31),
+            null,
+            1.0,
+            1.0);
     donacion.agregarItem(new ItemDonacion(bien, 2));
 
     List<ItemDonacionNormalizado> resultado =
