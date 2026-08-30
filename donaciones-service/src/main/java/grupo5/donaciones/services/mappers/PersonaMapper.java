@@ -193,7 +193,7 @@ public class PersonaMapper {
     return (tipo == null || tipo.isBlank()) ? "HUMANA" : tipo.trim().toUpperCase();
   }
 
-  private String obtenerNombreRazonSocial(Map<String, String> fila) {
+  private static String obtenerNombreRazonSocial(Map<String, String> fila) {
     return obtenerValor(
         fila,
         "NOMBRE_RAZON_SOCIAL",
