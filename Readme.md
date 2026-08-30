@@ -74,8 +74,8 @@ DonaTrack-TP-DDS/
 ├── notificaciones-service/       # Modulo de despacho de comunicaciones y alertas (:8081)
 ├── incentivos-service/           # Modulo de gamificacion, rankings e incentivos (:8082)
 ├── logistica-service/            # Modulo troncal de transporte, camiones, rutas y entregas (:8083)
-├── cliente-liviano/              # [Entrega 2] Directorio reservado para interfaz web
-└── auth-service/                 # [Entrega 2] Directorio reservado para modulo de seguridad
+├── cliente-liviano/              # [PLACEHOLDER] Directorio reservado para interfaz web
+└── auth-service/                 # [PLACEHOLDER] Directorio reservado para modulo de seguridad
 ```
 
 ---
@@ -166,4 +166,3 @@ El repositorio cuenta con dos scripts orquestadores en Bash diseñados para auto
 | **Nicolás Delorte** | 172.817-9 | ndelorte@frba.utn.edu.ar |
 | **Sofia Maria Deane** | 210.350-3 | sdeane@frba.utn.edu.ar |
 | **Tadeo Sorrentino** | 214.153-0 | tsorrentino@frba.utn.edu.ar |
-| **Valentina Thiwissen** | 209.210-4 | vthiwissen@frba.utn.edu.ar |

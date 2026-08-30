@@ -188,7 +188,7 @@ public class PersonaMapper {
     return persona;
   }
 
-  private String obtenerTipoPersona(Map<String, String> fila) {
+  private static String obtenerTipoPersona(Map<String, String> fila) {
     String tipo = obtenerValor(fila, "TIPO_PERSONA", "TipoPersona", "tipoPersona", "tipo_persona");
     return (tipo == null || tipo.isBlank()) ? "HUMANA" : tipo.trim().toUpperCase();
   }
@@ -206,7 +206,7 @@ public class PersonaMapper {
         "Nombre");
   }
 
-  private Persona crearPersonaJuridica(String nombreRazonSocial) {
+  private static Persona crearPersonaJuridica(String nombreRazonSocial) {
     String razonSocial =
         (nombreRazonSocial != null && !nombreRazonSocial.isBlank())
             ? nombreRazonSocial
@@ -217,13 +217,14 @@ public class PersonaMapper {
         razonSocial, TipoJuridico.EMPRESA, "Rubro CSV", representanteDefault);
   }
 
-  private Persona crearPersonaHumana(Map<String, String> fila, String nombreRazonSocial) {
+  private static Persona crearPersonaHumana(Map<String, String> fila, String nombreRazonSocial) {
     String[] nombreApellido = resolverNombreYApellido(fila, nombreRazonSocial);
     LocalDate fecha = parsearFechaNacimiento(fila);
     return PersonaFactory.crearHumana(nombreApellido[0], nombreApellido[1], fecha, null);
   }
 
-  private String[] resolverNombreYApellido(Map<String, String> fila, String nombreRazonSocial) {
+  private static String[] resolverNombreYApellido(
+      Map<String, String> fila, String nombreRazonSocial) {
     String nombre = obtenerValor(fila, "NOMBRE", "Nombre", "nombre");
     String apellido = obtenerValor(fila, "APELLIDO", "Apellido", "apellido");
 
@@ -244,7 +245,7 @@ public class PersonaMapper {
     return new String[] {nombreFinal, apellidoFinal};
   }
 
-  private LocalDate parsearFechaNacimiento(Map<String, String> fila) {
+  private static LocalDate parsearFechaNacimiento(Map<String, String> fila) {
     String fechaStr = obtenerValor(fila, "FECHA_NACIMIENTO", "FechaNacimiento", "Fecha Nacimiento");
     if (fechaStr != null && !fechaStr.isBlank()) {
       return LocalDate.parse(fechaStr.trim());
@@ -252,7 +253,7 @@ public class PersonaMapper {
     return null;
   }
 
-  private void asignarDocumento(Persona persona, Map<String, String> fila) {
+  private static void asignarDocumento(Persona persona, Map<String, String> fila) {
     String tipoDocStr =
         obtenerValor(
             fila, "TIPO_DOCUMENTO", "TIPO_DOC", "TipoDoc", "tipoDoc", "TipoDoc.", "Tipo Documento");
@@ -267,7 +268,7 @@ public class PersonaMapper {
     persona.actualizarDocumento(tipoDoc, documento.trim());
   }
 
-  private TipoDocumento parsearTipoDocumento(String tipoDocStr) {
+  private static TipoDocumento parsearTipoDocumento(String tipoDocStr) {
     if (tipoDocStr == null || tipoDocStr.isBlank()) {
       return null;
     }
@@ -278,7 +279,7 @@ public class PersonaMapper {
     }
   }
 
-  private void asignarMediosDeContacto(Persona persona, Map<String, String> fila) {
+  private static void asignarMediosDeContacto(Persona persona, Map<String, String> fila) {
     persona.limpiarMediosDeContacto();
 
     String email = obtenerValor(fila, "EMAIL", "Email", "email", "Correo", "correo");
