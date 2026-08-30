@@ -1,6 +1,6 @@
 # Plan de Refactor — `incentivos-service`
 
-> Instanciación del [Plan Genérico de Refactor por Oleadas](./plan-generico-refactor-servicios.md) aplicada al microservicio de incentivos.
+> Instanciación del [Plan Genérico de Refactor por Oleadas](../plan-generico-refactor-servicios.md) aplicada al microservicio de incentivos.
 > Fecha de auditoría inicial: 2026-08-26.
 
 > [!IMPORTANT]

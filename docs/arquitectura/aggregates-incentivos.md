@@ -18,27 +18,34 @@ El *Servicio de Incentivos* tiene como objetivo gamificar la participación de l
 ### 2.1. Agregado: DonanteIncentivos (Gamificación del Donante)
 *   **Aggregate Root**: `DonanteIncentivos`.
 *   **Componentes Internos (Entidades y Objetos de Valor)**:
-    *   `Mision` (Clase abstracta polimórfica y sus subclases `MisionHabilDonador`, `MisionRacha`, `MisionCompletitud`, `MisionDonacionesExitosas`). Representan misiones con un objetivo, progreso actual y estado de completitud.
-    *   `Insignia` (Objeto de Valor que describe el logro: nombre, descripción, fecha de obtención y URL de imagen).
+    *   `Mision` (Clase abstracta polimórfica en `grupo5.incentivos.models.entities.misiones` y sus subclases `MisionHabilDonador`, `MisionRacha`, `MisionCompletitud`, `MisionDonacionesExitosas` basadas en **Template Method**). Representan misiones con un objetivo, progreso actual y estado de completitud.
+    *   `Insignia` (Objeto de Valor/Entidad en `grupo5.incentivos.models.entities.insignias` asignada al donante).
     *   `CategoriaDonante` (Enum: *COLABORADOR*, *SOSTENEDOR*, *TRANSFORMADOR*).
+    *   `CambioCategoria` (Auditoría inmutable de ascensos/descensos).
 *   **Referencias Externas (por ID)**: 
-    *   `donanteId` (UUID/Long que actúa como la clave primaria del agregado, apuntando al Donante originado en el *Servicio de Donaciones*).
+    *   `donanteId` (`UUID` que actúa como la clave primaria del agregado, apuntando al Donante originado en el *Servicio de Donaciones*).
 *   **Responsabilidad**: Centralizar y validar las reglas de gamificación del donante. Procesa el impacto de nuevas donaciones en el progreso de las misiones y determina si el donante califica para un ascenso de categoría o para recibir insignias adicionales.
-*   **Paquete**: `grupo5.incentivos.models.entities.donante` (o `gamificacion`)
+*   **Paquete**: `grupo5.incentivos.models.entities.donante` y `entities.misiones`
 
-### 2.2. Agregado: RankingMensual (Tablero de Líderes)
+### 2.2. Agregado: Insignia (Catálogo de Logros)
+*   **Aggregate Root**: `Insignia`.
+*   **Atributos**: `id` (UUID), `nombre`, `descripcion`, `urlImagen`, `fechaCreacion`.
+*   **Responsabilidad**: Gestionar el catálogo disponible de reconocimientos y medallas del sistema mediante `InsigniaRepository`.
+*   **Paquete**: `grupo5.incentivos.models.entities.insignias`
+
+### 2.3. Agregado: RankingMensual (Tablero de Líderes)
 *   **Aggregate Root**: `RankingMensual`.
 *   **Componentes Internos (Entidades y Objetos de Valor)**:
     *   `EntradaRanking` (Entidad interna que describe la fila del podio: posición, nombre de donante y cantidad de misiones completadas).
 *   **Referencias Externas (por ID)**: 
-    *   `donanteId` (Long/UUID de la entrada que referencia a `DonanteIncentivos`).
+    *   `donanteId` (`UUID` de la entrada que referencia a `DonanteIncentivos`).
 *   **Responsabilidad**: Registrar el podio de posiciones de los donantes más activos para un período mensual (`YearMonth`) determinado de manera inmutable e histórica.
-*   **Paquete**: `grupo5.incentivos.models.entities.ranking` (o `analiticas`)
+*   **Paquete**: `grupo5.incentivos.models.entities.ranking`
 
 ---
 
 ## 3. Clases de Lógica y Transitorias (No son Agregados)
 
-*   **`EventoDonacion`**: Objeto de transferencia de datos (DTO) que mapea la información del evento de entrega (`donacionId`, `organizacionId`, `subcategoria`, `cantidadBienes`, `exitosa`, `fecha`). Se utiliza de forma transitoria para alimentar el procesamiento de misiones en `DonanteIncentivos` y no se persiste directamente.
-*   **`IncentivosService` / `RankingService`**: Servicios de Dominio/Aplicación. Coordinan la recuperación de las raíces de agregado desde los repositorios, ejecutan lógica que requiere múltiples llamadas (como el cálculo consolidado del ranking mensual) e interactúan con servicios externos.
+*   **`EventoDonacion`**: Objeto de dominio transitorio (`donacionId`, `organizacionId`, `subcategoria`, `cantidadBienes`, `exitosa`, `fecha`) utilizado para alimentar el procesamiento de misiones en `DonanteIncentivos`.
+*   **`InactividadJob` / `RachaJob` / `RankingMensualJob`**: Cron jobs programados (`@Scheduled`) en `grupo5.incentivos.infrastructure.schedulers` para el cálculo automático de rachas, inactividad y ranking.
 *   **`MisionFactory`**: Implementación del patrón *Factory* encargado de la creación inicial de misiones del catálogo estándar para los nuevos donantes.

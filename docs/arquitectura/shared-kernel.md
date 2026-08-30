@@ -35,12 +35,26 @@ Las siguientes responsabilidades están centralizadas en `common-lib` debido a s
   * El `@RestControllerAdvice` global que intercepta las excepciones y genera las respuestas HTTP mapeadas a los códigos de estado correspondientes (400, 404, 409, 500).
 * **Justificación:** Garantiza que cualquier error en cualquier servicio del sistema se exponga al cliente con el mismo formato JSON estandarizado.
 
-### D. Abstracciones de Persistencia y Pruebas
+### D. Abstracciones de Persistencia en Memoria (DDD)
 * **Qué incluye:**
-  * La interfaz `RecursoDTO` (que encapsula el contrato de identidad mediante un `UUID`).
-  * El contrato genérico `BaseRepository<T extends RecursoDTO>`.
-  * La clase abstracta `BaseRepositoryEnMemoria<T extends RecursoDTO>`, que proporciona una base segura para pruebas volátiles (Fakes) con lógica de autogeneración de UUIDs (Create vs. Update) y validaciones de nulos.
-* **Justificación:** Facilita la adopción de **Arquitectura Hexagonal (Puertos y Adaptadores)** y pruebas unitarias de integración rápidas sin necesidad de duplicar código de infraestructura de pruebas en cada microservicio.
+  * La interfaz `AggregateRoot` (que encapsula el contrato de identidad mediante un `UUID`).
+  * El contrato genérico `CrudRepository<T extends AggregateRoot>`.
+  * La clase abstracta `CrudRepositoryEnMemoria<T extends AggregateRoot>`, que proporciona una base concurrente segura (`ConcurrentHashMap`) para persistencia volátil en Fase 1, con soporte de CRUD completo, búsquedas polimórficas y logging estructurado.
+* **Justificación:** Facilita la adopción de **Arquitectura Hexagonal (Puertos y Adaptadores)** y aislamiento de dominio sin necesidad de duplicar código de infraestructura de repositorios en cada microservicio.
+
+### E. Trazabilidad y Observabilidad Distribuida Activa
+* **Qué incluye:** El paquete `grupo5.common.logging` con autoconfiguración Spring Boot:
+  * `TraceResponseHeaderFilter`: Inyecta el encabezado `X-Trace-Id` en las respuestas HTTP.
+  * `FeignTraceRequestInterceptor`: Propaga automáticamente el contexto de trazabilidad en llamadas síncronas entre microservicios.
+  * `ControllerLoggingInterceptor`: Loguea peticiones HTTP entrantes (verbo, URI, handler).
+  * `ServiceLoggingAspect` y `ScheduledJobLoggingAspect`: Registra inicio y finalización de servicios y cron jobs con span ID dedicado.
+  * `MdcTaskDecorator`: Propaga el MDC (Mapped Diagnostic Context) a hilos asíncronos (`@Async`).
+* **Justificación:** Garantiza visibilidad end-to-end y correlación de logs a través de todo el ecosistema distribuido.
+
+### F. Eventos de Dominio y Documentación OpenAPI
+* **Qué incluye:**
+  * `AgregadoConEventos` y `EventoDeDominio` en `grupo5.common.events`: Abstracciones base para acumulación y despacho desacoplado de eventos de dominio.
+  * `DonaTrackOpenApiAutoConfiguration` y `DonaTrackOpenApiProperties` en `grupo5.common.openapi`: Estandarización automática de Swagger UI y especificaciones OpenAPI 3 para todos los microservicios.
 
 ---
 
@@ -69,22 +83,15 @@ Para evitar caer en el anti-patrón de un **Monolito Distribuido**, los siguient
 
 ## 4. Decisiones de Diseño y Evolución Futura
 
-A medida que el ecosistema de **DonaTrack** crezca, se planea extender `common-lib` para incorporar las siguientes utilidades transversales:
+A medida que el ecosistema de **DonaTrack** crezca hacia la Entrega 2, se planea extender `common-lib` para incorporar:
 
-### A. Trazabilidad y Observabilidad Distribuida (TraceID)
-* **Objetivo:** Garantizar que cada solicitud que entra al sistema pueda ser rastreada a través de todos los microservicios involucrados.
-* **Implementación:**
-  * Configurar interceptores de clientes HTTP (como Feign o RestTemplate) para propagar cabeceras de trazabilidad (`X-B3-TraceId` o estándar W3C `traceparent`).
-  * Proveer un filtro de Servlet común para inyectar el `traceId` en el contexto de logs de Spring (MDC - Mapped Diagnostic Context).
-  * Estandarizar la salida de logs en formato JSON estructurado para su ingesta por recolectores de logs (ej. ELK Stack / Grafana Loki).
-
-### B. Seguridad y Autenticación Estandarizada
-* **Objetivo:** Evitar que cada microservicio implemente manualmente la validación de tokens de seguridad.
+### A. Seguridad y Autenticación Estandarizada
+* **Objetivo:** Evitar que cada microservicio implemente manualmente la validación de tokens de seguridad cuando se introduzca `auth-service`.
 * **Implementación:**
   * Proveer utilidades compartidas para parsear y validar JWTs (JSON Web Tokens).
-  * Definir filtros comunes de seguridad para delegar roles y extraer el contexto del usuario autenticado (inyectando un `UserPrincipalDTO` común en el contexto de seguridad).
+  * Definir filtros comunes de seguridad para delegar roles y extraer el contexto del usuario autenticado.
 
-### C. Configuraciones de Resiliencia y Comunicación Inter-Servicios
+### B. Configuraciones de Resiliencia Avanzada
 * **Objetivo:** Compartir políticas de reintentos y tolerancia a fallas en la red.
 * **Implementación:**
   * Definir configuraciones compartidas de Resilience4j (Circuit Breakers, Retries y Rate Limiters) específicas para los clientes Feign definidos en la biblioteca.

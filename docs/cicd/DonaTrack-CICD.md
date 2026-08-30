@@ -8,7 +8,7 @@ Este documento detalla la infraestructura de Integración y Despliegue Continuo 
 
 ## 1. Pipeline Principal de CI (GitHub Actions)
 
-El archivo [.github/workflows/main.yaml](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/workflows/main.yaml) centraliza las validaciones de integración en un pipeline unificado basado en la filosofía de **"Fallo Temprano" (Fail-fast)**, optimizado para compilaciones incrementales de microservicios.
+El archivo [`.github/workflows/main.yaml`](../../.github/workflows/main.yaml) centraliza las validaciones de integración en un pipeline unificado basado en la filosofía de **"Fallo Temprano" (Fail-fast)**, optimizado para compilaciones incrementales de microservicios.
 
 ### 1.1. Política de Ramas (Git Flow UTN)
 * **Merges a `main`**: Solo permitidos desde ramas `ENTREGA_N` mediante Pull Request.
@@ -57,11 +57,11 @@ graph TD
 Para agilizar las revisiones de código y evitar Pull Requests gigantescas, se implementó un sistema de **Stacked PRs** que desglosa de manera automática cada requerimiento principal en tareas modulares secuenciales.
 
 ### 2.1. Componentes del Flujo
-* **Workflow**: [.github/workflows/cascading-setup.yml](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/workflows/cascading-setup.yml)
-* **Script Orquestador (SOLID)**: [.github/scripts/setup_cascade.js](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/scripts/setup_cascade.js)
-* **Configuración de Tareas**: [.github/scripts/standard_tasks.json](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/scripts/standard_tasks.json)
-* **Plantilla de Sub-Issues**: [.github/scripts/sub_issue_body_template.md](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/scripts/sub_issue_body_template.md)
-* **Formulario Base**: [.github/ISSUE_TEMPLATE/02-req-con-subissues.yaml](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/ISSUE_TEMPLATE/02-req-con-subissues.yaml)
+* **Workflow**: [`.github/workflows/cascading-setup.yml`](../../.github/workflows/cascading-setup.yml)
+* **Script Orquestador (SOLID)**: [`.github/scripts/setup_cascade.js`](../../.github/scripts/setup_cascade.js)
+* **Configuración de Tareas**: [`.github/scripts/standard_tasks.json`](../../.github/scripts/standard_tasks.json)
+* **Plantilla de Sub-Issues**: [`.github/scripts/sub_issue_body_template.md`](../../.github/scripts/sub_issue_body_template.md)
+* **Formulario Base**: [`.github/ISSUE_TEMPLATE/02-req-con-subissues.yaml`](../../.github/ISSUE_TEMPLATE/02-req-con-subissues.yaml)
 
 ### 2.2. Funcionamiento de la Automatización
 1. Al crear una issue de requerimiento base con la etiqueta `requerimiento` (usando la plantilla `02-req-con-subissues.yaml`), el workflow se dispara automáticamente.
@@ -84,8 +84,8 @@ Para agilizar las revisiones de código y evitar Pull Requests gigantescas, se i
 Este flujo gestiona la asignación equitativa de revisores y garantiza que las revisiones de código de las PRs apiladas se soliciten de manera estrictamente ordenada.
 
 ### 3.1. Componentes del Flujo
-* **Workflow**: [.github/workflows/auto-assign.yml](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/workflows/auto-assign.yml)
-* **Script Orquestador (SOLID)**: [.github/scripts/assign_reviewer.js](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/scripts/assign_reviewer.js)
+* **Workflow**: [`.github/workflows/auto-assign.yml`](../../.github/workflows/auto-assign.yml)
+* **Script Orquestador (SOLID)**: [`.github/scripts/assign_reviewer.js`](../../.github/scripts/assign_reviewer.js)
 
 ### 3.2. Reglas de Validación y Asignación
 1. **Validación de Secuencialidad (Crítico)**: Cuando una PR de tarea (ej: Task 3) pasa de Draft a lista para revisión (`ready_for_review`), el script valida que no haya PRs previas (`task1`, `task2`) del mismo requerimiento que se encuentren en borrador (`draft == true`). Si encuentra alguna previa en borrador:
@@ -99,19 +99,24 @@ Este flujo gestiona la asignación equitativa de revisores y garantiza que las r
 
 ---
 
-## 4. Recordatorios Inteligentes de Inactividad (Cron Job)
+## 4. Recordatorios y Triage de Issues / PRs
 
-Monitorea de forma recurrente las Pull Requests para evitar cuellos de botella en la fase de revisión.
+### 4.1. Recordatorios Inteligentes de Inactividad (Cron Job)
+* **Workflow**: [`.github/workflows/pr-reminders.yml`](../../.github/workflows/pr-reminders.yml)
+* **Script Orquestador**: [`.github/scripts/send_reminders.js`](../../.github/scripts/send_reminders.js)
+* **Funcionamiento**: Se ejecuta de lunes a viernes a las 12:00 PM UTC-3 (15:00 UTC), alertando en Discord sobre PRs abiertas con más de 48 horas de inactividad.
 
-### 4.1. Componentes del Flujo
-* **Workflow**: [.github/workflows/pr-reminders.yml](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/workflows/pr-reminders.yml)
-* **Script Orquestador (SOLID)**: [.github/scripts/send_reminders.js](file:///C:/Users/Pc/Documents/DDS/DonaTrack-TP-DDS/.github/scripts/send_reminders.js)
+### 4.2. Triage y Asignación de Issues
+* **Workflows**: [`.github/workflows/issue-triage.yml`](../../.github/workflows/issue-triage.yml) e [`.github/workflows/issue-auto-assign-cron.yml`](../../.github/workflows/issue-auto-assign-cron.yml).
+* **Funcionamiento**: Clasifican automáticamente las etiquetas según el tipo de formulario y balancean la asignación de issues huérfanas entre los miembros del equipo.
 
-### 4.2. Funcionamiento
-* Se ejecuta automáticamente de **lunes a viernes a las 12:00 PM UTC-3** (15:00 UTC).
-* Escanea las PRs abiertas en estado no-draft y verifica si llevan más de 48 horas inactivas (según el timestamp `updated_at`).
-* Si llevan más de 48 horas sin recibir una revisión aprobada (`APPROVED`), envía una mención a los revisores asignados en el canal de Discord.
-* Si no hay revisores asignados, envía una alerta al canal general para que intervenga el líder técnico del equipo.
+---
+
+## 5. Despliegue de Documentación en GitHub Pages
+
+* **Workflow**: [`.github/workflows/deploy-pages.yaml`](../../.github/workflows/deploy-pages.yaml)
+* **Script de Árbol de Entregas**: [`.github/scripts/generate-pdf-tree.js`](../../.github/scripts/generate-pdf-tree.js)
+* **Funcionamiento**: En cada push a `main` o ramas `ENTREGA_*`, compila la previsualización interactiva de ADRs con Log4brains, empaqueta el visor Hub (`docs/herramientas/hub/`), el Documentador (`docs/herramientas/documentador/`) y genera el catálogo de PDFs de entregas publicando todo en GitHub Pages.
 
 ---
 

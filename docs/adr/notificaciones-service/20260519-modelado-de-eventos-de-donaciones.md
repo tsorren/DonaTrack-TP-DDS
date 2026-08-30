@@ -75,4 +75,4 @@ beneficiario
 
 ## Links
 
-* [Eventos Notificables](../20260519-eventos-como-disparadores-de-notificaciones)
+* [Eventos Notificables](./20260519-eventos-como-disparadores-de-notificaciones.md)
