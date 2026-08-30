@@ -1,0 +1,438 @@
+# ============================================================================
+# DonaTrack — Pipeline de Merge (Publicación de Imágenes Estables)
+# ============================================================================
+# Disparador: push a main o ENTREGA_* (resultado de un PR mergeado)
+#
+# Responsabilidad única: compilar TODOS los servicios del monorepo y publicar
+# sus imágenes Docker con tags estables en GHCR. Estos tags son los que consume
+# preprod-validation en el pipeline de PR para resolver servicios no modificados.
+#
+# Estrategia de tags publicados por cada servicio:
+#   :sha-<7 chars>  → Inmutable, para rollback/trazabilidad (ej: sha-a1b2c3d)
+#   :<branch>       → Tag de rama normalizado (ej: entrega_2, main)
+#   :latest         → Solo si el push es a 'main' (representa producción)
+#
+# Principios:
+#   • Build Once: cada servicio se compila y empaqueta una sola vez en la matriz
+#     y la imagen resultante se publica con múltiples tags sin reconstruir.
+#   • Determinismo: todos los servicios del stack se publican en la misma corrida,
+#     garantizando cohesión de contratos entre imágenes de la misma entrega.
+#   • Cleanup: los tags efímeros de PR (pr-N) se eliminan de GHCR al finalizar,
+#     evitando acumulación de imágenes obsoletas.
+#   • No cancelable: un merge build nunca se cancela a mitad; si dos merges
+#     ocurren seguidos, el segundo espera al primero (cancel-in-progress: false).
+# ============================================================================
+
+name: DonaTrack Merge Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - 'ENTREGA_*'
+    # Solo se dispara cuando hay cambios en código fuente, build files o Dockerfiles.
+    # Commits de solo documentación (docs/, ADRs, README) no consumen runner ni GHCR.
+    # IMPORTANTE: si se agrega un servicio nuevo sin cambiar código fuente, hacer
+    # un push vacío (git commit --allow-empty) para forzar la publicación inicial.
+    paths:
+      - '*/src/**'
+      - '*/pom.xml'
+      - 'pom.xml'
+      - '*/Dockerfile'
+      - '.dockerignore'
+      - 'docker-compose*.yml'
+      - 'docker-compose*.yaml'
+
+# ── Concurrencia ──────────────────────────────────────────────────────────────
+# A diferencia del pipeline de PR (cancel-in-progress: true), aquí NO se cancela
+# una publicación en curso. Dos merges rápidos se serializan: el segundo espera.
+# Esto evita publicar un estado intermedio o dejar imágenes sin el tag estable.
+concurrency:
+  group: merge-${{ github.ref_name }}
+  cancel-in-progress: false
+
+# ============================================================================
+# JOBS
+# ============================================================================
+jobs:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 1: Descubrimiento Dinámico de Servicios
+  # ──────────────────────────────────────────────────────────────────────────
+  # Mismo patrón de descubrimiento que main.yml: escanea carpetas con pom.xml,
+  # excluye módulos no-servicio, y distingue los que tienen Dockerfile.
+  # Genera dos matrices: una para build (todos los servicios) y otra para
+  # Docker (solo los que tienen Dockerfile).
+  # ──────────────────────────────────────────────────────────────────────────
+  detect-services:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      any-service: ${{ steps.discover.outputs.any-service }}
+      any-docker-service: ${{ steps.discover.outputs.any-docker-service }}
+      services-matrix: ${{ steps.discover.outputs.services-matrix }}
+      docker-matrix: ${{ steps.discover.outputs.docker-matrix }}
+      # Tag normalizado de la rama para usar como tag Docker estable
+      branch-tag: ${{ steps.discover.outputs.branch-tag }}
+      # SHA corto para tag inmutable de trazabilidad
+      sha-short: ${{ steps.discover.outputs.sha-short }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Descubrir servicios y calcular tags
+        id: discover
+        run: |
+          ALL_SERVICES=()
+          DOCKER_SERVICES=()
+
+          for pom in */pom.xml; do
+            [ -f "$pom" ] || continue
+            dir=$(dirname "$pom")
+            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" ]]; then
+              ALL_SERVICES+=("$dir")
+              if [ -f "$dir/Dockerfile" ]; then
+                DOCKER_SERVICES+=("$dir")
+              fi
+            fi
+          done
+
+          echo "🔍 Servicios detectados: ${ALL_SERVICES[*]}"
+          echo "🐳 Servicios con Dockerfile: ${DOCKER_SERVICES[*]}"
+
+          if [ ${#ALL_SERVICES[@]} -gt 0 ]; then
+            echo "any-service=true" >> "$GITHUB_OUTPUT"
+            MATRIX_JSON=$(jq -nc --args '$ARGS.positional | map({service: .})' "${ALL_SERVICES[@]}")
+            echo "services-matrix={\"include\":$MATRIX_JSON}" >> "$GITHUB_OUTPUT"
+          else
+            echo "any-service=false" >> "$GITHUB_OUTPUT"
+            echo 'services-matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ ${#DOCKER_SERVICES[@]} -gt 0 ]; then
+            echo "any-docker-service=true" >> "$GITHUB_OUTPUT"
+            DOCKER_JSON=$(jq -nc --args '$ARGS.positional | map({service: .})' "${DOCKER_SERVICES[@]}")
+            echo "docker-matrix={\"include\":$DOCKER_JSON}" >> "$GITHUB_OUTPUT"
+          else
+            echo "any-docker-service=false" >> "$GITHUB_OUTPUT"
+            echo 'docker-matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+          fi
+
+          # ── Calcular tags Docker ────────────────────────────────────────
+          # Tag de rama: normalizar a minúsculas y reemplazar '/' por '-'
+          # para cumplir con especificación OCI de nombres de imagen.
+          # Ejemplos: ENTREGA_2 → entrega_2 | feature/x → feature-x
+          BRANCH_TAG=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
+          echo "branch-tag=${BRANCH_TAG}" >> "$GITHUB_OUTPUT"
+
+          # SHA corto (7 chars): inmutable, ideal para rollback y trazabilidad
+          SHA_SHORT="${{ github.sha }}"
+          echo "sha-short=${SHA_SHORT:0:7}" >> "$GITHUB_OUTPUT"
+
+          echo "🏷️  Branch tag: ${BRANCH_TAG}"
+          echo "🔑 SHA short: ${SHA_SHORT:0:7}"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 2: Compilación y Verificación (Matriz por Servicio)
+  # ──────────────────────────────────────────────────────────────────────────
+  # Compila TODOS los servicios desde el estado mergeado, no desde artefactos
+  # del PR (que ya expiraron o pueden ser de otra corrida). Esto garantiza que
+  # las imágenes publicadas corresponden exactamente al estado integrado en la rama.
+  #
+  # Se ejecuta mvn verify (incluye tests unitarios) para detectar regresiones
+  # introducidas por el merge. Si un merge rompe tests, las imágenes no se publican.
+  # ──────────────────────────────────────────────────────────────────────────
+  build-and-verify:
+    needs: detect-services
+    if: ${{ needs.detect-services.outputs.any-service == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-services.outputs.services-matrix) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: "Compilar, testear y empaquetar: ${{ matrix.service }}"
+        run: |
+          echo "🔨 Compilando ${{ matrix.service }} desde estado mergeado..."
+          mvn -B clean verify \
+            -pl ${{ matrix.service }} -am \
+            -Dspotless.check.skip=true
+
+      - name: Subir JAR compilado
+        # Solo sube si la compilación fue exitosa; error si no hay JAR (aborta docker-publish)
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: merge-jar-${{ matrix.service }}
+          # Sube todos los JARs; docker-publish seleccionará el ejecutable con find
+          path: ${{ matrix.service }}/target/*.jar
+          retention-days: 1
+          if-no-files-found: error
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 3: Construcción y Publicación de Imágenes Estables (Matriz Docker)
+  # ──────────────────────────────────────────────────────────────────────────
+  # "Build Once, Tag Many": construye la imagen UNA vez y la publica con
+  # múltiples tags en un solo push usando docker/build-push-action con
+  # la opción `tags` multilínea.
+  #
+  # Tags publicados:
+  #   :sha-<7>    → inmutable, para rollback (nunca se sobreescribe)
+  #   :<branch>   → estable de rama (se sobreescribe en cada merge)
+  #   :latest     → solo en push a main (representa el estado de producción)
+  # ──────────────────────────────────────────────────────────────────────────
+  docker-publish:
+    needs: [detect-services, build-and-verify]
+    if: ${{ needs.build-and-verify.result == 'success' && needs.detect-services.outputs.any-docker-service == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      # fail-fast: false permite que los servicios restantes se publiquen aunque
+      # uno falle, maximizando la disponibilidad de imágenes estables.
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-services.outputs.docker-matrix) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Descargar JAR compilado
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: merge-jar-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/
+
+      - name: Iniciar sesión en GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Calcular tags y seleccionar JAR ejecutable
+        id: meta
+        run: |
+          # Selección determinista del fat JAR (mismo criterio que main.yml FIX-4)
+          JAR_PATH=$(find ${{ matrix.service }}/target \
+            -maxdepth 1 \
+            -name "*.jar" \
+            ! -name "*sources.jar" \
+            ! -name "*javadoc.jar" \
+            ! -name "*.original" \
+            ! -name "*plain.jar" \
+            | head -n 1)
+
+          if [ -z "$JAR_PATH" ]; then
+            echo "::error::No se encontró JAR ejecutable en ${{ matrix.service }}/target/"
+            exit 1
+          fi
+          echo "📦 JAR seleccionado: $JAR_PATH"
+          echo "jar_file=$JAR_PATH" >> "$GITHUB_OUTPUT"
+
+          # Base de la imagen en minúsculas (requisito OCI)
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_BASE="ghcr.io/${REPO_LOWER}/${{ matrix.service }}"
+
+          BRANCH_TAG="${{ needs.detect-services.outputs.branch-tag }}"
+          SHA_TAG="sha-${{ needs.detect-services.outputs.sha-short }}"
+
+          # Construir lista de tags multilínea para build-push-action
+          TAGS="${IMAGE_BASE}:${BRANCH_TAG}"$'\n'"${IMAGE_BASE}:${SHA_TAG}"
+
+          # :latest solo cuando el merge es a main (estado de producción)
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            TAGS="${TAGS}"$'\n'"${IMAGE_BASE}:latest"
+            echo "🏷️  Publicando también :latest (push a main)"
+          fi
+
+          echo "tags<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$TAGS" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "🏷️  Tags a publicar:"
+          echo "$TAGS"
+
+      - name: "Construir y publicar imagen estable: ${{ matrix.service }}"
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: ${{ matrix.service }}/Dockerfile
+          target: ci
+          build-args: |
+            JAR_FILE=${{ steps.meta.outputs.jar_file }}
+          push: true
+          # "Build Once, Tag Many": un solo build, múltiples tags en el mismo push.
+          # Esto evita reconstruir la imagen para cada tag y garantiza que todos
+          # los tags apunten al mismo digest (verificable con docker inspect).
+          tags: ${{ steps.meta.outputs.tags }}
+          # Caché GHA con scope por servicio (compartido con el pipeline de PR
+          # para acelerar builds posteriores)
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 4: Limpieza de Tags Efímeros de PR
+  # ──────────────────────────────────────────────────────────────────────────
+  # Los tags pr-N publicados por docker-build en el pipeline de PR son
+  # temporales. Una vez mergeado el PR, su imagen ya no es necesaria y ocupa
+  # cuota de almacenamiento en GHCR (límite: cuota compartida en repos privados).
+  #
+  # PREREQUISITOS Y LIMITACIONES DE PERMISOS:
+  #   - secrets.GITHUB_TOKEN NO puede borrar versiones de paquetes GHCR.
+  #     La API de GitHub exige un token con scope 'delete:packages':
+  #       · PAT Classic con delete:packages, ó
+  #       · GitHub App con permiso de administración de paquetes.
+  #     Configurar el secreto 'PACKAGES_CLEANUP_PAT' en el repositorio.
+  #     Si no existe, el job continúa con GITHUB_TOKEN pero las llamadas
+  #     DELETE devolverán 403 y el log registrará el aviso sin fallar el pipeline.
+  #
+  # RUTAS DE API GHCR:
+  #   - Cuenta personal (este repo): /users/{owner}/packages/container/{pkg}/versions
+  #   El nombre del paquete contiene '/' (repo/servicio) → se codifica como '%2F'
+  #   en la URL para no partir el path REST.
+  #
+  # TIPOS DE MERGE SOPORTADOS:
+  #   - Merge commit estándar: "Merge pull request #N from ..."  ← detectado
+  #   - Squash merge / Rebase merge: sin número de PR en el mensaje
+  #     → el job omite la limpieza sin error (has-pr=false)
+  # ──────────────────────────────────────────────────────────────────────────
+  cleanup-pr-tags:
+    needs: [detect-services, docker-publish]
+    # Ejecutar siempre después de docker-publish, incluso si falló algún servicio,
+    # para limpiar tags parcialmente publicados.
+    if: ${{ always() && needs.detect-services.outputs.any-docker-service == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # [BUG-1 FIX] El job corre en una VM limpia. Sin checkout, el workspace
+      # está vacío y el glob */pom.xml no produce ninguna coincidencia → el
+      # bucle termina sin intentar borrar ningún tag.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Extraer número de PR del mensaje de commit de merge
+        id: extract-pr
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          echo "📝 Commit message: ${COMMIT_MSG%%$'\n'*}"  # Solo primera línea
+
+          # Formato estándar de GitHub para merge commits:
+          # "Merge pull request #N from owner/branch"
+          if [[ "$COMMIT_MSG" =~ Merge\ pull\ request\ \#([0-9]+) ]]; then
+            PR_NUMBER="${BASH_REMATCH[1]}"
+            echo "🔍 PR detectado: #${PR_NUMBER}"
+            echo "pr-number=${PR_NUMBER}" >> "$GITHUB_OUTPUT"
+            echo "has-pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ℹ️  No se detectó número de PR (squash/rebase merge o push directo). Omitiendo limpieza."
+            echo "has-pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Eliminar tags pr-N de GHCR
+        if: ${{ steps.extract-pr.outputs.has-pr == 'true' }}
+        continue-on-error: true
+        env:
+          # [BUG-2 FIX] GITHUB_TOKEN no puede borrar versiones de paquetes GHCR
+          # (devuelve 403 incluso con packages: write). Se requiere un PAT Classic
+          # con scope 'delete:packages' configurado como secreto del repositorio.
+          # Si PACKAGES_CLEANUP_PAT no existe, el fallback es GITHUB_TOKEN: el
+          # job logeará el aviso 403 pero no fallará el pipeline (continue-on-error).
+          GH_TOKEN: ${{ secrets.PACKAGES_CLEANUP_PAT || secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.extract-pr.outputs.pr-number }}
+        run: |
+          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          PR_TAG="pr-${PR_NUMBER}"
+
+          # Repo alojado en cuenta personal → la base de la API es siempre users/.
+          # (Para repos de organización sería orgs/${REPO_OWNER}.)
+          API_BASE="users/${REPO_OWNER}"
+
+          echo "🧹 Eliminando tags '${PR_TAG}' de GHCR [${API_BASE}]..."
+
+          for pom in */pom.xml; do
+            [ -f "$pom" ] || continue
+            dir=$(dirname "$pom")
+            [[ "$dir" == "common-lib" || "$dir" == "integration-tests" || "$dir" == "adr-generator" ]] && continue
+            [ -f "$dir/Dockerfile" ] || continue
+
+            # [BUG-3 FIX] El nombre del paquete tiene forma "repo/servicio".
+            # En URLs REST, la '/' interior se debe codificar como '%2F' para
+            # no partir el path y que la API resuelva el recurso correctamente.
+            PACKAGE_SLUG="${REPO_NAME}%2F${dir}"
+            API_PATH="${API_BASE}/packages/container/${PACKAGE_SLUG}/versions"
+
+            echo "  🗑️  Buscando tag '${PR_TAG}' en ${REPO_OWNER}/${REPO_NAME}/${dir}..."
+
+            VERSION_ID=$(gh api "${API_PATH}" \
+              --jq ".[] | select(.metadata.container.tags[] == \"${PR_TAG}\") | .id" \
+              2>/dev/null || echo "")
+
+            if [ -n "$VERSION_ID" ]; then
+              if gh api --method DELETE "${API_PATH%/versions}/${VERSION_ID}" 2>/dev/null; then
+                echo "  ✅ Tag '${PR_TAG}' eliminado de ${dir} (version_id=${VERSION_ID})"
+              else
+                echo "  ⚠️  No se pudo eliminar '${PR_TAG}' de ${dir}."
+                echo "     Verificar que PACKAGES_CLEANUP_PAT tiene scope 'delete:packages'."
+              fi
+            else
+              echo "  ℹ️  Tag '${PR_TAG}' no encontrado en ${dir} (ya eliminado o no existía)"
+            fi
+          done
+
+          echo "✅ Limpieza de tags efímeros completada."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 5: Resumen del Pipeline de Merge
+  # ──────────────────────────────────────────────────────────────────────────
+  # Produce un resumen legible del estado de publicación para el historial
+  # de GitHub Actions. Útil para auditoría y diagnóstico rápido.
+  # ──────────────────────────────────────────────────────────────────────────
+  merge-summary:
+    needs: [detect-services, build-and-verify, docker-publish, cleanup-pr-tags]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Generar resumen del pipeline de merge
+        run: |
+          echo "## 🚀 Merge Pipeline — Resumen" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Campo | Valor |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Rama** | \`${{ github.ref_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Branch tag** | \`${{ needs.detect-services.outputs.branch-tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **SHA tag** | \`sha-${{ needs.detect-services.outputs.sha-short }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| **Actor** | @${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Estado de Jobs" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Job | Resultado |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| detect-services | ${{ needs.detect-services.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| build-and-verify | ${{ needs.build-and-verify.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| docker-publish | ${{ needs.docker-publish.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| cleanup-pr-tags | ${{ needs.cleanup-pr-tags.result }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "${{ needs.docker-publish.result }}" == "success" ]]; then
+            echo "✅ **Imágenes publicadas exitosamente en GHCR.**" >> "$GITHUB_STEP_SUMMARY"
+            echo "Los PRs futuros hacia \`${{ github.ref_name }}\` podrán resolver imágenes base desde \`:${{ needs.detect-services.outputs.branch-tag }}\`." >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "${{ needs.docker-publish.result }}" == "failure" ]]; then
+            echo "❌ **Fallo en la publicación de imágenes.** Los PRs futuros no podrán resolver imágenes base hasta que este pipeline se corrija y vuelva a ejecutar." >> "$GITHUB_STEP_SUMMARY"
+          fi
