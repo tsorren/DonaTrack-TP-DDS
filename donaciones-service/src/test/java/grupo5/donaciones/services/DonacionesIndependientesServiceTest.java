@@ -31,6 +31,7 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.Vencida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.services.impl.DonacionesIndependientesService;
 import grupo5.donaciones.services.mappers.DonacionIndependienteMapper;
@@ -44,6 +45,7 @@ import org.springframework.context.ApplicationEventPublisher;
 class DonacionesIndependientesServiceTest {
 
   private IDonacionesIndependientesRepository repositoryMock;
+  private IDonacionesRepository donacionesRepositoryMock;
   private INecesidadesRepository necesidadRepositoryMock;
   private DonacionIndependienteMapper mapperMock;
   private ApplicationEventPublisher eventPublisherMock;
@@ -54,6 +56,7 @@ class DonacionesIndependientesServiceTest {
   @BeforeEach
   void setUp() {
     repositoryMock = mock(IDonacionesIndependientesRepository.class);
+    donacionesRepositoryMock = mock(IDonacionesRepository.class);
     necesidadRepositoryMock = mock(INecesidadesRepository.class);
     mapperMock = mock(DonacionIndependienteMapper.class);
     eventPublisherMock = mock(ApplicationEventPublisher.class);
@@ -86,7 +89,11 @@ class DonacionesIndependientesServiceTest {
 
     service =
         new DonacionesIndependientesService(
-            repositoryMock, necesidadRepositoryMock, mapperMock, eventPublisherMock);
+            repositoryMock,
+            donacionesRepositoryMock,
+            necesidadRepositoryMock,
+            mapperMock,
+            eventPublisherMock);
   }
 
   @Test

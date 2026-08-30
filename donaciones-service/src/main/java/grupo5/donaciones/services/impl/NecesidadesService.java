@@ -56,6 +56,23 @@ public class NecesidadesService implements INecesidadesService {
         .toList();
   }
 
+  @Override
+  public NecesidadDTO actualizar(UUID id, NecesidadDTO dto) {
+    Necesidad necesidad =
+        necesidadRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    necesidad.actualizar(dto.descripcion(), dto.cantidadNecesitada());
+    necesidadRepository.save(necesidad);
+    return necesidad.toDTO();
+  }
+
+  @Override
+  public void eliminar(UUID id) {
+    Necesidad necesidad =
+        necesidadRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    necesidad.desactivar();
+    necesidadRepository.save(necesidad);
+  }
+
   // MAPPER INPUT (dto -> dominio)
   private Necesidad convertirDTOANecesidad(NecesidadDTO dto) {
 

@@ -102,6 +102,27 @@ class AlgoritmoPrioridadSubAtendidosTest {
   }
 
   @Test
+  void ordenarNecesidades_conNecesidadRecurrenteConDonaciones_debeConsiderarDonacionesRecientes() {
+    UUID entidadConRecurrente = UUID.randomUUID();
+    UUID entidadSinDonaciones = UUID.randomUUID();
+
+    grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente necesidadRecurrente =
+        NecesidadMother.recurrenteSemanal(entidadConRecurrente, subcategoria.getId(), 10);
+    necesidadRecurrente.asignarDonacion(donacionEnSubcategoria);
+
+    NecesidadExtraordinaria necesidadSinDonaciones =
+        NecesidadMother.extraordinaria(entidadSinDonaciones, subcategoria.getId(), 5);
+
+    List<Necesidad> necesidades =
+        new ArrayList<>(List.of(necesidadRecurrente, necesidadSinDonaciones));
+
+    List<Necesidad> resultado = algoritmo.ordenarNecesidades(necesidades);
+
+    assertEquals(necesidadSinDonaciones, resultado.get(0));
+    assertEquals(necesidadRecurrente, resultado.get(1));
+  }
+
+  @Test
   void ordenarNecesidades_cuandoNingunaTieneEntidad_debeRetornarLasMismas() {
     NecesidadExtraordinaria necesidad1 =
         NecesidadMother.extraordinaria(UUID.randomUUID(), subcategoria.getId(), 5);

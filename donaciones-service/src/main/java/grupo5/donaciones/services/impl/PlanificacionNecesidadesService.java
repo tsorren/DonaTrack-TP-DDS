@@ -21,7 +21,7 @@ public class PlanificacionNecesidadesService implements IPlanificacionNecesidade
   public void generarNuevosPeriodosParaNecesidadesRecurrentes() {
     LocalDate hoy = LocalDate.now(ZoneId.systemDefault());
     List<NecesidadRecurrente> modificadas =
-        necesidadRepository.findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue().stream()
+        necesidadRepository.findByActivaTrueAndRecurrenteTrue().stream()
             .map(n -> (NecesidadRecurrente) n)
             .filter(n -> n.renovarPeriodoSiCorresponde(hoy))
             .toList();

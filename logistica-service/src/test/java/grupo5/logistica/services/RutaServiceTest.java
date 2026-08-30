@@ -214,7 +214,8 @@ class RutaServiceTest {
         new EventoRutaIniciada(rutaId, camionId, List.of(entregaId), java.time.LocalDateTime.now());
     when(ruta.getDomainEvents()).thenReturn(List.of(evento));
 
-    when(rutaMapper.toResponseDTO(ruta)).thenReturn(mock(RutaResponseDTO.class));
+    RutaResponseDTO response = mock(RutaResponseDTO.class);
+    when(rutaMapper.toResponseDTO(ruta)).thenReturn(response);
 
     RutaResponseDTO resultado = rutasService.cambiarEstado(rutaId, dto);
 

@@ -201,7 +201,7 @@ class DonacionesIndependientesControllerTest {
             List.of(),
             5);
 
-    when(service.obtenerTodas()).thenReturn(List.of(response));
+    when(service.obtenerConFiltros(null, null, null)).thenReturn(List.of(response));
 
     mockMvc
         .perform(get("/donaciones-independientes"))

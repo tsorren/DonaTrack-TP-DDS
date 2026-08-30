@@ -58,4 +58,31 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   public List<EntidadBeneficiariaOutputDTO> obtenerTodas() {
     return repository.findAll().stream().map(mapper::toOutputDTO).toList();
   }
+
+  @Override
+  public EntidadBeneficiariaOutputDTO actualizarEntidad(
+      UUID id, EntidadBeneficiariaInputDTO input) {
+    repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+
+    Persona persona =
+        personasRepository
+            .findById(input.juridicaId())
+            .orElseThrow(() -> new RecursoNoEncontradoException(input.juridicaId()));
+
+    if (!(persona instanceof Juridica)) {
+      throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
+    }
+
+    EntidadBeneficiaria actualizada = new EntidadBeneficiaria(id, input.juridicaId());
+    EntidadBeneficiaria guardada = repository.save(actualizada);
+
+    return mapper.toOutputDTO(guardada);
+  }
+
+  @Override
+  public void eliminarEntidad(UUID id) {
+    EntidadBeneficiaria entidad =
+        repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    repository.delete(entidad);
+  }
 }

@@ -68,6 +68,27 @@ public class MedioDeContactoMapper {
     };
   }
 
+  public MedioDeContactoInputDTO toInputDTO(MedioDeContacto entity) {
+    if (entity == null) {
+      return null;
+    }
+    return switch (entity) {
+      case Correo c -> new CorreoInputDTO(c.getEsPredeterminado(), c.getDireccionCorreo());
+      case Telefono t -> {
+        if (t.getTipo() == TipoTelefono.WHATSAPP) {
+          yield new WhatsAppInputDTO(
+              t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
+        } else {
+          yield new TelefonoInputDTO(
+              t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
+        }
+      }
+      default ->
+          throw new IllegalArgumentException(
+              "Tipo de medio de contacto no soportado: " + entity.getClass().getSimpleName());
+    };
+  }
+
   private static Telefono populateTelefono(
       Telefono tel, String caracteristica, String codigoArea, String numero, TipoTelefono tipo) {
     tel.setCaracteristica(caracteristica);

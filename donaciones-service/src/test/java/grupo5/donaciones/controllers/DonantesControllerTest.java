@@ -168,4 +168,18 @@ class DonantesControllerTest {
         .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
         .andExpect(jsonPath("$.errors[0].field").value("path"));
   }
+
+  @Test
+  void obtenerArchivoDonantes_DeberiaRetornarOkYDto() throws Exception {
+    UUID archivoId = UUID.randomUUID();
+    ArchivoOutputDTO output = new ArchivoOutputDTO(archivoId, "/ruta/donantes.csv", "PROCESADO");
+
+    when(archivoDonantesService.obtenerPorId(archivoId)).thenReturn(output);
+
+    mockMvc
+        .perform(get("/api/donantes/archivos/{id}", archivoId))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(archivoId.toString()))
+        .andExpect(jsonPath("$.estado").value("PROCESADO"));
+  }
 }

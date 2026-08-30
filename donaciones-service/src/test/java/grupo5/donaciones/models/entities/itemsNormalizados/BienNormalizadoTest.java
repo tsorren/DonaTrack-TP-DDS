@@ -16,12 +16,14 @@ class BienNormalizadoTest {
   void crearAceptado_conVencimientoNoPermitido_debeMantenerLaValidacion() {
     Bien bien = new Bien("alimento", null, LocalDate.now().plusDays(1), null, 1.0, 1.0);
 
+    UUID normalizadoId = UUID.randomUUID();
+
     ValidationException exception =
         assertThrows(
             ValidationException.class,
             () ->
                 new BienNormalizado(
-                    bien, UUID.randomUUID(), 1.0, EstadoNormalizacion.ACEPTADO, false, false));
+                    bien, normalizadoId, 1.0, EstadoNormalizacion.ACEPTADO, false, false));
 
     assertEquals(ErrorCatalog.BIEN_VENCIMIENTO_NO_PERMITIDO, exception.getError());
   }

@@ -32,6 +32,12 @@ public class ItemDonacionNormalizadoController implements IItemDonacionNormaliza
   }
 
   @Override
+  @GetMapping("/{id}")
+  public ResponseEntity<ItemDonacionNormalizadoOutputDTO> obtenerPorId(@PathVariable UUID id) {
+    return ResponseEntity.ok(service.obtener(id));
+  }
+
+  @Override
   @PatchMapping("/{id}")
   public ResponseEntity<ItemDonacionNormalizadoOutputDTO> actualizarEstado(
       @PathVariable UUID id, @Valid @RequestBody ItemDonacionNormalizadoPatchDTO dto) {
