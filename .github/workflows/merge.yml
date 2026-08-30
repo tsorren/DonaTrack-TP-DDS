@@ -321,28 +321,24 @@ jobs:
   #     → el job omite la limpieza sin error (has-pr=false)
   # ──────────────────────────────────────────────────────────────────────────
   cleanup-pr-tags:
-    needs: [detect-services, docker-publish]
-    # Ejecutar siempre después de docker-publish, incluso si falló algún servicio,
-    # para limpiar tags parcialmente publicados.
+    needs: [ detect-services, docker-publish ]
     if: ${{ always() && needs.detect-services.outputs.any-docker-service == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
-      # [BUG-1 FIX] El job corre en una VM limpia. Sin checkout, el workspace
-      # está vacío y el glob */pom.xml no produce ninguna coincidencia → el
-      # bucle termina sin intentar borrar ningún tag.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Extraer número de PR del mensaje de commit de merge
         id: extract-pr
+        # FIX S7630: Se asigna a env para evitar script injection
+        env:
+          RAW_COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
-          echo "📝 Commit message: ${COMMIT_MSG%%$'\n'*}"  # Solo primera línea
-
-          # Formato estándar de GitHub para merge commits:
-          # "Merge pull request #N from owner/branch"
+          COMMIT_MSG="$RAW_COMMIT_MSG"
+          echo "📝 Commit message: ${COMMIT_MSG%%$'\n'*}"
+          
           if [[ "$COMMIT_MSG" =~ Merge\ pull\ request\ \#([0-9]+) ]]; then
             PR_NUMBER="${BASH_REMATCH[1]}"
             echo "🔍 PR detectado: #${PR_NUMBER}"
@@ -357,42 +353,33 @@ jobs:
         if: ${{ steps.extract-pr.outputs.has-pr == 'true' }}
         continue-on-error: true
         env:
-          # [BUG-2 FIX] GITHUB_TOKEN no puede borrar versiones de paquetes GHCR
-          # (devuelve 403 incluso con packages: write). Se requiere un PAT Classic
-          # con scope 'delete:packages' configurado como secreto del repositorio.
-          # Si PACKAGES_CLEANUP_PAT no existe, el fallback es GITHUB_TOKEN: el
-          # job logeará el aviso 403 pero no fallará el pipeline (continue-on-error).
           GH_TOKEN: ${{ secrets.PACKAGES_CLEANUP_PAT || secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.extract-pr.outputs.pr-number }}
+          RAW_OWNER: ${{ github.repository_owner }}
+          RAW_REPO: ${{ github.event.repository.name }}
         run: |
-          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          REPO_NAME=$(echo "${{ github.event.repository.name }}" | tr '[:upper:]' '[:lower:]')
+          REPO_OWNER=$(echo "$RAW_OWNER" | tr '[:upper:]' '[:lower:]')
+          REPO_NAME=$(echo "$RAW_REPO" | tr '[:upper:]' '[:lower:]')
           PR_TAG="pr-${PR_NUMBER}"
-
-          # Repo alojado en cuenta personal → la base de la API es siempre users/.
-          # (Para repos de organización sería orgs/${REPO_OWNER}.)
+          
           API_BASE="users/${REPO_OWNER}"
-
           echo "🧹 Eliminando tags '${PR_TAG}' de GHCR [${API_BASE}]..."
-
+          
           for pom in */pom.xml; do
             [ -f "$pom" ] || continue
             dir=$(dirname "$pom")
             [[ "$dir" == "common-lib" || "$dir" == "integration-tests" || "$dir" == "adr-generator" ]] && continue
             [ -f "$dir/Dockerfile" ] || continue
-
-            # [BUG-3 FIX] El nombre del paquete tiene forma "repo/servicio".
-            # En URLs REST, la '/' interior se debe codificar como '%2F' para
-            # no partir el path y que la API resuelva el recurso correctamente.
+          
             PACKAGE_SLUG="${REPO_NAME}%2F${dir}"
             API_PATH="${API_BASE}/packages/container/${PACKAGE_SLUG}/versions"
-
+          
             echo "  🗑️  Buscando tag '${PR_TAG}' en ${REPO_OWNER}/${REPO_NAME}/${dir}..."
-
+          
             VERSION_ID=$(gh api "${API_PATH}" \
               --jq ".[] | select(.metadata.container.tags[] == \"${PR_TAG}\") | .id" \
               2>/dev/null || echo "")
-
+          
             if [ -n "$VERSION_ID" ]; then
               if gh api --method DELETE "${API_PATH%/versions}/${VERSION_ID}" 2>/dev/null; then
                 echo "  ✅ Tag '${PR_TAG}' eliminado de ${dir} (version_id=${VERSION_ID})"
@@ -404,7 +391,7 @@ jobs:
               echo "  ℹ️  Tag '${PR_TAG}' no encontrado en ${dir} (ya eliminado o no existía)"
             fi
           done
-
+          
           echo "✅ Limpieza de tags efímeros completada."
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -414,37 +401,49 @@ jobs:
   # de GitHub Actions. Útil para auditoría y diagnóstico rápido.
   # ──────────────────────────────────────────────────────────────────────────
   merge-summary:
-    needs: [detect-services, build-and-verify, docker-publish, cleanup-pr-tags]
+    needs: [ detect-services, build-and-verify, docker-publish, cleanup-pr-tags ]
     if: always()
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - name: Generar resumen del pipeline de merge
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          BRANCH_TAG: ${{ needs.detect-services.outputs.branch-tag }}
+          SHA_SHORT: ${{ needs.detect-services.outputs.sha-short }}
+          COMMIT_SHA: ${{ github.sha }}
+          ACTOR: ${{ github.actor }}
+          RES_DETECT: ${{ needs.detect-services.result }}
+          RES_BUILD: ${{ needs.build-and-verify.result }}
+          RES_DOCKER: ${{ needs.docker-publish.result }}
+          RES_CLEANUP: ${{ needs.cleanup-pr-tags.result }}
         run: |
-          echo "## 🚀 Merge Pipeline — Resumen" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Campo | Valor |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Rama** | \`${{ github.ref_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Branch tag** | \`${{ needs.detect-services.outputs.branch-tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **SHA tag** | \`sha-${{ needs.detect-services.outputs.sha-short }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Commit** | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Actor** | @${{ github.actor }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Estado de Jobs" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Job | Resultado |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---|---|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| detect-services | ${{ needs.detect-services.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| build-and-verify | ${{ needs.build-and-verify.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| docker-publish | ${{ needs.docker-publish.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| cleanup-pr-tags | ${{ needs.cleanup-pr-tags.result }} |" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-
-          if [[ "${{ needs.docker-publish.result }}" == "success" ]]; then
+          {
+            echo "## 🚀 Merge Pipeline — Resumen"
+            echo ""
+            echo "| Campo | Valor |"
+            echo "|---|---|"
+            echo "| **Rama** | \`$REF_NAME\` |"
+            echo "| **Branch tag** | \`$BRANCH_TAG\` |"
+            echo "| **SHA tag** | \`sha-$SHA_SHORT\` |"
+            echo "| **Commit** | \`$COMMIT_SHA\` |"
+            echo "| **Actor** | @$ACTOR |"
+            echo ""
+            echo "### Estado de Jobs"
+            echo ""
+            echo "| Job | Resultado |"
+            echo "|---|---|"
+            echo "| detect-services | $RES_DETECT |"
+            echo "| build-and-verify | $RES_BUILD |"
+            echo "| docker-publish | $RES_DOCKER |"
+            echo "| cleanup-pr-tags | $RES_CLEANUP |"
+            echo ""
+          } >> "$GITHUB_STEP_SUMMARY"
+          
+          if [[ "$RES_DOCKER" == "success" ]]; then
             echo "✅ **Imágenes publicadas exitosamente en GHCR.**" >> "$GITHUB_STEP_SUMMARY"
-            echo "Los PRs futuros hacia \`${{ github.ref_name }}\` podrán resolver imágenes base desde \`:${{ needs.detect-services.outputs.branch-tag }}\`." >> "$GITHUB_STEP_SUMMARY"
-          elif [[ "${{ needs.docker-publish.result }}" == "failure" ]]; then
+            echo "Los PRs futuros hacia \`$REF_NAME\` podrán resolver imágenes base desde \`:$BRANCH_TAG\`." >> "$GITHUB_STEP_SUMMARY"
+          elif [[ "$RES_DOCKER" == "failure" ]]; then
             echo "❌ **Fallo en la publicación de imágenes.** Los PRs futuros no podrán resolver imágenes base hasta que este pipeline se corrija y vuelva a ejecutar." >> "$GITHUB_STEP_SUMMARY"
           fi
