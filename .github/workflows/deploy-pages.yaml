@@ -36,12 +36,16 @@ jobs:
           touch staging/.nojekyll
           
           # Copiar Documentador
-          if [ -d "docs/documentador" ]; then
+          if [ -d "docs/herramientas/documentador" ]; then
+            cp -a docs/herramientas/documentador/. staging/documentador/
+          elif [ -d "docs/documentador" ]; then
             cp -a docs/documentador/. staging/documentador/
           fi
           
           # Copiar Hub a la raíz de staging
-          if [ -d "docs/hub" ]; then
+          if [ -d "docs/herramientas/hub" ]; then
+            cp -a docs/herramientas/hub/. staging/
+          elif [ -d "docs/hub" ]; then
             cp -a docs/hub/. staging/
           fi
           
