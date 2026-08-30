@@ -82,6 +82,11 @@ jobs:
 
       - name: Descubrir servicios y calcular tags
         id: discover
+        # S7630: github.ref_name es controlable por el usuario (nombre de rama).
+        # Se asigna a variable de entorno para que el shell lo trate como literal.
+        env:
+          GH_REF_NAME: ${{ github.ref_name }}
+          GH_SHA: ${{ github.sha }}
         run: |
           ALL_SERVICES=()
           DOCKER_SERVICES=()
@@ -122,11 +127,11 @@ jobs:
           # Tag de rama: normalizar a minúsculas y reemplazar '/' por '-'
           # para cumplir con especificación OCI de nombres de imagen.
           # Ejemplos: ENTREGA_2 → entrega_2 | feature/x → feature-x
-          BRANCH_TAG=$(echo "${{ github.ref_name }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
+          BRANCH_TAG=$(echo "$GH_REF_NAME" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
           echo "branch-tag=${BRANCH_TAG}" >> "$GITHUB_OUTPUT"
 
           # SHA corto (7 chars): inmutable, ideal para rollback y trazabilidad
-          SHA_SHORT="${{ github.sha }}"
+          SHA_SHORT="$GH_SHA"
           echo "sha-short=${SHA_SHORT:0:7}" >> "$GITHUB_OUTPUT"
 
           echo "🏷️  Branch tag: ${BRANCH_TAG}"
@@ -162,10 +167,12 @@ jobs:
           cache: 'maven'
 
       - name: "Compilar, testear y empaquetar: ${{ matrix.service }}"
+        env:
+          SERVICE: ${{ matrix.service }}
         run: |
-          echo "🔨 Compilando ${{ matrix.service }} desde estado mergeado..."
+          echo "🔨 Compilando $SERVICE desde estado mergeado..."
           mvn -B clean verify \
-            -pl ${{ matrix.service }} -am \
+            -pl "$SERVICE" -am \
             -Dspotless.check.skip=true
 
       - name: Subir JAR compilado
@@ -223,9 +230,15 @@ jobs:
 
       - name: Calcular tags y seleccionar JAR ejecutable
         id: meta
+        env:
+          SERVICE: ${{ matrix.service }}
+          GH_REPOSITORY: ${{ github.repository }}
+          GH_REF_NAME: ${{ github.ref_name }}
+          BRANCH_TAG: ${{ needs.detect-services.outputs.branch-tag }}
+          SHA_SHORT: ${{ needs.detect-services.outputs.sha-short }}
         run: |
           # Selección determinista del fat JAR (mismo criterio que main.yml FIX-4)
-          JAR_PATH=$(find ${{ matrix.service }}/target \
+          JAR_PATH=$(find "$SERVICE/target" \
             -maxdepth 1 \
             -name "*.jar" \
             ! -name "*sources.jar" \
@@ -235,24 +248,23 @@ jobs:
             | head -n 1)
 
           if [ -z "$JAR_PATH" ]; then
-            echo "::error::No se encontró JAR ejecutable en ${{ matrix.service }}/target/"
+            echo "::error::No se encontró JAR ejecutable en $SERVICE/target/"
             exit 1
           fi
           echo "📦 JAR seleccionado: $JAR_PATH"
           echo "jar_file=$JAR_PATH" >> "$GITHUB_OUTPUT"
 
           # Base de la imagen en minúsculas (requisito OCI)
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          IMAGE_BASE="ghcr.io/${REPO_LOWER}/${{ matrix.service }}"
+          REPO_LOWER=$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          IMAGE_BASE="ghcr.io/${REPO_LOWER}/${SERVICE}"
 
-          BRANCH_TAG="${{ needs.detect-services.outputs.branch-tag }}"
-          SHA_TAG="sha-${{ needs.detect-services.outputs.sha-short }}"
+          SHA_TAG="sha-${SHA_SHORT}"
 
           # Construir lista de tags multilínea para build-push-action
           TAGS="${IMAGE_BASE}:${BRANCH_TAG}"$'\n'"${IMAGE_BASE}:${SHA_TAG}"
 
           # :latest solo cuando el merge es a main (estado de producción)
-          if [[ "${{ github.ref_name }}" == "main" ]]; then
+          if [[ "$GH_REF_NAME" == "main" ]]; then
             TAGS="${TAGS}"$'\n'"${IMAGE_BASE}:latest"
             echo "🏷️  Publicando también :latest (push a main)"
           fi
