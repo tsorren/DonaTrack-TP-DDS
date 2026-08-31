@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: club_user
       POSTGRES_PASSWORD: club_pass
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       # Ejecuta tu script al crear la base de datos por primera vez:
