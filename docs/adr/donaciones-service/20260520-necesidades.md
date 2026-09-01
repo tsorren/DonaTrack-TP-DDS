@@ -1,8 +1,11 @@
 # Necesidades
 
-- Status: rejected
+- Status: superseded by [20260609-gestion-de-necesidades-y-periodos.md](./20260609-gestion-de-necesidades-y-periodos.md)
 - Date: 2026-05-20
 - Deciders: Decisión Grupal
+
+> **Nota de Evolución y Superación Histórica (2026-06-09):**
+> Esta decisión inicial de modelado (adoptada para la Entrega 1) carecía de soporte para la dimensión temporal y los ciclos de renovación en demandas periódicas. Fue formalmente **superada y reemplazada** por [20260609-gestion-de-necesidades-y-periodos.md](./20260609-gestion-de-necesidades-y-periodos.md), la cual introdujo la entidad `PeriodoNecesidad` y el componente programado `PlanificadorDeNecesidades`.
 
 ## Contexto y Problema
 
@@ -35,3 +38,4 @@ con lógica y atributos especificos.
 * Estandariza las necesidades
 * Permite extender el dominio a nuevos tipos de necesidades fácilmente, solo se necesita determinar la lógica de
   cantidadAcumulada
+
