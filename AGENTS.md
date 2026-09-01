@@ -7,24 +7,16 @@
 
 ---
 
+> [!NOTE]
+> Este es el archivo canónico de instrucciones para agentes del repositorio DonaTrack. *This is the canonical vendor-neutral agent instruction file for this repository.*
+
+---
+
 ## 1. Propósito y Alcance Operativo
 
 Este documento establece las **reglas de gobierno, invariantes arquitectónicas, protocolo de razonamiento y criterios de validación** que rigen la interacción con el repositorio DonaTrack.
 
 `AGENTS.md` **no es un inventario ni una wiki documental**; actúa como el **núcleo de políticas operativas**. Los detalles de diseño, requerimientos de cátedra y decisiones históricas residen en sus respectivos documentos en `docs/`.
-
-```text
-                    ┌───────────────────────────────────────────────┐
-                    │                   AGENTS.md                   │
-                    │      (Gobernanza, Invariantes y Workflow)     │
-                    └───────────────────────┬───────────────────────┘
-                                            │
-                ┌───────────────────────────┼───────────────────────────┐
-                ▼                           ▼                           ▼
-        [docs/README.md]            [docs/adr/ & DEUDA]         [Código & Tests]
-       Índice y Arquitectura        Decisiones y Deuda         Verdad Ejecutable
-
-```
 
 ---
 
@@ -66,50 +58,29 @@ Para evitar alucinaciones, conclusiones precipitadas y re-evaluaciones redundant
 
 ### 4.1 Dominio y Encapsulamiento
 
-* **`[INVARIANT]` State Pattern de Donaciones:** Las transiciones de estado de `DonacionIndependiente` deben preservar rigurosamente:
-1. Validación de precondiciones de negocio antes de transicionar.
-2. Imposibilidad de ejecutar transiciones inválidas o saltarse estados intermedios.
-3. Mantenimiento consistente e inmutable del historial de cambios de estado.
-4. Encapsulamiento de la lógica de transición dentro del dominio (evitar mutaciones directas desde servicios externos).
+* **`[INVARIANT]` Patrones Arquitectónicos Establecidos:** Los patrones de diseño que gobiernan la lógica de negocio de un servicio (State Machine, Template Method, Strategy, etc.) no deben reemplazarse silenciosamente. Antes de modificar un patrón existente: cargar el contexto del servicio desde [`docs/context-index.md`](docs/context-index.md), demostrar equivalencia mediante tests y formalizar un ADR.
 
-
-* *Nota:* No sustituir el mecanismo actual sin demostrar mediante tests que preserva estas invariantes y sin el correspondiente ADR.
-
-
-* **`[CONSTRAINT]` Dependencias del Dominio:** Las entidades y agregados de dominio no deben acoplarse a DTOs de transporte, clientes HTTP ni dependencias de persistencia JPA/Hibernate durante Fase 1.
+* **`[CONSTRAINT]` Pureza del Dominio:** Las entidades y agregados de dominio no deben acoplarse a DTOs de transporte, clientes HTTP ni detalles de infraestructura de persistencia. Constraints temporales activas por servicio: [`docs/context-index.md`](docs/context-index.md).
 
 ### 4.2 Arquitectura de Capas y Microservicios
 
 * **`[INVARIANT]` Controladores como Adaptadores Puros:** Los `Controllers` son adaptadores de entrada HTTP. Su única responsabilidad es recibir requests, validar DTOs de frontera, delegar en Application Services y mapear respuestas. No deben contener lógica de dominio ni orquestación compleja.
-* **`[INVARIANT]` Criterio de Pertenencia a `common-lib` (Shared Kernel):** Una abstracción solo pertenece a `common-lib` si es utilizada por múltiples bounded contexts **y su semántica no depende de ningún dominio específico** (ej. `CrudRepository<T>`, jerarquía base de excepciones, helpers de logging/tracing). Queda prohibido introducir entidades de dominio, DTOs de negocio o lógica particular.
-* **`[PHASE-1 CONSTRAINT]` Persistencia en Fase 1:** La persistencia se resuelve en memoria mediante `CrudRepositoryEnMemoria<T>` (`ConcurrentHashMap`). No incorporar JPA/Hibernate ni bases de datos SQL en esta fase salvo indicación explícita.
-* **`[TARGET ARCHITECTURE]` Persistencia Futura:** El diseño del dominio y los repositorios debe permitir migrar la persistencia a SQL en fases posteriores sin contaminar el modelo con detalles de infraestructura ni requerir reescrituras de la lógica de negocio.
-* **`[CONSTRAINT]` Comunicación Inter-Servicios:**
-* Interacciones HTTP sincrónicas $\rightarrow$ Spring Cloud OpenFeign.
-* Eventos de dominio y desacoplamiento temporal $\rightarrow$ Mensajería AMQP vía RabbitMQ (`logistica-service` $\rightarrow$ `donaciones-service`).
+* **`[INVARIANT]` Criterio de `common-lib` (Shared Kernel):** Solo pertenece a `common-lib` lo que es genuinamente compartido por múltiples bounded contexts y semánticamente neutro respecto a cualquier dominio específico. Prohibido introducir entidades de negocio, DTOs o lógica particular. Detalle: [`docs/arquitectura/shared-kernel.md`](docs/arquitectura/shared-kernel.md).
+* **`[CONSTRAINT]` Comunicación Inter-Servicios:** Respetar los mecanismos de comunicación ya establecidos en el repositorio. No introducir nuevos canales de comunicación entre servicios sin ADR. Detalle de contratos por servicio: [`docs/context-index.md`](docs/context-index.md).
 
-
-* **`[INVARIANT]` Trazabilidad e Idempotencia:** Todo flujo distribuido debe conservar la correlación mediante `traceId`, propagándolo explícitamente en headers de Feign y RabbitMQ, y restaurándolo en el MDC del consumidor. Los consumidores AMQP deben ser idempotentes en la capa de aplicación.
+* **`[INVARIANT]` Trazabilidad e Idempotencia:** Todo flujo distribuido debe preservar trazabilidad (propagación de `traceId`) e idempotencia en el procesamiento de eventos distribuidos. Detalle operativo: [`docs/arquitectura/logging-trazabilidad.md`](docs/arquitectura/logging-trazabilidad.md).
 
 ### 4.3 Seguridad Operacional e Integridad de Pruebas
 
 * **`[CONSTRAINT]` Seguridad y Datos Sensibles:** Prohibido introducir credenciales, tokens, contraseñas hardcodeadas o datos personales reales (PII) en código, tests, fixtures, logs o reportes. Toda prueba debe utilizar datos sintéticos.
 * **`[INVARIANT]` Integridad de Quality Gates y Pruebas:** Queda terminantemente prohibido deshabilitar tests, eliminar o debilitar aserciones (`assertTrue(true)`), aumentar tolerancias arbitrariamente o alterar linters/CI para enmascarar regresiones o forzar un build verde.
-* **`[INVARIANT]` Calidad Estática y Cumplimiento de SonarCloud:** Todo cambio en código Java o configuración de CI/CD debe concebirse para superar el Quality Gate de SonarCloud (*Technical Debt = 0* en ramas principales, *Condition Coverage $\ge$ 80%*, *Security/Reliability/Maintainability = A*, *Duplicación $\le$ 3.0%*). Queda prohibido introducir *code smells* conocidos o scripts vulnerables; el agente debe aplicar la auto-auditoría pre-flight consultando la documentación técnica antes de finalizar su intervención.
+* **`[INVARIANT]` Calidad Estática y Cumplimiento de SonarCloud:** Todo cambio en código Java o configuración de CI/CD debe superar el Quality Gate de SonarCloud. Queda prohibido introducir *code smells* o scripts vulnerables. Ejecutar auto-auditoría pre-flight con [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md) antes de finalizar.
 
 ---
 
 ## 5. Criterios de Evaluación y Atributos de Calidad (Fitness Checks)
 
-Antes de proponer o implementar un cambio, someter el diseño a las siguientes preguntas operacionales:
-
-| Vector de Calidad | Pregunta de Verificación (Fitness Check) |
-| --- | --- |
-| **1. Cohesión y Mantenibilidad (SRP / OCP)** | ¿La responsabilidad pertenece naturalmente a la clase asignada y permite extender comportamiento variable sin modificar código base estable? |
-| **2. Acoplamiento e Identidad** | ¿Se evitó compartir referencias a objetos en memoria entre agregados o microservicios, interactuando únicamente mediante IDs estables (UUID)? |
-| **3. Simplicidad Suficiente (KISS / YAGNI)** | ¿La solución resuelve el problema real sin incorporar capas de indirección innecesarias, librerías prescindibles o abstracciones especulativas? |
-| **4. Resiliencia y Manejo de Estado** | ¿El sistema degrada de forma controlada ante la falla de un servicio externo y asume que la memoria del proceso local no es persistencia distribuida? |
-| **5. Testeabilidad y Reversibilidad** | ¿La lógica puede validarse con tests unitarios aislados y el cambio puede revertirse de forma limpia sin dejar inconsistencias colaterales? |
+Antes de proponer un cambio, verificar los Fitness Checks operacionales en [`docs/arquitectura/principios-diseno-arquitectura.md`](docs/arquitectura/principios-diseno-arquitectura.md).
 
 ---
 
@@ -119,7 +90,7 @@ Antes de proponer o implementar un cambio, someter el diseño a las siguientes p
 * **`[CONSTRAINT]` Prohibición de Refactorings Oportunistas No Autorizados:** Si durante la inspección se descubren errores secundarios, antipatrones o deuda técnica no relacionada con la tarea en curso:
 1. **No corregirlos en la misma iteración**, salvo que el hallazgo bloquee la tarea actual o comprometa críticamente la integridad.
 2. Documentarlos formalmente en el reporte de salida como hallazgo o deuda técnica a tratar.
-* **`[INVARIANT]` Integridad del Grafo Documental y Excepción de Alcance:** Cuando una tarea cree, traslade, renombre o modifique artefactos arquitectónicos, especificaciones o guías en `docs/`, la actualización sincronizada de sus índices padre (`docs/README.md`) y del panel canónico de vigencia (`docs/ESTADO_DOCUMENTACION.md`) **es mandatoria y forma parte indivisible del alcance autorizado**. Queda explícitamente aclarado que esta sincronización NO constituye refactoring oportunista ni *scope creep*, sino higiene y completitud obligatoria de la entrega.
+* **`[INVARIANT]` Integridad del Grafo Documental y Excepción de Alcance:** Cuando una tarea cree, traslade, renombre o modifique artefactos arquitectónicos, especificaciones o guías en `docs/`, la actualización sincronizada de `docs/README.md`, `docs/ESTADO_DOCUMENTACION.md` y (cuando corresponda) `docs/adr/DEUDA_TECNICA.md` **es mandatoria y forma parte indivisible del alcance autorizado**. Esta sincronización NO constituye refactoring oportunista ni *scope creep*, sino higiene obligatoria de la entrega.
 * **`[CONSTRAINT]` Control de Dependencias Externas:** No incorporar nuevas librerías en `pom.xml` ni alterar imágenes de Docker sin justificación técnica explícita y aprobación previa.
 * **`[CONSTRAINT]` Minimalismo Suficiente:** Aplicar el **cambio mínimo suficiente** para cumplir el objetivo funcional o arquitectónico, evitando reescrituras estéticas.
 
@@ -138,20 +109,7 @@ Descubrimiento ➔ Análisis      ➔ Diseño        ➔ Implementación ➔ Val
 
 ### Fase 1: Descubrimiento y Baseline
 
-* Inspeccionar el estado real del repositorio:
-```bash
-git status
-git branch --show-current
-git log -n 5 --oneline
-
-```
-
-
-* **Protocolo de Baseline (`BASELINE_GREEN` / `BASELINE_RED`):**
-* Ejecutar los tests de los módulos afectados antes de modificar código.
-* Si el baseline es `BASELINE_RED` (hay tests preexistentes rotos), **aislar y listar los fallos previos en el reporte** para no atribuirlos a la modificación en curso.
-
-
+Inspeccionar el repositorio (`git status`, `git log -n 5 --oneline`). Ejecutar los tests antes de modificar. Establecer `BASELINE_GREEN` o `BASELINE_RED`; si es RED, aislar los fallos preexistentes en el reporte para no atribuirlos a la modificación en curso.
 
 ### Fase 2: Análisis Estructural
 
@@ -163,20 +121,20 @@ git log -n 5 --oneline
 
 * Presentar la solución técnica justificando responsabilidades y trade-offs.
 * Verificar compatibilidad con los ADRs e invariantes arquitectónicas.
-* **Formalización Obligatoria de ADRs en `proposed`:** Si en Fase 2 se activó un trigger arquitectónico, redactar obligatoriamente el ADR en `docs/adr/<servicio>/YYYYMMDD-<slug>.md` con `Status: proposed` bajo formato MADR (analizando mínimo 2 alternativas reales y trade-offs), y registrarlo en `docs/adr/DEUDA_TECNICA.md`.
-* **Regla de Bifurcación Temporal (Presente vs Futuro):** Si el ADR resuelve la tarea actual, la solución se implementa en Fase 4; si constituye un hallazgo o preparación para entregas posteriores (ej. persistencia JPA para Entrega 4), el ADR queda propuesto y catalogado, pero **no se alterará el código funcional actual** para evitar refactors especulativos prematuros.
+* **Formalización de ADRs en `proposed`:** Si en Fase 2 se activó un trigger (§9.1), redactar el ADR en `docs/adr/<servicio>/YYYYMMDD-<slug>.md` y registrarlo en `docs/adr/DEUDA_TECNICA.md`. Ver política completa en §9.
+* **Regla de Bifurcación Temporal (Presente vs Futuro):** Si el ADR resuelve la tarea actual, implementar en Fase 4; si corresponde a entregas futuras, proponer y catalogar sin alterar el código actual.
 * **Interacción Humana Calibrada:** Solicitar confirmación del usuario **únicamente si el cambio modifica o supera el alcance originalmente autorizado**.
 
 ### Fase 4: Implementación Quirúrgica
 
 * Aplicar el cambio mínimo suficiente respetando la encapsulación y los contratos vigentes.
 * Mantener consistencia de nombres y estilo de código.
-* **Auto-revisión de Code Smells:** Durante la codificación, consultar obligatoriamente la guía de errores frecuentes y *smells* recurrentes en [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md) para evitar violaciones estáticas comunes (métodos que deben ser `static`, constructores privados en utilitarios, `@Override`, literales repetidos, shadowing de variables).
+* **Auto-revisión de Code Smells:** Durante la codificación, consultar obligatoriamente la guía de errores frecuentes y *smells* recurrentes en [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md) para evitar violaciones estáticas comunes (métodos que deben ser `static`, constructores privados en utilitarios, `@Override`, literales repetidos, shadowing de variables).
 
 ### Fase 5: Validación Gradual (Quality Gates)
 
 * Ejecutar los Quality Gates correspondientes al alcance (Sección 11).
-* **Verificación de Cobertura Condicional y Pre-Flight Sonar:** Asegurar que todo nuevo camino lógico (`if`, `switch`, ternarios, `Optional`) cuente con pruebas unitarias para todas sus bifurcaciones (*Condition Coverage $\ge 80\%$*), y verificar el cumplimiento del checklist pre-flight de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
+* **Verificación de Cobertura Condicional y Pre-Flight Sonar:** Asegurar que todo nuevo camino lógico (`if`, `switch`, ternarios, `Optional`) cuente con pruebas unitarias para todas sus bifurcaciones (*Condition Coverage $\ge 80\%$*), y verificar el cumplimiento del checklist pre-flight de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
 * Comprobar formato y estilo de código (`mvn spotless:check`).
 
 ### Fase 6: Revisión Crítica Adversarial y Refinamiento
@@ -186,9 +144,9 @@ Para erradicar el sesgo de auto-confirmación (*confirmation bias*), el agente *
 * **Invocación Mandatoria de Subagente Revisor:**  
 El agente principal debe invocar mediante la herramienta `invoke_subagent` a un subagente independiente de sólo lectura (`Role: Revisor Crítico Adversarial`, `TypeName: research` o `self`) enviándole el `git diff` de la rama y el objetivo de la tarea.
 * **Vectores de Auditoría Obligatorios:** El subagente revisor debe auditar la entrega contra cuatro fuentes normativas:
-1. [`docs/auditoria/plan-revisor-critico.md`](../docs/auditoria/plan-revisor-critico.md): Falsación activa, búsqueda de casos borde no cubiertos y violación de invariantes de agregados.
-2. [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md): Detección de *code smells* de SonarCloud (visibilidad JUnit 5, `@Override`, `static` en utilitarios, duplicación de strings, imports sobrantes).
-3. [`docs/ESTADO_DOCUMENTACION.md`](../docs/ESTADO_DOCUMENTACION.md) y [`docs/README.md`](../docs/README.md): Comprobación de integridad del grafo documental (ausencia de documentos huérfanos e índices desincronizados).
+1. [`docs/auditoria/plan-revisor-critico.md`](docs/auditoria/plan-revisor-critico.md): Falsación activa, búsqueda de casos borde no cubiertos y violación de invariantes de agregados.
+2. [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md): Detección de *code smells* de SonarCloud (visibilidad JUnit 5, `@Override`, `static` en utilitarios, duplicación de strings, imports sobrantes).
+3. [`docs/ESTADO_DOCUMENTACION.md`](docs/ESTADO_DOCUMENTACION.md) y [`docs/README.md`](docs/README.md): Comprobación de integridad del grafo documental (ausencia de documentos huérfanos e índices desincronizados).
 4. **Rúbrica de Benchmark de Calidad de ADRs (Sección 9.5):** Si la entrega incluye o modifica ADRs, calificar cada documento de 1 a 5 en sus 4 dimensiones, exigiendo un promedio ponderado $\ge \mathbf{4.0 / 5.0}$ para autorizar el pase a Fase 7.
 * **Ciclo de Corrección Inmediata:**  
 El subagente revisor emite un informe estructurado con los defectos u omisiones detectadas. El agente principal **debe aplicar inmediatamente las correcciones pertinentes dentro del alcance autorizado** y re-ejecutar Gate 1 (`mvn spotless:check` / `mvn test`) antes de proceder a la siguiente fase.
@@ -198,40 +156,7 @@ Si el entorno carece de la herramienta `invoke_subagent` o no soporta subagentes
 ### Fase 7: Reporte y Entrega
 
 * **Paso Previo de Pre-Cierre Documental:** Antes de redactar la lista de *Archivos Modificados*, si la tarea involucró creación, edición o reubicación de documentos en `docs/`, verificar obligatoriamente que `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` se encuentren 100% sincronizados.
-* **Mandatorio:** Todo agente debe emitir su reporte de cierre utilizando la siguiente estructura modular estandarizada:
-
-```markdown
-### 📋 Reporte Operativo — DonaTrack
-
-#### 1. Resumen Ejecutivo y Alcance
-* **Objetivo:** [Breve descripción de la tarea solicitada]
-* **Estado de Baseline:** `[BASELINE_GREEN]` | `[BASELINE_RED (Detallar fallos preexistentes aislados)]`
-* **Archivos Modificados:** [Listado de rutas relativas intervenidas]
-
-#### 2. Matriz Epistémica de Cambios y Hallazgos
-* `[OBSERVED]`: [Evidencias constatadas en código/git/tests antes de intervenir]
-* `[DOCUMENTED]`: [ADRs, consignas de cátedra o contratos que respaldan el cambio]
-* `[INFERRED]`: [Deducciones lógicas o hipótesis tomadas durante el análisis]
-* `[PROPOSED]`: [Modificaciones arquitectónicas o de código implementadas]
-* `[REJECTED]`: [Alternativas evaluadas y descartadas con justificación técnica]
-* `[VERIFIED]`: [Comandos ejecutados, tests superados y validaciones de formato]
-
-#### 3. Revisión Crítica Adversarial y Correcciones (Fase 6)
-* **Modalidad:** `[Subagente Independiente]` | `[Fallback Monoproceso]`
-* **Hallazgos Detectados:** [Listado de inconsistencias, smells o desfasajes documentales identificados]
-* **Correcciones Aplicadas:** [Detalle de los ajustes realizados antes del cierre]
-* **Auditoría de ADRs Propuestos:** [Si aplica: listado de ADRs formalizados, puntaje de rúbrica X.X/5.0 y vinculación en docs/adr/DEUDA_TECNICA.md]
-
-#### 4. Validación y Quality Gates
-* **Gate 1 (Unitario + Formato):** [✅ Aprobado (`mvn test -pl ...`, `mvn spotless:check`)]
-* **Gate 2 (Módulo Completo):** [✅ Aprobado | ⏭️ Omitido por alcance]
-* **Gate 3/4 (Integración / E2E):** [✅ Aprobado | ⚠️ `[DEFERRED_NO_DOCKER]` (indicar comando pendiente)]
-
-#### 5. Deuda Técnica y Hallazgos Colaterales (Anti-Scope Creep)
-* [Deuda técnica catalogada o hallazgos secundarios detectados pero NO modificados en esta iteración]
-```
-
-> **Nota de Flexibilidad y Profundidad:** La plantilla anterior fija los campos mínimos de control. Se alienta al agente a enriquecer el reporte con secciones adicionales de análisis arquitectónico profundo, diagramas PlantUML/Mermaid, análisis de trade-offs y explicaciones técnicas detalladas cuando la tarea lo amerite.
+* **Mandatorio:** Emitir reporte de cierre con la plantilla estandarizada disponible en [`docs/IA/04-checklist-antes-de-pr.md`](docs/IA/04-checklist-antes-de-pr.md).
 
 
 ---
@@ -241,8 +166,6 @@ Si el entorno carece de la herramienta `invoke_subagent` o no soporta subagentes
 ### 8.1 Criterio de Refactor Válido
 
 Todo refactor estructural debe regirse por el principio de preservación:
-
-$$\text{Refactor Válido} = \text{Intención Preservada} \land \text{Invariantes Preservadas} \land \text{Contratos Preservados/Migrados} \land \text{Sin Regresiones}$$
 
 1. **Establecer Baseline:** Identificar el estado inicial (`GREEN` o `RED`).
 2. **Preservar Contratos:** Mantener la firma de endpoints, DTOs y payloads de eventos AMQP.
@@ -275,7 +198,6 @@ $$\text{Refactor Válido} = \text{Intención Preservada} \land \text{Invariantes
 
 ### 9.2. Flujo Operativo de No Bloqueo (Aprobación Exclusiva por Pull Request)
 * **`[INVARIANT]` No Bloqueo en Chat:** El agente de IA **nunca debe detener la ejecución interactiva** para solicitar aprobación en el chat ante un ADR propuesto. El agente formula la propuesta técnica completa (con alternativas viables y trade-offs), vincula el registro correspondiente en `docs/adr/DEUDA_TECNICA.md`, implementa el cambio mínimo necesario (o pospone formalmente el impacto si corresponde a entregas posteriores), y somete el ADR para aprobación humana en la Pull Request de GitHub.
-* **`[INVARIANT]` Regla de Bifurcación Temporal (Presente vs Futuro):** Si el ADR resuelve la tarea actual, la solución se implementa en código; si constituye un hallazgo o preparación para entregas futuras (ej. persistencia JPA para Entrega 4), el ADR se formaliza en `Status: proposed` y se cataloga en deuda técnica, pero **no se altera el código funcional actual** para evitar refactorizaciones especulativas prematuras.
 * **`[INVARIANT]` Autoridad de Estados:** El estado `Status: accepted` está reservado exclusivamente para decisiones aprobadas formalmente por un revisor humano al integrar la PR, o decisiones preexistentes plenamente verificadas en la rama principal. Ningún agente puede auto-promover un ADR a `accepted` si la decisión introduce un cambio de diseño inédito.
 
 ### 9.3. Ciclo de Vida y Preservación de la Memoria Histórica
@@ -286,12 +208,6 @@ $$\text{Refactor Válido} = \text{Intención Preservada} \land \text{Invariantes
   - **`[INVARIANT]` Inmutabilidad del Cuerpo Histórico:** Queda terminantemente prohibido alterar los argumentos y deliberaciones originales del documento antiguo.
   - La superación se formaliza únicamente actualizando el encabezado a `Status: superseded by [...]` y añadiendo una nota de contexto histórica fechada en la parte superior del documento.
   - El nuevo ADR sucesor debe explicar las causas y lecciones que condujeron a la superación.
-
-### 9.4. Sincronización Obligatoria del Grafo Documental
-Toda adición, renombre o cambio de estado de un ADR exige la actualización atómica y simultánea de:
-1. `docs/adr/DEUDA_TECNICA.md`: Asignar o vincular el código de deuda técnica correspondiente (ej. DTI-01 a DTI-06).
-2. `docs/ESTADO_DOCUMENTACION.md`: Reflejar los totales canónicos exactos de ADRs (desglosados por `accepted`, `proposed`, `rejected` y `superseded`).
-3. `docs/README.md`: Mantener sincronizado el árbol de navegación del proyecto.
 
 ### 9.5. Rúbrica de Benchmark de Calidad en Fase 6 (Subagente Revisor)
 Durante la Fase 6 de Revisión Crítica Adversarial, el Subagente Revisor debe auditar todo ADR propuesto asignando una calificación del 1 al 5 en cuatro dimensiones:
@@ -314,23 +230,11 @@ Todo nuevo ADR debe respetar la estructura estándar MADR / Log4brains:
 
 ---
 
-## 10. Enrutador Documental (Router de Navegación)
+## 10. Enrutador de Contexto
 
-Para consultar especificaciones detalladas, dirigirse a las carpetas especializadas en `docs/`:
+Para recuperar contexto específico de tarea: [`docs/context-index.md`](docs/context-index.md) — routing orientado a tareas de coding agents.
 
-```text
-docs/
-├── ESTADO_DOCUMENTACION.md        ← Matriz de vigencia y auditoría documental
-├── README.md                      ← Mapa general y navegación del proyecto
-├── arquitectura/                  ← Especificaciones de dominio, agregados y Shared Kernel
-├── adr/                           ← Decisiones de arquitectura y catálogo de DEUDA_TECNICA.md
-├── auditoria/                     ← Marco metodológico y rúbricas de revisión crítica
-├── testing/                       ← Arquitectura de integración y colecciones Postman
-├── cicd/                          ← Flujos de CI/CD y políticas de Pull Request
-├── IA/                            ← Contexto base para LLMs, checklists y SonarCloud (07-errores-frecuentes-sonarcloud-ia.md)
-└── entregas/                      ← Enunciados oficiales y requerimientos de cátedra (INMUTABLES)
-
-```
+Para navegación del catálogo documental completo: [`docs/README.md`](docs/README.md).
 
 ---
 
@@ -355,66 +259,28 @@ Ejecutar las validaciones de menor a mayor costo computacional según el alcance
 
 ```
 
-### 11.1 Comandos Universales Maven (Java 21)
+### 11.1 Comandos Maven
 
 ```bash
-# Gate 1: Test unitario específico
-mvn test -pl <modulo-service> -Dtest=<NombreTest>
-
-# Gate 1: Verificación y corrección de formato con Spotless
-mvn spotless:check
-mvn spotless:apply
-
-# Gate 2: Compilación y tests del módulo con sus dependencias
-mvn clean test -pl <modulo-service> -am
-
-# Gate 2: Compilación rápida de todo el reactor (omitiendo tests)
-mvn clean package -DskipTests
-
-# Gate 2: Suite completa de tests unitarios del monorepo
-mvn test
-
-# Gate 3: Tests de integración y contratos
-mvn test -pl integration-tests -DskipTests=false
-
+mvn spotless:check                                     # Gate 1: formato
+mvn test -pl <modulo-service> -Dtest=<NombreTest>     # Gate 1: test unitario
+mvn clean test -pl <modulo-service> -am               # Gate 2: módulo + deps
+mvn test                                              # Gate 2: suite completa
+mvn test -pl integration-tests -DskipTests=false      # Gate 3: integración
 ```
 
-### 11.2 Entornos Docker y Tests Distribuidos E2E (Gate 4)
+### 11.2 Gate 4 — Entorno Docker E2E
 
-* **En entornos Bash (Linux / macOS / Git Bash / WSL):**
 ```bash
-# Ejecución integral E2E con ciclo de vida automático
-./run-preprod-tests.sh
-
-# Ejecución manteniendo la infraestructura activa para depuración
-./run-preprod-tests-stay.sh
-
+./run-preprod-tests.sh          # Bash / WSL — ciclo automático
+./run-preprod-tests-stay.sh     # Bash / WSL — infraestructura activa
 ```
 
+Comandos PowerShell y variantes en [`docs/testing/integration-tests.md`](docs/testing/integration-tests.md).
 
-* **En Windows (PowerShell nativo):**
-```powershell
-# Levantar entorno preproducción con JARs precompilados
-docker compose -f docker-compose.preprod.yml up --build -d
+### 11.3 Protocolo Modo Degradado (Sin Docker)
 
-# Ejecutar integración con maven apuntando a integration-tests
-mvn test -pl integration-tests -DskipTests=false
-
-# Detener y limpiar recursos
-docker compose -f docker-compose.preprod.yml down -v
-
-```
-
-
-
-### 11.3 Protocolo de Ejecución en Modo Degradado (Sin Acceso a Docker Daemon)
-
-Si el entorno de ejecución del agente carece de socket Docker accesible o el agente no logra levantar por su cuenta el daemon de Docker:
-
-1. **Ejecución Obligatoria:** Completar rigurosamente **Gate 1** y **Gate 2** mediante Maven nativo local.
-2. **Prohibición de Simulación Falsa:** Jamás clasificar Gate 3 o Gate 4 como superados (`VERIFIED`) si la infraestructura requerida no estuvo activa.
-3. **Marcado Formal:** Registrar los tests omitidos bajo el estado explícito `[DEFERRED_NO_DOCKER]` en la sección de Quality Gates del reporte de Fase 7, indicando el comando pendiente para ejecución humana en un entorno completo.
-4. **Validación Compensatoria:** Maximizar la validación de contratos y DTOs a nivel de tests unitarios de serialización Jackson y validadores de beans en memoria sin depender de RabbitMQ ni contenedores.
+Sin Docker accesible: completar Gate 1 y Gate 2 con Maven nativo. No declarar Gate 3/4 como `[VERIFIED]` sin infraestructura activa. Registrar como `[DEFERRED_NO_DOCKER]` en el reporte.
 
 ---
 
@@ -422,19 +288,14 @@ Si el entorno de ejecución del agente carece de socket Docker accesible o el ag
 
 Antes de dar por concluida cualquier interacción o propuesta técnica, verificar:
 
-* [ ] **Fuentes y memoria respetadas:** ¿La solución es coherente con los ADRs y se mantuvo intacta la documentación histórica?
-* [ ] **Baseline verificado:** ¿Se identificaron y aislaron claramente los fallos preexistentes (`BASELINE_RED`)?
-* [ ] **Invariantes protegidas:** ¿Se preservaron las guardas de estado y la pureza del dominio sin dependencias JPA prematuras?
-* [ ] **Límites de bounded context intactos:** ¿Se respetó el criterio de pertenencia de `common-lib` y el desacoplamiento por UUIDs?
-* [ ] **Seguridad e integridad preservada:** ¿Se evitaron secretos/PII en código y se mantuvieron intactas las aserciones de tests sin degradar umbrales?
-* [ ] **Pre-flight SonarCloud verificado:** ¿El código nuevo cumple con las condiciones del Quality Gate (Technical Debt = 0, Condition Coverage $\ge 80\%$) consultando `docs/IA/07-errores-frecuentes-sonarcloud-ia.md`?
-* [ ] **Alcance respetado:** ¿Se aplicó el cambio mínimo suficiente sin introducir dependencias no autorizadas ni refactors colaterales?
-* [ ] **Revisión Crítica Adversarial completada (Fase 6):** ¿Se ejecutó la auditoría independiente con el Subagente Revisor (o fallback) y se aplicaron las correcciones detectadas?
-* [ ] **Gobernanza de ADRs y Deuda Técnica cumplida (Sección 9):** ¿Todo cambio o hallazgo en los 9 triggers mandatorios fue formalizado en un ADR en `Status: proposed` con rúbrica $\ge 4.0 / 5.0$ y catalogado en `docs/adr/DEUDA_TECNICA.md` sin auto-promover a `accepted`?
-* [ ] **Grafo documental íntegro y sincronizado:** ¿Todo documento creado, modificado o renombrado está registrado en su índice local, en `docs/README.md` y en `docs/ESTADO_DOCUMENTACION.md` sin dejar archivos huérfanos?
-* [ ] **Contratos y eventos verificados:** ¿Se categorizó el impacto en contratos y se garantizó compatibilidad aditiva en eventos AMQP?
-* [ ] **Quality Gates superados o clasificados:** ¿Pasaron los tests correspondientes y se ejecutó `mvn spotless:check`? En ausencia de Docker, ¿se declaró formalmente `[DEFERRED_NO_DOCKER]`?
-* [ ] **Reporte emitido bajo plantilla modular (Fase 7):** ¿La entrega final sigue la estructura estandarizada de la Fase 7 respetando la taxonomía epistémica y detallando las correcciones de la Fase 6?
+* [ ] **Baseline verificado:** fallos preexistentes identificados y aislados
+* [ ] **Tests intactos:** sin aserciones debilitadas, gates alterados ni builds forzados
+* [ ] **Pre-flight SonarCloud ejecutado:** consultar [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md)
+* [ ] **Revisión Crítica Adversarial completada** (Fase 6)
+* [ ] **ADR formalizado** si se activó un trigger §9.1; ninguno auto-promovido a `accepted`
+* [ ] **Grafo documental sincronizado:** `docs/README.md`, `docs/ESTADO_DOCUMENTACION.md` y `docs/adr/DEUDA_TECNICA.md` según alcance
+* [ ] **Quality Gates superados** o `[DEFERRED_NO_DOCKER]` declarado formalmente
+* [ ] **Reporte emitido** con plantilla de [`docs/IA/04-checklist-antes-de-pr.md`](docs/IA/04-checklist-antes-de-pr.md)
 
 ---
 

@@ -176,3 +176,40 @@ Antes de abrir PR, debería poder afirmar:
 > Entiendo el cambio, validé su comportamiento, revisé los riesgos contra el Quality Gate de SonarCloud, audité la entrega con el Subagente Revisor y puedo hacerme responsable técnicamente por esta Pull Request.
 
 Si no puedo afirmar eso, todavía no debería pedir review.
+
+---
+
+## Apéndice: Plantilla de Reporte Operativo (Fase 7 de AGENTS.md)
+
+Incluir en la descripción de la PR:
+
+```markdown
+### 📋 Reporte Operativo — DonaTrack
+
+#### 1. Resumen Ejecutivo y Alcance
+* **Objetivo:** [Breve descripción de la tarea solicitada]
+* **Estado de Baseline:** `[BASELINE_GREEN]` | `[BASELINE_RED (Detallar fallos preexistentes aislados)]`
+* **Archivos Modificados:** [Listado de rutas relativas intervenidas]
+
+#### 2. Matriz Epistémica de Cambios y Hallazgos
+* `[OBSERVED]`: [Evidencias constatadas en código/git/tests antes de intervenir]
+* `[DOCUMENTED]`: [ADRs, consignas de cátedra o contratos que respaldan el cambio]
+* `[INFERRED]`: [Deducciones lógicas o hipótesis tomadas durante el análisis]
+* `[PROPOSED]`: [Modificaciones arquitectónicas o de código implementadas]
+* `[REJECTED]`: [Alternativas evaluadas y descartadas con justificación técnica]
+* `[VERIFIED]`: [Comandos ejecutados, tests superados y validaciones de formato]
+
+#### 3. Revisión Crítica Adversarial y Correcciones (Fase 6)
+* **Modalidad:** `[Subagente Independiente]` | `[Fallback Monoproceso]`
+* **Hallazgos Detectados:** [Listado de inconsistencias o desfasajes identificados]
+* **Correcciones Aplicadas:** [Ajustes realizados antes del cierre]
+* **Auditoría de ADRs Propuestos:** [Puntaje de rúbrica X.X/5.0 y vinculación en docs/adr/DEUDA_TECNICA.md]
+
+#### 4. Validación y Quality Gates
+* **Gate 1 (Unitario + Formato):** [✅ Aprobado]
+* **Gate 2 (Módulo Completo):** [✅ Aprobado | ⏭️ Omitido por alcance]
+* **Gate 3/4 (Integración / E2E):** [✅ Aprobado | ⚠️ `[DEFERRED_NO_DOCKER]`]
+
+#### 5. Deuda Técnica y Hallazgos Colaterales
+* [Hallazgos secundarios detectados pero NO modificados en esta iteración]
+```

@@ -14,6 +14,7 @@ El portal de documentación está organizado de forma modular según su área de
 docs/
 ├── ESTADO_DOCUMENTACION.md                # Panel central de auditoría y vigencia técnica
 ├── README.md                              # Este índice de navegación
+├── context-index.md                       # 🤖 Routing de contexto para coding agents (qué leer por tarea)
 │
 ├── auditoria/                             # Sistema de aseguramiento y verificación adversarial
 │   └── plan-revisor-critico.md            # Plan de auditoría, checklists y matriz de evaluación
@@ -66,6 +67,7 @@ docs/
 
 ## 📌 Enlaces Rápidos
 
+* 🤖 **Context Router para Agentes** *(qué leer por tipo de tarea)*: [context-index.md](context-index.md)
 * 🔍 **Diagnóstico de Vigencia y Auditoría:** [ESTADO_DOCUMENTACION.md](ESTADO_DOCUMENTACION.md)
 * 🛡️ **Plan de Auditoría y Marco Revisor Crítico:** [auditoria/plan-revisor-critico.md](auditoria/plan-revisor-critico.md)
 * 📐 **Principios de Diseño y Arquitectura (Documento Maestro):** [arquitectura/principios-diseno-arquitectura.md](arquitectura/principios-diseno-arquitectura.md)
