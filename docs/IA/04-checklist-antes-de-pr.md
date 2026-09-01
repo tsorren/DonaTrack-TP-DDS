@@ -120,42 +120,55 @@ Confirmo que:
 
 ---
 
-# 9. Review previa con IA
+# 9. Revisión Crítica Adversarial con IA (Fase 6 de AGENTS.md)
 
-Antes de pedir review humana, se recomienda usar:
+Antes de pedir review humana, es mandatorio ejecutar la **Fase 6 de AGENTS.md** despachando un **Subagente Revisor Independiente** (o fallback monoproceso) y usando como referencia:
 
-[`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)
+[`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md) y [`../auditoria/plan-revisor-critico.md`](../auditoria/plan-revisor-critico.md)
 
 Confirmo que:
 
-- [ ] Revisé el diff con mirada crítica.
-- [ ] Busqué bugs funcionales.
-- [ ] Busqué riesgos de integración.
-- [ ] Busqué errores de persistencia/JPA si aplica.
-- [ ] Busqué tests faltantes.
-- [ ] Revisé casos borde.
-- [ ] Corregí o justifiqué los hallazgos relevantes.
+- [ ] Se ejecutó la auditoría independiente con el Subagente Revisor sin sesgos sobre el diff completo de la PR.
+- [ ] Se buscaron activamente bugs funcionales, condiciones de carrera y casos borde no cubiertos.
+- [ ] Se auditó la integridad del grafo documental: ¿se actualizaron `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` si se tocaron documentos?
+- [ ] Se corrigieron de inmediato todos los defectos y desfasajes reportados por el revisor crítico antes de emitir el reporte.
 
 ---
 
-# 10. GitHub y comunicación
+# 10. Calidad Estática y SonarCloud Quality Gate
+
+Antes de abrir PR confirmo que:
+
+- [ ] Verifiqué el diff contra [`07-errores-frecuentes-sonarcloud-ia.md`](./07-errores-frecuentes-sonarcloud-ia.md) para prevenir los *smells* y vulnerabilidades recurrentes de IA.
+- [ ] Todo método privado auxiliar o de validación que no accede al estado de la instancia fue declarado `static` (`java:S2325`).
+- [ ] Las clases utilitarias o factories tienen un constructor `private` explícito para prevenir instanciación (`java:S1118`).
+- [ ] Las clases y métodos de test JUnit 5 tienen visibilidad de paquete (sin modificador `public` redundante `java:S5786`).
+- [ ] Los métodos que implementan interfaces o sobreescriben comportamiento llevan explícitamente la anotación `@Override` (`java:S1161`).
+- [ ] No existen cadenas literales duplicadas 3 o más veces; se extrajeron a constantes (`java:S1192`).
+- [ ] Todo nuevo bloque condicional (`if`, `switch`, ternarios, `Optional`) cuenta con cobertura de pruebas en todas sus bifurcaciones (*Condition Coverage $\ge 80\%$*).
+- [ ] Se ejecutó `mvn spotless:check` con resultado exitoso para asegurar formato estándar.
+
+---
+
+# 11. GitHub y comunicación
 
 Confirmo que:
 
 - [ ] La issue está actualizada.
 - [ ] La PR referencia la issue correspondiente.
-- [ ] La descripción de la PR explica qué se cambió.
-- [ ] La descripción de la PR explica cómo se probó.
+- [ ] El grafo documental está íntegro: no hay documentos huérfanos ni desfasajes en `docs/README.md` o `docs/ESTADO_DOCUMENTACION.md`.
+- [ ] La descripción de la PR incluye el **Reporte Operativo Estructurado** (Fase 7 de `AGENTS.md`) documentando baseline, cambios, correcciones de la Fase 6 y Quality Gates superados.
+- [ ] Si no hubo acceso al daemon de Docker en local, se declaró formalmente `[DEFERRED_NO_DOCKER]`.
 - [ ] La PR es revisable y no demasiado grande.
-- [ ] Si hubo decisiones relevantes, quedaron documentadas.
+- [ ] Si hubo decisiones relevantes, quedaron documentadas en un ADR o en la issue.
 - [ ] Si hubo dudas, quedaron comentadas en canales públicos o en GitHub.
 
 ---
 
-# 11. Declaración final
+# 12. Declaración final
 
 Antes de abrir PR, debería poder afirmar:
 
-> Entiendo el cambio, validé su comportamiento, revisé los riesgos y puedo hacerme responsable técnicamente por esta Pull Request.
+> Entiendo el cambio, validé su comportamiento, revisé los riesgos contra el Quality Gate de SonarCloud, audité la entrega con el Subagente Revisor y puedo hacerme responsable técnicamente por esta Pull Request.
 
 Si no puedo afirmar eso, todavía no debería pedir review.

@@ -43,6 +43,9 @@ La IA puede ayudar, pero la responsabilidad técnica sigue siendo humana.
 - [`06-contexto-base-donatrack.md`](./06-contexto-base-donatrack.md)  
   Contexto base para copiar y pegar al iniciar una conversación con ChatGPT, Claude, Gemini, Cursor o cualquier asistente similar.
 
+- [`07-errores-frecuentes-sonarcloud-ia.md`](./07-errores-frecuentes-sonarcloud-ia.md)  
+  Guía viva de errores frecuentes y checklist pre-flight de SonarCloud para agentes de IA antes de finalizar tareas o abrir PRs.
+
 ---
 
 ## Prompts listos para usar

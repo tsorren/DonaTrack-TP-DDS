@@ -18,11 +18,11 @@ Tras la ejecución del plan maestro de auditoría crítica, verificación advers
 ├──────────────────────────────────────┬──────────────────┬──────────────┤
 │ Categoría                            │ Cantidad         │ Porcentaje   │
 ├──────────────────────────────────────┼──────────────────┼──────────────┤
-│ 🟢 Vigentes y 100% Sincronizados     │ 33 documentos    │ 43%          │
+│ 🟢 Vigentes y 100% Sincronizados     │ 35 documentos    │ 44%          │
 │ 🔴 Con Discrepancias Altas / Críticas│ 0 documentos     │ 0%           │
 │ 🟡 Con Discrepancias Medias          │ 0 documentos     │ 0%           │
 │ 🟢 Con Discrepancias Bajas/Cosméticas│ 0 documentos     │ 0%           │
-│ 🔒 Históricos e Inmutables (ADRs/Ent)│ 44 componentes   │ 57%          │
+│ 🔒 Históricos e Inmutables (ADRs/Ent)│ 44 componentes   │ 56%          │
 └──────────────────────────────────────┴──────────────────┴──────────────┘
 ```
 
@@ -66,6 +66,7 @@ docs/
 │   ├── README.md                          # Mapa de prompts y normas de uso
 │   ├── 01-principios-de-uso.md … 05
 │   ├── 06-contexto-base-donatrack.md      # Snippet de contexto con stack técnico completo
+│   ├── 07-errores-frecuentes-sonarcloud-ia.md # 🟢 Prevención y checklist pre-flight SonarCloud
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # 🛠️ Aplicaciones web y utilidades locales
@@ -99,6 +100,8 @@ docs/
 | **10** | [docs/cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md) | CI/CD | Sincronizado | Verificado: 7 workflows de GitHub Actions y enlaces relativos válidos. | 🟢 Sincronizado |
 | **11** | [docs/IA/06-contexto-base-donatrack.md](IA/06-contexto-base-donatrack.md) | IA | Sincronizado | Verificado: Snippet de contexto con stack técnico y restricciones de persistencia. | 🟢 Sincronizado |
 | **12** | [docs/adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md) | ADR | Sincronizado | Verificado: Catálogo de deudas técnicas DTI-01 a DTI-06. | 🟢 Sincronizado |
+| **13** | [docs/IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md) | IA / Calidad | Inexistente | Guía viva de prevención de errores frecuentes de SonarCloud y checklist pre-flight para agentes. | 🟢 Sincronizado |
+| **14** | [.agents/rules/AGENTS.md](../.agents/rules/AGENTS.md) | Gobernanza | v1.0 desactualizado | Evolucionado a v3.4.0 (Gobernanza Calibrada, Reporte Estructurado, Modo Degradado y SonarCloud). | 🟢 Sincronizado |
 
 ---
 
