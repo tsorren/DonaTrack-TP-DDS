@@ -34,7 +34,7 @@ Confirmo que:
 
 ---
 
-# 3. Diseño técnico
+# 3. Diseño técnico y Gobernanza de ADRs
 
 Confirmo que:
 
@@ -45,6 +45,9 @@ Confirmo que:
 - [ ] No sobrecargué innecesariamente la capa de services.
 - [ ] No dupliqué lógica de negocio existente.
 - [ ] No introduje acoplamiento innecesario entre módulos.
+- [ ] Si el cambio tocó alguno de los 9 triggers mandatorios (`AGENTS.md` §9.1: DDD, ORM/Schemas, Contratos REST/AMQP, Schedulers, common-lib, SRP, Seguridad/PII, S3/Infra, Testing), formalicé el ADR en `Status: proposed` bajo formato MADR y lo registré en `docs/adr/DEUDA_TECNICA.md`.
+- [ ] Respeté la Regla de Bifurcación Temporal: si el ADR corresponde a entregas futuras (ej. JPA para Entrega 4), formalicé la propuesta sin introducir refactors especulativos en el código funcional actual.
+- [ ] Ningún ADR nuevo fue auto-promovido a `Status: accepted`; se delegó la aprobación formal al revisor humano en la PR.
 
 ---
 
@@ -130,6 +133,7 @@ Confirmo que:
 
 - [ ] Se ejecutó la auditoría independiente con el Subagente Revisor sin sesgos sobre el diff completo de la PR.
 - [ ] Se buscaron activamente bugs funcionales, condiciones de carrera y casos borde no cubiertos.
+- [ ] Si la PR introduce o modifica ADRs, el Subagente Revisor aplicó la Rúbrica de Benchmark (escala 1 a 5 en 4 dimensiones) y obtuvo un puntaje promedio $\ge 4.0 / 5.0$.
 - [ ] Se auditó la integridad del grafo documental: ¿se actualizaron `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` si se tocaron documentos?
 - [ ] Se corrigieron de inmediato todos los defectos y desfasajes reportados por el revisor crítico antes de emitir el reporte.
 
