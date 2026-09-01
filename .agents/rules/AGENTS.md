@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 3.4.0 (Gobernanza Calibrada, Protocolo de Reporte Estructurado y Modo Degradado)
+> **Versión:** 3.4.0 (Gobernanza Calibrada, Flujo de 7 Fases con Subagente Revisor y Modo Degradado)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -95,6 +95,7 @@ Para evitar alucinaciones, conclusiones precipitadas y re-evaluaciones redundant
 
 * **`[CONSTRAINT]` Seguridad y Datos Sensibles:** Prohibido introducir credenciales, tokens, contraseñas hardcodeadas o datos personales reales (PII) en código, tests, fixtures, logs o reportes. Toda prueba debe utilizar datos sintéticos.
 * **`[INVARIANT]` Integridad de Quality Gates y Pruebas:** Queda terminantemente prohibido deshabilitar tests, eliminar o debilitar aserciones (`assertTrue(true)`), aumentar tolerancias arbitrariamente o alterar linters/CI para enmascarar regresiones o forzar un build verde.
+* **`[INVARIANT]` Calidad Estática y Cumplimiento de SonarCloud:** Todo cambio en código Java o configuración de CI/CD debe concebirse para superar el Quality Gate de SonarCloud (*Technical Debt = 0* en ramas principales, *Condition Coverage $\ge$ 80%*, *Security/Reliability/Maintainability = A*, *Duplicación $\le$ 3.0%*). Queda prohibido introducir *code smells* conocidos o scripts vulnerables; el agente debe aplicar la auto-auditoría pre-flight consultando la documentación técnica antes de finalizar su intervención.
 
 ---
 
@@ -118,21 +119,20 @@ Antes de proponer o implementar un cambio, someter el diseño a las siguientes p
 * **`[CONSTRAINT]` Prohibición de Refactorings Oportunistas No Autorizados:** Si durante la inspección se descubren errores secundarios, antipatrones o deuda técnica no relacionada con la tarea en curso:
 1. **No corregirlos en la misma iteración**, salvo que el hallazgo bloquee la tarea actual o comprometa críticamente la integridad.
 2. Documentarlos formalmente en el reporte de salida como hallazgo o deuda técnica a tratar.
-
-
+* **`[INVARIANT]` Integridad del Grafo Documental y Excepción de Alcance:** Cuando una tarea cree, traslade, renombre o modifique artefactos arquitectónicos, especificaciones o guías en `docs/`, la actualización sincronizada de sus índices padre (`docs/README.md`) y del panel canónico de vigencia (`docs/ESTADO_DOCUMENTACION.md`) **es mandatoria y forma parte indivisible del alcance autorizado**. Queda explícitamente aclarado que esta sincronización NO constituye refactoring oportunista ni *scope creep*, sino higiene y completitud obligatoria de la entrega.
 * **`[CONSTRAINT]` Control de Dependencias Externas:** No incorporar nuevas librerías en `pom.xml` ni alterar imágenes de Docker sin justificación técnica explícita y aprobación previa.
 * **`[CONSTRAINT]` Minimalismo Suficiente:** Aplicar el **cambio mínimo suficiente** para cumplir el objetivo funcional o arquitectónico, evitando reescrituras estéticas.
 
 ---
 
-## 7. Protocolo de Trabajo del Agente en 6 Fases
+## 7. Protocolo de Trabajo del Agente en 7 Fases
 
 El agente debe estructurar su trabajo en las siguientes fases secuenciales:
 
 ```text
-FASE 1          FASE 2          FASE 3          FASE 4          FASE 5          FASE 6
-Descubrimiento ➔ Análisis      ➔ Diseño        ➔ Implementación ➔ Validación   ➔ Reporte
-(Git & Baseline) (OBS/INF/DOC)  (PROP / Trade) (Mínimo suf.)   (Quality Gates) (Plantilla Estándar)
+FASE 1          FASE 2          FASE 3          FASE 4          FASE 5          FASE 6                 FASE 7
+Descubrimiento ➔ Análisis      ➔ Diseño        ➔ Implementación ➔ Validación   ➔ Revisión Crítica     ➔ Reporte
+(Git/Baseline)  (OBS/INF/DOC)  (PROP/Trade)   (Mínimo suf.)   (Quality Gates) (Subagente Revisor)    (Modular)
 
 ```
 
@@ -168,15 +168,33 @@ git log -n 5 --oneline
 
 * Aplicar el cambio mínimo suficiente respetando la encapsulación y los contratos vigentes.
 * Mantener consistencia de nombres y estilo de código.
+* **Auto-revisión de Code Smells:** Durante la codificación, consultar obligatoriamente la guía de errores frecuentes y *smells* recurrentes en [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md) para evitar violaciones estáticas comunes (métodos que deben ser `static`, constructores privados en utilitarios, `@Override`, literales repetidos, shadowing de variables).
 
 ### Fase 5: Validación Gradual (Quality Gates)
 
 * Ejecutar los Quality Gates correspondientes al alcance (Sección 11).
+* **Verificación de Cobertura Condicional y Pre-Flight Sonar:** Asegurar que todo nuevo camino lógico (`if`, `switch`, ternarios, `Optional`) cuente con pruebas unitarias para todas sus bifurcaciones (*Condition Coverage $\ge 80\%$*), y verificar el cumplimiento del checklist pre-flight de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
 * Comprobar formato y estilo de código (`mvn spotless:check`).
 
-### Fase 6: Reporte y Entrega
+### Fase 6: Revisión Crítica Adversarial y Refinamiento
 
-* **Mandatorio:** Todo agente debe emitir su reporte de cierre utilizando exactamente la siguiente estructura estandarizada:
+Para erradicar el sesgo de auto-confirmación (*confirmation bias*), el agente **no debe dar por concluida su tarea sin someter su entrega a una auditoría independiente**.
+
+* **Invocación Mandatoria de Subagente Revisor:**  
+El agente principal debe invocar mediante la herramienta `invoke_subagent` a un subagente independiente de sólo lectura (`Role: Revisor Crítico Adversarial`, `TypeName: research` o `self`) enviándole el `git diff` de la rama y el objetivo de la tarea.
+* **Vectores de Auditoría Obligatorios:** El subagente revisor debe auditar la entrega contra tres fuentes normativas:
+1. [`docs/auditoria/plan-revisor-critico.md`](../docs/auditoria/plan-revisor-critico.md): Falsación activa, búsqueda de casos borde no cubiertos y violación de invariantes de agregados.
+2. [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md): Detección de *code smells* de SonarCloud (visibilidad JUnit 5, `@Override`, `static` en utilitarios, duplicación de strings, imports sobrantes).
+3. [`docs/ESTADO_DOCUMENTACION.md`](../docs/ESTADO_DOCUMENTACION.md) y [`docs/README.md`](../docs/README.md): Comprobación de integridad del grafo documental (ausencia de documentos huérfanos e índices desincronizados).
+* **Ciclo de Corrección Inmediata:**  
+El subagente revisor emite un informe estructurado con los defectos u omisiones detectadas. El agente principal **debe aplicar inmediatamente las correcciones pertinentes dentro del alcance autorizado** y re-ejecutar Gate 1 (`mvn spotless:check` / `mvn test`) antes de proceder a la siguiente fase.
+* **Modo Fallback Monoproceso (Sin Soporte de Subagentes):**  
+Si el entorno carece de la herramienta `invoke_subagent` o no soporta subagentes concurrentes, el agente principal **debe adoptar explícitamente el rol de auditor escéptico** en un bloque de razonamiento aislado de su propia traza, evaluando los 3 vectores anteriores con el máximo rigor crítico antes de emitir el reporte final.
+
+### Fase 7: Reporte y Entrega
+
+* **Paso Previo de Pre-Cierre Documental:** Antes de redactar la lista de *Archivos Modificados*, si la tarea involucró creación, edición o reubicación de documentos en `docs/`, verificar obligatoriamente que `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` se encuentren 100% sincronizados.
+* **Mandatorio:** Todo agente debe emitir su reporte de cierre utilizando la siguiente estructura modular estandarizada:
 
 ```markdown
 ### 📋 Reporte Operativo — DonaTrack
@@ -194,15 +212,22 @@ git log -n 5 --oneline
 * `[REJECTED]`: [Alternativas evaluadas y descartadas con justificación técnica]
 * `[VERIFIED]`: [Comandos ejecutados, tests superados y validaciones de formato]
 
-#### 3. Validación y Quality Gates
+#### 3. Revisión Crítica Adversarial y Correcciones (Fase 6)
+* **Modalidad:** `[Subagente Independiente]` | `[Fallback Monoproceso]`
+* **Hallazgos Detectados:** [Listado de inconsistencias, smells o desfasajes documentales identificados]
+* **Correcciones Aplicadas:** [Detalle de los ajustes realizados antes del cierre]
+
+#### 4. Validación y Quality Gates
 * **Gate 1 (Unitario + Formato):** [✅ Aprobado (`mvn test -pl ...`, `mvn spotless:check`)]
 * **Gate 2 (Módulo Completo):** [✅ Aprobado | ⏭️ Omitido por alcance]
 * **Gate 3/4 (Integración / E2E):** [✅ Aprobado | ⚠️ `[DEFERRED_NO_DOCKER]` (indicar comando pendiente)]
 
-#### 4. Deuda Técnica y Hallazgos Colaterales (Anti-Scope Creep)
+#### 5. Deuda Técnica y Hallazgos Colaterales (Anti-Scope Creep)
 * [Deuda técnica catalogada o hallazgos secundarios detectados pero NO modificados en esta iteración]
-
 ```
+
+> **Nota de Flexibilidad y Profundidad:** La plantilla anterior fija los campos mínimos de control. Se alienta al agente a enriquecer el reporte con secciones adicionales de análisis arquitectónico profundo, diagramas PlantUML/Mermaid, análisis de trade-offs y explicaciones técnicas detalladas cuando la tarea lo amerite.
+
 
 ---
 
@@ -254,7 +279,7 @@ docs/
 ├── auditoria/                     ← Marco metodológico y rúbricas de revisión crítica
 ├── testing/                       ← Arquitectura de integración y colecciones Postman
 ├── cicd/                          ← Flujos de CI/CD y políticas de Pull Request
-├── IA/                            ← Contexto base para LLMs, antipatrones y checklists
+├── IA/                            ← Contexto base para LLMs, checklists y SonarCloud (07-errores-frecuentes-sonarcloud-ia.md)
 └── entregas/                      ← Enunciados oficiales y requerimientos de cátedra (INMUTABLES)
 
 ```
@@ -336,11 +361,11 @@ docker compose -f docker-compose.preprod.yml down -v
 
 ### 11.3 Protocolo de Ejecución en Modo Degradado (Sin Acceso a Docker Daemon)
 
-Si el entorno de ejecución del agente carece de socket Docker accesible, permisos de contenedor o soporte de virtualización:
+Si el entorno de ejecución del agente carece de socket Docker accesible o el agente no logra levantar por su cuenta el daemon de Docker:
 
 1. **Ejecución Obligatoria:** Completar rigurosamente **Gate 1** y **Gate 2** mediante Maven nativo local.
 2. **Prohibición de Simulación Falsa:** Jamás clasificar Gate 3 o Gate 4 como superados (`VERIFIED`) si la infraestructura requerida no estuvo activa.
-3. **Marcado Formal:** Registrar los tests omitidos bajo el estado explícito `[DEFERRED_NO_DOCKER]` en la sección de Quality Gates del reporte de Fase 6, indicando el comando pendiente para ejecución humana en un entorno completo.
+3. **Marcado Formal:** Registrar los tests omitidos bajo el estado explícito `[DEFERRED_NO_DOCKER]` en la sección de Quality Gates del reporte de Fase 7, indicando el comando pendiente para ejecución humana en un entorno completo.
 4. **Validación Compensatoria:** Maximizar la validación de contratos y DTOs a nivel de tests unitarios de serialización Jackson y validadores de beans en memoria sin depender de RabbitMQ ni contenedores.
 
 ---
@@ -354,10 +379,13 @@ Antes de dar por concluida cualquier interacción o propuesta técnica, verifica
 * [ ] **Invariantes protegidas:** ¿Se preservaron las guardas de estado y la pureza del dominio sin dependencias JPA prematuras?
 * [ ] **Límites de bounded context intactos:** ¿Se respetó el criterio de pertenencia de `common-lib` y el desacoplamiento por UUIDs?
 * [ ] **Seguridad e integridad preservada:** ¿Se evitaron secretos/PII en código y se mantuvieron intactas las aserciones de tests sin degradar umbrales?
+* [ ] **Pre-flight SonarCloud verificado:** ¿El código nuevo cumple con las condiciones del Quality Gate (Technical Debt = 0, Condition Coverage $\ge 80\%$) consultando `docs/IA/07-errores-frecuentes-sonarcloud-ia.md`?
 * [ ] **Alcance respetado:** ¿Se aplicó el cambio mínimo suficiente sin introducir dependencias no autorizadas ni refactors colaterales?
+* [ ] **Revisión Crítica Adversarial completada (Fase 6):** ¿Se ejecutó la auditoría independiente con el Subagente Revisor (o fallback) y se aplicaron las correcciones detectadas?
+* [ ] **Grafo documental íntegro y sincronizado:** ¿Todo documento creado, modificado o renombrado está registrado en su índice local, en `docs/README.md` y en `docs/ESTADO_DOCUMENTACION.md` sin dejar archivos huérfanos?
 * [ ] **Contratos y eventos verificados:** ¿Se categorizó el impacto en contratos y se garantizó compatibilidad aditiva en eventos AMQP?
 * [ ] **Quality Gates superados o clasificados:** ¿Pasaron los tests correspondientes y se ejecutó `mvn spotless:check`? En ausencia de Docker, ¿se declaró formalmente `[DEFERRED_NO_DOCKER]`?
-* [ ] **Reporte emitido bajo plantilla oficial:** ¿La entrega final sigue la estructura estandarizada de la Fase 6 respetando la taxonomía epistémica?
+* [ ] **Reporte emitido bajo plantilla modular (Fase 7):** ¿La entrega final sigue la estructura estandarizada de la Fase 7 respetando la taxonomía epistémica y detallando las correcciones de la Fase 6?
 
 ---
 

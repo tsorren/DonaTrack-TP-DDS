@@ -2,7 +2,7 @@
 
 > **Portal de Documentación y Arquitectura del Sistema**  
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> Última actualización: **2026-08-29**
+> Última actualización: **2026-09-01**
 
 ---
 
@@ -46,6 +46,7 @@ docs/
 │   ├── README.md                          # Mapa de prompts y normas de uso
 │   ├── 01-principios-de-uso.md … 05
 │   ├── 06-contexto-base-donatrack.md      # Snippet de contexto para asistentes de IA
+│   ├── 07-errores-frecuentes-sonarcloud-ia.md # Prevención y checklist pre-flight SonarCloud
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # Aplicaciones web y utilidades locales
@@ -53,11 +54,11 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06)
-│   └── donaciones, incentivos, etc.       # 51 ADRs aceptados e inmutables
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
+│   └── donaciones, incentivos, etc.       # 76 ADRs (42 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
-    ├── 1/ … 3/                            # PDFs de requerimientos de cátedra
+    ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
     └── interfaz/                          # Bocetos Figma y mapa de navegación
 ```
 
@@ -73,4 +74,6 @@ docs/
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
+* 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
 * 📝 **Registro de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
+

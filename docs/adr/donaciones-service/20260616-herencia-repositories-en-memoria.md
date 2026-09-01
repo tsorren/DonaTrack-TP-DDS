@@ -1,9 +1,12 @@
 # Herencia de BaseRepositoryEnMemoria en los repositories en memoria
 
-- Status: accepted
+- Status: superseded by [../20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md](../20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md)
 - Date: 2026-06-16
 - Deciders: Tadeo Sorrentino, Sofia Deane
 - Tags: repositories, patrones-de-diseño, common-lib
+
+> **Nota de Evolución y Superación Histórica (2026-09-01):**
+> La implementación inicial obligaba a las entidades de dominio a implementar la interfaz `RecursoDTO`, contaminando el modelo con conceptos de transporte. Esta arquitectura fue formalmente **superada y reemplazada** por la consolidación del Shared Kernel en [20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md](../20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md), migrando a `CrudRepositoryEnMemoria<T extends AggregateRoot>` donde las entidades implementan la abstracción pura de dominio `AggregateRoot` (`UUID getId()`).
 
 ## Contexto y Problema
 
