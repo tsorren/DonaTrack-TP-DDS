@@ -2,7 +2,7 @@
 
 > **Portal de Documentación y Arquitectura del Sistema**  
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> Última actualización: **2026-08-29**
+> Última actualización: **2026-09-01**
 
 ---
 
@@ -54,11 +54,11 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06)
-│   └── donaciones, incentivos, etc.       # 51 ADRs aceptados e inmutables
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
+│   └── donaciones, incentivos, etc.       # 76 ADRs (42 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
-    ├── 1/ … 3/                            # PDFs de requerimientos de cátedra
+    ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
     └── interfaz/                          # Bocetos Figma y mapa de navegación
 ```
 

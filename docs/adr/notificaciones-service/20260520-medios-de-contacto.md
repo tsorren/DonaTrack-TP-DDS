@@ -1,6 +1,6 @@
 # Medios de Contacto
 
-- Status: proposed
+- Status: superseded by [20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router.md](./20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router.md)
 - Date: 2026-05-20
 - Deciders: Decisión Grupal
 
@@ -58,3 +58,8 @@ mensajes.
 * Si la lógica de negocio solo permite tener un medio de contacto predeterminado, se deberá validar desde la persona que
   no haya un estado invalido en los medios de contacto, ya que no se conocen entre si para determinar si son el único
   medio de contacto predeterminado
+
+## Nota de Superación
+
+El modelado inicial que planteaba a WhatsApp como subclase de Teléfono fue formalmente reemplazado por la decisión [20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router.md](./20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router.md), la cual unificó WhatsApp dentro de la entidad `Telefono` mediante `TipoTelefono.WHATSAPP` y delegó la lógica de envío a través del patrón Double Dispatch con `NotificacionRouter`, eliminando la necesidad de jerarquías de herencia redundantes.
+

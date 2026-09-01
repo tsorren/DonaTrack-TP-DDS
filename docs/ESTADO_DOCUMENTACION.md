@@ -3,14 +3,14 @@
 > **Panel de Auditoría y Matriz de Vigencia Documental vs. Código Fuente**  
 > **Proyecto:** DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones  
 > **Equipo:** UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> **Fecha de Normalización y Sincronización:** 2026-08-29  
-> **Propósito:** Diagnóstico y estado de sincronización de toda la documentación del repositorio contrastada contra la implementación real en Java 21, Spring Boot 3, RabbitMQ y n8n tras la ejecución del plan de auditoría crítica y verificación adversarial.
+> **Fecha de Normalización y Sincronización:** 2026-09-01  
+> **Propósito:** Diagnóstico y estado de sincronización de toda la documentación del repositorio contrastada contra la implementación real en Java 21, Spring Boot 3, RabbitMQ y n8n tras la formalización de ADRs de oleadas de refactor y auditoría de deuda técnica.
 
 ---
 
 ## 1. Resumen Ejecutivo y Estadísticas de Salud Documental
 
-Tras la ejecución del plan maestro de auditoría crítica, verificación adversarial en código Java y sincronización canónica:
+Tras la formalización de 28 nuevos ADRs propuestos basados en las oleadas de refactor, la evaluación de la interfaz Asignable y la resolución de estados de los ADRs existentes:
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -74,11 +74,11 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
-│   ├── DEUDA_TECNICA.md                   # 🟢 Registro de deuda técnica (DTI-01 a DTI-06)
-│   └── donaciones, incentivos, etc.       # 🔒 51 ADRs aceptados e inmutables
+│   ├── DEUDA_TECNICA.md                   # 🟢 Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
+│   └── donaciones, incentivos, etc.       # 76 ADRs (42 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
-    ├── 1/ … 3/                            # PDFs de requerimientos de cátedra
+    ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
     └── interfaz/                          # Bocetos Figma y mapa de navegación
 ```
 
@@ -99,12 +99,15 @@ docs/
 | **9** | [docs/arquitectura/aggregates-logistica.md](arquitectura/aggregates-logistica.md) | Logística | Sincronizado | Verificado: Máquina de estados de Entrega, Camion, Ruta y eventos AMQP RabbitMQ. | 🟢 Sincronizado |
 | **10** | [docs/cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md) | CI/CD | Sincronizado | Verificado: 7 workflows de GitHub Actions y enlaces relativos válidos. | 🟢 Sincronizado |
 | **11** | [docs/IA/06-contexto-base-donatrack.md](IA/06-contexto-base-donatrack.md) | IA | Sincronizado | Verificado: Snippet de contexto con stack técnico y restricciones de persistencia. | 🟢 Sincronizado |
-| **12** | [docs/adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md) | ADR | Sincronizado | Verificado: Catálogo de deudas técnicas DTI-01 a DTI-06. | 🟢 Sincronizado |
+| **12** | [docs/adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md) | ADR | Sincronizado | Verificado: Catálogo de deudas técnicas DTI-01 a DTI-06 con ADRs individuales enlazados. | 🟢 Sincronizado |
 | **13** | [docs/IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md) | IA / Calidad | Inexistente | Guía viva de prevención de errores frecuentes de SonarCloud y checklist pre-flight para agentes. | 🟢 Sincronizado |
 | **14** | [.agents/rules/AGENTS.md](../.agents/rules/AGENTS.md) | Gobernanza | v3.4.0 | Evolucionado a v3.5.0 (Gobernanza de ADRs en proposed, Triggers Mandatorios, Rúbrica de Benchmark y No Bloqueo). | 🟢 Sincronizado |
+| **14** | [.agents/rules/AGENTS.md](../.agents/rules/AGENTS.md) | Gobernanza | v1.0 desactualizado | Evolucionado a v3.4.0 (Gobernanza Calibrada, Reporte Estructurado, Modo Degradado y SonarCloud). | 🟢 Sincronizado |
+| **15** | [docs/adr/](adr/) | ADRs | 8 propuestos sin resolver / sin ADRs DTI | Formalizados 28 ADRs propuestos basados en oleadas, deuda técnica y evaluación de Asignable; transicionados los 8 existentes (6 accepted, 1 rejected, 1 superseded); auditados y transicionados primeros ADRs (20260520, 20260521 y 20260616 a superseded). Total: 76 ADRs (42 accepted, 28 proposed, 2 rejected, 4 superseded). | 🟢 Sincronizado |
 
 ---
 
-## 4. Backlog de Decisiones Pendientes (Fuera de Alcance)
+## 4. Estado de Formalización de ADRs y Decisiones de Arquitectura
 
-* **Redacción de Nuevos ADRs (Log4brains):** Queda formalmente diferida a la siguiente iteración la redacción de los ADRs correspondientes a los ítems DTI-02 a DTI-06 documentados en [docs/adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md).
+* **Formalización de ADRs de Deuda Técnica y Oleadas de Refactor:** Completada exitosamente al 100%. Se formalizaron 28 nuevos ADRs en estado propuesto (`Status: proposed`) en formato Log4brains / MADR (incluyendo DTI-01 a DTI-06, evaluación de `Asignable` vs `entidadBeneficiariaId`, arquitectura transversal de persistencia, MinIO S3, Transactional Outbox, Crypto-Shredding, Testcontainers, coordinadores distribuidos ShedLock, e invariantes de dominio de las Oleadas de Refactor), se transicionaron los 8 ADRs pendientes en `docs/adr/`, y se ajustaron los primeros ADRs históricos hacia `superseded`, alcanzando un total consolidado de **76 ADRs** plenamente vigentes y clasificados.
+
