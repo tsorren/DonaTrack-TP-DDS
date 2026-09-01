@@ -1,4 +1,5 @@
 # ============================================================================
+#
 # DonaTrack — Pipeline de Integración Continua (Optimizado)
 # ============================================================================
 # Principios aplicados:
@@ -6,6 +7,7 @@
 #   • Build Once: imágenes compiladas una sola vez y publicadas en GHCR
 #   • Descubrimiento Dinámico: extensible sin tocar el archivo de pipeline
 #   • Quality Gate Determinístico: validación context-aware sin falsos positivos
+# 
 # ============================================================================
 #
 # CHANGELOG (respecto al original):
