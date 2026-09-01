@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 3.5.0 (Gobernanza de ADRs en proposed, Rúbrica de Benchmark y Trazabilidad Histórica)
+> **Versión:** 4.0.0 (Oleada 4 — Workflow por Nivel de Tarea: QUICK / STANDARD / ARCHITECTURAL)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -96,67 +96,178 @@ Antes de proponer un cambio, verificar los Fitness Checks operacionales en [`doc
 
 ---
 
-## 7. Protocolo de Trabajo del Agente en 7 Fases
+## 7. Protocolo de Trabajo — Core Workflow y Niveles de Tarea
 
-El agente debe estructurar su trabajo en las siguientes fases secuenciales:
+El agente estructura su trabajo en un **Core Workflow universal de 7 pasos**, ejecutado con **profundidad variable** según el nivel de impacto clasificado en Fase 0. No existen tres workflows independientes: las mismas fases operan con diferente profundidad según el nivel.
+
+### 7.0 Fase 0 — Clasificación de Nivel (Pre-Task, Siempre Obligatoria)
+
+Clasificar la tarea antes de iniciar el trabajo. El nivel determina la profundidad de cada paso.
+
+> **Regla conservadora:** ante duda entre dos niveles, clasificar el superior.
 
 ```text
-FASE 1          FASE 2          FASE 3          FASE 4          FASE 5          FASE 6                 FASE 7
-Descubrimiento ➔ Análisis      ➔ Diseño        ➔ Implementación ➔ Validación   ➔ Revisión Crítica     ➔ Reporte
-(Git/Baseline)  (OBS/INF/DOC)  (PROP/Trade)   (Mínimo suf.)   (Quality Gates) (Subagente Revisor)    (Modular)
-
+¿La tarea cumple TODOS los criterios QUICK?
+│
+├── SÍ → QUICK
+│
+└── NO → ¿Activa alguna señal ARCHITECTURAL?
+          ├── SÍ → ARCHITECTURAL
+          └── NO → STANDARD
 ```
 
-### Fase 1: Descubrimiento y Baseline
+#### Nivel QUICK
 
-Inspeccionar el repositorio (`git status`, `git log -n 5 --oneline`). Ejecutar los tests antes de modificar. Establecer `BASELINE_GREEN` o `BASELINE_RED`; si es RED, aislar los fallos preexistentes en el reporte para no atribuirlos a la modificación en curso.
+Todos los siguientes deben cumplirse:
 
-### Fase 2: Análisis Estructural
+- No cambia comportamiento en runtime.
+- No cambia contratos (REST, AMQP, eventos, DTOs públicos).
+- No cambia arquitectura ni patrones establecidos.
+- No cambia tests funcionales.
+- El cambio es pequeño, mecánico y estrictamente local.
 
-* Separar hechos observados (`[OBSERVED]`) de inferencias (`[INFERRED]`) y alternativas descartadas (`[REJECTED]`).
-* Identificar restricciones, dependencias y riesgos. **No modificar código durante esta fase.**
-* **Evaluación de Triggers de ADRs:** Contrastar el cambio o hallazgo contra la *Matriz de Triggers Mandatorios* (Sección 9.1). Si encuadra en cualquiera de los 9 vectores arquitectónicos, catalogar el hallazgo como `[PROPOSED]` para su formalización en Fase 3.
+Si modifica código Java más allá de comentarios o Javadoc → nivel mínimo **STANDARD**.
+Si requiere comparar alternativas, resolver trade-offs o producir una propuesta → nivel mínimo **STANDARD**.
 
-### Fase 3: Propuesta de Diseño
+*Ejemplos:* typo, Javadoc, comentario, documentación local, formato, rename local sin impacto público.
 
-* Presentar la solución técnica justificando responsabilidades y trade-offs.
-* Verificar compatibilidad con los ADRs e invariantes arquitectónicas.
-* **Formalización de ADRs en `proposed`:** Si en Fase 2 se activó un trigger (§9.1), redactar el ADR en `docs/adr/<servicio>/YYYYMMDD-<slug>.md` y registrarlo en `docs/adr/DEUDA_TECNICA.md`. Ver política completa en §9.
-* **Regla de Bifurcación Temporal (Presente vs Futuro):** Si el ADR resuelve la tarea actual, implementar en Fase 4; si corresponde a entregas futuras, proponer y catalogar sin alterar el código actual.
-* **Interacción Humana Calibrada:** Solicitar confirmación del usuario **únicamente si el cambio modifica o supera el alcance originalmente autorizado**.
+#### Señales ARCHITECTURAL
 
-### Fase 4: Implementación Quirúrgica
+Tratar como ARCHITECTURAL cuando la tarea:
 
-* Aplicar el cambio mínimo suficiente respetando la encapsulación y los contratos vigentes.
-* Mantener consistencia de nombres y estilo de código.
-* **Auto-revisión de Code Smells:** Durante la codificación, consultar obligatoriamente la guía de errores frecuentes y *smells* recurrentes en [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md) para evitar violaciones estáticas comunes (métodos que deben ser `static`, constructores privados en utilitarios, `@Override`, literales repetidos, shadowing de variables).
+- modifica límites de bounded context o módulos;
+- cambia un contrato público o de interoperabilidad (REST, AMQP, Feign, eventos, DTOs compartidos);
+- cambia estrategia de persistencia o datos;
+- cambia mecanismos de seguridad o privacidad;
+- introduce tecnología o dependencia estructural nueva;
+- cambia comunicación sync ↔ async;
+- modifica estructuralmente shared kernel / `common-lib`;
+- reemplaza un patrón arquitectónico establecido;
+- implica una decisión costosa de revertir;
+- tiene impacto cross-service relevante.
 
-### Fase 5: Validación Gradual (Quality Gates)
+> **`[DEFERRED_WAVE_5]` Relación con triggers ADR:** Mientras la política de triggers §9.1 esté vigente, si una tarea activa alguno de esos triggers, debe tratarse como mínimo como ARCHITECTURAL. Oleada 5 redefinirá los triggers ADR de forma desacoplada de esta clasificación.
 
-* Ejecutar los Quality Gates correspondientes al alcance (Sección 11).
-* **Verificación de Cobertura Condicional y Pre-Flight Sonar:** Asegurar que todo nuevo camino lógico (`if`, `switch`, ternarios, `Optional`) cuente con pruebas unitarias para todas sus bifurcaciones (*Condition Coverage $\ge 80\%$*), y verificar el cumplimiento del checklist pre-flight de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
-* Comprobar formato y estilo de código (`mvn spotless:check`).
+#### Nivel STANDARD
 
-### Fase 6: Revisión Crítica Adversarial y Refinamiento
+Toda tarea que no sea QUICK ni ARCHITECTURAL: cambio funcional o estructural acotado a un servicio, bajo patrones existentes, sin señales arquitectónicas, reversible localmente.
+
+*Ejemplos:* bug fix, lógica local, nuevo test, refactor interno, endpoint que implementa un contrato/patrón ya decidido sin alterar arquitectura ni contrato establecido.
+
+---
+
+### 7.1 Regla Anti-Downgrade
+
+> El nivel se determina por el **mayor impacto descubierto**, no por el tamaño del diff ni la intención inicial.
+
+La clasificación puede **escalar** (QUICK → STANDARD → ARCHITECTURAL) si aparece nueva evidencia. No se reduce el nivel una vez detectada una señal de mayor impacto, salvo que nueva evidencia demuestre explícitamente que esa señal no aplica. Al escalar, reevaluar contexto, validación y reporte al nuevo nivel.
+
+---
+
+### 7.2 Core Workflow
+
+```text
+Paso 1: Clasificar impacto          → Nivel: QUICK / STANDARD / ARCHITECTURAL
+Paso 2: Entender scope y contexto   → cargar contexto necesario, no todo
+Paso 3: Establecer evidencia        → baseline proporcional al nivel
+Paso 4: Realizar cambio mínimo      → implementación quirúrgica
+Paso 5: Validar proporcionalmente   → gates según nivel e impacto real
+Paso 6: Revisar proporcionalmente   → profundidad según nivel
+Paso 7: Reportar evidencia          → reporte proporcional al nivel
+```
+
+Los Core Invariantes (epistemic labels, seguridad, integridad de tests, anti-scope creep, sincronía documental, SonarCloud pre-flight para código Java) aplican en todos los niveles.
+
+---
+
+### 7.3 Tabla de Profundidad por Nivel
+
+> **Regla general:** *Validation breadth follows impact, not task label alone.*
+
+| Paso | QUICK | STANDARD | ARCHITECTURAL |
+|------|-------|----------|---------------|
+| **2 — Contexto** | Solo si necesario; skip `context-index` para cambios triviales | Usar [`docs/context-index.md`](docs/context-index.md) | `context-index` + contexto del servicio + transversal + ADRs relacionados |
+| **3 — Evidencia** | `git status`; omitir baseline de tests si no hay código ejecutable afectado | Baseline del módulo (`mvn test -pl <modulo>` o equivalente) | Full baseline + scan de impacto cross-service |
+| **5 — Validación** | Solo lo directamente afectado; sin tests si no hay código ejecutable afectado | `mvn clean test -pl <modulo> -am`; escalar a reactor cuando: cambia `common-lib`, múltiples módulos, contrato compartido, config raíz, o evidencia de impacto transversal | Validación amplia; reactor cuando corresponda; Gate 3/4 solo cuando sean técnicamente relevantes y ejecutables |
+| **6 — Revisión** | `LIGHTWEIGHT_CLOSING_CHECK` | `REVIEW_REQUIRED` | `ENHANCED_REVIEW_REQUIRED` |
+| **7 — Reporte** | Breve: qué cambió y qué se validó | Scope, baseline, cambios, validación, riesgos/hallazgos | Completo: spec, impacto, alternativas, ADR (§9), validación, review, riesgos residuales, decisiones pendientes |
+
+---
+
+### 7.4 Spec Policy
+
+| Nivel | Requerimiento |
+|-------|---------------|
+| **QUICK** | No requiere spec. |
+| **STANDARD** | Spec mínimo cuando: objetivo no trivial, múltiples condiciones de aceptación, ambigüedad funcional, o más de un paso relevante. Formato: `Goal / Scope / Constraints / Validation`. |
+| **ARCHITECTURAL** | Spec obligatorio antes de implementar. Formato expandido con alternativas y justificación. Relación spec–ADR diferida a Oleada 5 (`DEFERRED_WAVE_5`). |
+
+No crear carpetas nuevas para specs salvo que ya exista una ubicación canónica apropiada y sea estrictamente necesaria.
+
+---
+
+### 7.5 Descripción de Fases
+
+#### Fase 1: Descubrimiento y Baseline
+
+Inspeccionar el repositorio (`git status`, `git log -n 5 --oneline`). El nivel de baseline y ejecución de tests dependen del nivel (§7.0) y la tabla (§7.3). Establecer `BASELINE_GREEN` o `BASELINE_RED`; si es RED, aislar los fallos preexistentes.
+
+#### Fase 2: Análisis Estructural
+
+* Separar `[OBSERVED]`, `[INFERRED]` y `[REJECTED]`. **No modificar código durante esta fase.**
+* **STANDARD y ARCHITECTURAL:** Evaluar señales ARCHITECTURAL (§7.0) y triggers ADR (§9.1). Si aparece una señal → reevaluar nivel (§7.1) y catalogar el hallazgo como `[PROPOSED]` para Fase 3.
+
+#### Fase 3: Propuesta de Diseño
+
+* **QUICK:** No existe ceremonia formal de diseño. Pensar antes de editar es obligatorio.
+* **STANDARD y ARCHITECTURAL:** Presentar solución técnica con trade-offs. Verificar compatibilidad con ADRs e invariantes (§4).
+* **ARCHITECTURAL:** Si se activó un trigger §9.1, redactar ADR en `proposed` en `docs/adr/<servicio>/YYYYMMDD-<slug>.md` y registrar en `docs/adr/DEUDA_TECNICA.md`. Ver política completa en §9.
+* **Regla de Bifurcación Temporal:** Si el ADR resuelve la tarea actual, implementar en Fase 4; si corresponde a entregas futuras, proponer y catalogar sin alterar código.
+* **Interacción Humana Calibrada:** Solicitar confirmación del usuario únicamente si el cambio supera el alcance originalmente autorizado.
+
+#### Fase 4: Implementación Quirúrgica
+
+Aplicar el cambio mínimo suficiente respetando encapsulación y contratos vigentes. Mantener consistencia de nombres y estilo.
+
+* **Para todo código Java:** Consultar obligatoriamente [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md) para evitar violaciones estáticas comunes (métodos `static`, constructores privados en utilitarios, `@Override`, literales repetidos, shadowing de variables).
+
+#### Fase 5: Validación Gradual
+
+Aplicar la profundidad de validación proporcional al nivel (§7.3). Ejecutar de menor a mayor costo computacional.
+
+* **Código Java:** Verificar cobertura condicional (Condition Coverage ≥ 80%) y pre-flight de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md). Ver §11 para comandos y Gates 1–4.
+
+#### Fase 6: Revisión Crítica
+
+La profundidad de revisión sigue el nivel clasificado (§7.3):
+
+| Nivel | Profundidad requerida |
+|-------|----------------------|
+| QUICK | `LIGHTWEIGHT_CLOSING_CHECK` — verificación proporcional antes de cerrar |
+| STANDARD | `REVIEW_REQUIRED` — aplicar política de review vigente |
+| ARCHITECTURAL | `ENHANCED_REVIEW_REQUIRED` — política vigente con máxima profundidad |
+
+> **`[DEFERRED_WAVE_6]`** La separación de mecanismos de review (Generator/Evaluator, self-review estructurado, herramientas vendor-specific) se define en Oleada 6.
+
+**Política de review vigente** (mecanismo invariante; profundidad según tabla arriba):
 
 Para erradicar el sesgo de auto-confirmación (*confirmation bias*), el agente **no debe dar por concluida su tarea sin someter su entrega a una auditoría independiente**.
 
-* **Invocación Mandatoria de Subagente Revisor:**  
-El agente principal debe invocar mediante la herramienta `invoke_subagent` a un subagente independiente de sólo lectura (`Role: Revisor Crítico Adversarial`, `TypeName: research` o `self`) enviándole el `git diff` de la rama y el objetivo de la tarea.
-* **Vectores de Auditoría Obligatorios:** El subagente revisor debe auditar la entrega contra cuatro fuentes normativas:
-1. [`docs/auditoria/plan-revisor-critico.md`](docs/auditoria/plan-revisor-critico.md): Falsación activa, búsqueda de casos borde no cubiertos y violación de invariantes de agregados.
-2. [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md): Detección de *code smells* de SonarCloud (visibilidad JUnit 5, `@Override`, `static` en utilitarios, duplicación de strings, imports sobrantes).
-3. [`docs/ESTADO_DOCUMENTACION.md`](docs/ESTADO_DOCUMENTACION.md) y [`docs/README.md`](docs/README.md): Comprobación de integridad del grafo documental (ausencia de documentos huérfanos e índices desincronizados).
-4. **Rúbrica de Benchmark de Calidad de ADRs (Sección 9.5):** Si la entrega incluye o modifica ADRs, calificar cada documento de 1 a 5 en sus 4 dimensiones, exigiendo un promedio ponderado $\ge \mathbf{4.0 / 5.0}$ para autorizar el pase a Fase 7.
-* **Ciclo de Corrección Inmediata:**  
-El subagente revisor emite un informe estructurado con los defectos u omisiones detectadas. El agente principal **debe aplicar inmediatamente las correcciones pertinentes dentro del alcance autorizado** y re-ejecutar Gate 1 (`mvn spotless:check` / `mvn test`) antes de proceder a la siguiente fase.
-* **Modo Fallback Monoproceso (Sin Soporte de Subagentes):**  
-Si el entorno carece de la herramienta `invoke_subagent` o no soporta subagentes concurrentes, el agente principal **debe adoptar explícitamente el rol de auditor escéptico** en un bloque de razonamiento aislado de su propia traza, evaluando los 4 vectores anteriores con el máximo rigor crítico antes de emitir el reporte final.
+* **Invocación de Subagente Revisor:** Invocar mediante `invoke_subagent` a un subagente independiente de sólo lectura (`Role: Revisor Crítico Adversarial`, `TypeName: research` o `self`) con el `git diff` y el objetivo de la tarea.
+* **Vectores de Auditoría Obligatorios:**
+  1. [`docs/auditoria/plan-revisor-critico.md`](docs/auditoria/plan-revisor-critico.md): Falsación activa, casos borde, violación de invariantes de agregados.
+  2. [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md): Code smells de SonarCloud (visibilidad JUnit 5, `@Override`, `static`, duplicación de strings, imports sobrantes).
+  3. [`docs/ESTADO_DOCUMENTACION.md`](docs/ESTADO_DOCUMENTACION.md) y [`docs/README.md`](docs/README.md): Integridad del grafo documental.
+  4. **Rúbrica de Benchmark de ADRs (§9.5):** Si la entrega incluye o modifica ADRs, calificar de 1 a 5 en sus 4 dimensiones, exigiendo promedio ponderado ≥ 4.0 / 5.0 para autorizar Fase 7.
+* **Ciclo de Corrección Inmediata:** El subagente revisor emite un informe estructurado. El agente principal **debe aplicar inmediatamente las correcciones pertinentes** y re-ejecutar Gate 1 (`mvn spotless:check` / `mvn test`) antes de proceder a Fase 7.
+* **Modo Fallback Monoproceso:** Si el entorno carece de `invoke_subagent`, el agente principal **debe adoptar explícitamente el rol de auditor escéptico** evaluando los 4 vectores anteriores con máximo rigor crítico.
 
-### Fase 7: Reporte y Entrega
+#### Fase 7: Reporte y Entrega
 
-* **Paso Previo de Pre-Cierre Documental:** Antes de redactar la lista de *Archivos Modificados*, si la tarea involucró creación, edición o reubicación de documentos en `docs/`, verificar obligatoriamente que `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` se encuentren 100% sincronizados.
-* **Mandatorio:** Emitir reporte de cierre con la plantilla estandarizada disponible en [`docs/IA/04-checklist-antes-de-pr.md`](docs/IA/04-checklist-antes-de-pr.md).
+Aplicar profundidad de reporte según nivel (§7.3).
+
+* **Paso Previo de Pre-Cierre Documental:** Si la tarea involucró creación, edición o reubicación de documentos en `docs/`, verificar obligatoriamente que `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` estén 100% sincronizados.
+* Para STANDARD y ARCHITECTURAL: usar plantilla de [`docs/IA/04-checklist-antes-de-pr.md`](docs/IA/04-checklist-antes-de-pr.md).
 
 
 ---
@@ -286,16 +397,16 @@ Sin Docker accesible: completar Gate 1 y Gate 2 con Maven nativo. No declarar Ga
 
 ## 12. Checklist de Cierre y Criterio de Parada
 
-Antes de dar por concluida cualquier interacción o propuesta técnica, verificar:
+Antes de dar por concluida cualquier interacción o propuesta técnica, verificar. Aplicar cada ítem proporcionalmente al nivel de la tarea (§7.0).
 
-* [ ] **Baseline verificado:** fallos preexistentes identificados y aislados
+* [ ] **Baseline verificado:** fallos preexistentes identificados y aislados (proporcional al nivel: §7.3)
 * [ ] **Tests intactos:** sin aserciones debilitadas, gates alterados ni builds forzados
-* [ ] **Pre-flight SonarCloud ejecutado:** consultar [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md)
-* [ ] **Revisión Crítica Adversarial completada** (Fase 6)
-* [ ] **ADR formalizado** si se activó un trigger §9.1; ninguno auto-promovido a `accepted`
+* [ ] **Pre-flight SonarCloud ejecutado:** para todo código Java, consultar [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md)
+* [ ] **Revisión completada** según profundidad del nivel: `LIGHTWEIGHT_CLOSING_CHECK` / `REVIEW_REQUIRED` / `ENHANCED_REVIEW_REQUIRED` (§7.5 Fase 6)
+* [ ] **ADR formalizado** si se activó un trigger §9.1 (ARCHITECTURAL); ninguno auto-promovido a `accepted`
 * [ ] **Grafo documental sincronizado:** `docs/README.md`, `docs/ESTADO_DOCUMENTACION.md` y `docs/adr/DEUDA_TECNICA.md` según alcance
-* [ ] **Quality Gates superados** o `[DEFERRED_NO_DOCKER]` declarado formalmente
-* [ ] **Reporte emitido** con plantilla de [`docs/IA/04-checklist-antes-de-pr.md`](docs/IA/04-checklist-antes-de-pr.md)
+* [ ] **Quality Gates superados** según nivel (§7.3), o `[DEFERRED_NO_DOCKER]` declarado formalmente
+* [ ] **Reporte emitido:** breve para QUICK; con plantilla de [`docs/IA/04-checklist-antes-de-pr.md`](docs/IA/04-checklist-antes-de-pr.md) para STANDARD y ARCHITECTURAL
 
 ---
 
