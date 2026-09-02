@@ -238,3 +238,17 @@ DonaTrack implementa la **Regla de Dependencia Unidireccional** de la Arquitectu
    Todos los repositorios heredan de `CrudRepositoryEnMemoria<T>`, aislando los datos en memoria por microservicio y garantizando tests reproducibles y determinísticos.
 3. **Evolución Hacia Entrega 2:**  
    La migración a bases de datos relacionales (JPA/Hibernate) y surrogate keys se encuentra planificada en `docs/adr/DEUDA_TECNICA.md` (`DTI-01` a `DTI-06`), preservando la integridad del modelo de dominio.
+
+---
+
+## 9. Checklist Operacional de Fitness
+
+Antes de proponer o implementar un cambio, someter el diseño a las siguientes preguntas:
+
+| Vector de Calidad | Pregunta de Verificación |
+| --- | --- |
+| **1. Cohesión y Mantenibilidad (SRP / OCP)** | ¿La responsabilidad pertenece naturalmente a la clase asignada y permite extender comportamiento variable sin modificar código base estable? |
+| **2. Acoplamiento e Identidad** | ¿Se evitó compartir referencias a objetos en memoria entre agregados o microservicios, interactuando únicamente mediante IDs estables (UUID)? |
+| **3. Simplicidad Suficiente (KISS / YAGNI)** | ¿La solución resuelve el problema real sin incorporar capas de indirección innecesarias, librerías prescindibles o abstracciones especulativas? |
+| **4. Resiliencia y Manejo de Estado** | ¿El sistema degrada de forma controlada ante la falla de un servicio externo y asume que la memoria del proceso local no es persistencia distribuida? |
+| **5. Testeabilidad y Reversibilidad** | ¿La lógica puede validarse con tests unitarios aislados y el cambio puede revertirse de forma limpia sin dejar inconsistencias colaterales? |

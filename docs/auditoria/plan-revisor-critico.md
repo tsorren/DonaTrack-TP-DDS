@@ -99,7 +99,7 @@ El Revisor Crítico debe evaluar cómo la documentación técnica aborda, fundam
 * **Archivos a inspeccionar:**
   * [docs/README.md](../README.md)
   * [docs/ESTADO_DOCUMENTACION.md](../ESTADO_DOCUMENTACION.md)
-  * .agents/rules/AGENTS.md y Readme.md (raíz).
+  * AGENTS.md (raíz) y Readme.md (raíz).
 * **Checklist de Verificación:**
   - [x] Ausencia de archivos plantilla obsoletos (ej. ddsi-tp-template.md).
   - [x] Ausencia de carpetas con espacios, caracteres no-ASCII o nombres informales (normalización de `docs/arquitectura/diseno/`).
