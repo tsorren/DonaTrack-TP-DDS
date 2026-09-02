@@ -1,3 +1,10 @@
+> [!WARNING]
+> **[HISTÓRICO — NO CANÓNICO]** Este archivo es una copia de referencia del `AGENTS.md` en su estado pre-refactor de ubicación (Oleada 0+1, 2026-09-01).
+> La fuente canónica activa es `/AGENTS.md` en la raíz del repositorio.
+> Este archivo no debe ser editado ni utilizado como instrucciones vigentes para agentes.
+
+---
+
 # AGENTS.md — Engineering & Architecture Rules
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**

@@ -45,8 +45,8 @@ Confirmo que:
 - [ ] No sobrecargué innecesariamente la capa de services.
 - [ ] No dupliqué lógica de negocio existente.
 - [ ] No introduje acoplamiento innecesario entre módulos.
-- [ ] Si el cambio tocó alguno de los 9 triggers mandatorios (`AGENTS.md` §9.1: DDD, ORM/Schemas, Contratos REST/AMQP, Schedulers, common-lib, SRP, Seguridad/PII, S3/Infra, Testing), formalicé el ADR en `Status: proposed` bajo formato MADR y lo registré en `docs/adr/DEUDA_TECNICA.md`.
-- [ ] Respeté la Regla de Bifurcación Temporal: si el ADR corresponde a entregas futuras (ej. JPA para Entrega 4), formalicé la propuesta sin introducir refactors especulativos en el código funcional actual.
+- [ ] Evalué si la tarea introdujo una nueva decisión arquitectónicamente significativa (Gate A + Gate B en [`docs/adr/README.md`](../adr/README.md)). Si aplica: formalicé el ADR en `Status: proposed` bajo formato MADR.
+- [ ] Si el ADR corresponde a una entrega futura, lo formalicé sin introducir código especulativo (ver Bifurcación Temporal en [`docs/adr/README.md`](../adr/README.md)).
 - [ ] Ningún ADR nuevo fue auto-promovido a `Status: accepted`; se delegó la aprobación formal al revisor humano en la PR.
 
 ---
@@ -123,19 +123,22 @@ Confirmo que:
 
 ---
 
-# 9. Revisión Crítica Adversarial con IA (Fase 6 de AGENTS.md)
+# 9. Revisión Crítica (Fase 6 de AGENTS.md)
 
-Antes de pedir review humana, es mandatorio ejecutar la **Fase 6 de AGENTS.md** despachando un **Subagente Revisor Independiente** (o fallback monoproceso) y usando como referencia:
+Antes de pedir review humana, es mandatorio ejecutar la **Fase 6 de AGENTS.md** según el nivel de la tarea.
 
-[`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md) y [`../auditoria/plan-revisor-critico.md`](../auditoria/plan-revisor-critico.md)
+Fuente canónica de política: [`review/evaluator.md`](./review/evaluator.md) · Prompt operativo: [`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)
 
 Confirmo que:
 
-- [ ] Se ejecutó la auditoría independiente con el Subagente Revisor sin sesgos sobre el diff completo de la PR.
-- [ ] Se buscaron activamente bugs funcionales, condiciones de carrera y casos borde no cubiertos.
-- [ ] Si la PR introduce o modifica ADRs, el Subagente Revisor aplicó la Rúbrica de Benchmark (escala 1 a 5 en 4 dimensiones) y obtuvo un puntaje promedio $\ge 4.0 / 5.0$.
-- [ ] Se auditó la integridad del grafo documental: ¿se actualizaron `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` si se tocaron documentos?
-- [ ] Se corrigieron de inmediato todos los defectos y desfasajes reportados por el revisor crítico antes de emitir el reporte.
+- [ ] **QUICK:** se completó el `LIGHTWEIGHT_CLOSING_CHECK` (scope/diff check, validaciones ejecutadas, evidencia, result `PASS` o `ESCALATE_TO_STANDARD`).
+- [ ] **STANDARD / ARCHITECTURAL:** se emitió el Review Contract con Verdict `PASS` o con findings documentados.
+- [ ] El modo de revisión fue declarado: `INDEPENDENT_REVIEW` | `SELF_REVIEW`.
+- [ ] Si la PR introduce ADRs `proposed`: se aplicó la Rúbrica de ADR Review (escala 1 a 5 en 4 dimensiones, puntaje ≥ 4.0/5.0) — separado del Review Contract de implementación.
+- [ ] Se auditó la integridad del grafo documental (V9): `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` sincronizados si correspondía.
+- [ ] Findings BLOCKING resueltos y Gate 1 re-ejecutado antes de cerrar.
+- [ ] Findings ADVISORY documentados en el Review Contract; el equipo humano decide si requieren acción.
+- [ ] Si ARCHITECTURAL con `SELF_REVIEW`: reportado como `[SELF_REVIEW_FALLBACK]` en Reporte de Fase 7.
 
 ---
 
@@ -173,6 +176,44 @@ Confirmo que:
 
 Antes de abrir PR, debería poder afirmar:
 
-> Entiendo el cambio, validé su comportamiento, revisé los riesgos contra el Quality Gate de SonarCloud, audité la entrega con el Subagente Revisor y puedo hacerme responsable técnicamente por esta Pull Request.
+> Entiendo el cambio, validé su comportamiento, revisé los riesgos contra el Quality Gate de SonarCloud, emití el Review Contract (o `LIGHTWEIGHT_CLOSING_CHECK` si QUICK) con Verdict, y puedo hacerme responsable técnicamente por esta Pull Request.
 
 Si no puedo afirmar eso, todavía no debería pedir review.
+
+---
+
+## Apéndice: Plantilla de Reporte Operativo (Fase 7 de AGENTS.md)
+
+Incluir en la descripción de la PR:
+
+```markdown
+### 📋 Reporte Operativo — DonaTrack
+
+#### 1. Resumen Ejecutivo y Alcance
+* **Objetivo:** [Breve descripción de la tarea solicitada]
+* **Estado de Baseline:** `[BASELINE_GREEN]` | `[BASELINE_RED (Detallar fallos preexistentes aislados)]`
+* **Archivos Modificados:** [Listado de rutas relativas intervenidas]
+
+#### 2. Matriz Epistémica de Cambios y Hallazgos
+* `[OBSERVED]`: [Evidencias constatadas en código/git/tests antes de intervenir]
+* `[DOCUMENTED]`: [ADRs, consignas de cátedra o contratos que respaldan el cambio]
+* `[INFERRED]`: [Deducciones lógicas o hipótesis tomadas durante el análisis]
+* `[PROPOSED]`: [Modificaciones arquitectónicas o de código implementadas]
+* `[REJECTED]`: [Alternativas evaluadas y descartadas con justificación técnica]
+* `[VERIFIED]`: [Comandos ejecutados, tests superados y validaciones de formato]
+
+#### 3. Revisión Crítica (Fase 6)
+* **Modo:** `[INDEPENDENT_REVIEW]` | `[SELF_REVIEW]` | `[LIGHTWEIGHT_CLOSING_CHECK]`
+* **Fallback declarado:** `[SELF_REVIEW_FALLBACK]` si ARCHITECTURAL sin independencia real
+* **Findings BLOCKING resueltos:** [Correcciones aplicadas antes del cierre]
+* **Findings ADVISORY:** [Listado; decisión pendiente del equipo humano]
+* **ADR Review (si aplica):** [Puntaje X.X/5.0 — separado del Review Contract de implementación]
+
+#### 4. Validación y Quality Gates
+* **Gate 1 (Unitario + Formato):** [✅ Aprobado]
+* **Gate 2 (Módulo Completo):** [✅ Aprobado | ⏭️ Omitido por alcance]
+* **Gate 3/4 (Integración / E2E):** [✅ Aprobado | ⚠️ `[DEFERRED_NO_DOCKER]`]
+
+#### 5. Deuda Técnica y Hallazgos Colaterales
+* [Hallazgos secundarios detectados pero NO modificados en esta iteración]
+```
