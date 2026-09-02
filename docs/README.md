@@ -62,14 +62,25 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
+│   └── donaciones, incentivos, etc.       # 78 ADRs (44 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
-│   ├── DEUDA_TECNICA.md                   # Índice de deuda técnica diferida (DTI-01 a DTI-06)
-│   └── donaciones, incentivos, etc.       # 76 ADRs (42 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
     └── interfaz/                          # Bocetos Figma y mapa de navegación
 ```
+
+---
+
+## 🛠️ Comandos de Compilación del Monorepo (Maven)
+
+* **Build completo del reactor:** `mvn clean test`
+* **Compilación de un módulo específico:** Utilizar siempre el flag `-am` (`--also-make`) para resolver dependencias internas del reactor (`common-lib`):
+  ```bash
+  mvn test -pl notificaciones-service -am
+  ```
+  *(Nota: ejecutar `mvn test -pl notificaciones-service` sin `-am` requerirá que `common-lib` haya sido previamente instalada en el repositorio local vía `mvn install -DskipTests -pl common-lib`).*
 
 ---
 
