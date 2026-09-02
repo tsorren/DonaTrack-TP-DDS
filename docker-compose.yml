@@ -193,6 +193,15 @@ services:
     networks:
       - donatrack-network
 
+  adminer:
+    image: adminer
+    ports:
+      - "8085:8080"
+    networks:
+      - donatrack-network
+    depends_on:
+      - postgres
+
   minio:
     image: minio/minio:latest
     container_name: donatrack-minio-local
@@ -217,3 +226,4 @@ networks:
 
 volumes:
   postgres_data:
+
