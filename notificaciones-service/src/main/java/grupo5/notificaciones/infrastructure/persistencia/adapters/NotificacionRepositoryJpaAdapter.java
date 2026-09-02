@@ -9,11 +9,11 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Primary
+@Profile("postgres")
 public class NotificacionRepositoryJpaAdapter
     extends CrudRepositoryJpaAdapter<
         Notificacion, NotificacionEntity, SpringDataNotificacionRepository>

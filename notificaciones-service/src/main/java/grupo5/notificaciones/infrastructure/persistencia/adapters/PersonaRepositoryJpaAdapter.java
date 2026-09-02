@@ -6,11 +6,11 @@ import grupo5.notificaciones.infrastructure.persistencia.mappers.PersonaPersiste
 import grupo5.notificaciones.infrastructure.persistencia.repositories.SpringDataPersonaRepository;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Primary
+@Profile("postgres")
 public class PersonaRepositoryJpaAdapter
     extends CrudRepositoryJpaAdapter<Persona, PersonaEntity, SpringDataPersonaRepository>
     implements IPersonaRepository {

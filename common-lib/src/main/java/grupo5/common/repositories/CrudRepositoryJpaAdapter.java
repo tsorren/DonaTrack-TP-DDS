@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  * @param <T> Tipo del Agregado de Dominio (debe implementar AggregateRoot)
  * @param <E> Tipo de la Entidad JPA de infraestructura
- * @param <R> Tipo de la interfaz Spring Data JPA (JpaRepository<E, UUID>)
+ * @param <R> Tipo de la interfaz Spring Data JPA
  */
 public abstract class CrudRepositoryJpaAdapter<
         T extends AggregateRoot, E, R extends JpaRepository<E, UUID>>
