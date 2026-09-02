@@ -266,23 +266,43 @@ package PORTS {
   MedioDeContacto ..|> Anonimizable
 }
 
-' ==================== INFRASTRUCTURE (adapters mock) ====================
+' ==================== INFRASTRUCTURE (adapters simulados y listeners) ====================
 package INFRASTRUCTURE {
-  class CorreoEnvioMock <<entity>> {
+  interface CriterioFalloSimulado <<interface>> {
+    + debeFallar(destinatario: String, mensaje: String): boolean
+  }
+
+  class CriterioFalloPorSentinela <<service>> {
+    + debeFallar(destinatario: String, mensaje: String): boolean
+  }
+
+  class CorreoAdapterSimulado <<entity>> {
+    - criterioFallo: CriterioFalloSimulado
     + enviarMail(destinatario: String, mensaje: String): boolean
   }
 
-  class TelefonoEnvioMock <<entity>> {
+  class TelefonoAdapterSimulado <<entity>> {
+    - criterioFallo: CriterioFalloSimulado
     + enviarSms(telefono: String, mensaje: String): boolean
   }
 
-  class WhatsappEnvioMock <<entity>> {
+  class WhatsAppAdapterSimulado <<entity>> {
+    - criterioFallo: CriterioFalloSimulado
     + enviarWhatsApp(telefono: String, mensaje: String): boolean
   }
 
-  CorreoEnvioMock ..|> CorreoAdapter
-  TelefonoEnvioMock ..|> TelefonoAdapter
-  WhatsappEnvioMock ..|> WhatsAppAdapter
+  class NotificacionAuditListener <<service>> {
+    + onNotificacionEnviada(event: NotificacionEnviada): void
+    + onNotificacionFallida(event: NotificacionFallida): void
+  }
+
+  CriterioFalloPorSentinela ..|> CriterioFalloSimulado
+  CorreoAdapterSimulado ..|> CorreoAdapter
+  TelefonoAdapterSimulado ..|> TelefonoAdapter
+  WhatsAppAdapterSimulado ..|> WhatsAppAdapter
+  CorreoAdapterSimulado --> CriterioFalloSimulado
+  TelefonoAdapterSimulado --> CriterioFalloSimulado
+  WhatsAppAdapterSimulado --> CriterioFalloSimulado
 }
 
 ' ==================== SERVICES (Application Services) ====================

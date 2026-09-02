@@ -31,7 +31,9 @@ class EventosNotificablesTest {
 
     assertEquals(1, notificaciones.size());
 
-    assertEquals("Subiste a la categoría Platino", notificaciones.getFirst().getMensaje());
+    assertEquals(
+        "¡Felicitaciones! Has ascendido de la categoría Bronce a Platino.",
+        notificaciones.getFirst().getMensaje());
   }
 
   @Test
