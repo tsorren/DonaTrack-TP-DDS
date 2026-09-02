@@ -168,7 +168,8 @@ public class GlobalExceptionHandler {
   public ResponseEntity<ErrorResponse> handleBusinessState(BusinessStateException ex) {
     HttpStatus status = HttpStatus.CONFLICT;
     if (ex.getError() == ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO
-        || ex.getError() == ErrorCatalog.INSIGNIA_NO_ENCONTRADA) {
+        || ex.getError() == ErrorCatalog.INSIGNIA_NO_ENCONTRADA
+        || ex.getError() == ErrorCatalog.RANKING_NO_ENCONTRADO) {
       status = HttpStatus.NOT_FOUND;
     }
     log.warn(

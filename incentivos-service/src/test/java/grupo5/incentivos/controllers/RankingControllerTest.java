@@ -1,11 +1,14 @@
 package grupo5.incentivos.controllers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.incentivos.dto.RankingMensualDTO;
 import grupo5.incentivos.fixtures.RankingMensualMother;
+import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.services.IRankingService;
 import java.time.Month;
 import java.time.YearMonth;
@@ -125,5 +128,28 @@ class RankingControllerTest {
     ResponseEntity<Integer> response = controller.obtenerPosicionDonante(donanteId, null);
 
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+  }
+
+  @Test
+  void obtenerRankingPorPeriodo_cuandoExiste_deberiaRetornarStatus200OkYBody() {
+    RankingMensual ranking = RankingMensualMother.vacioDeMayo2026();
+
+    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, Month.MAY)))
+        .thenReturn(Optional.of(ranking));
+
+    ResponseEntity<RankingMensualDTO> response = controller.obtenerRankingPorPeriodo("2026-05");
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(RankingMensualDTO.desde(ranking), response.getBody());
+    verify(rankingService, times(1)).obtenerRankingPorPeriodo(YearMonth.of(2026, Month.MAY));
+  }
+
+  @Test
+  void obtenerRankingPorPeriodo_cuandoNoExiste_deberiaLanzarBusinessStateException() {
+    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, Month.MAY)))
+        .thenReturn(Optional.empty());
+
+    assertThrows(
+        BusinessStateException.class, () -> controller.obtenerRankingPorPeriodo("2026-05"));
   }
 }

@@ -173,6 +173,31 @@ class MisionesDonacionServiceTest {
   }
 
   @Test
+  void
+      obtenerMisiones_cuandoMisionCompletadaTieneInsignia_deberiaIncluirLaInsigniaGanadaDelDonante() {
+    UUID donanteId = UUID.randomUUID();
+    MisionRacha racha =
+        MisionMother.rachaConInsignia(CategoriaDonante.COLABORADOR, 1, "Racha de Bronce");
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(racha));
+    repository.save(donante);
+
+    NuevaDonacionRequest request =
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
+    service.procesarDonacion(request);
+
+    List<MisionDTO> misiones = service.obtenerMisiones(donanteId);
+
+    assertEquals(1, misiones.size());
+    MisionDTO dto = misiones.get(0);
+    assertTrue(dto.completada());
+    assertNotNull(dto.insignia());
+    assertEquals("Racha de Bronce", dto.insignia().nombre());
+    // Si viniera solo del molde estático de la misión (fallback), la fecha sería null:
+    // que no sea null confirma que se resolvió la InsigniaGanada real del donante.
+    assertNotNull(dto.insignia().fechaObtenida());
+  }
+
+  @Test
   void verificarRachasVencidas_deberiaProcesarTodosLosDonantesDelRepositorio() {
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();

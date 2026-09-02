@@ -16,12 +16,16 @@ import grupo5.incentivos.dto.DonanteRegistradoDTO;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
 import grupo5.incentivos.dto.RegistrarDonanteRequest;
+import grupo5.incentivos.fixtures.RankingMensualMother;
+import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.services.IGestionDonanteService;
+import grupo5.incentivos.services.IInactividadService;
 import grupo5.incentivos.services.IInsigniasService;
 import grupo5.incentivos.services.IMetricasIncentivosService;
 import grupo5.incentivos.services.IMisionesDonacionService;
 import grupo5.incentivos.services.IRankingService;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,6 +49,7 @@ class ControllersWebMvcValidationTest {
   @Mock private IInsigniasService insigniasService;
   @Mock private IMetricasIncentivosService metricasIncentivosService;
   @Mock private IRankingService rankingService;
+  @Mock private IInactividadService inactividadService;
 
   @BeforeEach
   void setUp() {
@@ -59,6 +64,8 @@ class ControllersWebMvcValidationTest {
     MetricasIncentivosController metricasController =
         new MetricasIncentivosController(metricasIncentivosService);
     RankingController rankingController = new RankingController(rankingService);
+    ProcesosIncentivosController procesosController =
+        new ProcesosIncentivosController(inactividadService, misionesDonacionService);
 
     mockMvc =
         MockMvcBuilders.standaloneSetup(
@@ -66,7 +73,8 @@ class ControllersWebMvcValidationTest {
                 misionesController,
                 insigniasController,
                 metricasController,
-                rankingController)
+                rankingController,
+                procesosController)
             .setControllerAdvice(new GlobalExceptionHandler())
             .addFilters(new TraceResponseHeaderFilter())
             .build();
@@ -210,6 +218,56 @@ class ControllersWebMvcValidationTest {
         .perform(get("/api/incentivos/ranking/posicion/" + donanteId + "?periodo=2026-99"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void obtenerRankingPorPeriodo_conFormatoValido_deberiaRetornar200OkYNoChocarConUltimo()
+      throws Exception {
+    RankingMensual ranking = RankingMensualMother.vacioDeMayo2026();
+    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, 5)))
+        .thenReturn(Optional.of(ranking));
+
+    mockMvc
+        .perform(get("/api/incentivos/ranking/2026-05"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.periodo").value("2026-05"));
+
+    // /ultimo sigue resolviendo a obtenerUltimoRanking y no choca con /{periodo}
+    when(rankingService.obtenerUltimoRanking()).thenReturn(Optional.empty());
+    mockMvc.perform(get("/api/incentivos/ranking/ultimo")).andExpect(status().isNoContent());
+  }
+
+  @Test
+  void obtenerRankingPorPeriodo_conFormatoInvalido_deberiaRetornar400BadRequest() throws Exception {
+    mockMvc
+        .perform(get("/api/incentivos/ranking/2026-99"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void obtenerRankingPorPeriodo_cuandoNoExiste_deberiaRetornar404NotFound() throws Exception {
+    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, 8)))
+        .thenReturn(Optional.empty());
+
+    mockMvc
+        .perform(get("/api/incentivos/ranking/2026-08"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.RANKING_NO_ENCONTRADO.getCode()));
+  }
+
+  @Test
+  void ejecutarVerificacionRachas_deberiaRetornar200OkYDelegar() throws Exception {
+    mockMvc.perform(post("/api/incentivos/verificaciones-racha")).andExpect(status().isOk());
+
+    verify(misionesDonacionService, times(1)).verificarRachasVencidas(any());
+  }
+
+  @Test
+  void ejecutarEvaluacionInactividad_deberiaRetornar200OkYDelegar() throws Exception {
+    mockMvc.perform(post("/api/incentivos/evaluaciones-inactividad")).andExpect(status().isOk());
+
+    verify(inactividadService, times(1)).procesarInactividad();
   }
 
   @Test

@@ -62,7 +62,7 @@ public class MisionesDonacionService implements IMisionesDonacionService {
         .toList();
   }
 
-  private InsigniaGanada insigniaGanadaDe(Mision mision, DonanteIncentivos donante) {
+  private static InsigniaGanada insigniaGanadaDe(Mision mision, DonanteIncentivos donante) {
     if (!mision.isCompletada() || mision.getInsignia() == null) {
       return null;
     }

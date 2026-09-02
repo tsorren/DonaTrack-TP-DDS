@@ -282,4 +282,20 @@ class DonanteIncentivosTest {
     // El progreso de la misión no racha debe preservarse
     assertEquals(1, misionCompletitud.getProgresoActual());
   }
+
+  @Test
+  void constructorCompleto_conParametrosOpcionalesNulos_deberiaAplicarValoresPorDefecto() {
+    DonanteIncentivos d =
+        new DonanteIncentivos(ID_DONANTE, ID_PERSONA, "Test", null, null, null, null, null, null);
+
+    assertEquals(CategoriaDonante.COLABORADOR, d.getCategoria());
+    assertNotNull(d.getFechaRegistro());
+    assertNotNull(d.getHistorialCategorias());
+    assertTrue(d.getHistorialCategorias().isEmpty());
+    assertNotNull(d.getMisiones());
+    assertTrue(d.getMisiones().isEmpty());
+    assertNotNull(d.getInsignias());
+    assertTrue(d.getInsignias().isEmpty());
+    assertNotNull(d.getMetricas());
+  }
 }
