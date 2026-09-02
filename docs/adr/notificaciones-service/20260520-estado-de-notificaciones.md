@@ -1,6 +1,5 @@
 # Estado de notificaciones
-
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-20
 - Deciders: Decisión Grupal
 

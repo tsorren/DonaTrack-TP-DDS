@@ -1,4 +1,5 @@
 # ============================================================================
+#
 # DonaTrack — Pipeline de Integración Continua (Optimizado)
 # ============================================================================
 # Principios aplicados:
@@ -6,6 +7,7 @@
 #   • Build Once: imágenes compiladas una sola vez y publicadas en GHCR
 #   • Descubrimiento Dinámico: extensible sin tocar el archivo de pipeline
 #   • Quality Gate Determinístico: validación context-aware sin falsos positivos
+# 
 # ============================================================================
 #
 # CHANGELOG (respecto al original):
@@ -29,6 +31,10 @@
 #            se reemplaza por lógica genérica basada en el número de entrega.
 #   [FIX-8]  detect-changes: exporta output any-docker-service para desacoplar
 #            la evaluación de docker-build en el Quality Gate.
+#   [FIX-9]  pull_request trigger: agrega tipo 'edited' condicionado a cambios en
+#            la rama base (changes.base) para re-evaluar automáticamente el pipeline
+#            al cambiar el target de un PR sin re-ejecuciones espurias ante cambios
+#            de título o descripción.
 #   [NOTE-1] FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 eliminado — riesgo operativo
 #            con acciones de terceros compiladas en Node <24.
 # ============================================================================
@@ -37,6 +43,7 @@ name: DonaTrack CI Pipeline
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited]
 
 # ── Concurrencia ─────────────────────────────────────────────────────────────
 concurrency:
@@ -52,6 +59,7 @@ jobs:
   # Job 1: Validación de Git Flow
   # ──────────────────────────────────────────────────────────────────────────
   validate-git-flow:
+    if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -67,6 +75,7 @@ jobs:
           if [[ "$BASE_BRANCH" == "main" ]]; then
             if [[ ! "$SRC_BRANCH" =~ ^ENTREGA_[0-9]+$ ]]; then
               echo "::error::Pull Requests a 'main' solo se permiten desde ramas 'ENTREGA_N'."
+              echo "::notice::Si la PR debía apuntar a una rama ENTREGA_N, cambiá la rama base en la interfaz de GitHub. El pipeline se disparará automáticamente con el nuevo contexto."
               exit 1
             fi
           fi
@@ -797,7 +806,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   quality-gate:
     needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, preprod-validation]
-    if: always()
+    if: always() && (github.event.action != 'edited' || github.event.changes.base != null)
     runs-on: ubuntu-latest
     permissions:
       contents: read

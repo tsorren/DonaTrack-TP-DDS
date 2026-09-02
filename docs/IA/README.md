@@ -43,6 +43,14 @@ La IA puede ayudar, pero la responsabilidad técnica sigue siendo humana.
 - [`06-contexto-base-donatrack.md`](./06-contexto-base-donatrack.md)  
   Contexto base para copiar y pegar al iniciar una conversación con ChatGPT, Claude, Gemini, Cursor o cualquier asistente similar.
 
+- [`07-errores-frecuentes-sonarcloud-ia.md`](./07-errores-frecuentes-sonarcloud-ia.md)  
+  Guía viva de errores frecuentes y checklist pre-flight de SonarCloud para agentes de IA antes de finalizar tareas o abrir PRs.
+
+### Política de revisión
+
+- [`review/evaluator.md`](./review/evaluator.md)  
+  Fuente canónica de la política Generator/Evaluator. Roles, modos de independencia (INDEPENDENT_REVIEW / SELF_REVIEW / LIGHTWEIGHT_CLOSING_CHECK), Review Contract, vectores V1–V9, capability detection, ciclo de re-check y responsabilidad humana.
+
 ---
 
 ## Prompts listos para usar

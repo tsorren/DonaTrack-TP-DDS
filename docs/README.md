@@ -2,7 +2,7 @@
 
 > **Portal de Documentación y Arquitectura del Sistema**  
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> Última actualización: **2026-08-29**
+> Última actualización: **2026-09-02**
 
 ---
 
@@ -14,6 +14,7 @@ El portal de documentación está organizado de forma modular según su área de
 docs/
 ├── ESTADO_DOCUMENTACION.md                # Panel central de auditoría y vigencia técnica
 ├── README.md                              # Este índice de navegación
+├── context-index.md                       # 🤖 Routing de contexto para coding agents (qué leer por tarea)
 │
 ├── auditoria/                             # Sistema de aseguramiento y verificación adversarial
 │   └── plan-revisor-critico.md            # Plan de auditoría, checklists y matriz de evaluación
@@ -46,6 +47,9 @@ docs/
 │   ├── README.md                          # Mapa de prompts y normas de uso
 │   ├── 01-principios-de-uso.md … 05
 │   ├── 06-contexto-base-donatrack.md      # Snippet de contexto para asistentes de IA
+│   ├── 07-errores-frecuentes-sonarcloud-ia.md # Prevención y checklist pre-flight SonarCloud
+│   ├── review/
+│   │   └── evaluator.md                  # 🤖 Política Generator/Evaluator, Review Contract, vectores V1–V9
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # Aplicaciones web y utilidades locales
@@ -53,11 +57,12 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06)
-│   └── donaciones, incentivos, etc.       # 51 ADRs aceptados e inmutables
+│   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
+│   ├── DEUDA_TECNICA.md                   # Índice de deuda técnica diferida (DTI-01 a DTI-06)
+│   └── donaciones, incentivos, etc.       # 76 ADRs (42 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
-    ├── 1/ … 3/                            # PDFs de requerimientos de cátedra
+    ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
     └── interfaz/                          # Bocetos Figma y mapa de navegación
 ```
 
@@ -65,6 +70,7 @@ docs/
 
 ## 📌 Enlaces Rápidos
 
+* 🤖 **Context Router para Agentes** *(qué leer por tipo de tarea)*: [context-index.md](context-index.md)
 * 🔍 **Diagnóstico de Vigencia y Auditoría:** [ESTADO_DOCUMENTACION.md](ESTADO_DOCUMENTACION.md)
 * 🛡️ **Plan de Auditoría y Marco Revisor Crítico:** [auditoria/plan-revisor-critico.md](auditoria/plan-revisor-critico.md)
 * 📐 **Principios de Diseño y Arquitectura (Documento Maestro):** [arquitectura/principios-diseno-arquitectura.md](arquitectura/principios-diseno-arquitectura.md)
@@ -73,4 +79,8 @@ docs/
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
-* 📝 **Registro de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
+* 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
+* 🔍 **Política Generator/Evaluator — Review Contract y vectores:** [IA/review/evaluator.md](IA/review/evaluator.md)
+* ⚖️ **ADR Governance — Two-Gate Rule, lifecycle, MADR:** [adr/README.md](adr/README.md)
+* 📝 **Índice de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
+
