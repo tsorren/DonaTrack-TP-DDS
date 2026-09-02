@@ -45,8 +45,8 @@ Confirmo que:
 - [ ] No sobrecargué innecesariamente la capa de services.
 - [ ] No dupliqué lógica de negocio existente.
 - [ ] No introduje acoplamiento innecesario entre módulos.
-- [ ] Si el cambio tocó alguno de los 9 triggers mandatorios (`AGENTS.md` §9.1: DDD, ORM/Schemas, Contratos REST/AMQP, Schedulers, common-lib, SRP, Seguridad/PII, S3/Infra, Testing), formalicé el ADR en `Status: proposed` bajo formato MADR y lo registré en `docs/adr/DEUDA_TECNICA.md`.
-- [ ] Respeté la Regla de Bifurcación Temporal: si el ADR corresponde a entregas futuras (ej. JPA para Entrega 4), formalicé la propuesta sin introducir refactors especulativos en el código funcional actual.
+- [ ] Evalué si la tarea introdujo una nueva decisión arquitectónicamente significativa (Gate A + Gate B en [`docs/adr/README.md`](../adr/README.md)). Si aplica: formalicé el ADR en `Status: proposed` bajo formato MADR.
+- [ ] Si el ADR corresponde a una entrega futura, lo formalicé sin introducir código especulativo (ver Bifurcación Temporal en [`docs/adr/README.md`](../adr/README.md)).
 - [ ] Ningún ADR nuevo fue auto-promovido a `Status: accepted`; se delegó la aprobación formal al revisor humano en la PR.
 
 ---

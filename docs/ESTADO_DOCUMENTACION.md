@@ -3,7 +3,7 @@
 > **Panel de Auditoría y Matriz de Vigencia Documental vs. Código Fuente**  
 > **Proyecto:** DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones  
 > **Equipo:** UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> **Fecha de Normalización y Sincronización:** 2026-09-01  
+> **Fecha de Normalización y Sincronización:** 2026-09-02  
 > **Propósito:** Diagnóstico y estado de sincronización de toda la documentación del repositorio contrastada contra la implementación real en Java 21, Spring Boot 3, RabbitMQ y n8n tras la formalización de ADRs de oleadas de refactor y auditoría de deuda técnica.
 
 ---
@@ -74,7 +74,8 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
-│   ├── DEUDA_TECNICA.md                   # 🟢 Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
+│   ├── README.md                          # 🟢 Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
+│   ├── DEUDA_TECNICA.md                   # 🟢 Índice de deuda técnica diferida (DTI-01 a DTI-06)
 │   └── donaciones, incentivos, etc.       # 76 ADRs (42 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
@@ -108,6 +109,7 @@ docs/
 | **17** | [AGENTS.md](../AGENTS.md) + docs destino | Gobernanza | v3.5.0 (461 líneas) | Oleada 2 (2026-09-01): reducido a 329 líneas. Eliminadas: decoración ASCII, LaTeX, duplicaciones (§9.2b, §9.4). Condensadas: §4.1a, §4.3c, §7.1, §7.3, §11.1, §11.3, §12. Movido: Fitness Checks → `docs/arquitectura/principios-diseno-arquitectura.md §9`; template reporte → `docs/IA/04-checklist-antes-de-pr.md Apéndice`; comandos Docker → `docs/testing/integration-tests.md §5`. Marcadas KEEP_TEMPORARY: §4.1b, §4.2c. | 🟢 Sincronizado |
 | **15** | [docs/adr/](adr/) | ADRs | 8 propuestos sin resolver / sin ADRs DTI | Formalizados 28 ADRs propuestos basados en oleadas, deuda técnica y evaluación de Asignable; transicionados los 8 existentes (6 accepted, 1 rejected, 1 superseded); auditados y transicionados primeros ADRs (20260520, 20260521 y 20260616 a superseded). Total: 76 ADRs (42 accepted, 28 proposed, 2 rejected, 4 superseded). | 🟢 Sincronizado |
 | **20** | [AGENTS.md](../AGENTS.md) | Gobernanza | v3.5.0 (316 líneas) | Oleada 4 (2026-09-01): §7 reestructurado — Core Workflow universal + niveles QUICK / STANDARD / ARCHITECTURAL, árbol de clasificación, regla anti-downgrade, spec policy, profundidad por nivel (`LIGHTWEIGHT_CLOSING_CHECK` / `REVIEW_REQUIRED` / `ENHANCED_REVIEW_REQUIRED`). §12 actualizado con proporcionalidad. Bump a v4.0.0 (SemVer MAJOR). | 🟢 Sincronizado |
+| **21** | [AGENTS.md](../AGENTS.md) + [docs/adr/README.md](adr/README.md) + [docs/adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md) + [docs/IA/04-checklist-antes-de-pr.md](IA/04-checklist-antes-de-pr.md) + [docs/context-index.md](context-index.md) | Gobernanza ADR | v4.0.0 (lista de 9 triggers) | Oleada 5 (2026-09-02): ADR governance refactored — Two-Gate Rule (Gate A: decision novelty + Gate B: architectural significance) reemplaza la lista de 9 triggers mecánicos. Desacoplamiento Task Level ↔ ADR. docs/adr/README.md promovido a fuente canónica de governance. docs/adr/DEUDA_TECNICA.md convertido a índice puro con ejes Decision status / Implementation status separados. Bump AGENTS.md a v5.0.0 (SemVer MAJOR). | 🟢 Sincronizado |
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 4.0.0 (Oleada 4 — Workflow por Nivel de Tarea: QUICK / STANDARD / ARCHITECTURAL)
+> **Versión:** 5.0.0 (Oleada 5 — ADR Governance: Two-Gate Rule, desacoplamiento Task Level ↔ ADR)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -123,7 +123,7 @@ El agente estructura su trabajo en un **Core Workflow de 7 pasos** ejecutado con
 - implica decisión costosa de revertir
 - tiene impacto cross-service relevante
 
-> **`[DEFERRED_WAVE_5]`** Mientras §9.1 esté vigente, si una tarea activa alguno de sus triggers → mínimo ARCHITECTURAL. Oleada 5 desacoplará triggers ADR de esta clasificación.
+> La clasificación de Task Level y el requisito de ADR son **ejes independientes**. Una tarea puede ser ARCHITECTURAL sin requerir nuevo ADR (cuando implementa una decisión ya aceptada). Un ADR es obligatorio solo cuando Gate A + Gate B de §9.1 aplican, independientemente del Task Level.
 
 **STANDARD:** todo lo que no es QUICK ni ARCHITECTURAL. Cambio funcional o estructural acotado, sin señales arquitectónicas, reversible localmente.
 
@@ -156,7 +156,7 @@ Core Invariantes (aplican en todos los niveles): epistemic labels · seguridad �
 | **Contexto** | Solo si necesario; skip `context-index` para cambios triviales | [`docs/context-index.md`](docs/context-index.md) | context-index + servicio + transversal + ADRs |
 | **Baseline** | `git status`; omitir tests si no hay código ejecutable afectado | `mvn test -pl <modulo>`; registrar BASELINE_GREEN / RED | Full baseline + scan cross-service; registrar BASELINE_GREEN / RED |
 | **Validación** | Solo lo directamente afectado; sin tests si no hay código ejecutable | `mvn clean test -pl <modulo> -am`; escalar a reactor cuando: `common-lib`, múltiples módulos, contrato/config compartida, impacto transversal | Amplia; reactor cuando corresponda; Gate 3/4 solo si técnicamente relevantes y ejecutables (§11) |
-| **Spec** | No | Mínimo si objetivo no trivial (`Goal / Scope / Constraints / Validation`) | Obligatorio antes de implementar; relación spec–ADR: `DEFERRED_WAVE_5` |
+| **Spec** | No | Mínimo si objetivo no trivial (`Goal / Scope / Constraints / Validation`) | Obligatorio antes de implementar; relación spec–ADR: [`docs/adr/README.md`](docs/adr/README.md) |
 | **Revisión** | `LIGHTWEIGHT_CLOSING_CHECK` | `REVIEW_REQUIRED` | `ENHANCED_REVIEW_REQUIRED` |
 | **Reporte** | Qué cambió + qué se validó | Scope · baseline · cambios · validación · riesgos | Completo: spec · impacto · alternativas · ADR (§9) · validación · review · riesgos · decisiones pendientes |
 
@@ -166,7 +166,7 @@ Core Invariantes (aplican en todos los niveles): epistemic labels · seguridad �
 
 Profundidad según §7.3. El agente no da por concluida su tarea sin auditoría independiente.
 
-* Invocar mediante `invoke_subagent` un subagente de sólo lectura (`Role: Revisor Crítico Adversarial`) con el `git diff` y objetivo. Vectores: (1) [`docs/auditoria/plan-revisor-critico.md`](docs/auditoria/plan-revisor-critico.md) · (2) [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md) · (3) [`docs/ESTADO_DOCUMENTACION.md`](docs/ESTADO_DOCUMENTACION.md) + [`docs/README.md`](docs/README.md) · (4) Rúbrica ADRs §9.5 si aplica.
+* Invocar mediante `invoke_subagent` un subagente de sólo lectura (`Role: Revisor Crítico Adversarial`) con el `git diff` y objetivo. Vectores: (1) [`docs/auditoria/plan-revisor-critico.md`](docs/auditoria/plan-revisor-critico.md) · (2) [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md) · (3) [`docs/ESTADO_DOCUMENTACION.md`](docs/ESTADO_DOCUMENTACION.md) + [`docs/README.md`](docs/README.md) · (4) Rúbrica ADRs ([`docs/adr/README.md`](docs/adr/README.md)) si aplica.
 * Aplicar correcciones y re-ejecutar Gate 1 antes de Fase 7. **Fallback:** si no hay `invoke_subagent`, adoptar rol de auditor escéptico evaluando los 4 vectores.
 
 
@@ -190,54 +190,60 @@ Todo refactor estructural debe regirse por el principio de preservación:
 
 ---
 
-## 9. Gobernanza de Decisiones de Arquitectura (ADRs), Ciclo de Vida y Deuda Técnica
+## 9. Gobernanza de ADRs
 
-### 9.1. Obligatoriedad de Formalización de ADRs en Estado `proposed`
-* **`[INVARIANT]` Registro Obligatorio de Decisiones de Diseño:** Toda decisión de diseño de alto nivel identificada o introducida durante el ciclo de vida del software debe documentarse formalmente como un Registro de Decisión de Arquitectura (ADR) en estado `Status: proposed` bajo formato Log4brains / MADR.
-* **`[CONSTRAINT]` Triggers Mandatorios:** Es mandatorio redactar un ADR propuesto ante cualquiera de las siguientes circunstancias:
-  1. **Domain-Driven Design (DDD):** Alteración de límites de agregados, entidades raíz o desacoplamiento de identidades (`UUID`).
-  2. **Persistencia y ORM:** Estrategias de herencia relacional JPA/Hibernate, esquemas PostgreSQL o surrogate keys para anonimización.
-  3. **Contratos Públicos:** Creación o modificación de endpoints REST (OpenAPI/Feign) o eventos AMQP (RabbitMQ).
-  4. **Concurrencia y Schedulers:** Configuración de tareas `@Scheduled`, coordinadores distribuidos (ShedLock) o pools `@Async`.
-  5. **Shared Kernel (`common-lib`):** Inclusión o modificación de clases transversales compartidas.
-  6. **Responsabilidades de Capas:** Reubicación de lógica de negocio o segregación de servicios que violen el Principio de Responsabilidad Única (SRP).
-  7. **Seguridad y Privacidad:** Tratamiento de datos sensibles (PII), ofuscación o Crypto-Shredding.
-  8. **Almacenamiento e Infraestructura:** Integración de storage S3 (MinIO) o drivers de infraestructura.
-  9. **Testing de Persistencia:** Adopción de frameworks como Testcontainers frente a bases simuladas.
+### 9.1 Cuándo crear un ADR — Two-Gate Rule
 
-* **Regla de Exclusión (Anti-Micro-ADRs):** No se redactan ADRs para cambios cosméticos, corrección de bugs puntuales que no alteren contratos ni arquitectura, optimizaciones internas de algoritmos que respeten la interfaz pública, o formateo de código con Spotless.
+Crear un ADR `proposed` solo cuando se cumplen **ambos**:
 
-### 9.2. Flujo Operativo de No Bloqueo (Aprobación Exclusiva por Pull Request)
-* **`[INVARIANT]` No Bloqueo en Chat:** El agente de IA **nunca debe detener la ejecución interactiva** para solicitar aprobación en el chat ante un ADR propuesto. El agente formula la propuesta técnica completa (con alternativas viables y trade-offs), vincula el registro correspondiente en `docs/adr/DEUDA_TECNICA.md`, implementa el cambio mínimo necesario (o pospone formalmente el impacto si corresponde a entregas posteriores), y somete el ADR para aprobación humana en la Pull Request de GitHub.
-* **`[INVARIANT]` Autoridad de Estados:** El estado `Status: accepted` está reservado exclusivamente para decisiones aprobadas formalmente por un revisor humano al integrar la PR, o decisiones preexistentes plenamente verificadas en la rama principal. Ningún agente puede auto-promover un ADR a `accepted` si la decisión introduce un cambio de diseño inédito.
+**Gate A — Decision novelty:** ¿La tarea introduce una decisión arquitectónica **nueva**?
 
-### 9.3. Ciclo de Vida y Preservación de la Memoria Histórica
-* **`Status: proposed`:** Estado inicial de toda nueva propuesta arquitectónica generada por agentes.
-* **`Status: accepted`:** Decisión aprobada y adoptada oficialmente en el código fuente.
-* **`Status: rejected`:** Alternativa evaluada y formalmente descartada. **Prohibido borrar el archivo**; debe preservarse en `docs/adr/` documentando el análisis técnico que motivó el rechazo para prevenir reincidencias.
-* **`Status: superseded by [nuevo-adr.md]`:** Decisión histórica adoptada en el pasado que fue superada por una nueva arquitectura:
-  - **`[INVARIANT]` Inmutabilidad del Cuerpo Histórico:** Queda terminantemente prohibido alterar los argumentos y deliberaciones originales del documento antiguo.
-  - La superación se formaliza únicamente actualizando el encabezado a `Status: superseded by [...]` y añadiendo una nota de contexto histórica fechada en la parte superior del documento.
-  - El nuevo ADR sucesor debe explicar las causas y lecciones que condujeron a la superación.
+No hay decisión nueva cuando:
+- la tarea implementa un ADR ya aceptado;
+- se agrega un endpoint dentro de un contrato o patrón ya decidido;
+- se agrega un consumer siguiendo la arquitectura de mensajería adoptada;
+- se aplica un patrón de diseño existente en el proyecto a un nuevo caso.
 
-### 9.5. Rúbrica de Benchmark de Calidad en Fase 6 (Subagente Revisor)
-Durante la Fase 6 de Revisión Crítica Adversarial, el Subagente Revisor debe auditar todo ADR propuesto asignando una calificación del 1 al 5 en cuatro dimensiones:
-1. *Profundidad Técnica y Alternativas* (mínimo 2 alternativas reales analizadas con pros y contras sólidos).
-2. *Adherencia a Principios Académicos* (justificación basada en SOLID, GRASP, GoF y DDD).
-3. *Factibilidad Operativa* (realismo técnico y compatibilidad con stack Java 21 / PostgreSQL / Docker).
-4. *Factualidad y Enlaces* (citas de clases, interfaces, métodos y links 100% operativos sin alucinaciones).
+Si NO hay decisión nueva → no crear ADR. Si SÍ → Gate B.
 
-Todo ADR propuesto debe promediar $\ge \mathbf{4.0 / 5.0}$ para autorizar el cierre de la tarea.
+**Gate B — Architectural significance:** ¿La nueva decisión es arquitectónicamente significativa?
 
-### 9.6. Estructura y Campos Canónicos Obligatorios (Formato MADR)
-Todo nuevo ADR debe respetar la estructura estándar MADR / Log4brains:
-* **Cabecera YAML/Markdown:** `Status: proposed`, `Date: YYYY-MM-DD`, `Deciders: Decisión Grupal`, `Tags: [...]`.
-* **Contexto y Problema:** Descripción de la tensión técnica o requerimiento con referencias exactas a clases del proyecto.
-* **Atributos de Calidad y Drivers:** Factores clave de decisión (ej. Mantenibilidad, DDD, Persistencia Entrega 4).
-* **Alternativas Consideradas:** Mínimo 2 alternativas viables además de la propuesta.
-* **Resultado de la Decisión:** Alternativa elegida con justificación y análisis de consecuencias positivas/negativas.
-* **Análisis Detallado:** Pros y contras técnicos por cada alternativa analizada.
-* **Origen y Deuda Técnica:** Oleada/tarea de origen y vínculo a `docs/adr/DEUDA_TECNICA.md`.
+Evaluar el impacto real. Señales (no son triggers mecánicos; son criterios de evaluación):
+- afecta comunicación o integración entre servicios
+- cambia estrategia de persistencia o modelo de datos
+- introduce tecnología, framework o dependencia estructural nueva
+- modifica límites entre bounded contexts, módulos o capas
+- implica trade-off deliberado entre atributos de calidad
+- tiene alto costo de reversión
+- reemplaza un ADR aceptado o un patrón arquitectónico central al dominio
+- tiene implicancias de privacidad, seguridad o compliance
+
+`NEW DECISION + ARCHITECTURAL SIGNIFICANCE = ADR`
+
+### 9.2 Cuándo NO crear ADR
+
+Bugs sin impacto en contratos · cambios cosméticos o de formateo · DTOs internos sin impacto externo · tests con herramientas ya adoptadas · endpoints o consumers que siguen patrones establecidos · refactors locales sin cambio de límites ni contratos · implementación de una decisión ya documentada.
+
+### 9.3 Lifecycle y autoridad
+
+- **`proposed`:** Creado por agente o desarrollador cuando Gate A + Gate B aplican. Implementar sobre un ADR `proposed` es posible (no-blocking), pero conlleva el riesgo explícito de que si el ADR es rechazado, podría requerirse rollback.
+- **`accepted`:** Solo revisor humano al integrar PR. **`accepted` ≠ `implemented`** — la aceptación depende de autoridad humana, no del estado del código.
+- **`rejected`:** Solo revisor humano. El archivo se preserva para evitar ciclos de razonamiento repetitivos.
+- **`superseded`:** El agente puede proponer la relación; la aprobación es humana.
+
+**`[INVARIANT]` Prohibición absoluta de auto-promoción:** Ningún agente puede promover un ADR a `accepted` o `rejected` por ningún motivo, incluyendo código ya presente en main o decisión preexistente. Código existente ≠ aprobación arquitectónica. Si el agente descubre una decisión implementada pero no documentada: crear ADR `proposed` marcando `[OBSERVED] El código actual ya implementa esta decisión`; la aprobación queda a cargo del revisor humano.
+
+### 9.4 ADR status ≠ implementation status
+
+Son ejes independientes. Un ADR puede estar `accepted` sin que la implementación esté completa. Ver relación completa: [`docs/adr/README.md`](docs/adr/README.md).
+
+### 9.5 Divergencia código / ADR
+
+Si el código contradice un ADR `accepted`: reportar en Fase 7; no resolver unilateralmente. Es una violación arquitectónica o el ADR requiere un sucesor `proposed`.
+
+### 9.6 Guía completa
+
+[`docs/adr/README.md`](docs/adr/README.md) — criterio detallado, lifecycle, MADR format, spec vs ADR, status vs implementation, benchmark de calidad (Fase 6), bifurcación temporal.
 
 ---
 
@@ -303,7 +309,7 @@ Antes de dar por concluida cualquier interacción o propuesta técnica, verifica
 * [ ] **Tests intactos:** sin aserciones debilitadas, gates alterados ni builds forzados
 * [ ] **Pre-flight SonarCloud ejecutado:** para todo código Java, consultar [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md)
 * [ ] **Revisión completada** según profundidad del nivel: `LIGHTWEIGHT_CLOSING_CHECK` / `REVIEW_REQUIRED` / `ENHANCED_REVIEW_REQUIRED` (§7.5 Fase 6)
-* [ ] **ADR formalizado** si se activó un trigger §9.1 (ARCHITECTURAL); ninguno auto-promovido a `accepted`
+* [ ] **ADR formalizado** si Gate A + Gate B de §9.1 aplican (nueva decisión + significancia arquitectónica); ningún ADR auto-promovido a `accepted`
 * [ ] **Grafo documental sincronizado:** `docs/README.md`, `docs/ESTADO_DOCUMENTACION.md` y `docs/adr/DEUDA_TECNICA.md` según alcance
 * [ ] **Quality Gates superados** según nivel (§7.3), o `[DEFERRED_NO_DOCKER]` declarado formalmente
 * [ ] **Reporte emitido:** breve para QUICK; con plantilla de [`docs/IA/04-checklist-antes-de-pr.md`](docs/IA/04-checklist-antes-de-pr.md) para STANDARD y ARCHITECTURAL

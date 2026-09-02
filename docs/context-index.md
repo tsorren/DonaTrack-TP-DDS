@@ -40,7 +40,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Tipo de tarea | Cargar |
 | --- | --- |
 | Diseño arquitectónico / review | [`arquitectura/principios-diseno-arquitectura.md`](arquitectura/principios-diseno-arquitectura.md) |
-| Creación de ADR | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) + ADRs previos del mismo servicio |
+| Creación de ADR | [`adr/README.md`](adr/README.md) + [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) + ADRs previos del mismo servicio |
 | Testing / integración | [`testing/integration-tests.md`](testing/integration-tests.md) |
 | CI/CD / pipeline / Docker | [`cicd/DonaTrack-CICD.md`](cicd/DonaTrack-CICD.md) |
 | Code quality / SonarCloud | [`IA/07-errores-frecuentes-sonarcloud-ia.md`](IA/07-errores-frecuentes-sonarcloud-ia.md) |
