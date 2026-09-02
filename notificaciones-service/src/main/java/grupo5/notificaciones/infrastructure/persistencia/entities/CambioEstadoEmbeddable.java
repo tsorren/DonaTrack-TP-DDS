@@ -2,24 +2,21 @@ package grupo5.notificaciones.infrastructure.persistencia.entities;
 
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name = "notificacion_historial_estado")
+@Embeddable
 @Getter
 @Setter
 @NoArgsConstructor
-public class CambioEstadoEntity {
-  @Id private UUID id;
+@AllArgsConstructor
+public class CambioEstadoEmbeddable {
 
   @Enumerated(EnumType.STRING)
   @Column(name = "estado_anterior", length = 20)

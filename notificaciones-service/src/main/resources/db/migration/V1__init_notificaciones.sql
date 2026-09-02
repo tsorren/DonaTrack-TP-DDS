@@ -40,9 +40,8 @@ CREATE TABLE notificacion (
 CREATE INDEX idx_notificacion_persona ON notificacion(persona_id);
 CREATE INDEX idx_notificacion_estado ON notificacion(estado_notificacion);
 
--- 4. TABLA HISTORIAL DE ESTADOS
+-- 4. TABLA HISTORIAL DE ESTADOS (Colección de Elementos de Notificación)
 CREATE TABLE notificacion_historial_estado (
-                                               id UUID PRIMARY KEY,
                                                notificacion_id UUID NOT NULL REFERENCES notificacion(id) ON DELETE CASCADE,
                                                estado_anterior VARCHAR(20) NULL,
                                                estado_nuevo VARCHAR(20) NOT NULL,

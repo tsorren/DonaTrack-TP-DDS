@@ -33,6 +33,9 @@ public class PersonaEntity {
   @Column(name = "tipo_persona", nullable = false, length = 20)
   private TipoPersona tipoPersona;
 
+  @SuppressWarnings(
+      "squid:S1319") // FetchType.EAGER justificado: Réplica de Persona requiere siempre sus medios
+  // de contacto para despacho de notificaciones
   @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(name = "persona_id", nullable = false)
   private List<MedioDeContactoEntity> mediosDeContacto = new ArrayList<>();

@@ -11,7 +11,7 @@
 2. **Codebase desconocido, orientación global o tarea cross-service** → cargar System Primer primero
 3. **Tarea que toca persistencia o diseño de dominio** → revisar Temporal Constraints
 4. **Pre-PR o cierre de tarea** → cargar Pre-PR Context
-5. **Nunca** cargar `docs/` completo ni los 76 ADRs simultáneamente
+5. **Nunca** cargar `docs/` completo ni los 77 ADRs simultáneamente
 
 ---
 
@@ -79,7 +79,7 @@ Revisar esta sección si la tarea involucra: persistencia, repositorios, diseño
 
 - `docs/entregas/` — solo el enunciado de la entrega vigente y solo para compliance
 - `docs/arquitectura/diseno/` — solo para rastrear una decisión histórica concreta
-- Los 76 ADRs simultáneamente — usar la tabla de Service Context para llegar al subconjunto correcto
+- Los 77 ADRs simultáneamente — usar la tabla de Service Context para llegar al subconjunto correcto
 - `docs/herramientas/` — utilidades de desarrollo, no contexto de coding
 - Aggregates docs de servicios fuera del alcance de la tarea actual
 

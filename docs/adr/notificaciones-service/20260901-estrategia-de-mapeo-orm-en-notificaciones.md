@@ -1,4 +1,4 @@
-﻿# Estrategia de Mapeo ORM en Notificaciones
+# Estrategia de Mapeo ORM en Notificaciones
 
 - Status: proposed
 - Date: 2026-09-01
@@ -25,35 +25,46 @@ Al diseñar el esquema relacional con JPA/Hibernate 6 para Fase 2, se requiere d
 
 ## Alternativas Consideradas
 
-* **Mapeo con SINGLE_TABLE y Desacoplamiento por UUID:**
+* **Mapeo con SINGLE_TABLE, Value Objects en @ElementCollection y Desacoplamiento por UUID:**
   1. *Jerarquía MedioDeContacto:* `@Inheritance(strategy = InheritanceType.SINGLE_TABLE)` con columna discriminadora `tipo_medio VARCHAR(20)` (`CORREO` / `TELEFONO`) y columna auxiliar `tipo_telefono VARCHAR(20)` (`ESTANDAR` / `WHATSAPP`).
   2. *Desacoplamiento de Agregados en Notificacion:* La tabla `notificacion` contiene `persona_id UUID NOT NULL` como valor escalar (sin `@ManyToOne` hacia entidades de persona), respetando el desacoplamiento de microservicios.
-  3. *Estado de Notificación:* Persistido como `VARCHAR(20)` mediante `@Enumerated(EnumType.STRING)`.
+  3. *Historial de Estados como Value Object (@ElementCollection):* La clase `CambioEstadoNotificacion` no posee ciclo de vida independiente ni identidad propia; se modela como un Value Object `@Embeddable` (`CambioEstadoEmbeddable`) mapeado en una colección `@ElementCollection` con tabla de unión `notificacion_historial_estado` vinculada por `notificacion_id UUID NOT NULL`, sin columna de clave subrogada artificial `id UUID PRIMARY KEY`. Esto previene sobrecarga de identidad innecesaria y el churn masivo de DELETE + INSERT en cada actualización de estado.
+  4. *Carga Ansiosa Justificada (FetchType.EAGER):* Las colecciones `mediosDeContacto` (en `PersonaEntity`) y `historialEstado` (en `NotificacionEntity`) se configuran con `FetchType.EAGER`. La invariante de negocio de notificaciones exige disponer de la lista completa de canales para resolver el medio preferido y del historial completo para trazabilidad al momento de despachar, suprimiendo formalmente la advertencia Sonar S1319 mediante `@SuppressWarnings("squid:S1319")` con justificación arquitectónica documentada.
+  5. *Arquitectura Hexagonal y Adaptadores JPA:* Los repositorios de dominio (`IPersonaRepository`, `INotificacionRepository`) se implementan mediante `PersonaRepositoryJpaAdapter` y `NotificacionRepositoryJpaAdapter` extendiendo la clase base genérica `CrudRepositoryJpaAdapter` de `common-lib`.
+  6. *Segregación de Perfiles de Ejecución:* El microservicio opera con repositorios volátiles en memoria bajo el perfil `default` (excluyendo condicionalmente la autoconfiguración de JPA/DataSource/Flyway) y activa los adaptadores relacionales y migraciones Flyway bajo el perfil `postgres`.
 * **Herencia JOINED para Medios de Contacto:** Tablas separadas `medio_de_contacto`, `correo` y `telefono`.
 * **Relación Forzada @ManyToOne hacia Persona:** Exigir que `Notificacion` contenga un puntero JPA a una tabla de personas.
+* **Historial como Entidad Separada con Clave Subrogada:** Tratar a cada cambio de estado como una `@Entity` con su propio `UUID` primario generado aleatoriamente.
 
 ## Resultado de la Decisión
 
-Alternativa elegida: "Mapeo con SINGLE_TABLE y Desacoplamiento por UUID"
+Alternativa elegida: "Mapeo con SINGLE_TABLE, Value Objects en @ElementCollection y Desacoplamiento por UUID"
 
 Justificación:
 Es la opción de mayor rendimiento y menor complejidad. `SINGLE_TABLE` permite que la consulta para obtener los medios de contacto de un destinatario (`SELECT * FROM medio_de_contacto WHERE persona_id = :id`) se resuelva en una sola lectura indexada ultra-rápida sin joins polimórficos. Guardar `persona_id` como UUID puro garantiza la independencia del microservicio frente a cualquier cambio en el esquema de personas de otros módulos.
+El modelado de `CambioEstadoEmbeddable` en `@ElementCollection` respeta fielmente la semántica de Value Object de DDD y optimiza la sincronización en base de datos.
+La configuración de exclusión condicional en `application.properties` preserva la capacidad del servicio de inicializarse en memoria para pruebas unitarias sin requerir infraestructura externa de base de datos.
 
 ### Consecuencias Positivas
 
 * Consultas y despachos de notificaciones de altísima velocidad.
-* Esquema SQL simple, fácil de migrar y auditar.
+* Esquema SQL simple, fácil de migrar y auditar, sin claves artificiales redundantes en tablas de historial.
 * Microservicio 100% autónomo y desacoplado de las tablas de datos personales centrales.
+* Adopción estricta de la Arquitectura Hexagonal reutilizando `CrudRepositoryJpaAdapter` del Shared Kernel.
+* Soporte dual transparente: arranque en memoria para tests ligeros y PostgreSQL 16 para integración y producción.
 
 ### Consecuencias Negativas
 
 * La columna `tipo_telefono` queda en `NULL` para los registros donde `tipo_medio = 'CORREO'` (despreciable).
+* El uso de `FetchType.EAGER` carga la colección en cada lectura (mitigado y justificado porque el tamaño de la colección por aggregate es mínimo y siempre se necesita completa).
 
 ### Validación
 
 Se valida mediante:
-1. Esquema DDL de notificaciones en `decisiones_futuras_en_oleada_10.md`.
-2. Tests unitarios con Testcontainers comprobando la persistencia y recuperación polimórfica de correos y teléfonos WhatsApp desde una única tabla.
+1. Esquema DDL en `V1__init_notificaciones.sql` sin columna `id` en `notificacion_historial_estado`.
+2. Tests unitarios en `CrudRepositoryJpaAdapterTest` en `common-lib`.
+3. Suite de integración `RepositoriosJpaTest` en `notificaciones-service` con Testcontainers PostgreSQL 16, verificando la persistencia y recuperación de `Persona` polimórfica y `Notificacion` con historial.
+4. Pruebas de arranque en perfil `default` en `NotificacionesServiceApplicationTests` validando ejecución en memoria.
 
 ## Análisis de Alternativas
 

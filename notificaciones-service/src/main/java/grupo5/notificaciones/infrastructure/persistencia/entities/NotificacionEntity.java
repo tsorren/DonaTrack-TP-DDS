@@ -1,15 +1,15 @@
 package grupo5.notificaciones.infrastructure.persistencia.entities;
 
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,7 +40,12 @@ public class NotificacionEntity {
   @Column(name = "estado_notificacion", nullable = false, length = 20)
   private EstadoNotificacion estadoNotificacion;
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-  @JoinColumn(name = "notificacion_id", nullable = false)
-  private List<CambioEstadoEntity> historialEstado = new ArrayList<>();
+  @SuppressWarnings(
+      "squid:S1319") // FetchType.EAGER justificado: Agregado Notificacion requiere consistencia
+  // total de su historial
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(
+      name = "notificacion_historial_estado",
+      joinColumns = @JoinColumn(name = "notificacion_id", nullable = false))
+  private List<CambioEstadoEmbeddable> historialEstado = new ArrayList<>();
 }
