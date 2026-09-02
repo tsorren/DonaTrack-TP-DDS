@@ -204,11 +204,20 @@ package EVENTOS {
     + generarNotificaciones(): List<Notificacion>
   }
 
+  class DonacionVencida <<entity>> {
+    - administracion: Persona
+    - detalleDonacion: String
+    - motivo: String
+    --
+    + generarNotificaciones(): List<Notificacion>
+  }
+
   EventoDeDonacion --|> EventoNotificable
   DonacionAsignada --|> EventoDeDonacion
   DonacionRecibida --|> EventoDeDonacion
   DonacionEnCamino --|> EventoDeDonacion
   EntregaFallida --|> EventoDeDonacion
+  DonacionVencida --|> EventoNotificable
   MisionCumplida --|> EventoNotificable
   SubioCategoria --|> EventoNotificable
   DonanteRegistrado --|> EventoNotificable
@@ -217,6 +226,7 @@ package EVENTOS {
   EventoNotificable --> Persona : persona
   EventoDeDonacion --> Persona : entidadBeneficiaria
   EntregaFallida --> Persona : administracion
+  DonacionVencida --> Persona : administracion
   EventoNotificable ..> Notificacion : genera >
 }
 
