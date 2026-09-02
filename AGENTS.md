@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 6.0.0 (Oleada 6 — Generator/Evaluator vendor-neutral, SOURCE_READ_ONLY, Review Contract)
+> **Versión:** 6.1.0 (Oleada 7A — Enforcement mecánico: agent-governance CI + `scripts/agent-check.js`)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -338,3 +338,11 @@ Toda modificación de `AGENTS.md` debe cumplir obligatoriamente:
 5. **Revisión Humana Mandatoria:** Recibir aprobación humana explícita antes de integrarse a la rama principal.
 
 * **`[INVARIANT]` Prohibición de Elusión Normativa:** Un agente nunca debe modificar `AGENTS.md` para eludir una restricción, enmascarar un fallo de Quality Gate o ampliar artificialmente el alcance autorizado de una tarea.
+
+---
+
+## 14. Enforcement Mecánico del Harness
+
+Propiedades objetivamente verificables de este harness son validadas automáticamente en CI y localmente.
+
+Ejecutar: `node scripts/agent-check.js`
