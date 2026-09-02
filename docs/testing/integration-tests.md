@@ -132,3 +132,30 @@ mvn clean verify -pl integration-tests -DskipTests=false `
   "-Dincentivos.url=http://localhost:8082" `
   "-Dlogistica.url=http://localhost:8083"
 ```
+
+---
+
+## 5. Comandos de Arranque de Infraestructura (Gate 4)
+
+### Bash / WSL (Linux, macOS, Git Bash)
+
+```bash
+# Ejecución integral E2E con ciclo de vida automático
+./run-preprod-tests.sh
+
+# Ejecución manteniendo la infraestructura activa para depuración
+./run-preprod-tests-stay.sh
+```
+
+### Windows (PowerShell)
+
+```powershell
+# Levantar entorno preproducción con JARs precompilados
+docker compose -f docker-compose.preprod.yml up --build -d
+
+# Ejecutar integración con maven apuntando a integration-tests
+mvn test -pl integration-tests -DskipTests=false
+
+# Detener y limpiar recursos
+docker compose -f docker-compose.preprod.yml down -v
+```
