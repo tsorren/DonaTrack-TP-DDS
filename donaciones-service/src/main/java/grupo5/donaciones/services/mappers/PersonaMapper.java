@@ -318,7 +318,10 @@ public class PersonaMapper {
     }
     String denominacion =
         switch (p) {
-          case Humana h -> h.getNombre() + " " + h.getApellido();
+          case Humana h ->
+              grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING.equals(h.getNombre())
+                  ? grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING
+                  : h.getNombre() + " " + h.getApellido();
           case Juridica j -> j.getRazonSocial();
         };
 
