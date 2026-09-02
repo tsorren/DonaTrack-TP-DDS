@@ -62,8 +62,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-jpa</artifactId>
+        <optional>true</optional>
         </dependency>
         <!-- La dependencia de spring-data-jpa es provisoria hasta que la bd
         este implementada en todos los servicios (sino busca una bd que no existe
