@@ -46,8 +46,8 @@ public class EnTraslado implements EstadoDonacionIndependiente {
   /**
    * Registra una falla en la entrega de la donación.
    *
-   * <p>Siempre produce la transición EN_TRASLADO → ENTREGA_FALLIDA, registrando ambos estados en
-   * el historial de la donación.
+   * <p>Siempre produce la transición EN_TRASLADO → ENTREGA_FALLIDA, registrando ambos estados en el
+   * historial de la donación.
    *
    * <p>Si {@code replanificable == true}, se produce una segunda transición inmediata
    * ENTREGA_FALLIDA → ASIGNACION_REALIZADA. Ambas transiciones quedan registradas en el historial,
