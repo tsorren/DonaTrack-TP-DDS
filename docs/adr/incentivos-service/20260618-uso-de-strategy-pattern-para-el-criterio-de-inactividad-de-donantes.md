@@ -1,5 +1,5 @@
 # Uso de Strategy pattern para el criterio de inactividad de donantes
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-18
 - Deciders: Decisión Grupal
 
