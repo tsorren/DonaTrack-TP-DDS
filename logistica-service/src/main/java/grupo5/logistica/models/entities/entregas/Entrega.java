@@ -127,17 +127,17 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
     actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
     registrarEvento(new EntregaFallida(this.id, this.idDonacion, justificacion, replanificable));
-    mandarARevision("SISTEMA_LOGISTICA");
+    // mandarARevision("SISTEMA_LOGISTICA");
   }
 
-  private void mandarARevision(String actor) {
-    validarActor(actor);
+  public void mandarARevision(String administrador) {
+    validarActor(administrador);
 
     if (this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
-    actualizarEstado(EstadoEntrega.REVISION, actor);
+    actualizarEstado(EstadoEntrega.REVISION, administrador);
   }
 
   public void regresarAlDeposito(String administrador) {

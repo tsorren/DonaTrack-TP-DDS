@@ -106,7 +106,7 @@ class GestoresDeDominioTest {
 
     GestorDeEntregas.cambiarEstado(
         new NoRecepcion(entrega, "beneficiaria", "domicilio cerrado", true));
-    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
+    assertEquals(EstadoEntrega.NO_RECIBIDA, entrega.getEstadoActual());
 
     GestorDeEntregas.cambiarEstado(new RegresoDeposito(entrega, "administrador"));
     assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());

@@ -29,7 +29,7 @@ public class PlanificacionController implements IPlanificacionController {
   }
 
   @Override
-  @PostMapping("/resultados")
+  @PostMapping({"/resultados", "/callback/rutas"})
   public ResponseEntity<SolicitudPlanificacionResponseDTO> procesarCallback(
       @Valid @RequestBody CallbackPlanificacionRequestDTO dto) {
     return ResponseEntity.ok(planificacionService.procesarCallback(dto));

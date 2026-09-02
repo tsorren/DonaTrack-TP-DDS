@@ -85,8 +85,9 @@ public class EntregasService implements IEntregasService {
       case NO_RECIBIDA ->
           procesarEntregaNoRecibida(
               request.actor(), entrega, request.justificacion(), request.replanificable());
+      case REVISION -> entrega.mandarARevision(request.actor());
       case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
-      case EN_TRASLADO, REVISION ->
+      case EN_TRASLADO ->
           throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }

@@ -121,21 +121,22 @@ class EntregaTest {
 
     entrega.iniciarRuta("Chofer Jose");
 
-    // Negar entrega
+    // 1. Negar entrega
     entrega.negarEntrega("Comedor Infantil", "Domicilio cerrado", true);
+    assertEquals(EstadoEntrega.NO_RECIBIDA, entrega.getEstadoActual());
     assertEquals(
-        EstadoEntrega.REVISION,
-        entrega.getEstadoActual()); // Pasa a NO_RECIBIDA y luego inmediatamente a REVISION en
-    // negarEntrega()
-    assertEquals(
-        3,
+        2,
         entrega
             .getHistorialEstado()
-            .size()); // Registro de EN_TRASLADO -> NO_RECIBIDA y NO_RECIBIDA -> REVISION
-
-    // Regresar al deposito
+            .size()); // PENDIENTE -> EN_TRASLADO, EN_TRASLADO -> NO_RECIBIDA
+    // 2. Administrador toma el caso y lo pasa a revisión
+    entrega.mandarARevision("Admin Carlos");
+    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
+    assertEquals(3, entrega.getHistorialEstado().size()); // NO_RECIBIDA -> REVISION
+    // 3. Regresar al depósito
     entrega.regresarAlDeposito("Admin Carlos");
     assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+    assertEquals(4, entrega.getHistorialEstado().size()); // REVISION -> PENDIENTE
     assertNull(entrega.getHoraArribo());
     assertNull(entrega.getHoraSalida());
   }
