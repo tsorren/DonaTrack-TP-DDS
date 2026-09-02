@@ -8,8 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class IncentivosServiceApplicationTest {
 
-  @MockitoBean
-  private NotificacionesFeignClient notificacionesFeignClient;
+  @MockitoBean private NotificacionesFeignClient notificacionesFeignClient;
 
   @Test
   void contextLoads() {}
