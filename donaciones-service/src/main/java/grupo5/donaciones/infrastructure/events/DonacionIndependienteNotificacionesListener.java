@@ -2,6 +2,7 @@ package grupo5.donaciones.infrastructure.events;
 
 import grupo5.donaciones.dto.comunicaciones.DonacionExitosaRequest;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionVencidaDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallidaDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciadaDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
@@ -11,6 +12,7 @@ import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionFallida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionRecibida;
+import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionVencida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoRutaIniciada;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
@@ -92,6 +94,29 @@ public class DonacionIndependienteNotificacionesListener {
               event.getPatenteCamion()));
     } catch (Exception e) {
       log.error("Error al procesar donación recibida: {}", e.getMessage(), e);
+    }
+  }
+
+  @EventListener
+  public void onEventoDonacionVencida(EventoDonacionVencida event) {
+    log.info(
+        "Procesando EventoDonacionVencida para donación {}", event.getDonacionIndependienteId());
+    try {
+      UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
+      UUID idPersonaAdmin = personasService.obtenerIdPersonaAdministradora();
+      String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
+
+      notificacionesFeignClient.enviarEvento(
+          new EventoDonacionVencidaDTO(
+              personaDonanteId,
+              event.getTimestamp() != null
+                  ? event.getTimestamp()
+                  : LocalDateTime.now(ZoneId.systemDefault()),
+              idPersonaAdmin,
+              descripcion,
+              event.getMotivo()));
+    } catch (Exception e) {
+      log.error("Error al notificar donación vencida: {}", e.getMessage(), e);
     }
   }
 

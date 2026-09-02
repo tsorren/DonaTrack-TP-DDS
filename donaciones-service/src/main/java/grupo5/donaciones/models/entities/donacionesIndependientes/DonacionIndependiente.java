@@ -103,6 +103,10 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     return items.stream().mapToDouble(ItemDonacionIndependiente::getVolumenTotal).sum();
   }
 
+  public Boolean estaVencida() {
+    return this.items.stream().anyMatch(i -> i.bien().estaVencido());
+  }
+
   // ── Métodos de negocio ─────────────────────────────────────────────────────
 
   public void cambiarEstado(SolicitudCambioEstadoDonacionIndependiente solicitud) {
