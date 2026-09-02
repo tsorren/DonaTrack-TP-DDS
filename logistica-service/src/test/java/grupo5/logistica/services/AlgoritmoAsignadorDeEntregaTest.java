@@ -11,6 +11,7 @@ import grupo5.logistica.models.entities.planificacion.AsignadorDeEntregasPorDime
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class AlgoritmoAsignadorDeEntregaTest {
@@ -138,6 +139,8 @@ class AlgoritmoAsignadorDeEntregaTest {
    * AsignadorDeEntregasPorDimension. Agregar @Test cuando Entrega exponga su dimensión de altura y
    * el asignador implemente la restricción correspondiente.
    */
+  @Test
+  @Disabled("Deuda técnica: Pendiente modelado de alturaM en Entrega")
   void asignar_deberiaRechazarEntregaMasAltaQueElCamion() {
     // cuando Entrega tenga alturaM, probar que una entrega cuya altura supera la del camión
     // queda sin asignar aunque peso y volumen entren.

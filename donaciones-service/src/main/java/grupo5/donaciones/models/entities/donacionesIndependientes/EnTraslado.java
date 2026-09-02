@@ -43,6 +43,20 @@ public class EnTraslado implements EstadoDonacionIndependiente {
     registrarFalla(d, justificacion, null, actor);
   }
 
+  /**
+   * Registra una falla en la entrega de la donación.
+   *
+   * <p>Siempre produce la transición EN_TRASLADO → ENTREGA_FALLIDA, registrando ambos estados en
+   * el historial de la donación.
+   *
+   * <p>Si {@code replanificable == true}, se produce una segunda transición inmediata
+   * ENTREGA_FALLIDA → ASIGNACION_REALIZADA. Ambas transiciones quedan registradas en el historial,
+   * preservando la trazabilidad completa del ciclo de vida.
+   *
+   * @param justificacion motivo de la falla; obligatorio, no puede ser nulo ni vacío
+   * @param replanificable si {@code true}, la donación vuelve a ASIGNACION_REALIZADA para ser
+   *     reasignada; si {@code false} o {@code null}, queda en ENTREGA_FALLIDA
+   */
   public void registrarFalla(
       DonacionIndependiente d, String justificacion, Boolean replanificable, String actor) {
     if (justificacion == null || justificacion.isBlank()) {
