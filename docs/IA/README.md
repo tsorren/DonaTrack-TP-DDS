@@ -51,6 +51,17 @@ La IA puede ayudar, pero la responsabilidad técnica sigue siendo humana.
 - [`review/evaluator.md`](./review/evaluator.md)  
   Fuente canónica de la política Generator/Evaluator. Roles, modos de independencia (INDEPENDENT_REVIEW / SELF_REVIEW / LIGHTWEIGHT_CLOSING_CHECK), Review Contract, vectores V1–V9, capability detection, ciclo de re-check y responsabilidad humana.
 
+### Evaluación del harness (Wave 9)
+
+- [`evals/README.md`](./evals/README.md)  
+  Suite de evaluación del harness de agentes. Output Contract v1, Critical Failure Taxonomy, metodología A/B (v3.5.0 vs v6.2.0), execution policy y result format.
+
+- [`evals/scenarios/`](./evals/scenarios/)  
+  9 scenarios (E01–E09): common-lib contamination, routine REST endpoint, sync→async, implement accepted ADR, baseline failure, false VERIFIED, review capability, context router, temporal drift.
+
+- [`evals/scorecards/scorecard-template.md`](./evals/scorecards/scorecard-template.md)  
+  Plantilla reutilizable para registrar cada run de eval (output contract, scorecard, critical failures, tool calls, A/B comparison).
+
 ---
 
 ## Prompts listos para usar

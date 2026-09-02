@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 6.0.0 (Oleada 6 — Generator/Evaluator vendor-neutral, SOURCE_READ_ONLY, Review Contract)
+> **Versión:** 6.2.0 (Oleada 8 — Nested AGENTS: `common-lib/AGENTS.md` — Shared Kernel governance)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -65,7 +65,7 @@ Para evitar alucinaciones, conclusiones precipitadas y re-evaluaciones redundant
 ### 4.2 Arquitectura de Capas y Microservicios
 
 * **`[INVARIANT]` Controladores como Adaptadores Puros:** Los `Controllers` son adaptadores de entrada HTTP. Su única responsabilidad es recibir requests, validar DTOs de frontera, delegar en Application Services y mapear respuestas. No deben contener lógica de dominio ni orquestación compleja.
-* **`[INVARIANT]` Criterio de `common-lib` (Shared Kernel):** Solo pertenece a `common-lib` lo que es genuinamente compartido por múltiples bounded contexts y semánticamente neutro respecto a cualquier dominio específico. Prohibido introducir entidades de negocio, DTOs o lógica particular. Detalle: [`docs/arquitectura/shared-kernel.md`](docs/arquitectura/shared-kernel.md).
+* **`[INVARIANT]` Criterio de `common-lib` (Shared Kernel):** Solo pertenece a `common-lib` lo genuinamente compartido, cross-cutting y semánticamente neutro respecto a cualquier dominio. Para trabajo bajo `common-lib/`, aplicar también [`common-lib/AGENTS.md`](common-lib/AGENTS.md).
 * **`[CONSTRAINT]` Comunicación Inter-Servicios:** Respetar los mecanismos de comunicación ya establecidos en el repositorio. No introducir nuevos canales de comunicación entre servicios sin ADR. Detalle de contratos por servicio: [`docs/context-index.md`](docs/context-index.md).
 
 * **`[INVARIANT]` Trazabilidad e Idempotencia:** Todo flujo distribuido debe preservar trazabilidad (propagación de `traceId`) e idempotencia en el procesamiento de eventos distribuidos. Detalle operativo: [`docs/arquitectura/logging-trazabilidad.md`](docs/arquitectura/logging-trazabilidad.md).
@@ -338,3 +338,11 @@ Toda modificación de `AGENTS.md` debe cumplir obligatoriamente:
 5. **Revisión Humana Mandatoria:** Recibir aprobación humana explícita antes de integrarse a la rama principal.
 
 * **`[INVARIANT]` Prohibición de Elusión Normativa:** Un agente nunca debe modificar `AGENTS.md` para eludir una restricción, enmascarar un fallo de Quality Gate o ampliar artificialmente el alcance autorizado de una tarea.
+
+---
+
+## 14. Enforcement Mecánico del Harness
+
+Propiedades objetivamente verificables de este harness son validadas automáticamente en CI y localmente.
+
+Ejecutar: `node scripts/agent-check.js`

@@ -50,6 +50,11 @@ docs/
 │   ├── 07-errores-frecuentes-sonarcloud-ia.md # Prevención y checklist pre-flight SonarCloud
 │   ├── review/
 │   │   └── evaluator.md                  # 🤖 Política Generator/Evaluator, Review Contract, vectores V1–V9
+│   ├── evals/                             # 🧪 Suite de evaluación del harness (Wave 9)
+│   │   ├── README.md                      # Output Contract v1, Critical Failures, A/B methodology, execution policy
+│   │   ├── scenarios/                     # 9 scenarios E01–E09 (golden + adversariales integrados)
+│   │   ├── scorecards/                    # Plantilla de scorecard por run
+│   │   └── results/                       # Resultados de runs (no versionados individualmente)
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # Aplicaciones web y utilidades locales
@@ -81,6 +86,7 @@ docs/
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
 * 🔍 **Política Generator/Evaluator — Review Contract y vectores:** [IA/review/evaluator.md](IA/review/evaluator.md)
+* 🧪 **Harness Evals — Output Contract, Critical Failures, A/B:** [IA/evals/README.md](IA/evals/README.md)
 * ⚖️ **ADR Governance — Two-Gate Rule, lifecycle, MADR:** [adr/README.md](adr/README.md)
 * 📝 **Índice de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
 
