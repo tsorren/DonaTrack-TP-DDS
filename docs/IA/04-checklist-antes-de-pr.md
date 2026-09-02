@@ -123,19 +123,22 @@ Confirmo que:
 
 ---
 
-# 9. Revisión Crítica Adversarial con IA (Fase 6 de AGENTS.md)
+# 9. Revisión Crítica (Fase 6 de AGENTS.md)
 
-Antes de pedir review humana, es mandatorio ejecutar la **Fase 6 de AGENTS.md** despachando un **Subagente Revisor Independiente** (o fallback monoproceso) y usando como referencia:
+Antes de pedir review humana, es mandatorio ejecutar la **Fase 6 de AGENTS.md** según el nivel de la tarea.
 
-[`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md) y [`../auditoria/plan-revisor-critico.md`](../auditoria/plan-revisor-critico.md)
+Fuente canónica de política: [`review/evaluator.md`](./review/evaluator.md) · Prompt operativo: [`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)
 
 Confirmo que:
 
-- [ ] Se ejecutó la auditoría independiente con el Subagente Revisor sin sesgos sobre el diff completo de la PR.
-- [ ] Se buscaron activamente bugs funcionales, condiciones de carrera y casos borde no cubiertos.
-- [ ] Si la PR introduce o modifica ADRs, el Subagente Revisor aplicó la Rúbrica de Benchmark (escala 1 a 5 en 4 dimensiones) y obtuvo un puntaje promedio $\ge 4.0 / 5.0$.
-- [ ] Se auditó la integridad del grafo documental: ¿se actualizaron `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` si se tocaron documentos?
-- [ ] Se corrigieron de inmediato todos los defectos y desfasajes reportados por el revisor crítico antes de emitir el reporte.
+- [ ] **QUICK:** se completó el `LIGHTWEIGHT_CLOSING_CHECK` (scope/diff check, validaciones ejecutadas, evidencia, result `PASS` o `ESCALATE_TO_STANDARD`).
+- [ ] **STANDARD / ARCHITECTURAL:** se emitió el Review Contract con Verdict `PASS` o con findings documentados.
+- [ ] El modo de revisión fue declarado: `INDEPENDENT_REVIEW` | `SELF_REVIEW`.
+- [ ] Si la PR introduce ADRs `proposed`: se aplicó la Rúbrica de ADR Review (escala 1 a 5 en 4 dimensiones, puntaje ≥ 4.0/5.0) — separado del Review Contract de implementación.
+- [ ] Se auditó la integridad del grafo documental (V9): `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` sincronizados si correspondía.
+- [ ] Findings BLOCKING resueltos y Gate 1 re-ejecutado antes de cerrar.
+- [ ] Findings ADVISORY documentados en el Review Contract; el equipo humano decide si requieren acción.
+- [ ] Si ARCHITECTURAL con `SELF_REVIEW`: reportado como `[SELF_REVIEW_FALLBACK]` en Reporte de Fase 7.
 
 ---
 
@@ -173,7 +176,7 @@ Confirmo que:
 
 Antes de abrir PR, debería poder afirmar:
 
-> Entiendo el cambio, validé su comportamiento, revisé los riesgos contra el Quality Gate de SonarCloud, audité la entrega con el Subagente Revisor y puedo hacerme responsable técnicamente por esta Pull Request.
+> Entiendo el cambio, validé su comportamiento, revisé los riesgos contra el Quality Gate de SonarCloud, emití el Review Contract (o `LIGHTWEIGHT_CLOSING_CHECK` si QUICK) con Verdict, y puedo hacerme responsable técnicamente por esta Pull Request.
 
 Si no puedo afirmar eso, todavía no debería pedir review.
 
@@ -199,11 +202,12 @@ Incluir en la descripción de la PR:
 * `[REJECTED]`: [Alternativas evaluadas y descartadas con justificación técnica]
 * `[VERIFIED]`: [Comandos ejecutados, tests superados y validaciones de formato]
 
-#### 3. Revisión Crítica Adversarial y Correcciones (Fase 6)
-* **Modalidad:** `[Subagente Independiente]` | `[Fallback Monoproceso]`
-* **Hallazgos Detectados:** [Listado de inconsistencias o desfasajes identificados]
-* **Correcciones Aplicadas:** [Ajustes realizados antes del cierre]
-* **Auditoría de ADRs Propuestos:** [Puntaje de rúbrica X.X/5.0 y vinculación en docs/adr/DEUDA_TECNICA.md]
+#### 3. Revisión Crítica (Fase 6)
+* **Modo:** `[INDEPENDENT_REVIEW]` | `[SELF_REVIEW]` | `[LIGHTWEIGHT_CLOSING_CHECK]`
+* **Fallback declarado:** `[SELF_REVIEW_FALLBACK]` si ARCHITECTURAL sin independencia real
+* **Findings BLOCKING resueltos:** [Correcciones aplicadas antes del cierre]
+* **Findings ADVISORY:** [Listado; decisión pendiente del equipo humano]
+* **ADR Review (si aplica):** [Puntaje X.X/5.0 — separado del Review Contract de implementación]
 
 #### 4. Validación y Quality Gates
 * **Gate 1 (Unitario + Formato):** [✅ Aprobado]

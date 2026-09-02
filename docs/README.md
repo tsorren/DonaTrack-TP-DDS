@@ -48,6 +48,8 @@ docs/
 │   ├── 01-principios-de-uso.md … 05
 │   ├── 06-contexto-base-donatrack.md      # Snippet de contexto para asistentes de IA
 │   ├── 07-errores-frecuentes-sonarcloud-ia.md # Prevención y checklist pre-flight SonarCloud
+│   ├── review/
+│   │   └── evaluator.md                  # 🤖 Política Generator/Evaluator, Review Contract, vectores V1–V9
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # Aplicaciones web y utilidades locales
@@ -78,6 +80,7 @@ docs/
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
+* 🔍 **Política Generator/Evaluator — Review Contract y vectores:** [IA/review/evaluator.md](IA/review/evaluator.md)
 * ⚖️ **ADR Governance — Two-Gate Rule, lifecycle, MADR:** [adr/README.md](adr/README.md)
 * 📝 **Índice de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
 

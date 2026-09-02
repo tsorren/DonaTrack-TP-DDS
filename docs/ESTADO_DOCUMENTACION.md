@@ -18,7 +18,7 @@ Tras la formalización de 28 nuevos ADRs propuestos basados en las oleadas de re
 ├──────────────────────────────────────┬──────────────────┬──────────────┤
 │ Categoría                            │ Cantidad         │ Porcentaje   │
 ├──────────────────────────────────────┼──────────────────┼──────────────┤
-│ 🟢 Vigentes y 100% Sincronizados     │ 35 documentos    │ 44%          │
+│ 🟢 Vigentes y 100% Sincronizados     │ 36 documentos    │ 44%          │
 │ 🔴 Con Discrepancias Altas / Críticas│ 0 documentos     │ 0%           │
 │ 🟡 Con Discrepancias Medias          │ 0 documentos     │ 0%           │
 │ 🟢 Con Discrepancias Bajas/Cosméticas│ 0 documentos     │ 0%           │
@@ -67,6 +67,8 @@ docs/
 │   ├── 01-principios-de-uso.md … 05
 │   ├── 06-contexto-base-donatrack.md      # Snippet de contexto con stack técnico completo
 │   ├── 07-errores-frecuentes-sonarcloud-ia.md # 🟢 Prevención y checklist pre-flight SonarCloud
+│   ├── review/
+│   │   └── evaluator.md                  # 🟢 Política Generator/Evaluator, Review Contract, vectores V1–V9
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # 🛠️ Aplicaciones web y utilidades locales
@@ -110,6 +112,7 @@ docs/
 | **15** | [docs/adr/](adr/) | ADRs | 8 propuestos sin resolver / sin ADRs DTI | Formalizados 28 ADRs propuestos basados en oleadas, deuda técnica y evaluación de Asignable; transicionados los 8 existentes (6 accepted, 1 rejected, 1 superseded); auditados y transicionados primeros ADRs (20260520, 20260521 y 20260616 a superseded). Total: 76 ADRs (42 accepted, 28 proposed, 2 rejected, 4 superseded). | 🟢 Sincronizado |
 | **20** | [AGENTS.md](../AGENTS.md) | Gobernanza | v3.5.0 (316 líneas) | Oleada 4 (2026-09-01): §7 reestructurado — Core Workflow universal + niveles QUICK / STANDARD / ARCHITECTURAL, árbol de clasificación, regla anti-downgrade, spec policy, profundidad por nivel (`LIGHTWEIGHT_CLOSING_CHECK` / `REVIEW_REQUIRED` / `ENHANCED_REVIEW_REQUIRED`). §12 actualizado con proporcionalidad. Bump a v4.0.0 (SemVer MAJOR). | 🟢 Sincronizado |
 | **21** | [AGENTS.md](../AGENTS.md) + [docs/adr/README.md](adr/README.md) + [docs/adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md) + [docs/IA/04-checklist-antes-de-pr.md](IA/04-checklist-antes-de-pr.md) + [docs/context-index.md](context-index.md) | Gobernanza ADR | v4.0.0 (lista de 9 triggers) | Oleada 5 (2026-09-02): ADR governance refactored — Two-Gate Rule (Gate A: decision novelty + Gate B: architectural significance) reemplaza la lista de 9 triggers mecánicos. Desacoplamiento Task Level ↔ ADR. docs/adr/README.md promovido a fuente canónica de governance. docs/adr/DEUDA_TECNICA.md convertido a índice puro con ejes Decision status / Implementation status separados. Bump AGENTS.md a v5.0.0 (SemVer MAJOR). | 🟢 Sincronizado |
+| **22** | [AGENTS.md](../AGENTS.md) + [docs/IA/review/evaluator.md](IA/review/evaluator.md) + [docs/IA/04-checklist-antes-de-pr.md](IA/04-checklist-antes-de-pr.md) + [docs/README.md](README.md) + [docs/IA/README.md](IA/README.md) | Gobernanza Review | v5.0.0 (invoke_subagent, fallback monoproceso) | Oleada 6 (2026-09-02): política de revisión refactored — separación Generator/Evaluator vendor-neutral. Creado `docs/IA/review/evaluator.md` como fuente canónica: roles, modos de independencia (INDEPENDENT_REVIEW / SELF_REVIEW / LIGHTWEIGHT_CLOSING_CHECK), SOURCE_READ_ONLY + NON_DESTRUCTIVE_VERIFICATION, Review Contract, vectores V1–V9, capability detection, ciclo re-check, responsabilidad humana. Eliminadas referencias tool-specific de AGENTS.md §7.4 (`invoke_subagent`, fallback monoproceso). Corregida referencia §7.5 → §7.4 en §12. Actualizado checklist y plantilla Reporte Operativo. Bump AGENTS.md a v6.0.0 (SemVer MAJOR). | 🟢 Sincronizado |
 
 ---
 

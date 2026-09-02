@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 5.0.0 (Oleada 5 — ADR Governance: Two-Gate Rule, desacoplamiento Task Level ↔ ADR)
+> **Versión:** 6.0.0 (Oleada 6 — Generator/Evaluator vendor-neutral, SOURCE_READ_ONLY, Review Contract)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -162,12 +162,19 @@ Core Invariantes (aplican en todos los niveles): epistemic labels · seguridad �
 
 ### 7.4 Fase 6 — Revisión Crítica
 
-> **`[DEFERRED_WAVE_6]`** Separación de mecanismos de review (Generator/Evaluator, herramientas vendor-specific) diferida a Oleada 6.
+Profundidad según §7.3. Ninguna tarea se da por concluida sin el output de revisión correspondiente.
 
-Profundidad según §7.3. El agente no da por concluida su tarea sin auditoría independiente.
+* **QUICK → `LIGHTWEIGHT_CLOSING_CHECK`:** el Generator completa un chequeo de cierre proporcional (scope/diff, validaciones ejecutadas, evidencia, result `PASS` o `ESCALATE_TO_STANDARD`). No requiere Review Contract.
+* **STANDARD → `REVIEW_REQUIRED`:** emitir Review Contract. Usar `INDEPENDENT_REVIEW` si la herramienta soporta un contexto secundario independiente; `SELF_REVIEW` explícito en caso contrario.
+* **ARCHITECTURAL → `ENHANCED_REVIEW_REQUIRED`:** emitir Review Contract ampliado. `INDEPENDENT_REVIEW` fuertemente preferido. Si no está disponible: `SELF_REVIEW` con `[SELF_REVIEW_FALLBACK]` declarado en el Reporte de Fase 7.
 
-* Invocar mediante `invoke_subagent` un subagente de sólo lectura (`Role: Revisor Crítico Adversarial`) con el `git diff` y objetivo. Vectores: (1) [`docs/auditoria/plan-revisor-critico.md`](docs/auditoria/plan-revisor-critico.md) · (2) [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md) · (3) [`docs/ESTADO_DOCUMENTACION.md`](docs/ESTADO_DOCUMENTACION.md) + [`docs/README.md`](docs/README.md) · (4) Rúbrica ADRs ([`docs/adr/README.md`](docs/adr/README.md)) si aplica.
-* Aplicar correcciones y re-ejecutar Gate 1 antes de Fase 7. **Fallback:** si no hay `invoke_subagent`, adoptar rol de auditor escéptico evaluando los 4 vectores.
+**Evaluator — SOURCE_READ_ONLY + NON_DESTRUCTIVE_VERIFICATION:** no modifica código fuente, documentación ni configuración durante la evaluación. Puede ejecutar verificaciones no destructivas cuando la herramienta lo permita (tests focalizados, Maven checks, `git diff`, `grep`, inspección de archivos, linters, validación de links). Si no puede ejecutar un check: declarar `[TESTS_NOT_EXECUTED_BY_EVALUATOR]`.
+
+**Capability detection:** `INDEPENDENT_REVIEW` disponible cuando existe un contexto secundario que no depende del razonamiento previo del Generator y recibe solo artefactos explícitos. En todos los demás casos: `SELF_REVIEW`. Nunca etiquetar `SELF_REVIEW` como independiente.
+
+Aplicar correcciones de findings BLOCKING y re-ejecutar Gate 1 antes de Fase 7.
+
+Política completa, Review Contract y vectores V1–V9: [`docs/IA/review/evaluator.md`](docs/IA/review/evaluator.md).
 
 
 ---
@@ -308,7 +315,7 @@ Antes de dar por concluida cualquier interacción o propuesta técnica, verifica
 * [ ] **Baseline verificado:** fallos preexistentes identificados y aislados (proporcional al nivel: §7.3)
 * [ ] **Tests intactos:** sin aserciones debilitadas, gates alterados ni builds forzados
 * [ ] **Pre-flight SonarCloud ejecutado:** para todo código Java, consultar [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](docs/IA/07-errores-frecuentes-sonarcloud-ia.md)
-* [ ] **Revisión completada** según profundidad del nivel: `LIGHTWEIGHT_CLOSING_CHECK` / `REVIEW_REQUIRED` / `ENHANCED_REVIEW_REQUIRED` (§7.5 Fase 6)
+* [ ] **Revisión completada** según profundidad del nivel: `LIGHTWEIGHT_CLOSING_CHECK` / `REVIEW_REQUIRED` / `ENHANCED_REVIEW_REQUIRED` (§7.4 Fase 6)
 * [ ] **ADR formalizado** si Gate A + Gate B de §9.1 aplican (nueva decisión + significancia arquitectónica); ningún ADR auto-promovido a `accepted`
 * [ ] **Grafo documental sincronizado:** `docs/README.md`, `docs/ESTADO_DOCUMENTACION.md` y `docs/adr/DEUDA_TECNICA.md` según alcance
 * [ ] **Quality Gates superados** según nivel (§7.3), o `[DEFERRED_NO_DOCKER]` declarado formalmente
