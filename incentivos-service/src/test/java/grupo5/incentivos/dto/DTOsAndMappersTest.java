@@ -85,7 +85,7 @@ class DTOsAndMappersTest {
             2,
             "Racha Bronce");
 
-    MisionDTO dto = MisionDTO.desde(racha);
+    MisionDTO dto = MisionDTO.desde(racha, null);
 
     assertNotNull(dto);
     assertEquals(racha.getNombre(), dto.nombre());

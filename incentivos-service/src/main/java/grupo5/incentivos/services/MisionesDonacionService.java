@@ -7,6 +7,7 @@ import grupo5.incentivos.dto.MisionDTO;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
+import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.time.YearMonth;
@@ -52,12 +53,20 @@ public class MisionesDonacionService implements IMisionesDonacionService {
 
   @Override
   public List<MisionDTO> obtenerMisiones(UUID donanteId) {
-    return obtenerDonante(donanteId).getMisiones().stream()
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    return donante.getMisiones().stream()
         .sorted(
             Comparator.comparing(
                 Mision::getNumeroMision, Comparator.nullsLast(Comparator.naturalOrder())))
-        .map(MisionDTO::desde)
+        .map(mision -> MisionDTO.desde(mision, insigniaGanadaDe(mision, donante)))
         .toList();
+  }
+
+  private InsigniaGanada insigniaGanadaDe(Mision mision, DonanteIncentivos donante) {
+    if (!mision.isCompletada() || mision.getInsignia() == null) {
+      return null;
+    }
+    return donante.insigniaGanadaDe(mision.getInsignia().nombre());
   }
 
   @Override
