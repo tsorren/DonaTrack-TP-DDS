@@ -25,6 +25,7 @@ import grupo5.incentivos.services.IMetricasIncentivosService;
 import grupo5.incentivos.services.IMisionesDonacionService;
 import grupo5.incentivos.services.IRankingService;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -224,7 +225,7 @@ class ControllersWebMvcValidationTest {
   void obtenerRankingPorPeriodo_conFormatoValido_deberiaRetornar200OkYNoChocarConUltimo()
       throws Exception {
     RankingMensual ranking = RankingMensualMother.vacioDeMayo2026();
-    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, 5)))
+    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, Month.MAY)))
         .thenReturn(Optional.of(ranking));
 
     mockMvc
@@ -232,7 +233,6 @@ class ControllersWebMvcValidationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.periodo").value("2026-05"));
 
-    // /ultimo sigue resolviendo a obtenerUltimoRanking y no choca con /{periodo}
     when(rankingService.obtenerUltimoRanking()).thenReturn(Optional.empty());
     mockMvc.perform(get("/api/incentivos/ranking/ultimo")).andExpect(status().isNoContent());
   }
@@ -247,7 +247,7 @@ class ControllersWebMvcValidationTest {
 
   @Test
   void obtenerRankingPorPeriodo_cuandoNoExiste_deberiaRetornar404NotFound() throws Exception {
-    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, 8)))
+    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, Month.AUGUST)))
         .thenReturn(Optional.empty());
 
     mockMvc
