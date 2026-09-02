@@ -1,6 +1,6 @@
 'use strict';
 
-// Agent Governance Check — Test Suite (Wave 7A + 7B + 7C)
+// Agent Governance Check — Test Suite (Wave 7A + 7B + 7C + 8)
 // Run: node scripts/tests/run-tests.js
 // Uses only Node.js built-ins. No npm dependencies.
 
@@ -56,13 +56,15 @@ function noFail(findings) { return findings.every(f => f.severity !== 'FAIL'); }
 
 // ─── [1] checkAgentsCanonicity ─────────────────────────────────────────────────
 
-console.log('\nAgent Governance — Test Suite (Wave 7A + 7B + 7C)');
+console.log('\nAgent Governance — Test Suite (Wave 7A + 7B + 7C + 8)');
 console.log('═'.repeat(56));
 console.log('\n[1] checkAgentsCanonicity');
 
 { const tmp = makeTemp(); try {
-  write(tmp, 'AGENTS.md', '# AGENTS'); write(tmp, 'docs/IA/history/AGENTS-v3.5.md', '# historical');
-  assert('1.1  root AGENTS.md + history allowed → no FAIL', noFail(checkAgentsCanonicity(tmp)));
+  write(tmp, 'AGENTS.md', '# AGENTS');
+  write(tmp, 'common-lib/AGENTS.md', '# Shared Kernel nested');
+  write(tmp, 'docs/IA/history/AGENTS-v3.5.md', '# historical');
+  assert('1.1  root + common-lib nested + history allowed → no FAIL', noFail(checkAgentsCanonicity(tmp)));
 } finally { cleanup(tmp); } }
 
 { const tmp = makeTemp(); try {
@@ -77,6 +79,32 @@ console.log('\n[1] checkAgentsCanonicity');
 { const tmp = makeTemp(); try {
   write(tmp, 'AGENTS.md', '# AGENTS'); write(tmp, 'docs/IA/history/AGENTS.md', '# in history');
   assert('1.4  AGENTS.md under history → excluded, no AGENTS_UNEXPECTED FAIL', !hasFail(checkAgentsCanonicity(tmp), 'AGENTS_UNEXPECTED'));
+} finally { cleanup(tmp); } }
+
+// Wave 8 — nested AGENTS allowlist
+{ const tmp = makeTemp(); try {
+  write(tmp, 'AGENTS.md', '# AGENTS');
+  write(tmp, 'common-lib/AGENTS.md', '# Shared Kernel nested');
+  assert('1.5  root + common-lib/AGENTS.md (allowlisted) → no AGENTS_UNEXPECTED FAIL', !hasFail(checkAgentsCanonicity(tmp), 'AGENTS_UNEXPECTED'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, 'AGENTS.md', '# AGENTS');
+  write(tmp, 'common-lib/AGENTS.md', '# Shared Kernel nested');
+  write(tmp, 'logistica-service/AGENTS.md', '# unauthorized nested');
+  assert('1.6  unauthorized nested AGENTS.md → AGENTS_UNEXPECTED FAIL', hasFail(checkAgentsCanonicity(tmp), 'AGENTS_UNEXPECTED'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, 'AGENTS.md', '# AGENTS');
+  write(tmp, 'common-lib/AGENTS.md', '# Shared Kernel nested');
+  assert('1.7  allowlisted nested present → AGENTS_ALLOWLISTED_MISSING PASS', !hasFail(checkAgentsCanonicity(tmp), 'AGENTS_ALLOWLISTED_MISSING'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, 'AGENTS.md', '# AGENTS');
+  // common-lib/AGENTS.md intentionally absent
+  assert('1.8  allowlisted nested missing → AGENTS_ALLOWLISTED_MISSING FAIL', hasFail(checkAgentsCanonicity(tmp), 'AGENTS_ALLOWLISTED_MISSING'));
 } finally { cleanup(tmp); } }
 
 // ─── [2] checkEvaluatorPolicy ─────────────────────────────────────────────────
@@ -142,12 +170,18 @@ console.log('\n[3] checkStaleTerms');
   assert('3.8  ESTADO_DOCUMENTACION.md excluded (audit log) → no FAIL', !hasFail(checkStaleTerms(tmp), 'STALE_TERM'));
 } finally { cleanup(tmp); } }
 
+{ const tmp = makeTemp(); try {
+  write(tmp, 'common-lib/AGENTS.md', 'invoke_subagent used in nested'); // stale term in active nested
+  assert('3.9  stale term in common-lib/AGENTS.md (active nested) → STALE_TERM FAIL', hasFail(checkStaleTerms(tmp), 'STALE_TERM'));
+} finally { cleanup(tmp); } }
+
 // ─── [4] runAllChecks exit code ────────────────────────────────────────────────
 
 console.log('\n[4] runAllChecks — exit code aggregation');
 
 { const tmp = makeTemp(); try {
   write(tmp, 'AGENTS.md', 'evaluator.md ref');
+  write(tmp, 'common-lib/AGENTS.md', '# Shared Kernel nested'); // Wave 8: allowlisted nested required
   write(tmp, 'docs/IA/review/evaluator.md', '# Evaluator');
   write(tmp, 'docs/clean.md', '# Clean');
   write(tmp, 'docs/context-index.md', '# No code spans');

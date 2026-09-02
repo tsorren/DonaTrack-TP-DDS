@@ -6,8 +6,12 @@
 const SKIP_DIRS = new Set(['.git', 'node_modules', 'target', '.mvn', '.idea', 'dist', 'build']);
 
 // Root-relative paths where AGENTS.md is canonical or explicitly allowed.
-// Wave 8 extends this list when nested AGENTS are introduced.
-const AGENTS_ALLOWLIST = new Set(['AGENTS.md']);
+// Each entry beyond 'AGENTS.md' is a nested AGENTS authorized by governance policy (Wave 8+).
+// Explicit paths only — no wildcards. Absence of an allowlisted nested file is a FAIL.
+const AGENTS_ALLOWLIST = new Set([
+  'AGENTS.md',
+  'common-lib/AGENTS.md', // Wave 8: Shared Kernel governance
+]);
 
 // Path prefixes (forward-slash, relative to repo root) treated as historical archives.
 const HISTORY_PREFIXES = ['docs/IA/history'];
