@@ -50,6 +50,11 @@ docs/
 │   ├── 07-errores-frecuentes-sonarcloud-ia.md # Prevención y checklist pre-flight SonarCloud
 │   ├── review/
 │   │   └── evaluator.md                  # 🤖 Política Generator/Evaluator, Review Contract, vectores V1–V9
+│   ├── evals/                             # 🧪 Suite de evaluación del harness (Wave 9)
+│   │   ├── README.md                      # Output Contract v1, Critical Failures, A/B methodology, execution policy
+│   │   ├── scenarios/                     # 9 scenarios E01–E09 (golden + adversariales integrados)
+│   │   ├── scorecards/                    # Plantilla de scorecard por run
+│   │   └── results/                       # Resultados de runs (no versionados individualmente)
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # Aplicaciones web y utilidades locales
@@ -57,14 +62,25 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
+│   └── donaciones, incentivos, etc.       # 78 ADRs (44 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
-│   ├── DEUDA_TECNICA.md                   # Índice de deuda técnica diferida (DTI-01 a DTI-06)
-│   └── donaciones, incentivos, etc.       # 76 ADRs (42 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
     └── interfaz/                          # Bocetos Figma y mapa de navegación
 ```
+
+---
+
+## 🛠️ Comandos de Compilación del Monorepo (Maven)
+
+* **Build completo del reactor:** `mvn clean test`
+* **Compilación de un módulo específico:** Utilizar siempre el flag `-am` (`--also-make`) para resolver dependencias internas del reactor (`common-lib`):
+  ```bash
+  mvn test -pl notificaciones-service -am
+  ```
+  *(Nota: ejecutar `mvn test -pl notificaciones-service` sin `-am` requerirá que `common-lib` haya sido previamente instalada en el repositorio local vía `mvn install -DskipTests -pl common-lib`).*
 
 ---
 
@@ -81,6 +97,7 @@ docs/
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
 * 🔍 **Política Generator/Evaluator — Review Contract y vectores:** [IA/review/evaluator.md](IA/review/evaluator.md)
+* 🧪 **Harness Evals — Output Contract, Critical Failures, A/B:** [IA/evals/README.md](IA/evals/README.md)
 * ⚖️ **ADR Governance — Two-Gate Rule, lifecycle, MADR:** [adr/README.md](adr/README.md)
 * 📝 **Índice de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
 
