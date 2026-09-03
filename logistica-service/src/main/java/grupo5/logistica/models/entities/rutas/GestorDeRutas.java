@@ -8,6 +8,7 @@ import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 public final class GestorDeRutas {
 
@@ -51,6 +52,29 @@ public final class GestorDeRutas {
     ruta.iniciarRuta();
   }
 
+  public static void completarRuta(
+      Ruta ruta, Camion camion, Chofer chofer, List<Entrega> entregas) {
+    validarColaboradores(ruta, chofer, camion);
+    if (entregas == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (ruta.getEstado() != EstadoRuta.EN_TRASLADO
+        || !Objects.equals(ruta.getId(), chofer.getRutaId())
+        || !Objects.equals(ruta.getId(), camion.getRutaId())) {
+      throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
+    }
+    List<UUID> idsEntregas = entregas.stream().map(Entrega::getId).toList();
+    if (!ruta.getEntregaIds().equals(idsEntregas)
+        || entregas.stream()
+            .anyMatch(
+                e ->
+                    e.getEstadoActual() == EstadoEntrega.EN_TRASLADO
+                        || e.getEstadoActual() == EstadoEntrega.PENDIENTE)) {
+      throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
+    }
+    completarRuta(ruta, camion, chofer);
+  }
+
   public static void completarRuta(Ruta ruta, Camion camion, Chofer chofer) {
     validarColaboradores(ruta, chofer, camion);
     if (ruta.getEstado() != EstadoRuta.EN_TRASLADO
@@ -58,7 +82,6 @@ public final class GestorDeRutas {
         || !Objects.equals(ruta.getId(), camion.getRutaId())) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
-
     ruta.completarRuta();
     camion.completarRuta();
     chofer.completarRuta();

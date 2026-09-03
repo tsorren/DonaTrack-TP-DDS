@@ -170,4 +170,42 @@ class GestoresDeDominioTest {
     Direccion direccion = new Direccion("Calle", 123, null, null, "1000", localidad);
     return new Entrega(UUID.randomUUID(), UUID.randomUUID(), direccion, 10f, 2f);
   }
+
+  @Test
+  void gestorDeRutasNoCompletaRutaSiHayEntregasEnTraslado() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
+
+    // La entrega sigue EN_TRASLADO, intentar completar debe lanzar excepción
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega)));
+
+    assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
+  }
+
+  @Test
+  void gestorDeRutasCompletaRutaCuandoTodasLasEntregasEstanResueltas() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
+
+    // Resolvemos la entrega pasándola a ENTREGADA
+    entrega.confirmarEntrega("Comedor");
+
+    GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega));
+
+    assertEquals(EstadoRuta.COMPLETADA, ruta.getEstado());
+    assertEquals(EstadoCamion.DISPONIBLE, camion.getEstado());
+    assertEquals(EstadoChofer.DISPONIBLE, chofer.getEstado());
+    assertNull(camion.getRutaId());
+    assertNull(chofer.getRutaId());
+  }
 }
