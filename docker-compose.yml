@@ -79,6 +79,12 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      notificaciones-service:
+        condition: service_healthy
+      incentivos-service:
+        condition: service_healthy
+      logistica-service:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
     healthcheck:

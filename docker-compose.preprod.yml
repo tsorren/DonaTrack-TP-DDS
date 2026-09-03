@@ -86,6 +86,12 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      notificaciones-service:
+        condition: service_healthy
+      incentivos-service:
+        condition: service_healthy
+      logistica-service:
+        condition: service_healthy
     volumes:
       - ./logs:/app/logs
     healthcheck:
@@ -161,6 +167,9 @@ services:
       - NODE_OPTIONS=--max-old-space-size=384
     volumes:
       - ./n8n:/etc/n8n/workflows
+      # TODO deuda técnica: docker-compose.yml (local) no persiste /home/node/.n8n a propósito,
+      # por diseño solo se hizo para preprod. Evaluar si conviene espejarlo en local.
+      - n8n_data:/home/node/.n8n
     healthcheck:
       test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:5678/healthz', (res) => { res.resume(); process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))\""]
       interval: 5s
@@ -174,3 +183,6 @@ services:
 networks:
   preprod-network:
     driver: bridge
+
+volumes:
+  n8n_data:
