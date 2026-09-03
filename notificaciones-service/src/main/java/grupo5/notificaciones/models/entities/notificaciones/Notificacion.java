@@ -44,6 +44,23 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
         EstadoNotificacion.PENDIENTE); // usa el método para que quede en el historial
   }
 
+  // constructor para NotificacionPersistenciaMapper
+  public Notificacion(
+      UUID id,
+      UUID personaId,
+      String mensaje,
+      LocalDateTime fechaCreacion,
+      EstadoNotificacion estadoNotificacion,
+      List<CambioEstadoNotificacion> historialEstado) {
+    this.id = id;
+    this.personaId = personaId;
+    this.mensaje = mensaje;
+    this.fechaCreacion = fechaCreacion;
+    this.estadoNotificacion = estadoNotificacion;
+    this.historialEstado =
+        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
+  }
+
   public List<CambioEstadoNotificacion> getHistorialEstado() {
     return List.copyOf(this.historialEstado);
   }

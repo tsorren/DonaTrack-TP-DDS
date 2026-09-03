@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 
 import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
+import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
+import grupo5.donaciones.infrastructure.clients.LogisticaFeignClient;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.services.INotificacionesAsyncService;
@@ -19,6 +21,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 class DonacionesServiceApplicationTest {
 
   @MockitoBean private NotificacionesFeignClient notificacionesFeignClient;
+  @MockitoBean private IncentivosFeignClient incentivosFeignClient;
+  @MockitoBean private LogisticaFeignClient logisticaFeignClient;
 
   @Autowired private INotificacionesAsyncService notificacionesAsyncService;
 
