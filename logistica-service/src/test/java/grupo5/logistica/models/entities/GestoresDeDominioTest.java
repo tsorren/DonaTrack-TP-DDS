@@ -180,7 +180,8 @@ class GestoresDeDominioTest {
     GestorDeRutas.agregarEntrega(ruta, entrega);
     GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
 
-    // La entrega sigue EN_TRASLADO, intentar completar debe lanzar excepción
+    List<Entrega> entregas = List.of(entrega);
+
     assertThrows(
         ValidationException.class,
         () -> GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega)));
