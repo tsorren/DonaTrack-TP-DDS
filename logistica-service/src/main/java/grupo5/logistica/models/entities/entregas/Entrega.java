@@ -127,7 +127,6 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
     actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
     registrarEvento(new EntregaFallida(this.id, this.idDonacion, justificacion, replanificable));
-    // mandarARevision("SISTEMA_LOGISTICA");
   }
 
   public void mandarARevision(String administrador) {
