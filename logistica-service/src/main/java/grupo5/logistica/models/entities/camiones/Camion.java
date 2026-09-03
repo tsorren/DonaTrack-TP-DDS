@@ -34,7 +34,7 @@ public class Camion implements AggregateRoot {
 
     this.id = UUID.randomUUID();
     this.rutaId = null;
-    this.patente = patente.trim();
+    this.patente = ValidadorPatentes.normalizar(patente);
     this.capacidadVolumen = capacidadVolumen;
     this.capacidadKG = capacidadKG;
     this.altura = altura;
