@@ -8,6 +8,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallidaDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciadaDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.infrastructure.outbox.OutboxStore;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -42,6 +43,7 @@ class DonacionesIndependientesNotificacionesServiceTest {
   @Mock private INecesidadesRepository necesidadRepository;
   @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
   @Mock private IPersonasService personasService;
+  @Mock private OutboxStore outboxStore;
 
   @InjectMocks private DonacionesIndependientesNotificacionesService notificacionesService;
 
@@ -122,5 +124,51 @@ class DonacionesIndependientesNotificacionesServiceTest {
     notificacionesService.procesarDonacionFallida(event);
 
     verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoEntregaFallidaDTO.class));
+  }
+
+  @Test
+  void procesarRutaIniciada_cuandoNotificacionesFalla_encolarEnOutbox() {
+    EventoRutaIniciada event =
+        new EventoRutaIniciada(
+            donacionIndependienteId, donacionOriginalId, necesidadId, "http://mapa/ruta");
+    doThrow(new RuntimeException("notificaciones-service no disponible"))
+        .when(notificacionesFeignClient)
+        .enviarEvento(any());
+
+    notificacionesService.procesarRutaIniciada(event);
+
+    verify(outboxStore, times(1)).agregar(any());
+  }
+
+  @Test
+  void procesarDonacionRecibida_cuandoIncentivosFalla_encolarIncentivosPeroNotificacionesSeLlama() {
+    EventoDonacionRecibida event =
+        new EventoDonacionRecibida(
+            donacionIndependienteId, donacionOriginalId, necesidadId, "ABC-123");
+    doThrow(new RuntimeException("incentivos-service no disponible"))
+        .when(incentivosFeignClient)
+        .procesarDonacionExitosa(any());
+
+    notificacionesService.procesarDonacionRecibida(event);
+
+    verify(outboxStore, times(1)).agregar(any());
+    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoDonacionRecibidaDTO.class));
+  }
+
+  @Test
+  void procesarDonacionRecibida_cuandoAmbosFallan_encolarAmbasLlamadasIndependientemente() {
+    EventoDonacionRecibida event =
+        new EventoDonacionRecibida(
+            donacionIndependienteId, donacionOriginalId, necesidadId, "ABC-123");
+    doThrow(new RuntimeException("incentivos-service no disponible"))
+        .when(incentivosFeignClient)
+        .procesarDonacionExitosa(any());
+    doThrow(new RuntimeException("notificaciones-service no disponible"))
+        .when(notificacionesFeignClient)
+        .enviarEvento(any());
+
+    notificacionesService.procesarDonacionRecibida(event);
+
+    verify(outboxStore, times(2)).agregar(any());
   }
 }

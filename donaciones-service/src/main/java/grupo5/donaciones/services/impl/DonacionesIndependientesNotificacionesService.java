@@ -7,6 +7,8 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallidaDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciadaDTO;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.infrastructure.outbox.OutboxEntry;
+import grupo5.donaciones.infrastructure.outbox.OutboxStore;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -45,6 +47,7 @@ public class DonacionesIndependientesNotificacionesService
   private final INecesidadesRepository necesidadRepository;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
   private final IPersonasService personasService;
+  private final OutboxStore outboxStore;
 
   public DonacionesIndependientesNotificacionesService(
       IncentivosFeignClient incentivosFeignClient,
@@ -54,7 +57,8 @@ public class DonacionesIndependientesNotificacionesService
       IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository,
       INecesidadesRepository necesidadRepository,
       IDonacionesIndependientesRepository donacionesIndependientesRepository,
-      IPersonasService personasService) {
+      IPersonasService personasService,
+      OutboxStore outboxStore) {
     this.incentivosFeignClient = incentivosFeignClient;
     this.notificacionesFeignClient = notificacionesFeignClient;
     this.donacionRepository = donacionRepository;
@@ -63,27 +67,35 @@ public class DonacionesIndependientesNotificacionesService
     this.necesidadRepository = necesidadRepository;
     this.donacionesIndependientesRepository = donacionesIndependientesRepository;
     this.personasService = personasService;
+    this.outboxStore = outboxStore;
   }
 
   @Override
   public void procesarRutaIniciada(EventoRutaIniciada event) {
     log.info("Procesando EventoRutaIniciada para donación {}", event.getDonacionIndependienteId());
-    try {
-      UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
-      UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(event.getIdNecesidad());
-      String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
 
-      notificacionesFeignClient.enviarEvento(
-          new EventoRutaIniciadaDTO(
-              personaDonanteId,
-              event.getTimestamp() != null
-                  ? event.getTimestamp()
-                  : LocalDateTime.now(ZoneId.systemDefault()),
-              idPersonaBeneficiaria,
-              descripcion,
-              event.getUrlMapa()));
+    UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
+    UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(event.getIdNecesidad());
+    String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
+
+    var dto =
+        new EventoRutaIniciadaDTO(
+            personaDonanteId,
+            event.getTimestamp() != null
+                ? event.getTimestamp()
+                : LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaBeneficiaria,
+            descripcion,
+            event.getUrlMapa());
+
+    try {
+      notificacionesFeignClient.enviarEvento(dto);
     } catch (Exception e) {
-      log.error("Error al notificar ruta iniciada: {}", e.getMessage(), e);
+      log.warn("Fallo al notificar ruta iniciada, encolando para reintento: {}", e.getMessage());
+      outboxStore.agregar(
+          OutboxEntry.nuevo(
+              "notificaciones.rutaIniciada[" + event.getDonacionIndependienteId() + "]",
+              () -> notificacionesFeignClient.enviarEvento(dto)));
     }
   }
 
@@ -91,27 +103,44 @@ public class DonacionesIndependientesNotificacionesService
   public void procesarDonacionRecibida(EventoDonacionRecibida event) {
     log.info(
         "Procesando EventoDonacionRecibida para donación {}", event.getDonacionIndependienteId());
+
+    UUID donanteId = obtenerDonanteId(event.getDonacionOriginalId());
+    UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
+    UUID organizacionId = obtenerOrganizacionId(event.getIdNecesidad());
+    UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(event.getIdNecesidad());
+    String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
+
+    var dtoIncentivos = new DonacionExitosaRequest(donanteId, organizacionId);
     try {
-      UUID donanteId = obtenerDonanteId(event.getDonacionOriginalId());
-      UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
-      UUID organizacionId = obtenerOrganizacionId(event.getIdNecesidad());
-      UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(event.getIdNecesidad());
-      String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
-
-      incentivosFeignClient.procesarDonacionExitosa(
-          new DonacionExitosaRequest(donanteId, organizacionId));
-
-      notificacionesFeignClient.enviarEvento(
-          new EventoDonacionRecibidaDTO(
-              personaDonanteId,
-              event.getTimestamp() != null
-                  ? event.getTimestamp()
-                  : LocalDateTime.now(ZoneId.systemDefault()),
-              idPersonaBeneficiaria,
-              descripcion,
-              event.getPatenteCamion()));
+      incentivosFeignClient.procesarDonacionExitosa(dtoIncentivos);
     } catch (Exception e) {
-      log.error("Error al procesar donación recibida: {}", e.getMessage(), e);
+      log.warn(
+          "Fallo al registrar incentivos para donación recibida, encolando para reintento: {}",
+          e.getMessage());
+      outboxStore.agregar(
+          OutboxEntry.nuevo(
+              "incentivos.procesarDonacionExitosa[" + event.getDonacionIndependienteId() + "]",
+              () -> incentivosFeignClient.procesarDonacionExitosa(dtoIncentivos)));
+    }
+
+    var dtoNotificaciones =
+        new EventoDonacionRecibidaDTO(
+            personaDonanteId,
+            event.getTimestamp() != null
+                ? event.getTimestamp()
+                : LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaBeneficiaria,
+            descripcion,
+            event.getPatenteCamion());
+    try {
+      notificacionesFeignClient.enviarEvento(dtoNotificaciones);
+    } catch (Exception e) {
+      log.warn(
+          "Fallo al notificar donación recibida, encolando para reintento: {}", e.getMessage());
+      outboxStore.agregar(
+          OutboxEntry.nuevo(
+              "notificaciones.donacionRecibida[" + event.getDonacionIndependienteId() + "]",
+              () -> notificacionesFeignClient.enviarEvento(dtoNotificaciones)));
     }
   }
 
@@ -119,22 +148,29 @@ public class DonacionesIndependientesNotificacionesService
   public void procesarDonacionVencida(EventoDonacionVencida event) {
     log.info(
         "Procesando EventoDonacionVencida para donación {}", event.getDonacionIndependienteId());
-    try {
-      UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
-      UUID idPersonaAdmin = personasService.obtenerIdPersonaAdministradora();
-      String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
 
-      notificacionesFeignClient.enviarEvento(
-          new EventoDonacionVencidaDTO(
-              personaDonanteId,
-              event.getTimestamp() != null
-                  ? event.getTimestamp()
-                  : LocalDateTime.now(ZoneId.systemDefault()),
-              idPersonaAdmin,
-              descripcion,
-              event.getMotivo()));
+    UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
+    UUID idPersonaAdmin = personasService.obtenerIdPersonaAdministradora();
+    String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
+
+    var dto =
+        new EventoDonacionVencidaDTO(
+            personaDonanteId,
+            event.getTimestamp() != null
+                ? event.getTimestamp()
+                : LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaAdmin,
+            descripcion,
+            event.getMotivo());
+
+    try {
+      notificacionesFeignClient.enviarEvento(dto);
     } catch (Exception e) {
-      log.error("Error al notificar donación vencida: {}", e.getMessage(), e);
+      log.warn("Fallo al notificar donación vencida, encolando para reintento: {}", e.getMessage());
+      outboxStore.agregar(
+          OutboxEntry.nuevo(
+              "notificaciones.donacionVencida[" + event.getDonacionIndependienteId() + "]",
+              () -> notificacionesFeignClient.enviarEvento(dto)));
     }
   }
 
@@ -142,25 +178,32 @@ public class DonacionesIndependientesNotificacionesService
   public void procesarDonacionFallida(EventoDonacionFallida event) {
     log.info(
         "Procesando EventoDonacionFallida para donación {}", event.getDonacionIndependienteId());
-    try {
-      UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
-      UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(event.getIdNecesidad());
-      UUID idPersonaAdmin = personasService.obtenerIdPersonaAdministradora();
-      String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
 
-      notificacionesFeignClient.enviarEvento(
-          new EventoEntregaFallidaDTO(
-              personaDonanteId,
-              event.getTimestamp() != null
-                  ? event.getTimestamp()
-                  : LocalDateTime.now(ZoneId.systemDefault()),
-              idPersonaBeneficiaria,
-              descripcion,
-              idPersonaAdmin,
-              event.getJustificacion(),
-              event.getReplanificable()));
+    UUID personaDonanteId = obtenerPersonaDonanteId(event.getDonacionOriginalId());
+    UUID idPersonaBeneficiaria = obtenerPersonaBeneficiariaId(event.getIdNecesidad());
+    UUID idPersonaAdmin = personasService.obtenerIdPersonaAdministradora();
+    String descripcion = obtenerDescripcionDonacion(event.getDonacionIndependienteId());
+
+    var dto =
+        new EventoEntregaFallidaDTO(
+            personaDonanteId,
+            event.getTimestamp() != null
+                ? event.getTimestamp()
+                : LocalDateTime.now(ZoneId.systemDefault()),
+            idPersonaBeneficiaria,
+            descripcion,
+            idPersonaAdmin,
+            event.getJustificacion(),
+            event.getReplanificable());
+
+    try {
+      notificacionesFeignClient.enviarEvento(dto);
     } catch (Exception e) {
-      log.error("Error al notificar entrega fallida: {}", e.getMessage(), e);
+      log.warn("Fallo al notificar entrega fallida, encolando para reintento: {}", e.getMessage());
+      outboxStore.agregar(
+          OutboxEntry.nuevo(
+              "notificaciones.donacionFallida[" + event.getDonacionIndependienteId() + "]",
+              () -> notificacionesFeignClient.enviarEvento(dto)));
     }
   }
 
