@@ -9,9 +9,6 @@ import grupo5.logistica.models.entities.rutas.RespuestaPlanificacion;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.services.IServicioExternoPlanificacion;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -39,19 +36,18 @@ public class ProveedorExternoPlanificacionSimulado implements IServicioExternoPl
       SolicitudPlanificacion seguimiento, PlanificacionSolicitada solicitud) {
     try {
       RespuestaPlanificacion respuesta = planificadorDeRutas.procesarSolicitud(solicitud);
-      enviarCallback(seguimiento, crearCallback(respuesta, solicitud));
+      enviarCallback(seguimiento, callbackExitoso(respuesta));
     } catch (Exception error) {
       log.error("[PLANIFICADOR_EXTERNO] Error procesando solicitud {}", seguimiento.getId(), error);
       String motivo =
           error.getMessage() != null ? error.getMessage() : error.getClass().getSimpleName();
       enviarCallback(
           seguimiento,
-          new CallbackPlanificacionRequestDTO(seguimiento.getId(), List.of(), "ERROR", motivo));
+          new CallbackPlanificacionRequestDTO(seguimiento.getId(), null, "ERROR", motivo));
     }
   }
 
-  private static CallbackPlanificacionRequestDTO crearCallback(
-      RespuestaPlanificacion respuesta, PlanificacionSolicitada solicitud) {
+  private static CallbackPlanificacionRequestDTO callbackExitoso(RespuestaPlanificacion respuesta) {
     List<RutaPlanificadaDTO> rutas =
         respuesta.datos().entrySet().stream()
             .map(
@@ -62,23 +58,8 @@ public class ProveedorExternoPlanificacionSimulado implements IServicioExternoPl
                         respuesta.fecha(),
                         asignacion.getValue().stream().map(Entrega::getId).toList()))
             .toList();
-    Set<UUID> entregasEsperadas =
-        solicitud.entregas().stream().map(Entrega::getId).collect(Collectors.toSet());
-    Set<UUID> entregasAsignadas =
-        respuesta.datos().values().stream()
-            .flatMap(List::stream)
-            .map(Entrega::getId)
-            .collect(Collectors.toSet());
-    if (entregasAsignadas.isEmpty()) {
-      return new CallbackPlanificacionRequestDTO(
-          respuesta.idPlanificacionSolicitada(),
-          List.of(),
-          "ERROR",
-          "Capacidad insuficiente para asignar entregas");
-    }
-    String estado = entregasAsignadas.containsAll(entregasEsperadas) ? "OK" : "PARCIAL";
     return new CallbackPlanificacionRequestDTO(
-        respuesta.idPlanificacionSolicitada(), rutas, estado, null);
+        respuesta.idPlanificacionSolicitada(), rutas, "OK", null);
   }
 
   private void enviarCallback(

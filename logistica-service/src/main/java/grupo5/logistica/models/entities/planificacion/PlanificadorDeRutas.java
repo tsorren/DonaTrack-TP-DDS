@@ -7,6 +7,8 @@ import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.PlanificacionSolicitada;
 import grupo5.logistica.models.entities.rutas.RespuestaPlanificacion;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.LinkedHashMap;
@@ -36,13 +38,13 @@ public class PlanificadorDeRutas {
 
     List<Entrega> entregasOrdenadas =
         ordenadorEntregas.obtenerEntregasOrdenadas(solicitud.entregas());
-    List<Camion> camionesDisponibles =
+    List<Camion> camiones =
         solicitud.camionesDisponibles().stream().filter(Camion::estaDisponibleParaAsignar).toList();
-    List<Chofer> choferesDisponibles =
-        solicitud.choferesDisponibles().stream().filter(Chofer::estaDisponibleParaAsignar).toList();
-    int cantidadPares = Math.min(camionesDisponibles.size(), choferesDisponibles.size());
-    List<Camion> camiones = camionesDisponibles.subList(0, cantidadPares);
-    Deque<Chofer> choferes = new ArrayDeque<>(choferesDisponibles.subList(0, cantidadPares));
+    Deque<Chofer> choferes =
+        new ArrayDeque<>(
+            solicitud.choferesDisponibles().stream()
+                .filter(Chofer::estaDisponibleParaAsignar)
+                .toList());
 
     Map<Camion, List<Entrega>> asignacion =
         asignadorDeEntregas.asignar(entregasOrdenadas, camiones);
@@ -59,6 +61,10 @@ public class PlanificadorDeRutas {
         });
 
     return new RespuestaPlanificacion(
-        UUID.randomUUID(), solicitud.id(), solicitud.fecha(), rutasConChofer, choferesPorCamion);
+        UUID.randomUUID(),
+        solicitud.id(),
+        LocalDate.now(ZoneId.of("UTC")),
+        rutasConChofer,
+        choferesPorCamion);
   }
 }

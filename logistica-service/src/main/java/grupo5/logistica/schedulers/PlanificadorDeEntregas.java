@@ -13,9 +13,7 @@ public class PlanificadorDeEntregas {
     this.planificacionService = planificacionService;
   }
 
-  @Scheduled(
-      cron = "${logistica.planificacion.cron.expression:0 0 2 * * ?}",
-      zone = "${logistica.planificacion.cron.zone:UTC}")
+  @Scheduled(cron = "${logistica.planificacion.cron.expression:0 0 2 * * ?}")
   public void ejecutar() {
     planificacionService.iniciarPlanificacion();
   }

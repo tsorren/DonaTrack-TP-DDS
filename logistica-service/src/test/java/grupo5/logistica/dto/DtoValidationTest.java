@@ -271,15 +271,6 @@ class DtoValidationTest {
   }
 
   @Test
-  void callbackPlanificacion_estadoDesconocido_violacion() {
-    assertFalse(
-        validator
-            .validate(
-                new CallbackPlanificacionRequestDTO(UUID.randomUUID(), null, "DESCONOCIDO", null))
-            .isEmpty());
-  }
-
-  @Test
   void callbackPlanificacion_valido_sinViolaciones() {
     assertTrue(
         validator

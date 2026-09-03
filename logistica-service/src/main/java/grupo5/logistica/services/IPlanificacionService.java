@@ -1,7 +1,6 @@
 package grupo5.logistica.services;
 
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
-import grupo5.logistica.dto.callback.EjecucionPlanificacionResponseDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import java.util.UUID;
 
@@ -11,9 +10,7 @@ import java.util.UUID;
  */
 public interface IPlanificacionService {
 
-  EjecucionPlanificacionResponseDTO iniciarPlanificacion();
-
-  EjecucionPlanificacionResponseDTO iniciarPlanificacionManual();
+  void iniciarPlanificacion();
 
   SolicitudPlanificacionResponseDTO procesarCallback(CallbackPlanificacionRequestDTO dto);
 
