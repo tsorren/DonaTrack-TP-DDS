@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -271,5 +274,49 @@ public class GlobalExceptionHandler {
         ex);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(new ErrorResponse(ex, ErrorCatalog.ERROR_INTERNO.getCode(), "Internal Server Error"));
+  }
+
+  @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+  public ResponseEntity<ErrorResponse> handleMethodNotSupported(
+      HttpRequestMethodNotSupportedException ex) {
+    String detail =
+        String.format(
+            "El método HTTP '%s' no está soportado para este endpoint. Métodos soportados: %s",
+            ex.getMethod(), ex.getSupportedHttpMethods());
+    log.warn(
+        "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Method not supported: {}",
+        ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
+        ex.getClass().getSimpleName(),
+        detail);
+    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+        .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
+  }
+
+  @ExceptionHandler(NoResourceFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex) {
+    String detail =
+        String.format("El recurso en la ruta '%s' no fue encontrado.", ex.getResourcePath());
+    log.warn(
+        "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - No resource found: {}",
+        ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(),
+        ex.getClass().getSimpleName(),
+        detail);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(new ErrorResponse(ex, ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(), detail));
+  }
+
+  @ExceptionHandler(NoHandlerFoundException.class)
+  public ResponseEntity<ErrorResponse> handleNoHandlerFound(NoHandlerFoundException ex) {
+    String detail =
+        String.format(
+            "No se encontró un manejador para la ruta '%s' y método '%s'.",
+            ex.getRequestURL(), ex.getHttpMethod());
+    log.warn(
+        "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - No handler found: {}",
+        ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(),
+        ex.getClass().getSimpleName(),
+        detail);
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(new ErrorResponse(ex, ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(), detail));
   }
 }

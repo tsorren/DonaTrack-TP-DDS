@@ -3,9 +3,8 @@ package grupo5.logistica.controllers;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -227,6 +226,25 @@ class ValidacionHttpTest {
         .perform(
             post("/api/camiones").contentType(MediaType.APPLICATION_JSON).content("{malformed"))
         .andExpect(status().isBadRequest());
+  }
+
+  // ===================== 405 — Method Not Allowed (Verifica GlobalExceptionHandler)
+  // =====================
+  @Test
+  void endpointConMetodoNoSoportado_retorna405MethodNotAllowed() throws Exception {
+    // Intentar hacer DELETE en un endpoint que solo acepta PATCH
+    entregaMvc
+        .perform(delete("/api/entregas/" + ID + "/estado"))
+        .andExpect(status().isMethodNotAllowed())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void consultarHistorialConPut_retorna405MethodNotAllowed() throws Exception {
+    // Intentar hacer PUT en un endpoint que solo acepta GET
+    entregaMvc
+        .perform(put("/api/entregas/" + ID + "/historial"))
+        .andExpect(status().isMethodNotAllowed());
   }
 
   // ===================== Confirmacion de status codes (verificacion adicional)
