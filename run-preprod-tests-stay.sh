@@ -70,8 +70,7 @@ docker compose -f "$COMPOSE_FILE" up --build --wait -d
 ok "Todos los servicios están healthy."
 
 step "Importando y activando workflows en n8n"
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Insignias.JSON || warn "No se pudo importar el workflow de insignias"
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || warn "No se pudo importar el workflow de ranking"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --separate --input=//etc/n8n/workflows || warn "No se pudieron importar los workflows"
 
 echo "Publicando (activando) workflows en n8n..."
 MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=1 || warn "No se pudo activar el workflow de insignias"

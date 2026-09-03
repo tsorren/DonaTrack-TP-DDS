@@ -147,16 +147,19 @@ El hallazgo más severo en el pipeline actual es la presencia reiterada de mecan
   Aunque SonarCloud S7630 fue mitigado en partes de `main.yml` y `merge.yml`, el patrón de interpolación directa en lugar de variables de entorno explícitas debe ser auditado de forma continua para evitar inyecciones remotas de código a través de nombres de ramas maliciosos.
 
 ### [V-03] Bootstrapping Frágil y Acoplamiento a IDs Hardcodeados en n8n
-* **Evidencia en Código:**  
-  En [`.github/workflows/main.yml:L706-L712`](../../.github/workflows/main.yml#L706-L712) y [`run-preprod-tests.sh:L106-L111`](../../run-preprod-tests.sh#L106-L111):
+* **Evidencia en Código (Previa):**  
+  En [`.github/workflows/main.yml`](../../.github/workflows/main.yml) y [`run-preprod-tests.sh`](../../run-preprod-tests.sh) se intentaba importar archivos JSON de un solo workflow sin `--separate`, lo que arrojaba `workflows.map is not a function`, y se invocaba `publish:workflow` (inexistente en n8n 1.x), enmascarado con `|| true`:
   ```bash
   docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Insignias.JSON || true
   docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || true
   docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1 || true
   docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2 || true
   ```
-* **Impacto y SPOF:**  
-  Se asume de forma determinística que los IDs autoincrementales asignados por n8n serán exactamente `1` y `2`. Si la base interna de n8n retiene un estado previo o asigna UUIDs, la publicación falla silenciosamente (enmascarada por `|| true`). Los tests de integración posteriores (`SmokeIT`, `FlujoCompletoIT`) fallarán más adelante con errores HTTP 404/500 al llamar al webhook, sin que la causa raíz quede explícita.
+* **Remediación Aplicada:**  
+  1. Se utiliza `n8n import:workflow --separate --input=/etc/n8n/workflows`, permitiendo importar archivos individuales con `--separate` y resolviendo la excepción `workflows.map is not a function`.
+  2. Se actualiza la imagen a `n8nio/n8n:2.37.7` donde `publish:workflow` es el comando nativo oficial: `n8n publish:workflow --id=1` y `n8n publish:workflow --id=2`.
+  3. Se configuran variables de entorno headless (`N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false`, `N8N_DIAGNOSTICS_ENABLED=false`).
+  4. Se eliminan los operadores `|| true` para asegurar detección inmediata ante fallos de importación o activación.
 
 ### [V-04] Acoplamiento de API GHCR a Cuentas Personales (`/users/`)
 * **Evidencia en Código:**  

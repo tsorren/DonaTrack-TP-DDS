@@ -140,7 +140,7 @@ services:
       - donatrack-network
 
   n8n:
-    image: n8nio/n8n:latest
+    image: n8nio/n8n:2.37.7
     ports:
       - "5678:5678"
     environment:
@@ -151,6 +151,7 @@ services:
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_VERSION_NOTIFICATIONS_ENABLED=false
       - N8N_METRICS_ENABLED=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
       - NODE_OPTIONS=--max-old-space-size=384
     volumes:
       - ./n8n:/etc/n8n/workflows
