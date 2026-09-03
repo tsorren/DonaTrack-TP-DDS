@@ -1,4 +1,4 @@
-﻿# Estrategia de Testing de Persistencia con Testcontainers frente a H2
+# Estrategia de Testing de Persistencia con Testcontainers frente a H2
 
 - Status: proposed
 - Date: 2026-09-01
@@ -22,22 +22,23 @@ Al planificar las pruebas automatizadas de la capa de persistencia relacional (J
 
 ## Alternativas Consideradas
 
-* **Testcontainers con PostgreSQL 15+ (`postgres:15-alpine`):** Utilizar Testcontainers en las pruebas `@DataJpaTest` / integración para levantar automáticamente un contenedor efímero de PostgreSQL idéntico al de producción.
+* **Testcontainers con PostgreSQL 16 (`postgres:16-alpine`):** Utilizar Testcontainers en las pruebas `@DataJpaTest` / integración para levantar automáticamente un contenedor efímero de PostgreSQL 16 idéntico al de producción, ejecutando el script canónico `persistencia/init-db/01-init-schemas-roles.sql` para replicar esquemas lógicos y roles segregados.
 * **Base de Datos Embebida H2 en Memoria:** Configurar H2 con modo de compatibilidad PostgreSQL (`MODE=PostgreSQL`).
 * **Instancia Fija de PostgreSQL Compartida Localmente:** Requerir que cada desarrollador o agente mantenga un servicio PostgreSQL corriendo manualmente en su máquina.
 
 ## Resultado de la Decisión
 
-Alternativa elegida: "Testcontainers con PostgreSQL 15+ (`postgres:15-alpine`)"
+Alternativa elegida: "Testcontainers con PostgreSQL 16 (`postgres:16-alpine`)"
 
 Justificación:
-Testcontainers garantiza fidelidad absoluta al 100% con el motor PostgreSQL real. Elimina los falsos positivos/negativos de H2, permite probar DDLs nativos, índices parciales y transacciones concurrentes con `SKIP LOCKED`. Se integra nativamente con Spring Boot mediante `@DynamicPropertySource` y con el pipeline de GitHub Actions ya existente.
+Testcontainers garantiza fidelidad absoluta al 100% con el motor PostgreSQL 16 real. Elimina los falsos positivos/negativos de H2, permite probar DDLs nativos, restricciones de schemas y transacciones concurrentes con `SKIP LOCKED`. Se integra nativamente con Spring Boot mediante `@DynamicPropertySource`, inyectando la URL con el parámetro `currentSchema` correspondiente y las credenciales específicas del rol de cada microservicio, validando simultáneamente la infraestructura de seguridad y las migraciones Flyway.
 
 ### Consecuencias Positivas
 
 * Pruebas de persistencia verdaderamente fidedignas; lo que pasa en test pasa idénticamente en producción.
 * Aislamiento total entre tests: cada suite o contexto obtiene un esquema limpio y determinista.
 * Unificación del dialecto SQL en un único archivo DDL canónico de PostgreSQL.
+* Validación empírica del aislamiento de roles de base de datos dentro del entorno de pruebas.
 
 ### Consecuencias Negativas
 
@@ -47,12 +48,15 @@ Testcontainers garantiza fidelidad absoluta al 100% con el motor PostgreSQL real
 ### Validación
 
 Se valida mediante:
-1. Clases de prueba de persistencia que utilizan `@Testcontainers` y `@Container static PostgreSQLContainer<?> postgres`.
-2. Verificación de ejecución exitosa de queries nativas con `JSONB` y `SKIP LOCKED` en CI/CD.
+1. Clases de prueba de persistencia que utilizan `@Testcontainers` y `@Container static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")`.
+2. Inicialización de contenedor montando `persistencia/init-db/01-init-schemas-roles.sql`.
+3. Inyección dinámica de datasource con `@DynamicPropertySource` conectando con el usuario segregado del microservicio (`notificaciones_user`).
+4. Ejecución exitosa de `RepositoriosJpaTest` en `notificaciones-service`.
 
 ## Análisis de Alternativas
 
-### Testcontainers con PostgreSQL 15+
+### Testcontainers con PostgreSQL 16
+
 
 #### Pros
 * Paridad 1:1 con producción.

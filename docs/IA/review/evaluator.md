@@ -3,7 +3,7 @@
 > **Fuente canónica de la política de revisión de implementación para agentes de IA.**  
 > Define roles, modos de independencia, Review Contract y vectores de revisión.  
 > Complementa `AGENTS.md` §7.4 — que define la *profundidad* (QUICK / STANDARD / ARCHITECTURAL).  
-> Auditoría documental (fuente separada): [`../auditoria/plan-revisor-critico.md`](../auditoria/plan-revisor-critico.md)
+> Auditoría documental (fuente separada): [`../../auditoria/plan-revisor-critico.md`](../../auditoria/plan-revisor-critico.md)
 
 ---
 
@@ -387,7 +387,7 @@ Son actividades distintas que pueden coexistir en tareas ARCHITECTURAL.
 ### ADR Review
 
 **Pregunta central:** ¿la decisión arquitectónica está bien fundamentada?  
-**Rúbrica:** escala 1–5 en 4 dimensiones — ver [`docs/adr/README.md`](../adr/README.md).  
+**Rúbrica:** escala 1–5 en 4 dimensiones — ver [`docs/adr/README.md`](../../adr/README.md).  
 **Threshold mínimo:** ≥ 4.0/5.0 para que el ADR sea apto para review humana.  
 **Output:** puntaje X.X/5.0 + observaciones sobre el ADR propuesto.
 

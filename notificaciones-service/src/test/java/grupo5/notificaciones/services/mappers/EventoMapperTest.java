@@ -176,4 +176,41 @@ class EventoMapperTest {
     // ErrorCatalog.RECURSO_NO_ENCONTRADO, mismo criterio que PersonasService.
     assertThrows(ValidationException.class, () -> mapper.toEntity(dto));
   }
+
+  @Test
+  void toEntity_donacionVencida_deberiaMapearCorrectamente() {
+    EventoDonacionVencidaDTO dto =
+        new EventoDonacionVencidaDTO(
+            donante.getId(),
+            TEST_DATE_TIME,
+            admin.getId(),
+            "10 kg de arroz",
+            "Expiró plazo de acopio");
+
+    EventoNotificable evento = mapper.toEntity(dto);
+
+    assertInstanceOf(DonacionVencida.class, evento);
+    DonacionVencida dv = (DonacionVencida) evento;
+    assertEquals(donante.getId(), dv.getPersona().getId());
+    assertEquals(admin.getId(), dv.getAdministracion().getId());
+    assertEquals("10 kg de arroz", dv.getDetalleDonacion());
+    assertEquals("Expiró plazo de acopio", dv.getMotivo());
+    assertEquals(TEST_DATE_TIME, dv.getFecha());
+  }
+
+  @Test
+  void toEntity_donacionVencida_conAdminInexistente_deberiaLanzarExcepcion() {
+    UUID adminInexistente = UUID.randomUUID();
+    when(personaRepository.findById(adminInexistente)).thenReturn(Optional.empty());
+
+    EventoDonacionVencidaDTO dto =
+        new EventoDonacionVencidaDTO(
+            donante.getId(),
+            TEST_DATE_TIME,
+            adminInexistente,
+            "10 kg de arroz",
+            "Expiró plazo de acopio");
+
+    assertThrows(ValidationException.class, () -> mapper.toEntity(dto));
+  }
 }

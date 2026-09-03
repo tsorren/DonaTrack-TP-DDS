@@ -42,6 +42,34 @@ class PersonasServiceTest {
 
   @Test
   void sincronizar_deberiaMapearYGuardar() {
+    when(replicaDTO.id()).thenReturn(persona.getId());
+    when(repository.findById(persona.getId())).thenReturn(Optional.empty());
+    when(mapper.toEntity(replicaDTO)).thenReturn(persona);
+
+    service.sincronizar(replicaDTO);
+
+    verify(repository).save(persona);
+  }
+
+  @Test
+  void sincronizar_cuandoPersonaYaEstaAnonimizada_deberiaLanzarPersonaYaAnonimizadaException() {
+    UUID id = persona.getId();
+    Persona personaAnonimizada =
+        new Persona(id, new ArrayList<>(), "ANONIMIZADO", TipoPersona.HUMANA);
+    when(replicaDTO.id()).thenReturn(id);
+    when(repository.findById(id)).thenReturn(Optional.of(personaAnonimizada));
+
+    assertThrows(
+        grupo5.notificaciones.exceptions.PersonaYaAnonimizadaException.class,
+        () -> service.sincronizar(replicaDTO));
+    verify(repository, never()).save(any());
+  }
+
+  @Test
+  void sincronizar_cuandoPersonaExisteYNoEstaAnonimizada_deberiaActualizarYGuardar() {
+    UUID id = persona.getId();
+    when(replicaDTO.id()).thenReturn(id);
+    when(repository.findById(id)).thenReturn(Optional.of(persona));
     when(mapper.toEntity(replicaDTO)).thenReturn(persona);
 
     service.sincronizar(replicaDTO);

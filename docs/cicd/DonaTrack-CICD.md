@@ -202,3 +202,16 @@ El correcto funcionamiento de todos los flujos de integraciÃ³n y notificacione
 | `DISCORD_SEMANTIC_DIFF_WEBHOOK_URL` | Webhook de Discord exclusivo para reportar los diffs arquitectÃ³nicos visuales generados por la comparaciÃ³n UML | URL del webhook del canal de arquitectura |
 | `DISCORD_USER_MAP` | JSON confidencial que mapea usuarios de GitHub con sus IDs de Discord de 18 dÃ­gitos | `{"github_user": "123456789012345678"}` |
 | `PACKAGES_CLEANUP_PAT` | PAT Classic con scope `delete:packages` para limpiar tags efÃ­meros `pr-N` de GHCR tras merge. Sin este secreto, la limpieza falla silenciosamente (el pipeline no se bloquea). | PAT generado en GitHub â†’ Settings â†’ Developer settings |
+
+---
+
+## 9. Agent Governance Check (Wave 7A)
+
+* **Workflow**: [`.github/workflows/agent-governance.yml`](../../.github/workflows/agent-governance.yml)
+* **Trigger**: Todo `pull_request` y `push` a `main` o `ENTREGA_*`. Sin filtros de paths — el check es lo suficientemente barato.
+* **Responsabilidad**: Verifica propiedades mecánicas del harness de agentes. Wave 7A cubre: canonicidad de `AGENTS.md`, existencia y referencia activa de `docs/IA/review/evaluator.md`, y ausencia de términos obsoletos eliminados en Oleada 6.
+* **Stack**: Node.js 20, módulos built-in únicamente. Sin Docker, Maven ni dependencias externas.
+* **Tests del tooling**: `node scripts/tests/run-tests.js` (17 casos, fixtures temporales).
+* **Ejecución local**: `node scripts/agent-check.js`
+* **Bloquea merge**: Sí, si cualquier check emite severidad `FAIL`. Los `WARN` son informativos.
+* **Secretos requeridos**: Ninguno.
