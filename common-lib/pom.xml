@@ -66,16 +66,9 @@
         <artifactId>spring-data-jpa</artifactId>
         <optional>true</optional>
         </dependency>
-        <!-- La dependencia de spring-data-jpa es provisoria hasta que la bd
-        este implementada en todos los servicios (sino busca una bd que no existe
-        y tira error). Cuando este en todos dejar la que esta comentada aca abajo
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-            <optional>true</optional>
-        </dependency>
-        -->
+        <!-- Nota: spring-data-jpa se incluye como dependencia opcional para CrudRepositoryJpaAdapter.
+             Una vez que la persistencia este implementada en todos los servicios se podra
+             utilizar el starter completo de Spring Boot. -->
     </dependencies>
 
     <build>

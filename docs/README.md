@@ -62,9 +62,9 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
-│   └── donaciones, incentivos, etc.       # 78 ADRs (44 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
+│   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
