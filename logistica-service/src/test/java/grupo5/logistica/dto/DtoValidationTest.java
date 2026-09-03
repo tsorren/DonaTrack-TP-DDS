@@ -9,17 +9,14 @@ import grupo5.logistica.dto.camiones.CambioEstadoCamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionRequestDTO;
 import grupo5.logistica.dto.choferes.CambioEstadoChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferRequestDTO;
-import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.ConfirmarRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
-import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
-import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
+import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
 import grupo5.logistica.dto.rutas.CambioEstadoRutaRequestDTO;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -158,6 +155,63 @@ class DtoValidationTest {
         validator
             .validate(
                 new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), dir, 10f, null))
+            .isEmpty());
+  }
+
+  @Test
+  void crearEntrega_pesoNulo_violacion() {
+    DireccionDTO dir =
+        new DireccionDTO("Calle", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    assertFalse(
+        validator
+            .validate(
+                new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), dir, null, 2f))
+            .isEmpty());
+  }
+
+  @Test
+  void crearEntrega_pesoNegativo_violacion() {
+    DireccionDTO dir =
+        new DireccionDTO("Calle", 123, null, null, "1000", "CABA", "Buenos Aires", "Argentina");
+    assertFalse(
+        validator
+            .validate(
+                new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), dir, -1f, 2f))
+            .isEmpty());
+  }
+
+  // ======================== CambioEstadoEntregaRequestDTO ========================
+  @Test
+  void cambioEstadoEntrega_valido_sinViolaciones() {
+    assertTrue(
+        validator
+            .validate(
+                new CambioEstadoEntregaRequestDTO(
+                    EstadoEntrega.ENTREGADA, "Comedor Infantil", null, null))
+            .isEmpty());
+  }
+
+  @Test
+  void cambioEstadoEntrega_estadoNulo_violacion() {
+    assertFalse(
+        validator
+            .validate(new CambioEstadoEntregaRequestDTO(null, "Comedor Infantil", null, null))
+            .isEmpty());
+  }
+
+  @Test
+  void cambioEstadoEntrega_actorVacio_violacion() {
+    assertFalse(
+        validator
+            .validate(new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, "   ", null, null))
+            .isEmpty());
+  }
+
+  @Test
+  void cambioEstadoEntrega_actorNulo_violacion() {
+    assertFalse(
+        validator
+            .validate(new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, null, null, null))
             .isEmpty());
   }
 
