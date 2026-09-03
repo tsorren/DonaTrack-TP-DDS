@@ -6,9 +6,8 @@ import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public final class GestorDeRutas {
 
@@ -35,7 +34,9 @@ public final class GestorDeRutas {
     if (entregas == null || entregas.isEmpty() || actor == null || actor.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
-    if (!ruta.getEntregaIds().equals(entregas.stream().map(Entrega::getId).toList())
+    Set<UUID> idsRuta = new HashSet<>(ruta.getEntregaIds());
+    Set<UUID> idsEntregas = entregas.stream().map(Entrega::getId).collect(Collectors.toSet());
+    if (!idsRuta.equals(idsEntregas)
         || entregas.stream().anyMatch(e -> e.getEstadoActual() != EstadoEntrega.PENDIENTE)) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
@@ -63,25 +64,21 @@ public final class GestorDeRutas {
         || !Objects.equals(ruta.getId(), camion.getRutaId())) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
-    List<UUID> idsEntregas = entregas.stream().map(Entrega::getId).toList();
-    if (!ruta.getEntregaIds().equals(idsEntregas)
+    Set<UUID> idsRuta = new HashSet<>(ruta.getEntregaIds());
+    Set<UUID> idsEntregas = entregas.stream().map(Entrega::getId).collect(Collectors.toSet());
+    if (!idsRuta.equals(idsEntregas)
         || entregas.stream()
             .anyMatch(
                 e ->
                     e.getEstadoActual() == EstadoEntrega.EN_TRASLADO
-                        || e.getEstadoActual() == EstadoEntrega.PENDIENTE)) {
+                        || (e.getEstadoActual() == EstadoEntrega.PENDIENTE
+                            && Objects.equals(e.getIdRuta(), ruta.getId())))) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
-    completarRuta(ruta, camion, chofer);
+    ejecutarCierreDeRuta(ruta, camion, chofer);
   }
 
-  public static void completarRuta(Ruta ruta, Camion camion, Chofer chofer) {
-    validarColaboradores(ruta, chofer, camion);
-    if (ruta.getEstado() != EstadoRuta.EN_TRASLADO
-        || !Objects.equals(ruta.getId(), chofer.getRutaId())
-        || !Objects.equals(ruta.getId(), camion.getRutaId())) {
-      throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
-    }
+  private static void ejecutarCierreDeRuta(Ruta ruta, Camion camion, Chofer chofer) {
     ruta.completarRuta();
     camion.completarRuta();
     chofer.completarRuta();

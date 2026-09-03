@@ -209,4 +209,24 @@ class GestoresDeDominioTest {
     assertNull(camion.getRutaId());
     assertNull(chofer.getRutaId());
   }
+
+  @Test
+  void gestorDeRutasCompletaRutaIndependientementeDelOrdenDeLasEntregas() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega1 = crearEntrega();
+    Entrega entrega2 = crearEntrega();
+
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, entrega1);
+    GestorDeRutas.agregarEntrega(ruta, entrega2);
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega1, entrega2), "Ada Lovelace");
+
+    entrega1.confirmarEntrega("Comedor 1");
+    entrega2.confirmarEntrega("Comedor 2");
+
+    GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega2, entrega1));
+
+    assertEquals(EstadoRuta.COMPLETADA, ruta.getEstado());
+  }
 }
