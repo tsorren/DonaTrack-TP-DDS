@@ -116,13 +116,18 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md`](adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) | ADR Persistencia | Formalización de arquitectura multi-schema y segregación de credenciales. | 🟢 Sincronizado |
 | [`docs/adr/20260901-estrategia-de-testing-de-persistencia-con-testcontainers-frente-a-h2.md`](adr/20260901-estrategia-de-testing-de-persistencia-con-testcontainers-frente-a-h2.md) | ADR Testing | Adopción de Testcontainers frente a bases en memoria H2 para paridad con producción. | 🟢 Sincronizado |
 | [`docs/adr/notificaciones-service/20260901-estrategia-de-mapeo-orm-en-notificaciones.md`](adr/notificaciones-service/20260901-estrategia-de-mapeo-orm-en-notificaciones.md) | ADR Mapeo ORM | Estrategia SINGLE_TABLE para medios de contacto y @ElementCollection para historial. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-transacciones-atomicas-cortas-y-despacho-asincrono-de-notificaciones.md`](adr/notificaciones-service/20260902-transacciones-atomicas-cortas-y-despacho-asincrono-de-notificaciones.md) | ADR Transacciones | Desacoplamiento de I/O externo, transacciones cortas y despacho asíncrono. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones.md`](adr/notificaciones-service/20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones.md) | ADR Idempotencia | Transactional Inbox Pattern con tabla evento_procesado y eventId UUID. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-sincronizacion-diferencial-de-medios-de-contacto-sin-key-churn.md`](adr/notificaciones-service/20260902-sincronizacion-diferencial-de-medios-de-contacto-sin-key-churn.md) | ADR Optimización ORM | Sincronización diferencial de medios en mapper para erradicar el key churn. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes.md`](adr/notificaciones-service/20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes.md) | ADR Privacidad PII | Crypto-Shredding con Key Broker, Blind Index y desacoplamiento de PII cruzado. | 🟢 Sincronizado |
 
 ### 3.4 Aseguramiento, Calidad y Deuda Técnica
 
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
 | [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
-| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-06) con ADRs enlazados. | 🟢 Sincronizado |
+| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-07) con ADRs enlazados. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md`](adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) | ADR Deuda Técnica | DTI-07: Adaptador interino local para Crypto-Shredding mientras auth-service no exista. | 🟢 Sincronizado |
 | [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
