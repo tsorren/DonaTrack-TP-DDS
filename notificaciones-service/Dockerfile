@@ -20,28 +20,34 @@ RUN --mount=type=cache,target=/root/.m2 mvn clean package -pl ${SERVICE_NAME} -a
 # Etapa 2: Imagen final - CI (Copia el JAR pre-compilado de GitHub Actions)
 # ==============================================================================
 FROM eclipse-temurin:21-jre-alpine AS ci
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl && \
+    addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
 WORKDIR /app
 
 ARG JAR_FILE
-COPY ${JAR_FILE} app.jar
+COPY --chown=appuser:appgroup ${JAR_FILE} app.jar
 
+USER 1001:1001
 EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:+ExitOnOutOfMemoryError", "-jar", "app.jar"]
 
 
 # ==============================================================================
 # Etapa 3: Imagen final - Desarrollo local (Por defecto, compila desde builder)
 # ==============================================================================
 FROM eclipse-temurin:21-jre-alpine AS local
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl && \
+    addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
 WORKDIR /app
 
 # nombre del directorio físico del servicio,
 ARG SERVICE_NAME=notificaciones-service
 
 # Copiar el JAR compilado desde la etapa anterior
-COPY --from=builder /app/${SERVICE_NAME}/target/*.jar app.jar
+COPY --from=builder --chown=appuser:appgroup /app/${SERVICE_NAME}/target/*.jar app.jar
 
+USER 1001:1001
 EXPOSE 8081
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:+ExitOnOutOfMemoryError", "-jar", "app.jar"]

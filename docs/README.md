@@ -17,7 +17,8 @@ docs/
 ├── context-index.md                       # 🤖 Routing de contexto para coding agents (qué leer por tarea)
 │
 ├── auditoria/                             # Sistema de aseguramiento y verificación adversarial
-│   └── plan-revisor-critico.md            # Plan de auditoría, checklists y matriz de evaluación
+│   ├── plan-revisor-critico.md            # Plan de auditoría, checklists y matriz de evaluación
+│   └── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
 │
 ├── arquitectura/                          # Especificaciones de dominio, DDD y Shared Kernel
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
@@ -39,9 +40,8 @@ docs/
 │   └── postman/                           # 12 colecciones y flujos E2E distribuidos
 │
 ├── cicd/                                  # Automatización, CI/CD y políticas de PR
-│   ├── DonaTrack-CICD.md                  # Documentación de los 7 workflows de GitHub Actions
-│   ├── assignment_reminders_plan.md       # Sistema de asignación dinámica de reviews
-│   └── cascading_flow_plan.md             # Flujo de Stacked PRs en cascada
+│   ├── DonaTrack-CICD.md                  # Documentación de pipelines y workflows de GitHub Actions
+│   └── assignment_reminders_plan.md       # Recordatorios de inactividad de PRs en Discord
 │
 ├── IA/                                    # Lineamientos de ingeniería con Inteligencia Artificial
 │   ├── README.md                          # Mapa de prompts y normas de uso

@@ -143,7 +143,8 @@ mkdir -p "logs/registro/${EXECUTION_ID}"
 docker compose -f "$COMPOSE_FILE" logs --no-color --timestamps > "logs/registro/${EXECUTION_ID}/docker-compose-full.log" 2>/dev/null || true
 
 step "Ejecutando diagnóstico y análisis de logs (${EXECUTION_ID})"
-python scripts/analyze_preprod_logs.py --run "$EXECUTION_ID" --export-report || true
+python scripts/analyze_preprod_logs.py --file "logs/registro/${EXECUTION_ID}/docker-compose-full.log" --export-report || true
+python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports || true
 
 echo ""
 echo "Los contenedores siguen ejecutándose."

@@ -21,8 +21,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
       interval: 5s
@@ -51,8 +49,6 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 5s
@@ -86,8 +82,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 5s
@@ -118,8 +112,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 5s

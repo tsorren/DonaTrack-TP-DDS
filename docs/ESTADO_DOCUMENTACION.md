@@ -26,7 +26,8 @@ docs/
 ├── README.md                              # 🟢 Índice general de navegación y enlaces rápidos
 │
 ├── auditoria/                             # 🟢 Sistema de aseguramiento y verificación adversarial
-│   └── plan-revisor-critico.md            # Plan de auditoría, checklists por etapa y matriz de evaluación
+│   ├── plan-revisor-critico.md            # Plan de auditoría, checklists por etapa y matriz de evaluación
+│   └── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
 │
 ├── arquitectura/                          # 🟢 Especificaciones de dominio, DDD, patrones y Shared Kernel
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
@@ -50,8 +51,7 @@ docs/
 │
 ├── cicd/                                  # 🟢 Automatización, CI/CD y políticas de PR
 │   ├── DonaTrack-CICD.md                  # Documentación de workflows de GitHub Actions
-│   ├── assignment_reminders_plan.md       # Sistema de asignación dinámica de reviews
-│   └── cascading_flow_plan.md             # Flujo de Stacked PRs en cascada
+│   └── assignment_reminders_plan.md       # Recordatorios de inactividad de PRs en Discord
 │
 ├── IA/                                    # 🟢 Lineamientos de ingeniería con Inteligencia Artificial
 │   ├── README.md                          # Mapa de normas y prompts de IA
@@ -126,6 +126,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
 | [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
+| [`docs/auditoria/revision-critica-devops-ci.md`](auditoria/revision-critica-devops-ci.md) | Auditoría DevOps | Revisión crítica experta de pipelines CI/CD, Dockerfiles, observabilidad y scripts auxiliares. | 🟢 Sincronizado |
 | [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-07) con ADRs enlazados. | 🟢 Sincronizado |
 | [`docs/adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md`](adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) | ADR Deuda Técnica | DTI-07: Adaptador interino local para Crypto-Shredding mientras auth-service no exista. | 🟢 Sincronizado |
 | [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
@@ -137,6 +138,10 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/cicd/DonaTrack-CICD.md`](cicd/DonaTrack-CICD.md) | CI/CD | Documentación de los 7 flujos automatizados en GitHub Actions. | 🟢 Sincronizado |
 | [`docs/testing/integration-tests.md`](testing/integration-tests.md) | Testing E2E | Infraestructura de pruebas de integración distribuida (Docker, RabbitMQ, PostgreSQL, n8n). | 🟢 Sincronizado |
 | [`docs/IA/06-contexto-base-donatrack.md`](IA/06-contexto-base-donatrack.md) | Contexto IA | Snippet de contexto con arquitectura de puertos, tecnologías y restricciones. | 🟢 Sincronizado |
+| [`docs/adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md`](adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md) | ADR DevOps | Aislamiento de contenedores, usuario non-root y recolección de logs sin volúmenes de host. | 🟢 Sincronizado |
+| [`docs/adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md`](adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md) | ADR CI/CD | Protocolo semántico de códigos de salida (0, 1, 2+) y política fail-if-no-tests. | 🟢 Sincronizado |
+| [`docs/adr/20260903-estandarizacion-ciclo-vida-testing-surefire-failsafe.md`](adr/20260903-estandarizacion-ciclo-vida-testing-surefire-failsafe.md) | ADR Testing | Estandarización de ciclo de vida Maven: Surefire (test) y Failsafe (verify). | 🟢 Sincronizado |
+| [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Observabilidad | Observabilidad estructurada en NDJSON y enriquecimiento MDC en el Shared Kernel. | 🟢 Sincronizado |
 
 
 ---

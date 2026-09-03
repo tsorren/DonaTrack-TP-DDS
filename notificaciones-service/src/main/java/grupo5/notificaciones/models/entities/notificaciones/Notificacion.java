@@ -38,7 +38,9 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
     this.id = UUID.randomUUID();
     this.personaId = personaId;
     this.mensaje = mensaje;
-    this.fechaCreacion = LocalDateTime.now(ZoneId.systemDefault()); // TODO: Corregir con fecha de evento en vez de now
+    this.fechaCreacion =
+        LocalDateTime.now(
+            ZoneId.systemDefault()); // TODO: Corregir con fecha de evento en vez de now
     this.historialEstado = new ArrayList<>();
     this.actualizarEstado(
         EstadoNotificacion.PENDIENTE); // usa el método para que quede en el historial
