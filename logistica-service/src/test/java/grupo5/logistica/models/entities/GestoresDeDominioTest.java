@@ -184,7 +184,7 @@ class GestoresDeDominioTest {
 
     assertThrows(
         ValidationException.class,
-        () -> GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega)));
+        () -> GestorDeRutas.completarRuta(ruta, camion, chofer, entregas));
 
     assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
   }
