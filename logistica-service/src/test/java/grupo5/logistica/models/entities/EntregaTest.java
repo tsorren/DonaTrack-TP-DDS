@@ -27,6 +27,11 @@ class EntregaTest {
     return new Direccion("Calle Falsa", 123, null, null, "1824", loc);
   }
 
+  private Entrega crearEntregaValida() {
+    return new Entrega(
+        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), createTestDireccion(), 10f, 1f);
+  }
+
   @Test
   void testConstructorExitoso() {
     UUID idRuta = UUID.randomUUID();
@@ -252,5 +257,29 @@ class EntregaTest {
     assertTrue(entrega.getDomainEvents().isEmpty());
     EventoEntrega primerEvento = snapshot.getFirst();
     assertThrows(UnsupportedOperationException.class, () -> snapshot.add(primerEvento));
+  }
+
+  @Test
+  void testRegresarAlDepositoDirectamenteDesdeNoRecibidaLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+    entrega.negarEntrega("Comedor Infantil", "Domicilio cerrado", true);
+
+    // Debe fallar porque no pasó por REVISION
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entrega.regresarAlDeposito("Admin Carlos"));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
+  }
+
+  @Test
+  void testNegarEntregaSinJustificacionLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+
+    // Justificación nula
+    assertThrows(ValidationException.class, () -> entrega.negarEntrega("Comedor", null, true));
+
+    // Justificación vacía o en blanco
+    assertThrows(ValidationException.class, () -> entrega.negarEntrega("Comedor", "   ", true));
   }
 }

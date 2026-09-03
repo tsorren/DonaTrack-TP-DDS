@@ -12,12 +12,7 @@ import grupo5.logistica.models.entities.camiones.GestorDeCamiones;
 import grupo5.logistica.models.entities.camiones.SolicitudNuevoCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
-import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
-import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.entregas.EstadoEntrega;
-import grupo5.logistica.models.entities.entregas.GestorDeEntregas;
-import grupo5.logistica.models.entities.entregas.NoRecepcion;
-import grupo5.logistica.models.entities.entregas.RegresoDeposito;
+import grupo5.logistica.models.entities.entregas.*;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.GestorDeRutas;
 import grupo5.logistica.models.entities.rutas.Ruta;
@@ -107,6 +102,9 @@ class GestoresDeDominioTest {
     GestorDeEntregas.cambiarEstado(
         new NoRecepcion(entrega, "beneficiaria", "domicilio cerrado", true));
     assertEquals(EstadoEntrega.NO_RECIBIDA, entrega.getEstadoActual());
+
+    GestorDeEntregas.cambiarEstado(new RevisionEntrega(entrega, "administrador"));
+    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
 
     GestorDeEntregas.cambiarEstado(new RegresoDeposito(entrega, "administrador"));
     assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
