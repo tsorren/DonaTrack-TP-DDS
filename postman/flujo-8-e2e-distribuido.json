@@ -618,14 +618,19 @@
           }
         },
         {
-          "name": "2. Verificar detalle: nace PENDIENTE",
+          "name": "2. Verificar detalle: nace PENDIENTE y con magnitudes válidas",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "pm.test('estadoActual == PENDIENTE', function () { pm.expect(pm.response.json().estadoActual).to.eql('PENDIENTE'); });"
-                ],
+                  "var j = pm.response.json();",
+                  "pm.test('200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('estadoActual == PENDIENTE', function () { pm.expect(j.estadoActual).to.eql('PENDIENTE'); });",
+                  "pm.test('pesoTotalKG y volumenTotalM3 presentes', function () {",
+                  "    pm.expect(j.pesoTotalKG).to.be.above(0);",
+                  "    pm.expect(j.volumenTotalM3).to.be.above(0);",
+                  "});"                ],
                 "type": "text/javascript"
               }
             }
@@ -647,6 +652,47 @@
         }
       ]
     },
+    {
+      "name": "3. [Negativo] EN_TRASLADO directo no permitido vía endpoint",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status 400 ESTADO_ENTREGA_TRANSICION_INVALIDA', function () { pm.response.to.have.status(400); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"estado\": \"EN_TRASLADO\",\n  \"actor\": \"Transportista\"\n}"
+        },
+        "url": {
+          "raw": "{{logisticaUrl}}/api/entregas/{{entregaId}}/estado",
+          "host": [
+            "{{logisticaUrl}}"
+          ],
+          "path": [
+            "api",
+            "entregas",
+            "{{entregaId}}",
+            "estado"
+          ]
+        }
+      }
+    }
+  ]
+},
     {
       "name": "4. Donaciones: completar el ciclo de entrega",
       "item": [
