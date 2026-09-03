@@ -38,12 +38,30 @@ public class GeneradorDeRutas {
     }
 
     int limite = Math.min(maximoPorLote, MAX_ENTREGAS_POR_SOLICITUD);
-    return generadorLotes.particionarEnLotes(entregas, limite).stream()
-        .map(
-            lote ->
-                new PlanificacionSolicitada(
-                    UUID.randomUUID(), fecha, limite, List.of(lote), camiones, choferes))
-        .toList();
+    List<List<Entrega>> lotes = generadorLotes.particionarEnLotes(entregas, limite);
+    int cantidadRecursos = Math.min(camiones.size(), choferes.size());
+    int cantidadSolicitudes = Math.min(lotes.size(), cantidadRecursos);
+    List<PlanificacionSolicitada> solicitudes = new ArrayList<>();
+    int primerRecurso = 0;
+
+    for (int indice = 0; indice < cantidadSolicitudes; indice++) {
+      int recursosRestantes = cantidadRecursos - primerRecurso;
+      int solicitudesRestantes = cantidadSolicitudes - indice;
+      int recursosParaSolicitud =
+          (int) Math.ceil((double) recursosRestantes / solicitudesRestantes);
+      int ultimoRecurso = primerRecurso + recursosParaSolicitud;
+      solicitudes.add(
+          new PlanificacionSolicitada(
+              UUID.randomUUID(),
+              fecha,
+              limite,
+              List.of(lotes.get(indice)),
+              camiones.subList(primerRecurso, ultimoRecurso),
+              choferes.subList(primerRecurso, ultimoRecurso)));
+      primerRecurso = ultimoRecurso;
+    }
+
+    return List.copyOf(solicitudes);
   }
 
   public List<Ruta> calcularRutas(RespuestaPlanificacion respuesta) {

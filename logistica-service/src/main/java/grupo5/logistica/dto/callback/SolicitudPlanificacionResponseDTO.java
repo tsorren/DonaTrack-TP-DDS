@@ -11,6 +11,19 @@ public record SolicitudPlanificacionResponseDTO(
     EstadoSolicitud estado,
     Integer cantidadDonaciones,
     String callbackUrl,
+    List<UUID> entregaIds,
+    List<UUID> camionIds,
+    List<UUID> choferIds,
     List<UUID> rutasGeneradas,
+    List<UUID> entregasNoAsignadas,
     Integer intentosFallidos,
-    String motivoError) {}
+    String motivoError) {
+
+  public SolicitudPlanificacionResponseDTO {
+    entregaIds = List.copyOf(entregaIds);
+    camionIds = List.copyOf(camionIds);
+    choferIds = List.copyOf(choferIds);
+    rutasGeneradas = List.copyOf(rutasGeneradas);
+    entregasNoAsignadas = List.copyOf(entregasNoAsignadas);
+  }
+}

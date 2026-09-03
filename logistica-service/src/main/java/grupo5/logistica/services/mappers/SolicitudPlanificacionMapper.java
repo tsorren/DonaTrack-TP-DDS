@@ -18,7 +18,11 @@ public class SolicitudPlanificacionMapper {
         solicitud.getEstado(),
         solicitud.getCantidadDonaciones(),
         solicitud.getCallbackUrl(),
+        solicitud.getEntregaIds(),
+        solicitud.getCamionIds(),
+        solicitud.getChoferIds(),
         solicitud.getRutasGeneradas(),
+        solicitud.getEntregasNoAsignadas(),
         solicitud.getIntentosFallidos(),
         solicitud.getMotivoError());
   }

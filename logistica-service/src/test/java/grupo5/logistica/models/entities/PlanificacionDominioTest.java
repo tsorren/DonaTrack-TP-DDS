@@ -49,18 +49,20 @@ class PlanificacionDominioTest {
   void planificarParteCientoUnaEntregasEnDosSolicitudes() {
     GeneradorDeRutas generador = new GeneradorDeRutas(new GeneradorLotesSimple());
     List<Entrega> entregas = IntStream.range(0, 101).mapToObj(i -> crearEntrega()).toList();
+    Camion camion1 = new Camion("AB123CD", 2000f, 10000f, 3f);
+    Camion camion2 = new Camion("AC123CD", 2000f, 10000f, 3f);
+    Chofer chofer1 = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Chofer chofer2 = new Chofer("Grace", "Hopper", "LIC-2", "2222");
 
     List<PlanificacionSolicitada> solicitudes =
         generador.planificar(
-            entregas,
-            List.of(new Camion("AB123CD", 2000f, 10000f, 3f)),
-            List.of(new Chofer("Ada", "Lovelace", "LIC-1", "1111")),
-            LocalDate.now(),
-            100);
+            entregas, List.of(camion1, camion2), List.of(chofer1, chofer2), LocalDate.now(), 100);
 
     assertEquals(2, solicitudes.size());
     assertEquals(100, solicitudes.getFirst().entregas().size());
     assertEquals(1, solicitudes.getLast().entregas().size());
+    assertEquals(List.of(camion1), solicitudes.getFirst().camionesDisponibles());
+    assertEquals(List.of(camion2), solicitudes.getLast().camionesDisponibles());
   }
 
   @Test
@@ -69,9 +71,10 @@ class PlanificacionDominioTest {
     Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
     Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
     GeneradorDeRutas generador = new GeneradorDeRutas(new GeneradorLotesSimple());
+    LocalDate fechaObjetivo = LocalDate.now().plusDays(1);
     PlanificacionSolicitada solicitud =
         generador
-            .planificar(List.of(entrega), List.of(camion), List.of(chofer), LocalDate.now(), 100)
+            .planificar(List.of(entrega), List.of(camion), List.of(chofer), fechaObjetivo, 100)
             .getFirst();
 
     RespuestaPlanificacion respuesta =
@@ -79,7 +82,7 @@ class PlanificacionDominioTest {
                 new AlgoritmoOrdenadorSimple(), new AsignadorDeEntregasPorDimension())
             .procesarSolicitud(solicitud);
 
-    assertEquals(LocalDate.now(), respuesta.fecha());
+    assertEquals(fechaObjetivo, respuesta.fecha());
     assertNull(entrega.getIdRuta());
 
     List<Ruta> rutas = generador.calcularRutas(respuesta);

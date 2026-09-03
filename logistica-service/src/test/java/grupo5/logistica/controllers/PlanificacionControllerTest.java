@@ -13,6 +13,7 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.handlers.GlobalExceptionHandler;
 import grupo5.logistica.controllers.impl.PlanificacionController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
+import grupo5.logistica.dto.callback.EjecucionPlanificacionResponseDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import grupo5.logistica.services.IPlanificacionService;
@@ -46,6 +47,10 @@ class PlanificacionControllerTest {
           EstadoSolicitud.PROCESADA,
           1,
           "http://callback",
+          List.of(UUID.randomUUID()),
+          List.of(UUID.randomUUID()),
+          List.of(UUID.randomUUID()),
+          List.of(),
           List.of(),
           0,
           null);
@@ -58,6 +63,19 @@ class PlanificacionControllerTest {
             .build();
     objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
+  }
+
+  @Test
+  void iniciarPlanificacionManual_deberiaRetornar201() throws Exception {
+    EjecucionPlanificacionResponseDTO response =
+        new EjecucionPlanificacionResponseDTO(
+            LocalDate.now().plusDays(1), List.of(RESPONSE_DTO), List.of());
+    when(planificacionService.iniciarPlanificacionManual()).thenReturn(response);
+
+    mockMvc
+        .perform(post("/api/logistica/planificaciones/ejecuciones"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.solicitudes[0].id").value(SOLICITUD_ID.toString()));
   }
 
   // ===================== POST /api/logistica/resultados =====================
@@ -105,6 +123,20 @@ class PlanificacionControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.details").value(SOLICITUD_ID.toString()));
+  }
+
+  @Test
+  void procesarCallback_deberiaAceptarLaUrlPublicadaAlProveedor() throws Exception {
+    CallbackPlanificacionRequestDTO request =
+        new CallbackPlanificacionRequestDTO(SOLICITUD_ID, List.of(), "OK", null);
+    when(planificacionService.procesarCallback(any())).thenReturn(RESPONSE_DTO);
+
+    mockMvc
+        .perform(
+            post("/api/logistica/callback/rutas")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
   }
 
   // ===================== GET /api/logistica/planificaciones/{id} =====================

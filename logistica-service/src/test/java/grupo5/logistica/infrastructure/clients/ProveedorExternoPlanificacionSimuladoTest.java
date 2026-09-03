@@ -54,7 +54,13 @@ class ProveedorExternoPlanificacionSimuladoTest {
             Map.of(camion, List.of(entrega)),
             Map.of(camion, chofer));
     SolicitudPlanificacion seguimiento =
-        new SolicitudPlanificacion(solicitudId, LocalDate.now(), 1, "http://callback");
+        new SolicitudPlanificacion(
+            solicitudId,
+            solicitud.fecha(),
+            List.of(entrega.getId()),
+            List.of(camion.getId()),
+            List.of(chofer.getId()),
+            "http://callback");
     when(planificador.procesarSolicitud(solicitud)).thenReturn(respuesta);
 
     proveedor.solicitarPlanificacion(seguimiento, solicitud);
@@ -78,7 +84,13 @@ class ProveedorExternoPlanificacionSimuladoTest {
         new PlanificacionSolicitada(
             solicitudId, LocalDate.now(), 100, List.of(), List.of(), List.of());
     SolicitudPlanificacion seguimiento =
-        new SolicitudPlanificacion(solicitudId, LocalDate.now(), 1, "http://callback");
+        new SolicitudPlanificacion(
+            solicitudId,
+            LocalDate.now(),
+            List.of(UUID.randomUUID()),
+            List.of(UUID.randomUUID()),
+            List.of(UUID.randomUUID()),
+            "http://callback");
     when(planificador.procesarSolicitud(solicitud)).thenThrow(new IllegalStateException("fallo"));
 
     proveedor.solicitarPlanificacion(seguimiento, solicitud);
@@ -89,6 +101,86 @@ class ProveedorExternoPlanificacionSimuladoTest {
             argThat(
                 (CallbackPlanificacionRequestDTO dto) ->
                     "ERROR".equals(dto.estado()) && "fallo".equals(dto.motivoError())),
+            eq(Void.class));
+  }
+
+  @Test
+  void informaResultadoParcialCuandoQuedanEntregasSinAsignar() {
+    PlanificadorDeRutas planificador = mock(PlanificadorDeRutas.class);
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    ProveedorExternoPlanificacionSimulado proveedor =
+        new ProveedorExternoPlanificacionSimulado(planificador, restTemplate);
+    Entrega asignada = crearEntrega();
+    Entrega sinAsignar = crearEntrega();
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    UUID solicitudId = UUID.randomUUID();
+    PlanificacionSolicitada solicitud =
+        new PlanificacionSolicitada(
+            solicitudId,
+            LocalDate.now().plusDays(1),
+            100,
+            List.of(List.of(asignada, sinAsignar)),
+            List.of(camion),
+            List.of(chofer));
+    RespuestaPlanificacion respuesta =
+        new RespuestaPlanificacion(
+            UUID.randomUUID(),
+            solicitudId,
+            solicitud.fecha(),
+            Map.of(camion, List.of(asignada)),
+            Map.of(camion, chofer));
+    SolicitudPlanificacion seguimiento =
+        new SolicitudPlanificacion(
+            solicitudId,
+            solicitud.fecha(),
+            List.of(asignada.getId(), sinAsignar.getId()),
+            List.of(camion.getId()),
+            List.of(chofer.getId()),
+            "http://callback");
+    when(planificador.procesarSolicitud(solicitud)).thenReturn(respuesta);
+
+    proveedor.solicitarPlanificacion(seguimiento, solicitud);
+
+    verify(restTemplate)
+        .postForEntity(
+            eq("http://callback"),
+            argThat((CallbackPlanificacionRequestDTO dto) -> "PARCIAL".equals(dto.estado())),
+            eq(Void.class));
+  }
+
+  @Test
+  void informaErrorCuandoNoExisteCapacidadParaNingunaEntrega() {
+    PlanificadorDeRutas planificador = mock(PlanificadorDeRutas.class);
+    RestTemplate restTemplate = mock(RestTemplate.class);
+    ProveedorExternoPlanificacionSimulado proveedor =
+        new ProveedorExternoPlanificacionSimulado(planificador, restTemplate);
+    Entrega entrega = crearEntrega();
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    UUID solicitudId = UUID.randomUUID();
+    LocalDate fecha = LocalDate.now().plusDays(1);
+    PlanificacionSolicitada solicitud =
+        new PlanificacionSolicitada(
+            solicitudId, fecha, 100, List.of(List.of(entrega)), List.of(camion), List.of(chofer));
+    RespuestaPlanificacion respuesta =
+        new RespuestaPlanificacion(UUID.randomUUID(), solicitudId, fecha, Map.of(), Map.of());
+    SolicitudPlanificacion seguimiento =
+        new SolicitudPlanificacion(
+            solicitudId,
+            fecha,
+            List.of(entrega.getId()),
+            List.of(camion.getId()),
+            List.of(chofer.getId()),
+            "http://callback");
+    when(planificador.procesarSolicitud(solicitud)).thenReturn(respuesta);
+
+    proveedor.solicitarPlanificacion(seguimiento, solicitud);
+
+    verify(restTemplate)
+        .postForEntity(
+            eq("http://callback"),
+            argThat((CallbackPlanificacionRequestDTO dto) -> "ERROR".equals(dto.estado())),
             eq(Void.class));
   }
 

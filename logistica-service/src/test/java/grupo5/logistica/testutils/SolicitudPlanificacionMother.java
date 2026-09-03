@@ -10,7 +10,12 @@ public final class SolicitudPlanificacionMother {
   private SolicitudPlanificacionMother() {}
 
   public static SolicitudPlanificacion pendiente() {
-    return new SolicitudPlanificacion(LocalDate.now(), 1, "http://logistica/callback");
+    return new SolicitudPlanificacion(
+        LocalDate.now(),
+        List.of(UUID.randomUUID()),
+        List.of(UUID.randomUUID()),
+        List.of(UUID.randomUUID()),
+        "http://logistica/callback");
   }
 
   public static SolicitudPlanificacion enError() {
@@ -21,7 +26,7 @@ public final class SolicitudPlanificacionMother {
 
   public static SolicitudPlanificacion procesada() {
     SolicitudPlanificacion solicitud = pendiente();
-    solicitud.procesarResultados(List.of(UUID.randomUUID()));
+    solicitud.procesarResultados(List.of(UUID.randomUUID()), solicitud.getEntregaIds());
     return solicitud;
   }
 }
