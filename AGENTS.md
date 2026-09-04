@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 6.2.0 (Oleada 8 — Nested AGENTS: `common-lib/AGENTS.md` — Shared Kernel governance)
+> **Versión:** 6.3.0 (Oleada 9 — §11.4 Arranque Local Rápido: punto de entrada único para levantar entorno y establecer baseline)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -272,7 +272,7 @@ Ejecutar las validaciones de menor a mayor costo computacional según el alcance
                     /   \      ./run-preprod-tests.sh (Docker + n8n + 4 Servicios)
                    /─────\
                   /       \    Gate 3: Integración y Contratos
-                 /         \   mvn test -pl integration-tests -DskipTests=false
+                  /         \   mvn verify -pl integration-tests -DskipTests=false
                 /───────────\
                /             \ Gate 2: Módulo Completo
               /               \ mvn test -pl <modulo> -am
@@ -290,7 +290,7 @@ mvn spotless:check                                     # Gate 1: formato
 mvn test -pl <modulo-service> -Dtest=<NombreTest>     # Gate 1: test unitario
 mvn clean test -pl <modulo-service> -am               # Gate 2: módulo + deps
 mvn test                                              # Gate 2: suite completa
-mvn test -pl integration-tests -DskipTests=false      # Gate 3: integración
+mvn verify -pl integration-tests -DskipTests=false    # Gate 3: integración
 ```
 
 ### 11.2 Gate 4 — Entorno Docker E2E
@@ -305,6 +305,19 @@ Comandos PowerShell y variantes en [`docs/testing/integration-tests.md`](docs/te
 ### 11.3 Protocolo Modo Degradado (Sin Docker)
 
 Sin Docker accesible: completar Gate 1 y Gate 2 con Maven nativo. No declarar Gate 3/4 como `[VERIFIED]` sin infraestructura activa. Registrar como `[DEFERRED_NO_DOCKER]` en el reporte.
+
+### 11.4 Arranque Local Rápido
+
+Referencia concentrada para levantar el entorno o establecer baseline (§7.2/§7.3) sin buscar entre secciones. Estos son los comandos canónicos; variantes y flags adicionales en [`docs/testing/integration-tests.md`](docs/testing/integration-tests.md).
+
+| Objetivo | Comando |
+|---|---|
+| Levantar stack completo (Docker) | `./run-preprod-tests-stay.sh` |
+| Test unitario puntual | `mvn test -pl <modulo> -Dtest=<Test>` |
+| Formatear / verificar estilo | `mvn spotless:check` |
+| Módulo + dependencias | `mvn clean test -pl <modulo> -am` |
+
+> **Justificación:** Los comandos existían en §11.1/§11.2 pero dispersos. Un agente o dev nuevo sin esta referencia tiende a inventar variantes incorrectas o a omitir el baseline requerido por §7.3, invalidando el checklist de cierre (§12). Concentrarlos aquí reduce esa clase de error sin duplicar contenido normativo.
 
 ---
 

@@ -35,6 +35,7 @@
         <plantuml-generator.version>3.0.1</plantuml-generator.version>
         <sonar.version>5.7.0.6970</sonar.version>
         <testcontainers.version>1.20.4</testcontainers.version>
+        <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
     </properties>
 
     <dependencyManagement>
@@ -59,6 +60,11 @@
                 <version>${testcontainers.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
