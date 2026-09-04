@@ -196,7 +196,7 @@ services:
       - postgres
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2024-10-02T17-50-41Z
     container_name: donatrack-minio-local
     ports:
       - "9000:9000"

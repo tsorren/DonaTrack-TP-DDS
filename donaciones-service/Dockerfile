@@ -48,6 +48,10 @@ ARG SERVICE_NAME=donaciones-service
 # Copiar el JAR compilado desde la etapa anterior
 COPY --from=builder --chown=appuser:appgroup /app/${SERVICE_NAME}/target/*.jar app.jar
 
+# /app queda root:root al crearse por WORKDIR; --chown solo cubre el jar copiado,
+# no el directorio. Sin esto, el perfil de logging local no puede escribir en logs/.
+RUN mkdir -p /app/logs && chown -R appuser:appgroup /app/logs
+
 USER 1001:1001
 EXPOSE 8080
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-XX:+ExitOnOutOfMemoryError", "-jar", "app.jar"]
