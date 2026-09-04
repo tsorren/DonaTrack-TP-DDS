@@ -20,7 +20,7 @@ Las pruebas se ejecutan sobre el entorno de preproducción (`docker-compose.prep
 
 ```
 integration-tests/
-├── pom.xml                                      # Configuración Maven (Spotless activo, Surefire)
+├── pom.xml                                      # Configuración Maven (Spotless activo, Surefire + Failsafe)
 └── src/test/java/grupo5/tests/
     ├── BaseIT.java                              # URLs base, RestAssured y clientes instanciados
     │
@@ -153,8 +153,8 @@ mvn clean verify -pl integration-tests -DskipTests=false `
 # Levantar entorno preproducción con JARs precompilados
 docker compose -f docker-compose.preprod.yml up --build -d
 
-# Ejecutar integración con maven apuntando a integration-tests
-mvn test -pl integration-tests -DskipTests=false
+# Ejecutar integración con maven apuntando a integration-tests (fase verify)
+mvn verify -pl integration-tests -DskipTests=false
 
 # Detener y limpiar recursos
 docker compose -f docker-compose.preprod.yml down -v
