@@ -1,69 +1,35 @@
-# Rediseño del Sistema de Asignación y Notificaciones de GitHub (Issue #697)
+# Scripts Auxiliares y Automatizaciones — `.github/scripts/`
 
-Este documento detalla la reestructuración técnica de los flujos de integración y automatizaciones del repositorio de **DonaTrack**, migrando de un esquema de asignación plano a un sistema jerárquico por niveles de prioridad (`ALTA`, `MEDIA`, `BAJA`) y aplicando principios **SOLID** para garantizar la extensibilidad futura del sistema de notificaciones.
-
----
-
-## 1. Decisiones de Diseño y Arquitectura (SOLID)
-
-### A. Corrección del Bug de Round-Robin en PRs
-*   **Problema original:** El selector realizaba conteos de asignación sobre `pr.requested_reviewers` en las últimas 50 PRs. Sin embargo, en GitHub este campo solo contiene solicitudes *pendientes*. En cuanto se aprueba/comenta la PR o esta se fusiona, el campo queda vacío. Esto causaba un empate constante en `0` y hacía que el algoritmo seleccionara siempre al primer integrante alfabéticamente (sobrecargándolo).
-*   **Solución:** Se implementó `listReviews` en el repositorio de GitHub. Ahora, el script recupera el historial de revisiones completadas reales en una ventana optimizada de las **últimas 15 PRs** (reduciendo el tamaño de 50 a 15 para evitar bloqueos por Rate Limit de la API de GitHub).
-
-### B. Desacoplamiento de las Notificaciones de Discord
-*   **Problema original:** La notificación a Discord estaba acoplada dentro del flujo de asignación automática. Si el equipo asignaba manualmente a un revisor en GitHub, la acción no asignaba y el revisor nunca era notificado en Discord.
-*   **Solución:** Se separaron físicamente las responsabilidades. 
-    1.  [auto-assign.yml](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/workflows/auto-assign.yml) se encarga de ejecutar la asignación automática por Round-Robin (y finaliza inmediatamente en *skip* si la PR ya posee revisores asignados).
-    2.  [notify-reviewer.yml](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/workflows/notify-reviewer.yml) reacciona a los eventos nativos de GitHub `ready_for_review` y `review_requested`, disparando el script de comunicación de forma aislada. Esto garantiza que cualquier revisor asignado (manual, automático o re-solicitado) reciba su alerta en Discord.
-
-### C. Framework Extensible de Notificaciones (`shared_notifier.js`)
-Para cumplir con los principios SOLID y dejar el sistema preparado para futuras alertas (issues creadas, issues inactivas y vencimientos cercanos), se diseñó un módulo centralizado:
-*   **Single Responsibility (SRP):** El transporte de red de Discord (`DiscordNotifierChannel`), la resolución de identidades de usuario (`UserResolver`) y las reglas de negocio de formato de cada mensaje (`NotificationFormatter`) están en clases independientes y cohesivas.
-*   **Open/Closed (OCP):** Agregar un nuevo evento de notificación (por ejemplo, notificar una issue que está por vencerse) se resuelve **añadiendo una nueva clase** que hereda de `NotificationFormatter` (ej. `IssueDueSoonNotificationFormatter`) e inyectándola al canal, sin modificar una sola línea del código de transporte de Discord o de otros flujos.
-*   **Dependency Inversion (DIP):** Los scripts dependen de contratos y clases abstractas, facilitando el testeo local con mocks.
+Este directorio contiene los scripts y herramientas de soporte utilizados por las GitHub Actions de DonaTrack y por el entorno local de desarrollo.
 
 ---
 
-## 2. Nueva Estructura de Archivos
+## 1. Módulos y Scripts Activos
 
-*   **[reviewer_groups.json](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/scripts/reviewer_groups.json):** Archivo de datos centralizado con la distribución de los integrantes en sus niveles correspondientes (`ALTA`, `MEDIA`, `BAJA`).
-*   **[shared_notifier.js](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/scripts/shared_notifier.js):** Núcleo del framework de notificaciones.
-*   **[triage_issue.js](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/scripts/triage_issue.js) y [issue-triage.yml](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/workflows/issue-triage.yml):** Automatizan el etiquetado y actualización del campo "Priority" de GitHub Projects V2 a partir del prefijo `[ALTA]`, `[MEDIA]` o `[BAJA]` del título de la issue.
-*   **[assign_reviewer.js](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/scripts/assign_reviewer.js) y [auto-assign.yml](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/workflows/auto-assign.yml):** Asignan revisores por Round-Robin corregido, admiten override manual y comentan advertencias en fallbacks.
-*   **[notify_reviewer.js](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/scripts/notify_reviewer.js):** Despacha menciones en Discord a los revisores activos en la PR. Se ejecuta como un job dependiente secuencial en [auto-assign.yml](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/workflows/auto-assign.yml) (`notify-discord`) para evitar condiciones de carrera.
-*   **[auto_assign_issues.js](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/scripts/auto_assign_issues.js) y [issue-auto-assign-cron.yml](file:///C:/IdeaProjects/DonaTrack-TP-DDS/.github/workflows/issue-auto-assign-cron.yml):** Cron Job planificado diariamente a las 9:00 AM hora de Argentina (incluyendo fines de semana) que autoasigna issues abiertas desatendidas y envía un aviso de omisión a Discord.
+### A. Framework de Notificaciones (`shared_notifier.js`)
+Módulo centralizado y desacoplado bajo principios **SOLID** para despacho de mensajes a canales externos (Discord):
+* **Single Responsibility (SRP):** El transporte de red (`DiscordNotifierChannel`), la resolución de identidades de usuario (`UserResolver`) y las reglas de negocio de formato de cada mensaje (`NotificationFormatter`) residen en clases independientes y cohesivas.
+* **Open/Closed (OCP):** Nuevos formatos de notificación heredan de `NotificationFormatter` (ej. `PRInactivityNotificationFormatter`).
+* **Dependency Inversion (DIP):** Los scripts dependen de abstracciones, permitiendo testing desacoplado y sustitución de canales.
 
----
+### B. Recordatorios Diarios de Inactividad (`send_reminders.js`)
+* **Workflow asociado:** [`.github/workflows/pr-reminders.yml`](../workflows/pr-reminders.yml)
+* **Función:** Se ejecuta de lunes a viernes (cron 15:00 UTC / 12:00 PM Argentina) e inspecciona PRs abiertas con más de 48 horas sin actualización ni aprobaciones formales, despachando recordatorios a Discord mediante `shared_notifier.js`.
 
-## 3. Matrices de Asignación y Enrutamiento
+### C. Generación del Catálogo de Entregas (`generate-pdf-tree.js`)
+* **Workflow asociado:** [`.github/workflows/deploy-pages.yml`](../workflows/deploy-pages.yml)
+* **Función:** Escanea el árbol de consignas académicas en `docs/entregas/` y genera un índice JSON estructurado consumido por el visor interactivo de PDFs en GitHub Pages.
 
-### A. Matriz de Reviews (Aprobación Jerárquica de PRs)
-Para garantizar la calidad y evitar sobrecargas, la asignación de revisores sigue estas reglas:
-
-| Prioridad de la PR | Pool de Revisores Habilitados | Integrantes del Pool (Mids / Juniors) |
-| :--- | :--- | :--- |
-| **BAJA** | `BAJA` + `MEDIA` | `belennn24`, `ndelorte`, `sofiadeane`, `martinzaj`, `Anushig04`, `suarezcamila` |
-| **MEDIA** | `ALTA` | `tsorren`, `BerEsti`, `MiriMiranda` |
-| **ALTA** | `ALTA` | `tsorren`, `BerEsti`, `MiriMiranda` |
-
-*Los desarrolladores de nivel ALTA (Seniors: `tsorren`, `BerEsti`, `MiriMiranda`) quedan totalmente exentos de la asignación automática de reviews de PRs de tipo BAJA.*
-
-### B. Matriz de Autoasignación de Tareas (Cron de Issues)
-Cuando el Cron Job detecta una issue abierta sin asignar, calcula el Round-Robin asignando al desarrollador correspondiente al nivel de la issue para repartir la carga operativa:
-
-| Prioridad de la Issue | Pool de Asignados Habilitados | Nivel de Desarrollador |
-| :--- | :--- | :--- |
-| **BAJA** | `BAJA` | `martinzaj`, `Anushig04`, `suarezcamila` |
-| **MEDIA** | `MEDIA` | `belennn24`, `ndelorte`, `sofiadeane` |
-| **ALTA** | `ALTA` | `tsorren`, `BerEsti`, `MiriMiranda` |
+### D. Hooks Locales de Git
+* **`setup-hooks.ps1`:** Script de PowerShell para instalar automáticamente los Git Hooks del proyecto en `.git/hooks/`.
+* **`pre-commit.sh`:** Hook de pre-commit que valida `mvn spotless:check` y los tests unitarios únicamente sobre los archivos en stage antes de permitir el commit.
+* **`test-hub-local.ps1`:** Utilidad local de testing para levantar y verificar el Hub de Documentación antes de su publicación.
 
 ---
 
-## 4. Verificación Local (Test Suite)
+## 2. Historial de Simplificación y Desmantelamiento (Oleada 2026)
 
-Se introdujo el script de simulación [test_scripts.js](file:///C:/Users/rata/.gemini/antigravity/brain/bc3761f2-6141-4a18-a2b7-50eb9aecf698/scratch/test_scripts.js) (ubicado en el directorio de pruebas local / scratch) que simula el entorno de ejecución de GitHub Actions y valida que:
-1. Las issues adquieran su label y prioridad de proyectos al crearse.
-2. Las PRs `BAJA` se asignen a un Junior/Mid (excluyendo Seniors) y las PRs `MEDIA`/`ALTA` obligatoriamente a un Senior.
-3. Se omitan asignaciones si la PR ya posee revisores.
-4. Las notificaciones a Discord se construyan y resuelvan correctamente.
-5. El Cron diario balancee y asigne las issues a los desarrolladores de su nivel de prioridad emitiendo la alerta correspondiente en Discord.
+Los flujos experimentales de autoasignación por Round-Robin (`assign_reviewer.js`, `auto_assign_issues.js`, `reviewer_groups.json`), triage de issues (`triage_issue.js`) y generación de sub-issues en cascada (`setup_cascade.js`, `standard_tasks.json`, `sub_issue_body_template.md`) fueron desmantelados y retirados del repositorio para:
+1. Eliminar complejidad accidental y dependencias innecesarias de permisos de escritura (`issues: write`, `pull-requests: write`).
+2. Evitar saturación de límites de tasa (Rate Limiting) en la API de GitHub.
+3. Centrar el esfuerzo de desarrollo y revisión en el flujo colaborativo estándar y en los Quality Gates del pipeline principal (`main.yml`).
