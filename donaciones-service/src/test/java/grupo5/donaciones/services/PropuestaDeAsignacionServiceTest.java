@@ -3,13 +3,13 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.donaciones.dto.comunicaciones.NuevaEntregaRequest;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
@@ -23,7 +23,6 @@ import grupo5.donaciones.models.entities.propuestas.GestorPropuestasDeAsignacion
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.propuestas.PropuestaAprobada;
-import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
@@ -32,8 +31,8 @@ import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import grupo5.donaciones.services.impl.LogisticaAsyncService;
 import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
-import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
+import grupo5.donaciones.services.mappers.LogisticaRequestMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.util.List;
 import java.util.Optional;
@@ -54,8 +53,8 @@ class PropuestaDeAsignacionServiceTest {
   private ApplicationEventPublisher eventPublisher;
   private IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private IPersonasRepository personasRepository;
-  private DireccionMapper direccionMapper;
   private LogisticaAsyncService logisticaAsyncService;
+  private LogisticaRequestMapper logisticaRequestMapper;
   private PropuestaDeAsignacionService service;
 
   @BeforeEach
@@ -70,8 +69,8 @@ class PropuestaDeAsignacionServiceTest {
     eventPublisher = mock(ApplicationEventPublisher.class);
     entidadesBeneficiariasRepository = mock(IEntidadesBeneficiariasRepository.class);
     personasRepository = mock(IPersonasRepository.class);
-    direccionMapper = mock(DireccionMapper.class);
     logisticaAsyncService = mock(LogisticaAsyncService.class);
+    logisticaRequestMapper = mock(LogisticaRequestMapper.class);
 
     service =
         new PropuestaDeAsignacionService(
@@ -85,8 +84,8 @@ class PropuestaDeAsignacionServiceTest {
             eventPublisher,
             entidadesBeneficiariasRepository,
             personasRepository,
-            direccionMapper,
-            logisticaAsyncService);
+            logisticaAsyncService,
+            logisticaRequestMapper);
   }
 
   @Test
@@ -240,22 +239,19 @@ class PropuestaDeAsignacionServiceTest {
     when(entidadesBeneficiariasRepository.findById(entidadId)).thenReturn(Optional.of(entidad));
 
     Juridica persona = mock(Juridica.class);
-    Direccion direccionPersona = mock(Direccion.class);
-    when(persona.getDireccion()).thenReturn(direccionPersona);
     when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(persona));
+
+    NuevaEntregaRequest requestEsperado =
+        new NuevaEntregaRequest(UUID.randomUUID(), entidadId, null, 12.5, 0.3);
+    when(logisticaRequestMapper.toRequest(donacionOriginal, entidad, persona))
+        .thenReturn(requestEsperado);
 
     PropuestaAprobada event =
         new PropuestaAprobada(UUID.randomUUID(), necesidadId, List.of(fragmentacion), "actor");
 
     service.onPropuestaAprobada(event);
 
-    verify(direccionMapper).toOutputDTO(direccionPersona);
-    verify(logisticaAsyncService)
-        .registrarEntregaPendiente(
-            argThat(
-                request ->
-                    request.idBeneficiaria().equals(entidadId)
-                        && request.pesoTotalKG().equals(12.5)
-                        && request.volumenTotalM3().equals(0.3)));
+    verify(logisticaRequestMapper).toRequest(donacionOriginal, entidad, persona);
+    verify(logisticaAsyncService).registrarEntregaPendiente(requestEsperado);
   }
 }
