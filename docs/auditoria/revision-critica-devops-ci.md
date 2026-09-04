@@ -159,7 +159,8 @@ El hallazgo más severo en el pipeline actual es la presencia reiterada de mecan
   1. Se utiliza `n8n import:workflow --separate --input=/etc/n8n/workflows`, permitiendo importar archivos individuales con `--separate` y resolviendo la excepción `workflows.map is not a function`.
   2. Se actualiza la imagen a `n8nio/n8n:2.37.7` donde `publish:workflow` es el comando nativo oficial: `n8n publish:workflow --id=1` y `n8n publish:workflow --id=2`.
   3. Se configuran variables de entorno headless (`N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false`, `N8N_DIAGNOSTICS_ENABLED=false`).
-  4. Se eliminan los operadores `|| true` para asegurar detección inmediata ante fallos de importación o activación.
+  4. Se eliminan los operadores `|| true` y `|| warn` para asegurar detección inmediata ante fallos de importación o activación en CI y scripts locales.
+  5. Se normalizan los nombres de los archivos de workflows a minúsculas y kebab-case (`workflow-insignias.json` y `workflow-ranking-mensual.json`), resolviendo la omisión silenciosa en Linux causada por el patrón estricto `glob('*.json')` de `fast-glob` en n8n CLI.
 
 ### [V-04] Acoplamiento de API GHCR a Cuentas Personales (`/users/`)
 * **Evidencia en Código:**  
