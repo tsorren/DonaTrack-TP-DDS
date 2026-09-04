@@ -12,15 +12,20 @@ services:
       - "8081:8081"
     environment:
       - PORT=8081
+      - SPRING_PROFILES_ACTIVE=postgres,preprod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones
+      - SPRING_DATASOURCE_USERNAME=notificaciones_user
+      - SPRING_DATASOURCE_PASSWORD=notif_pass_2026
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
-    volumes:
-      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -41,6 +46,7 @@ services:
       - "8082:8082"
     environment:
       - PORT=8082
+      - SPRING_PROFILES_ACTIVE=preprod
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
@@ -49,8 +55,6 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 5s
@@ -73,6 +77,7 @@ services:
       - "8080:8080"
     environment:
       - PORT=8080
+      - SPRING_PROFILES_ACTIVE=preprod
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
       - LOGISTICA_SERVICE_URL=http://logistica-service:8083
@@ -86,14 +91,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      notificaciones-service:
-        condition: service_healthy
-      incentivos-service:
-        condition: service_healthy
-      logistica-service:
-        condition: service_healthy
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 5s
@@ -116,6 +113,7 @@ services:
       - "8083:8083"
     environment:
       - PORT=8083
+      - SPRING_PROFILES_ACTIVE=preprod
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
@@ -126,8 +124,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 5s
@@ -153,7 +149,7 @@ services:
       - preprod-network
 
   n8n:
-    image: n8nio/n8n:latest
+    image: n8nio/n8n:2.37.7
     ports:
       - "5678:5678"
     environment:
@@ -164,6 +160,7 @@ services:
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_VERSION_NOTIFICATIONS_ENABLED=false
       - N8N_METRICS_ENABLED=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
       - NODE_OPTIONS=--max-old-space-size=384
     volumes:
       - ./n8n:/etc/n8n/workflows
@@ -177,6 +174,39 @@ services:
       retries: 20
       start_period: 20s
       start_interval: 1s
+    networks:
+      - preprod-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: donatrack-postgres
+    environment:
+      POSTGRES_DB: donatrack
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_secure_password
+    volumes:
+      - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d donatrack" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - preprod-network
+
+  minio:
+    image: minio/minio:RELEASE.2024-10-02T17-50-41Z
+    container_name: donatrack-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
     networks:
       - preprod-network
 

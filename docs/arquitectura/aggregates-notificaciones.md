@@ -35,7 +35,7 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
 
 ## 3. Políticas y Procesamiento de Eventos (`EventoNotificable`)
 
-La jerarquía de clases bajo el paquete `grupo5.notificaciones.models.entities.notificaciones.eventos` (tales como `EventoDeDonacion`, `DonanteRegistrado`, `MisionCumplida`, `SubioCategoria`, `DonacionEnCamino`, `EntregaFallida`) representa **Políticas de Dominio (Domain Policies)** y no agregados persistentes:
+La jerarquía de clases bajo el paquete `grupo5.notificaciones.models.entities.notificaciones.eventos` (tales como `EventoDeDonacion`, `DonanteRegistrado`, `MisionCumplida`, `SubioCategoria`, `DonacionEnCamino`, `EntregaFallida`, `DonacionVencida`) representa **Políticas de Dominio (Domain Policies)** y no agregados persistentes:
 
 *   **Rol en el Diseño**: Actúan como factorías polimórficas de alertas (`generarNotificaciones()`).
 *   **Funcionamiento**:

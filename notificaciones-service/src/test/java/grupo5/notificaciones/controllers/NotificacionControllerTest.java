@@ -184,4 +184,63 @@ class NotificacionControllerTest {
         .perform(get("/notificaciones/persona/no-es-un-uuid"))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  void donacionVencida_deberiaResponderAceptadoYProcesarEvento() throws Exception {
+    EventoNotificableDTO dto =
+        new EventoDonacionVencidaDTO(
+            personaMock.getId(),
+            TEST_DATE_TIME,
+            UUID.randomUUID(),
+            "5 kg de leche en polvo",
+            "Expiró tiempo de acopio");
+
+    mockMvc
+        .perform(
+            post("/notificaciones")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
+        .andExpect(status().isAccepted());
+
+    verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
+  }
+
+  @Test
+  void donacionVencida_conCamposEnBlanco_deberiaResponderBadRequest() throws Exception {
+    EventoNotificableDTO dto =
+        new EventoDonacionVencidaDTO(
+            personaMock.getId(), TEST_DATE_TIME, UUID.randomUUID(), "", "");
+
+    mockMvc
+        .perform(
+            post("/notificaciones")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
+        .andExpect(status().isBadRequest());
+
+    verify(notificacionService, never()).procesar(any(EventoNotificableDTO.class));
+  }
+
+  @Test
+  void donacionVencida_conFechaFutura_deberiaResponderBadRequest() throws Exception {
+    EventoNotificableDTO dto =
+        new EventoDonacionVencidaDTO(
+            personaMock.getId(),
+            LocalDateTime.now().plusDays(2),
+            UUID.randomUUID(),
+            "5 kg de leche en polvo",
+            "Expiró tiempo de acopio");
+
+    mockMvc
+        .perform(
+            post("/notificaciones")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
+        .andExpect(status().isBadRequest());
+
+    verify(notificacionService, never()).procesar(any(EventoNotificableDTO.class));
+  }
 }

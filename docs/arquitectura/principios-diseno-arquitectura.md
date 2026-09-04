@@ -90,7 +90,7 @@ La arquitectura y el diseño de software de DonaTrack combinan las mejores prác
 * **Motivación en DonaTrack:** Integrar la plataforma con automatizaciones no-code de gamificación (n8n), pasarelas de mensajería externa (Email, WhatsApp, SMS) y clientes de prueba automatizados.
 * **Evidencia en Código Fuente:**
   1. **Clientes Declarativos OpenFeign:** Comunicación inter-servicios tipada (`DonacionesFeignClient`, `NotificacionesFeignClient`, `IncentivosFeignClient`, `LogisticaFeignClient`) con contratos explícitos de DTOs y reintentos configurados.
-  2. **Webhooks con n8n Engine:** `incentivos-service` expone endpoints REST para que workflows externos de n8n (`WorkFlow-Insignias.JSON`, `WorkFlow-Ranking-Mensual.JSON`) disparen evaluaciones periódicas y otorgamiento de insignias vía HTTP.
+  2. **Webhooks con n8n Engine:** `incentivos-service` expone endpoints REST para que workflows externos de n8n (`workflow-insignias.json`, `workflow-ranking-mensual.json`) disparen evaluaciones periódicas y otorgamiento de insignias vía HTTP.
   3. **Colecciones Postman y OpenAPI:** Contratos REST documentados para interoperabilidad con clientes livianos y suites de integración.
 
 ### 8) Testeabilidad (Facilidad de Prueba)

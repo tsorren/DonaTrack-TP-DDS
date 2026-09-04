@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 6.2.0 (Oleada 8 — Nested AGENTS: `common-lib/AGENTS.md` — Shared Kernel governance)
+> **Versión:** 6.2.1 (Oleada 8 — Actualización de comando canónico Gate 3 a mvn verify)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -272,7 +272,7 @@ Ejecutar las validaciones de menor a mayor costo computacional según el alcance
                     /   \      ./run-preprod-tests.sh (Docker + n8n + 4 Servicios)
                    /─────\
                   /       \    Gate 3: Integración y Contratos
-                 /         \   mvn test -pl integration-tests -DskipTests=false
+                  /         \   mvn verify -pl integration-tests -DskipTests=false
                 /───────────\
                /             \ Gate 2: Módulo Completo
               /               \ mvn test -pl <modulo> -am
@@ -290,7 +290,7 @@ mvn spotless:check                                     # Gate 1: formato
 mvn test -pl <modulo-service> -Dtest=<NombreTest>     # Gate 1: test unitario
 mvn clean test -pl <modulo-service> -am               # Gate 2: módulo + deps
 mvn test                                              # Gate 2: suite completa
-mvn test -pl integration-tests -DskipTests=false      # Gate 3: integración
+mvn verify -pl integration-tests -DskipTests=false    # Gate 3: integración
 ```
 
 ### 11.2 Gate 4 — Entorno Docker E2E

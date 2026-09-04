@@ -6,15 +6,16 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class NotificacionRepositoryEnMemoria extends CrudRepositoryEnMemoria<Notificacion>
     implements INotificacionRepository {
 
   @Override
   public List<Notificacion> findByEstado(EstadoNotificacion estado) {
-    // Buscamos dentro de la colección en memoria que maneja la clase madre
     return this.findAll().stream().filter(n -> n.getEstadoNotificacion() == estado).toList();
   }
 
