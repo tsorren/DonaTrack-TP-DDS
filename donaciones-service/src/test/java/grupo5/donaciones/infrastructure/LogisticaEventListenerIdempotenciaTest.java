@@ -32,7 +32,8 @@ class LogisticaEventListenerIdempotenciaTest {
     EventoRutaAsignada evento =
         new EventoRutaAsignada(UUID.randomUUID(), donacionId, LocalDateTime.now());
 
-    when(donacionesIndependientesService.cambiarEstado(eq(donacionId), any(), eq("logistica-service")))
+    when(donacionesIndependientesService.cambiarEstado(
+            eq(donacionId), any(), eq("logistica-service")))
         .thenReturn(mock(DonacionIndependienteResponseDTO.class))
         .thenThrow(new RuntimeException("ya está en LISTA_PARA_ENTREGAR"));
 
@@ -55,7 +56,8 @@ class LogisticaEventListenerIdempotenciaTest {
             LocalDateTime.now(),
             "http://mapa/ruta");
 
-    when(donacionesIndependientesService.cambiarEstado(eq(donacionId), any(), eq("logistica-service")))
+    when(donacionesIndependientesService.cambiarEstado(
+            eq(donacionId), any(), eq("logistica-service")))
         .thenReturn(mock(DonacionIndependienteResponseDTO.class))
         .thenThrow(new RuntimeException("ya está en EN_TRASLADO"));
 
@@ -73,7 +75,8 @@ class LogisticaEventListenerIdempotenciaTest {
         new EventoEntregaExitosa(
             UUID.randomUUID(), donacionId, UUID.randomUUID(), "AA-123-BB", LocalDateTime.now());
 
-    when(donacionesIndependientesService.cambiarEstado(eq(donacionId), any(), eq("logistica-service")))
+    when(donacionesIndependientesService.cambiarEstado(
+            eq(donacionId), any(), eq("logistica-service")))
         .thenReturn(mock(DonacionIndependienteResponseDTO.class))
         .thenThrow(new RuntimeException("ya está en ENTREGADA"));
 
@@ -91,7 +94,8 @@ class LogisticaEventListenerIdempotenciaTest {
         new EventoEntregaFallida(
             UUID.randomUUID(), donacionId, "Dirección incorrecta", LocalDateTime.now(), false);
 
-    when(donacionesIndependientesService.cambiarEstado(eq(donacionId), any(), eq("logistica-service")))
+    when(donacionesIndependientesService.cambiarEstado(
+            eq(donacionId), any(), eq("logistica-service")))
         .thenReturn(mock(DonacionIndependienteResponseDTO.class))
         .thenThrow(new RuntimeException("ya está en ENTREGA_FALLIDA"));
 
