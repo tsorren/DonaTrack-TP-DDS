@@ -4,22 +4,48 @@ info:
   version: 1.0.0
   description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
 servers:
-  - url: http://localhost:8081
+  - url: http://localhost:8080
     description: Servidor local de desarrollo
 paths:
   /donaciones-independientes:
-    post:
-      summary: Registrar donación independiente
-      operationId: registrarDonacionIndependiente
-      responses:
-        '201':
-          description: Donación independiente creada
     get:
-      summary: Listar donaciones independientes
+      summary: Listar donaciones independientes con filtros
       operationId: listarDonacionesIndependientes
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - EN_DEPOSITO
+              - ASIGNACION_REALIZADA
+              - EN_TRASLADO
+              - LISTA_PARA_ENTREGAR
+              - ENTREGADA
+              - ENTREGA_FALLIDA
+              - VENCIDA
+        - name: subcategoriaId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: donanteId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
-          description: Lista de donaciones
+          description: Lista de donaciones independientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
   /donaciones-independientes/{id}:
     get:
       summary: Consultar donación independiente por ID
@@ -31,9 +57,13 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Detalle de la donación
+          description: Detalle de la donación independiente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
         '404':
-          description: Donación no encontrada
+          description: Donación independiente no encontrada
   /donaciones-independientes/{id}/estado:
     patch:
       summary: Transicionar estado de la donación independiente (State Pattern)
@@ -43,6 +73,11 @@ paths:
           in: path
           required: true
           schema: { type: string, format: uuid }
+        - name: X-Actor
+          in: header
+          required: true
+          schema: { type: string }
+          description: Identificador del actor o sistema que ejecuta la transición
       requestBody:
         required: true
         content:
@@ -52,8 +87,61 @@ paths:
       responses:
         '200':
           description: Estado actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
         '400':
           description: Transición inválida para el estado actual
+  /api/donaciones:
+    post:
+      summary: Registrar donación (donación general con ítems)
+      operationId: registrarDonacion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonacionInputDTO'
+      responses:
+        '201':
+          description: Donación creada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonacionOutputDTO'
+        '400':
+          description: Datos de donación inválidos
+    get:
+      summary: Listar donaciones
+      operationId: listarDonaciones
+      responses:
+        '200':
+          description: Listado de donaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DonacionOutputDTO'
+  /api/donaciones/{id}:
+    get:
+      summary: Consultar donación por ID
+      operationId: obtenerDonacionPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle de la donación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonacionOutputDTO'
+        '404':
+          description: Donación no encontrada
   /api/necesidades:
     post:
       summary: Registrar necesidad de entidad beneficiaria
@@ -64,16 +152,50 @@ paths:
     get:
       summary: Listar necesidades activas
       operationId: listarNecesidades
+      parameters:
+        - name: entidadId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+        - name: tipo
+          in: query
+          required: false
+          schema: { type: string }
       responses:
         '200':
           description: Listado de necesidades
-  /api/asignaciones:
+  /api/asignaciones/ejecuciones:
     post:
       summary: Ejecutar algoritmo de asignación y generar propuestas
-      operationId: generarPropuestaAsignacion
+      operationId: ejecutarAsignacion
+      responses:
+        '201':
+          description: Propuestas generadas
+    get:
+      summary: Historial de ejecuciones de asignación
+      operationId: historialEjecucionesAsignacion
       responses:
         '200':
-          description: Propuestas generadas
+          description: Historial de ejecuciones
+  /api/asignaciones/propuestas:
+    get:
+      summary: Listar propuestas de asignación
+      operationId: listarPropuestasAsignacion
+      responses:
+        '200':
+          description: Listado de propuestas
+  /api/asignaciones/propuestas/{id}/estado:
+    put:
+      summary: Actualizar estado de una propuesta de asignación
+      operationId: actualizarEstadoPropuesta
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Estado actualizado
   /api/entidades:
     post:
       summary: Registrar entidad beneficiaria
@@ -122,3 +244,71 @@ components:
         urlMapa: { type: string }
         patenteCamion: { type: string }
         replanificable: { type: boolean }
+    DonacionIndependienteResponseDTO:
+      type: object
+      required:
+        - id
+        - donacionOriginalId
+        - estadoActual
+        - fechaRegistro
+      properties:
+        id:
+          type: string
+          format: uuid
+        donacionOriginalId:
+          type: string
+          format: uuid
+        descripcion:
+          type: string
+        estadoActual:
+          type: string
+          enum:
+            - EN_DEPOSITO
+            - ASIGNACION_REALIZADA
+            - EN_TRASLADO
+            - LISTA_PARA_ENTREGAR
+            - ENTREGADA
+            - ENTREGA_FALLIDA
+            - VENCIDA
+        fechaRegistro:
+          type: string
+          format: date-time
+        historial:
+          type: array
+          items:
+            type: object
+        items:
+          type: array
+          items:
+            type: object
+        cantidad:
+          type: integer
+    DonacionInputDTO:
+      type: object
+      required:
+        - donanteId
+        - items
+      properties:
+        donanteId:
+          type: string
+          format: uuid
+        descripcion:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+    DonacionOutputDTO:
+      type: object
+      required:
+        - id
+        - donanteId
+      properties:
+        id:
+          type: string
+          format: uuid
+        donanteId:
+          type: string
+          format: uuid
+        descripcion:
+          type: string

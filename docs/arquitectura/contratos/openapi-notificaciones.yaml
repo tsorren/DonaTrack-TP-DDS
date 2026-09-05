@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API REST para despacho de alertas multicanal (Email, WhatsApp, SMS), sincronización idempotente de personas replicadas y gestión de historial de notificaciones.
 servers:
-  - url: http://localhost:8084
+  - url: http://localhost:8081
     description: Servidor local de desarrollo
 paths:
   /notificaciones:
@@ -117,15 +117,20 @@ components:
       type: object
       required:
         - tipo
-        - valor
       properties:
         tipo:
           type: string
-          enum: [EMAIL, TELEFONO, WHATSAPP]
-        valor:
-          type: string
-        preferido:
+          enum: [CORREO, TELEFONO, WHATSAPP]
+        esPredeterminado:
           type: boolean
+        direccionCorreo:
+          type: string
+        caracteristica:
+          type: string
+        codigoArea:
+          type: string
+        numero:
+          type: string
     EventoNotificableDTO:
       type: object
       required:
@@ -153,20 +158,19 @@ components:
           format: date-time
     NotificacionDTO:
       type: object
+      required:
+        - id
+        - mensaje
+        - estado
+        - fechaCreacion
       properties:
         id:
           type: string
           format: uuid
-        personaId:
-          type: string
-          format: uuid
-        medioEnvio:
-          type: string
-        destino:
+        mensaje:
           type: string
         estado:
           type: string
-          enum: [ENVIADA, FALLIDA, PENDIENTE]
-        fechaEnvio:
+        fechaCreacion:
           type: string
           format: date-time

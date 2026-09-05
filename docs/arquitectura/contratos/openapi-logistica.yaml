@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: API REST para planificación de rutas de transporte, seguimiento de camiones, asignación de choferes y trazabilidad de entregas.
 servers:
-  - url: http://localhost:8082
+  - url: http://localhost:8083
     description: Servidor local de desarrollo
 paths:
   /api/entregas:
@@ -26,6 +26,18 @@ paths:
                 $ref: '#/components/schemas/EntregaResponseDTO'
         '400':
           description: Datos inválidos
+    get:
+      summary: Listar entregas registradas
+      operationId: listarEntregas
+      responses:
+        '200':
+          description: Listado de entregas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntregaResponseDTO'
   /api/entregas/{id}:
     get:
       summary: Consultar entrega por ID
@@ -46,6 +58,7 @@ paths:
                 $ref: '#/components/schemas/EntregaResponseDTO'
         '404':
           description: Entrega no encontrada
+  /api/entregas/{id}/estado:
     patch:
       summary: Cambiar estado de una entrega
       operationId: cambiarEstadoEntrega
@@ -69,13 +82,52 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EntregaResponseDTO'
-  /api/rutas:
-    post:
-      summary: Crear ruta logística
-      operationId: crearRuta
+        '400':
+          description: Transición de estado inválida
+  /api/entregas/{id}/fotos:
+    patch:
+      summary: Adjuntar foto de recepción de entrega
+      operationId: adjuntarFotoRecepcion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fotoRecepcionUrl
+              properties:
+                fotoRecepcionUrl:
+                  type: string
       responses:
-        '201':
-          description: Ruta creada
+        '200':
+          description: Foto adjuntada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntregaResponseDTO'
+  /api/rutas:
+    get:
+      summary: Listar rutas planificadas
+      operationId: listarRutas
+      parameters:
+        - name: camionId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filtro opcional por ID de camión
+      responses:
+        '200':
+          description: Listado de rutas
   /api/rutas/{id}:
     get:
       summary: Consultar ruta con sus paradas y URL de seguimiento
@@ -90,8 +142,48 @@ paths:
       responses:
         '200':
           description: Detalle de la ruta
+  /api/rutas/{id}/entregas:
+    get:
+      summary: Consultar ruta junto con el detalle de sus entregas
+      operationId: obtenerRutaConEntregas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ruta con entregas asociadas
+    post:
+      summary: Agregar entrega a una ruta existente
+      operationId: agregarEntregaRuta
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idEntrega
+              properties:
+                idEntrega:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Entrega agregada a la ruta
+  /api/rutas/{id}/estado:
     patch:
-      summary: Cambiar estado de la ruta (iniciada, completada, etc.)
+      summary: Cambiar estado de la ruta
       operationId: cambiarEstadoRuta
       parameters:
         - name: id
@@ -100,6 +192,18 @@ paths:
           schema:
             type: string
             format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nuevoEstado
+              properties:
+                nuevoEstado:
+                  type: string
+                  enum: [PLANIFICADA, EN_CURSO, COMPLETADA, CANCELADA]
       responses:
         '200':
           description: Estado actualizado
@@ -116,6 +220,20 @@ paths:
       responses:
         '200':
           description: Listado de camiones
+  /api/camiones/{id}:
+    get:
+      summary: Consultar camión por ID
+      operationId: obtenerCamionPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del camión
   /api/choferes:
     post:
       summary: Registrar chofer
@@ -123,15 +241,90 @@ paths:
       responses:
         '201':
           description: Chofer registrado
-  /api/logistica/planificaciones/manual:
-    post:
-      summary: Planificar ruta de entregas manualmente
-      operationId: planificarManual
+    get:
+      summary: Listar choferes
+      operationId: listarChoferes
       responses:
         '200':
-          description: Planificación generada
+          description: Listado de choferes
+  /api/choferes/{id}:
+    get:
+      summary: Consultar chofer por ID
+      operationId: obtenerChoferPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del chofer
+  /api/logistica/planificaciones/ejecuciones:
+    post:
+      summary: Iniciar planificación de rutas de forma manual
+      description: Disparador auxiliar habilitado condicionalmente mediante logistica.planificacion.manual-enabled=true.
+      operationId: iniciarPlanificacionManual
+      responses:
+        '202':
+          description: Planificación aceptada para ejecución asíncrona
+  /api/logistica/planificaciones/{id}:
+    get:
+      summary: Consultar estado de solicitud de planificación
+      operationId: obtenerSolicitudPlanificacion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle de la solicitud de planificación
+  /api/logistica/resultados:
+    post:
+      summary: Procesar callback de resultados de optimización de rutas
+      operationId: procesarCallbackPlanificacion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Callback procesado exitosamente
 components:
   schemas:
+    DireccionDTO:
+      type: object
+      required:
+        - calle
+        - altura
+        - codigoPostal
+        - localidad
+        - provincia
+        - pais
+      properties:
+        calle:
+          type: string
+        altura:
+          type: integer
+          minimum: 1
+        piso:
+          type: string
+        departamento:
+          type: string
+        codigoPostal:
+          type: string
+        localidad:
+          type: string
+        provincia:
+          type: string
+        pais:
+          type: string
     CrearEntregaRequestDTO:
       type: object
       required:
@@ -147,18 +340,13 @@ components:
           type: string
           format: uuid
         destino:
-          type: object
-          required: [calle]
-          properties:
-            calle: { type: string }
-            numero: { type: string }
-            ciudad: { type: string }
-            latitud: { type: number }
-            longitud: { type: number }
+          $ref: '#/components/schemas/DireccionDTO'
         pesoTotalKG:
           type: number
+          exclusiveMinimum: 0
         volumenTotalM3:
           type: number
+          exclusiveMinimum: 0
     CambioEstadoEntregaRequestDTO:
       type: object
       required:
@@ -166,7 +354,12 @@ components:
       properties:
         estado:
           type: string
-          enum: [PENDIENTE, EN_PLANIFICACION, PLANIFICADA, EN_VIAJE, ENTREGADA, NO_RECIBIDA, CANCELADA]
+          enum:
+            - PENDIENTE
+            - EN_TRASLADO
+            - ENTREGADA
+            - NO_RECIBIDA
+            - REVISION
         actor:
           type: string
         justificacion:
@@ -179,20 +372,47 @@ components:
         - id
         - idDonacion
         - idBeneficiaria
-        - estado
+        - estadoActual
       properties:
         id:
           type: string
           format: uuid
+        idRuta:
+          type: string
+          format: uuid
+          nullable: true
         idDonacion:
           type: string
           format: uuid
         idBeneficiaria:
           type: string
           format: uuid
-        estado:
+        destino:
+          $ref: '#/components/schemas/DireccionDTO'
+        estadoActual:
           type: string
+          enum:
+            - PENDIENTE
+            - EN_TRASLADO
+            - ENTREGADA
+            - NO_RECIBIDA
+            - REVISION
+        horaSalida:
+          type: string
+          format: date-time
+          nullable: true
+        horaArribo:
+          type: string
+          format: date-time
+          nullable: true
+        fotoRecepcionUrl:
+          type: string
+          nullable: true
         volumenTotalM3:
           type: number
         pesoTotalKG:
           type: number
+        historialEstado:
+          type: array
+          items:
+            type: object
