@@ -8,11 +8,17 @@ import grupo5.logistica.models.entities.planificacion.PlanificadorDeRutas;
 import grupo5.logistica.models.entities.rutas.GeneradorDeRutas;
 import grupo5.logistica.models.entities.rutas.GeneradorLotes;
 import grupo5.logistica.models.entities.rutas.GeneradorLotesSimple;
+import java.time.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class PlanificacionConfig {
+
+  @Bean
+  Clock clock() {
+    return Clock.systemUTC();
+  }
 
   @Bean
   GeneradorLotes generadorLotes() {
