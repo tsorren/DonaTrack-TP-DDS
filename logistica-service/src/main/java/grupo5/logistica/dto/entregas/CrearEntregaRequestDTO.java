@@ -10,5 +10,5 @@ public record CrearEntregaRequestDTO(
     @NotNull UUID idDonacion,
     @NotNull UUID idBeneficiaria,
     @NotNull @Valid DireccionDTO destino,
-    @Positive Float pesoTotalKG,
+    @NotNull @Positive Float pesoTotalKG,
     @NotNull @Positive Float volumenTotalM3) {}
