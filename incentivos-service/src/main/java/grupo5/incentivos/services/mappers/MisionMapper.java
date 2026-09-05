@@ -39,14 +39,14 @@ public class MisionMapper {
         resolverInsigniaDTO(mision, ganada));
   }
 
-  private InsigniaGanada insigniaGanadaDe(Mision mision, DonanteIncentivos donante) {
+  private static InsigniaGanada insigniaGanadaDe(Mision mision, DonanteIncentivos donante) {
     if (!mision.isCompletada() || mision.getInsignia() == null) {
       return null;
     }
     return donante.insigniaGanadaDe(mision.getInsignia().nombre());
   }
 
-  private InsigniaDTO resolverInsigniaDTO(Mision mision, InsigniaGanada ganada) {
+  private static InsigniaDTO resolverInsigniaDTO(Mision mision, InsigniaGanada ganada) {
     if (ganada != null) {
       return InsigniaDTO.desde(ganada);
     }
