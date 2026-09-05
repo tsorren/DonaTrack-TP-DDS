@@ -64,6 +64,7 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-07) con ADRs enlazados
+│   ├── 20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md # Estandarización de 405 (Allow RFC 9110) y 404
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
