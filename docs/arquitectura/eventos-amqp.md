@@ -87,8 +87,8 @@ Publicado ante imposibilidad de concretar la entrega.
 
 ---
 
-## 4. Idempotencia y Políticas de Reintentos
+## 4. Idempotencia, Trazabilidad y Manejo de Fallas
 
-1. **Idempotencia en el Receptor:** Toda transición ejecutada por `donaciones-service` en su máquina de estados verifica si el estado destino es compatible o redundante (State Pattern).
-2. **Propagación de Trazabilidad:** Todo mensaje AMQP preserva el encabezado `X-Trace-Id` en las propiedades del mensaje RabbitMQ para correlacionar los logs distribuidos a través de MDC.
-3. **Dead Letter Queue (DLQ):** Los mensajes que no puedan ser procesados tras agotar reintentos configurados son derivados al exchange `dlx.exchange` con destino a la cola `donaciones.dlq`.
+1. **Idempotencia en el Receptor:** Toda transición ejecutada por `donaciones-service` en su máquina de estados verifica si el estado destino es compatible o redundante (State Pattern). Si la donación ya se encuentra en el estado solicitado o en un estado posterior válido, la operación concluye de forma segura sin efectos colaterales.
+2. **Trazabilidad Distribuida:** En la implementación actual, la correlación vía `traceId` opera sobre el tráfico HTTP síncrono mediante interceptores (`ControllerLoggingInterceptor`, Feign client). La propagación de `X-Trace-Id` en los headers de los mensajes RabbitMQ (`MessageProperties`) es una mejora técnica proyectada.
+3. **Manejo de Errores en Consumidores:** En caso de excepción al procesar un evento de logística, `LogisticaEventListener` captura el error y registra el fallo en los logs (`log.error`), completando el ciclo del listener para no bloquear la cola. La incorporación de un Dead Letter Exchange (`dlx.exchange`) y Dead Letter Queue (`donaciones.dlq`) con reintentos exponenciales está catalogada como deuda técnica / evolución de infraestructura pendiente.
