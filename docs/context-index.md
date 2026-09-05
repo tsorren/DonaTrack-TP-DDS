@@ -30,7 +30,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | `donaciones-service` | [`arquitectura/aggregates-donaciones.md`](arquitectura/aggregates-donaciones.md) | State Pattern o algoritmos → ADRs en `docs/adr/donaciones-service/`; historial de refactor → `docs/arquitectura/diseno/donaciones/` |
 | `logistica-service` | [`arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Eventos RabbitMQ → ADR `20260703-uso-de-rabbitmq-*` en `docs/adr/logistica-service/`; trazabilidad → [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
 | `incentivos-service` | [`arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Scheduler / cron → ADRs en `docs/adr/incentivos-service/` |
-| `notificaciones-service` | [`arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | REST / Feign → ADRs en `docs/adr/notificaciones-service/` |
+| `notificaciones-service` | [`arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | REST / Feign / Persistencia JPA → ADRs en `docs/adr/notificaciones-service/` |
 | `common-lib` | [`arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Impacto cross-service → aggregates docs de los servicios afectados |
 
 ---
@@ -60,7 +60,7 @@ Revisar esta sección si la tarea involucra: persistencia, repositorios, diseño
 
 | Constraint | Scope | Regla vigente | Fuente de autoridad | Drift signal |
 | --- | --- | --- | --- | --- |
-| Persistencia en memoria | Todos los servicios (Fase 1) | No introducir JPA, Hibernate ni SQL salvo ADR aprobado para ese servicio | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` activo en `pom.xml` del servicio — revisar si la constraint fue reemplazada para ese servicio en particular |
+| Persistencia en memoria | `donaciones`, `logistica`, `incentivos` (Fase 1) | No introducir JPA, Hibernate ni SQL salvo ADR aprobado para ese servicio. En `notificaciones-service`: JPA activo con Flyway V1; persistencia en memoria retenida bajo `@Profile("!postgres")` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` activo en `pom.xml` del servicio — revisar si la constraint fue reemplazada para ese servicio en particular |
 | Pureza de dominio | Todos los servicios (Fase 1) | Entidades de dominio sin anotaciones JPA ni acoplamiento a infraestructura de persistencia | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 + DTI-06 | `@Entity` / `@Column` en `models/entities/` — revisar si existe ADR que autorice la excepción para ese servicio |
 
 ---
