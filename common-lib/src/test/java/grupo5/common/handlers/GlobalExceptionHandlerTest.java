@@ -26,6 +26,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 class GlobalExceptionHandlerTest {
@@ -265,5 +267,18 @@ class GlobalExceptionHandlerTest {
     assertNotNull(response.getBody());
     assertEquals(ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(), response.getBody().code());
     assertTrue(response.getBody().details().contains("api/inexistente"));
+  }
+
+  @Test
+  void handleNoHandlerFound_deberiaRetornarNotFound() {
+    NoHandlerFoundException ex =
+        new NoHandlerFoundException("GET", "/api/inexistente", new HttpHeaders());
+
+    ResponseEntity<ErrorResponse> response = handler.handleNoHandlerFound(ex);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(), response.getBody().code());
+    assertTrue(response.getBody().details().contains("/api/inexistente"));
   }
 }
