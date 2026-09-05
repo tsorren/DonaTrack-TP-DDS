@@ -11,8 +11,10 @@ import grupo5.common.responses.FieldErrorDTO;
 import jakarta.validation.ConstraintViolationException;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -279,17 +281,29 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
   public ResponseEntity<ErrorResponse> handleMethodNotSupported(
       HttpRequestMethodNotSupportedException ex) {
+    Set<HttpMethod> supportedMethods = ex.getSupportedHttpMethods();
+    String metodosStr =
+        (supportedMethods != null && !supportedMethods.isEmpty())
+            ? supportedMethods.toString()
+            : "no especificados";
     String detail =
         String.format(
             "El método HTTP '%s' no está soportado para este endpoint. Métodos soportados: %s",
-            ex.getMethod(), ex.getSupportedHttpMethods());
+            ex.getMethod(), metodosStr);
+
     log.warn(
         "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Method not supported: {}",
         ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
         ex.getClass().getSimpleName(),
         detail);
-    return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-        .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
+
+    var responseBuilder = ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED);
+    if (supportedMethods != null && !supportedMethods.isEmpty()) {
+      responseBuilder.allow(supportedMethods.toArray(HttpMethod[]::new));
+    }
+
+    return responseBuilder.body(
+        new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
   }
 
   @ExceptionHandler(NoResourceFoundException.class)

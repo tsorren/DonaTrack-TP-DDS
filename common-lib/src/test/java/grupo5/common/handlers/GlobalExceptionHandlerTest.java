@@ -27,6 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -236,13 +237,18 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  void handleMethodNotSupported_deberiaRetornarMethodNotAllowed() {
+  void handleMethodNotSupported_deberiaRetornarMethodNotAllowedConHeaderAllow() {
     HttpRequestMethodNotSupportedException ex =
         new HttpRequestMethodNotSupportedException("DELETE", List.of("GET", "POST"));
 
     ResponseEntity<ErrorResponse> response = handler.handleMethodNotSupported(ex);
 
     assertEquals(HttpStatus.METHOD_NOT_ALLOWED, response.getStatusCode());
+
+    assertNotNull(response.getHeaders().getAllow());
+    assertTrue(response.getHeaders().getAllow().contains(HttpMethod.GET));
+    assertTrue(response.getHeaders().getAllow().contains(HttpMethod.POST));
+
     assertNotNull(response.getBody());
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), response.getBody().code());
     assertTrue(response.getBody().details().contains("DELETE"));
@@ -250,8 +256,8 @@ class GlobalExceptionHandlerTest {
 
   @Test
   void handleNoResourceFound_deberiaRetornarNotFound() {
-    NoResourceFoundException ex = mock(NoResourceFoundException.class);
-    when(ex.getResourcePath()).thenReturn("api/inexistente");
+    NoResourceFoundException ex =
+        new NoResourceFoundException(HttpMethod.GET, "api/inexistente", "api/inexistente");
 
     ResponseEntity<ErrorResponse> response = handler.handleNoResourceFound(ex);
 

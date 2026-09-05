@@ -4,8 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -231,11 +230,11 @@ class ValidacionHttpTest {
   // ===================== 405 — Method Not Allowed (Verifica GlobalExceptionHandler)
   // =====================
   @Test
-  void endpointConMetodoNoSoportado_retorna405MethodNotAllowed() throws Exception {
-    // Intentar hacer DELETE en un endpoint que solo acepta PATCH
+  void endpointConMetodoNoSoportado_retorna405MethodNotAllowedConHeaderAllow() throws Exception {
     entregaMvc
         .perform(delete("/api/entregas/" + ID + "/estado"))
         .andExpect(status().isMethodNotAllowed())
+        .andExpect(header().exists(org.springframework.http.HttpHeaders.ALLOW))
         .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
   }
 
