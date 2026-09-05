@@ -109,25 +109,24 @@ enum grupo5.common.exceptions.ErrorCatalog {
 	{field} +SUBCATEGORIA_SIN_NOMBRE
 	{field} +TIPO_PERSONA_INVALIDO
 	{field} +VALIDACION_FALLIDA
-	{field} -codigo : String
-	{field} -descripcion : String
-	{field} -httpStatus : int
-	{method} +getCodigo () : String
-	{method} +getDescripcion () : String
-	{method} +getHttpStatus () : int
+	{field} -code : String
+	{method} +getCode () : String
 	{method} +valueOf ( name : String ) : grupo5.common.exceptions.ErrorCatalog
 	{method} +values () : grupo5.common.exceptions.ErrorCatalog[]
 }
 
-class grupo5.common.exceptions.GlobalExceptionHandler {
-	{field} -logger : org.slf4j.Logger
+class grupo5.common.handlers.GlobalExceptionHandler {
+	{field} -log : org.slf4j.Logger
 	{method} +handleBusinessState ( ex : grupo5.common.exceptions.BusinessStateException ) : org.springframework.http.ResponseEntity
 	{method} +handleGenericException ( ex : java.lang.Exception ) : org.springframework.http.ResponseEntity
-	{method} +handleNotFound ( ex : grupo5.common.exceptions.ResourceNotFoundException ) : org.springframework.http.ResponseEntity
+	{method} +handleRecursoNoEncontrado ( ex : grupo5.common.exceptions.RecursoNoEncontradoException ) : org.springframework.http.ResponseEntity
 	{method} +handleValidation ( ex : grupo5.common.exceptions.ValidationException ) : org.springframework.http.ResponseEntity
 }
 
-class grupo5.common.exceptions.ResourceNotFoundException {
+class grupo5.common.exceptions.RecursoNoEncontradoException {
+}
+
+class grupo5.common.exceptions.InfrastructureException {
 }
 
 class grupo5.common.exceptions.ValidationException {
@@ -143,8 +142,9 @@ class grupo5.common.logging.ControllerLoggingInterceptor {
 	{method} +preHandle ( request : jakarta.servlet.http.HttpServletRequest , response : jakarta.servlet.http.HttpServletResponse , handler : Object ) : boolean
 }
 
-class grupo5.common.logging.FeignTraceIdInterceptor {
-	{field} -TRACE_ID_HEADER : String
+class grupo5.common.logging.FeignTraceRequestInterceptor {
+	{field} +MDC_TRACE_KEY : String
+	{field} +TRACE_HEADER : String
 	{method} +apply ( template : feign.RequestTemplate ) : void
 }
 
@@ -163,10 +163,11 @@ class grupo5.common.logging.ServiceLoggingAspect {
 	{method} +logServiceMethods ( joinPoint : org.aspectj.lang.ProceedingJoinPoint ) : Object
 }
 
-class grupo5.common.logging.TraceIdFilter {
-	{field} -TRACE_ID_HEADER : String
-	{field} -TRACE_ID_MDC_KEY : String
-	{method} +doFilter ( request : jakarta.servlet.ServletRequest , response : jakarta.servlet.ServletResponse , chain : jakarta.servlet.FilterChain ) : void
+class grupo5.common.logging.TraceResponseHeaderFilter {
+	{field} +MDC_TRACE_KEY : String
+	{field} +REQUEST_ID_HEADER : String
+	{field} +TRACE_HEADER : String
+	{method} #doFilterInternal ( request : jakarta.servlet.http.HttpServletRequest , response : jakarta.servlet.http.HttpServletResponse , filterChain : jakarta.servlet.FilterChain ) : void
 }
 
 class grupo5.common.openapi.DonaTrackOpenApiAutoConfiguration {
@@ -218,7 +219,8 @@ interface grupo5.common.repositories.CrudRepository {
 }
 
 grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.BusinessStateException
-grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.ResourceNotFoundException
+grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.InfrastructureException
+grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.RecursoNoEncontradoException
 grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.ValidationException
 grupo5.common.repositories.CrudRepository <|.. grupo5.common.repositories.CrudRepositoryEnMemoria
 
