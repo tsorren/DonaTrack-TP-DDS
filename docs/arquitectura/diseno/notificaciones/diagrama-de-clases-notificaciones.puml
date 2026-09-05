@@ -381,4 +381,33 @@ package SERVICES {
   PersonaMapper --> MedioDeContactoMapper : medioDeContactoMapper
 }
 
+' ==================== PERSISTENCIA (JPA & EnMemoria) ====================
+package PERSISTENCIA {
+  class PersonaRepositoryEnMemoria <<service>> {
+    + <<@Profile("!postgres")>>
+  }
+
+  class PersonaRepositoryJpaAdapter <<service>> {
+    + <<@Profile("postgres")>>
+  }
+
+  class NotificacionRepositoryJpaAdapter <<service>> {
+    + <<@Profile("postgres")>>
+  }
+
+  interface SpringDataPersonaRepository <<interface>>
+  interface SpringDataNotificacionRepository <<interface>>
+
+  class PersonaEntity <<entity>>
+  class NotificacionEntity <<entity>>
+
+  PersonaRepositoryEnMemoria ..|> IPersonaRepository
+  PersonaRepositoryJpaAdapter ..|> IPersonaRepository
+  NotificacionRepositoryJpaAdapter ..|> INotificacionRepository
+  PersonaRepositoryJpaAdapter --> SpringDataPersonaRepository
+  NotificacionRepositoryJpaAdapter --> SpringDataNotificacionRepository
+  SpringDataPersonaRepository --> PersonaEntity
+  SpringDataNotificacionRepository --> NotificacionEntity
+}
+
 @enduml
