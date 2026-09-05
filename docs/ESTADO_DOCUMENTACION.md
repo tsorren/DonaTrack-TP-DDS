@@ -39,11 +39,16 @@ docs/
 │   ├── aggregates-incentivos.md           # Aggregates de gamificación, Insignia y Rankings
 │   ├── aggregates-logistica.md            # Aggregates de transporte, rutas y camiones
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
-│   └── diseno/                            # Bitácoras de refactor y diagramas PUML
+│   ├── contratos-rest.md                  # 🟢 Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
+│   ├── eventos-amqp.md                    # 🟢 Topología RabbitMQ y contratos de eventos asíncronos
+│   ├── contratos/                         # 🟢 Especificaciones OpenAPI 3.0 (YAML) y Schemas JSON
+│   └── diseno/                            # Bitácoras de refactor, diagramas PUML y anexos
 │       ├── donaciones/
 │       ├── incentivos/
 │       ├── logistica/
-│       └── notificaciones/
+│       ├── notificaciones/
+│       ├── common/                        # Estilos compartidos donatrack-style.puml
+│       └── anexos-tecnicos/               # Modelos técnicos de build autogenerados por Maven
 │
 ├── testing/                               # 🟢 Pruebas automatizadas y contratos
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
@@ -106,6 +111,10 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | Notificaciones | Réplica de personas, adaptadores de envío y eventos notificables. | 🟢 Sincronizado |
 | [`docs/arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Incentivos | Misiones con Template Method, insignias, eventos de gamificación y ranking. | 🟢 Sincronizado |
 | [`docs/arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Logística | Ciclo de vida de entregas, planificación de rutas, camiones y eventos RabbitMQ. | 🟢 Sincronizado |
+| [`docs/arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) | Contratos REST | Catálogo consolidado de endpoints, DTOs, Swagger UI y especificaciones OpenAPI 3.0. | 🟢 Sincronizado |
+| [`docs/arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) | Mensajería AMQP | Topología RabbitMQ, TopicExchange, routing keys, payloads JSON e idempotencia. | 🟢 Sincronizado |
+| [`scripts/validate-contracts.js`](../scripts/validate-contracts.js) | Testing Contratos | Suite de validación mecánica de JSON Schemas y especificaciones OpenAPI 3.0. | 🟢 Sincronizado |
+| [`docs/arquitectura/diseno/anexos-tecnicos/README.md`](arquitectura/diseno/anexos-tecnicos/README.md) | Diagramas Técnicos | Modelos técnicos de bytecode autogenerados por Maven (`plantuml-generator`). | 🟢 Sincronizado |
 
 ### 3.3 Persistencia y Base de Datos
 

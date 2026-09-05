@@ -29,11 +29,16 @@ docs/
 │   ├── aggregates-incentivos.md           # Aggregates de gamificación, Insignia y Rankings
 │   ├── aggregates-logistica.md            # Aggregates de transporte, rutas y camiones
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
-│   └── diseno/                            # Bitácoras de refactor por oleadas y diagramas PUML
+│   ├── contratos-rest.md                  # Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
+│   ├── eventos-amqp.md                    # Topología RabbitMQ y contratos de eventos asíncronos
+│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML) y Schemas JSON
+│   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── donaciones/
 │       ├── incentivos/
 │       ├── logistica/
-│       └── notificaciones/
+│       ├── notificaciones/
+│       ├── common/                        # Estilos compartidos donatrack-style.puml
+│       └── anexos-tecnicos/               # Modelos técnicos de build autogenerados por Maven
 │
 ├── testing/                               # Pruebas automatizadas y contratos
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados

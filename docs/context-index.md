@@ -46,6 +46,8 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Code quality / SonarCloud | [`IA/07-errores-frecuentes-sonarcloud-ia.md`](IA/07-errores-frecuentes-sonarcloud-ia.md) |
 | Revisión adversarial (Fase 6) | [`auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) |
 | Trazabilidad / RabbitMQ / Feign | [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
+| Contratos REST / OpenAPI | [`arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) + `docs/arquitectura/contratos/` |
+| Eventos AMQP / RabbitMQ | [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) + `docs/arquitectura/contratos/schemas/` |
 | Compliance académico | `docs/entregas/<N>/Enunciado-<N>.pdf` — solo el enunciado de la entrega vigente |
 
 ---
@@ -85,12 +87,10 @@ Revisar esta sección si la tarea involucra: persistencia, repositorios, diseño
 
 ---
 
-## Hallazgos: gaps documentales pendientes
+## Gaps documentales resueltos (Wave 10)
 
-Estos gaps existen hoy. No bloquean el uso del índice, pero limitan el routing en esas áreas:
-
-- **Contratos REST consolidados:** No existe un documento que liste todos los endpoints por servicio. Enrutar temporalmente a ADRs `20260702-alcance-operaciones-rest-*` en `docs/adr/<servicio>/`.
-- **Contratos AMQP consolidados:** No existe un esquema centralizado de eventos RabbitMQ. Enrutar a ADR `20260703-uso-de-rabbitmq-*` en `docs/adr/logistica-service/`.
+- **Contratos REST consolidados:** Resuelto vía [`arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) y especificaciones OpenAPI en `docs/arquitectura/contratos/`.
+- **Contratos AMQP consolidados:** Resuelto vía [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) y esquemas JSON en `docs/arquitectura/contratos/schemas/`.
 
 ---
 
