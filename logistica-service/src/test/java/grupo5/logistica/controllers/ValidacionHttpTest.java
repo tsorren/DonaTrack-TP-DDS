@@ -239,7 +239,7 @@ class ValidacionHttpTest {
     entregaMvc
         .perform(delete("/api/entregas/" + ID + "/estado"))
         .andExpect(status().isMethodNotAllowed())
-        .andExpect(header().exists(org.springframework.http.HttpHeaders.ALLOW))
+        .andExpect(header().string("Allow", org.hamcrest.Matchers.containsString("PATCH")))
         .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
   }
 
@@ -287,9 +287,12 @@ class ValidacionHttpTest {
   }
 
   @Test
-  void endpointInexistente_retorna404NotFound() throws Exception {
+  void consultarEntregaInexistente_retorna404NotFound() throws Exception {
+    when(entregasService.obtenerPorId(ID))
+        .thenThrow(new grupo5.common.exceptions.RecursoNoEncontradoException(ID));
+
     entregaMvc
-        .perform(get("/api/ruta-completamente-inexistente"))
+        .perform(get("/api/entregas/" + ID))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.code").value("ERR-CSR-001"));
   }
