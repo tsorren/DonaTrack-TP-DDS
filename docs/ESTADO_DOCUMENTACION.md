@@ -3,7 +3,7 @@
 > **Panel de Auditoría y Matriz de Vigencia Documental vs. Código Fuente**  
 > **Proyecto:** DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones  
 > **Equipo:** UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> **Fecha de Normalización y Sincronización:** 2026-09-02  
+> **Fecha de Normalización y Sincronización:** 2026-09-05  
 > **Propósito:** Diagnóstico y estado de sincronización de toda la documentación del repositorio contrastada contra la implementación real en Java 21, Spring Boot 3, RabbitMQ y n8n tras la formalización de ADRs de oleadas de refactor y auditoría de deuda técnica.
 
 ---
