@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/cambio-estado-entrega-request.schema.json",
+  "title": "CambioEstadoEntregaRequestDTO",
+  "description": "Payload para registrar un cambio de estado en una entrega de logística",
+  "type": "object",
+  "properties": {
+    "estado": {
+      "type": "string",
+      "enum": [
+        "PENDIENTE",
+        "EN_PLANIFICACION",
+        "PLANIFICADA",
+        "EN_VIAJE",
+        "ENTREGADA",
+        "NO_RECIBIDA",
+        "CANCELADA"
+      ],
+      "description": "Estado objetivo de la entrega"
+    },
+    "actor": {
+      "type": "string",
+      "description": "Identificador o rol del usuario/servicio que desencadena el evento"
+    },
+    "justificacion": {
+      "type": "string",
+      "description": "Motivo obligatorio cuando el estado es NO_RECIBIDA o CANCELADA"
+    },
+    "replanificable": {
+      "type": "boolean",
+      "description": "Indica si la entrega fallida puede ser replanificada automáticamente"
+    }
+  },
+  "required": ["estado"],
+  "additionalProperties": false
+}

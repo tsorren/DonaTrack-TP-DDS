@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/entrega-response.schema.json",
+  "title": "EntregaResponseDTO",
+  "description": "Representación de una entrega en el microservicio de logística",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "idDonacion": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "idBeneficiaria": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "estado": {
+      "type": "string"
+    },
+    "volumenTotalM3": {
+      "type": "number"
+    },
+    "pesoTotalKG": {
+      "type": "number"
+    }
+  },
+  "required": ["id", "idDonacion", "idBeneficiaria", "estado"],
+  "additionalProperties": true
+}

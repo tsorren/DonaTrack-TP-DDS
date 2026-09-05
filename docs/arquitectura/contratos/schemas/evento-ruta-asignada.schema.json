@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-ruta-asignada.schema.json",
+  "title": "EventoRutaAsignada",
+  "description": "Evento AMQP emitido por logística cuando una donación/entrega queda asignada a una ruta planificada",
+  "type": "object",
+  "properties": {
+    "rutaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la ruta logística asignada"
+    },
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la donación independiente afectada"
+    },
+    "fechaAsignacion": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del momento de la asignación"
+    }
+  },
+  "required": ["rutaId", "donacionIndependienteId"],
+  "additionalProperties": true
+}

@@ -1,0 +1,198 @@
+openapi: 3.0.3
+info:
+  title: DonaTrack - Logística Service API
+  version: 1.0.0
+  description: API REST para planificación de rutas de transporte, seguimiento de camiones, asignación de choferes y trazabilidad de entregas.
+servers:
+  - url: http://localhost:8082
+    description: Servidor local de desarrollo
+paths:
+  /api/entregas:
+    post:
+      summary: Crear y registrar entrega para planificación
+      operationId: crearEntrega
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearEntregaRequestDTO'
+      responses:
+        '201':
+          description: Entrega creada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntregaResponseDTO'
+        '400':
+          description: Datos inválidos
+  /api/entregas/{id}:
+    get:
+      summary: Consultar entrega por ID
+      operationId: obtenerEntregaPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle de la entrega
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntregaResponseDTO'
+        '404':
+          description: Entrega no encontrada
+    patch:
+      summary: Cambiar estado de una entrega
+      operationId: cambiarEstadoEntrega
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CambioEstadoEntregaRequestDTO'
+      responses:
+        '200':
+          description: Estado de la entrega actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntregaResponseDTO'
+  /api/rutas:
+    post:
+      summary: Crear ruta logística
+      operationId: crearRuta
+      responses:
+        '201':
+          description: Ruta creada
+  /api/rutas/{id}:
+    get:
+      summary: Consultar ruta con sus paradas y URL de seguimiento
+      operationId: obtenerRutaPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle de la ruta
+    patch:
+      summary: Cambiar estado de la ruta (iniciada, completada, etc.)
+      operationId: cambiarEstadoRuta
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Estado actualizado
+  /api/camiones:
+    post:
+      summary: Registrar nuevo camión en la flota
+      operationId: registrarCamion
+      responses:
+        '201':
+          description: Camión registrado
+    get:
+      summary: Listar camiones
+      operationId: listarCamiones
+      responses:
+        '200':
+          description: Listado de camiones
+  /api/choferes:
+    post:
+      summary: Registrar chofer
+      operationId: registrarChofer
+      responses:
+        '201':
+          description: Chofer registrado
+  /api/logistica/planificaciones/manual:
+    post:
+      summary: Planificar ruta de entregas manualmente
+      operationId: planificarManual
+      responses:
+        '200':
+          description: Planificación generada
+components:
+  schemas:
+    CrearEntregaRequestDTO:
+      type: object
+      required:
+        - idDonacion
+        - idBeneficiaria
+        - destino
+        - volumenTotalM3
+      properties:
+        idDonacion:
+          type: string
+          format: uuid
+        idBeneficiaria:
+          type: string
+          format: uuid
+        destino:
+          type: object
+          required: [calle]
+          properties:
+            calle: { type: string }
+            numero: { type: string }
+            ciudad: { type: string }
+            latitud: { type: number }
+            longitud: { type: number }
+        pesoTotalKG:
+          type: number
+        volumenTotalM3:
+          type: number
+    CambioEstadoEntregaRequestDTO:
+      type: object
+      required:
+        - estado
+      properties:
+        estado:
+          type: string
+          enum: [PENDIENTE, EN_PLANIFICACION, PLANIFICADA, EN_VIAJE, ENTREGADA, NO_RECIBIDA, CANCELADA]
+        actor:
+          type: string
+        justificacion:
+          type: string
+        replanificable:
+          type: boolean
+    EntregaResponseDTO:
+      type: object
+      required:
+        - id
+        - idDonacion
+        - idBeneficiaria
+        - estado
+      properties:
+        id:
+          type: string
+          format: uuid
+        idDonacion:
+          type: string
+          format: uuid
+        idBeneficiaria:
+          type: string
+          format: uuid
+        estado:
+          type: string
+        volumenTotalM3:
+          type: number
+        pesoTotalKG:
+          type: number

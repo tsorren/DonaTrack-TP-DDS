@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-entrega-exitosa.schema.json",
+  "title": "EventoEntregaExitosa",
+  "description": "Evento AMQP emitido cuando una donación fue entregada con éxito a la entidad beneficiaria",
+  "type": "object",
+  "properties": {
+    "entregaId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "camionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "patenteCamion": {
+      "type": "string"
+    },
+    "fechaEntrega": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["entregaId", "donacionIndependienteId"],
+  "additionalProperties": true
+}

@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: DonaTrack - Incentivos Service API
+  version: 1.0.0
+  description: API REST para gamificación, misiones por Template Method, asignación de insignias y cómputo de ranking mensual de donantes.
+servers:
+  - url: http://localhost:8083
+    description: Servidor local de desarrollo
+paths:
+  /api/incentivos/ranking:
+    get:
+      summary: Obtener ranking global acumulado de donantes
+      operationId: obtenerRankingGlobal
+      responses:
+        '200':
+          description: Listado ordenado de donantes por puntuación
+  /api/incentivos/ranking/{anio}/{mes}:
+    get:
+      summary: Obtener ranking mensual de donantes
+      operationId: obtenerRankingMensual
+      parameters:
+        - name: anio
+          in: path
+          required: true
+          schema: { type: integer }
+        - name: mes
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Ranking del período especificado
+  /api/incentivos/donantes/{id}:
+    get:
+      summary: Consultar métricas y estado de incentivos de un donante
+      operationId: obtenerPerfilDonante
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Perfil del donante
+        '404':
+          description: Donante no encontrado
+  /api/incentivos/misiones:
+    get:
+      summary: Listar misiones activas
+      operationId: listarMisiones
+      responses:
+        '200':
+          description: Misiones disponibles
+  /api/incentivos/insignias:
+    get:
+      summary: Listar catálogo de insignias disponibles
+      operationId: listarInsignias
+      responses:
+        '200':
+          description: Catálogo de insignias
+components:
+  schemas:
+    RankingMensualDTO:
+      type: object
+      properties:
+        anio: { type: integer }
+        mes: { type: integer }
+        posicion: { type: integer }
+        donanteId: { type: string, format: uuid }
+        puntos: { type: integer }
+    InsigniaDTO:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        nombre: { type: string }
+        descripcion: { type: string }
+        iconoUrl: { type: string }

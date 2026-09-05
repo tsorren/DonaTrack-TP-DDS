@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: DonaTrack - Donaciones Service API
+  version: 1.0.0
+  description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
+servers:
+  - url: http://localhost:8081
+    description: Servidor local de desarrollo
+paths:
+  /donaciones-independientes:
+    post:
+      summary: Registrar donación independiente
+      operationId: registrarDonacionIndependiente
+      responses:
+        '201':
+          description: Donación independiente creada
+    get:
+      summary: Listar donaciones independientes
+      operationId: listarDonacionesIndependientes
+      responses:
+        '200':
+          description: Lista de donaciones
+  /donaciones-independientes/{id}:
+    get:
+      summary: Consultar donación independiente por ID
+      operationId: obtenerDonacionIndependientePorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle de la donación
+        '404':
+          description: Donación no encontrada
+  /donaciones-independientes/{id}/estado:
+    patch:
+      summary: Transicionar estado de la donación independiente (State Pattern)
+      operationId: cambiarEstadoDonacionIndependiente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CambioEstadoDonacionIndependienteRequestDTO'
+      responses:
+        '200':
+          description: Estado actualizado
+        '400':
+          description: Transición inválida para el estado actual
+  /api/necesidades:
+    post:
+      summary: Registrar necesidad de entidad beneficiaria
+      operationId: registrarNecesidad
+      responses:
+        '201':
+          description: Necesidad registrada
+    get:
+      summary: Listar necesidades activas
+      operationId: listarNecesidades
+      responses:
+        '200':
+          description: Listado de necesidades
+  /api/asignaciones:
+    post:
+      summary: Ejecutar algoritmo de asignación y generar propuestas
+      operationId: generarPropuestaAsignacion
+      responses:
+        '200':
+          description: Propuestas generadas
+  /api/entidades:
+    post:
+      summary: Registrar entidad beneficiaria
+      operationId: registrarEntidadBeneficiaria
+      responses:
+        '201':
+          description: Entidad creada
+    get:
+      summary: Listar entidades beneficiarias
+      operationId: listarEntidadesBeneficiarias
+      responses:
+        '200':
+          description: Listado de entidades
+  /api/donantes:
+    post:
+      summary: Registrar nuevo donante
+      operationId: registrarDonante
+      responses:
+        '201':
+          description: Donante registrado
+    get:
+      summary: Listar donantes
+      operationId: listarDonantes
+      responses:
+        '200':
+          description: Listado de donantes
+components:
+  schemas:
+    CambioEstadoDonacionIndependienteRequestDTO:
+      type: object
+      required:
+        - estado
+      properties:
+        estado:
+          type: string
+          enum:
+            - EN_DEPOSITO
+            - ASIGNACION_REALIZADA
+            - EN_TRASLADO
+            - LISTA_PARA_ENTREGAR
+            - ENTREGADA
+            - ENTREGA_FALLIDA
+            - VENCIDA
+        justificacion: { type: string }
+        necesidadId: { type: string, format: uuid }
+        urlMapa: { type: string }
+        patenteCamion: { type: string }
+        replanificable: { type: boolean }

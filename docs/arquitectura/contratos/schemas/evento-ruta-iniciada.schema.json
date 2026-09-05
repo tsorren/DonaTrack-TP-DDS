@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-ruta-iniciada.schema.json",
+  "title": "EventoRutaIniciada",
+  "description": "Evento AMQP emitido por logística cuando un chofer y camión inician el viaje de una ruta",
+  "type": "object",
+  "properties": {
+    "rutaId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "camionId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "patenteCamion": {
+      "type": "string"
+    },
+    "donacionesIndependientesIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "fechaInicio": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "urlMapa": {
+      "type": "string"
+    }
+  },
+  "required": ["rutaId", "camionId", "donacionesIndependientesIds"],
+  "additionalProperties": true
+}

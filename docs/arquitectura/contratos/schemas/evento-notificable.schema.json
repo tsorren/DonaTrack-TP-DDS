@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-notificable.schema.json",
+  "title": "EventoNotificableDTO",
+  "description": "Payload polimórfico para despachar alertas y notificaciones a personas en notificaciones-service",
+  "type": "object",
+  "properties": {
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "DONANTE_REGISTRADO",
+        "DONANTE_INACTIVO",
+        "MISION_CUMPLIDA",
+        "SUBIO_CATEGORIA",
+        "DONACION_ASIGNADA",
+        "DONACION_RECIBIDA",
+        "DONACION_EN_CAMINO",
+        "ENTREGA_FALLIDA",
+        "DONACION_VENCIDA"
+      ],
+      "description": "Discriminador polimórfico del evento notificable"
+    },
+    "idPersonaDonante": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID del donante destinatario de la notificación"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Momento de ocurrencia del evento"
+    }
+  },
+  "required": ["tipo", "idPersonaDonante", "fecha"],
+  "additionalProperties": true
+}

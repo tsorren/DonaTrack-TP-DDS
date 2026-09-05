@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/donacion-independiente-response.schema.json",
+  "title": "DonacionIndependienteResponseDTO",
+  "description": "Representación de respuesta para una donación independiente",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador único de la donación independiente"
+    },
+    "estado": {
+      "type": "string",
+      "enum": [
+        "EN_DEPOSITO",
+        "ASIGNACION_REALIZADA",
+        "EN_TRASLADO",
+        "LISTA_PARA_ENTREGAR",
+        "ENTREGADA",
+        "ENTREGA_FALLIDA",
+        "VENCIDA"
+      ]
+    },
+    "donanteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "destinoId": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
+    "descripcion": {
+      "type": "string"
+    },
+    "fechaCreacion": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["id", "estado", "donanteId"],
+  "additionalProperties": true
+}
