@@ -7,19 +7,19 @@
 
 ## Contexto y Problema
 
-En `notificaciones-service`, la privacidad de los usuarios y el cumplimiento de la Ley 25.326 de Protección de Datos Personales (y regulaciones equivalentes como GDPR Art. 17) se resolvieron originalmente mediante la interfaz `Anonimizable`, aplicando una sobreescritura manual en caliente con `"ANONIMIZADO"` sobre la persona y sus notificaciones vinculadas ([`PersonasService.java`](../../notificaciones-service/src/main/java/grupo5/notificaciones/services/impl/PersonasService.java#L50-L64)).
+En `notificaciones-service`, la privacidad de los usuarios y el cumplimiento de la Ley 25.326 de Protección de Datos Personales (y regulaciones equivalentes como GDPR Art. 17) se resolvieron originalmente mediante la interfaz `Anonimizable`, aplicando una sobreescritura manual en caliente con `"ANONIMIZADO"` sobre la persona y sus notificaciones vinculadas ([`PersonasService.java`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/services/impl/PersonasService.java#L50-L64)).
 
 Una auditoría técnica en profundidad de la persistencia relacional en PostgreSQL y de la construcción de mensajes reveló tres vulnerabilidades arquitectónicas críticas:
 
 1. **Persistencia de PII en Texto Plano en `Notificacion.mensaje`:**
-   La columna `mensaje TEXT` en la tabla `notificacion` ([`V1__init_notificaciones.sql`](../../notificaciones-service/src/main/resources/db/migration/V1__init_notificaciones.sql#L32-L38)) almacena textos que contienen datos personales identificatorios directos:
-   * Credenciales temporales de acceso y contraseñas de bienvenida en [`DonanteRegistrado.java`](../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/notificaciones/eventos/DonanteRegistrado.java#L20-L24) (`"Bienvenido a DonaTrack " + credencialesDeAcceso`).
+   La columna `mensaje TEXT` en la tabla `notificacion` ([`V1__init_notificaciones.sql`](../../../notificaciones-service/src/main/resources/db/migration/V1__init_notificaciones.sql#L32-L38)) almacena textos que contienen datos personales identificatorios directos:
+   * Credenciales temporales de acceso y contraseñas de bienvenida en [`DonanteRegistrado.java`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/notificaciones/eventos/DonanteRegistrado.java#L20-L24) (`"Bienvenido a DonaTrack " + credencialesDeAcceso`).
    * Denominaciones y nombres completos de donantes y beneficiarios.
-   * Enlaces y tokens de geolocalización en tiempo real en [`DonacionEnCamino.java`](../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/notificaciones/eventos/DonacionEnCamino.java#L24-L28).
+   * Enlaces y tokens de geolocalización en tiempo real en [`DonacionEnCamino.java`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/notificaciones/eventos/DonacionEnCamino.java#L24-L28).
    En los backups periódicos de base de datos (`pg_dump`), en réplicas de lectura y en los logs transaccionales (WAL), esta información permanece expuesta indefinidamente en claro.
 
 2. **Fuga Crítica de PII Cruzado entre Agregados (*Cross-Aggregate Leakage*):**
-   Eventos como [`EntregaFallida.java`](../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/notificaciones/eventos/EntregaFallida.java#L31-L70) generan alertas simultáneas para el donante, el beneficiario y el administrador. En la notificación persistida para el Administrador (`persona_id = adminId`), se quema textualmente el nombre del donante:
+   Eventos como [`EntregaFallida.java`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/notificaciones/eventos/EntregaFallida.java#L31-L70) generan alertas simultáneas para el donante, el beneficiario y el administrador. En la notificación persistida para el Administrador (`persona_id = adminId`), se quema textualmente el nombre del donante:
    ```java
    "Entrega fallida — donante: " + getPersona().getDenominacion() + ...
    ```

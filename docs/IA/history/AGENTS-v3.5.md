@@ -178,12 +178,12 @@ git log -n 5 --oneline
 
 * Aplicar el cambio mínimo suficiente respetando la encapsulación y los contratos vigentes.
 * Mantener consistencia de nombres y estilo de código.
-* **Auto-revisión de Code Smells:** Durante la codificación, consultar obligatoriamente la guía de errores frecuentes y *smells* recurrentes en [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md) para evitar violaciones estáticas comunes (métodos que deben ser `static`, constructores privados en utilitarios, `@Override`, literales repetidos, shadowing de variables).
+* **Auto-revisión de Code Smells:** Durante la codificación, consultar obligatoriamente la guía de errores frecuentes y *smells* recurrentes en [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../07-errores-frecuentes-sonarcloud-ia.md) para evitar violaciones estáticas comunes (métodos que deben ser `static`, constructores privados en utilitarios, `@Override`, literales repetidos, shadowing de variables).
 
 ### Fase 5: Validación Gradual (Quality Gates)
 
 * Ejecutar los Quality Gates correspondientes al alcance (Sección 11).
-* **Verificación de Cobertura Condicional y Pre-Flight Sonar:** Asegurar que todo nuevo camino lógico (`if`, `switch`, ternarios, `Optional`) cuente con pruebas unitarias para todas sus bifurcaciones (*Condition Coverage $\ge 80\%$*), y verificar el cumplimiento del checklist pre-flight de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
+* **Verificación de Cobertura Condicional y Pre-Flight Sonar:** Asegurar que todo nuevo camino lógico (`if`, `switch`, ternarios, `Optional`) cuente con pruebas unitarias para todas sus bifurcaciones (*Condition Coverage $\ge 80\%$*), y verificar el cumplimiento del checklist pre-flight de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../07-errores-frecuentes-sonarcloud-ia.md).
 * Comprobar formato y estilo de código (`mvn spotless:check`).
 
 ### Fase 6: Revisión Crítica Adversarial y Refinamiento
@@ -193,9 +193,9 @@ Para erradicar el sesgo de auto-confirmación (*confirmation bias*), el agente *
 * **Invocación Mandatoria de Subagente Revisor:**  
 El agente principal debe invocar mediante la herramienta `invoke_subagent` a un subagente independiente de sólo lectura (`Role: Revisor Crítico Adversarial`, `TypeName: research` o `self`) enviándole el `git diff` de la rama y el objetivo de la tarea.
 * **Vectores de Auditoría Obligatorios:** El subagente revisor debe auditar la entrega contra cuatro fuentes normativas:
-1. [`docs/auditoria/plan-revisor-critico.md`](../docs/auditoria/plan-revisor-critico.md): Falsación activa, búsqueda de casos borde no cubiertos y violación de invariantes de agregados.
-2. [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../docs/IA/07-errores-frecuentes-sonarcloud-ia.md): Detección de *code smells* de SonarCloud (visibilidad JUnit 5, `@Override`, `static` en utilitarios, duplicación de strings, imports sobrantes).
-3. [`docs/ESTADO_DOCUMENTACION.md`](../docs/ESTADO_DOCUMENTACION.md) y [`docs/README.md`](../docs/README.md): Comprobación de integridad del grafo documental (ausencia de documentos huérfanos e índices desincronizados).
+1. [`docs/auditoria/plan-revisor-critico.md`](../../auditoria/plan-revisor-critico.md): Falsación activa, búsqueda de casos borde no cubiertos y violación de invariantes de agregados.
+2. [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../07-errores-frecuentes-sonarcloud-ia.md): Detección de *code smells* de SonarCloud (visibilidad JUnit 5, `@Override`, `static` en utilitarios, duplicación de strings, imports sobrantes).
+3. [`docs/ESTADO_DOCUMENTACION.md`](../../ESTADO_DOCUMENTACION.md) y [`docs/README.md`](../../README.md): Comprobación de integridad del grafo documental (ausencia de documentos huérfanos e índices desincronizados).
 4. **Rúbrica de Benchmark de Calidad de ADRs (Sección 9.5):** Si la entrega incluye o modifica ADRs, calificar cada documento de 1 a 5 en sus 4 dimensiones, exigiendo un promedio ponderado $\ge \mathbf{4.0 / 5.0}$ para autorizar el pase a Fase 7.
 * **Ciclo de Corrección Inmediata:**  
 El subagente revisor emite un informe estructurado con los defectos u omisiones detectadas. El agente principal **debe aplicar inmediatamente las correcciones pertinentes dentro del alcance autorizado** y re-ejecutar Gate 1 (`mvn spotless:check` / `mvn test`) antes de proceder a la siguiente fase.

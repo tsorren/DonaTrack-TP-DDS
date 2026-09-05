@@ -20,7 +20,7 @@ Utilizar la misma clase para ambos roles provocaba una violación grave de encap
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleada 3 de `incentivos-service` y Principios Transversales v2 (§2 del [Plan Genérico v2](../arquitectura/diseno/plan-refactor-oleadas-generico-v2.md)).
+* **Oleadas de Origen:** Oleada 3 de `incentivos-service` y Principios Transversales v2 (§2 del [Plan Genérico v2](../../arquitectura/diseno/plan-refactor-oleadas-generico-v2.md)).
 * **Hallazgo:** El principio transversal "Plantilla vs. Instancia Poseída" surgió específicamente del bug detectado en la Oleada 3 de incentivos: *"Cuando un mismo concepto sirve de plantilla inmutable y también de instancia que un actor posee y puede mutar, separarlos en dos clases desde el diseño"*.
 
 ## Alternativas Consideradas

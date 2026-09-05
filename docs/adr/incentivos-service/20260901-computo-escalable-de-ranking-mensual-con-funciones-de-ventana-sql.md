@@ -17,7 +17,7 @@ En `incentivos-service`, al finalizar cada mes, el sistema debe calcular el **Ra
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleada 10 de Persistencia en `incentivos-service` ([decisiones_futuras_en_oleada_10.md](../arquitectura/diseno/incentivos/decisiones_futuras_en_oleada_10.md) §6).
+* **Oleadas de Origen:** Oleada 10 de Persistencia en `incentivos-service` ([decisiones_futuras_en_oleada_10.md](../../arquitectura/diseno/incentivos/decisiones_futuras_en_oleada_10.md) §6).
 * **Hallazgo:** El análisis de escalabilidad de la Oleada 10 demostró que trasladar el ordenamiento y cálculo de percentiles al motor relacional PostgreSQL mediante la función de ventana `ROW_NUMBER() OVER (...)` reduce el consumo de memoria del backend a prácticamente cero.
 
 ## Alternativas Consideradas

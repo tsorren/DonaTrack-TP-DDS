@@ -723,7 +723,7 @@ Esto podría causar problemas cuando se implemente persistencia real: dos aggreg
 
 | Diagrama | Servicio | Estado |
 |---|---|---|
-| [diagrama-de-clases-logistica.puml](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/logistica-service/diagrama-de-clases-logistica.puml) | logística | ✅ Existe y está actualizado |
+| [diagrama-de-clases-logistica.puml](diseno/logistica/diagrama-de-clases-logistica.puml) | logística | ✅ Existe y está actualizado |
 | *Ninguno* | donaciones | ❌ **FALTA** |
 | *Ninguno* | notificaciones | ❌ No existe |
 | *Ninguno* | incentivos | ❌ No existe |
@@ -767,20 +767,20 @@ Esto podría causar problemas cuando se implemente persistencia real: dos aggreg
 
 | # | Problema | Evidencia | Resp. Actual | Resp. Esperada | Severidad | Confianza |
 |---|---|---|---|---|---|---|
-| P1 | `ProcesadorDeDonaciones` es Application Service en `infrastructure/` | [ProcesadorDeDonaciones.java](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/infrastructure/ProcesadorDeDonaciones.java) | Infra | Application | CRÍTICO | Alta |
-| P2 | `SegmentacionEventListener` es caso de uso completo en `infrastructure/events/` | [SegmentacionEventListener.java](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/infrastructure/events/SegmentacionEventListener.java) | Infra | Application | CRÍTICO | Alta |
-| P3 | Algoritmos de asignación en `infrastructure/algoritmos/` con lógica de dominio pura | [AlgoritmoAsignacion.java](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/infrastructure/algoritmos/AlgoritmoAsignacion.java) | Infra | Domain | ALTA | Alta |
-| P4 | `DonacionesIndependientesService.cambiarEstado()` mezcla 6 casos de uso | [DonacionesIndependientesService.java:L66-90](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/services/impl/DonacionesIndependientesService.java#L66-L90) | Application | Application (dividido) | ALTA | Alta |
-| P5 | `AlgoritmosService` tiene baja cohesión (algoritmos + propuestas + notificaciones) | [AlgoritmosService.java](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/services/impl/AlgoritmosService.java) | Application | Application (dividido) | ALTA | Alta |
-| P6 | `Necesidad.toDTO()` crea acoplamiento dominio → DTO | [Necesidad.java:L49-59](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/necesidades/Necesidad.java#L49-L59) | Domain | Application/Mapper | MEDIA | Alta |
+| P1 | `ProcesadorDeDonaciones` es Application Service en `infrastructure/` | [ProcesadorDeDonaciones.java](../../donaciones-service/src/main/java/grupo5/donaciones/infrastructure/ProcesadorDeDonaciones.java) | Infra | Application | CRÍTICO | Alta |
+| P2 | `SegmentacionEventListener` es caso de uso completo en `infrastructure/events/` | [SegmentacionEventListener.java](../../donaciones-service/src/main/java/grupo5/donaciones/infrastructure/events/SegmentacionEventListener.java) | Infra | Application | CRÍTICO | Alta |
+| P3 | Algoritmos de asignación en `infrastructure/algoritmos/` con lógica de dominio pura | [AlgoritmoAsignacion.java](../../donaciones-service/src/main/java/grupo5/donaciones/models/algoritmos/AlgoritmoAsignacion.java) | Infra | Domain | ALTA | Alta |
+| P4 | `DonacionesIndependientesService.cambiarEstado()` mezcla 6 casos de uso | [DonacionesIndependientesService.java:L66-90](../../donaciones-service/src/main/java/grupo5/donaciones/services/impl/DonacionesIndependientesService.java#L66-L90) | Application | Application (dividido) | ALTA | Alta |
+| P5 | `AlgoritmosService` tiene baja cohesión (algoritmos + propuestas + notificaciones) | AlgoritmosService.java | Application | Application (dividido) | ALTA | Alta |
+| P6 | `Necesidad.toDTO()` crea acoplamiento dominio → DTO | [Necesidad.java:L49-59](../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/necesidades/Necesidad.java#L49-L59) | Domain | Application/Mapper | MEDIA | Alta |
 | P7 | Falta diagrama PlantUML para donaciones-service | `docs/design/` sin `.puml` de donaciones | — | Documentación | ALTA | Alta |
-| P8 | `NecesidadExtraordinaria` tiene referencia directa a `DonacionIndependiente` (entre aggregates) | [NecesidadExtraordinaria.java:L14](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/necesidades/NecesidadExtraordinaria.java#L14) | Domain | Domain (ref por ID) | MEDIA | Alta |
-| P9 | `AlgoritmosService` usa `ResponseStatusException` (presentation concern) | [AlgoritmosService.java:L174](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/services/impl/AlgoritmosService.java#L174) | Application | Application | MEDIA | Alta |
-| P10 | `DonacionIndependiente` usa `@JsonIgnore` (concern de serialización en dominio) | [DonacionIndependiente.java:L30](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donacionesIndependientes/DonacionIndependiente.java#L30) | Domain | Application/Mapper | BAJO | Alta |
+| P8 | `NecesidadExtraordinaria` tiene referencia directa a `DonacionIndependiente` (entre aggregates) | [NecesidadExtraordinaria.java:L14](../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/necesidades/NecesidadExtraordinaria.java#L14) | Domain | Domain (ref por ID) | MEDIA | Alta |
+| P9 | `AlgoritmosService` usa `ResponseStatusException` (presentation concern) | AlgoritmosService.java:L174 | Application | Application | MEDIA | Alta |
+| P10 | `DonacionIndependiente` usa `@JsonIgnore` (concern de serialización en dominio) | [DonacionIndependiente.java:L30](../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/donacionesIndependientes/DonacionIndependiente.java#L30) | Domain | Application/Mapper | BAJO | Alta |
 | P11 | Dos clases/interfaces llamadas `EstadoDonacion` en paquetes distintos | `entities.donaciones` vs `entities.donacionesIndependientes` | Domain | Domain | BAJO | Alta |
 | P12 | Traversal repetido entre aggregates para notificaciones (DI→Donacion→Donante→Persona) | Múltiples services y listeners | Application | Application (extraer) | MEDIA | Alta |
-| P13 | `AsignacionController` inyecta clase concreta `PropuestaService` | [AsignacionController.java:L21](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/AsignacionController.java#L21) | Presentation | Presentation | BAJO | Alta |
-| P14 | `consolidar()` en `AlgoritmosService` es lógica de dominio en un method estático privado | [AlgoritmosService.java:L71-96](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/services/impl/AlgoritmosService.java#L71-L96) | Application | Domain | MEDIA | Media |
+| P13 | `AsignacionController` inyecta clase concreta `PropuestaService` | AsignacionController.java:L21 | Presentation | Presentation | BAJO | Alta |
+| P14 | `consolidar()` en `AlgoritmosService` es lógica de dominio en un method estático privado | AlgoritmosService.java:L71-96 | Application | Domain | MEDIA | Media |
 
 ---
 

@@ -422,11 +422,11 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 
 ### Objetivo
 1. **Crear Object Mothers y Fixtures Centralizados en `grupo5.incentivos.fixtures`**:
-   - [`DonanteIncentivosMotherTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/DonanteIncentivosMotherTest.java): métodos canónicos para donantes colaboradores, con misiones activas, rachas y misiones completadas en meses específicos.
-   - [`MisionMotherTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/MisionMotherTest.java): métodos para las 4 subclases de `Mision` (`racha`, `exitosas`, `completitud`, `habilDonador`) con y sin insignias.
-   - [`RankingMensualMotherTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/RankingMensualMotherTest.java): creación de rankings mensuales vacíos o poblados con $N$ entradas.
-   - [`EventoDonacionMotherTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/EventoDonacionMotherTest.java): eventos parametrizados por fecha, categorías y cantidad de bienes.
-   - [`IncentivosFixturesTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/fixtures/IncentivosFixturesTest.java): fábrica para requests de entrada (`RegistrarDonanteRequest`, `NuevaDonacionRequest`, `DonacionExitosaRequest`, `ModificarDonanteRequest`).
+   - [`DonanteIncentivosMotherTest.java`](../../../../incentivos-service/src/test/java/grupo5/incentivos/fixtures/DonanteIncentivosMother.java): métodos canónicos para donantes colaboradores, con misiones activas, rachas y misiones completadas en meses específicos.
+   - [`MisionMotherTest.java`](../../../../incentivos-service/src/test/java/grupo5/incentivos/fixtures/MisionMother.java): métodos para las 4 subclases de `Mision` (`racha`, `exitosas`, `completitud`, `habilDonador`) con y sin insignias.
+   - [`RankingMensualMotherTest.java`](../../../../incentivos-service/src/test/java/grupo5/incentivos/fixtures/RankingMensualMother.java): creación de rankings mensuales vacíos o poblados con $N$ entradas.
+   - [`EventoDonacionMotherTest.java`](../../../../incentivos-service/src/test/java/grupo5/incentivos/fixtures/EventoDonacionMother.java): eventos parametrizados por fecha, categorías y cantidad de bienes.
+   - [`IncentivosFixturesTest.java`](../../../../incentivos-service/src/test/java/grupo5/incentivos/fixtures/IncentivosFixtures.java): fábrica para requests de entrada (`RegistrarDonanteRequest`, `NuevaDonacionRequest`, `DonacionExitosaRequest`, `ModificarDonanteRequest`).
 2. **Aplicar "Tell, Don't Ask" en el 100% de los Tests**:
    - Erradicar mutaciones y accesos a listas internas; ordenar al agregado ejecutar acciones (`donante.registrarDonacion(...)`, `donante.otorgarInsignia(...)`) y consultar estado semántico (`donante.getCategoria()`, `donante.misionesCompletadas()`, `donante.insigniasVisibles()`).
    - Hacer idempotente `DonanteIncentivos.otorgarInsignia(insignia)` e incorporar el método `insigniasVisibles()`.
@@ -583,7 +583,7 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 6. **Estrategia de Testcontainers**:
    - Especificación de suite `@DataJpaTest` con contenedor efímero `PostgreSQLContainer` para validación de converters, herencia `SINGLE_TABLE` y concurrencia optimista.
 7. **Documento de Referencia Técnica**:
-   - Creado [`docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md).
+   - Creado [`docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md`](decisiones_futuras_en_oleada_10.md).
 
 ### Fuera de scope
 - Cierre final de code review y sanitización de seguridad (Oleadas 11+12).

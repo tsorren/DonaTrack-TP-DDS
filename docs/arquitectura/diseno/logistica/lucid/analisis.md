@@ -13,9 +13,9 @@ Searched for files: *
 **Rol:** Ingeniero Revisor de Diseño de Software y Arquitectura de Datos  
 **Contexto:** Servicio de Logística — Sistema DonaTrack  
 **Documentos evaluados:**
-- Diagrama de Clases de Dominio: [`logistica-clases.puml`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/logistica-service/lucid/logistica-clases.puml)
-- Export DDL del DER: [`logistica-DER.sql`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/logistica-service/lucid/logistica-DER.sql)
-- Catálogo de Agregados DDD: [`aggregates-servicio-logistica.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/aggregates/aggregates-servicio-logistica.md)
+- Diagrama de Clases de Dominio: [`logistica-clases.puml`](logistica-clases.puml)
+- Export DDL del DER: [`logistica-DER.sql`](logistica-DER.sql)
+- Catálogo de Agregados DDD: [`aggregates-servicio-logistica.md`](../../../aggregates-logistica.md)
 
 ---
 
