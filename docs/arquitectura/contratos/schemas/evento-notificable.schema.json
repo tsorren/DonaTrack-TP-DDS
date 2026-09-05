@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://donatrack.utn.edu.ar/schemas/evento-notificable.schema.json",
   "title": "EventoNotificableDTO",
-  "description": "Payload polimórfico para despachar alertas y notificaciones a personas en notificaciones-service",
+  "description": "Payload polimórfico REST para despachar alertas y notificaciones a personas en notificaciones-service vía POST /notificaciones",
   "type": "object",
   "properties": {
     "tipo": {

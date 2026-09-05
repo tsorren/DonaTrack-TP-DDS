@@ -10,7 +10,16 @@
       "format": "uuid",
       "description": "Identificador único de la donación independiente"
     },
-    "estado": {
+    "donacionOriginalId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la donación original"
+    },
+    "descripcion": {
+      "type": "string",
+      "description": "Descripción de la donación"
+    },
+    "estadoActual": {
       "type": "string",
       "enum": [
         "EN_DEPOSITO",
@@ -20,24 +29,27 @@
         "ENTREGADA",
         "ENTREGA_FALLIDA",
         "VENCIDA"
-      ]
+      ],
+      "description": "Estado actual de la donación independiente"
     },
-    "donanteId": {
+    "fechaRegistro": {
       "type": "string",
-      "format": "uuid"
+      "format": "date-time",
+      "description": "Fecha y hora de registro"
     },
-    "destinoId": {
-      "type": ["string", "null"],
-      "format": "uuid"
+    "historial": {
+      "type": "array",
+      "description": "Historial de transiciones de estado"
     },
-    "descripcion": {
-      "type": "string"
+    "items": {
+      "type": "array",
+      "description": "Ítems normalizados asignados"
     },
-    "fechaCreacion": {
-      "type": "string",
-      "format": "date-time"
+    "cantidad": {
+      "type": "integer",
+      "description": "Cantidad total de ítems"
     }
   },
-  "required": ["id", "estado", "donanteId"],
+  "required": ["id", "donacionOriginalId", "estadoActual", "fechaRegistro"],
   "additionalProperties": true
 }

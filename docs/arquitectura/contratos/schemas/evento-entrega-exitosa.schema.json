@@ -25,6 +25,6 @@
       "format": "date-time"
     }
   },
-  "required": ["entregaId", "donacionIndependienteId"],
+  "required": ["entregaId", "donacionIndependienteId", "fechaEntrega"],
   "additionalProperties": true
 }

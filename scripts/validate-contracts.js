@@ -63,12 +63,18 @@ function validateSchemaObject(schema, data, pathName = 'root') {
     if (schema.minLength && data.length < schema.minLength) {
       return { valid: false, error: `${pathName}: length ${data.length} < minLength ${schema.minLength}` };
     }
-  } else if (schema.type === 'number') {
-    if (typeof data !== 'number' || isNaN(data)) {
-      return { valid: false, error: `${pathName}: expected number, got ${typeof data}` };
+  } else if (schema.type === 'number' || schema.type === 'integer') {
+    if (typeof data !== 'number' || isNaN(data) || (schema.type === 'integer' && !Number.isInteger(data))) {
+      return { valid: false, error: `${pathName}: expected ${schema.type}, got ${typeof data}` };
     }
     if (schema.exclusiveMinimum !== undefined && data <= schema.exclusiveMinimum) {
       return { valid: false, error: `${pathName}: ${data} <= exclusiveMinimum ${schema.exclusiveMinimum}` };
+    }
+    if (schema.minimum !== undefined && data < schema.minimum) {
+      return { valid: false, error: `${pathName}: ${data} < minimum ${schema.minimum}` };
+    }
+    if (schema.maximum !== undefined && data > schema.maximum) {
+      return { valid: false, error: `${pathName}: ${data} > maximum ${schema.maximum}` };
     }
   } else if (schema.type === 'boolean') {
     if (typeof data !== 'boolean') {
@@ -153,13 +159,27 @@ const entregaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'crear-en
 const validEntrega = {
   idDonacion: '12345678-1234-1234-1234-123456789abc',
   idBeneficiaria: 'abcdefab-abcd-abcd-abcd-abcdefabcdef',
-  destino: { calle: 'Av. Medrano', numero: 951 },
+  destino: {
+    calle: 'Av. Medrano',
+    altura: 951,
+    codigoPostal: 'C1179AAQ',
+    localidad: 'CABA',
+    provincia: 'Buenos Aires',
+    pais: 'Argentina'
+  },
   volumenTotalM3: 2.5
 };
 const invalidEntregaVolumen = {
   idDonacion: '12345678-1234-1234-1234-123456789abc',
   idBeneficiaria: 'abcdefab-abcd-abcd-abcd-abcdefabcdef',
-  destino: { calle: 'Av. Medrano' },
+  destino: {
+    calle: 'Av. Medrano',
+    altura: 951,
+    codigoPostal: 'C1179AAQ',
+    localidad: 'CABA',
+    provincia: 'Buenos Aires',
+    pais: 'Argentina'
+  },
   volumenTotalM3: -1.0 // Debe ser positivo
 };
 assert('crear_entrega_payload_valido', validateSchemaObject(entregaSchema, validEntrega).valid);
@@ -170,7 +190,7 @@ const validPersona = {
   id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   denominacion: 'Juan Perez',
   tipoPersona: 'HUMANA',
-  mediosDeContacto: [{ tipo: 'EMAIL', valor: 'juan@example.com', preferido: true }]
+  mediosDeContacto: [{ tipo: 'CORREO', direccionCorreo: 'juan@example.com', esPredeterminado: true }]
 };
 const invalidPersonaTipo = {
   id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',

@@ -9,6 +9,10 @@
       "type": "string",
       "format": "uuid"
     },
+    "idRuta": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    },
     "idDonacion": {
       "type": "string",
       "format": "uuid"
@@ -17,16 +21,40 @@
       "type": "string",
       "format": "uuid"
     },
-    "estado": {
-      "type": "string"
+    "destino": {
+      "type": "object"
+    },
+    "estadoActual": {
+      "type": "string",
+      "enum": [
+        "PENDIENTE",
+        "EN_TRASLADO",
+        "ENTREGADA",
+        "NO_RECIBIDA",
+        "REVISION"
+      ]
+    },
+    "horaSalida": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "horaArribo": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "fotoRecepcionUrl": {
+      "type": ["string", "null"]
     },
     "volumenTotalM3": {
       "type": "number"
     },
     "pesoTotalKG": {
       "type": "number"
+    },
+    "historialEstado": {
+      "type": "array"
     }
   },
-  "required": ["id", "idDonacion", "idBeneficiaria", "estado"],
+  "required": ["id", "idDonacion", "idBeneficiaria", "estadoActual"],
   "additionalProperties": true
 }

@@ -19,14 +19,16 @@
       "type": "object",
       "properties": {
         "calle": { "type": "string" },
-        "numero": { "type": ["string", "integer"] },
-        "ciudad": { "type": "string" },
+        "altura": { "type": "integer", "exclusiveMinimum": 0 },
+        "piso": { "type": "integer" },
+        "departamento": { "type": "string" },
         "codigoPostal": { "type": "string" },
-        "latitud": { "type": "number" },
-        "longitud": { "type": "number" }
+        "localidad": { "type": "string" },
+        "provincia": { "type": "string" },
+        "pais": { "type": "string" }
       },
-      "required": ["calle"],
-      "additionalProperties": true
+      "required": ["calle", "altura", "codigoPostal", "localidad", "provincia", "pais"],
+      "additionalProperties": false
     },
     "pesoTotalKG": {
       "type": "number",

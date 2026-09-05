@@ -27,17 +27,25 @@
         "properties": {
           "tipo": {
             "type": "string",
-            "enum": ["EMAIL", "TELEFONO", "WHATSAPP"]
+            "enum": ["CORREO", "TELEFONO", "WHATSAPP"]
           },
-          "valor": {
-            "type": "string",
-            "minLength": 1
-          },
-          "preferido": {
+          "esPredeterminado": {
             "type": "boolean"
+          },
+          "direccionCorreo": {
+            "type": "string"
+          },
+          "caracteristica": {
+            "type": "string"
+          },
+          "codigoArea": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
           }
         },
-        "required": ["tipo", "valor"],
+        "required": ["tipo"],
         "additionalProperties": false
       },
       "description": "Lista de canales de contacto disponibles para despachar alertas"

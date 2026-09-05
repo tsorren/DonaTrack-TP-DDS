@@ -21,6 +21,6 @@
       "description": "Marca temporal del momento de la asignación"
     }
   },
-  "required": ["rutaId", "donacionIndependienteId"],
+  "required": ["rutaId", "donacionIndependienteId", "fechaAsignacion"],
   "additionalProperties": true
 }

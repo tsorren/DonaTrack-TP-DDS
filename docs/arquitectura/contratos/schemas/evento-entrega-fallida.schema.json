@@ -24,6 +24,6 @@
       "type": "boolean"
     }
   },
-  "required": ["entregaId", "donacionIndependienteId", "replanificable"],
+  "required": ["entregaId", "donacionIndependienteId", "fechaFalla", "replanificable"],
   "additionalProperties": true
 }

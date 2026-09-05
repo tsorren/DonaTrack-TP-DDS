@@ -9,12 +9,10 @@
       "type": "string",
       "enum": [
         "PENDIENTE",
-        "EN_PLANIFICACION",
-        "PLANIFICADA",
-        "EN_VIAJE",
+        "EN_TRASLADO",
         "ENTREGADA",
         "NO_RECIBIDA",
-        "CANCELADA"
+        "REVISION"
       ],
       "description": "Estado objetivo de la entrega"
     },
