@@ -229,4 +229,31 @@ class GestoresDeDominioTest {
 
     assertEquals(EstadoRuta.COMPLETADA, ruta.getEstado());
   }
+
+  @Test
+  void gestorDeRutasCompletaRutaCuandoEntregaFueReplanificadaEnOtraRuta() {
+    Camion camion1 = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer1 = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
+
+    Ruta ruta1 = new Ruta(LocalDate.now(), chofer1.getId(), camion1.getId());
+    GestorDeRutas.agregarEntrega(ruta1, entrega);
+    GestorDeRutas.iniciarRuta(ruta1, camion1, chofer1, List.of(entrega), "Ada");
+
+    entrega.negarEntrega("Chofer", "Destinatario ausente", true);
+    entrega.mandarARevision("Admin");
+    entrega.regresarAlDeposito("Admin");
+
+    Camion camion2 = new Camion("AF999ZZ", 20f, 5000f, 3f);
+    Chofer chofer2 = new Chofer("Grace", "Hopper", "LIC-2", "2222");
+    Ruta ruta2 = new Ruta(LocalDate.now(), chofer2.getId(), camion2.getId());
+    GestorDeRutas.agregarEntrega(ruta2, entrega);
+    GestorDeRutas.iniciarRuta(ruta2, camion2, chofer2, List.of(entrega), "Grace");
+
+    GestorDeRutas.completarRuta(ruta1, camion1, chofer1, List.of(entrega));
+
+    assertEquals(EstadoRuta.COMPLETADA, ruta1.getEstado());
+    assertEquals(EstadoCamion.DISPONIBLE, camion1.getEstado());
+    assertEquals(EstadoChofer.DISPONIBLE, chofer1.getEstado());
+  }
 }

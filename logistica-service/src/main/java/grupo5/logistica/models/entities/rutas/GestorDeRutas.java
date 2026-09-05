@@ -70,9 +70,9 @@ public final class GestorDeRutas {
         || entregas.stream()
             .anyMatch(
                 e ->
-                    e.getEstadoActual() == EstadoEntrega.EN_TRASLADO
-                        || (e.getEstadoActual() == EstadoEntrega.PENDIENTE
-                            && Objects.equals(e.getIdRuta(), ruta.getId())))) {
+                    Objects.equals(e.getIdRuta(), ruta.getId())
+                        && (e.getEstadoActual() == EstadoEntrega.EN_TRASLADO
+                            || e.getEstadoActual() == EstadoEntrega.PENDIENTE))) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
     ejecutarCierreDeRuta(ruta, camion, chofer);
