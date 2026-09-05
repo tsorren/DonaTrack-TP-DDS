@@ -32,8 +32,7 @@ Las siguientes responsabilidades están centralizadas en `common-lib` debido a s
 ### C. Manejo de Errores HTTP (`GlobalExceptionHandler` y `ErrorResponse`)
 * **Qué incluye:**
   * El récord `ErrorResponse`, que captura información estructural (`code`, `type`, `details`, `timestamp`) sin strings de UI formateados.
-  * El `@RestControllerAdvice` global que intercepta las excepciones y genera las respuestas HTTP mapeadas a los códigos de estado correspondientes (400, 404, 409, 500).
-* **Justificación:** Garantiza que cualquier error en cualquier servicio del sistema se exponga al cliente con el mismo formato JSON estandarizado.
+  * El `@RestControllerAdvice` global que intercepta las excepciones y genera las respuestas HTTP mapeadas a los códigos de estado correspondientes (400, 404, 405, 409, 500).
 
 ### D. Abstracciones de Persistencia y Puertos de Repositorio (DDD)
 * **Qué incluye:**
