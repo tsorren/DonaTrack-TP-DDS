@@ -79,6 +79,21 @@ class PlanificacionControllerTest {
   }
 
   @Test
+  void procesarCallback_deberiaAceptarLaUrlConfiguradaEnLaSolicitud() throws Exception {
+    CallbackPlanificacionRequestDTO request =
+        new CallbackPlanificacionRequestDTO(SOLICITUD_ID, List.of(), "OK", null);
+    when(planificacionService.procesarCallback(any())).thenReturn(RESPONSE_DTO);
+
+    mockMvc
+        .perform(
+            post("/api/logistica/callback/rutas")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(SOLICITUD_ID.toString()));
+  }
+
+  @Test
   void procesarCallback_deberiaRetornar400_cuandoCallbackEsInvalido() throws Exception {
     CallbackPlanificacionRequestDTO request =
         new CallbackPlanificacionRequestDTO(null, null, null, null);

@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Las solicitudes de planificación se generan únicamente desde el scheduler interno ({@code
- * PlanificadorDeEntregas}), en horarios de baja carga. Este controller no expone creación manual:
- * sólo el callback del proveedor de rutas y la consulta de una solicitud ya existente.
+ * PlanificadorDeEntregas}), en horarios de baja carga. Este controller expone el callback del
+ * proveedor de rutas y la consulta de una solicitud ya existente.
  */
 @RestController
 @RequestMapping("/api/logistica")
@@ -29,7 +29,7 @@ public class PlanificacionController implements IPlanificacionController {
   }
 
   @Override
-  @PostMapping("/resultados")
+  @PostMapping({"/resultados", "/callback/rutas"})
   public ResponseEntity<SolicitudPlanificacionResponseDTO> procesarCallback(
       @Valid @RequestBody CallbackPlanificacionRequestDTO dto) {
     return ResponseEntity.ok(planificacionService.procesarCallback(dto));

@@ -362,8 +362,13 @@ jobs:
           REPO_NAME=$(echo "$RAW_REPO" | tr '[:upper:]' '[:lower:]')
           PR_TAG="pr-${PR_NUMBER}"
           
-          API_BASE="users/${REPO_OWNER}"
-          echo "🧹 Eliminando tags '${PR_TAG}' de GHCR [${API_BASE}]..."
+          OWNER_TYPE=$(gh api "users/${REPO_OWNER}" --jq '.type' 2>/dev/null || echo "User")
+          if [ "$OWNER_TYPE" = "Organization" ]; then
+            API_BASE="orgs/${REPO_OWNER}"
+          else
+            API_BASE="users/${REPO_OWNER}"
+          fi
+          echo "🧹 Eliminando tags '${PR_TAG}' de GHCR [${API_BASE}] (${OWNER_TYPE})..."
           
           for pom in */pom.xml; do
             [ -f "$pom" ] || continue

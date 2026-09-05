@@ -703,12 +703,11 @@ jobs:
       - name: Importar y Activar Workflows en n8n
         run: |
           echo "📥 Importando workflows en n8n..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Insignias.JSON || true
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --input=/etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || true
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --separate --input=/etc/n8n/workflows
 
           echo "🚀 Activando workflows en n8n..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1 || true
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2 || true
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2
 
           echo "🔄 Reiniciando n8n para aplicar webhooks..."
           docker compose -f docker-compose.preprod.yml restart n8n
@@ -751,7 +750,7 @@ jobs:
 
       - name: 1. Smoke Tests (Fail-Fast)
         run: |
-          mvn test -pl integration-tests -DskipTests=false -Dgroups=smoke \
+          mvn verify -pl integration-tests -DskipTests=false -Dgroups=smoke \
             -Ddonaciones.url=http://localhost:8080 \
             -Dnotificaciones.url=http://localhost:8081 \
             -Dincentivos.url=http://localhost:8082 \
@@ -759,34 +758,37 @@ jobs:
 
       - name: 2. Pruebas de Contrato, Integración y E2E
         run: |
-          mvn test -pl integration-tests -DskipTests=false -Dgroups="contract,integration,e2e" \
+          mvn verify -pl integration-tests -DskipTests=false -Dgroups="contract,integration,e2e" \
             -Ddonaciones.url=http://localhost:8080 \
             -Dnotificaciones.url=http://localhost:8081 \
             -Dincentivos.url=http://localhost:8082 \
             -Dlogistica.url=http://localhost:8083
 
-      - name: Generar Reporte Detallado de Fallos y Diagnóstico
-        if: always()
-        run: |
-          python scripts/analyze_preprod_logs.py --run "$EXECUTION_ID" --export-report || true
-          python scripts/report_test_failures.py || true
-
-      - name: Subir Reportes de Surefire (Integration Tests)
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: surefire-integration-tests
-          path: integration-tests/target/surefire-reports/
-          retention-days: 7
-
       - name: Recolectar Logs de Contenedores
         if: always()
         run: |
           mkdir -p docker-logs
-          docker compose -f docker-compose.preprod.yml logs --no-color > docker-logs/preprod-services.log || true
-          if [ -d "logs" ]; then
-            cp -r logs docker-logs/files || true
-          fi
+          docker compose -f docker-compose.preprod.yml logs --no-color --timestamps > docker-logs/docker-preprod-full.log || true
+
+      - name: Analizar Logs de Contenedores y Diagnóstico
+        if: always()
+        run: |
+          python scripts/analyze_preprod_logs.py --file docker-logs/docker-preprod-full.log --export-report
+
+      - name: Reportar Fallos de Pruebas Automatizadas
+        if: always()
+        run: |
+          python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports --fail-on-zero-tests
+
+      - name: Subir Reportes de Pruebas (Failsafe & Surefire)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-reports-integration
+          path: |
+            integration-tests/target/failsafe-reports/
+            integration-tests/target/surefire-reports/
+          retention-days: 7
 
       - name: Archivar Logs de Docker
         if: always()

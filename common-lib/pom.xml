@@ -60,6 +60,20 @@
             <artifactId>springdoc-openapi-starter-common</artifactId>
             <version>${springdoc-openapi.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+
+        <dependency>
+        <groupId>org.springframework.data</groupId>
+        <artifactId>spring-data-jpa</artifactId>
+        <optional>true</optional>
+        </dependency>
+        <!-- Nota: spring-data-jpa se incluye como dependencia opcional para CrudRepositoryJpaAdapter.
+             Una vez que la persistencia este implementada en todos los servicios se podra
+             utilizar el starter completo de Spring Boot. -->
     </dependencies>
 
     <build>

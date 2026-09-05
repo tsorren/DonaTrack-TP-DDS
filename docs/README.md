@@ -17,7 +17,8 @@ docs/
 ├── context-index.md                       # 🤖 Routing de contexto para coding agents (qué leer por tarea)
 │
 ├── auditoria/                             # Sistema de aseguramiento y verificación adversarial
-│   └── plan-revisor-critico.md            # Plan de auditoría, checklists y matriz de evaluación
+│   ├── plan-revisor-critico.md            # Plan de auditoría, checklists y matriz de evaluación
+│   └── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
 │
 ├── arquitectura/                          # Especificaciones de dominio, DDD y Shared Kernel
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
@@ -39,9 +40,8 @@ docs/
 │   └── postman/                           # 12 colecciones y flujos E2E distribuidos
 │
 ├── cicd/                                  # Automatización, CI/CD y políticas de PR
-│   ├── DonaTrack-CICD.md                  # Documentación de los 7 workflows de GitHub Actions
-│   ├── assignment_reminders_plan.md       # Sistema de asignación dinámica de reviews
-│   └── cascading_flow_plan.md             # Flujo de Stacked PRs en cascada
+│   ├── DonaTrack-CICD.md                  # Documentación de pipelines y workflows de GitHub Actions
+│   └── assignment_reminders_plan.md       # Recordatorios de inactividad de PRs en Discord
 │
 ├── IA/                                    # Lineamientos de ingeniería con Inteligencia Artificial
 │   ├── README.md                          # Mapa de prompts y normas de uso
@@ -62,9 +62,9 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
-│   └── donaciones, incentivos, etc.       # 78 ADRs (44 aceptados, 28 propuestos, 2 rechazados, 4 superados)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-07) con ADRs enlazados
+│   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
@@ -100,4 +100,5 @@ docs/
 * 🧪 **Harness Evals — Output Contract, Critical Failures, A/B:** [IA/evals/README.md](IA/evals/README.md)
 * ⚖️ **ADR Governance — Two-Gate Rule, lifecycle, MADR:** [adr/README.md](adr/README.md)
 * 📝 **Índice de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
+* 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql)
 

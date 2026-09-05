@@ -14,6 +14,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — requiere integración de capa de persistencia |
 | Target | donaciones-service · Entrega de persistencia (prioridad alta) |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** para surrogate keys en JPA; **Entrega 6 (Semana del 23 de Noviembre 2026)** para crypto-shredding definitivo con `auth-service` |
 
 ---
 
@@ -25,6 +26,7 @@
 | Decision status | `proposed` |
 | Implementation status | `unknown` |
 | Target | donaciones-service (prioridad media) |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — estabilización de servicios de aplicación durante persistencia |
 
 ---
 
@@ -36,6 +38,7 @@
 | Decision status | `proposed` |
 | Implementation status | `unknown` |
 | Target | donaciones-service (prioridad media) |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — desacoplamiento de listeners locales previo a la integración |
 
 ---
 
@@ -47,6 +50,7 @@
 | Decision status | `proposed` |
 | Implementation status | `unknown` |
 | Target | donaciones-service (prioridad media) |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — alineación de transacciones cortas con State Pattern |
 
 ---
 
@@ -58,6 +62,7 @@
 | Decision status | `proposed` |
 | Implementation status | `unknown` |
 | Target | donaciones-service (prioridad baja/media) |
+| Cuándo se saldará | **Entrega 5 (Semana del 19 de Octubre 2026)** — refactor previo a la integración con la interfaz Web MVC |
 
 ---
 
@@ -70,3 +75,30 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — crítico para mapeo relacional |
 | Target | donaciones-service · Entrega de persistencia (prioridad alta) |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — obligatorio para mapeo independiente de entidades JPA |
+
+---
+
+## DTI-07 — Dependencia diferida de auth-service para Key Broker y solución interina de Crypto-Shredding
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260902-dti-07](./notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) |
+| ADR complementario | [20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes](./notificaciones-service/20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes.md) |
+| Decision status | `proposed` |
+| Implementation status | `[INFERRED] deferred` — requiere implementación del microservicio auth-service |
+| Target | notificaciones-service · auth-service (prioridad alta) |
+| Cuándo se saldará | **Entrega 6: Despliegue, Observabilidad y Seguridad (Semana del 23 de Noviembre 2026)** — formalmente diferido al hito de Seguridad de la cátedra; se cancelará en simultáneo con la construcción de `auth-service`, la emisión de `ClaveUsuarioDestruidaEvent` en RabbitMQ y la adopción de `RemoteAuthKeyBrokerClient` |
+
+---
+
+## DTI-08 — Campos de observabilidad diferidos (spanId, executionTimeMs, errorCode estructurado, AMQP_DISPATCH/EXCEPTION, filtro BOOTSTRAP)
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc](./20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) |
+| Decision status | `proposed` |
+| Implementation status | `in-progress` — implementado: `eventType` (`HTTP_IN`, `SERVICE_SUCCESS`, `SERVICE_ERROR`), `httpMethod`, `endpoint`. Pendiente: `spanId`, `executionTimeMs`, `errorCode` como campo MDC/JSON estructurado (hoy solo existe embebido en el mensaje de texto de `GlobalExceptionHandler`), `eventType` `AMQP_DISPATCH`/`EXCEPTION`, filtro anti-fatiga `BOOTSTRAP` |
+| Target | `common-lib` (`ControllerLoggingInterceptor`, `ServiceLoggingAspect`, `GlobalExceptionHandler`) · `scripts/analyze_preprod_logs.py` |
+| Cuándo se saldará | Sin fecha asignada — pendiente de priorización |
+

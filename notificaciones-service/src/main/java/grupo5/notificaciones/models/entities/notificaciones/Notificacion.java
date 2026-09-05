@@ -38,10 +38,29 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
     this.id = UUID.randomUUID();
     this.personaId = personaId;
     this.mensaje = mensaje;
-    this.fechaCreacion = LocalDateTime.now(ZoneId.systemDefault());
+    this.fechaCreacion =
+        LocalDateTime.now(
+            ZoneId.systemDefault()); // TODO: Corregir con fecha de evento en vez de now
     this.historialEstado = new ArrayList<>();
     this.actualizarEstado(
         EstadoNotificacion.PENDIENTE); // usa el método para que quede en el historial
+  }
+
+  // constructor para NotificacionPersistenciaMapper
+  public Notificacion(
+      UUID id,
+      UUID personaId,
+      String mensaje,
+      LocalDateTime fechaCreacion,
+      EstadoNotificacion estadoNotificacion,
+      List<CambioEstadoNotificacion> historialEstado) {
+    this.id = id;
+    this.personaId = personaId;
+    this.mensaje = mensaje;
+    this.fechaCreacion = fechaCreacion;
+    this.estadoNotificacion = estadoNotificacion;
+    this.historialEstado =
+        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
   }
 
   public List<CambioEstadoNotificacion> getHistorialEstado() {
