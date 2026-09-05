@@ -19,6 +19,7 @@ import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import grupo5.incentivos.services.mappers.MisionMapper;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
@@ -43,7 +44,7 @@ class MisionesDonacionServiceTest {
   @BeforeEach
   void setUp() {
     repository = new DonanteIncentivosRepository();
-    service = new MisionesDonacionService(repository, eventPublisher);
+    service = new MisionesDonacionService(repository, eventPublisher, new MisionMapper());
   }
 
   @Test
