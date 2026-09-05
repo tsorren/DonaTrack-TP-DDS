@@ -153,14 +153,17 @@ class GestoresDeDominioTest {
   void gestorDeRutasCoordinaRutaCamionYChoferConElContratoMinimo() {
     Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
     Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
     Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
-    ruta.agregarEntrega(UUID.randomUUID());
 
-    GestorDeRutas.iniciarRuta(ruta, camion, chofer);
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
 
     assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
     assertEquals(ruta.getId(), camion.getRutaId());
     assertEquals(ruta.getId(), chofer.getRutaId());
+    assertEquals(EstadoEntrega.EN_TRASLADO, entrega.getEstadoActual());
   }
 
   private static Entrega crearEntrega() {
@@ -239,21 +242,45 @@ class GestoresDeDominioTest {
     Ruta ruta1 = new Ruta(LocalDate.now(), chofer1.getId(), camion1.getId());
     GestorDeRutas.agregarEntrega(ruta1, entrega);
     GestorDeRutas.iniciarRuta(ruta1, camion1, chofer1, List.of(entrega), "Ada");
-
     entrega.negarEntrega("Chofer", "Destinatario ausente", true);
     entrega.mandarARevision("Admin");
     entrega.regresarAlDeposito("Admin");
-
     Camion camion2 = new Camion("AF999ZZ", 20f, 5000f, 3f);
     Chofer chofer2 = new Chofer("Grace", "Hopper", "LIC-2", "2222");
     Ruta ruta2 = new Ruta(LocalDate.now(), chofer2.getId(), camion2.getId());
     GestorDeRutas.agregarEntrega(ruta2, entrega);
     GestorDeRutas.iniciarRuta(ruta2, camion2, chofer2, List.of(entrega), "Grace");
-
     GestorDeRutas.completarRuta(ruta1, camion1, chofer1, List.of(entrega));
-
     assertEquals(EstadoRuta.COMPLETADA, ruta1.getEstado());
     assertEquals(EstadoCamion.DISPONIBLE, camion1.getEstado());
     assertEquals(EstadoChofer.DISPONIBLE, chofer1.getEstado());
+  }
+
+  @Test
+  void gestorDeRutasLanzaExcepcionSiListaDeEntregasContieneElementoNulo() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    Entrega entrega = crearEntrega();
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    List<Entrega> listaConNulo = new java.util.ArrayList<>();
+    listaConNulo.add(null);
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeRutas.iniciarRuta(ruta, camion, chofer, listaConNulo, "Ada"));
+  }
+
+  @Test
+  void gestorDeRutasLanzaExcepcionSiCardinalidadDeEntregasNoCoincide() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    Entrega entrega = crearEntrega();
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    Entrega entregaExtra = crearEntrega();
+    List<Entrega> entregas = List.of(entrega, entregaExtra);
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeRutas.iniciarRuta(ruta, camion, chofer, entregas, "Ada"));
   }
 }

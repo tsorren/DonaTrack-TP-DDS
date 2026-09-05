@@ -31,9 +31,10 @@ public final class GestorDeRutas {
   public static void iniciarRuta(
       Ruta ruta, Camion camion, Chofer chofer, List<Entrega> entregas, String actor) {
     validarInicioRuta(ruta, camion, chofer);
-    if (entregas == null || entregas.isEmpty() || actor == null || actor.isBlank()) {
+    if (actor == null || actor.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+    validarListaEntregas(ruta, entregas);
     Set<UUID> idsRuta = new HashSet<>(ruta.getEntregaIds());
     Set<UUID> idsEntregas = entregas.stream().map(Entrega::getId).collect(Collectors.toSet());
     if (!idsRuta.equals(idsEntregas)
@@ -41,13 +42,11 @@ public final class GestorDeRutas {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
 
-    iniciarRuta(ruta, camion, chofer);
+    ejecutarInicioRuta(ruta, camion, chofer);
     entregas.forEach(entrega -> entrega.iniciarRuta(actor));
   }
 
-  public static void iniciarRuta(Ruta ruta, Camion camion, Chofer chofer) {
-    validarInicioRuta(ruta, camion, chofer);
-
+  private static void ejecutarInicioRuta(Ruta ruta, Camion camion, Chofer chofer) {
     camion.asignarARuta(ruta.getId());
     chofer.asignarARuta(ruta.getId());
     ruta.iniciarRuta();
@@ -56,9 +55,7 @@ public final class GestorDeRutas {
   public static void completarRuta(
       Ruta ruta, Camion camion, Chofer chofer, List<Entrega> entregas) {
     validarColaboradores(ruta, chofer, camion);
-    if (entregas == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
+    validarListaEntregas(ruta, entregas);
     if (ruta.getEstado() != EstadoRuta.EN_TRASLADO
         || !Objects.equals(ruta.getId(), chofer.getRutaId())
         || !Objects.equals(ruta.getId(), camion.getRutaId())) {
@@ -98,6 +95,14 @@ public final class GestorDeRutas {
         || !Objects.equals(ruta.getChoferId(), chofer.getId())
         || !Objects.equals(ruta.getCamionId(), camion.getId())) {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
+    }
+  }
+
+  private static void validarListaEntregas(Ruta ruta, List<Entrega> entregas) {
+    if (entregas == null
+        || entregas.size() != ruta.getEntregaIds().size()
+        || entregas.stream().anyMatch(Objects::isNull)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }
 }
