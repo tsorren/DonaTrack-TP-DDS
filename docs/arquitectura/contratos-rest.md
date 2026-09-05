@@ -7,77 +7,101 @@
 
 ## 1. Matriz de Puertos y Documentación Interactiva
 
-Todos los microservicios exponen su documentación interactiva Swagger UI y su definición OpenAPI 3.0 mediante la autoconfiguración de `common-lib` (`DonaTrackOpenApiAutoConfiguration`):
+Todos los microservicios exponen su documentación interactiva Swagger UI y su definición OpenAPI 3.0 mediante la autoconfiguración de `common-lib` (`DonaTrackOpenApiAutoConfiguration`) y la topología de puertos definida en `docker-compose.yml` y `application.properties`:
 
 | Microservicio | Puerto Local | Context Path | Swagger UI | OpenAPI 3.0 YAML |
 |---|:---:|---|---|---|
-| **`donaciones-service`** | `8081` | `/` | [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html) | [`contratos/openapi-donaciones.yaml`](./contratos/openapi-donaciones.yaml) |
-| **`logistica-service`** | `8082` | `/` | [http://localhost:8082/swagger-ui.html](http://localhost:8082/swagger-ui.html) | [`contratos/openapi-logistica.yaml`](./contratos/openapi-logistica.yaml) |
-| **`incentivos-service`** | `8083` | `/` | [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html) | [`contratos/openapi-incentivos.yaml`](./contratos/openapi-incentivos.yaml) |
-| **`notificaciones-service`** | `8084` | `/` | [http://localhost:8084/swagger-ui.html](http://localhost:8084/swagger-ui.html) | [`contratos/openapi-notificaciones.yaml`](./contratos/openapi-notificaciones.yaml) |
+| **`donaciones-service`** | `8080` | `/` | [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html) | [`contratos/openapi-donaciones.yaml`](./contratos/openapi-donaciones.yaml) |
+| **`notificaciones-service`** | `8081` | `/` | [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html) | [`contratos/openapi-notificaciones.yaml`](./contratos/openapi-notificaciones.yaml) |
+| **`incentivos-service`** | `8082` | `/` | [http://localhost:8082/swagger-ui.html](http://localhost:8082/swagger-ui.html) | [`contratos/openapi-incentivos.yaml`](./contratos/openapi-incentivos.yaml) |
+| **`logistica-service`** | `8083` | `/` | [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html) | [`contratos/openapi-logistica.yaml`](./contratos/openapi-logistica.yaml) |
 
 ---
 
 ## 2. Catálogo de Endpoints por Microservicio
 
-### 2.1 `donaciones-service` (Puerto 8081)
+### 2.1 `donaciones-service` (Puerto 8080)
 
 *Documento de Dominio:* [`aggregates-donaciones.md`](./aggregates-donaciones.md)
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
-| `POST` | `/donaciones-independientes` | Alta de donación independiente en estado inicial `EN_DEPOSITO` | `DonacionIndependienteInputDTO` | `201`, `400` |
-| `GET` | `/donaciones-independientes` | Listado paginado de donaciones independientes | — | `200` |
-| `GET` | `/donaciones-independientes/{id}` | Consulta por UUID | — | `200`, `404` |
-| `PATCH` | `/donaciones-independientes/{id}/estado` | Transición de estado en la máquina de 7 estados (State Pattern) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
-| `POST` | `/api/necesidades` | Registro de necesidades declaradas por entidades beneficiarias | `NecesidadInputDTO` | `201`, `400` |
-| `GET` | `/api/necesidades` | Listado de necesidades activas | — | `200` |
-| `POST` | `/api/asignaciones` | Ejecución de algoritmos de matching (`AlgoritmoAsignacion`) | `PropuestaAsignacionInputDTO` | `200`, `400` |
+| `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems | `DonacionInputDTO` | `201`, `400` |
+| `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
+| `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
+| `GET` | `/donaciones-independientes` | Listado con filtros (`estado`, `subcategoriaId`, `donanteId`) | — | `200` |
+| `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
+| `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
+| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias | `NecesidadDTO` | `201`, `400` |
+| `GET` | `/api/necesidades` | Listado de necesidades activas (filtros `entidadId`, `tipo`) | — | `200` |
+| `GET` | `/api/necesidades/{id}` | Consulta de necesidad por ID | — | `200`, `404` |
+| `POST` | `/api/asignaciones/ejecuciones` | Ejecución del algoritmo de asignación | — | `201`, `400` |
+| `GET` | `/api/asignaciones/ejecuciones` | Historial de ejecuciones de asignación | — | `200` |
+| `GET` | `/api/asignaciones/propuestas` | Listado de propuestas de asignación generadas | — | `200` |
+| `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta | `ActualizarEstadoRequestDTO` | `200`, `400`, `404` |
 | `POST` | `/api/entidades` | Alta de entidad beneficiaria | `EntidadBeneficiariaInputDTO` | `201`, `400` |
-| `POST` | `/api/donantes` | Registro de donante individual | `DonanteInputDTO` | `201`, `400` |
+| `GET` | `/api/entidades` | Listado de entidades beneficiarias | — | `200` |
+| `POST` | `/api/donantes` | Registro de nuevo donante | `DonanteInputDTO` | `201`, `400` |
+| `GET` | `/api/donantes` | Listado de donantes | — | `200` |
 
 ---
 
-### 2.2 `logistica-service` (Puerto 8082)
+### 2.2 `logistica-service` (Puerto 8083)
 
 *Documento de Dominio:* [`aggregates-logistica.md`](./aggregates-logistica.md)
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
 | `POST` | `/api/entregas` | Registrar entrega de donación para planificar | [`crear-entrega-request.schema.json`](./contratos/schemas/crear-entrega-request.schema.json) | `201`, `400` |
-| `GET` | `/api/entregas/{id}` | Consulta de entrega | — | `200`, `404` |
-| `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
-| `POST` | `/api/rutas` | Creación de ruta logística con paradas asociadas | `CrearRutaRequestDTO` | `201`, `400` |
-| `GET` | `/api/rutas/{id}` | Consulta de ruta con URL de tracking calculada bajo demanda | — | `200`, `404` |
-| `PATCH` | `/api/rutas/{id}/estado` | Cambio de estado de ruta (`INICIADA`, `COMPLETADA`) | `CambioEstadoRutaRequestDTO` | `200`, `400` |
-| `POST` | `/api/camiones` | Alta de vehículo en la flota (patente, volumen, peso) | `CamionRequestDTO` | `201`, `400` |
-| `POST` | `/api/choferes` | Alta de chofer asignable | `ChoferRequestDTO` | `201`, `400` |
-| `POST` | `/api/logistica/planificaciones/manual` | Planificación manual de entregas en ruta | `PlanificacionManualRequestDTO` | `200`, `400` |
+| `GET` | `/api/entregas` | Listar entregas registradas | — | `200` |
+| `GET` | `/api/entregas/{id}` | Consulta de entrega por ID | — | `200`, `404` |
+| `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
+| `PATCH` | `/api/entregas/{id}/fotos` | Adjuntar URL de foto de recepción | `AdjuntarFotoRecepcionRequestDTO` | `200`, `400`, `404` |
+| `GET` | `/api/rutas` | Listar rutas planificadas (filtro opcional `camionId`) | — | `200` |
+| `GET` | `/api/rutas/{id}` | Consulta de ruta con paradas y URL de seguimiento | — | `200`, `404` |
+| `GET` | `/api/rutas/{id}/entregas` | Consulta de ruta detallando entregas asignadas | — | `200`, `404` |
+| `POST` | `/api/rutas/{id}/entregas` | Agregar entrega a una ruta planificada | `AgregarEntregaRutaRequestDTO` | `201`, `400`, `404` |
+| `PATCH` | `/api/rutas/{id}/estado` | Cambio de estado de ruta | `CambioEstadoRutaRequestDTO` | `200`, `400`, `404` |
+| `POST` | `/api/camiones` | Alta de camión en la flota (patente, capacidad, peso) | `CamionRequestDTO` | `201`, `400` |
+| `GET` | `/api/camiones` | Listado de camiones | — | `200` |
+| `GET` | `/api/camiones/{id}` | Consulta de camión por ID | — | `200`, `404` |
+| `POST` | `/api/choferes` | Alta de chofer | `ChoferRequestDTO` | `201`, `400` |
+| `GET` | `/api/choferes` | Listado de choferes | — | `200` |
+| `GET` | `/api/choferes/{id}` | Consulta de chofer por ID | — | `200`, `404` |
+| `POST` | `/api/logistica/planificaciones/ejecuciones` | Disparador manual de planificación (habilitado si `manual-enabled=true`) | — | `202` |
+| `GET` | `/api/logistica/planificaciones/{id}` | Consulta de estado de solicitud de planificación | — | `200`, `404` |
+| `POST` | `/api/logistica/resultados` | Callback webhook para recepción de resultados del optimizador | `CallbackPlanificacionRequestDTO` | `200`, `400` |
 
 ---
 
-### 2.3 `incentivos-service` (Puerto 8083)
+### 2.3 `incentivos-service` (Puerto 8082)
 
 *Documento de Dominio:* [`aggregates-incentivos.md`](./aggregates-incentivos.md)
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
-| `GET` | `/api/incentivos/ranking` | Ranking acumulado de donantes | — | `200` |
-| `GET` | `/api/incentivos/ranking/{anio}/{mes}` | Cómputo de ranking mensual mediante window functions SQL | — | `200` |
-| `GET` | `/api/incentivos/donantes/{id}` | Consulta de perfil del donante, puntos acumulados e insignias | — | `200`, `404` |
-| `GET` | `/api/incentivos/misiones` | Catálogo de misiones activas (GoF Template Method) | — | `200` |
-| `GET` | `/api/incentivos/insignias` | Catálogo de insignias y logros disponibles | — | `200` |
+| `GET` | `/api/incentivos/ranking/ultimo` | Último ranking mensual calculado | — | `200`, `204` |
+| `GET` | `/api/incentivos/ranking/historial` | Historial de rankings mensuales | — | `200` |
+| `POST` | `/api/incentivos/ranking/calcular` | Cálculo y persistencia de ranking mensual (`?periodo=YYYY-MM`) | — | `200`, `400` |
+| `GET` | `/api/incentivos/ranking/posicion/{donanteId}` | Posición de un donante en ranking (`?periodo=YYYY-MM`) | — | `200`, `404` |
+| `GET` | `/api/incentivos/donantes/{donanteId}/metricas` | Métricas de impacto, donaciones completadas y nivel del donante | — | `200`, `404` |
+| `GET` | `/api/incentivos/admin/resumen` | Resumen consolidado del sistema de incentivos | — | `200` |
+| `GET` | `/api/incentivos/donantes/{donanteId}/misiones` | Misiones asignadas al donante (GoF Template Method) | — | `200`, `404` |
+| `GET` | `/api/incentivos/donantes/{donanteId}/insignias` | Insignias obtenidas por el donante (`?soloVisibles=true/false`) | — | `200`, `404` |
+| `PUT` | `/api/incentivos/donantes/{donanteId}/insignias/{nombre}/visibilidad` | Configurar visibilidad pública de insignia (`?visible=true/false`) | — | `200`, `404` |
+| `POST` | `/api/incentivos/donaciones` | Notificar donación para evaluación de progreso de misiones | `NuevaDonacionRequest` | `200`, `400` |
+| `POST` | `/api/incentivos/donaciones/exitosa` | Notificar donación exitosa para evaluación de misiones | `DonacionExitosaRequest` | `200`, `400` |
 
 ---
 
-### 2.4 `notificaciones-service` (Puerto 8084)
+### 2.4 `notificaciones-service` (Puerto 8081)
 
 *Documento de Dominio:* [`aggregates-notificaciones.md`](./aggregates-notificaciones.md)
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
-| `POST` | `/notificaciones` | Despacho asíncrono de alertas multicanal por evento de dominio | [`evento-notificable.schema.json`](./contratos/schemas/evento-notificable.schema.json) | `202`, `400` |
-| `GET` | `/notificaciones/persona/{id}` | Consulta de historial de notificaciones enviadas a una persona | — | `200` |
+| `POST` | `/notificaciones` | Despacho asíncrono de alertas multicanal vía payload polimórfico REST | [`evento-notificable.schema.json`](./contratos/schemas/evento-notificable.schema.json) | `202`, `400` |
+| `GET` | `/notificaciones/persona/{personaId}` | Consulta de historial de notificaciones generadas para una persona | — | `200` |
 | `PUT` | `/api/notificaciones/personas` | Sincronización idempotente de réplica de persona y contactos | [`persona-replica.schema.json`](./contratos/schemas/persona-replica.schema.json) | `200`, `400` |
 | `GET` | `/api/notificaciones/personas/{id}` | Consulta de réplica de persona | — | `200`, `404` |
 | `DELETE` | `/api/notificaciones/personas/{id}` | Baja y desasociación de datos de contacto (Crypto-Shredding) | — | `204`, `404` |
@@ -86,16 +110,28 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 
 ## 3. Estándar Unificado de Manejo de Errores
 
-Todos los microservicios heredan el manejador global de excepciones provisto por `common-lib` (`GlobalExceptionHandler`), asegurando uniformidad absoluta en los códigos de estado y cuerpo de error JSON:
+Todos los microservicios heredan el manejador global de excepciones provisto por `common-lib` (`GlobalExceptionHandler`), asegurando uniformidad absoluta en los códigos de estado y cuerpo de error JSON estructurado en `ErrorResponse`:
 
 ```json
 {
-  "errorCode": "VAL_001",
-  "message": "El estado es obligatorio",
+  "code": "ERR-VAL-001",
+  "type": "ValidationException",
+  "details": "El estado es obligatorio",
   "traceId": "c3f81e05-6490-4a82-9c12-ef36c92e1041",
-  "timestamp": "2026-09-05T13:48:00.000Z"
+  "timestamp": "2026-09-05T13:48:00.000Z",
+  "errors": [
+    {
+      "field": "estado",
+      "message": "El estado es obligatorio",
+      "rejectedValue": null
+    }
+  ]
 }
 ```
 
-* **`traceId`:** Propagado en el header HTTP `X-Trace-Id` y capturado en el MDC de SLF4J / Logback.
-* **`errorCode`:** Proveniente del catálogo unificado `ErrorCatalog`.
+* **`code`:** Código canónico estandarizado proveniente de `ErrorCatalog` (ej. `ERR-VAL-001`, `ERR-ENT-001`).
+* **`type`:** Nombre de la clase de excepción lanzada (`ValidationException`, `RecursoNoEncontradoException`, etc.).
+* **`details`:** Mensaje explicativo amigable para el consumidor de la API.
+* **`traceId`:** Identificador correlativo distribuido propagado en el header HTTP `X-Trace-Id` y capturado en el MDC de SLF4J / Logback.
+* **`timestamp`:** Marca de tiempo ISO-8601 en UTC del momento de ocurrencia del error.
+* **`errors`:** (Opcional) Detalle de fallas a nivel de campo en validaciones de entrada (`FieldErrorDTO`).
