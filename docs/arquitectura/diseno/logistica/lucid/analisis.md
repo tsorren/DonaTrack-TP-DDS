@@ -1,13 +1,3 @@
-Viewed logistica-clases.puml:1-362
-Viewed logistica-DER.sql:1-150
-Searched for files: *
-Searched for files: *logistica*
-Viewed aggregates-servicio-logistica.md:1-71
-Viewed diagrama-de-clases-logistica.puml:1-341
-Searched for files: *
-Searched for files: *logistica*
-Searched for files: *
-
 # Informe de Revisión de Diseño: Modelado de Datos y Persistencia (Servicio de Logística)
 
 **Rol:** Ingeniero Revisor de Diseño de Software y Arquitectura de Datos  

@@ -164,6 +164,48 @@ paths:
       responses:
         '200':
           description: Listado de necesidades
+  /api/necesidades/{id}:
+    get:
+      summary: Consultar necesidad por ID
+      operationId: obtenerNecesidadPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle de la necesidad
+        '404':
+          description: Necesidad no encontrada
+    put:
+      summary: Actualizar necesidad existente
+      operationId: actualizarNecesidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Necesidad actualizada
+        '400':
+          description: Datos inválidos
+        '404':
+          description: Necesidad no encontrada
+    delete:
+      summary: Baja de necesidad
+      operationId: eliminarNecesidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Necesidad eliminada exitosamente
+        '404':
+          description: Necesidad no encontrada
   /api/asignaciones/ejecuciones:
     post:
       summary: Ejecutar algoritmo de asignación y generar propuestas
@@ -209,6 +251,48 @@ paths:
       responses:
         '200':
           description: Listado de entidades
+  /api/entidades/{id}:
+    get:
+      summary: Consultar entidad beneficiaria por ID
+      operationId: obtenerEntidadPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle de la entidad
+        '404':
+          description: Entidad no encontrada
+    put:
+      summary: Actualizar entidad beneficiaria
+      operationId: actualizarEntidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Entidad actualizada
+        '400':
+          description: Datos inválidos
+        '404':
+          description: Entidad no encontrada
+    delete:
+      summary: Baja de entidad beneficiaria
+      operationId: eliminarEntidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Entidad eliminada exitosamente
+        '404':
+          description: Entidad no encontrada
   /api/donantes:
     post:
       summary: Registrar nuevo donante
@@ -219,9 +303,246 @@ paths:
     get:
       summary: Listar donantes
       operationId: listarDonantes
+      parameters:
+        - name: canal
+          in: query
+          required: false
+          schema: { type: string }
       responses:
         '200':
           description: Listado de donantes
+  /api/donantes/{id}:
+    get:
+      summary: Consultar donante por ID
+      operationId: obtenerDonantePorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle del donante
+        '404':
+          description: Donante no encontrado
+    delete:
+      summary: Eliminar donante
+      operationId: eliminarDonante
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Donante eliminado exitosamente
+        '404':
+          description: Donante no encontrado
+  /api/donantes/archivos:
+    post:
+      summary: Cargar archivo/padrón de donantes para procesamiento asíncrono
+      operationId: cargarArchivoDonantes
+      responses:
+        '202':
+          description: Archivo aceptado para procesamiento
+        '400':
+          description: Archivo inválido
+  /api/donantes/archivos/{id}:
+    get:
+      summary: Consultar estado de procesamiento de archivo de donantes
+      operationId: obtenerArchivoDonantes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle del archivo de donantes
+        '404':
+          description: Archivo no encontrado
+  /api/categorias:
+    get:
+      summary: Listar categorías de donación
+      operationId: listarCategorias
+      responses:
+        '200':
+          description: Listado de categorías
+    post:
+      summary: Crear categoría
+      operationId: crearCategoria
+      responses:
+        '201':
+          description: Categoría creada
+  /api/categorias/{id}:
+    get:
+      summary: Consultar categoría por ID
+      operationId: obtenerCategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Detalle de categoría }
+        '404': { description: Categoría no encontrada }
+    put:
+      summary: Actualizar categoría
+      operationId: actualizarCategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Categoría actualizada }
+        '404': { description: Categoría no encontrada }
+    delete:
+      summary: Eliminar categoría
+      operationId: eliminarCategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Categoría eliminada }
+        '404': { description: Categoría no encontrada }
+  /api/subcategorias:
+    get:
+      summary: Listar subcategorías
+      operationId: listarSubcategorias
+      responses:
+        '200': { description: Listado de subcategorías }
+    post:
+      summary: Crear subcategoría
+      operationId: crearSubcategoria
+      responses:
+        '201': { description: Subcategoría creada }
+  /api/subcategorias/{id}:
+    get:
+      summary: Consultar subcategoría por ID
+      operationId: obtenerSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Detalle de subcategoría }
+        '404': { description: Subcategoría no encontrada }
+    put:
+      summary: Actualizar subcategoría
+      operationId: actualizarSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Subcategoría actualizada }
+        '404': { description: Subcategoría no encontrada }
+    delete:
+      summary: Eliminar subcategoría
+      operationId: eliminarSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Subcategoría eliminada }
+        '404': { description: Subcategoría no encontrada }
+  /api/items-normalizados:
+    get:
+      summary: Listar items normalizados
+      operationId: listarItemsNormalizados
+      responses:
+        '200': { description: Listado de items normalizados }
+    post:
+      summary: Crear item normalizado
+      operationId: crearItemNormalizado
+      responses:
+        '201': { description: Item normalizado creado }
+  /api/items-normalizados/{id}:
+    get:
+      summary: Consultar item normalizado por ID
+      operationId: obtenerItemNormalizado
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Detalle de item }
+        '404': { description: Item no encontrado }
+    put:
+      summary: Actualizar item normalizado
+      operationId: actualizarItemNormalizado
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Item actualizado }
+        '404': { description: Item no encontrado }
+    delete:
+      summary: Eliminar item normalizado
+      operationId: eliminarItemNormalizado
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Item eliminado }
+        '404': { description: Item no encontrado }
+  /api/personas:
+    get:
+      summary: Listar personas registradas
+      operationId: listarPersonasDonaciones
+      responses:
+        '200': { description: Listado de personas }
+    post:
+      summary: Crear persona
+      operationId: crearPersonaDonaciones
+      responses:
+        '201': { description: Persona creada }
+  /api/personas/{id}:
+    get:
+      summary: Consultar persona por ID
+      operationId: obtenerPersonaDonaciones
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Detalle de persona }
+        '404': { description: Persona no encontrada }
+    put:
+      summary: Actualizar persona
+      operationId: actualizarPersonaDonaciones
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Persona actualizada }
+        '404': { description: Persona no encontrada }
+    delete:
+      summary: Eliminar persona
+      operationId: eliminarPersonaDonaciones
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Persona eliminada }
+        '404': { description: Persona no encontrada }
 components:
   schemas:
     CambioEstadoDonacionIndependienteRequestDTO:

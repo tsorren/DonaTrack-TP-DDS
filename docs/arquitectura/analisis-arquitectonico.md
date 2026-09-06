@@ -25,7 +25,7 @@
 
 9. **Los Repositories están correctamente abstraídos**: interfaces en `models/repositories/` con implementaciones en memoria en `impl/`, usando un `CrudRepository<T extends AggregateRoot>` genérico.
 
-10. **Falta un diagrama PlantUML para `donaciones-service`**, que es el servicio con mayor complejidad de dominio. Solo existe diagrama para `logistica-service`.
+10. **Diagramas PlantUML disponibles para los 4 servicios**, incorporados en `docs/arquitectura/diseno/` para `donaciones-service`, `logistica-service`, `incentivos-service` y `notificaciones-service`.
 
 ---
 
@@ -102,12 +102,10 @@ Service (@Service - orquestación)
 |---|---|---|---|---|
 | `DonacionesController` | `controllers/impl/` | Adaptador HTTP | Presentation | ✅ Correcto |
 | `DonacionesIndependientesController` | `controllers/impl/` | Adaptador HTTP | Presentation | ✅ Correcto |
-| `AsignacionController` | `controllers/impl/` | Adaptador HTTP | Presentation | ✅ Correcto |
-| `PropuestasController` | `controllers/impl/` | Adaptador HTTP | Presentation | ✅ Correcto |
+| `PropuestaDeAsignacionController` | `controllers/impl/` | Adaptador HTTP (propuestas y ejecuciones) | Presentation | ✅ Correcto |
 | `DonacionesService` | `services/impl/` | Orquestación: cargar/listar donaciones | Application | ✅ Correcto |
 | `DonacionesIndependientesService` | `services/impl/` | Orquestación: cambios de estado + notificaciones | Application + Coordinación | ⚠️ Cohesión baja |
-| `AlgoritmosService` | `services/impl/` | Ejecución de algoritmos + gestión propuestas | Application + Dominio mixto | ⚠️ Cohesión baja |
-| `PropuestaService` | `services/impl/` | Fachada de asignación, event listener | Application | ⚠️ Doble rol |
+| `PropuestaDeAsignacionService` | `services/impl/` | Orquestación: asignación + propuestas + eventos | Application | ✅ Correcto |
 | `NecesidadesService` | `services/impl/` | CRUD necesidades | Application | ✅ Correcto |
 | `ProcesadorDeDonaciones` | `infrastructure/` | Normalización + segmentación async | Application (ubicado en Infra) | ❌ Mal ubicado |
 | `SegmentacionEventListener` | `infrastructure/events/` | Segmentar + registrar incentivos + persistir | Application (ubicado en Infra) | ❌ Orquestación en Infra |
@@ -116,7 +114,7 @@ Service (@Service - orquestación)
 | `DonacionIndependiente` | `models/entities/donacionesIndependientes/` | Aggregate Root + State Pattern | Domain | ✅ Correcto |
 | `Necesidad` (abstract) | `models/entities/necesidades/` | Aggregate Root con comportamiento | Domain | ✅ Correcto |
 | `Propuesta` | `models/entities/propuestas/` | Aggregate Root + domain events | Domain | ✅ Correcto |
-| `AlgoritmoAsignacion` | `infrastructure/algoritmos/` | Template Method para asignación | Domain/Application | ⚠️ Ubicación discutible |
+| `AlgoritmoAsignacion` | `models/algoritmos/` | Template Method para asignación | Domain | ✅ Correcto |
 | Feign Clients | `infrastructure/clients/` | Comunicación inter-servicios | Infrastructure | ✅ Correcto |
 | Repositories (interfaces) | `models/repositories/` | Contrato de persistencia | Domain | ✅ Correcto |
 | Repositories (impl) | `models/repositories/impl/` | Almacenamiento en memoria | Infrastructure | ✅ Correcto |
@@ -724,9 +722,9 @@ Esto podría causar problemas cuando se implemente persistencia real: dos aggreg
 | Diagrama | Servicio | Estado |
 |---|---|---|
 | [diagrama-de-clases-logistica.puml](diseno/logistica/diagrama-de-clases-logistica.puml) | logística | ✅ Existe y está actualizado |
-| *Ninguno* | donaciones | ❌ **FALTA** |
-| *Ninguno* | notificaciones | ❌ No existe |
-| *Ninguno* | incentivos | ❌ No existe |
+| [diagrama-de-clases-donaciones.puml](diseno/donaciones/diagrama-de-clases-donaciones.puml) | donaciones | ✅ Incorporado en diseno/donaciones/ |
+| [diagrama-de-clases-notificaciones.puml](diseno/notificaciones/diagrama-de-clases-notificaciones.puml) | notificaciones | ✅ Incorporado en diseno/notificaciones/ |
+| [diagrama-de-clases-incentivos.puml](diseno/incentivos/diagrama-de-clases-incentivos.puml) | incentivos | ✅ Incorporado en diseno/incentivos/ |
 
 ### Análisis del diagrama de logística vs código
 

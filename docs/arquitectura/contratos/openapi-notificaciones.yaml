@@ -133,29 +133,244 @@ components:
           type: string
     EventoNotificableDTO:
       type: object
+      description: Contrato polimórfico base para eventos de dominio que desencadenan notificaciones
+      discriminator:
+        propertyName: tipo
+        mapping:
+          DONANTE_REGISTRADO: '#/components/schemas/EventoDonanteRegistradoDTO'
+          DONANTE_INACTIVO: '#/components/schemas/EventoDonanteInactivoDTO'
+          MISION_CUMPLIDA: '#/components/schemas/EventoMisionCumplidaDTO'
+          SUBIO_CATEGORIA: '#/components/schemas/EventoSubioCategoriaDTO'
+          DONACION_ASIGNADA: '#/components/schemas/EventoDonacionAsignadaDTO'
+          DONACION_RECIBIDA: '#/components/schemas/EventoDonacionRecibidaDTO'
+          DONACION_EN_CAMINO: '#/components/schemas/EventoDonacionEnCaminoDTO'
+          ENTREGA_FALLIDA: '#/components/schemas/EventoEntregaFallidaDTO'
+          DONACION_VENCIDA: '#/components/schemas/EventoDonacionVencidaDTO'
+      oneOf:
+        - $ref: '#/components/schemas/EventoDonanteRegistradoDTO'
+        - $ref: '#/components/schemas/EventoDonanteInactivoDTO'
+        - $ref: '#/components/schemas/EventoMisionCumplidaDTO'
+        - $ref: '#/components/schemas/EventoSubioCategoriaDTO'
+        - $ref: '#/components/schemas/EventoDonacionAsignadaDTO'
+        - $ref: '#/components/schemas/EventoDonacionRecibidaDTO'
+        - $ref: '#/components/schemas/EventoDonacionEnCaminoDTO'
+        - $ref: '#/components/schemas/EventoEntregaFallidaDTO'
+        - $ref: '#/components/schemas/EventoDonacionVencidaDTO'
+    EventoDonanteRegistradoDTO:
+      type: object
       required:
         - tipo
         - idPersonaDonante
         - fecha
+        - credencialesDeAcceso
       properties:
         tipo:
           type: string
-          enum:
-            - DONANTE_REGISTRADO
-            - DONANTE_INACTIVO
-            - MISION_CUMPLIDA
-            - SUBIO_CATEGORIA
-            - DONACION_ASIGNADA
-            - DONACION_RECIBIDA
-            - DONACION_EN_CAMINO
-            - ENTREGA_FALLIDA
-            - DONACION_VENCIDA
+          enum: [DONANTE_REGISTRADO]
         idPersonaDonante:
           type: string
           format: uuid
         fecha:
           type: string
           format: date-time
+        credencialesDeAcceso:
+          type: string
+    EventoDonanteInactivoDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - diasInactivo
+      properties:
+        tipo:
+          type: string
+          enum: [DONANTE_INACTIVO]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        diasInactivo:
+          type: integer
+          minimum: 1
+    EventoMisionCumplidaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - nombreMision
+        - recompensa
+      properties:
+        tipo:
+          type: string
+          enum: [MISION_CUMPLIDA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        nombreMision:
+          type: string
+        recompensa:
+          type: string
+    EventoSubioCategoriaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - categoriaNueva
+        - categoriaVieja
+      properties:
+        tipo:
+          type: string
+          enum: [SUBIO_CATEGORIA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        categoriaNueva:
+          type: string
+        categoriaVieja:
+          type: string
+    EventoDonacionAsignadaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaBeneficiaria
+        - detalleDonacion
+      properties:
+        tipo:
+          type: string
+          enum: [DONACION_ASIGNADA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaBeneficiaria:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+    EventoDonacionRecibidaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaBeneficiaria
+        - detalleDonacion
+      properties:
+        tipo:
+          type: string
+          enum: [DONACION_RECIBIDA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaBeneficiaria:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+        patenteCamion:
+          type: string
+    EventoDonacionEnCaminoDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaBeneficiaria
+        - detalleDonacion
+      properties:
+        tipo:
+          type: string
+          enum: [DONACION_EN_CAMINO]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaBeneficiaria:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+        enlaceSeguimiento:
+          type: string
+    EventoEntregaFallidaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaBeneficiaria
+        - detalleDonacion
+        - idPersonaAdmin
+        - motivo
+        - replanificable
+      properties:
+        tipo:
+          type: string
+          enum: [ENTREGA_FALLIDA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaBeneficiaria:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+        idPersonaAdmin:
+          type: string
+          format: uuid
+        motivo:
+          type: string
+        replanificable:
+          type: boolean
+    EventoDonacionVencidaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaAdmin
+        - detalleDonacion
+        - motivo
+      properties:
+        tipo:
+          type: string
+          enum: [DONACION_VENCIDA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaAdmin:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+        motivo:
+          type: string
     NotificacionDTO:
       type: object
       required:

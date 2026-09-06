@@ -73,6 +73,77 @@ paths:
       responses:
         '200':
           description: Posición del donante en el ranking
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 3
+        '204':
+          description: El donante no posee posición en el ranking para el período solicitado
+  /api/incentivos/donantes/{donanteId}:
+    post:
+      summary: Registrar un nuevo donante en el sistema de incentivos
+      operationId: registrarDonanteIncentivos
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrarDonanteRequest'
+      responses:
+        '201':
+          description: Donante registrado exitosamente en incentivos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonanteRegistradoDTO'
+        '400':
+          description: Datos inválidos o discrepancia de ID
+    delete:
+      summary: Dar de baja donante en incentivos
+      operationId: darDeBajaDonanteIncentivos
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Donante dado de baja exitosamente
+        '404':
+          description: Donante no encontrado
+    patch:
+      summary: Modificar atributos de donante en incentivos
+      operationId: modificarDonanteIncentivos
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificarDonanteRequest'
+      responses:
+        '200':
+          description: Donante modificado exitosamente
+        '400':
+          description: Payload inválido
+        '404':
+          description: Donante no encontrado
   /api/incentivos/donantes/{donanteId}/metricas:
     get:
       summary: Consultar métricas y nivel de un donante
@@ -218,3 +289,38 @@ components:
         fechaOtorgamiento:
           type: string
           format: date-time
+    RegistrarDonanteRequest:
+      type: object
+      required:
+        - idDonante
+        - idPersona
+        - nombre
+      properties:
+        idDonante:
+          type: string
+          format: uuid
+        idPersona:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          minLength: 2
+          maxLength: 100
+    DonanteRegistradoDTO:
+      type: object
+      properties:
+        donanteId:
+          type: string
+          format: uuid
+        categoria:
+          type: string
+    ModificarDonanteRequest:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          minLength: 2
+          maxLength: 100
+

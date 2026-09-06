@@ -116,8 +116,8 @@ package NOTIFICACIONES {
     - estadoNotificacion: EstadoNotificacion
     - historialEstado: List<CambioEstadoNotificacion>
     --
-    + notificar(sender: NotificacionSender): void
-    + ordenarMedios(): List<MedioDeContacto>
+    + notificar(persona: Persona, sender: NotificacionSender): void
+    + ordenarMedios(persona: Persona): List<MedioDeContacto>
     + actualizarEstado(nuevoEstado: EstadoNotificacion): void
     + anonimizar(): void
   }

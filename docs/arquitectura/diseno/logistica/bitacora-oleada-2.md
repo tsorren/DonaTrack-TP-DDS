@@ -1,7 +1,7 @@
 # Bitácora — Oleada 2: Domain Events en `Entrega`
 
 **Branch:** `E4_refactor_logistica`  
-**Referencia del plan:** `docs/design/logistica-service/plan-refactor-logistica-service.md` → Oleada 2 (RF-03)
+**Referencia del plan:** [`plan-refactor-logistica-service.md`](./plan-refactor-logistica-service.md) → Oleada 2 (RF-03)
 
 ---
 

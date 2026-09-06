@@ -113,6 +113,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/EntregaResponseDTO'
+  /api/entregas/{id}/historial:
+    get:
+      summary: Consultar historial de cambios de estado de una entrega
+      operationId: obtenerHistorialEntrega
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Historial de transiciones de la entrega
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CambioEstadoEntregaResponseDTO'
+        '404':
+          description: Entrega no encontrada
   /api/rutas:
     get:
       summary: Listar rutas planificadas
@@ -234,6 +256,55 @@ paths:
       responses:
         '200':
           description: Detalle del camión
+        '404':
+          description: Camión no encontrado
+    delete:
+      summary: Dar de baja camión de la flota
+      operationId: darDeBajaCamion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Camión dado de baja exitosamente
+        '404':
+          description: Camión no encontrado
+  /api/camiones/{id}/estado:
+    patch:
+      summary: Cambiar estado operativo de un camión
+      operationId: cambiarEstadoCamion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [DISPONIBLE, EN_MANTENIMIENTO, EN_VIAJE, BAJA]
+                motivo:
+                  type: string
+      responses:
+        '200':
+          description: Estado del camión actualizado
+        '400':
+          description: Transición de estado inválida
+        '404':
+          description: Camión no encontrado
   /api/choferes:
     post:
       summary: Registrar chofer
@@ -261,6 +332,55 @@ paths:
       responses:
         '200':
           description: Detalle del chofer
+        '404':
+          description: Chofer no encontrado
+    delete:
+      summary: Dar de baja chofer
+      operationId: darDeBajaChofer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Chofer dado de baja exitosamente
+        '404':
+          description: Chofer no encontrado
+  /api/choferes/{id}/estado:
+    patch:
+      summary: Cambiar estado de un chofer
+      operationId: cambiarEstadoChofer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [DISPONIBLE, EN_VIAJE, LICENCIA, BAJA]
+                motivo:
+                  type: string
+      responses:
+        '200':
+          description: Estado del chofer actualizado
+        '400':
+          description: Transición de estado inválida
+        '404':
+          description: Chofer no encontrado
   /api/logistica/planificaciones/ejecuciones:
     post:
       summary: Iniciar planificación de rutas de forma manual
@@ -287,6 +407,19 @@ paths:
     post:
       summary: Procesar callback de resultados de optimización de rutas
       operationId: procesarCallbackPlanificacion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Callback procesado exitosamente
+  /api/logistica/callback/rutas:
+    post:
+      summary: Webhook alias para recepción de resultados del optimizador de rutas
+      operationId: procesarCallbackRutasAlias
       requestBody:
         required: true
         content:

@@ -19,14 +19,16 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
 ### 2.1. Agregado: Persona (Réplica Local de Lectura)
 *   **Aggregate Root**: `Persona`.
 *   **Componentes Internos**: 
-    *   `MedioDeContacto` (Clase base abstracta de tipo Objeto de Valor/Entidad interna).
-    *   `Correo`, `Telefono`, `WhatsApp` (Especializaciones del medio de contacto).
+    *   `MedioDeContacto` (Clase base abstracta de tipo Objeto de Valor/Entidad interna que implementa `Anonimizable`).
+    *   `Correo`, `Telefono` (Especializaciones del medio de contacto; los canales físicos de salida como Correo, SMS/Teléfono y WhatsApp se despachan mediante adaptadores de infraestructura).
+    *   `TipoPersona`, `TipoTelefono` (Enums).
 *   **Responsabilidad**: Almacenar la denominación y el ruteo de medios de contacto del usuario destinatario. Este agregado se sincroniza síncronamente vía endpoint HTTP REST (`PUT /api/notificaciones/personas`) invocado mediante Feign cuando se crea o actualiza una persona en `donaciones-service`.
-*   **Paquete**: `grupo5.notificaciones.models.entities.personas` (y subpaquete `medioDeContacto`).
+*   **Paquete**: `grupo5.notificaciones.models.entities.personas`
 
 ### 2.2. Agregado: Notificación
 *   **Aggregate Root**: `Notificacion` (Representa el intento y estado final de una notificación despachada a un usuario).
-*   **Componentes Internos**: `EstadoNotificacion` (Enum con valores *PENDIENTE*, *ENVIADA*, *FALLIDA*).
+*   **Componentes Internos**: `EstadoNotificacion` (Enum con valores *PENDIENTE*, *ENVIADA*, *FALLIDA*) y `CambioEstadoNotificacion` (auditoría inmutable).
+*   **Eventos de Dominio**: `NotificacionCreada`, `NotificacionEnviada`, `NotificacionFallida` (en `grupo5.notificaciones.models.entities.notificaciones.events`).
 *   **Referencias Externas (por ID)**: `personaId` (UUID que apunta al agregado `Persona`).
 *   **Responsabilidad**: Registrar el mensaje, el destinatario, la fecha y el estado de la comunicación. Provee la lógica para ordenar los canales por prioridad (respetando la predeterminación) y ejecutar reintentos de envío (*fallback*) ante fallos de proveedores de mensajería (Double Dispatch con `NotificacionRouter` y adaptadores multicanal).
 *   **Paquete**: `grupo5.notificaciones.models.entities.notificaciones`
@@ -35,7 +37,7 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
 
 ## 3. Políticas y Procesamiento de Eventos (`EventoNotificable`)
 
-La jerarquía de clases bajo el paquete `grupo5.notificaciones.models.entities.notificaciones.eventos` (tales como `EventoDeDonacion`, `DonanteRegistrado`, `MisionCumplida`, `SubioCategoria`, `DonacionEnCamino`, `EntregaFallida`, `DonacionVencida`) representa **Políticas de Dominio (Domain Policies)** y no agregados persistentes:
+La jerarquía de clases bajo el paquete `grupo5.notificaciones.models.entities.notificaciones.eventos` (tales como `EventoDeDonacion`, `DonanteRegistrado`, `DonanteInactivo`, `DonacionAsignada`, `DonacionRecibida`, `MisionCumplida`, `SubioCategoria`, `DonacionEnCamino`, `EntregaFallida`, `DonacionVencida`) representa **Políticas de Dominio (Domain Policies)** y no agregados persistentes:
 
 *   **Rol en el Diseño**: Actúan como factorías polimórficas de alertas (`generarNotificaciones()`).
 *   **Funcionamiento**:

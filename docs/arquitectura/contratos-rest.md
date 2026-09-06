@@ -35,14 +35,31 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias | `NecesidadDTO` | `201`, `400` |
 | `GET` | `/api/necesidades` | Listado de necesidades activas (filtros `entidadId`, `tipo`) | — | `200` |
 | `GET` | `/api/necesidades/{id}` | Consulta de necesidad por ID | — | `200`, `404` |
+| `PUT` | `/api/necesidades/{id}` | Actualización de necesidad existente | `NecesidadDTO` | `200`, `400`, `404` |
+| `DELETE` | `/api/necesidades/{id}` | Baja de necesidad registrada | — | `204`, `404` |
 | `POST` | `/api/asignaciones/ejecuciones` | Ejecución del algoritmo de asignación | — | `201`, `400` |
 | `GET` | `/api/asignaciones/ejecuciones` | Historial de ejecuciones de asignación | — | `200` |
 | `GET` | `/api/asignaciones/propuestas` | Listado de propuestas de asignación generadas | — | `200` |
 | `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta | `ActualizarEstadoRequestDTO` | `200`, `400`, `404` |
 | `POST` | `/api/entidades` | Alta de entidad beneficiaria | `EntidadBeneficiariaInputDTO` | `201`, `400` |
 | `GET` | `/api/entidades` | Listado de entidades beneficiarias | — | `200` |
+| `GET` | `/api/entidades/{id}` | Consulta de entidad beneficiaria por ID | — | `200`, `404` |
+| `PUT` | `/api/entidades/{id}` | Actualización de entidad beneficiaria | `EntidadBeneficiariaInputDTO` | `200`, `400`, `404` |
+| `DELETE` | `/api/entidades/{id}` | Baja de entidad beneficiaria | — | `204`, `404` |
 | `POST` | `/api/donantes` | Registro de nuevo donante | `DonanteInputDTO` | `201`, `400` |
-| `GET` | `/api/donantes` | Listado de donantes | — | `200` |
+| `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`) | — | `200` |
+| `GET` | `/api/donantes/{id}` | Consulta de donante por ID | — | `200`, `404` |
+| `DELETE` | `/api/donantes/{id}` | Eliminación de donante | — | `204`, `404` |
+| `POST` | `/api/donantes/archivos` | Carga asíncrona de archivo/padrón de donantes (MinIO) | `ArchivoInputDTO` | `202`, `400` |
+| `GET` | `/api/donantes/archivos/{id}` | Consulta de estado de procesamiento de archivo | — | `200`, `404` |
+| `GET` / `POST` | `/api/categorias` | Gestión y catálogo de categorías de donación | `CategoriaDTO` | `200`, `201`, `400` |
+| `GET` / `PUT` / `DELETE` | `/api/categorias/{id}` | Consulta, modificación y baja de categoría | `CategoriaDTO` | `200`, `204`, `404` |
+| `GET` / `POST` | `/api/subcategorias` | Gestión y catálogo de subcategorías | `SubcategoriaDTO` | `200`, `201`, `400` |
+| `GET` / `PUT` / `DELETE` | `/api/subcategorias/{id}` | Consulta, modificación y baja de subcategoría | `SubcategoriaDTO` | `200`, `204`, `404` |
+| `GET` / `POST` | `/api/items-normalizados` | Catálogo de items normalizados homologados | `ItemDonacionNormalizadoDTO` | `200`, `201`, `400` |
+| `GET` / `PUT` / `DELETE` | `/api/items-normalizados/{id}` | Consulta, modificación y baja de item normalizado | `ItemDonacionNormalizadoDTO` | `200`, `204`, `404` |
+| `GET` / `POST` | `/api/personas` | CRUD de personas y contactos del módulo donaciones | `PersonaInputDTO` | `200`, `201`, `400` |
+| `GET` / `PUT` / `DELETE` | `/api/personas/{id}` | Consulta, modificación y baja de persona | `PersonaInputDTO` | `200`, `204`, `404` |
 
 ---
 
@@ -57,6 +74,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/entregas/{id}` | Consulta de entrega por ID | — | `200`, `404` |
 | `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
 | `PATCH` | `/api/entregas/{id}/fotos` | Adjuntar URL de foto de recepción | `AdjuntarFotoRecepcionRequestDTO` | `200`, `400`, `404` |
+| `GET` | `/api/entregas/{id}/historial` | Historial de transiciones de una entrega | — | `200`, `404` |
 | `GET` | `/api/rutas` | Listar rutas planificadas (filtro opcional `camionId`) | — | `200` |
 | `GET` | `/api/rutas/{id}` | Consulta de ruta con paradas y URL de seguimiento | — | `200`, `404` |
 | `GET` | `/api/rutas/{id}/entregas` | Consulta de ruta detallando entregas asignadas | — | `200`, `404` |
@@ -65,12 +83,17 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/camiones` | Alta de camión en la flota (patente, capacidad, peso) | `CamionRequestDTO` | `201`, `400` |
 | `GET` | `/api/camiones` | Listado de camiones | — | `200` |
 | `GET` | `/api/camiones/{id}` | Consulta de camión por ID | — | `200`, `404` |
+| `PATCH` | `/api/camiones/{id}/estado` | Cambio de estado operativo de camión | `CambioEstadoCamionRequestDTO` | `200`, `400`, `404` |
+| `DELETE` | `/api/camiones/{id}` | Baja de camión de la flota | — | `204`, `404` |
 | `POST` | `/api/choferes` | Alta de chofer | `ChoferRequestDTO` | `201`, `400` |
 | `GET` | `/api/choferes` | Listado de choferes | — | `200` |
 | `GET` | `/api/choferes/{id}` | Consulta de chofer por ID | — | `200`, `404` |
+| `PATCH` | `/api/choferes/{id}/estado` | Cambio de estado de chofer | `CambioEstadoChoferRequestDTO` | `200`, `400`, `404` |
+| `DELETE` | `/api/choferes/{id}` | Baja de chofer | — | `204`, `404` |
 | `POST` | `/api/logistica/planificaciones/ejecuciones` | Disparador manual de planificación (habilitado si `manual-enabled=true`) | — | `202` |
 | `GET` | `/api/logistica/planificaciones/{id}` | Consulta de estado de solicitud de planificación | — | `200`, `404` |
 | `POST` | `/api/logistica/resultados` | Callback webhook para recepción de resultados del optimizador | `CallbackPlanificacionRequestDTO` | `200`, `400` |
+| `POST` | `/api/logistica/callback/rutas` | Callback webhook alternativo para recepción de resultados | `CallbackPlanificacionRequestDTO` | `200`, `400` |
 
 ---
 
@@ -83,7 +106,10 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/incentivos/ranking/ultimo` | Último ranking mensual calculado | — | `200`, `204` |
 | `GET` | `/api/incentivos/ranking/historial` | Historial de rankings mensuales | — | `200` |
 | `POST` | `/api/incentivos/ranking/calcular` | Cálculo y persistencia de ranking mensual (`?periodo=YYYY-MM`) | — | `200`, `400` |
-| `GET` | `/api/incentivos/ranking/posicion/{donanteId}` | Posición de un donante en ranking (`?periodo=YYYY-MM`) | — | `200`, `404` |
+| `GET` | `/api/incentivos/ranking/posicion/{donanteId}` | Posición de un donante en ranking (`?periodo=YYYY-MM`) | — | `200`, `204` |
+| `POST` | `/api/incentivos/donantes/{donanteId}` | Registro de donante en módulo incentivos | `RegistrarDonanteRequest` | `201`, `400` |
+| `DELETE` | `/api/incentivos/donantes/{donanteId}` | Baja de donante en módulo incentivos | — | `204`, `404` |
+| `PATCH` | `/api/incentivos/donantes/{donanteId}` | Modificación de datos de donante | `ModificarDonanteRequest` | `200`, `400`, `404` |
 | `GET` | `/api/incentivos/donantes/{donanteId}/metricas` | Métricas de impacto, donaciones completadas y nivel del donante | — | `200`, `404` |
 | `GET` | `/api/incentivos/admin/resumen` | Resumen consolidado del sistema de incentivos | — | `200` |
 | `GET` | `/api/incentivos/donantes/{donanteId}/misiones` | Misiones asignadas al donante (GoF Template Method) | — | `200`, `404` |

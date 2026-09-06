@@ -1,7 +1,6 @@
 # Título
 
--
-Status: [draft | proposed | rejected | accepted | deprecated | … | superseded by yyyymmdd-xxx.md] <!-- optional -->
+- Status: [draft | proposed | rejected | accepted | deprecated | … | superseded by yyyymmdd-xxx.md] <!-- optional -->
 - Date: {YYYY-MM-DD}
 - Deciders: {lista de integrantes involucrados en la decisión}
 - Tags: {lista}

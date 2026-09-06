@@ -19,18 +19,22 @@ El *Servicio de Incentivos* tiene como objetivo gamificar la participación de l
 *   **Aggregate Root**: `DonanteIncentivos`.
 *   **Componentes Internos (Entidades y Objetos de Valor)**:
     *   `Mision` (Clase abstracta polimórfica en `grupo5.incentivos.models.entities.misiones` y sus subclases `MisionHabilDonador`, `MisionRacha`, `MisionCompletitud`, `MisionDonacionesExitosas` basadas en **Template Method**). Representan misiones con un objetivo, progreso actual y estado de completitud.
-    *   `Insignia` (Objeto de Valor/Entidad en `grupo5.incentivos.models.entities.insignias` asignada al donante).
+    *   `Insignia` e `InsigniaGanada` (Objetos de Valor inmutables - Java records en `grupo5.incentivos.models.entities.insignias` asignadas al donante con control de visibilidad).
+    *   `Metricas` (Entidad/Objeto interno en `grupo5.incentivos.models.entities.metricas` que acumula donaciones totales, exitosas y métricas de impacto).
     *   `CategoriaDonante` (Enum: *COLABORADOR*, *SOSTENEDOR*, *TRANSFORMADOR*).
     *   `CambioCategoria` (Auditoría inmutable de ascensos/descensos).
 *   **Referencias Externas (por ID)**: 
-    *   `donanteId` (`UUID` que actúa como la clave primaria del agregado, apuntando al Donante originado en el *Servicio de Donaciones*).
+    *   `id` / `idDonante` (`UUID` que actúa como la clave primaria del agregado, apuntando al Donante originado en el *Servicio de Donaciones*).
+    *   `idPersona` (`UUID` de la persona asociada).
 *   **Responsabilidad**: Centralizar y validar las reglas de gamificación del donante. Procesa el impacto de nuevas donaciones en el progreso de las misiones y determina si el donante califica para un ascenso de categoría o para recibir insignias adicionales.
-*   **Paquete**: `grupo5.incentivos.models.entities.donante` y `entities.misiones`
+*   **Paquete**: `grupo5.incentivos.models.entities.donante`, `entities.misiones`, `entities.insignias` y `entities.metricas`
 
-### 2.2. Agregado: Insignia (Catálogo de Logros)
-*   **Aggregate Root**: `Insignia`.
-*   **Atributos**: `id` (UUID), `nombre`, `descripcion`, `urlImagen`, `fechaCreacion`.
-*   **Responsabilidad**: Gestionar el catálogo disponible de reconocimientos y medallas del sistema mediante `InsigniaRepository`.
+### 2.2. Objeto de Valor: Insignia e InsigniaGanada (Logros de Gamificación)
+*   **Tipo**: Objetos de Valor (Java `record`, inmutables, sin repositorio independiente).
+*   **Componentes**:
+    *   `Insignia`: `nombre`, `descripcion`, `imagenUrl`.
+    *   `InsigniaGanada`: `nombre`, `descripcion`, `imagenUrl`, `visible` (boolean), `fechaObtenida` (`LocalDate`).
+*   **Responsabilidad**: Representar los reconocimientos obtenidos por el donante dentro del agregado `DonanteIncentivos`, permitiendo alternar su visibilidad pública.
 *   **Paquete**: `grupo5.incentivos.models.entities.insignias`
 
 ### 2.3. Agregado: RankingMensual (Tablero de Líderes)

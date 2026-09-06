@@ -25,6 +25,7 @@ docs/
 │   ├── shared-kernel.md                   # CrudRepository, eventos de dominio y OpenAPI
 │   ├── logging-trazabilidad.md            # Observabilidad distribuida, MDC y traceId
 │   ├── analisis-arquitectonico.md         # Diagnóstico estructural del monorepo
+│   ├── guia-patrones-diseno.md            # Catálogo de patrones de diseño aplicados
 │   ├── aggregates-donaciones.md           # Aggregates DDD, 7 estados de DI y Propuesta
 │   ├── aggregates-incentivos.md           # Aggregates de gamificación, Insignia y Rankings
 │   ├── aggregates-logistica.md            # Aggregates de transporte, rutas y camiones
@@ -95,6 +96,7 @@ docs/
 * 🔍 **Diagnóstico de Vigencia y Auditoría:** [ESTADO_DOCUMENTACION.md](ESTADO_DOCUMENTACION.md)
 * 🛡️ **Plan de Auditoría y Marco Revisor Crítico:** [auditoria/plan-revisor-critico.md](auditoria/plan-revisor-critico.md)
 * 📐 **Principios de Diseño y Arquitectura (Documento Maestro):** [arquitectura/principios-diseno-arquitectura.md](arquitectura/principios-diseno-arquitectura.md)
+* 🧩 **Guía de Patrones de Diseño Aplicados:** [arquitectura/guia-patrones-diseno.md](arquitectura/guia-patrones-diseno.md)
 * 🏗️ **Dominio y Persistencia Compartida:** [arquitectura/shared-kernel.md](arquitectura/shared-kernel.md)
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
