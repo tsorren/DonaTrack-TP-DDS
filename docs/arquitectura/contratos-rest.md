@@ -52,14 +52,31 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `DELETE` | `/api/donantes/{id}` | Eliminación de donante | — | `204`, `404` |
 | `POST` | `/api/donantes/archivos` | Carga asíncrona de archivo/padrón de donantes (MinIO) | `ArchivoInputDTO` | `202`, `400` |
 | `GET` | `/api/donantes/archivos/{id}` | Consulta de estado de procesamiento de archivo | — | `200`, `404` |
-| `GET` / `POST` | `/api/categorias` | Gestión y catálogo de categorías de donación | `CategoriaDTO` | `200`, `201`, `400` |
-| `GET` / `PUT` / `DELETE` | `/api/categorias/{id}` | Consulta, modificación y baja de categoría | `CategoriaDTO` | `200`, `204`, `404` |
-| `GET` / `POST` | `/api/subcategorias` | Gestión y catálogo de subcategorías | `SubcategoriaDTO` | `200`, `201`, `400` |
-| `GET` / `PUT` / `DELETE` | `/api/subcategorias/{id}` | Consulta, modificación y baja de subcategoría | `SubcategoriaDTO` | `200`, `204`, `404` |
-| `GET` / `POST` | `/api/items-normalizados` | Catálogo de items normalizados homologados | `ItemDonacionNormalizadoDTO` | `200`, `201`, `400` |
-| `GET` / `PUT` / `DELETE` | `/api/items-normalizados/{id}` | Consulta, modificación y baja de item normalizado | `ItemDonacionNormalizadoDTO` | `200`, `204`, `404` |
-| `GET` / `POST` | `/api/personas` | CRUD de personas y contactos del módulo donaciones | `PersonaInputDTO` | `200`, `201`, `400` |
-| `GET` / `PUT` / `DELETE` | `/api/personas/{id}` | Consulta, modificación y baja de persona | `PersonaInputDTO` | `200`, `204`, `404` |
+| `POST` | `/api/categorias` | Alta de categoría de donación | `CategoriaInputDTO` | `201`, `400` |
+| `GET` | `/api/categorias` | Listado de categorías de donación | — | `200` |
+| `GET` | `/api/categorias/{id}` | Consulta de categoría por ID | — | `200`, `404` |
+| `PUT` | `/api/categorias/{id}` | Actualización de categoría existente | `CategoriaInputDTO` | `200`, `400`, `404` |
+| `DELETE` | `/api/categorias/{id}` | Baja de categoría (retorna entidad eliminada en el cuerpo) | — | `200`, `404` |
+| `POST` | `/api/subcategorias` | Alta de subcategoría | `SubcategoriaInputDTO` | `201`, `400` |
+| `GET` | `/api/subcategorias` | Listado de subcategorías | — | `200` |
+| `GET` | `/api/subcategorias/{id}` | Consulta de subcategoría por ID | — | `200`, `404` |
+| `PUT` | `/api/subcategorias/{id}` | Actualización de subcategoría existente | `SubcategoriaInputDTO` | `200`, `400`, `404` |
+| `DELETE` | `/api/subcategorias/{id}` | Baja de subcategoría (retorna entidad eliminada en el cuerpo) | — | `200`, `404` |
+| `POST` | `/api/subcategorias/{id}/aliases` | Agregar alias semántico a una subcategoría | `AliasSubcategoriaInputDTO` | `200`, `400`, `404` |
+| `DELETE` | `/api/subcategorias/{id}/aliases/{alias}` | Quitar alias semántico de una subcategoría | — | `200`, `404` |
+| `GET` | `/api/items-normalizados/pendientes` | Listado de ítems normalizados pendientes de revisión | — | `200` |
+| `GET` | `/api/items-normalizados/{id}` | Consulta de ítem normalizado por ID | — | `200`, `404` |
+| `PATCH` | `/api/items-normalizados/{id}` | Revisión y reclasificación manual de normalización | `ItemDonacionNormalizadoPatchDTO` | `200`, `400`, `404` |
+| `POST` | `/api/personas` | Alta de persona y contactos en donaciones | `PersonaInputDTO` | `201`, `400` |
+| `GET` | `/api/personas` | Listado de personas (filtro opcional por `?tipo=HUMANA|JURIDICA`) | — | `200` |
+| `PUT` | `/api/personas/{id}` | Actualización de datos de persona | `PersonaInputDTO` | `200`, `400`, `404` |
+| `DELETE` | `/api/personas/{id}` | Baja y supresión de persona | — | `204`, `404` |
+
+> **Notas de reconciliación con el código fuente Java (`donaciones-service`):**
+> - **D1:** `/api/items-normalizados` no implementa un CRUD estándar; expone `GET /pendientes`, `GET /{id}` y `PATCH /{id}` conforme a `ItemDonacionNormalizadoController.java`.
+> - **D2:** Se incorporan los endpoints de gestión de alias semánticos de subcategorías: `POST /api/subcategorias/{id}/aliases` y `DELETE /api/subcategorias/{id}/aliases/{alias}` (`SubcategoriasController.java`).
+> - **D3:** `GET /api/personas/{id}` no existe en `donaciones-service` (la consulta por ID reside en `notificaciones-service` vía `GET /api/notificaciones/personas/{id}`). En `donaciones-service`, el listado general con filtro `?tipo=` cubre la consulta.
+> - **D4:** `DELETE /api/categorias/{id}` y `DELETE /api/subcategorias/{id}` devuelven código `200 OK` retornando el DTO del recurso eliminado (`CategoriaOutputDTO` y `SubcategoriaOutputDTO`), en lugar de `204 No Content`.
 
 ---
 
@@ -114,9 +131,12 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/incentivos/admin/resumen` | Resumen consolidado del sistema de incentivos | — | `200` |
 | `GET` | `/api/incentivos/donantes/{donanteId}/misiones` | Misiones asignadas al donante (GoF Template Method) | — | `200`, `404` |
 | `GET` | `/api/incentivos/donantes/{donanteId}/insignias` | Insignias obtenidas por el donante (`?soloVisibles=true/false`) | — | `200`, `404` |
-| `PUT` | `/api/incentivos/donantes/{donanteId}/insignias/{nombre}/visibilidad` | Configurar visibilidad pública de insignia (`?visible=true/false`) | — | `200`, `404` |
+| `PUT` | `/api/incentivos/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad` | Configurar visibilidad pública de insignia (`?visible=true/false`) | — | `200`, `404` |
 | `POST` | `/api/incentivos/donaciones` | Notificar donación para evaluación de progreso de misiones | `NuevaDonacionRequest` | `200`, `400` |
 | `POST` | `/api/incentivos/donaciones/exitosa` | Notificar donación exitosa para evaluación de misiones | `DonacionExitosaRequest` | `200`, `400` |
+
+> **Nota de reconciliación con el código fuente Java (`incentivos-service`):**
+> - **D5:** El parámetro de ruta para visibilidad de insignias utiliza la variable `{nombreInsignia}` conforme a `InsigniasController.java` (`@PathVariable String nombreInsignia`).
 
 ---
 

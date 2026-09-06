@@ -406,7 +406,7 @@ paths:
           required: true
           schema: { type: string, format: uuid }
       responses:
-        '204': { description: Categoría eliminada }
+        '200': { description: Categoría eliminada exitosamente (retorna CategoriaOutputDTO) }
         '404': { description: Categoría no encontrada }
   /api/subcategorias:
     get:
@@ -451,53 +451,112 @@ paths:
           required: true
           schema: { type: string, format: uuid }
       responses:
-        '204': { description: Subcategoría eliminada }
+        '200': { description: Subcategoría eliminada exitosamente (retorna SubcategoriaOutputDTO) }
         '404': { description: Subcategoría no encontrada }
-  /api/items-normalizados:
-    get:
-      summary: Listar items normalizados
-      operationId: listarItemsNormalizados
-      responses:
-        '200': { description: Listado de items normalizados }
+  /api/subcategorias/{id}/aliases:
     post:
-      summary: Crear item normalizado
-      operationId: crearItemNormalizado
+      summary: Agregar alias semántico a una subcategoría
+      operationId: agregarAliasSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AliasSubcategoriaInputDTO'
       responses:
-        '201': { description: Item normalizado creado }
+        '200':
+          description: Subcategoría con alias agregado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcategoriaOutputDTO'
+        '400':
+          description: Alias inválido
+        '404':
+          description: Subcategoría no encontrada
+  /api/subcategorias/{id}/aliases/{alias}:
+    delete:
+      summary: Quitar alias semántico de una subcategoría
+      operationId: quitarAliasSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: alias
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Subcategoría con alias eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcategoriaOutputDTO'
+        '404':
+          description: Subcategoría o alias no encontrado
+  /api/items-normalizados/pendientes:
+    get:
+      summary: Listar items normalizados pendientes de revisión
+      operationId: listarItemsNormalizadosPendientes
+      responses:
+        '200':
+          description: Listado de items normalizados pendientes de revisión
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemDonacionNormalizadoOutputDTO'
   /api/items-normalizados/{id}:
     get:
       summary: Consultar item normalizado por ID
-      operationId: obtenerItemNormalizado
+      operationId: obtenerItemNormalizadoPorId
       parameters:
         - name: id
           in: path
           required: true
           schema: { type: string, format: uuid }
       responses:
-        '200': { description: Detalle de item }
-        '404': { description: Item no encontrado }
-    put:
-      summary: Actualizar item normalizado
-      operationId: actualizarItemNormalizado
+        '200':
+          description: Detalle del item normalizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDonacionNormalizadoOutputDTO'
+        '404':
+          description: Item normalizado no encontrado
+    patch:
+      summary: Actualizar estado y reclasificación de item normalizado
+      operationId: actualizarEstadoItemNormalizado
       parameters:
         - name: id
           in: path
           required: true
           schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemDonacionNormalizadoPatchDTO'
       responses:
-        '200': { description: Item actualizado }
-        '404': { description: Item no encontrado }
-    delete:
-      summary: Eliminar item normalizado
-      operationId: eliminarItemNormalizado
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '204': { description: Item eliminado }
-        '404': { description: Item no encontrado }
+        '200':
+          description: Item normalizado actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDonacionNormalizadoOutputDTO'
+        '400':
+          description: Datos de actualización inválidos
+        '404':
+          description: Item normalizado no encontrado
   /api/personas:
     get:
       summary: Listar personas registradas
@@ -510,17 +569,6 @@ paths:
       responses:
         '201': { description: Persona creada }
   /api/personas/{id}:
-    get:
-      summary: Consultar persona por ID
-      operationId: obtenerPersonaDonaciones
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema: { type: string, format: uuid }
-      responses:
-        '200': { description: Detalle de persona }
-        '404': { description: Persona no encontrada }
     put:
       summary: Actualizar persona
       operationId: actualizarPersonaDonaciones
@@ -633,3 +681,72 @@ components:
           format: uuid
         descripcion:
           type: string
+    AliasSubcategoriaInputDTO:
+      type: object
+      required:
+        - alias
+      properties:
+        alias:
+          type: string
+    SubcategoriaOutputDTO:
+      type: object
+      required:
+        - id
+        - nombre
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        categoria:
+          type: object
+        aliases:
+          type: array
+          items:
+            type: object
+    ItemDonacionNormalizadoOutputDTO:
+      type: object
+      required:
+        - id
+        - donacionOriginalId
+        - estadoNormalizacion
+      properties:
+        id:
+          type: string
+          format: uuid
+        donacionOriginalId:
+          type: string
+          format: uuid
+        descripcionBienOriginal:
+          type: string
+        cantidad:
+          type: integer
+        subcategoria:
+          $ref: '#/components/schemas/SubcategoriaOutputDTO'
+        confianza:
+          type: number
+          format: double
+        estadoNormalizacion:
+          type: string
+          enum:
+            - PENDIENTE_REVISION
+            - ACEPTADO
+            - RECHAZADO
+        segmentado:
+          type: boolean
+    ItemDonacionNormalizadoPatchDTO:
+      type: object
+      required:
+        - estadoNormalizacion
+      properties:
+        estadoNormalizacion:
+          type: string
+          enum:
+            - PENDIENTE_REVISION
+            - ACEPTADO
+            - RECHAZADO
+        subcategoriaId:
+          type: string
+          format: uuid
+

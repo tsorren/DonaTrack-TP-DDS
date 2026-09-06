@@ -663,14 +663,13 @@ PENDIENTE ──▶ EN_TRASLADO ──▶ ENTREGADA
                     └──▶ NO_RECIBIDA ──▶ REVISION
 ```
 
-### `EstadoDonacion` (de `Donacion`) vs `EstadoDonacion` (de `DonacionIndependiente`) ⚠️
+### `EstadoDonacion` (de `Donacion`) y `EstadoDonacionIndependiente` (de `DonacionIndependiente`) ✅
 
-Existen dos clases/interfaces llamadas `EstadoDonacion` en paquetes distintos:
-- `models.entities.donaciones.EstadoDonacion` — un **enum** simple
-- `models.entities.donacionesIndependientes.EstadoDonacion` — una **interfaz** (State Pattern)
+La ambigüedad de nombres fue saneada formalmente:
+- `models.entities.donaciones.EstadoDonacion` — un **enum** simple para el aggregate `Donacion`
+- `models.entities.donacionesIndependientes.EstadoDonacionIndependiente` — una **interfaz** polimórfica (State Pattern con 7 clases concretas)
 
-**Severidad: BAJO** (ambigüedad de nombres)
-**Confianza: Alta**
+**Estado: SANEADO**
 
 ---
 
@@ -681,7 +680,7 @@ Existen dos clases/interfaces llamadas `EstadoDonacion` en paquetes distintos:
 | Aggregate Root | Servicio | Componentes internos |
 |---|---|---|
 | `Donacion` | donaciones | `ItemDonacion` (lista), `CambioEstadoDonacion` (historial), `Bien` (VO) |
-| `DonacionIndependiente` | donaciones | `ItemDonacionIndependiente` (lista), `CambioEstado` (historial), `EstadoDonacion` (state) |
+| `DonacionIndependiente` | donaciones | `ItemDonacionIndependiente` (lista), `CambioEstado` (historial), `EstadoDonacionIndependiente` (state) |
 | `ItemDonacionNormalizado` | donaciones | `BienNormalizado` (VO) |
 | `Propuesta` | donaciones | `PosibleFragmentacion` (lista), domain events |
 | `Categoria` | donaciones | `Subcategoria` (por ref ID) |
