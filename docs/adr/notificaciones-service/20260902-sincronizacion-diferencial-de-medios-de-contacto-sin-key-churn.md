@@ -7,11 +7,11 @@
 
 ## Contexto y Problema
 
-En `notificaciones-service`, el agregado `Persona` mantiene una colección de canales de comunicación (`List<MedioDeContacto>`). En el modelo de dominio ([`Persona.java`](../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/personas/Persona.java)), `MedioDeContacto` fue modelado como una Entidad Interna / Objeto de Valor puro sin identificador técnico (`id UUID`): en la lógica de negocio, un canal de contacto se define unívocamente por su tipo y su valor (la dirección de correo en `Correo`, o la combinación de característica, código de área y número en `Telefono`), junto con su marca de preferencia (`esPredeterminado`).
+En `notificaciones-service`, el agregado `Persona` mantiene una colección de canales de comunicación (`List<MedioDeContacto>`). En el modelo de dominio ([`Persona.java`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/personas/Persona.java)), `MedioDeContacto` fue modelado como una Entidad Interna / Objeto de Valor puro sin identificador técnico (`id UUID`): en la lógica de negocio, un canal de contacto se define unívocamente por su tipo y su valor (la dirección de correo en `Correo`, o la combinación de característica, código de área y número en `Telefono`), junto con su marca de preferencia (`esPredeterminado`).
 
-En la capa de persistencia relacional ([`PersonaEntity.java`](../../notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/persistencia/entities/PersonaEntity.java) y [`MedioDeContactoEntity.java`](../../notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/persistencia/entities/MedioDeContactoEntity.java)), cada medio se almacena en la tabla relacional `medio_de_contacto` con una clave primaria subrogada propia (`id UUID PRIMARY KEY`).
+En la capa de persistencia relacional ([`PersonaEntity.java`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/persistencia/entities/PersonaEntity.java) y [`MedioDeContactoEntity.java`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/persistencia/entities/MedioDeContactoEntity.java)), cada medio se almacena en la tabla relacional `medio_de_contacto` con una clave primaria subrogada propia (`id UUID PRIMARY KEY`).
 
-Actualmente, [`PersonaPersistenciaMapper.toEntity(domain)`](../../notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/persistencia/mappers/PersonaPersistenciaMapper.java#L18-L46) mapea la colección de la siguiente forma:
+Actualmente, [`PersonaPersistenciaMapper.toEntity(domain)`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/persistencia/mappers/PersonaPersistenciaMapper.java#L18-L46) mapea la colección de la siguiente forma:
 ```java
 List<MedioDeContactoEntity> mediosEntities = new ArrayList<>();
 for (MedioDeContacto medio : domain.getMediosDeContacto()) {

@@ -5,7 +5,7 @@
 
 > [!IMPORTANT]
 > **Regla de Bitácora y Gobernanza Obligatoria**:
-> Cada oleada completada (y cada RF dentro de ella) debe documentarse en el archivo `oleadas-refactor.md` ubicado en `docs/design/incentivos-service/oleadas-refactor.md`, siguiendo estrictamente el formato y estructura de [`docs/design/donaciones-service/oleadas-refactor.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/oleadas-refactor.md):
+> Cada oleada completada (y cada RF dentro de ella) debe documentarse en el archivo `oleadas-refactor.md` ubicado en `docs/design/incentivos-service/oleadas-refactor.md`, siguiendo estrictamente el formato y estructura de [`docs/design/donaciones-service/oleadas-refactor.md`](../donaciones/oleadas-refactor.md):
 > - **Problema**: Descripción del acoplamiento, violación arquitectónica o bug detectado.
 > - **Evidencia**: Referencias directas a archivos, líneas de código y Diagrama de Clases.
 > - **Objetivo**: Qué responsabilidades se reubican, qué clases se crean o eliminan.
@@ -923,7 +923,7 @@ Todo ítem de esta oleada es `📝` (solo diseño/análisis):
 3. **Jerarquía `Mision`**: Estrategia `@Inheritance(strategy = SINGLE_TABLE)` con `@DiscriminatorColumn(tipo_mision)`. Mapeo `@ElementCollection` para `categoriasDonadas` y `categoriasNecesarias` en `MisionCompletitud`. Campo `version: Long` en clase base.
 4. **`Metricas`**: Aplanamiento escalar a nivel `@Embeddable` (`totalDonaciones`, `donacionesConsecutivas`, `maxDonacionesConsecutivas`, `totalDonacionesExitosas`, `ultimaDonacionFecha`) para evitar cuellos de botella de memoria en carga de historiales extensos.
 5. **Transactional Outbox y Privacidad**: Diseño de tabla `outbox_events` para eventos (`AscensoDonante`, `MisionCompletada`) y estrategia de Crypto-Shredding para derecho al olvido.
-6. **Documentación Formal**: Consolidada en [`docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md).
+6. **Documentación Formal**: Consolidada en [`docs/design/incentivos-service/decisiones_futuras_en_oleada_10.md`](decisiones_futuras_en_oleada_10.md).
 
 **Checklist Oleada 10:**
 - [x] 📝 Auditoría de límites y referencias en todos los agregados (CERO punteros directos entre ARs)
@@ -1024,7 +1024,7 @@ git grep "import .*\.\*" src/
 - **Documentación Técnica**: Especificar el reemplazo del despacho directo *Fire-and-Forget* (`WebClient.subscribe()`) por la inserción atómica en `outbox_events` y relay asíncrono con reintentos exponenciales y Dead Letter Queue (DLQ).
 
 #### RF-INC-13.3: Bitácora Exhaustiva `oleadas-refactor.md` y Checksum de Gobernanza
-- **Bitácora viva**: Verificar que **TODAS** las oleadas (0 a 13) estén debidamente registradas y completadas en [`docs/design/incentivos-service/oleadas-refactor.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/incentivos-service/oleadas-refactor.md) siguiendo la estructura estándar (Problema, Evidencia, Objetivo, Fuera de scope, Tests, Diseño resultante, IA utilizada, Verificación humana).
+- **Bitácora viva**: Verificar que **TODAS** las oleadas (0 a 13) estén debidamente registradas y completadas en [`docs/design/incentivos-service/oleadas-refactor.md`](oleadas-refactor.md) siguiendo la estructura estándar (Problema, Evidencia, Objetivo, Fuera de scope, Tests, Diseño resultante, IA utilizada, Verificación humana).
 - Auditar toda la documentación de este plan y de la bitácora: CERO ítems mal marcados (confrontar `git diff` contra bitácora).
 - Ejecutar suite completa: `mvn clean test` verde en el reactor completo (7/7 módulos).
 - Ejecutar `mvn spotless:check` verde (100% compliant).

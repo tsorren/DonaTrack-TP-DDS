@@ -164,19 +164,84 @@ class EntregasControllerTest {
   // ===================== PATCH /api/entregas/{id}/estado =====================
 
   @Test
-  void cambiarEstado_deberiaRetornar200() throws Exception {
+  void cambiarEstado_deberiaRetornar200_cuandoEntregada() throws Exception {
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, "chofer", null, null);
     EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
-
     when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
-
     mockMvc
         .perform(
             patch("/api/entregas/" + ID + "/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar200_cuandoNoRecibida() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(
+            EstadoEntrega.NO_RECIBIDA, "chofer", "Destinatario ausente", true);
+    EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
+    when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar200_cuandoRevision() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.REVISION, "admin", null, null);
+    EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
+    when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar200_cuandoRegresoAlDeposito() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.PENDIENTE, "admin", null, null);
+    EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
+    when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar400_cuandoEstadoEsNulo() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(null, "chofer", null, null);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar400_cuandoActorEsVacio() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, "   ", null, null);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
   }
 
   // ===================== PATCH /api/entregas/{id}/foto =====================

@@ -20,7 +20,7 @@ Almacenar estos archivos directamente en el sistema de archivos local (`/tmp` o 
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleada 10 de Persistencia en `donaciones-service` ([decisiones_futuras_en_oleada_10.md](../arquitectura/diseno/donaciones/decisiones_futuras_en_oleada_10.md) §3).
+* **Oleadas de Origen:** Oleada 10 de Persistencia en `donaciones-service` ([decisiones_futuras_en_oleada_10.md](../../arquitectura/diseno/donaciones/decisiones_futuras_en_oleada_10.md) §3).
 * **Hallazgo:** Se diseñó la integración con MinIO mediante un puerto de almacenamiento (`StoragePort`) y su adaptador `MinioStorageAdapter` utilizando el cliente oficial de MinIO compatible con la API de Amazon S3.
 
 ## Alternativas Consideradas

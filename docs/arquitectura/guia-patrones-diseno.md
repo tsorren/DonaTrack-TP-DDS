@@ -42,7 +42,7 @@ AppServ --> PortNotif
 
 RepoImpl ..|> PortRepo : Implements
 Feign ..|> PortNotif : Implements
-@endum
+@enduml
 ```
 
 ### El Dominio (Core)
@@ -116,7 +116,7 @@ package "Capa de Infraestructura" #FFEBEB {
     }
     Adapter ..|> Port : Implements
 }
-@endum
+@enduml
 ```
 
 ---
@@ -178,7 +178,7 @@ S --> C : return DTO
 deactivate S
 C --> Cliente : 200 OK
 deactivate C
-@endum
+@enduml
 ```
 
 ---
@@ -216,7 +216,7 @@ package "Agregado: DonacionIndependiente" #EAFFAF {
     AR *--> Item
     Item *--> Bien
 }
-@endum
+@enduml
 ```
 
 ### Reglas Críticas de Diseño para Agregados

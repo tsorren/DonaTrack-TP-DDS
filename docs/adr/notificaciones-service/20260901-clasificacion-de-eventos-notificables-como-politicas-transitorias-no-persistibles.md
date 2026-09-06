@@ -17,7 +17,7 @@ En `notificaciones-service`, existe una rica jerarquía polimórfica de 10 clase
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleadas 3 y 10 de `notificaciones-service` ([decisiones_futuras_en_oleada_10.md](../arquitectura/diseno/notificaciones/decisiones_futuras_en_oleada_10.md) §3).
+* **Oleadas de Origen:** Oleadas 3 y 10 de `notificaciones-service` ([decisiones_futuras_en_oleada_10.md](../../arquitectura/diseno/notificaciones/decisiones_futuras_en_oleada_10.md) §3).
 * **Hallazgo:** La auditoría final de notificaciones estableció formalmente: *"Las 8 subclases de EventoDeDonacion NO se persisten... Son políticas transitorias de fábrica con guardas de negocio en sus constructores... Se documenta explícitamente para que nadie las mapee por consistencia con el resto del dominio cuando llegue la migración real: no hace falta @Entity ni tabla propia; lo único que persiste es su efecto (las Notificacion que generan)"*.
 
 ## Alternativas Consideradas

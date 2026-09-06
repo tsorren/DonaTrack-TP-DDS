@@ -16,7 +16,7 @@ Estamos revisando una propuesta de diseño técnico antes de pasar a implementac
 
 ## Contexto del proyecto
 
-DonaTrack es un proyecto académico desarrollado en equipo. El flujo de trabajo separa diseño técnico e implementación. Antes de escribir código Java, las issues que lo requieran deben tener su diseño aprobado, normalmente mediante archivos PlantUML en `docs/design/<modulo>/`.
+DonaTrack es un proyecto académico desarrollado en equipo. El flujo de trabajo separa diseño técnico e implementación. Antes de escribir código Java, las issues que lo requieran deben tener su diseño aprobado, normalmente mediante archivos PlantUML en `docs/arquitectura/diseno/<modulo>/`.
 
 El objetivo de esta revisión es detectar problemas de arquitectura, responsabilidades mal ubicadas, contratos ambiguos, riesgos de integración o falta de claridad antes de que el equipo empiece a implementar.
 

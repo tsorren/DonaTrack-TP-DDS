@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+  title: DonaTrack - Incentivos Service API
+  version: 1.0.0
+  description: API REST para gamificación, misiones por Template Method, asignación de insignias y cómputo de ranking mensual de donantes.
+servers:
+  - url: http://localhost:8082
+    description: Servidor local de desarrollo
+paths:
+  /api/incentivos/ranking/ultimo:
+    get:
+      summary: Obtener el último ranking mensual calculado
+      operationId: obtenerUltimoRanking
+      responses:
+        '200':
+          description: Último ranking mensual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankingMensualDTO'
+        '204':
+          description: No hay rankings calculados todavía
+  /api/incentivos/ranking/historial:
+    get:
+      summary: Obtener historial de rankings mensuales
+      operationId: obtenerHistorialRankings
+      responses:
+        '200':
+          description: Historial de rankings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RankingMensualDTO'
+  /api/incentivos/ranking/calcular:
+    post:
+      summary: Calcular y persistir ranking mensual
+      operationId: calcularRanking
+      parameters:
+        - name: periodo
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+            example: '2026-09'
+          description: Período a calcular en formato YYYY-MM (por defecto el mes actual)
+      responses:
+        '200':
+          description: Ranking calculado y persistido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankingMensualDTO'
+  /api/incentivos/ranking/posicion/{donanteId}:
+    get:
+      summary: Obtener posición y estado en ranking de un donante
+      operationId: obtenerPosicionRanking
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: periodo
+          in: query
+          required: false
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+      responses:
+        '200':
+          description: Posición del donante en el ranking
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 3
+        '204':
+          description: El donante no posee posición en el ranking para el período solicitado
+  /api/incentivos/donantes/{donanteId}:
+    post:
+      summary: Registrar un nuevo donante en el sistema de incentivos
+      operationId: registrarDonanteIncentivos
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrarDonanteRequest'
+      responses:
+        '201':
+          description: Donante registrado exitosamente en incentivos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonanteRegistradoDTO'
+        '400':
+          description: Datos inválidos o discrepancia de ID
+    delete:
+      summary: Dar de baja donante en incentivos
+      operationId: darDeBajaDonanteIncentivos
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Donante dado de baja exitosamente
+        '404':
+          description: Donante no encontrado
+    patch:
+      summary: Modificar atributos de donante en incentivos
+      operationId: modificarDonanteIncentivos
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModificarDonanteRequest'
+      responses:
+        '200':
+          description: Donante modificado exitosamente
+        '400':
+          description: Payload inválido
+        '404':
+          description: Donante no encontrado
+  /api/incentivos/donantes/{donanteId}/metricas:
+    get:
+      summary: Consultar métricas y nivel de un donante
+      operationId: obtenerMetricasDonante
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Métricas del donante
+        '404':
+          description: Donante no encontrado
+  /api/incentivos/admin/resumen:
+    get:
+      summary: Obtener resumen consolidado del sistema de incentivos para administración
+      operationId: obtenerResumenSistema
+      responses:
+        '200':
+          description: Resumen general de incentivos
+  /api/incentivos/donantes/{donanteId}/misiones:
+    get:
+      summary: Listar misiones asignadas a un donante
+      operationId: obtenerMisionesDonante
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de misiones del donante
+  /api/incentivos/donantes/{donanteId}/insignias:
+    get:
+      summary: Listar insignias obtenidas por un donante
+      operationId: obtenerInsigniasDonante
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: soloVisibles
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Catálogo de insignias del donante
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InsigniaDTO'
+  /api/incentivos/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad:
+    put:
+      summary: Configurar visibilidad pública de una insignia
+      operationId: configurarVisibilidadInsignia
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: nombreInsignia
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: visible
+          in: query
+          required: true
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Visibilidad actualizada
+  /api/incentivos/donaciones:
+    post:
+      summary: Notificar nueva donación para evaluación de misiones
+      operationId: procesarNuevaDonacion
+      responses:
+        '200':
+          description: Evento de donación procesado
+  /api/incentivos/donaciones/exitosa:
+    post:
+      summary: Notificar donación completada exitosamente para evaluación de misiones
+      operationId: procesarDonacionExitosa
+      responses:
+        '200':
+          description: Evento de donación exitosa procesado
+components:
+  schemas:
+    RankingMensualDTO:
+      type: object
+      properties:
+        periodo:
+          type: string
+          example: '2026-09'
+        entradas:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntradaRankingDTO'
+        podio:
+          type: array
+          items:
+            $ref: '#/components/schemas/EntradaRankingDTO'
+    EntradaRankingDTO:
+      type: object
+      properties:
+        posicion:
+          type: integer
+        donanteId:
+          type: string
+          format: uuid
+        nombreDonante:
+          type: string
+        misionesCompletadas:
+          type: integer
+    InsigniaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        iconoUrl:
+          type: string
+        visible:
+          type: boolean
+        fechaOtorgamiento:
+          type: string
+          format: date-time
+    RegistrarDonanteRequest:
+      type: object
+      required:
+        - idDonante
+        - idPersona
+        - nombre
+      properties:
+        idDonante:
+          type: string
+          format: uuid
+        idPersona:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+          minLength: 2
+          maxLength: 100
+    DonanteRegistradoDTO:
+      type: object
+      properties:
+        donanteId:
+          type: string
+          format: uuid
+        categoria:
+          type: string
+    ModificarDonanteRequest:
+      type: object
+      required:
+        - nombre
+      properties:
+        nombre:
+          type: string
+          minLength: 2
+          maxLength: 100
+

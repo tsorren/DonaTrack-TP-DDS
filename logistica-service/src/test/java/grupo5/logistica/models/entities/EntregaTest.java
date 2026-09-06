@@ -27,6 +27,11 @@ class EntregaTest {
     return new Direccion("Calle Falsa", 123, null, null, "1824", loc);
   }
 
+  private Entrega crearEntregaValida() {
+    return new Entrega(
+        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), createTestDireccion(), 10f, 1f);
+  }
+
   @Test
   void testConstructorExitoso() {
     UUID idRuta = UUID.randomUUID();
@@ -121,21 +126,22 @@ class EntregaTest {
 
     entrega.iniciarRuta("Chofer Jose");
 
-    // Negar entrega
+    // 1. Negar entrega
     entrega.negarEntrega("Comedor Infantil", "Domicilio cerrado", true);
+    assertEquals(EstadoEntrega.NO_RECIBIDA, entrega.getEstadoActual());
     assertEquals(
-        EstadoEntrega.REVISION,
-        entrega.getEstadoActual()); // Pasa a NO_RECIBIDA y luego inmediatamente a REVISION en
-    // negarEntrega()
-    assertEquals(
-        3,
+        2,
         entrega
             .getHistorialEstado()
-            .size()); // Registro de EN_TRASLADO -> NO_RECIBIDA y NO_RECIBIDA -> REVISION
-
-    // Regresar al deposito
+            .size()); // PENDIENTE -> EN_TRASLADO, EN_TRASLADO -> NO_RECIBIDA
+    // 2. Administrador toma el caso y lo pasa a revisión
+    entrega.mandarARevision("Admin Carlos");
+    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
+    assertEquals(3, entrega.getHistorialEstado().size()); // NO_RECIBIDA -> REVISION
+    // 3. Regresar al depósito
     entrega.regresarAlDeposito("Admin Carlos");
     assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+    assertEquals(4, entrega.getHistorialEstado().size()); // REVISION -> PENDIENTE
     assertNull(entrega.getHoraArribo());
     assertNull(entrega.getHoraSalida());
   }
@@ -251,5 +257,29 @@ class EntregaTest {
     assertTrue(entrega.getDomainEvents().isEmpty());
     EventoEntrega primerEvento = snapshot.getFirst();
     assertThrows(UnsupportedOperationException.class, () -> snapshot.add(primerEvento));
+  }
+
+  @Test
+  void testRegresarAlDepositoDirectamenteDesdeNoRecibidaLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+    entrega.negarEntrega("Comedor Infantil", "Domicilio cerrado", true);
+
+    // Debe fallar porque no pasó por REVISION
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entrega.regresarAlDeposito("Admin Carlos"));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
+  }
+
+  @Test
+  void testNegarEntregaSinJustificacionLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+
+    // Justificación nula
+    assertThrows(ValidationException.class, () -> entrega.negarEntrega("Comedor", null, true));
+
+    // Justificación vacía o en blanco
+    assertThrows(ValidationException.class, () -> entrega.negarEntrega("Comedor", "   ", true));
   }
 }

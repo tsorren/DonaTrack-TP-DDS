@@ -1,0 +1,551 @@
+openapi: 3.0.3
+info:
+  title: DonaTrack - Logística Service API
+  version: 1.0.0
+  description: API REST para planificación de rutas de transporte, seguimiento de camiones, asignación de choferes y trazabilidad de entregas.
+servers:
+  - url: http://localhost:8083
+    description: Servidor local de desarrollo
+paths:
+  /api/entregas:
+    post:
+      summary: Crear y registrar entrega para planificación
+      operationId: crearEntrega
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearEntregaRequestDTO'
+      responses:
+        '201':
+          description: Entrega creada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntregaResponseDTO'
+        '400':
+          description: Datos inválidos
+    get:
+      summary: Listar entregas registradas
+      operationId: listarEntregas
+      responses:
+        '200':
+          description: Listado de entregas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EntregaResponseDTO'
+  /api/entregas/{id}:
+    get:
+      summary: Consultar entrega por ID
+      operationId: obtenerEntregaPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle de la entrega
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntregaResponseDTO'
+        '404':
+          description: Entrega no encontrada
+  /api/entregas/{id}/estado:
+    patch:
+      summary: Cambiar estado de una entrega
+      operationId: cambiarEstadoEntrega
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CambioEstadoEntregaRequestDTO'
+      responses:
+        '200':
+          description: Estado de la entrega actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntregaResponseDTO'
+        '400':
+          description: Transición de estado inválida
+  /api/entregas/{id}/fotos:
+    patch:
+      summary: Adjuntar foto de recepción de entrega
+      operationId: adjuntarFotoRecepcion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - fotoRecepcionUrl
+              properties:
+                fotoRecepcionUrl:
+                  type: string
+      responses:
+        '200':
+          description: Foto adjuntada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntregaResponseDTO'
+  /api/entregas/{id}/historial:
+    get:
+      summary: Consultar historial de cambios de estado de una entrega
+      operationId: obtenerHistorialEntrega
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Historial de transiciones de la entrega
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CambioEstadoEntregaResponseDTO'
+        '404':
+          description: Entrega no encontrada
+  /api/rutas:
+    get:
+      summary: Listar rutas planificadas
+      operationId: listarRutas
+      parameters:
+        - name: camionId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filtro opcional por ID de camión
+      responses:
+        '200':
+          description: Listado de rutas
+  /api/rutas/{id}:
+    get:
+      summary: Consultar ruta con sus paradas y URL de seguimiento
+      operationId: obtenerRutaPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle de la ruta
+  /api/rutas/{id}/entregas:
+    get:
+      summary: Consultar ruta junto con el detalle de sus entregas
+      operationId: obtenerRutaConEntregas
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Ruta con entregas asociadas
+    post:
+      summary: Agregar entrega a una ruta existente
+      operationId: agregarEntregaRuta
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idEntrega
+              properties:
+                idEntrega:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Entrega agregada a la ruta
+  /api/rutas/{id}/estado:
+    patch:
+      summary: Cambiar estado de la ruta
+      operationId: cambiarEstadoRuta
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nuevoEstado
+              properties:
+                nuevoEstado:
+                  type: string
+                  enum: [PLANIFICADA, EN_CURSO, COMPLETADA, CANCELADA]
+      responses:
+        '200':
+          description: Estado actualizado
+  /api/camiones:
+    post:
+      summary: Registrar nuevo camión en la flota
+      operationId: registrarCamion
+      responses:
+        '201':
+          description: Camión registrado
+    get:
+      summary: Listar camiones
+      operationId: listarCamiones
+      responses:
+        '200':
+          description: Listado de camiones
+  /api/camiones/{id}:
+    get:
+      summary: Consultar camión por ID
+      operationId: obtenerCamionPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del camión
+        '404':
+          description: Camión no encontrado
+    delete:
+      summary: Dar de baja camión de la flota
+      operationId: darDeBajaCamion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Camión dado de baja exitosamente
+        '404':
+          description: Camión no encontrado
+  /api/camiones/{id}/estado:
+    patch:
+      summary: Cambiar estado operativo de un camión
+      operationId: cambiarEstadoCamion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [DISPONIBLE, EN_MANTENIMIENTO, EN_VIAJE, BAJA]
+                motivo:
+                  type: string
+      responses:
+        '200':
+          description: Estado del camión actualizado
+        '400':
+          description: Transición de estado inválida
+        '404':
+          description: Camión no encontrado
+  /api/choferes:
+    post:
+      summary: Registrar chofer
+      operationId: registrarChofer
+      responses:
+        '201':
+          description: Chofer registrado
+    get:
+      summary: Listar choferes
+      operationId: listarChoferes
+      responses:
+        '200':
+          description: Listado de choferes
+  /api/choferes/{id}:
+    get:
+      summary: Consultar chofer por ID
+      operationId: obtenerChoferPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del chofer
+        '404':
+          description: Chofer no encontrado
+    delete:
+      summary: Dar de baja chofer
+      operationId: darDeBajaChofer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Chofer dado de baja exitosamente
+        '404':
+          description: Chofer no encontrado
+  /api/choferes/{id}/estado:
+    patch:
+      summary: Cambiar estado de un chofer
+      operationId: cambiarEstadoChofer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [DISPONIBLE, EN_VIAJE, LICENCIA, BAJA]
+                motivo:
+                  type: string
+      responses:
+        '200':
+          description: Estado del chofer actualizado
+        '400':
+          description: Transición de estado inválida
+        '404':
+          description: Chofer no encontrado
+  /api/logistica/planificaciones/ejecuciones:
+    post:
+      summary: Iniciar planificación de rutas de forma manual
+      description: Disparador auxiliar habilitado condicionalmente mediante logistica.planificacion.manual-enabled=true.
+      operationId: iniciarPlanificacionManual
+      responses:
+        '202':
+          description: Planificación aceptada para ejecución asíncrona
+  /api/logistica/planificaciones/{id}:
+    get:
+      summary: Consultar estado de solicitud de planificación
+      operationId: obtenerSolicitudPlanificacion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle de la solicitud de planificación
+  /api/logistica/resultados:
+    post:
+      summary: Procesar callback de resultados de optimización de rutas
+      operationId: procesarCallbackPlanificacion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Callback procesado exitosamente
+  /api/logistica/callback/rutas:
+    post:
+      summary: Webhook alias para recepción de resultados del optimizador de rutas
+      operationId: procesarCallbackRutasAlias
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Callback procesado exitosamente
+components:
+  schemas:
+    DireccionDTO:
+      type: object
+      required:
+        - calle
+        - altura
+        - codigoPostal
+        - localidad
+        - provincia
+        - pais
+      properties:
+        calle:
+          type: string
+        altura:
+          type: integer
+          minimum: 1
+        piso:
+          type: string
+        departamento:
+          type: string
+        codigoPostal:
+          type: string
+        localidad:
+          type: string
+        provincia:
+          type: string
+        pais:
+          type: string
+    CrearEntregaRequestDTO:
+      type: object
+      required:
+        - idDonacion
+        - idBeneficiaria
+        - destino
+        - volumenTotalM3
+      properties:
+        idDonacion:
+          type: string
+          format: uuid
+        idBeneficiaria:
+          type: string
+          format: uuid
+        destino:
+          $ref: '#/components/schemas/DireccionDTO'
+        pesoTotalKG:
+          type: number
+          exclusiveMinimum: 0
+        volumenTotalM3:
+          type: number
+          exclusiveMinimum: 0
+    CambioEstadoEntregaRequestDTO:
+      type: object
+      required:
+        - estado
+      properties:
+        estado:
+          type: string
+          enum:
+            - PENDIENTE
+            - EN_TRASLADO
+            - ENTREGADA
+            - NO_RECIBIDA
+            - REVISION
+        actor:
+          type: string
+        justificacion:
+          type: string
+        replanificable:
+          type: boolean
+    EntregaResponseDTO:
+      type: object
+      required:
+        - id
+        - idDonacion
+        - idBeneficiaria
+        - estadoActual
+      properties:
+        id:
+          type: string
+          format: uuid
+        idRuta:
+          type: string
+          format: uuid
+          nullable: true
+        idDonacion:
+          type: string
+          format: uuid
+        idBeneficiaria:
+          type: string
+          format: uuid
+        destino:
+          $ref: '#/components/schemas/DireccionDTO'
+        estadoActual:
+          type: string
+          enum:
+            - PENDIENTE
+            - EN_TRASLADO
+            - ENTREGADA
+            - NO_RECIBIDA
+            - REVISION
+        horaSalida:
+          type: string
+          format: date-time
+          nullable: true
+        horaArribo:
+          type: string
+          format: date-time
+          nullable: true
+        fotoRecepcionUrl:
+          type: string
+          nullable: true
+        volumenTotalM3:
+          type: number
+        pesoTotalKG:
+          type: number
+        historialEstado:
+          type: array
+          items:
+            type: object

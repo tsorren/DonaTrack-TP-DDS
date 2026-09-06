@@ -20,7 +20,7 @@ Al diseñar el esquema relacional con JPA/Hibernate 6 para Fase 2, se requiere d
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleada 10 de Persistencia en `notificaciones-service` ([decisiones_futuras_en_oleada_10.md](../arquitectura/diseno/notificaciones/decisiones_futuras_en_oleada_10.md) §1, §2, §7).
+* **Oleadas de Origen:** Oleada 10 de Persistencia en `notificaciones-service` ([decisiones_futuras_en_oleada_10.md](../../arquitectura/diseno/notificaciones/decisiones_futuras_en_oleada_10.md) §1, §2, §7).
 * **Hallazgo:** Se estableció que la jerarquía de medios de contacto se unifica en una sola tabla mediante `SINGLE_TABLE` por ser extremadamente homogénea (ambos subtipos comparten `persona_id`, `es_predeterminado`, `valor` y solo difieren en la columna opcional `tipo_telefono`), y que `Notificacion` debe referenciar a la persona mediante `persona_id UUID` sin foreign key forzada.
 
 ## Alternativas Consideradas

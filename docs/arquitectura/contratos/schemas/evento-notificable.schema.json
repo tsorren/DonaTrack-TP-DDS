@@ -1,0 +1,309 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-notificable.schema.json",
+  "title": "EventoNotificableDTO",
+  "description": "Payload polimórfico REST para despachar alertas y notificaciones a personas en notificaciones-service vía POST /notificaciones",
+  "oneOf": [
+    { "$ref": "#/$defs/EventoDonanteRegistradoDTO" },
+    { "$ref": "#/$defs/EventoDonanteInactivoDTO" },
+    { "$ref": "#/$defs/EventoMisionCumplidaDTO" },
+    { "$ref": "#/$defs/EventoSubioCategoriaDTO" },
+    { "$ref": "#/$defs/EventoDonacionAsignadaDTO" },
+    { "$ref": "#/$defs/EventoDonacionRecibidaDTO" },
+    { "$ref": "#/$defs/EventoDonacionEnCaminoDTO" },
+    { "$ref": "#/$defs/EventoEntregaFallidaDTO" },
+    { "$ref": "#/$defs/EventoDonacionVencidaDTO" }
+  ],
+  "$defs": {
+    "EventoDonanteRegistradoDTO": {
+      "type": "object",
+      "description": "Notificación emitida al registrar un nuevo donante en el sistema",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "DONANTE_REGISTRADO",
+          "description": "Discriminador polimórfico del evento"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID del donante destinatario"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Momento de ocurrencia del evento"
+        },
+        "credencialesDeAcceso": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Credenciales o clave inicial de acceso generada para el donante"
+        }
+      },
+      "required": ["tipo", "idPersonaDonante", "fecha", "credencialesDeAcceso"],
+      "additionalProperties": false
+    },
+    "EventoDonanteInactivoDTO": {
+      "type": "object",
+      "description": "Alerta enviada cuando un donante supera el umbral de inactividad",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "DONANTE_INACTIVO"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "diasInactivo": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Cantidad de días transcurridos sin registrar donaciones"
+        }
+      },
+      "required": ["tipo", "idPersonaDonante", "fecha", "diasInactivo"],
+      "additionalProperties": false
+    },
+    "EventoMisionCumplidaDTO": {
+      "type": "object",
+      "description": "Felicitación por cumplimiento exitoso de una misión de fidelización",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "MISION_CUMPLIDA"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "nombreMision": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nombre de la misión completada"
+        },
+        "recompensa": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Detalle de puntos, insignia o recompensa obtenida"
+        }
+      },
+      "required": ["tipo", "idPersonaDonante", "fecha", "nombreMision", "recompensa"],
+      "additionalProperties": false
+    },
+    "EventoSubioCategoriaDTO": {
+      "type": "object",
+      "description": "Notificación por ascenso de nivel/categoría del donante",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "SUBIO_CATEGORIA"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "categoriaNueva": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Nueva categoría alcanzada"
+        },
+        "categoriaVieja": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Categoría previa"
+        }
+      },
+      "required": ["tipo", "idPersonaDonante", "fecha", "categoriaNueva", "categoriaVieja"],
+      "additionalProperties": false
+    },
+    "EventoDonacionAsignadaDTO": {
+      "type": "object",
+      "description": "Notificación emitida cuando una donación es vinculada a una entidad beneficiaria",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "DONACION_ASIGNADA"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "idPersonaBeneficiaria": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID de la entidad beneficiaria asignada"
+        },
+        "detalleDonacion": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Descripción sintética de la donación asignada"
+        }
+      },
+      "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaBeneficiaria", "detalleDonacion"],
+      "additionalProperties": false
+    },
+    "EventoDonacionRecibidaDTO": {
+      "type": "object",
+      "description": "Notificación con comprobante de recepción efectiva de la donación",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "DONACION_RECIBIDA"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "idPersonaBeneficiaria": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "detalleDonacion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "patenteCamion": {
+          "type": "string",
+          "description": "Identificador del camión que completó la entrega (opcional)"
+        }
+      },
+      "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaBeneficiaria", "detalleDonacion"],
+      "additionalProperties": false
+    },
+    "EventoDonacionEnCaminoDTO": {
+      "type": "object",
+      "description": "Notificación informando que la donación ha iniciado su traslado logístico",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "DONACION_EN_CAMINO"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "idPersonaBeneficiaria": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "detalleDonacion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "enlaceSeguimiento": {
+          "type": "string",
+          "description": "URL pública o tracking code para seguir el camión (opcional)"
+        }
+      },
+      "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaBeneficiaria", "detalleDonacion"],
+      "additionalProperties": false
+    },
+    "EventoEntregaFallidaDTO": {
+      "type": "object",
+      "description": "Alerta enviada a donante, beneficiario y administrador ante una entrega fallida",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "ENTREGA_FALLIDA"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "idPersonaBeneficiaria": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "detalleDonacion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "idPersonaAdmin": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID del administrador destinatario de la alerta de falla"
+        },
+        "motivo": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Motivo justificado del rechazo o imposibilidad de entrega"
+        },
+        "replanificable": {
+          "type": "boolean",
+          "description": "Indica si la entrega califica para reintento automático"
+        }
+      },
+      "required": [
+        "tipo",
+        "idPersonaDonante",
+        "fecha",
+        "idPersonaBeneficiaria",
+        "detalleDonacion",
+        "idPersonaAdmin",
+        "motivo",
+        "replanificable"
+      ],
+      "additionalProperties": false
+    },
+    "EventoDonacionVencidaDTO": {
+      "type": "object",
+      "description": "Alerta por vencimiento temporal de una donación sin asignar o en acopio",
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "const": "DONACION_VENCIDA"
+        },
+        "idPersonaDonante": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fecha": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "idPersonaAdmin": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "detalleDonacion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "motivo": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaAdmin", "detalleDonacion", "motivo"],
+      "additionalProperties": false
+    }
+  }
+}
