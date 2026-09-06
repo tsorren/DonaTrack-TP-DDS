@@ -41,7 +41,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | --- | --- |
 | Diseño arquitectónico / review | [`arquitectura/principios-diseno-arquitectura.md`](arquitectura/principios-diseno-arquitectura.md) |
 | Creación de ADR | [`adr/README.md`](adr/README.md) + [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) + ADRs previos del mismo servicio |
-| Testing / integración | [`testing/integration-tests.md`](testing/integration-tests.md) |
+| Testing / integración / QA | [`testing/integration-tests.md`](testing/integration-tests.md) + [`testing/auditoria/README.md`](testing/auditoria/README.md) + [`testing/plan-auditoria-y-blueprint-qa.md`](testing/plan-auditoria-y-blueprint-qa.md) |
 | CI/CD / pipeline / Docker | [`cicd/DonaTrack-CICD.md`](cicd/DonaTrack-CICD.md) |
 | Code quality / SonarCloud | [`IA/07-errores-frecuentes-sonarcloud-ia.md`](IA/07-errores-frecuentes-sonarcloud-ia.md) |
 | Revisión adversarial (Fase 6) | [`auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) |

@@ -102,3 +102,17 @@
 | Target | `common-lib` (`ControllerLoggingInterceptor`, `ServiceLoggingAspect`, `GlobalExceptionHandler`) · `scripts/analyze_preprod_logs.py` |
 | Cuándo se saldará | Sin fecha asignada — pendiente de priorización |
 
+---
+
+## DTI-09 — Modernización del arnés de testing y erradicación de antipatrones de QA (AP-01, AP-02, AP-03)
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes](./20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes.md) |
+| ADR complementario | [20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp](./20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — auditoría y blueprints formalizados; implementación diferida a Entregas 4 y 5 según el roadmap de migración |
+| Target | Monorepo · `integration-tests` · microservicios (`donaciones`, `logistica`, `incentivos`, `notificaciones`) |
+| Cuándo se saldará | **Entrega 4 (Sprints 1-4)**: Fase 1 (Fitness Functions ArchUnit) y Fase 2 (Slicing Testcontainers `@ServiceConnection`); **Entrega 5 (Sprints 5-7)**: Fase 3 (Contratos OpenAPI/WireMock erradicando AP-01) y Fase 4 (Migración de carga a k6 erradicando AP-02) |
+
+
