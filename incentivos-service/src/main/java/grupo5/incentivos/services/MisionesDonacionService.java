@@ -9,6 +9,7 @@ import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
+import grupo5.incentivos.services.mappers.MisionMapper;
 import java.time.YearMonth;
 import java.util.Comparator;
 import java.util.List;
@@ -21,11 +22,15 @@ public class MisionesDonacionService implements IMisionesDonacionService {
 
   private final IDonanteIncentivosRepository repository;
   private final ApplicationEventPublisher eventPublisher;
+  private final MisionMapper misionMapper;
 
   public MisionesDonacionService(
-      IDonanteIncentivosRepository repository, ApplicationEventPublisher eventPublisher) {
+      IDonanteIncentivosRepository repository,
+      ApplicationEventPublisher eventPublisher,
+      MisionMapper misionMapper) {
     this.repository = repository;
     this.eventPublisher = eventPublisher;
+    this.misionMapper = misionMapper;
   }
 
   @Override
@@ -52,11 +57,12 @@ public class MisionesDonacionService implements IMisionesDonacionService {
 
   @Override
   public List<MisionDTO> obtenerMisiones(UUID donanteId) {
-    return obtenerDonante(donanteId).getMisiones().stream()
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    return donante.getMisiones().stream()
         .sorted(
             Comparator.comparing(
                 Mision::getNumeroMision, Comparator.nullsLast(Comparator.naturalOrder())))
-        .map(MisionDTO::desde)
+        .map(mision -> misionMapper.toResponseDTO(mision, donante))
         .toList();
   }
 

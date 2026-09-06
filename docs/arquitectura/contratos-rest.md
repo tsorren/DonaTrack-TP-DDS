@@ -124,9 +124,12 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/incentivos/ranking/historial` | Historial de rankings mensuales | — | `200` |
 | `POST` | `/api/incentivos/ranking/calcular` | Cálculo y persistencia de ranking mensual (`?periodo=YYYY-MM`) | — | `200`, `400` |
 | `GET` | `/api/incentivos/ranking/posicion/{donanteId}` | Posición de un donante en ranking (`?periodo=YYYY-MM`) | — | `200`, `204` |
+| `GET` | `/api/incentivos/ranking/{periodo}` | Consulta de ranking mensual por período específico (`YYYY-MM`) | — | `200`, `400`, `404` |
 | `POST` | `/api/incentivos/donantes/{donanteId}` | Registro de donante en módulo incentivos | `RegistrarDonanteRequest` | `201`, `400` |
 | `DELETE` | `/api/incentivos/donantes/{donanteId}` | Baja de donante en módulo incentivos | — | `204`, `404` |
 | `PATCH` | `/api/incentivos/donantes/{donanteId}` | Modificación de datos de donante | `ModificarDonanteRequest` | `200`, `400`, `404` |
+| `GET` | `/api/incentivos/donantes/{donanteId}` | Consulta del perfil consolidado del donante en incentivos | — | `200`, `404` |
+| `GET` | `/api/incentivos/donantes/{donanteId}/ascensos` | Historial de transiciones de categoría del donante | — | `200`, `404` |
 | `GET` | `/api/incentivos/donantes/{donanteId}/metricas` | Métricas de impacto, donaciones completadas y nivel del donante | — | `200`, `404` |
 | `GET` | `/api/incentivos/admin/resumen` | Resumen consolidado del sistema de incentivos | — | `200` |
 | `GET` | `/api/incentivos/donantes/{donanteId}/misiones` | Misiones asignadas al donante (GoF Template Method) | — | `200`, `404` |
@@ -134,9 +137,12 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `PUT` | `/api/incentivos/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad` | Configurar visibilidad pública de insignia (`?visible=true/false`) | — | `200`, `404` |
 | `POST` | `/api/incentivos/donaciones` | Notificar donación para evaluación de progreso de misiones | `NuevaDonacionRequest` | `200`, `400` |
 | `POST` | `/api/incentivos/donaciones/exitosa` | Notificar donación exitosa para evaluación de misiones | `DonacionExitosaRequest` | `200`, `400` |
+| `POST` | `/api/incentivos/evaluaciones-inactividad` | Disparo manual de evaluación de inactividad de donantes (testing/admin) | — | `200` |
+| `POST` | `/api/incentivos/verificaciones-racha` | Disparo manual de verificación de vigencia de rachas (testing/admin) | — | `200` |
 
-> **Nota de reconciliación con el código fuente Java (`incentivos-service`):**
+> **Notas de reconciliación con el código fuente Java (`incentivos-service`):**
 > - **D5:** El parámetro de ruta para visibilidad de insignias utiliza la variable `{nombreInsignia}` conforme a `InsigniasController.java` (`@PathVariable String nombreInsignia`).
+> - **D6:** Los endpoints de procesos batch (`POST /api/incentivos/evaluaciones-inactividad` y `POST /api/incentivos/verificaciones-racha`) operan como disparadores on-demand para pruebas automatizadas y soporte administrativo, amparados bajo deuda técnica catalogada ([DTI-09](../adr/DEUDA_TECNICA.md#dti-09-seguridad-control-de-acceso-y-asincronia-en-procesos-batch-de-incentivos)).
 
 ---
 

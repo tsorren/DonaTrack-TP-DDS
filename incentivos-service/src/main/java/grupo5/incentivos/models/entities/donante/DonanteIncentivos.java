@@ -165,6 +165,13 @@ public class DonanteIncentivos extends AgregadoConEventos<EventoDonanteIncentivo
     return this.insignias.stream().filter(InsigniaGanada::visible).toList();
   }
 
+  public InsigniaGanada insigniaGanadaDe(String nombreInsignia) {
+    return this.insignias.stream()
+        .filter(ganada -> ganada.nombre().equals(nombreInsignia))
+        .findFirst()
+        .orElse(null);
+  }
+
   public void configurarVisibilidadInsignia(String nombre, boolean visible) {
     if (nombre == null || nombre.trim().isEmpty()) {
       throw new ValidationException(ErrorCatalog.INSIGNIA_SIN_NOMBRE);

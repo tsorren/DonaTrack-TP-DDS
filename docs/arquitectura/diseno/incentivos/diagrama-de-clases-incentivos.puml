@@ -57,7 +57,10 @@ package DONANTE {
     + otorgarInsignia(plantilla: Insignia): void
     + otorgarInsignia(plantilla: Insignia, fechaObtencion: LocalDate): void
     + insigniasVisibles(): List<InsigniaGanada>
+    + insigniaGanadaDe(nombreInsignia: String): InsigniaGanada
     + configurarVisibilidadInsignia(nombre: String, visible: boolean): void
+    + getHistorialCategorias(): List<CambioCategoria>
+    + getMisionActiva(): Mision
     - evaluarMisiones(evento: EventoDonacion): void
     - siguienteCategoria(): CategoriaDonante
   }
@@ -84,8 +87,7 @@ package INSIGNIAS {
     - fechaObtenida: LocalDate {final}
     --
     + InsigniaGanada(nombre: String, descripcion: String, imagenUrl: String, visible: boolean, fechaObtenida: LocalDate)
-    + ocultada(): InsigniaGanada
-    + visible(): InsigniaGanada
+    + conVisibilidad(visible: boolean): InsigniaGanada
   }
 
   DonanteIncentivos "1" *-- "many" InsigniaGanada
@@ -326,10 +328,12 @@ package APPLICATION_SERVICES {
 
   interface IRankingService <<interface>> {
     + calcularYPersistir(periodo: YearMonth): RankingMensualDTO
+    + calcularYNotificar(periodo: YearMonth): RankingMensualDTO
     + obtenerHistorial(): List<RankingMensualDTO>
     + obtenerUltimoRanking(): Optional<RankingMensualDTO>
     + obtenerPosicionDonante(donanteId: UUID): Optional<Integer>
     + obtenerPosicionDonante(donanteId: UUID, periodo: YearMonth): Optional<Integer>
+    + obtenerRankingPorPeriodo(periodo: YearMonth): Optional<RankingMensual>
   }
 
   class GestionDonanteService <<service>> implements IGestionDonanteService
@@ -338,6 +342,52 @@ package APPLICATION_SERVICES {
   class MetricasIncentivosService <<service>> implements IMetricasIncentivosService
   class InactividadService <<service>> implements IInactividadService
   class RankingService <<service>> implements IRankingService
+}
+
+' ==================== MAPPERS ====================
+package MAPPERS {
+  class MisionMapper <<service>> {
+    + toResponseDTO(mision: Mision, donante: DonanteIncentivos): MisionDTO
+    - insigniaGanadaDe(mision: Mision, donante: DonanteIncentivos): InsigniaGanada
+    - resolverInsigniaDTO(mision: Mision, ganada: InsigniaGanada): InsigniaDTO
+  }
+
+  MisionMapper ..> Mision : mapea
+  MisionMapper ..> DonanteIncentivos : consulta
+  MisionMapper ..> InsigniaGanada : resuelve
+}
+
+' ==================== REST CONTROLLERS ====================
+package CONTROLLERS {
+  interface IDonanteIncentivosController <<interface>> {
+    + registrarDonante(donanteId: UUID, request: RegistrarDonanteRequest): ResponseEntity<DonanteRegistradoDTO>
+    + darDeBaja(donanteId: UUID): ResponseEntity<Void>
+    + modificarDonante(donanteId: UUID, request: ModificarDonanteRequest): ResponseEntity<Void>
+    + obtenerDonante(donanteId: UUID): ResponseEntity<DonantePerfilDTO>
+    + obtenerAscensos(donanteId: UUID): ResponseEntity<List<CambioCategoriaDTO>>
+  }
+
+  interface IRankingController <<interface>> {
+    + obtenerUltimoRanking(): ResponseEntity<RankingMensualDTO>
+    + obtenerHistorial(): ResponseEntity<List<RankingMensualDTO>>
+    + calcularRanking(periodo: String): ResponseEntity<RankingMensualDTO>
+    + obtenerPosicionDonante(donanteId: UUID, periodo: String): ResponseEntity<Integer>
+    + obtenerRankingPorPeriodo(periodo: String): ResponseEntity<RankingMensualDTO>
+  }
+
+  interface IProcesosIncentivosController <<interface>> {
+    + ejecutarEvaluacionInactividad(): ResponseEntity<Void>
+    + ejecutarVerificacionRachas(): ResponseEntity<Void>
+  }
+
+  class DonanteIncentivosController <<rest_controller>> implements IDonanteIncentivosController
+  class RankingController <<rest_controller>> implements IRankingController
+  class ProcesosIncentivosController <<rest_controller>> implements IProcesosIncentivosController
+
+  DonanteIncentivosController --> IGestionDonanteService
+  RankingController --> IRankingService
+  ProcesosIncentivosController --> IInactividadService
+  ProcesosIncentivosController --> IMisionesDonacionService
 }
 
 ' ==================== INFRASTRUCTURE & CONFIG ====================

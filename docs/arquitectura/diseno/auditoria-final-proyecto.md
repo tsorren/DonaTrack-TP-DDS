@@ -639,7 +639,8 @@ CONFIRMADO: logistica-service NO invoca directamente a donaciones, incentivos ni
 
 | Endpoint | Método | Controller | En Postman | Discrepancias |
 |----------|--------|-----------|-----------|---------------|
-| /api/incentivos/donantes/{id} | POST, DELETE, PATCH | DonanteIncentivosController | SI (postman-incentivos) | Ninguna |
+| /api/incentivos/donantes/{id} | POST, DELETE, PATCH, GET | DonanteIncentivosController | SI (postman-incentivos) | Consulta de perfil del donante consolidada en PR #856 |
+| /api/incentivos/donantes/{id}/ascensos | GET | DonanteIncentivosController | SI (postman-incentivos) | Historial de transiciones de categoría agregado en PR #856 |
 | /api/incentivos/donaciones | POST | MisionesDonacionController | SI | Ninguna |
 | /api/incentivos/donaciones/exitosa | POST | MisionesDonacionController | SI (flujo-5) | Ninguna |
 | /api/incentivos/donantes/{id}/misiones | GET | MisionesDonacionController | SI | Ninguna |
@@ -647,9 +648,12 @@ CONFIRMADO: logistica-service NO invoca directamente a donaciones, incentivos ni
 | /api/incentivos/ranking/historial | GET | RankingController | SI | Ninguna |
 | /api/incentivos/ranking/calcular | POST | RankingController | SI (flujo-5) | Ninguna |
 | /api/incentivos/ranking/posicion/{id} | GET | RankingController | SI | Ninguna |
+| /api/incentivos/ranking/{periodo} | GET | RankingController | NO | Consulta de ranking mensual por período (YYYY-MM) agregada en PR #856 |
 | /api/incentivos/donantes/{id}/insignias | GET | InsigniasController | SI (flujo-5) | Parámetro opcional soloVisibles; visibilidad se configura vía PUT .../visibilidad (no PATCH) |
 | /api/incentivos/donantes/{id}/metricas | GET | MetricasIncentivosController | SI (flujo-8 paso 5.1) | Ninguna |
 | /api/incentivos/admin/resumen | GET | MetricasIncentivosController | NO | Resumen global del sistema para administradores |
+| /api/incentivos/evaluaciones-inactividad | POST | ProcesosIncentivosController | NO | Disparador on-demand para pruebas y administración (DTI-09) |
+| /api/incentivos/verificaciones-racha | POST | ProcesosIncentivosController | NO | Disparador on-demand para pruebas y administración (DTI-09) |
 
 ### 10.4 Notificaciones (:8081) — Endpoints verificados
 

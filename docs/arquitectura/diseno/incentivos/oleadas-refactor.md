@@ -202,7 +202,7 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
    - Encapsular mutaciones de progreso y estado en métodos protegidos (`completar()`, `setProgresoActual()`) y semánticos (`setNumeroMision()`, `setInsignia()`).
    - Confinar las actualizaciones de `Metricas` a métodos de comportamiento (`registrarDonacion`, `registrarDonacionExitosa`, `registrarOrganizacionAyudada`).
 4. **Separación de Responsabilidades `Insignia` (plantilla) e `InsigniaGanada` (poseída)**:
-   - Crear `InsigniaGanada` con métodos inmutables de evolución de visibilidad (`ocultada()`, `mostrada()`, `conVisibilidad(boolean)`).
+   - Crear `InsigniaGanada` con método inmutable de evolución de visibilidad (`conVisibilidad(boolean)`).
    - Reducir `Insignia` a plantilla inmutable (`nombre`, `descripcion`, `imagenUrl`).
    - Migrar `DonanteIncentivos.insignias` a `List<InsigniaGanada>`.
    - Sobrecargar `InsigniaDTO.desde()` para soportar ambas representaciones limpiamente.

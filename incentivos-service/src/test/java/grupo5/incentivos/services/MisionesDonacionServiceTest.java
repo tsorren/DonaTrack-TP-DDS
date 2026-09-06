@@ -19,6 +19,7 @@ import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import grupo5.incentivos.services.mappers.MisionMapper;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
@@ -43,7 +44,7 @@ class MisionesDonacionServiceTest {
   @BeforeEach
   void setUp() {
     repository = new DonanteIncentivosRepository();
-    service = new MisionesDonacionService(repository, eventPublisher);
+    service = new MisionesDonacionService(repository, eventPublisher, new MisionMapper());
   }
 
   @Test
@@ -170,6 +171,31 @@ class MisionesDonacionServiceTest {
 
     assertEquals(1, list.size());
     assertEquals(mision.getNombre(), list.get(0).nombre());
+  }
+
+  @Test
+  void
+      obtenerMisiones_cuandoMisionCompletadaTieneInsignia_deberiaIncluirLaInsigniaGanadaDelDonante() {
+    UUID donanteId = UUID.randomUUID();
+    MisionRacha racha =
+        MisionMother.rachaConInsignia(CategoriaDonante.COLABORADOR, 1, "Racha de Bronce");
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(donanteId, List.of(racha));
+    repository.save(donante);
+
+    NuevaDonacionRequest request =
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10));
+    service.procesarDonacion(request);
+
+    List<MisionDTO> misiones = service.obtenerMisiones(donanteId);
+
+    assertEquals(1, misiones.size());
+    MisionDTO dto = misiones.get(0);
+    assertTrue(dto.completada());
+    assertNotNull(dto.insignia());
+    assertEquals("Racha de Bronce", dto.insignia().nombre());
+    // Si viniera solo del molde estático de la misión (fallback), la fecha sería null:
+    // que no sea null confirma que se resolvió la InsigniaGanada real del donante.
+    assertNotNull(dto.insignia().fechaObtenida());
   }
 
   @Test
