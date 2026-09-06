@@ -134,6 +134,6 @@
 |---|---|
 | ADR | [20260905-dti-11](./incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md) |
 | Decision status | `proposed` |
-| Implementation status | `[INFERRED] deferred` — lógica de resolución de insignias embebida en DTO y service |
+| Implementation status | `[VERIFIED] implemented (PR #856)` — `MisionMapper` creado en `services.mappers` y `MisionDTO` purificado como record anémico |
 | Target | `incentivos-service` (`MisionDTO`, `MisionMapper`, `MisionesDonacionService`) |
-| Cuándo se saldará | **Entrega 5: Arquitectura Web MVC (Semana del 19 de Octubre 2026)** — creación de `services.mappers.MisionMapper` homologando con el patrón de `donaciones-service` y `logistica-service` |
+| Cuándo se saldará | **Saldada en PR #856 (Septiembre 2026)** — se implementó el componente `grupo5.incentivos.services.mappers.MisionMapper` resolviendo la insignia del donante y desacoplando `MisionDTO` |

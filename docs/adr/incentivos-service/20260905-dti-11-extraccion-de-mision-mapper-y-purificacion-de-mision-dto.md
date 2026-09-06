@@ -46,8 +46,11 @@ Continuar resolviendo las insignias mediante métodos privados estáticos en el 
 
 Se aprueba catalogar la extracción de `MisionMapper` como Deuda Técnica (DTI-11).
 
-### Cuándo se saldará
-**Entrega 5: Arquitectura Web MVC (Semana del 19 de Octubre 2026)**:
-1. Creación del componente `MisionMapper` en `services.mappers`.
-2. Migración de la lógica de resolución de insignias hacia `MisionMapper.toDTO(Mision mision, DonanteIncentivos donante)`.
-3. Purificación de `MisionDTO` como simple contenedor de datos (Java Record).
+### Resolución e Implementación
+
+> **`[VERIFIED]` Implementado en PR #856:**
+> Anticipando la deuda técnica inicialmente planificada para Entrega 5, en el PR #856 se completó:
+> 1. Creación del componente `@Component MisionMapper` en `grupo5.incentivos.services.mappers`.
+> 2. Implementación de `toResponseDTO(Mision mision, DonanteIncentivos donante)` resolviendo la instancia `InsigniaGanada` correspondiente vs. preview de plantilla estática.
+> 3. Purificación de `MisionDTO` como Java Record anémico sin métodos estáticos ni lógica de resolución.
+> 4. Tests dedicados en `DTOsAndMappersTest` y `MisionesDonacionServiceTest`.
