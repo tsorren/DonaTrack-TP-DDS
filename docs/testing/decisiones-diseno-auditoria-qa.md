@@ -104,7 +104,7 @@ A continuación se detallan las decisiones adoptadas (`[PROPOSED]`), las alterna
   - El repositorio **ya cuenta con infraestructura de contratos parcial**:
     - 4 especificaciones OpenAPI 3.0 estáticas en `docs/arquitectura/contratos/` (donaciones, incentivos, logística, notificaciones).
     - 11 esquemas JSON Schema formales en `docs/arquitectura/contratos/schemas/` (eventos AMQP, requests, responses).
-    - Validador automatizado en Node.js (`scripts/validate-contracts.js`) usando la librería Ajv, integrado en CI.
+    - Validador automatizado nativo en Node.js (`scripts/validate-contracts.js`) sin dependencias externas, integrado en CI.
   - Sin embargo, las **pruebas de contrato en Java son superficiales** (antipatrón *Green Smoke Contract*):
     - `ContractIT.java` solo verifica la existencia de paths en el JSON de OpenAPI generado dinámicamente (ej. `paths."/api/entregas".post != null`), sin validar esquemas de request/response, obligatoriedad de campos, tipos de datos ni códigos de respuesta.
     - `TracingContractIT.java` verifica la propagación del header `X-Trace-Id` — correcta pero ortogonal a la validación de contratos funcionales.
@@ -114,7 +114,7 @@ A continuación se detallan las decisiones adoptadas (`[PROPOSED]`), las alterna
     1. *Contratos HTTP:* Validación bidireccional contra las especificaciones OpenAPI existentes en `docs/arquitectura/contratos/` mediante filtros de RestAssured / MockMvc (`OpenApiValidationFilter` de Atlassian `swagger-request-validator`).
     2. *Contratos de Eventos RabbitMQ:* Validación de payloads serializados contra esquemas formales `docs/arquitectura/contratos/schemas/` mediante `networknt/json-schema-validator`.
     3. *Desacoplamiento de Clientes Feign:* Los tests de integración en consumidores usan `WireMockServer` cargado con payloads canónicos derivados de OpenAPI.
-  - **Relación con el baseline:** La validación Java con `swagger-request-validator` y `json-schema-validator` **complementa** (no reemplaza) el validador Ajv existente en CI. El validador Node.js opera en tiempo de CI sobre las specs estáticas; la validación Java opera en runtime de tests sobre los contratos vivos.
+  - **Relación con el baseline:** La validación Java con `swagger-request-validator` y `json-schema-validator` **complementa** (no reemplaza) el validador Node.js existente en CI. El validador Node.js opera en tiempo de CI sobre las specs estáticas; la validación Java opera en runtime de tests sobre los contratos vivos.
 * **Mitigaciones Obligatorias Incorporadas:**
   - *Detección de Drift de OpenAPI en CI:* Un paso temprano en el pipeline compara el OpenAPI generado en compilación contra la spec estática en `docs/`; si divergen, el build falla exigiendo actualización documental.
   - *Stubs OpenAPI Validados:* Los stubs de WireMock se auto-validan contra la spec del productor para evitar falsos verdes.
@@ -218,3 +218,4 @@ Este documento y su plan complementario ([`plan-auditoria-y-blueprint-qa.md`](pl
 |:---:|:---:|---|---|---|
 | **1.0.0** | 2026-09-06 | Principal QA Architect & Systems Test Engineer | Versión inicial consolidada tras sesión interactiva de `/grill-me`. Formalización de decisiones y alternativas descartadas. | Establecer la memoria histórica de diseño y justificación para la ejecución con `/goal`. |
 | **1.1.0** | 2026-09-06 | Revisor Crítico (Antigravity) | Quick wins QW-02, QW-04, QW-06, QW-11, QW-12 aplicados: baseline actual y evidencia de *Green Smoke Contract* en §2.4, baseline de Testcontainers y heterogeneidad `@WebMvcTest`/`standaloneSetup` en §2.3, columna Baseline Existente en §3, referencia cruzada a INC-01 en §1. | Revisión crítica adversarial pre-ejecución con `/goal`. Hallazgos respaldados por evidencia GrepAI. |
+| **1.2.0** | 2026-09-06 | Principal QA Architect (Antigravity) | Corrección adversarial H-01 aplicada: rectificada la alusión a Ajv en §2.4, documentando con precisión el motor nativo de validación en Node.js puro de `scripts/validate-contracts.js`. | Dictamen adversarial post-auditoría. |

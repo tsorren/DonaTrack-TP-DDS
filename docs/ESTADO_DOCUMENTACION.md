@@ -141,7 +141,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 |---|---|---|:---:|
 | [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
 | [`docs/auditoria/revision-critica-devops-ci.md`](auditoria/revision-critica-devops-ci.md) | Auditoría DevOps | Revisión crítica experta de pipelines CI/CD, Dockerfiles, observabilidad y scripts auxiliares. | 🟢 Sincronizado |
-| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-08) con ADRs enlazados. | 🟢 Sincronizado |
+| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-09) con ADRs enlazados. | 🟢 Sincronizado |
 | [`docs/adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md`](adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) | ADR Deuda Técnica | DTI-07: Adaptador interino local para Crypto-Shredding mientras auth-service no exista. | 🟢 Sincronizado |
 | [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Deuda Técnica | DTI-08: Campos de observabilidad diferidos (spanId, executionTimeMs, errorCode estructurado). | 🟢 Sincronizado |
 | [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
@@ -156,11 +156,21 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/testing/integration-tests.md`](testing/integration-tests.md) | Testing E2E | Infraestructura de pruebas de integración distribuida (Docker, RabbitMQ, PostgreSQL, n8n). | 🟢 Sincronizado |
 | [`docs/testing/plan-auditoria-y-blueprint-qa.md`](testing/plan-auditoria-y-blueprint-qa.md) | Auditoría QA | Especificación y plan maestro de auditoría y arquitectura target de testing para ejecución con /goal. | 🟢 Sincronizado |
 | [`docs/testing/decisiones-diseno-auditoria-qa.md`](testing/decisiones-diseno-auditoria-qa.md) | Decisiones QA | Registro y fundamentación de decisiones de diseño y análisis de alternativas descartadas. | 🟢 Sincronizado |
+| [`docs/testing/auditoria/README.md`](testing/auditoria/README.md) | Portal Auditoría QA | Índice maestro, síntesis ejecutiva, mapa de navegación y glosario canónico de QA. | 🟢 Sincronizado |
+| [`docs/testing/auditoria/01-diagnostico-ejecutivo.md`](testing/auditoria/01-diagnostico-ejecutivo.md) | Diagnóstico QA | Radiografía factual, evaluación teórica (Khorikov, Google SWE, Fowler) e INC-01. | 🟢 Sincronizado |
+| [`docs/testing/auditoria/02-matriz-antipatrones.md`](testing/auditoria/02-matriz-antipatrones.md) | Smells QA | Matriz de hallazgos empíricos: AP-01 a AP-10 y fortalezas FT-01 a FT-05. | 🟢 Sincronizado |
+| [`docs/testing/auditoria/03-estudio-comparativo.md`](testing/auditoria/03-estudio-comparativo.md) | Comparativa QA | Estudio multidimensional de alternativas (Ambientes, Contratos, Fitness, Performance). | 🟢 Sincronizado |
+| [`docs/testing/auditoria/04-blueprint-target.md`](testing/auditoria/04-blueprint-target.md) | Blueprint QA | Arquitectura target: Testing Honeycomb, SLA por capa, paridad DDL y diagramas Mermaid. | 🟢 Sincronizado |
+| [`docs/testing/auditoria/05-roadmap-migracion.md`](testing/auditoria/05-roadmap-migracion.md) | Roadmap QA | Plan de migración en 4 fases, preservación de compatibilidad docente y contingencias. | 🟢 Sincronizado |
 | [`docs/IA/06-contexto-base-donatrack.md`](IA/06-contexto-base-donatrack.md) | Contexto IA | Snippet de contexto con arquitectura de puertos, tecnologías y restricciones. | 🟢 Sincronizado |
 | [`docs/adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md`](adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md) | ADR DevOps | Aislamiento de contenedores, usuario non-root y recolección de logs sin volúmenes de host. | 🟢 Sincronizado |
 | [`docs/adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md`](adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md) | ADR CI/CD | Protocolo semántico de códigos de salida (0, 1, 2+) y política fail-if-no-tests. | 🟢 Sincronizado |
 | [`docs/adr/20260903-estandarizacion-ciclo-vida-testing-surefire-failsafe.md`](adr/20260903-estandarizacion-ciclo-vida-testing-surefire-failsafe.md) | ADR Testing | Estandarización de ciclo de vida Maven: Surefire (test) y Failsafe (verify). | 🟢 Sincronizado |
 | [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Observabilidad | Observabilidad estructurada en NDJSON y enriquecimiento MDC en el Shared Kernel. | 🟢 Sincronizado |
+| [`docs/adr/20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes.md`](adr/20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes.md) | ADR QA Ambientes | Testcontainers en componentes (@ServiceConnection) y coexistencia con Docker Compose. | 🟢 Sincronizado |
+| [`docs/adr/20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp.md`](adr/20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp.md) | ADR QA Contratos | Validación bidireccional OpenAPI, stubs WireMock y esquemas AMQP con JSON Schema. | 🟢 Sincronizado |
+| [`docs/adr/20260906-fitness-functions-arquitectonicas-con-archunit-y-pitest.md`](adr/20260906-fitness-functions-arquitectonicas-con-archunit-y-pitest.md) | ADR QA Fitness | Fitness Functions de arquitectura con ArchUnit en mvn test y Pitest acotado. | 🟢 Sincronizado |
+| [`docs/adr/20260906-migracion-pruebas-rendimiento-a-k6.md`](adr/20260906-migracion-pruebas-rendimiento-a-k6.md) | ADR QA Performance | Migración total de pruebas de rendimiento a k6, deprecación de PerfIT y wrapper docente. | 🟢 Sincronizado |
 
 ### 3.6 Bounded Contexts Reservados y Currícula
 
