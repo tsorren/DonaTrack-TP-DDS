@@ -47,7 +47,7 @@ Permite a cada microservicio validar su persistencia real (`@DataJpaTest`) y men
 
 * **Descompresión de la suite E2E:** Los errores de mapeo JPA o sintaxis SQL se detectan en la fase de slicing de componentes de cada servicio, sin esperar al despliegue distribuido.
 * **Erradicación de Boilerplate:** `@ServiceConnection` autoconfigura `spring.datasource.*` a partir del contenedor sin `@DynamicPropertySource`.
-* **Reutilización de Contenedores:** Con `.withReuse(true)` (Ryuk), el contenedor PostgreSQL se mantiene activo entre suites de un mismo servicio, reduciendo el startup a < 1s.
+* **Reutilización de Contenedores:** Con `.withReuse(true)` (habilitado mediante `testcontainers.reuse.enable=true` en `~/.testcontainers.properties`), el contenedor PostgreSQL se mantiene activo entre suites de un mismo servicio, reduciendo el startup a < 1s. Se debe contemplar la limpieza o aislamiento transaccional de datos entre pruebas, dado que el script DDL de `/docker-entrypoint-initdb.d/` solo se ejecuta en la inicialización inicial del contenedor.
 * **Modo Degradado Automatizado:** La extensión `@DisabledIfDockerUnavailable` desactiva selectivamente los tests de Testcontainers en estaciones de trabajo sin Docker, preservando `mvn test` en verde reportando `[DEFERRED_NO_DOCKER]`.
 
 ### Consecuencias Negativas

@@ -138,7 +138,7 @@ A continuación se detallan las decisiones adoptadas (`[PROPOSED]`), las alterna
     - Verificación automática de invariantes de `AGENTS.md` en tiempo de compilación (ejecución en ~200 ms por módulo en memoria):
       - *Controllers como adaptadores puros:* Prohibición de inyectar Repositorios en Controllers.
       - *Pureza del dominio:* Paquete `models/entities/` aislado de anotaciones JPA, Spring y HTTP.
-      - *Segregación Surefire/Failsafe (ADR 20260903):* Clases `*Test` en Surefire sin `@SpringBootTest`; clases `*IT` en Failsafe.
+      - *Segregación Surefire/Failsafe (ADR 20260903):* Clases `*Test` en Surefire sin `@SpringBootTest`; clases `*IT` en Failsafe (con migración o exclusión previa de las 4 suites preexistentes con `@SpringBootTest`).
       - *Shared Kernel:* `common-lib` libre de referencias cruzadas a servicios específicos.
   - **Pitest Acotado con Perfil Dedicado (`-Pmutation-test`):**
     - Mutation testing restringido exclusivamente a dominios con lógica de decisión y estado compleja:
@@ -219,3 +219,4 @@ Este documento y su plan complementario ([`plan-auditoria-y-blueprint-qa.md`](pl
 | **1.0.0** | 2026-09-06 | Principal QA Architect & Systems Test Engineer | Versión inicial consolidada tras sesión interactiva de `/grill-me`. Formalización de decisiones y alternativas descartadas. | Establecer la memoria histórica de diseño y justificación para la ejecución con `/goal`. |
 | **1.1.0** | 2026-09-06 | Revisor Crítico (Antigravity) | Quick wins QW-02, QW-04, QW-06, QW-11, QW-12 aplicados: baseline actual y evidencia de *Green Smoke Contract* en §2.4, baseline de Testcontainers y heterogeneidad `@WebMvcTest`/`standaloneSetup` en §2.3, columna Baseline Existente en §3, referencia cruzada a INC-01 en §1. | Revisión crítica adversarial pre-ejecución con `/goal`. Hallazgos respaldados por evidencia GrepAI. |
 | **1.2.0** | 2026-09-06 | Principal QA Architect (Antigravity) | Corrección adversarial H-01 aplicada: rectificada la alusión a Ajv en §2.4, documentando con precisión el motor nativo de validación en Node.js puro de `scripts/validate-contracts.js`. | Dictamen adversarial post-auditoría. |
+| **1.3.0** | 2026-09-06 | Senior Staff Architect & Adversarial Evaluator | Correcciones post-review PR #869 aplicadas: refinamiento de paquetes en regla ArchUnit para controllers (`jakarta..`, `lombok..`, `io.swagger..`), condición de exclusión/migración de las 4 suites `@SpringBootTest` preexistentes, actualización de WireMock a versión 3 (Java 21 / Jakarta EE), y canonización de montaje DDL desde classpath y directiva reuse en Testcontainers. | Cierre de observaciones técnicas de PR #869. |

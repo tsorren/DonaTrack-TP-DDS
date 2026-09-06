@@ -49,7 +49,7 @@ Aprovecha al 100% los activos ya desarrollados en el repositorio (las 4 especifi
 ### Consecuencias Negativas
 
 * Requiere sincronizar manualmente las modificaciones de contratos en el código con los archivos YAML en `docs/arquitectura/contratos/` (mitigado por el detector de drift en CI).
-* Se incorporan librerías adicionales en el scope de test: `swagger-request-validator-restassured`, `wiremock-jre8-standalone` y `json-schema-validator`.
+* Se incorporan librerías adicionales en el scope de test: `swagger-request-validator-restassured`, `org.wiremock:wiremock-standalone` (v3.x para compatibilidad con Java 21 y Jakarta EE) y `json-schema-validator`.
 
 ### Validación
 

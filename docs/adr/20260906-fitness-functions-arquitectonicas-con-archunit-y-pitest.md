@@ -46,7 +46,16 @@ ArchUnit inspecciona el bytecode compilado en memoria utilizando Reflection/ASM 
    ```java
    classes().that().resideInAPackage("..controllers..")
        .should().onlyDependOnClassesThat()
-       .resideInAnyPackage("..services..", "..dto..", "java..", "org.springframework..")
+       .resideInAnyPackage(
+           "..services..",
+           "..dto..",
+           "..common..",
+           "java..",
+           "org.springframework..",
+           "jakarta..",
+           "io.swagger..",
+           "lombok..",
+           "org.slf4j..")
    ```
 2. **Pureza de Dominio:**
    ```java
@@ -54,11 +63,15 @@ ArchUnit inspecciona el bytecode compilado en memoria utilizando Reflection/ASM 
        .should().dependOnClassesThat()
        .resideInAnyPackage("..controllers..", "..infrastructure..", "jakarta.persistence..")
    ```
-3. **Segregación Surefire:**
+3. **Segregación Surefire (con migración/exclusión de suites pesadas):**
    ```java
    noClasses().that().haveSimpleNameEndingWith("Test")
+       .and().doNotHaveSimpleNameEndingWith("ApplicationTest")
+       .and().resideOutsideOfPackage("..integration..")
        .should().beAnnotatedWith(SpringBootTest.class)
    ```
+   > [!NOTE]
+   > Las 4 clases preexistentes con `@SpringBootTest` que finalizan en `*Test.java` (`DonacionesServiceApplicationTest`, `IncentivosServiceApplicationTest`, `PlanificacionManualFlowIntegrationTest` y `RepositoriosJpaTest`) deben excluirse formalmente por nombre/paquete (como se muestra arriba) o renombrarse a `*IT.java` (Maven Failsafe) antes de activar la regla en el build diario para evitar roturas prematuras.
 
 ### Consecuencias Positivas
 

@@ -129,16 +129,12 @@ Todas las pruebas que utilicen PostgreSQL real (tanto en Testcontainers como en 
   - `notificaciones`: schema `notificaciones`, usuario `notificaciones_user`
 - Conexión dinámica idiomática y resolución de DDL:
   > [!NOTE]
-  > Dado que `01-init-schemas-roles.sql` reside en la raíz del repositorio (`persistencia/init-db/`), la resolución robusta entre submódulos Maven se gestiona mediante helper de host path (patrón probado en `RepositoriosJpaTest.java`) o empaquetando el DDL en el classpath de `common-lib` durante el build:
+  > Para erradicar la fragilidad de rutas relativas de host identificada en `AP-04`, el enfoque canónico de la arquitectura target consiste en **empaquetar el DDL en el classpath de pruebas** (mediante `common-lib` o recurso de test), montándolo con `MountableFile.forClasspathResource(...)`. Durante la transición se preserva el helper de host path como fallback.
+  > 
+  > Asimismo, la directiva `.withReuse(true)` requiere que el desarrollador declare `testcontainers.reuse.enable=true` en `~/.testcontainers.properties`. Dado que los scripts en `/docker-entrypoint-initdb.d/` solo se ejecutan en la inicialización inicial del contenedor, las suites que reutilicen contenedores deben garantizar aislamiento transaccional o limpieza de tablas entre tests.
 
   ```java
-  private static String resolveInitScriptPath() {
-    Path pathInSubmodule = Path.of("../persistencia/init-db/01-init-schemas-roles.sql");
-    return Files.exists(pathInSubmodule)
-        ? pathInSubmodule.toAbsolutePath().toString()
-        : Path.of("persistencia/init-db/01-init-schemas-roles.sql").toAbsolutePath().toString();
-  }
-
+  // Enfoque canónico target: montaje desde classpath de pruebas (sin fragilidad de PWD)
   @Container
   @ServiceConnection
   static PostgreSQLContainer<?> postgres = 
@@ -147,7 +143,7 @@ Todas las pruebas que utilicen PostgreSQL real (tanto en Testcontainers como en 
           .withUsername("admin")
           .withPassword("admin_secure_password")
           .withCopyFileToContainer(
-              MountableFile.forHostPath(resolveInitScriptPath()),
+              MountableFile.forClasspathResource("/init-db/01-init-schemas-roles.sql"),
               "/docker-entrypoint-initdb.d/01-init-schemas-roles.sql")
           .withReuse(true);
   ```

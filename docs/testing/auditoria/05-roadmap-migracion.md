@@ -56,7 +56,7 @@ gantt
   2. Implementar `ArchitectureFitnessTest.java` en cada microservicio para validar automáticamente:
      - Pureza de paquetes de dominio (`models/entities` aislado de HTTP y persistencia).
      - Controllers como adaptadores puros (ningún Controller puede inyectar un Repositorio).
-     - Segregación Surefire/Failsafe (ningún `*Test.java` puede tener `@SpringBootTest`).
+     - Segregación Surefire/Failsafe: se excluyen temporalmente o se migran/renombran a `*IT.java` (Failsafe) las 4 suites preexistentes con `@SpringBootTest` (`DonacionesServiceApplicationTest`, `IncentivosServiceApplicationTest`, `PlanificacionManualFlowIntegrationTest` y `RepositoriosJpaTest`) para que ningún `*Test.java` en Surefire viole el Quality Gate.
   3. Configurar el plugin `org.pitest:pitest-maven` bajo el perfil dedicado `-Pmutation-test`, acotado a `grupo5.donaciones.services.matching` y transiciones de estado de `DonacionIndependiente`.
   4. Crear la extensión JUnit 5 `@DisabledIfDockerUnavailable` en `common-lib` para soportar el modo degradado local (§11.3 de `AGENTS.md`).
 * **Definition of Done (DoD):**
@@ -93,7 +93,7 @@ gantt
   2. Reemplazar las aserciones superficiales de `ContractIT.java` por validación bidireccional estricta:
      - Cada request y response de prueba se valida contra `docs/arquitectura/contratos/openapi-*.yaml`.
      - Si un campo obligatorio falta o un tipo no coincide, la prueba falla explícitamente.
-  3. Incorporar `com.github.tomakehurst:wiremock-jre8-standalone` para pruebas de integración de clientes Feign (`NotificacionesFeignClient`, `LogisticaFeignClient`, `IncentivosFeignClient`):
+  3. Incorporar `org.wiremock:wiremock-standalone:3.12.0` (compatible con Java 21 y Jakarta EE) para pruebas de integración de clientes Feign (`NotificacionesFeignClient`, `LogisticaFeignClient`, `IncentivosFeignClient`):
      - Configurar stubs canónicos de WireMock inicializados a partir de las specs OpenAPI de los productores.
   4. Validar los eventos serializados de RabbitMQ contra los 11 JSON Schemas en `docs/arquitectura/contratos/schemas/` usando `networknt/json-schema-validator`.
 * **Definition of Done (DoD):**
