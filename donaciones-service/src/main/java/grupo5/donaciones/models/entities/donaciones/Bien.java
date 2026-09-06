@@ -35,6 +35,6 @@ public record Bien(
   // metodos
   public boolean estaVencido() {
     if (this.fechaVencimiento == null) return false;
-    return this.fechaVencimiento.isBefore(LocalDate.now(ZoneId.systemDefault()));
+    return this.fechaVencimiento.isBefore(LocalDate.now(ZoneId.of("UTC")));
   }
 }

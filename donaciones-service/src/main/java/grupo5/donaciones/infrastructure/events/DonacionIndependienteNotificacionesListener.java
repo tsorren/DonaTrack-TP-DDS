@@ -60,7 +60,7 @@ public class DonacionIndependienteNotificacionesListener {
               personaDonanteId,
               event.getTimestamp() != null
                   ? event.getTimestamp()
-                  : LocalDateTime.now(ZoneId.systemDefault()),
+                  : LocalDateTime.now(ZoneId.of("UTC")),
               idPersonaBeneficiaria,
               descripcion,
               event.getUrlMapa()));
@@ -88,7 +88,7 @@ public class DonacionIndependienteNotificacionesListener {
               personaDonanteId,
               event.getTimestamp() != null
                   ? event.getTimestamp()
-                  : LocalDateTime.now(ZoneId.systemDefault()),
+                  : LocalDateTime.now(ZoneId.of("UTC")),
               idPersonaBeneficiaria,
               descripcion,
               event.getPatenteCamion()));
@@ -111,7 +111,7 @@ public class DonacionIndependienteNotificacionesListener {
               personaDonanteId,
               event.getTimestamp() != null
                   ? event.getTimestamp()
-                  : LocalDateTime.now(ZoneId.systemDefault()),
+                  : LocalDateTime.now(ZoneId.of("UTC")),
               idPersonaAdmin,
               descripcion,
               event.getMotivo()));
@@ -135,7 +135,7 @@ public class DonacionIndependienteNotificacionesListener {
               personaDonanteId,
               event.getTimestamp() != null
                   ? event.getTimestamp()
-                  : LocalDateTime.now(ZoneId.systemDefault()),
+                  : LocalDateTime.now(ZoneId.of("UTC")),
               idPersonaBeneficiaria,
               descripcion,
               idPersonaAdmin,

@@ -47,7 +47,7 @@ public class NecesidadRecurrente extends Necesidad {
     if (fechaInicio == null) {
       throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
     }
-    if (fechaInicio.isAfter(LocalDate.now(ZoneId.systemDefault()))) {
+    if (fechaInicio.isAfter(LocalDate.now(ZoneId.of("UTC")))) {
       throw new ValidationException(ErrorCatalog.FECHA_INICIO_FUTURA);
     }
   }
@@ -120,7 +120,7 @@ public class NecesidadRecurrente extends Necesidad {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     LocalDate nuevaFechaFin =
         (actual == null || actual.fechaFin() == null)
-            ? LocalDate.now(ZoneId.systemDefault()).plus(this.periodo)
+            ? LocalDate.now(ZoneId.of("UTC")).plus(this.periodo)
             : actual.fechaFin().plus(this.periodo);
 
     this.periodos.add(

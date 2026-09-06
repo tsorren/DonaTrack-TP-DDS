@@ -41,7 +41,7 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     items.forEach(this::agregarItem);
     this.estadoActual = new EnDeposito();
     this.historial = new ArrayList<>();
-    this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
+    this.fechaRegistro = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
   public String getDescripcion() {

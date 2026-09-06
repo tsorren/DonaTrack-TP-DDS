@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public final class NecesidadMother {
 
-  public static final LocalDate FECHA_INICIO = LocalDate.now(ZoneId.systemDefault()).minusDays(5);
+  public static final LocalDate FECHA_INICIO = LocalDate.now(ZoneId.of("UTC")).minusDays(5);
 
   private NecesidadMother() {}
 

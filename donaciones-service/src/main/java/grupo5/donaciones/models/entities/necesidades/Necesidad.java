@@ -26,7 +26,7 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
     this.subcategoriaId = subcategoriaId;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;
-    this.fechaInicio = LocalDate.now(ZoneId.systemDefault());
+    this.fechaInicio = LocalDate.now(ZoneId.of("UTC"));
 
     validarNecesidad();
   }

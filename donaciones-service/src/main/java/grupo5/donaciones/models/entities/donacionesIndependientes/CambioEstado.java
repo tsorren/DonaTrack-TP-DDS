@@ -20,7 +20,7 @@ public class CambioEstado {
       String actor) {
     this.estadoAnterior = estadoAnterior;
     this.estadoNuevo = estadoNuevo;
-    this.timestamp = LocalDateTime.now(ZoneId.systemDefault());
+    this.timestamp = LocalDateTime.now(ZoneId.of("UTC"));
     this.justificacion = justificacion;
     this.actor = actor;
   }

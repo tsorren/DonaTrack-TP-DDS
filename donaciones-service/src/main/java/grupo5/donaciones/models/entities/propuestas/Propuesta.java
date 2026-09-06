@@ -24,7 +24,7 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
     this.id = UUID.randomUUID();
     this.posiblesFragmentaciones = new ArrayList<>();
     this.estado = EstadoPropuesta.PENDIENTE;
-    this.fechaCreacion = LocalDateTime.now(ZoneId.systemDefault());
+    this.fechaCreacion = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
   public Propuesta(UUID id) {

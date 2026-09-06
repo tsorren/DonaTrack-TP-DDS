@@ -178,7 +178,7 @@ public class SegmentacionEventListener {
                 di.getCantidad(),
                 donacionOriginal.getFecha() != null
                     ? donacionOriginal.getFecha().toLocalDate()
-                    : java.time.LocalDate.now(java.time.ZoneId.systemDefault()),
+                    : java.time.LocalDate.now(java.time.ZoneId.of("UTC")),
                 nombreDonante));
       } catch (Exception e) {
         log.error("Error al registrar donación en incentivos: {}", e.getMessage(), e);

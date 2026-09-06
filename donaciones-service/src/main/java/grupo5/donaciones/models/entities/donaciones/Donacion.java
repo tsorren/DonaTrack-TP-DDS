@@ -48,7 +48,7 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
     this.donanteId = donanteId;
     this.depositoRecepcion = depositoRecepcion;
     this.descripcion = descripcion;
-    this.fecha = fecha != null ? fecha : LocalDateTime.now(java.time.ZoneId.systemDefault());
+    this.fecha = fecha != null ? fecha : LocalDateTime.now(java.time.ZoneId.of("UTC"));
     this.items = new ArrayList<>();
     this.estadoActual = EstadoDonacion.CARGADA;
     this.historialEstados = new ArrayList<>();

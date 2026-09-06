@@ -62,7 +62,7 @@ public class DonantesService implements IDonantesService {
               + UUID.randomUUID().toString().substring(0, 8);
       notificacionesFeignClient.enviarEvento(
           new EventoDonanteRegistradoDTO(
-              persona.getId(), LocalDateTime.now(ZoneId.systemDefault()), credenciales));
+              persona.getId(), LocalDateTime.now(ZoneId.of("UTC")), credenciales));
     }
 
     return donanteMapper.toOutputDTO(guardado);
