@@ -2,17 +2,18 @@ package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.itemsNormalizados.inputs.ItemDonacionNormalizadoPatchDTO;
 import grupo5.donaciones.dto.itemsNormalizados.outputs.ItemDonacionNormalizadoOutputDTO;
-import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
@@ -57,6 +58,7 @@ class ItemDonacionNormalizadoServiceTest {
         new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, java.time.Month.MAY, 15));
     Donante donante = new Donante(humana.getId());
     donacion = new Donacion(donante.getId());
+    donacion.clearDomainEvents();
 
     Categoria categoria =
         new Categoria(
@@ -115,6 +117,15 @@ class ItemDonacionNormalizadoServiceTest {
         .thenReturn(Optional.of(subcategoria));
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
     when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
+    doAnswer(
+            invocation -> {
+              assertTrue(
+                  donacion.getDomainEvents().isEmpty(),
+                  "El evento debe retirarse del agregado antes de publicarse");
+              return null;
+            })
+        .when(eventPublisher)
+        .publishEvent(any(DonacionNormalizada.class));
 
     ItemDonacionNormalizadoPatchDTO patchDTO =
         new ItemDonacionNormalizadoPatchDTO(EstadoNormalizacion.ACEPTADO, null);
@@ -125,7 +136,7 @@ class ItemDonacionNormalizadoServiceTest {
     assertEquals(EstadoDonacion.NORMALIZADA, donacion.getEstadoActual());
     verify(itemNormalizadoRepository, times(1)).save(itemNormalizado);
     verify(donacionRepository, times(1)).save(donacion);
-    verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizadaEvent.class));
+    verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizada.class));
   }
 
   @Test
@@ -153,6 +164,6 @@ class ItemDonacionNormalizadoServiceTest {
     assertEquals(newSubId, itemNormalizado.getBien().subcategoriaId());
     assertEquals(1.0, itemNormalizado.getBien().confianza());
     assertEquals(EstadoDonacion.NORMALIZADA, donacion.getEstadoActual());
-    verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizadaEvent.class));
+    verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizada.class));
   }
 }

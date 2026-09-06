@@ -4,16 +4,14 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class DonacionRecibida extends EventoDeDonacion {
 
   private static final DateTimeFormatter FORMATO_COMPROBANTE =
       DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-  private String patenteCamion;
+  private final String patenteCamion;
 
   public DonacionRecibida(
       Persona persona,
@@ -21,14 +19,9 @@ public class DonacionRecibida extends EventoDeDonacion {
       String detalleDonacion,
       String patenteCamion,
       LocalDateTime fecha) {
-    this.setPersona(persona);
-    this.setEntidadBeneficiaria(entidadBeneficiaria);
-    this.setDetalleDonacion(detalleDonacion);
-    this.setFecha(fecha);
+    super(persona, entidadBeneficiaria, detalleDonacion, fecha);
     this.patenteCamion = patenteCamion;
   }
-
-  public DonacionRecibida() {}
 
   @Override
   protected String armarMensajeDonante() {

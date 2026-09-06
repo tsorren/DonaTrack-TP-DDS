@@ -83,4 +83,4 @@ Utilizar el framework Mockito para crear objetos simulados y programar su compor
 
 ## Links
 
-* [Contexto - NotificacionRouter](../20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router)
+* [Contexto - NotificacionRouter](./20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router.md)

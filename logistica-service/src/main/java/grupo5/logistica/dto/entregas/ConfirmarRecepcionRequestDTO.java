@@ -1,3 +1,5 @@
 package grupo5.logistica.dto.entregas;
 
-public record ConfirmarRecepcionRequestDTO(String actor) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record ConfirmarRecepcionRequestDTO(@NotBlank String actor) {}

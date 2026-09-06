@@ -1,5 +1,5 @@
 # Uso de Template Method para definir el comportamiento de las misiones
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-18
 - Deciders: Decisión Grupal
 

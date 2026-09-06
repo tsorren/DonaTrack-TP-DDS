@@ -1,0 +1,435 @@
+@startuml diagrama-de-clases-notificaciones
+!include ../common/donatrack-style.puml
+
+title Servicio de Notificaciones - Dominio y Capas
+
+' ============================================================
+' Reconstruido a partir de "Diagrama de Clases - Servicio
+' Notificaciones.csv" (Lucidchart) + código real de
+' notificaciones-service, en docs/refactor/notificaciones/
+' fase-0-auditoria.md (§2-3). Corrige 3 errores del CSV original
+' (ver fase-0-auditoria.md §3.4):
+'   1. CambioEstadoNotificacion tipaba sus campos como
+'      "EstadoChofer" (copy-paste de logística) -> EstadoNotificacion.
+'   2. NotificacionSender/NotificacionRouter dibujaban una clase
+'      "WhatsApp" que nunca existió como clase -> WhatsApp está
+'      fusionado en Telefono vía TipoTelefono.WHATSAPP.
+'   3. La relación MedioDeContacto -> NotificacionSender estaba
+'      dibujada como Generalization (herencia) -> es una
+'      dependencia de uso (NotificacionSender se recibe como
+'      parámetro en enviarMensaje(), no se extiende ni se implementa).
+' ============================================================
+
+' ==================== PERSONAS ====================
+package PERSONAS {
+  enum TipoPersona <<enum>> {
+    HUMANA
+    JURIDICA
+  }
+
+  class Persona <<entity>> {
+    - id: UUID
+    - denominacion: String
+    - tipoPersona: TipoPersona
+    - mediosDeContacto: List<MedioDeContacto>
+    --
+    + agregarMedioDeContacto(medioDeContacto: MedioDeContacto): void
+    + quitarMedioDeContacto(medioDeContacto: MedioDeContacto): void
+    + definirMedioDeContactoPredeterminado(medioDeContacto: MedioDeContacto): void
+    + getMediosDeContacto(): List<MedioDeContacto>
+    + anonimizar(): void
+  }
+
+  Persona --> TipoPersona
+}
+
+' ==================== CONTACTOS ====================
+package CONTACTOS {
+  enum TipoTelefono <<enum>> {
+    ESTANDAR
+    WHATSAPP
+  }
+
+  abstract class MedioDeContacto <<entity>> {
+    - esPredeterminado: Boolean
+    --
+    + {abstract} enviarMensaje(mensaje: String, sender: NotificacionSender): boolean
+  }
+
+  class Correo <<entity>> {
+    - direccionCorreo: String
+    --
+    + enviarMensaje(mensaje: String, sender: NotificacionSender): boolean
+    + anonimizar(): void
+  }
+
+  class Telefono <<entity>> {
+    - caracteristica: String
+    - codigoArea: String
+    - numero: String
+    - tipo: TipoTelefono
+    --
+    + enviarMensaje(mensaje: String, sender: NotificacionSender): boolean
+    + obtenerNumeroCompleto(): String
+    + anonimizar(): void
+  }
+
+  note right of Telefono
+    WhatsApp NO es una clase propia: se modela
+    como Telefono con tipo = TipoTelefono.WHATSAPP.
+    NotificacionRouter decide el adapter (SMS vs.
+    WhatsApp) inspeccionando este campo.
+  end note
+
+  Correo --|> MedioDeContacto
+  Telefono --|> MedioDeContacto
+  Telefono --> TipoTelefono : tipo
+  Persona "1" o-- "0..*" MedioDeContacto : mediosDeContacto
+}
+
+' ==================== NOTIFICACIONES ====================
+package NOTIFICACIONES {
+  enum EstadoNotificacion <<enum>> {
+    PENDIENTE
+    ENVIADA
+    FALLIDA
+  }
+
+  note top of EstadoNotificacion
+    Diagrama de estados:
+    PENDIENTE -> ENVIADA  ("funcionó un medio")
+    PENDIENTE -> FALLIDA  ("fallaron todos los medios")
+    ENVIADA y FALLIDA son estados terminales (sin retry hoy).
+  end note
+
+  class CambioEstadoNotificacion <<entity>> {
+    - estadoAnterior: EstadoNotificacion
+    - estadoNuevo: EstadoNotificacion
+    - timestamp: LocalDateTime
+  }
+
+  class Notificacion <<entity>> {
+    - id: UUID
+    - personaId: UUID
+    - mensaje: String
+    - fechaCreacion: LocalDateTime
+    - estadoNotificacion: EstadoNotificacion
+    - historialEstado: List<CambioEstadoNotificacion>
+    --
+    + notificar(persona: Persona, sender: NotificacionSender): void
+    + ordenarMedios(persona: Persona): List<MedioDeContacto>
+    + actualizarEstado(nuevoEstado: EstadoNotificacion): void
+    + anonimizar(): void
+  }
+
+  Notificacion "1" *-- "0..*" CambioEstadoNotificacion : historialEstado
+  Notificacion --> EstadoNotificacion : estadoNotificacion
+  CambioEstadoNotificacion --> EstadoNotificacion
+}
+
+' ==================== EVENTOS (políticas de dominio, no persistentes) ====================
+package EVENTOS {
+  abstract class EventoNotificable <<entity>> {
+    - persona: Persona
+    - fecha: LocalDateTime
+    --
+    + {abstract} generarNotificaciones(): List<Notificacion>
+  }
+
+  abstract class EventoDeDonacion <<entity>> {
+    - entidadBeneficiaria: Persona
+    - detalleDonacion: String
+    --
+    + generarNotificaciones(): List<Notificacion>
+    # {abstract} armarMensajeDonante(): String
+    # {abstract} armarMensajeBeneficiario(): String
+  }
+
+  class DonacionAsignada <<entity>> {
+    --
+    # armarMensajeDonante(): String
+    # armarMensajeBeneficiario(): String
+  }
+
+  class DonacionRecibida <<entity>> {
+    - patenteCamion: String
+    --
+    # armarMensajeDonante(): String
+    # armarMensajeBeneficiario(): String
+    - armarComprobante(): String
+  }
+
+  class DonacionEnCamino <<entity>> {
+    - enlaceSeguimiento: String
+    --
+    # armarMensajeDonante(): String
+    # armarMensajeBeneficiario(): String
+  }
+
+  class EntregaFallida <<entity>> {
+    - administracion: Persona
+    - motivo: String
+    - replanificable: boolean
+    --
+    + generarNotificaciones(): List<Notificacion>
+    # armarMensajeDonante(): String
+    # armarMensajeBeneficiario(): String
+    - armarMensajeAdmin(): String
+  }
+
+  class MisionCumplida <<entity>> {
+    - nombreMision: String
+    - recompensa: String
+    --
+    + generarNotificaciones(): List<Notificacion>
+  }
+
+  class SubioCategoria <<entity>> {
+    - categoriaVieja: String
+    - categoriaNueva: String
+    --
+    + generarNotificaciones(): List<Notificacion>
+  }
+
+  class DonanteRegistrado <<entity>> {
+    - credencialesDeAcceso: String
+    --
+    + generarNotificaciones(): List<Notificacion>
+  }
+
+  class DonanteInactivo <<entity>> {
+    - diasInactividad: Integer
+    --
+    + generarNotificaciones(): List<Notificacion>
+  }
+
+  class DonacionVencida <<entity>> {
+    - administracion: Persona
+    - detalleDonacion: String
+    - motivo: String
+    --
+    + generarNotificaciones(): List<Notificacion>
+  }
+
+  EventoDeDonacion --|> EventoNotificable
+  DonacionAsignada --|> EventoDeDonacion
+  DonacionRecibida --|> EventoDeDonacion
+  DonacionEnCamino --|> EventoDeDonacion
+  EntregaFallida --|> EventoDeDonacion
+  DonacionVencida --|> EventoNotificable
+  MisionCumplida --|> EventoNotificable
+  SubioCategoria --|> EventoNotificable
+  DonanteRegistrado --|> EventoNotificable
+  DonanteInactivo --|> EventoNotificable
+
+  EventoNotificable --> Persona : persona
+  EventoDeDonacion --> Persona : entidadBeneficiaria
+  EntregaFallida --> Persona : administracion
+  DonacionVencida --> Persona : administracion
+  EventoNotificable ..> Notificacion : genera >
+}
+
+' ==================== NOTIFICADOR (double dispatch) ====================
+package NOTIFICADOR {
+  interface NotificacionSender <<interface>> {
+    + enviarA(correo: Correo, mensaje: String): boolean
+    + enviarA(telefono: Telefono, mensaje: String): boolean
+  }
+
+  interface CorreoAdapter <<interface>> {
+    + enviarMail(correo: String, mensaje: String): boolean
+  }
+
+  interface TelefonoAdapter <<interface>> {
+    + enviarSms(telefono: String, mensaje: String): boolean
+  }
+
+  interface WhatsAppAdapter <<interface>> {
+    + enviarWhatsApp(telefono: String, mensaje: String): boolean
+  }
+
+  class NotificacionRouter <<entity>> {
+    - correoApi: CorreoAdapter
+    - telefonoApi: TelefonoAdapter
+    - whatsappApi: WhatsAppAdapter
+    --
+    + enviarA(correo: Correo, mensaje: String): boolean
+    + enviarA(telefono: Telefono, mensaje: String): boolean
+  }
+
+  NotificacionRouter ..|> NotificacionSender
+  NotificacionRouter --> CorreoAdapter
+  NotificacionRouter --> TelefonoAdapter
+  NotificacionRouter --> WhatsAppAdapter
+  MedioDeContacto ..> NotificacionSender : usa (double dispatch,\nrecibido como parámetro)
+}
+
+' ==================== PORTS (transversal) ====================
+package PORTS {
+  interface Anonimizable <<interface>> {
+    + anonimizar(): void
+  }
+
+  Persona ..|> Anonimizable
+  Notificacion ..|> Anonimizable
+  MedioDeContacto ..|> Anonimizable
+}
+
+' ==================== INFRASTRUCTURE (adapters simulados y listeners) ====================
+package INFRASTRUCTURE {
+  interface CriterioFalloSimulado <<interface>> {
+    + debeFallar(destinatario: String, mensaje: String): boolean
+  }
+
+  class CriterioFalloPorSentinela <<service>> {
+    + debeFallar(destinatario: String, mensaje: String): boolean
+  }
+
+  class CorreoAdapterSimulado <<entity>> {
+    - criterioFallo: CriterioFalloSimulado
+    + enviarMail(destinatario: String, mensaje: String): boolean
+  }
+
+  class TelefonoAdapterSimulado <<entity>> {
+    - criterioFallo: CriterioFalloSimulado
+    + enviarSms(telefono: String, mensaje: String): boolean
+  }
+
+  class WhatsAppAdapterSimulado <<entity>> {
+    - criterioFallo: CriterioFalloSimulado
+    + enviarWhatsApp(telefono: String, mensaje: String): boolean
+  }
+
+  class NotificacionAuditListener <<service>> {
+    + onNotificacionEnviada(event: NotificacionEnviada): void
+    + onNotificacionFallida(event: NotificacionFallida): void
+  }
+
+  CriterioFalloPorSentinela ..|> CriterioFalloSimulado
+  CorreoAdapterSimulado ..|> CorreoAdapter
+  TelefonoAdapterSimulado ..|> TelefonoAdapter
+  WhatsAppAdapterSimulado ..|> WhatsAppAdapter
+  CorreoAdapterSimulado --> CriterioFalloSimulado
+  TelefonoAdapterSimulado --> CriterioFalloSimulado
+  WhatsAppAdapterSimulado --> CriterioFalloSimulado
+}
+
+' ==================== DOMAIN EVENTS (Notificaciones) ====================
+package "DOMAIN EVENTS" {
+  abstract class NotificacionDomainEvent <<entity>> {
+    - notificacionId: UUID
+    - fecha: LocalDateTime
+    --
+    + getNotificacionId(): UUID
+    + getFecha(): LocalDateTime
+  }
+
+  class NotificacionCreada <<entity>> {
+    - personaId: UUID
+    --
+    + personaId(): UUID
+  }
+
+  class NotificacionEnviada <<entity>> {
+  }
+
+  class NotificacionFallida <<entity>> {
+  }
+
+  NotificacionDomainEvent <|-- NotificacionCreada
+  NotificacionDomainEvent <|-- NotificacionEnviada
+  NotificacionDomainEvent <|-- NotificacionFallida
+}
+
+' ==================== SERVICES (Application Services) ====================
+package SERVICES {
+
+  class EventoMapper <<service>> {
+    - personaRepository: IPersonaRepository
+    --
+    + toEntity(dto: EventoNotificableDTO): EventoNotificable
+    - buscarPersona(id: UUID): Persona
+  }
+
+  class PersonaMapper <<service>> {
+    - medioDeContactoMapper: MedioDeContactoMapper
+    --
+    + toEntity(dto: PersonaReplicaDTO): Persona
+    + toReplicaDTO(entity: Persona): PersonaReplicaDTO
+  }
+
+  class MedioDeContactoMapper <<service>> {
+    + toEntity(dto: MedioDeContactoReplicaDTO): MedioDeContacto
+    + toReplicaDTO(entity: MedioDeContacto): MedioDeContactoReplicaDTO
+  }
+
+  class NotificacionService <<service>> {
+    - repository: INotificacionRepository
+    - mapper: EventoMapper
+    - eventPublisher: ApplicationEventPublisher
+    --
+    + procesar(dto: EventoNotificableDTO): void
+    + obtenerPorPersona(personaId: UUID): List<NotificacionDTO>
+  }
+
+  class NotificacionGestor <<service>> {
+    - repository: INotificacionRepository
+    - sender: NotificacionSender
+    --
+    + onNotificacionesCreadas(event: NotificacionesCreadasEvent): void
+    + notificarPendientes(): void
+  }
+
+  class PersonasService <<service>> {
+    - repository: IPersonaRepository
+    - notificacionRepository: INotificacionRepository
+    - mapper: PersonaMapper
+    --
+    + sincronizar(dto: PersonaReplicaDTO): void
+    + anonimizar(id: UUID): void
+    + obtenerPersona(id: UUID): PersonaReplicaDTO
+  }
+
+  NotificacionService --> EventoMapper : mapper
+  NotificacionService --> Notificacion : crea >
+  NotificacionService ..> NotificacionesCreadasEvent : publica >
+  NotificacionGestor ..> NotificacionesCreadasEvent : escucha <
+  NotificacionGestor --> NotificacionSender : sender
+  NotificacionGestor --> Notificacion : notifica >
+  EventoMapper ..> EventoNotificable : construye >
+  PersonasService --> PersonaMapper : mapper
+  PersonasService --> Persona : coordina >
+  PersonasService --> Notificacion : anonimiza >
+  PersonaMapper --> MedioDeContactoMapper : medioDeContactoMapper
+}
+
+' ==================== PERSISTENCIA (JPA & EnMemoria) ====================
+package PERSISTENCIA {
+  class PersonaRepositoryEnMemoria <<service>> {
+    + <<@Profile("!postgres")>>
+  }
+
+  class PersonaRepositoryJpaAdapter <<service>> {
+    + <<@Profile("postgres")>>
+  }
+
+  class NotificacionRepositoryJpaAdapter <<service>> {
+    + <<@Profile("postgres")>>
+  }
+
+  interface SpringDataPersonaRepository <<interface>>
+  interface SpringDataNotificacionRepository <<interface>>
+
+  class PersonaEntity <<entity>>
+  class NotificacionEntity <<entity>>
+
+  PersonaRepositoryEnMemoria ..|> IPersonaRepository
+  PersonaRepositoryJpaAdapter ..|> IPersonaRepository
+  NotificacionRepositoryJpaAdapter ..|> INotificacionRepository
+  PersonaRepositoryJpaAdapter --> SpringDataPersonaRepository
+  NotificacionRepositoryJpaAdapter --> SpringDataNotificacionRepository
+  SpringDataPersonaRepository --> PersonaEntity
+  SpringDataNotificacionRepository --> NotificacionEntity
+}
+
+@enduml

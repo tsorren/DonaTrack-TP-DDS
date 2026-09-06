@@ -1,10 +1,11 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
+import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Asignable;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -15,13 +16,13 @@ import java.util.UUID;
 import lombok.Getter;
 
 @Getter
-public class DonacionIndependiente implements AggregateRoot {
+public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionIndependiente> {
   private final UUID id;
   private UUID donacionOriginalId;
   private List<ItemDonacionIndependiente> items;
-  private EstadoDonacion estadoActual;
+  private EstadoDonacionIndependiente estadoActual;
 
-  void setEstadoActual(EstadoDonacion estadoActual) {
+  void setEstadoActual(EstadoDonacionIndependiente estadoActual) {
     this.estadoActual = estadoActual;
   }
 
@@ -60,7 +61,6 @@ public class DonacionIndependiente implements AggregateRoot {
     this.items.add(item);
   }
 
-  // Lanzar excepcion si el item no esta en la lista
   public void quitarItem(ItemDonacionIndependiente bien) {
     if (!this.items.contains(bien)) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_QUITAR_ITEM_INEXISTENTE);
@@ -105,6 +105,22 @@ public class DonacionIndependiente implements AggregateRoot {
 
   // ── Métodos de negocio ─────────────────────────────────────────────────────
 
+  public void cambiarEstado(SolicitudCambioEstadoDonacionIndependiente solicitud) {
+    if (solicitud == null || solicitud.getEstado() == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    switch (solicitud.getEstado()) {
+      case ASIGNACION_REALIZADA -> this.estadoActual.asignar(this, solicitud);
+      case LISTA_PARA_ENTREGAR -> this.estadoActual.planificarRuta(this, solicitud);
+      case EN_TRASLADO -> this.estadoActual.iniciarRecorrido(this, solicitud);
+      case ENTREGADA -> this.estadoActual.confirmarEntrega(this, solicitud);
+      case ENTREGA_FALLIDA -> this.estadoActual.registrarFalla(this, solicitud);
+      case EN_DEPOSITO -> this.estadoActual.retornar(this, solicitud);
+      case VENCIDA -> this.estadoActual.vencer(this, solicitud);
+      default -> throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
+    }
+  }
+
   public void registrar(String actor) {
     this.estadoActual.registrar(this, actor);
   }
@@ -142,8 +158,12 @@ public class DonacionIndependiente implements AggregateRoot {
     this.estadoActual.vencer(this, actor);
   }
 
+  public void asignarReceptor(Asignable receptor) {
+    this.asignadaA = receptor;
+  }
+
   // Llamado únicamente por los estados concretos
-  void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion, String actor) {
+  void cambiarEstado(EstadoDonacionIndependiente nuevoEstado, String justificacion, String actor) {
     CambioEstado cambio = new CambioEstado(this.estadoActual, nuevoEstado, justificacion, actor);
     this.historial.add(cambio);
     this.estadoActual = nuevoEstado;

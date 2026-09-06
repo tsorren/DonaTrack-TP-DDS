@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/persona-replica.schema.json",
+  "title": "PersonaReplicaDTO",
+  "description": "Payload para sincronizar la réplica de persona y medios de contacto en notificaciones-service",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador global de la persona"
+    },
+    "denominacion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nombre completo o razón social de la persona"
+    },
+    "tipoPersona": {
+      "type": "string",
+      "enum": ["HUMANA", "JURIDICA"],
+      "description": "Tipo de persona según el dominio"
+    },
+    "mediosDeContacto": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": ["CORREO", "TELEFONO", "WHATSAPP"]
+          },
+          "esPredeterminado": {
+            "type": "boolean"
+          },
+          "direccionCorreo": {
+            "type": "string"
+          },
+          "caracteristica": {
+            "type": "string"
+          },
+          "codigoArea": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          }
+        },
+        "required": ["tipo"],
+        "additionalProperties": false
+      },
+      "description": "Lista de canales de contacto disponibles para despachar alertas"
+    }
+  },
+  "required": ["id", "denominacion", "tipoPersona"],
+  "additionalProperties": false
+}

@@ -5,6 +5,7 @@ import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
@@ -13,12 +14,19 @@ import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.ports.Segmentador;
-import grupo5.donaciones.models.repositories.*;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -37,10 +45,11 @@ public class SegmentacionEventListener {
   private final ISubcategoriasRepository subcategoriasRepository;
   private final IPersonasRepository personasRepository;
   private final IDonantesRepository donantesRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   @EventListener
-  public void onDonacionNormalizada(DonacionNormalizadaEvent event) {
-    log.info("Capturando DonacionNormalizadaEvent para donación ID: {}", event.donacionId());
+  public void onDonacionNormalizada(DonacionNormalizada event) {
+    log.info("Capturando DonacionNormalizada para donación ID: {}", event.donacionId());
 
     Donacion donacion =
         donacionRepository
@@ -57,6 +66,9 @@ public class SegmentacionEventListener {
           event.donacionId());
       donacion.marcarSegmentada();
       donacionRepository.save(donacion);
+      var eventos = donacion.getDomainEvents();
+      donacion.clearDomainEvents();
+      eventos.forEach(eventPublisher::publishEvent);
       return;
     }
 
@@ -84,6 +96,9 @@ public class SegmentacionEventListener {
     // Cambiar estado de donación original a SEGMENTADA
     donacion.marcarSegmentada();
     donacionRepository.save(donacion);
+    var eventos = donacion.getDomainEvents();
+    donacion.clearDomainEvents();
+    eventos.forEach(eventPublisher::publishEvent);
     log.info("Donación original ID {} movida a SEGMENTADA.", donacion.getId());
   }
 
@@ -148,51 +163,48 @@ public class SegmentacionEventListener {
               .orElseThrow(() -> new IllegalStateException("Persona no encontrada: " + personaId));
       String nombreDonante = obtenerNombrePersona(persona);
 
-      NuevaDonacionRequest request =
-          new NuevaDonacionRequest(
-              donanteId,
-              categorias,
-              di.getCantidad(),
-              donacionOriginal.getFecha().toLocalDate(),
-              nombreDonante);
+      log.info(
+          "Registrando donación en incentivos: Donante ID {}, Nombre {}, Cantidad {}, Categorías {}",
+          donanteId,
+          nombreDonante,
+          di.getCantidad(),
+          categorias);
 
       try {
-        log.info(
-            "Registrando donación en motor de incentivos para donante ID: {}", request.donanteId());
-        incentivosFeignClient.procesarDonacion(request);
+        incentivosFeignClient.procesarDonacion(
+            new NuevaDonacionRequest(
+                donanteId,
+                categorias,
+                di.getCantidad(),
+                donacionOriginal.getFecha() != null
+                    ? donacionOriginal.getFecha().toLocalDate()
+                    : java.time.LocalDate.now(java.time.ZoneId.systemDefault()),
+                nombreDonante));
       } catch (Exception e) {
-        log.error("Error al registrar donación en motor de incentivos: {}", e.getMessage());
+        log.error("Error al registrar donación en incentivos: {}", e.getMessage(), e);
       }
     }
   }
 
-  private List<String> obtenerCategoriasDeItems(DonacionIndependiente di) {
-    return di.getItems().stream()
-        .map(
-            item -> {
-              UUID subId = item.bien().subcategoriaId();
-              UUID catId =
-                  subId != null
-                      ? subcategoriasRepository
-                          .findById(subId)
-                          .map(Subcategoria::getCategoriaId)
-                          .orElse(null)
-                      : null;
-              return catId != null
-                  ? categoriasRepository
-                      .findById(catId)
-                      .map(Categoria::getNombre)
-                      .orElse("Desconocida")
-                  : "Desconocida";
-            })
-        .distinct()
-        .toList();
+  private static String obtenerNombrePersona(Persona persona) {
+    if (persona instanceof Humana h) {
+      return h.getNombre() + " " + h.getApellido();
+    } else if (persona instanceof Juridica j) {
+      return j.getRazonSocial();
+    }
+    return "Donante Anónimo";
   }
 
-  private static String obtenerNombrePersona(Persona persona) {
-    return switch (persona) {
-      case Humana h -> h.getNombre() + " " + h.getApellido();
-      case Juridica j -> j.getRazonSocial();
-    };
+  private List<String> obtenerCategoriasDeItems(DonacionIndependiente di) {
+    if (di.getSubcategoriaId() == null) {
+      return List.of();
+    }
+    return subcategoriasRepository
+        .findById(di.getSubcategoriaId())
+        .map(Subcategoria::getCategoriaId)
+        .flatMap(categoriasRepository::findById)
+        .map(Categoria::getNombre)
+        .map(List::of)
+        .orElse(List.of());
   }
 }

@@ -16,13 +16,7 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.handlers.GlobalExceptionHandler;
 import grupo5.logistica.controllers.impl.EntregasController;
-import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
-import grupo5.logistica.dto.entregas.ConfirmarRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
-import grupo5.logistica.dto.entregas.EntregaResponseDTO;
-import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
-import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
+import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.services.IEntregasService;
@@ -167,71 +161,102 @@ class EntregasControllerTest {
         .andExpect(jsonPath("$.details").value(ID.toString()));
   }
 
-  // ===================== PATCH confirmar recepción =====================
+  // ===================== PATCH /api/entregas/{id}/estado =====================
 
   @Test
-  void confirmarRecepcion_deberiaRetornar200() throws Exception {
-
-    ConfirmarRecepcionRequestDTO request = new ConfirmarRecepcionRequestDTO("chofer");
-
-    when(entregasService.confirmarRecepcion(eq(ID), any())).thenReturn(RESPONSE_DTO);
-
+  void cambiarEstado_deberiaRetornar200_cuandoEntregada() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, "chofer", null, null);
+    EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
+    when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
     mockMvc
         .perform(
-            patch("/api/entregas/" + ID + "/confirmar-recepcion")
+            patch("/api/entregas/" + ID + "/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());
   }
 
-  // ===================== PATCH foto recepción =====================
+  @Test
+  void cambiarEstado_deberiaRetornar200_cuandoNoRecibida() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(
+            EstadoEntrega.NO_RECIBIDA, "chofer", "Destinatario ausente", true);
+    EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
+    when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar200_cuandoRevision() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.REVISION, "admin", null, null);
+    EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
+    when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar200_cuandoRegresoAlDeposito() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.PENDIENTE, "admin", null, null);
+    EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
+    when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar400_cuandoEstadoEsNulo() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(null, "chofer", null, null);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void cambiarEstado_deberiaRetornar400_cuandoActorEsVacio() throws Exception {
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, "   ", null, null);
+    mockMvc
+        .perform(
+            patch("/api/entregas/" + ID + "/estado")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(status().isBadRequest());
+  }
+
+  // ===================== PATCH /api/entregas/{id}/foto =====================
 
   @Test
   void adjuntarFotoRecepcion_deberiaRetornar200() throws Exception {
-
     AdjuntarFotoRecepcionRequestDTO request =
         new AdjuntarFotoRecepcionRequestDTO("https://foto.com/foto.jpg");
+    EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
 
-    when(entregasService.adjuntarFotoRecepcion(eq(ID), any())).thenReturn(RESPONSE_DTO);
-
-    mockMvc
-        .perform(
-            patch("/api/entregas/" + ID + "/foto-recepcion")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk());
-  }
-
-  // ===================== PATCH no recibida =====================
-
-  @Test
-  void reportarNoRecepcion_deberiaRetornar200() throws Exception {
-
-    ReportarNoRecepcionRequestDTO request =
-        new ReportarNoRecepcionRequestDTO("chofer", "No había nadie", true);
-
-    when(entregasService.reportarNoRecepcion(eq(ID), any())).thenReturn(RESPONSE_DTO);
+    when(entregasService.adjuntarFotoRecepcion(eq(ID), any())).thenReturn(responseDto);
 
     mockMvc
         .perform(
-            patch("/api/entregas/" + ID + "/no-recibida")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk());
-  }
-
-  // ===================== PATCH regresar depósito =====================
-
-  @Test
-  void regresarAlDeposito_deberiaRetornar200() throws Exception {
-
-    RegresarAlDepositoRequestDTO request = new RegresarAlDepositoRequestDTO("chofer");
-
-    when(entregasService.regresarAlDeposito(eq(ID), any())).thenReturn(RESPONSE_DTO);
-
-    mockMvc
-        .perform(
-            patch("/api/entregas/" + ID + "/regresar-al-deposito")
+            patch("/api/entregas/" + ID + "/fotos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isOk());

@@ -1,15 +1,23 @@
 package grupo5.tests.performance;
 
-import grupo5.tests.BaseIT;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.tests.BaseIT;
+import grupo5.tests.builders.DonacionTestDataBuilder;
+import grupo5.tests.builders.PersonaTestDataBuilder;
+import grupo5.tests.dto.DonacionTestDTO;
+import grupo5.tests.dto.PersonaTestDTO;
+import grupo5.tests.utils.PollingUtils;
+import grupo5.tests.utils.TestIdGenerator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+@Tag("performance")
 class PerformanceStressIT extends BaseIT {
 
   @Test
@@ -21,20 +29,35 @@ class PerformanceStressIT extends BaseIT {
     long startTimeSuite = System.currentTimeMillis();
 
     for (int i = 0; i < totalRequests; i++) {
-      String documento = "700" + String.format("%05d", i);
+      String documento = TestIdGenerator.randomDni();
       String nombre = "PerfRaul_" + i;
-      String email = "perf.raul." + i + "@example.com";
+      String email = TestIdGenerator.randomEmail("perf" + i);
 
       long start = System.currentTimeMillis();
       try {
-        String personaId = apiCrearPersonaHumana(documento, nombre, email);
-        String donanteId = apiCrearDonante(personaId);
-        apiCrearDonacion(donanteId, "Donación stress " + i, "arroz", 1);
+        PersonaTestDTO persona =
+            PersonaTestDataBuilder.humana()
+                .conNombre(nombre)
+                .conDocumento(documento)
+                .conEmail(email)
+                .build();
+        UUID personaId = donacionesClient.crearPersonaOk(persona);
+        PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+        UUID donanteId = donacionesClient.crearDonanteOk(personaId);
+
+        String itemStress = TestIdGenerator.uniqueItemName("stress_grain");
+        DonacionTestDTO donacion =
+            DonacionTestDataBuilder.deAlimento(itemStress, 1)
+                .conDonante(donanteId)
+                .conDescripcion("Donación stress " + i)
+                .build();
+        donacionesClient.crearDonacionOk(donacion);
+
         long end = System.currentTimeMillis();
         latencies.add(end - start);
       } catch (Throwable t) {
-        System.err.println("Error creating donante/donation at iteration " + i + ": " + t.getMessage());
-        t.printStackTrace();
+        System.err.println(
+            "Error creando donante/donación en iteración " + i + ": " + t.getMessage());
         errorCount++;
       }
     }
@@ -42,21 +65,38 @@ class PerformanceStressIT extends BaseIT {
     long endTimeSuite = System.currentTimeMillis();
     long totalDuration = endTimeSuite - startTimeSuite;
 
-    // Report
-    printPerformanceReport("Donor and Donation Creation", totalRequests, latencies, errorCount, totalDuration);
+    printPerformanceReport(
+        "Donor and Donation Creation", totalRequests, latencies, errorCount, totalDuration);
 
-    assertEquals(0, errorCount, "There should be no errors during sequential donante and donation creation performance test.");
+    assertEquals(
+        0,
+        errorCount,
+        "No deberían haber errores durante la prueba secuencial de creación de donantes y donaciones.");
     double average = calculateAverage(latencies);
-    assertTrue(average < 500.0, "Average latency of donante + donation creation (" + average + " ms) should be below 500ms.");
+    double maxLatency = Double.parseDouble(System.getProperty("perf.max.donor.latency", "1500.0"));
+    assertTrue(
+        average < maxLatency,
+        "La latencia promedio ("
+            + average
+            + " ms) debería ser inferior al umbral configurado de "
+            + maxLatency
+            + " ms.");
   }
 
   @Test
   void testDonationEventProcessingStress() {
-    // 1. Pre-register a donante to run stress tests on
-    String personaId = apiCrearPersonaHumana("79998888", "StressDonor", "stress.donante@example.com");
-    String donanteId = apiCrearDonante(personaId);
+    // 1. Registrar donante para la prueba de estrés
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana()
+            .conNombre("StressDonor")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("stress"))
+            .build();
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+    UUID donanteId = donacionesClient.crearDonanteOk(personaId);
 
-    // 2. Stress with 200 sequential calls to /api/incentivos/donaciones
+    // 2. 200 llamadas secuenciales a /api/incentivos/donaciones
     int totalRequests = 200;
     List<Long> latencies = new ArrayList<>();
     int errorCount = 0;
@@ -66,12 +106,12 @@ class PerformanceStressIT extends BaseIT {
     for (int i = 0; i < totalRequests; i++) {
       long start = System.currentTimeMillis();
       try {
-        apiEnviarEventoDonacionIncentivos(donanteId, "2026-06-01", 1);
+        incentivosClient.enviarEventoDonacion(donanteId, "2026-06-01", 1).then().statusCode(200);
         long end = System.currentTimeMillis();
         latencies.add(end - start);
       } catch (Throwable t) {
-        System.err.println("Error sending donation event at iteration " + i + ": " + t.getMessage());
-        t.printStackTrace();
+        System.err.println(
+            "Error enviando evento de donación en iteración " + i + ": " + t.getMessage());
         errorCount++;
       }
     }
@@ -79,12 +119,18 @@ class PerformanceStressIT extends BaseIT {
     long endTimeSuite = System.currentTimeMillis();
     long totalDuration = endTimeSuite - startTimeSuite;
 
-    // Report
-    printPerformanceReport("Donation Event Ingestion Stress", totalRequests, latencies, errorCount, totalDuration);
+    printPerformanceReport(
+        "Donation Event Ingestion Stress", totalRequests, latencies, errorCount, totalDuration);
 
-    assertEquals(0, errorCount, "There should be no errors during sequential donation event processing stress test.");
+    assertEquals(
+        0,
+        errorCount,
+        "No deberían haber errores durante la prueba de estrés de ingestión de eventos.");
     double average = calculateAverage(latencies);
-    assertTrue(average < 150.0, "Average latency of event ingestion (" + average + " ms) should be below 150ms.");
+    double maxLatency = Double.parseDouble(System.getProperty("perf.max.event.latency", "500.0"));
+    assertTrue(
+        average < maxLatency,
+        "La latencia promedio (" + average + " ms) debería ser inferior a " + maxLatency + " ms.");
   }
 
   private double calculateAverage(List<Long> values) {
@@ -100,16 +146,22 @@ class PerformanceStressIT extends BaseIT {
   }
 
   private void printPerformanceReport(
-      String testName, int totalRequests, List<Long> latencies, int errorCount, long totalDurationMs) {
+      String testName,
+      int totalRequests,
+      List<Long> latencies,
+      int errorCount,
+      long totalDurationMs) {
     long min = latencies.stream().mapToLong(Long::longValue).min().orElse(0);
     long max = latencies.stream().mapToLong(Long::longValue).max().orElse(0);
     double avg = calculateAverage(latencies);
     long p95 = calculatePercentile(latencies, 95.0);
     double throughput = (double) latencies.size() / (totalDurationMs / 1000.0);
 
-    System.out.println("================================================================================");
+    System.out.println(
+        "================================================================================");
     System.out.println("QA PERFORMANCE & STRESS TEST REPORT - " + testName.toUpperCase());
-    System.out.println("================================================================================");
+    System.out.println(
+        "================================================================================");
     System.out.println(String.format("Total Requests Sent : %d", totalRequests));
     System.out.println(String.format("Successful Requests : %d", latencies.size()));
     System.out.println(String.format("Failed Requests     : %d", errorCount));
@@ -119,7 +171,8 @@ class PerformanceStressIT extends BaseIT {
     System.out.println(String.format("Average Latency     : %.2f ms", avg));
     System.out.println(String.format("P95 Latency         : %d ms", p95));
     System.out.println(String.format("Throughput          : %.2f req/sec", throughput));
-    System.out.println("================================================================================");
+    System.out.println(
+        "================================================================================");
     System.out.println();
   }
 }

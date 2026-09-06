@@ -1,8 +1,11 @@
 # Asignacion de Donaciones
 
-- Status: rejected
+- Status: superseded by [20260609-asignacion-parcial-de-donacion-independiente.md](./20260609-asignacion-parcial-de-donacion-independiente.md)
 - Date: 2026-05-21
 - Deciders: Decisión Grupal
+
+> **Nota de Evolución y Superación Histórica (2026-06-09):**
+> La estrategia inicial basada en mutar un contador `cantidadDisponible` dentro de cada `ItemDonacion` generaba un acoplamiento indeseado entre la gestión de inventario y la segmentación. Fue formalmente **superada y reemplazada** por [20260609-asignacion-parcial-de-donacion-independiente.md](./20260609-asignacion-parcial-de-donacion-independiente.md), la cual adoptó el patrón de fragmentación de `DonacionIndependiente` como aggregate root inmutable.
 
 ## Contexto y Problema
 

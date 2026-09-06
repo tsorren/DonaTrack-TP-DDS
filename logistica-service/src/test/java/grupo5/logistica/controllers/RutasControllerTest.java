@@ -2,6 +2,7 @@ package grupo5.logistica.controllers;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -16,10 +17,7 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.handlers.GlobalExceptionHandler;
 import grupo5.logistica.controllers.impl.RutasController;
-import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
-import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
-import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
-import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.dto.rutas.*;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.services.IRutasService;
 import java.time.LocalDate;
@@ -33,7 +31,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 @ExtendWith(MockitoExtension.class)
@@ -157,7 +154,7 @@ class RutasControllerTest {
   // ===================== POST /api/rutas/{id}/entregas =====================
 
   @Test
-  void agregarEntrega_deberiaRetornar200() throws Exception {
+  void agregarEntrega_deberiaRetornar201() throws Exception {
 
     AgregarEntregaRutaRequestDTO request = new AgregarEntregaRutaRequestDTO(ENTREGA_ID);
 
@@ -168,7 +165,7 @@ class RutasControllerTest {
             post("/api/rutas/" + ID + "/entregas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").value(ID.toString()));
   }
 
@@ -176,9 +173,6 @@ class RutasControllerTest {
   void agregarEntrega_deberiaRetornar400_cuandoRequestEsInvalido() throws Exception {
 
     AgregarEntregaRutaRequestDTO request = new AgregarEntregaRutaRequestDTO(null);
-
-    when(rutasService.agregarEntrega(eq(ID), any()))
-        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_NULO));
 
     mockMvc
         .perform(
@@ -188,76 +182,37 @@ class RutasControllerTest {
         .andExpect(status().isBadRequest());
   }
 
-  // ===================== PATCH /api/rutas/{id}/iniciar =====================
+  // ===================== PATCH /api/rutas/{id}/estado =====================
 
   @Test
-  void iniciar_deberiaRetornar200() throws Exception {
+  void cambiarEstado_deberiaRetornar200_alIniciarRuta() throws Exception {
+    CambioEstadoRutaRequestDTO request =
+        new CambioEstadoRutaRequestDTO(EstadoRuta.EN_TRASLADO, CHOFER_ID, "actor");
+    RutaResponseDTO response = mock(RutaResponseDTO.class);
 
-    IniciarRutaRequestDTO request = new IniciarRutaRequestDTO(CHOFER_ID, "chofer");
-
-    when(rutasService.iniciar(eq(ID), any())).thenReturn(RESPONSE_DTO);
+    when(rutasService.cambiarEstado(eq(ID), any())).thenReturn(response);
 
     mockMvc
         .perform(
-            patch("/api/rutas/" + ID + "/iniciar")
+            patch("/api/rutas/" + ID + "/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(ID.toString()));
+        .andExpect(status().isOk());
   }
 
   @Test
-  void iniciar_deberiaRetornar400_cuandoChoferNoCoincide() throws Exception {
+  void cambiarEstado_deberiaRetornar400_cuandoRequestEsInvalido() throws Exception {
+    CambioEstadoRutaRequestDTO request =
+        new CambioEstadoRutaRequestDTO(EstadoRuta.EN_TRASLADO, UUID.randomUUID(), "chofer");
 
-    IniciarRutaRequestDTO request = new IniciarRutaRequestDTO(UUID.randomUUID(), "chofer");
-
-    when(rutasService.iniciar(eq(ID), any()))
+    when(rutasService.cambiarEstado(eq(ID), any()))
         .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
 
     mockMvc
         .perform(
-            patch("/api/rutas/" + ID + "/iniciar")
+            patch("/api/rutas/" + ID + "/estado")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isBadRequest());
-  }
-
-  @Test
-  void iniciar_deberiaRetornar404_cuandoRutaNoExiste() throws Exception {
-
-    IniciarRutaRequestDTO request = new IniciarRutaRequestDTO(CHOFER_ID, "chofer");
-
-    when(rutasService.iniciar(eq(ID), any())).thenThrow(new RecursoNoEncontradoException(ID));
-
-    mockMvc
-        .perform(
-            patch("/api/rutas/" + ID + "/iniciar")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isNotFound());
-  }
-
-  // ===================== PATCH /api/rutas/{id}/completar =====================
-
-  @Test
-  void completar_deberiaRetornar200() throws Exception {
-
-    when(rutasService.completar(ID)).thenReturn(RESPONSE_DTO);
-
-    mockMvc
-        .perform((RequestBuilder) patch("/api/rutas/" + ID + "/completar"))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(ID.toString()));
-  }
-
-  @Test
-  void completar_deberiaRetornar404_cuandoRutaNoExiste() throws Exception {
-
-    when(rutasService.completar(ID)).thenThrow(new RecursoNoEncontradoException(ID));
-
-    mockMvc
-        .perform((RequestBuilder) patch("/api/rutas/" + ID + "/completar"))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.details").value(ID.toString()));
   }
 }

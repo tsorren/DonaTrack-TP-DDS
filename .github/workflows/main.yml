@@ -1,0 +1,904 @@
+# ============================================================================
+#
+# DonaTrack — Pipeline de Integración Continua (Optimizado)
+# ============================================================================
+# Principios aplicados:
+#   • Fail-Fast: validaciones tempranas y paralelismo estricto
+#   • Build Once: imágenes compiladas una sola vez y publicadas en GHCR
+#   • Descubrimiento Dinámico: extensible sin tocar el archivo de pipeline
+#   • Quality Gate Determinístico: validación context-aware sin falsos positivos
+# 
+# ============================================================================
+#
+# CHANGELOG (respecto al original):
+#   [FIX-1]  Quality Gate: lógica context-aware con dos ejes de contexto:
+#            any-service (hay módulos modificados) y any-docker-service
+#            (hay módulos modificados con Dockerfile). Evita falsos positivos
+#            cuando docker-build es correctamente omitido (sin Dockerfile).
+#   [FIX-2]  detect-changes: git diff --name-only usa triple-punto (...) para
+#            comparación precisa en el commit de merge sintético de GitHub.
+#   [FIX-3]  build-and-test: upload-artifact del PUML usa if-no-files-found: warn
+#            para no abortar el job si el generador está deshabilitado.
+#   [FIX-4]  docker-build: selección de JAR usa `find` excluyendo *sources.jar,
+#            *javadoc.jar, *.original y *plain.jar para garantizar el fat jar.
+#   [FIX-5]  preprod-validation: BASE_TAG usa github.base_ref (la rama base real
+#            del PR) en lugar de "latest" estático. Evita mezcla de imágenes
+#            entre entregas distintas y preserva el principio "Build Once".
+#   [FIX-6]  generate-diagrams: clave de caché de PlantUML fija con versión
+#            explícita (v1.2024.7) y URL de descarga pinneada al mismo tag.
+#            Elimina el bug de clave dinámica por run_id (0% cache hit).
+#   [FIX-7]  validate-git-flow: excepción hardcodeada de E1_CORREGIDA eliminada;
+#            se reemplaza por lógica genérica basada en el número de entrega.
+#   [FIX-8]  detect-changes: exporta output any-docker-service para desacoplar
+#            la evaluación de docker-build en el Quality Gate.
+#   [FIX-9]  pull_request trigger: agrega tipo 'edited' condicionado a cambios en
+#            la rama base (changes.base) para re-evaluar automáticamente el pipeline
+#            al cambiar el target de un PR sin re-ejecuciones espurias ante cambios
+#            de título o descripción.
+#   [NOTE-1] FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 eliminado — riesgo operativo
+#            con acciones de terceros compiladas en Node <24.
+# ============================================================================
+
+name: DonaTrack CI Pipeline
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+# ── Concurrencia ─────────────────────────────────────────────────────────────
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+# ============================================================================
+# JOBS
+# ============================================================================
+jobs:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 1: Validación de Git Flow
+  # ──────────────────────────────────────────────────────────────────────────
+  validate-git-flow:
+    if: github.event.action != 'edited' || github.event.changes.base != null
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Validar nomenclatura de ramas
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+          SRC_BRANCH: ${{ github.head_ref }}
+        run: |
+          echo "📌 PR: $SRC_BRANCH → $BASE_BRANCH"
+
+          # Caso 1: Merge a main — solo desde ramas ENTREGA_*
+          if [[ "$BASE_BRANCH" == "main" ]]; then
+            if [[ ! "$SRC_BRANCH" =~ ^ENTREGA_[0-9]+$ ]]; then
+              echo "::error::Pull Requests a 'main' solo se permiten desde ramas 'ENTREGA_N'."
+              echo "::notice::Si la PR debía apuntar a una rama ENTREGA_N, cambiá la rama base en la interfaz de GitHub. El pipeline se disparará automáticamente con el nuevo contexto."
+              exit 1
+            fi
+          fi
+
+          # Caso 2: Merge a ENTREGA_N — solo desde ramas E<N>_* o ENTREGA_<N>_*
+          # [FIX-7] La excepción hardcodeada para E1_CORREGIDA fue eliminada.
+          # La regla genérica ya acepta E1_CORREGIDA porque comienza con "E1_".
+          # Si se necesitan excepciones adicionales, parametrizar via variable de
+          # repositorio (vars.GITFLOW_EXTRA_ALLOWED_BRANCHES) en lugar de hardcodear.
+          if [[ "$BASE_BRANCH" =~ ^ENTREGA_([0-9]+)$ ]]; then
+            DELIVERY_NUM="${BASH_REMATCH[1]}"
+            REQUIRED_PREFIX="E${DELIVERY_NUM}_"
+            REQUIRED_LONG_PREFIX="ENTREGA_${DELIVERY_NUM}_"
+
+            if [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* && ! "$SRC_BRANCH" =~ ^${REQUIRED_LONG_PREFIX}.* ]]; then
+              echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX' o '$REQUIRED_LONG_PREFIX'."
+              echo "  Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
+              exit 1
+            fi
+          fi
+
+          echo "✅ Nomenclatura de ramas válida."
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 2: Detección y Descubrimiento Dinámico de Microservicios
+  # ──────────────────────────────────────────────────────────────────────────
+  detect-changes:
+    needs: validate-git-flow
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      any-service: ${{ steps.generate-matrices.outputs.any-service }}
+      any-docker-service: ${{ steps.generate-matrices.outputs.any-docker-service }}
+      services-matrix: ${{ steps.generate-matrices.outputs.services-matrix }}
+      docker-matrix: ${{ steps.generate-matrices.outputs.docker-matrix }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      # paths-filter actualizado a v4
+      - name: Detectar cambios globales y transversales
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v4.0.3
+        id: filter
+        with:
+          filters: |
+            global:
+              - 'common-lib/**'
+              - 'pom.xml'
+              - 'docker-compose*.yml'
+              - 'docker-compose*.yaml'
+              - '**/Dockerfile*'
+              - '.dockerignore'
+              - 'n8n/**'
+              - 'integration-tests/**'
+
+      - name: Descubrir servicios y generar matrices dinámicas
+        id: generate-matrices
+        run: |
+          SERVICES=()
+          DOCKER_SERVICES=()
+
+          # Descubrimiento 100% dinámico: escanea carpetas con pom.xml
+          ALL_SERVICES=()
+          for pom in */pom.xml; do
+            [ -f "$pom" ] || continue
+            dir=$(dirname "$pom")
+            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" ]]; then
+              ALL_SERVICES+=("$dir")
+            fi
+          done
+
+          echo "🔍 Servicios detectados en el repositorio: ${ALL_SERVICES[*]}"
+
+          GLOBAL_CHANGED="${{ steps.filter.outputs.global }}"
+          # [FIX-2] Usar triple-punto para comparación precisa en PRs.
+          # En pull_request, HEAD es el commit de merge sintético (refs/pull/N/merge).
+          # Con dos puntos (A B) se compara la punta de base con HEAD, incluyendo
+          # commits nuevos en la rama base que no pertenecen al PR.
+          # Con triple punto (A...B) se compara desde el ancestro común, reflejando
+          # exclusivamente los cambios introducidos por el PR.
+          CHANGED_FILES=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+
+          for svc in "${ALL_SERVICES[@]}"; do
+            if [ "$GLOBAL_CHANGED" = "true" ] || echo "$CHANGED_FILES" | grep -q "^${svc}/"; then
+              SERVICES+=("$svc")
+              if [ -f "$svc/Dockerfile" ]; then
+                DOCKER_SERVICES+=("$svc")
+              fi
+            fi
+          done
+
+          if [ ${#SERVICES[@]} -gt 0 ]; then
+            echo "any-service=true" >> "$GITHUB_OUTPUT"
+            MATRIX_JSON=$(jq -nc --args '$ARGS.positional | map({service: .})' "${SERVICES[@]}")
+            DOCKER_JSON=$(jq -nc --args '$ARGS.positional | map({service: .})' "${DOCKER_SERVICES[@]}")
+            echo "services-matrix={\"include\":$MATRIX_JSON}" >> "$GITHUB_OUTPUT"
+            echo "docker-matrix={\"include\":$DOCKER_JSON}" >> "$GITHUB_OUTPUT"
+          else
+            echo "any-service=false" >> "$GITHUB_OUTPUT"
+            echo 'services-matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            echo 'docker-matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+          fi
+
+          # [FIX-8] any-docker-service es independiente de any-service.
+          # Un PR puede modificar un servicio sin Dockerfile (ej. common-lib o un
+          # módulo auxiliar) → any-service=true pero any-docker-service=false.
+          # El Quality Gate necesita este eje para no penalizar docker-build cuando
+          # no hay ningún servicio dockerizable modificado.
+          if [ ${#DOCKER_SERVICES[@]} -gt 0 ]; then
+            echo "any-docker-service=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any-docker-service=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          echo "📦 Módulos a compilar: ${SERVICES[*]:-ninguno}"
+          echo "🐳 Módulos para Docker: ${DOCKER_SERVICES[*]:-ninguno}"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 3: Lint y Formato (Spotless)
+  # ──────────────────────────────────────────────────────────────────────────
+  lint-and-format:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Verificar formato (Spotless)
+        run: |
+          echo "🔍 Verificando estilo de código..."
+          mvn -B spotless:check --fail-at-end
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 4: Build y Tests Unitarios (Matrix por Servicio)
+  # ──────────────────────────────────────────────────────────────────────────
+  build-and-test:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
+    steps:
+      - name: Checkout superficial
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: "Compilar y testear: ${{ matrix.service }}"
+        run: |
+          echo "🔨 Construyendo ${{ matrix.service }}..."
+          mvn -B clean verify \
+            -pl ${{ matrix.service }} -am \
+            -Dspotless.check.skip=true
+
+      - name: Subir reportes de JaCoCo
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: jacoco-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/site/jacoco/
+          retention-days: 3
+          if-no-files-found: warn
+
+      - name: Subir reportes de Surefire
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: surefire-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/surefire-reports/
+          retention-days: 3
+          if-no-files-found: warn
+
+      - name: Subir JAR de ${{ matrix.service }}
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: jar-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/*.jar
+          retention-days: 1
+          if-no-files-found: error
+
+      # [FIX-3] Si el generador PUML está deshabilitado o falla silenciosamente
+      # en el perfil por defecto, el job no debe abortar. Se usa warn en lugar
+      # del default error para que el artefacto sea opcional.
+      - name: Subir PUML de ${{ matrix.service }}
+        if: success()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: puml-pr-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/modelo_tecnico.puml
+          retention-days: 1
+          if-no-files-found: warn
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 5: Análisis SonarCloud
+  # ──────────────────────────────────────────────────────────────────────────
+  sonar-analysis:
+    needs: [lint-and-format, build-and-test]
+    if: ${{ always() && needs.build-and-test.result == 'success' && needs.lint-and-format.result == 'success' && (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_')) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - name: Checkout con historial completo para Sonar
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Descargar reportes de JaCoCo
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: jacoco-*
+          path: jacoco-reports
+
+      - name: Descargar reportes de Surefire
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: surefire-*
+          path: surefire-reports
+
+      - name: Reubicar reportes de test y cobertura
+        run: |
+          if [ -d "jacoco-reports" ]; then
+            for dir in jacoco-reports/jacoco-*; do
+              if [ -d "$dir" ]; then
+                svc="${dir#jacoco-reports/jacoco-}"
+                mkdir -p "${svc}/target/site/jacoco"
+                cp -r "$dir"/* "${svc}/target/site/jacoco/"
+              fi
+            done
+          fi
+
+          if [ -d "surefire-reports" ]; then
+            for dir in surefire-reports/surefire-*; do
+              if [ -d "$dir" ]; then
+                svc="${dir#surefire-reports/surefire-}"
+                mkdir -p "${svc}/target/surefire-reports"
+                cp -r "$dir"/* "${svc}/target/surefire-reports/"
+              fi
+            done
+          fi
+
+      - name: Compilar clases y análisis Sonar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORG: ${{ secrets.SONAR_ORG }}
+          SONAR_URL: ${{ secrets.SONAR_URL }}
+        run: |
+          mvn -B test-compile sonar:sonar \
+            -Dsonar.projectKey="$SONAR_PROJECT_KEY" \
+            -Dsonar.organization="$SONAR_ORG" \
+            -Dsonar.host.url="$SONAR_URL" \
+            -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml \
+            -Dsonar.junit.reportPaths=**/target/surefire-reports \
+            -Dspotless.check.skip=true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 6: Construcción y Publicación de Imágenes en GHCR (Matrix)
+  # ──────────────────────────────────────────────────────────────────────────
+  docker-build:
+    needs: [detect-changes, build-and-test]
+    if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.docker-matrix) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Descargar JAR compilado
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: jar-${{ matrix.service }}
+          path: ${{ matrix.service }}/target/
+
+      - name: Iniciar sesión en GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - name: Determinar archivo JAR y Tags
+        id: meta
+        run: |
+          # [FIX-4] Se reemplaza `ls -1 ... | head -n 1` por `find` con exclusiones
+          # explícitas para garantizar que se empaquete el JAR ejecutable (fat jar)
+          # y no el JAR original sin dependencias ni artefactos auxiliares.
+          JAR_PATH=$(find ${{ matrix.service }}/target \
+            -maxdepth 1 \
+            -name "*.jar" \
+            ! -name "*sources.jar" \
+            ! -name "*javadoc.jar" \
+            ! -name "*.original" \
+            ! -name "*plain.jar" \
+            | head -n 1)
+
+          if [ -z "$JAR_PATH" ]; then
+            echo "::error::No se encontró JAR ejecutable en ${{ matrix.service }}/target/"
+            exit 1
+          fi
+
+          echo "📦 JAR seleccionado: $JAR_PATH"
+          echo "jar_file=$JAR_PATH" >> "$GITHUB_OUTPUT"
+
+          # Normalizar a minúsculas requerido por las especificaciones OCI / Docker
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_TAG="ghcr.io/${REPO_LOWER}/${{ matrix.service }}:pr-${{ github.event.pull_request.number }}"
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: "Construir y publicar imagen en GHCR: ${{ matrix.service }}"
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: ${{ matrix.service }}/Dockerfile
+          target: ci
+          build-args: |
+            JAR_FILE=${{ steps.meta.outputs.jar_file }}
+          push: true
+          tags: ${{ steps.meta.outputs.image_tag }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }},ignore-error=true
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 7: Generar Diagramas
+  # ──────────────────────────────────────────────────────────────────────────
+  generate-diagrams:
+    needs: [detect-changes, build-and-test]
+    if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout de la rama Base
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Configurar Graphviz
+        uses: ts-graphviz/setup-graphviz@b1de5da23ed0a6d14e0aeee8ed52fdd87af2363c # v2
+
+      # [FIX-6] Clave de caché fija con versión explícita de PlantUML.
+      # La clave original 'plantuml-jar-latest' era inmutable (0% renovación).
+      # La clave con hashFiles('plantuml.jar') era inválida: el archivo no existe
+      # antes de la descarga, por lo que hashFiles devuelve "" y el fallback
+      # format('week-{0}', github.run_id) genera una clave única por ejecución
+      # (run_id no es la semana), resultando en 0% cache hit y saturación de cuota.
+      #
+      # Solución: pin explícito de versión. Para actualizar PlantUML, cambiar la
+      # versión en la clave y en la URL de descarga de forma sincronizada.
+      - name: Caché PlantUML JAR
+        id: cache-plantuml
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # 4
+        with:
+          path: plantuml.jar
+          key: plantuml-jar-1.2024.7
+
+      - name: Descargar PlantUML si no está en caché
+        if: steps.cache-plantuml.outputs.cache-hit != 'true'
+        run: |
+          curl --proto '=https' --proto-redir =https -L -s -o plantuml.jar \
+            https://github.com/plantuml/plantuml/releases/download/v1.2024.7/plantuml-1.2024.7.jar
+
+      # [FIX-PUML] download-artifact@v4 falla con error si el artefacto nombrado
+      # no existe en la corrida (a diferencia de la descarga por pattern).
+      # Si build-and-test emitió warn (PUML no generado), el artefacto nunca se
+      # publicó → este paso aborta generate-diagrams en cadena.
+      # continue-on-error permite continuar; el paso de renderizado ya guarda
+      # con [[ -f "pr_uml/modelo_tecnico.puml" ]] antes de invocar PlantUML.
+      - name: Descargar PUML de PR
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        continue-on-error: true
+        with:
+          name: puml-pr-${{ matrix.service }}
+          path: pr_uml/
+
+      - name: Generar PUML de Base
+        run: |
+          echo "📐 Generando diagrama de clase para ${{ matrix.service }} en rama Base..."
+          if [ -d "${{ matrix.service }}" ]; then
+            mvn -B clean test \
+              -pl ${{ matrix.service }} -am \
+              -DskipTests=true \
+              -Dspotless.check.skip=true \
+              -Dplantuml-generator.skip=false || true
+          fi
+
+          if [ ! -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]; then
+            mkdir -p "${{ matrix.service }}/target"
+            echo "@startuml" > "${{ matrix.service }}/target/modelo_tecnico.puml"
+            echo "@enduml" >> "${{ matrix.service }}/target/modelo_tecnico.puml"
+          fi
+
+      - name: Renderizar diagramas a SVG
+        run: |
+          mkdir -p diagrams-output
+
+          if [[ -f "pr_uml/modelo_tecnico.puml" ]]; then
+            java -jar plantuml.jar -tsvg -o "$(pwd)/diagrams-output" pr_uml/modelo_tecnico.puml
+            if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
+              mv diagrams-output/modelo_tecnico.svg diagrams-output/${{ matrix.service }}_modelo_tecnico_pr.svg
+            fi
+            cp pr_uml/modelo_tecnico.puml diagrams-output/${{ matrix.service }}_pr.puml
+          fi
+
+          if [[ -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]]; then
+            java -jar plantuml.jar -tsvg -o "$(pwd)/diagrams-output" ${{ matrix.service }}/target/modelo_tecnico.puml
+            if [[ -f "diagrams-output/modelo_tecnico.svg" ]]; then
+              mv diagrams-output/modelo_tecnico.svg diagrams-output/${{ matrix.service }}_modelo_tecnico_base.svg
+            fi
+            cp ${{ matrix.service }}/target/modelo_tecnico.puml diagrams-output/${{ matrix.service }}_base.puml
+          fi
+
+      - name: Subir artefactos de la matriz
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: diagramas-servicio-${{ matrix.service }}
+          path: diagrams-output/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 8: Semantic UML Diff (Architectural Review)
+  # ──────────────────────────────────────────────────────────────────────────
+  semantic-uml-diff:
+    needs: [detect-changes, generate-diagrams]
+    if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Descargar diagramas de la matriz
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: diagramas-servicio-*
+          path: diagramas-temp
+
+      - name: Reubicar archivos PUML
+        run: |
+          mkdir -p base_uml_dir pr_uml_dir
+
+          find diagramas-temp -name "*_base.puml" -exec cp {} base_uml_dir/ \;
+          find diagramas-temp -name "*_pr.puml" -exec cp {} pr_uml_dir/ \;
+
+          cd base_uml_dir
+          for f in *_base.puml; do
+            [ -f "$f" ] && mv "$f" "${f%_base.puml}.puml"
+          done
+
+          cd ../pr_uml_dir
+          for f in *_pr.puml; do
+            [ -f "$f" ] && mv "$f" "${f%_pr.puml}.puml"
+          done
+
+      - name: Semantic UML Diff
+        uses: tsorren/SemanticUMLDiff@26774c541bd0532aea867be1b5d7073fb14f74cc
+        with:
+          base_uml_dir: ./base_uml_dir
+          pr_uml_dir: ./pr_uml_dir
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          diagram_spacing: 20
+          context_depth: 0
+        env:
+          PUBLISH_GITHUB: 'true'
+          PUBLISH_DISCORD: 'true'
+          IMAGE_HOSTING_PROVIDER: 'discord'
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_SEMANTIC_DIFF_WEBHOOK_URL }}
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 9: Validación en Pre-Producción
+  # ──────────────────────────────────────────────────────────────────────────
+  preprod-validation:
+    needs: [build-and-test, docker-build]
+    # [FIX-PREPROD-IF] Sin always(), GitHub Actions inyecta success() implícito
+    # que exige que TODAS las dependencias directas sean 'success'. Si docker-build
+    # fue 'skipped' (legítimamente, sin Dockerfiles modificados), success() → false
+    # y preprod-validation se omite en cadena, disparando una falla en el Quality Gate.
+    # Se usa always() + condiciones explícitas para cada dependencia:
+    #   - build-and-test debe ser success (compilación superada)
+    #   - docker-build puede ser success O skipped (ambos son estados válidos)
+    if: ${{ always() && needs.build-and-test.result == 'success' && (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    env:
+      EXECUTION_ID: "run_${{ github.run_id }}_${{ github.run_attempt }}"
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar JDK 21
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Iniciar sesión en GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # [FIX-5] Estrategia de resolución de imágenes en 3 niveles:
+      #   1. Imagen del PR (tag pr-N) — servicio modificado en este PR
+      #   2. Imagen de la rama base real en GHCR (tag = github.base_ref sanitizado)
+      #   3. Error explícito — sin recompilación silenciosa que destruye tiempos
+      #
+      # CORRECCIÓN respecto a la iteración anterior: BASE_TAG usaba "latest"
+      # estático, lo que mezcla imágenes de entregas distintas. Por ejemplo,
+      # un PR a ENTREGA_2 descargaba imágenes de ENTREGA_1 (el latest de main),
+      # generando fallos contractuales si los endpoints cambiaron entre entregas.
+      # Se usa github.base_ref directamente (ej. "ENTREGA_2") como tag base.
+      #
+      # PREREQUISITO: el pipeline de merge (push a main/ENTREGA_*) debe publicar
+      # el tag correspondiente al nombre de la rama en GHCR al integrar cambios.
+      - name: Obtener imágenes de GHCR y preparar servicios
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          GHCR_BASE="ghcr.io/${REPO_LOWER}"
+          PR_TAG="pr-${{ github.event.pull_request.number }}"
+          # [FIX-5] Tag de rama base real: evita mezcla entre entregas distintas.
+          # El nombre de rama puede contener mayúsculas y "/" no válidos en tags OCI;
+          # se normaliza a minúsculas y se reemplaza "/" por "-".
+          BASE_TAG=$(echo "${{ github.base_ref }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
+
+          # Descubrimiento dinámico de servicios (idéntico a Job 2)
+          ALL_SERVICES=()
+          for pom in */pom.xml; do
+            [ -f "$pom" ] || continue
+            dir=$(dirname "$pom")
+            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" ]]; then
+              ALL_SERVICES+=("$dir")
+            fi
+          done
+
+          FAILED_SERVICES=()
+          for svc in "${ALL_SERVICES[@]}"; do
+            # [FIX-PREPROD-DOCKERFILE] Solo intentar resolver imagen para módulos
+            # que tienen Dockerfile. Sin este guard, el bucle intenta docker pull
+            # para librerías internas, clientes API o módulos batch sin contenedor,
+            # los dos pulls fallan y el servicio entra en FAILED_SERVICES → exit 1.
+            if [ ! -f "$svc/Dockerfile" ]; then
+              echo "⏭️  Omitiendo $svc (no posee Dockerfile — no es un servicio contenerizable)"
+              continue
+            fi
+
+            PR_IMAGE="${GHCR_BASE}/${svc}:${PR_TAG}"
+            BASE_IMAGE="${GHCR_BASE}/${svc}:${BASE_TAG}"
+            LOCAL_IMAGE="donatrack/${svc}:preprod"
+
+            echo "📦 Resolviendo imagen para: $svc"
+
+            if docker pull "$PR_IMAGE" 2>/dev/null; then
+              echo "  ✅ Imagen PR descargada de GHCR: $PR_IMAGE"
+              docker tag "$PR_IMAGE" "$LOCAL_IMAGE"
+            elif docker pull "$BASE_IMAGE" 2>/dev/null; then
+              echo "  ⚠️  Imagen PR no encontrada. Usando imagen base estable: $BASE_IMAGE"
+              docker tag "$BASE_IMAGE" "$LOCAL_IMAGE"
+            else
+              echo "  ❌ No se encontró imagen ni en PR ni en rama base para: $svc"
+              FAILED_SERVICES+=("$svc")
+            fi
+          done
+
+          if [ ${#FAILED_SERVICES[@]} -gt 0 ]; then
+            echo "::error::Las siguientes imágenes no pudieron resolverse: ${FAILED_SERVICES[*]}"
+            echo "::error::Asegúrese de que el pipeline de merge publica el tag '$BASE_TAG' en GHCR."
+            exit 1
+          fi
+
+      - name: Provisionar Entorno de Pre-Producción (Sin recompilar)
+        run: |
+          docker compose -f docker-compose.preprod.yml up --no-build --wait -d
+          echo "✅ Stack de Pre-Producción levantado y healthy."
+
+      - name: Importar y Activar Workflows en n8n
+        run: |
+          echo "📥 Importando workflows en n8n..."
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --separate --input=/etc/n8n/workflows
+
+          echo "🚀 Activando workflows en n8n..."
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1
+          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2
+
+          echo "🔄 Reiniciando n8n para aplicar webhooks..."
+          docker compose -f docker-compose.preprod.yml restart n8n
+
+          echo "⏳ Esperando disponibilidad de n8n..."
+          attempts=0
+          until curl -s -f http://localhost:5678/healthz >/dev/null; do
+            attempts=$((attempts+1))
+            if [ $attempts -ge 30 ]; then
+              echo "❌ Error: n8n no respondió en el tiempo límite."
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "✅ n8n listo con workflows activos."
+
+      - name: Verificar disponibilidad de /v3/api-docs
+        run: |
+          set -e
+          URLs=(
+            "http://localhost:8080/v3/api-docs"
+            "http://localhost:8081/v3/api-docs"
+            "http://localhost:8082/v3/api-docs"
+            "http://localhost:8083/v3/api-docs"
+          )
+          for url in "${URLs[@]}"; do
+            echo "Esperando endpoint $url..."
+            attempt=0
+            until curl -s -f "$url" >/dev/null; do
+              attempt=$((attempt+1))
+              if [ $attempt -ge 60 ]; then
+                echo "::error:: $url no respondió con HTTP 200 tras 60 intentos."
+                docker compose -f docker-compose.preprod.yml logs --no-color || true
+                exit 1
+              fi
+              sleep 2
+            done
+            echo "✅ $url disponible"
+          done
+
+      - name: 1. Smoke Tests (Fail-Fast)
+        run: |
+          mvn verify -pl integration-tests -DskipTests=false -Dgroups=smoke \
+            -Ddonaciones.url=http://localhost:8080 \
+            -Dnotificaciones.url=http://localhost:8081 \
+            -Dincentivos.url=http://localhost:8082 \
+            -Dlogistica.url=http://localhost:8083
+
+      - name: 2. Pruebas de Contrato, Integración y E2E
+        run: |
+          mvn verify -pl integration-tests -DskipTests=false -Dgroups="contract,integration,e2e" \
+            -Ddonaciones.url=http://localhost:8080 \
+            -Dnotificaciones.url=http://localhost:8081 \
+            -Dincentivos.url=http://localhost:8082 \
+            -Dlogistica.url=http://localhost:8083
+
+      - name: Recolectar Logs de Contenedores
+        if: always()
+        run: |
+          mkdir -p docker-logs
+          docker compose -f docker-compose.preprod.yml logs --no-color --timestamps > docker-logs/docker-preprod-full.log || true
+
+      - name: Analizar Logs de Contenedores y Diagnóstico
+        if: always()
+        run: |
+          python scripts/analyze_preprod_logs.py --file docker-logs/docker-preprod-full.log --export-report
+
+      - name: Reportar Fallos de Pruebas Automatizadas
+        if: always()
+        run: |
+          python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports --fail-on-zero-tests
+
+      - name: Subir Reportes de Pruebas (Failsafe & Surefire)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-reports-integration
+          path: |
+            integration-tests/target/failsafe-reports/
+            integration-tests/target/surefire-reports/
+          retention-days: 7
+
+      - name: Archivar Logs de Docker
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: docker-preprod-logs
+          path: docker-logs/
+          retention-days: 3
+
+      - name: Desmantelar Entorno
+        if: always()
+        run: |
+          docker compose -f docker-compose.preprod.yml down -v
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 10: Quality Gate (Consolidador Final)
+  # ──────────────────────────────────────────────────────────────────────────
+  quality-gate:
+    needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, preprod-validation]
+    if: always() && (github.event.action != 'edited' || github.event.changes.base != null)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      # [FIX-1] Quality Gate con lógica de doble eje de contexto.
+      #
+      # Problema resuelto en esta iteración:
+      #   La versión anterior usaba un único eje (any-service) para evaluar todos
+      #   los jobs, incluyendo docker-build. Un PR que modifica un servicio sin
+      #   Dockerfile genera any-service=true pero docker-build=skipped (correcto),
+      #   lo cual el gate anterior penalizaba como fallo.
+      #
+      # Solución: check_job acepta un tercer parámetro "required-when":
+      #   "always"        → requerido independientemente de any-service
+      #   "any-service"   → requerido si any-service == true
+      #   "any-docker"    → requerido si any-docker-service == true
+      #   "never"         → siempre opcional (skipped aceptado sin condiciones)
+      - name: Evaluar resultado consolidado del pipeline
+        run: |
+          echo "══════════════════════════════════════════"
+          echo "       QUALITY GATE — RESULTADOS"
+          echo "══════════════════════════════════════════"
+
+          FAILED=false
+          any_service="${{ needs.detect-changes.outputs.any-service }}"
+          any_docker="${{ needs.detect-changes.outputs.any-docker-service }}"
+
+          # Parámetros:
+          #   $1 = nombre del job
+          #   $2 = resultado del job
+          #   $3 = "always"      → siempre requerido
+          #        "any-service"  → requerido si hay servicios modificados
+          #        "any-docker"   → requerido si hay servicios con Dockerfile modificados
+          #        "never"        → siempre opcional
+          check_job() {
+            local name="$1"
+            local result="$2"
+            local required_when="$3"
+
+            # Determinar si este job es obligatorio en el contexto actual
+            local is_required=false
+            case "$required_when" in
+              always)      is_required=true ;;
+              any-service) [[ "$any_service" == "true" ]] && is_required=true ;;
+              any-docker)  [[ "$any_docker"  == "true" ]] && is_required=true ;;
+              never)       is_required=false ;;
+            esac
+
+            if [[ "$result" == "success" ]]; then
+              echo "  ✅ ${name}: success"
+            elif [[ "$result" == "skipped" ]]; then
+              if [[ "$is_required" == "true" ]]; then
+                echo "  ❌ ${name}: skipped indebidamente (contexto=${required_when}=true pero el job no corrió)"
+                FAILED=true
+              else
+                echo "  ⏭️  ${name}: skipped (esperado — contexto=${required_when}=false)"
+              fi
+            else
+              echo "  ❌ ${name}: ${result}"
+              if [[ "$is_required" == "true" ]]; then
+                FAILED=true
+              fi
+            fi
+          }
+
+          # Jobs siempre requeridos
+          check_job "validate-git-flow"   "${{ needs.validate-git-flow.result }}"   "always"
+          check_job "detect-changes"      "${{ needs.detect-changes.result }}"      "always"
+
+          # Jobs requeridos si hay servicios con código modificado
+          check_job "lint-and-format"     "${{ needs.lint-and-format.result }}"     "any-service"
+          check_job "build-and-test"      "${{ needs.build-and-test.result }}"      "any-service"
+          check_job "generate-diagrams"   "${{ needs.generate-diagrams.result }}"   "any-service"
+          check_job "preprod-validation"  "${{ needs.preprod-validation.result }}"  "any-service"
+
+          # Jobs requeridos solo si hay servicios con Dockerfile modificados
+          check_job "docker-build"        "${{ needs.docker-build.result }}"        "any-docker"
+
+          # Jobs opcionales (skipped siempre aceptado)
+          check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"      "never"
+          check_job "semantic-uml-diff"   "${{ needs.semantic-uml-diff.result }}"   "never"
+
+          echo "══════════════════════════════════════════"
+          echo "  Contexto: any-service=${any_service} | any-docker=${any_docker}"
+          echo "══════════════════════════════════════════"
+
+          if [[ "$FAILED" == "true" ]]; then
+            echo "::error::❌ Quality Gate FALLIDO — Uno o más checks requeridos fallaron o fueron omitidos indebidamente."
+            exit 1
+          else
+            echo "✅ Quality Gate APROBADO — Pipeline completado exitosamente."
+          fi

@@ -57,21 +57,26 @@
                 <version>3.2.5</version>
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
-                    <runOrder>alphabetical</runOrder>
-                    <!-- Surefire excluye *IT.java por convencion; lo habilitamos explicitamente -->
-                    <includes>
-                        <include>**/*IT.java</include>
-                        <include>**/*Test.java</include>
-                    </includes>
                 </configuration>
             </plugin>
-            <!-- Spotless no aplica: este modulo no tiene fuentes principales -->
             <plugin>
-                <groupId>com.diffplug.spotless</groupId>
-                <artifactId>spotless-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.2.5</version>
                 <configuration>
-                    <skip>true</skip>
+                    <skipITs>${skipTests}</skipITs>
+                    <includes>
+                        <include>**/*IT.java</include>
+                    </includes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <!-- JaCoCo no aplica: los tests golpean servicios externos, no hay bytecode propio -->
             <plugin>

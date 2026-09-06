@@ -50,10 +50,12 @@ DonaTrack resuelve las necesidades logisticas complejas mediante modulos tecnico
 
 La plataforma se organiza bajo una arquitectura modular de servicios independientes desacoplados para asegurar una alta disponibilidad operativa:
 
-* **Modulo de Donaciones:** Gestiona de forma transaccional el catalogo de bienes, inventarios y necesidades operativas.
-* **Modulo de Incentivos:** Registra las metricas historicas de ayuda, procesa el cumplimiento de misiones y administra los rankings.
-* **Modulo de Notificaciones:** Sistema no bloqueante para el despacho de alertas que mantiene réplicas locales ligeras de los perfiles. Esto garantiza que las comunicaciones sigan funcionando de forma autonoma incluso ante eventuales caidas o demoras en la red de los otros modulos.
-* **Kernel Compartido (common-lib):** Biblioteca que centraliza excepciones tecnicas y logging estructurado de manera transversal sin compartir logica ni entidades de negocio, resguardando la autonomia de desarrollo y despliegue de cada modulo.
+* **Modulo de Donaciones:** Gestiona de forma transaccional el catalogo de bienes, inventarios y necesidades operativas, procesando normalizacion semantica y algoritmos de asignacion.
+* **Modulo de Logistica:** Gestiona de forma reactiva y transaccional la flota de camiones, choferes, planificacion de rutas y ciclo de vida de entregas, publicando eventos asincronos.
+* **Modulo de Incentivos:** Registra las metricas historicas de ayuda, procesa el cumplimiento de misiones y administra los rankings y fidelizacion.
+* **Modulo de Notificaciones:** Sistema no bloqueante para el despacho multicanal de alertas (Email, SMS, WhatsApp) que mantiene replicas locales ligeras de los perfiles para garantizar autonomia.
+* **Broker de Mensajeria (RabbitMQ):** Desacopla la comunicacion de transporte y eventos de entrega entre logistica y donaciones (`logistica.exchange` hacia colas `donaciones.ruta.*` y `donaciones.entrega.*`).
+* **Kernel Compartido (common-lib):** Biblioteca que centraliza persistencia generica en memoria (`CrudRepository`), jerarquia de excepciones, observabilidad (MDC/TraceId) y configuraciones transversales.
 
 ---
 
@@ -63,17 +65,17 @@ Organizacion del reactor multi-modulo y de los directorios principales del proye
 
 ```text
 DonaTrack-TP-DDS/
-├── .github/                      # Flujos de integracion continua y calidad automatizada
-├── docs/                         # Documentacion del portal y registros de decisiones
+├── .github/                      # Flujos de integracion continua, reviews y calidad automatizada
+├── docs/                         # Documentacion tecnica, arquitectura, testing y decisiones (ADRs)
 ├── n8n/                          # Workflows serializados para la integracion externa
-├── integration-tests/            # Suite de pruebas funcionales y de extremo a extremo
-├── common-lib/                   # shared kernel de utilidades de infraestructura y logging
-├── cliente-liviano/              # Interfaz y portal web de administracion
-├── auth-service/                 # Modulo de seguridad, usuarios y accesos
-├── donaciones-service/           # Modulo central de inventario y matchmaking
-├── incentivos-service/           # Modulo de gamificacion, rankings e incentivos
-├── logistica-service/            # Modulo experimental de transporte y rutas
-└── notificaciones-service/       # Modulo de despacho de comunicaciones y alertas
+├── integration-tests/            # Suite de pruebas funcionales y de extremo a extremo (E2E)
+├── common-lib/                   # Shared kernel: CrudRepository, logging estructurado y excepciones
+├── donaciones-service/           # Modulo central de inventario, normalizacion y matchmaking (:8080)
+├── notificaciones-service/       # Modulo de despacho de comunicaciones y alertas (:8081)
+├── incentivos-service/           # Modulo de gamificacion, rankings e incentivos (:8082)
+├── logistica-service/            # Modulo troncal de transporte, camiones, rutas y entregas (:8083)
+├── cliente-liviano/              # [PLACEHOLDER] Directorio reservado para interfaz web
+└── auth-service/                 # [PLACEHOLDER] Directorio reservado para modulo de seguridad
 ```
 
 ---
@@ -83,8 +85,11 @@ DonaTrack-TP-DDS/
 La seleccion de tecnologias responde a la necesidad de construir un producto confiable, mantenible a largo plazo y facilmente adaptable:
 
 * **Java 21 y Spring Boot 3:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
-* **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema, logrando que funcione de forma identica en cualquier computadora personal o servidor en la nube.
-* **n8n Workflow Engine:** Agilidad logica para automatizar integraciones mediante flujos de trabajo independientes, liberando a los microservicios principales de las dependencias de APIs de terceros.
+* **RabbitMQ (AMQP 3.13):** Broker de mensajeria asincrono para desacoplar eventos logisticos de alto volumen.
+* **Spring Cloud OpenFeign:** Clientes HTTP declarativos para comunicacion inter-servicios resiliente.
+* **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema en preproduccion y desarrollo local.
+* **n8n Workflow Engine:** Agilidad logica para automatizar integraciones mediante flujos de trabajo independientes, liberando a los microservicios de dependencias de APIs de terceros.
+* **Spotless & SonarCloud:** Estandarizacion de formato y analisis estatico continuo de calidad de codigo.
 * **Maven Reactor:** Reactor de compilacion unificado que simplifica la compilacion incremental y la administracion de dependencias.
 
 ---
@@ -161,4 +166,3 @@ El repositorio cuenta con dos scripts orquestadores en Bash diseñados para auto
 | **Nicolás Delorte** | 172.817-9 | ndelorte@frba.utn.edu.ar |
 | **Sofia Maria Deane** | 210.350-3 | sdeane@frba.utn.edu.ar |
 | **Tadeo Sorrentino** | 214.153-0 | tsorrentino@frba.utn.edu.ar |
-| **Valentina Thiwissen** | 209.210-4 | vthiwissen@frba.utn.edu.ar |

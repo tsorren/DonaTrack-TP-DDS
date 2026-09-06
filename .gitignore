@@ -46,3 +46,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
+/docs/rf local docs/
+
+### Python ###
+__pycache__/
+*.pyc
+.grepai/

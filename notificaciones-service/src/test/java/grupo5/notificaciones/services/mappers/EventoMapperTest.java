@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.input.*;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.*;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -171,6 +172,45 @@ class EventoMapperTest {
 
     EventoDonanteInactivoDTO dto = new EventoDonanteInactivoDTO(idInexistente, TEST_DATE_TIME, 21);
 
-    assertThrows(IllegalArgumentException.class, () -> mapper.toEntity(dto));
+    // Oleada 3 (RF-05): antes IllegalArgumentException cruda, ahora ValidationException +
+    // ErrorCatalog.RECURSO_NO_ENCONTRADO, mismo criterio que PersonasService.
+    assertThrows(ValidationException.class, () -> mapper.toEntity(dto));
+  }
+
+  @Test
+  void toEntity_donacionVencida_deberiaMapearCorrectamente() {
+    EventoDonacionVencidaDTO dto =
+        new EventoDonacionVencidaDTO(
+            donante.getId(),
+            TEST_DATE_TIME,
+            admin.getId(),
+            "10 kg de arroz",
+            "Expiró plazo de acopio");
+
+    EventoNotificable evento = mapper.toEntity(dto);
+
+    assertInstanceOf(DonacionVencida.class, evento);
+    DonacionVencida dv = (DonacionVencida) evento;
+    assertEquals(donante.getId(), dv.getPersona().getId());
+    assertEquals(admin.getId(), dv.getAdministracion().getId());
+    assertEquals("10 kg de arroz", dv.getDetalleDonacion());
+    assertEquals("Expiró plazo de acopio", dv.getMotivo());
+    assertEquals(TEST_DATE_TIME, dv.getFecha());
+  }
+
+  @Test
+  void toEntity_donacionVencida_conAdminInexistente_deberiaLanzarExcepcion() {
+    UUID adminInexistente = UUID.randomUUID();
+    when(personaRepository.findById(adminInexistente)).thenReturn(Optional.empty());
+
+    EventoDonacionVencidaDTO dto =
+        new EventoDonacionVencidaDTO(
+            donante.getId(),
+            TEST_DATE_TIME,
+            adminInexistente,
+            "10 kg de arroz",
+            "Expiró plazo de acopio");
+
+    assertThrows(ValidationException.class, () -> mapper.toEntity(dto));
   }
 }
