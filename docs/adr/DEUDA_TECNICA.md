@@ -137,17 +137,3 @@
 | Implementation status | `[INFERRED] deferred` — lógica de resolución de insignias embebida en DTO y service |
 | Target | `incentivos-service` (`MisionDTO`, `MisionMapper`, `MisionesDonacionService`) |
 | Cuándo se saldará | **Entrega 5: Arquitectura Web MVC (Semana del 19 de Octubre 2026)** — creación de `services.mappers.MisionMapper` homologando con el patrón de `donaciones-service` y `logistica-service` |
-
----
-
-## DTI-12 — Resiliencia de cálculo de rachas ante eventos desordenados
-
-| Campo | Valor |
-|---|---|
-| ADR | [20260905-dti-12](./incentivos-service/20260905-dti-12-resiliencia-de-rachas-ante-eventos-desordenados.md) |
-| Decision status | `proposed` |
-| Implementation status | `[INFERRED] deferred` — autómata con puntero a 1 mes previo; requiere persistencia de histórico |
-| Target | `incentivos-service` (`MisionRacha`, `Metricas`) |
-| Cuándo se saldará | **Fase de Persistencia Física y JPA (Entrega 4/5)** — agregación SQL o cálculo sobre `donante.donacionesPorPeriodo()` independiente del orden de llegada de eventos AMQP |
-
-
