@@ -1,7 +1,7 @@
 # Bitácora — Oleada 6: housekeeping de paquetes
 
 **Branch:** `E4_refactor_logistica`
-**Referencia del plan:** `docs/design/logistica-service/plan-refactor-logistica-service.md` → Oleada 6 (RF-07)
+**Referencia del plan:** [`plan-refactor-logistica-service.md`](./plan-refactor-logistica-service.md) → Oleada 6 (RF-07)
 
 ---
 

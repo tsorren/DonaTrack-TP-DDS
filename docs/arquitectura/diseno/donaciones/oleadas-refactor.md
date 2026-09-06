@@ -116,7 +116,7 @@ Oleada 2:
 
 ## Evidencia
 
-- **Diagrama de Clases ([`donaciones-clases.puml`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/lucid/donaciones-clases.puml))**:
+- **Diagrama de Clases ([`donaciones-clases.puml`](lucid/donaciones-clases.puml))**:
   - `Donacion` contiene `- eventos: List<EventoDonacion>`, `- registrarEvento(EventoDonacion)` y `+ limpiarEventos(): void`.
   - Los eventos heredan de una base común (`EventoDonacion`).
 - **Código Previo**:
@@ -241,47 +241,6 @@ Oleada 3:
 
 Oleada 4:
 # Oleada 4: Asignación y Propuestas — Unificación de Services, Controllers y `PosibleFragmentacion.confirmar`
-
-## Problema
-- `PosibleFragmentacion` era una clase anémica sin métodos de comportamiento; la lógica de decisión sobre si fragmentar o no una donación residía en el Application Service / EventListener.
-- `AsignacionService` y `PropuestaDeAsignacionService` duplicaban responsabilidades de orquestación, contenían lógica de consolidación pura en métodos estáticos privados y creaban niveles innecesarios de indirección.
-- Los controladores `AsignacionController` y `PropuestasController` estaban fragmentados bajo la misma raíz `/api/asignaciones/*`.
-
-## Evidencia
-- En `donaciones-clases.puml` (L532-568), `PosibleFragmentacion` define el método `+ confirmar(necesidad: Necesidad, actor: String): DonacionIndependiente`, y `GestorPropuestasDeAsignacion` encapsula los algoritmos de matching y `consolidar(p1, p2)`.
-- El código previo delegaba la fragmentación en `PropuestaDeAsignacionService.onPropuestaAprobada` y el matching en `AsignacionService`.
-
-## Objetivo
-1. Trasladar la decisión de negocio de fragmentación a `PosibleFragmentacion.confirmar(necesidad, actor)`.
-2. Crear `GestorPropuestasDeAsignacion` como Domain Service puro de matchmaking y consolidación.
-3. Unificar `AsignacionService` y `PropuestaDeAsignacionService` en un único Application Service (`PropuestaDeAsignacionService` / `IPropuestaDeAsignacionService`), eliminando `AsignacionService.java`.
-4. Unificar `AsignacionController` y `PropuestasController` en `PropuestaDeAsignacionController` / `IPropuestaDeAsignacionController` bajo `@RequestMapping("/api/asignaciones")`.
-
-## Fuera de scope
-- Planificación y generación de períodos de `NecesidadRecurrente` (Oleada 5).
-- Reorganización de paquetes de infraestructura (Oleada 6).
-
-## Tests
-- `PosibleFragmentacionTest`: Validación exhaustiva del método de dominio `confirmar` con y sin fragmentación y guardas.
-- `GestorPropuestasDeAsignacionTest`: Pruebas de reglas de consolidación de propuestas (intersección, unión y listas vacías).
-- `PropuestaDeAsignacionServiceTest`: Pruebas del servicio de aplicación unificado y consumo de eventos.
-- `PropuestaDeAsignacionControllerTest`: Pruebas unitarias de los 4 endpoints REST unificados.
-
-## Diseño resultante
-- Dominio rico con `PosibleFragmentacion` y `GestorPropuestasDeAsignacion` como Domain Service.
-- Application Service delgado y sin duplicación, enfocado en persistencia y orquestación.
-- Controlador web unificado con 100% de compatibilidad en rutas y contratos REST.
-
-## IA utilizada
-- Diagnóstico de responsabilidades y diseño de unificación de servicios y controladores.
-- Implementación de `PosibleFragmentacion.confirmar` y `GestorPropuestasDeAsignacion`.
-- Refactorización y unificación de `PropuestaDeAsignacionService` y `PropuestaDeAsignacionController`.
-- Generación de tests unitarios y validación en todo el reactor multi-módulo (`mvn clean test`).
-
-## Verificación humana
-- Validación de que `PosibleFragmentacion.confirmar` muta y asigna las entidades adecuadamente.
-- Comprobación de que no quedan clases huérfanas de asignaciones previas (`AsignacionService`, `AsignacionController`, etc.).
-- Verificación de ejecución exitosa en todo el reactor (BUILD SUCCESS, 0 fallos, 0 errores).# Oleada 4: Asignación y Propuestas — Unificación de Services, Controllers y `PosibleFragmentacion.confirmar`
 
 ## Problema
 - `PosibleFragmentacion` era una clase anémica sin métodos de comportamiento; la lógica de decisión sobre si fragmentar o no una donación residía en el Application Service / EventListener.
@@ -723,7 +682,7 @@ De cara a la futura migración desde repositorios en memoria hacia persistencia 
 - **Cero anotaciones JPA prematuras en producción**: No se introducen `@Entity`, `@Table`, `@Column` ni `@Embeddable` en esta oleada.
 - **Cero dependencias de base de datos física**: No se agregan drivers de PostgreSQL ni SDK de MinIO en los `pom.xml`.
 - **Persistencia física diferida**: Todo el detalle de implementación de esquemas relacionales DDL, JPA Converters, Testcontainers, scripts de migración y configuración de buckets se encuentra formalmente documentado en el archivo complementario:
-  👉 [`decisiones_futuras_en_oleada_10.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/decisiones_futuras_en_oleada_10.md).
+  👉 [`decisiones_futuras_en_oleada_10.md`](decisiones_futuras_en_oleada_10.md).
 
 ## Tests / Plan de Validación y No-Regresión
 - **Protección de la Oleada 8**:
@@ -749,7 +708,7 @@ De cara a la futura migración desde repositorios en memoria hacia persistencia 
 - Auditoría integral 360° de los 10 agregados del microservicio de donaciones.
 - Diagnóstico de acoplamientos contra `donaciones-clases.puml` y diseño de eliminación de `Asignable`.
 - Diseño del patrón Strategy para almacenamiento dual (FileSystem vs MinIO) y análisis de concurrencia CAS vs OCC.
-- Elaboración del documento de arquitectura complementario [`decisiones_futuras_en_oleada_10.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/decisiones_futuras_en_oleada_10.md).
+- Elaboración del documento de arquitectura complementario [`decisiones_futuras_en_oleada_10.md`](decisiones_futuras_en_oleada_10.md).
 
 ## Verificación humana
 - [x] Verificada la eliminación conceptual de `Asignable` y el desacoplamiento por `UUID` en `DonacionIndependiente` y `Necesidad`.
@@ -757,7 +716,7 @@ De cara a la futura migración desde repositorios en memoria hacia persistencia 
 - [x] Verificado el análisis de concurrencia (`AtomicLong`/CAS en memoria vs `@Version Long` en PostgreSQL).
 - [x] Verificada la estrategia de Crypto-Shredding y eliminación de la interfaz `Anonimizable`.
 - [x] Verificada la no-regresión de todas las capacidades de las Oleadas 8 y 9.
-- [x] Verificada la existencia y completitud de [`decisiones_futuras_en_oleada_10.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/donaciones-service/decisiones_futuras_en_oleada_10.md).
+- [x] Verificada la existencia y completitud de [`decisiones_futuras_en_oleada_10.md`](decisiones_futuras_en_oleada_10.md).
 - [x] Ejecución limpia del reactor Maven: `mvn clean test` (**BUILD SUCCESS en los 7 módulos**).
 - [x] Formateo Spotless validado: `mvn spotless:check` (**CLEAN**).
 
@@ -977,7 +936,7 @@ Al auditar el progreso global del refactor y de cara a la implementación de per
 # Oleada 14: Cierre Exhaustivo de Gaps Arquitectónicos, Pureza de Dominio, Estandarización de Excepciones y Testing Desacoplado
 
 ## Problema
-Tras la auditoría exhaustiva del código fuente contra el checklist de 13 oleadas del [Plan Genérico de Refactor](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/plan-generico-refactor-servicios.md), se identificaron deudas residuales puntuales en `donaciones-service` y `common-lib`:
+Tras la auditoría exhaustiva del código fuente contra el checklist de 13 oleadas del [Plan Genérico de Refactor](../plan-generico-refactor-servicios.md), se identificaron deudas residuales puntuales en `donaciones-service` y `common-lib`:
 1. **Pureza de Dominio Incompleta**: La clase `SegmentadorComplejo` en `models/segmentacion/` retenía la anotación `@Component` de Spring e inyectaba repositorios directamente en lugar de ser un POJO ensamblado en `DomainServicesConfig`.
 2. **Inconsistencia en Anotación de Repositorios**: `NecesidadesRepositoryEnMemoria` usaba `@Component` en vez de la convención `@Repository`.
 3. **Guardas con Excepciones Genéricas**: `EnTraslado.registrarFalla`, los constructores de `Deposito` y `Donante`, y `AsignacionesRepositoryEnMemoria.save` lanzaban `IllegalArgumentException` con mensajes en texto plano sin usar `ValidationException` ni constantes de `ErrorCatalog`.
@@ -1133,7 +1092,7 @@ Tras completar las 14 oleadas del refactor de `donaciones-service`, se generaliz
 
 ## Documento de referencia
 
-👉 [`plan-generico-refactor-servicios.md`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/design/plan-generico-refactor-servicios.md)
+👉 [`plan-generico-refactor-servicios.md`](../plan-generico-refactor-servicios.md)
 
 ## Principio de exhaustividad y barrido mecánico
 

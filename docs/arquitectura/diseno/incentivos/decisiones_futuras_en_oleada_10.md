@@ -642,5 +642,3 @@ public interface DonanteHistorialDonacionJpaRepository extends JpaRepository<Don
 * **Decisión de Gamificación**:
   - Actualmente, `DonanteIncentivos.getMisionActiva()` evalúa una sola misión por categoría en orden secuencial (`min(numeroMision)`).
   - Para la fase física, se define la opción de **evaluación en paralelo** (`donante.getMisionesActivas()`), permitiendo que eventos de donación simultáneos impacten sobre la misión de racha y la de completitud a la vez sin pérdida de progreso intermedio.
-
-

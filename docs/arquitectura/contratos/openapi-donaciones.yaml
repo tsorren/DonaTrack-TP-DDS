@@ -1,0 +1,752 @@
+openapi: 3.0.3
+info:
+  title: DonaTrack - Donaciones Service API
+  version: 1.0.0
+  description: API REST para gestión de donaciones independientes (máquina de 7 estados), necesidades de entidades beneficiarias, donantes y propuestas de asignación algorítmica.
+servers:
+  - url: http://localhost:8080
+    description: Servidor local de desarrollo
+paths:
+  /donaciones-independientes:
+    get:
+      summary: Listar donaciones independientes con filtros
+      operationId: listarDonacionesIndependientes
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - EN_DEPOSITO
+              - ASIGNACION_REALIZADA
+              - EN_TRASLADO
+              - LISTA_PARA_ENTREGAR
+              - ENTREGADA
+              - ENTREGA_FALLIDA
+              - VENCIDA
+        - name: subcategoriaId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: donanteId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lista de donaciones independientes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
+  /donaciones-independientes/{id}:
+    get:
+      summary: Consultar donación independiente por ID
+      operationId: obtenerDonacionIndependientePorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle de la donación independiente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
+        '404':
+          description: Donación independiente no encontrada
+  /donaciones-independientes/{id}/estado:
+    patch:
+      summary: Transicionar estado de la donación independiente (State Pattern)
+      operationId: cambiarEstadoDonacionIndependiente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: X-Actor
+          in: header
+          required: true
+          schema: { type: string }
+          description: Identificador del actor o sistema que ejecuta la transición
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CambioEstadoDonacionIndependienteRequestDTO'
+      responses:
+        '200':
+          description: Estado actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
+        '400':
+          description: Transición inválida para el estado actual
+  /api/donaciones:
+    post:
+      summary: Registrar donación (donación general con ítems)
+      operationId: registrarDonacion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonacionInputDTO'
+      responses:
+        '201':
+          description: Donación creada con éxito
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonacionOutputDTO'
+        '400':
+          description: Datos de donación inválidos
+    get:
+      summary: Listar donaciones
+      operationId: listarDonaciones
+      responses:
+        '200':
+          description: Listado de donaciones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DonacionOutputDTO'
+  /api/donaciones/{id}:
+    get:
+      summary: Consultar donación por ID
+      operationId: obtenerDonacionPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle de la donación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonacionOutputDTO'
+        '404':
+          description: Donación no encontrada
+  /api/necesidades:
+    post:
+      summary: Registrar necesidad de entidad beneficiaria
+      operationId: registrarNecesidad
+      responses:
+        '201':
+          description: Necesidad registrada
+    get:
+      summary: Listar necesidades activas
+      operationId: listarNecesidades
+      parameters:
+        - name: entidadId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+        - name: tipo
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Listado de necesidades
+  /api/necesidades/{id}:
+    get:
+      summary: Consultar necesidad por ID
+      operationId: obtenerNecesidadPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle de la necesidad
+        '404':
+          description: Necesidad no encontrada
+    put:
+      summary: Actualizar necesidad existente
+      operationId: actualizarNecesidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Necesidad actualizada
+        '400':
+          description: Datos inválidos
+        '404':
+          description: Necesidad no encontrada
+    delete:
+      summary: Baja de necesidad
+      operationId: eliminarNecesidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Necesidad eliminada exitosamente
+        '404':
+          description: Necesidad no encontrada
+  /api/asignaciones/ejecuciones:
+    post:
+      summary: Ejecutar algoritmo de asignación y generar propuestas
+      operationId: ejecutarAsignacion
+      responses:
+        '201':
+          description: Propuestas generadas
+    get:
+      summary: Historial de ejecuciones de asignación
+      operationId: historialEjecucionesAsignacion
+      responses:
+        '200':
+          description: Historial de ejecuciones
+  /api/asignaciones/propuestas:
+    get:
+      summary: Listar propuestas de asignación
+      operationId: listarPropuestasAsignacion
+      responses:
+        '200':
+          description: Listado de propuestas
+  /api/asignaciones/propuestas/{id}/estado:
+    put:
+      summary: Actualizar estado de una propuesta de asignación
+      operationId: actualizarEstadoPropuesta
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Estado actualizado
+  /api/entidades:
+    post:
+      summary: Registrar entidad beneficiaria
+      operationId: registrarEntidadBeneficiaria
+      responses:
+        '201':
+          description: Entidad creada
+    get:
+      summary: Listar entidades beneficiarias
+      operationId: listarEntidadesBeneficiarias
+      responses:
+        '200':
+          description: Listado de entidades
+  /api/entidades/{id}:
+    get:
+      summary: Consultar entidad beneficiaria por ID
+      operationId: obtenerEntidadPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle de la entidad
+        '404':
+          description: Entidad no encontrada
+    put:
+      summary: Actualizar entidad beneficiaria
+      operationId: actualizarEntidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Entidad actualizada
+        '400':
+          description: Datos inválidos
+        '404':
+          description: Entidad no encontrada
+    delete:
+      summary: Baja de entidad beneficiaria
+      operationId: eliminarEntidad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Entidad eliminada exitosamente
+        '404':
+          description: Entidad no encontrada
+  /api/donantes:
+    post:
+      summary: Registrar nuevo donante
+      operationId: registrarDonante
+      responses:
+        '201':
+          description: Donante registrado
+    get:
+      summary: Listar donantes
+      operationId: listarDonantes
+      parameters:
+        - name: canal
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: Listado de donantes
+  /api/donantes/{id}:
+    get:
+      summary: Consultar donante por ID
+      operationId: obtenerDonantePorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle del donante
+        '404':
+          description: Donante no encontrado
+    delete:
+      summary: Eliminar donante
+      operationId: eliminarDonante
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204':
+          description: Donante eliminado exitosamente
+        '404':
+          description: Donante no encontrado
+  /api/donantes/archivos:
+    post:
+      summary: Cargar archivo/padrón de donantes para procesamiento asíncrono
+      operationId: cargarArchivoDonantes
+      responses:
+        '202':
+          description: Archivo aceptado para procesamiento
+        '400':
+          description: Archivo inválido
+  /api/donantes/archivos/{id}:
+    get:
+      summary: Consultar estado de procesamiento de archivo de donantes
+      operationId: obtenerArchivoDonantes
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle del archivo de donantes
+        '404':
+          description: Archivo no encontrado
+  /api/categorias:
+    get:
+      summary: Listar categorías de donación
+      operationId: listarCategorias
+      responses:
+        '200':
+          description: Listado de categorías
+    post:
+      summary: Crear categoría
+      operationId: crearCategoria
+      responses:
+        '201':
+          description: Categoría creada
+  /api/categorias/{id}:
+    get:
+      summary: Consultar categoría por ID
+      operationId: obtenerCategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Detalle de categoría }
+        '404': { description: Categoría no encontrada }
+    put:
+      summary: Actualizar categoría
+      operationId: actualizarCategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Categoría actualizada }
+        '404': { description: Categoría no encontrada }
+    delete:
+      summary: Eliminar categoría
+      operationId: eliminarCategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Categoría eliminada exitosamente (retorna CategoriaOutputDTO) }
+        '404': { description: Categoría no encontrada }
+  /api/subcategorias:
+    get:
+      summary: Listar subcategorías
+      operationId: listarSubcategorias
+      responses:
+        '200': { description: Listado de subcategorías }
+    post:
+      summary: Crear subcategoría
+      operationId: crearSubcategoria
+      responses:
+        '201': { description: Subcategoría creada }
+  /api/subcategorias/{id}:
+    get:
+      summary: Consultar subcategoría por ID
+      operationId: obtenerSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Detalle de subcategoría }
+        '404': { description: Subcategoría no encontrada }
+    put:
+      summary: Actualizar subcategoría
+      operationId: actualizarSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Subcategoría actualizada }
+        '404': { description: Subcategoría no encontrada }
+    delete:
+      summary: Eliminar subcategoría
+      operationId: eliminarSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Subcategoría eliminada exitosamente (retorna SubcategoriaOutputDTO) }
+        '404': { description: Subcategoría no encontrada }
+  /api/subcategorias/{id}/aliases:
+    post:
+      summary: Agregar alias semántico a una subcategoría
+      operationId: agregarAliasSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AliasSubcategoriaInputDTO'
+      responses:
+        '200':
+          description: Subcategoría con alias agregado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcategoriaOutputDTO'
+        '400':
+          description: Alias inválido
+        '404':
+          description: Subcategoría no encontrada
+  /api/subcategorias/{id}/aliases/{alias}:
+    delete:
+      summary: Quitar alias semántico de una subcategoría
+      operationId: quitarAliasSubcategoria
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: alias
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Subcategoría con alias eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubcategoriaOutputDTO'
+        '404':
+          description: Subcategoría o alias no encontrado
+  /api/items-normalizados/pendientes:
+    get:
+      summary: Listar items normalizados pendientes de revisión
+      operationId: listarItemsNormalizadosPendientes
+      responses:
+        '200':
+          description: Listado de items normalizados pendientes de revisión
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemDonacionNormalizadoOutputDTO'
+  /api/items-normalizados/{id}:
+    get:
+      summary: Consultar item normalizado por ID
+      operationId: obtenerItemNormalizadoPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Detalle del item normalizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDonacionNormalizadoOutputDTO'
+        '404':
+          description: Item normalizado no encontrado
+    patch:
+      summary: Actualizar estado y reclasificación de item normalizado
+      operationId: actualizarEstadoItemNormalizado
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemDonacionNormalizadoPatchDTO'
+      responses:
+        '200':
+          description: Item normalizado actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDonacionNormalizadoOutputDTO'
+        '400':
+          description: Datos de actualización inválidos
+        '404':
+          description: Item normalizado no encontrado
+  /api/personas:
+    get:
+      summary: Listar personas registradas
+      operationId: listarPersonasDonaciones
+      responses:
+        '200': { description: Listado de personas }
+    post:
+      summary: Crear persona
+      operationId: crearPersonaDonaciones
+      responses:
+        '201': { description: Persona creada }
+  /api/personas/{id}:
+    put:
+      summary: Actualizar persona
+      operationId: actualizarPersonaDonaciones
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Persona actualizada }
+        '404': { description: Persona no encontrada }
+    delete:
+      summary: Eliminar persona
+      operationId: eliminarPersonaDonaciones
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Persona eliminada }
+        '404': { description: Persona no encontrada }
+components:
+  schemas:
+    CambioEstadoDonacionIndependienteRequestDTO:
+      type: object
+      required:
+        - estado
+      properties:
+        estado:
+          type: string
+          enum:
+            - EN_DEPOSITO
+            - ASIGNACION_REALIZADA
+            - EN_TRASLADO
+            - LISTA_PARA_ENTREGAR
+            - ENTREGADA
+            - ENTREGA_FALLIDA
+            - VENCIDA
+        justificacion: { type: string }
+        necesidadId: { type: string, format: uuid }
+        urlMapa: { type: string }
+        patenteCamion: { type: string }
+        replanificable: { type: boolean }
+    DonacionIndependienteResponseDTO:
+      type: object
+      required:
+        - id
+        - donacionOriginalId
+        - estadoActual
+        - fechaRegistro
+      properties:
+        id:
+          type: string
+          format: uuid
+        donacionOriginalId:
+          type: string
+          format: uuid
+        descripcion:
+          type: string
+        estadoActual:
+          type: string
+          enum:
+            - EN_DEPOSITO
+            - ASIGNACION_REALIZADA
+            - EN_TRASLADO
+            - LISTA_PARA_ENTREGAR
+            - ENTREGADA
+            - ENTREGA_FALLIDA
+            - VENCIDA
+        fechaRegistro:
+          type: string
+          format: date-time
+        historial:
+          type: array
+          items:
+            type: object
+        items:
+          type: array
+          items:
+            type: object
+        cantidad:
+          type: integer
+    DonacionInputDTO:
+      type: object
+      required:
+        - donanteId
+        - items
+      properties:
+        donanteId:
+          type: string
+          format: uuid
+        descripcion:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+    DonacionOutputDTO:
+      type: object
+      required:
+        - id
+        - donanteId
+      properties:
+        id:
+          type: string
+          format: uuid
+        donanteId:
+          type: string
+          format: uuid
+        descripcion:
+          type: string
+    AliasSubcategoriaInputDTO:
+      type: object
+      required:
+        - alias
+      properties:
+        alias:
+          type: string
+    SubcategoriaOutputDTO:
+      type: object
+      required:
+        - id
+        - nombre
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        categoria:
+          type: object
+        aliases:
+          type: array
+          items:
+            type: object
+    ItemDonacionNormalizadoOutputDTO:
+      type: object
+      required:
+        - id
+        - donacionOriginalId
+        - estadoNormalizacion
+      properties:
+        id:
+          type: string
+          format: uuid
+        donacionOriginalId:
+          type: string
+          format: uuid
+        descripcionBienOriginal:
+          type: string
+        cantidad:
+          type: integer
+        subcategoria:
+          $ref: '#/components/schemas/SubcategoriaOutputDTO'
+        confianza:
+          type: number
+          format: double
+        estadoNormalizacion:
+          type: string
+          enum:
+            - PENDIENTE_REVISION
+            - ACEPTADO
+            - RECHAZADO
+        segmentado:
+          type: boolean
+    ItemDonacionNormalizadoPatchDTO:
+      type: object
+      required:
+        - estadoNormalizacion
+      properties:
+        estadoNormalizacion:
+          type: string
+          enum:
+            - PENDIENTE_REVISION
+            - ACEPTADO
+            - RECHAZADO
+        subcategoriaId:
+          type: string
+          format: uuid
+

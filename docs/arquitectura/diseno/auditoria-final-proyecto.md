@@ -115,18 +115,18 @@ Los siguientes 20 hallazgos representan los puntos más relevantes del estado ac
 
 | Requisito | Servicio | Implementación | Endpoint/Event | Tests | Estado |
 |-----------|----------|----------------|----------------|-------|--------|
-| Gestión donantes | donaciones | Donante, PersonasService, DonantesService | POST/GET/PUT/DELETE /api/donantes, /api/personas | SI | OK |
+| Gestión donantes | donaciones | Donante, PersonasService, DonantesService | POST/GET/DELETE /api/donantes, POST/GET/PUT/DELETE /api/personas | SI | OK |
 | Donaciones (original) | donaciones | Donacion.java (AgregadoConEventos) | POST/GET /api/donaciones | SI | OK |
 | DonacionIndependiente | donaciones | DonacionIndependiente.java (State pattern) | PATCH /donaciones-independientes/{id}/estado | SI | OK |
 | Separación Donacion/DonacionIndependiente | donaciones | Dos aggregates distintos con ciclos de vida independientes | — | SI | OK |
-| Importación CSV masiva | donaciones | LectorDonantesCSV + ImportadorService | POST /api/donantes/importar (inferido) | SI (6 tests CSV) | OK |
-| Entidades beneficiarias | donaciones | EntidadBeneficiaria.java | POST/GET /api/entidades-beneficiarias | SI | OK |
+| Importación CSV masiva | donaciones | LectorDonantesCSV + ImportadorService | POST /api/donantes/archivos | SI (6 tests CSV) | OK |
+| Entidades beneficiarias | donaciones | EntidadBeneficiaria.java | POST/GET/PUT/DELETE /api/entidades | SI | OK |
 | Necesidades recurrentes | donaciones | NecesidadRecurrente.java + PeriodoNecesidad | POST /api/necesidades | SI | OK |
 | Necesidades extraordinarias | donaciones | NecesidadExtraordinaria.java implementa Asignable | POST /api/necesidades | SI | OK |
 | Segmentación | donaciones | Segmentador port, SegmentacionEventListener | Automático post-normalización | SI | OK |
 | Trazabilidad de estados | donaciones | historialEstados en Donacion, historial en DonacionIndependiente | GET /api/donaciones/{id} | SI | OK |
 | Algoritmos de asignación | donaciones | AlgoritmoAsignacion abstract + 2 impl Strategy | POST /api/asignaciones/ejecuciones | SI (14 tests algoritmos) | OK |
-| Flota de camiones | logistica | Camion.java (AggregateRoot, state machine) | POST/GET/PATCH /api/camiones | SI (23 tests Camion) | OK |
+| Flota de camiones | logistica | Camion.java (AggregateRoot, state machine) | POST/GET/PATCH/DELETE /api/camiones | SI (23 tests Camion) | OK |
 | Planificación de rutas | logistica | GeneradorDeRutas + PlanificadorDeRutas + proveedor externo | Scheduler + callback /api/logistica/resultados | SI | OK |
 | Lotes ≤ 100 entregas | logistica | GeneradorDeRutas.MAX_ENTREGAS_POR_SOLICITUD=100 | Configurado en properties | SI | OK |
 | Callback externo | logistica | PlanificacionController.procesarCallback() | POST /api/logistica/resultados | SI | OK |
@@ -136,7 +136,7 @@ Los siguientes 20 hallazgos representan los puntos más relevantes del estado ac
 | Replanificación | logistica | Entrega.regresarAlDeposito() → vuelve a PENDIENTE | PATCH /api/entregas/{id}/estado estado=PENDIENTE | SI | OK |
 | Misiones secuenciales | incentivos | Mision abstract + MisionFactory.crearMisionesEstandar() | Automático via procesarDonacion | SI (22 tests misiones) | OK |
 | Categorías donante | incentivos | CategoriaDonante enum (COLABORADOR/SOSTENEDOR/TRANSFORMADOR) | Automático via ascender() | SI | OK |
-| Insignias | incentivos | Insignia + InsigniaGanada + configurarVisibilidad | GET/PATCH /api/incentivos/donantes/{id}/insignias | SI | OK |
+| Insignias | incentivos | Insignia + InsigniaGanada + configurarVisibilidad | GET/PUT /api/incentivos/donantes/{donanteId}/insignias | SI | OK |
 | Ranking mensual | incentivos | GestorDeRankings + RankingService + RankingMensualJob | POST /api/incentivos/ranking/calcular + scheduler cron | SI (13 tests ranking) | OK |
 | Publicación N8N | incentivos | N8nClientAdapter WebClient async | Automático via evento MisionCompletada y RankingMensualJob | SI | OK |
 | Inactividad | incentivos | InactividadJob + InactividadService (verifica dias sin actividad) | Scheduler diario 8AM | SI (12 tests inactividad) | OK |
@@ -602,16 +602,17 @@ CONFIRMADO: logistica-service NO invoca directamente a donaciones, incentivos ni
 | /api/asignaciones/ejecuciones | GET | PropuestaDeAsignacionController | SI (postman-donaciones sección 09) | Ninguna |
 | /api/asignaciones/propuestas | GET | PropuestaDeAsignacionController | SI (flujos 4 y 8) | Ninguna |
 | /api/asignaciones/propuestas/{id}/estado | PUT | PropuestaDeAsignacionController | SI (flujos 4 y 8) | Ninguna |
-| /api/donantes | POST/GET | DonantesController | SI | Ninguna |
-| /api/donantes/{id} | GET/PUT/DELETE | DonantesController | SI | Ninguna |
-| /api/personas | POST/GET | PersonasController | SI (flujo-1) | Ninguna |
-| /api/personas/{id} | GET/PUT/DELETE | PersonasController | SI | Ninguna |
-| /api/entidades | POST/GET | EntidadBeneficiariaController | SI — ATENCIÓN: en flujo-8-e2e-distribuido la URL es `/api/entidades`, no `/api/entidades-beneficiarias` | Inconsistencia posible de prefijo entre flujos |
-| /api/necesidades | POST/GET/PATCH | NecesidadesController | SI (flujo-2, flujo-8) | Ninguna |
-| /api/categorias | POST/GET/PUT/DELETE | CategoriasController | SI (postman-donaciones sección 01) | Ninguna |
-| /api/subcategorias | POST/GET/PUT/DELETE | SubcategoriasController | SI (postman-donaciones sección 02) | Ninguna |
-| /api/items-normalizados | GET | ItemDonacionNormalizadoController | SI (postman-donaciones) | Ninguna |
-| /api/donantes/importar-csv | POST | ArchivoDonantesController | NO está en ningún flujo Postman | Endpoint CSV no documentado en colecciones |
+| /api/donantes | POST, GET | DonantesController | SI | Ninguna |
+| /api/donantes/{id} | GET, DELETE | DonantesController | SI | El controller no implementa PUT (solo GET y DELETE) |
+| /api/donantes/archivos | POST | DonantesController | NO | Carga asíncrona de CSV de donantes (retorna 202 ACCEPTED) |
+| /api/donantes/archivos/{id} | GET | DonantesController | NO | Consulta de estado de archivo procesado |
+| /api/personas | POST, GET | PersonasController | SI (flujo-1) | Ninguna |
+| /api/personas/{id} | PUT, DELETE | PersonasController | SI | El controller no implementa GET /{id} (solo PUT y DELETE) |
+| /api/entidades | POST, GET | EntidadBeneficiariaController | SI | Mapeo canónico del controller. /{id} soporta GET, PUT, DELETE |
+| /api/necesidades | POST, GET | NecesidadesController | SI (flujo-2, flujo-8) | /{id} soporta GET, PUT, DELETE (usa PUT, no PATCH) |
+| /api/categorias | POST, GET, PUT, DELETE | CategoriasController | SI (postman-donaciones sección 01) | Ninguna |
+| /api/subcategorias | POST, GET, PUT, DELETE | SubcategoriasController | SI (postman-donaciones sección 02) | Soporta además POST /api/subcategorias/{id}/aliases y DELETE /{id}/aliases/{alias} |
+| /api/items-normalizados/pendientes | GET | ItemDonacionNormalizadoController | SI (postman-donaciones) | /{id} soporta GET y PATCH. No existe endpoint GET en raíz |
 
 ### 10.2 Logística (:8083) — Endpoints verificados
 
@@ -626,12 +627,13 @@ CONFIRMADO: logistica-service NO invoca directamente a donaciones, incentivos ni
 | /api/rutas/{id} | GET | RutasController | SI | Ninguna |
 | /api/rutas/{id}/entregas | GET, POST | RutasController | SI | Ninguna |
 | /api/rutas/{id}/estado | PATCH | RutasController | SI (flujo-6) | Ninguna |
-| /api/logistica/callback/rutas | POST | PlanificacionController | NO presente en colecciones (endpoint de callback externo) | Es el endpoint que llama el proveedor externo, no el cliente Postman |
+| /api/logistica/callback/rutas | POST | PlanificacionController | NO presente en colecciones (endpoint de callback externo) | También mapeado en `/api/logistica/resultados` (ambas rutas en @PostMapping) |
 | /api/logistica/planificaciones/{id} | GET | PlanificacionController | SI | Ninguna |
-| /api/camiones | POST/GET | CamionesController | SI (postman-logistica) | Ninguna |
-| /api/camiones/{id} | GET/PATCH | CamionesController | SI | Ninguna |
-| /api/choferes | POST/GET | ChoferesController | SI | Ninguna |
-| /api/choferes/{id} | GET/PATCH | ChoferesController | SI | Ninguna |
+| /api/logistica/planificaciones/ejecuciones | POST | PlanificacionManualController | NO | Disparador manual para pruebas (condicional en logistica.planificacion.manual-enabled=true) |
+| /api/camiones | POST, GET | CamionesController | SI (postman-logistica) | Ninguna |
+| /api/camiones/{id} | GET, DELETE | CamionesController | SI | PATCH en `/api/camiones/{id}/estado`; DELETE para dar de baja |
+| /api/choferes | POST, GET | ChoferesController | SI | Ninguna |
+| /api/choferes/{id} | GET, DELETE | ChoferesController | SI | PATCH en `/api/choferes/{id}/estado`; DELETE para dar de baja |
 
 ### 10.3 Incentivos (:8082) — Endpoints verificados
 
@@ -645,8 +647,9 @@ CONFIRMADO: logistica-service NO invoca directamente a donaciones, incentivos ni
 | /api/incentivos/ranking/historial | GET | RankingController | SI | Ninguna |
 | /api/incentivos/ranking/calcular | POST | RankingController | SI (flujo-5) | Ninguna |
 | /api/incentivos/ranking/posicion/{id} | GET | RankingController | SI | Ninguna |
-| /api/incentivos/donantes/{id}/insignias | GET/PATCH | InsigniasController | SI (flujo-5) | Ninguna |
+| /api/incentivos/donantes/{id}/insignias | GET | InsigniasController | SI (flujo-5) | Parámetro opcional soloVisibles; visibilidad se configura vía PUT .../visibilidad (no PATCH) |
 | /api/incentivos/donantes/{id}/metricas | GET | MetricasIncentivosController | SI (flujo-8 paso 5.1) | Ninguna |
+| /api/incentivos/admin/resumen | GET | MetricasIncentivosController | NO | Resumen global del sistema para administradores |
 
 ### 10.4 Notificaciones (:8081) — Endpoints verificados
 
@@ -654,8 +657,8 @@ CONFIRMADO: logistica-service NO invoca directamente a donaciones, incentivos ni
 |----------|--------|-----------|-----------|---------------|
 | /notificaciones | POST | NotificacionController | SI (flujo-7, postman-notificaciones) | Ninguna. Sin prefijo /api/ documentado correctamente en todas las colecciones |
 | /notificaciones/persona/{id} | GET | NotificacionController | SI (flujo-8 paso 5.2) | Ninguna |
-| /api/notificaciones/personas | PUT | PersonasController | SI (postman-notificaciones) | Ninguna |
-| /api/notificaciones/personas/{id} | DELETE | PersonasController | SI | Ninguna |
+| /api/notificaciones/personas | PUT | PersonasController | SI (postman-notificaciones) | Sincronización de réplica de persona |
+| /api/notificaciones/personas/{id} | GET, DELETE | PersonasController | SI | Consulta de réplica y anonimización de persona |
 
 ### 10.5 Estado de las 12 colecciones Postman
 
@@ -983,10 +986,10 @@ El refactor post-oleada 11 ha mejorado significativamente la coherencia del mode
 - **Archivo:** `donaciones-service/.../GestorPropuestasDeAsignacion.java:74-77`
 - **Principio:** Claridad de decisiones de negocio.
 
-**C2-HAL-09 — `flujo-8-e2e-distribuido.json` usa `/api/entidades` pero el código usa `/api/entidades-beneficiarias`**
-- **Clasificación:** POSIBLE INCONSISTENCIA POSTMAN vs CÓDIGO
-- **Descripción:** En el paso 1.4 del flujo E2E, la URL es `{{donacionesUrl}}/api/entidades`. El controller en `postman-donaciones.json` usa `/api/entidades-beneficiarias`. Si el controller real usa `/api/entidades-beneficiarias`, el flujo E2E fallaría en este paso. INFERENCIA: puede existir un alias o el controller puede estar mapeado en `/api/entidades` también.
-- **Archivo:** `docs/postman/flujo-8-e2e-distribuido.json:43`
+**C2-HAL-09 — Resolución: `EntidadBeneficiariaController` está mapeado en `/api/entidades`**
+- **Clasificación:** [OBSERVED] CONTRATO CONFIRMADO
+- **Descripción:** En `EntidadBeneficiariaController.java:22`, la anotación canónica es `@RequestMapping("/api/entidades")`. Por tanto, `flujo-8-e2e-distribuido.json` (que invoca `{{donacionesUrl}}/api/entidades`) es 100% consistente con el código fuente real. La discrepancia residía en la colección legacy `postman-donaciones.json`, que empleaba el prefijo obsoleto `/api/entidades-beneficiarias`.
+- **Archivo:** `donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:22`
 - **Principio:** Consistencia de documentación vs código.
 
 **C2-HAL-10 — `postman-donaciones.json` sección 10 documenta limitación conocida del nuevo endpoint**
@@ -1034,7 +1037,7 @@ El refactor post-oleada 11 ha mejorado significativamente la coherencia del mode
 | C2-HAL-06 | MEDIO | INCONSISTENCIA | Nuevo GET /donaciones-independientes sin prefijo /api/ confirmado |
 | C2-HAL-07 | — | POSITIVO | Tests nuevos endpoint completos y de alta calidad |
 | C2-HAL-08 | BAJO | INFERENCIA | consolidar() prioriza algoritmo 2 sin documentar |
-| C2-HAL-09 | BAJO | REVISAR | flujo-8 usa /api/entidades vs /api/entidades-beneficiarias |
+| C2-HAL-09 | BAJO | RESUELTO | EntidadBeneficiariaController mapeado en /api/entidades (código es canónico) |
 | C2-HAL-10 | BAJO | DOCUMENTACIÓN | Limitación documentada en Postman ya no aplica con nuevo GET |
 | C2-HAL-11 | BAJO | INCONSISTENCIA | ZoneId.systemDefault() vs ZoneId.of("UTC") entre servicios |
 | C2-HAL-12 | BAJO | DEUDA | TODO vacío en NecesidadesService |
@@ -1259,18 +1262,18 @@ El patrón anterior podía producir `ConcurrentModificationException` si `clearD
 | `/api/asignaciones/propuestas` | GET | Listar propuestas |
 | `/api/asignaciones/propuestas/{id}/estado` | PUT | Aprobar o descartar propuesta |
 | `/api/donantes` | POST, GET | CRUD donantes |
-| `/api/donantes/{id}` | GET | Obtener donante |
+| `/api/donantes/{id}` | GET, DELETE | Obtener o eliminar donante |
 | `/api/donantes/archivos` | POST | **CSV masivo** — recibe `{ "path": "..." }`, no multipart |
 | `/api/personas` | POST, GET | CRUD personas |
-| `/api/personas/{id}` | GET, PUT, DELETE | |
-| `/api/entidades-beneficiarias` | POST, GET | |
-| `/api/entidades-beneficiarias/{id}` | GET, PUT, DELETE | |
-| `/api/necesidades` | POST, GET | |
-| `/api/necesidades/{id}` | GET, PATCH | |
-| `/api/categorias` | POST, GET, PUT, DELETE | |
-| `/api/subcategorias` | POST, GET, PUT, DELETE | |
-| `/api/items-normalizados` | GET | Listar ítems normalizados |
-| `/api/items-normalizados/{id}` | PATCH | Reclasificar manualmente un ítem (flujo de revisión manual) |
+| `/api/personas/{id}` | PUT, DELETE | Actualizar o eliminar persona (GET /{id} no implementado en controller) |
+| `/api/entidades` | POST, GET | Alta y listado de entidades beneficiarias |
+| `/api/entidades/{id}` | GET, PUT, DELETE | Consulta, actualización y eliminación de entidad beneficiaria |
+| `/api/necesidades` | POST, GET | Alta y listado de necesidades |
+| `/api/necesidades/{id}` | GET, PUT, DELETE | Consulta, actualización y eliminación de necesidad (usa PUT, no PATCH) |
+| `/api/categorias` | POST, GET, PUT, DELETE | CRUD de categorías |
+| `/api/subcategorias` | POST, GET, PUT, DELETE | CRUD de subcategorías (soporta POST/DELETE en `/{id}/aliases`) |
+| `/api/items-normalizados/pendientes` | GET | Listar ítems normalizados pendientes de revisión |
+| `/api/items-normalizados/{id}` | GET, PATCH | Consulta y reclasificación manual de un ítem (flujo de revisión manual) |
 
 **Aclaración crítica respecto al Checkpoint 2:** El endpoint de importación CSV correcto es `POST /api/donantes/archivos` (no `/api/donantes/importar-csv`). El controller es `DonantesController` (mismo que maneja el CRUD de donantes), no un `ArchivoDonantesController` separado. El endpoint anterior en el doc era incorrecto.
 

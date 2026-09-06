@@ -17,7 +17,7 @@ En el diseño conceptual original de `logistica-service` plasmado en el Diagrama
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleada 5 y [Auditoría Final de Logística](../arquitectura/diseno/logistica/auditoria-final.md) (§1.6 "Divergencia del bloque PLANIFICADOR_EXTERNO documentada").
+* **Oleadas de Origen:** Oleada 5 y [Auditoría Final de Logística](../../arquitectura/diseno/logistica/auditoria-final.md) (§1.6 "Divergencia del bloque PLANIFICADOR_EXTERNO documentada").
 * **Hallazgo:** La auditoría final destacó explícitamente que la implementación real adoptó una arquitectura asíncrona con callback: *"La divergencia DC síncrono en memoria vs. código async-con-callback se mantiene como decisión de diseño... es una divergencia consciente y bien documentada, no un bug... Quien mantenga el DC debería actualizarlo para reflejar el diseño async-con-callback antes de la Oleada 10"*.
 
 ## Alternativas Consideradas

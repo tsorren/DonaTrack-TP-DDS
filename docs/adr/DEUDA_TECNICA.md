@@ -24,7 +24,7 @@
 |---|---|
 | ADR | [20260901-dti-02](./donaciones-service/20260901-dti-02-reubicacion-de-procesador-de-donaciones-a-capa-de-aplicacion.md) |
 | Decision status | `proposed` |
-| Implementation status | `unknown` |
+| Implementation status | `[OBSERVED] deferred` — `ProcesadorDeDonaciones` permanece en paquete `infrastructure/` |
 | Target | donaciones-service (prioridad media) |
 | Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — estabilización de servicios de aplicación durante persistencia |
 
@@ -36,7 +36,7 @@
 |---|---|
 | ADR | [20260901-dti-03](./donaciones-service/20260901-dti-03-desacoplamiento-de-segmentacion-event-listener-en-servicio-de-aplicacion.md) |
 | Decision status | `proposed` |
-| Implementation status | `unknown` |
+| Implementation status | `[OBSERVED] deferred` — `SegmentacionEventListener` permanece en paquete `infrastructure/events/` |
 | Target | donaciones-service (prioridad media) |
 | Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — desacoplamiento de listeners locales previo a la integración |
 
@@ -48,7 +48,7 @@
 |---|---|
 | ADR | [20260901-dti-04](./donaciones-service/20260901-dti-04-descomposicion-de-cambiarestado-en-donaciones-independientes-service.md) |
 | Decision status | `proposed` |
-| Implementation status | `unknown` |
+| Implementation status | `[OBSERVED] deferred` — método monolítico `cambiarEstado()` activo en `DonacionesIndependientesService` |
 | Target | donaciones-service (prioridad media) |
 | Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — alineación de transacciones cortas con State Pattern |
 
@@ -60,7 +60,7 @@
 |---|---|
 | ADR | [20260901-dti-05](./donaciones-service/20260901-dti-05-segregacion-de-responsabilidades-en-algoritmos-service.md) |
 | Decision status | `proposed` |
-| Implementation status | `unknown` |
+| Implementation status | `[OBSERVED] in-progress` — responsabilidades divididas entre `GestorPropuestasDeAsignacion` (dominio) y `PropuestaDeAsignacionService` (aplicación); `AlgoritmosService` no introducido |
 | Target | donaciones-service (prioridad baja/media) |
 | Cuándo se saldará | **Entrega 5 (Semana del 19 de Octubre 2026)** — refactor previo a la integración con la interfaz Web MVC |
 

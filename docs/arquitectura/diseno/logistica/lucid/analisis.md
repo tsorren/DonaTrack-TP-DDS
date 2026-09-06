@@ -1,21 +1,11 @@
-Viewed logistica-clases.puml:1-362
-Viewed logistica-DER.sql:1-150
-Searched for files: *
-Searched for files: *logistica*
-Viewed aggregates-servicio-logistica.md:1-71
-Viewed diagrama-de-clases-logistica.puml:1-341
-Searched for files: *
-Searched for files: *logistica*
-Searched for files: *
-
 # Informe de Revisión de Diseño: Modelado de Datos y Persistencia (Servicio de Logística)
 
 **Rol:** Ingeniero Revisor de Diseño de Software y Arquitectura de Datos  
 **Contexto:** Servicio de Logística — Sistema DonaTrack  
 **Documentos evaluados:**
-- Diagrama de Clases de Dominio: [`logistica-clases.puml`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/logistica-service/lucid/logistica-clases.puml)
-- Export DDL del DER: [`logistica-DER.sql`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/design/logistica-service/lucid/logistica-DER.sql)
-- Catálogo de Agregados DDD: [`aggregates-servicio-logistica.md`](file:///C:/IdeaProjects/DonaTrack-TP-DDS/docs/aggregates/aggregates-servicio-logistica.md)
+- Diagrama de Clases de Dominio: [`logistica-clases.puml`](logistica-clases.puml)
+- Export DDL del DER: [`logistica-DER.sql`](logistica-DER.sql)
+- Catálogo de Agregados DDD: [`aggregates-servicio-logistica.md`](../../../aggregates-logistica.md)
 
 ---
 

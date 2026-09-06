@@ -17,7 +17,7 @@
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleada 10 de Persistencia en `donaciones-service` ([decisiones_futuras_en_oleada_10.md](../arquitectura/diseno/donaciones/decisiones_futuras_en_oleada_10.md) §1).
+* **Oleadas de Origen:** Oleada 10 de Persistencia en `donaciones-service` ([decisiones_futuras_en_oleada_10.md](../../arquitectura/diseno/donaciones/decisiones_futuras_en_oleada_10.md) §1).
 * **Hallazgo:** Se constató que para el State Pattern de `DonacionIndependiente` no se deben crear 7 tablas relacionales polimórficas; la solución óptima es persistir el enum `TipoEstadoDonacion` mediante un `AttributeConverter` que rehidrata la instancia correcta del estado a través de un factory.
 
 ## Alternativas Consideradas

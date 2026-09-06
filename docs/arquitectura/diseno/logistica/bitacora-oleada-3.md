@@ -1,7 +1,7 @@
 # Bitácora — Oleada 3: Domain Events en `Ruta` y coordinación de rutas
 
 **Branch:** `E4_refactor_logistica`
-**Referencia del plan:** `docs/design/logistica-service/plan-refactor-logistica-service.md` → Oleada 3 (RF-04)
+**Referencia del plan:** [`plan-refactor-logistica-service.md`](./plan-refactor-logistica-service.md) → Oleada 3 (RF-04)
 
 ---
 

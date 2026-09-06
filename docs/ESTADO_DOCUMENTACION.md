@@ -3,7 +3,7 @@
 > **Panel de Auditoría y Matriz de Vigencia Documental vs. Código Fuente**  
 > **Proyecto:** DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones  
 > **Equipo:** UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> **Fecha de Normalización y Sincronización:** 2026-09-02  
+> **Fecha de Normalización y Sincronización:** 2026-09-05  
 > **Propósito:** Diagnóstico y estado de sincronización de toda la documentación del repositorio contrastada contra la implementación real en Java 21, Spring Boot 3, RabbitMQ y n8n tras la formalización de ADRs de oleadas de refactor y auditoría de deuda técnica.
 
 ---
@@ -33,17 +33,23 @@ docs/
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
 │   ├── shared-kernel.md                   # CrudRepository, eventos de dominio y OpenAPI
 │   ├── logging-trazabilidad.md            # Observabilidad distribuida, MDC y traceId
+│   ├── catalogo-errores.md                # 🟢 Catálogo exhaustivo de 108 códigos de error unificados
 │   ├── analisis-arquitectonico.md         # Diagnóstico estructural del monorepo
 │   ├── guia-patrones-diseno.md            # Catálogo de patrones de diseño aplicados
 │   ├── aggregates-donaciones.md           # Aggregates DDD, 7 estados de DI y Propuesta
 │   ├── aggregates-incentivos.md           # Aggregates de gamificación, Insignia y Rankings
 │   ├── aggregates-logistica.md            # Aggregates de transporte, rutas y camiones
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
-│   └── diseno/                            # Bitácoras de refactor y diagramas PUML
+│   ├── contratos-rest.md                  # 🟢 Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
+│   ├── eventos-amqp.md                    # 🟢 Topología RabbitMQ y contratos de eventos asíncronos
+│   ├── contratos/                         # 🟢 Especificaciones OpenAPI 3.0 (YAML) y Schemas JSON
+│   └── diseno/                            # Bitácoras de refactor, diagramas PUML y anexos
 │       ├── donaciones/
 │       ├── incentivos/
 │       ├── logistica/
-│       └── notificaciones/
+│       ├── notificaciones/
+│       ├── common/                        # Estilos compartidos donatrack-style.puml
+│       └── anexos-tecnicos/               # Modelos técnicos de build autogenerados por Maven
 │
 ├── testing/                               # 🟢 Pruebas automatizadas y contratos
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
@@ -68,10 +74,11 @@ docs/
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # 🟢 Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
-│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-06)
+│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-08)
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
+    ├── README.md                          # 🟢 Matriz curricular e índice de entregas 1 a 4
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
     └── interfaz/                          # Bocetos Figma y mapa de navegación
 ```
@@ -102,16 +109,22 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Shared Kernel | Definición de `common-lib`, contratos de repositorios, excepciones unificadas y traceId. | 🟢 Sincronizado |
 | [`docs/arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) | Observabilidad | Trazabilidad distribuida con MDC, header `X-Trace-Id` e interceptores Feign. | 🟢 Sincronizado |
 | [`docs/arquitectura/guia-patrones-diseno.md`](arquitectura/guia-patrones-diseno.md) | Patrones de Diseño | Catálogo de patrones implementados (State, Strategy, Template Method, Observer, etc.). | 🟢 Sincronizado |
+| [`docs/arquitectura/catalogo-errores.md`](arquitectura/catalogo-errores.md) | Catálogo de Errores | Catálogo exhaustivo de los 108 códigos de error unificados (ERR-INF, ERR-CSR, ERR-VAL, ERR-EST). | 🟢 Sincronizado |
 | [`docs/arquitectura/aggregates-donaciones.md`](arquitectura/aggregates-donaciones.md) | Donaciones | Modelo de agregados DDD, máquina de 7 estados y propuesta de asignación. | 🟢 Sincronizado |
 | [`docs/arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | Notificaciones | Réplica de personas, adaptadores de envío y eventos notificables. | 🟢 Sincronizado |
 | [`docs/arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Incentivos | Misiones con Template Method, insignias, eventos de gamificación y ranking. | 🟢 Sincronizado |
 | [`docs/arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Logística | Ciclo de vida de entregas, planificación de rutas, camiones y eventos RabbitMQ. | 🟢 Sincronizado |
+| [`docs/arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) | Contratos REST | Catálogo consolidado de endpoints, DTOs, Swagger UI y especificaciones OpenAPI 3.0. | 🟢 Sincronizado |
+| [`docs/arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) | Mensajería AMQP | Topología RabbitMQ, TopicExchange, routing keys, payloads JSON e idempotencia. | 🟢 Sincronizado |
+| [`scripts/validate-contracts.js`](../scripts/validate-contracts.js) | Testing Contratos | Suite de validación mecánica de JSON Schemas y especificaciones OpenAPI 3.0. | 🟢 Sincronizado |
+| [`docs/arquitectura/diseno/anexos-tecnicos/README.md`](arquitectura/diseno/anexos-tecnicos/README.md) | Diagramas Técnicos | Modelos técnicos de bytecode autogenerados por Maven (`plantuml-generator`). | 🟢 Sincronizado |
 | [`docs/adr/20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md`](adr/20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md) | ADR Contratos HTTP | Estandarización de respuestas 405 (con header Allow RFC 9110) y 404 en GlobalExceptionHandler. | 🟢 Sincronizado |
 
 ### 3.3 Persistencia y Base de Datos
 
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
+| [`persistencia/README.md`](../persistencia/README.md) | Base de Datos | Arquitectura multi-schema, roles PostgreSQL, URLs JDBC y ciclo Flyway. | 🟢 Sincronizado |
 | [`persistencia/init-db/01-init-schemas-roles.sql`](../persistencia/init-db/01-init-schemas-roles.sql) | Base de Datos | Inicialización idempotente de esquemas PostgreSQL y roles con privilegios mínimos. | 🟢 Sincronizado |
 | `notificaciones-service` (JPA + Flyway) | Persistencia | Mapeo relacional, migraciones Flyway V1 y testing con Testcontainers PostgreSQL 16. | 🟢 Sincronizado |
 | [`docs/adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md`](adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) | ADR Persistencia | Formalización de arquitectura multi-schema y segregación de credenciales. | 🟢 Sincronizado |
@@ -128,8 +141,9 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 |---|---|---|:---:|
 | [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
 | [`docs/auditoria/revision-critica-devops-ci.md`](auditoria/revision-critica-devops-ci.md) | Auditoría DevOps | Revisión crítica experta de pipelines CI/CD, Dockerfiles, observabilidad y scripts auxiliares. | 🟢 Sincronizado |
-| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-07) con ADRs enlazados. | 🟢 Sincronizado |
+| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-08) con ADRs enlazados. | 🟢 Sincronizado |
 | [`docs/adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md`](adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) | ADR Deuda Técnica | DTI-07: Adaptador interino local para Crypto-Shredding mientras auth-service no exista. | 🟢 Sincronizado |
+| [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Deuda Técnica | DTI-08: Campos de observabilidad diferidos (spanId, executionTimeMs, errorCode estructurado). | 🟢 Sincronizado |
 | [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
@@ -137,12 +151,22 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
 | [`docs/cicd/DonaTrack-CICD.md`](cicd/DonaTrack-CICD.md) | CI/CD | Documentación de los 7 flujos automatizados en GitHub Actions. | 🟢 Sincronizado |
+| [`n8n/README.md`](../n8n/README.md) | Automatización | Workflows de n8n, webhooks de difusión de insignias y ranking mensual. | 🟢 Sincronizado |
+| [`postman/README.md`](../postman/README.md) | Pruebas API | 8 colecciones Postman (170 requests), variables y ejecución Newman CLI. | 🟢 Sincronizado |
 | [`docs/testing/integration-tests.md`](testing/integration-tests.md) | Testing E2E | Infraestructura de pruebas de integración distribuida (Docker, RabbitMQ, PostgreSQL, n8n). | 🟢 Sincronizado |
 | [`docs/IA/06-contexto-base-donatrack.md`](IA/06-contexto-base-donatrack.md) | Contexto IA | Snippet de contexto con arquitectura de puertos, tecnologías y restricciones. | 🟢 Sincronizado |
 | [`docs/adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md`](adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md) | ADR DevOps | Aislamiento de contenedores, usuario non-root y recolección de logs sin volúmenes de host. | 🟢 Sincronizado |
 | [`docs/adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md`](adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md) | ADR CI/CD | Protocolo semántico de códigos de salida (0, 1, 2+) y política fail-if-no-tests. | 🟢 Sincronizado |
 | [`docs/adr/20260903-estandarizacion-ciclo-vida-testing-surefire-failsafe.md`](adr/20260903-estandarizacion-ciclo-vida-testing-surefire-failsafe.md) | ADR Testing | Estandarización de ciclo de vida Maven: Surefire (test) y Failsafe (verify). | 🟢 Sincronizado |
 | [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Observabilidad | Observabilidad estructurada en NDJSON y enriquecimiento MDC en el Shared Kernel. | 🟢 Sincronizado |
+
+### 3.6 Bounded Contexts Reservados y Currícula
+
+| Documento / Artefacto | Área | Propósito / Alcance | Estado |
+|---|---|---|:---:|
+| [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación y Key Broker (Entrega 6). | 🟢 Sincronizado |
+| [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para interfaz Web MVC (Entrega 5). | 🟢 Sincronizado |
+| [`docs/entregas/README.md`](entregas/README.md) | Currícula Cátedra | Matriz curricular e índice de enunciados oficiales y artefactos de Entregas 1 a 4. | 🟢 Sincronizado |
 
 
 ---
