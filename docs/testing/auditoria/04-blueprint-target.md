@@ -100,7 +100,7 @@ graph TD
 
 ## 4. Topología de Ejecución Local y Modo Degradado
 
-Para garantizar que los desarrolladores puedan trabajar ágilmente sin importar la capacidad de su estación de trabajo (ej. laptops sin Docker daemon activo), la arquitectura soporta **ejecución en modo degradado** conforme a §11.3 de [`AGENTS.md`](../../AGENTS.md):
+Para garantizar que los desarrolladores puedan trabajar ágilmente sin importar la capacidad de su estación de trabajo (ej. laptops sin Docker daemon activo), la arquitectura soporta **ejecución en modo degradado** conforme a §11.3 de [`AGENTS.md`](../../../AGENTS.md):
 
 ```mermaid
 flowchart TD

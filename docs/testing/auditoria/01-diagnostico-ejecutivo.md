@@ -177,7 +177,7 @@ En DonaTrack hoy:
 
 1. **Fitness Functions Arquitectónicas (ArchUnit):**  
    `[OBSERVED]` El archivo `pom.xml` del monorepo y los pom de los 4 servicios poseen **0 referencias a `com.tngtech.archunit`**.  
-   Las invariantes establecidas en [`AGENTS.md`](../../AGENTS.md):
+   Las invariantes establecidas en [`AGENTS.md`](../../../AGENTS.md):
    - *Controllers como adaptadores puros:* ningún controller debe inyectar directamente un repositorio ni contener lógica de bifurcación de negocio.
    - *Pureza del modelo de dominio:* el paquete `models/entities` no debe tener acoplamiento con DTOs de transporte ni librerías de persistencia.
    - *Segregación Surefire/Failsafe:* las pruebas unitarias (`*Test.java`) no deben levantar `@SpringBootTest` pesados en la fase de Surefire.  

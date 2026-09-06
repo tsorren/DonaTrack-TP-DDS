@@ -41,7 +41,7 @@ Para contrastar objetivamente cada alternativa frente al contexto técnico de la
 ### 2.2 Análisis de Alternativas Descartadas y Justificación de la Elección
 
 * **Por qué se descarta H2 (`[REJECTED]`):**  
-  `[DOCUMENTED]` Formalmente descartado en el ADR predecesor [`20260901-estrategia-de-testing-de-persistencia-con-testcontainers-frente-a-h2.md`](../adr/20260901-estrategia-de-testing-de-persistencia-con-testcontainers-frente-a-h2.md). H2 no soporta de forma idéntica el particionamiento de schemas (`currentSchema=notificaciones`), los tipos de datos nativos de PostgreSQL (ej. `JSONB`, `UUID` nativo), ni las funciones y disparadores de PostgreSQL 16. Forzar H2 obligaría a mantener scripts de inicialización paralelos, provocando divergencias silenciosas donde los tests pasan en memoria pero fallan en producción.
+  `[DOCUMENTED]` Formalmente descartado en el ADR predecesor [`20260901-estrategia-de-testing-de-persistencia-con-testcontainers-frente-a-h2.md`](../../adr/20260901-estrategia-de-testing-de-persistencia-con-testcontainers-frente-a-h2.md). H2 no soporta de forma idéntica el particionamiento de schemas (`currentSchema=notificaciones`), los tipos de datos nativos de PostgreSQL (ej. `JSONB`, `UUID` nativo), ni las funciones y disparadores de PostgreSQL 16. Forzar H2 obligaría a mantener scripts de inicialización paralelos, provocando divergencias silenciosas donde los tests pasan en memoria pero fallan en producción.
 * **Por qué se descarta Docker Compose Exclusivo (`[REJECTED]`):**  
   Usar únicamente Docker Compose obliga a los desarrolladores a compilar los 4 microservicios y levantar RabbitMQ, PostgreSQL y n8n incluso para verificar una simple consulta JPA o un constraint de unicidad. Esto destruye el bucle de retroalimentación rápida (*Feedback Loop*) de Khorikov y genera cuellos de botella de memoria en CI.
 * **Decisión Elegida: Coexistencia en Dos Niveles (`[PROPOSED]`):**  
@@ -99,7 +99,7 @@ Para contrastar objetivamente cada alternativa frente al contexto técnico de la
 * **Por qué los Linters Estáticos no bastan:**  
   Spotless (Google Java Format) garantiza que el código sea estilísticamente uniforme, pero es completamente ciego a las violaciones de arquitectura: permite que un Controller inyecte un Repositorio, que una entidad de dominio importe librerías de persistencia, o que una clase `*Test` levante un contexto `@SpringBootTest` en tiempo de Surefire.
 * **Decisión Elegida: ArchUnit Universal en `mvn test` (`[PROPOSED]`):**  
-  Se adopta ArchUnit en todos los módulos para codificar como pruebas ejecutables las invariantes de [`AGENTS.md`](../../AGENTS.md):
+  Se adopta ArchUnit en todos los módulos para codificar como pruebas ejecutables las invariantes de [`AGENTS.md`](../../../AGENTS.md):
   - *Controllers como Adaptadores Puros:* `classes().that().resideInAPackage("..controllers..").should().onlyDependOnClassesThat().resideInAnyPackage("..services..", "..dto..", "java..")`
   - *Pureza del Dominio:* El paquete `models.entities` no debe acoplarse a Jackson, Spring Data ni clases de infraestructura.
   - *Segregación Surefire/Failsafe:* Las clases `*Test.java` no deben contener `@SpringBootTest`.
