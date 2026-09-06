@@ -79,13 +79,18 @@ public class PlanificacionService implements IPlanificacionService {
     this.comunicadorEventos = comunicadorEventos;
     this.planificadorExterno = planificadorExterno;
     this.generadorDeRutas = generadorDeRutas;
-    this.clock = clock;
+    this.clock = clock != null ? clock : Clock.systemUTC();
     this.maximoPorLote = Math.min(maximoPorLote, GeneradorDeRutas.MAX_ENTREGAS_POR_SOLICITUD);
     this.callbackUrl = selfBaseUrl + "/api/logistica/callback/rutas";
   }
 
   @Override
   public void iniciarPlanificacion() {
+    iniciarPlanificacion(LocalDate.now(clock).plusDays(1));
+  }
+
+  @Override
+  public void iniciarPlanificacion(LocalDate fechaObjetivo) {
     List<Entrega> entregas = entregasRepository.findSinRuta();
     if (entregas.isEmpty()) {
       log.info("No hay entregas pendientes de planificación.");
@@ -103,8 +108,7 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     List<PlanificacionSolicitada> solicitudes =
-        generadorDeRutas.planificar(
-            entregas, camiones, choferes, LocalDate.now(clock).plusDays(1), maximoPorLote);
+        generadorDeRutas.planificar(entregas, camiones, choferes, fechaObjetivo, maximoPorLote);
     solicitudes.forEach(this::enviarPlanificacion);
   }
 
