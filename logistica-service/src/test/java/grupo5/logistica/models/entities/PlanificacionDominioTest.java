@@ -69,9 +69,10 @@ class PlanificacionDominioTest {
     Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
     Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
     GeneradorDeRutas generador = new GeneradorDeRutas(new GeneradorLotesSimple());
+    LocalDate fechaPlanificacion = LocalDate.of(2026, 9, 6);
     PlanificacionSolicitada solicitud =
         generador
-            .planificar(List.of(entrega), List.of(camion), List.of(chofer), LocalDate.now(), 100)
+            .planificar(List.of(entrega), List.of(camion), List.of(chofer), fechaPlanificacion, 100)
             .getFirst();
 
     RespuestaPlanificacion respuesta =
@@ -79,7 +80,7 @@ class PlanificacionDominioTest {
                 new AlgoritmoOrdenadorSimple(), new AsignadorDeEntregasPorDimension())
             .procesarSolicitud(solicitud);
 
-    assertEquals(LocalDate.now(), respuesta.fecha());
+    assertEquals(fechaPlanificacion, respuesta.fecha());
     assertNull(entrega.getIdRuta());
 
     List<Ruta> rutas = generador.calcularRutas(respuesta);

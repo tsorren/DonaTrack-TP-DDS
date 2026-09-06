@@ -34,7 +34,10 @@ import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.services.impl.PlanificacionService;
 import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
 import grupo5.logistica.testutils.EntregaMother;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +47,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class PlanificacionServiceTest {
+
+  private static final Clock FIXED_CLOCK =
+      Clock.fixed(Instant.parse("2026-09-05T00:00:00Z"), ZoneOffset.UTC);
 
   private ISolicitudPlanificacionRepository solicitudesRepository;
   private IRutasRepository rutasRepository;
@@ -76,6 +82,7 @@ class PlanificacionServiceTest {
             comunicadorEventos,
             planificadorExterno,
             new GeneradorDeRutas(new GeneradorLotesSimple()),
+            FIXED_CLOCK,
             50,
             "http://logistica");
   }
@@ -149,6 +156,9 @@ class PlanificacionServiceTest {
     assertEquals(
         "http://logistica/api/logistica/callback/rutas",
         solicitudCaptor.getValue().getCallbackUrl());
+    LocalDate fechaEsperada = LocalDate.now(FIXED_CLOCK).plusDays(1);
+    assertEquals(fechaEsperada, solicitudCaptor.getValue().getFecha());
+    assertEquals(fechaEsperada, planificacionCaptor.getValue().fecha());
     assertEquals(10, planificacionCaptor.getValue().entregas().size());
   }
 
