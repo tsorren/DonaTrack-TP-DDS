@@ -232,10 +232,12 @@ class RutaServiceTest {
     UUID rutaId = UUID.randomUUID();
     UUID camionId = UUID.randomUUID();
     UUID choferId = UUID.randomUUID();
+    UUID entregaId = UUID.randomUUID();
 
     Ruta ruta = mock(Ruta.class);
     Camion camion = mock(Camion.class);
     Chofer chofer = mock(Chofer.class);
+    Entrega entrega = mock(Entrega.class);
 
     CambioEstadoRutaRequestDTO dto =
         new CambioEstadoRutaRequestDTO(EstadoRuta.COMPLETADA, null, "actor");
@@ -245,12 +247,17 @@ class RutaServiceTest {
     when(ruta.getChoferId()).thenReturn(choferId);
     when(ruta.getId()).thenReturn(rutaId);
     when(ruta.getEstado()).thenReturn(EstadoRuta.EN_TRASLADO);
+    when(ruta.getEntregaIds()).thenReturn(List.of(entregaId));
 
     when(camionRepository.findById(camionId)).thenReturn(Optional.of(camion));
     when(choferesRepository.findById(choferId)).thenReturn(Optional.of(chofer));
 
     when(camion.getRutaId()).thenReturn(rutaId);
     when(chofer.getRutaId()).thenReturn(rutaId);
+
+    when(entregasRepository.findById(entregaId)).thenReturn(Optional.of(entrega));
+    when(entrega.getId()).thenReturn(entregaId);
+    when(entrega.getEstadoActual()).thenReturn(EstadoEntrega.ENTREGADA);
 
     RutaResponseDTO response = mock(RutaResponseDTO.class);
     when(rutaMapper.toResponseDTO(ruta)).thenReturn(response);

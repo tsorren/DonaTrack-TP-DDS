@@ -6,6 +6,9 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -229,6 +232,25 @@ class ValidacionHttpTest {
         .andExpect(status().isBadRequest());
   }
 
+  // ===================== 405 — Method Not Allowed (Verifica GlobalExceptionHandler)
+  // =====================
+  @Test
+  void endpointConMetodoNoSoportado_retorna405MethodNotAllowedConHeaderAllow() throws Exception {
+    entregaMvc
+        .perform(delete("/api/entregas/" + ID + "/estado"))
+        .andExpect(status().isMethodNotAllowed())
+        .andExpect(header().string("Allow", org.hamcrest.Matchers.containsString("PATCH")))
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void consultarHistorialConPut_retorna405MethodNotAllowed() throws Exception {
+    // Intentar hacer PUT en un endpoint que solo acepta GET
+    entregaMvc
+        .perform(put("/api/entregas/" + ID + "/historial"))
+        .andExpect(status().isMethodNotAllowed());
+  }
+
   // ===================== Confirmacion de status codes (verificacion adicional)
   // =====================
 
@@ -262,5 +284,16 @@ class ValidacionHttpTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated());
+  }
+
+  @Test
+  void consultarEntregaInexistente_retorna404NotFound() throws Exception {
+    when(entregasService.obtenerPorId(ID))
+        .thenThrow(new grupo5.common.exceptions.RecursoNoEncontradoException(ID));
+
+    entregaMvc
+        .perform(get("/api/entregas/" + ID))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-001"));
   }
 }

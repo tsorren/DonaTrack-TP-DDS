@@ -74,6 +74,16 @@ class CamionesServiceTest {
     verify(camionRepository, never()).save(any());
   }
 
+  @Test
+  void crear_deberiaLanzarExcepcion_cuandoPatenteConFormatoEquivalenteYaExiste() {
+    CamionRequestDTO request = new CamionRequestDTO("ab-123-cd", 10f, 2f, 5000f);
+
+    when(camionRepository.findByPatente("AB123CD")).thenReturn(Optional.of(mock(Camion.class)));
+
+    assertThrows(BusinessStateException.class, () -> camionesService.crear(request));
+    verify(camionRepository, never()).save(any());
+  }
+
   // ===================== consultarTodos() =====================
 
   @Test

@@ -3,6 +3,7 @@ package grupo5.logistica.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.*;
@@ -261,5 +262,39 @@ class EntregaServiceTest {
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
 
     assertThrows(ValidationException.class, () -> entregasService.cambiarEstado(id, request));
+  }
+
+  @Test
+  void cambiarEstado_deberiaMandarARevision_cuandoEstadoEsRevision() {
+    UUID id = UUID.randomUUID();
+    Entrega entrega = mock(Entrega.class);
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.REVISION, "Admin Carlos", null, null);
+    EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
+
+    when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
+    when(entregasRepository.save(entrega)).thenReturn(entrega);
+    when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
+
+    EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
+
+    verify(entrega).mandarARevision("Admin Carlos");
+    verify(entregasRepository).save(entrega);
+    assertEquals(dto, resultado);
+  }
+
+  @Test
+  void cambiarEstado_deberiaLanzarExcepcion_cuandoIntentaPasarAEnTrasladoDirectamente() {
+    UUID id = UUID.randomUUID();
+    Entrega entrega = mock(Entrega.class);
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.EN_TRASLADO, "Chofer Jose", null, null);
+
+    when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entregasService.cambiarEstado(id, request));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
+    verify(entregasRepository, never()).save(any());
   }
 }
