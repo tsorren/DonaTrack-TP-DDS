@@ -10,13 +10,16 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class NecesidadRecurrente extends Necesidad {
   private Period periodo;
+  @Getter(AccessLevel.NONE)
   private List<PeriodoNecesidad> periodos;
   private Boolean activa;
 
@@ -26,7 +29,17 @@ public class NecesidadRecurrente extends Necesidad {
       String descripcion,
       Period periodo,
       LocalDate fechaInicio) {
-    super(subcategoriaId, cantidadNecesitada, descripcion);
+    this(UUID.randomUUID(), subcategoriaId, cantidadNecesitada, descripcion, periodo, fechaInicio);
+  }
+
+  public NecesidadRecurrente(
+      UUID id,
+      UUID subcategoriaId,
+      Integer cantidadNecesitada,
+      String descripcion,
+      Period periodo,
+      LocalDate fechaInicio) {
+    super(id, subcategoriaId, cantidadNecesitada, descripcion);
     if (periodo == null)
       throw new ValidationException(ErrorCatalog.NECESIDAD_RECURRENTE_SIN_PERIODO);
     if (fechaInicio == null) throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
@@ -56,8 +69,12 @@ public class NecesidadRecurrente extends Necesidad {
   public List<DonacionIndependiente> getDonacionesAsignadas() {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     return actual != null && actual.donacionesAsignadas() != null
-        ? actual.donacionesAsignadas()
+        ? Collections.unmodifiableList(actual.donacionesAsignadas())
         : List.of();
+  }
+
+  public List<PeriodoNecesidad> getPeriodos() {
+    return Collections.unmodifiableList(periodos);
   }
 
   public PeriodoNecesidad obtenerPeriodoActual() {

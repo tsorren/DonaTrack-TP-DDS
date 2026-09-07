@@ -17,11 +17,19 @@ public class ItemDonacionNormalizado implements AggregateRoot {
   }
 
   public ItemDonacionNormalizado(UUID donacionOriginalId, BienNormalizado bien, Integer cantidad) {
-    this.id = UUID.randomUUID();
+    this(UUID.randomUUID(), donacionOriginalId, bien, cantidad, false);
+  }
+
+  public ItemDonacionNormalizado(
+      UUID id, UUID donacionOriginalId, BienNormalizado bien, Integer cantidad, boolean segmentado) {
+    if (id == null) {
+      throw new IllegalArgumentException("El id del ítem normalizado no puede ser nulo");
+    }
+    this.id = id;
     this.donacionOriginalId = donacionOriginalId;
     this.bien = bien;
     this.cantidad = cantidad;
-    this.segmentado = false;
+    this.segmentado = segmentado;
   }
 
   public Double getPesoTotal() {

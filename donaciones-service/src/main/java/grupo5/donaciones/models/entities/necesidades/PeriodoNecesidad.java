@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -16,6 +17,12 @@ public record PeriodoNecesidad(
     implements Asignable {
 
   private static final Logger logger = Logger.getLogger(PeriodoNecesidad.class.getName());
+
+  public PeriodoNecesidad {
+    donacionesAsignadas =
+        Collections.unmodifiableList(
+            new ArrayList<>(donacionesAsignadas != null ? donacionesAsignadas : List.of()));
+  }
 
   public PeriodoNecesidad(LocalDate fechaFin, Integer cantidadObjetivo) {
     this(fechaFin, new ArrayList<>(), cantidadObjetivo, null);

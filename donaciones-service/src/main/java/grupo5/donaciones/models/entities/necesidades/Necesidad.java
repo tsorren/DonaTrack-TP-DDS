@@ -22,7 +22,14 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
   private UUID entidadId;
 
   protected Necesidad(UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
-    this.id = UUID.randomUUID();
+    this(UUID.randomUUID(), subcategoriaId, cantidadNecesitada, descripcion);
+  }
+
+  protected Necesidad(UUID id, UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
+    if (id == null) {
+      throw new IllegalArgumentException("El id de la necesidad no puede ser nulo");
+    }
+    this.id = id;
     this.subcategoriaId = subcategoriaId;
     this.cantidadNecesitada = cantidadNecesitada;
     this.descripcion = descripcion;

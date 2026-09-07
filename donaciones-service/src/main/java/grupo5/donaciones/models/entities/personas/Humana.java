@@ -36,7 +36,7 @@ public final class Humana extends Persona {
     this.genero = genero;
   }
 
-  /** Constructor con id fijo, exclusivamente para seeding (para persona admin). */
+  /** Constructor con id conocido para seeding o rehidratación. */
   public Humana(UUID id, String nombre, String apellido, LocalDate fechaNacimiento, Genero genero) {
     super(id);
     validarDatosHumanos(nombre, apellido, fechaNacimiento);

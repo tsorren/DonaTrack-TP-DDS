@@ -6,20 +6,33 @@ import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class NecesidadExtraordinaria extends Necesidad implements Asignable {
+  @Getter(AccessLevel.NONE)
   private List<DonacionIndependiente> donacionesAsignadas;
   private boolean activa;
 
   public NecesidadExtraordinaria(
       UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
-    super(subcategoriaId, cantidadNecesitada, descripcion);
+    this(UUID.randomUUID(), subcategoriaId, cantidadNecesitada, descripcion);
+  }
+
+  public NecesidadExtraordinaria(
+      UUID id, UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
+    super(id, subcategoriaId, cantidadNecesitada, descripcion);
     this.donacionesAsignadas = new ArrayList<>();
     this.activa = true;
+  }
+
+  @Override
+  public List<DonacionIndependiente> getDonacionesAsignadas() {
+    return Collections.unmodifiableList(donacionesAsignadas);
   }
 
   @Override

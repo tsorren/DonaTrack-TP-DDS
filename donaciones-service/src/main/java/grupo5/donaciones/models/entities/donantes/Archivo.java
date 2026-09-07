@@ -13,9 +13,16 @@ public class Archivo implements AggregateRoot {
   private EstadoArchivo estado;
 
   public Archivo(String path) {
-    this.id = UUID.randomUUID();
+    this(UUID.randomUUID(), path, EstadoArchivo.PENDIENTE);
+  }
+
+  public Archivo(UUID id, String path, EstadoArchivo estado) {
+    if (id == null) {
+      throw new IllegalArgumentException("El id del archivo no puede ser nulo");
+    }
+    this.id = id;
     this.path = path;
-    this.estado = EstadoArchivo.PENDIENTE;
+    this.estado = estado != null ? estado : EstadoArchivo.PENDIENTE;
   }
 
   public void marcarComoProcesando() {

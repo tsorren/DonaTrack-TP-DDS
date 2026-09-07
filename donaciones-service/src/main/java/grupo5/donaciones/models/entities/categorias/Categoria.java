@@ -23,10 +23,18 @@ public class Categoria implements AggregateRoot {
   }
 
   public Categoria(String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
-    this.id = UUID.randomUUID();
+    this(UUID.randomUUID(), nombre, conUso, conVencimiento, tipoUnidad);
+  }
+
+  public Categoria(
+      UUID id, String nombre, Boolean conUso, Boolean conVencimiento, Unidad tipoUnidad) {
+    if (id == null) {
+      throw new IllegalArgumentException("El id de la categoría no puede ser nulo");
+    }
 
     validarCategoria(nombre, conUso, conVencimiento, tipoUnidad);
 
+    this.id = id;
     this.nombre = nombre;
     this.conUso = conUso;
     this.conVencimiento = conVencimiento;

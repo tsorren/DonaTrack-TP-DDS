@@ -41,10 +41,28 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
 
   public Donacion(
       UUID donanteId, Deposito depositoRecepcion, String descripcion, LocalDateTime fecha) {
+    this(UUID.randomUUID(), donanteId, depositoRecepcion, descripcion, fecha, true);
+  }
+
+  public Donacion(
+      UUID id, UUID donanteId, Deposito depositoRecepcion, String descripcion, LocalDateTime fecha) {
+    this(id, donanteId, depositoRecepcion, descripcion, fecha, false);
+  }
+
+  private Donacion(
+      UUID id,
+      UUID donanteId,
+      Deposito depositoRecepcion,
+      String descripcion,
+      LocalDateTime fecha,
+      boolean registrarEventoDeCarga) {
     if (donanteId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_SIN_DONANTE);
     }
-    this.id = UUID.randomUUID();
+    if (id == null) {
+      throw new IllegalArgumentException("El id de la donación no puede ser nulo");
+    }
+    this.id = id;
     this.donanteId = donanteId;
     this.depositoRecepcion = depositoRecepcion;
     this.descripcion = descripcion;
@@ -52,7 +70,9 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
     this.items = new ArrayList<>();
     this.estadoActual = EstadoDonacion.CARGADA;
     this.historialEstados = new ArrayList<>();
-    this.registrarEvento(new DonacionCargada(this.id, this.donanteId));
+    if (registrarEventoDeCarga) {
+      this.registrarEvento(new DonacionCargada(this.id, this.donanteId));
+    }
   }
 
   public Donacion(UUID donanteId, Deposito depositoRecepcion) {
