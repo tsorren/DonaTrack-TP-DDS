@@ -41,6 +41,7 @@ class LogisticaEventListenerIdempotenciaTest {
             eq(donacionId), any(), eq("logistica-service")))
         .thenReturn(mock(DonacionIndependienteResponseDTO.class))
         .thenThrow(new RuntimeException("ya está en LISTA_PARA_ENTREGAR"));
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
 
     assertDoesNotThrow(() -> listener.onRutaAsignada(evento));
     assertDoesNotThrow(() -> listener.onRutaAsignada(evento));
@@ -65,6 +66,7 @@ class LogisticaEventListenerIdempotenciaTest {
             eq(donacionId), any(), eq("logistica-service")))
         .thenReturn(mock(DonacionIndependienteResponseDTO.class))
         .thenThrow(new RuntimeException("ya está en EN_TRASLADO"));
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
 
     assertDoesNotThrow(() -> listener.onRutaIniciada(evento));
     assertDoesNotThrow(() -> listener.onRutaIniciada(evento));
@@ -84,6 +86,7 @@ class LogisticaEventListenerIdempotenciaTest {
             eq(donacionId), any(), eq("logistica-service")))
         .thenReturn(mock(DonacionIndependienteResponseDTO.class))
         .thenThrow(new RuntimeException("ya está en ENTREGADA"));
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
 
     assertDoesNotThrow(() -> listener.onEntregaExitosa(evento));
     assertDoesNotThrow(() -> listener.onEntregaExitosa(evento));
@@ -103,6 +106,7 @@ class LogisticaEventListenerIdempotenciaTest {
             eq(donacionId), any(), eq("logistica-service")))
         .thenReturn(mock(DonacionIndependienteResponseDTO.class))
         .thenThrow(new RuntimeException("ya está en ENTREGA_FALLIDA"));
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
 
     assertDoesNotThrow(() -> listener.onEntregaFallida(evento));
     assertDoesNotThrow(() -> listener.onEntregaFallida(evento));
@@ -119,16 +123,8 @@ class LogisticaEventListenerIdempotenciaTest {
 
     when(donacionesIndependientesService.cambiarEstado(eq(donacionId), any(), any()))
         .thenThrow(new RecursoNoEncontradoException(donacionId));
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
 
     assertDoesNotThrow(() -> listener.onRutaAsignada(evento));
   }
 }
-    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
-
-    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
-
-    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
-
-    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
-
-    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
