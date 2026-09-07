@@ -12,6 +12,7 @@ import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
+import grupo5.incentivos.services.mappers.MisionMapper;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
@@ -78,20 +79,26 @@ class DTOsAndMappersTest {
   }
 
   @Test
-  void misionDTO_desde_deberiaMapearCorrectamente() {
+  void
+      misionMapper_toResponseDTO_conMisionSinCompletar_deberiaExponerLaPlantillaDeInsigniaComoPreview() {
     MisionRacha racha =
         MisionMother.rachaConInsignia(
             grupo5.incentivos.models.entities.donante.CategoriaDonante.COLABORADOR,
             2,
             "Racha Bronce");
+    MisionMapper mapper = new MisionMapper();
 
-    MisionDTO dto = MisionDTO.desde(racha);
+    // La misión no está completada: no hace falta un donante real para resolver la insignia.
+    MisionDTO dto = mapper.toResponseDTO(racha, null);
 
     assertNotNull(dto);
     assertEquals(racha.getNombre(), dto.nombre());
     assertEquals(racha.getObjetivo(), dto.objetivo());
+    assertFalse(dto.completada());
     assertNotNull(dto.insignia());
     assertEquals(racha.getInsignia().nombre(), dto.insignia().nombre());
+    // Es la plantilla (preview), todavía no la ganó: no tiene fecha de obtención.
+    assertNull(dto.insignia().fechaObtenida());
   }
 
   @Test

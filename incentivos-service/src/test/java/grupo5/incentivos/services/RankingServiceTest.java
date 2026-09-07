@@ -15,11 +15,13 @@ import grupo5.incentivos.models.repositories.RankingRepository;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -130,6 +132,26 @@ class RankingServiceTest {
     service.calcularYNotificar(mayo);
 
     verify(n8nClient, times(1)).notificarRankingCalculado(eq("2026-05"), any());
+  }
+
+  @Test
+  void calcularYNotificar_conMasDeTresDonantes_soloDeberiaEnviarElTop3AN8n() {
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
+    for (int i = 1; i <= 5; i++) {
+      donanteRepository.save(
+          DonanteIncentivosMother.conMisionesCompletadasEnMes(
+              UUID.randomUUID(), "Donante " + i, mayo, i));
+    }
+
+    service.calcularYNotificar(mayo);
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<List<Map<String, Object>>> captor = ArgumentCaptor.forClass(List.class);
+    verify(n8nClient, times(1)).notificarRankingCalculado(eq("2026-05"), captor.capture());
+
+    List<Map<String, Object>> top3 = captor.getValue();
+    assertEquals(3, top3.size());
+    assertTrue(top3.stream().allMatch(entrada -> (int) entrada.get("posicion") <= 3));
   }
 
   @Test

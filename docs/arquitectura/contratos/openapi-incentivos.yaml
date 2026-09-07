@@ -80,6 +80,30 @@ paths:
                 example: 3
         '204':
           description: El donante no posee posición en el ranking para el período solicitado
+  /api/incentivos/ranking/{periodo}:
+    get:
+      summary: Obtener ranking mensual de un período específico
+      operationId: obtenerRankingPorPeriodo
+      parameters:
+        - name: periodo
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+            example: '2026-09'
+          description: Período a consultar en formato YYYY-MM
+      responses:
+        '200':
+          description: Ranking mensual del período solicitado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RankingMensualDTO'
+        '400':
+          description: Formato de período inválido
+        '404':
+          description: Ranking no encontrado para el período
   /api/incentivos/donantes/{donanteId}:
     post:
       summary: Registrar un nuevo donante en el sistema de incentivos
@@ -144,6 +168,47 @@ paths:
           description: Payload inválido
         '404':
           description: Donante no encontrado
+    get:
+      summary: Consultar perfil consolidado del donante en incentivos
+      operationId: obtenerDonantePerfil
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Perfil consolidado del donante
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonantePerfilDTO'
+        '404':
+          description: Donante no encontrado
+  /api/incentivos/donantes/{donanteId}/ascensos:
+    get:
+      summary: Consultar historial de ascensos de categoría del donante
+      operationId: obtenerAscensosDonante
+      parameters:
+        - name: donanteId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Historial de ascensos de categoría
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CambioCategoriaDTO'
+        '404':
+          description: Donante no encontrado
   /api/incentivos/donantes/{donanteId}/metricas:
     get:
       summary: Consultar métricas y nivel de un donante
@@ -181,6 +246,14 @@ paths:
       responses:
         '200':
           description: Lista de misiones del donante
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MisionDTO'
+        '404':
+          description: Donante no encontrado
   /api/incentivos/donantes/{donanteId}/insignias:
     get:
       summary: Listar insignias obtenidas por un donante
@@ -244,6 +317,20 @@ paths:
       responses:
         '200':
           description: Evento de donación exitosa procesado
+  /api/incentivos/evaluaciones-inactividad:
+    post:
+      summary: Ejecutar evaluación de inactividad de donantes (on-demand)
+      operationId: ejecutarEvaluacionInactividad
+      responses:
+        '200':
+          description: Evaluación de inactividad ejecutada exitosamente
+  /api/incentivos/verificaciones-racha:
+    post:
+      summary: Ejecutar verificación de vigencia de rachas (on-demand)
+      operationId: ejecutarVerificacionRachas
+      responses:
+        '200':
+          description: Verificación de rachas ejecutada exitosamente
 components:
   schemas:
     RankingMensualDTO:
@@ -323,4 +410,63 @@ components:
           type: string
           minLength: 2
           maxLength: 100
+    MisionDTO:
+      type: object
+      properties:
+        nombre:
+          type: string
+        descripcion:
+          type: string
+        categoria:
+          type: string
+          enum: [COLABORADOR, SOSTENEDOR, TRANSFORMADOR]
+        progresoActual:
+          type: integer
+        objetivo:
+          type: integer
+        porcentaje:
+          type: integer
+        distanciaAlObjetivo:
+          type: integer
+        completada:
+          type: boolean
+        fechaCompletada:
+          type: string
+          format: date
+        insignia:
+          $ref: '#/components/schemas/InsigniaDTO'
+    DonantePerfilDTO:
+      type: object
+      properties:
+        donanteId:
+          type: string
+          format: uuid
+        idPersona:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        categoria:
+          type: string
+          enum: [COLABORADOR, SOSTENEDOR, TRANSFORMADOR]
+        fechaRegistro:
+          type: string
+          format: date
+        misionesCompletadas:
+          type: integer
+        insigniasGanadas:
+          type: integer
+    CambioCategoriaDTO:
+      type: object
+      properties:
+        categoriaAnterior:
+          type: string
+          enum: [COLABORADOR, SOSTENEDOR, TRANSFORMADOR]
+        categoriaNueva:
+          type: string
+          enum: [COLABORADOR, SOSTENEDOR, TRANSFORMADOR]
+        fecha:
+          type: string
+          format: date
+
 

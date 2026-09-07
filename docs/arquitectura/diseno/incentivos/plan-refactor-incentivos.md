@@ -482,12 +482,8 @@ public record InsigniaGanada(String nombre, String descripcion, String imagenUrl
         // fechaObtenida puede ser null si viene de datos legacy
     }
 
-    public InsigniaGanada ocultada() {
-        return new InsigniaGanada(nombre, descripcion, imagenUrl, false, fechaObtenida);
-    }
-
-    public InsigniaGanada visible() {
-        return new InsigniaGanada(nombre, descripcion, imagenUrl, true, fechaObtenida);
+    public InsigniaGanada conVisibilidad(boolean visible) {
+        return new InsigniaGanada(nombre, descripcion, imagenUrl, visible, fechaObtenida);
     }
 }
 ```
@@ -512,7 +508,7 @@ public void configurarVisibilidadInsignia(String nombre, boolean visible) {
     for (int i = 0; i < this.insignias.size(); i++) {
         InsigniaGanada g = this.insignias.get(i);
         if (g.nombre().equals(nombre)) {
-            this.insignias.set(i, visible ? g.visible() : g.ocultada());
+            this.insignias.set(i, g.conVisibilidad(visible));
             return;
         }
     }

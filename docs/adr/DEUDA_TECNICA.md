@@ -104,7 +104,43 @@
 
 ---
 
-## DTI-09 — Modernización del arnés de testing y erradicación de antipatrones de QA (AP-01, AP-02, AP-03)
+## DTI-09 — Seguridad, control de acceso y asincronía en procesos batch de incentivos
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260905-dti-09](./incentivos-service/20260905-dti-09-seguridad-y-asincronia-en-procesos-batch-de-incentivos.md) |
+| Decision status | `proposed` |
+| Implementation status | `[INFERRED] deferred` — endpoints creados para testing; requiere auth-service y Spring Security |
+| Target | `incentivos-service` (`ProcesosIncentivosController`, `InactividadService`) |
+| Cuándo se saldará | **Entrega 6: Despliegue, Observabilidad y Seguridad (Semana del 23 de Noviembre 2026)** — integración con `auth-service`, protección perimetral con roles (`ROLE_ADMIN`), traslado a `/api/admin/` y respuesta `202 Accepted` asíncrona |
+
+---
+
+## DTI-10 — Desacoplamiento de errores de dominio de incentivos en GlobalExceptionHandler
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260905-dti-10](./incentivos-service/20260905-dti-10-desacoplamiento-de-errores-de-dominio-en-global-exception-handler.md) |
+| Decision status | `proposed` |
+| Implementation status | `[INFERRED] deferred` — preserva consistencia con patrón preexistente en Entrega 2 |
+| Target | `common-lib` (`GlobalExceptionHandler`, `ErrorCatalog`) · `incentivos-service` (`RankingController`) |
+| Cuándo se saldará | **Entrega 5: Arquitectura Web MVC (Semana del 19 de Octubre 2026)** — refactor de capa Web y reemplazo del `if/else` por resolución idiomática de `Optional` o jerarquía tipada |
+
+---
+
+## DTI-11 — Extracción de MisionMapper dedicado y purificación de MisionDTO
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260905-dti-11](./incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md) |
+| Decision status | `proposed` |
+| Implementation status | `[VERIFIED] implemented (PR #856)` — `MisionMapper` creado en `services.mappers` y `MisionDTO` purificado como record anémico |
+| Target | `incentivos-service` (`MisionDTO`, `MisionMapper`, `MisionesDonacionService`) |
+| Cuándo se saldará | **Saldada en PR #856 (Septiembre 2026)** — se implementó el componente `grupo5.incentivos.services.mappers.MisionMapper` resolviendo la insignia del donante y desacoplando `MisionDTO` |
+
+---
+
+## DTI-12 — Modernización del arnés de testing y erradicación de antipatrones de QA (AP-01, AP-02, AP-03)
 
 | Campo | Valor |
 |---|---|
@@ -114,5 +150,3 @@
 | Implementation status | `[OBSERVED] deferred` — auditoría y blueprints formalizados; implementación diferida a Entregas 4 y 5 según el roadmap de migración |
 | Target | Monorepo · `integration-tests` · microservicios (`donaciones`, `logistica`, `incentivos`, `notificaciones`) |
 | Cuándo se saldará | **Entrega 4 (Sprints 1-4)**: Fase 1 (Fitness Functions ArchUnit) y Fase 2 (Slicing Testcontainers `@ServiceConnection`); **Entrega 5 (Sprints 5-7)**: Fase 3 (Contratos OpenAPI/WireMock erradicando AP-01) y Fase 4 (Migración de carga a k6 erradicando AP-02) |
-
-

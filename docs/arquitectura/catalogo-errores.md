@@ -34,7 +34,7 @@
 | `RecursoNoEncontradoException` | `DonaTrackException` | `404 Not Found` | Recurso buscado por ID no existe |
 | `InfrastructureException` | `DonaTrackException` | `500 Internal Server Error` | Fallo en capa de infraestructura (CSV, conexiones externas) |
 
-> \* `BusinessStateException` devuelve `404 Not Found` para los códigos `ERR-EST-702` y `ERR-EST-708` (ver handler).
+> \* `BusinessStateException` devuelve `404 Not Found` para los códigos `ERR-EST-702`, `ERR-EST-708` y `ERR-EST-716` (ver handler).
 
 ---
 
@@ -216,6 +216,7 @@
 | `ERR-EST-515` | `SIN_PERIODO_ACTIVO` | No existe período activo para la operación | `409` | |
 | `ERR-EST-702` | `DONANTE_INCENTIVOS_NO_ENCONTRADO` | Donante no encontrado en servicio de incentivos | **`404`** | Excepción especial en handler |
 | `ERR-EST-708` | `INSIGNIA_NO_ENCONTRADA` | Insignia no encontrada | **`404`** | Excepción especial en handler |
+| `ERR-EST-716` | `RANKING_NO_ENCONTRADO` | Ranking mensual no encontrado para el período solicitado | **`404`** | Excepción especial en handler |
 | `ERR-EST-804` | `ENTREGA_YA_ASIGNADA_A_RUTA` | La entrega ya está asignada a otra ruta | `409` | |
 | `ERR-EST-810` | `SOLICITUD_PLANIFICACION_TRANSICION_INVALIDA` | Transición de estado de solicitud de planificación inválida | `409` | |
 
@@ -248,5 +249,5 @@ Estos errores no se originan en `ErrorCatalog` directamente, pero el handler los
 | `ERR-INF` | Infraestructura | 3 | `500` |
 | `ERR-CSR` | Comunes / Transversales | 4 | `400` / `404` / `500` |
 | `ERR-VAL` | Validación de dominio | 93 | `400` |
-| `ERR-EST` | Estado de negocio | 8 | `409` (excepto 702 y 708 → `404`) |
-| **Total** | | **108** | |
+| `ERR-EST` | Estado de negocio | 9 | `409` (excepto 702, 708 y 716 → `404`) |
+| **Total** | | **109** | |
