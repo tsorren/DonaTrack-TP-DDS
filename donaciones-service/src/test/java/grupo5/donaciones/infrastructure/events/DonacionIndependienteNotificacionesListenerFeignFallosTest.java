@@ -19,6 +19,7 @@ import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
+import grupo5.donaciones.services.IDonacionesIndependientesNotificacionesService;
 import grupo5.donaciones.services.IPersonasService;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,6 +44,7 @@ class DonacionIndependienteNotificacionesListenerFeignFallosTest {
   @Mock private INecesidadesRepository necesidadRepository;
   @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
   @Mock private IPersonasService personasService;
+  @Mock private IDonacionesIndependientesNotificacionesService notificacionesService;
 
   @InjectMocks private DonacionIndependienteNotificacionesListener listener;
 

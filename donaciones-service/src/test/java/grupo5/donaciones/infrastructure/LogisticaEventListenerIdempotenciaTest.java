@@ -10,9 +10,12 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import grupo5.donaciones.infrastructure.idempotency.IEventosConsumidosRepository;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +27,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class LogisticaEventListenerIdempotenciaTest {
 
   @Mock private IDonacionesIndependientesService donacionesIndependientesService;
+  @Mock private IEventosConsumidosRepository eventosConsumidosRepository;
+  @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
   @InjectMocks private LogisticaEventListener listener;
 
   @Test
@@ -118,3 +123,12 @@ class LogisticaEventListenerIdempotenciaTest {
     assertDoesNotThrow(() -> listener.onRutaAsignada(evento));
   }
 }
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
