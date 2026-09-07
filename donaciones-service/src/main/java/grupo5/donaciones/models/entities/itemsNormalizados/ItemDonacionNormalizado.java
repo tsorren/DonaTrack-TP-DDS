@@ -21,7 +21,11 @@ public class ItemDonacionNormalizado implements AggregateRoot {
   }
 
   public ItemDonacionNormalizado(
-      UUID id, UUID donacionOriginalId, BienNormalizado bien, Integer cantidad, boolean segmentado) {
+      UUID id,
+      UUID donacionOriginalId,
+      BienNormalizado bien,
+      Integer cantidad,
+      boolean segmentado) {
     if (id == null) {
       throw new IllegalArgumentException("El id del ítem normalizado no puede ser nulo");
     }

@@ -18,8 +18,10 @@ import lombok.Getter;
 public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   private UUID id;
   private UUID necesidadQueSatisfaceId;
+
   @Getter(AccessLevel.NONE)
   private List<PosibleFragmentacion> posiblesFragmentaciones;
+
   private EstadoPropuesta estado;
   private LocalDateTime fechaCreacion;
 

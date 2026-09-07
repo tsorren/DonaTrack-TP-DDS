@@ -16,6 +16,7 @@ import lombok.Getter;
 public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   @Getter(AccessLevel.NONE)
   private List<DonacionIndependiente> donacionesAsignadas;
+
   private boolean activa;
 
   public NecesidadExtraordinaria(

@@ -45,7 +45,11 @@ public class Donacion extends AgregadoConEventos<EventoDonacion> {
   }
 
   public Donacion(
-      UUID id, UUID donanteId, Deposito depositoRecepcion, String descripcion, LocalDateTime fecha) {
+      UUID id,
+      UUID donanteId,
+      Deposito depositoRecepcion,
+      String descripcion,
+      LocalDateTime fecha) {
     this(id, donanteId, depositoRecepcion, descripcion, fecha, false);
   }
 

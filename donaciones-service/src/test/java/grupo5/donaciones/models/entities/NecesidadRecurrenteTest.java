@@ -11,6 +11,7 @@ import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
+import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Period;
@@ -82,10 +83,21 @@ class NecesidadRecurrenteTest {
 
   @Test
   void asignarDonacion_cuandoNoHayPeriodoActivo_deberiaLanzarExcepcion() {
-    necesidad.getPeriodos().clear();
+    // Como ahora son inmutables desde afuera, estamos forzados a crear una subclase anonima solo
+    // para esta prueba,
+    // sobrescribiendo obtenerPeriodoActual para simular el caso
+    NecesidadRecurrente necesidadSinPeriodos =
+        new NecesidadRecurrente(
+            subcategoriaId, 100, "Test sin periodos", Period.ofWeeks(1), TEST_DATE.minusDays(5)) {
+          @Override
+          public PeriodoNecesidad obtenerPeriodoActual() {
+            return null;
+          }
+        };
 
     BusinessStateException excepcion =
-        assertThrows(BusinessStateException.class, () -> necesidad.asignarDonacion(d100));
+        assertThrows(
+            BusinessStateException.class, () -> necesidadSinPeriodos.asignarDonacion(d100));
 
     assertEquals(ErrorCatalog.SIN_PERIODO_ACTIVO, excepcion.getError());
   }
@@ -110,10 +122,25 @@ class NecesidadRecurrenteTest {
 
   @Test
   void renovarPeriodoSiCorresponde_cuandoNoTienePeriodos_deberiaRetornarTrueYCrearPeriodo() {
-    necesidad.getPeriodos().clear();
+    // Instanciamos la entidad anulando temporalmente el período inicial
+    NecesidadRecurrente necesidadSinPeriodos =
+        new NecesidadRecurrente(
+            subcategoriaId, 100, "Test sin periodos", Period.ofWeeks(1), TEST_DATE.minusDays(5)) {
+          private boolean sinPeriodos = true;
 
-    assertTrue(necesidad.renovarPeriodoSiCorresponde(TEST_DATE));
+          @Override
+          public PeriodoNecesidad obtenerPeriodoActual() {
+            return sinPeriodos ? null : super.obtenerPeriodoActual();
+          }
 
-    assertEquals(1, necesidad.getPeriodos().size());
+          @Override
+          public void generarNuevoPeriodo() {
+            this.sinPeriodos = false;
+            super.generarNuevoPeriodo();
+          }
+        };
+
+    assertTrue(necesidadSinPeriodos.renovarPeriodoSiCorresponde(TEST_DATE));
+    assertEquals(2, necesidadSinPeriodos.getPeriodos().size()); // Se sumó el nuevo período
   }
 }

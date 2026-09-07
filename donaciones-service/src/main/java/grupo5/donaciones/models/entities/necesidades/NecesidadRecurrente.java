@@ -19,8 +19,10 @@ import lombok.Getter;
 @Getter
 public class NecesidadRecurrente extends Necesidad {
   private Period periodo;
+
   @Getter(AccessLevel.NONE)
   private List<PeriodoNecesidad> periodos;
+
   private Boolean activa;
 
   public NecesidadRecurrente(
