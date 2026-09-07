@@ -31,11 +31,11 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   @JsonIgnore private Asignable asignadaA;
 
   public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
-    this.id = UUID.randomUUID();
-    this.donacionOriginalId = donacionOriginalId;
     if (donacionOriginalId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
+    this.id = UUID.randomUUID();
+    this.donacionOriginalId = donacionOriginalId;
 
     this.items = new ArrayList<>();
     items.forEach(this::agregarItem);
