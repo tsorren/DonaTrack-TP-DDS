@@ -35,12 +35,13 @@ Las siguientes responsabilidades están centralizadas en `common-lib` debido a s
   * El `@RestControllerAdvice` global que intercepta las excepciones y genera las respuestas HTTP mapeadas a los códigos de estado correspondientes (400, 404, 409, 500).
 * **Justificación:** Garantiza que cualquier error en cualquier servicio del sistema se exponga al cliente con el mismo formato JSON estandarizado.
 
-### D. Abstracciones de Persistencia en Memoria (DDD)
+### D. Abstracciones de Persistencia y Puertos de Repositorio (DDD)
 * **Qué incluye:**
   * La interfaz `AggregateRoot` (que encapsula el contrato de identidad mediante un `UUID`).
-  * El contrato genérico `CrudRepository<T extends AggregateRoot>`.
+  * El contrato genérico de puerto `CrudRepository<T extends AggregateRoot>`.
   * La clase abstracta `CrudRepositoryEnMemoria<T extends AggregateRoot>`, que proporciona una base concurrente segura (`ConcurrentHashMap`) para persistencia volátil en Fase 1, con soporte de CRUD completo, búsquedas polimórficas y logging estructurado.
-* **Justificación:** Facilita la adopción de **Arquitectura Hexagonal (Puertos y Adaptadores)** y aislamiento de dominio sin necesidad de duplicar código de infraestructura de repositorios en cada microservicio.
+  * La clase abstracta adaptadora `CrudRepositoryJpaAdapter<T extends AggregateRoot, E, R extends JpaRepository<E, UUID>>`, que implementa el puerto `CrudRepository<T>` delegando sobre repositorios `JpaRepository` de Spring Data JPA mediante mappers bidireccionales (`toEntity`, `toDomain`), proporcionando soporte transaccional y logging estandarizado para la persistencia relacional en Fase 2.
+* **Justificación:** Facilita la adopción de **Arquitectura Hexagonal (Puertos y Adaptadores)** y aislamiento de dominio sin duplicar código de infraestructura de repositorios ni acoplar las interfaces del dominio a Spring Data JPA.
 
 ### E. Trazabilidad y Observabilidad Distribuida Activa
 * **Qué incluye:** El paquete `grupo5.common.logging` con autoconfiguración Spring Boot:

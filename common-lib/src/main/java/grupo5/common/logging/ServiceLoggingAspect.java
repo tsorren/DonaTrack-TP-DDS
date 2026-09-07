@@ -6,11 +6,13 @@ import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 @Aspect
 public class ServiceLoggingAspect {
   private static final Logger log = LoggerFactory.getLogger(ServiceLoggingAspect.class);
   private static final String UNKNOWN = "Unknown";
+  private static final String EVENT_TYPE = "eventType";
 
   @AfterReturning(
       pointcut =
@@ -21,11 +23,17 @@ public class ServiceLoggingAspect {
     String className = target != null ? target.getClass().getSimpleName() : UNKNOWN;
     String packageName = target != null ? target.getClass().getPackageName() : UNKNOWN;
     String methodName = joinPoint.getSignature().getName();
-    log.info(
-        "[SERVICE-SUCCESS] [PACKAGE: {}] [CLASS: {}] [METHOD: {}] - Completed successfully",
-        packageName,
-        className,
-        methodName);
+
+    MDC.put(EVENT_TYPE, "SERVICE_SUCCESS");
+    try {
+      log.info(
+          "[SERVICE-SUCCESS] [PACKAGE: {}] [CLASS: {}] [METHOD: {}] - Completed successfully",
+          packageName,
+          className,
+          methodName);
+    } finally {
+      MDC.remove(EVENT_TYPE);
+    }
   }
 
   @AfterThrowing(
@@ -37,11 +45,17 @@ public class ServiceLoggingAspect {
     String className = target != null ? target.getClass().getSimpleName() : UNKNOWN;
     String packageName = target != null ? target.getClass().getPackageName() : UNKNOWN;
     String methodName = joinPoint.getSignature().getName();
-    log.error(
-        "[SERVICE-ERROR] [PACKAGE: {}] [CLASS: {}] [METHOD: {}] - Failed with exception: {}",
-        packageName,
-        className,
-        methodName,
-        ex.getMessage());
+
+    MDC.put(EVENT_TYPE, "SERVICE_ERROR");
+    try {
+      log.error(
+          "[SERVICE-ERROR] [PACKAGE: {}] [CLASS: {}] [METHOD: {}] - Failed with exception: {}",
+          packageName,
+          className,
+          methodName,
+          ex.getMessage());
+    } finally {
+      MDC.remove(EVENT_TYPE);
+    }
   }
 }

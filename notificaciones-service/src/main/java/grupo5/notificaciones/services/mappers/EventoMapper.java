@@ -5,6 +5,7 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionEnCaminoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionRecibidaDTO;
+import grupo5.notificaciones.dto.input.EventoDonacionVencidaDTO;
 import grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO;
 import grupo5.notificaciones.dto.input.EventoDonanteRegistradoDTO;
 import grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO;
@@ -14,6 +15,7 @@ import grupo5.notificaciones.dto.input.EventoSubioCategoriaDTO;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionAsignada;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionEnCamino;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionRecibida;
+import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionVencida;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteInactivo;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteRegistrado;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EntregaFallida;
@@ -69,6 +71,10 @@ public class EventoMapper {
             ef.motivo(),
             ef.replanificable(),
             ef.fecha());
+      }
+      case EventoDonacionVencidaDTO dv -> {
+        Persona admin = buscarPersona(dv.idPersonaAdmin());
+        yield new DonacionVencida(donante, admin, dv.detalleDonacion(), dv.motivo(), dv.fecha());
       }
     };
   }

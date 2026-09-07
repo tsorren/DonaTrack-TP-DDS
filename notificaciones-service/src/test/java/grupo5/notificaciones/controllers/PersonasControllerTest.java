@@ -66,6 +66,24 @@ class PersonasControllerTest {
   }
 
   @Test
+  void sincronizar_cuandoPersonaEstaAnonimizada_deberiaResponderConflict() throws Exception {
+    UUID id = UUID.randomUUID();
+    PersonaReplicaDTO dto =
+        new PersonaReplicaDTO(id, "Test Replica", TipoPersona.HUMANA, Collections.emptyList());
+    org.mockito.Mockito.doThrow(
+            new grupo5.notificaciones.exceptions.PersonaYaAnonimizadaException(id))
+        .when(service)
+        .sincronizar(any());
+
+    mockMvc
+        .perform(
+            put("/api/notificaciones/personas")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(dto)))
+        .andExpect(status().isConflict());
+  }
+
+  @Test
   void sincronizar_conDenominacionEnBlanco_deberiaResponderBadRequest() throws Exception {
     // RF-09 (Oleada 9): Bean Validation en PersonaReplicaDTO, sin llegar al service.
     UUID id = UUID.randomUUID();

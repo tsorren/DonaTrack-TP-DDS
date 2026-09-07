@@ -9,15 +9,20 @@ services:
       - "8081:8081"
     environment:
       - PORT=8081
+      - SPRING_PROFILES_ACTIVE=postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones
+      - SPRING_DATASOURCE_USERNAME=notificaciones_user
+      - SPRING_DATASOURCE_PASSWORD=notif_pass_2026
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
-    volumes:
-      - ./logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -44,8 +49,6 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 5s
@@ -79,8 +82,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 5s
@@ -111,8 +112,6 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-    volumes:
-      - ./logs:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
       interval: 5s
@@ -141,7 +140,7 @@ services:
       - donatrack-network
 
   n8n:
-    image: n8nio/n8n:latest
+    image: n8nio/n8n:2.37.7
     ports:
       - "5678:5678"
     environment:
@@ -152,6 +151,7 @@ services:
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_VERSION_NOTIFICATIONS_ENABLED=false
       - N8N_METRICS_ENABLED=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
       - NODE_OPTIONS=--max-old-space-size=384
     volumes:
       - ./n8n:/etc/n8n/workflows
@@ -165,6 +165,58 @@ services:
     networks:
       - donatrack-network
 
+  postgres:
+    image: postgres:16-alpine
+    container_name: donatrack-postgres-local
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: donatrack
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin_secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U admin -d donatrack" ]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - donatrack-network
+
+  adminer:
+    image: adminer
+    ports:
+      - "8085:8080"
+    networks:
+      - donatrack-network
+    depends_on:
+      - postgres
+
+  minio:
+    image: minio/minio:RELEASE.2024-10-02T17-50-41Z
+    container_name: donatrack-minio-local
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - donatrack-network
+
 networks:
   donatrack-network:
     driver: bridge
+
+volumes:
+  postgres_data:
+

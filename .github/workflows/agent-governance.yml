@@ -1,0 +1,41 @@
+name: Agent Governance Check
+
+# Verifica propiedades mecánicas del harness de agentes (Wave 7A).
+# Checks: AGENTS canonicity, evaluator policy presence, stale term detection.
+# Sin Docker, sin Maven, sin dependencias externas.
+# Ejecución local equivalente: node scripts/agent-check.js
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches:
+      - main
+      - 'ENTREGA_*'
+
+# Permite cancelar runs redundantes del mismo ref.
+concurrency:
+  group: governance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  agent-governance:
+    name: Governance Checks (Wave 7A)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Ejecutar tests del tooling
+        run: node scripts/tests/run-tests.js
+
+      - name: Ejecutar governance checks
+        run: node scripts/agent-check.js

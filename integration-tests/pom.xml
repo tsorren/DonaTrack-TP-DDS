@@ -57,12 +57,26 @@
                 <version>3.2.5</version>
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
-                    <!-- Surefire excluye *IT.java por convencion; lo habilitamos explicitamente -->
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <skipITs>${skipTests}</skipITs>
                     <includes>
                         <include>**/*IT.java</include>
-                        <include>**/*Test.java</include>
                     </includes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <!-- JaCoCo no aplica: los tests golpean servicios externos, no hay bytecode propio -->
             <plugin>

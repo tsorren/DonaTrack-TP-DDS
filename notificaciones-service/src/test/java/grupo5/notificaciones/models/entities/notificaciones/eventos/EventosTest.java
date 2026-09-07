@@ -31,7 +31,9 @@ class EventosNotificablesTest {
 
     assertEquals(1, notificaciones.size());
 
-    assertEquals("Subiste a la categoría Platino", notificaciones.getFirst().getMensaje());
+    assertEquals(
+        "¡Felicitaciones! Has ascendido de la categoría Bronce a Platino.",
+        notificaciones.getFirst().getMensaje());
   }
 
   @Test
@@ -237,5 +239,71 @@ class EventosNotificablesTest {
     assertThrows(
         ValidationException.class,
         () -> new DonacionAsignada(donante, beneficiario, null, TEST_DATE_TIME));
+  }
+
+  @Test
+  void donacionVencida_deberiaGenerarNotificacionParaAdmin() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Carlos Gómez", TipoPersona.HUMANA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Admin Sistema", TipoPersona.HUMANA);
+    String detalle = "5 kg de leche en polvo";
+    String motivo = "Superó el tiempo máximo de acopio (30 días)";
+
+    DonacionVencida evento = new DonacionVencida(donante, admin, detalle, motivo, TEST_DATE_TIME);
+
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+
+    assertEquals(1, notificaciones.size());
+    assertEquals(admin.getId(), notificaciones.getFirst().getPersonaId());
+    assertEquals(
+        "Atención administrador: La donación de 5 kg de leche en polvo del donante Carlos Gómez ha vencido. Motivo: Superó el tiempo máximo de acopio (30 días).",
+        notificaciones.getFirst().getMensaje());
+  }
+
+  @Test
+  void donacionVencida_conAdministracionNula_deberiaLanzarValidationException() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Carlos Gómez", TipoPersona.HUMANA);
+
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, null, "5 kg de leche", "Vencida", TEST_DATE_TIME));
+  }
+
+  @Test
+  void donacionVencida_conDetalleNuloOVacio_deberiaLanzarValidationException() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Carlos Gómez", TipoPersona.HUMANA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Admin Sistema", TipoPersona.HUMANA);
+
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, null, "Vencida", TEST_DATE_TIME));
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "", "Vencida", TEST_DATE_TIME));
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "   ", "Vencida", TEST_DATE_TIME));
+  }
+
+  @Test
+  void donacionVencida_conMotivoNuloOVacio_deberiaLanzarValidationException() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Carlos Gómez", TipoPersona.HUMANA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Admin Sistema", TipoPersona.HUMANA);
+
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "5 kg de leche", null, TEST_DATE_TIME));
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "5 kg de leche", "", TEST_DATE_TIME));
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "5 kg de leche", "   ", TEST_DATE_TIME));
   }
 }

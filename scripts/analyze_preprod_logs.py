@@ -57,20 +57,26 @@ class Colors:
 
 # ── Modelo de Datos de Log ──────────────────────────────────────────────────
 class LogEntry:
-    def __init__(self, timestamp_str, level, app_name, instance_id, trace_id, logger, message, filename, line_num):
-        self.timestamp_str = timestamp_str
-        self.level = level.strip()
-        self.app_name = app_name.strip()
-        self.instance_id = instance_id.strip()
-        self.trace_id = trace_id.strip()
-        self.logger = logger.strip()
-        self.message = message.strip()
+    def __init__(self, timestamp_str, level, app_name, instance_id, trace_id, logger, message, filename, line_num, event_type=None):
+        self.timestamp_str = str(timestamp_str) if timestamp_str else ""
+        self.level = (level or "INFO").strip()
+        self.app_name = (app_name or "unknown").strip()
+        self.instance_id = (instance_id or "unknown").strip()
+        self.trace_id = (trace_id or "NO_TRACE").strip()
+        self.logger = (logger or "").strip()
+        self.message = (message or "").strip()
         self.filename = filename
         self.line_num = line_num
+        self.event_type = (event_type or "").strip()
         self.stacktrace = []
 
         try:
-            self.timestamp = datetime.strptime(timestamp_str, "%Y-%m-%d %H:%M:%S.%f")
+            # Soportar ISO-8601 o formato clásico
+            if "T" in self.timestamp_str:
+                clean_ts = self.timestamp_str.replace("Z", "+00:00")
+                self.timestamp = datetime.fromisoformat(clean_ts)
+            else:
+                self.timestamp = datetime.strptime(self.timestamp_str, "%Y-%m-%d %H:%M:%S.%f")
         except Exception:
             self.timestamp = None
 
@@ -90,24 +96,31 @@ class LogEntry:
             "traceId": self.trace_id,
             "logger": self.logger,
             "message": self.message,
+            "eventType": self.event_type,
             "filename": self.filename,
             "lineNum": self.line_num,
             "stacktrace": self.stacktrace[:10] if self.stacktrace else []
         }
 
 
-# ── Analizador de Directorio de Corrida ──────────────────────────────────────
+# ── Analizador de Directorio / Stream de Corrida ─────────────────────────────
 class RunAnalyzer:
     LOG_HEADER_REGEX = re.compile(
         r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\s*\|\s*([A-Z]+)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*(.*)$"
     )
 
-    def __init__(self, workspace_root, run_id=None):
+    def __init__(self, workspace_root, run_id=None, log_file=None):
         self.workspace_root = workspace_root
         self.logs_dir = os.path.join(workspace_root, "logs")
         self.registro_dir = os.path.join(self.logs_dir, "registro")
-        self.run_id = run_id or self._resolve_latest_run_id()
-        self.run_dir = os.path.join(self.registro_dir, self.run_id)
+        self.log_file = log_file
+
+        if log_file:
+            self.run_id = run_id or os.path.splitext(os.path.basename(log_file))[0]
+            self.run_dir = None
+        else:
+            self.run_id = run_id or self._resolve_latest_run_id()
+            self.run_dir = os.path.join(self.registro_dir, self.run_id)
 
         self.entries = []
         self.traces = defaultdict(list)
@@ -125,22 +138,57 @@ class RunAnalyzer:
 
     def _resolve_latest_run_id(self):
         if not os.path.exists(self.registro_dir):
-            raise FileNotFoundError(f"No existe el directorio de registro: {self.registro_dir}")
+            return f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         runs = [d for d in os.listdir(self.registro_dir) if os.path.isdir(os.path.join(self.registro_dir, d))]
         if not runs:
-            raise FileNotFoundError(f"No se encontraron ejecuciones en {self.registro_dir}")
+            return f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         runs_sorted = sorted(runs, key=lambda x: (x.startswith("run_"), x), reverse=True)
         return runs_sorted[0]
 
-    def load_and_parse(self):
-        if not os.path.exists(self.run_dir):
-            raise FileNotFoundError(f"No existe el directorio de la corrida: {self.run_dir}")
+    def _parse_single_line(self, line_clean, fname, line_num):
+        # Intentar parseo como NDJSON estructurado (Logstash Logback)
+        if line_clean.startswith("{") and line_clean.endswith("}"):
+            try:
+                data = json.loads(line_clean)
+                ts = data.get("@timestamp") or data.get("timestamp") or ""
+                level = data.get("level") or "INFO"
+                app = data.get("service") or data.get("appName") or data.get("app") or fname.split(".")[0]
+                instance = data.get("instanceId") or data.get("instance") or "unknown"
+                trace = data.get("traceId") or data.get("trace") or "NO_TRACE"
+                logger = data.get("logger_name") or data.get("logger") or ""
+                msg = data.get("message") or data.get("msg") or ""
+                event_type = data.get("eventType")
+                entry = LogEntry(ts, level, app, instance, trace, logger, msg, fname, line_num, event_type=event_type)
+                if data.get("stack_trace"):
+                    for st in data["stack_trace"].split("\n"):
+                        entry.add_stacktrace_line(st)
+                return entry
+            except Exception:
+                pass
 
-        log_files = glob.glob(os.path.join(self.run_dir, "*.log"))
-        if not log_files:
-            raise FileNotFoundError(f"No se encontraron archivos .log en {self.run_dir}")
+        # Fallback a regex de formato clásico pipe-separated
+        match = self.LOG_HEADER_REGEX.match(line_clean)
+        if match:
+            ts, level, app, instance, trace, logger, msg = match.groups()
+            return LogEntry(ts, level, app, instance, trace, logger, msg, fname, line_num)
+
+        return None
+
+    def load_and_parse(self):
+        # Modo 1: Archivo único pasado por parámetro (ej. docker-preprod-full.log)
+        if self.log_file:
+            if not os.path.exists(self.log_file):
+                raise FileNotFoundError(f"No existe el archivo de log: {self.log_file}")
+            log_files = [self.log_file]
+        else:
+            # Modo 2: Directorio de corrida
+            if not self.run_dir or not os.path.exists(self.run_dir):
+                raise FileNotFoundError(f"No existe el directorio de la corrida: {self.run_dir}")
+            log_files = glob.glob(os.path.join(self.run_dir, "*.log"))
+            if not log_files:
+                raise FileNotFoundError(f"No se encontraron archivos .log en {self.run_dir}")
 
         for log_path in sorted(log_files):
             fname = os.path.basename(log_path)
@@ -152,16 +200,13 @@ class RunAnalyzer:
                     if not line_clean.strip():
                         continue
 
-                    match = self.LOG_HEADER_REGEX.match(line_clean)
-                    if match:
-                        ts, level, app, instance, trace, logger, msg = match.groups()
-                        entry = LogEntry(ts, level, app, instance, trace, logger, msg, fname, line_num)
+                    entry = self._parse_single_line(line_clean, fname, line_num)
+                    if entry:
                         self.entries.append(entry)
                         self.level_counts[entry.level] += 1
                         self.service_counts[entry.app_name] += 1
                         if entry.has_trace:
                             self.traces[entry.trace_id].append(entry)
-
                         current_entry = entry
                     elif current_entry is not None:
                         current_entry.add_stacktrace_line(line_clean)
@@ -176,15 +221,15 @@ class RunAnalyzer:
             msg = entry.message
 
             # Detección de Controllers
-            if "[CONTROLLER]" in msg or entry.logger.endswith("ControllerLoggingInterceptor"):
+            if entry.event_type == "HTTP_IN" or "[CONTROLLER]" in msg or entry.logger.endswith("ControllerLoggingInterceptor"):
                 self.controller_invocations.append(entry)
                 if entry.has_trace:
                     endpoint_counts_by_trace[entry.trace_id][msg] += 1
 
             # Detección de Service Success / Error
-            if "[SERVICE-SUCCESS]" in msg:
+            if entry.event_type == "SERVICE_SUCCESS" or "[SERVICE-SUCCESS]" in msg:
                 self.service_successes.append(entry)
-            elif "[SERVICE-ERROR]" in msg or "SimpleAsyncUncaughtExceptionHandler" in entry.logger:
+            elif entry.event_type == "SERVICE_ERROR" or "[SERVICE-ERROR]" in msg or "SimpleAsyncUncaughtExceptionHandler" in entry.logger:
                 self.service_errors.append(entry)
 
             # Detección de Error Handlers
@@ -192,7 +237,7 @@ class RunAnalyzer:
                 self.error_handlers.append(entry)
 
             # Fugas de Trazabilidad en eventos relevantes de negocio
-            if not entry.has_trace and ("[CONTROLLER]" in msg or "[SERVICE-" in msg or "[REPOSITORY]" in msg):
+            if not entry.has_trace and (entry.event_type in ("HTTP_IN", "SERVICE_SUCCESS", "SERVICE_ERROR") or "[CONTROLLER]" in msg or "[SERVICE-" in msg or "[REPOSITORY]" in msg):
                 self.no_trace_events.append(entry)
 
             # Problemas con Webhooks n8n
@@ -379,7 +424,12 @@ class RunAnalyzer:
 
     def export_markdown_report(self, output_path=None):
         if not output_path:
-            output_path = os.path.join(self.run_dir, "reporte-analisis.md")
+            if self.run_dir and os.path.exists(self.run_dir):
+                output_path = os.path.join(self.run_dir, "reporte-analisis.md")
+            else:
+                docker_logs_dir = os.path.join(self.workspace_root, "docker-logs")
+                os.makedirs(docker_logs_dir, exist_ok=True)
+                output_path = os.path.join(docker_logs_dir, "reporte-analisis.md")
 
         total_errors = sum(1 for e in self.entries if e.level == "ERROR")
         total_warns = sum(1 for e in self.entries if e.level == "WARN")
@@ -387,12 +437,13 @@ class RunAnalyzer:
 
         status_str = "APROBADO" if total_errors == 0 and not self.detected_anomalies else "FALLIDO / ANOMALÍAS DETECTADAS"
 
+        origin_desc = f"`{self.run_dir}`" if self.run_dir else f"`{self.log_file}`"
         lines = [
             f"# Reporte de Diagnóstico de Logs Pre-Producción: `{self.run_id}`",
             "",
             f"> **Fecha de Análisis:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}  ",
             f"> **Estado Global:** **`{status_str}`**  ",
-            f"> **Directorio de Corrida:** `{self.run_dir}`  ",
+            f"> **Origen de Logs:** {origin_desc}  ",
             "",
             "---",
             "",
@@ -480,8 +531,9 @@ class RunAnalyzer:
 def main():
     parser = argparse.ArgumentParser(description="Analizador de logs pre-producción DonaTrack")
     parser.add_argument("--run", help="ID de la corrida a analizar (ej. run_20260827_155032). Si no se pasa, toma la última.")
+    parser.add_argument("--file", help="Archivo de logs puntual a analizar (ej. docker-preprod-full.log)")
     parser.add_argument("--trace", help="Inspeccionar una traza distribuida puntual por traceId")
-    parser.add_argument("--export-report", action="store_true", help="Generar reporte Markdown en el directorio de la corrida")
+    parser.add_argument("--export-report", action="store_true", help="Generar reporte Markdown en el directorio de la corrida o docker-logs")
     parser.add_argument("--report-file", help="Ruta personalizada para el archivo de reporte Markdown")
     parser.add_argument("--no-color", action="store_true", help="Desactivar colores ANSI")
     parser.add_argument("--json", action="store_true", help="Salida en formato JSON estructurado")
@@ -495,7 +547,7 @@ def main():
     workspace_root = os.path.abspath(os.path.join(script_dir, ".."))
 
     try:
-        analyzer = RunAnalyzer(workspace_root, run_id=args.run)
+        analyzer = RunAnalyzer(workspace_root, run_id=args.run, log_file=args.file)
         analyzer.load_and_parse()
         analyzer.analyze_flows()
 

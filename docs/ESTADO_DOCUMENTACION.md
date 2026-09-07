@@ -3,28 +3,18 @@
 > **Panel de Auditoría y Matriz de Vigencia Documental vs. Código Fuente**  
 > **Proyecto:** DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones  
 > **Equipo:** UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> **Fecha de Normalización y Sincronización:** 2026-09-01  
+> **Fecha de Normalización y Sincronización:** 2026-09-02  
 > **Propósito:** Diagnóstico y estado de sincronización de toda la documentación del repositorio contrastada contra la implementación real en Java 21, Spring Boot 3, RabbitMQ y n8n tras la formalización de ADRs de oleadas de refactor y auditoría de deuda técnica.
 
 ---
 
-## 1. Resumen Ejecutivo y Estadísticas de Salud Documental
+## 1. Resumen Ejecutivo de Salud Documental
 
-Tras la formalización de 28 nuevos ADRs propuestos basados en las oleadas de refactor, la evaluación de la interfaz Asignable y la resolución de estados de los ADRs existentes:
+El repositorio DonaTrack mantiene su grafo documental estrictamente alineado con el código fuente ejecutable:
 
-```text
-┌────────────────────────────────────────────────────────────────────────┐
-│             MÉTRICAS DE SALUD DOCUMENTAL (POST-AUDITORÍA CANÓNICA)     │
-├──────────────────────────────────────┬──────────────────┬──────────────┤
-│ Categoría                            │ Cantidad         │ Porcentaje   │
-├──────────────────────────────────────┼──────────────────┼──────────────┤
-│ 🟢 Vigentes y 100% Sincronizados     │ 62 documentos    │ 44%          │
-│ 🔴 Con Discrepancias Altas / Críticas│ 0 documentos     │ 0%           │
-│ 🟡 Con Discrepancias Medias          │ 0 documentos     │ 0%           │
-│ 🟢 Con Discrepancias Bajas/Cosméticas│ 0 documentos     │ 0%           │
-│ 🔒 Históricos y Registros ADR        │ 79 componentes   │ 56%          │
-└──────────────────────────────────────┴──────────────────┴──────────────┘
-```
+* **Sincronización:** 🟢 Plena. Todos los agregados de dominio, adaptadores, contratos REST, eventos AMQP y configuraciones de persistencia cuentan con respaldo documental canónico en `docs/`.
+* **Discrepancias Críticas:** 0. No existen divergencias no catalogadas entre la documentación y el código fuente.
+* **Verificación Mecánica:** La vigencia de enlaces internos, canonicidad de reglas de agentes, detección de términos obsoletos y validez de estados de ADRs se auditan automáticamente en CI/CD mediante el arnés de gobernanza (`scripts/agent-check.js`).
 
 ---
 
@@ -36,18 +26,20 @@ docs/
 ├── README.md                              # 🟢 Índice general de navegación y enlaces rápidos
 │
 ├── auditoria/                             # 🟢 Sistema de aseguramiento y verificación adversarial
-│   └── plan-revisor-critico.md            # Plan de auditoría, checklists por etapa y matriz de evaluación
+│   ├── plan-revisor-critico.md            # Plan de auditoría, checklists por etapa y matriz de evaluación
+│   └── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
 │
-├── arquitectura/                          # 🟢 Especificaciones de dominio, DDD y Shared Kernel
+├── arquitectura/                          # 🟢 Especificaciones de dominio, DDD, patrones y Shared Kernel
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
 │   ├── shared-kernel.md                   # CrudRepository, eventos de dominio y OpenAPI
 │   ├── logging-trazabilidad.md            # Observabilidad distribuida, MDC y traceId
 │   ├── analisis-arquitectonico.md         # Diagnóstico estructural del monorepo
+│   ├── guia-patrones-diseno.md            # Catálogo de patrones de diseño aplicados
 │   ├── aggregates-donaciones.md           # Aggregates DDD, 7 estados de DI y Propuesta
 │   ├── aggregates-incentivos.md           # Aggregates de gamificación, Insignia y Rankings
 │   ├── aggregates-logistica.md            # Aggregates de transporte, rutas y camiones
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
-│   └── diseno/                            # Bitácoras de refactor por oleadas y diagramas PUML
+│   └── diseno/                            # Bitácoras de refactor y diagramas PUML
 │       ├── donaciones/
 │       ├── incentivos/
 │       ├── logistica/
@@ -55,18 +47,19 @@ docs/
 │
 ├── testing/                               # 🟢 Pruebas automatizadas y contratos
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
-│   └── postman/                           # 12 colecciones y flujos E2E distribuidos
+│   └── postman/                           # Colecciones y flujos E2E distribuidos
 │
 ├── cicd/                                  # 🟢 Automatización, CI/CD y políticas de PR
-│   ├── DonaTrack-CICD.md                  # Documentación de los 7 workflows de GitHub Actions
-│   ├── assignment_reminders_plan.md       # Sistema de asignación dinámica de reviews
-│   └── cascading_flow_plan.md             # Flujo de Stacked PRs en cascada
+│   ├── DonaTrack-CICD.md                  # Documentación de workflows de GitHub Actions
+│   └── assignment_reminders_plan.md       # Recordatorios de inactividad de PRs en Discord
 │
 ├── IA/                                    # 🟢 Lineamientos de ingeniería con Inteligencia Artificial
-│   ├── README.md                          # Mapa de prompts y normas de uso
-│   ├── 01-principios-de-uso.md … 05
+│   ├── README.md                          # Mapa de normas y prompts de IA
 │   ├── 06-contexto-base-donatrack.md      # Snippet de contexto con stack técnico completo
 │   ├── 07-errores-frecuentes-sonarcloud-ia.md # 🟢 Prevención y checklist pre-flight SonarCloud
+│   ├── review/
+│   │   └── evaluator.md                  # 🟢 Política Generator/Evaluator, Review Contract, vectores V1–V9
+│   ├── evals/                             # 🟢 Infraestructura documental de eval suite v1
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # 🛠️ Aplicaciones web y utilidades locales
@@ -74,8 +67,9 @@ docs/
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
-│   ├── DEUDA_TECNICA.md                   # 🟢 Registro de deuda técnica (DTI-01 a DTI-06) con ADRs enlazados
-│   └── donaciones, incentivos, etc.       # 76 ADRs (42 aceptados, 28 propuestos, 2 rechazados, 4 superados)
+│   ├── README.md                          # 🟢 Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
+│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-06)
+│   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
@@ -84,29 +78,77 @@ docs/
 
 ---
 
-## 3. Matriz de Resoluciones y Documentos Incorporados
+## 3. Matriz de Componentes y Documentos Incorporados
 
-| # | Documento | Área | Estado Inicial | Resolución / Incorporación Canónica | Estado Actual |
-|:---:|---|---|:---:|---|:---:|
-| **1** | [docs/auditoria/plan-revisor-critico.md](auditoria/plan-revisor-critico.md) | Auditoría | Inexistente | Creado marco metodológico completo, matrices 1-5, rúbricas, checklists por etapa y plantillas. | 🟢 Sincronizado |
-| **2** | [docs/arquitectura/principios-diseno-arquitectura.md](arquitectura/principios-diseno-arquitectura.md) | Arquitectura | Inexistente | Creado documento maestro con fundamentación teórica, los 8 atributos de calidad, SOLID, GRASP, GoF y DDD. | 🟢 Sincronizado |
-| **3** | [docs/README.md](README.md) | Raíz docs/ | Desactualizado | Actualizado con enlaces y estructura modular de auditoria/ y nuevos documentos canónicos. | 🟢 Sincronizado |
-| **4** | [docs/arquitectura/shared-kernel.md](arquitectura/shared-kernel.md) | Shared Kernel | Sincronizado | Verificado: CrudRepository<T extends AggregateRoot>, eventos de dominio y OpenAPI. | 🟢 Sincronizado |
-| **5** | [docs/arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md) | Observabilidad | Sincronizado | Verificado: MDC, TraceResponseHeaderFilter e interceptor OpenFeign en los 4 microservicios. | 🟢 Sincronizado |
-| **6** | [docs/arquitectura/aggregates-donaciones.md](arquitectura/aggregates-donaciones.md) | Donaciones | Sincronizado | Verificado: 7 estados del State Pattern y Aggregate Root Propuesta. | 🟢 Sincronizado |
-| **7** | [docs/arquitectura/aggregates-notificaciones.md](arquitectura/aggregates-notificaciones.md) | Notificaciones | Sincronizado | Verificado: Transporte HTTP REST vía OpenFeign y réplica ligera de Persona. | 🟢 Sincronizado |
-| **8** | [docs/arquitectura/aggregates-incentivos.md](arquitectura/aggregates-incentivos.md) | Incentivos | Sincronizado | Verificado: Misiones con Template Method, InsigniaRepository y rankings. | 🟢 Sincronizado |
-| **9** | [docs/arquitectura/aggregates-logistica.md](arquitectura/aggregates-logistica.md) | Logística | Sincronizado | Verificado: Máquina de estados de Entrega, Camion, Ruta y eventos AMQP RabbitMQ. | 🟢 Sincronizado |
-| **10** | [docs/cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md) | CI/CD | Sincronizado | Verificado: 7 workflows de GitHub Actions y enlaces relativos válidos. | 🟢 Sincronizado |
-| **11** | [docs/IA/06-contexto-base-donatrack.md](IA/06-contexto-base-donatrack.md) | IA | Sincronizado | Verificado: Snippet de contexto con stack técnico y restricciones de persistencia. | 🟢 Sincronizado |
-| **12** | [docs/adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md) | ADR | Sincronizado | Verificado: Catálogo de deudas técnicas DTI-01 a DTI-06 con ADRs individuales enlazados. | 🟢 Sincronizado |
-| **13** | [docs/IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md) | IA / Calidad | Inexistente | Guía viva de prevención de errores frecuentes de SonarCloud y checklist pre-flight para agentes. | 🟢 Sincronizado |
-| **14** | [.agents/rules/AGENTS.md](../.agents/rules/AGENTS.md) | Gobernanza | v1.0 desactualizado | Evolucionado a v3.4.0 (Gobernanza Calibrada, Reporte Estructurado, Modo Degradado y SonarCloud). | 🟢 Sincronizado |
-| **15** | [docs/adr/](adr/) | ADRs | 8 propuestos sin resolver / sin ADRs DTI | Formalizados 28 ADRs propuestos basados en oleadas, deuda técnica y evaluación de Asignable; transicionados los 8 existentes (6 accepted, 1 rejected, 1 superseded); auditados y transicionados primeros ADRs (20260520, 20260521 y 20260616 a superseded). Total: 76 ADRs (42 accepted, 28 proposed, 2 rejected, 4 superseded). | 🟢 Sincronizado |
+Para evitar conflictos de merge recurrentes por solapamiento de índices secuenciales, la matriz se estructura por dominios y componentes estables:
+
+### 3.1 Gobernanza, Metodología y Harness de IA
+
+| Documento / Artefacto | Área | Propósito / Alcance | Estado |
+|---|---|---|:---:|
+| [`AGENTS.md`](../AGENTS.md) | Gobernanza Raíz | Núcleo canónico de políticas, niveles de tarea (QUICK/STANDARD/ARCHITECTURAL) y Quality Gates. | 🟢 Sincronizado |
+| [`common-lib/AGENTS.md`](../common-lib/AGENTS.md) | Gobernanza Nested | Reglas de pertenencia del Shared Kernel, contratos protegidos y validación reactor. | 🟢 Sincronizado |
+| [`docs/context-index.md`](context-index.md) | Context Routing | Routing de contexto para agentes de IA por servicio, tarea y temporal constraints. | 🟢 Sincronizado |
+| [`docs/IA/review/evaluator.md`](IA/review/evaluator.md) | Revisión Crítica | Roles Generator/Evaluator, Review Contract y vectores de revisión V1–V9. | 🟢 Sincronizado |
+| [`scripts/agent-check/`](../scripts/agent-check/) | Enforcement CI | Suite de validación mecánica de integridad referencial, canonicidad y ADRs. | 🟢 Sincronizado |
+| [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, escenarios E01–E09 y scorecards. | 🟢 Sincronizado |
+| [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](IA/07-errores-frecuentes-sonarcloud-ia.md) | Calidad Estática | Guía viva de prevención de errores SonarCloud y auto-auditoría pre-flight. | 🟢 Sincronizado |
+
+### 3.2 Arquitectura y Modelo de Dominio
+
+| Documento / Artefacto | Área | Propósito / Alcance | Estado |
+|---|---|---|:---:|
+| [`docs/arquitectura/principios-diseno-arquitectura.md`](arquitectura/principios-diseno-arquitectura.md) | Fundamentos | Atributos de calidad, principios SOLID, GRASP, patrones GoF y fitness checks. | 🟢 Sincronizado |
+| [`docs/arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Shared Kernel | Definición de `common-lib`, contratos de repositorios, excepciones unificadas y traceId. | 🟢 Sincronizado |
+| [`docs/arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) | Observabilidad | Trazabilidad distribuida con MDC, header `X-Trace-Id` e interceptores Feign. | 🟢 Sincronizado |
+| [`docs/arquitectura/guia-patrones-diseno.md`](arquitectura/guia-patrones-diseno.md) | Patrones de Diseño | Catálogo de patrones implementados (State, Strategy, Template Method, Observer, etc.). | 🟢 Sincronizado |
+| [`docs/arquitectura/aggregates-donaciones.md`](arquitectura/aggregates-donaciones.md) | Donaciones | Modelo de agregados DDD, máquina de 7 estados y propuesta de asignación. | 🟢 Sincronizado |
+| [`docs/arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | Notificaciones | Réplica de personas, adaptadores de envío y eventos notificables. | 🟢 Sincronizado |
+| [`docs/arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Incentivos | Misiones con Template Method, insignias, eventos de gamificación y ranking. | 🟢 Sincronizado |
+| [`docs/arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Logística | Ciclo de vida de entregas, planificación de rutas, camiones y eventos RabbitMQ. | 🟢 Sincronizado |
+
+### 3.3 Persistencia y Base de Datos
+
+| Documento / Artefacto | Área | Propósito / Alcance | Estado |
+|---|---|---|:---:|
+| [`persistencia/init-db/01-init-schemas-roles.sql`](../persistencia/init-db/01-init-schemas-roles.sql) | Base de Datos | Inicialización idempotente de esquemas PostgreSQL y roles con privilegios mínimos. | 🟢 Sincronizado |
+| `notificaciones-service` (JPA + Flyway) | Persistencia | Mapeo relacional, migraciones Flyway V1 y testing con Testcontainers PostgreSQL 16. | 🟢 Sincronizado |
+| [`docs/adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md`](adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) | ADR Persistencia | Formalización de arquitectura multi-schema y segregación de credenciales. | 🟢 Sincronizado |
+| [`docs/adr/20260901-estrategia-de-testing-de-persistencia-con-testcontainers-frente-a-h2.md`](adr/20260901-estrategia-de-testing-de-persistencia-con-testcontainers-frente-a-h2.md) | ADR Testing | Adopción de Testcontainers frente a bases en memoria H2 para paridad con producción. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260901-estrategia-de-mapeo-orm-en-notificaciones.md`](adr/notificaciones-service/20260901-estrategia-de-mapeo-orm-en-notificaciones.md) | ADR Mapeo ORM | Estrategia SINGLE_TABLE para medios de contacto y @ElementCollection para historial. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-transacciones-atomicas-cortas-y-despacho-asincrono-de-notificaciones.md`](adr/notificaciones-service/20260902-transacciones-atomicas-cortas-y-despacho-asincrono-de-notificaciones.md) | ADR Transacciones | Desacoplamiento de I/O externo, transacciones cortas y despacho asíncrono. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones.md`](adr/notificaciones-service/20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones.md) | ADR Idempotencia | Transactional Inbox Pattern con tabla evento_procesado y eventId UUID. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-sincronizacion-diferencial-de-medios-de-contacto-sin-key-churn.md`](adr/notificaciones-service/20260902-sincronizacion-diferencial-de-medios-de-contacto-sin-key-churn.md) | ADR Optimización ORM | Sincronización diferencial de medios en mapper para erradicar el key churn. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes.md`](adr/notificaciones-service/20260902-proteccion-de-pii-crypto-shredding-y-desacoplamiento-de-mensajes.md) | ADR Privacidad PII | Crypto-Shredding con Key Broker, Blind Index y desacoplamiento de PII cruzado. | 🟢 Sincronizado |
+
+### 3.4 Aseguramiento, Calidad y Deuda Técnica
+
+| Documento / Artefacto | Área | Propósito / Alcance | Estado |
+|---|---|---|:---:|
+| [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
+| [`docs/auditoria/revision-critica-devops-ci.md`](auditoria/revision-critica-devops-ci.md) | Auditoría DevOps | Revisión crítica experta de pipelines CI/CD, Dockerfiles, observabilidad y scripts auxiliares. | 🟢 Sincronizado |
+| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-07) con ADRs enlazados. | 🟢 Sincronizado |
+| [`docs/adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md`](adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) | ADR Deuda Técnica | DTI-07: Adaptador interino local para Crypto-Shredding mientras auth-service no exista. | 🟢 Sincronizado |
+| [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
+
+### 3.5 Infraestructura, CI/CD y Testing
+
+| Documento / Artefacto | Área | Propósito / Alcance | Estado |
+|---|---|---|:---:|
+| [`docs/cicd/DonaTrack-CICD.md`](cicd/DonaTrack-CICD.md) | CI/CD | Documentación de los 7 flujos automatizados en GitHub Actions. | 🟢 Sincronizado |
+| [`docs/testing/integration-tests.md`](testing/integration-tests.md) | Testing E2E | Infraestructura de pruebas de integración distribuida (Docker, RabbitMQ, PostgreSQL, n8n). | 🟢 Sincronizado |
+| [`docs/IA/06-contexto-base-donatrack.md`](IA/06-contexto-base-donatrack.md) | Contexto IA | Snippet de contexto con arquitectura de puertos, tecnologías y restricciones. | 🟢 Sincronizado |
+| [`docs/adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md`](adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md) | ADR DevOps | Aislamiento de contenedores, usuario non-root y recolección de logs sin volúmenes de host. | 🟢 Sincronizado |
+| [`docs/adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md`](adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md) | ADR CI/CD | Protocolo semántico de códigos de salida (0, 1, 2+) y política fail-if-no-tests. | 🟢 Sincronizado |
+| [`docs/adr/20260903-estandarizacion-ciclo-vida-testing-surefire-failsafe.md`](adr/20260903-estandarizacion-ciclo-vida-testing-surefire-failsafe.md) | ADR Testing | Estandarización de ciclo de vida Maven: Surefire (test) y Failsafe (verify). | 🟢 Sincronizado |
+| [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Observabilidad | Observabilidad estructurada en NDJSON y enriquecimiento MDC en el Shared Kernel. | 🟢 Sincronizado |
+
 
 ---
 
 ## 4. Estado de Formalización de ADRs y Decisiones de Arquitectura
 
-* **Formalización de ADRs de Deuda Técnica y Oleadas de Refactor:** Completada exitosamente al 100%. Se formalizaron 28 nuevos ADRs en estado propuesto (`Status: proposed`) en formato Log4brains / MADR (incluyendo DTI-01 a DTI-06, evaluación de `Asignable` vs `entidadBeneficiariaId`, arquitectura transversal de persistencia, MinIO S3, Transactional Outbox, Crypto-Shredding, Testcontainers, coordinadores distribuidos ShedLock, e invariantes de dominio de las Oleadas de Refactor), se transicionaron los 8 ADRs pendientes en `docs/adr/`, y se ajustaron los primeros ADRs históricos hacia `superseded`, alcanzando un total consolidado de **76 ADRs** plenamente vigentes y clasificados.
+* **Gobierno de Decisiones:** Todo cambio arquitectónico significativo se rige por la **Two-Gate Rule** formalizada en [`docs/adr/README.md`](adr/README.md).
+* **Catálogo Integrado:** Los ADRs se organizan modularmente por servicio en `docs/adr/<servicio>/` y a nivel transversal en `docs/adr/`.
+* **Auditoría Dinámica:** El estado y la consistencia de cada ADR (`proposed`, `accepted`, `rejected`, `superseded`) se audita de forma determinística en cada build mediante `scripts/agent-check.js` (`ADR_STATUS_VALID`), asegurando total trazabilidad sin requerir la actualización manual y conflictiva de totales numéricos en este documento.
 
