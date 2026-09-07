@@ -21,8 +21,8 @@ La evaluación contrastó el estado real del código fuente (`[OBSERVED]`) frent
 │                        BALANCE DE LA AUDITORÍA DE TESTING                              │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │  🟢 Fortalezas:                                                                        │
-│     • ~2020 ejecuciones de tests unitarios de dominio (1118 métodos en 198 archivos)   │
-│       con 0 fallos, alta velocidad (~15-20s) y seguimiento de la Escuela Clásica.      │
+│     • ~2020 ejecuciones de tests unitarios de dominio (1118 métodos en 174 archivos    │
+│       *Test.java, 182 clases) con 0 fallos, alta velocidad y Escuela Clásica.          │
 │     • Uso sistemático de Test Data Builders (Persona, Donacion, Necesidad) y Mothers.  │
 │     • Infraestructura previa de contratos: 4 OpenAPI 3.0 YAML y 11 JSON Schemas.       │
 │     • Trazabilidad distribuida activa con header X-Trace-Id y propagación MDC.         │
@@ -30,7 +30,7 @@ La evaluación contrastó el estado real del código fuente (`[OBSERVED]`) frent
 │  🔴 Anti-patrones Críticos a Erradicar:                                                │
 │     • AP-01 (Green Smoke Contract): ContractIT solo aserta paths, no esquemas/tipos.   │
 │     • AP-02 (Sequential Load Loop): PerformanceStressIT corre for síncrono sin carga.  │
-│     • AP-03 (Standalone Setup Blindspot): 17 controllers ignoran interceptores/filtros.│
+│     • AP-03 (Standalone Setup Blindspot): 17 controllers individuales ignoran filtros. │
 │                                                                                        │
 │  🎯 Arquitectura Target Adoptada:                                                      │
 │     • Panal de Pruebas (Testing Honeycomb) con Testcontainers (@ServiceConnection).    │

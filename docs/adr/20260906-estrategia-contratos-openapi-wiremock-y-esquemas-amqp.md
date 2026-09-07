@@ -16,6 +16,8 @@ En arquitecturas distribuidas de microservicios, las rupturas de contrato en los
 
 Además, las pruebas de clientes Feign en los consumidores (`NotificacionesFeignClient`, `LogisticaFeignClient`) carecen de stubs formales y dependen de la presencia de los microservicios reales levantados en Docker Compose.
 
+3. **Evolución Asincrónica en Curso:** El proyecto se encuentra transitando una migración estratégica hacia comunicaciones asincrónicas entre microservicios mediante **RabbitMQ**. Como los contratos de eventos AMQP aún se hallan en etapa de definición y estabilización, la arquitectura de pruebas de contrato debe articularse de manera flexible y desacoplada.
+
 ## Atributos de Calidad y Drivers de Decisión
 
 * **Integridad Contractual y Compatibilidad Retroactiva:** Detección inmediata en CI de cualquier cambio que rompa el contrato de un endpoint o el payload de un evento AMQP.
@@ -40,6 +42,10 @@ Aprovecha al 100% los activos ya desarrollados en el repositorio (las 4 especifi
 - `scripts/validate-contracts.js` opera en tiempo de CI auditando estáticamente los archivos YAML y JSON Schema.
 - La validación Java opera dinámicamente en tiempo de ejecución de tests interceptando las peticiones y respuestas reales contra los controladores y clientes Feign.
 
+Adicionalmente, ante la migración asincrónica a RabbitMQ, la implementación de la decisión se desdobla con flexibilidad operativa:
+- **Pista Síncrona (Inmediata):** Validación estricta de OpenAPI 3.0 en `ContractIT.java` para endpoints REST mediante `swagger-request-validator`.
+- **Pista Asíncrona (Post-Definición):** Validación de payloads contra JSON Schema en serialización/deserialización de eventos AMQP de RabbitMQ y configuración de stubs de integración una vez congelados los contratos de mensajería por parte del equipo.
+
 ### Consecuencias Positivas
 
 * **Erradicación del Antipatrón *Green Smoke Contract*:** `ContractIT.java` pasa a validar campos obligatorios, restricciones de formato (UUID, email, fechas ISO-8601) y códigos de estado HTTP contra el OpenAPI YAML.
@@ -56,3 +62,4 @@ Aprovecha al 100% los activos ya desarrollados en el repositorio (las 4 especifi
 1. Refactor de `ContractIT.java` utilizando `OpenApiValidationFilter` conectado a `docs/arquitectura/contratos/openapi-*.yaml`.
 2. Verificación de que renombrar un atributo obligatorio en un DTO de respuesta provoque la falla inmediata y explícita de `ContractIT`.
 3. Verificación de que los tests de `LogisticaAsyncService` o `IncentivosServiceApplicationTest` utilicen stubs de WireMock sin errores de red.
+4. Verificación de serializadores/deserializadores de RabbitMQ contra JSON Schemas canónicos al finalizar la definición de contratos de mensajería.

@@ -19,6 +19,7 @@ Por lo tanto, la transición se estructura en **4 Fases Incrementales No Disrupt
 1. **Invariante de Preservación de Baseline:** En ninguna fase se debilitará o eliminará un test existente hasta que su reemplazo moderno esté completamente verificado y reporte verde.
 2. **Invariante de Compatibilidad de Scripts:** Los comandos docentes canónicos `./run-preprod-tests.sh` y `./run-preprod-tests-stay.sh` deben continuar funcionando exactamente igual desde la perspectiva del usuario.
 3. **Invariante de Independencia de Fases:** Cada fase entrega valor arquitectónico independiente y puede desplegarse a producción sin requerir la finalización de las fases subsiguientes.
+4. **Invariante de Implementación Integral y Capacidad Asignada:** La totalidad del roadmap (Fases 1 a 4) será implementada por el equipo, contando con 1 desarrollador dedicado a su ejecución rápida y atómica mediante PRs secuenciales organizadas por fase.
 
 ---
 
@@ -36,10 +37,11 @@ gantt
     Refactor @ServiceConnection en notificaciones:f2_1, 2026-09-25, 5d
     Migración gradual a @WebMvcTest            :f2_2, after f2_1, 8d
     DataJpaTest en servicios con JPA            :f2_3, after f2_2, 7d
-    section Fase 3: Contratos Vivos
+    section Fase 3A: Contratos REST (Inmediata)
     swagger-request-validator en ContractIT    :f3_1, 2026-10-15, 6d
-    Stubs WireMock para Feign Clients          :f3_2, after f3_1, 6d
-    Validación de Schemas AMQP en Consumers    :f3_3, after f3_2, 5d
+    section Fase 3B: AMQP RabbitMQ (Post-Migración)
+    Validación de Schemas AMQP en Consumers    :f3_2, after f3_1, 5d
+    Stubs WireMock para Clientes Residuales    :f3_3, after f3_2, 5d
     section Fase 4: Rendimiento con k6
     Scripts k6 en tests/performance/k6         :f4_1, 2026-11-05, 5d
     Servicio k6 en docker-compose.preprod.yml  :f4_2, after f4_1, 4d
@@ -74,7 +76,7 @@ gantt
      - Reemplazar `@SpringBootTest` por `@DataJpaTest`.
      - Reemplazar `@DynamicPropertySource` manual por `@ServiceConnection` (Spring Boot 3.1+).
      - Reutilizar el script SQL canónico `01-init-schemas-roles.sql` montado desde classpath.
-  2. Migrar de forma incremental las 17 clases de controladores que usan `MockMvcBuilders.standaloneSetup` a `@WebMvcTest(MiController.class)`:
+  2. Migrar de forma incremental las 17 clases de controladores individuales que usan `MockMvcBuilders.standaloneSetup` a `@WebMvcTest(MiController.class)`:
      - Validar que participen `ControllerLoggingInterceptor`, `TraceResponseHeaderFilter` y `GlobalExceptionHandler`.
      - Simular las dependencias de servicio con `@MockitoBean`.
   3. A medida que los microservicios `donaciones`, `logistica` e `incentivos` migren de repositorios en memoria a Spring Data JPA, incorporar sus respectivos `@DataJpaTest` con Testcontainers Postgres.
@@ -85,21 +87,22 @@ gantt
 
 ---
 
-### 2.3 Fase 3: Contratos Inter-Servicios Vivos y Stubs WireMock (Sprints 5-6)
+### 2.3 Fase 3: Contratos Inter-Servicios Vivos (REST Inmediato y AMQP Desacoplado) (Sprints 5-6)
 
-* **Objetivo:** Erradicar el smell crítico `AP-01` (*Green Smoke Contract*) y desacoplar los tests de consumidores Feign de los servicios remotos.
-* **Acciones Concretas:**
+* **Objetivo:** Erradicar el smell crítico `AP-01` (*Green Smoke Contract*) y dotar a DonaTrack de verificación contractual bidireccional, secuenciando los contratos REST síncronos de forma inmediata y adaptando la validación asincrónica a la migración en curso de RabbitMQ.
+* **Subfase 3A: Validación de Contratos REST Vivos (Inmediata):**
   1. Incorporar la librería `com.atlassian.oai:swagger-request-validator-mockmvc` y `swagger-request-validator-restassured`.
-  2. Reemplazar las aserciones superficiales de `ContractIT.java` por validación bidireccional estricta:
-     - Cada request y response de prueba se valida contra `docs/arquitectura/contratos/openapi-*.yaml`.
-     - Si un campo obligatorio falta o un tipo no coincide, la prueba falla explícitamente.
-  3. Incorporar `org.wiremock:wiremock-standalone:3.12.0` (compatible con Java 21 y Jakarta EE) para pruebas de integración de clientes Feign (`NotificacionesFeignClient`, `LogisticaFeignClient`, `IncentivosFeignClient`):
-     - Configurar stubs canónicos de WireMock inicializados a partir de las specs OpenAPI de los productores.
-  4. Validar los eventos serializados de RabbitMQ contra los 11 JSON Schemas en `docs/arquitectura/contratos/schemas/` usando `networknt/json-schema-validator`.
+  2. Reemplazar las aserciones superficiales de `ContractIT.java` por validación bidireccional estricta contra `docs/arquitectura/contratos/openapi-*.yaml`.
+  3. Si un campo obligatorio falta o un tipo de dato no coincide, la prueba falla explícitamente (*Breaking Change detection*).
+* **Subfase 3B: Validación Asincrónica y Stubs de Integración (Post-Migración RabbitMQ):**
+  4. Ante la migración en curso hacia comunicaciones asincrónicas con RabbitMQ entre microservicios (en etapa activa de definición de contratos), esta subfase se acoplará dinámicamente tan pronto como los contratos de mensajería sean congelados por el equipo.
+  5. Validar los eventos serializados de RabbitMQ contra los 11 JSON Schemas en `docs/arquitectura/contratos/schemas/` usando `networknt/json-schema-validator`.
+  6. Incorporar `org.wiremock:wiremock-standalone:3.12.0` (Java 21 y Jakarta EE) para pruebas de integración de clientes HTTP/Feign residuales.
 * **Definition of Done (DoD):**
-  - [ ] `ContractIT.java` valida esquemas completos de request y response contra los 4 OpenAPI YAML.
+  - [ ] `ContractIT.java` valida esquemas completos de request y response contra los 4 OpenAPI YAML en tiempo de ejecución.
   - [ ] Un cambio incompatible intencional en un DTO provoca la falla inmediata de la prueba de contrato.
-  - [ ] Los clientes Feign cuentan con suites de prueba unitarias/componente con WireMock sin requerir el backend real levantado.
+  - [ ] Los esquemas y eventos AMQP de RabbitMQ se validan contra los JSON Schemas formales al completarse la definición de contratos asincrónicos.
+  - [ ] Los clientes de comunicación inter-servicio cuentan con suites de pruebas desacopladas de la infraestructura distribuida pesada.
 
 ---
 

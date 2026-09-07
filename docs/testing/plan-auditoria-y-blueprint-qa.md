@@ -195,11 +195,11 @@ Al dispararse la tarea mediante la skill `/goal`, el agente completará secuenci
 ```
 
 > [!IMPORTANT]
-> **Circuit Breaker Post-Iteración 1 (QW-08):** Si la Iteración 1 revela divergencias significativas con las premisas del §4 (ej. tecnologías ya adoptadas no previstas, conteo de tests >30% diferente al baseline esperado, patrones de testing no documentados), el agente **DEBE pausar y reportar** antes de continuar con la Iteración 2. Esto previene el drift acumulativo de construir diagnósticos sobre fundamentos incorrectos.
+> **Circuit Breaker Post-Iteración 1 (QW-08):** Si la Iteración 1 revela divergencias significativas con las premisas del §4 (ej. tecnologías ya adoptadas no previstas, conteo de métodos crudos [1118] o ejecuciones Maven esperadas [~2020] con >30% de desvío del baseline, patrones de testing no documentados), el agente **DEBE pausar y reportar** antes de continuar con la Iteración 2. Esto previene el drift acumulativo de construir diagnósticos sobre fundamentos incorrectos.
 
 **Baseline esperado para validación de Iteración 1 (QW-09):**
 
-| Módulo | Tests esperados (aprox.) | Anotaciones clave a verificar |
+| Módulo | Ejecuciones Maven esperadas (aprox.)* | Anotaciones clave a verificar |
 |---|---|---|
 | `common-lib` | ~38 | `@ExtendWith(MockitoExtension.class)` |
 | `donaciones-service` | ~790 | `@SpringBootTest`, `@ExtendWith(MockitoExtension.class)` |
@@ -207,6 +207,8 @@ Al dispararse la tarea mediante la skill `/goal`, el agente completará secuenci
 | `incentivos-service` | ~378 | `@SpringBootTest(webEnvironment = NONE)` |
 | `notificaciones-service` | ~232 | `@WebMvcTest`, `@Testcontainers`, `@DynamicPropertySource` |
 | `integration-tests` | 9 clases IT | `@Tag(smoke/contract/integration/e2e/performance)` |
+
+*\*Nota metodológica sobre ejecuciones vs. métodos: Las cifras de esta tabla representan ejecuciones de prueba en el reactor Maven (~2020 en total). El monorepo cuenta con 1118 métodos declarativos `@Test` en 174 archivos `*Test.java` (182 clases), cuya cifra de ejecución se expande debido a tests parametrizados (`@ParameterizedTest`) y repetidos (`@RepeatedTest`).*
 
 ---
 
@@ -256,4 +258,5 @@ Este documento es un artefacto vivo sujeto a control de cambios formal. Toda mod
 | **1.1.0** | 2026-09-06 | Revisor Crítico (Antigravity) | Quick wins QW-01, QW-03, QW-05, QW-07, QW-08, QW-09, QW-10 aplicados: columna Estado Actual en §4, lista de auditorías precedentes en §1.1, referencia a ADR predecesor en §5.B, GrepAI-Preferred en §2.2, circuit breaker en §6, baseline de tests en §6, etiquetas epistémicas en §7. | Revisión crítica adversarial pre-ejecución con `/goal`. Hallazgos respaldados por evidencia GrepAI. |
 | **1.2.0** | 2026-09-06 | Principal QA Architect (Antigravity) | Corrección adversarial H-01 aplicada: rectificada la alusión a Ajv en §4 y §5.B, documentando el motor nativo de validación en Node.js puro de `scripts/validate-contracts.js`. | Dictamen adversarial post-auditoría. |
 | **1.3.0** | 2026-09-06 | Senior Staff Architect & Adversarial Evaluator | Correcciones post-review PR #869 aplicadas: reglas ArchUnit refinadas, surefire segregation con exclusión previa de suites pesadas, WireMock 3 (Java 21) y canonización de classpath mounting DDL. | Cierre de observaciones técnicas de PR #869. |
+| **1.4.0** | 2026-09-07 | Lead QA Architect (Antigravity) | Correcciones post-review PR #869 aplicadas: precisión métrica H-1 (174 archivos *Test.java / 182 clases / 1118 métodos), H-2 (nota metodológica standaloneSetup 17/19), H-3 (rotulación explícita de ~2020 ejecuciones Maven en QW-08/QW-09) y H-4 (desacople de Fase 3 en 3A REST y 3B AMQP ante migración RabbitMQ). | Incorporación de observaciones de review y alineación con estrategia de comunicación asincrónica. |
 
