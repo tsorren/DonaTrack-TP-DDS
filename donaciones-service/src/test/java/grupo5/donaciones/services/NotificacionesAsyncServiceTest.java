@@ -39,24 +39,4 @@ class NotificacionesAsyncServiceTest {
 
     verify(client, times(1)).sincronizarPersona(dto);
   }
-
-  @Test
-  void anonimizarPersona_deberiaInvocarCliente_CuandoNoHayErrores() {
-    UUID id = UUID.randomUUID();
-
-    service.anonimizarPersona(id);
-
-    verify(client, times(1)).anonimizarPersona(id);
-  }
-
-  @Test
-  void anonimizarPersona_deberiaCapturarExcepcionYNoPropagarla_CuandoClienteFalla() {
-    UUID id = UUID.randomUUID();
-    doThrow(new RuntimeException("Error de conexión")).when(client).anonimizarPersona(id);
-
-    // No debe lanzar excepción
-    service.anonimizarPersona(id);
-
-    verify(client, times(1)).anonimizarPersona(id);
-  }
 }

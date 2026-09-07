@@ -83,7 +83,7 @@ public class PersonasService implements IPersonasService {
     repository.save(persona);
 
     // Sincronizar asincrónicamente con el servicio de notificaciones
-    notificacionesAsyncService.anonimizarPersona(id);
+    notificacionesAsyncService.sincronizarPersona(mapper.toReplicaDTO(persona));
   }
 
   @Override

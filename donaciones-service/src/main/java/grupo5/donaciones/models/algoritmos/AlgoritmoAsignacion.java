@@ -11,13 +11,24 @@ import java.util.Objects;
 
 public abstract class AlgoritmoAsignacion {
 
+  private static final int LIMITE_PROPUESTAS_DEFAULT = 10;
+  private final int limitePropuestas;
+
+  protected AlgoritmoAsignacion() {
+    this.limitePropuestas = LIMITE_PROPUESTAS_DEFAULT;
+  }
+
+  protected AlgoritmoAsignacion(int limitePropuestas) {
+    this.limitePropuestas = limitePropuestas;
+  }
+
   public List<Propuesta> ejecutar(
       List<Necesidad> necesidades, List<DonacionIndependiente> donaciones) {
     List<Propuesta> propuestas = new ArrayList<>();
     StockDeDonaciones stock = new StockDeDonaciones(donaciones);
 
     for (Necesidad necesidad : ordenarNecesidades(necesidades)) {
-      if (propuestas.size() >= 10) break;
+      if (propuestas.size() >= limitePropuestas) break;
 
       List<DonacionIndependiente> candidatas = filtrarDonaciones(necesidad, stock.disponibles());
       if (!candidatas.isEmpty()) {

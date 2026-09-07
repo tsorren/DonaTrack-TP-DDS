@@ -2,29 +2,11 @@ package grupo5.donaciones.infrastructure.events;
 
 import static org.mockito.Mockito.*;
 
-import grupo5.donaciones.dto.comunicaciones.DonacionExitosaRequest;
-import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaDTO;
-import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallidaDTO;
-import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciadaDTO;
-import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
-import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
-import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionFallida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionRecibida;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoRutaIniciada;
-import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.necesidades.Necesidad;
-import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
-import grupo5.donaciones.models.repositories.IDonacionesRepository;
-import grupo5.donaciones.models.repositories.IDonantesRepository;
-import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
-import grupo5.donaciones.models.repositories.INecesidadesRepository;
-import grupo5.donaciones.services.IPersonasService;
-import java.util.Optional;
+import grupo5.donaciones.services.IDonacionesIndependientesNotificacionesService;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -34,93 +16,34 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DonacionIndependienteNotificacionesListenerTest {
 
-  @Mock private IncentivosFeignClient incentivosFeignClient;
-  @Mock private NotificacionesFeignClient notificacionesFeignClient;
-  @Mock private IDonacionesRepository donacionRepository;
-  @Mock private IDonantesRepository donantesRepository;
-  @Mock private IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
-  @Mock private INecesidadesRepository necesidadRepository;
-  @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
-  @Mock private IPersonasService personasService;
+  @Mock private IDonacionesIndependientesNotificacionesService notificacionesService;
 
   @InjectMocks private DonacionIndependienteNotificacionesListener listener;
 
-  private UUID donacionIndependienteId;
-  private UUID donacionOriginalId;
-  private UUID necesidadId;
-  private UUID donanteId;
-  private UUID personaDonanteId;
-  private UUID entidadId;
-  private UUID personaBeneficiariaId;
-  private UUID personaAdminId;
-
-  @BeforeEach
-  void setUp() {
-    donacionIndependienteId = UUID.randomUUID();
-    donacionOriginalId = UUID.randomUUID();
-    necesidadId = UUID.randomUUID();
-    donanteId = UUID.randomUUID();
-    personaDonanteId = UUID.randomUUID();
-    entidadId = UUID.randomUUID();
-    personaBeneficiariaId = UUID.randomUUID();
-    personaAdminId = UUID.randomUUID();
-
-    Donacion donacion = mock(Donacion.class);
-    when(donacion.getDonanteId()).thenReturn(donanteId);
-    when(donacionRepository.findById(donacionOriginalId)).thenReturn(Optional.of(donacion));
-
-    Donante donante = mock(Donante.class);
-    when(donante.personaId()).thenReturn(personaDonanteId);
-    when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
-
-    Necesidad necesidad = mock(Necesidad.class);
-    when(necesidad.getEntidadId()).thenReturn(entidadId);
-    when(necesidadRepository.findById(necesidadId)).thenReturn(Optional.of(necesidad));
-
-    EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
-    when(entidad.juridicaId()).thenReturn(personaBeneficiariaId);
-    when(entidadesBeneficiariasRepository.findById(entidadId)).thenReturn(Optional.of(entidad));
-
-    DonacionIndependiente donacionIndependiente = mock(DonacionIndependiente.class);
-    when(donacionIndependiente.getDescripcion()).thenReturn("Abrigo de lana");
-    when(donacionesIndependientesRepository.findById(donacionIndependienteId))
-        .thenReturn(Optional.of(donacionIndependiente));
-  }
-
   @Test
-  void onEventoRutaIniciada_deberiaEnviarNotificacion() {
+  void onEventoRutaIniciada_deberiaDelegar_alServicio() {
     EventoRutaIniciada event =
         new EventoRutaIniciada(
-            donacionIndependienteId, donacionOriginalId, necesidadId, "http://mapa/ruta");
-
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "http://mapa/ruta");
     listener.onEventoRutaIniciada(event);
-
-    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoRutaIniciadaDTO.class));
+    verify(notificacionesService, times(1)).procesarRutaIniciada(event);
   }
 
   @Test
-  void onEventoDonacionRecibida_deberiaRegistrarIncentivosYEnviarNotificacion() {
+  void onEventoDonacionRecibida_deberiaDelegar_alServicio() {
     EventoDonacionRecibida event =
         new EventoDonacionRecibida(
-            donacionIndependienteId, donacionOriginalId, necesidadId, "ABC-123");
-
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "ABC-123");
     listener.onEventoDonacionRecibida(event);
-
-    verify(incentivosFeignClient, times(1))
-        .procesarDonacionExitosa(any(DonacionExitosaRequest.class));
-    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoDonacionRecibidaDTO.class));
+    verify(notificacionesService, times(1)).procesarDonacionRecibida(event);
   }
 
   @Test
-  void onEventoDonacionFallida_deberiaEnviarNotificacionConAdmin() {
-    when(personasService.obtenerIdPersonaAdministradora()).thenReturn(personaAdminId);
-
+  void onEventoDonacionFallida_deberiaDelegar_alServicio() {
     EventoDonacionFallida event =
         new EventoDonacionFallida(
-            donacionIndependienteId, donacionOriginalId, necesidadId, "Dirección no existe", false);
-
+            UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "Dirección no existe", false);
     listener.onEventoDonacionFallida(event);
-
-    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoEntregaFallidaDTO.class));
+    verify(notificacionesService, times(1)).procesarDonacionFallida(event);
   }
 }

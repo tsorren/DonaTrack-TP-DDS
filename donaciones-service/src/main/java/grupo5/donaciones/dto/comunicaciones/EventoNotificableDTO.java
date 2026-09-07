@@ -11,7 +11,8 @@ import java.util.UUID;
   @JsonSubTypes.Type(value = EventoDonacionAsignadaDTO.class, name = "DONACION_ASIGNADA"),
   @JsonSubTypes.Type(value = EventoDonacionRecibidaDTO.class, name = "DONACION_RECIBIDA"),
   @JsonSubTypes.Type(value = EventoEntregaFallidaDTO.class, name = "ENTREGA_FALLIDA"),
-  @JsonSubTypes.Type(value = EventoRutaIniciadaDTO.class, name = "DONACION_EN_CAMINO")
+  @JsonSubTypes.Type(value = EventoRutaIniciadaDTO.class, name = "DONACION_EN_CAMINO"),
+  @JsonSubTypes.Type(value = EventoDonacionVencidaDTO.class, name = "DONACION_VENCIDA")
 })
 public interface EventoNotificableDTO {
   UUID idPersonaDonante();
