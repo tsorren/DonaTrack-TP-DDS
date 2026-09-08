@@ -147,6 +147,6 @@
 | ADR | [20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes](./20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes.md) |
 | ADR complementario | [20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp](./20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — auditoría y blueprints formalizados; implementación diferida a Entregas 4 y 5 según el roadmap de migración |
+| Implementation status | `[OBSERVED] in-progress` — Fases 1, 2, 3A y 4 implementadas: ArchUnit universal y fitness functions activas, Pitest acotado a matching, persistencia efímera con `@ServiceConnection` y controllers en `@WebMvcTest`, validación viva de contratos OpenAPI en `ContractIT` erradicando AP-01, pruebas de rendimiento migradas a k6 erradicando AP-02 (`PerformanceStressIT` eliminado); Subfase 3B (AMQP) catalogada como `[DEFERRED_PENDING_RABBITMQ_CONTRACTS]` |
 | Target | Monorepo · `integration-tests` · microservicios (`donaciones`, `logistica`, `incentivos`, `notificaciones`) |
-| Cuándo se saldará | **Entrega 4 (Sprints 1-4)**: Fase 1 (Fitness Functions ArchUnit) y Fase 2 (Slicing Testcontainers `@ServiceConnection`); **Entrega 5 (Sprints 5-7)**: Fase 3 (Contratos OpenAPI/WireMock erradicando AP-01) y Fase 4 (Migración de carga a k6 erradicando AP-02) |
+| Cuándo se saldará | **Saldada en Entrega 4 (Fases 1, 2, 3A y 4)**; Subfase 3B (AMQP) diferida formalmente hasta la congelación de contratos RabbitMQ |

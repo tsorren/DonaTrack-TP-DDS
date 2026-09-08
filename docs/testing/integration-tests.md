@@ -64,8 +64,9 @@ integration-tests/
     ├── e2e/                                     # @Tag("e2e")
     │   └── FullDistributedDonationE2EIT.java    # Flujo completo con Logística y RabbitMQ
     │
-    └── performance/                             # @Tag("performance")
-        └── PerformanceStressIT.java             # Caracterización volumétrica con bienes aislados
+    └── (k6 performance)                        # Pruebas de rendimiento desacopladas (tests/performance/k6/)
+        ├── donaciones-creacion-carga.js         # Carga con rampa y SLA p(95) < 500ms
+        └── incentivos-eventos-saturacion.js     # Saturación con rampa y SLA p(95) < 500ms
 ```
 
 ---
@@ -117,7 +118,7 @@ El script automatiza la compilación, puesta en marcha de Docker Compose, espera
 # Flujo E2E Distribuido Completo (Logística + RabbitMQ)
 ./run-preprod-tests.sh --skip-build --groups e2e
 
-# Pruebas de Rendimiento y Volumen
+# Pruebas de Rendimiento y Carga con k6 (ADR 20260906-migracion-pruebas-rendimiento-a-k6)
 ./run-preprod-tests.sh --skip-build --groups performance
 
 # Ejecución Completa
