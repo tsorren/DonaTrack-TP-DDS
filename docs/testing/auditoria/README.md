@@ -44,7 +44,7 @@ La evaluación contrastó el estado real del código fuente (`[OBSERVED]`) frent
 
 ## 2. Mapa de Navegación y Estructura de Entregables
 
-La auditoría se organiza de forma hiper-granular en 5 documentos especializados e independientes:
+La auditoría se organiza de forma hiper-granular en 6 documentos especializados e independientes:
 
 | Documento | Título y Enlace | Propósito y Contenido Principal |
 |:---:|---|---|
@@ -53,6 +53,7 @@ La auditoría se organiza de forma hiper-granular en 5 documentos especializados
 | **03** | [`03-estudio-comparativo.md`](03-estudio-comparativo.md) | **Estudio Comparativo Multidimensional:** Tablas de trade-offs en 4 dimensiones (Ambientes, Contratos, Fitness Functions, Rendimiento) con análisis profundo de alternativas descartadas (`[REJECTED]`). |
 | **04** | [`04-blueprint-target.md`](04-blueprint-target.md) | **Blueprint de la Arquitectura Target:** Topología formal del Panal de Pruebas (*Testing Honeycomb*), SLAs por capa, paridad DDL multi-schema, modo degradado y 3 diagramas Mermaid. |
 | **05** | [`05-roadmap-migracion.md`](05-roadmap-migracion.md) | **Roadmap de Migración No Disruptivo:** Plan en 4 fases, preservación de compatibilidad con scripts de entrega docente (`run-preprod-tests.sh`), Definitions of Done y matriz de contingencias. |
+| **06** | [`06-cobertura-critica-qa-backlog.md`](06-cobertura-critica-qa-backlog.md) | **Diagnóstico de Cobertura Crítica Faltante y Backlog:** 6 vectores de riesgo (Persistencia JPA real, Idempotencia AMQP, Timeouts Feign, Concurrencia, E2E caminos negativos y PITest) priorizados para futura iteración. |
 
 ---
 
