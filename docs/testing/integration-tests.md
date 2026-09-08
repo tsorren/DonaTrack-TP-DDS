@@ -134,6 +134,18 @@ mvn clean verify -pl integration-tests -DskipTests=false `
   "-Dlogistica.url=http://localhost:8083"
 ```
 
+### C. Testing Acelerado e Impact Analysis (TIA)
+Para ciclos de desarrollo rápido (Gate 1 y Gate 2) sin levantar infraestructura Docker completa, consultar la guía de optimización en [testing-performance.md](./testing-performance.md):
+
+* **PowerShell (Windows):**
+  ```powershell
+  ./scripts/test-changed.ps1 -Fast
+  ```
+* **Bash / Git Bash / WSL:**
+  ```bash
+  ./scripts/test-changed.sh --fast
+  ```
+
 ---
 
 ## 5. Comandos de Arranque de Infraestructura (Gate 4)

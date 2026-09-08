@@ -44,6 +44,7 @@ docs/
 │
 ├── testing/                               # Pruebas automatizadas y contratos
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
+│   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de testing y QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño y justificación de alternativas descartadas
 │   ├── auditoria/                         # 🧪 Compendio de auditoría de testing y arquitectura target (5 docs + README)
@@ -107,6 +108,7 @@ docs/
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
+* ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)

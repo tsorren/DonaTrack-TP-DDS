@@ -105,7 +105,8 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <configuration>
-                        <argLine>-XX:+TieredCompilation -XX:TieredStopAtLevel=1 @{argLine}</argLine>
+                        <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
+                        <argLine>-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UseSerialGC @{argLine}</argLine>
                         <properties>
                             <configurationParameters>
                                 junit.jupiter.execution.parallel.enabled = true
@@ -172,6 +173,9 @@
                 <configuration>
                     <release>${java.version}</release>
                     <parameters>true</parameters>
+                    <compilerArgs>
+                        <arg>-proc:full</arg>
+                    </compilerArgs>
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>

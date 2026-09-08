@@ -53,6 +53,7 @@ docs/
 │
 ├── testing/                               # 🟢 Pruebas automatizadas y contratos
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
+│   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
 │   └── postman/                           # Colecciones y flujos E2E distribuidos
 │
 ├── cicd/                                  # 🟢 Automatización, CI/CD y políticas de PR
@@ -157,6 +158,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`n8n/README.md`](../n8n/README.md) | Automatización | Workflows de n8n, webhooks de difusión de insignias y ranking mensual. | 🟢 Sincronizado |
 | [`postman/README.md`](../postman/README.md) | Pruebas API | 8 colecciones Postman (170 requests), variables y ejecución Newman CLI. | 🟢 Sincronizado |
 | [`docs/testing/integration-tests.md`](testing/integration-tests.md) | Testing E2E | Infraestructura de pruebas de integración distribuida (Docker, RabbitMQ, PostgreSQL, n8n). | 🟢 Sincronizado |
+| [`docs/testing/testing-performance.md`](testing/testing-performance.md) | Rendimiento QA | Optimización de compilación, surefire, consolidación WebMvc, scripts TIA y evaluación mvnd. | 🟢 Sincronizado |
 | [`docs/testing/plan-auditoria-y-blueprint-qa.md`](testing/plan-auditoria-y-blueprint-qa.md) | Auditoría QA | Especificación y plan maestro de auditoría y arquitectura target de testing para ejecución con /goal. | 🟢 Sincronizado |
 | [`docs/testing/decisiones-diseno-auditoria-qa.md`](testing/decisiones-diseno-auditoria-qa.md) | Decisiones QA | Registro y fundamentación de decisiones de diseño y análisis de alternativas descartadas. | 🟢 Sincronizado |
 | [`docs/testing/auditoria/README.md`](testing/auditoria/README.md) | Portal Auditoría QA | Índice maestro, síntesis ejecutiva, mapa de navegación y glosario canónico de QA. | 🟢 Sincronizado |

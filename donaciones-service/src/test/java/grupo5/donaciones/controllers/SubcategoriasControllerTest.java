@@ -7,31 +7,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.CommonLibAutoConfiguration;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.donaciones.controllers.impl.SubcategoriasController;
 import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
-import grupo5.donaciones.services.ISubcategoriasService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(SubcategoriasController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class SubcategoriasControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-
-  @MockitoBean private ISubcategoriasService subcategoriasService;
+class SubcategoriasControllerTest extends AbstractDonacionesWebMvcTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 

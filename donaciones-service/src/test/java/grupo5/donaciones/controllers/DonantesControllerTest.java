@@ -10,9 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.CommonLibAutoConfiguration;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.donaciones.controllers.impl.DonantesController;
 import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
@@ -21,28 +18,14 @@ import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
-import grupo5.donaciones.services.IArchivoDonantesService;
-import grupo5.donaciones.services.IDonantesService;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(DonantesController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class DonantesControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-
-  @MockitoBean private IDonantesService donantesService;
-  @MockitoBean private IArchivoDonantesService archivoDonantesService;
+class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 

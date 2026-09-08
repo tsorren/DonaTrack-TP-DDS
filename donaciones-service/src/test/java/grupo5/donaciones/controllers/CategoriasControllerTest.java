@@ -12,30 +12,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.CommonLibAutoConfiguration;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.donaciones.controllers.impl.CategoriasController;
 import grupo5.donaciones.dto.categorias.CategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.CategoriaOutputDTO;
 import grupo5.donaciones.models.entities.categorias.Unidad;
-import grupo5.donaciones.services.ICategoriasService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(CategoriasController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class CategoriasControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-
-  @MockitoBean private ICategoriasService categoriasService;
+class CategoriasControllerTest extends AbstractDonacionesWebMvcTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 

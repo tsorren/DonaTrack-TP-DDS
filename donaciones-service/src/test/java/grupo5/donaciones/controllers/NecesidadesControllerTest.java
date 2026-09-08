@@ -12,31 +12,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.CommonLibAutoConfiguration;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.donaciones.controllers.impl.NecesidadesController;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
-import grupo5.donaciones.services.INecesidadesService;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(NecesidadesController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class NecesidadesControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-
-  @MockitoBean private INecesidadesService necesidadesService;
+class NecesidadesControllerTest extends AbstractDonacionesWebMvcTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 

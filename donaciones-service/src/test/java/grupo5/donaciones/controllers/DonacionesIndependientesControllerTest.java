@@ -8,34 +8,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.donaciones.controllers.impl.DonacionesIndependientesController;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
-import grupo5.donaciones.services.IDonacionesIndependientesService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(DonacionesIndependientesController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class DonacionesIndependientesControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-
-  @MockitoBean private IDonacionesIndependientesService service;
+class DonacionesIndependientesControllerTest extends AbstractDonacionesWebMvcTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -63,7 +48,8 @@ class DonacionesIndependientesControllerTest {
             List.of(),
             0);
 
-    when(service.cambiarEstado(eq(id), any(), eq(ACTOR))).thenReturn(response);
+    when(donacionesIndependientesService.cambiarEstado(eq(id), any(), eq(ACTOR)))
+        .thenReturn(response);
 
     mockMvc
         .perform(
@@ -116,7 +102,7 @@ class DonacionesIndependientesControllerTest {
     CambioEstadoDonacionIndependienteRequestDTO request =
         DTOFixtures.cambioEstadoDIInput(TipoEstadoDonacion.ASIGNACION_REALIZADA);
 
-    when(service.cambiarEstado(eq(id), any(), eq(ACTOR)))
+    when(donacionesIndependientesService.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenThrow(new RecursoNoEncontradoException(id));
 
     mockMvc
@@ -136,7 +122,7 @@ class DonacionesIndependientesControllerTest {
     CambioEstadoDonacionIndependienteRequestDTO request =
         DTOFixtures.cambioEstadoDIInput(TipoEstadoDonacion.ENTREGADA);
 
-    when(service.cambiarEstado(eq(id), any(), eq(ACTOR)))
+    when(donacionesIndependientesService.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenThrow(new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA));
 
     mockMvc
@@ -158,7 +144,7 @@ class DonacionesIndependientesControllerTest {
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.ENTREGA_FALLIDA, "", null, null, null, null);
 
-    when(service.cambiarEstado(eq(id), any(), eq(ACTOR)))
+    when(donacionesIndependientesService.cambiarEstado(eq(id), any(), eq(ACTOR)))
         .thenThrow(
             new IllegalArgumentException(
                 "La justificación es obligatoria para registrar una entrega fallida."));
@@ -188,7 +174,8 @@ class DonacionesIndependientesControllerTest {
             List.of(),
             5);
 
-    when(service.obtenerConFiltros(null, null, null)).thenReturn(List.of(response));
+    when(donacionesIndependientesService.obtenerConFiltros(null, null, null))
+        .thenReturn(List.of(response));
 
     mockMvc
         .perform(get("/donaciones-independientes"))
@@ -215,7 +202,7 @@ class DonacionesIndependientesControllerTest {
             List.of(),
             5);
 
-    when(service.obtener(id)).thenReturn(response);
+    when(donacionesIndependientesService.obtener(id)).thenReturn(response);
 
     mockMvc
         .perform(get("/donaciones-independientes/{id}", id))
@@ -230,7 +217,8 @@ class DonacionesIndependientesControllerTest {
   @Test
   void obtener_DeberiaRetornarNotFound_CuandoNoExiste() throws Exception {
     UUID id = UUID.randomUUID();
-    when(service.obtener(id)).thenThrow(new RecursoNoEncontradoException(id));
+    when(donacionesIndependientesService.obtener(id))
+        .thenThrow(new RecursoNoEncontradoException(id));
 
     mockMvc
         .perform(get("/donaciones-independientes/{id}", id))

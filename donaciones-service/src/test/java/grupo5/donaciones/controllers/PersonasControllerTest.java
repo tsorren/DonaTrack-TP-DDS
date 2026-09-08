@@ -8,32 +8,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.CommonLibAutoConfiguration;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.donaciones.controllers.impl.PersonasController;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
-import grupo5.donaciones.services.IPersonasService;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(PersonasController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class PersonasControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-
-  @MockitoBean private IPersonasService service;
+class PersonasControllerTest extends AbstractDonacionesWebMvcTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -52,7 +37,7 @@ class PersonasControllerTest {
             "Perez",
             Genero.HOMBRE,
             java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    when(service.crearPersona(any())).thenReturn(output);
+    when(personasService.crearPersona(any())).thenReturn(output);
 
     mockMvc
         .perform(
@@ -93,7 +78,7 @@ class PersonasControllerTest {
             "Perez",
             Genero.HOMBRE,
             java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    when(service.actualizarPersona(eq(id), any())).thenReturn(output);
+    when(personasService.actualizarPersona(eq(id), any())).thenReturn(output);
 
     mockMvc
         .perform(
@@ -107,7 +92,7 @@ class PersonasControllerTest {
   @Test
   void eliminarPersona_deberiaRetornarStatusNoContent() throws Exception {
     UUID id = UUID.randomUUID();
-    doNothing().when(service).eliminarPersona(id);
+    doNothing().when(personasService).eliminarPersona(id);
 
     mockMvc
         .perform(delete("/api/personas/" + id))

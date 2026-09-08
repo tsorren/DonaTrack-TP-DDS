@@ -10,30 +10,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.CommonLibAutoConfiguration;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.donaciones.controllers.impl.ItemDonacionNormalizadoController;
 import grupo5.donaciones.dto.itemsNormalizados.inputs.ItemDonacionNormalizadoPatchDTO;
 import grupo5.donaciones.dto.itemsNormalizados.outputs.ItemDonacionNormalizadoOutputDTO;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
-import grupo5.donaciones.services.IItemDonacionNormalizadoService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(ItemDonacionNormalizadoController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class ItemDonacionNormalizadoControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-
-  @MockitoBean private IItemDonacionNormalizadoService service;
+class ItemDonacionNormalizadoControllerTest extends AbstractDonacionesWebMvcTest {
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -50,7 +35,7 @@ class ItemDonacionNormalizadoControllerTest {
             EstadoNormalizacion.PENDIENTE_REVISION,
             false);
 
-    when(service.obtenerPendientes()).thenReturn(List.of(output));
+    when(itemDonacionNormalizadoService.obtenerPendientes()).thenReturn(List.of(output));
 
     mockMvc
         .perform(get("/api/items-normalizados/pendientes"))
@@ -74,7 +59,8 @@ class ItemDonacionNormalizadoControllerTest {
             EstadoNormalizacion.ACEPTADO,
             false);
 
-    when(service.actualizarEstado(eq(randomId), any(ItemDonacionNormalizadoPatchDTO.class)))
+    when(itemDonacionNormalizadoService.actualizarEstado(
+            eq(randomId), any(ItemDonacionNormalizadoPatchDTO.class)))
         .thenReturn(output);
 
     mockMvc
@@ -115,7 +101,7 @@ class ItemDonacionNormalizadoControllerTest {
             EstadoNormalizacion.ACEPTADO,
             false);
 
-    when(service.obtener(randomId)).thenReturn(output);
+    when(itemDonacionNormalizadoService.obtener(randomId)).thenReturn(output);
 
     mockMvc
         .perform(get("/api/items-normalizados/{id}", randomId))
