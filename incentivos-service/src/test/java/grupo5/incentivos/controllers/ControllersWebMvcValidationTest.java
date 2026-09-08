@@ -7,10 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
+import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.DonanteRegistradoDTO;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
@@ -30,56 +30,34 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest({
+  DonanteIncentivosController.class,
+  MisionesDonacionController.class,
+  InsigniasController.class,
+  MetricasIncentivosController.class,
+  RankingController.class,
+  ProcesosIncentivosController.class
+})
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
 class ControllersWebMvcValidationTest {
 
-  private MockMvc mockMvc;
-  private ObjectMapper objectMapper;
+  @Autowired private MockMvc mockMvc;
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-  @Mock private IGestionDonanteService gestionDonanteService;
-  @Mock private IMisionesDonacionService misionesDonacionService;
-  @Mock private IInsigniasService insigniasService;
-  @Mock private IMetricasIncentivosService metricasIncentivosService;
-  @Mock private IRankingService rankingService;
-  @Mock private IInactividadService inactividadService;
-
-  @BeforeEach
-  void setUp() {
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-
-    DonanteIncentivosController donanteController =
-        new DonanteIncentivosController(gestionDonanteService);
-    MisionesDonacionController misionesController =
-        new MisionesDonacionController(misionesDonacionService);
-    InsigniasController insigniasController = new InsigniasController(insigniasService);
-    MetricasIncentivosController metricasController =
-        new MetricasIncentivosController(metricasIncentivosService);
-    RankingController rankingController = new RankingController(rankingService);
-    ProcesosIncentivosController procesosController =
-        new ProcesosIncentivosController(inactividadService, misionesDonacionService);
-
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(
-                donanteController,
-                misionesController,
-                insigniasController,
-                metricasController,
-                rankingController,
-                procesosController)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-  }
+  @MockitoBean private IGestionDonanteService gestionDonanteService;
+  @MockitoBean private IMisionesDonacionService misionesDonacionService;
+  @MockitoBean private IInsigniasService insigniasService;
+  @MockitoBean private IMetricasIncentivosService metricasIncentivosService;
+  @MockitoBean private IRankingService rankingService;
+  @MockitoBean private IInactividadService inactividadService;
 
   @Test
   void registrarDonante_cuandoEsValido_deberiaRetornar201CreatedYHeaderTraceId() throws Exception {

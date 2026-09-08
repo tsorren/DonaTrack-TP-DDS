@@ -5,6 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.common.testing.DisabledIfDockerUnavailable;
+import grupo5.notificaciones.infrastructure.persistencia.adapters.NotificacionRepositoryJpaAdapter;
+import grupo5.notificaciones.infrastructure.persistencia.adapters.PersonaRepositoryJpaAdapter;
+import grupo5.notificaciones.infrastructure.persistencia.mappers.NotificacionPersistenciaMapper;
+import grupo5.notificaciones.infrastructure.persistencia.mappers.PersonaPersistenciaMapper;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Correo;
@@ -14,71 +19,51 @@ import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.entities.personas.TipoTelefono;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.MountableFile;
 
-@SpringBootTest
+@DataJpaTest
 @ActiveProfiles("postgres")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import({
+  PersonaPersistenciaMapper.class,
+  NotificacionPersistenciaMapper.class,
+  PersonaRepositoryJpaAdapter.class,
+  NotificacionRepositoryJpaAdapter.class
+})
 @Testcontainers
+@DisabledIfDockerUnavailable
 class RepositoriosJpaTest {
 
-  private static String resolveInitScriptPath() {
-    Path pathInSubmodule = Path.of("../persistencia/init-db/01-init-schemas-roles.sql");
-    if (Files.exists(pathInSubmodule)) {
-      return pathInSubmodule.toAbsolutePath().toString();
-    }
-    return Path.of("persistencia/init-db/01-init-schemas-roles.sql").toAbsolutePath().toString();
-  }
-
-  @Container
+  @Container @ServiceConnection
   static PostgreSQLContainer<?> postgres =
       new PostgreSQLContainer<>("postgres:16-alpine")
           .withDatabaseName("donatrack")
-          .withUsername("admin")
-          .withPassword("admin_secure_password")
+          .withUsername("notificaciones_user")
+          .withPassword("notif_pass_2026")
           .withCopyFileToContainer(
-              MountableFile.forHostPath(resolveInitScriptPath()),
+              MountableFile.forClasspathResource("init-db/01-init-schemas-roles.sql"),
               "/docker-entrypoint-initdb.d/01-init-schemas-roles.sql");
-
-  @DynamicPropertySource
-  static void configureProperties(DynamicPropertyRegistry registry) {
-    registry.add(
-        "spring.datasource.url",
-        () -> {
-          String jdbcUrl = postgres.getJdbcUrl();
-          String separator = jdbcUrl.contains("?") ? "&" : "?";
-          return jdbcUrl + separator + "currentSchema=notificaciones";
-        });
-    registry.add("spring.datasource.username", () -> "notificaciones_user");
-    registry.add("spring.datasource.password", () -> "notif_pass_2026");
-  }
 
   @Autowired private IPersonaRepository personaRepository;
   @Autowired private INotificacionRepository notificacionRepository;
 
   @Test
   void deberiaUsarAdaptadoresJpaEnLugarDeMemoria() {
-    assertInstanceOf(
-        grupo5.notificaciones.infrastructure.persistencia.adapters.PersonaRepositoryJpaAdapter
-            .class,
-        personaRepository);
-    assertInstanceOf(
-        grupo5.notificaciones.infrastructure.persistencia.adapters.NotificacionRepositoryJpaAdapter
-            .class,
-        notificacionRepository);
+    assertInstanceOf(PersonaRepositoryJpaAdapter.class, personaRepository);
+    assertInstanceOf(NotificacionRepositoryJpaAdapter.class, notificacionRepository);
   }
 
   @Test

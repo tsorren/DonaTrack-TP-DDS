@@ -31,4 +31,24 @@ public abstract class BaseIT {
     incentivosClient = new IncentivosApiClient(INCENTIVOS_URL);
     logisticaClient = new LogisticaApiClient(LOGISTICA_URL);
   }
+
+  protected static boolean isServiceAvailable(String url) {
+    try {
+      java.net.URI uri = java.net.URI.create(url + "/v3/api-docs");
+      java.net.http.HttpClient client =
+          java.net.http.HttpClient.newBuilder()
+              .connectTimeout(java.time.Duration.ofMillis(500))
+              .build();
+      java.net.http.HttpRequest request =
+          java.net.http.HttpRequest.newBuilder(uri)
+              .timeout(java.time.Duration.ofMillis(500))
+              .GET()
+              .build();
+      java.net.http.HttpResponse<Void> response =
+          client.send(request, java.net.http.HttpResponse.BodyHandlers.discarding());
+      return response.statusCode() == 200;
+    } catch (Exception e) {
+      return false;
+    }
+  }
 }

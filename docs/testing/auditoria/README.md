@@ -18,25 +18,30 @@ La evaluación contrastó el estado real del código fuente (`[OBSERVED]`) frent
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        BALANCE DE LA AUDITORÍA DE TESTING                              │
+│                        BALANCE DE LA AUDITORÍA Y EVOLUCIÓN DE TESTING                  │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
-│  🟢 Fortalezas:                                                                        │
-│     • ~2020 ejecuciones de tests unitarios de dominio (1118 métodos en 174 archivos    │
-│       *Test.java, 182 clases) con 0 fallos, alta velocidad y Escuela Clásica.          │
-│     • Uso sistemático de Test Data Builders (Persona, Donacion, Necesidad) y Mothers.  │
-│     • Infraestructura previa de contratos: 4 OpenAPI 3.0 YAML y 11 JSON Schemas.       │
+│  🟢 Fortalezas Consolidadas:                                                           │
+│     • 1.191 métodos ejecutables en 191 clases de test con 0 fallos en todo el monorepo.│
+│     • Dominio puro y blindado (424 tests POJO Detroit, < 5 ms/test).                   │
+│     • Test Data Builders (Persona, Donacion, Necesidad) y Mothers unificados.          │
 │     • Trazabilidad distribuida activa con header X-Trace-Id y propagación MDC.         │
 │                                                                                        │
-│  🔴 Anti-patrones Críticos a Erradicar:                                                │
-│     • AP-01 (Green Smoke Contract): ContractIT solo aserta paths, no esquemas/tipos.   │
-│     • AP-02 (Sequential Load Loop): PerformanceStressIT corre for síncrono sin carga.  │
-│     • AP-03 (Standalone Setup Blindspot): 17 controllers individuales ignoran filtros. │
+│  ✅ Anti-patrones Críticos Erradicados (Fases 1 a 4 Implementadas):                    │
+│     • AP-01 (Green Smoke Contract) → ✅ Resuelto con Atlassian Swagger Request Validator.│
+│     • AP-02 (Sequential Load Loop) → ✅ Resuelto migrando a k6 (Docker) y eliminando PerfIT.│
+│     • AP-03 (Standalone Setup)     → ✅ Resuelto migrando a @WebMvcTest con Abstract bases.│
+│     • AP-04 (DynamicPropertySetup) → ✅ Resuelto con @ServiceConnection Spring Boot 3.1+.  │
+│     • AP-07 (Falta de ArchUnit)    → ✅ Resuelto con ArchitectureFitnessTest en todos.    │
+│     • AP-08 (Falta de Pitest)      → ✅ Resuelto con perfil -Pmutation-test acotado.      │
+│     • F-03 / F-04 / F-07 / F-08    → ✅ Resueltos (AbstractLogistica, mappers, IT, test-jar).│
 │                                                                                        │
-│  🎯 Arquitectura Target Adoptada:                                                      │
-│     • Panal de Pruebas (Testing Honeycomb) con Testcontainers (@ServiceConnection).    │
-│     • Contratos vivos bidireccionales en Java con WireMock y swagger-request-validator.│
-│     • Fitness Functions universales con ArchUnit y Pitest acotado a lógica crítica.    │
-│     • Pruebas de rendimiento modernas con k6 en contenedor (VUs, percentiles, SLA).   │
+│  🟡 Backlog Pendiente para Próxima Iteración (06-cobertura-critica-qa-backlog.md):     │
+│     • QA-GAP-01: Idempotencia y DLQ en consumidores de RabbitMQ (P1).                  │
+│     • QA-GAP-02: Persistencia real con @DataJpaTest y Testcontainers en 3 servicios (P1).│
+│     • QA-GAP-03: Resiliencia y timeouts Feign con WireMock stubs (P2).                 │
+│                                                                                        │
+│  🏛️ Documento Maestro Canónico Consolidado:                                            │
+│     • docs/testing/auditoria-arquitectura-testing.md (Informe Integral y Blueprint)     │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -44,7 +49,7 @@ La evaluación contrastó el estado real del código fuente (`[OBSERVED]`) frent
 
 ## 2. Mapa de Navegación y Estructura de Entregables
 
-La auditoría se organiza de forma hiper-granular en 5 documentos especializados e independientes:
+La auditoría se organiza de forma hiper-granular en 6 documentos especializados e independientes:
 
 | Documento | Título y Enlace | Propósito y Contenido Principal |
 |:---:|---|---|
@@ -53,12 +58,14 @@ La auditoría se organiza de forma hiper-granular en 5 documentos especializados
 | **03** | [`03-estudio-comparativo.md`](03-estudio-comparativo.md) | **Estudio Comparativo Multidimensional:** Tablas de trade-offs en 4 dimensiones (Ambientes, Contratos, Fitness Functions, Rendimiento) con análisis profundo de alternativas descartadas (`[REJECTED]`). |
 | **04** | [`04-blueprint-target.md`](04-blueprint-target.md) | **Blueprint de la Arquitectura Target:** Topología formal del Panal de Pruebas (*Testing Honeycomb*), SLAs por capa, paridad DDL multi-schema, modo degradado y 3 diagramas Mermaid. |
 | **05** | [`05-roadmap-migracion.md`](05-roadmap-migracion.md) | **Roadmap de Migración No Disruptivo:** Plan en 4 fases, preservación de compatibilidad con scripts de entrega docente (`run-preprod-tests.sh`), Definitions of Done y matriz de contingencias. |
+| **06** | [`06-cobertura-critica-qa-backlog.md`](06-cobertura-critica-qa-backlog.md) | **Diagnóstico de Cobertura Crítica Faltante y Backlog:** 6 vectores de riesgo (Persistencia JPA real, Idempotencia AMQP, Timeouts Feign, Concurrencia, E2E caminos negativos y PITest) priorizados para futura iteración. |
 
 ---
 
 ## 3. Documentos Complementarios y Gobernanza de ADRs
 
-### 3.1 Especificaciones de Origen
+### 3.1 Documentos Maestros y Especificaciones de Origen
+* [`../auditoria-arquitectura-testing.md`](../auditoria-arquitectura-testing.md) — **Documento Canónico Maestro:** Informe integral de auditoría factual de 1.191 tests, matriz de patologías F-01 a F-12, evaluación adversarial y blueprint target.
 * [`plan-auditoria-y-blueprint-qa.md`](../plan-auditoria-y-blueprint-qa.md) — Plan maestro operativo y metodología de 5 fases para ejecución con `/goal`.
 * [`decisiones-diseno-auditoria-qa.md`](../decisiones-diseno-auditoria-qa.md) — Registro de deliberaciones técnicas, fundamentación y memorial de alternativas descartadas (`[REJECTED]`).
 

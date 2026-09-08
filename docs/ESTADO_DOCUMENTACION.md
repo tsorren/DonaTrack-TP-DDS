@@ -52,7 +52,9 @@ docs/
 │       └── anexos-tecnicos/               # Modelos técnicos de build autogenerados por Maven
 │
 ├── testing/                               # 🟢 Pruebas automatizadas y contratos
+│   ├── auditoria-arquitectura-testing.md  # 🏛️ Auditoría integral y Blueprint de Arquitectura de Testing y QA (Documento Maestro)
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
+│   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
 │   └── postman/                           # Colecciones y flujos E2E distribuidos
 │
 ├── cicd/                                  # 🟢 Automatización, CI/CD y políticas de PR
@@ -116,7 +118,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Logística | Ciclo de vida de entregas, planificación de rutas, camiones y eventos RabbitMQ. | 🟢 Sincronizado |
 | [`docs/arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) | Contratos REST | Catálogo consolidado de endpoints, DTOs, Swagger UI y especificaciones OpenAPI 3.0. | 🟢 Sincronizado |
 | [`docs/arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) | Mensajería AMQP | Topología RabbitMQ, TopicExchange, routing keys, payloads JSON e idempotencia. | 🟢 Sincronizado |
-| [`scripts/validate-contracts.js`](../scripts/validate-contracts.js) | Testing Contratos | Suite de validación mecánica de JSON Schemas y especificaciones OpenAPI 3.0. | 🟢 Sincronizado |
+| [`scripts/validate-contracts.js`](../scripts/validate-contracts.js) | Testing Contratos | Suite de validación mecánica de JSON Schemas, auditoría semántica de OpenAPI 3.0 (tipos y nulabilidad) integrada en CI (`agent-governance.yml`) y tests de drift en Surefire. | 🟢 Sincronizado |
 | [`docs/arquitectura/diseno/anexos-tecnicos/README.md`](arquitectura/diseno/anexos-tecnicos/README.md) | Diagramas Técnicos | Modelos técnicos de bytecode autogenerados por Maven (`plantuml-generator`). | 🟢 Sincronizado |
 | [`docs/adr/20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md`](adr/20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md) | ADR Contratos HTTP | Estandarización de respuestas 405 (con header Allow RFC 9110) y 404 en GlobalExceptionHandler. | 🟢 Sincronizado |
 
@@ -156,7 +158,9 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/cicd/DonaTrack-CICD.md`](cicd/DonaTrack-CICD.md) | CI/CD | Documentación de los 7 flujos automatizados en GitHub Actions. | 🟢 Sincronizado |
 | [`n8n/README.md`](../n8n/README.md) | Automatización | Workflows de n8n, webhooks de difusión de insignias y ranking mensual. | 🟢 Sincronizado |
 | [`postman/README.md`](../postman/README.md) | Pruebas API | 8 colecciones Postman (170 requests), variables y ejecución Newman CLI. | 🟢 Sincronizado |
+| [`docs/testing/auditoria-arquitectura-testing.md`](testing/auditoria-arquitectura-testing.md) | Auditoría Testing Master | Documento canónico maestro de auditoría factual de 1.191 tests, patologías F-01 a F-12, comparativa multicriterio, evaluación adversarial y blueprint target. | 🟢 Sincronizado |
 | [`docs/testing/integration-tests.md`](testing/integration-tests.md) | Testing E2E | Infraestructura de pruebas de integración distribuida (Docker, RabbitMQ, PostgreSQL, n8n). | 🟢 Sincronizado |
+| [`docs/testing/testing-performance.md`](testing/testing-performance.md) | Rendimiento QA | Optimización de compilación, surefire, consolidación WebMvc, scripts TIA y evaluación mvnd. | 🟢 Sincronizado |
 | [`docs/testing/plan-auditoria-y-blueprint-qa.md`](testing/plan-auditoria-y-blueprint-qa.md) | Auditoría QA | Especificación y plan maestro de auditoría y arquitectura target de testing para ejecución con /goal. | 🟢 Sincronizado |
 | [`docs/testing/decisiones-diseno-auditoria-qa.md`](testing/decisiones-diseno-auditoria-qa.md) | Decisiones QA | Registro y fundamentación de decisiones de diseño y análisis de alternativas descartadas. | 🟢 Sincronizado |
 | [`docs/testing/auditoria/README.md`](testing/auditoria/README.md) | Portal Auditoría QA | Índice maestro, síntesis ejecutiva, mapa de navegación y glosario canónico de QA. | 🟢 Sincronizado |
@@ -165,6 +169,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/testing/auditoria/03-estudio-comparativo.md`](testing/auditoria/03-estudio-comparativo.md) | Comparativa QA | Estudio multidimensional de alternativas (Ambientes, Contratos, Fitness, Performance). | 🟢 Sincronizado |
 | [`docs/testing/auditoria/04-blueprint-target.md`](testing/auditoria/04-blueprint-target.md) | Blueprint QA | Arquitectura target: Testing Honeycomb, SLA por capa, paridad DDL y diagramas Mermaid. | 🟢 Sincronizado |
 | [`docs/testing/auditoria/05-roadmap-migracion.md`](testing/auditoria/05-roadmap-migracion.md) | Roadmap QA | Plan de migración en 4 fases, preservación de compatibilidad docente y contingencias. | 🟢 Sincronizado |
+| [`docs/testing/auditoria/06-cobertura-critica-qa-backlog.md`](testing/auditoria/06-cobertura-critica-qa-backlog.md) | Backlog QA | Diagnóstico de cobertura crítica faltante y backlog priorizado para futura iteración de QA. | 🟢 Sincronizado |
 | [`docs/IA/06-contexto-base-donatrack.md`](IA/06-contexto-base-donatrack.md) | Contexto IA | Snippet de contexto con arquitectura de puertos, tecnologías y restricciones. | 🟢 Sincronizado |
 | [`docs/adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md`](adr/20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md) | ADR DevOps | Aislamiento de contenedores, usuario non-root y recolección de logs sin volúmenes de host. | 🟢 Sincronizado |
 | [`docs/adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md`](adr/20260903-protocolo-salida-semantico-y-quality-gate-estricto.md) | ADR CI/CD | Protocolo semántico de códigos de salida (0, 1, 2+) y política fail-if-no-tests. | 🟢 Sincronizado |

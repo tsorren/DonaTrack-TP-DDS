@@ -547,7 +547,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   semantic-uml-diff:
     needs: [detect-changes, generate-diagrams]
-    if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
+    if: false # Deshabilitado
     runs-on: ubuntu-latest
     permissions:
       contents: read

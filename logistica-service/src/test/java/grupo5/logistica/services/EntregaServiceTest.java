@@ -6,9 +6,14 @@ import static org.mockito.Mockito.*;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.logistica.dto.entregas.*;
+import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
+import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.EntregaResponseDTO;
+import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
-import grupo5.logistica.models.entities.entregas.*;
+import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.Ruta;
@@ -16,13 +21,14 @@ import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.impl.EntregasService;
+import grupo5.logistica.services.mappers.DireccionMapper;
 import grupo5.logistica.services.mappers.EntregaMapper;
+import grupo5.logistica.testutils.EntregaMother;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InOrder;
 
 class EntregaServiceTest {
 
@@ -38,7 +44,7 @@ class EntregaServiceTest {
     entregasRepository = mock(IEntregasRepository.class);
     rutasRepository = mock(IRutasRepository.class);
     camionRepository = mock(ICamionRepository.class);
-    entregaMapper = mock(EntregaMapper.class);
+    entregaMapper = new EntregaMapper(new DireccionMapper());
     comunicadorEventos = mock(ComunicadorEventosLogistica.class);
 
     entregasService =
@@ -54,34 +60,26 @@ class EntregaServiceTest {
 
   @Test
   void crear_deberiaGuardarYDevolverDTO_cuandoDatosValidos() {
+    DireccionDTO destino =
+        new DireccionDTO("Calle Falsa", 123, 4, "B", "C1000", "CABA", "Buenos Aires", "Argentina");
+    CrearEntregaRequestDTO request =
+        new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), destino, 10f, 2f);
 
-    CrearEntregaRequestDTO request = mock(CrearEntregaRequestDTO.class);
-
-    Entrega entrega = mock(Entrega.class);
-
-    EntregaResponseDTO response = mock(EntregaResponseDTO.class);
-
-    when(entregaMapper.toEntity(request)).thenReturn(entrega);
-
-    when(entregasRepository.save(entrega)).thenReturn(entrega);
-
-    when(entregaMapper.toResponseDTO(entrega)).thenReturn(response);
+    when(entregasRepository.save(any(Entrega.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
     EntregaResponseDTO resultado = entregasService.crear(request);
 
-    verify(entregasRepository).save(entrega);
-    assertEquals(response, resultado);
+    verify(entregasRepository).save(any(Entrega.class));
+    assertNotNull(resultado);
+    assertEquals(request.idDonacion(), resultado.idDonacion());
+    assertEquals(request.idBeneficiaria(), resultado.idBeneficiaria());
+    assertEquals(EstadoEntrega.PENDIENTE, resultado.estadoActual());
   }
 
   @Test
   void crear_deberiaLanzarExcepcion_cuandoMapperDevuelveNull() {
-
-    CrearEntregaRequestDTO request = mock(CrearEntregaRequestDTO.class);
-
-    when(entregaMapper.toEntity(request)).thenReturn(null);
-
-    assertThrows(ValidationException.class, () -> entregasService.crear(request));
-
+    assertThrows(ValidationException.class, () -> entregasService.crear(null));
     verify(entregasRepository, never()).save(any());
   }
 
@@ -89,23 +87,19 @@ class EntregaServiceTest {
 
   @Test
   void listar_deberiaRetornarListaDeEntregas() {
-
-    Entrega entrega = mock(Entrega.class);
-    EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
+    Entrega entrega = EntregaMother.pendiente();
 
     when(entregasRepository.findAll()).thenReturn(List.of(entrega));
-
-    when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
     List<EntregaResponseDTO> resultado = entregasService.listar();
 
     assertEquals(1, resultado.size());
-    assertEquals(dto, resultado.getFirst());
+    assertEquals(entrega.getId(), resultado.getFirst().id());
+    assertEquals(entrega.getIdDonacion(), resultado.getFirst().idDonacion());
   }
 
   @Test
   void listar_deberiaRetornarListaVacia_cuandoNoHayEntregas() {
-
     when(entregasRepository.findAll()).thenReturn(List.of());
 
     List<EntregaResponseDTO> resultado = entregasService.listar();
@@ -117,25 +111,19 @@ class EntregaServiceTest {
 
   @Test
   void obtenerPorId_deberiaRetornarEntrega_cuandoExiste() {
-
-    UUID id = UUID.randomUUID();
-
-    Entrega entrega = mock(Entrega.class);
-
-    EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
+    Entrega entrega = EntregaMother.pendiente();
+    UUID id = entrega.getId();
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
 
-    when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
-
     EntregaResponseDTO resultado = entregasService.obtenerPorId(id);
 
-    assertEquals(dto, resultado);
+    assertEquals(id, resultado.id());
+    assertEquals(entrega.getIdDonacion(), resultado.idDonacion());
   }
 
   @Test
   void obtenerPorId_deberiaLanzarExcepcion_cuandoNoExiste() {
-
     UUID id = UUID.randomUUID();
 
     when(entregasRepository.findById(id)).thenReturn(Optional.empty());
@@ -147,117 +135,102 @@ class EntregaServiceTest {
 
   @Test
   void adjuntarFotoRecepcion_deberiaGuardarFoto() {
-
-    UUID id = UUID.randomUUID();
-
-    Entrega entrega = mock(Entrega.class);
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.asignarRuta(UUID.randomUUID());
+    entrega.iniciarRuta("Chofer");
+    entrega.confirmarEntrega("Actor");
+    UUID id = entrega.getId();
 
     AdjuntarFotoRecepcionRequestDTO request = new AdjuntarFotoRecepcionRequestDTO("foto.jpg");
 
-    EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
-
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
-
     when(entregasRepository.save(entrega)).thenReturn(entrega);
-
-    when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
     EntregaResponseDTO resultado = entregasService.adjuntarFotoRecepcion(id, request);
 
-    verify(entrega).adjuntarFotoRecepcion("foto.jpg");
     verify(entregasRepository).save(entrega);
-    assertEquals(dto, resultado);
+    assertEquals("foto.jpg", resultado.fotoRecepcionUrl());
   }
 
   // ===================== cambiarEstado() =====================
 
   @Test
   void cambiarEstado_deberiaConfirmarRecepcion_cuandoEstadoEsEntregada() {
-    UUID id = UUID.randomUUID();
-    Entrega entrega = mock(Entrega.class);
+    UUID rutaId = UUID.randomUUID();
+    UUID camionId = UUID.randomUUID();
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.asignarRuta(rutaId);
+    entrega.iniciarRuta("Chofer");
+    UUID id = entrega.getId();
+
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, "actor", null, null);
-    EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
 
     Ruta ruta = mock(Ruta.class);
     Camion camion = mock(Camion.class);
-    EntregaConfirmada evento =
-        new EntregaConfirmada(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
-
-    when(entrega.getIdRuta()).thenReturn(UUID.randomUUID());
-    when(rutasRepository.findById(any())).thenReturn(Optional.of(ruta));
-    when(ruta.getCamionId()).thenReturn(UUID.randomUUID());
-    when(camionRepository.findById(any())).thenReturn(Optional.of(camion));
-    when(entrega.getDomainEvents()).thenReturn(List.of(evento));
-
+    when(rutasRepository.findById(rutaId)).thenReturn(Optional.of(ruta));
+    when(ruta.getCamionId()).thenReturn(camionId);
+    when(camionRepository.findById(camionId)).thenReturn(Optional.of(camion));
     when(entregasRepository.save(entrega)).thenReturn(entrega);
-    when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
     EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
 
-    // Como GestorDeEntregas se ejecuta estáticamente con el objeto de dominio que instanció el
-    // Service,
-    // el Gestor afectará a nuestro mock 'entrega', permitiéndonos verificar la llamada:
-    verify(entrega).confirmarEntrega("actor");
-    InOrder orden = inOrder(entregasRepository, comunicadorEventos, entrega);
-    orden.verify(entregasRepository).save(entrega);
-    orden.verify(comunicadorEventos).comunicarEntregaExitosa(evento, camion);
-    orden.verify(entrega).clearDomainEvents();
-    assertEquals(dto, resultado);
+    assertEquals(EstadoEntrega.ENTREGADA, entrega.getEstadoActual());
+    assertEquals(EstadoEntrega.ENTREGADA, resultado.estadoActual());
+    verify(entregasRepository).save(entrega);
+    verify(comunicadorEventos).comunicarEntregaExitosa(any(EntregaConfirmada.class), eq(camion));
   }
 
   @Test
   void cambiarEstado_deberiaReportarNoRecepcion_cuandoEstadoEsNoRecibida() {
-    UUID id = UUID.randomUUID();
-    Entrega entrega = mock(Entrega.class);
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    UUID id = entrega.getId();
+
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.NO_RECIBIDA, "actor", "Motivo", false);
-    EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
-
-    EntregaFallida evento =
-        new EntregaFallida(UUID.randomUUID(), UUID.randomUUID(), "Motivo", false);
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
     when(entregasRepository.save(entrega)).thenReturn(entrega);
-    when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
-    when(entrega.getDomainEvents()).thenReturn(List.of(evento));
 
     EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
 
-    verify(entrega).negarEntrega("actor", "Motivo", false);
-    InOrder orden = inOrder(entregasRepository, comunicadorEventos, entrega);
-    orden.verify(entregasRepository).save(entrega);
-    orden.verify(comunicadorEventos).comunicarEntregaFallida(evento);
-    orden.verify(entrega).clearDomainEvents();
-    assertEquals(dto, resultado);
+    assertEquals(EstadoEntrega.NO_RECIBIDA, entrega.getEstadoActual());
+    assertEquals(EstadoEntrega.NO_RECIBIDA, resultado.estadoActual());
+    verify(entregasRepository).save(entrega);
+    verify(comunicadorEventos).comunicarEntregaFallida(any(EntregaFallida.class));
   }
 
   @Test
   void cambiarEstado_deberiaRegresarAlDeposito_cuandoEstadoEsPendiente() {
-    UUID id = UUID.randomUUID();
-    Entrega entrega = mock(Entrega.class);
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.asignarRuta(UUID.randomUUID());
+    entrega.iniciarRuta("Chofer");
+    entrega.negarEntrega("actor", "Motivo", false);
+    entrega.mandarARevision("Admin");
+    UUID id = entrega.getId();
+
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.PENDIENTE, "actor", null, null);
-    EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
     when(entregasRepository.save(entrega)).thenReturn(entrega);
-    when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
     EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
 
-    verify(entrega).regresarAlDeposito("actor");
-    assertEquals(dto, resultado);
+    assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+    assertEquals(EstadoEntrega.PENDIENTE, resultado.estadoActual());
+    verify(entregasRepository).save(entrega);
   }
 
   @Test
   void cambiarEstado_deberiaLanzarExcepcion_cuandoEstadoNoAlcanzable() {
-    UUID id = UUID.randomUUID();
+    Entrega entrega = EntregaMother.pendiente();
+    UUID id = entrega.getId();
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.EN_TRASLADO, "actor", null, null);
-    Entrega entrega = mock(Entrega.class);
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
 
@@ -266,27 +239,28 @@ class EntregaServiceTest {
 
   @Test
   void cambiarEstado_deberiaMandarARevision_cuandoEstadoEsRevision() {
-    UUID id = UUID.randomUUID();
-    Entrega entrega = mock(Entrega.class);
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    entrega.negarEntrega("actor", "Motivo", false);
+    UUID id = entrega.getId();
+
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.REVISION, "Admin Carlos", null, null);
-    EntregaResponseDTO dto = mock(EntregaResponseDTO.class);
 
     when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
     when(entregasRepository.save(entrega)).thenReturn(entrega);
-    when(entregaMapper.toResponseDTO(entrega)).thenReturn(dto);
 
     EntregaResponseDTO resultado = entregasService.cambiarEstado(id, request);
 
-    verify(entrega).mandarARevision("Admin Carlos");
+    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
+    assertEquals(EstadoEntrega.REVISION, resultado.estadoActual());
     verify(entregasRepository).save(entrega);
-    assertEquals(dto, resultado);
   }
 
   @Test
   void cambiarEstado_deberiaLanzarExcepcion_cuandoIntentaPasarAEnTrasladoDirectamente() {
-    UUID id = UUID.randomUUID();
-    Entrega entrega = mock(Entrega.class);
+    Entrega entrega = EntregaMother.pendiente();
+    UUID id = entrega.getId();
     CambioEstadoEntregaRequestDTO request =
         new CambioEstadoEntregaRequestDTO(EstadoEntrega.EN_TRASLADO, "Chofer Jose", null, null);
 

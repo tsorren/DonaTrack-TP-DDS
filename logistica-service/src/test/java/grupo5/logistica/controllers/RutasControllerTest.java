@@ -15,32 +15,17 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.logistica.controllers.impl.RutasController;
 import grupo5.logistica.dto.rutas.*;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
-import grupo5.logistica.services.IRutasService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class RutasControllerTest {
+class RutasControllerTest extends AbstractLogisticaWebMvcTest {
 
-  private MockMvc mockMvc;
-  private ObjectMapper objectMapper;
-
-  @Mock private IRutasService rutasService;
-  @InjectMocks private RutasController controller;
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   private static final UUID ID = UUID.randomUUID();
   private static final UUID CAMION_ID = UUID.randomUUID();
@@ -58,17 +43,6 @@ class RutasControllerTest {
           null,
           null,
           null);
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
-
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-  }
 
   // ===================== GET /api/rutas =====================
 

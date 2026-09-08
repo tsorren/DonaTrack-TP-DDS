@@ -39,3 +39,6 @@ jobs:
 
       - name: Ejecutar governance checks
         run: node scripts/agent-check.js
+
+      - name: Validar contratos y schemas OpenAPI
+        run: node scripts/validate-contracts.js

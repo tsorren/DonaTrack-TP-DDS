@@ -7,46 +7,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
-import grupo5.donaciones.controllers.impl.SubcategoriasController;
 import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
-import grupo5.donaciones.services.ISubcategoriasService;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class SubcategoriasControllerTest {
+class SubcategoriasControllerTest extends AbstractDonacionesWebMvcTest {
 
-  private MockMvc mockMvc;
-
-  @Mock private ISubcategoriasService subcategoriasService;
-
-  @InjectMocks private SubcategoriasController controller;
-
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-    objectMapper = new ObjectMapper();
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void crear_DeberiaRetornarCreatedYDto() throws Exception {
