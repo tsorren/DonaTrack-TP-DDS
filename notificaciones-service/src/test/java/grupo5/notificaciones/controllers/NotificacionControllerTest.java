@@ -28,12 +28,11 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(NotificacionController.class)
 class NotificacionControllerTest {
 
-  @Autowired private MockMvc mockMvc; // Herramienta para simular peticiones HTTP
+  @Autowired private MockMvc mockMvc;
 
-  private ObjectMapper objectMapper; // Para convertir los objetos DTO a formato JSON
+  private ObjectMapper objectMapper;
 
-  @MockitoBean // Simula el servicio para no ejecutar lógica real
-  private NotificacionService notificacionService;
+  @MockitoBean private NotificacionService notificacionService;
 
   private static final LocalDateTime TEST_DATE_TIME =
       LocalDateTime.of(2026, java.time.Month.JUNE, 18, 12, 0, 0);
@@ -52,11 +51,12 @@ class NotificacionControllerTest {
   @Test
   void registrarDonante_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
-        new EventoDonanteRegistradoDTO(personaMock.getId(), TEST_DATE_TIME, "user123");
+        new EventoDonanteRegistradoDTO(
+            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, "user123");
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos") // <-- Acá cambió
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -68,11 +68,11 @@ class NotificacionControllerTest {
   @Test
   void donanteInactivo_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
-        new EventoDonanteInactivoDTO(personaMock.getId(), TEST_DATE_TIME, 30);
+        new EventoDonanteInactivoDTO(UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, 30);
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -85,11 +85,15 @@ class NotificacionControllerTest {
   void donacionAsignada_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionAsignadaDTO(
-            personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "10kg de arroz");
+            UUID.randomUUID(),
+            personaMock.getId(),
+            TEST_DATE_TIME,
+            personaMock.getId(),
+            "10kg de arroz");
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -102,11 +106,16 @@ class NotificacionControllerTest {
   void donacionRecibida_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionRecibidaDTO(
-            personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "ropa", "AB123CD");
+            UUID.randomUUID(),
+            personaMock.getId(),
+            TEST_DATE_TIME,
+            personaMock.getId(),
+            "ropa",
+            "AB123CD");
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -119,6 +128,7 @@ class NotificacionControllerTest {
   void donacionEnCamino_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionEnCaminoDTO(
+            UUID.randomUUID(),
             personaMock.getId(),
             TEST_DATE_TIME,
             personaMock.getId(),
@@ -127,7 +137,7 @@ class NotificacionControllerTest {
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -140,6 +150,7 @@ class NotificacionControllerTest {
   void entregaFallida_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoEntregaFallidaDTO(
+            UUID.randomUUID(),
             personaMock.getId(),
             TEST_DATE_TIME,
             personaMock.getId(),
@@ -150,7 +161,7 @@ class NotificacionControllerTest {
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -161,13 +172,13 @@ class NotificacionControllerTest {
 
   @Test
   void procesarEvento_conDetalleDonacionEnBlanco_deberiaResponderBadRequest() throws Exception {
-    // RF-09 (Oleada 9): Bean Validation en el DTO de entrada, sin llegar a NotificacionService.
     EventoNotificableDTO dto =
-        new EventoDonacionAsignadaDTO(personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "");
+        new EventoDonacionAsignadaDTO(
+            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, personaMock.getId(), "");
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -178,10 +189,8 @@ class NotificacionControllerTest {
 
   @Test
   void obtenerPorPersona_conPersonaIdMalformado_deberiaResponderBadRequest() throws Exception {
-    // RF-09 (Oleada 9): el GlobalExceptionHandler de common-lib ya maneja
-    // MethodArgumentTypeMismatchException — no hace falta agregar nada en este servicio.
     mockMvc
-        .perform(get("/notificaciones/persona/no-es-un-uuid"))
+        .perform(get("/api/notificaciones?personaId=no-es-un-uuid")) // <-- Acá también cambió
         .andExpect(status().isBadRequest());
   }
 
@@ -189,6 +198,7 @@ class NotificacionControllerTest {
   void donacionVencida_deberiaResponderAceptadoYProcesarEvento() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionVencidaDTO(
+            UUID.randomUUID(),
             personaMock.getId(),
             TEST_DATE_TIME,
             UUID.randomUUID(),
@@ -197,7 +207,7 @@ class NotificacionControllerTest {
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -210,11 +220,11 @@ class NotificacionControllerTest {
   void donacionVencida_conCamposEnBlanco_deberiaResponderBadRequest() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionVencidaDTO(
-            personaMock.getId(), TEST_DATE_TIME, UUID.randomUUID(), "", "");
+            UUID.randomUUID(), personaMock.getId(), TEST_DATE_TIME, UUID.randomUUID(), "", "");
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))
@@ -227,6 +237,7 @@ class NotificacionControllerTest {
   void donacionVencida_conFechaFutura_deberiaResponderBadRequest() throws Exception {
     EventoNotificableDTO dto =
         new EventoDonacionVencidaDTO(
+            UUID.randomUUID(),
             personaMock.getId(),
             LocalDateTime.now().plusDays(2),
             UUID.randomUUID(),
@@ -235,7 +246,7 @@ class NotificacionControllerTest {
 
     mockMvc
         .perform(
-            post("/notificaciones")
+            post("/api/notificaciones/eventos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     objectMapper.writerFor(EventoNotificableDTO.class).writeValueAsString(dto)))

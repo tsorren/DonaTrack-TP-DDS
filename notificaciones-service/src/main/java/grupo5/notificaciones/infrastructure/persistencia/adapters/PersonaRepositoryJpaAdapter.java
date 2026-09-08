@@ -15,8 +15,23 @@ public class PersonaRepositoryJpaAdapter
     extends CrudRepositoryJpaAdapter<Persona, PersonaEntity, SpringDataPersonaRepository>
     implements IPersonaRepository {
 
+  private final SpringDataPersonaRepository springDataRepo;
+  private final PersonaPersistenciaMapper mapper;
+
   public PersonaRepositoryJpaAdapter(
       SpringDataPersonaRepository springDataRepo, PersonaPersistenciaMapper mapper) {
     super(springDataRepo, mapper::toEntity, mapper::toDomain);
+    this.springDataRepo = springDataRepo;
+    this.mapper = mapper;
+  }
+
+  @Override
+  public Persona save(Persona domainEntity) {
+    PersonaEntity existing = this.springDataRepo.findById(domainEntity.getId()).orElse(null);
+    PersonaEntity entityToSave = this.mapper.toEntity(domainEntity, existing);
+
+    // Guardar en la DB y mapear de vuelta a dominio para respetar el contrato
+    PersonaEntity savedEntity = this.springDataRepo.save(entityToSave);
+    return this.mapper.toDomain(savedEntity);
   }
 }

@@ -17,6 +17,7 @@ import grupo5.notificaciones.models.entities.personas.Correo;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
+import grupo5.notificaciones.mothers.NotificacionMother;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import grupo5.notificaciones.services.mappers.EventoMapper;
 import java.time.LocalDateTime;
@@ -63,7 +64,7 @@ class NotificacionServiceTest {
   void procesar_conEventoDeUnDestinatario_deberiaResolverPersonaNotificarYGuardar() {
     Persona donante = personaConCorreoQueSiempreEnvia("Juan");
     EventoDonanteInactivoDTO dto =
-        new EventoDonanteInactivoDTO(donante.getId(), TEST_DATE_TIME, 21);
+        new EventoDonanteInactivoDTO(UUID.randomUUID(), donante.getId(), TEST_DATE_TIME, 21);
     EventoNotificable evento = new DonanteInactivo(donante, 21, TEST_DATE_TIME);
 
     when(mapper.toEntity(dto)).thenReturn(evento);
@@ -72,9 +73,6 @@ class NotificacionServiceTest {
 
     ArgumentCaptor<List<Notificacion>> captor = ArgumentCaptor.forClass(List.class);
     verify(repository, times(1)).saveAll(captor.capture());
-    // 1 notificación creada -> 1 domain event NotificacionCreada publicado (antes: 1 evento de
-    // aplicación genérico por llamada a procesar(), sin relación con la cantidad de
-    // notificaciones).
     verify(eventPublisher, times(1)).publishEvent(any(NotificacionCreada.class));
 
     assertEquals(1, captor.getValue().size());
@@ -89,6 +87,7 @@ class NotificacionServiceTest {
 
     EventoEntregaFallidaDTO dto =
         new EventoEntregaFallidaDTO(
+            UUID.randomUUID(),
             donante.getId(),
             TEST_DATE_TIME,
             beneficiario.getId(),
@@ -107,7 +106,6 @@ class NotificacionServiceTest {
 
     ArgumentCaptor<List<Notificacion>> captor = ArgumentCaptor.forClass(List.class);
     verify(repository, times(1)).saveAll(captor.capture());
-    // 3 notificaciones creadas -> 3 domain events NotificacionCreada publicados, uno por cada una.
     verify(eventPublisher, times(3)).publishEvent(any(NotificacionCreada.class));
 
     assertEquals(3, captor.getValue().size());
@@ -116,7 +114,7 @@ class NotificacionServiceTest {
   @Test
   void obtenerPorPersona_deberiaMeapearEntidadesADTO() {
     Persona persona = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola, tenés novedades");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola, tenés novedades");
 
     when(repository.findByPersonaId(persona.getId())).thenReturn(List.of(notificacion));
 

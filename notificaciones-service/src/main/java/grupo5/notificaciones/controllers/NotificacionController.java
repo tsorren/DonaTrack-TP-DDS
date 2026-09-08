@@ -9,26 +9,39 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/notificaciones")
 @RequiredArgsConstructor
-public class NotificacionController {
+public class NotificacionController implements INotificacionController {
+
   private final NotificacionService service;
 
-  @PostMapping
+  @Override
   public ResponseEntity<Void> procesarEvento(@Valid @RequestBody EventoNotificableDTO dto) {
     service.procesar(dto);
-    // 202 Accepted (Oleada 9, RF-09): el endpoint no crea "un" recurso identificable de punta a
-    // punta desde la óptica del llamador — recibe un evento de dominio y, según el tipo, puede
-    // generar 0..N Notificacion (ej. EntregaFallida genera notificación al admin y al donante),
-    // sin un único id/Location que devolver. 201 Created no encaja con esa cardinalidad N.
     return ResponseEntity.status(HttpStatus.ACCEPTED).build();
   }
 
-  @GetMapping("/persona/{personaId}")
-  public ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(@PathVariable UUID personaId) {
-    return ResponseEntity.ok(service.obtenerPorPersona(personaId));
+  @Override
+  public ResponseEntity<List<NotificacionDTO>> obtenerNotificaciones(
+      @RequestParam(required = false) UUID personaId,
+      @RequestParam(required = false) String estado) {
+
+    if (personaId != null) {
+      return ResponseEntity.ok(service.obtenerPorPersona(personaId));
+    }
+
+    // Como comportamiento por defecto devolvemos lista vacía si no hay filtros.
+    return ResponseEntity.ok(List.of());
+  }
+
+  @Override
+  public ResponseEntity<NotificacionDTO> obtenerPorId(@PathVariable UUID id) {
+    // TODO: A futuro se debería llamar a service.obtenerPorId(id)
+    return ResponseEntity.notFound().build();
   }
 }

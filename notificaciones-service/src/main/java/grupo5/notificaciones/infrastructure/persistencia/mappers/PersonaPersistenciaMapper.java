@@ -16,32 +16,47 @@ import org.springframework.stereotype.Component;
 public class PersonaPersistenciaMapper {
 
   public PersonaEntity toEntity(Persona domain) {
+    return toEntity(domain, null);
+  }
+
+  public PersonaEntity toEntity(Persona domain, PersonaEntity existing) {
     if (domain == null) return null;
-    PersonaEntity entity = new PersonaEntity();
+    // Reutilizar la entidad si existe, o crear una nueva
+    PersonaEntity entity = existing != null ? existing : new PersonaEntity();
     entity.setId(domain.getId());
     entity.setDenominacion(domain.getDenominacion());
     entity.setTipoPersona(domain.getTipoPersona());
-
     List<MedioDeContactoEntity> mediosEntities = new ArrayList<>();
-
     for (MedioDeContacto medio : domain.getMediosDeContacto()) {
-
       if (medio instanceof Correo correo) {
-        CorreoEntity ce = new CorreoEntity();
+        CorreoEntity ce = (CorreoEntity) findExistingCorreo(existing, correo.getDireccionCorreo());
+        if (ce == null) {
+          ce = new CorreoEntity();
+          ce.setDireccionCorreo(correo.getDireccionCorreo());
+        }
         ce.setEsPredeterminado(correo.getEsPredeterminado());
-        ce.setDireccionCorreo(correo.getDireccionCorreo());
         mediosEntities.add(ce);
       } else if (medio instanceof Telefono tel) {
-        TelefonoEntity te = new TelefonoEntity();
+        TelefonoEntity te = (TelefonoEntity) findExistingTelefono(existing, tel);
+        if (te == null) {
+          te = new TelefonoEntity();
+          te.setCaracteristica(tel.getCaracteristica());
+          te.setCodigoArea(tel.getCodigoArea());
+          te.setNumero(tel.getNumero());
+          te.setTipo(tel.getTipo());
+        }
         te.setEsPredeterminado(tel.getEsPredeterminado());
-        te.setCaracteristica(tel.getCaracteristica());
-        te.setCodigoArea(tel.getCodigoArea());
-        te.setNumero(tel.getNumero());
-        te.setTipo(tel.getTipo());
         mediosEntities.add(te);
       }
     }
-    entity.setMediosDeContacto(mediosEntities);
+
+    // Importante: Conservar la referencia a la colección de Hibernate
+    if (existing != null) {
+      entity.getMediosDeContacto().clear();
+      entity.getMediosDeContacto().addAll(mediosEntities);
+    } else {
+      entity.setMediosDeContacto(mediosEntities);
+    }
     return entity;
   }
 
@@ -72,5 +87,30 @@ public class PersonaPersistenciaMapper {
     }
     return new Persona(
         entity.getId(), mediosDomain, entity.getDenominacion(), entity.getTipoPersona());
+  }
+
+  private MedioDeContactoEntity findExistingCorreo(PersonaEntity existing, String direccionCorreo) {
+    if (existing == null || existing.getMediosDeContacto() == null) return null;
+    return existing.getMediosDeContacto().stream()
+        .filter(m -> m instanceof CorreoEntity)
+        .map(m -> (CorreoEntity) m)
+        .filter(c -> c.getDireccionCorreo().equalsIgnoreCase(direccionCorreo))
+        .findFirst()
+        .orElse(null);
+  }
+
+  private MedioDeContactoEntity findExistingTelefono(PersonaEntity existing, Telefono tel) {
+    if (existing == null || existing.getMediosDeContacto() == null) return null;
+    return existing.getMediosDeContacto().stream()
+        .filter(m -> m instanceof TelefonoEntity)
+        .map(m -> (TelefonoEntity) m)
+        .filter(
+            t ->
+                java.util.Objects.equals(t.getCaracteristica(), tel.getCaracteristica())
+                    && java.util.Objects.equals(t.getCodigoArea(), tel.getCodigoArea())
+                    && java.util.Objects.equals(t.getNumero(), tel.getNumero())
+                    && t.getTipo() == tel.getTipo())
+        .findFirst()
+        .orElse(null);
   }
 }

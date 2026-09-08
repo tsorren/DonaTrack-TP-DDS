@@ -19,6 +19,7 @@ import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.entities.personas.TipoTelefono;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
+import grupo5.notificaciones.mothers.NotificacionMother;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -94,7 +95,9 @@ class RepositoriosJpaTest {
   @Test
   void deberiaPersistirNotificacionYFiltrarPorEstado() {
     UUID personaId = UUID.randomUUID();
-    Notificacion notificacion = new Notificacion(personaId, "Mensaje de prueba de persistencia");
+    Persona personaDummy = new Persona(personaId, List.of(), "Dummy", TipoPersona.HUMANA);
+    Notificacion notificacion =
+        NotificacionMother.pendiente(personaDummy, "Mensaje de prueba de persistencia");
     notificacion.actualizarEstado(EstadoNotificacion.ENVIADA);
 
     // 1. Guardar Notificación en PostgreSQL real

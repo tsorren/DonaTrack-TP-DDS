@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificacionService {
@@ -26,14 +27,11 @@ public class NotificacionService {
     this.eventPublisher = eventPublisher;
   }
 
+  @Transactional
   public void procesar(EventoNotificableDTO dto) {
     EventoNotificable evento = mapper.toEntity(dto);
-
     List<Notificacion> notificaciones = evento.generarNotificaciones();
     repository.saveAll(notificaciones);
-
-    // Oleada 2 (RF-02): ya no se arma un evento de aplicación a mano; se publican y limpian los
-    // domain events que cada Notificacion generó sobre sí misma al crearse (NotificacionCreada).
     notificaciones.forEach(this::publicarYLimpiarDomainEvents);
   }
 

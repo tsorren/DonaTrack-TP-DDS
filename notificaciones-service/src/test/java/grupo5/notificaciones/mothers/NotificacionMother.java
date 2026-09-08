@@ -21,6 +21,6 @@ public final class NotificacionMother {
   }
 
   public static Notificacion pendiente(Persona persona, String mensaje) {
-    return new Notificacion(persona.getId(), mensaje);
+    return new Notificacion(persona.getId(), mensaje, java.time.LocalDateTime.now());
   }
 }

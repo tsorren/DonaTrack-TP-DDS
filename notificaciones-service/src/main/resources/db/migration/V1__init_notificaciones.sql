@@ -2,7 +2,7 @@
 -- V1: MIGRACIÓN INICIAL DEL SCHEMA DE NOTIFICACIONES
 -- ============================================================================
 
--- 1. TABLA PERSONA (Réplica de lectura)
+-- 1. TABLA PERSONA
 CREATE TABLE persona (
                          id UUID PRIMARY KEY,
                          denominacion VARCHAR(150) NOT NULL,
