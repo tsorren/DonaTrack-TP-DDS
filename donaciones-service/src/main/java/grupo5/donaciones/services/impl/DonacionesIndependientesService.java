@@ -121,4 +121,17 @@ public class DonacionesIndependientesService implements IDonacionesIndependiente
 
     return donacionIndependienteMapper.toDTO(donacion);
   }
+
+  @Override
+  public void vencer() {
+    repositorio.findEnDeposito().stream()
+        .filter(DonacionIndependiente::estaVencida)
+        .forEach(
+            donacion -> {
+              donacion.vencer("SISTEMA");
+              repositorio.save(donacion);
+              donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+              donacion.clearDomainEvents();
+            });
+  }
 }

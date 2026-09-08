@@ -6,8 +6,12 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDonacionIndependienteRequestDTO;
+import grupo5.donaciones.infrastructure.idempotency.EventoConsumido;
+import grupo5.donaciones.infrastructure.idempotency.IEventosConsumidosRepository;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +25,16 @@ public class LogisticaEventListener {
   private static final String ACTOR = "logistica-service";
 
   private final IDonacionesIndependientesService donacionesIndependientesService;
+  private final IEventosConsumidosRepository eventosConsumidosRepository;
+  private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
 
-  public LogisticaEventListener(IDonacionesIndependientesService donacionesIndependientesService) {
+  public LogisticaEventListener(
+      IDonacionesIndependientesService donacionesIndependientesService,
+      IEventosConsumidosRepository eventosConsumidosRepository,
+      IDonacionesIndependientesRepository donacionesIndependientesRepository) {
     this.donacionesIndependientesService = donacionesIndependientesService;
+    this.eventosConsumidosRepository = eventosConsumidosRepository;
+    this.donacionesIndependientesRepository = donacionesIndependientesRepository;
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_ASIGNADA)
@@ -37,7 +48,9 @@ public class LogisticaEventListener {
         evento.donacionIndependienteId(),
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null),
-        "RutaAsignada");
+        "RutaAsignada",
+        RabbitMQConfig.QUEUE_RUTA_ASIGNADA,
+        evento.rutaId());
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_INICIADA)
@@ -55,7 +68,9 @@ public class LogisticaEventListener {
                     donacionId,
                     new CambioEstadoDonacionIndependienteRequestDTO(
                         TipoEstadoDonacion.EN_TRASLADO, null, null, evento.urlMapa(), null, null),
-                    "RutaIniciada"));
+                    "RutaIniciada",
+                    RabbitMQConfig.QUEUE_RUTA_INICIADA,
+                    evento.rutaId()));
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_EXITOSA)
@@ -69,7 +84,9 @@ public class LogisticaEventListener {
         evento.donacionIndependienteId(),
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.ENTREGADA, null, null, null, evento.patenteCamion(), null),
-        "EntregaExitosa");
+        "EntregaExitosa",
+        RabbitMQConfig.QUEUE_ENTREGA_EXITOSA,
+        evento.entregaId());
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_FALLIDA)
@@ -88,18 +105,59 @@ public class LogisticaEventListener {
             null,
             null,
             evento.replanificable()),
-        "EntregaFallida");
+        "EntregaFallida",
+        RabbitMQConfig.QUEUE_ENTREGA_FALLIDA,
+        evento.entregaId());
   }
 
   private void aplicarCambioEstado(
-      UUID donacionId, CambioEstadoDonacionIndependienteRequestDTO request, String origenEvento) {
+      UUID donacionId,
+      CambioEstadoDonacionIndependienteRequestDTO request,
+      String eventType,
+      String queueName,
+      UUID businessId) {
+
+    if (eventosConsumidosRepository.yaFueConsumido(eventType, businessId, donacionId)) {
+      log.info(
+          "Evento duplicado ignorado: tipo={}, businessId={}, donacionId={}",
+          eventType,
+          businessId,
+          donacionId);
+      return;
+    }
+
+    var donacion = donacionesIndependientesRepository.findById(donacionId);
+    if (donacion.isPresent() && donacion.get().getEstadoActual().getTipo() == request.estado()) {
+      log.info(
+          "Donación {} ya se encuentra en estado {}, registrando como consumido y descartando",
+          donacionId,
+          request.estado());
+      eventosConsumidosRepository.registrar(
+          new EventoConsumido(
+              UUID.randomUUID(),
+              eventType,
+              queueName,
+              businessId,
+              donacionId,
+              LocalDateTime.now()));
+      return;
+    }
+
     try {
       donacionesIndependientesService.cambiarEstado(donacionId, request, ACTOR);
+      eventosConsumidosRepository.registrar(
+          new EventoConsumido(
+              UUID.randomUUID(),
+              eventType,
+              queueName,
+              businessId,
+              donacionId,
+              LocalDateTime.now()));
     } catch (Exception e) {
       log.error(
           "Error al procesar donación {} en evento {} (estado destino={}): {}",
           donacionId,
-          origenEvento,
+          eventType,
           request.estado(),
           e.getMessage(),
           e);

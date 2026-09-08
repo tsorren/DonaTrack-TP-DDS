@@ -98,11 +98,12 @@ class PersonasServiceTest {
     UUID id = humana.getId();
     when(repository.findById(id)).thenReturn(Optional.of(humana));
     when(repository.save(humana)).thenReturn(humana);
+    when(mapper.toReplicaDTO(humana)).thenReturn(replicaDTO);
 
     service.eliminarPersona(id);
 
     verify(repository).save(humana);
-    verify(notificacionesAsyncService).anonimizarPersona(id);
+    verify(notificacionesAsyncService).sincronizarPersona(replicaDTO);
     assertEquals(grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING, humana.getNombre());
   }
 
@@ -113,6 +114,6 @@ class PersonasServiceTest {
 
     assertThrows(RecursoNoEncontradoException.class, () -> service.eliminarPersona(id));
     verify(repository, never()).save(any());
-    verify(notificacionesAsyncService, never()).anonimizarPersona(any());
+    verify(notificacionesAsyncService, never()).sincronizarPersona(any());
   }
 }
