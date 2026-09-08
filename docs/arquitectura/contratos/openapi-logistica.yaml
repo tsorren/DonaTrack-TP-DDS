@@ -548,4 +548,33 @@ components:
         historialEstado:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/CambioEstadoEntregaResponseDTO'
+    CambioEstadoEntregaResponseDTO:
+      type: object
+      required:
+        - estadoAnterior
+        - estadoNuevo
+        - timestamp
+      properties:
+        estadoAnterior:
+          type: string
+          enum:
+            - PENDIENTE
+            - EN_TRASLADO
+            - ENTREGADA
+            - NO_RECIBIDA
+            - REVISION
+        estadoNuevo:
+          type: string
+          enum:
+            - PENDIENTE
+            - EN_TRASLADO
+            - ENTREGADA
+            - NO_RECIBIDA
+            - REVISION
+        timestamp:
+          type: string
+          format: date-time
+        actor:
+          type: string
+          nullable: true

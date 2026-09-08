@@ -307,6 +307,12 @@ paths:
     post:
       summary: Notificar nueva donación para evaluación de misiones
       operationId: procesarNuevaDonacion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuevaDonacionRequest'
       responses:
         '200':
           description: Evento de donación procesado
@@ -314,6 +320,12 @@ paths:
     post:
       summary: Notificar donación completada exitosamente para evaluación de misiones
       operationId: procesarDonacionExitosa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonacionExitosaRequest'
       responses:
         '200':
           description: Evento de donación exitosa procesado
@@ -468,5 +480,40 @@ components:
         fecha:
           type: string
           format: date
+    NuevaDonacionRequest:
+      type: object
+      required:
+        - donanteId
+        - categorias
+        - cantidadBienes
+        - fecha
+      properties:
+        donanteId:
+          type: string
+          format: uuid
+        categorias:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 50
+        cantidadBienes:
+          type: integer
+          minimum: 1
+        fecha:
+          type: string
+          format: date
+    DonacionExitosaRequest:
+      type: object
+      required:
+        - donanteId
+        - organizacionId
+      properties:
+        donanteId:
+          type: string
+          format: uuid
+        organizacionId:
+          type: string
+          format: uuid
 
 

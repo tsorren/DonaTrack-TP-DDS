@@ -66,6 +66,23 @@ class ContractIT extends BaseIT {
   }
 
   @Test
+  void testAllOpenApiSpecsLoadSuccessfully() {
+    // Valida que las 4 especificaciones OpenAPI se carguen sin errores sintácticos ni referencias
+    // rotas
+    for (String specFile :
+        java.util.List.of(
+            "openapi-donaciones.yaml",
+            "openapi-notificaciones.yaml",
+            "openapi-logistica.yaml",
+            "openapi-incentivos.yaml")) {
+      String path = resolveContractPath(specFile);
+      OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(path).build();
+      org.junit.jupiter.api.Assertions.assertNotNull(
+          validator, "El validador para " + specFile + " debe construirse exitosamente");
+    }
+  }
+
+  @Test
   void testIncentivosDonacionesContract() {
     // donaciones-service notifica eventos de donación mediante POST /api/incentivos/donaciones
     Assumptions.assumeTrue(
@@ -75,8 +92,42 @@ class ContractIT extends BaseIT {
     String specPath = resolveContractPath("openapi-incentivos.yaml");
     OpenApiValidationFilter validationFilter = new OpenApiValidationFilter(specPath);
 
+    UUID donanteId = UUID.randomUUID();
+    UUID personaId = UUID.randomUUID();
+    String registrarPayload =
+        """
+        {
+          "idDonante": "%s",
+          "idPersona": "%s",
+          "nombre": "Donante Contract Test"
+        }
+        """
+            .formatted(donanteId, personaId);
+
     given()
         .filter(validationFilter)
+        .contentType(ContentType.JSON)
+        .body(registrarPayload)
+        .when()
+        .post(INCENTIVOS_URL + "/api/incentivos/donantes/" + donanteId)
+        .then()
+        .statusCode(201);
+
+    String donacionPayload =
+        """
+        {
+          "donanteId": "%s",
+          "categorias": ["Alimentos"],
+          "cantidadBienes": 3,
+          "fecha": "%s"
+        }
+        """
+            .formatted(donanteId, java.time.LocalDate.now());
+
+    given()
+        .filter(validationFilter)
+        .contentType(ContentType.JSON)
+        .body(donacionPayload)
         .when()
         .post(INCENTIVOS_URL + "/api/incentivos/donaciones")
         .then()
@@ -95,18 +146,18 @@ class ContractIT extends BaseIT {
     String entregaPayload =
         """
         {
-          "donacionId": "%s",
-          "beneficiariaId": "%s",
-          "direccion": {
+          "idDonacion": "%s",
+          "idBeneficiaria": "%s",
+          "destino": {
             "calle": "Av. Corrientes",
-            "numero": 1234,
+            "altura": 1234,
             "codigoPostal": "1043",
-            "ciudad": "CABA",
+            "localidad": "CABA",
             "provincia": "Buenos Aires",
             "pais": "Argentina"
           },
-          "peso": 10.5,
-          "volumen": 2.0
+          "pesoTotalKG": 10.5,
+          "volumenTotalM3": 2.0
         }
         """
             .formatted(UUID.randomUUID(), UUID.randomUUID());
