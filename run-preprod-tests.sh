@@ -33,6 +33,14 @@ while [[ $# -gt 0 ]]; do
     --skip-build) SKIP_BUILD=true; shift ;;
     --test)       TEST_FILTER="$2"; shift 2 ;;
     --groups)     GROUPS_FILTER="$2"; shift 2 ;;
+    -h|--help)
+      echo "Uso: $0 [opciones]"
+      echo "  --skip-build           Reusar JARs ya compilados"
+      echo "  --test <Clase>         Ejecutar una clase puntual (ej. SmokeIT)"
+      echo "  --groups <Grupo>       Ejecutar grupo/tag (ej. smoke, contract, e2e, performance)"
+      echo "  -h, --help             Mostrar esta ayuda"
+      exit 0
+      ;;
     *) echo "Opción desconocida: $1"; exit 1 ;;
   esac
 done
@@ -144,34 +152,46 @@ for url in "$DONACIONES_URL/v3/api-docs" "$NOTIFICACIONES_URL/v3/api-docs" "$INC
 done
 
 # ── Paso 3: Ejecutar suite ───────────────────────────────────────────────────
-step "Ejecutando suite de validación"
-
-MVN_ARGS=(
-  verify
-  -pl integration-tests
-  -DskipTests=false
-  -Ddonaciones.url="$DONACIONES_URL"
-  -Dnotificaciones.url="$NOTIFICACIONES_URL"
-  -Dincentivos.url="$INCENTIVOS_URL"
-  -Dlogistica.url="$LOGISTICA_URL"
-)
-
-if [[ -n "$TEST_FILTER" ]]; then
-  MVN_ARGS+=(-Dtest="$TEST_FILTER")
-  warn "Filtro de test activo: $TEST_FILTER"
-fi
-
-if [[ -n "$GROUPS_FILTER" ]]; then
-  MVN_ARGS+=(-Dgroups="$GROUPS_FILTER")
-  warn "Filtro de grupos/tags activo: $GROUPS_FILTER"
-fi
-
-if mvn "${MVN_ARGS[@]}"; then
-  echo ""
-  ok "Suite de validación pre-producción APROBADA."
+if [[ "$GROUPS_FILTER" == "performance" ]]; then
+  step "Ejecutando pruebas de rendimiento con k6 en Docker Compose (--profile perf)"
+  if docker compose -f "$COMPOSE_FILE" --profile perf run --rm k6 run /scripts/donaciones-creacion-carga.js; then
+    echo ""
+    ok "Pruebas de rendimiento k6 APROBADAS (cumplieron SLAs y thresholds de latencia/error)."
+  else
+    echo ""
+    fail "Pruebas de rendimiento k6 FALLIDAS — superaron umbrales de SLA o tasa de error."
+    exit 1
+  fi
 else
-  echo ""
-  fail "Suite de validación pre-producción FALLIDA — revisá los logs de arriba."
-  # El trap cleanup se ejecuta igual al salir con exit_code != 0
-  exit 1
+  step "Ejecutando suite de validación"
+
+  MVN_ARGS=(
+    verify
+    -pl integration-tests
+    -DskipTests=false
+    -Ddonaciones.url="$DONACIONES_URL"
+    -Dnotificaciones.url="$NOTIFICACIONES_URL"
+    -Dincentivos.url="$INCENTIVOS_URL"
+    -Dlogistica.url="$LOGISTICA_URL"
+  )
+
+  if [[ -n "$TEST_FILTER" ]]; then
+    MVN_ARGS+=(-Dtest="$TEST_FILTER")
+    warn "Filtro de test activo: $TEST_FILTER"
+  fi
+
+  if [[ -n "$GROUPS_FILTER" ]]; then
+    MVN_ARGS+=(-Dgroups="$GROUPS_FILTER")
+    warn "Filtro de grupos/tags activo: $GROUPS_FILTER"
+  fi
+
+  if mvn "${MVN_ARGS[@]}"; then
+    echo ""
+    ok "Suite de validación pre-producción APROBADA."
+  else
+    echo ""
+    fail "Suite de validación pre-producción FALLIDA — revisá los logs de arriba."
+    # El trap cleanup se ejecuta igual al salir con exit_code != 0
+    exit 1
+  fi
 fi
