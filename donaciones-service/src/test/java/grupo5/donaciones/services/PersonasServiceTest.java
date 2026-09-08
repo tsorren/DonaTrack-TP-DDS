@@ -98,12 +98,18 @@ class PersonasServiceTest {
     UUID id = humana.getId();
     when(repository.findById(id)).thenReturn(Optional.of(humana));
     when(repository.save(humana)).thenReturn(humana);
-    when(mapper.toReplicaDTO(humana)).thenReturn(replicaDTO);
 
     service.eliminarPersona(id);
 
     verify(repository).save(humana);
-    verify(notificacionesAsyncService).sincronizarPersona(replicaDTO);
+    verify(notificacionesAsyncService)
+        .sincronizarPersona(
+            argThat(
+                dto ->
+                    dto != null
+                        && dto.id().equals(id)
+                        && grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING.equals(
+                            dto.denominacion())));
     assertEquals(grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING, humana.getNombre());
   }
 
