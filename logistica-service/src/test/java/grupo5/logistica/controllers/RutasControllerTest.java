@@ -12,10 +12,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.logistica.controllers.impl.RutasController;
 import grupo5.logistica.dto.rutas.*;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
@@ -23,24 +24,22 @@ import grupo5.logistica.services.IRutasService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(RutasController.class)
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
 class RutasControllerTest {
 
-  private MockMvc mockMvc;
-  private ObjectMapper objectMapper;
+  @Autowired private MockMvc mockMvc;
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-  @Mock private IRutasService rutasService;
-  @InjectMocks private RutasController controller;
+  @MockitoBean private IRutasService rutasService;
 
   private static final UUID ID = UUID.randomUUID();
   private static final UUID CAMION_ID = UUID.randomUUID();
@@ -58,17 +57,6 @@ class RutasControllerTest {
           null,
           null,
           null);
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
-
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-  }
 
   // ===================== GET /api/rutas =====================
 

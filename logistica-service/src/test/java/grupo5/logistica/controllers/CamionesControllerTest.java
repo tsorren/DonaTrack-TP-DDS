@@ -5,11 +5,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.logistica.controllers.impl.CamionesController;
 import grupo5.logistica.dto.camiones.CambioEstadoCamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionRequestDTO;
@@ -18,37 +19,26 @@ import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import grupo5.logistica.services.ICamionesService;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(CamionesController.class)
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
 class CamionesControllerTest {
 
-  private MockMvc mockMvc;
-  private ObjectMapper objectMapper;
+  @Autowired private MockMvc mockMvc;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
-  @Mock private ICamionesService camionesService;
-  @InjectMocks private CamionesController controller;
+  @MockitoBean private ICamionesService camionesService;
 
   private static final UUID ID = UUID.randomUUID();
   private static final CamionResponseDTO RESPONSE_DTO =
       new CamionResponseDTO(ID, "AB123CD", 10f, 2f, 5000f, EstadoCamion.DISPONIBLE, null);
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
-    objectMapper = new ObjectMapper();
-  }
 
   // ===================== POST /api/camiones =====================
 
