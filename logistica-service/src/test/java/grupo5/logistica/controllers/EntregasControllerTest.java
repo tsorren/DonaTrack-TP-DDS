@@ -9,11 +9,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.atlassian.oai.validator.model.Request;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.common.testutils.OpenApiTestUtils;
 import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MvcResult;
 
 class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
 
@@ -61,13 +64,68 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
 
     when(entregasService.crear(any())).thenReturn(RESPONSE_DTO);
 
-    mockMvc
-        .perform(
-            post("/api/entregas")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").value(ID.toString()));
+    MvcResult result =
+        mockMvc
+            .perform(
+                post("/api/entregas")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(ID.toString()))
+            .andReturn();
+
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiTestUtils.assertResponseConformsToOpenApi(
+        specPath,
+        "/api/entregas",
+        Request.Method.POST,
+        201,
+        result.getResponse().getContentAsString());
+  }
+
+  @Test
+  void crear_deberiaRetornar201_conPisoYDepartamentoNoNulos() throws Exception {
+    DireccionDTO direccionConPiso =
+        new DireccionDTO(
+            "Av. Corrientes", 1234, 5, "A", "1043", "CABA", "Buenos Aires", "Argentina");
+    CrearEntregaRequestDTO request =
+        new CrearEntregaRequestDTO(DONACION_ID, BENEFICIARIA_ID, direccionConPiso, 10f, 2f);
+    EntregaResponseDTO responseConPiso =
+        new EntregaResponseDTO(
+            ID,
+            RUTA_ID,
+            DONACION_ID,
+            BENEFICIARIA_ID,
+            direccionConPiso,
+            EstadoEntrega.PENDIENTE,
+            null,
+            null,
+            null,
+            10f,
+            2f,
+            List.of());
+
+    when(entregasService.crear(any())).thenReturn(responseConPiso);
+
+    MvcResult result =
+        mockMvc
+            .perform(
+                post("/api/entregas")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").value(ID.toString()))
+            .andExpect(jsonPath("$.destino.piso").value(5))
+            .andExpect(jsonPath("$.destino.departamento").value("A"))
+            .andReturn();
+
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiTestUtils.assertResponseConformsToOpenApi(
+        specPath,
+        "/api/entregas",
+        Request.Method.POST,
+        201,
+        result.getResponse().getContentAsString());
   }
 
   @Test
@@ -118,10 +176,20 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
 
     when(entregasService.obtenerPorId(ID)).thenReturn(RESPONSE_DTO);
 
-    mockMvc
-        .perform(get("/api/entregas/" + ID))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(ID.toString()));
+    MvcResult result =
+        mockMvc
+            .perform(get("/api/entregas/" + ID))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(ID.toString()))
+            .andReturn();
+
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiTestUtils.assertResponseConformsToOpenApi(
+        specPath,
+        "/api/entregas/" + ID,
+        Request.Method.GET,
+        200,
+        result.getResponse().getContentAsString());
   }
 
   @Test

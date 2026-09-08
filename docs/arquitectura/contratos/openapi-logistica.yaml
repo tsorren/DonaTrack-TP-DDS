@@ -447,9 +447,11 @@ components:
           type: integer
           minimum: 1
         piso:
-          type: string
+          type: integer
+          nullable: true
         departamento:
           type: string
+          nullable: true
         codigoPostal:
           type: string
         localidad:
@@ -484,6 +486,7 @@ components:
       type: object
       required:
         - estado
+        - actor
       properties:
         estado:
           type: string
@@ -497,8 +500,10 @@ components:
           type: string
         justificacion:
           type: string
+          nullable: true
         replanificable:
           type: boolean
+          nullable: true
     EntregaResponseDTO:
       type: object
       required:
