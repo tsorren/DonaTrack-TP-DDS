@@ -10,14 +10,19 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class NecesidadRecurrente extends Necesidad {
   private Period periodo;
+
+  @Getter(AccessLevel.NONE)
   private List<PeriodoNecesidad> periodos;
+
   private Boolean activa;
 
   public NecesidadRecurrente(
@@ -26,7 +31,17 @@ public class NecesidadRecurrente extends Necesidad {
       String descripcion,
       Period periodo,
       LocalDate fechaInicio) {
-    super(subcategoriaId, cantidadNecesitada, descripcion);
+    this(UUID.randomUUID(), subcategoriaId, cantidadNecesitada, descripcion, periodo, fechaInicio);
+  }
+
+  public NecesidadRecurrente(
+      UUID id,
+      UUID subcategoriaId,
+      Integer cantidadNecesitada,
+      String descripcion,
+      Period periodo,
+      LocalDate fechaInicio) {
+    super(id, subcategoriaId, cantidadNecesitada, descripcion);
     if (periodo == null)
       throw new ValidationException(ErrorCatalog.NECESIDAD_RECURRENTE_SIN_PERIODO);
     if (fechaInicio == null) throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
@@ -47,7 +62,7 @@ public class NecesidadRecurrente extends Necesidad {
     if (fechaInicio == null) {
       throw new ValidationException(ErrorCatalog.FECHA_INICIO_NULA);
     }
-    if (fechaInicio.isAfter(LocalDate.now(ZoneId.systemDefault()))) {
+    if (fechaInicio.isAfter(LocalDate.now(ZoneId.of("UTC")))) {
       throw new ValidationException(ErrorCatalog.FECHA_INICIO_FUTURA);
     }
   }
@@ -56,8 +71,12 @@ public class NecesidadRecurrente extends Necesidad {
   public List<DonacionIndependiente> getDonacionesAsignadas() {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     return actual != null && actual.donacionesAsignadas() != null
-        ? actual.donacionesAsignadas()
+        ? Collections.unmodifiableList(actual.donacionesAsignadas())
         : List.of();
+  }
+
+  public List<PeriodoNecesidad> getPeriodos() {
+    return Collections.unmodifiableList(periodos);
   }
 
   public PeriodoNecesidad obtenerPeriodoActual() {
@@ -120,7 +139,7 @@ public class NecesidadRecurrente extends Necesidad {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     LocalDate nuevaFechaFin =
         (actual == null || actual.fechaFin() == null)
-            ? LocalDate.now(ZoneId.systemDefault()).plus(this.periodo)
+            ? LocalDate.now(ZoneId.of("UTC")).plus(this.periodo)
             : actual.fechaFin().plus(this.periodo);
 
     this.periodos.add(

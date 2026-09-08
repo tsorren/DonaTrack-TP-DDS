@@ -17,7 +17,7 @@ public class AlgoritmoPrioridadSubAtendidos extends AlgoritmoAsignacion {
   public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
     if (necesidades == null)
       throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);
-    LocalDateTime hace3meses = LocalDateTime.now(ZoneId.systemDefault()).minusMonths(3);
+    LocalDateTime hace3meses = LocalDateTime.now(ZoneId.of("UTC")).minusMonths(3);
 
     Map<java.util.UUID, Integer> donacionesPorEntidad = new HashMap<>();
     for (Necesidad necesidad : necesidades) {

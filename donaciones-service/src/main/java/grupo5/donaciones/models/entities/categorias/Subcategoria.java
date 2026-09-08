@@ -20,8 +20,15 @@ public class Subcategoria implements AggregateRoot {
   private final List<AliasSubcategoria> aliases = new ArrayList<>();
 
   public Subcategoria(UUID categoriaId, String nombre) {
-    this.id = UUID.randomUUID();
+    this(UUID.randomUUID(), categoriaId, nombre);
+  }
+
+  public Subcategoria(UUID id, UUID categoriaId, String nombre) {
+    if (id == null) {
+      throw new IllegalArgumentException("El id de la subcategoría no puede ser nulo");
+    }
     validarSubCategoria(categoriaId, nombre);
+    this.id = id;
     this.categoriaId = categoriaId;
     this.nombre = nombre;
   }

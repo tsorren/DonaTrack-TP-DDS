@@ -13,13 +13,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionIndependiente> {
   private final UUID id;
   private UUID donacionOriginalId;
+
+  @Getter(AccessLevel.NONE)
   private List<ItemDonacionIndependiente> items;
+
   private EstadoDonacionIndependiente estadoActual;
 
   void setEstadoActual(EstadoDonacionIndependiente estadoActual) {
@@ -31,17 +35,29 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   @JsonIgnore private Asignable asignadaA;
 
   public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
+    this(UUID.randomUUID(), donacionOriginalId, items);
+  }
+
+  public DonacionIndependiente(
+      UUID id, UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
     if (donacionOriginalId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
-    this.id = UUID.randomUUID();
+    if (id == null) {
+      throw new IllegalArgumentException("El id de la donación independiente no puede ser nulo");
+    }
+    this.id = id;
     this.donacionOriginalId = donacionOriginalId;
 
     this.items = new ArrayList<>();
     items.forEach(this::agregarItem);
     this.estadoActual = new EnDeposito();
     this.historial = new ArrayList<>();
-    this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
+    this.fechaRegistro = LocalDateTime.now(ZoneId.of("UTC"));
+  }
+
+  public List<ItemDonacionIndependiente> getItems() {
+    return Collections.unmodifiableList(items);
   }
 
   public String getDescripcion() {

@@ -14,10 +14,17 @@ public class Donante implements Anonimizable, AggregateRoot {
   private final UUID personaId;
 
   public Donante(UUID personaId) {
+    this(UUID.randomUUID(), personaId);
+  }
+
+  public Donante(UUID id, UUID personaId) {
     if (personaId == null) {
       throw new ValidationException(ErrorCatalog.DONANTE_SIN_PERSONA);
     }
-    this.id = UUID.randomUUID();
+    if (id == null) {
+      throw new IllegalArgumentException("El id del donante no puede ser nulo");
+    }
+    this.id = id;
     this.personaId = personaId;
   }
 

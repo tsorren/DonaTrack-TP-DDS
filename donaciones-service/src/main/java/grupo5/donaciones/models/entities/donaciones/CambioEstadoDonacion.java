@@ -14,6 +14,6 @@ public class CambioEstadoDonacion {
   public CambioEstadoDonacion(EstadoDonacion estadoAnterior, EstadoDonacion estadoNuevo) {
     this.estadoAnterior = estadoAnterior;
     this.estadoNuevo = estadoNuevo;
-    this.timestamp = LocalDateTime.now(ZoneId.systemDefault());
+    this.timestamp = LocalDateTime.now(ZoneId.of("UTC"));
   }
 }

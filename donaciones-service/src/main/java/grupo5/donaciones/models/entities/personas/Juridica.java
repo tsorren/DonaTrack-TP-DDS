@@ -11,6 +11,7 @@ import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -25,7 +26,12 @@ public final class Juridica extends Persona {
 
   public Juridica(
       Humana representanteInicial, String razonSocial, TipoJuridico tipo, String rubro) {
-    super();
+    this(UUID.randomUUID(), representanteInicial, razonSocial, tipo, rubro);
+  }
+
+  public Juridica(
+      UUID id, Humana representanteInicial, String razonSocial, TipoJuridico tipo, String rubro) {
+    super(id);
     if (representanteInicial == null) {
       throw new ValidationException(ErrorCatalog.JURIDICA_SIN_REPRESENTANTE_INICIAL);
     }

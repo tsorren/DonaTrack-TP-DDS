@@ -21,11 +21,11 @@ public class EjecucionAsignacion implements AggregateRoot {
     }
     this.id = id != null ? id : UUID.randomUUID();
     this.fechaEjecucion =
-        fechaEjecucion != null ? fechaEjecucion : LocalDateTime.now(ZoneId.systemDefault());
+        fechaEjecucion != null ? fechaEjecucion : LocalDateTime.now(ZoneId.of("UTC"));
     this.cantidadPropuestasGeneradas = cantidadPropuestasGeneradas;
   }
 
   public EjecucionAsignacion(Integer cantidadPropuestasGeneradas) {
-    this(UUID.randomUUID(), LocalDateTime.now(ZoneId.systemDefault()), cantidadPropuestasGeneradas);
+    this(UUID.randomUUID(), LocalDateTime.now(ZoneId.of("UTC")), cantidadPropuestasGeneradas);
   }
 }

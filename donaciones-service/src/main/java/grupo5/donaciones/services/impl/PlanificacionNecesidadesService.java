@@ -19,7 +19,7 @@ public class PlanificacionNecesidadesService implements IPlanificacionNecesidade
 
   @Override
   public void generarNuevosPeriodosParaNecesidadesRecurrentes() {
-    LocalDate hoy = LocalDate.now(ZoneId.systemDefault());
+    LocalDate hoy = LocalDate.now(ZoneId.of("UTC"));
     List<NecesidadRecurrente> modificadas =
         necesidadRepository.findByActivaTrueAndRecurrenteTrue().stream()
             .map(n -> (NecesidadRecurrente) n)

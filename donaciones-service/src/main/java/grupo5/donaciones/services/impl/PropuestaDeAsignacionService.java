@@ -23,8 +23,8 @@ import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
-import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
+import grupo5.donaciones.services.mappers.LogisticaRequestMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
 import java.util.List;
 import java.util.UUID;
@@ -51,8 +51,8 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   private final ApplicationEventPublisher eventPublisher;
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final IPersonasRepository personasRepository;
-  private final DireccionMapper direccionMapper;
   private final LogisticaAsyncService logisticaAsyncService;
+  private final LogisticaRequestMapper logisticaRequestMapper;
 
   @Override
   public List<PropuestaDTO> ejecutarAsignacion() {
@@ -150,11 +150,6 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
             .findById(entidad.juridicaId())
             .orElseThrow(() -> new RecursoNoEncontradoException(entidad.juridicaId()));
 
-    return new NuevaEntregaRequest(
-        donacionAsignar.getId(),
-        entidad.getId(),
-        direccionMapper.toOutputDTO(persona.getDireccion()),
-        donacionAsignar.getPesoTotal(),
-        donacionAsignar.getVolumenTotal());
+    return logisticaRequestMapper.toRequest(donacionAsignar, entidad, persona);
   }
 }

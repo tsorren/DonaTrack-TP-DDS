@@ -212,7 +212,7 @@ public class PersonaMapper {
             ? nombreRazonSocial
             : "Empresa S.A.";
     Humana representanteDefault =
-        new Humana("Representante", "Legal", LocalDate.now(ZoneId.systemDefault()));
+        new Humana("Representante", "Legal", LocalDate.now(ZoneId.of("UTC")));
     return PersonaFactory.crearJuridica(
         razonSocial, TipoJuridico.EMPRESA, "Rubro CSV", representanteDefault);
   }

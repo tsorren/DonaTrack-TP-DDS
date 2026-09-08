@@ -27,8 +27,11 @@ public abstract sealed class Persona implements Anonimizable, AggregateRoot
     this.mediosDeContacto.add(new Telefono());
   }
 
-  /** Permite fijar el id explícitamente (uso: seeding de entidades con id conocido). */
+  /** Permite reconstruir una persona que ya tiene un identificador conocido. */
   protected Persona(UUID id) {
+    if (id == null) {
+      throw new IllegalArgumentException("El id de la persona no puede ser nulo");
+    }
     this.id = id;
     this.mediosDeContacto = new ArrayList<>();
     this.mediosDeContacto.add(new Telefono());

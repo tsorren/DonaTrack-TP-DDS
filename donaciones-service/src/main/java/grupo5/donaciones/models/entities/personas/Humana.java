@@ -36,7 +36,7 @@ public final class Humana extends Persona {
     this.genero = genero;
   }
 
-  /** Constructor con id fijo, exclusivamente para seeding (para persona admin). */
+  /** Constructor con id conocido para seeding o rehidratación. */
   public Humana(UUID id, String nombre, String apellido, LocalDate fechaNacimiento, Genero genero) {
     super(id);
     validarDatosHumanos(nombre, apellido, fechaNacimiento);
@@ -62,7 +62,7 @@ public final class Humana extends Persona {
     if (apellido == null || apellido.trim().isEmpty()) {
       throw new ValidationException(ErrorCatalog.HUMANA_APELLIDO_VACIO);
     }
-    if (fechaNacimiento != null && fechaNacimiento.isAfter(LocalDate.now(ZoneId.systemDefault()))) {
+    if (fechaNacimiento != null && fechaNacimiento.isAfter(LocalDate.now(ZoneId.of("UTC")))) {
       throw new ValidationException(ErrorCatalog.HUMANA_FECHA_NACIMIENTO_FUTURA);
     }
   }
