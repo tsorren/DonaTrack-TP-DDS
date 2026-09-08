@@ -35,6 +35,9 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
   private final float pesoTotalKG;
   private final float volumenTotalM3;
 
+  /** Para Optimistic Locking futuro — gestionado por el adaptador JPA, no por el dominio. */
+  private Long version;
+
   public Entrega(
       UUID idDonacion,
       UUID idBeneficiaria,
@@ -67,6 +70,39 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
       float volumenTotalM3) {
     this(idDonacion, idBeneficiaria, destino, pesoTotalKG, volumenTotalM3);
     asignarRuta(idRuta);
+  }
+
+  /**
+   * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
+   * ejecutar validaciones de negocio ni generar un nuevo UUID.
+   */
+  public Entrega(
+      UUID id,
+      UUID idRuta,
+      UUID idDonacion,
+      UUID idBeneficiaria,
+      Direccion destino,
+      EstadoEntrega estadoActual,
+      List<CambioEstadoEntrega> historialEstado,
+      LocalDateTime horaArribo,
+      LocalDateTime horaSalida,
+      String fotoRecepcionUrl,
+      float pesoTotalKG,
+      float volumenTotalM3,
+      Long version) {
+    this.id = id;
+    this.idRuta = idRuta;
+    this.idDonacion = idDonacion;
+    this.idBeneficiaria = idBeneficiaria;
+    this.destino = destino;
+    this.estadoActual = estadoActual;
+    this.historialEstado = new ArrayList<>(historialEstado);
+    this.horaArribo = horaArribo;
+    this.horaSalida = horaSalida;
+    this.fotoRecepcionUrl = fotoRecepcionUrl;
+    this.pesoTotalKG = pesoTotalKG;
+    this.volumenTotalM3 = volumenTotalM3;
+    this.version = version;
   }
 
   public void asignarRuta(UUID idRuta) {

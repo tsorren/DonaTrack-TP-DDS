@@ -34,6 +34,9 @@ public class SolicitudPlanificacion implements AggregateRoot {
   private Integer intentosFallidos;
   private String motivoError;
 
+  /** Para Optimistic Locking futuro — gestionado por el adaptador JPA, no por el dominio. */
+  private Long version;
+
   public SolicitudPlanificacion(LocalDate fecha, Integer cantidadDonaciones, String callbackUrl) {
     this(UUID.randomUUID(), fecha, cantidadDonaciones, callbackUrl);
   }
@@ -61,6 +64,31 @@ public class SolicitudPlanificacion implements AggregateRoot {
     this.rutasGeneradas = new ArrayList<>();
     this.intentosFallidos = 0;
     this.motivoError = null;
+  }
+
+  /**
+   * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
+   * ejecutar validaciones de negocio ni generar un nuevo UUID.
+   */
+  public SolicitudPlanificacion(
+      UUID id,
+      LocalDate fecha,
+      EstadoSolicitud estado,
+      Integer cantidadDonaciones,
+      String callbackUrl,
+      List<UUID> rutasGeneradas,
+      Integer intentosFallidos,
+      String motivoError,
+      Long version) {
+    this.id = id;
+    this.fecha = fecha;
+    this.estado = estado;
+    this.cantidadDonaciones = cantidadDonaciones;
+    this.callbackUrl = callbackUrl;
+    this.rutasGeneradas = new ArrayList<>(rutasGeneradas);
+    this.intentosFallidos = intentosFallidos;
+    this.motivoError = motivoError;
+    this.version = version;
   }
 
   public List<UUID> getRutasGeneradas() {

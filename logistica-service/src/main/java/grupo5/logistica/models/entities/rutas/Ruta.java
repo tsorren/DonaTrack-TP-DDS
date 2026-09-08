@@ -35,6 +35,9 @@ public class Ruta extends AgregadoConEventos<EventoRuta> {
   private LocalDateTime horaInicioReal;
   private LocalDateTime horaFinReal;
 
+  /** Para Optimistic Locking futuro — gestionado por el adaptador JPA, no por el dominio. */
+  private Long version;
+
   public Ruta(LocalDate fecha, UUID choferId, UUID camionId) {
     validarFecha(fecha);
     validarIdentificador(choferId);
@@ -47,6 +50,33 @@ public class Ruta extends AgregadoConEventos<EventoRuta> {
     this.estado = EstadoRuta.PENDIENTE;
     this.entregas = new ArrayList<>();
     this.historialEstado = new ArrayList<>();
+  }
+
+  /**
+   * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
+   * ejecutar validaciones de negocio ni generar un nuevo UUID.
+   */
+  public Ruta(
+      UUID id,
+      LocalDate fecha,
+      List<UUID> entregas,
+      UUID choferId,
+      UUID camionId,
+      EstadoRuta estado,
+      List<CambioEstadoRuta> historialEstado,
+      LocalDateTime horaInicioReal,
+      LocalDateTime horaFinReal,
+      Long version) {
+    this.id = id;
+    this.fecha = fecha;
+    this.entregas = new ArrayList<>(entregas);
+    this.choferId = choferId;
+    this.camionId = camionId;
+    this.estado = estado;
+    this.historialEstado = new ArrayList<>(historialEstado);
+    this.horaInicioReal = horaInicioReal;
+    this.horaFinReal = horaFinReal;
+    this.version = version;
   }
 
   public void iniciarRuta() {

@@ -26,6 +26,9 @@ public class Camion implements AggregateRoot {
   @Getter(AccessLevel.NONE)
   private final List<CambioEstadoCamion> historialEstado;
 
+  /** Para Optimistic Locking futuro — gestionado por el adaptador JPA, no por el dominio. */
+  private Long version;
+
   public Camion(String patente, Float capacidadVolumen, Float capacidadKG, Float altura) {
     validarPatente(patente);
     validarCapacidad(capacidadVolumen);
@@ -40,6 +43,31 @@ public class Camion implements AggregateRoot {
     this.altura = altura;
     this.estado = EstadoCamion.DISPONIBLE;
     this.historialEstado = new ArrayList<>();
+  }
+
+  /**
+   * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
+   * ejecutar validaciones de negocio ni generar un nuevo UUID.
+   */
+  public Camion(
+      UUID id,
+      UUID rutaId,
+      String patente,
+      Float capacidadVolumen,
+      Float capacidadKG,
+      Float altura,
+      EstadoCamion estado,
+      List<CambioEstadoCamion> historialEstado,
+      Long version) {
+    this.id = id;
+    this.rutaId = rutaId;
+    this.patente = patente;
+    this.capacidadVolumen = capacidadVolumen;
+    this.capacidadKG = capacidadKG;
+    this.altura = altura;
+    this.estado = estado;
+    this.historialEstado = new ArrayList<>(historialEstado);
+    this.version = version;
   }
 
   public void asignarARuta(UUID rutaId) {
