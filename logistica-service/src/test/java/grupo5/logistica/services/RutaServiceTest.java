@@ -5,7 +5,10 @@ import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.logistica.dto.rutas.*;
+import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
+import grupo5.logistica.dto.rutas.CambioEstadoRutaRequestDTO;
+import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
@@ -14,11 +17,15 @@ import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
-import grupo5.logistica.models.repositories.*;
 import grupo5.logistica.models.repositories.ICamionRepository;
+import grupo5.logistica.models.repositories.IChoferesRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
+import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.services.impl.RutasService;
+import grupo5.logistica.services.mappers.DireccionMapper;
+import grupo5.logistica.services.mappers.EntregaMapper;
 import grupo5.logistica.services.mappers.RutaMapper;
+import grupo5.logistica.testutils.RutaMother;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,7 +50,10 @@ class RutaServiceTest {
     entregasRepository = mock(IEntregasRepository.class);
     camionRepository = mock(ICamionRepository.class);
     choferesRepository = mock(IChoferesRepository.class);
-    rutaMapper = mock(RutaMapper.class);
+    rutaMapper =
+        new RutaMapper(
+            new EntregaMapper(new DireccionMapper()),
+            new GeneradorDeURLSeguimiento("http://localhost:3000/tracking"));
     comunicadorEventos = mock(ComunicadorEventosLogistica.class);
 
     rutasService =
@@ -63,18 +73,14 @@ class RutaServiceTest {
   @Test
   void listar_deberiaRetornarTodasLasRutas() {
 
-    Ruta ruta = mock(Ruta.class);
-
-    RutaResponseDTO dto = mock(RutaResponseDTO.class);
+    Ruta ruta = RutaMother.pendiente();
 
     when(rutasRepository.findAll()).thenReturn(List.of(ruta));
-
-    when(rutaMapper.toResponseDTO(ruta)).thenReturn(dto);
 
     List<RutaResponseDTO> resultado = rutasService.listar();
 
     assertEquals(1, resultado.size());
-    verify(rutaMapper).toResponseDTO(ruta);
+    assertEquals(ruta.getId(), resultado.getFirst().id());
   }
 
   @Test
@@ -94,19 +100,14 @@ class RutaServiceTest {
   @Test
   void obtenerPorId_deberiaRetornarRutaSiExiste() {
 
-    UUID id = UUID.randomUUID();
-
-    Ruta ruta = mock(Ruta.class);
-
-    RutaResponseDTO dto = mock(RutaResponseDTO.class);
+    Ruta ruta = RutaMother.pendiente();
+    UUID id = ruta.getId();
 
     when(rutasRepository.findById(id)).thenReturn(Optional.of(ruta));
 
-    when(rutaMapper.toResponseDTO(ruta)).thenReturn(dto);
-
     RutaResponseDTO resultado = rutasService.obtenerPorId(id);
 
-    assertEquals(dto, resultado);
+    assertEquals(id, resultado.id());
   }
 
   @Test
@@ -147,10 +148,6 @@ class RutaServiceTest {
     EventoRutaAsignada evento = new EventoRutaAsignada(rutaId, entregaId);
     when(ruta.getDomainEvents()).thenReturn(List.of(evento));
 
-    RutaResponseDTO response = mock(RutaResponseDTO.class);
-
-    when(rutaMapper.toResponseDTO(ruta)).thenReturn(response);
-
     RutaResponseDTO resultado = rutasService.agregarEntrega(rutaId, dto);
 
     verify(ruta).agregarEntrega(entregaId);
@@ -161,7 +158,8 @@ class RutaServiceTest {
     verify(comunicadorEventos).comunicarRutaAsignada(evento, entrega);
     verify(ruta).clearDomainEvents();
 
-    assertEquals(response, resultado);
+    assertNotNull(resultado);
+    assertEquals(rutaId, resultado.id());
   }
 
   @Test
@@ -214,9 +212,6 @@ class RutaServiceTest {
         new EventoRutaIniciada(rutaId, camionId, List.of(entregaId), java.time.LocalDateTime.now());
     when(ruta.getDomainEvents()).thenReturn(List.of(evento));
 
-    RutaResponseDTO response = mock(RutaResponseDTO.class);
-    when(rutaMapper.toResponseDTO(ruta)).thenReturn(response);
-
     RutaResponseDTO resultado = rutasService.cambiarEstado(rutaId, dto);
 
     verify(ruta).iniciarRuta();
@@ -225,6 +220,7 @@ class RutaServiceTest {
     verify(comunicadorEventos).comunicarRutaIniciada(eq(evento), eq(camion), anyList());
     verify(ruta).clearDomainEvents();
     assertNotNull(resultado);
+    assertEquals(rutaId, resultado.id());
   }
 
   @Test
@@ -232,10 +228,12 @@ class RutaServiceTest {
     UUID rutaId = UUID.randomUUID();
     UUID camionId = UUID.randomUUID();
     UUID choferId = UUID.randomUUID();
+    UUID entregaId = UUID.randomUUID();
 
     Ruta ruta = mock(Ruta.class);
     Camion camion = mock(Camion.class);
     Chofer chofer = mock(Chofer.class);
+    Entrega entrega = mock(Entrega.class);
 
     CambioEstadoRutaRequestDTO dto =
         new CambioEstadoRutaRequestDTO(EstadoRuta.COMPLETADA, null, "actor");
@@ -245,6 +243,7 @@ class RutaServiceTest {
     when(ruta.getChoferId()).thenReturn(choferId);
     when(ruta.getId()).thenReturn(rutaId);
     when(ruta.getEstado()).thenReturn(EstadoRuta.EN_TRASLADO);
+    when(ruta.getEntregaIds()).thenReturn(List.of(entregaId));
 
     when(camionRepository.findById(camionId)).thenReturn(Optional.of(camion));
     when(choferesRepository.findById(choferId)).thenReturn(Optional.of(chofer));
@@ -252,8 +251,9 @@ class RutaServiceTest {
     when(camion.getRutaId()).thenReturn(rutaId);
     when(chofer.getRutaId()).thenReturn(rutaId);
 
-    RutaResponseDTO response = mock(RutaResponseDTO.class);
-    when(rutaMapper.toResponseDTO(ruta)).thenReturn(response);
+    when(entregasRepository.findById(entregaId)).thenReturn(Optional.of(entrega));
+    when(entrega.getId()).thenReturn(entregaId);
+    when(entrega.getEstadoActual()).thenReturn(EstadoEntrega.ENTREGADA);
 
     RutaResponseDTO resultado = rutasService.cambiarEstado(rutaId, dto);
 
@@ -261,5 +261,6 @@ class RutaServiceTest {
     verify(rutasRepository).save(ruta);
     verify(ruta).clearDomainEvents();
     assertNotNull(resultado);
+    assertEquals(rutaId, resultado.id());
   }
 }

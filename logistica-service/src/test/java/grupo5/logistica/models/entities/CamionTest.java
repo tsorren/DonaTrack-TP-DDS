@@ -19,7 +19,7 @@ class CamionTest {
   void testConstructorExitoso() {
     Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
     assertNotNull(camion.getId());
-    assertEquals("ABC-123", camion.getPatente());
+    assertEquals("ABC123", camion.getPatente());
     assertEquals(15.5f, camion.getCapacidadVolumen());
     assertEquals(1500f, camion.getCapacidadKG());
     assertEquals(2.5f, camion.getAltura());
@@ -60,6 +60,14 @@ class CamionTest {
     ValidationException exception =
         assertThrows(ValidationException.class, () -> new Camion("ABC-123", 15.5f, 1500f, 0f));
     assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, exception.getError());
+  }
+
+  @Test
+  void testConstructorNormalizaPatenteConGuionesEspaciosYMinusculas() {
+    Camion camion1 = new Camion("ab-123-cd", 10f, 1000f, 2f);
+    assertEquals("AB123CD", camion1.getPatente());
+    Camion camion2 = new Camion("  AB 123 CD  ", 10f, 1000f, 2f);
+    assertEquals("AB123CD", camion2.getPatente());
   }
 
   // ========================= CHARACTERIZATION: asignarARuta =========================

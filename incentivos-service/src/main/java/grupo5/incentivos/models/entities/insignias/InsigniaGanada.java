@@ -13,14 +13,6 @@ public record InsigniaGanada(
     }
   }
 
-  public InsigniaGanada ocultada() {
-    return new InsigniaGanada(nombre, descripcion, imagenUrl, false, fechaObtenida);
-  }
-
-  public InsigniaGanada mostrada() {
-    return new InsigniaGanada(nombre, descripcion, imagenUrl, true, fechaObtenida);
-  }
-
   public InsigniaGanada conVisibilidad(boolean visible) {
     return new InsigniaGanada(nombre, descripcion, imagenUrl, visible, fechaObtenida);
   }

@@ -1,7 +1,7 @@
 # Bitácora — Oleada 4: transiciones de Camión y Chofer
 
 **Branch:** `E4_refactor_logistica`
-**Referencia del plan:** `docs/design/logistica-service/plan-refactor-logistica-service.md` → Oleada 4 (RF-05)
+**Referencia del plan:** [`plan-refactor-logistica-service.md`](./plan-refactor-logistica-service.md) → Oleada 4 (RF-05)
 
 ---
 

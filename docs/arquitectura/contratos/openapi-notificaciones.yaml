@@ -1,0 +1,391 @@
+openapi: 3.0.3
+info:
+  title: DonaTrack - Notificaciones Service API
+  version: 1.0.0
+  description: API REST para despacho de alertas multicanal (Email, WhatsApp, SMS), sincronización idempotente de personas replicadas y gestión de historial de notificaciones.
+servers:
+  - url: http://localhost:8081
+    description: Servidor local de desarrollo
+paths:
+  /notificaciones:
+    post:
+      summary: Despachar notificación por evento de dominio
+      description: Recibe un evento de dominio y programa el despacho asíncrono a los medios de contacto de la persona.
+      operationId: procesarEventoNotificable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventoNotificableDTO'
+      responses:
+        '202':
+          description: Evento aceptado para procesamiento asíncrono
+        '400':
+          description: Payload inválido o campos obligatorios faltantes
+  /notificaciones/persona/{personaId}:
+    get:
+      summary: Obtener historial de notificaciones de una persona
+      operationId: obtenerNotificacionesPorPersona
+      parameters:
+        - name: personaId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Historial de notificaciones despachadas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificacionDTO'
+  /api/notificaciones/personas:
+    put:
+      summary: Sincronizar réplica de persona y medios de contacto
+      description: Operación idempotente consumida vía Feign o HTTP directo para actualizar datos de contacto.
+      operationId: sincronizarPersona
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonaReplicaDTO'
+      responses:
+        '200':
+          description: Réplica sincronizada con éxito
+        '400':
+          description: Datos de réplica inválidos
+  /api/notificaciones/personas/{id}:
+    get:
+      summary: Consultar persona replicada
+      operationId: obtenerPersona
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Datos de la persona replicada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonaReplicaDTO'
+        '404':
+          description: Persona no encontrada
+    delete:
+      summary: Anonimizar datos personales (Crypto-shredding / Baja)
+      operationId: anonimizarPersona
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Datos de la persona anonimizados o eliminados
+components:
+  schemas:
+    PersonaReplicaDTO:
+      type: object
+      required:
+        - id
+        - denominacion
+        - tipoPersona
+      properties:
+        id:
+          type: string
+          format: uuid
+        denominacion:
+          type: string
+        tipoPersona:
+          type: string
+          enum: [HUMANA, JURIDICA]
+        mediosDeContacto:
+          type: array
+          items:
+            $ref: '#/components/schemas/MedioDeContactoReplicaDTO'
+    MedioDeContactoReplicaDTO:
+      type: object
+      required:
+        - tipo
+      properties:
+        tipo:
+          type: string
+          enum: [CORREO, TELEFONO, WHATSAPP]
+        esPredeterminado:
+          type: boolean
+        direccionCorreo:
+          type: string
+        caracteristica:
+          type: string
+        codigoArea:
+          type: string
+        numero:
+          type: string
+    EventoNotificableDTO:
+      type: object
+      description: Contrato polimórfico base para eventos de dominio que desencadenan notificaciones
+      discriminator:
+        propertyName: tipo
+        mapping:
+          DONANTE_REGISTRADO: '#/components/schemas/EventoDonanteRegistradoDTO'
+          DONANTE_INACTIVO: '#/components/schemas/EventoDonanteInactivoDTO'
+          MISION_CUMPLIDA: '#/components/schemas/EventoMisionCumplidaDTO'
+          SUBIO_CATEGORIA: '#/components/schemas/EventoSubioCategoriaDTO'
+          DONACION_ASIGNADA: '#/components/schemas/EventoDonacionAsignadaDTO'
+          DONACION_RECIBIDA: '#/components/schemas/EventoDonacionRecibidaDTO'
+          DONACION_EN_CAMINO: '#/components/schemas/EventoDonacionEnCaminoDTO'
+          ENTREGA_FALLIDA: '#/components/schemas/EventoEntregaFallidaDTO'
+          DONACION_VENCIDA: '#/components/schemas/EventoDonacionVencidaDTO'
+      oneOf:
+        - $ref: '#/components/schemas/EventoDonanteRegistradoDTO'
+        - $ref: '#/components/schemas/EventoDonanteInactivoDTO'
+        - $ref: '#/components/schemas/EventoMisionCumplidaDTO'
+        - $ref: '#/components/schemas/EventoSubioCategoriaDTO'
+        - $ref: '#/components/schemas/EventoDonacionAsignadaDTO'
+        - $ref: '#/components/schemas/EventoDonacionRecibidaDTO'
+        - $ref: '#/components/schemas/EventoDonacionEnCaminoDTO'
+        - $ref: '#/components/schemas/EventoEntregaFallidaDTO'
+        - $ref: '#/components/schemas/EventoDonacionVencidaDTO'
+    EventoDonanteRegistradoDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - credencialesDeAcceso
+      properties:
+        tipo:
+          type: string
+          enum: [DONANTE_REGISTRADO]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        credencialesDeAcceso:
+          type: string
+    EventoDonanteInactivoDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - diasInactivo
+      properties:
+        tipo:
+          type: string
+          enum: [DONANTE_INACTIVO]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        diasInactivo:
+          type: integer
+          minimum: 1
+    EventoMisionCumplidaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - nombreMision
+        - recompensa
+      properties:
+        tipo:
+          type: string
+          enum: [MISION_CUMPLIDA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        nombreMision:
+          type: string
+        recompensa:
+          type: string
+    EventoSubioCategoriaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - categoriaNueva
+        - categoriaVieja
+      properties:
+        tipo:
+          type: string
+          enum: [SUBIO_CATEGORIA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        categoriaNueva:
+          type: string
+        categoriaVieja:
+          type: string
+    EventoDonacionAsignadaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaBeneficiaria
+        - detalleDonacion
+      properties:
+        tipo:
+          type: string
+          enum: [DONACION_ASIGNADA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaBeneficiaria:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+    EventoDonacionRecibidaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaBeneficiaria
+        - detalleDonacion
+      properties:
+        tipo:
+          type: string
+          enum: [DONACION_RECIBIDA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaBeneficiaria:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+        patenteCamion:
+          type: string
+    EventoDonacionEnCaminoDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaBeneficiaria
+        - detalleDonacion
+      properties:
+        tipo:
+          type: string
+          enum: [DONACION_EN_CAMINO]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaBeneficiaria:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+        enlaceSeguimiento:
+          type: string
+    EventoEntregaFallidaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaBeneficiaria
+        - detalleDonacion
+        - idPersonaAdmin
+        - motivo
+        - replanificable
+      properties:
+        tipo:
+          type: string
+          enum: [ENTREGA_FALLIDA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaBeneficiaria:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+        idPersonaAdmin:
+          type: string
+          format: uuid
+        motivo:
+          type: string
+        replanificable:
+          type: boolean
+    EventoDonacionVencidaDTO:
+      type: object
+      required:
+        - tipo
+        - idPersonaDonante
+        - fecha
+        - idPersonaAdmin
+        - detalleDonacion
+        - motivo
+      properties:
+        tipo:
+          type: string
+          enum: [DONACION_VENCIDA]
+        idPersonaDonante:
+          type: string
+          format: uuid
+        fecha:
+          type: string
+          format: date-time
+        idPersonaAdmin:
+          type: string
+          format: uuid
+        detalleDonacion:
+          type: string
+        motivo:
+          type: string
+    NotificacionDTO:
+      type: object
+      required:
+        - id
+        - mensaje
+        - estado
+        - fechaCreacion
+      properties:
+        id:
+          type: string
+          format: uuid
+        mensaje:
+          type: string
+        estado:
+          type: string
+        fechaCreacion:
+          type: string
+          format: date-time

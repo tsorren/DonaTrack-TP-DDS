@@ -20,7 +20,7 @@ Al ejecutar ambos algoritmos sobre el mismo inventario y consolidar los resultad
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Hallazgo §982 de la [Auditoría Final del Proyecto](../arquitectura/diseno/auditoria-final-proyecto.md) y diseño de `donaciones-service`.
+* **Oleadas de Origen:** Hallazgo §982 de la [Auditoría Final del Proyecto](../../arquitectura/diseno/auditoria-final-proyecto.md) y diseño de `donaciones-service`.
 * **Hallazgo:** La auditoría final observó que `consolidar()` descartaba silenciosamente las propuestas semánticas a favor de las de prioridad cuando ambas coincidían en una necesidad, señalando: *"Esta decisión no está documentada en comentarios ni ADR"*.
 
 ## Alternativas Consideradas

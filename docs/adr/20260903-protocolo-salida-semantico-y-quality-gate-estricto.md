@@ -60,4 +60,4 @@ La distinción entre código 1 y 2 permite a los ingenieros de DevOps y a los de
 ## Referencias y Trabajo Futuro
 
 * [`docs/auditoria/revision-critica-devops-ci.md`](../auditoria/revision-critica-devops-ci.md): Eje 2 de la revisión crítica DevOps.
-* [`AGENTS.md §4.3`](/AGENTS.md): Invariante de integridad de quality gates y pruebas.
+* [`AGENTS.md §4.3`](../../AGENTS.md): Invariante de integridad de quality gates y pruebas.

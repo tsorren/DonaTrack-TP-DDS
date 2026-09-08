@@ -64,8 +64,9 @@ integration-tests/
     ├── e2e/                                     # @Tag("e2e")
     │   └── FullDistributedDonationE2EIT.java    # Flujo completo con Logística y RabbitMQ
     │
-    └── performance/                             # @Tag("performance")
-        └── PerformanceStressIT.java             # Caracterización volumétrica con bienes aislados
+    └── (k6 performance)                        # Pruebas de rendimiento desacopladas (tests/performance/k6/)
+        ├── donaciones-creacion-carga.js         # Carga con rampa y SLA p(95) < 500ms
+        └── incentivos-eventos-saturacion.js     # Saturación con rampa y SLA p(95) < 500ms
 ```
 
 ---
@@ -77,8 +78,8 @@ Cada microservicio cuenta con un cliente dedicado en `grupo5.tests.client.*` que
 * **Métodos `*Ok`**: Ejecutan la petición, validan el status code esperado (`201 Created` / `200 OK`) y extraen directamente el identificador `UUID` o DTO correspondiente.
 * **Métodos `Response`**: Retornan el objeto `io.restassured.response.Response` para pruebas de contrato o casos negativos (validación de status codes de error 400, 404, etc.).
 
-### B. Test Data Builders Locales
-En lugar de mutar JSONs no tipados (`Map<String, Object>`), los payloads se construyen mediante constructores fluidos e inmutables:
+### B. Test Data Builders Locales (Erradicación de Fixtures Huérfanos F-08)
+En lugar de depender de fixtures JSON estáticos externos (los cuales fueron depurados y erradicados de `src/test/resources/fixtures/` al constituir código muerto no referenciado, resolviendo el hallazgo F-08), los payloads se construyen mediante constructores fluidos e inmutables:
 ```java
 PersonaTestDTO persona = PersonaTestDataBuilder.humana()
     .conNombre("Carlos")
@@ -117,7 +118,7 @@ El script automatiza la compilación, puesta en marcha de Docker Compose, espera
 # Flujo E2E Distribuido Completo (Logística + RabbitMQ)
 ./run-preprod-tests.sh --skip-build --groups e2e
 
-# Pruebas de Rendimiento y Volumen
+# Pruebas de Rendimiento y Carga con k6 (ADR 20260906-migracion-pruebas-rendimiento-a-k6)
 ./run-preprod-tests.sh --skip-build --groups performance
 
 # Ejecución Completa
@@ -132,6 +133,18 @@ mvn clean verify -pl integration-tests -DskipTests=false `
   "-Dincentivos.url=http://localhost:8082" `
   "-Dlogistica.url=http://localhost:8083"
 ```
+
+### C. Testing Acelerado e Impact Analysis (TIA)
+Para ciclos de desarrollo rápido (Gate 1 y Gate 2) sin levantar infraestructura Docker completa, consultar la guía de optimización en [testing-performance.md](./testing-performance.md):
+
+* **PowerShell (Windows):**
+  ```powershell
+  ./scripts/test-changed.ps1 -Fast
+  ```
+* **Bash / Git Bash / WSL:**
+  ```bash
+  ./scripts/test-changed.sh --fast
+  ```
 
 ---
 

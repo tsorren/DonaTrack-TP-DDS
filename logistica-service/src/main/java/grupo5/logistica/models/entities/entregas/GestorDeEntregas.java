@@ -22,6 +22,7 @@ public final class GestorDeEntregas {
       }
       case NoRecepcion(var entrega, var actor, var justificacion, var replanificable) ->
           entrega.negarEntrega(actor, justificacion, replanificable);
+      case RevisionEntrega(var entrega, var actor) -> entrega.mandarARevision(actor);
       case RegresoDeposito(var entrega, var actor) -> entrega.regresarAlDeposito(actor);
     }
     // spotless:on

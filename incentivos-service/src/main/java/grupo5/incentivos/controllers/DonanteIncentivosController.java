@@ -2,16 +2,21 @@ package grupo5.incentivos.controllers;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.incentivos.dto.CambioCategoriaDTO;
+import grupo5.incentivos.dto.DonantePerfilDTO;
 import grupo5.incentivos.dto.DonanteRegistradoDTO;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.RegistrarDonanteRequest;
+import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.services.IGestionDonanteService;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,5 +59,21 @@ public class DonanteIncentivosController implements IDonanteIncentivosController
       @PathVariable UUID donanteId, @Valid @RequestBody ModificarDonanteRequest request) {
     gestionDonanteService.modificarDonante(donanteId, request);
     return ResponseEntity.ok().build();
+  }
+
+  @Override
+  @GetMapping("/donantes/{donanteId}")
+  public ResponseEntity<DonantePerfilDTO> obtenerDonante(@PathVariable UUID donanteId) {
+    DonanteIncentivos donante = gestionDonanteService.obtenerDonante(donanteId);
+    return ResponseEntity.ok(DonantePerfilDTO.desde(donante));
+  }
+
+  @Override
+  @GetMapping("/donantes/{donanteId}/ascensos")
+  public ResponseEntity<List<CambioCategoriaDTO>> obtenerAscensos(@PathVariable UUID donanteId) {
+    DonanteIncentivos donante = gestionDonanteService.obtenerDonante(donanteId);
+    List<CambioCategoriaDTO> ascensos =
+        donante.getHistorialCategorias().stream().map(CambioCategoriaDTO::desde).toList();
+    return ResponseEntity.ok(ascensos);
   }
 }

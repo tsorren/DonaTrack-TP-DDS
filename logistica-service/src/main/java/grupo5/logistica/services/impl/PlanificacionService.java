@@ -25,8 +25,8 @@ import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IPlanificacionService;
 import grupo5.logistica.services.IServicioExternoPlanificacion;
 import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,6 +53,7 @@ public class PlanificacionService implements IPlanificacionService {
   private final ComunicadorEventosLogistica comunicadorEventos;
   private final IServicioExternoPlanificacion planificadorExterno;
   private final GeneradorDeRutas generadorDeRutas;
+  private final Clock clock;
   private final int maximoPorLote;
   private final String callbackUrl;
 
@@ -66,6 +67,7 @@ public class PlanificacionService implements IPlanificacionService {
       ComunicadorEventosLogistica comunicadorEventos,
       IServicioExternoPlanificacion planificadorExterno,
       GeneradorDeRutas generadorDeRutas,
+      Clock clock,
       @Value("${logistica.planificacion.max-donaciones-por-lote:100}") int maximoPorLote,
       @Value("${logistica.self.base-url:http://localhost:8083}") String selfBaseUrl) {
     this.solicitudesRepository = solicitudesRepository;
@@ -77,12 +79,18 @@ public class PlanificacionService implements IPlanificacionService {
     this.comunicadorEventos = comunicadorEventos;
     this.planificadorExterno = planificadorExterno;
     this.generadorDeRutas = generadorDeRutas;
+    this.clock = clock != null ? clock : Clock.systemUTC();
     this.maximoPorLote = Math.min(maximoPorLote, GeneradorDeRutas.MAX_ENTREGAS_POR_SOLICITUD);
     this.callbackUrl = selfBaseUrl + "/api/logistica/callback/rutas";
   }
 
   @Override
   public void iniciarPlanificacion() {
+    iniciarPlanificacion(LocalDate.now(clock).plusDays(1));
+  }
+
+  @Override
+  public void iniciarPlanificacion(LocalDate fechaObjetivo) {
     List<Entrega> entregas = entregasRepository.findSinRuta();
     if (entregas.isEmpty()) {
       log.info("No hay entregas pendientes de planificación.");
@@ -100,8 +108,7 @@ public class PlanificacionService implements IPlanificacionService {
     }
 
     List<PlanificacionSolicitada> solicitudes =
-        generadorDeRutas.planificar(
-            entregas, camiones, choferes, LocalDate.now(ZoneId.of("UTC")), maximoPorLote);
+        generadorDeRutas.planificar(entregas, camiones, choferes, fechaObjetivo, maximoPorLote);
     solicitudes.forEach(this::enviarPlanificacion);
   }
 

@@ -19,7 +19,7 @@ En `incentivos-service`, el agregado principal `DonanteIncentivos` mantiene las 
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleada 10 de Persistencia en `incentivos-service` ([decisiones_futuras_en_oleada_10.md](../arquitectura/diseno/incentivos/decisiones_futuras_en_oleada_10.md) §1).
+* **Oleadas de Origen:** Oleada 10 de Persistencia en `incentivos-service` ([decisiones_futuras_en_oleada_10.md](../../arquitectura/diseno/incentivos/decisiones_futuras_en_oleada_10.md) §1).
 * **Hallazgo:** Se constató que las métricas de negocio de un donante (`puntos`, `nivel`, `racha`) deben aplanarse como columnas escalares directas en la tabla `donante_incentivos` (en lugar de mapear una entidad separada `Metricas`), logrando lecturas directas en una sola fila. Para `Mision`, la estrategia `SINGLE_TABLE` demostró ser la más eficiente.
 
 ## Alternativas Consideradas

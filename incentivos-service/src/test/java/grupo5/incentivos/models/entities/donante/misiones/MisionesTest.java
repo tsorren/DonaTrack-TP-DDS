@@ -326,4 +326,109 @@ class MisionesTest {
     racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 4, 15));
     assertEquals(4, racha.getProgresoActual());
   }
+
+  @Test
+  void racha_conDonacionDemoradaDelMesAnteriorAlPrimeroDeLaRacha_deberiaExtenderlaHaciaAtras() {
+    MisionRacha racha = MisionMother.rachaColaborador(5);
+
+    // Febrero, Marzo, Abril -> racha de 3 (primer mes: Febrero)
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 2, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 3, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 4, 15));
+    assertEquals(3, racha.getProgresoActual());
+
+    // Llega demorada la donación de Enero (mes anterior al primero de la racha)
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 1, 20));
+
+    assertEquals(4, racha.getProgresoActual());
+    assertFalse(racha.isCompletada());
+
+    // La racha sigue extendiéndose hacia adelante con normalidad (Mayo)
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 5, 10));
+
+    assertEquals(5, racha.getProgresoActual());
+    assertTrue(racha.isCompletada());
+  }
+
+  @Test
+  void racha_conDonacionViejaQueNoConectaConLaRachaActual_deberiaIgnorarseSinRomperla() {
+    MisionRacha racha = MisionMother.rachaColaborador(5);
+
+    // Febrero, Marzo, Abril -> racha de 3 (primer mes: Febrero)
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 2, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 3, 15));
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 4, 15));
+    assertEquals(3, racha.getProgresoActual());
+
+    // Llega una donación de Diciembre 2025: no conecta (no es el mes inmediato anterior)
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2025, 12, 5));
+
+    assertEquals(3, racha.getProgresoActual());
+    assertFalse(racha.isCompletada());
+
+    // La racha sigue vigente y extendiéndose con normalidad
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 5, 10));
+    assertEquals(4, racha.getProgresoActual());
+  }
+
+  @Test
+  void mision_yaCompletada_alEvaluarProgresoNuevamente_noDeberiaAlterarSuEstado() {
+    MisionRacha racha = MisionMother.rachaColaborador(1);
+    LocalDate fechaCompletada = LocalDate.of(2026, Month.JANUARY, 15);
+
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(fechaCompletada));
+    assertTrue(racha.isCompletada());
+    assertEquals(1, racha.getProgresoActual());
+
+    // Un evento posterior, que de procesarse normalmente reiniciaría la racha, no debe afectarla
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 6, 15));
+
+    assertTrue(racha.isCompletada());
+    assertEquals(1, racha.getProgresoActual());
+    assertEquals(fechaCompletada, racha.getFechaCompletada());
+    assertEquals(YearMonth.of(2026, Month.JANUARY), racha.getUltimoMesDonado());
+  }
+
+  @Test
+  void fueCompletadaEnMes_conMesIgualPeroAnioDistinto_deberiaSerFalso() {
+    MisionRacha racha = MisionMother.rachaColaborador(1);
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 5, 10));
+    assertTrue(racha.isCompletada());
+
+    assertTrue(racha.fueCompletadaEnMes(2026, 5));
+    assertFalse(racha.fueCompletadaEnMes(2027, 5));
+  }
+
+  @Test
+  void completitud_conListaDeCategoriasVacia_noDeberiaSumarProgreso() {
+    MisionCompletitud mision = MisionMother.completitud(CategoriaDonante.COLABORADOR, 2);
+
+    mision.evaluarProgreso(donante, EventoDonacionMother.conCategorias(HOY, List.of()));
+
+    assertEquals(0, mision.getProgresoActual());
+    assertFalse(mision.isCompletada());
+  }
+
+  @Test
+  void completitud_conCategoriasVaciasOEnBlancoEnLaLista_deberiaIgnorarlasSinContarlas() {
+    MisionCompletitud mision = MisionMother.completitud(CategoriaDonante.COLABORADOR, 2);
+
+    mision.evaluarProgreso(
+        donante, EventoDonacionMother.conCategorias(HOY, List.of("", "   ", "arroz")));
+
+    assertEquals(1, mision.getProgresoActual());
+    assertFalse(mision.isCompletada());
+  }
+
+  @Test
+  void habilDonador_conCantidadDeBienesNulaEnElEvento_deberiaTratarseComoCero() {
+    MisionHabilDonador mision = MisionMother.habilDonador(CategoriaDonante.SOSTENEDOR, 5);
+    EventoDonacion evento =
+        EventoDonacion.builder().fecha(HOY).cantidadBienes(null).categorias(List.of()).build();
+
+    mision.evaluarProgreso(donante, evento);
+
+    assertEquals(0, mision.getProgresoActual());
+    assertFalse(mision.isCompletada());
+  }
 }

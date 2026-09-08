@@ -17,13 +17,12 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 
 ### 2.1. Agregado: Persona
 *   **Aggregate Root**: `Persona` (Clase abstracta polimórfica implementada por `Humana` y `Juridica`).
-*   **Objetos de Valor Internos**: 
-    *   `Direccion` (calle, altura, piso, departamento, codigoPostal).
-    *   `Localidad` (nombreLocalidad, provincia).
-    *   `MedioContacto` (tipo, valor).
-    *   `TipoDocumento`, `Genero`, `TipoJuridico` (Enums).
+*   **Objetos de Valor Internos y de Ubicación**: 
+    *   `Direccion` (calle, altura, piso, departamento, codigoPostal) y `Localidad` (ubicados en el paquete compartido `grupo5.donaciones.models.entities.ubicaciones`).
+    *   `MedioDeContacto` (clase base polimórfica implementada por `Correo` y `Telefono`).
+    *   `TipoDocumento`, `Genero`, `TipoJuridico`, `TipoPersona`, `TipoTelefono` (Enums).
 *   **Responsabilidad**: Validar la consistencia de los datos demográficos y fiscales de los actores del sistema, asegurando que se registren con al menos un contacto válido.
-*   **Paquete**: `grupo5.donaciones.models.entities.personas`
+*   **Paquete**: `grupo5.donaciones.models.entities.personas` (con objetos de valor geográficos en `grupo5.donaciones.models.entities.ubicaciones`)
 
 ### 2.2. Agregado: Donante
 *   **Aggregate Root**: `Donante`.
@@ -62,7 +61,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 
 ### 2.5. Agregado: Entidad Beneficiaria
 *   **Aggregate Root**: `EntidadBeneficiaria` (Actor que recibe las donaciones).
-*   **Objetos de Valor Internos**: `Direccion`, `Localidad` (dirección postal física).
+*   **Objetos de Valor Internos**: `Direccion`, `Localidad` (dirección postal física, en `grupo5.donaciones.models.entities.ubicaciones`).
 *   **Responsabilidad**: Validar los datos de contacto y direcciones físicas para coordinar los puntos de entrega de logística.
 *   **Paquete**: `grupo5.donaciones.models.entities.beneficiarios`
 
@@ -76,7 +75,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 
 ### 2.7. Agregado: Propuesta (Matchmaking de Asignación)
 *   **Aggregate Root**: `Propuesta` (Representa el lote de sugerencias generado por un algoritmo de asignación).
-*   **Componentes Internos**: `DonacionAsignadaItem` (Entidad interna que vincula `donacionIndependienteId`, `necesidadId` y `cantidadAsignada`).
+*   **Componentes Internos**: `PosibleFragmentacion` (Entidad interna que vincula `donacionOriginalId` y `cantidadNecesaria`).
 *   **Responsabilidad**: Almacenar temporalmente las propuestas calculadas antes de su confirmación y ejecución transaccional en el inventario.
 *   **Paquete**: `grupo5.donaciones.models.entities.propuestas`
 
@@ -84,10 +83,10 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 
 ## 3. Catálogo de Bienes y Normalización
 
-### 3.1. Paquetes: `grupo5.donaciones.models.entities.categorias` y `entities.donaciones`
-*   **Bien**: Objeto de valor (descripción, foto, vencimiento) utilizado por los agregados de Donación y Donación Independiente.
-*   **ItemDonacionNormalizado**: Entidad que asocia descripciones libres de donantes con su subcategoría formal homologada.
-*   **Categoria**: Raíz del catálogo de referencia que define si una categoría requiere fecha de vencimiento (perecedero) o control de estado de uso.
+### 3.1. Paquetes: `grupo5.donaciones.models.entities.categorias`, `itemsNormalizados` y `donaciones`
+*   **Bien**: Objeto de valor (descripción, foto, vencimiento) en `grupo5.donaciones.models.entities.donaciones`, utilizado por Donación y Donación Independiente.
+*   **ItemDonacionNormalizado** y **BienNormalizado**: Entidad y objeto de valor en `grupo5.donaciones.models.entities.itemsNormalizados` que asocian descripciones libres de donantes con su subcategoría formal homologada.
+*   **Categoria**: Raíz del catálogo de referencia en `grupo5.donaciones.models.entities.categorias` que define si una categoría requiere fecha de vencimiento (perecedero) o control de estado de uso.
 *   **Subcategoria**: Entidad del catálogo con sus alias semánticos (`AliasSubcategoria`).
 *   **Unidad**: Enum (KILOGRAMOS, LITROS, UNIDADES, etc.).
 

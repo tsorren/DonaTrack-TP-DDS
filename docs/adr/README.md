@@ -1,7 +1,7 @@
 # ADR Governance — DonaTrack
 
 > Fuente canónica de política de decisiones arquitectónicas.  
-> Referenciada desde [`AGENTS.md §9`](/AGENTS.md).
+> Referenciada desde [`AGENTS.md §9`](../../AGENTS.md).
 
 ---
 

@@ -21,7 +21,7 @@ Al desplegar la aplicación en un entorno de alta disponibilidad con **múltiple
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Oleada 10 de Persistencia en `incentivos-service` ([decisiones_futuras_en_oleada_10.md](../arquitectura/diseno/incentivos/decisiones_futuras_en_oleada_10.md) §12).
+* **Oleadas de Origen:** Oleada 10 de Persistencia en `incentivos-service` ([decisiones_futuras_en_oleada_10.md](../../arquitectura/diseno/incentivos/decisiones_futuras_en_oleada_10.md) §12).
 * **Hallazgo:** En la auditoría de concurrencia se evidenció que la anotación `@Scheduled` nativa de Spring no tiene noción de clúster. Se seleccionó la librería **ShedLock** coordinada sobre la tabla relacional de PostgreSQL.
 
 ## Alternativas Consideradas

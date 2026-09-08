@@ -17,7 +17,7 @@ Uno de los principios inviolables de Domain-Driven Design (DDD) establece que **
 
 ## Origen y Lecciones de las Oleadas de Refactor
 
-* **Oleadas de Origen:** Registrado en [docs/adr/DEUDA_TECNICA.md](../DEUDA_TECNICA.md) como **DTI-06**; Modelo de Agregados DDD ([aggregates-donaciones.md](../arquitectura/aggregates-donaciones.md) §2.6).
+* **Oleadas de Origen:** Registrado en [docs/adr/DEUDA_TECNICA.md](../DEUDA_TECNICA.md) como **DTI-06**; Modelo de Agregados DDD ([aggregates-donaciones.md](../../arquitectura/aggregates-donaciones.md) §2.6).
 * **Hallazgo:** Durante la auditoría de DDD de `donaciones-service`, se constató que mientras `DonacionIndependiente` sí referencia correctamente a `necesidadId` por UUID, `NecesidadExtraordinaria` rompe la simetría conteniendo objetos directos de `DonacionIndependiente`.
 
 ## Alternativas Consideradas

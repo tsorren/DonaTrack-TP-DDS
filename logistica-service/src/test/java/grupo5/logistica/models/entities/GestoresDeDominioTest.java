@@ -12,12 +12,7 @@ import grupo5.logistica.models.entities.camiones.GestorDeCamiones;
 import grupo5.logistica.models.entities.camiones.SolicitudNuevoCamion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
-import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
-import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.entregas.EstadoEntrega;
-import grupo5.logistica.models.entities.entregas.GestorDeEntregas;
-import grupo5.logistica.models.entities.entregas.NoRecepcion;
-import grupo5.logistica.models.entities.entregas.RegresoDeposito;
+import grupo5.logistica.models.entities.entregas.*;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.GestorDeRutas;
 import grupo5.logistica.models.entities.rutas.Ruta;
@@ -106,6 +101,9 @@ class GestoresDeDominioTest {
 
     GestorDeEntregas.cambiarEstado(
         new NoRecepcion(entrega, "beneficiaria", "domicilio cerrado", true));
+    assertEquals(EstadoEntrega.NO_RECIBIDA, entrega.getEstadoActual());
+
+    GestorDeEntregas.cambiarEstado(new RevisionEntrega(entrega, "administrador"));
     assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
 
     GestorDeEntregas.cambiarEstado(new RegresoDeposito(entrega, "administrador"));
@@ -155,14 +153,17 @@ class GestoresDeDominioTest {
   void gestorDeRutasCoordinaRutaCamionYChoferConElContratoMinimo() {
     Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
     Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
     Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
-    ruta.agregarEntrega(UUID.randomUUID());
 
-    GestorDeRutas.iniciarRuta(ruta, camion, chofer);
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
 
     assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
     assertEquals(ruta.getId(), camion.getRutaId());
     assertEquals(ruta.getId(), chofer.getRutaId());
+    assertEquals(EstadoEntrega.EN_TRASLADO, entrega.getEstadoActual());
   }
 
   private static Entrega crearEntrega() {
@@ -171,5 +172,115 @@ class GestoresDeDominioTest {
     Localidad localidad = new Localidad("CABA", provincia);
     Direccion direccion = new Direccion("Calle", 123, null, null, "1000", localidad);
     return new Entrega(UUID.randomUUID(), UUID.randomUUID(), direccion, 10f, 2f);
+  }
+
+  @Test
+  void gestorDeRutasNoCompletaRutaSiHayEntregasEnTraslado() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
+
+    List<Entrega> entregas = List.of(entrega);
+
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeRutas.completarRuta(ruta, camion, chofer, entregas));
+
+    assertEquals(EstadoRuta.EN_TRASLADO, ruta.getEstado());
+  }
+
+  @Test
+  void gestorDeRutasCompletaRutaCuandoTodasLasEntregasEstanResueltas() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
+
+    // Resolvemos la entrega pasándola a ENTREGADA
+    entrega.confirmarEntrega("Comedor");
+
+    GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega));
+
+    assertEquals(EstadoRuta.COMPLETADA, ruta.getEstado());
+    assertEquals(EstadoCamion.DISPONIBLE, camion.getEstado());
+    assertEquals(EstadoChofer.DISPONIBLE, chofer.getEstado());
+    assertNull(camion.getRutaId());
+    assertNull(chofer.getRutaId());
+  }
+
+  @Test
+  void gestorDeRutasCompletaRutaIndependientementeDelOrdenDeLasEntregas() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega1 = crearEntrega();
+    Entrega entrega2 = crearEntrega();
+
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    GestorDeRutas.agregarEntrega(ruta, entrega1);
+    GestorDeRutas.agregarEntrega(ruta, entrega2);
+    GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega1, entrega2), "Ada Lovelace");
+
+    entrega1.confirmarEntrega("Comedor 1");
+    entrega2.confirmarEntrega("Comedor 2");
+
+    GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega2, entrega1));
+
+    assertEquals(EstadoRuta.COMPLETADA, ruta.getEstado());
+  }
+
+  @Test
+  void gestorDeRutasCompletaRutaCuandoEntregaFueReplanificadaEnOtraRuta() {
+    Camion camion1 = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer1 = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Entrega entrega = crearEntrega();
+
+    Ruta ruta1 = new Ruta(LocalDate.now(), chofer1.getId(), camion1.getId());
+    GestorDeRutas.agregarEntrega(ruta1, entrega);
+    GestorDeRutas.iniciarRuta(ruta1, camion1, chofer1, List.of(entrega), "Ada");
+    entrega.negarEntrega("Chofer", "Destinatario ausente", true);
+    entrega.mandarARevision("Admin");
+    entrega.regresarAlDeposito("Admin");
+    Camion camion2 = new Camion("AF999ZZ", 20f, 5000f, 3f);
+    Chofer chofer2 = new Chofer("Grace", "Hopper", "LIC-2", "2222");
+    Ruta ruta2 = new Ruta(LocalDate.now(), chofer2.getId(), camion2.getId());
+    GestorDeRutas.agregarEntrega(ruta2, entrega);
+    GestorDeRutas.iniciarRuta(ruta2, camion2, chofer2, List.of(entrega), "Grace");
+    GestorDeRutas.completarRuta(ruta1, camion1, chofer1, List.of(entrega));
+    assertEquals(EstadoRuta.COMPLETADA, ruta1.getEstado());
+    assertEquals(EstadoCamion.DISPONIBLE, camion1.getEstado());
+    assertEquals(EstadoChofer.DISPONIBLE, chofer1.getEstado());
+  }
+
+  @Test
+  void gestorDeRutasLanzaExcepcionSiListaDeEntregasContieneElementoNulo() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    Entrega entrega = crearEntrega();
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    List<Entrega> listaConNulo = new java.util.ArrayList<>();
+    listaConNulo.add(null);
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeRutas.iniciarRuta(ruta, camion, chofer, listaConNulo, "Ada"));
+  }
+
+  @Test
+  void gestorDeRutasLanzaExcepcionSiCardinalidadDeEntregasNoCoincide() {
+    Camion camion = new Camion("AB123CD", 20f, 5000f, 3f);
+    Chofer chofer = new Chofer("Ada", "Lovelace", "LIC-1", "1111");
+    Ruta ruta = new Ruta(LocalDate.now(), chofer.getId(), camion.getId());
+    Entrega entrega = crearEntrega();
+    GestorDeRutas.agregarEntrega(ruta, entrega);
+    Entrega entregaExtra = crearEntrega();
+    List<Entrega> entregas = List.of(entrega, entregaExtra);
+    assertThrows(
+        ValidationException.class,
+        () -> GestorDeRutas.iniciarRuta(ruta, camion, chofer, entregas, "Ada"));
   }
 }

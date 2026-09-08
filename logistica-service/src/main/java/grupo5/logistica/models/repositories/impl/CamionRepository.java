@@ -3,6 +3,7 @@ package grupo5.logistica.models.repositories.impl;
 import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.ValidadorPatentes;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import java.util.List;
 import java.util.Optional;
@@ -18,11 +19,11 @@ public class CamionRepository extends CrudRepositoryEnMemoria<Camion> implements
 
   @Override
   public Optional<Camion> findByPatente(String patente) {
-    if (patente == null) {
+    if (patente == null || patente.isBlank()) {
       return Optional.empty();
     }
 
-    String patenteNormalizada = patente.trim();
+    String patenteNormalizada = ValidadorPatentes.normalizar(patente);
     return storage.values().stream()
         .filter(camion -> camion.getPatente().equalsIgnoreCase(patenteNormalizada))
         .findFirst();

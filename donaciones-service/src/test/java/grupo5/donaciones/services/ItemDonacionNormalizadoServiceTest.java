@@ -24,14 +24,15 @@ import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.ItemDonacionNormalizadoService;
+import grupo5.donaciones.services.mappers.CategoriaMapper;
 import grupo5.donaciones.services.mappers.ItemDonacionNormalizadoMapper;
+import grupo5.donaciones.services.mappers.SubcategoriaMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -43,10 +44,10 @@ class ItemDonacionNormalizadoServiceTest {
   @Mock private IDonacionesRepository donacionRepository;
   @Mock private ISubcategoriasRepository subcategoriasRepository;
   @Mock private ICategoriasRepository categoriasRepository;
-  @Mock private ItemDonacionNormalizadoMapper mapper;
   @Mock private ApplicationEventPublisher eventPublisher;
 
-  @InjectMocks private ItemDonacionNormalizadoService service;
+  private ItemDonacionNormalizadoMapper mapper;
+  private ItemDonacionNormalizadoService service;
 
   private Donacion donacion;
   private Subcategoria subcategoria;
@@ -54,6 +55,18 @@ class ItemDonacionNormalizadoServiceTest {
 
   @BeforeEach
   void setUp() {
+    SubcategoriaMapper subcategoriaMapper =
+        new SubcategoriaMapper(new CategoriaMapper(), categoriasRepository);
+    mapper = new ItemDonacionNormalizadoMapper(subcategoriaMapper, subcategoriasRepository);
+    service =
+        new ItemDonacionNormalizadoService(
+            itemNormalizadoRepository,
+            donacionRepository,
+            subcategoriasRepository,
+            categoriasRepository,
+            mapper,
+            eventPublisher);
+
     Humana humana =
         new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, java.time.Month.MAY, 15));
     Donante donante = new Donante(humana.getId());
@@ -78,22 +91,14 @@ class ItemDonacionNormalizadoServiceTest {
   @Test
   void obtenerPendientes_deberiaRetornarSoloItemsPendientes() {
     when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
-    ItemDonacionNormalizadoOutputDTO outputDTO =
-        new ItemDonacionNormalizadoOutputDTO(
-            itemNormalizado.getId(),
-            donacion.getId(),
-            "Paquete de arroz",
-            10,
-            null,
-            0.4,
-            EstadoNormalizacion.PENDIENTE_REVISION,
-            false);
-    when(mapper.toOutputDTO(itemNormalizado)).thenReturn(outputDTO);
+    when(subcategoriasRepository.findById(subcategoria.getId()))
+        .thenReturn(Optional.of(subcategoria));
 
     List<ItemDonacionNormalizadoOutputDTO> result = service.obtenerPendientes();
 
     assertEquals(1, result.size());
     assertEquals(EstadoNormalizacion.PENDIENTE_REVISION, result.getFirst().estadoNormalizacion());
+    assertEquals("Paquete de arroz", result.getFirst().descripcionBienOriginal());
   }
 
   @Test

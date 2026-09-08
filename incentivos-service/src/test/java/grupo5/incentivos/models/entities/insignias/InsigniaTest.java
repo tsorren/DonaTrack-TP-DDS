@@ -57,20 +57,17 @@ class InsigniaTest {
   }
 
   @Test
-  void insigniaGanada_ocultadaYVisible_deberianEvolucionarInmutablemente() {
+  void insigniaGanada_conVisibilidad_deberiaEvolucionarInmutablemente() {
     LocalDate fecha = LocalDate.of(2026, Month.JUNE, 1);
     InsigniaGanada visible = new InsigniaGanada("Racha", "desc", "/img.png", true, fecha);
-    InsigniaGanada ocultada = visible.ocultada();
 
-    assertFalse(ocultada.visible());
+    InsigniaGanada oculta = visible.conVisibilidad(false);
+    assertFalse(oculta.visible());
     assertTrue(visible.visible());
-    assertEquals(visible.nombre(), ocultada.nombre());
-    assertEquals(visible.fechaObtenida(), ocultada.fechaObtenida());
+    assertEquals(visible.nombre(), oculta.nombre());
+    assertEquals(visible.fechaObtenida(), oculta.fechaObtenida());
 
-    InsigniaGanada revivida = ocultada.mostrada();
-    assertTrue(revivida.visible());
-
-    InsigniaGanada toggle = visible.conVisibilidad(false);
-    assertFalse(toggle.visible());
+    InsigniaGanada revisible = oculta.conVisibilidad(true);
+    assertTrue(revisible.visible());
   }
 }

@@ -27,4 +27,11 @@ public interface IRankingController {
               regexp = "^\\d{4}-(0[1-9]|1[0-2])$",
               message = "El periodo debe tener formato YYYY-MM")
           String periodo);
+
+  ResponseEntity<RankingMensualDTO> obtenerRankingPorPeriodo(
+      @PathVariable
+          @Pattern(
+              regexp = "^\\d{4}-(0[1-9]|1[0-2])$",
+              message = "El periodo debe tener formato YYYY-MM")
+          String periodo);
 }
