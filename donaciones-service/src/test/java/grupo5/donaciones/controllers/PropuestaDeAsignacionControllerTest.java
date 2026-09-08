@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
+import grupo5.common.CommonLibAutoConfiguration;
+import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.donaciones.controllers.impl.PropuestaDeAsignacionController;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
@@ -17,31 +17,23 @@ import grupo5.donaciones.services.IPropuestaDeAsignacionService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+@WebMvcTest(PropuestaDeAsignacionController.class)
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
 class PropuestaDeAsignacionControllerTest {
 
-  private MockMvc mockMvc;
-  private IPropuestaDeAsignacionService serviceMock;
-  private ObjectMapper objectMapper;
+  @Autowired private MockMvc mockMvc;
 
-  @BeforeEach
-  void setUp() {
-    serviceMock = mock(IPropuestaDeAsignacionService.class);
-    objectMapper = new ObjectMapper();
-    objectMapper.findAndRegisterModules();
+  @MockitoBean private IPropuestaDeAsignacionService serviceMock;
 
-    PropuestaDeAsignacionController controller = new PropuestaDeAsignacionController(serviceMock);
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
   @Test
   void ejecutar_deberiaRetornar201YPropuestasGeneradas() throws Exception {

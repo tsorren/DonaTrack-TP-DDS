@@ -10,8 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
+import grupo5.common.CommonLibAutoConfiguration;
+import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.donaciones.controllers.impl.DonantesController;
 import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
@@ -27,37 +27,24 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(DonantesController.class)
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
 class DonantesControllerTest {
 
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @Mock private IDonantesService donantesService;
-  @Mock private IArchivoDonantesService archivoDonantesService;
+  @MockitoBean private IDonantesService donantesService;
+  @MockitoBean private IArchivoDonantesService archivoDonantesService;
 
-  @InjectMocks private DonantesController controller;
-
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-    objectMapper = new ObjectMapper();
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void crearDonante_DeberiaRetornarCreatedYDto() throws Exception {
