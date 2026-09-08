@@ -13,13 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.CommonLibAutoConfiguration;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.logistica.controllers.impl.CamionesController;
-import grupo5.logistica.controllers.impl.ChoferesController;
-import grupo5.logistica.controllers.impl.EntregasController;
-import grupo5.logistica.controllers.impl.PlanificacionController;
-import grupo5.logistica.controllers.impl.RutasController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionResponseDTO;
@@ -29,48 +22,23 @@ import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
 import grupo5.logistica.dto.rutas.RutaResponseDTO;
-import grupo5.logistica.services.ICamionesService;
-import grupo5.logistica.services.IChoferesService;
-import grupo5.logistica.services.IEntregasService;
-import grupo5.logistica.services.IPlanificacionService;
-import grupo5.logistica.services.IRutasService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Tests de integración HTTP: verifica que @Valid + GlobalExceptionHandler producen los códigos de
  * estado correctos (201, 204, 400, 404) con el pipe de Bean Validation activo.
  */
-@WebMvcTest({
-  CamionesController.class,
-  ChoferesController.class,
-  EntregasController.class,
-  RutasController.class,
-  PlanificacionController.class
-})
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class ValidacionHttpTest {
-
-  @Autowired private MockMvc mockMvc;
+class ValidacionHttpTest extends AbstractLogisticaWebMvcTest {
 
   private MockMvc camionMvc;
   private MockMvc choferMvc;
   private MockMvc entregaMvc;
   private MockMvc rutaMvc;
   private MockMvc planificacionMvc;
-
-  @MockitoBean private ICamionesService camionesService;
-  @MockitoBean private IChoferesService choferesService;
-  @MockitoBean private IEntregasService entregasService;
-  @MockitoBean private IRutasService rutasService;
-  @MockitoBean private IPlanificacionService planificacionService;
 
   private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 

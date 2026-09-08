@@ -156,3 +156,18 @@ Para asegurar que los docentes y evaluadores no perciban cambios en la forma de 
 | **R2: Estaciones de trabajo de estudiantes sin Docker** | Media | Alta | Mitigado por diseño con `@DisabledIfDockerUnavailable`: los unitarios y controllers corren siempre; solo los slices de persistencia se saltean reportando `[DEFERRED_NO_DOCKER]`. |
 | **R3: Divergencia entre OpenAPI y endpoints vivos** | Media | Alta | El validador `swagger-request-validator` en `ContractIT` detecta la discrepancia inmediatamente en el PR, bloqueando el merge hasta que se actualice la spec en `docs/`. |
 | **R4: Fallas espurias en k6 por recursos de CI** | Baja | Media | Los thresholds de k6 en CI se calibran de forma conservadora (`p(95) < 800ms`) considerando las 2 vCPUs de GitHub Actions, dejando umbrales más estrictos para entornos locales. |
+
+---
+
+## 5. Evolución Continua y Backlog para Siguientes Iteraciones
+
+Con la culminación exitosa de las Fases 1, 2, 3A y 4, la infraestructura de testing de **DonaTrack** ha alcanzado el nivel de madurez objetivo para la entrega actual (**ENTREGA_4**).
+
+Los ítems diferidos (Subfase 3B) y las brechas detectadas durante la auditoría final están formalmente catalogados y priorizados en:
+* **[Diagnóstico de Cobertura Crítica Faltante y Backlog de QA](06-cobertura-critica-qa-backlog.md)**
+  - `QA-GAP-01`: Validación de Schemas, Deduplicación e Idempotencia en RabbitMQ.
+  - `QA-GAP-02`: Extensión de `@DataJpaTest` con `@ServiceConnection` a `donaciones`, `logistica` e `incentivos`.
+  - `QA-GAP-03`: Stubs WireMock para fallos y resiliencia en comunicación Feign sincrónica.
+  - `QA-GAP-04`: Pruebas de contención y concurrencia multihilo en asignación de recursos logísticos.
+  - `QA-GAP-05`: Caminos negativos y flujos de compensación distribuida en E2E (`DistributedFailureRecoveryE2EIT`).
+

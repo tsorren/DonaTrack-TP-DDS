@@ -9,33 +9,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.logistica.controllers.impl.PlanificacionController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
-import grupo5.logistica.services.IPlanificacionService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(PlanificacionController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class PlanificacionControllerTest {
+class PlanificacionControllerTest extends AbstractLogisticaWebMvcTest {
 
-  @Autowired private MockMvc mockMvc;
   private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-
-  @MockitoBean private IPlanificacionService planificacionService;
 
   private static final UUID SOLICITUD_ID = UUID.randomUUID();
   private static final SolicitudPlanificacionResponseDTO RESPONSE_DTO =

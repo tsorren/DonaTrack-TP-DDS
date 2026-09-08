@@ -117,7 +117,6 @@
                         <excludes>
                             <exclude>**/DonacionesServiceApplicationTest.java</exclude>
                             <exclude>**/IncentivosServiceApplicationTest.java</exclude>
-                            <exclude>**/PlanificacionManualFlowIntegrationTest.java</exclude>
                             <exclude>**/RepositoriosJpaTest.java</exclude>
                         </excludes>
                     </configuration>

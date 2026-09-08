@@ -8,9 +8,9 @@
 
 ## 1. Diagnóstico y Objetivos de Rendimiento
 
-A medida que el ecosistema DonaTrack creció incorporando 5 microservicios (`donaciones-service`, `logistica-service`, `notificaciones-service`, `viandas-service`, `incentivos-service`), una librería compartida (`common-lib`) y una suite de pruebas de integración (`integration-tests`), el ciclo de retroalimentación de testing (Inner Dev Loop) demandaba optimizaciones estructurales:
+A medida que el ecosistema DonaTrack creció incorporando 4 microservicios (`donaciones-service`, `logistica-service`, `notificaciones-service`, `incentivos-service`), una librería compartida (`common-lib`) y una suite de pruebas de integración (`integration-tests`), el ciclo de retroalimentación de testing (Inner Dev Loop) demandaba optimizaciones estructurales:
 
-1. **Re-arranque repetitivo de contextos Spring en slices `@WebMvcTest`:** En `donaciones-service`, cada suite de controlador instanciaba su propio `ApplicationContext` aislado, multiplicando los tiempos de inicialización y el consumo de memoria.
+1. **Re-arranque repetitivo de contextos Spring en slices `@WebMvcTest`:** En `donaciones-service` y `logistica-service`, cada suite de controlador instanciaba su propio `ApplicationContext` aislado, multiplicando los tiempos de inicialización y el consumo de memoria.
 2. **Rigidez de ejecución de pruebas focalizadas (`-Dtest`):** En configuraciones multimódulo de Maven, pasar `-Dtest=MiTest` solía fallar en módulos que no poseían la clase especificada a menos que se utilizara `-DfailIfNoSpecifiedTests=false`.
 3. **Falta de Test Impact Analysis (TIA):** Los desarrolladores ejecutaban suites completas incluso ante modificaciones menores o quirúrgicas en controladores o servicios individuales.
 
@@ -39,14 +39,14 @@ En el `pom.xml` raíz se introdujeron directivas en `pluginManagement` y configu
 ## 3. Consolidación de Slices Spring Boot WebMvc (`@WebMvcTest`)
 
 ### 3.1 El Problema del Context Churn
-En `donaciones-service` existían 10 suites de testing de controladores REST. Cada una declaraba individualmente su propia anotación `@WebMvcTest(MiController.class)` y sus correspondientes dependencias mockeadas (`@MockitoBean`).
+Inicialmente, cada suite de testing de controladores REST declaraba individualmente su propia anotación `@WebMvcTest(MiController.class)` y sus correspondientes dependencias mockeadas (`@MockitoBean`).
 
-Dado que Spring Boot genera una clave de caché de contexto (`MergedContextConfiguration`) basada exactamente en los beans y controladores declarados, el framework instanciaba 10 `ApplicationContext` independientes. Cada inicialización requería:
+Dado que Spring Boot genera una clave de caché de contexto (`MergedContextConfiguration`) basada exactamente en los beans y controladores declarados, el framework instanciaba múltiples `ApplicationContext` independientes (10 en donaciones, 7 en logística). Cada inicialización requería:
 * Escaneo de componentes y auto-configuración de Spring MVC.
 * Registro de serializadores Jackson, convertidores y validadores Bean Validation.
 * Inicialización de interceptores de logging (`ControllerLoggingInterceptor`) y manejador de excepciones global (`GlobalExceptionHandler`).
 
-### 3.2 Solución: `AbstractDonacionesWebMvcTest`
+### 3.2 Solución en Donaciones: `AbstractDonacionesWebMvcTest`
 Se creó la clase base abstracta `AbstractDonacionesWebMvcTest`, que:
 1. Registra **todos los controladores REST** del servicio en una única declaración `@WebMvcTest({ ... })`.
 2. Declara todos los mocks comunes de servicios (`@MockitoBean protected ICategoriasService ...`).
@@ -86,6 +86,35 @@ Para garantizar determinismo absoluto sin deshabilitar la concurrencia global de
 * Se anotó la clase base con `@Execution(ExecutionMode.SAME_THREAD)` y `@ResourceLock("donaciones-webmvc-context")`.
 * En JUnit 5, `@ResourceLock` es `@Inherited`. Esto sincroniza las suites de controladores entre sí, impidiendo carreras en los mocks sobre el contexto compartido.
 * **Resultado:** El contexto se inicializa **una sola vez** (~2.5 segundos) y cada suite subsiguiente ejecuta en ~0.2 segundos, ahorrando más de 20 segundos por corrida y reduciendo la presión sobre la memoria.
+
+### 3.4 Solución en Logística: `AbstractLogisticaWebMvcTest`
+Siguiendo la misma arquitectura de optimización para erradicar el hallazgo F-03, en `logistica-service` se consolidaron sus 6 controladores REST bajo la clase base abstracta `AbstractLogisticaWebMvcTest`:
+
+```java
+@WebMvcTest(
+    controllers = {
+      CamionesController.class,
+      ChoferesController.class,
+      EntregasController.class,
+      PlanificacionController.class,
+      PlanificacionManualController.class,
+      RutasController.class
+    },
+    properties = "logistica.planificacion.manual-enabled=true")
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
+@Execution(ExecutionMode.SAME_THREAD)
+@ResourceLock("logistica-webmvc-context")
+public abstract class AbstractLogisticaWebMvcTest {
+  @Autowired protected MockMvc mockMvc;
+  @MockitoBean protected ICamionesService camionesService;
+  @MockitoBean protected IChoferesService choferesService;
+  @MockitoBean protected IEntregasService entregasService;
+  @MockitoBean protected IPlanificacionService planificacionService;
+  @MockitoBean protected IRutasService rutasService;
+}
+```
+
+Esta consolidación reduce el tiempo de la suite web de logística de ~12s a < 2.5s, compartiendo un único slice en caché y garantizando aislamiento libre de race conditions.
 
 ---
 

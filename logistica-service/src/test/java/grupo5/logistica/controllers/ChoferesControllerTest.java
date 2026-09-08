@@ -11,35 +11,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.logging.LoggingAutoConfiguration;
-import grupo5.logistica.controllers.impl.ChoferesController;
 import grupo5.logistica.dto.choferes.CambioEstadoChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferResponseDTO;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
-import grupo5.logistica.services.IChoferesService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(ChoferesController.class)
-@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
-class ChoferesControllerTest {
+class ChoferesControllerTest extends AbstractLogisticaWebMvcTest {
 
-  @Autowired private MockMvc mockMvc;
   private final ObjectMapper objectMapper = new ObjectMapper();
-
-  @MockitoBean private IChoferesService choferesService;
 
   private static final UUID ID = UUID.randomUUID();
 

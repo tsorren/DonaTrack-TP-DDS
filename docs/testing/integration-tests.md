@@ -78,8 +78,8 @@ Cada microservicio cuenta con un cliente dedicado en `grupo5.tests.client.*` que
 * **Métodos `*Ok`**: Ejecutan la petición, validan el status code esperado (`201 Created` / `200 OK`) y extraen directamente el identificador `UUID` o DTO correspondiente.
 * **Métodos `Response`**: Retornan el objeto `io.restassured.response.Response` para pruebas de contrato o casos negativos (validación de status codes de error 400, 404, etc.).
 
-### B. Test Data Builders Locales
-En lugar de mutar JSONs no tipados (`Map<String, Object>`), los payloads se construyen mediante constructores fluidos e inmutables:
+### B. Test Data Builders Locales (Erradicación de Fixtures Huérfanos F-08)
+En lugar de depender de fixtures JSON estáticos externos (los cuales fueron depurados y erradicados de `src/test/resources/fixtures/` al constituir código muerto no referenciado, resolviendo el hallazgo F-08), los payloads se construyen mediante constructores fluidos e inmutables:
 ```java
 PersonaTestDTO persona = PersonaTestDataBuilder.humana()
     .conNombre("Carlos")

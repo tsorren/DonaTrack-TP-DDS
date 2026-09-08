@@ -37,7 +37,7 @@ import org.springframework.web.context.WebApplicationContext;
       "logistica.planificacion.manual-enabled=true",
       "logistica.planificacion.cron.expression=0 0 0 1 1 *"
     })
-class PlanificacionManualFlowIntegrationTest {
+class PlanificacionManualFlowIntegrationIT {
 
   @Autowired private WebApplicationContext context;
   @Autowired private IPlanificacionService planificacionService;

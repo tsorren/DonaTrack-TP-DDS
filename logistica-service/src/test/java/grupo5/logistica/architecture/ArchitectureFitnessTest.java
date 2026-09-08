@@ -68,8 +68,6 @@ class ArchitectureFitnessTest {
     noClasses()
         .that()
         .haveSimpleNameEndingWith("Test")
-        .and()
-        .doNotHaveSimpleName("PlanificacionManualFlowIntegrationTest")
         .should()
         .beAnnotatedWith(SpringBootTest.class)
         .check(testClasses);

@@ -68,7 +68,7 @@ class PlanificacionServiceTest {
     entregasRepository = mock(IEntregasRepository.class);
     camionesRepository = mock(ICamionRepository.class);
     choferesRepository = mock(IChoferesRepository.class);
-    solicitudMapper = mock(SolicitudPlanificacionMapper.class);
+    solicitudMapper = new SolicitudPlanificacionMapper();
     comunicadorEventos = mock(ComunicadorEventosLogistica.class);
     planificadorExterno = mock(IServicioExternoPlanificacion.class);
     service =
@@ -181,14 +181,12 @@ class PlanificacionServiceTest {
                     List.of(entrega.getId()))),
             "OK",
             null);
-    SolicitudPlanificacionResponseDTO response = mock(SolicitudPlanificacionResponseDTO.class);
     when(solicitudesRepository.findById(solicitudId)).thenReturn(Optional.of(seguimiento));
     when(camionesRepository.findById(camion.getId())).thenReturn(Optional.of(camion));
     when(choferesRepository.findById(chofer.getId())).thenReturn(Optional.of(chofer));
     when(entregasRepository.findById(entrega.getId())).thenReturn(Optional.of(entrega));
     when(solicitudesRepository.save(any(SolicitudPlanificacion.class)))
         .thenAnswer(invocacion -> invocacion.getArgument(0));
-    when(solicitudMapper.toResponseDTO(seguimiento)).thenReturn(response);
 
     SolicitudPlanificacionResponseDTO resultado = service.procesarCallback(callback);
 
@@ -202,7 +200,8 @@ class PlanificacionServiceTest {
     assertEquals(entrega.getId(), eventoCaptor.getValue().getEntregaId());
     assertEquals(0, rutaCaptor.getValue().getDomainEvents().size());
     assertEquals(rutaCaptor.getValue().getId(), entrega.getIdRuta());
-    assertEquals(response, resultado);
+    assertNotNull(resultado);
+    assertEquals(solicitudId, resultado.id());
   }
 
   @Test
@@ -213,16 +212,15 @@ class PlanificacionServiceTest {
     procesada.procesarResultados(List.of(UUID.randomUUID()));
     CallbackPlanificacionRequestDTO callback =
         new CallbackPlanificacionRequestDTO(solicitudId, List.of(), "OK", null);
-    SolicitudPlanificacionResponseDTO response = mock(SolicitudPlanificacionResponseDTO.class);
     when(solicitudesRepository.findById(solicitudId)).thenReturn(Optional.of(procesada));
-    when(solicitudMapper.toResponseDTO(procesada)).thenReturn(response);
 
     SolicitudPlanificacionResponseDTO resultado = service.procesarCallback(callback);
 
     verify(rutasRepository, never()).save(any());
     verify(entregasRepository, never()).save(any());
     verify(comunicadorEventos, never()).comunicarRutaAsignada(any(), any());
-    assertEquals(response, resultado);
+    assertNotNull(resultado);
+    assertEquals(solicitudId, resultado.id());
   }
 
   private static Entrega crearEntrega() {
