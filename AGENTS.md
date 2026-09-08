@@ -2,7 +2,7 @@
 
 > **DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones**
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Versión:** 6.3.0 (Oleada 9 — §11.4 Arranque Local Rápido: punto de entrada único para levantar entorno y establecer baseline)
+> **Versión:** 6.4.0 (Oleada 9 — §11.4 Arranque Local Rápido: comandos de testing acelerado, TIA y testing unitario y modular)
 > **Ámbito:** Obligatorio e inmutable para agentes de IA y desarrolladores.
 
 ---
@@ -308,13 +308,15 @@ Sin Docker accesible: completar Gate 1 y Gate 2 con Maven nativo. No declarar Ga
 
 ### 11.4 Arranque Local Rápido
 
-Referencia concentrada para levantar el entorno o establecer baseline (§7.2/§7.3) sin buscar entre secciones. Estos son los comandos canónicos; variantes y flags adicionales en [`docs/testing/integration-tests.md`](docs/testing/integration-tests.md).
+Referencia concentrada para levantar el entorno, acelerar corridas locales o establecer baseline (§7.2/§7.3) sin buscar entre secciones. Estos son los comandos canónicos; variantes, optimizaciones TIA y flags adicionales en [`docs/testing/integration-tests.md`](docs/testing/integration-tests.md) y [`docs/testing/testing-performance.md`](docs/testing/testing-performance.md).
 
 | Objetivo | Comando |
 |---|---|
 | Levantar stack completo (Docker) | `./run-preprod-tests-stay.sh` |
+| Test Impact Analysis (TIA local) | `./scripts/test-changed.ps1 -Fast` *(PowerShell)*<br>`./scripts/test-changed.sh --fast` *(Bash)* |
 | Test unitario puntual | `mvn test -pl <modulo> -Dtest=<Test>` |
-| Formatear / verificar estilo | `mvn spotless:check` |
+| Test unitario rápido (sin spotless) | `mvn test -pl <modulo> -Dtest=<Test> -Dspotless.check.skip=true` |
+| Formatear / verificar estilo | `mvn spotless:check` / `mvn spotless:apply` |
 | Módulo + dependencias | `mvn clean test -pl <modulo> -am` |
 
 > **Justificación:** Los comandos existían en §11.1/§11.2 pero dispersos. Un agente o dev nuevo sin esta referencia tiende a inventar variantes incorrectas o a omitir el baseline requerido por §7.3, invalidando el checklist de cierre (§12). Concentrarlos aquí reduce esa clase de error sin duplicar contenido normativo.

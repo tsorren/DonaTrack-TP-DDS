@@ -160,7 +160,7 @@ La arquitectura y el diseño de software de DonaTrack combinan las mejores prác
 ┌───────────────────────────────┬───────────────────────────────┬─────────────────────────────────────────────────┐
 │ Patrón GoF                    │ Tipo                          │ Componente / Clase en DonaTrack                 │
 ├───────────────────────────────┼───────────────────────────────┼─────────────────────────────────────────────────┤
-│ State Pattern                 │ Comportamiento                │ EstadoDonacionIndependiente / EstadoEntrega     │
+│ State Pattern                 │ Comportamiento                │ EstadoDonacionIndependiente                     │
 │ Strategy Pattern              │ Comportamiento                │ AlgoritmoAsignacion / AsignadorPorDimension     │
 │ Template Method               │ Comportamiento                │ AlgoritmoAsignacion / Mision / Segmentador      │
 │ Observer / Domain Events      │ Comportamiento                │ LogisticaEventListener / AMQP RabbitMQ          │
@@ -171,7 +171,7 @@ La arquitectura y el diseño de software de DonaTrack combinan las mejores prác
 ```
 
 ### Detalle de Implementación:
-* **State Pattern (`EstadoDonacionIndependiente.java`):** Encapsula los 7 estados de una donación independiente (`EnDeposito`, `AsignacionRealizada`, `ListaParaEntregar`, `EnTraslado`, `Entregada`, `EntregaFallida`, `Vencida`). Cada clase estado implementa las transiciones válidas y rechaza transiciones ilegales con `BusinessStateException`, evitando condicionales anidados (`if-else`/`switch`) en el modelo.
+* **State Pattern (`EstadoDonacionIndependiente.java`):** Encapsula los 7 estados de una donación independiente (`EnDeposito`, `AsignacionRealizada`, `ListaParaEntregar`, `EnTraslado`, `Entregada`, `EntregaFallida`, `Vencida`) bajo el patrón GoF State con clases polimórficas concretas que implementan transiciones válidas y rechazan transiciones ilegales con `BusinessStateException`. *(Nota: `EstadoEntrega` y `EstadoCamion` en logística modelan máquinas de estado con guardas encapsuladas dentro del Aggregate Root utilizando Enums)*.
 * **Template Method (`AlgoritmoAsignacion.java`):** Define el esqueleto del algoritmo de matching en el método `ejecutar(...)`: (1) Ordenar necesidades, (2) Filtrar donaciones compatibles mediante el método primitivo abstracto `filtrarDonaciones(...)`, (3) Construir propuestas y registrar reservas de stock.
 * **Strategy Pattern (`AlgoritmoAsignacion`):** Permite intercambiar la estrategia de matching (`AlgoritmoCompatibilidadSemantica`, `AlgoritmoPrioridadSubAtendidos`) en tiempo de ejecución según la necesidad del planificador.
 * **Observer / Event-Driven (`LogisticaEventListener`):** Desacopla la finalización de una entrega en `logistica-service` de la actualización del estado de la donación en `donaciones-service` vía eventos AMQP.

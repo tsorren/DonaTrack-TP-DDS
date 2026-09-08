@@ -26,16 +26,21 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 class GlobalExceptionHandlerTest {
 
@@ -231,5 +236,49 @@ class GlobalExceptionHandlerTest {
     assertEquals(1, response.getBody().errors().size());
     assertEquals("cantidad", response.getBody().errors().get(0).field());
     assertEquals("debe ser mayor a cero", response.getBody().errors().get(0).message());
+  }
+
+  @Test
+  void handleMethodNotSupported_deberiaRetornarMethodNotAllowedConHeaderAllow() {
+    HttpRequestMethodNotSupportedException ex =
+        new HttpRequestMethodNotSupportedException("DELETE", List.of("GET", "POST"));
+
+    ResponseEntity<ErrorResponse> response = handler.handleMethodNotSupported(ex);
+
+    assertEquals(HttpStatus.METHOD_NOT_ALLOWED, response.getStatusCode());
+
+    assertNotNull(response.getHeaders().getAllow());
+    assertTrue(response.getHeaders().getAllow().contains(HttpMethod.GET));
+    assertTrue(response.getHeaders().getAllow().contains(HttpMethod.POST));
+
+    assertNotNull(response.getBody());
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), response.getBody().code());
+    assertTrue(response.getBody().details().contains("DELETE"));
+  }
+
+  @Test
+  void handleNoResourceFound_deberiaRetornarNotFound() {
+    NoResourceFoundException ex =
+        new NoResourceFoundException(HttpMethod.GET, "api/inexistente", "api/inexistente");
+
+    ResponseEntity<ErrorResponse> response = handler.handleNoResourceFound(ex);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(), response.getBody().code());
+    assertTrue(response.getBody().details().contains("api/inexistente"));
+  }
+
+  @Test
+  void handleNoHandlerFound_deberiaRetornarNotFound() {
+    NoHandlerFoundException ex =
+        new NoHandlerFoundException("GET", "/api/inexistente", new HttpHeaders());
+
+    ResponseEntity<ErrorResponse> response = handler.handleNoHandlerFound(ex);
+
+    assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    assertNotNull(response.getBody());
+    assertEquals(ErrorCatalog.RECURSO_NO_ENCONTRADO.getCode(), response.getBody().code());
+    assertTrue(response.getBody().details().contains("/api/inexistente"));
   }
 }

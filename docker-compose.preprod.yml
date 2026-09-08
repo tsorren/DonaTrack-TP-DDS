@@ -210,9 +210,15 @@ services:
     networks:
       - preprod-network
 
+  k6:
+    image: grafana/k6:latest
+    profiles: ["perf"]
+    volumes:
+      - ./tests/performance/k6:/scripts:ro
+    networks:
+      - preprod-network
+
 networks:
   preprod-network:
     driver: bridge
 
-volumes:
-  n8n_data:

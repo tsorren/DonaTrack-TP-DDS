@@ -5,47 +5,24 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
-import grupo5.donaciones.controllers.impl.PropuestaDeAsignacionController;
 import grupo5.donaciones.dto.propuestas.ActualizarEstadoRequestDTO;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.propuestas.EstadoPropuesta;
-import grupo5.donaciones.services.IPropuestaDeAsignacionService;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-class PropuestaDeAsignacionControllerTest {
+class PropuestaDeAsignacionControllerTest extends AbstractDonacionesWebMvcTest {
 
-  private MockMvc mockMvc;
-  private IPropuestaDeAsignacionService serviceMock;
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    serviceMock = mock(IPropuestaDeAsignacionService.class);
-    objectMapper = new ObjectMapper();
-    objectMapper.findAndRegisterModules();
-
-    PropuestaDeAsignacionController controller = new PropuestaDeAsignacionController(serviceMock);
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
   @Test
   void ejecutar_deberiaRetornar201YPropuestasGeneradas() throws Exception {
-    when(serviceMock.ejecutarAsignacion()).thenReturn(List.of());
+    when(propuestaDeAsignacionService.ejecutarAsignacion()).thenReturn(List.of());
 
     mockMvc
         .perform(post("/api/asignaciones/ejecuciones"))
@@ -53,7 +30,7 @@ class PropuestaDeAsignacionControllerTest {
         .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$").isArray());
 
-    verify(serviceMock, times(1)).ejecutarAsignacion();
+    verify(propuestaDeAsignacionService, times(1)).ejecutarAsignacion();
   }
 
   @Test
@@ -63,7 +40,7 @@ class PropuestaDeAsignacionControllerTest {
     dto.setFechaEjecucion(LocalDateTime.now());
     dto.setCantidadPropuestasGeneradas(3);
 
-    when(serviceMock.historialEjecuciones()).thenReturn(List.of(dto));
+    when(propuestaDeAsignacionService.historialEjecuciones()).thenReturn(List.of(dto));
 
     mockMvc
         .perform(get("/api/asignaciones/ejecuciones"))
@@ -71,7 +48,7 @@ class PropuestaDeAsignacionControllerTest {
         .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$[0].cantidadPropuestasGeneradas").value(3));
 
-    verify(serviceMock, times(1)).historialEjecuciones();
+    verify(propuestaDeAsignacionService, times(1)).historialEjecuciones();
   }
 
   @Test
@@ -80,7 +57,7 @@ class PropuestaDeAsignacionControllerTest {
     PropuestaDTO dto =
         new PropuestaDTO(propId, EstadoPropuesta.PENDIENTE, LocalDateTime.now(), null, List.of());
 
-    when(serviceMock.listarPropuestas()).thenReturn(List.of(dto));
+    when(propuestaDeAsignacionService.listarPropuestas()).thenReturn(List.of(dto));
 
     mockMvc
         .perform(get("/api/asignaciones/propuestas"))
@@ -88,7 +65,7 @@ class PropuestaDeAsignacionControllerTest {
         .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$[0].id").value(propId.toString()));
 
-    verify(serviceMock, times(1)).listarPropuestas();
+    verify(propuestaDeAsignacionService, times(1)).listarPropuestas();
   }
 
   @Test
@@ -105,7 +82,8 @@ class PropuestaDeAsignacionControllerTest {
         .andExpect(status().isOk())
         .andExpect(header().exists("X-Trace-Id"));
 
-    verify(serviceMock, times(1)).actualizarEstado(propId, EstadoPropuesta.APROBADA);
+    verify(propuestaDeAsignacionService, times(1))
+        .actualizarEstado(propId, EstadoPropuesta.APROBADA);
   }
 
   @Test

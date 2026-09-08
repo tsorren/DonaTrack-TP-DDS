@@ -7,70 +7,57 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import grupo5.common.CommonLibAutoConfiguration;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
+import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.DonanteRegistradoDTO;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
 import grupo5.incentivos.dto.RegistrarDonanteRequest;
+import grupo5.incentivos.fixtures.RankingMensualMother;
+import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.services.IGestionDonanteService;
+import grupo5.incentivos.services.IInactividadService;
 import grupo5.incentivos.services.IInsigniasService;
 import grupo5.incentivos.services.IMetricasIncentivosService;
 import grupo5.incentivos.services.IMisionesDonacionService;
 import grupo5.incentivos.services.IRankingService;
 import java.time.LocalDate;
+import java.time.Month;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest({
+  DonanteIncentivosController.class,
+  MisionesDonacionController.class,
+  InsigniasController.class,
+  MetricasIncentivosController.class,
+  RankingController.class,
+  ProcesosIncentivosController.class
+})
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
 class ControllersWebMvcValidationTest {
 
-  private MockMvc mockMvc;
-  private ObjectMapper objectMapper;
+  @Autowired private MockMvc mockMvc;
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-  @Mock private IGestionDonanteService gestionDonanteService;
-  @Mock private IMisionesDonacionService misionesDonacionService;
-  @Mock private IInsigniasService insigniasService;
-  @Mock private IMetricasIncentivosService metricasIncentivosService;
-  @Mock private IRankingService rankingService;
-
-  @BeforeEach
-  void setUp() {
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-
-    DonanteIncentivosController donanteController =
-        new DonanteIncentivosController(gestionDonanteService);
-    MisionesDonacionController misionesController =
-        new MisionesDonacionController(misionesDonacionService);
-    InsigniasController insigniasController = new InsigniasController(insigniasService);
-    MetricasIncentivosController metricasController =
-        new MetricasIncentivosController(metricasIncentivosService);
-    RankingController rankingController = new RankingController(rankingService);
-
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(
-                donanteController,
-                misionesController,
-                insigniasController,
-                metricasController,
-                rankingController)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-  }
+  @MockitoBean private IGestionDonanteService gestionDonanteService;
+  @MockitoBean private IMisionesDonacionService misionesDonacionService;
+  @MockitoBean private IInsigniasService insigniasService;
+  @MockitoBean private IMetricasIncentivosService metricasIncentivosService;
+  @MockitoBean private IRankingService rankingService;
+  @MockitoBean private IInactividadService inactividadService;
 
   @Test
   void registrarDonante_cuandoEsValido_deberiaRetornar201CreatedYHeaderTraceId() throws Exception {
@@ -210,6 +197,55 @@ class ControllersWebMvcValidationTest {
         .perform(get("/api/incentivos/ranking/posicion/" + donanteId + "?periodo=2026-99"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void obtenerRankingPorPeriodo_conFormatoValido_deberiaRetornar200OkYNoChocarConUltimo()
+      throws Exception {
+    RankingMensual ranking = RankingMensualMother.vacioDeMayo2026();
+    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, Month.MAY)))
+        .thenReturn(Optional.of(ranking));
+
+    mockMvc
+        .perform(get("/api/incentivos/ranking/2026-05"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.periodo").value("2026-05"));
+
+    when(rankingService.obtenerUltimoRanking()).thenReturn(Optional.empty());
+    mockMvc.perform(get("/api/incentivos/ranking/ultimo")).andExpect(status().isNoContent());
+  }
+
+  @Test
+  void obtenerRankingPorPeriodo_conFormatoInvalido_deberiaRetornar400BadRequest() throws Exception {
+    mockMvc
+        .perform(get("/api/incentivos/ranking/2026-99"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+  }
+
+  @Test
+  void obtenerRankingPorPeriodo_cuandoNoExiste_deberiaRetornar404NotFound() throws Exception {
+    when(rankingService.obtenerRankingPorPeriodo(YearMonth.of(2026, Month.AUGUST)))
+        .thenReturn(Optional.empty());
+
+    mockMvc
+        .perform(get("/api/incentivos/ranking/2026-08"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.code").value(ErrorCatalog.RANKING_NO_ENCONTRADO.getCode()));
+  }
+
+  @Test
+  void ejecutarVerificacionRachas_deberiaRetornar200OkYDelegar() throws Exception {
+    mockMvc.perform(post("/api/incentivos/verificaciones-racha")).andExpect(status().isOk());
+
+    verify(misionesDonacionService, times(1)).verificarRachasVencidas(any());
+  }
+
+  @Test
+  void ejecutarEvaluacionInactividad_deberiaRetornar200OkYDelegar() throws Exception {
+    mockMvc.perform(post("/api/incentivos/evaluaciones-inactividad")).andExpect(status().isOk());
+
+    verify(inactividadService, times(1)).procesarInactividad();
   }
 
   @Test

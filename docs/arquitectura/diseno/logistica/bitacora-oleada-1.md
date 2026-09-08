@@ -1,7 +1,7 @@
 # Bitácora — Oleada 1: Historial de estado en `Camion` y `Chofer`
 
 **Branch:** `E4_refactor_logistica`
-**Referencia del plan:** `docs/design/logistica-service/plan-refactor-logistica-service.md` → Oleada 1 (RF-02)
+**Referencia del plan:** [`plan-refactor-logistica-service.md`](./plan-refactor-logistica-service.md) → Oleada 1 (RF-02)
 
 ---
 

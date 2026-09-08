@@ -12,45 +12,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
-import grupo5.donaciones.controllers.impl.EntidadBeneficiariaController;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
-import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class EntidadBeneficiariaControllerTest {
+class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
 
-  private MockMvc mockMvc;
-
-  @Mock private IEntidadBeneficiariaService service;
-
-  @InjectMocks private EntidadBeneficiariaController controller;
-
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-    objectMapper = new ObjectMapper();
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void crearEntidad_debeRetornarCreated() throws Exception {
@@ -58,7 +30,7 @@ class EntidadBeneficiariaControllerTest {
     EntidadBeneficiariaInputDTO input = DTOFixtures.entidadBeneficiariaInput(juridicaId);
     EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
 
-    when(service.crearEntidad(any())).thenReturn(outputMock);
+    when(entidadBeneficiariaService.crearEntidad(any())).thenReturn(outputMock);
 
     mockMvc
         .perform(
@@ -88,7 +60,7 @@ class EntidadBeneficiariaControllerTest {
     UUID id = UUID.randomUUID();
     EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
 
-    when(service.obtenerEntidad(id)).thenReturn(outputMock);
+    when(entidadBeneficiariaService.obtenerEntidad(id)).thenReturn(outputMock);
 
     mockMvc
         .perform(get("/api/entidades/" + id))
@@ -99,7 +71,7 @@ class EntidadBeneficiariaControllerTest {
   @Test
   void obtenerTodas_debeRetornarOk() throws Exception {
     EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
-    when(service.obtenerTodas()).thenReturn(List.of(outputMock));
+    when(entidadBeneficiariaService.obtenerTodas()).thenReturn(List.of(outputMock));
 
     mockMvc
         .perform(get("/api/entidades"))
@@ -114,7 +86,8 @@ class EntidadBeneficiariaControllerTest {
     EntidadBeneficiariaInputDTO input = DTOFixtures.entidadBeneficiariaInput(juridicaId);
     EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
 
-    when(service.actualizarEntidad(any(UUID.class), any(EntidadBeneficiariaInputDTO.class)))
+    when(entidadBeneficiariaService.actualizarEntidad(
+            any(UUID.class), any(EntidadBeneficiariaInputDTO.class)))
         .thenReturn(outputMock);
 
     mockMvc

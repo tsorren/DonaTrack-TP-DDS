@@ -10,33 +10,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.logistica.controllers.impl.PlanificacionController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
-import grupo5.logistica.services.IPlanificacionService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class PlanificacionControllerTest {
+class PlanificacionControllerTest extends AbstractLogisticaWebMvcTest {
 
-  private MockMvc mockMvc;
-  private ObjectMapper objectMapper;
-
-  @Mock private IPlanificacionService planificacionService;
-  @InjectMocks private PlanificacionController controller;
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   private static final UUID SOLICITUD_ID = UUID.randomUUID();
   private static final SolicitudPlanificacionResponseDTO RESPONSE_DTO =
@@ -49,16 +34,6 @@ class PlanificacionControllerTest {
           List.of(),
           0,
           null);
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-  }
 
   // ===================== POST /api/logistica/resultados =====================
 

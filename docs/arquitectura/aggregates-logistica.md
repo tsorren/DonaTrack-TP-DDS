@@ -17,16 +17,24 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 
 ### 2.1. Agregado: Chofer
 *   **Aggregate Root**: `Chofer` (implements `AggregateRoot`).
-*   **Responsabilidad**: Modelar el conductor del camión de la flota, controlando sus datos personales (nombre, apellido), licencia y número de contacto de forma encapsulada y protegida.
+*   **Referencias Externas (por ID)**: `rutaId` (UUID nulable de la ruta activa asignada).
+*   **Estados de Ciclo de Vida**: *DISPONIBLE*, *EN_RUTA*, *DESHABILITADO* (Enum `EstadoChofer`).
+*   **Componentes Internos**: `CambioEstadoChofer` (Java record de auditoría inmutable de estados).
+*   **Responsabilidad**: Modelar el conductor del camión de la flota, controlando sus datos personales (nombre, apellido), licencia y número de contacto de forma encapsulada y protegida, así como su disponibilidad operativa.
 *   **Métodos de Negocio**:
     *   `actualizarLicencia(String nuevaLicencia)`
     *   `actualizarTelefonoContacto(String nuevoTelefono)`
+    *   `asignarARuta(UUID rutaId)`
+    *   `completarRuta()`
+    *   `habilitar()`
+    *   `deshabilitar()`
 *   **Paquete**: `grupo5.logistica.models.entities.choferes`
 
 ### 2.2. Agregado: Camión
 *   **Aggregate Root**: `Camion` (implements `AggregateRoot`).
 *   **Referencias Externas (por ID)**: `rutaId` (UUID nulable de la ruta activa asignada).
 *   **Estados de Ciclo de Vida**: *DISPONIBLE*, *EN_RUTA*, *DESHABILITADO* (Enum `EstadoCamion`).
+*   **Componentes Internos**: `CambioEstadoCamion` (Java record de auditoría inmutable de estados).
 *   **Responsabilidad**: Modelar cada vehículo de la flota de distribución, validando sus dimensiones físicas y capacidades de carga (volumen, peso, altura) en su constructor, y controlando consistentemente la asignación a rutas y deshabilitación.
 *   **Métodos de Negocio**:
     *   `asignarARuta(UUID rutaId)`
@@ -36,13 +44,14 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Paquete**: `grupo5.logistica.models.entities.camiones`
 
 ### 2.3. Agregado: Ruta
-*   **Aggregate Root**: `Ruta` (implements `AggregateRoot`).
+*   **Aggregate Root**: `Ruta` (extends `AgregadoConEventos<EventoRuta>`).
+*   **Componentes Internos**: `CambioEstadoRuta` (Java record de auditoría inmutable de transiciones).
 *   **Referencias Externas (por ID)**:
     *   `choferId` (UUID del chofer asignado).
     *   `camionId` (UUID del camión asignado).
     *   `entregas` (Lista inmutable de UUIDs que apuntan a las `Entrega` que componen la ruta).
 *   **Estados de Ciclo de Vida**: *PENDIENTE*, *EN_TRASLADO*, *COMPLETADA* (Enum `EstadoRuta`).
-*   **Responsabilidad**: Planificar y rastrear la ruta operativa de reparto para un vehículo y conductor específicos. Garantiza que la ruta no se pueda iniciar si no tiene entregas asignadas.
+*   **Responsabilidad**: Planificar y rastrear la ruta operativa de reparto para un vehículo y conductor específicos. Garantiza que la ruta no se pueda iniciar si no tiene entregas asignadas y emite eventos de dominio (`EventoRutaAsignada`, `EventoRutaIniciada`).
 *   **Métodos de Negocio**:
     *   `agregarEntrega(UUID entregaId)` (valida no duplicados y estado PENDIENTE).
     *   `iniciarRuta()` (valida existencia de entregas).
@@ -50,21 +59,23 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 *   **Paquete**: `grupo5.logistica.models.entities.rutas`
 
 ### 2.4. Agregado: Entrega
-*   **Aggregate Root**: `Entrega` (implements `AggregateRoot`).
+*   **Aggregate Root**: `Entrega` (extends `AgregadoConEventos<EventoEntrega>`).
 *   **Objetos de Valor Internos**: 
     *   `CambioEstadoEntrega` (Auditoría inmutable de cambio de estado - Java record).
-    *   `Direccion` (Dirección destino - Java record).
+    *   `Direccion` (Dirección destino - Java record en `grupo5.logistica.models.entities.rutas.direccion`).
     *   `Localidad`, `Provincia`, `Pais` (Records geográficos).
+*   **Propiedades Físicas**: `pesoTotalKG` y `volumenTotalM3` (magnitudes positivas validadas para cubicaje).
 *   **Referencias Externas (por ID)**:
-    *   `idRuta` (UUID de la ruta asignada).
+    *   `idRuta` (UUID nulable de la ruta asignada).
     *   `idDonacion` (UUID de la donación independiente correspondiente en `donaciones-service`).
     *   `idBeneficiaria` (UUID de la entidad beneficiaria destinataria).
 *   **Estados de Ciclo de Vida**: *PENDIENTE*, *EN_TRASLADO*, *ENTREGADA*, *NO_RECIBIDA*, *REVISION* (Enum `EstadoEntrega`).
-*   **Responsabilidad**: Registrar el ciclo de vida y trazabilidad física de una donación específica desde que sale del depósito hasta que es confirmada por la entidad beneficiaria, registrando un historial inmutable de auditoría para cada cambio de estado.
+*   **Responsabilidad**: Registrar el ciclo de vida y trazabilidad física de una donación específica desde que sale del depósito hasta que es confirmada por la entidad beneficiaria, registrando un historial inmutable de auditoría para cada cambio de estado y emitiendo eventos (`EntregaConfirmada`, `EntregaFallida`).
 *   **Métodos de Negocio**:
+    *   `asignarRuta(UUID idRuta)`
     *   `iniciarRuta(String chofer)`
     *   `confirmarEntrega(String entidad)`
     *   `adjuntarFotoRecepcion(String fotoURL)`
-    *   `negarEntrega(String entidad)`
+    *   `negarEntrega(String entidad, String justificacion, boolean replanificable)`
     *   `regresarAlDeposito(String administrador)`
 *   **Paquete**: `grupo5.logistica.models.entities.entregas`

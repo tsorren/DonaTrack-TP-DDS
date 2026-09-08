@@ -113,6 +113,7 @@ jobs:
       any-docker-service: ${{ steps.generate-matrices.outputs.any-docker-service }}
       services-matrix: ${{ steps.generate-matrices.outputs.services-matrix }}
       docker-matrix: ${{ steps.generate-matrices.outputs.docker-matrix }}
+      enable-diagrams: 'false' # Control de ejecución: dejar en 'false' para deshabilitar generate-diagrams
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -440,7 +441,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   generate-diagrams:
     needs: [detect-changes, build-and-test]
-    if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
+    if: ${{ needs.detect-changes.outputs.enable-diagrams == 'true' && needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -547,7 +548,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   semantic-uml-diff:
     needs: [detect-changes, generate-diagrams]
-    if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
+    if: false # Deshabilitado
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -836,6 +837,7 @@ jobs:
           FAILED=false
           any_service="${{ needs.detect-changes.outputs.any-service }}"
           any_docker="${{ needs.detect-changes.outputs.any-docker-service }}"
+          enable_diagrams="${{ needs.detect-changes.outputs.enable-diagrams }}"
 
           # Parámetros:
           #   $1 = nombre del job
@@ -882,7 +884,6 @@ jobs:
           # Jobs requeridos si hay servicios con código modificado
           check_job "lint-and-format"     "${{ needs.lint-and-format.result }}"     "any-service"
           check_job "build-and-test"      "${{ needs.build-and-test.result }}"      "any-service"
-          check_job "generate-diagrams"   "${{ needs.generate-diagrams.result }}"   "any-service"
           check_job "preprod-validation"  "${{ needs.preprod-validation.result }}"  "any-service"
 
           # Jobs requeridos solo si hay servicios con Dockerfile modificados
@@ -890,10 +891,15 @@ jobs:
 
           # Jobs opcionales (skipped siempre aceptado)
           check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"      "never"
+          if [[ "$enable_diagrams" == "true" ]]; then
+            check_job "generate-diagrams" "${{ needs.generate-diagrams.result }}"   "any-service"
+          else
+            check_job "generate-diagrams" "${{ needs.generate-diagrams.result }}"   "never"
+          fi
           check_job "semantic-uml-diff"   "${{ needs.semantic-uml-diff.result }}"   "never"
 
           echo "══════════════════════════════════════════"
-          echo "  Contexto: any-service=${any_service} | any-docker=${any_docker}"
+          echo "  Contexto: any-service=${any_service} | any-docker=${any_docker} | enable-diagrams=${enable_diagrams}"
           echo "══════════════════════════════════════════"
 
           if [[ "$FAILED" == "true" ]]; then

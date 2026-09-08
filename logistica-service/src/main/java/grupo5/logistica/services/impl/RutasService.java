@@ -128,8 +128,9 @@ public class RutasService implements IRutasService {
   private void procesarRutaCompletada(Ruta ruta) {
     Chofer chofer = buscarChofer(ruta.getChoferId());
     Camion camion = buscarCamion(ruta.getCamionId());
+    List<Entrega> entregas = buscarEntregasDeRuta(ruta);
 
-    GestorDeRutas.completarRuta(ruta, camion, chofer);
+    GestorDeRutas.completarRuta(ruta, camion, chofer, entregas);
 
     rutasRepository.save(ruta);
     choferesRepository.save(chofer);

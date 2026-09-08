@@ -4,7 +4,7 @@
 
 ## 1. Diagrama de Clases (DC) vs. código final
 
-**Ninguna oleada tocó `docs/design/notificaciones-service/diagrama-de-clases-notificaciones.puml`.** Queda explícitamente pendiente, no implícitamente resuelto por haber ejecutado las oleadas. Divergencias concretas confirmadas contra el código de hoy:
+**Ninguna oleada tocó [`diagrama-de-clases-notificaciones.puml`](./diagrama-de-clases-notificaciones.puml).** Queda explícitamente pendiente, no implícitamente resuelto por haber ejecutado las oleadas. Divergencias concretas confirmadas contra el código de hoy:
 
 | Elemento del `.puml` | Dibuja | Código real | Oleada que lo cambió |
 |---|---|---|---|
@@ -47,7 +47,7 @@ Suite completa de `notificaciones-service`: **116 tests, 0 failures, 0 errors** 
 
 ## 4. Pendientes explícitos
 
-- **`docs/design/notificaciones-service/diagrama-de-clases-notificaciones.puml` no está actualizado.** Ninguna oleada lo tocó (ver §1). No se corrige en esta auditoría — es un cambio de documentación de diseño, no de código, y no estaba en el alcance de ningún prompt ejecutado.
+- **[`diagrama-de-clases-notificaciones.puml`](./diagrama-de-clases-notificaciones.puml) no está actualizado.** Ninguna oleada lo tocó (ver §1). No se corrige en esta auditoría — es un cambio de documentación de diseño, no de código, y no estaba en el alcance de ningún prompt ejecutado.
 - **RF-10 (idempotencia) sigue sin implementar**, tal como se pidió mantenerlo — es una decisión que cruza el límite de `notificaciones-service` y requiere coordinación con `donaciones-service`/`incentivos-service` antes de tocar el contrato del DTO compartido.
 - **RF-03** no generó ningún artefacto de código propio — quedó resuelto como decisión documental en la bitácora de Oleada 3 (`Persona` no necesita domain events propios), no como un ítem verificable con evidencia de línea.
 

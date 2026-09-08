@@ -120,31 +120,31 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   public void negarEntrega(String entidad, String justificacion, boolean replanificable) {
     validarActor(entidad);
+    validarJustificacion(justificacion);
 
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
     actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
-    registrarEvento(new EntregaFallida(this.id, this.idDonacion, justificacion, replanificable));
-    mandarARevision("SISTEMA_LOGISTICA");
+    registrarEvento(
+        new EntregaFallida(this.id, this.idDonacion, justificacion.trim(), replanificable));
   }
 
-  private void mandarARevision(String actor) {
-    validarActor(actor);
+  public void mandarARevision(String administrador) {
+    validarActor(administrador);
 
     if (this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
-    actualizarEstado(EstadoEntrega.REVISION, actor);
+    actualizarEstado(EstadoEntrega.REVISION, administrador);
   }
 
   public void regresarAlDeposito(String administrador) {
     validarActor(administrador);
 
-    if (this.estadoActual != EstadoEntrega.REVISION
-        && this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
+    if (this.estadoActual != EstadoEntrega.REVISION) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
@@ -190,6 +190,12 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   private static void validarActor(String actor) {
     if (Objects.isNull(actor) || actor.isBlank()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
+  private static void validarJustificacion(String justificacion) {
+    if (Objects.isNull(justificacion) || justificacion.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }

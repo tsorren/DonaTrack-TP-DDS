@@ -1,6 +1,9 @@
 package grupo5.incentivos.controllers;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.dto.RankingMensualDTO;
+import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import grupo5.incentivos.services.IRankingService;
 import jakarta.validation.constraints.Pattern;
 import java.time.YearMonth;
@@ -70,5 +73,20 @@ public class RankingController implements IRankingController {
             ? rankingService.obtenerPosicionDonante(donanteId, YearMonth.parse(periodo))
             : rankingService.obtenerPosicionDonante(donanteId);
     return posicion.map(ResponseEntity::ok).orElse(ResponseEntity.noContent().build());
+  }
+
+  @Override
+  @GetMapping("/{periodo}")
+  public ResponseEntity<RankingMensualDTO> obtenerRankingPorPeriodo(
+      @PathVariable
+          @Pattern(
+              regexp = "^\\d{4}-(0[1-9]|1[0-2])$",
+              message = "El periodo debe tener formato YYYY-MM")
+          String periodo) {
+    RankingMensual ranking =
+        rankingService
+            .obtenerRankingPorPeriodo(YearMonth.parse(periodo))
+            .orElseThrow(() -> new BusinessStateException(ErrorCatalog.RANKING_NO_ENCONTRADO));
+    return ResponseEntity.ok(RankingMensualDTO.desde(ranking));
   }
 }

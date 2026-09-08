@@ -1,12 +1,12 @@
 # Plan de Refactor por Oleadas — Servicio de Notificaciones
 
-> Adaptación de `plan-refactor-oleadas-generico-v2.md` al servicio de notificaciones, siguiendo la receta de su §7. Se apoya en los hallazgos de [`fase-0-auditoria.md`](./fase-0-auditoria.md) — leer ese documento primero. Rama de trabajo: `E4_refactor-notificaciones`.
+> Adaptación de [`plan-refactor-oleadas-generico-v2.md`](../plan-refactor-oleadas-generico-v2.md) al servicio de notificaciones, siguiendo la receta de su §7. Se apoya en los hallazgos de [`fase-0-auditoria.md`](./fase-0-auditoria.md) — leer ese documento primero. Rama de trabajo: `E4_refactor-notificaciones`.
 >
 > Convención de estado por oleada: `✅` = hay diff de código y la suite pasa en verde. `📝` = decisión de diseño/análisis, sin diff. Las Oleadas 1, 2, 3, 4, 6, 7 y 8 ya están ejecutadas y documentadas con su propia "Bitácora de ejecución" (formato de gobernanza de la plantilla v2 §3: Problema/Evidencia/Objetivo/Fuera de scope/Tests/Diseño/IA/Verificación humana); las Oleadas 5, 9, 9.5, 10 y 11 todavía son plan, sin ejecutar.
 
 ## Agregados principales del servicio
 
-Siguiendo `docs/aggregates/aggregate-servicio-notificaciones.md` (confirmado contra el código en la Fase 0):
+Siguiendo [`aggregates-notificaciones.md`](../../aggregates-notificaciones.md) (confirmado contra el código en la Fase 0):
 
 - **`Notificacion`** — Aggregate Root principal. Registra el intento y estado final de una notificación despachada.
 - **`Persona`** — Aggregate Root secundario, réplica de lectura de datos de contacto (no es dueño de reglas de negocio complejas).
@@ -90,8 +90,7 @@ Detección estática de los 6 call sites (`grep`), verificación de que no habí
 - [x] Suite de `notificaciones-service` en verde (71/71).
 - [x] Reactor completo en verde (612/612).
 - [x] Formatter/linter (`spotless:check`) — no corrido en este RF (no fue solicitado explícitamente; queda para antes de abrir el PR).
-  git add docs/refactor/notificaciones/fase-0-auditoria.md docs/design/notificaciones-service/
-  git commit -m "docs: Fase 0 - auditoria y diagrama de clases de notificaciones-service"
+
 #### 🔁 Devolución necesaria
 Archivos con call sites de `setEsPredeterminado` actualizados a `marcarComoPredeterminado()`/`desmarcarComoPredeterminado()` — 2 de producción + 4 de test, sin ninguno roto:
 1. `notificaciones-service/src/main/java/grupo5/notificaciones/config/AdminSeeder.java` (línea 41)

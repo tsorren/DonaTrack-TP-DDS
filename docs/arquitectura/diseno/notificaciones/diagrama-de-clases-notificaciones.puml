@@ -110,14 +110,14 @@ package NOTIFICACIONES {
 
   class Notificacion <<entity>> {
     - id: UUID
-    - persona: Persona
+    - personaId: UUID
     - mensaje: String
     - fechaCreacion: LocalDateTime
     - estadoNotificacion: EstadoNotificacion
     - historialEstado: List<CambioEstadoNotificacion>
     --
-    + notificar(sender: NotificacionSender): void
-    + ordenarMedios(): List<MedioDeContacto>
+    + notificar(persona: Persona, sender: NotificacionSender): void
+    + ordenarMedios(persona: Persona): List<MedioDeContacto>
     + actualizarEstado(nuevoEstado: EstadoNotificacion): void
     + anonimizar(): void
   }
@@ -125,7 +125,6 @@ package NOTIFICACIONES {
   Notificacion "1" *-- "0..*" CambioEstadoNotificacion : historialEstado
   Notificacion --> EstadoNotificacion : estadoNotificacion
   CambioEstadoNotificacion --> EstadoNotificacion
-  Notificacion --> Persona : persona
 }
 
 ' ==================== EVENTOS (políticas de dominio, no persistentes) ====================
@@ -315,12 +314,35 @@ package INFRASTRUCTURE {
   WhatsAppAdapterSimulado --> CriterioFalloSimulado
 }
 
+' ==================== DOMAIN EVENTS (Notificaciones) ====================
+package "DOMAIN EVENTS" {
+  abstract class NotificacionDomainEvent <<entity>> {
+    - notificacionId: UUID
+    - fecha: LocalDateTime
+    --
+    + getNotificacionId(): UUID
+    + getFecha(): LocalDateTime
+  }
+
+  class NotificacionCreada <<entity>> {
+    - personaId: UUID
+    --
+    + personaId(): UUID
+  }
+
+  class NotificacionEnviada <<entity>> {
+  }
+
+  class NotificacionFallida <<entity>> {
+  }
+
+  NotificacionDomainEvent <|-- NotificacionCreada
+  NotificacionDomainEvent <|-- NotificacionEnviada
+  NotificacionDomainEvent <|-- NotificacionFallida
+}
+
 ' ==================== SERVICES (Application Services) ====================
 package SERVICES {
-  class NotificacionesCreadasEvent <<service>> {
-    ' ApplicationEvent ad-hoc; candidato a reemplazarse por
-    ' Domain Events reales de Notificacion (ver Oleada 2 del plan).
-  }
 
   class EventoMapper <<service>> {
     - personaRepository: IPersonaRepository
@@ -379,6 +401,35 @@ package SERVICES {
   PersonasService --> Persona : coordina >
   PersonasService --> Notificacion : anonimiza >
   PersonaMapper --> MedioDeContactoMapper : medioDeContactoMapper
+}
+
+' ==================== PERSISTENCIA (JPA & EnMemoria) ====================
+package PERSISTENCIA {
+  class PersonaRepositoryEnMemoria <<service>> {
+    + <<@Profile("!postgres")>>
+  }
+
+  class PersonaRepositoryJpaAdapter <<service>> {
+    + <<@Profile("postgres")>>
+  }
+
+  class NotificacionRepositoryJpaAdapter <<service>> {
+    + <<@Profile("postgres")>>
+  }
+
+  interface SpringDataPersonaRepository <<interface>>
+  interface SpringDataNotificacionRepository <<interface>>
+
+  class PersonaEntity <<entity>>
+  class NotificacionEntity <<entity>>
+
+  PersonaRepositoryEnMemoria ..|> IPersonaRepository
+  PersonaRepositoryJpaAdapter ..|> IPersonaRepository
+  NotificacionRepositoryJpaAdapter ..|> INotificacionRepository
+  PersonaRepositoryJpaAdapter --> SpringDataPersonaRepository
+  NotificacionRepositoryJpaAdapter --> SpringDataNotificacionRepository
+  SpringDataPersonaRepository --> PersonaEntity
+  SpringDataNotificacionRepository --> NotificacionEntity
 }
 
 @enduml

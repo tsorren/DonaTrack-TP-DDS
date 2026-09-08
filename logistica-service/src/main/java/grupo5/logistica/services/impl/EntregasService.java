@@ -85,8 +85,9 @@ public class EntregasService implements IEntregasService {
       case NO_RECIBIDA ->
           procesarEntregaNoRecibida(
               request.actor(), entrega, request.justificacion(), request.replanificable());
+      case REVISION -> procesarEntregaEnRevision(request.actor(), entrega);
       case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
-      case EN_TRASLADO, REVISION ->
+      case EN_TRASLADO ->
           throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
       default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
@@ -121,6 +122,11 @@ public class EntregasService implements IEntregasService {
 
   private static void procesarEntregaPendiente(String actor, Entrega entrega) {
     RegresoDeposito solicitud = new RegresoDeposito(entrega, actor);
+    GestorDeEntregas.cambiarEstado(solicitud);
+  }
+
+  private static void procesarEntregaEnRevision(String actor, Entrega entrega) {
+    RevisionEntrega solicitud = new RevisionEntrega(entrega, actor);
     GestorDeEntregas.cambiarEstado(solicitud);
   }
 
