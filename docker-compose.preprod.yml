@@ -222,3 +222,5 @@ networks:
   preprod-network:
     driver: bridge
 
+volumes:
+  n8n_data:
