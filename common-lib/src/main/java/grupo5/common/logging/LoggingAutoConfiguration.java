@@ -26,14 +26,14 @@ public class LoggingAutoConfiguration {
   }
 
   @Bean
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(TraceResponseHeaderFilter.class)
   public TraceResponseHeaderFilter traceResponseHeaderFilter() {
     return new TraceResponseHeaderFilter();
   }
 
   @Bean
   @ConditionalOnClass(RequestInterceptor.class)
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(FeignTraceRequestInterceptor.class)
   public FeignTraceRequestInterceptor feignTraceRequestInterceptor() {
     return new FeignTraceRequestInterceptor();
   }

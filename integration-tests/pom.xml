@@ -92,14 +92,6 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
-            <!-- PlantUML no aplica: no hay clases de dominio en este modulo -->
-            <plugin>
-                <groupId>de.elnarion.maven</groupId>
-                <artifactId>plantuml-generator-maven-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 </project>
