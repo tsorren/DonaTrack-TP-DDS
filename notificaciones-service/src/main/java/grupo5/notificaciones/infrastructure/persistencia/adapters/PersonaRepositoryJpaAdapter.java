@@ -6,6 +6,7 @@ import grupo5.notificaciones.infrastructure.persistencia.mappers.PersonaPersiste
 import grupo5.notificaciones.infrastructure.persistencia.repositories.SpringDataPersonaRepository;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
+import java.util.List;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -33,5 +34,11 @@ public class PersonaRepositoryJpaAdapter
     // Guardar en la DB y mapear de vuelta a dominio para respetar el contrato
     PersonaEntity savedEntity = this.springDataRepo.save(entityToSave);
     return this.mapper.toDomain(savedEntity);
+  }
+
+  @Override
+  public List<Persona> saveAll(List<Persona> aggregates) {
+    if (aggregates == null) return List.of();
+    return aggregates.stream().map(this::save).toList();
   }
 }

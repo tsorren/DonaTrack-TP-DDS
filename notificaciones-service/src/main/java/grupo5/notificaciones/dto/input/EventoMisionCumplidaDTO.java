@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record EventoMisionCumplidaDTO(
-    @NotNull(message = "El eventId es obligatorio") UUID eventId,
+    UUID eventId,
     @NotNull(message = "El ID del donante es obligatorio") UUID idPersonaDonante,
     @NotNull(message = "La fecha es obligatoria")
         @PastOrPresent(message = "La fecha no puede ser futura")

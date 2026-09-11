@@ -150,3 +150,16 @@
 | Implementation status | `[OBSERVED] in-progress` — Fases 1, 2, 3A y 4 implementadas: ArchUnit universal y fitness functions activas, Pitest acotado a matching, persistencia efímera con `@ServiceConnection` y controllers en `@WebMvcTest`, validación viva de contratos OpenAPI en `ContractIT` erradicando AP-01, pruebas de rendimiento migradas a k6 erradicando AP-02 (`PerformanceStressIT` eliminado); Subfase 3B (AMQP) catalogada como `[DEFERRED_PENDING_RABBITMQ_CONTRACTS]` |
 | Target | Monorepo · `integration-tests` · microservicios (`donaciones`, `logistica`, `incentivos`, `notificaciones`) |
 | Cuándo se saldará | **Saldada en Entrega 4 (Fases 1, 2, 3A y 4)**; Subfase 3B (AMQP) diferida formalmente hasta la congelación de contratos RabbitMQ |
+
+---
+
+## DTI-13 — Migración de clientes consumidores de la API REST deprecada de notificaciones a ruta canónica y AMQP
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260910-dti-13](./20260910-dti-13-migracion-clientes-api-rest-deprecada-notificaciones-a-amqp.md) |
+| ADR complementario | [20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones](./notificaciones-service/20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `donaciones-service` e `incentivos-service` continúan invocando el endpoint legacy `POST /notificaciones` sin propagar `eventId`; retrocompatibilidad soportada en `notificaciones-service` mediante fallback `UUID.randomUUID()` |
+| Target | `donaciones-service` (`NotificacionesFeignClient`) · `incentivos-service` (`NotificacionesFeignClient`, `NotificacionesClientAdapter`) |
+| Cuándo se saldará | **Fase A (Ruta canónica REST `/api/notificaciones/eventos` + `eventId`):** **Entrega 4 (Semana del 14 de Septiembre 2026)**; **Fase B (Migración a AMQP y baja de endpoint legacy):** **Entrega 5 (Semana del 19 de Octubre 2026)** |

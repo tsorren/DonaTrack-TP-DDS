@@ -19,6 +19,11 @@
       "type": "object",
       "description": "Notificación emitida al registrar un nuevo donante en el sistema",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
           "type": "string",
           "const": "DONANTE_REGISTRADO",
@@ -47,6 +52,11 @@
       "type": "object",
       "description": "Alerta enviada cuando un donante supera el umbral de inactividad",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
           "type": "string",
           "const": "DONANTE_INACTIVO"
@@ -72,6 +82,11 @@
       "type": "object",
       "description": "Felicitación por cumplimiento exitoso de una misión de fidelización",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
           "type": "string",
           "const": "MISION_CUMPLIDA"
@@ -102,6 +117,11 @@
       "type": "object",
       "description": "Notificación por ascenso de nivel/categoría del donante",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
           "type": "string",
           "const": "SUBIO_CATEGORIA"
@@ -132,7 +152,13 @@
       "type": "object",
       "description": "Notificación emitida cuando una donación es vinculada a una entidad beneficiaria",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
+
           "type": "string",
           "const": "DONACION_ASIGNADA"
         },
@@ -162,6 +188,11 @@
       "type": "object",
       "description": "Notificación con comprobante de recepción efectiva de la donación",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
           "type": "string",
           "const": "DONACION_RECIBIDA"
@@ -194,6 +225,11 @@
       "type": "object",
       "description": "Notificación informando que la donación ha iniciado su traslado logístico",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
           "type": "string",
           "const": "DONACION_EN_CAMINO"
@@ -226,6 +262,11 @@
       "type": "object",
       "description": "Alerta enviada a donante, beneficiario y administrador ante una entrega fallida",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
           "type": "string",
           "const": "ENTREGA_FALLIDA"
@@ -277,6 +318,11 @@
       "type": "object",
       "description": "Alerta por vencimiento temporal de una donación sin asignar o en acopio",
       "properties": {
+        "eventId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Identificador unívoco idempotente del evento"
+        },
         "tipo": {
           "type": "string",
           "const": "DONACION_VENCIDA"
@@ -302,6 +348,7 @@
           "minLength": 1
         }
       },
+
       "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaAdmin", "detalleDonacion", "motivo"],
       "additionalProperties": false
     }

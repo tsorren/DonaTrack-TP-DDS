@@ -8,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import grupo5.common.testing.DisabledIfDockerUnavailable;
 import grupo5.notificaciones.infrastructure.persistencia.adapters.NotificacionRepositoryJpaAdapter;
 import grupo5.notificaciones.infrastructure.persistencia.adapters.PersonaRepositoryJpaAdapter;
+import grupo5.notificaciones.infrastructure.persistencia.entities.PersonaEntity;
 import grupo5.notificaciones.infrastructure.persistencia.mappers.NotificacionPersistenciaMapper;
 import grupo5.notificaciones.infrastructure.persistencia.mappers.PersonaPersistenciaMapper;
+import grupo5.notificaciones.infrastructure.persistencia.repositories.SpringDataPersonaRepository;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Correo;
@@ -20,6 +22,7 @@ import grupo5.notificaciones.models.entities.personas.TipoTelefono;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.mothers.NotificacionMother;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,6 +32,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -60,6 +64,8 @@ class RepositoriosJpaTest {
 
   @Autowired private IPersonaRepository personaRepository;
   @Autowired private INotificacionRepository notificacionRepository;
+  @Autowired private SpringDataPersonaRepository springDataPersonaRepo;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   @Test
   void deberiaUsarAdaptadoresJpaEnLugarDeMemoria() {
@@ -113,5 +119,87 @@ class RepositoriosJpaTest {
     assertEquals(1, porPersona.size());
     assertEquals("Mensaje de prueba de persistencia", porPersona.get(0).getMensaje());
     assertEquals(2, porPersona.get(0).getHistorialEstado().size()); // PENDIENTE + ENVIADA
+  }
+
+  @Test
+  void sincronizarPersona_noDeberiaProvocarKeyChurnEnMediosDeContacto() {
+    UUID personaId = UUID.randomUUID();
+    Correo correo = new Correo();
+    correo.setDireccionCorreo("original@donatrack.org");
+    correo.marcarComoPredeterminado();
+    Persona persona =
+        new Persona(personaId, List.of(correo), "Carlos Original", TipoPersona.HUMANA);
+
+    personaRepository.save(persona);
+
+    PersonaEntity entityOriginal = springDataPersonaRepo.findById(personaId).orElseThrow();
+    assertEquals(1, entityOriginal.getMediosDeContacto().size());
+    UUID medioIdOriginal = entityOriginal.getMediosDeContacto().get(0).getId();
+
+    Correo mismoCorreo = new Correo();
+    mismoCorreo.setDireccionCorreo("original@donatrack.org");
+    mismoCorreo.marcarComoPredeterminado();
+    Telefono nuevoTelefono = new Telefono();
+    nuevoTelefono.setCaracteristica("54");
+    nuevoTelefono.setCodigoArea("11");
+    nuevoTelefono.setNumero("99998888");
+    nuevoTelefono.setTipo(TipoTelefono.WHATSAPP);
+
+    Persona personaActualizada =
+        new Persona(
+            personaId,
+            List.of(mismoCorreo, nuevoTelefono),
+            "Carlos Actualizado",
+            TipoPersona.HUMANA);
+    personaRepository.save(personaActualizada);
+
+    PersonaEntity entityActualizada = springDataPersonaRepo.findById(personaId).orElseThrow();
+    assertEquals("Carlos Actualizado", entityActualizada.getDenominacion());
+    assertEquals(2, entityActualizada.getMediosDeContacto().size());
+
+    boolean conservaId =
+        entityActualizada.getMediosDeContacto().stream()
+            .anyMatch(m -> medioIdOriginal.equals(m.getId()));
+    assertTrue(conservaId, "El medio de contacto original debe conservar su ID (cero key churn)");
+  }
+
+  @Test
+  void saveAll_deberiaPreservarIdentidadMediosDeContacto() {
+    UUID personaId = UUID.randomUUID();
+    Correo correo = new Correo();
+    correo.setDireccionCorreo("lote@donatrack.org");
+    correo.marcarComoPredeterminado();
+    Persona persona = new Persona(personaId, List.of(correo), "Lote Original", TipoPersona.HUMANA);
+
+    personaRepository.saveAll(List.of(persona));
+
+    PersonaEntity entityOriginal = springDataPersonaRepo.findById(personaId).orElseThrow();
+    UUID medioIdOriginal = entityOriginal.getMediosDeContacto().get(0).getId();
+
+    Persona personaActualizada =
+        new Persona(personaId, List.of(correo), "Lote Modificado", TipoPersona.HUMANA);
+    personaRepository.saveAll(List.of(personaActualizada));
+
+    PersonaEntity entityActualizada = springDataPersonaRepo.findById(personaId).orElseThrow();
+    assertEquals("Lote Modificado", entityActualizada.getDenominacion());
+    assertEquals(medioIdOriginal, entityActualizada.getMediosDeContacto().get(0).getId());
+  }
+
+  @Test
+  void eventoProcesado_deberiaDescartarDuplicadosPorInboxPattern() {
+    UUID eventId = UUID.randomUUID();
+    int primeraVez =
+        jdbcTemplate.update(
+            "INSERT INTO notificaciones.evento_procesado (event_id, fecha_procesamiento) VALUES (?, ?) ON CONFLICT (event_id) DO NOTHING",
+            eventId,
+            LocalDateTime.now());
+    assertEquals(1, primeraVez);
+
+    int segundaVez =
+        jdbcTemplate.update(
+            "INSERT INTO notificaciones.evento_procesado (event_id, fecha_procesamiento) VALUES (?, ?) ON CONFLICT (event_id) DO NOTHING",
+            eventId,
+            LocalDateTime.now());
+    assertEquals(0, segundaVez, "El evento duplicado debe ser descartado (0 filas afectadas)");
   }
 }

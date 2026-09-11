@@ -33,7 +33,7 @@ docs/
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
 │   ├── contratos-rest.md                  # Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
 │   ├── eventos-amqp.md                    # Topología RabbitMQ y contratos de eventos asíncronos
-│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML) y Schemas JSON
+│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── donaciones/
 │       ├── incentivos/
@@ -75,7 +75,7 @@ docs/
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-12) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-13) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
@@ -106,6 +106,7 @@ docs/
 * 🧩 **Guía de Patrones de Diseño Aplicados:** [arquitectura/guia-patrones-diseno.md](arquitectura/guia-patrones-diseno.md)
 * ⚠️ **Catálogo Unificado de Errores:** [arquitectura/catalogo-errores.md](arquitectura/catalogo-errores.md)
 * 🏗️ **Dominio y Persistencia Compartida:** [arquitectura/shared-kernel.md](arquitectura/shared-kernel.md)
+* 🔄 **Guía de Migración de Contratos E4 (Notificaciones):** [arquitectura/contratos/guia-migracion-notificaciones-e4.md](arquitectura/contratos/guia-migracion-notificaciones-e4.md)
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 🏛️ **Auditoría Integral y Blueprint de Testing y QA (Documento Maestro):** [testing/auditoria-arquitectura-testing.md](testing/auditoria-arquitectura-testing.md)

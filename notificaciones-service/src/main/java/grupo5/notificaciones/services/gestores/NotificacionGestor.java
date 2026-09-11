@@ -32,7 +32,7 @@ public class NotificacionGestor {
   }
 
   @Async
-  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void onNotificacionCreada(NotificacionCreada event) {
     // Como NotificacionCreada hereda de DomainEvent, el id de la notificación suele venir en
     // event.aggregateId()
