@@ -105,6 +105,7 @@
 ---
 
 ## DTI-09 — Seguridad, control de acceso y asincronía en procesos batch de incentivos
+<a id="dti-09-seguridad-control-de-acceso-y-asincronia-en-procesos-batch-de-incentivos"></a>
 
 | Campo | Valor |
 |---|---|

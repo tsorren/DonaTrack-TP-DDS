@@ -8,7 +8,7 @@ description: >-
 # Skill: review-pr — Revisión Crítica y Adversarial de Pull Requests (GrepAI-Powered)
 
 > **Ámbito:** Auditoría exhaustiva y adversarial de Pull Requests, ramas y diffs en DonaTrack.  
-> **Alineación Normativa:** [`AGENTS.md`](../../AGENTS.md) §4 (Invariantes), §6 (Anti-Scope Creep), §7.4 (Revisión Crítica), §8 (Contratos), §11 (Quality Gates) y [`docs/IA/review/evaluator.md`](../../docs/IA/review/evaluator.md).
+> **Alineación Normativa:** [`AGENTS.md`](../../../AGENTS.md) §4 (Invariantes), §6 (Anti-Scope Creep), §7.4 (Revisión Crítica), §8 (Contratos), §11 (Quality Gates) y [`docs/IA/review/evaluator.md`](../../../docs/IA/review/evaluator.md).
 
 ---
 
@@ -132,7 +132,7 @@ Cuando el PR esté disponible localmente en el working tree o rama local, ejecut
   mvn test -pl <modulo-afectado> -Dtest=<SuiteTestRelevante>
   ```
 * **Auto-auditoría pre-flight SonarCloud:**
-  Verificar el diff contra los 12 errores frecuentes de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
+  Verificar el diff contra los 12 errores frecuentes de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../../../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
 
 ---
 

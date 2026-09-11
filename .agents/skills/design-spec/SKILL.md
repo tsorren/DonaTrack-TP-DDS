@@ -8,13 +8,13 @@ description: >-
 # Skill: design-spec — Diseño Arquitectónico y Especificación Técnica
 
 > **Ámbito:** Diseño de microservicios, Shared Kernel y persistencia en DonaTrack.  
-> **Alineación Normativa:** [`AGENTS.md`](../../AGENTS.md), [`docs/context-index.md`](../../docs/context-index.md), [`docs/arquitectura/principios-diseno-arquitectura.md`](../../docs/arquitectura/principios-diseno-arquitectura.md) y Two-Gate Rule (§9.1).
+> **Alineación Normativa:** [`AGENTS.md`](../../../AGENTS.md), [`docs/context-index.md`](../../../docs/context-index.md), [`docs/arquitectura/principios-diseno-arquitectura.md`](../../../docs/arquitectura/principios-diseno-arquitectura.md) y Two-Gate Rule (§9.1).
 
 ---
 
 ## 1. Propósito y Responsabilidades
 
-Esta skill recibe una especificación funcional aprobada en [`docs/specs/active/`](../../docs/specs/) y produce el **diseño técnico de detalle** antes de escribir código fuente ejecutable, asegurando que:
+Esta skill recibe una especificación funcional aprobada en [`docs/specs/active/`](../../../docs/specs/active/) y produce el **diseño técnico de detalle** antes de escribir código fuente ejecutable, asegurando que:
 * No se violen invariantes de bounded contexts ni pureza de capas.
 * Se evalúe formalmente si la solución requiere un nuevo Architectural Decision Record (ADR `proposed`).
 * Se utilice **`grepai`** de forma primaria para la inspección y trazabilidad estructural del código preexistente.

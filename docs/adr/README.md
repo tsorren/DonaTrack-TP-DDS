@@ -156,4 +156,5 @@ log4brains preview        # Previsualización local con hot reload
 log4brains adr new        # Crear nuevo ADR interactivo
 ```
 
-Base de conocimientos publicada: https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview
+* Portal local de Log4brains: [`index.md`](index.md)
+* Base de conocimientos publicada: https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview

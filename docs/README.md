@@ -2,7 +2,7 @@
 
 > **Portal de Documentación y Arquitectura del Sistema**  
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> Última actualización: **2026-09-05**
+> Última actualización: **2026-09-11**
 
 ---
 
@@ -17,11 +17,13 @@ docs/
 ├── context-index.md                       # 🤖 Routing de contexto para coding agents (qué leer por tarea)
 │
 ├── auditoria/                             # Sistema de aseguramiento y verificación adversarial
+│   ├── README.md                          # 🟢 Portal y catálogo de auditorías y directivas
 │   ├── plan-revisor-critico.md            # Plan de auditoría, checklists y matriz de evaluación
 │   ├── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
 │   └── auditoria-directivas-agentes.md    # 🤖 Auditoría de repositorio bajo directivas de agentes IA (Maturity Scorecard)
 │
 ├── arquitectura/                          # Especificaciones de dominio, DDD y Shared Kernel
+│   ├── README.md                          # 🟢 Portal e índice canónico de arquitectura y agregados
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
 │   ├── shared-kernel.md                   # CrudRepository, eventos de dominio y OpenAPI
 │   ├── logging-trazabilidad.md            # Observabilidad distribuida, MDC y traceId
@@ -36,6 +38,7 @@ docs/
 │   ├── eventos-amqp.md                    # Topología RabbitMQ y contratos de eventos asíncronos
 │   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML) y Schemas JSON
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
+│       ├── README.md                      # 🟢 Portal de diseño y anexos técnicos
 │       ├── donaciones/
 │       ├── incentivos/
 │       ├── logistica/
@@ -44,6 +47,7 @@ docs/
 │       └── anexos-tecnicos/               # Modelos técnicos de build autogenerados por Maven
 │
 ├── testing/                               # Pruebas automatizadas y contratos
+│   ├── README.md                          # 🟢 Portal general y mapa de testing
 │   ├── auditoria-arquitectura-testing.md  # 🏛️ Auditoría integral y Blueprint de Arquitectura de Testing y QA (Documento Maestro)
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
@@ -53,6 +57,7 @@ docs/
 │   └── postman/                           # 12 colecciones y flujos E2E distribuidos
 │
 ├── cicd/                                  # Automatización, CI/CD y políticas de PR
+│   ├── README.md                          # 🟢 Portal de CI/CD y automatización
 │   ├── DonaTrack-CICD.md                  # Documentación de pipelines y workflows de GitHub Actions
 │   └── assignment_reminders_plan.md       # Recordatorios de inactividad de PRs en Discord
 │
@@ -71,18 +76,20 @@ docs/
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # Aplicaciones web y utilidades locales
+│   ├── README.md                          # 🟢 Portal de herramientas y utilidades
 │   ├── documentador/                      # Generador interactivo de minutas y ADRs
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
+│   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
 │   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-12) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
 │   ├── active/                            # Specs en curso de diseño o implementación
-│   └── completed/                         # Specs cerradas y verificadas
+│   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
 │   ├── README.md                          # Visión general y reglas de regeneración
@@ -92,11 +99,15 @@ docs/
 │   └── contracts-summary.json             # Sumario estructurado de contratos en formato JSON
 │
 ├── agentes/                               # 🧠 Informes de investigación en desarrollo con agentes IA
+│   ├── README.md                          # 🟢 Portal de investigación en ingeniería con agentes
 │   ├── informe-agent-friendly-repository-architecture.md
 │   ├── informe-harness-engineering-pi-gentle-pi.md
 │   ├── informe-agent-graphs.md
 │   ├── informe-orquestadores-control-planes-coding-agents.md
 │   └── evals-agentes-resumen.md
+│
+├── entrega-4/                             # 🟢 Principios arquitectónicos de Entrega 4 (Fase 0)
+│   └── arquitectura/principios.md         # Reglas comunes de persistencia, outbox, aislamiento e idempotencia
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 4
@@ -121,6 +132,12 @@ docs/
 
 * 🤖 **Context Router para Agentes** *(qué leer por tipo de tarea)*: [context-index.md](context-index.md)
 * 🔍 **Diagnóstico de Vigencia y Auditoría:** [ESTADO_DOCUMENTACION.md](ESTADO_DOCUMENTACION.md)
+* 🏛️ **Portal de Arquitectura y Agregados:** [arquitectura/README.md](arquitectura/README.md)
+* 🧪 **Portal de Testing y Estrategia de Pruebas:** [testing/README.md](testing/README.md)
+* 🛡️ **Portal de Auditoría y Aseguramiento:** [auditoria/README.md](auditoria/README.md)
+* 🚀 **Portal de CI/CD e Integración Continua:** [cicd/README.md](cicd/README.md)
+* 🛠️ **Portal de Herramientas y Utilidades:** [herramientas/README.md](herramientas/README.md)
+* 🧠 **Portal de Investigación de Agentes IA:** [agentes/README.md](agentes/README.md)
 * 🛡️ **Plan de Auditoría y Marco Revisor Crítico:** [auditoria/plan-revisor-critico.md](auditoria/plan-revisor-critico.md)
 * 🤖 **Auditoría de Repositorio bajo Directivas de Agentes IA:** [auditoria/auditoria-directivas-agentes.md](auditoria/auditoria-directivas-agentes.md)
 * 📋 **Especificaciones Técnicas y Funcionales (SDD):** [specs/README.md](specs/README.md)
@@ -131,6 +148,7 @@ docs/
 * 🏗️ **Dominio y Persistencia Compartida:** [arquitectura/shared-kernel.md](arquitectura/shared-kernel.md)
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
+* 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
 * 🏛️ **Auditoría Integral y Blueprint de Testing y QA (Documento Maestro):** [testing/auditoria-arquitectura-testing.md](testing/auditoria-arquitectura-testing.md)
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)

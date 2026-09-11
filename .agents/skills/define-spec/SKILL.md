@@ -9,7 +9,7 @@ description: >-
 # Skill: define-spec — Elicitación de Requerimientos y Formulación de Specs
 
 > **Ámbito:** Bounded Contexts y flujos funcionales de DonaTrack.  
-> **Alineación Normativa:** [`AGENTS.md`](../../AGENTS.md), [`docs/context-index.md`](../../docs/context-index.md) y filosofía SDD de [`docs/agentes/informe-harness-engineering-pi-gentle-pi.md`](../../docs/agentes/informe-harness-engineering-pi-gentle-pi.md).
+> **Alineación Normativa:** [`AGENTS.md`](../../../AGENTS.md), [`docs/context-index.md`](../../../docs/context-index.md) y filosofía SDD de [`docs/agentes/informe-harness-engineering-pi-gentle-pi.md`](../../../docs/agentes/informe-harness-engineering-pi-gentle-pi.md).
 
 ---
 
@@ -19,7 +19,7 @@ Esta skill transforma requerimientos vagos, incompletos o ambiguos en una **espe
 
 ### Principios Mandatorios:
 1. **Tolerancia Cero a Inferencias Especulativas:**
-   * Queda terminantemente prohibido inferir o inventar requerimientos de cátedra ([`docs/entregas/`](../../docs/entregas/)), límites de bounded contexts, contratos públicos (REST DTOs, AMQP, Feign) o nuevas dependencias en `pom.xml`.
+   * Queda terminantemente prohibido inferir o inventar requerimientos de cátedra ([`docs/entregas/`](../../../docs/entregas/)), límites de bounded contexts, contratos públicos (REST DTOs, AMQP, Feign) o nuevas dependencias en `pom.xml`.
    * Si la información no está explícitamente respaldada en la documentación canónica o en la solicitud del usuario, **se debe consultar al usuario**.
    * Inferencias operativas internas (nombres de métodos auxiliares o detalles locales que sigan convenciones ya existentes) están permitidas únicamente si se documentan de forma transparente con la etiqueta `[INFERRED]` de `AGENTS.md` §3.
 2. **Generación de Alternativas Intrínsecamente Viables:**
@@ -50,8 +50,8 @@ Esta skill transforma requerimientos vagos, incompletos o ambiguos en una **espe
 ```
 
 ### Paso 1: Relevamiento de Contexto (Progressive Disclosure)
-* Cargar exclusivamente el contexto necesario desde [`docs/context-index.md`](../../docs/context-index.md) según el módulo o servicio involucrado.
-* Validar si existen ADRs aceptados que ya resuelvan la problemática en [`docs/adr/`](../../docs/adr/). Si ya existe un ADR aceptado, la decisión ya fue tomada y debe respetarse.
+* Cargar exclusivamente el contexto necesario desde [`docs/context-index.md`](../../../docs/context-index.md) según el módulo o servicio involucrado.
+* Validar si existen ADRs aceptados que ya resuelvan la problemática en [`docs/adr/`](../../../docs/adr/). Si ya existe un ADR aceptado, la decisión ya fue tomada y debe respetarse.
 
 ### Paso 2: Análisis de Ambigüedad y Alcance
 * Clasificar el impacto preliminar según `AGENTS.md` §7.0:

@@ -59,3 +59,13 @@ Los archivos deben seguir el formato:
 * Ejemplo: `docs/specs/active/SPEC-01-donaciones-mision-validacion.md`
 
 Al completar la implementación y pasar todos los Quality Gates, el archivo se traslada a `docs/specs/completed/` como registro histórico inmutable del desarrollo.
+
+---
+
+## 5. Índice de Especificaciones Completadas
+
+| ID | Título y Enlace | Nivel | Estado | Alcance / Propósito Principal |
+|:---:|---|:---:|:---:|---|
+| **SPEC-01** | [`SPEC-01-consolidacion-nivel-4-agent-first.md`](completed/SPEC-01-consolidacion-nivel-4-agent-first.md) | ARCHITECTURAL | `COMPLETED` | Consolidación del repositorio a Nivel 4 (Agent-First Pleno): arnés SDD, suite de 7 skills, generated knowledge, benchmark evals y governance checks. |
+| **SPEC-02** | [`SPEC-02-harness-skill-review-pr-adversarial-grepai.md`](completed/SPEC-02-harness-skill-review-pr-adversarial-grepai.md) | ARCHITECTURAL | `COMPLETED` | Implementación de la skill canónica `review-pr`, protocolo GrepAI-First, scripts CLI de contexto y ADR de formalización. |
+

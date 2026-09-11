@@ -8,7 +8,7 @@ description: >-
 # Skill: implementation-review — Evaluación Adversarial de Código (V1–V9)
 
 > **Ámbito:** Revisión crítica e independiente de código modificado o nuevo en DonaTrack.  
-> **Alineación Canónica:** [`docs/IA/review/evaluator.md`](../../docs/IA/review/evaluator.md), [`AGENTS.md`](../../AGENTS.md) §4, §7.4, §11.
+> **Alineación Canónica:** [`docs/IA/review/evaluator.md`](../../../docs/IA/review/evaluator.md), [`AGENTS.md`](../../../AGENTS.md) §4, §7.4, §11.
 
 ---
 
@@ -44,7 +44,7 @@ Esta skill actúa como el **Implementation Evaluator**. Opera estrictamente en m
 
 ## 3. Emisión del Review Contract Canónico
 
-El Evaluator debe emitir el reporte estructurado observable según [`docs/IA/review/evaluator.md`](../../docs/IA/review/evaluator.md):
+El Evaluator debe emitir el reporte estructurado observable según [`docs/IA/review/evaluator.md`](../../../docs/IA/review/evaluator.md):
 
 ```markdown
 === REVIEW CONTRACT ===

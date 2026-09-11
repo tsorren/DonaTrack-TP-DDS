@@ -8,7 +8,7 @@ description: >-
 # Skill: engineering-loop — Workflow Maestro y Enrutador Dinámico
 
 > **Ámbito:** Orquestación secuencial y gobierno de tareas de desarrollo en DonaTrack.  
-> **Alineación Normativa:** [`AGENTS.md`](../../AGENTS.md) §7.0–§7.4, [`docs/IA/review/evaluator.md`](../../docs/IA/review/evaluator.md), y directivas de control de flujo de [`docs/agentes/`](../../docs/agentes/).
+> **Alineación Normativa:** [`AGENTS.md`](../../../AGENTS.md) §7.0–§7.4, [`docs/IA/review/evaluator.md`](../../../docs/IA/review/evaluator.md), y directivas de control de flujo de [`docs/agentes/`](../../../docs/agentes/).
 
 ---
 
@@ -123,4 +123,4 @@ Al alcanzar el estado `PASS` en cualquier ruta:
 1. **Mover Spec Finalizada:** Trasladar `docs/specs/active/<task-id>-spec.md` a `docs/specs/completed/<task-id>-spec.md`.
 2. **Sincronización Documental:** Actualizar `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` si se introdujeron nuevas capacidades o documentos.
 3. **Purga de Checkpoint:** Si existiera un archivo de estado temporal en `.agents/state/active-task-state.json`, eliminarlo para garantizar que la próxima sesión inicie limpia.
-4. **Reporte de Entrega:** Emitir el reporte de cierre bajo la plantilla canónica de [`docs/IA/04-checklist-antes-de-pr.md`](../../docs/IA/04-checklist-antes-de-pr.md).
+4. **Reporte de Entrega:** Emitir el reporte de cierre bajo la plantilla canónica de [`docs/IA/04-checklist-antes-de-pr.md`](../../../docs/IA/04-checklist-antes-de-pr.md).

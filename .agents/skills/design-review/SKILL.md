@@ -8,7 +8,7 @@ description: >-
 # Skill: design-review — Evaluación Adversarial de Diseño Pre-Código
 
 > **Ámbito:** Revisión crítica y pre-flight arquitectónico antes de modificar código fuente.  
-> **Alineación Normativa:** [`AGENTS.md`](../../AGENTS.md) §4, §6, §9 y [`docs/IA/review/evaluator.md`](../../docs/IA/review/evaluator.md).
+> **Alineación Normativa:** [`AGENTS.md`](../../../AGENTS.md) §4, §6, §9 y [`docs/IA/review/evaluator.md`](../../../docs/IA/review/evaluator.md).
 
 ---
 
@@ -17,7 +17,7 @@ description: >-
 Esta skill actúa como el **Design Evaluator escéptico y adversarial**. Su función es cuestionar activamente los supuestos del diseño técnico antes de que se escriba una sola línea de código fuente (`SOURCE_READ_ONLY`), detectando sobreingeniería, acoplamientos ilegítimos o violaciones de contratos.
 
 ### Modo de Independencia:
-* **`INDEPENDENT_REVIEW` (Recomendado):** Se invoca a través de un subagente o contexto secundario aislado pasando exclusivamente el artefacto de especificación de [`docs/specs/active/`](../../docs/specs/). El evaluador no hereda el chain-of-thought del generador.
+* **`INDEPENDENT_REVIEW` (Recomendado):** Se invoca a través de un subagente o contexto secundario aislado pasando exclusivamente el artefacto de especificación de [`docs/specs/active/`](../../../docs/specs/active/). El evaluador no hereda el chain-of-thought del generador.
 * **`SELF_REVIEW` (Fallback):** Si no hay soporte de subagentes en la herramienta, el evaluador opera en el mismo contexto pero debe declarar formalmente `Mode: SELF_REVIEW` y adoptar una postura adversarial estricta.
 
 ---
@@ -29,7 +29,7 @@ El evaluador debe auditar sistemáticamente los siguientes 6 vectores:
 | Vector | Dimensión Evaluada | Criterio de Aceptación / Rechazo |
 |:---:|---|---|
 | **D1** | **Invariantes Arquitectónicas** | ¿Respeta la separación de capas? Controllers adaptadores puros; Application Services orquestadores; entidades con lógica de negocio; sin acoplamiento a detalles de infraestructura. |
-| **D2** | **Pureza de `common-lib`** | ¿Se intenta ubicar lógica de dominio, enums específicos de negocio o dependencias cruzadas en el Shared Kernel? Rechazo inmediato si viola [`common-lib/AGENTS.md`](../../common-lib/AGENTS.md). |
+| **D2** | **Pureza de `common-lib`** | ¿Se intenta ubicar lógica de dominio, enums específicos de negocio o dependencias cruzadas en el Shared Kernel? Rechazo inmediato si viola [`common-lib/AGENTS.md`](../../../common-lib/AGENTS.md). |
 | **D3** | **Retrocompatibilidad de Contratos** | ¿La modificación en DTOs o mensajes AMQP es estrictamente aditiva? Prohibido renombrar o eliminar campos públicos sin un ciclo de migración formal. |
 | **D4** | **Gobernanza de ADRs** | ¿Cumple la Two-Gate Rule? Si introduce nueva decisión significativa, ¿está marcada como `proposed`? **Invariante:** Prohibición absoluta de auto-promoción a `accepted`. |
 | **D5** | **Anti-Scope Creep & YAGNI** | ¿El diseño introduce abstracciones innecesarias, patrones no solicitados o refactorings oportunistas ajenos al objetivo de la tarea? |

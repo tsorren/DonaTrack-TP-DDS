@@ -8,7 +8,7 @@ description: >-
 # Skill: explain-concept — Mentoría Pedagógica y Transferencia de Conocimiento
 
 > **Ámbito:** Explicación didáctica, fundamentación conceptual y acompañamiento técnico a estudiantes de Ingeniería en Sistemas de Información (UTN-FRBA).  
-> **Alineación Normativa:** [`AGENTS.md`](../../AGENTS.md), [`docs/context-index.md`](../../docs/context-index.md) y estándares académicos de Diseño de Sistemas.
+> **Alineación Normativa:** [`AGENTS.md`](../../../AGENTS.md), [`docs/context-index.md`](../../../docs/context-index.md) y estándares académicos de Diseño de Sistemas.
 
 ---
 

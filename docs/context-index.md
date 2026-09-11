@@ -48,6 +48,9 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Trazabilidad / RabbitMQ / Feign | [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
 | Contratos REST / OpenAPI | [`arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) + `docs/arquitectura/contratos/` |
 | Eventos AMQP / RabbitMQ | [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) + `docs/arquitectura/contratos/schemas/` |
+| Especificaciones SDD (Fase 1/2) | [`specs/README.md`](specs/README.md) + `docs/specs/active/` |
+| Review de Pull Requests (GrepAI) | [`.agents/skills/review-pr/SKILL.md`](../.agents/skills/review-pr/SKILL.md) + [`IA/review/evaluator.md`](IA/review/evaluator.md) |
+| Catálogo Vivo de Contratos | [`generated/README.md`](generated/README.md) + `docs/generated/` |
 | Mentoría conceptual / didáctica | [`IA/prompts/transversal-mentoria-conceptos.md`](IA/prompts/transversal-mentoria-conceptos.md) + skill `.agents/skills/explain-concept/` |
 | Compliance académico | `docs/entregas/<N>/Enunciado-<N>.pdf` — solo el enunciado de la entrega vigente |
 

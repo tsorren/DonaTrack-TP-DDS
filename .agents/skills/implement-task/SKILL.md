@@ -8,7 +8,7 @@ description: >-
 # Skill: implement-task — Implementación Quirúrgica y TDD
 
 > **Ámbito:** Modificación y creación de código en microservicios y Shared Kernel de DonaTrack.  
-> **Alineación Normativa:** [`AGENTS.md`](../../AGENTS.md) §6, §7.2, §11, [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
+> **Alineación Normativa:** [`AGENTS.md`](../../../AGENTS.md) §6, §7.2, §11, [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../../../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
 
 ---
 
@@ -67,7 +67,7 @@ mvn test -pl <modulo> -Dtest=<TestExistente> -Dspotless.check.skip=true
    ```
 
 ### Paso 4: Auto-Auditoría Pre-Flight de SonarCloud
-Revisar el diff contra [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../../docs/IA/07-errores-frecuentes-sonarcloud-ia.md):
+Revisar el diff contra [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../../../docs/IA/07-errores-frecuentes-sonarcloud-ia.md):
 * [ ] Cero código comentado o bloques muertos.
 * [ ] Sin `throws Exception` genéricos en métodos de dominio o tests.
 * [ ] Uso adecuado de Logger parametrizado (`log.info("Mensaje: {}", dato)` en lugar de concatenación `+`).
