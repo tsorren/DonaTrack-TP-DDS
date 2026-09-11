@@ -18,7 +18,8 @@ docs/
 │
 ├── auditoria/                             # Sistema de aseguramiento y verificación adversarial
 │   ├── plan-revisor-critico.md            # Plan de auditoría, checklists y matriz de evaluación
-│   └── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
+│   ├── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
+│   └── auditoria-directivas-agentes.md    # 🤖 Auditoría de repositorio bajo directivas de agentes IA (Maturity Scorecard)
 │
 ├── arquitectura/                          # Especificaciones de dominio, DDD y Shared Kernel
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
@@ -64,7 +65,7 @@ docs/
 │   │   └── evaluator.md                  # 🤖 Política Generator/Evaluator, Review Contract, vectores V1–V9
 │   ├── evals/                             # 🧪 Suite de evaluación del harness (Wave 9)
 │   │   ├── README.md                      # Output Contract v1, Critical Failures, A/B methodology, execution policy
-│   │   ├── scenarios/                     # 9 scenarios E01–E09 (golden + adversariales integrados)
+│   │   ├── scenarios/                     # 11 scenarios E01–E11 (golden + adversariales integrados)
 │   │   ├── scorecards/                    # Plantilla de scorecard por run
 │   │   └── results/                       # Resultados de runs (no versionados individualmente)
 │   └── prompts/                           # Prompts especializados por rol de equipo
@@ -77,6 +78,25 @@ docs/
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-12) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
+│
+├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
+│   ├── README.md                          # Normas de ciclo de vida de especificaciones
+│   ├── active/                            # Specs en curso de diseño o implementación
+│   └── completed/                         # Specs cerradas y verificadas
+│
+├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
+│   ├── README.md                          # Visión general y reglas de regeneración
+│   ├── endpoints-catalog.md               # Catálogo unificado de 94 endpoints REST
+│   ├── events-catalog.md                  # Catálogo unificado de eventos AMQP y schemas
+│   ├── architecture-graph.md              # Topología y grafo de dependencias entre microservicios
+│   └── contracts-summary.json             # Sumario estructurado de contratos en formato JSON
+│
+├── agentes/                               # 🧠 Informes de investigación en desarrollo con agentes IA
+│   ├── informe-agent-friendly-repository-architecture.md
+│   ├── informe-harness-engineering-pi-gentle-pi.md
+│   ├── informe-agent-graphs.md
+│   ├── informe-orquestadores-control-planes-coding-agents.md
+│   └── evals-agentes-resumen.md
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 4
@@ -102,6 +122,9 @@ docs/
 * 🤖 **Context Router para Agentes** *(qué leer por tipo de tarea)*: [context-index.md](context-index.md)
 * 🔍 **Diagnóstico de Vigencia y Auditoría:** [ESTADO_DOCUMENTACION.md](ESTADO_DOCUMENTACION.md)
 * 🛡️ **Plan de Auditoría y Marco Revisor Crítico:** [auditoria/plan-revisor-critico.md](auditoria/plan-revisor-critico.md)
+* 🤖 **Auditoría de Repositorio bajo Directivas de Agentes IA:** [auditoria/auditoria-directivas-agentes.md](auditoria/auditoria-directivas-agentes.md)
+* 📋 **Especificaciones Técnicas y Funcionales (SDD):** [specs/README.md](specs/README.md)
+* 🗂️ **Conocimiento Generado del Repositorio:** [generated/README.md](generated/README.md)
 * 📐 **Principios de Diseño y Arquitectura (Documento Maestro):** [arquitectura/principios-diseno-arquitectura.md](arquitectura/principios-diseno-arquitectura.md)
 * 🧩 **Guía de Patrones de Diseño Aplicados:** [arquitectura/guia-patrones-diseno.md](arquitectura/guia-patrones-diseno.md)
 * ⚠️ **Catálogo Unificado de Errores:** [arquitectura/catalogo-errores.md](arquitectura/catalogo-errores.md)

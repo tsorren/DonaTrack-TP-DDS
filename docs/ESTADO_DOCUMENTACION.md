@@ -27,7 +27,8 @@ docs/
 │
 ├── auditoria/                             # 🟢 Sistema de aseguramiento y verificación adversarial
 │   ├── plan-revisor-critico.md            # Plan de auditoría, checklists por etapa y matriz de evaluación
-│   └── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
+│   ├── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
+│   └── auditoria-directivas-agentes.md    # 🟢 Auditoría de repositorio bajo directivas de agentes IA (Maturity Scorecard)
 │
 ├── arquitectura/                          # 🟢 Especificaciones de dominio, DDD, patrones y Shared Kernel
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
@@ -79,6 +80,25 @@ docs/
 │   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-11)
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
+├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
+│   ├── README.md                          # Normas de ciclo de vida de especificaciones
+│   ├── active/                            # Specs en curso de diseño o implementación
+│   └── completed/                         # Specs cerradas y verificadas
+│
+├── generated/                              # 🟢 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
+│   ├── README.md                          # Visión general y reglas de regeneración
+│   ├── endpoints-catalog.md               # Catálogo unificado de 94 endpoints REST
+│   ├── events-catalog.md                  # Catálogo unificado de eventos AMQP y schemas
+│   ├── architecture-graph.md              # Topología y grafo de dependencias entre microservicios
+│   └── contracts-summary.json             # Sumario estructurado de contratos en formato JSON
+│
+├── agentes/                               # 🟢 Informes de investigación en desarrollo con agentes IA
+│   ├── informe-agent-friendly-repository-architecture.md
+│   ├── informe-harness-engineering-pi-gentle-pi.md
+│   ├── informe-agent-graphs.md
+│   ├── informe-orquestadores-control-planes-coding-agents.md
+│   └── evals-agentes-resumen.md
+│
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── README.md                          # 🟢 Matriz curricular e índice de entregas 1 a 4
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
@@ -99,8 +119,14 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`common-lib/AGENTS.md`](../common-lib/AGENTS.md) | Gobernanza Nested | Reglas de pertenencia del Shared Kernel, contratos protegidos y validación reactor. | 🟢 Sincronizado |
 | [`docs/context-index.md`](context-index.md) | Context Routing | Routing de contexto para agentes de IA por servicio, tarea y temporal constraints. | 🟢 Sincronizado |
 | [`docs/IA/review/evaluator.md`](IA/review/evaluator.md) | Revisión Crítica | Roles Generator/Evaluator, Review Contract y vectores de revisión V1–V9. | 🟢 Sincronizado |
-| [`scripts/agent-check/`](../scripts/agent-check/) | Enforcement CI | Suite de validación mecánica de integridad referencial, canonicidad y ADRs. | 🟢 Sincronizado |
-| [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, escenarios E01–E09 y scorecards. | 🟢 Sincronizado |
+| [`scripts/agent-check/`](../scripts/agent-check/) | Enforcement CI | Suite de validación mecánica de integridad referencial, canonicidad, skills y ADRs. | 🟢 Sincronizado |
+| [`.agents/skills/`](../.agents/skills/) | Suite de Skills | Suite de 6 skills modulares para el Engineering Loop con routing dinámico por criticidad. | 🟢 Sincronizado |
+| [`docs/specs/`](specs/README.md) | Especificaciones SDD | Catálogo centralizado de especificaciones funcionales y técnicas (active/completed). | 🟢 Sincronizado |
+| [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
+| [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
+| [`scripts/run-evals.js`](../scripts/run-evals.js) | Harness Evals Runner | Runner determinista de escenarios E01–E11 y taxonomía de fallas críticas CF-01 a CF-12 con emisión de scorecard. | 🟢 Sincronizado |
+| [`scripts/generate-repo-knowledge.js`](../scripts/generate-repo-knowledge.js) | Extractor de Contratos | Extractor mecánico de topología de microservicios, endpoints OpenAPI y eventos AMQP hacia `docs/generated/`. | 🟢 Sincronizado |
+| [`docs/generated/`](generated/README.md) | Generated Knowledge | Catálogo vivo y estructurado de contratos, eventos, endpoints y grafo de arquitectura generado mecánicamente. | 🟢 Sincronizado |
 | [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](IA/07-errores-frecuentes-sonarcloud-ia.md) | Calidad Estática | Guía viva de prevención de errores SonarCloud y auto-auditoría pre-flight. | 🟢 Sincronizado |
 
 ### 3.2 Arquitectura y Modelo de Dominio
