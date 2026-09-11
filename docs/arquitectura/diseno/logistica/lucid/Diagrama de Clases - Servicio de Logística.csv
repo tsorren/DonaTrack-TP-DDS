@@ -1,0 +1,215 @@
+Id,Name,Shape Library,Page ID,Contained By,Group,Line Source,Line Destination,Source Arrow,Destination Arrow,Status,Text Area 1,Text Area 2,Text Area 3,Text Area 4,Text Area 5,Text Area 6,Text Area 7,Text Area 8,Text Area 9,Text Area 10,Text Area 11,Text Area 12,Text Area 13,Text Area 14,Text Area 15,Text Area 16,Text Area 17,Text Area 18,Text Area 19,Text Area 20,Text Area 21,Text Area 22,Text Area 23,Text Area 24,Text Area 25,Text Area 26,Text Area 27,Text Area 28,Text Area 29,Text Area 30,Text Area 31,Text Area 32,Text Area 33,Text Area 34,Comments,Notes,Shape ID,dd,id,property 3,SpreadsheetColumnParentKey,SpreadsheetRowParentKey
+1,Document,,,,,,,,,Draft,Diagrama de Clases,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,daddd34f-aa51-4efa-b7e1-d5695e2d38b8,,,,,
+62,Block,Standard,2,,,,,,,,Servicio de Logística - Dominio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrm0iHRHTmV,,,,,
+63,Flex polygon,Geometric Shapes,2,,237,,,,,,  ENTREGA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrm8XoVIfHU,,,,,
+64,Block,Standard,2,,237,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrms4j72rSb,,,,,
+65,Class,UML,2,,,,,,,,Entrega,"​- id: UUID
+- idRuta: UUID
+- idDonacion: UUID
+- idBeneficiaria: UUID
+- destino: Direccion
+- estadoActual: EstadoEntrega
+- historialEstado: List<CambioEstadoEntrega>
+- horaArribo: LocalDateTime
+- hora Salida: LocalDateTime
+- fotoRecepcionUrl: String
+- volumenTotalM3: float
+- pesoTotalKG: float","​+ inciarRuta(chofer): void
++ confirmarEntrega(entidadBeneficiaria): void
++ adjuntarFotoRecepcion(fotoRecepcionUrl): void
++ negarEntrega(entidadbeneficiaria): void
++ mandarARevision(administrador):void
++ regresarAlDeposito(administrador): void
+- actualizarEstado(EstadoEntrega nuevoEstado, String actor): void
+- registrarCambioEstado(EstadoEntrega anterior, EstadoEntrega nuevo, String actor): void
++ asignarRuta(rutaId): void
++ validarIdentificador(UUID): void
++ validarDestino(Destino): void
++ validarMagnitudPositiva(Float): void
++ validarActor(String): void",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmjPY_RCzC,,,,COLUMN,ROW
+66,Flex polygon,Geometric Shapes,2,,238,,,,,,  CAMIONES,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmpMznPL~B,,,,,
+67,Block,Standard,2,,238,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmr7i3MFKb,,,,,
+68,Class,UML,2,,,,,,,,Camion,"​- id: UUID
+- rutaActual: UUID
+- patente: String
+- capacidadVolumen: Float
+- alturaM: Float
+- capacidadKG: Float
+- estado: EstadoCamion","​+ asignarRuta (rutaId): void
++ completarRuta (): void
++ habilitar(): void
++ deshabilitar(): void
++ estaDisponibleParaAsignar(): boolean
++ validarPatente(String) : void {static}
++ validarCapacidad(Float) : void",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrm6IjiAuge,,,,COLUMN,ROW
+69,Flex polygon,Geometric Shapes,2,,239,,,,,,  RUTAS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmkdQzvhp3,,,,,
+70,Block,Standard,2,,239,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmm4MFo5j-,,,,,
+71,Class,UML,2,,,,,,,,Ruta,"​- id: UUID
+- fecha: LocalDate
+- entregas: List<UUID>
+- UUID: ChoferId
+- UUID: CamionId
+- estado: EstadoRuta
+- historialEstado: List<CambioEstadoRuta>
+- horaInicioReal: DateTime
+- horaFinReal: DateTime
+","​+ iniciarRuta(): void
++ completarRuta(): void
++ agregarEntrega(entregaId): void
++ obtenerEntregas(): List <UUID>",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmlWJyor.S,,,,,
+72,Flex polygon,Geometric Shapes,2,,240,,,,,,  CHOFER,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmYoxOEMrn,,,,,
+73,Block,Standard,2,,240,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrm3-C9xxlB,,,,,
+74,Class,UML,2,,,,,,,,CambioEstadoEntrega,"​- estadoAnterior: EstadoEntrega
+- estadoNuevo: EstadoEntrega
+- timestamp: LocalDateTime
+- actor: String",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmd_JLpD4~,,,,COLUMN,ROW
+75,Class,UML,2,,,,,,,,Chofer,"​- id: UUID
+- nombre: String
+- apellido: String
+- licencia: String
+- telefonoContacto: String
+- estado: EstadoChofer
+- historialEstados: List<CambioEstadoCamion>","​+ cambiarEstado(EstadoChofer): void
++ actualizarLicencia(String):void
++ actualizarTelefContacto(String):void
++ asignarRuta(Ruta):void
++ completarRuta():void
++ habilitar():void
++ deshabilitar():void
++ estaDisponibleParaAsignar():Boolean
+- validarEstado(String, String, String, String):void",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmQQodJsOo,,,,COLUMN,ROW
+76,Class,UML,2,,,,,,,,"<Enum>
+EstadoEntrega","PENDIENTE
+EN_TRASLADO
+ENTREGADA
+NO_RECIBIDA
+REVISION",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmYjweTvlt,,,,,
+78,Sticky note,Sticky Notes,2,,,,,,,,E4,Tadeo Sorrentino,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TlrmKKwFur8i,,,,,
+79,Class,UML,2,,,,,,,,GeneradorDeRutas,"​- MAX_ENTREGAS_POR_SOLICITUD: int (constante = 100)
+- generadorLotes: GeneradorLotes","​+ planificar(List<Entrega>, List<Camion>): List<PlanificacionSolicitada>
++ generarRutas(RespuestaPlanificacion): List<Ruta>
+- generarLotes(List<Entrega>): List<List<Entrega>>",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,L-tm8KcLNipj,,,,COLUMN,ROW
+80,Class,UML,2,,,,,,,,GeneradorLotesSimple,,​+ particionarEnLotes(List<Entrega>):  List<List<Entrega>>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,L-tmHq5qTUZa,,,,COLUMN,ROW
+81,Class,UML,2,,,,,,,,"<Interface>
+GeneradorLotes",​+ particionarEnLotes(List<Entrega>):  List<List<Entrega>>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,L-tm07F.w~F7,,,,,
+82,Class,UML,2,,,,,,,,RespuestaPlanificacion,"​- id: UUID
+- idPlanificacionSolicitada: UUID 
+- fecha: LocalDate
+- datos: Map<Camion, List<Entrega>",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,L-tmzhw6WGgl,,,,COLUMN,ROW
+83,Class,UML,2,,,,,,,,PlanificacionSolicitada,"​- id: UUID
+- fecha: LocalDate
+- maximoPorLote: Integer
+- lotesEntregas: List<List<Entrega>>
+- camionesDisponibles: List<Camion>",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,L-tmV2ofAuoA,,,,COLUMN,ROW
+84,Class,UML,2,,,,,,,,GestorDeCamiones,​- validadorPatentes: ValidadorPatentes,"​+ procesarSolicitudNuevoCamion(SolicitudNuevoCamion): Optional<Camion>
++ cambiarEstado(Camion, EstadoCamion): void
+- validarPatente(String, List<String>): Boolean",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,cjumZUDR~9qX,,,,,
+85,Class,UML,2,,,,,,,,SolicitudNuevoCamion,"​- patente: String
+- capacidadVolumen: Float
+- altura: Float
+- capacidadKG: Float
+- patentesExistentes: List<String>",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,cjumLYKr415g,,,,COLUMN,ROW
+86,Class,UML,2,,,,,,,,GestorDeEntregas,,​+ cambiarEstado(SolicitudTransicionEntrega): void,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smumFxoDActb,,,,COLUMN,ROW
+87,Class,UML,2,,,,,,,,ConfirmacionRecepcion ,​- fotoRecepcionUrl: String,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smumbOqLnJ7d,,,,COLUMN,ROW
+88,Class,UML,2,,,,,,,,NoRecepcion,"​- justificacion: String
+- replanificable: Boolean",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smumhrvtI8FJ,,,,COLUMN,ROW
+89,Class,UML,2,,,,,,,,RegresoDeposito,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smumXvx7TKzP,,,,COLUMN,ROW
+90,Class,UML,2,,,,,,,,"<Sealed Interface>
+SolicitudTransicionEntrega","​- actor: String
+- entrega: Entrega",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smumqOuhvDUe,,,,,
+91,Class,UML,2,,,,,,,,"<Enum>
+EstadoCamion","DISPONIBLE
+EN_RUTA
+DESHABILITADO",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ABum7jAqZrQp,,,,,
+95,Flex polygon,Geometric Shapes,2,,242,,,,,,  DIRECCION,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEumdFr~sI2V,,,,,
+96,Block,Standard,2,,242,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEumWS7Twh2-,,,,,
+97,Class,UML,2,,,,,,,,Pais,​- nombre: String,​+ anonimizar(): void,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEumbl-yELyD,,,,COLUMN,ROW
+98,Class,UML,2,,,,,,,,Direccion,"​- localidad: Localidad 
+- calle: String 
+- altura: Integer 
+- piso: Integer 
+- departamento: String 
+- codigoPostal: String","​+ Direccion(String, Integer, Integer, String, String, Localidad) 
+- validarDireccion(String, Integer, String, Localidad): void {static} 
++ anonimizar(): void",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEumnzP5iKXU,,,,COLUMN,ROW
+99,Class,UML,2,,,,,,,,Provincia,"​- nombre: String
+- pais: Pais",​+ anonimizar(): void,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEum16qrMfk0,,,,COLUMN,ROW
+100,Class,UML,2,,,,,,,,Localidad,"​- nombre: String 
+- provincia: Provincia",​+ anonimizar(): void,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEumHkdInBv4,,,,COLUMN,ROW
+101,Flex polygon,Geometric Shapes,2,,243,,,,,,PLANIFICADOR_EXTERNO,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xm0WBfhTLh,,,,,
+102,Block,Standard,2,,243,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xm_Jl6Mlzf,,,,,
+103,Class,UML,2,,,,,,,,AlgoritmoOrdenadorSimple,,​+ obtenerEntregasOrdenadas(List<Entrega>):  List<Entrega>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xmByd068rm,,,,COLUMN,ROW
+104,Class,UML,2,,,,,,,,PlanificadorDeRutas,"​- ordenadorEntregas: AlgoritmoOrdenadorDeEntregas
+- asignadorDeEntregas: AlgoritmoAsignadorDeEntregas",​+ procesarSolicitud(PlanificacionSolicitada): RespuestaPlanificacion,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xmojPlkC2a,,,,COLUMN,ROW
+105,Class,UML,2,,,,,,,,"<Interface>
+AlgoritmoOrdenadorDeEntregas",​+ obtenerEntregasOrdenadas(List<Entrega>):  List<Entrega>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xmop4m1A7Y,,,,,
+106,Class,UML,2,,,,,,,,"<Interface>
+AlgoritmoAsignadorDeEntregas",​+ obtenerEntregasOrdenadas(List<Entrega>):  List<Entrega>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xm_RPzQLty,,,,,
+107,Class,UML,2,,,,,,,,AsignadorDeEntregasPorDimension,,"​- asignar(List<Entrega>, List<Camion>): Map<UUID, List<Entrega>>",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xmIRbaBGYh,,,,COLUMN,ROW
+108,Class,UML,2,,,,,,,,ValidadorPatentes,​- camionRepository: ICamionRepository,"​+ validar(patente): void
++ validarFormato(patente): void
++ validarUnicidad(patente): void",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,slymmqVeVadn,,,,COLUMN,ROW
+116,Class,UML,2,,,,,,,,"<Enum>
+EstadoRuta","PENDIENTE
+EN_TRASLADO
+COMPLETADA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmDuxjFaac,,,,,
+117,Class,UML,2,,,,,,,,GestorDeRutas,,"​+ cambiarEstado(Ruta, Chofer, EstadoRuta)
+- iniciarRuta(Ruta, Chofer): void
+- completarRuta(Ruta, Chofer): void",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,VgumD.7qlmCI,,,,COLUMN,ROW
+129,Class,UML,2,,,,,,,,CambioEstadoRuta,"​- estadoAnterior: EstadoRuta
+- estadoNuevo: EstadoRuta
+- timestamp: LocalDateTime
+",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ofOm8dUsie8u,,,,COLUMN,ROW
+130,Class,UML,2,,,,,,,,CambioEstadoCamion,"​- estadoAnterior: EstadoRuta
+- estadoNuevo: EstadoRuta
+- timestamp: LocalDateTime
+",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,2fOmVjuFEisj,,,,COLUMN,ROW
+134,Class,UML,2,,,,,,,,"<Enum>
+EstadoChofer","DISPONIBLE
+EN_RUTA
+DESHABILITADO",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,vxOmrPSBqnbQ,,,,,
+135,Class,UML,2,,,,,,,,CambioEstadoCamion,"​- estadoAnterior: EstadoChofer
+- estadoNuevo: EstadoChofer
+- timestamp: LocalDateTime
+",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,vxOmBJ8H41Ep,,,,COLUMN,ROW
+169,Line,,2,,,71,116,Composition,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmHs_LY18J,,,,,
+170,Line,,2,,,68,71,None,Aggregation,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,3gMmMmYxHWT9,,,,,
+171,Line,,2,,,71,65,None,Composition,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ulrmsNSbx-k1,,,,,
+172,Line,,2,,,80,81,None,Equilateral Hollow Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,L-tmb~sqRkSi,,,,,
+173,Line,,2,,,79,83,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,L-tmrw6ho8n1,,,,,
+174,Line,,2,,,79,80,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ZdumsVkhxiFA,,,,,
+175,Line,,2,,,82,79,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,M8MmBXXdG-Tl,,,,,
+176,Line,,2,,,84,85,None,Equilateral Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,cjumPy0Sk8xE,,,,,
+177,Line,,2,,,68,84,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,ikumRt_ZMpCR,,,,,
+178,Line,,2,,,87,90,None,Equilateral Hollow Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smumao-Hossv,,,,,
+179,Line,,2,,,88,90,None,Equilateral Hollow Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smumExs-TvhS,,,,,
+180,Line,,2,,,89,90,None,Equilateral Hollow Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smum80AB0eqI,,,,,
+181,Line,,2,,,86,90,None,Equilateral Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,smum7IPc10Aq,,,,,
+182,Line,,2,,,76,65,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,Irumd7AKTgCr,,,,,
+183,Line,,2,,,65,80,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,CtumRWuelwoB,,,,,
+184,Line,,2,,,86,65,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,YwumJ80~iRfZ,,,,,
+185,Line,,2,,,74,65,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,UxumC-~fhvyK,,,,,
+186,Line,,2,,,74,76,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,7xum31V4q9ad,,,,,
+187,Line,,2,,,91,68,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,LBum4E-XHS0p,,,,,
+192,Line,,2,,,98,100,None,Equilateral Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEumhJ7~lNEH,,,,,
+193,Line,,2,,,99,97,None,Equilateral Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEumXC9fzrZB,,,,,
+194,Line,,2,,,100,99,None,Equilateral Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,TEumC1ZTNujS,,,,,
+195,Line,,2,,,103,105,Equilateral Arrow,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xmlpssCWac,,,,,
+196,Line,,2,,,107,106,Equilateral Arrow,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xmaKDB0ZNP,,,,,
+197,Line,,2,,,105,104,Generalization,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xmJqvAMtN4,,,,,
+198,Line,,2,,,106,104,Generalization,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,K~xmb8ImI2ts,,,,,
+199,Line,,2,,,108,84,None,Composition,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,zlym9K4GKtY.,,,,,
+205,Line,,2,,,104,83,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,r-Lm4rxaJcui,,,,,
+206,Line,,2,,,104,82,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,x-LmblwtyOAk,,,,,
+207,Line,,2,,,98,65,None,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,​-cMmXAkaEHZm,,,,,
+208,Line,,2,,,71,79,Equilateral Arrow,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,j8MmCVzWx7nX,,,,,
+209,Line,,2,,,71,75,Aggregation,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,4tNm5mdd1.Io,,,,,
+214,Line,,2,,,117,68,None,Equilateral Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,crOmrg_T02On,,,,,
+218,Line,,2,,,117,71,None,Equilateral Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,hsOmDMU7af-M,,,,,
+219,Line,,2,,,117,73,None,Equilateral Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,QsOmzrIsnkKz,,,,,
+222,Line,,2,,,71,129,Composition,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,RuOm5Zv8fmPS,,,,,
+223,Line,,2,,,129,116,Composition,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,5uOmim5YA4_M,,,,,
+225,Line,,2,,,,134,Composition,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,vxOmrCX2xIET,,,,,
+226,Line,,2,,,,135,Composition,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,vxOm.fVNGoBK,,,,,
+227,Line,,2,,,135,134,Composition,None,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,vxOm-IAw~pMy,,,,,
+228,Line,,2,,,134,,None,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,GxOmFHXgsWpq,,,,,

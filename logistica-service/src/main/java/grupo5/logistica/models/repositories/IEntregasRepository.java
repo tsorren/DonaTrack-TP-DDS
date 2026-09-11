@@ -11,4 +11,6 @@ public interface IEntregasRepository extends CrudRepository<Entrega> {
   List<Entrega> findByEstado(EstadoEntrega estado);
 
   List<Entrega> findByRutaId(UUID rutaId);
+
+  List<Entrega> findSinRuta();
 }

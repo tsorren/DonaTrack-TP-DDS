@@ -1,9 +1,6 @@
 package grupo5.logistica.services;
 
-import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
-import grupo5.logistica.dto.rutas.IniciarRutaRequestDTO;
-import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
-import grupo5.logistica.dto.rutas.RutaResponseDTO;
+import grupo5.logistica.dto.rutas.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,9 +13,7 @@ public interface IRutasService {
 
   RutaResponseDTO agregarEntrega(UUID id, AgregarEntregaRutaRequestDTO dto);
 
-  RutaResponseDTO iniciar(UUID id, IniciarRutaRequestDTO dto);
-
-  RutaResponseDTO completar(UUID id);
+  RutaResponseDTO cambiarEstado(UUID id, CambioEstadoRutaRequestDTO dto);
 
   List<RutaResponseDTO> listarPorCamion(UUID camionId);
 }

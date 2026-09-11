@@ -1,0 +1,811 @@
+{
+  "info": {
+    "_postman_id": "donatrack-flujo-07-notificaciones",
+    "name": "Flujo 7 - Sincronización y los 8 Eventos de Notificación (notificaciones-service)",
+    "description": "Autocontenido. Sincroniza 3 réplicas de persona (donante, beneficiaria, admin) y dispara los 8 tipos de evento reales, verificando cuántas notificaciones genera cada uno y a quién. Cierra con el flujo de anonimización. OJO: en este servicio 'recurso no encontrado' es SIEMPRE 400, nunca 404 (ver Mapa de Flujos DonaTrack).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "if (!pm.collectionVariables.get('donantePersonaId')) { pm.collectionVariables.set('donantePersonaId', pm.variables.replaceIn('{{$guid}}')); }",
+          "if (!pm.collectionVariables.get('beneficiariaPersonaId')) { pm.collectionVariables.set('beneficiariaPersonaId', pm.variables.replaceIn('{{$guid}}')); }",
+          "if (!pm.collectionVariables.get('adminPersonaId')) { pm.collectionVariables.set('adminPersonaId', pm.variables.replaceIn('{{$guid}}')); }"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "donantePersonaId",
+      "value": ""
+    },
+    {
+      "key": "beneficiariaPersonaId",
+      "value": ""
+    },
+    {
+      "key": "adminPersonaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Sincronizar réplicas de persona",
+      "item": [
+        {
+          "name": "1. Sincronizar Donante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{donantePersonaId}}\",\n  \"denominacion\": \"Donante QA\",\n  \"tipoPersona\": \"HUMANA\",\n  \"mediosDeContacto\": [\n    { \"tipo\": \"CORREO\", \"esPredeterminado\": true, \"direccionCorreo\": \"donante.qa@example.com\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/personas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificaciones",
+                "personas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Sincronizar Beneficiaria (JURIDICA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{beneficiariaPersonaId}}\",\n  \"denominacion\": \"Comedor QA\",\n  \"tipoPersona\": \"JURIDICA\",\n  \"mediosDeContacto\": [\n    { \"tipo\": \"CORREO\", \"esPredeterminado\": true, \"direccionCorreo\": \"comedor.qa@example.com\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/personas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificaciones",
+                "personas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Sincronizar Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{adminPersonaId}}\",\n  \"denominacion\": \"Admin QA\",\n  \"tipoPersona\": \"HUMANA\",\n  \"mediosDeContacto\": [\n    { \"tipo\": \"CORREO\", \"esPredeterminado\": true, \"direccionCorreo\": \"admin.qa@example.com\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/personas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificaciones",
+                "personas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. [Negativo] Medio de contacto con tipo no soportado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 MEDIO_DE_CONTACTO_TIPO_NO_SOPORTADO', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"denominacion\": \"Persona con medio raro\",\n  \"tipoPersona\": \"HUMANA\",\n  \"mediosDeContacto\": [\n    { \"tipo\": \"FAX\", \"esPredeterminado\": true }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/personas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificaciones",
+                "personas"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Los 8 tipos de evento",
+      "item": [
+        {
+          "name": "1. DONANTE_REGISTRADO (1 notificación → donante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONANTE_REGISTRADO\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"credencialesDeAcceso\": \"USER: qa.donante | PASS: temp1234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            },
+            "description": "credencialesDeAcceso viaja como texto plano y se reenvía tal cual al donante — deuda de seguridad de fondo del servicio."
+          }
+        },
+        {
+          "name": "2. DONANTE_INACTIVO (1 notificación → donante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONANTE_INACTIVO\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"diasInactivo\": 45\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. MISION_CUMPLIDA (1 notificación → donante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"MISION_CUMPLIDA\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"nombreMision\": \"Hábil Donador\",\n  \"recompensa\": \"Insignia de Bronce\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. SUBIO_CATEGORIA (1 notificación → donante)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"SUBIO_CATEGORIA\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"categoriaNueva\": \"SOSTENEDOR\",\n  \"categoriaVieja\": \"COLABORADOR\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. DONACION_ASIGNADA (2 notificaciones → donante + beneficiaria)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONACION_ASIGNADA\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"idPersonaBeneficiaria\": \"{{beneficiariaPersonaId}}\",\n  \"detalleDonacion\": \"5 paquetes de fideos\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. DONACION_RECIBIDA (2 notificaciones → donante + beneficiaria)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONACION_RECIBIDA\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"idPersonaBeneficiaria\": \"{{beneficiariaPersonaId}}\",\n  \"detalleDonacion\": \"5 paquetes de fideos\",\n  \"patenteCamion\": \"AB123CD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "7. DONACION_EN_CAMINO (2 notificaciones → donante + beneficiaria)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONACION_EN_CAMINO\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"idPersonaBeneficiaria\": \"{{beneficiariaPersonaId}}\",\n  \"detalleDonacion\": \"5 paquetes de fideos\",\n  \"enlaceSeguimiento\": \"https://donatrack.org/seguimiento/qa\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "8. ENTREGA_FALLIDA (3 notificaciones → donante + beneficiaria + admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"ENTREGA_FALLIDA\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"idPersonaBeneficiaria\": \"{{beneficiariaPersonaId}}\",\n  \"detalleDonacion\": \"5 paquetes de fideos\",\n  \"idPersonaAdmin\": \"{{adminPersonaId}}\",\n  \"motivo\": \"Nadie recibió el envío en el domicilio\",\n  \"replanificable\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            },
+            "description": "Único tipo con 3 destinatarios."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Verificar conteos de notificaciones por persona",
+      "item": [
+        {
+          "name": "1. Donante recibió 8 notificaciones",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('8 notificaciones', function () { pm.expect(pm.response.json().length).to.eql(8); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/persona/{{donantePersonaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "persona",
+                "{{donantePersonaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Beneficiaria recibió 4 notificaciones",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('4 notificaciones (ASIGNADA + RECIBIDA + EN_CAMINO + ENTREGA_FALLIDA)', function () { pm.expect(pm.response.json().length).to.eql(4); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/persona/{{beneficiariaPersonaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "persona",
+                "{{beneficiariaPersonaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Admin recibió 1 notificación (solo ENTREGA_FALLIDA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('1 notificación', function () { pm.expect(pm.response.json().length).to.eql(1); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/persona/{{adminPersonaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "persona",
+                "{{adminPersonaId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Negativos",
+      "item": [
+        {
+          "name": "1. [Negativo] Evento para persona sin réplica sincronizada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400, no 404 (RECURSO_NO_ENCONTRADO se mapea a 400 en este servicio)', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONANTE_REGISTRADO\",\n  \"idPersonaDonante\": \"{{$guid}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"credencialesDeAcceso\": \"USER: nadie | PASS: nada\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. [Negativo] tipo no reconocido por el discriminador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 (JSON inválido/malformado)', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"TIPO_QUE_NO_EXISTE\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. [Negativo] fecha futura (@PastOrPresent)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"MISION_CUMPLIDA\",\n  \"idPersonaDonante\": \"{{donantePersonaId}}\",\n  \"fecha\": \"2099-01-01T00:00:00\",\n  \"nombreMision\": \"Futura\",\n  \"recompensa\": \"N/A\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Anonimización",
+      "item": [
+        {
+          "name": "1. Anonimizar Donante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/personas/{{donantePersonaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificaciones",
+                "personas",
+                "{{donantePersonaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Verificar réplica anonimizada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.test('denominacion == ANONIMIZADO', function () { pm.expect(json.denominacion).to.eql('ANONIMIZADO'); });",
+                  "pm.test('correo == ANONIMIZADO', function () { pm.expect(json.mediosDeContacto[0].direccionCorreo).to.eql('ANONIMIZADO'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/personas/{{donantePersonaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificaciones",
+                "personas",
+                "{{donantePersonaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Verificar que las notificaciones ya existentes también se anonimizaron",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var notifs = pm.response.json();",
+                  "pm.test('Todos los mensajes ya viejos ahora son ANONIMIZADO', function () {",
+                  "  notifs.forEach(function (n) { pm.expect(n.mensaje).to.eql('ANONIMIZADO'); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/persona/{{donantePersonaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "persona",
+                "{{donantePersonaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. [Nota] Sincronizar de nuevo des-anonimiza sin aviso",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/notificaciones/personas/{{donantePersonaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notificaciones",
+                "personas",
+                "{{donantePersonaId}}"
+              ]
+            },
+            "description": "No es un endpoint nuevo — correr otra vez el request 1.1 con este mismo id sobreescribe todo, incluida la denominación ANONIMIZADO. Documentado como comportamiento a confirmar con el equipo, no un caso de prueba con asserts."
+          }
+        }
+      ]
+    }
+  ]
+}

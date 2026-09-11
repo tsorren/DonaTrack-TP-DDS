@@ -1,5 +1,5 @@
 # Uso de RabbitMQ para la comunicación entre Logística y los demás servicios
-- Status: proposed
+- Status: accepted
 - Date: 2026-07-03
 - Deciders: Decisión Grupal
 

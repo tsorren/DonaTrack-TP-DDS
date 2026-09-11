@@ -1,0 +1,302 @@
+{
+  "info": {
+    "_postman_id": "donatrack-logistica-swagger-verified-v2",
+    "name": "DonaTrack - Logística Service (Swagger Verified)",
+    "description": "Colección verificada contra los Controllers de Swagger UI de logistica-service (:8083).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8083" },
+    { "key": "camionId", "value": "" },
+    { "key": "choferId", "value": "" },
+    { "key": "entregaId", "value": "" },
+    { "key": "rutaId", "value": "" },
+    { "key": "planificacionId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01. Camiones Controller",
+      "item": [
+        {
+          "name": "1. Crear Camión",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('camionId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"AB123CD\",\n  \"capacidadKG\": 2000.0,\n  \"capacidadVolumen\": 25.0,\n  \"altura\": 2.8\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/camiones", "host": ["{{baseUrl}}"], "path": ["api", "camiones"] }
+          }
+        },
+        {
+          "name": "2. Listar Camiones",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/camiones", "host": ["{{baseUrl}}"], "path": ["api", "camiones"] }
+          }
+        },
+        {
+          "name": "3. Consultar Camión por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/camiones/{{camionId}}", "host": ["{{baseUrl}}"], "path": ["api", "camiones", "{{camionId}}"] }
+          }
+        },
+        {
+          "name": "4. Cambiar Estado de Camión",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"DISPONIBLE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/camiones/{{camionId}}/estado", "host": ["{{baseUrl}}"], "path": ["api", "camiones", "{{camionId}}", "estado"] }
+          }
+        },
+        {
+          "name": "5. Dar de Baja Camión",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/camiones/{{camionId}}", "host": ["{{baseUrl}}"], "path": ["api", "camiones", "{{camionId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Choferes Controller",
+      "item": [
+        {
+          "name": "1. Crear Chofer",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('choferId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Carlos\",\n  \"apellido\": \"Gomez\",\n  \"licencia\": \"B2-123456\",\n  \"telefonoContacto\": \"+541166667777\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/choferes", "host": ["{{baseUrl}}"], "path": ["api", "choferes"] }
+          }
+        },
+        {
+          "name": "2. Listar Choferes",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/choferes", "host": ["{{baseUrl}}"], "path": ["api", "choferes"] }
+          }
+        },
+        {
+          "name": "3. Consultar Chofer por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/choferes/{{choferId}}", "host": ["{{baseUrl}}"], "path": ["api", "choferes", "{{choferId}}"] }
+          }
+        },
+        {
+          "name": "4. Cambiar Estado de Chofer",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"DISPONIBLE\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/choferes/{{choferId}}/estado", "host": ["{{baseUrl}}"], "path": ["api", "choferes", "{{choferId}}", "estado"] }
+          }
+        },
+        {
+          "name": "5. Dar de Baja Chofer",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/choferes/{{choferId}}", "host": ["{{baseUrl}}"], "path": ["api", "choferes", "{{choferId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Entregas Controller",
+      "item": [
+        {
+          "name": "1. Crear Entrega",
+          "description": "NOTA: idDonacion/idBeneficiaria son IDs sintéticos de otro microservicio (donaciones-service), no validados aquí. En el flujo real este endpoint lo invoca donaciones-service de forma asíncrona vía Feign al aprobarse una propuesta de matching (ver LogisticaFeignClient) — este request sirve para probar el contrato de logistica-service de forma aislada, no un flujo E2E real.",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('entregaId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonacion\": \"d1d1d1d1-d1d1-d1d1-d1d1-d1d1d1d1d1d1\",\n  \"idBeneficiaria\": \"e2e2e2e2-e2e2-e2e2-e2e2-e2e2e2e2e2e2\",\n  \"destino\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"piso\": null,\n    \"departamento\": null,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  },\n  \"pesoTotalKG\": 15.0,\n  \"volumenTotalM3\": 0.2\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/entregas", "host": ["{{baseUrl}}"], "path": ["api", "entregas"] }
+          }
+        },
+        {
+          "name": "2. Listar Entregas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/entregas", "host": ["{{baseUrl}}"], "path": ["api", "entregas"] }
+          }
+        },
+        {
+          "name": "3. Obtener Entrega por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/entregas/{{entregaId}}", "host": ["{{baseUrl}}"], "path": ["api", "entregas", "{{entregaId}}"] }
+          }
+        },
+        {
+          "name": "4. Obtener Historial de Entrega",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/historial", "host": ["{{baseUrl}}"], "path": ["api", "entregas", "{{entregaId}}", "historial"] }
+          }
+        },
+        {
+          "name": "5. Adjuntar Foto de Recepción",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fotoRecepcionUrl\": \"https://donatrack.org/evidencia-entrega.jpg\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/fotos", "host": ["{{baseUrl}}"], "path": ["api", "entregas", "{{entregaId}}", "fotos"] }
+          }
+        },
+        {
+          "name": "6. Cambiar Estado de Entrega",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREGADA\",\n  \"actor\": \"Comedor Solidario\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/estado", "host": ["{{baseUrl}}"], "path": ["api", "entregas", "{{entregaId}}", "estado"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Rutas Controller",
+      "item": [
+        {
+          "name": "1. Listar Rutas",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "if (json && json.length > 0) {",
+                "  pm.collectionVariables.set('rutaId', json[0].id);",
+                "}",
+                "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rutas", "host": ["{{baseUrl}}"], "path": ["api", "rutas"] }
+          }
+        },
+        {
+          "name": "2. Obtener Ruta por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rutas/{{rutaId}}", "host": ["{{baseUrl}}"], "path": ["api", "rutas", "{{rutaId}}"] }
+          }
+        },
+        {
+          "name": "3. Obtener Ruta con sus Entregas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/rutas/{{rutaId}}/entregas", "host": ["{{baseUrl}}"], "path": ["api", "rutas", "{{rutaId}}", "entregas"] }
+          }
+        },
+        {
+          "name": "4. Agregar Entrega a Ruta",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entregaId\": \"{{entregaId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/rutas/{{rutaId}}/entregas", "host": ["{{baseUrl}}"], "path": ["api", "rutas", "{{rutaId}}", "entregas"] }
+          }
+        },
+        {
+          "name": "5. Cambiar Estado de Ruta (EN_TRASLADO / COMPLETADA)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_TRASLADO\",\n  \"actor\": \"Administrador\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/rutas/{{rutaId}}/estado", "host": ["{{baseUrl}}"], "path": ["api", "rutas", "{{rutaId}}", "estado"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Planificación Controller",
+      "item": [
+        {
+          "name": "1. Procesar Callback de Planificación Externa",
+          "description": "Endpoint interno: no expone creación manual de planificaciones (solo dispara el scheduler PlanificadorDeEntregas). Este request simula la respuesta que el proveedor externo de ruteo envía de vuelta vía POST a este mismo endpoint (ver ProveedorExternoPlanificacionSimulado). estado acepta \"OK\" o \"ERROR\" (con motivoError en ese caso).",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"solicitudId\": \"{{planificacionId}}\",\n  \"rutas\": [],\n  \"estado\": \"OK\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/logistica/resultados", "host": ["{{baseUrl}}"], "path": ["api", "logistica", "resultados"] }
+          }
+        },
+        {
+          "name": "2. Obtener Planificación por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/logistica/planificaciones/{{planificacionId}}", "host": ["{{baseUrl}}"], "path": ["api", "logistica", "planificaciones", "{{planificacionId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}

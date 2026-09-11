@@ -1,11 +1,14 @@
 package grupo5.notificaciones.models.entities.notificaciones.eventos;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
+import grupo5.notificaciones.mothers.EventoNotificableMother;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.ArrayList;
@@ -28,7 +31,9 @@ class EventosNotificablesTest {
 
     assertEquals(1, notificaciones.size());
 
-    assertEquals("Subiste a la categoría Platino", notificaciones.getFirst().getMensaje());
+    assertEquals(
+        "¡Felicitaciones! Has ascendido de la categoría Bronce a Platino.",
+        notificaciones.getFirst().getMensaje());
   }
 
   @Test
@@ -149,5 +154,156 @@ class EventosNotificablesTest {
     assertEquals(donante.getId(), notificaciones.get(0).getPersonaId());
     assertEquals(beneficiario.getId(), notificaciones.get(1).getPersonaId());
     assertEquals(admin.getId(), notificaciones.get(2).getPersonaId());
+  }
+
+  // Oleada 8: EntregaFallida.generarNotificaciones() con y sin replanificable, confirmando el
+  // mensaje al admin — antes solo alcanzable indirectamente vía armarMensajeAdmin() (privado).
+
+  @Test
+  void entregaFallida_conReplanificableTrue_elMensajeAlAdminDeberiaDecirQueSiSeReplanifico() {
+    Persona donante = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
+    Persona beneficiario =
+        new Persona(
+            UUID.randomUUID(), new ArrayList<>(), "Comedor Esperanza", TipoPersona.JURIDICA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Administración", TipoPersona.HUMANA);
+
+    EntregaFallida evento =
+        EventoNotificableMother.entregaFallida(donante, beneficiario, admin, true);
+
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+    String mensajeAdmin = notificaciones.get(2).getMensaje();
+
+    assertTrue(mensajeAdmin.contains("donante: Juan"));
+    assertTrue(mensajeAdmin.contains("entidad: Comedor Esperanza"));
+    assertTrue(mensajeAdmin.contains("Motivo: Nadie respondió"));
+    assertTrue(mensajeAdmin.contains("Replanificada: sí"));
+  }
+
+  @Test
+  void entregaFallida_conReplanificableFalse_elMensajeAlAdminDeberiaDecirQueNoSeReplanifico() {
+    Persona donante = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
+    Persona beneficiario =
+        new Persona(
+            UUID.randomUUID(), new ArrayList<>(), "Comedor Esperanza", TipoPersona.JURIDICA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Administración", TipoPersona.HUMANA);
+
+    EntregaFallida evento =
+        EventoNotificableMother.entregaFallida(donante, beneficiario, admin, false);
+
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+
+    assertTrue(notificaciones.get(2).getMensaje().contains("Replanificada: no"));
+    // Los mensajes a donante y beneficiario también dependen de replanificable — se confirman
+    // acá para no dejar ese costado sin cubrir.
+    assertTrue(notificaciones.get(0).getMensaje().endsWith("Nadie respondió."));
+    assertTrue(notificaciones.get(1).getMensaje().endsWith("Nadie respondió."));
+  }
+
+  // Oleada 3 (RF-06): guardas de obligatoriedad de los nuevos constructores protegidos de
+  // EventoNotificable/EventoDeDonacion, ejercitadas a través de una subclase concreta de cada uno.
+
+  @Test
+  void constructor_conPersonaNula_deberiaLanzarValidationException() {
+    assertThrows(
+        ValidationException.class,
+        () -> new SubioCategoria(null, "Bronce", "Platino", TEST_DATE_TIME));
+  }
+
+  @Test
+  void constructor_conFechaNula_deberiaLanzarValidationException() {
+    Persona persona =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Persona", TipoPersona.HUMANA);
+
+    assertThrows(
+        ValidationException.class, () -> new SubioCategoria(persona, "Bronce", "Platino", null));
+  }
+
+  @Test
+  void constructorEventoDeDonacion_conEntidadBeneficiariaNula_deberiaLanzarValidationException() {
+    Persona donante = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
+
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionAsignada(donante, null, "10 cajas de leche", TEST_DATE_TIME));
+  }
+
+  @Test
+  void constructorEventoDeDonacion_conDetalleDonacionNulo_deberiaLanzarValidationException() {
+    Persona donante = new Persona(UUID.randomUUID(), new ArrayList<>(), "Juan", TipoPersona.HUMANA);
+    Persona beneficiario =
+        new Persona(
+            UUID.randomUUID(), new ArrayList<>(), "Comedor Esperanza", TipoPersona.JURIDICA);
+
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionAsignada(donante, beneficiario, null, TEST_DATE_TIME));
+  }
+
+  @Test
+  void donacionVencida_deberiaGenerarNotificacionParaAdmin() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Carlos Gómez", TipoPersona.HUMANA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Admin Sistema", TipoPersona.HUMANA);
+    String detalle = "5 kg de leche en polvo";
+    String motivo = "Superó el tiempo máximo de acopio (30 días)";
+
+    DonacionVencida evento = new DonacionVencida(donante, admin, detalle, motivo, TEST_DATE_TIME);
+
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+
+    assertEquals(1, notificaciones.size());
+    assertEquals(admin.getId(), notificaciones.getFirst().getPersonaId());
+    assertEquals(
+        "Atención administrador: La donación de 5 kg de leche en polvo del donante Carlos Gómez ha vencido. Motivo: Superó el tiempo máximo de acopio (30 días).",
+        notificaciones.getFirst().getMensaje());
+  }
+
+  @Test
+  void donacionVencida_conAdministracionNula_deberiaLanzarValidationException() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Carlos Gómez", TipoPersona.HUMANA);
+
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, null, "5 kg de leche", "Vencida", TEST_DATE_TIME));
+  }
+
+  @Test
+  void donacionVencida_conDetalleNuloOVacio_deberiaLanzarValidationException() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Carlos Gómez", TipoPersona.HUMANA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Admin Sistema", TipoPersona.HUMANA);
+
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, null, "Vencida", TEST_DATE_TIME));
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "", "Vencida", TEST_DATE_TIME));
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "   ", "Vencida", TEST_DATE_TIME));
+  }
+
+  @Test
+  void donacionVencida_conMotivoNuloOVacio_deberiaLanzarValidationException() {
+    Persona donante =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Carlos Gómez", TipoPersona.HUMANA);
+    Persona admin =
+        new Persona(UUID.randomUUID(), new ArrayList<>(), "Admin Sistema", TipoPersona.HUMANA);
+
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "5 kg de leche", null, TEST_DATE_TIME));
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "5 kg de leche", "", TEST_DATE_TIME));
+    assertThrows(
+        ValidationException.class,
+        () -> new DonacionVencida(donante, admin, "5 kg de leche", "   ", TEST_DATE_TIME));
   }
 }

@@ -1,6 +1,6 @@
 package grupo5.donaciones.schedulers;
 
-import grupo5.donaciones.services.impl.PropuestaService;
+import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -10,18 +10,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class PlanificadorDeAlgoritmos {
 
-  private final PropuestaService propuestaService;
+  private final PropuestaDeAsignacionService propuestaDeAsignacionService;
 
   @Value("${planificador.algoritmos.cron.expression}")
   private String cronExpression;
 
-  public PlanificadorDeAlgoritmos(PropuestaService propuestaService) {
-    this.propuestaService = propuestaService;
+  public PlanificadorDeAlgoritmos(PropuestaDeAsignacionService propuestaDeAsignacionService) {
+    this.propuestaDeAsignacionService = propuestaDeAsignacionService;
   }
 
   @Scheduled(cron = "${planificador.algoritmos.cron.expression}")
   public void ejecutarAlgoritmos() {
-    propuestaService.ejecutarAsignacion();
+    propuestaDeAsignacionService.ejecutarAsignacion();
   }
 
   private static String traducir(String valor) {

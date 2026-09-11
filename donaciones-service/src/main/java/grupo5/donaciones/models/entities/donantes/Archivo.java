@@ -30,6 +30,14 @@ public class Archivo implements AggregateRoot {
     this.estado = EstadoArchivo.PROCESADO;
   }
 
+  public void finalizarProcesamiento(int erroresDeNegocio) {
+    if (erroresDeNegocio > 0) {
+      marcarComoCompletadoConErrores();
+    } else {
+      marcarComoProcesado();
+    }
+  }
+
   public void marcarComoError() {
     this.estado = EstadoArchivo.ERROR;
   }

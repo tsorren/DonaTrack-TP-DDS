@@ -1,6 +1,5 @@
 # Modelado de Eventos de Donaciones
-
-- Status: proposed
+- Status: accepted
 - Date: 2026-05-19
 - Deciders: Decisión Grupal
 - Tags: servicio-notificaciones
@@ -75,4 +74,4 @@ beneficiario
 
 ## Links
 
-* [Eventos Notificables](../20260519-eventos-como-disparadores-de-notificaciones)
+* [Eventos Notificables](./20260519-eventos-como-disparadores-de-notificaciones.md)

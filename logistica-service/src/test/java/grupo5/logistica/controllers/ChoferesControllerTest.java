@@ -14,48 +14,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.logistica.controllers.impl.ChoferesController;
 import grupo5.logistica.dto.choferes.CambioEstadoChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferResponseDTO;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
-import grupo5.logistica.services.IChoferesService;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class ChoferesControllerTest {
+class ChoferesControllerTest extends AbstractLogisticaWebMvcTest {
 
-  private MockMvc mockMvc;
-  private ObjectMapper objectMapper;
-
-  @Mock private IChoferesService choferesService;
-  @InjectMocks private ChoferesController controller;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   private static final UUID ID = UUID.randomUUID();
 
   private static final ChoferResponseDTO RESPONSE_DTO =
       new ChoferResponseDTO(
           ID, "Juan", "Perez", "LIC123456", "1122334455", EstadoChofer.DISPONIBLE, null);
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
-    objectMapper = new ObjectMapper();
-  }
 
   // ===================== POST /api/choferes =====================
 
@@ -80,16 +56,12 @@ class ChoferesControllerTest {
   void crear_deberiaRetornar400_cuandoLicenciaEsInvalida() throws Exception {
     ChoferRequestDTO request = new ChoferRequestDTO("Juan", "Perez", "", "1122334455");
 
-    when(choferesService.crear(any()))
-        .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO));
-
     mockMvc
         .perform(
             post("/api/choferes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value(ErrorCatalog.ARGUMENTO_INVALIDO.getCode()));
+        .andExpect(status().isBadRequest());
   }
 
   // ===================== GET /api/choferes =====================

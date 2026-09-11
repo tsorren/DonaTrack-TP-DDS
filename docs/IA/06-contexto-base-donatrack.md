@@ -13,9 +13,18 @@ No reemplaza el contexto específico de cada issue. Es solo una base inicial.
 # Contexto base para copiar
 
 ```txt
-Estoy trabajando en DonaTrack, un proyecto académico desarrollado en equipo.
+Estoy trabajando en DonaTrack, un proyecto académico de logística y trazabilidad de donaciones desarrollado en equipo (Java 21, Spring Boot 3, Maven reactor multi-módulo, Docker Compose, RabbitMQ y n8n).
 
-El proyecto utiliza un flujo de trabajo organizado por issues, sub-issues, Pull Requests de diseño, Pull Requests de implementación, documentación técnica en PlantUML, tests y reviews.
+Arquitectura del proyecto (4 microservicios + shared kernel):
+- `donaciones-service` (:8080): Núcleo de catálogo, personas, necesidades, normalización y asignación (State Pattern de DonacionIndependiente con 7 estados).
+- `notificaciones-service` (:8081): Despacho multicanal sincrónico vía HTTP Feign REST y réplica local de personas.
+- `incentivos-service` (:8082): Gamificación, misiones (Template Method), insignias, rankings y cron jobs.
+- `logistica-service` (:8083): Camiones, choferes, rutas, ciclo de vida de entregas y eventos RabbitMQ.
+- `common-lib`: Shared kernel con CrudRepositoryEnMemoria, jerarquía de excepciones y observabilidad (MDC/TraceId).
+- `integration-tests`: Suite desacoplada de pruebas de integración y E2E distribuido.
+- Persistencia actual: En memoria (ConcurrentHashMap / CrudRepositoryEnMemoria). BD relacional diferida a Entrega 2.
+
+El proyecto utiliza un flujo de trabajo organizado por issues, sub-issues, Pull Requests de diseño, Pull Requests de implementación, documentación técnica, tests y reviews.
 
 El equipo está dividido en tres grupos:
 
@@ -61,3 +70,4 @@ Formato ideal de respuesta:
 8. Próximo paso recomendado.
 
 No quiero respuestas genéricas. Quiero respuestas aplicadas al contexto de DonaTrack.
+```

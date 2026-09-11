@@ -1,0 +1,423 @@
+@startuml diagrama-de-clases-incentivos
+!include ../common/donatrack-style.puml
+
+title Servicio de Incentivos - Dominio y Arquitectura
+
+' ==================== GAMIFICACION / DONANTE ====================
+package DONANTE {
+  enum CategoriaDonante <<enum>> {
+    COLABORADOR
+    SOSTENEDOR
+    TRANSFORMADOR
+  }
+
+  class CambioCategoria <<entity>> {
+    - categoriaAnterior: CategoriaDonante
+    - categoriaNueva: CategoriaDonante
+    - fecha: LocalDateTime
+    --
+    + CambioCategoria(anterior: CategoriaDonante, nueva: CategoriaDonante)
+  }
+
+  class EventoDonacion <<entity>> {
+    - donacionId: UUID
+    - donanteId: UUID
+    - organizacionId: UUID
+    - subcategoria: String
+    - categorias: List<String>
+    - cantidadBienes: Integer
+    - exitosa: Boolean
+    - fecha: LocalDate
+    --
+    + esExitosa(): Boolean
+    + esDeMes(mes: YearMonth): Boolean
+  }
+
+  class DonanteIncentivos <<entity>> {
+    - id: UUID {final}
+    - idPersona: UUID {final}
+    - fechaRegistro: LocalDate {final}
+    - nombre: String
+    - categoria: CategoriaDonante
+    - misiones: List<Mision>
+    - insignias: List<InsigniaGanada>
+    - historialCategorias: List<CambioCategoria>
+    - metricas: Metricas
+    --
+    + DonanteIncentivos(id: UUID, idPersona: UUID, nombre: String, misiones: List<Mision>)
+    + DonanteIncentivos(id: UUID, idPersona: UUID, nombre: String, categoria: CategoriaDonante, fechaRegistro: LocalDate, historialCategorias: List<CambioCategoria>, misiones: List<Mision>, insignias: List<InsigniaGanada>, metricas: Metricas)
+    + registrarDonacion(evento: EventoDonacion): void
+    + verificarRachas(mesActual: YearMonth): void
+    + misionesCompletadas(): int
+    + tuvoActividadEnMes(mes: YearMonth): boolean
+    + donacionesEnMes(mes: YearMonth): long
+    + fechaUltimaActividad(): LocalDate
+    + donacionesPorPeriodo(): Map<YearMonth, Long>
+    + ascender(): void
+    + otorgarInsignia(plantilla: Insignia): void
+    + otorgarInsignia(plantilla: Insignia, fechaObtencion: LocalDate): void
+    + insigniasVisibles(): List<InsigniaGanada>
+    + insigniaGanadaDe(nombreInsignia: String): InsigniaGanada
+    + configurarVisibilidadInsignia(nombre: String, visible: boolean): void
+    + getHistorialCategorias(): List<CambioCategoria>
+    + getMisionActiva(): Mision
+    - evaluarMisiones(evento: EventoDonacion): void
+    - siguienteCategoria(): CategoriaDonante
+  }
+
+  DonanteIncentivos "1" *-- "many" CambioCategoria
+  DonanteIncentivos --> CategoriaDonante
+}
+
+' ==================== INSIGNIAS ====================
+package INSIGNIAS {
+  class Insignia <<entity>> {
+    - nombre: String {final}
+    - descripcion: String {final}
+    - imagenUrl: String {final}
+    --
+    + Insignia(nombre: String, descripcion: String, imagenUrl: String)
+  }
+
+  class InsigniaGanada <<entity>> {
+    - nombre: String {final}
+    - descripcion: String {final}
+    - imagenUrl: String {final}
+    - visible: boolean {final}
+    - fechaObtenida: LocalDate {final}
+    --
+    + InsigniaGanada(nombre: String, descripcion: String, imagenUrl: String, visible: boolean, fechaObtenida: LocalDate)
+    + conVisibilidad(visible: boolean): InsigniaGanada
+  }
+
+  DonanteIncentivos "1" *-- "many" InsigniaGanada
+}
+
+' ==================== METRICAS ====================
+package METRICAS {
+  class Metricas <<entity>> {
+    - totalDonacionesHistoricas: Integer
+    - totalDonacionesExitosas: Integer
+    - ultimaDonacion: LocalDate
+    - historialDonaciones: List<EventoDonacion>
+    - organizacionesAyudadas: Set<UUID>
+    --
+    + registrarDonacion(evento: EventoDonacion): void
+    + registrarDonacionExitosa(organizacionId: UUID): void
+    + yaAyudoA(organizacionId: UUID): boolean
+    + getTotalOrganizacionesAyudadas(): Integer
+    + getHistorialDonaciones(): List<EventoDonacion>
+    + getOrganizacionesAyudadas(): Set<UUID>
+    + donacionesEnMes(mes: YearMonth): long
+    + donacionesMesActual(): long
+    + donacionesMesAnterior(): long
+    + donacionesPorPeriodo(): Map<YearMonth, Long>
+  }
+
+  DonanteIncentivos "1" *-- "1" Metricas
+  Metricas "1" *-- "many" EventoDonacion
+}
+
+' ==================== MISIONES ====================
+package MISIONES {
+  abstract class Mision <<entity>> {
+    - id: UUID
+    - numeroMision: Integer
+    - nombre: String
+    - descripcion: String
+    - categoria: CategoriaDonante
+    - objetivo: int
+    - progresoActual: int
+    - completada: boolean
+    - fechaCompletada: LocalDate
+    - insignia: Insignia
+    --
+    + Mision(nombre: String, descripcion: String, categoria: CategoriaDonante, objetivo: int, insignia: Insignia)
+    + {abstract} evaluarProgreso(donante: DonanteIncentivos, evento: EventoDonacion): void
+    + isCompletada(): boolean
+    + reiniciarProgreso(): void
+    + getPorcentajeProgreso(): int
+    + getDistanciaAlObjetivo(): int
+    + verificarVigencia(mesActual: YearMonth): void
+    # completar(donante: DonanteIncentivos, fecha: LocalDate): void
+    # {abstract} calcularNuevoProgreso(donante: DonanteIncentivos, evento: EventoDonacion): Integer
+  }
+
+  class MisionRacha <<entity>> {
+    - ultimoMesDonado: YearMonth
+    --
+    + MisionRacha(categoria: CategoriaDonante, mesesObjetivo: int)
+    + evaluarProgreso(donante: DonanteIncentivos, evento: EventoDonacion): void
+    + verificarVigencia(mesActual: YearMonth): void
+  }
+
+  class MisionCompletitud <<entity>> {
+    - categoriasDonadas: Set<String>
+    --
+    + MisionCompletitud(categoria: CategoriaDonante, subcategoriasRequeridas: int)
+    + evaluarProgreso(donante: DonanteIncentivos, evento: EventoDonacion): void
+  }
+
+  class MisionDonacionesExitosas <<entity>> {
+    - fechaUltimoDonacion: LocalDate
+    --
+    + MisionDonacionesExitosas(categoria: CategoriaDonante, donacionesRequeridas: int)
+    + evaluarProgreso(donante: DonanteIncentivos, evento: EventoDonacion): void
+    + evaluarProgresoExitoso(donante: DonanteIncentivos): void
+  }
+
+  class MisionHabilDonador <<entity>> {
+    --
+    + MisionHabilDonador(categoria: CategoriaDonante, bienesObjetivo: int)
+    + evaluarProgreso(donante: DonanteIncentivos, evento: EventoDonacion): void
+  }
+
+  class MisionFactory <<service>> {
+    + {static} crearMisionesEstandar(): List<Mision>
+  }
+
+  Mision <|-- MisionRacha
+  Mision <|-- MisionCompletitud
+  Mision <|-- MisionDonacionesExitosas
+  Mision <|-- MisionHabilDonador
+
+  Mision --> Insignia
+  Mision --> CategoriaDonante
+  DonanteIncentivos "1" *-- "many" Mision
+  MisionFactory ..> Mision : crea
+}
+
+' ==================== DOMAIN EVENTS ====================
+package EVENTOS {
+  abstract class "AgregadoConEventos<E>" <<aggregate_root>> {
+    - domainEvents: List<E>
+    --
+    + registrarEvento(evento: E): void
+    + getDomainEvents(): List<E>
+    + clearDomainEvents(): void
+  }
+
+  abstract class EventoDonanteIncentivos <<entity>> {
+    - id: UUID
+    - timestamp: LocalDateTime
+    --
+    + EventoDonanteIncentivos()
+  }
+
+  class AscensoDonante <<entity>> {
+    - donanteId: UUID
+    - idPersona: UUID
+    - categoriaAnterior: CategoriaDonante
+    - categoriaNueva: CategoriaDonante
+    --
+    + AscensoDonante(donanteId: UUID, idPersona: UUID, anterior: CategoriaDonante, nueva: CategoriaDonante)
+  }
+
+  class MisionCompletada <<entity>> {
+    - donanteId: UUID
+    - idPersona: UUID
+    - nombreDonante: String
+    - nombreMision: String
+    - insignia: Insignia
+    --
+    + MisionCompletada(donanteId: UUID, idPersona: UUID, nombreDonante: String, nombreMision: String, insignia: Insignia)
+  }
+
+  EventoDonanteIncentivos <|-- AscensoDonante
+  EventoDonanteIncentivos <|-- MisionCompletada
+  "AgregadoConEventos<E>" <|-- DonanteIncentivos
+  DonanteIncentivos ..> EventoDonanteIncentivos : registra
+}
+
+' ==================== RANKINGS ====================
+package RANKINGS {
+  class EntradaRanking <<entity>> {
+    - posicion: int {final}
+    - donanteId: UUID {final}
+    - nombreDonante: String {final}
+    - misionesCompletadas: int {final}
+    - totalDonaciones: int {final}
+    --
+    + EntradaRanking(posicion: int, donanteId: UUID, nombre: String, misiones: int, donaciones: int)
+  }
+
+  class RankingMensual <<entity>> {
+    - id: UUID {final}
+    - periodo: YearMonth {final}
+    - entradas: List<EntradaRanking>
+    - fechaCalculo: LocalDateTime {final}
+    --
+    + RankingMensual(periodo: YearMonth)
+    + agregarEntrada(entrada: EntradaRanking): void
+    + getPosicion(donanteId: UUID): Optional<Integer>
+    + getTop(n: int): List<EntradaRanking>
+    + getPodio(): List<EntradaRanking>
+  }
+
+  class GestorDeRankings <<service>> {
+    + calcular(todos: List<DonanteIncentivos>, periodo: YearMonth): RankingMensual
+  }
+
+  RankingMensual "1" *-- "many" EntradaRanking
+  GestorDeRankings ..> RankingMensual : calcula
+}
+
+' ==================== INACTIVIDAD ====================
+package INACTIVIDAD {
+  abstract class CriterioInactividad <<service>> {
+    + {abstract} esInactivo(donante: DonanteIncentivos): boolean
+    + {abstract} diasInactivo(donante: DonanteIncentivos): int
+  }
+
+  class InactividadDonaciones <<service>> {
+    - diasUmbral: int
+    --
+    + InactividadDonaciones(diasUmbral: int)
+    + InactividadDonaciones(diasUmbral: int, clock: Clock)
+    + esInactivo(donante: DonanteIncentivos): boolean
+    + diasInactivo(donante: DonanteIncentivos): int
+  }
+
+  class DonanteInactivo <<entity>> {
+    - donanteId: UUID
+    - idPersona: UUID
+    - diasInactivo: int
+    --
+    + DonanteInactivo(donanteId: UUID, idPersona: UUID, dias: int)
+  }
+
+  class GestorDeInactivos <<service>> {
+    + procesarInactividad(criterios: List<CriterioInactividad>, todos: List<DonanteIncentivos>): List<DonanteInactivo>
+  }
+
+  CriterioInactividad <|-- InactividadDonaciones
+  GestorDeInactivos ..> CriterioInactividad
+  GestorDeInactivos ..> DonanteInactivo : produce
+}
+
+' ==================== APPLICATION SERVICES ====================
+package APPLICATION_SERVICES {
+  interface IGestionDonanteService <<interface>> {
+    + registrarDonante(request: RegistrarDonanteRequest): DonanteRegistradoDTO
+    + modificarDonante(donanteId: UUID, request: ModificarDonanteRequest): void
+    + obtenerDonante(donanteId: UUID): DonanteIncentivos
+    + darDeBaja(donanteId: UUID): void
+    + listarTodos(): List<DonanteIncentivos>
+  }
+
+  interface IMisionesDonacionService <<interface>> {
+    + procesarDonacion(request: NuevaDonacionRequest): void
+    + procesarDonacionExitosa(request: DonacionExitosaRequest): void
+    + obtenerMisiones(donanteId: UUID): List<MisionDTO>
+    + verificarRachasVencidas(mesActual: YearMonth): void
+  }
+
+  interface IInsigniasService <<interface>> {
+    + obtenerInsignias(donanteId: UUID, soloVisibles: Boolean): List<InsigniaDTO>
+    + configurarVisibilidadInsignia(donanteId: UUID, nombre: String, visible: boolean): void
+  }
+
+  interface IMetricasIncentivosService <<interface>> {
+    + obtenerMetricas(donanteId: UUID): MetricasDonanteDTO
+    + obtenerResumenSistema(): ResumenSistemaDTO
+  }
+
+  interface IInactividadService <<interface>> {
+    + procesarInactividad(): void
+  }
+
+  interface IRankingService <<interface>> {
+    + calcularYPersistir(periodo: YearMonth): RankingMensualDTO
+    + calcularYNotificar(periodo: YearMonth): RankingMensualDTO
+    + obtenerHistorial(): List<RankingMensualDTO>
+    + obtenerUltimoRanking(): Optional<RankingMensualDTO>
+    + obtenerPosicionDonante(donanteId: UUID): Optional<Integer>
+    + obtenerPosicionDonante(donanteId: UUID, periodo: YearMonth): Optional<Integer>
+    + obtenerRankingPorPeriodo(periodo: YearMonth): Optional<RankingMensual>
+  }
+
+  class GestionDonanteService <<service>> implements IGestionDonanteService
+  class MisionesDonacionService <<service>> implements IMisionesDonacionService
+  class InsigniasService <<service>> implements IInsigniasService
+  class MetricasIncentivosService <<service>> implements IMetricasIncentivosService
+  class InactividadService <<service>> implements IInactividadService
+  class RankingService <<service>> implements IRankingService
+}
+
+' ==================== MAPPERS ====================
+package MAPPERS {
+  class MisionMapper <<service>> {
+    + toResponseDTO(mision: Mision, donante: DonanteIncentivos): MisionDTO
+    - insigniaGanadaDe(mision: Mision, donante: DonanteIncentivos): InsigniaGanada
+    - resolverInsigniaDTO(mision: Mision, ganada: InsigniaGanada): InsigniaDTO
+  }
+
+  MisionMapper ..> Mision : mapea
+  MisionMapper ..> DonanteIncentivos : consulta
+  MisionMapper ..> InsigniaGanada : resuelve
+}
+
+' ==================== REST CONTROLLERS ====================
+package CONTROLLERS {
+  interface IDonanteIncentivosController <<interface>> {
+    + registrarDonante(donanteId: UUID, request: RegistrarDonanteRequest): ResponseEntity<DonanteRegistradoDTO>
+    + darDeBaja(donanteId: UUID): ResponseEntity<Void>
+    + modificarDonante(donanteId: UUID, request: ModificarDonanteRequest): ResponseEntity<Void>
+    + obtenerDonante(donanteId: UUID): ResponseEntity<DonantePerfilDTO>
+    + obtenerAscensos(donanteId: UUID): ResponseEntity<List<CambioCategoriaDTO>>
+  }
+
+  interface IRankingController <<interface>> {
+    + obtenerUltimoRanking(): ResponseEntity<RankingMensualDTO>
+    + obtenerHistorial(): ResponseEntity<List<RankingMensualDTO>>
+    + calcularRanking(periodo: String): ResponseEntity<RankingMensualDTO>
+    + obtenerPosicionDonante(donanteId: UUID, periodo: String): ResponseEntity<Integer>
+    + obtenerRankingPorPeriodo(periodo: String): ResponseEntity<RankingMensualDTO>
+  }
+
+  interface IProcesosIncentivosController <<interface>> {
+    + ejecutarEvaluacionInactividad(): ResponseEntity<Void>
+    + ejecutarVerificacionRachas(): ResponseEntity<Void>
+  }
+
+  class DonanteIncentivosController <<rest_controller>> implements IDonanteIncentivosController
+  class RankingController <<rest_controller>> implements IRankingController
+  class ProcesosIncentivosController <<rest_controller>> implements IProcesosIncentivosController
+
+  DonanteIncentivosController --> IGestionDonanteService
+  RankingController --> IRankingService
+  ProcesosIncentivosController --> IInactividadService
+  ProcesosIncentivosController --> IMisionesDonacionService
+}
+
+' ==================== INFRASTRUCTURE & CONFIG ====================
+package INFRASTRUCTURE {
+  interface INotificacionesClient <<interface>> {
+    + notificarMisionCumplida(idPersona: UUID, mision: String, recompensa: String): void
+    + notificarAscensoCategoria(idPersona: UUID, nueva: String, anterior: String): void
+    + notificarInactividad(idPersona: UUID, dias: int): void
+  }
+
+  interface IN8nClient <<interface>> {
+    + publicarInsigniaGanada(donanteId: UUID, donante: String, insignia: String, desc: String): void
+    + notificarRankingCalculado(periodo: String, top3: List<Map<String, Object>>): void
+  }
+
+  class NotificacionesClientAdapter <<service>> implements INotificacionesClient
+  class N8nClientAdapter <<service>> implements IN8nClient
+
+  class NotificacionesIncentivosListener <<service>> {
+    + onMisionCompletada(evento: MisionCompletada): void
+    + onAscensoDonante(evento: AscensoDonante): void
+  }
+
+  class AsyncConfig <<configuration>> {
+    + notificacionesTaskExecutor(): Executor
+  }
+
+  NotificacionesIncentivosListener --> INotificacionesClient
+  NotificacionesIncentivosListener --> IN8nClient
+  NotificacionesClientAdapter ..> AsyncConfig : utiliza pool
+}
+
+@enduml

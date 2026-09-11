@@ -1,5 +1,7 @@
 package grupo5.incentivos.models.entities.ranking;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
 import java.time.YearMonth;
 import java.util.ArrayList;
@@ -15,7 +17,7 @@ public class RankingMensual implements AggregateRoot {
 
   public RankingMensual(YearMonth periodo) {
     if (periodo == null) {
-      throw new IllegalArgumentException("El periodo del ranking no puede ser nulo");
+      throw new ValidationException(ErrorCatalog.RANKING_PERIODO_NULO);
     }
     this.id = UUID.randomUUID();
     this.periodo = periodo;
@@ -24,7 +26,7 @@ public class RankingMensual implements AggregateRoot {
 
   public void agregarEntrada(EntradaRanking entrada) {
     if (entrada == null) {
-      throw new IllegalArgumentException("La entrada no puede ser nula");
+      throw new ValidationException(ErrorCatalog.RANKING_ENTRADA_NULA);
     }
     this.entradas.add(entrada);
   }

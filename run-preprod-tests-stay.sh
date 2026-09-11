@@ -39,6 +39,7 @@ COMPOSE_FILE="docker-compose.preprod.yml"
 DONACIONES_URL="http://localhost:8080"
 NOTIFICACIONES_URL="http://localhost:8081"
 INCENTIVOS_URL="http://localhost:8082"
+LOGISTICA_URL="http://localhost:8083"
 
 # Generar EXECUTION_ID si no está definido
 if [[ -z "${EXECUTION_ID:-}" ]]; then
@@ -69,12 +70,11 @@ docker compose -f "$COMPOSE_FILE" up --build --wait -d
 ok "Todos los servicios están healthy."
 
 step "Importando y activando workflows en n8n"
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Insignias.JSON || warn "No se pudo importar el workflow de insignias"
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || warn "No se pudo importar el workflow de ranking"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --separate --input=//etc/n8n/workflows
 
 echo "Publicando (activando) workflows en n8n..."
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=1 || warn "No se pudo activar el workflow de insignias"
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=2 || warn "No se pudo activar el workflow de ranking"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=1
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=2
 
 echo "Reiniciando contenedor de n8n para registrar webhooks..."
 docker compose -f "$COMPOSE_FILE" restart n8n
@@ -119,6 +119,7 @@ MVN_ARGS=(
   -Ddonaciones.url="$DONACIONES_URL"
   -Dnotificaciones.url="$NOTIFICACIONES_URL"
   -Dincentivos.url="$INCENTIVOS_URL"
+  -Dlogistica.url="$LOGISTICA_URL"
 )
 
 if [[ -n "$TEST_FILTER" ]]; then
@@ -126,16 +127,27 @@ if [[ -n "$TEST_FILTER" ]]; then
   warn "Filtro de test activo: $TEST_FILTER"
 fi
 
+TEST_STATUS=0
 if mvn "${MVN_ARGS[@]}"; then
   echo ""
   ok "Suite de validación pre-producción APROBADA."
 else
   echo ""
   fail "Suite de validación pre-producción FALLIDA — revisá los logs de arriba."
-  # El trap cleanup se ejecuta igual al salir con exit_code != 0
-  exit 1
+  TEST_STATUS=1
 fi
+
+step "Recopilando logs de infraestructura y contenedores (${EXECUTION_ID})"
+mkdir -p "logs/registro/${EXECUTION_ID}"
+docker compose -f "$COMPOSE_FILE" logs --no-color --timestamps > "logs/registro/${EXECUTION_ID}/docker-compose-full.log" 2>/dev/null || true
+
+step "Ejecutando diagnóstico y análisis de logs (${EXECUTION_ID})"
+python scripts/analyze_preprod_logs.py --file "logs/registro/${EXECUTION_ID}/docker-compose-full.log" --export-report || true
+python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports || true
+
 echo ""
 echo "Los contenedores siguen ejecutándose."
-echo "Presioná cualquier tecla para finalizar el script..."
+echo "Presioná cualquier tecla para finalizar el script y desmontar el stack (o Ctrl+C para mantenerlo)..."
 read -n 1 -s
+cleanup
+exit $TEST_STATUS

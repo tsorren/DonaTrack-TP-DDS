@@ -11,4 +11,8 @@ public interface IEntidadBeneficiariaService {
   EntidadBeneficiariaOutputDTO obtenerEntidad(UUID id);
 
   List<EntidadBeneficiariaOutputDTO> obtenerTodas();
+
+  EntidadBeneficiariaOutputDTO actualizarEntidad(UUID id, EntidadBeneficiariaInputDTO input);
+
+  void eliminarEntidad(UUID id);
 }

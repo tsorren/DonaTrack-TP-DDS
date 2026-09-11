@@ -3,26 +3,19 @@ package grupo5.logistica.services.impl;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
-import grupo5.logistica.dto.entregas.ConfirmarRecepcionRequestDTO;
-import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
-import grupo5.logistica.dto.entregas.EntregaResponseDTO;
-import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
-import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
-import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
-import grupo5.logistica.dto.eventos.EventoEntregaFallida;
-import grupo5.logistica.dto.rutas.RutaResponseDTO;
-import grupo5.logistica.infrastructure.LogisticaEventPublisher;
+import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.models.entities.camiones.Camion;
-import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.*;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
+import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
+import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
+import grupo5.logistica.models.repositories.IRutasRepository;
+import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IEntregasService;
-import grupo5.logistica.services.IRutasService;
 import grupo5.logistica.services.mappers.EntregaMapper;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -30,22 +23,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class EntregasService implements IEntregasService {
   private final IEntregasRepository entregasRepository;
-  private final IRutasService rutasService;
+  private final IRutasRepository rutasRepository;
   private final ICamionRepository camionRepository;
   private final EntregaMapper entregaMapper;
-  private final LogisticaEventPublisher eventPublisher;
+  private final ComunicadorEventosLogistica comunicadorEventos;
 
   public EntregasService(
       IEntregasRepository entregasRepository,
-      IRutasService rutasService,
+      IRutasRepository rutasRepository,
       ICamionRepository camionRepository,
       EntregaMapper entregaMapper,
-      LogisticaEventPublisher eventPublisher) {
+      ComunicadorEventosLogistica comunicadorEventos) {
     this.entregasRepository = entregasRepository;
-    this.rutasService = rutasService;
+    this.rutasRepository = rutasRepository;
     this.camionRepository = camionRepository;
     this.entregaMapper = entregaMapper;
-    this.eventPublisher = eventPublisher;
+    this.comunicadorEventos = comunicadorEventos;
   }
 
   @Override
@@ -69,28 +62,6 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
-  public EntregaResponseDTO confirmarRecepcion(UUID id, ConfirmarRecepcionRequestDTO dto) {
-    if (dto == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
-
-    Entrega entrega = buscarEntrega(id);
-    entrega.confirmarEntrega(dto.actor());
-    entregasRepository.save(entrega);
-
-    Camion camion = buscarCamionDeEntrega(entrega);
-    eventPublisher.publicarEntregaExitosa(
-        new EventoEntregaExitosa(
-            entrega.getId(),
-            entrega.getIdDonacion(),
-            camion.getId(),
-            camion.getPatente(),
-            LocalDateTime.now(ZoneId.of("UTC"))));
-
-    return entregaMapper.toResponseDTO(entrega);
-  }
-
-  @Override
   public EntregaResponseDTO adjuntarFotoRecepcion(UUID id, AdjuntarFotoRecepcionRequestDTO dto) {
     if (dto == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -102,36 +73,29 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
-  public EntregaResponseDTO reportarNoRecepcion(UUID id, ReportarNoRecepcionRequestDTO dto) {
-    if (dto == null) {
+  public EntregaResponseDTO cambiarEstado(UUID id, CambioEstadoEntregaRequestDTO request) {
+    if (request == null || request.estado() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
 
     Entrega entrega = buscarEntrega(id);
-    entrega.negarEntrega(dto.actor());
+
+    switch (request.estado()) {
+      case ENTREGADA -> procesarEntregaEntregada(request.actor(), entrega);
+      case NO_RECIBIDA ->
+          procesarEntregaNoRecibida(
+              request.actor(), entrega, request.justificacion(), request.replanificable());
+      case REVISION -> procesarEntregaEnRevision(request.actor(), entrega);
+      case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
+      case EN_TRASLADO ->
+          throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+      default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+
     entregasRepository.save(entrega);
-
-    boolean replanificable = dto.replanificable() == null || dto.replanificable();
-    eventPublisher.publicarEntregaFallida(
-        new EventoEntregaFallida(
-            entrega.getId(),
-            entrega.getIdDonacion(),
-            dto.justificacion(),
-            LocalDateTime.now(ZoneId.of("UTC")),
-            replanificable));
-
+    publicarEventos(entrega);
+    entrega.clearDomainEvents();
     return entregaMapper.toResponseDTO(entrega);
-  }
-
-  @Override
-  public EntregaResponseDTO regresarAlDeposito(UUID id, RegresarAlDepositoRequestDTO dto) {
-    if (dto == null) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
-    }
-
-    Entrega entrega = buscarEntrega(id);
-    entrega.regresarAlDeposito(dto.actor());
-    return entregaMapper.toResponseDTO(entregasRepository.save(entrega));
   }
 
   @Override
@@ -141,14 +105,52 @@ public class EntregasService implements IEntregasService {
         .toList();
   }
 
+  private static void procesarEntregaEntregada(String actor, Entrega entrega) {
+    SolicitudTransicionEntrega solicitud = new ConfirmacionRecepcion(entrega, actor, null);
+
+    GestorDeEntregas.cambiarEstado(solicitud);
+  }
+
+  private static void procesarEntregaNoRecibida(
+      String actor, Entrega entrega, String justificacion, Boolean replanificable) {
+
+    boolean esReplanificable = replanificable == null || replanificable;
+    NoRecepcion solicitud = new NoRecepcion(entrega, actor, justificacion, esReplanificable);
+
+    GestorDeEntregas.cambiarEstado(solicitud);
+  }
+
+  private static void procesarEntregaPendiente(String actor, Entrega entrega) {
+    RegresoDeposito solicitud = new RegresoDeposito(entrega, actor);
+    GestorDeEntregas.cambiarEstado(solicitud);
+  }
+
+  private static void procesarEntregaEnRevision(String actor, Entrega entrega) {
+    RevisionEntrega solicitud = new RevisionEntrega(entrega, actor);
+    GestorDeEntregas.cambiarEstado(solicitud);
+  }
+
+  private void publicarEventos(Entrega entrega) {
+    for (EventoEntrega evento : entrega.getDomainEvents()) {
+      switch (evento) {
+        case EntregaConfirmada confirmada ->
+            comunicadorEventos.comunicarEntregaExitosa(confirmada, buscarCamionDeEntrega(entrega));
+        case EntregaFallida fallida -> comunicadorEventos.comunicarEntregaFallida(fallida);
+      }
+    }
+  }
+
   private Entrega buscarEntrega(UUID id) {
     return entregasRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
   }
 
   private Camion buscarCamionDeEntrega(Entrega entrega) {
-    RutaResponseDTO ruta = rutasService.obtenerPorId(entrega.getIdRuta());
+    Ruta ruta =
+        rutasRepository
+            .findById(entrega.getIdRuta())
+            .orElseThrow(() -> new RecursoNoEncontradoException(entrega.getIdRuta()));
     return camionRepository
-        .findById(ruta.camionId())
-        .orElseThrow(() -> new RecursoNoEncontradoException(ruta.camionId()));
+        .findById(ruta.getCamionId())
+        .orElseThrow(() -> new RecursoNoEncontradoException(ruta.getCamionId()));
   }
 }

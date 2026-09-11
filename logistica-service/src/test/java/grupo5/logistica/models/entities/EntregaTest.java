@@ -7,6 +7,9 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
+import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
@@ -22,6 +25,11 @@ class EntregaTest {
     Provincia prov = new Provincia("Buenos Aires", pais);
     Localidad loc = new Localidad("Lanus", prov);
     return new Direccion("Calle Falsa", 123, null, null, "1824", loc);
+  }
+
+  private Entrega crearEntregaValida() {
+    return new Entrega(
+        UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), createTestDireccion(), 10f, 1f);
   }
 
   @Test
@@ -118,21 +126,22 @@ class EntregaTest {
 
     entrega.iniciarRuta("Chofer Jose");
 
-    // Negar entrega
-    entrega.negarEntrega("Comedor Infantil");
+    // 1. Negar entrega
+    entrega.negarEntrega("Comedor Infantil", "Domicilio cerrado", true);
+    assertEquals(EstadoEntrega.NO_RECIBIDA, entrega.getEstadoActual());
     assertEquals(
-        EstadoEntrega.REVISION,
-        entrega.getEstadoActual()); // Pasa a NO_RECIBIDA y luego inmediatamente a REVISION en
-    // negarEntrega()
-    assertEquals(
-        3,
+        2,
         entrega
             .getHistorialEstado()
-            .size()); // Registro de EN_TRASLADO -> NO_RECIBIDA y NO_RECIBIDA -> REVISION
-
-    // Regresar al deposito
+            .size()); // PENDIENTE -> EN_TRASLADO, EN_TRASLADO -> NO_RECIBIDA
+    // 2. Administrador toma el caso y lo pasa a revisión
+    entrega.mandarARevision("Admin Carlos");
+    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
+    assertEquals(3, entrega.getHistorialEstado().size()); // NO_RECIBIDA -> REVISION
+    // 3. Regresar al depósito
     entrega.regresarAlDeposito("Admin Carlos");
     assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+    assertEquals(4, entrega.getHistorialEstado().size()); // REVISION -> PENDIENTE
     assertNull(entrega.getHoraArribo());
     assertNull(entrega.getHoraSalida());
   }
@@ -186,5 +195,91 @@ class EntregaTest {
     CambioEstadoEntrega nuevoCambio =
         new CambioEstadoEntrega(EstadoEntrega.PENDIENTE, EstadoEntrega.ENTREGADA, null, "hack");
     assertThrows(UnsupportedOperationException.class, () -> historial.add(nuevoCambio));
+  }
+
+  @Test
+  void confirmarEntregaRegistraEventoDeDominio() {
+    UUID rutaId = UUID.randomUUID();
+    UUID donacionId = UUID.randomUUID();
+    Entrega entrega =
+        new Entrega(rutaId, donacionId, UUID.randomUUID(), createTestDireccion(), 10f, 1f);
+    entrega.iniciarRuta("Chofer Jose");
+
+    entrega.confirmarEntrega("Comedor Infantil");
+
+    EntregaConfirmada evento =
+        assertInstanceOf(EntregaConfirmada.class, entrega.getDomainEvents().getFirst());
+    assertEquals(entrega.getId(), evento.getEntregaId());
+    assertEquals(donacionId, evento.getDonacionId());
+    assertEquals(rutaId, evento.getIdRuta());
+    assertNotNull(evento.getId());
+    assertNotNull(evento.getTimestamp());
+  }
+
+  @Test
+  void negarEntregaRegistraEventoDeDominio() {
+    UUID donacionId = UUID.randomUUID();
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(), donacionId, UUID.randomUUID(), createTestDireccion(), 10f, 1f);
+    entrega.iniciarRuta("Chofer Jose");
+
+    entrega.negarEntrega("Comedor Infantil", "Domicilio cerrado", false);
+
+    EntregaFallida evento =
+        assertInstanceOf(EntregaFallida.class, entrega.getDomainEvents().getFirst());
+    assertEquals(entrega.getId(), evento.getEntregaId());
+    assertEquals(donacionId, evento.getDonacionId());
+    assertEquals("Domicilio cerrado", evento.getJustificacion());
+    assertFalse(evento.isReplanificable());
+    assertNotNull(evento.getId());
+    assertNotNull(evento.getTimestamp());
+  }
+
+  @Test
+  void snapshotDeEventosEsInmutableYNoCambiaAlLimpiarElAgregado() {
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            createTestDireccion(),
+            10f,
+            1f);
+    entrega.iniciarRuta("Chofer Jose");
+    entrega.confirmarEntrega("Comedor Infantil");
+    List<EventoEntrega> snapshot = entrega.getDomainEvents();
+
+    entrega.clearDomainEvents();
+
+    assertEquals(1, snapshot.size());
+    assertInstanceOf(EntregaConfirmada.class, snapshot.getFirst());
+    assertTrue(entrega.getDomainEvents().isEmpty());
+    EventoEntrega primerEvento = snapshot.getFirst();
+    assertThrows(UnsupportedOperationException.class, () -> snapshot.add(primerEvento));
+  }
+
+  @Test
+  void testRegresarAlDepositoDirectamenteDesdeNoRecibidaLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+    entrega.negarEntrega("Comedor Infantil", "Domicilio cerrado", true);
+
+    // Debe fallar porque no pasó por REVISION
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entrega.regresarAlDeposito("Admin Carlos"));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
+  }
+
+  @Test
+  void testNegarEntregaSinJustificacionLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+
+    // Justificación nula
+    assertThrows(ValidationException.class, () -> entrega.negarEntrega("Comedor", null, true));
+
+    // Justificación vacía o en blanco
+    assertThrows(ValidationException.class, () -> entrega.negarEntrega("Comedor", "   ", true));
   }
 }

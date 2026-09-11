@@ -1,0 +1,587 @@
+{
+  "info": {
+    "_postman_id": "donatrack-donaciones-swagger-verified-v1",
+    "name": "DonaTrack - Donaciones Service (Swagger Verified)",
+    "description": "Colección 100% verificada contra los Controllers de Swagger UI de donaciones-service (:8080).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "categoriaId", "value": "" },
+    { "key": "subcategoriaId", "value": "" },
+    { "key": "personaDonanteId", "value": "" },
+    { "key": "personaBeneficiariaId", "value": "" },
+    { "key": "donanteId", "value": "" },
+    { "key": "entidadId", "value": "" },
+    { "key": "necesidadId", "value": "" },
+    { "key": "donacionId", "value": "" },
+    { "key": "donacionIndependienteId", "value": "" },
+    { "key": "itemNormalizadoId", "value": "" },
+    { "key": "propuestaId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01. Categorías Controller",
+      "item": [
+        {
+          "name": "1. Listar Categorías",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "if (json && json.length > 0) {",
+                "  pm.collectionVariables.set('categoriaId', json[0].id);",
+                "}",
+                "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/categorias", "host": ["{{baseUrl}}"], "path": ["api", "categorias"] }
+          }
+        },
+        {
+          "name": "2. Crear Categoría",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('categoriaId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Higiene y Limpieza\",\n  \"conUso\": false,\n  \"conVencimiento\": true,\n  \"unidad\": \"UNIDADES\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/categorias", "host": ["{{baseUrl}}"], "path": ["api", "categorias"] }
+          }
+        },
+        {
+          "name": "3. Obtener Categoría por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/categorias/{{categoriaId}}", "host": ["{{baseUrl}}"], "path": ["api", "categorias", "{{categoriaId}}"] }
+          }
+        },
+        {
+          "name": "4. Modificar Categoría",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Higiene Personal\",\n  \"conUso\": false,\n  \"conVencimiento\": true,\n  \"unidad\": \"UNIDADES\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/categorias/{{categoriaId}}", "host": ["{{baseUrl}}"], "path": ["api", "categorias", "{{categoriaId}}"] }
+          }
+        },
+        {
+          "name": "5. Eliminar Categoría",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/categorias/{{categoriaId}}", "host": ["{{baseUrl}}"], "path": ["api", "categorias", "{{categoriaId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Subcategorías Controller",
+      "item": [
+        {
+          "name": "1. Listar Subcategorías",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "if (json && json.length > 0) {",
+                "  var noPerecederos = json.find(s => s.nombre === 'No Perecederos') || json[0];",
+                "  pm.collectionVariables.set('subcategoriaId', noPerecederos.id);",
+                "}",
+                "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/subcategorias", "host": ["{{baseUrl}}"], "path": ["api", "subcategorias"] }
+          }
+        },
+        {
+          "name": "2. Crear Subcategoría",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('subcategoriaId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Jabón Líquido\",\n  \"idCategoria\": \"{{categoriaId}}\",\n  \"aliases\": [\n    { \"alias\": \"jabon\" },\n    { \"alias\": \"detergente\" }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/subcategorias", "host": ["{{baseUrl}}"], "path": ["api", "subcategorias"] }
+          }
+        },
+        {
+          "name": "3. Obtener Subcategoría por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/subcategorias/{{subcategoriaId}}", "host": ["{{baseUrl}}"], "path": ["api", "subcategorias", "{{subcategoriaId}}"] }
+          }
+        },
+        {
+          "name": "4. Modificar Subcategoría",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Jabón Líquido Corporal\",\n  \"idCategoria\": \"{{categoriaId}}\",\n  \"aliases\": [\n    { \"alias\": \"jabon\" },\n    { \"alias\": \"jabon corporal\" }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/subcategorias/{{subcategoriaId}}", "host": ["{{baseUrl}}"], "path": ["api", "subcategorias", "{{subcategoriaId}}"] }
+          }
+        },
+        {
+          "name": "5. Agregar Alias a Subcategoría",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alias\": \"jabon liquido\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/subcategorias/{{subcategoriaId}}/aliases", "host": ["{{baseUrl}}"], "path": ["api", "subcategorias", "{{subcategoriaId}}", "aliases"] }
+          }
+        },
+        {
+          "name": "6. Quitar Alias de Subcategoría",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/subcategorias/{{subcategoriaId}}/aliases/jabon", "host": ["{{baseUrl}}"], "path": ["api", "subcategorias", "{{subcategoriaId}}", "aliases", "jabon"] }
+          }
+        },
+        {
+          "name": "7. Eliminar Subcategoría",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/subcategorias/{{subcategoriaId}}", "host": ["{{baseUrl}}"], "path": ["api", "subcategorias", "{{subcategoriaId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Personas Controller",
+      "item": [
+        {
+          "name": "1. Crear Persona Humana (Donante)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('personaDonanteId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"tipoDocumento\": \"DNI\",\n  \"documento\": \"12345678\",\n  \"nombre\": \"Preprod\",\n  \"apellido\": \"CD\",\n  \"genero\": \"HOMBRE\",\n  \"fechaNacimiento\": \"2000-01-01\",\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"CORREO\",\n      \"esPredeterminado\": true,\n      \"direccionCorreo\": \"juan.perez@example.com\"\n    }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"piso\": null,\n    \"departamento\": null,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/personas", "host": ["{{baseUrl}}"], "path": ["api", "personas"] }
+          }
+        },
+        {
+          "name": "2. Crear Persona Jurídica (Entidad)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('personaBeneficiariaId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"JURIDICA\",\n  \"tipoDocumento\": \"CUIT\",\n  \"documento\": \"30-11112222-3\",\n  \"razonSocial\": \"Comedor Solidario\",\n  \"tipoJuridico\": \"ONG\",\n  \"rubro\": \"Comedor\",\n  \"representantes\": [\n    {\n      \"tipo\": \"HUMANA\",\n      \"tipoDocumento\": \"DNI\",\n      \"documento\": \"12345678\",\n      \"nombre\": \"Juan\",\n      \"apellido\": \"Representante\",\n      \"genero\": \"HOMBRE\",\n      \"fechaNacimiento\": \"1980-01-01\",\n      \"mediosDeContacto\": []\n    }\n  ],\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"CORREO\",\n      \"esPredeterminado\": true,\n      \"direccionCorreo\": \"comedor@example.com\"\n    }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"piso\": null,\n    \"departamento\": null,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/personas", "host": ["{{baseUrl}}"], "path": ["api", "personas"] }
+          }
+        },
+        {
+          "name": "3. Listar Personas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/personas", "host": ["{{baseUrl}}"], "path": ["api", "personas"] }
+          }
+        },
+        {
+          "name": "4. Actualizar Persona",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"tipoDocumento\": \"DNI\",\n  \"documento\": \"12345678\",\n  \"nombre\": \"Preprod Actualizado\",\n  \"apellido\": \"CD\",\n  \"genero\": \"HOMBRE\",\n  \"fechaNacimiento\": \"2000-01-01\",\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"CORREO\",\n      \"esPredeterminado\": true,\n      \"direccionCorreo\": \"juan.perez@example.com\"\n    }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/personas/{{personaDonanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "personas", "{{personaDonanteId}}"] }
+          }
+        },
+        {
+          "name": "5. Eliminar Persona",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/personas/{{personaDonanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "personas", "{{personaDonanteId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Donantes Controller",
+      "item": [
+        {
+          "name": "1. Crear Donante",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('donanteId', json.idDonante);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPersona\": \"{{personaDonanteId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/donantes", "host": ["{{baseUrl}}"], "path": ["api", "donantes"] }
+          }
+        },
+        {
+          "name": "2. Listar Donantes",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/donantes", "host": ["{{baseUrl}}"], "path": ["api", "donantes"] }
+          }
+        },
+        {
+          "name": "3. Obtener Donante por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/donantes/{{donanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "donantes", "{{donanteId}}"] }
+          }
+        },
+        {
+          "name": "4. Cargar Archivo CSV de Donantes",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"path\": \"donantes_sample.csv\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/donantes/archivos", "host": ["{{baseUrl}}"], "path": ["api", "donantes", "archivos"] }
+          }
+        },
+        {
+          "name": "5. Eliminar Donante",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/donantes/{{donanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "donantes", "{{donanteId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Entidad Beneficiaria Controller",
+      "item": [
+        {
+          "name": "1. Crear Entidad Beneficiaria",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('entidadId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juridicaId\": \"{{personaBeneficiariaId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/entidades", "host": ["{{baseUrl}}"], "path": ["api", "entidades"] }
+          }
+        },
+        {
+          "name": "2. Listar Entidades Beneficiarias",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/entidades", "host": ["{{baseUrl}}"], "path": ["api", "entidades"] }
+          }
+        },
+        {
+          "name": "3. Obtener Entidad Beneficiaria por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/entidades/{{entidadId}}", "host": ["{{baseUrl}}"], "path": ["api", "entidades", "{{entidadId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Necesidades Controller",
+      "item": [
+        {
+          "name": "1. Crear Necesidad Extraordinaria",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('necesidadId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"10 paquetes de fideos para el comedor\",\n  \"fechaInicio\": \"2026-06-18\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/necesidades", "host": ["{{baseUrl}}"], "path": ["api", "necesidades"] }
+          }
+        },
+        {
+          "name": "2. Crear Necesidad Recurrente",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"RECURRENTE\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 20,\n  \"descripcion\": \"20 paquetes de fideos mensuales\",\n  \"fechaInicio\": \"2026-01-01\",\n  \"fechaFin\": \"2026-12-31\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/necesidades", "host": ["{{baseUrl}}"], "path": ["api", "necesidades"] }
+          }
+        },
+        {
+          "name": "3. Listar Necesidades",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/necesidades", "host": ["{{baseUrl}}"], "path": ["api", "necesidades"] }
+          }
+        },
+        {
+          "name": "4. Obtener Necesidad por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/necesidades/{{necesidadId}}", "host": ["{{baseUrl}}"], "path": ["api", "necesidades", "{{necesidadId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Donaciones Controller",
+      "item": [
+        {
+          "name": "1. Cargar Donación",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('donacionId', json.id);",
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"descripcion\": \"Donación de fideos\",\n  \"items\": [\n    {\n      \"descripcionBien\": \"fideos\",\n      \"cantidad\": 5,\n      \"estadoBien\": \"NUEVO\",\n      \"fechaVencimiento\": \"2027-12-31\",\n      \"pesoUnitario\": 0.5,\n      \"volumenUnitario\": 0.005\n    }\n  ],\n  \"nombreDeposito\": \"Deposito Central\",\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"piso\": null,\n    \"departamento\": null,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "donaciones"] }
+          }
+        },
+        {
+          "name": "2. Listar Donaciones",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "donaciones"] }
+          }
+        },
+        {
+          "name": "3. Obtener Donación por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/donaciones/{{donacionId}}", "host": ["{{baseUrl}}"], "path": ["api", "donaciones", "{{donacionId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Ítems Normalizados Controller",
+      "item": [
+        {
+          "name": "1. Obtener Ítems Normalizados Pendientes",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "if (json && json.length > 0) {",
+                "  pm.collectionVariables.set('itemNormalizadoId', json[0].id);",
+                "}",
+                "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/items-normalizados/pendientes", "host": ["{{baseUrl}}"], "path": ["api", "items-normalizados", "pendientes"] }
+          }
+        },
+        {
+          "name": "2. Actualizar Estado de Normalización",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoNormalizacion\": \"ACEPTADO\",\n  \"subcategoriaId\": \"{{subcategoriaId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/items-normalizados/{{itemNormalizadoId}}", "host": ["{{baseUrl}}"], "path": ["api", "items-normalizados", "{{itemNormalizadoId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Propuestas y Asignaciones Controller",
+      "item": [
+        {
+          "name": "1. Ejecutar Algoritmo de Asignación",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/asignaciones/ejecuciones", "host": ["{{baseUrl}}"], "path": ["api", "asignaciones", "ejecuciones"] }
+          }
+        },
+        {
+          "name": "2. Listar Propuestas de Asignación",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "if (json && json.length > 0) {",
+                "  pm.collectionVariables.set('propuestaId', json[0].id);",
+                "}",
+                "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/asignaciones/propuestas", "host": ["{{baseUrl}}"], "path": ["api", "asignaciones", "propuestas"] }
+          }
+        },
+        {
+          "name": "3. Historial de Ejecuciones",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/asignaciones/ejecuciones", "host": ["{{baseUrl}}"], "path": ["api", "asignaciones", "ejecuciones"] }
+          }
+        },
+        {
+          "name": "4. Actualizar Estado de Propuesta (Aprobar)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"APROBADA\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/asignaciones/propuestas/{{propuestaId}}/estado", "host": ["{{baseUrl}}"], "path": ["api", "asignaciones", "propuestas", "{{propuestaId}}", "estado"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Donaciones Independientes Controller",
+      "description": "Movida al final a propósito: si se ejecuta antes de la sección 09, pasar una DonacionIndependiente a VENCIDA la saca del pool que usa el algoritmo de asignación (findEnDeposito()), invalidando esa sección.",
+      "item": [
+        {
+          "name": "1. Cambiar Estado de Donación Independiente (Vencida/Manual)",
+          "description": "LIMITACIÓN CONOCIDA: {{donacionIndependienteId}} NO es lo mismo que {{donacionId}} (sección 07). Una Donacion y una DonacionIndependiente son agregados distintos con IDs distintos; la segunda se crea de forma asíncrona (SegmentacionEventListener) recién cuando sus ítems fueron normalizados/aceptados (ver sección 08). Este controller no expone ningún GET para listar/descubrir ese id — hoy solo se puede obtener consultando la base de datos o el log de eventos directamente. Completar {{donacionIndependienteId}} a mano antes de correr este request.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Actor", "value": "Administrador" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"VENCIDA\",\n  \"justificacion\": \"Bien caducado en depósito\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/donaciones-independientes/{{donacionIndependienteId}}/estado", "host": ["{{baseUrl}}"], "path": ["donaciones-independientes", "{{donacionIndependienteId}}", "estado"] }
+          }
+        }
+      ]
+    }
+  ]
+}

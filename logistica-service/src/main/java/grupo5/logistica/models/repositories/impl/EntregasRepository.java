@@ -26,4 +26,9 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
         .filter(entrega -> Objects.equals(entrega.getIdRuta(), rutaId))
         .toList();
   }
+
+  @Override
+  public List<Entrega> findSinRuta() {
+    return storage.values().stream().filter(entrega -> entrega.getIdRuta() == null).toList();
+  }
 }

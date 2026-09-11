@@ -37,20 +37,20 @@ class NotificacionRouterTest {
 
     correo = new Correo();
     correo.setDireccionCorreo("donante@test.com");
-    correo.setEsPredeterminado(true);
+    correo.marcarComoPredeterminado();
 
     telefono = new Telefono();
     telefono.setCaracteristica("+54");
     telefono.setCodigoArea("11");
     telefono.setNumero("55556666");
-    telefono.setEsPredeterminado(false);
+    telefono.desmarcarComoPredeterminado();
     telefono.setTipo(TipoTelefono.ESTANDAR);
 
     whatsapp = new Telefono();
     whatsapp.setCaracteristica("+54");
     whatsapp.setCodigoArea("11");
     whatsapp.setNumero("99998888");
-    whatsapp.setEsPredeterminado(false);
+    whatsapp.desmarcarComoPredeterminado();
     whatsapp.setTipo(TipoTelefono.WHATSAPP);
   }
 
@@ -70,7 +70,7 @@ class NotificacionRouterTest {
 
   @Test
   void notificar_cuandoTelefonoEsPredeterminadoYApiRespondeTrue_estadoDeberiaSerEnviada() {
-    telefono.setEsPredeterminado(true);
+    telefono.marcarComoPredeterminado();
     persona.agregarMedioDeContacto(telefono);
     when(telefonoApi.enviarSms(eq("+541155556666"), anyString())).thenReturn(true);
 
@@ -85,7 +85,7 @@ class NotificacionRouterTest {
 
   @Test
   void notificar_cuandoWhatsAppEsPredeterminadoYApiRespondeTrue_estadoDeberiaSerEnviada() {
-    whatsapp.setEsPredeterminado(true);
+    whatsapp.marcarComoPredeterminado();
     persona.agregarMedioDeContacto(whatsapp);
     when(whatsappApi.enviarWhatsApp(eq("+541199998888"), anyString())).thenReturn(true);
 

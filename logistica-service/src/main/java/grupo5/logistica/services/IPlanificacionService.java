@@ -2,14 +2,18 @@ package grupo5.logistica.services;
 
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.callback.SolicitudPlanificacionResponseDTO;
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Consulta y recepción del resultado de planificaciones. La creación de una {@code
- * SolicitudPlanificacion} es responsabilidad exclusiva del scheduler ({@code
- * PlanificadorDeEntregas}), no de este service.
+ * Caso de uso de planificación: el scheduler lo activa, el service prepara los datos y el dominio
+ * decide lotes, asignaciones y creación de rutas.
  */
 public interface IPlanificacionService {
+
+  void iniciarPlanificacion();
+
+  void iniciarPlanificacion(LocalDate fechaObjetivo);
 
   SolicitudPlanificacionResponseDTO procesarCallback(CallbackPlanificacionRequestDTO dto);
 

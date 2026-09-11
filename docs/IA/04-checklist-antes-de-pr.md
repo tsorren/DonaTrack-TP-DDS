@@ -34,7 +34,7 @@ Confirmo que:
 
 ---
 
-# 3. Diseño técnico
+# 3. Diseño técnico y Gobernanza de ADRs
 
 Confirmo que:
 
@@ -45,6 +45,9 @@ Confirmo que:
 - [ ] No sobrecargué innecesariamente la capa de services.
 - [ ] No dupliqué lógica de negocio existente.
 - [ ] No introduje acoplamiento innecesario entre módulos.
+- [ ] Evalué si la tarea introdujo una nueva decisión arquitectónicamente significativa (Gate A + Gate B en [`docs/adr/README.md`](../adr/README.md)). Si aplica: formalicé el ADR en `Status: proposed` bajo formato MADR.
+- [ ] Si el ADR corresponde a una entrega futura, lo formalicé sin introducir código especulativo (ver Bifurcación Temporal en [`docs/adr/README.md`](../adr/README.md)).
+- [ ] Ningún ADR nuevo fue auto-promovido a `Status: accepted`; se delegó la aprobación formal al revisor humano en la PR.
 
 ---
 
@@ -120,42 +123,97 @@ Confirmo que:
 
 ---
 
-# 9. Review previa con IA
+# 9. Revisión Crítica (Fase 6 de AGENTS.md)
 
-Antes de pedir review humana, se recomienda usar:
+Antes de pedir review humana, es mandatorio ejecutar la **Fase 6 de AGENTS.md** según el nivel de la tarea.
 
-[`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)
+Fuente canónica de política: [`review/evaluator.md`](./review/evaluator.md) · Prompt operativo: [`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)
 
 Confirmo que:
 
-- [ ] Revisé el diff con mirada crítica.
-- [ ] Busqué bugs funcionales.
-- [ ] Busqué riesgos de integración.
-- [ ] Busqué errores de persistencia/JPA si aplica.
-- [ ] Busqué tests faltantes.
-- [ ] Revisé casos borde.
-- [ ] Corregí o justifiqué los hallazgos relevantes.
+- [ ] **QUICK:** se completó el `LIGHTWEIGHT_CLOSING_CHECK` (scope/diff check, validaciones ejecutadas, evidencia, result `PASS` o `ESCALATE_TO_STANDARD`).
+- [ ] **STANDARD / ARCHITECTURAL:** se emitió el Review Contract con Verdict `PASS` o con findings documentados.
+- [ ] El modo de revisión fue declarado: `INDEPENDENT_REVIEW` | `SELF_REVIEW`.
+- [ ] Si la PR introduce ADRs `proposed`: se aplicó la Rúbrica de ADR Review (escala 1 a 5 en 4 dimensiones, puntaje ≥ 4.0/5.0) — separado del Review Contract de implementación.
+- [ ] Se auditó la integridad del grafo documental (V9): `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` sincronizados si correspondía.
+- [ ] Findings BLOCKING resueltos y Gate 1 re-ejecutado antes de cerrar.
+- [ ] Findings ADVISORY documentados en el Review Contract; el equipo humano decide si requieren acción.
+- [ ] Si ARCHITECTURAL con `SELF_REVIEW`: reportado como `[SELF_REVIEW_FALLBACK]` en Reporte de Fase 7.
 
 ---
 
-# 10. GitHub y comunicación
+# 10. Calidad Estática y SonarCloud Quality Gate
+
+Antes de abrir PR confirmo que:
+
+- [ ] Verifiqué el diff contra [`07-errores-frecuentes-sonarcloud-ia.md`](./07-errores-frecuentes-sonarcloud-ia.md) para prevenir los *smells* y vulnerabilidades recurrentes de IA.
+- [ ] Todo método privado auxiliar o de validación que no accede al estado de la instancia fue declarado `static` (`java:S2325`).
+- [ ] Las clases utilitarias o factories tienen un constructor `private` explícito para prevenir instanciación (`java:S1118`).
+- [ ] Las clases y métodos de test JUnit 5 tienen visibilidad de paquete (sin modificador `public` redundante `java:S5786`).
+- [ ] Los métodos que implementan interfaces o sobreescriben comportamiento llevan explícitamente la anotación `@Override` (`java:S1161`).
+- [ ] No existen cadenas literales duplicadas 3 o más veces; se extrajeron a constantes (`java:S1192`).
+- [ ] Todo nuevo bloque condicional (`if`, `switch`, ternarios, `Optional`) cuenta con cobertura de pruebas en todas sus bifurcaciones (*Condition Coverage $\ge 80\%$*).
+- [ ] Se ejecutó `mvn spotless:check` con resultado exitoso para asegurar formato estándar.
+
+---
+
+# 11. GitHub y comunicación
 
 Confirmo que:
 
 - [ ] La issue está actualizada.
 - [ ] La PR referencia la issue correspondiente.
-- [ ] La descripción de la PR explica qué se cambió.
-- [ ] La descripción de la PR explica cómo se probó.
+- [ ] El grafo documental está íntegro: no hay documentos huérfanos ni desfasajes en `docs/README.md` o `docs/ESTADO_DOCUMENTACION.md`.
+- [ ] La descripción de la PR incluye el **Reporte Operativo Estructurado** (Fase 7 de `AGENTS.md`) documentando baseline, cambios, correcciones de la Fase 6 y Quality Gates superados.
+- [ ] Si no hubo acceso al daemon de Docker en local, se declaró formalmente `[DEFERRED_NO_DOCKER]`.
 - [ ] La PR es revisable y no demasiado grande.
-- [ ] Si hubo decisiones relevantes, quedaron documentadas.
+- [ ] Si hubo decisiones relevantes, quedaron documentadas en un ADR o en la issue.
 - [ ] Si hubo dudas, quedaron comentadas en canales públicos o en GitHub.
 
 ---
 
-# 11. Declaración final
+# 12. Declaración final
 
 Antes de abrir PR, debería poder afirmar:
 
-> Entiendo el cambio, validé su comportamiento, revisé los riesgos y puedo hacerme responsable técnicamente por esta Pull Request.
+> Entiendo el cambio, validé su comportamiento, revisé los riesgos contra el Quality Gate de SonarCloud, emití el Review Contract (o `LIGHTWEIGHT_CLOSING_CHECK` si QUICK) con Verdict, y puedo hacerme responsable técnicamente por esta Pull Request.
 
 Si no puedo afirmar eso, todavía no debería pedir review.
+
+---
+
+## Apéndice: Plantilla de Reporte Operativo (Fase 7 de AGENTS.md)
+
+Incluir en la descripción de la PR:
+
+```markdown
+### 📋 Reporte Operativo — DonaTrack
+
+#### 1. Resumen Ejecutivo y Alcance
+* **Objetivo:** [Breve descripción de la tarea solicitada]
+* **Estado de Baseline:** `[BASELINE_GREEN]` | `[BASELINE_RED (Detallar fallos preexistentes aislados)]`
+* **Archivos Modificados:** [Listado de rutas relativas intervenidas]
+
+#### 2. Matriz Epistémica de Cambios y Hallazgos
+* `[OBSERVED]`: [Evidencias constatadas en código/git/tests antes de intervenir]
+* `[DOCUMENTED]`: [ADRs, consignas de cátedra o contratos que respaldan el cambio]
+* `[INFERRED]`: [Deducciones lógicas o hipótesis tomadas durante el análisis]
+* `[PROPOSED]`: [Modificaciones arquitectónicas o de código implementadas]
+* `[REJECTED]`: [Alternativas evaluadas y descartadas con justificación técnica]
+* `[VERIFIED]`: [Comandos ejecutados, tests superados y validaciones de formato]
+
+#### 3. Revisión Crítica (Fase 6)
+* **Modo:** `[INDEPENDENT_REVIEW]` | `[SELF_REVIEW]` | `[LIGHTWEIGHT_CLOSING_CHECK]`
+* **Fallback declarado:** `[SELF_REVIEW_FALLBACK]` si ARCHITECTURAL sin independencia real
+* **Findings BLOCKING resueltos:** [Correcciones aplicadas antes del cierre]
+* **Findings ADVISORY:** [Listado; decisión pendiente del equipo humano]
+* **ADR Review (si aplica):** [Puntaje X.X/5.0 — separado del Review Contract de implementación]
+
+#### 4. Validación y Quality Gates
+* **Gate 1 (Unitario + Formato):** [✅ Aprobado]
+* **Gate 2 (Módulo Completo):** [✅ Aprobado | ⏭️ Omitido por alcance]
+* **Gate 3/4 (Integración / E2E):** [✅ Aprobado | ⚠️ `[DEFERRED_NO_DOCKER]`]
+
+#### 5. Deuda Técnica y Hallazgos Colaterales
+* [Hallazgos secundarios detectados pero NO modificados en esta iteración]
+```

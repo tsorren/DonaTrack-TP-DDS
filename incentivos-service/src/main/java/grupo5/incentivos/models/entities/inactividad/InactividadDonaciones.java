@@ -1,8 +1,11 @@
 package grupo5.incentivos.models.entities.inactividad;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class InactividadDonaciones extends CriterioInactividad {
@@ -16,20 +19,33 @@ public class InactividadDonaciones extends CriterioInactividad {
 
   public InactividadDonaciones(int diasSinDonar, Clock clock) {
     if (diasSinDonar <= 0) {
-      throw new IllegalArgumentException("Los días de inactividad deben ser mayores a cero");
+      throw new ValidationException(ErrorCatalog.INACTIVIDAD_DIAS_INVALIDOS);
     }
     this.diasSinDonar = diasSinDonar;
     this.clock = clock;
   }
 
   @Override
-  public List<DonanteIncentivos> detectarInactivos(List<DonanteIncentivos> donantes) {
-    LocalDate umbral = LocalDate.now(clock).minusDays(diasSinDonar);
-    return donantes.stream().filter(d -> esInactivo(d, umbral)).toList();
+  public List<DonanteInactivo> detectarInactivos(List<DonanteIncentivos> donantes) {
+    LocalDate hoy = LocalDate.now(clock);
+    LocalDate umbral = hoy.minusDays(diasSinDonar);
+    return donantes.stream()
+        .filter(d -> esInactivo(d, umbral))
+        .map(d -> aDonanteInactivo(d, hoy))
+        .toList();
   }
 
   private static boolean esInactivo(DonanteIncentivos donante, LocalDate umbral) {
-    LocalDate ultimaDonacion = donante.getMetricas().getUltimaDonacion();
-    return ultimaDonacion == null || ultimaDonacion.isBefore(umbral);
+    LocalDate fechaReferencia = donante.fechaUltimaActividad();
+    return fechaReferencia != null && fechaReferencia.isBefore(umbral);
+  }
+
+  private DonanteInactivo aDonanteInactivo(DonanteIncentivos donante, LocalDate hoy) {
+    LocalDate fechaReferencia = donante.fechaUltimaActividad();
+    int diasInactivo =
+        fechaReferencia != null
+            ? (int) ChronoUnit.DAYS.between(fechaReferencia, hoy)
+            : diasSinDonar;
+    return crear(donante, diasInactivo, hoy);
   }
 }

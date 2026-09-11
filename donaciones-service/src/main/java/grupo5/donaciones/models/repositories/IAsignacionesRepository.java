@@ -1,12 +1,12 @@
 package grupo5.donaciones.models.repositories;
 
-import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
+import grupo5.donaciones.models.entities.propuestas.EjecucionAsignacion;
 import java.util.List;
 
 public interface IAsignacionesRepository {
-  EjecucionAsignacionDTO save(EjecucionAsignacionDTO aggregate);
+  EjecucionAsignacion save(EjecucionAsignacion aggregate);
 
-  List<EjecucionAsignacionDTO> obtenerHistorial();
+  List<EjecucionAsignacion> obtenerHistorial();
 
   void deleteAll();
 }

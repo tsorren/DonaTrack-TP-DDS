@@ -11,4 +11,8 @@ public interface INecesidadesService {
   List<NecesidadDTO> listarConFiltros(UUID entidadId, String tipo);
 
   NecesidadDTO obtenerPorId(UUID id);
+
+  NecesidadDTO actualizar(UUID id, NecesidadDTO dto);
+
+  void eliminar(UUID id);
 }

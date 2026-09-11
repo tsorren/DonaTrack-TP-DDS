@@ -2,14 +2,14 @@ package grupo5.donaciones.services.impl;
 
 import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
-import java.util.UUID;
+import grupo5.donaciones.services.INotificacionesAsyncService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
-public class NotificacionesAsyncService {
+public class NotificacionesAsyncService implements INotificacionesAsyncService {
 
   private static final Logger log = LoggerFactory.getLogger(NotificacionesAsyncService.class);
   private final NotificacionesFeignClient client;
@@ -28,16 +28,6 @@ public class NotificacionesAsyncService {
           dto.id(),
           e.getMessage(),
           e);
-    }
-  }
-
-  @Async
-  public void anonimizarPersona(UUID id) {
-    try {
-      client.anonimizarPersona(id);
-    } catch (Exception e) {
-      log.error(
-          "Fallo al anonimizar persona {} en notificaciones-service: {}", id, e.getMessage(), e);
     }
   }
 }

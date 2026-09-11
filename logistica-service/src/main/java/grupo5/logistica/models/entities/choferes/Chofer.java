@@ -3,8 +3,13 @@ package grupo5.logistica.models.entities.choferes;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
@@ -17,6 +22,9 @@ public class Chofer implements AggregateRoot {
   private EstadoChofer estado;
   private UUID rutaId;
 
+  @Getter(AccessLevel.NONE)
+  private final List<CambioEstadoChofer> historialEstados;
+
   public Chofer(String nombre, String apellido, String licencia, String telefonoContacto) {
     validarDatos(nombre, apellido, licencia, telefonoContacto);
     this.id = UUID.randomUUID();
@@ -26,6 +34,7 @@ public class Chofer implements AggregateRoot {
     this.telefonoContacto = telefonoContacto;
     this.estado = EstadoChofer.DISPONIBLE;
     this.rutaId = null;
+    this.historialEstados = new ArrayList<>();
   }
 
   public void actualizarLicencia(String nuevaLicencia) {
@@ -58,7 +67,7 @@ public class Chofer implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoChofer.EN_RUTA;
+    actualizarEstado(EstadoChofer.EN_RUTA);
     this.rutaId = rutaId;
   }
 
@@ -67,7 +76,7 @@ public class Chofer implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoChofer.DISPONIBLE;
+    actualizarEstado(EstadoChofer.DISPONIBLE);
     this.rutaId = null;
   }
 
@@ -76,7 +85,7 @@ public class Chofer implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoChofer.DISPONIBLE;
+    actualizarEstado(EstadoChofer.DISPONIBLE);
   }
 
   public void deshabilitar() {
@@ -84,12 +93,35 @@ public class Chofer implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoChofer.DESHABILITADO;
+    actualizarEstado(EstadoChofer.DESHABILITADO);
     this.rutaId = null;
   }
 
   public boolean estaDisponibleParaAsignar() {
     return this.estado == EstadoChofer.DISPONIBLE && Objects.isNull(this.rutaId);
+  }
+
+  public void cambiarEstado(EstadoChofer estadoNuevo) {
+    if (estadoNuevo == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+
+    switch (estadoNuevo) {
+      case DISPONIBLE -> habilitar();
+      case DESHABILITADO -> deshabilitar();
+      case EN_RUTA -> throw new ValidationException(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA);
+    }
+  }
+
+  public List<CambioEstadoChofer> getHistorialEstados() {
+    return List.copyOf(historialEstados);
+  }
+
+  private void actualizarEstado(EstadoChofer estadoNuevo) {
+    EstadoChofer estadoAnterior = this.estado;
+    this.estado = estadoNuevo;
+    this.historialEstados.add(
+        new CambioEstadoChofer(estadoAnterior, estadoNuevo, LocalDateTime.now(ZoneId.of("UTC"))));
   }
 
   private static void validarDatos(

@@ -4,7 +4,6 @@ import grupo5.logistica.dto.rutas.RutaConEntregasResponseDTO;
 import grupo5.logistica.dto.rutas.RutaResponseDTO;
 import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -64,7 +63,7 @@ public class RutaMapper {
    * front de seguimiento entre ambientes.
    */
   private String calcularUrlSeguimiento(Ruta ruta) {
-    if (ruta.getEstado() == EstadoRuta.PENDIENTE) {
+    if (!ruta.tieneSeguimientoDisponible()) {
       return null;
     }
     return generadorDeUrlSeguimiento.generarUrl(ruta.getId());

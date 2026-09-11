@@ -2,16 +2,14 @@ package grupo5.incentivos.models.entities.ranking;
 
 import java.util.UUID;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class EntradaRanking {
 
-  private int posicion;
-  private UUID donanteId;
-  private String nombreDonante;
-  private long misionesCompletadas;
+  private final int posicion;
+  private final UUID donanteId;
+  private final String nombreDonante;
+  private final long misionesCompletadas;
 
   public EntradaRanking(
       int posicion, UUID donanteId, String nombreDonante, long misionesCompletadas) {

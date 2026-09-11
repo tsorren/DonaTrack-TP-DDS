@@ -1,0 +1,387 @@
+@startuml diagrama-de-clases-logistica
+!include ../common/donatrack-style.puml
+
+title Servicio de Logística - Dominio
+
+' ==================== CHOFER ====================
+package CHOFER {
+  enum EstadoChofer <<enum>> {
+    DISPONIBLE
+    EN_RUTA
+    DESHABILITADO
+  }
+
+  class CambioEstadoChofer <<entity>> {
+    - estadoAnterior: EstadoChofer
+    - estadoNuevo: EstadoChofer
+    - timestamp: LocalDateTime
+  }
+
+  class Chofer <<entity>> {
+    - id: UUID
+    - nombre: String
+    - apellido: String
+    - licencia: String
+    - telefonoContacto: String
+    - estado: EstadoChofer
+    - historialEstados: List<CambioEstadoChofer>
+    --
+    + cambiarEstado(estado: EstadoChofer): void
+    + actualizarLicencia(licencia: String): void
+    + actualizarTelefContacto(telefono: String): void
+    + asignarRuta(ruta: Ruta): void
+    + completarRuta(): void
+    + habilitar(): void
+    + deshabilitar(): void
+    + estaDisponibleParaAsignar(): Boolean
+    - validarEstado(nombre: String, apellido: String, licencia: String, telefono: String): void
+  }
+
+  Chofer --> EstadoChofer
+  Chofer --> CambioEstadoChofer
+  CambioEstadoChofer --> EstadoChofer
+}
+
+' ==================== DIRECCION ====================
+package DIRECCION {
+  class Direccion <<entity>> {
+    - localidad: Localidad
+    - calle: String
+    - altura: Integer
+    - piso: Integer
+    - departamento: String
+    - codigoPostal: String
+    --
+    + Direccion(calle: String, altura: Integer, piso: Integer, departamento: String, codigoPostal: String, localidad: Localidad)
+    - {static} validarDireccion(calle: String, altura: Integer, codigoPostal: String, localidad: Localidad): void
+    + anonimizar(): void
+  }
+
+  class Localidad <<entity>> {
+    - nombre: String
+    - provincia: Provincia
+    --
+    + anonimizar(): void
+  }
+
+  class Provincia <<entity>> {
+    - nombre: String
+    - pais: Pais
+    --
+    + anonimizar(): void
+  }
+
+  class Pais <<entity>> {
+    - nombre: String
+    --
+    + anonimizar(): void
+  }
+
+  Direccion --> Localidad
+  Localidad --> Provincia
+  Provincia --> Pais
+}
+
+' ==================== ENTREGA ====================
+package ENTREGA {
+  enum EstadoEntrega <<enum>> {
+    PENDIENTE
+    EN_TRASLADO
+    ENTREGADA
+    NO_RECIBIDA
+    REVISION
+  }
+
+  class CambioEstadoEntrega <<entity>> {
+    - estadoAnterior: EstadoEntrega
+    - estadoNuevo: EstadoEntrega
+    - timestamp: LocalDateTime
+    - actor: String
+  }
+
+  class Entrega <<entity>> {
+    - id: UUID
+    - idRuta: UUID
+    - idDonacion: UUID
+    - idBeneficiaria: UUID
+    - destino: Direccion
+    - estadoActual: EstadoEntrega
+    - historialEstado: List<CambioEstadoEntrega>
+    - horaArribo: LocalDateTime
+    - horaSalida: LocalDateTime
+    - fotoRecepcionUrl: String
+    - volumenTotalM3: float
+    - pesoTotalKG: float
+    - domainEvents: List<EventoEntrega>
+    --
+    + iniciarRuta(chofer: String): void
+    + confirmarEntrega(entidadBeneficiaria: String): void
+    + negarEntrega(entidadBeneficiaria: String): void
+    + adjuntarFotoRecepcion(fotoRecepcionUrl: String): void
+    + mandarARevision(administrador: String): void
+    + regresarAlDeposito(administrador: String): void
+    - actualizarEstado(nuevoEstado: EstadoEntrega, actor: String): void
+    - registrarCambioEstado(estadoAnterior: EstadoEntrega, estadoNuevo: EstadoEntrega, actor: String): void
+    + asignarRuta(idRuta: UUID): void
+    - validarIdentificador(id: UUID): void
+    - validarDestino(destino: Direccion): void
+    - validarMagnitudPositiva(valor: Float): void
+    - validarActor(actor: String): void
+    + getDomainEvents(): List<EventoEntrega>
+    + clearDomainEvents(): void
+    - registrarEvento(evento: EventoEntrega): void
+  }
+
+  Entrega --> CambioEstadoEntrega
+  Entrega --> EstadoEntrega
+  CambioEstadoEntrega --> EstadoEntrega
+
+  abstract class EventoEntrega <<entity>> {
+    - entregaId: UUID
+    - ocurrioEn: LocalDateTime
+  }
+
+  class EventoRutaAsignada <<entity>> {
+    - rutaId: UUID
+    - donacionId: UUID
+  }
+
+  class EventoEntregaExitosa <<entity>> {
+    - donacionId: UUID
+  }
+
+  class EventoEntregaFallida <<entity>> {
+    - donacionId: UUID
+    - justificacion: String
+    - replanificable: Boolean
+  }
+
+  EventoEntrega <|-- EventoRutaAsignada
+  EventoEntrega <|-- EventoEntregaExitosa
+  EventoEntrega <|-- EventoEntregaFallida
+  Entrega *-- EventoEntrega
+
+  interface SolicitudTransicionEntrega <<Sealed Interface>> {
+    - actor: String
+    - entrega: Entrega
+  }
+
+  class ConfirmacionRecepcion <<entity>> {
+    - fotoRecepcionUrl: String
+  }
+
+  class NoRecepcion <<entity>> {
+    - justificacion: String
+    - replanificable: Boolean
+  }
+
+  class RegresoDeposito <<entity>> {
+  }
+
+  class GestorDeEntregas <<entity>> {
+    + cambiarEstado(solicitud: SolicitudTransicionEntrega): void
+  }
+
+  ConfirmacionRecepcion ..|> SolicitudTransicionEntrega
+  NoRecepcion ..|> SolicitudTransicionEntrega
+  RegresoDeposito ..|> SolicitudTransicionEntrega
+  GestorDeEntregas --> SolicitudTransicionEntrega
+  GestorDeEntregas --> Entrega
+}
+
+' ==================== RUTAS ====================
+package RUTAS {
+  enum EstadoRuta <<enum>> {
+    PENDIENTE
+    EN_TRASLADO
+    COMPLETADA
+  }
+
+  class CambioEstadoRuta <<entity>> {
+    - estadoAnterior: EstadoRuta
+    - estadoNuevo: EstadoRuta
+    - timestamp: LocalDateTime
+  }
+
+  class Ruta <<entity>> {
+    - id: UUID
+    - fecha: LocalDate
+    - entregas: List<UUID>
+    - choferId: UUID
+    - camionId: UUID
+    - estado: EstadoRuta
+    - historialEstado: List<CambioEstadoRuta>
+    - horaInicioReal: LocalDateTime
+    - horaFinReal: LocalDateTime
+    - domainEvents: List<EventoRutaIniciada>
+    --
+    + iniciarRuta(): void
+    + completarRuta(): void
+    + agregarEntrega(entregaId: UUID): void
+    + obtenerEntregas(): List<UUID>
+    + getDomainEvents(): List<EventoRutaIniciada>
+    + clearDomainEvents(): void
+    - registrarEvento(evento: EventoRutaIniciada): void
+  }
+
+  class EventoRutaIniciada <<entity>> {
+    - rutaId: UUID
+    - camionId: UUID
+    - entregaIds: List<UUID>
+    - ocurrioEn: LocalDateTime
+  }
+
+  class GestorDeRutas <<entity>> {
+    + cambiarEstado(ruta: Ruta, chofer: Chofer, estado: EstadoRuta): void
+    - iniciarRuta(ruta: Ruta, chofer: Chofer): void
+    - completarRuta(ruta: Ruta, chofer: Chofer): void
+  }
+
+  Ruta --> EstadoRuta
+  Ruta --> CambioEstadoRuta
+  CambioEstadoRuta --> EstadoRuta
+  Ruta *-- EventoRutaIniciada
+  GestorDeRutas --> Ruta
+  GestorDeRutas --> Chofer
+}
+
+' ==================== CAMIONES ====================
+package CAMIONES {
+  enum EstadoCamion <<enum>> {
+    DISPONIBLE
+    EN_RUTA
+    DESHABILITADO
+  }
+
+  class CambioEstadoCamion <<entity>> {
+    - estadoAnterior: EstadoCamion
+    - estadoNuevo: EstadoCamion
+    - timestamp: LocalDateTime
+  }
+
+  class Camion <<entity>> {
+    - id: UUID
+    - rutaActual: UUID
+    - patente: String
+    - capacidadVolumen: Float
+    - alturaM: Float
+    - capacidadKG: Float
+    - estado: EstadoCamion
+    - historialEstado: List<CambioEstadoCamion>
+    --
+    + asignarRuta(rutaId: UUID): void
+    + completarRuta(): void
+    + habilitar(): void
+    + deshabilitar(): void
+    + estaDisponibleParaAsignar(): boolean
+    + {static} validarPatente(patente: String): void
+    - validarCapacidad(valor: Float): void
+  }
+
+  class GestorDeCamiones <<entity>> {
+    - validadorPatentes: ValidadorPatentes
+    --
+    + procesarSolicitudNuevoCamion(solicitud: SolicitudNuevoCamion): Optional<Camion>
+    + cambiarEstado(camion: Camion, estado: EstadoCamion): void
+    - validarPatente(patente: String, patentesExistentes: List<String>): Boolean
+  }
+
+  class SolicitudNuevoCamion <<entity>> {
+    - patente: String
+    - capacidadVolumen: Float
+    - altura: Float
+    - capacidadKG: Float
+    - patentesExistentes: List<String>
+  }
+
+  class ValidadorPatentes <<entity>> {
+    - camionRepository: ICamionRepository
+    --
+    + validar(patente: String): void
+    + validarFormato(patente: String): void
+    + validarUnicidad(patente: String): void
+  }
+
+  Camion --> EstadoCamion
+  Camion --> CambioEstadoCamion
+  CambioEstadoCamion --> EstadoCamion
+  GestorDeCamiones --> SolicitudNuevoCamion
+  GestorDeCamiones --> Camion
+  GestorDeCamiones *-- ValidadorPatentes
+}
+
+' relaciones cruzadas entre RUTAS, CHOFER y CAMIONES (por id, no por referencia de objeto)
+Chofer --> Ruta
+Camion --> Ruta
+Ruta --* Entrega
+
+' ==================== PLANIFICADOR_EXTERNO ====================
+package PLANIFICADOR_EXTERNO {
+  interface AlgoritmoOrdenadorDeEntregas <<interface>> {
+    + obtenerEntregasOrdenadas(entregas: List<Entrega>): List<Entrega>
+  }
+
+  interface AlgoritmoAsignadorDeEntregas <<interface>> {
+    + asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<UUID, List<Entrega>>
+  }
+
+  class AlgoritmoOrdenadorSimple <<entity>> {
+    + obtenerEntregasOrdenadas(entregas: List<Entrega>): List<Entrega>
+  }
+
+  class AsignadorDeEntregasPorDimension <<entity>> {
+    - asignar(entregas: List<Entrega>, camiones: List<Camion>): Map<UUID, List<Entrega>>
+  }
+
+  class PlanificadorDeRutas <<entity>> {
+    - ordenadorEntregas: AlgoritmoOrdenadorDeEntregas
+    - asignadorDeEntregas: AlgoritmoAsignadorDeEntregas
+    --
+    + procesarSolicitud(solicitud: PlanificacionSolicitada): RespuestaPlanificacion
+  }
+
+  class PlanificacionSolicitada <<entity>> {
+    - id: UUID
+    - fecha: LocalDate
+    - maximoPorLote: Integer
+    - lotesEntregas: List<List<Entrega>>
+    - camionesDisponibles: List<Camion>
+  }
+
+  class RespuestaPlanificacion <<entity>> {
+    - id: UUID
+    - idPlanificacionSolicitada: UUID
+    - fecha: LocalDate
+    - datos: Map<Camion, List<Entrega>>
+  }
+
+  interface GeneradorLotes <<interface>> {
+    + particionarEnLotes(entregas: List<Entrega>): List<List<Entrega>>
+  }
+
+  class GeneradorLotesSimple <<entity>> {
+    + particionarEnLotes(entregas: List<Entrega>): List<List<Entrega>>
+  }
+
+  class GeneradorDeRutas <<entity>> {
+    - {static} MAX_ENTREGAS_POR_SOLICITUD: int = 100
+    - generadorLotes: GeneradorLotes
+    --
+    + planificar(entregas: List<Entrega>, camiones: List<Camion>): List<PlanificacionSolicitada>
+    + generarRutas(respuesta: RespuestaPlanificacion): List<Ruta>
+    - generarLotes(entregas: List<Entrega>): List<List<Entrega>>
+  }
+
+  AlgoritmoOrdenadorDeEntregas <|.. AlgoritmoOrdenadorSimple
+  AlgoritmoAsignadorDeEntregas <|.. AsignadorDeEntregasPorDimension
+  PlanificadorDeRutas *-- AlgoritmoOrdenadorDeEntregas
+  PlanificadorDeRutas *-- AlgoritmoAsignadorDeEntregas
+  PlanificadorDeRutas --> PlanificacionSolicitada
+  PlanificadorDeRutas --> RespuestaPlanificacion
+  GeneradorLotes <|.. GeneradorLotesSimple
+  GeneradorDeRutas --> GeneradorLotes
+  GeneradorDeRutas --> PlanificacionSolicitada
+  GeneradorDeRutas --> RespuestaPlanificacion
+}
+
+@enduml

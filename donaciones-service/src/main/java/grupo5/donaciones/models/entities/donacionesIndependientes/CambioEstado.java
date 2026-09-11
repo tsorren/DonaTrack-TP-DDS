@@ -7,15 +7,15 @@ import lombok.Getter;
 @Getter
 public class CambioEstado {
 
-  private final EstadoDonacion estadoAnterior;
-  private final EstadoDonacion estadoNuevo;
+  private final EstadoDonacionIndependiente estadoAnterior;
+  private final EstadoDonacionIndependiente estadoNuevo;
   private final LocalDateTime timestamp;
   private final String justificacion;
   private final String actor; // quién realizó la transición (ej: "admin@donatrack.org", "SISTEMA")
 
   public CambioEstado(
-      EstadoDonacion estadoAnterior,
-      EstadoDonacion estadoNuevo,
+      EstadoDonacionIndependiente estadoAnterior,
+      EstadoDonacionIndependiente estadoNuevo,
       String justificacion,
       String actor) {
     this.estadoAnterior = estadoAnterior;

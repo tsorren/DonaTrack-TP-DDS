@@ -1,3 +1,6 @@
 package grupo5.donaciones.dto.categorias;
 
-public record AliasSubcategoriaInputDTO(String alias) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record AliasSubcategoriaInputDTO(
+    @NotBlank(message = "El alias es obligatorio") String alias) {}
