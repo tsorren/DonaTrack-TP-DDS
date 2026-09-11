@@ -11,6 +11,8 @@ const EXPECTED_SKILLS = [
   'implement-task',
   'implementation-review',
   'engineering-loop',
+  'explain-concept',
+  'review-pr',
 ];
 
 function checkSkillsIntegrity(repoRoot) {
@@ -79,6 +81,50 @@ function checkSkillsIntegrity(repoRoot) {
         findings.push(passed('IMPL_REVIEW_CONTRACT_VECTORS', `${skillName} defines all V1-V9 code vectors from evaluator.md`));
       } else {
         findings.push(failed('IMPL_REVIEW_CONTRACT_VECTORS', `${skillRel} missing one or more V1-V9 vectors`, skillRel));
+      }
+    }
+
+    if (skillName === 'explain-concept') {
+      const hasAllSteps = ['Paso 1:', 'Paso 2:', 'Paso 3:', 'Paso 4:'].every(step => content.includes(step));
+      if (hasAllSteps) {
+        findings.push(passed('EXPLAIN_CONCEPT_FRAMEWORK_STEPS', `${skillName} defines the 4 pedagogical framework steps`));
+      } else {
+        findings.push(failed('EXPLAIN_CONCEPT_FRAMEWORK_STEPS', `${skillRel} missing one or more of the 4 pedagogical framework steps`, skillRel));
+      }
+    }
+
+    if (skillName === 'review-pr') {
+      const vectors = [
+        'Arquitectura',
+        'Contratos',
+        'Concurrencia',
+        'Tests',
+        'Seguridad',
+        'Rendimiento',
+        'Scope',
+        'Simplicidad',
+      ];
+      const hasAllVectors = vectors.every(v => content.toLowerCase().includes(v.toLowerCase()));
+      if (hasAllVectors) {
+        findings.push(passed('REVIEW_PR_VECTORS', `${skillName} defines all 8 PR review vectors`));
+      } else {
+        findings.push(failed('REVIEW_PR_VECTORS', `${skillRel} missing one or more of the 8 PR review vectors`, skillRel));
+      }
+
+      const grepaiTools = ['grepai_search', 'grepai_trace_callers', 'grepai_trace_callees'];
+      const hasGrepaiProtocol = grepaiTools.every(tool => content.includes(tool));
+      if (hasGrepaiProtocol) {
+        findings.push(passed('REVIEW_PR_GREPAI_PROTOCOL', `${skillName} defines the GrepAI-First inspection protocol`));
+      } else {
+        findings.push(failed('REVIEW_PR_GREPAI_PROTOCOL', `${skillRel} missing GrepAI-First tool references`, skillRel));
+      }
+
+      const reportSections = ['REVISIÓN CRÍTICA DE PR', 'Veredicto', 'Matriz de Evaluación Rápida', 'Hallazgos Bloqueantes'];
+      const hasReportStructure = reportSections.every(s => content.includes(s));
+      if (hasReportStructure) {
+        findings.push(passed('REVIEW_PR_REPORT_FORMAT', `${skillName} defines canonical compact report template`));
+      } else {
+        findings.push(failed('REVIEW_PR_REPORT_FORMAT', `${skillRel} missing canonical compact report sections`, skillRel));
       }
     }
   }

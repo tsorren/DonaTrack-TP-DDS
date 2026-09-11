@@ -100,6 +100,9 @@ Los prompts se encuentran en [`prompts/`](./prompts/).
 
 ### Prompts transversales
 
+- [`prompts/transversal-mentoria-conceptos.md`](./prompts/transversal-mentoria-conceptos.md)  
+  Para solicitar explicaciones didácticas y mentoría de conceptos de arquitectura/diseño estructuradas en 4 pasos.
+
 - [`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)  
   Para revisar una PR antes de pedir review humana.
 

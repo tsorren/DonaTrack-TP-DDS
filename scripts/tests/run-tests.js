@@ -19,6 +19,7 @@ const {
   checkAdrStatus,
   checkModuleRouting,
   checkTemporalDrift,
+  checkSkillsIntegrity,
   checkSpecsIntegrity,
   runAllChecks,
   // Pure helpers
@@ -189,11 +190,13 @@ console.log('\n[4] runAllChecks — exit code aggregation');
   write(tmp, 'docs/context-index.md', '# No code spans');
   write(tmp, 'docs/adr/DEUDA_TECNICA.md', '# No DTIs');
   write(tmp, '.gitignore', '!.agents/skills/\n');
-  const skills = ['define-spec', 'design-spec', 'design-review', 'implement-task', 'implementation-review', 'engineering-loop'];
+  const skills = ['define-spec', 'design-spec', 'design-review', 'implement-task', 'implementation-review', 'engineering-loop', 'explain-concept', 'review-pr'];
   for (const s of skills) {
     let extra = 'AGENTS.md anchor\n';
     if (s === 'design-review') extra += 'D1 D2 D3 D4 D5 D6\n';
     if (s === 'implementation-review') extra += 'V1 V2 V3 V4 V5 V6 V7 V8 V9\n';
+    if (s === 'explain-concept') extra += 'Paso 1: Paso 2: Paso 3: Paso 4:\n';
+    if (s === 'review-pr') extra += 'Arquitectura Contratos Concurrencia Tests Seguridad Rendimiento Scope Simplicidad\ngrepai_search grepai_trace_callers grepai_trace_callees\nREVISIÓN CRÍTICA DE PR Veredicto Matriz de Evaluación Rápida Hallazgos Bloqueantes\n';
     write(tmp, `.agents/skills/${s}/SKILL.md`, `---\nname: ${s}\ndescription: desc\n---\n${extra}`);
   }
   write(tmp, 'docs/specs/active/.gitkeep', '');
@@ -686,6 +689,63 @@ Entonces z
 Result: PASS
 `);
   assert('16.9  completed spec with review contract → no FAIL', noFail(checkSpecsIntegrity(tmp)));
+} finally { cleanup(tmp); } }
+
+// ─── [17] checkSkillsIntegrity & review-pr ────────────────────────────────────
+
+console.log('\n[17] checkSkillsIntegrity & review-pr');
+
+{ const tmp = makeTemp(); try {
+  // Empty repo missing skills dir
+  assert('17.1  missing skills dir → SKILLS_DIR_EXISTS FAIL', hasFail(checkSkillsIntegrity(tmp), 'SKILLS_DIR_EXISTS'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, '.agents/skills/dummy.txt', 'not tracked');
+  // Missing gitignore un-ignore
+  write(tmp, '.gitignore', '# empty');
+  assert('17.2  missing !.agents/skills/ in gitignore → SKILLS_GITIGNORE_TRACKED FAIL', hasFail(checkSkillsIntegrity(tmp), 'SKILLS_GITIGNORE_TRACKED'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, '.gitignore', '!.agents/skills/\n');
+  write(tmp, '.agents/skills/review-pr/SKILL.md', `---
+name: review-pr
+description: Review skill
+---
+# Skill review-pr
+References AGENTS.md.
+## Protocol
+grepai_search grepai_trace_callers grepai_trace_callees
+## Vectors
+Arquitectura Contratos Concurrencia Tests Seguridad Rendimiento Scope Simplicidad
+## Report
+REVISIÓN CRÍTICA DE PR
+Veredicto
+Matriz de Evaluación Rápida
+Hallazgos Bloqueantes
+`);
+  const findings = checkSkillsIntegrity(tmp);
+  assert('17.3  review-pr with frontmatter, AGENTS.md anchor, vectors, grepai, report → PASS on review-pr checks',
+    findings.some(f => f.severity === 'PASS' && f.id === 'REVIEW_PR_VECTORS') &&
+    findings.some(f => f.severity === 'PASS' && f.id === 'REVIEW_PR_GREPAI_PROTOCOL') &&
+    findings.some(f => f.severity === 'PASS' && f.id === 'REVIEW_PR_REPORT_FORMAT')
+  );
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, '.gitignore', '!.agents/skills/\n');
+  write(tmp, '.agents/skills/review-pr/SKILL.md', `---
+name: review-pr
+description: Incomplete review skill
+---
+# Incomplete
+References AGENTS.md.
+Missing vectors and protocol.
+`);
+  const findings = checkSkillsIntegrity(tmp);
+  assert('17.4  review-pr missing vectors → REVIEW_PR_VECTORS FAIL', hasFail(findings, 'REVIEW_PR_VECTORS'));
+  assert('17.5  review-pr missing grepai tools → REVIEW_PR_GREPAI_PROTOCOL FAIL', hasFail(findings, 'REVIEW_PR_GREPAI_PROTOCOL'));
 } finally { cleanup(tmp); } }
 
 // ─── Summary ──────────────────────────────────────────────────────────────────

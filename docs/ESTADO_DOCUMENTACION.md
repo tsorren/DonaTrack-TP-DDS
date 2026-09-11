@@ -120,7 +120,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/context-index.md`](context-index.md) | Context Routing | Routing de contexto para agentes de IA por servicio, tarea y temporal constraints. | 🟢 Sincronizado |
 | [`docs/IA/review/evaluator.md`](IA/review/evaluator.md) | Revisión Crítica | Roles Generator/Evaluator, Review Contract y vectores de revisión V1–V9. | 🟢 Sincronizado |
 | [`scripts/agent-check/`](../scripts/agent-check/) | Enforcement CI | Suite de validación mecánica de integridad referencial, canonicidad, skills y ADRs. | 🟢 Sincronizado |
-| [`.agents/skills/`](../.agents/skills/) | Suite de Skills | Suite de 6 skills modulares para el Engineering Loop con routing dinámico por criticidad. | 🟢 Sincronizado |
+| [`.agents/skills/`](../.agents/skills/) | Suite de Skills | Suite de 8 skills modulares para el Engineering Loop y auditoría adversarial de PRs con GrepAI. | 🟢 Sincronizado |
 | [`docs/specs/`](specs/README.md) | Especificaciones SDD | Catálogo centralizado de especificaciones funcionales y técnicas (active/completed). | 🟢 Sincronizado |
 | [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
 | [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
@@ -176,6 +176,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/incentivos-service/20260905-dti-10-desacoplamiento-de-errores-de-dominio-en-global-exception-handler.md`](adr/incentivos-service/20260905-dti-10-desacoplamiento-de-errores-de-dominio-en-global-exception-handler.md) | ADR Deuda Técnica | DTI-10: Desacoplamiento de errores de dominio de incentivos en GlobalExceptionHandler. | 🟢 Sincronizado |
 | [`docs/adr/incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md`](adr/incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md) | ADR Deuda Técnica | DTI-11: Extracción de MisionMapper dedicado y purificación anémica de MisionDTO. | 🟢 Sincronizado |
 | [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
+| [`docs/adr/20260911-harness-skill-review-pr-adversarial-grepai.md`](adr/20260911-harness-skill-review-pr-adversarial-grepai.md) | ADR Gobernanza IA | Formalización de la skill canónica review-pr, protocolo GrepAI y tooling CLI de contexto. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
 
