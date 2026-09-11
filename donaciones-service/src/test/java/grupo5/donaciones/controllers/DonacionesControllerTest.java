@@ -10,51 +10,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
-import grupo5.donaciones.controllers.impl.DonacionesController;
 import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
-import grupo5.donaciones.services.IDonacionesService;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class DonacionesControllerTest {
+class DonacionesControllerTest extends AbstractDonacionesWebMvcTest {
 
-  private MockMvc mockMvc;
-
-  @Mock private IDonacionesService service;
-
-  @InjectMocks private DonacionesController controller;
-
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   @Test
   void cargarDonacion_deberiaRetornarStatusCreated() throws Exception {
@@ -87,7 +58,7 @@ class DonacionesControllerTest {
             EstadoDonacion.CARGADA,
             List.of());
 
-    when(service.cargarDonacion(any())).thenReturn(output);
+    when(donacionesService.cargarDonacion(any())).thenReturn(output);
 
     mockMvc
         .perform(
@@ -124,7 +95,7 @@ class DonacionesControllerTest {
 
   @Test
   void listarDonaciones_deberiaRetornarStatusOk() throws Exception {
-    when(service.listarDonaciones()).thenReturn(List.of());
+    when(donacionesService.listarDonaciones()).thenReturn(List.of());
 
     mockMvc.perform(get("/api/donaciones")).andExpect(status().isOk());
   }
@@ -147,7 +118,7 @@ class DonacionesControllerTest {
             EstadoDonacion.CARGADA,
             List.of());
 
-    when(service.obtenerDonacion(id)).thenReturn(output);
+    when(donacionesService.obtenerDonacion(id)).thenReturn(output);
 
     mockMvc.perform(get("/api/donaciones/{id}", id)).andExpect(status().isOk());
   }

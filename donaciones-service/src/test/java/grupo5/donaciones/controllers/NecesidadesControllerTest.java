@@ -12,47 +12,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
-import grupo5.donaciones.controllers.impl.NecesidadesController;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
-import grupo5.donaciones.services.INecesidadesService;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class NecesidadesControllerTest {
+class NecesidadesControllerTest extends AbstractDonacionesWebMvcTest {
 
-  private MockMvc mockMvc;
-
-  @Mock private INecesidadesService necesidadesService;
-
-  @InjectMocks private NecesidadesController controller;
-
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   @Test
   void crearNecesidad_deberiaRetornarCreatedYDto() throws Exception {

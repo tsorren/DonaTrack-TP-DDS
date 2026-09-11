@@ -3,6 +3,7 @@ package grupo5.donaciones.models.entities.donacionesIndependientes;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionAsignada;
+import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionVencida;
 import java.util.UUID;
 
 public class EnDeposito implements EstadoDonacionIndependiente {
@@ -39,6 +40,11 @@ public class EnDeposito implements EstadoDonacionIndependiente {
   @Override
   public void vencer(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new Vencida(), null, actor);
+    d.registrarEvento(
+        new EventoDonacionVencida(
+            d.getId(),
+            d.getDonacionOriginalId(),
+            "Los ítems de la donación han superado su fecha de vencimiento."));
   }
 
   @Override

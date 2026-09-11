@@ -19,23 +19,30 @@ public class LoggingAutoConfiguration {
     return new ServiceLoggingAspect();
   }
 
-  @Bean
-  @ConditionalOnBean(Tracer.class)
-  public ScheduledJobLoggingAspect scheduledJobLoggingAspect(Tracer tracer) {
-    return new ScheduledJobLoggingAspect(tracer);
+  @Configuration(proxyBeanMethods = false)
+  @ConditionalOnClass(Tracer.class)
+  public static class TracingLoggingConfiguration {
+    @Bean
+    @ConditionalOnBean(Tracer.class)
+    public ScheduledJobLoggingAspect scheduledJobLoggingAspect(Tracer tracer) {
+      return new ScheduledJobLoggingAspect(tracer);
+    }
   }
 
   @Bean
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(TraceResponseHeaderFilter.class)
   public TraceResponseHeaderFilter traceResponseHeaderFilter() {
     return new TraceResponseHeaderFilter();
   }
 
-  @Bean
+  @Configuration(proxyBeanMethods = false)
   @ConditionalOnClass(RequestInterceptor.class)
-  @ConditionalOnMissingBean
-  public FeignTraceRequestInterceptor feignTraceRequestInterceptor() {
-    return new FeignTraceRequestInterceptor();
+  public static class FeignLoggingConfiguration {
+    @Bean
+    @ConditionalOnMissingBean(FeignTraceRequestInterceptor.class)
+    public FeignTraceRequestInterceptor feignTraceRequestInterceptor() {
+      return new FeignTraceRequestInterceptor();
+    }
   }
 
   @Configuration

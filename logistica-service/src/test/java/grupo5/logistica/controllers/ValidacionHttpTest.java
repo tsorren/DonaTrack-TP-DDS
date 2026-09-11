@@ -13,12 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.logistica.controllers.impl.CamionesController;
-import grupo5.logistica.controllers.impl.ChoferesController;
-import grupo5.logistica.controllers.impl.EntregasController;
-import grupo5.logistica.controllers.impl.PlanificacionController;
-import grupo5.logistica.controllers.impl.RutasController;
 import grupo5.logistica.dto.callback.CallbackPlanificacionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionResponseDTO;
@@ -28,24 +22,17 @@ import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
 import grupo5.logistica.dto.rutas.AgregarEntregaRutaRequestDTO;
 import grupo5.logistica.dto.rutas.RutaResponseDTO;
-import grupo5.logistica.services.ICamionesService;
-import grupo5.logistica.services.IChoferesService;
-import grupo5.logistica.services.IEntregasService;
-import grupo5.logistica.services.IPlanificacionService;
-import grupo5.logistica.services.IRutasService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 /**
  * Tests de integración HTTP: verifica que @Valid + GlobalExceptionHandler producen los códigos de
  * estado correctos (201, 204, 400, 404) con el pipe de Bean Validation activo.
  */
-class ValidacionHttpTest {
+class ValidacionHttpTest extends AbstractLogisticaWebMvcTest {
 
   private MockMvc camionMvc;
   private MockMvc choferMvc;
@@ -53,55 +40,17 @@ class ValidacionHttpTest {
   private MockMvc rutaMvc;
   private MockMvc planificacionMvc;
 
-  private ICamionesService camionesService;
-  private IChoferesService choferesService;
-  private IEntregasService entregasService;
-  private IRutasService rutasService;
-  private IPlanificacionService planificacionService;
-
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   private static final UUID ID = UUID.randomUUID();
 
   @BeforeEach
   void setUp() {
-    LocalValidatorFactoryBean validatorFactory = new LocalValidatorFactoryBean();
-    validatorFactory.afterPropertiesSet();
-
-    camionesService = mock(ICamionesService.class);
-    choferesService = mock(IChoferesService.class);
-    entregasService = mock(IEntregasService.class);
-    rutasService = mock(IRutasService.class);
-    planificacionService = mock(IPlanificacionService.class);
-
-    camionMvc =
-        MockMvcBuilders.standaloneSetup(new CamionesController(camionesService))
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .setValidator(validatorFactory)
-            .build();
-    choferMvc =
-        MockMvcBuilders.standaloneSetup(new ChoferesController(choferesService))
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .setValidator(validatorFactory)
-            .build();
-    entregaMvc =
-        MockMvcBuilders.standaloneSetup(new EntregasController(entregasService))
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .setValidator(validatorFactory)
-            .build();
-    rutaMvc =
-        MockMvcBuilders.standaloneSetup(new RutasController(rutasService))
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .setValidator(validatorFactory)
-            .build();
-    planificacionMvc =
-        MockMvcBuilders.standaloneSetup(new PlanificacionController(planificacionService))
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .setValidator(validatorFactory)
-            .build();
-
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
+    camionMvc = mockMvc;
+    choferMvc = mockMvc;
+    entregaMvc = mockMvc;
+    rutaMvc = mockMvc;
+    planificacionMvc = mockMvc;
   }
 
   // ===================== 201 — Creacion =====================

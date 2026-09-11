@@ -447,9 +447,11 @@ components:
           type: integer
           minimum: 1
         piso:
-          type: string
+          type: integer
+          nullable: true
         departamento:
           type: string
+          nullable: true
         codigoPostal:
           type: string
         localidad:
@@ -484,6 +486,7 @@ components:
       type: object
       required:
         - estado
+        - actor
       properties:
         estado:
           type: string
@@ -497,8 +500,10 @@ components:
           type: string
         justificacion:
           type: string
+          nullable: true
         replanificable:
           type: boolean
+          nullable: true
     EntregaResponseDTO:
       type: object
       required:
@@ -548,4 +553,33 @@ components:
         historialEstado:
           type: array
           items:
-            type: object
+            $ref: '#/components/schemas/CambioEstadoEntregaResponseDTO'
+    CambioEstadoEntregaResponseDTO:
+      type: object
+      required:
+        - estadoAnterior
+        - estadoNuevo
+        - timestamp
+      properties:
+        estadoAnterior:
+          type: string
+          enum:
+            - PENDIENTE
+            - EN_TRASLADO
+            - ENTREGADA
+            - NO_RECIBIDA
+            - REVISION
+        estadoNuevo:
+          type: string
+          enum:
+            - PENDIENTE
+            - EN_TRASLADO
+            - ENTREGADA
+            - NO_RECIBIDA
+            - REVISION
+        timestamp:
+          type: string
+          format: date-time
+        actor:
+          type: string
+          nullable: true

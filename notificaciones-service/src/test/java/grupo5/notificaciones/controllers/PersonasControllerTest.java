@@ -7,48 +7,34 @@ import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.common.handlers.GlobalExceptionHandler;
+import grupo5.common.CommonLibAutoConfiguration;
+import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.services.IPersonasService;
 import java.util.Collections;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(PersonasController.class)
+@Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class})
 class PersonasControllerTest {
 
-  private MockMvc mockMvc;
+  @Autowired private MockMvc mockMvc;
 
-  @Mock private IPersonasService service;
+  @MockitoBean private IPersonasService service;
 
-  @InjectMocks private PersonasController controller;
-
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    // setControllerAdvice (Oleada 9, RF-09): standaloneSetup no levanta el contexto de Spring
-    // completo, así que el GlobalExceptionHandler de common-lib no se auto-registra como en
-    // NotificacionControllerTest (@WebMvcTest) — hay que agregarlo a mano, mismo patrón que
-    // RutasControllerTest en logistica-service.
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
-    objectMapper = new ObjectMapper();
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
   void sincronizar_deberiaRetornarStatusOk() throws Exception {
@@ -62,7 +48,8 @@ class PersonasControllerTest {
             put("/api/notificaciones/personas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 
   @Test
@@ -80,7 +67,8 @@ class PersonasControllerTest {
             put("/api/notificaciones/personas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-        .andExpect(status().isConflict());
+        .andExpect(status().isConflict())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 
   @Test
@@ -95,7 +83,8 @@ class PersonasControllerTest {
             put("/api/notificaciones/personas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(header().exists("X-Trace-Id"));
 
     verify(service, never()).sincronizar(any());
   }
@@ -105,7 +94,10 @@ class PersonasControllerTest {
     UUID id = UUID.randomUUID();
     doNothing().when(service).anonimizar(id);
 
-    mockMvc.perform(delete("/api/notificaciones/personas/" + id)).andExpect(status().isNoContent());
+    mockMvc
+        .perform(delete("/api/notificaciones/personas/" + id))
+        .andExpect(status().isNoContent())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 
   @Test
@@ -114,13 +106,15 @@ class PersonasControllerTest {
     // MethodArgumentTypeMismatchException — no hace falta agregar nada en este servicio.
     mockMvc
         .perform(delete("/api/notificaciones/personas/no-es-un-uuid"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 
   @Test
   void obtenerPersona_conIdMalformado_deberiaResponderBadRequest() throws Exception {
     mockMvc
         .perform(get("/api/notificaciones/personas/no-es-un-uuid"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 }

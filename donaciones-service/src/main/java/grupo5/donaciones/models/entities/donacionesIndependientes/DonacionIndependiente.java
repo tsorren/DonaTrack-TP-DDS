@@ -31,11 +31,11 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   @JsonIgnore private Asignable asignadaA;
 
   public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
-    this.id = UUID.randomUUID();
-    this.donacionOriginalId = donacionOriginalId;
     if (donacionOriginalId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
     }
+    this.id = UUID.randomUUID();
+    this.donacionOriginalId = donacionOriginalId;
 
     this.items = new ArrayList<>();
     items.forEach(this::agregarItem);
@@ -72,25 +72,27 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     return this.items.stream().mapToInt(ItemDonacionIndependiente::cantidad).sum();
   }
 
-  public DonacionIndependiente fragmentarse(Integer cantidadNecesitada) {
+  public DonacionIndependiente fragmentarse(int cantidadNecesitada) {
     if (this.getCantidad() <= cantidadNecesitada) {
       throw new BusinessStateException(ErrorCatalog.FRAGMENTACION_CANTIDAD_INSUFICIENTE);
     }
-    Integer cantidadPorExtraer = cantidadNecesitada;
+    int cantidadPorExtraer = cantidadNecesitada;
     List<ItemDonacionIndependiente> itemsExtraidos = new ArrayList<>();
     while (cantidadPorExtraer > 0) {
-      ItemDonacionIndependiente itemExtraido = this.items.getFirst();
-      if (itemExtraido.cantidad() > cantidadPorExtraer) {
-        ItemDonacionIndependiente remainder =
+      ItemDonacionIndependiente itemActual = this.items.getFirst();
+      ItemDonacionIndependiente fragmento;
+      if (itemActual.cantidad() > cantidadPorExtraer) {
+        ItemDonacionIndependiente remanente =
             new ItemDonacionIndependiente(
-                itemExtraido.bien(), itemExtraido.cantidad() - cantidadPorExtraer);
-        itemExtraido = itemExtraido.fragmentarse(cantidadPorExtraer);
-        this.items.set(0, remainder);
+                itemActual.bien(), itemActual.cantidad() - cantidadPorExtraer);
+        fragmento = itemActual.fragmentarse(cantidadPorExtraer);
+        this.items.set(0, remanente);
       } else {
-        this.items.remove(itemExtraido);
+        fragmento = itemActual;
+        this.items.remove(itemActual);
       }
-      itemsExtraidos.add(itemExtraido);
-      cantidadPorExtraer -= itemExtraido.cantidad();
+      itemsExtraidos.add(fragmento);
+      cantidadPorExtraer -= fragmento.cantidad();
     }
     return new DonacionIndependiente(this.donacionOriginalId, itemsExtraidos);
   }
@@ -101,6 +103,10 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
 
   public Double getVolumenTotal() {
     return items.stream().mapToDouble(ItemDonacionIndependiente::getVolumenTotal).sum();
+  }
+
+  public Boolean estaVencida() {
+    return this.items.stream().anyMatch(i -> i.bien().estaVencido());
   }
 
   // ── Métodos de negocio ─────────────────────────────────────────────────────

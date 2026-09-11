@@ -21,6 +21,7 @@ import grupo5.donaciones.models.ports.CargadorDonantes;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.impl.ImportadorService;
 import grupo5.donaciones.services.impl.ValidadorPersonaDuplicada;
+import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.util.List;
@@ -45,8 +46,8 @@ class ImportadorServiceTest {
   void setUp() {
     archivoRepository = mock(IArchivoDonantesRepository.class);
     lectorCSV = mock(CargadorDonantes.class);
-    personaMapper = mock(PersonaMapper.class);
     medioDeContactoMapper = new MedioDeContactoMapper();
+    personaMapper = new PersonaMapper(new DireccionMapper(), medioDeContactoMapper);
     validadorDuplicados = mock(ValidadorPersonaDuplicada.class);
     personaService = mock(IPersonasService.class);
     donantesService = mock(IDonantesService.class);
@@ -72,9 +73,7 @@ class ImportadorServiceTest {
         Map.of("TipoPersona", "HUMANA", "Nombre", "Juan", "Apellido", "Perez");
     when(lectorCSV.cargarDonantes(archivo.getPath())).thenReturn(List.of(fila));
 
-    Humana personaMock = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
-    when(personaMapper.mapToPersona(fila)).thenReturn(personaMock);
-    when(validadorDuplicados.buscarDuplicado(personaMock)).thenReturn(Optional.empty());
+    when(validadorDuplicados.buscarDuplicado(any(Persona.class))).thenReturn(Optional.empty());
 
     PersonaOutputDTO outputDTO =
         new HumanaOutputDTO(
@@ -108,11 +107,9 @@ class ImportadorServiceTest {
         Map.of("TipoPersona", "HUMANA", "Nombre", "Juan", "Apellido", "Perez");
     when(lectorCSV.cargarDonantes(archivo.getPath())).thenReturn(List.of(fila));
 
-    Humana personaMock = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
     Humana personaExistente = grupo5.donaciones.fixtures.PersonaMother.humanaValida();
 
-    when(personaMapper.mapToPersona(fila)).thenReturn(personaMock);
-    when(validadorDuplicados.buscarDuplicado(personaMock))
+    when(validadorDuplicados.buscarDuplicado(any(Persona.class)))
         .thenReturn(Optional.of((Persona) personaExistente));
 
     service.procesarImportacionAsincronica(archivoId);

@@ -8,48 +8,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.common.logging.TraceResponseHeaderFilter;
-import grupo5.donaciones.controllers.impl.PersonasController;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
-import grupo5.donaciones.services.IPersonasService;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class PersonasControllerTest {
+class PersonasControllerTest extends AbstractDonacionesWebMvcTest {
 
-  private MockMvc mockMvc;
-
-  @Mock private IPersonasService service;
-
-  @InjectMocks private PersonasController controller;
-
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .addFilters(new TraceResponseHeaderFilter())
-            .build();
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   @Test
   void crearPersona_deberiaRetornarStatusCreated() throws Exception {
@@ -66,7 +37,7 @@ class PersonasControllerTest {
             "Perez",
             Genero.HOMBRE,
             java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    when(service.crearPersona(any())).thenReturn(output);
+    when(personasService.crearPersona(any())).thenReturn(output);
 
     mockMvc
         .perform(
@@ -107,7 +78,7 @@ class PersonasControllerTest {
             "Perez",
             Genero.HOMBRE,
             java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    when(service.actualizarPersona(eq(id), any())).thenReturn(output);
+    when(personasService.actualizarPersona(eq(id), any())).thenReturn(output);
 
     mockMvc
         .perform(
@@ -121,7 +92,7 @@ class PersonasControllerTest {
   @Test
   void eliminarPersona_deberiaRetornarStatusNoContent() throws Exception {
     UUID id = UUID.randomUUID();
-    doNothing().when(service).eliminarPersona(id);
+    doNothing().when(personasService).eliminarPersona(id);
 
     mockMvc
         .perform(delete("/api/personas/" + id))

@@ -203,6 +203,105 @@ if (!fs.existsSync(schemasDir)) {
   }
 }
 
+// Auditoría semántica de schemas OpenAPI 3.0 (Reglas de Nulabilidad y Tipos)
+function parseAndAuditOpenApiSchemas(yamlContent, filename) {
+  const lines = yamlContent.split('\n');
+  let inSchemas = false;
+  let currentSchema = null;
+  let currentProp = null;
+  const schemas = {}; // schemaName -> { required: [], props: { propName: { type, nullable } } }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+
+    const indent = line.search(/\S/);
+
+    if (trimmed === 'components:') continue;
+    if (trimmed === 'schemas:' && indent <= 4) {
+      inSchemas = true;
+      continue;
+    }
+    if (inSchemas && indent <= 2 && !trimmed.startsWith('schemas:')) {
+      inSchemas = false;
+      break;
+    }
+
+    if (inSchemas) {
+      // Nuevo schema (indent 4)
+      if (indent === 4 && trimmed.endsWith(':')) {
+        currentSchema = trimmed.slice(0, -1);
+        schemas[currentSchema] = { required: [], props: {} };
+        currentProp = null;
+        continue;
+      }
+
+      if (!currentSchema) continue;
+
+      // Lista required
+      if (indent === 6 && trimmed === 'required:') {
+        currentProp = null;
+        continue;
+      }
+      if (indent === 8 && trimmed.startsWith('- ') && !trimmed.includes(':')) {
+        schemas[currentSchema].required.push(trimmed.slice(2).trim());
+        continue;
+      }
+
+      // Bloque properties
+      if (indent === 6 && trimmed === 'properties:') {
+        currentProp = null;
+        continue;
+      }
+
+      // Nueva propiedad (indent 8)
+      if (indent === 8 && trimmed.endsWith(':') && !trimmed.startsWith('- ')) {
+        currentProp = trimmed.slice(0, -1);
+        schemas[currentSchema].props[currentProp] = { type: null, nullable: false };
+        continue;
+      }
+
+      // Atributos de propiedad (indent 10+)
+      if (currentProp && indent >= 10) {
+        if (trimmed.startsWith('type:')) {
+          schemas[currentSchema].props[currentProp].type = trimmed.split(':')[1].trim();
+        }
+        if (trimmed.startsWith('nullable:')) {
+          schemas[currentSchema].props[currentProp].nullable = trimmed.split(':')[1].trim() === 'true';
+        }
+      }
+    }
+  }
+
+  // Regla de Integridad Contractual:
+  // En objetos DTO, si una propiedad no es requerida y no es booleana/array, debe ser nullable: true
+  // para evitar fallos de serialización de null en Jackson contra OpenAPI 3.0.
+  for (const [schemaName, schemaData] of Object.entries(schemas)) {
+    for (const [propName, propData] of Object.entries(schemaData.props)) {
+      const isRequired = schemaData.required.includes(propName);
+      if (!isRequired && propData.type) {
+        // Campos identificados del dominio que aceptan nulo:
+        if (['piso', 'departamento', 'idRuta', 'horaSalida', 'horaArribo', 'fotoRecepcionUrl', 'actor', 'justificacion'].includes(propName)) {
+          assert(
+            `openapi_nullable_${filename}_${schemaName}_${propName}`,
+            propData.nullable === true,
+            `El campo opcional '${propName}' en '${schemaName}' debe tener 'nullable: true'`
+          );
+        }
+      }
+      // Regla de tipo numérico para piso
+      if (propName === 'piso') {
+        assert(
+          `openapi_type_integer_${filename}_${schemaName}_piso`,
+          propData.type === 'integer',
+          `El campo 'piso' en '${schemaName}' debe ser 'type: integer', se encontró '${propData.type}'`
+        );
+      }
+    }
+  }
+}
+
 // 2. Validar especificaciones OpenAPI 3.0 YAML
 console.log('\n[2] Validación de Especificaciones OpenAPI 3.0:');
 const expectedOpenApis = [
@@ -221,6 +320,7 @@ for (const oasFile of expectedOpenApis) {
     assert(`openapi_version_${oasFile}`, content.includes('openapi: 3.0.'), 'Versión OpenAPI 3.0 declarada');
     assert(`openapi_paths_${oasFile}`, content.includes('paths:') && content.includes('/'), 'Rutas y endpoints declarados');
     assert(`openapi_info_${oasFile}`, content.includes('info:') && content.includes('title:'), 'Metadatos info presentes');
+    parseAndAuditOpenApiSchemas(content, oasFile);
   }
 }
 
