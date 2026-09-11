@@ -10,10 +10,13 @@
 
 Optimizacion logistica, trazabilidad transparente y fidelizacion de donantes para potenciar el impacto de las organizaciones sociales mediante una plataforma de software robusta, moderna y escalable.
 
+> 📖 **Documentación y Gobernanza:** [Portal de Documentación](docs/README.md) · [Panel de Estado y Vigencia](docs/ESTADO_DOCUMENTACION.md) · [Router de Contexto para Agentes](docs/context-index.md) · [Reglas de Ingeniería AGENTS.md](AGENTS.md)
+
 ---
 
 ## Indice
 
+* [Documentación y Gobernanza](docs/README.md)
 * [Propuesta de Valor y Desafios Resolutivos](#propuesta-de-valor-y-desafios-resolutivos)
 * [Soluciones Operativas de la Plataforma](#soluciones-operativas-de-la-plataforma)
 * [Arquitectura Distribuida y Resiliencia](#arquitectura-distribuida-y-resiliencia)
@@ -65,6 +68,8 @@ Organizacion del reactor multi-modulo y de los directorios principales del proye
 
 ```text
 DonaTrack-TP-DDS/
+├── AGENTS.md                     # Núcleo de políticas operativas, Quality Gates y reglas de agentes
+├── .agents/                      # Suite de skills modulares y tooling para desarrollo asistido
 ├── .github/                      # Flujos de integracion continua, reviews y calidad automatizada
 ├── docs/                         # Documentacion tecnica, arquitectura, testing y decisiones (ADRs)
 ├── n8n/                          # Workflows serializados para la integracion externa

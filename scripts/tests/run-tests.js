@@ -19,6 +19,8 @@ const {
   checkAdrStatus,
   checkModuleRouting,
   checkTemporalDrift,
+  checkSkillsIntegrity,
+  checkSpecsIntegrity,
   runAllChecks,
   // Pure helpers
   extractMarkdownLinks,
@@ -28,6 +30,7 @@ const {
   parseAdrEntry,
   parsePomModules,
   parseContextIndexServices,
+  parseSpecFile,
 } = require('../agent-check/index');
 
 // ─── Harness ──────────────────────────────────────────────────────────────────
@@ -186,6 +189,18 @@ console.log('\n[4] runAllChecks — exit code aggregation');
   write(tmp, 'docs/clean.md', '# Clean');
   write(tmp, 'docs/context-index.md', '# No code spans');
   write(tmp, 'docs/adr/DEUDA_TECNICA.md', '# No DTIs');
+  write(tmp, '.gitignore', '!.agents/skills/\n');
+  const skills = ['define-spec', 'design-spec', 'design-review', 'implement-task', 'implementation-review', 'engineering-loop', 'explain-concept', 'review-pr'];
+  for (const s of skills) {
+    let extra = 'AGENTS.md anchor\n';
+    if (s === 'design-review') extra += 'D1 D2 D3 D4 D5 D6\n';
+    if (s === 'implementation-review') extra += 'V1 V2 V3 V4 V5 V6 V7 V8 V9\n';
+    if (s === 'explain-concept') extra += 'Paso 1: Paso 2: Paso 3: Paso 4:\n';
+    if (s === 'review-pr') extra += 'Arquitectura Contratos Concurrencia Tests Seguridad Rendimiento Scope Simplicidad\ngrepai_search grepai_trace_callers grepai_trace_callees\nREVISIÓN CRÍTICA DE PR Veredicto Matriz de Evaluación Rápida Hallazgos Bloqueantes\n';
+    write(tmp, `.agents/skills/${s}/SKILL.md`, `---\nname: ${s}\ndescription: desc\n---\n${extra}`);
+  }
+  write(tmp, 'docs/specs/active/.gitkeep', '');
+  write(tmp, 'docs/specs/completed/.gitkeep', '');
   const r = runAllChecks(tmp);
   assert('4.1  minimal all-pass scenario → failCount === 0', r.filter(f => f.severity === 'FAIL').length === 0);
 } finally { cleanup(tmp); } }
@@ -516,6 +531,223 @@ console.log('\n[15] checkTemporalDrift');
   assert('15.7  TEMPORAL_DRIFT is always WARN, never FAIL', r.every(f => f.id !== 'TEMPORAL_DRIFT' || f.severity === 'WARN'));
 } finally { cleanup(tmp); } }
 
+// ─── [16] checkSpecsIntegrity & parseSpecFile ───────────────────────────────
+
+console.log('\n[16] checkSpecsIntegrity & parseSpecFile');
+
+{
+  const canonicalContent = `
+# Spec: SPEC-99 — Test Specification
+
+> **Estado:** APPROVED_BY_USER
+> **Nivel:** ARCHITECTURAL
+> **Fecha:** 2026-09-11
+
+## 1. Objetivo Funcional (Goal)
+Goal description.
+
+## 2. Alcance Delimitado (Scope Boundaries)
+### In-Scope
+- item 1
+### Out-of-Scope
+- item 2
+
+## 3. Decisiones Acordadas y Trade-offs
+Trade-off evaluation under 5D criteria.
+
+## 4. Invariantes
+- invariant 1
+
+## 5. Criterios de Aceptación (Gherkin / Given-When-Then)
+Dado precondition
+Cuando action
+Entonces result
+
+## 7. Especificación Técnica de Diseño (Technical Design)
+Two-Gate ADR evaluation and TDD plan.
+
+=== DESIGN REVIEW CONTRACT ===
+Verdict: DESIGN_APPROVED
+`;
+
+  const parsed = parseSpecFile(canonicalContent);
+  assert('16.1  parseSpecFile all fields true on canonical spec',
+    parsed.hasCanonicalTitle &&
+    parsed.hasStatus &&
+    parsed.hasLevel &&
+    parsed.isArchitectural &&
+    parsed.hasGoal &&
+    parsed.hasScope &&
+    parsed.hasTradeoffs &&
+    parsed.hasInvariants &&
+    parsed.hasGherkin &&
+    parsed.hasTechnicalDesign &&
+    parsed.hasReviewContract
+  );
+
+  const brokenScope = `# Spec: S\n> **Estado:** OK\n> **Nivel:** STANDARD\n## 1. Goal\n## 2. Alcance Delimitado\n### In-Scope\n`;
+  assert('16.2  parseSpecFile detects missing Out-of-Scope', !parseSpecFile(brokenScope).hasScope);
+
+  const brokenGherkin = `# Spec: S\n> **Estado:** OK\n> **Nivel:** STANDARD\n## 5. Criterios de Aceptación\nJust plain text`;
+  assert('16.3  parseSpecFile detects missing Given-When-Then keywords', !parseSpecFile(brokenGherkin).hasGherkin);
+}
+
+{ const tmp = makeTemp(); try {
+  assert('16.4  missing docs/specs directory → SPECS_DIR_EXISTS FAIL', hasFail(checkSpecsIntegrity(tmp), 'SPECS_DIR_EXISTS'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, 'docs/specs/active/.gitkeep', '');
+  write(tmp, 'docs/specs/completed/.gitkeep', '');
+  assert('16.5  empty docs/specs with .gitkeep → no FAIL and SPECS_INTEGRITY PASS', noFail(checkSpecsIntegrity(tmp)));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, 'docs/specs/active/SPEC-01-valid.md', `
+# Spec: SPEC-01 — Valid Spec
+> **Estado:** APPROVED_BY_USER
+> **Nivel:** STANDARD
+## 1. Objetivo Funcional (Goal)
+Goal.
+## 2. Alcance Delimitado
+### In-Scope
+### Out-of-Scope
+## 3. Decisiones Acordadas y Trade-offs
+Trade-off with 5D.
+## 4. Invariantes
+Invariants.
+## 5. Criterios de Aceptación
+Dado x
+Cuando y
+Entonces z
+`);
+  assert('16.6  valid STANDARD spec in active → no FAIL', noFail(checkSpecsIntegrity(tmp)));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, 'docs/specs/active/SPEC-02-no-tradeoffs.md', `
+# Spec: SPEC-02 — No Tradeoffs
+> **Estado:** APPROVED_BY_USER
+> **Nivel:** STANDARD
+## 1. Objetivo Funcional (Goal)
+Goal.
+## 2. Alcance Delimitado
+### In-Scope
+### Out-of-Scope
+## 4. Invariantes
+Invariants.
+## 5. Criterios de Aceptación
+Dado x
+Cuando y
+Entonces z
+`);
+  assert('16.7  missing Trade-offs section → SPEC_SECTION_TRADEOFFS FAIL', hasFail(checkSpecsIntegrity(tmp), 'SPEC_SECTION_TRADEOFFS'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, 'docs/specs/completed/SPEC-03-no-review.md', `
+# Spec: SPEC-03 — Completed without Review Contract
+> **Estado:** COMPLETED
+> **Nivel:** STANDARD
+## 1. Objetivo Funcional (Goal)
+Goal.
+## 2. Alcance Delimitado
+### In-Scope
+### Out-of-Scope
+## 3. Decisiones Acordadas y Trade-offs
+Trade-off 5D.
+## 4. Invariantes
+Invariants.
+## 5. Criterios de Aceptación
+Dado x
+Cuando y
+Entonces z
+`);
+  assert('16.8  completed spec without review contract → SPEC_COMPLETED_REVIEW_CONTRACT FAIL', hasFail(checkSpecsIntegrity(tmp), 'SPEC_COMPLETED_REVIEW_CONTRACT'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, 'docs/specs/completed/SPEC-04-with-review.md', `
+# Spec: SPEC-04 — Completed with Review Contract
+> **Estado:** COMPLETED
+> **Nivel:** STANDARD
+## 1. Objetivo Funcional (Goal)
+Goal.
+## 2. Alcance Delimitado
+### In-Scope
+### Out-of-Scope
+## 3. Decisiones Acordadas y Trade-offs
+Trade-off 5D.
+## 4. Invariantes
+Invariants.
+## 5. Criterios de Aceptación
+Dado x
+Cuando y
+Entonces z
+
+=== REVIEW CONTRACT ===
+Result: PASS
+`);
+  assert('16.9  completed spec with review contract → no FAIL', noFail(checkSpecsIntegrity(tmp)));
+} finally { cleanup(tmp); } }
+
+// ─── [17] checkSkillsIntegrity & review-pr ────────────────────────────────────
+
+console.log('\n[17] checkSkillsIntegrity & review-pr');
+
+{ const tmp = makeTemp(); try {
+  // Empty repo missing skills dir
+  assert('17.1  missing skills dir → SKILLS_DIR_EXISTS FAIL', hasFail(checkSkillsIntegrity(tmp), 'SKILLS_DIR_EXISTS'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, '.agents/skills/dummy.txt', 'not tracked');
+  // Missing gitignore un-ignore
+  write(tmp, '.gitignore', '# empty');
+  assert('17.2  missing !.agents/skills/ in gitignore → SKILLS_GITIGNORE_TRACKED FAIL', hasFail(checkSkillsIntegrity(tmp), 'SKILLS_GITIGNORE_TRACKED'));
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, '.gitignore', '!.agents/skills/\n');
+  write(tmp, '.agents/skills/review-pr/SKILL.md', `---
+name: review-pr
+description: Review skill
+---
+# Skill review-pr
+References AGENTS.md.
+## Protocol
+grepai_search grepai_trace_callers grepai_trace_callees
+## Vectors
+Arquitectura Contratos Concurrencia Tests Seguridad Rendimiento Scope Simplicidad
+## Report
+REVISIÓN CRÍTICA DE PR
+Veredicto
+Matriz de Evaluación Rápida
+Hallazgos Bloqueantes
+`);
+  const findings = checkSkillsIntegrity(tmp);
+  assert('17.3  review-pr with frontmatter, AGENTS.md anchor, vectors, grepai, report → PASS on review-pr checks',
+    findings.some(f => f.severity === 'PASS' && f.id === 'REVIEW_PR_VECTORS') &&
+    findings.some(f => f.severity === 'PASS' && f.id === 'REVIEW_PR_GREPAI_PROTOCOL') &&
+    findings.some(f => f.severity === 'PASS' && f.id === 'REVIEW_PR_REPORT_FORMAT')
+  );
+} finally { cleanup(tmp); } }
+
+{ const tmp = makeTemp(); try {
+  write(tmp, '.gitignore', '!.agents/skills/\n');
+  write(tmp, '.agents/skills/review-pr/SKILL.md', `---
+name: review-pr
+description: Incomplete review skill
+---
+# Incomplete
+References AGENTS.md.
+Missing vectors and protocol.
+`);
+  const findings = checkSkillsIntegrity(tmp);
+  assert('17.4  review-pr missing vectors → REVIEW_PR_VECTORS FAIL', hasFail(findings, 'REVIEW_PR_VECTORS'));
+  assert('17.5  review-pr missing grepai tools → REVIEW_PR_GREPAI_PROTOCOL FAIL', hasFail(findings, 'REVIEW_PR_GREPAI_PROTOCOL'));
+} finally { cleanup(tmp); } }
+
 // ─── Summary ──────────────────────────────────────────────────────────────────
 
 console.log('\n' + '═'.repeat(56));
@@ -523,3 +755,4 @@ console.log(`PASS: ${passed}  │  FAIL: ${failed}`);
 console.log('═'.repeat(56));
 if (failed > 0) { console.error('\nTest suite FAILED'); process.exit(1); }
 else { console.log('\nTest suite PASSED'); process.exit(0); }
+

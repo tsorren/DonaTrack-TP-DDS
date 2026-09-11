@@ -3,8 +3,8 @@
 > **Panel de Auditoría y Matriz de Vigencia Documental vs. Código Fuente**  
 > **Proyecto:** DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones  
 > **Equipo:** UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> **Fecha de Normalización y Sincronización:** 2026-09-05  
-> **Propósito:** Diagnóstico y estado de sincronización de toda la documentación del repositorio contrastada contra la implementación real en Java 21, Spring Boot 3, RabbitMQ y n8n tras la formalización de ADRs de oleadas de refactor y auditoría de deuda técnica.
+> **Fecha de Normalización y Sincronización:** 2026-09-11  
+> **Propósito:** Diagnóstico y estado de sincronización de toda la documentación del repositorio contrastada contra la implementación real en Java 21, Spring Boot 3, RabbitMQ y n8n tras la formalización de ADRs de oleadas de refactor, testing architecture blueprint, arnés de gobernanza y auditoría de deuda técnica.
 
 ---
 
@@ -24,12 +24,16 @@ El repositorio DonaTrack mantiene su grafo documental estrictamente alineado con
 docs/
 ├── ESTADO_DOCUMENTACION.md                # 🟢 Panel central de auditoría y vigencia técnica
 ├── README.md                              # 🟢 Índice general de navegación y enlaces rápidos
+├── context-index.md                       # 🟢 Context Router para coding agents
 │
 ├── auditoria/                             # 🟢 Sistema de aseguramiento y verificación adversarial
+│   ├── README.md                          # 🟢 Portal de auditorías críticas y DevOps
 │   ├── plan-revisor-critico.md            # Plan de auditoría, checklists por etapa y matriz de evaluación
-│   └── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
+│   ├── revision-critica-devops-ci.md      # 🟢 Revisión crítica y auditoría de CI/CD, Dockerfiles y scripts
+│   └── auditoria-directivas-agentes.md    # 🟢 Auditoría de repositorio bajo directivas de agentes IA (Maturity Scorecard)
 │
 ├── arquitectura/                          # 🟢 Especificaciones de dominio, DDD, patrones y Shared Kernel
+│   ├── README.md                          # 🟢 Portal de arquitectura y especificaciones DDD
 │   ├── principios-diseno-arquitectura.md  # Fundamentación teórica, 8 atributos, SOLID, GRASP, GoF, DDD
 │   ├── shared-kernel.md                   # CrudRepository, eventos de dominio y OpenAPI
 │   ├── logging-trazabilidad.md            # Observabilidad distribuida, MDC y traceId
@@ -43,7 +47,8 @@ docs/
 │   ├── contratos-rest.md                  # 🟢 Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
 │   ├── eventos-amqp.md                    # 🟢 Topología RabbitMQ y contratos de eventos asíncronos
 │   ├── contratos/                         # 🟢 Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
-│   └── diseno/                            # Bitácoras de refactor, diagramas PUML y anexos
+│   └── diseno/                            # 🟢 Bitácoras de refactor, diagramas PUML y anexos
+│       ├── README.md                      # 🟢 Portal de bitácoras y diseño por microservicio
 │       ├── donaciones/
 │       ├── incentivos/
 │       ├── logistica/
@@ -52,12 +57,17 @@ docs/
 │       └── anexos-tecnicos/               # Modelos técnicos de build autogenerados por Maven
 │
 ├── testing/                               # 🟢 Pruebas automatizadas y contratos
+│   ├── README.md                          # 🟢 Portal canónico de testing y QA
 │   ├── auditoria-arquitectura-testing.md  # 🏛️ Auditoría integral y Blueprint de Arquitectura de Testing y QA (Documento Maestro)
 │   ├── integration-tests.md               # Arquitectura de tests E2E y clientes tipados
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
+│   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de QA
+│   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño de testing y alternativas
+│   ├── auditoria/                         # 🟢 Compendio especializado de auditoría QA (01 a 06 + README)
 │   └── postman/                           # Colecciones y flujos E2E distribuidos
 │
 ├── cicd/                                  # 🟢 Automatización, CI/CD y políticas de PR
+│   ├── README.md                          # 🟢 Portal de CI/CD y automatización
 │   ├── DonaTrack-CICD.md                  # Documentación de workflows de GitHub Actions
 │   └── assignment_reminders_plan.md       # Recordatorios de inactividad de PRs en Discord
 │
@@ -67,17 +77,42 @@ docs/
 │   ├── 07-errores-frecuentes-sonarcloud-ia.md # 🟢 Prevención y checklist pre-flight SonarCloud
 │   ├── review/
 │   │   └── evaluator.md                  # 🟢 Política Generator/Evaluator, Review Contract, vectores V1–V9
-│   ├── evals/                             # 🟢 Infraestructura documental de eval suite v1
+│   ├── evals/                             # 🟢 Infraestructura documental de eval suite v1 (E01 a E11)
 │   └── prompts/                           # Prompts especializados por rol de equipo
 │
 ├── herramientas/                          # 🛠️ Aplicaciones web y utilidades locales
+│   ├── README.md                          # 🟢 Portal de herramientas y utilidades
 │   ├── documentador/                      # Generador interactivo de minutas y ADRs
 │   └── hub/                               # Visor web de documentación y PDFs de entregas
 │
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # 🟢 Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
+│   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
 │   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-13)
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
+│
+├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
+│   ├── README.md                          # Normas de ciclo de vida de especificaciones
+│   ├── active/                            # Specs en curso de diseño o implementación
+│   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
+│
+├── generated/                              # 🟢 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
+│   ├── README.md                          # Visión general y reglas de regeneración
+│   ├── endpoints-catalog.md               # Catálogo unificado de 94 endpoints REST
+│   ├── events-catalog.md                  # Catálogo unificado de eventos AMQP y schemas
+│   ├── architecture-graph.md              # Topología y grafo de dependencias entre microservicios
+│   └── contracts-summary.json             # Sumario estructurado de contratos en formato JSON
+│
+├── agentes/                               # 🟢 Informes de investigación en desarrollo con agentes IA
+│   ├── README.md                          # 🟢 Portal de investigación en ingeniería con agentes
+│   ├── informe-agent-friendly-repository-architecture.md
+│   ├── informe-harness-engineering-pi-gentle-pi.md
+│   ├── informe-agent-graphs.md
+│   ├── informe-orquestadores-control-planes-coding-agents.md
+│   └── evals-agentes-resumen.md
+│
+├── entrega-4/                             # 🟢 Principios arquitectónicos de Entrega 4 (Fase 0)
+│   └── arquitectura/principios.md         # Reglas comunes de persistencia, outbox, aislamiento e idempotencia
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── README.md                          # 🟢 Matriz curricular e índice de entregas 1 a 4
@@ -99,14 +134,23 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`common-lib/AGENTS.md`](../common-lib/AGENTS.md) | Gobernanza Nested | Reglas de pertenencia del Shared Kernel, contratos protegidos y validación reactor. | 🟢 Sincronizado |
 | [`docs/context-index.md`](context-index.md) | Context Routing | Routing de contexto para agentes de IA por servicio, tarea y temporal constraints. | 🟢 Sincronizado |
 | [`docs/IA/review/evaluator.md`](IA/review/evaluator.md) | Revisión Crítica | Roles Generator/Evaluator, Review Contract y vectores de revisión V1–V9. | 🟢 Sincronizado |
-| [`scripts/agent-check/`](../scripts/agent-check/) | Enforcement CI | Suite de validación mecánica de integridad referencial, canonicidad y ADRs. | 🟢 Sincronizado |
-| [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, escenarios E01–E09 y scorecards. | 🟢 Sincronizado |
+| [`scripts/agent-check/`](../scripts/agent-check/) | Enforcement CI | Suite de validación mecánica de integridad referencial, canonicidad, skills y ADRs. | 🟢 Sincronizado |
+| [`.agents/skills/`](../.agents/skills/) | Suite de Skills | Suite de 8 skills modulares para el Engineering Loop y auditoría adversarial de PRs con GrepAI. | 🟢 Sincronizado |
+| [`docs/specs/`](specs/README.md) | Especificaciones SDD | Catálogo centralizado de especificaciones funcionales y técnicas (active/completed). | 🟢 Sincronizado |
+| [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
+| [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
+| [`scripts/run-evals.js`](../scripts/run-evals.js) | Harness Evals Runner | Runner determinista de escenarios E01–E11 y taxonomía de fallas críticas CF-01 a CF-12 con emisión de scorecard. | 🟢 Sincronizado |
+| [`scripts/generate-repo-knowledge.js`](../scripts/generate-repo-knowledge.js) | Extractor de Contratos | Extractor mecánico de topología de microservicios, endpoints OpenAPI y eventos AMQP hacia `docs/generated/`. | 🟢 Sincronizado |
+| [`docs/generated/`](generated/README.md) | Generated Knowledge | Catálogo vivo y estructurado de contratos, eventos, endpoints y grafo de arquitectura generado mecánicamente. | 🟢 Sincronizado |
+| [`docs/agentes/README.md`](agentes/README.md) | Agentes IA | Portal de investigación y estado del arte en ingeniería de software con agentes autónomos. | 🟢 Sincronizado |
+| [`docs/herramientas/README.md`](herramientas/README.md) | Herramientas Locales | Portal de utilidades locales, generador de documentación y visor web. | 🟢 Sincronizado |
 | [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](IA/07-errores-frecuentes-sonarcloud-ia.md) | Calidad Estática | Guía viva de prevención de errores SonarCloud y auto-auditoría pre-flight. | 🟢 Sincronizado |
 
 ### 3.2 Arquitectura y Modelo de Dominio
 
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
+| [`docs/arquitectura/README.md`](arquitectura/README.md) | Portal Arquitectura | Portal e índice canónico de arquitectura, modelo de agregados y contratos. | 🟢 Sincronizado |
 | [`docs/arquitectura/principios-diseno-arquitectura.md`](arquitectura/principios-diseno-arquitectura.md) | Fundamentos | Atributos de calidad, principios SOLID, GRASP, patrones GoF y fitness checks. | 🟢 Sincronizado |
 | [`docs/arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Shared Kernel | Definición de `common-lib`, contratos de repositorios, excepciones unificadas y traceId. | 🟢 Sincronizado |
 | [`docs/arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) | Observabilidad | Trazabilidad distribuida con MDC, header `X-Trace-Id` e interceptores Feign. | 🟢 Sincronizado |
@@ -120,6 +164,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) | Mensajería AMQP | Topología RabbitMQ, TopicExchange, routing keys, payloads JSON e idempotencia. | 🟢 Sincronizado |
 | [`docs/arquitectura/contratos/guia-migracion-notificaciones-e4.md`](arquitectura/contratos/guia-migracion-notificaciones-e4.md) | Migración E4 | Guía de migración técnica de contratos e ingesta AMQP/REST para `notificaciones-service`. | 🟢 Sincronizado |
 | [`scripts/validate-contracts.js`](../scripts/validate-contracts.js) | Testing Contratos | Suite de validación mecánica de JSON Schemas, auditoría semántica de OpenAPI 3.0 (tipos y nulabilidad) integrada en CI (`agent-governance.yml`) y tests de drift en Surefire. | 🟢 Sincronizado |
+| [`docs/arquitectura/diseno/README.md`](arquitectura/diseno/README.md) | Diseño de Dominio | Portal de diseño detallado de subsistemas y anexos técnicos. | 🟢 Sincronizado |
 | [`docs/arquitectura/diseno/anexos-tecnicos/README.md`](arquitectura/diseno/anexos-tecnicos/README.md) | Diagramas Técnicos | Modelos técnicos de bytecode autogenerados por Maven (`plantuml-generator`). | 🟢 Sincronizado |
 | [`docs/adr/20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md`](adr/20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md) | ADR Contratos HTTP | Estandarización de respuestas 405 (con header Allow RFC 9110) y 404 en GlobalExceptionHandler. | 🟢 Sincronizado |
 
@@ -142,6 +187,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
+| [`docs/auditoria/README.md`](auditoria/README.md) | Portal Auditoría | Portal y catálogo de auditorías arquitectónicas, directivas y planes revisores. | 🟢 Sincronizado |
 | [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
 | [`docs/auditoria/revision-critica-devops-ci.md`](auditoria/revision-critica-devops-ci.md) | Auditoría DevOps | Revisión crítica experta de pipelines CI/CD, Dockerfiles, observabilidad y scripts auxiliares. | 🟢 Sincronizado |
 | [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-13) con ADRs enlazados. | 🟢 Sincronizado |
@@ -152,11 +198,14 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md`](adr/incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md) | ADR Deuda Técnica | DTI-11: Extracción de MisionMapper dedicado y purificación anémica de MisionDTO. | 🟢 Sincronizado |
 | [`docs/adr/20260910-dti-13-migracion-clientes-api-rest-deprecada-notificaciones-a-amqp.md`](adr/20260910-dti-13-migracion-clientes-api-rest-deprecada-notificaciones-a-amqp.md) | ADR Deuda Técnica | DTI-13: Migración de clientes consumidores de la API REST deprecada de notificaciones a ruta canónica y AMQP. | 🟢 Sincronizado |
 | [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
+| [`docs/adr/20260911-harness-skill-review-pr-adversarial-grepai.md`](adr/20260911-harness-skill-review-pr-adversarial-grepai.md) | ADR Gobernanza IA | Formalización de la skill canónica review-pr, protocolo GrepAI y tooling CLI de contexto. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
 
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
+| [`docs/testing/README.md`](testing/README.md) | Portal Testing | Portal general y mapa de testing unitario, modular, E2E y auditoría de QA. | 🟢 Sincronizado |
+| [`docs/cicd/README.md`](cicd/README.md) | Portal CI/CD | Portal de flujos de integración y despliegue continuo en GitHub Actions. | 🟢 Sincronizado |
 | [`docs/cicd/DonaTrack-CICD.md`](cicd/DonaTrack-CICD.md) | CI/CD | Documentación de los 7 flujos automatizados en GitHub Actions. | 🟢 Sincronizado |
 | [`n8n/README.md`](../n8n/README.md) | Automatización | Workflows de n8n, webhooks de difusión de insignias y ranking mensual. | 🟢 Sincronizado |
 | [`postman/README.md`](../postman/README.md) | Pruebas API | 8 colecciones Postman (170 requests), variables y ejecución Newman CLI. | 🟢 Sincronizado |
@@ -188,6 +237,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 |---|---|---|:---:|
 | [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación y Key Broker (Entrega 6). | 🟢 Sincronizado |
 | [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para interfaz Web MVC (Entrega 5). | 🟢 Sincronizado |
+| [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
 | [`docs/entregas/README.md`](entregas/README.md) | Currícula Cátedra | Matriz curricular e índice de enunciados oficiales y artefactos de Entregas 1 a 4. | 🟢 Sincronizado |
 
 

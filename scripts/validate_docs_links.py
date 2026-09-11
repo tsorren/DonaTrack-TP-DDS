@@ -40,8 +40,10 @@ def check_markdown_links(docs_root, workspace_root="."):
             print(f"Error reading {md_file}: {e}")
             continue
             
-        links = link_pattern.findall(content)
-        imgs = img_pattern.findall(content)
+        # Strip fenced code blocks before matching markdown links
+        clean_content = re.sub(r'```[\s\S]*?```', '', content)
+        links = link_pattern.findall(clean_content)
+        imgs = img_pattern.findall(clean_content)
         
         all_targets = [(text, target, 'link') for text, target in links] + [(alt, target, 'img') for alt, target in imgs]
         

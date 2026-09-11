@@ -48,6 +48,10 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Trazabilidad / RabbitMQ / Feign | [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
 | Contratos REST / OpenAPI | [`arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) + `docs/arquitectura/contratos/` |
 | Eventos AMQP / RabbitMQ | [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) + `docs/arquitectura/contratos/schemas/` |
+| Especificaciones SDD (Fase 1/2) | [`specs/README.md`](specs/README.md) + `docs/specs/active/` |
+| Review de Pull Requests (GrepAI) | [`.agents/skills/review-pr/SKILL.md`](../.agents/skills/review-pr/SKILL.md) + [`IA/review/evaluator.md`](IA/review/evaluator.md) |
+| Catálogo Vivo de Contratos | [`generated/README.md`](generated/README.md) + `docs/generated/` |
+| Mentoría conceptual / didáctica | [`IA/prompts/transversal-mentoria-conceptos.md`](IA/prompts/transversal-mentoria-conceptos.md) + skill `.agents/skills/explain-concept/` |
 | Compliance académico | `docs/entregas/<N>/Enunciado-<N>.pdf` — solo el enunciado de la entrega vigente |
 
 ---
@@ -62,8 +66,9 @@ Revisar esta sección si la tarea involucra: persistencia, repositorios, diseño
 
 | Constraint | Scope | Regla vigente | Fuente de autoridad | Drift signal |
 | --- | --- | --- | --- | --- |
-| Persistencia en memoria | `donaciones`, `logistica`, `incentivos` (Fase 1) | No introducir JPA, Hibernate ni SQL salvo ADR aprobado para ese servicio. En `notificaciones-service`: JPA activo con Flyway V1+V2 (Transactional Inbox); persistencia en memoria retenida bajo `@Profile("!postgres")` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` activo en `pom.xml` del servicio — revisar si la constraint fue reemplazada para ese servicio en particular |
+| Persistencia en memoria | `donaciones`, `logistica`, `incentivos` (Fase 1) | No introducir JPA, Hibernate ni SQL salvo ADR aprobado para ese servicio. En `notificaciones-service`: JPA activo con Flyway V1+V2 (Transactional Inbox); persistencia en memoria retenida bajo `@Profile("!postgres")` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` activo en `pom.xml` del servicio — autorizado en `notificaciones-service`; para los demás servicios, revisar si la constraint fue reemplazada |
 | Pureza de dominio | Todos los servicios (Fase 1) | Entidades de dominio sin anotaciones JPA ni acoplamiento a infraestructura de persistencia | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 + DTI-06 | `@Entity` / `@Column` en `models/entities/` — revisar si existe ADR que autorice la excepción para ese servicio |
+
 
 ---
 
