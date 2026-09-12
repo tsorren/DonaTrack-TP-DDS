@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-incentivo-mision-cumplida-v1.schema.json",
+  "title": "EventoIncentivoMisionCumplidaV1",
+  "description": "Evento de dominio emitido por incentivos-service cuando un donante completa una misión de gamificación",
+  "type": "object",
+  "properties": {
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona donante que completó la misión"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del cumplimiento de la misión"
+    },
+    "nombreMision": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nombre de la misión completada"
+    },
+    "puntosObtenidos": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Cantidad de puntos otorgados al donante"
+    }
+  },
+  "required": ["personaDonanteId", "fecha", "nombreMision", "puntosObtenidos"],
+  "additionalProperties": false
+}

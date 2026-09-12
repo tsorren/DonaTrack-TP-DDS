@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-persona-sincronizada-v1.schema.json",
+  "title": "EventoPersonaSincronizadaV1",
+  "description": "Evento de dominio emitido por donaciones-service para replicar y mantener sincronizados los datos de contacto de una persona en notificaciones-service",
+  "type": "object",
+  "properties": {
+    "personaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador global de la persona"
+    },
+    "denominacion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nombre completo o razón social de la persona"
+    },
+    "tipoPersona": {
+      "type": "string",
+      "enum": ["HUMANA", "JURIDICA"],
+      "description": "Tipo de persona según el modelo de dominio"
+    },
+    "mediosDeContacto": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tipo": {
+            "type": "string",
+            "enum": ["CORREO", "TELEFONO", "WHATSAPP"]
+          },
+          "esPredeterminado": {
+            "type": "boolean"
+          },
+          "direccionCorreo": {
+            "type": "string"
+          },
+          "caracteristica": {
+            "type": "string"
+          },
+          "codigoArea": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          }
+        },
+        "required": ["tipo"],
+        "additionalProperties": false
+      },
+      "description": "Lista de canales de contacto disponibles para despachar alertas"
+    }
+  },
+  "required": ["personaId", "denominacion", "tipoPersona"],
+  "additionalProperties": false
+}

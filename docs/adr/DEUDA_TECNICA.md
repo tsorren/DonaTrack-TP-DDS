@@ -159,8 +159,10 @@
 | Campo | Valor |
 |---|---|
 | ADR | [20260910-dti-13](./20260910-dti-13-migracion-clientes-api-rest-deprecada-notificaciones-a-amqp.md) |
+| ADR complementario | [20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) |
 | ADR complementario | [20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones](./notificaciones-service/20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] deferred` — `donaciones-service` e `incentivos-service` continúan invocando el endpoint legacy `POST /notificaciones` sin propagar `eventId`; retrocompatibilidad soportada en `notificaciones-service` mediante fallback `UUID.randomUUID()` |
+| Implementation status | `[OBSERVED] in-progress` — Resolución técnica formalizada en ADR 20260911 y SPEC-03 en Entrega 4: adopción de Pub/Sub canónico AMQP, TopicExchanges de emisores, colas segregadas, clúster DLQ y erradicación total de OpenFeign (Hard Cutover); persistencia relacional física de outbox SQL diferida a Oleada 10 para servicios en memoria |
 | Target | `donaciones-service` (`NotificacionesFeignClient`) · `incentivos-service` (`NotificacionesFeignClient`, `NotificacionesClientAdapter`) |
-| Cuándo se saldará | **Fase A (Ruta canónica REST `/api/notificaciones/eventos` + `eventId`):** **Entrega 4 (Semana del 14 de Septiembre 2026)**; **Fase B (Migración a AMQP y baja de endpoint legacy):** **Entrega 5 (Semana del 19 de Octubre 2026)** |
+| Cuándo se saldará | **En ejecución en Entrega 4 (Septiembre 2026)** — desacoplamiento AMQP completo y eliminación de clientes Feign mediante ADR transversal [20260911](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) y [SPEC-03](../specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) (al verificar la implementación en código de la Etapa 2) |
+

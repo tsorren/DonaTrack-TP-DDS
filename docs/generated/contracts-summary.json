@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-11T03:28:42.555Z",
+  "generatedAt": "2026-09-11T23:53:58.817Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
-    "endpointsCount": 94,
-    "schemasCount": 11,
+    "endpointsCount": 98,
+    "schemasCount": 21,
     "eventsCount": 9
   },
   "services": [
@@ -985,8 +985,19 @@
         {
           "path": "/notificaciones",
           "method": "POST",
-          "summary": "Despachar notificación por evento de dominio",
+          "summary": "Despachar notificación por evento de dominio (Legacy/Deprecated)",
           "operationId": "procesarEventoNotificable",
+          "requestBody": "EventoNotificableDTO",
+          "responses": {
+            "202": "-",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/notificaciones/eventos",
+          "method": "POST",
+          "summary": "Despachar notificación por evento de dominio",
+          "operationId": "procesarEventoNotificableApi",
           "requestBody": "EventoNotificableDTO",
           "responses": {
             "202": "-",
@@ -996,11 +1007,43 @@
         {
           "path": "/notificaciones/persona/{personaId}",
           "method": "GET",
-          "summary": "Obtener historial de notificaciones de una persona",
+          "summary": "Obtener historial de notificaciones de una persona (Legacy/Deprecated)",
           "operationId": "obtenerNotificacionesPorPersona",
           "requestBody": "-",
           "responses": {
             "200": "NotificacionDTO"
+          }
+        },
+        {
+          "path": "/api/notificaciones/persona/{personaId}",
+          "method": "GET",
+          "summary": "Obtener historial de notificaciones de una persona",
+          "operationId": "obtenerNotificacionesPorPersonaApi",
+          "requestBody": "-",
+          "responses": {
+            "200": "NotificacionDTO"
+          }
+        },
+        {
+          "path": "/api/notificaciones",
+          "method": "GET",
+          "summary": "Obtener notificaciones por persona y/o estado",
+          "operationId": "obtenerNotificaciones",
+          "requestBody": "-",
+          "responses": {
+            "200": "NotificacionDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/notificaciones/{id}",
+          "method": "GET",
+          "summary": "Obtener una notificación específica por su ID",
+          "operationId": "obtenerNotificacionPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "NotificacionDTO",
+            "404": "-"
           }
         },
         {
@@ -1206,6 +1249,89 @@
       "subtypes": []
     },
     {
+      "fileName": "evento-donacion-asignada-v1.schema.json",
+      "title": "EventoDonacionAsignadaV1",
+      "description": "Evento de dominio emitido por donaciones-service cuando una donación es asignada a una entidad beneficiaria",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "personaBeneficiariaId",
+        "descripcion"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-donacion-en-camino-v1.schema.json",
+      "title": "EventoDonacionEnCaminoV1",
+      "description": "Evento de dominio emitido cuando una donación se encuentra en traslado logístico hacia la entidad beneficiaria",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "personaBeneficiariaId",
+        "descripcion",
+        "urlMapa"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-donacion-entrega-fallida-v1.schema.json",
+      "title": "EventoDonacionEntregaFallidaV1",
+      "description": "Evento de dominio emitido cuando la entrega de una donación fracasa y se notifica a las partes y administradores",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "personaBeneficiariaId",
+        "descripcion",
+        "personaAdminId",
+        "justificacion",
+        "replanificable"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-donacion-recibida-v1.schema.json",
+      "title": "EventoDonacionRecibidaV1",
+      "description": "Evento de dominio emitido cuando una donación es entregada y recibida conforme por la entidad beneficiaria",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "personaBeneficiariaId",
+        "descripcion",
+        "patenteCamion"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-donacion-vencida-v1.schema.json",
+      "title": "EventoDonacionVencidaV1",
+      "description": "Evento de dominio emitido cuando una donación supera su fecha de caducidad o vigencia sin ser asignada o retirada",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "personaAdminId",
+        "descripcion",
+        "motivo"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-donante-registrado-v1.schema.json",
+      "title": "EventoDonanteRegistradoV1",
+      "description": "Evento de dominio emitido cuando un nuevo donante es registrado en donaciones-service para despachar sus credenciales",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "credencialesDeAcceso"
+      ],
+      "subtypes": []
+    },
+    {
       "fileName": "evento-entrega-exitosa.schema.json",
       "title": "EventoEntregaExitosa",
       "description": "Evento AMQP emitido cuando una donación fue entregada con éxito a la entidad beneficiaria",
@@ -1231,6 +1357,43 @@
       "subtypes": []
     },
     {
+      "fileName": "evento-incentivo-donante-inactivo-v1.schema.json",
+      "title": "EventoIncentivoDonanteInactivoV1",
+      "description": "Evento de dominio emitido por incentivos-service al detectar que un donante superó el umbral de días sin registrar donaciones",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "diasInactividad"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-incentivo-mision-cumplida-v1.schema.json",
+      "title": "EventoIncentivoMisionCumplidaV1",
+      "description": "Evento de dominio emitido por incentivos-service cuando un donante completa una misión de gamificación",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "nombreMision",
+        "puntosObtenidos"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-incentivo-subio-categoria-v1.schema.json",
+      "title": "EventoIncentivoSubioCategoriaV1",
+      "description": "Evento de dominio emitido por incentivos-service cuando un donante asciende de nivel o categoría",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "fecha",
+        "nombreNuevaCategoria"
+      ],
+      "subtypes": []
+    },
+    {
       "fileName": "evento-notificable.schema.json",
       "title": "EventoNotificableDTO",
       "description": "Payload polimórfico REST para despachar alertas y notificaciones a personas en notificaciones-service vía POST /notificaciones",
@@ -1247,6 +1410,18 @@
         "EventoEntregaFallidaDTO",
         "EventoDonacionVencidaDTO"
       ]
+    },
+    {
+      "fileName": "evento-persona-sincronizada-v1.schema.json",
+      "title": "EventoPersonaSincronizadaV1",
+      "description": "Evento de dominio emitido por donaciones-service para replicar y mantener sincronizados los datos de contacto de una persona en notificaciones-service",
+      "type": "object",
+      "required": [
+        "personaId",
+        "denominacion",
+        "tipoPersona"
+      ],
+      "subtypes": []
     },
     {
       "fileName": "evento-ruta-asignada.schema.json",

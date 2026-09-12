@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-incentivo-subio-categoria-v1.schema.json",
+  "title": "EventoIncentivoSubioCategoriaV1",
+  "description": "Evento de dominio emitido por incentivos-service cuando un donante asciende de nivel o categoría",
+  "type": "object",
+  "properties": {
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona donante promovida"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del ascenso de categoría"
+    },
+    "nombreNuevaCategoria": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nombre de la nueva categoría alcanzada por el donante"
+    }
+  },
+  "required": ["personaDonanteId", "fecha", "nombreNuevaCategoria"],
+  "additionalProperties": false
+}
