@@ -26,7 +26,8 @@ public class SubioCategoria extends EventoNotificable {
             + " a "
             + categoriaNueva
             + ".";
-    Notificacion notificacion = new Notificacion(this.getPersona().getId(), mensaje);
+    Notificacion notificacion =
+        new Notificacion(this.getPersona().getId(), mensaje, this.getFecha());
 
     return List.of(notificacion);
   }

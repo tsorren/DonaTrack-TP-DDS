@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-asignada-v1.schema.json",
+  "title": "EventoDonacionAsignadaV1",
+  "description": "Evento de dominio emitido por donaciones-service cuando una donación es asignada a una entidad beneficiaria",
+  "type": "object",
+  "properties": {
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona donante"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del momento de asignación"
+    },
+    "personaBeneficiariaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona o entidad beneficiaria receptora"
+    },
+    "descripcion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Descripción detallada de la donación asignada"
+    }
+  },
+  "required": ["personaDonanteId", "fecha", "personaBeneficiariaId", "descripcion"],
+  "additionalProperties": false
+}

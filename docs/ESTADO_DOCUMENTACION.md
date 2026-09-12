@@ -46,7 +46,7 @@ docs/
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
 │   ├── contratos-rest.md                  # 🟢 Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
 │   ├── eventos-amqp.md                    # 🟢 Topología RabbitMQ y contratos de eventos asíncronos
-│   ├── contratos/                         # 🟢 Especificaciones OpenAPI 3.0 (YAML) y Schemas JSON
+│   ├── contratos/                         # 🟢 Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
 │   └── diseno/                            # 🟢 Bitácoras de refactor, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de bitácoras y diseño por microservicio
 │       ├── donaciones/
@@ -88,12 +88,12 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # 🟢 Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-12)
+│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-13)
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🟢 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -137,6 +137,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`scripts/agent-check/`](../scripts/agent-check/) | Enforcement CI | Suite de validación mecánica de integridad referencial, canonicidad, skills y ADRs. | 🟢 Sincronizado |
 | [`.agents/skills/`](../.agents/skills/) | Suite de Skills | Suite de 8 skills modulares para el Engineering Loop y auditoría adversarial de PRs con GrepAI. | 🟢 Sincronizado |
 | [`docs/specs/`](specs/README.md) | Especificaciones SDD | Catálogo centralizado de especificaciones funcionales y técnicas (active/completed). | 🟢 Sincronizado |
+| [`docs/specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md`](specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) | Especificación SDD | Topología AMQP Pub/Sub canónica, colas segregadas, envelope nativo, 10 schemas y Hard Cutover. | 🟢 Sincronizado |
 | [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
 | [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
 | [`scripts/run-evals.js`](../scripts/run-evals.js) | Harness Evals Runner | Runner determinista de escenarios E01–E11 y taxonomía de fallas críticas CF-01 a CF-12 con emisión de scorecard. | 🟢 Sincronizado |
@@ -162,6 +163,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Logística | Ciclo de vida de entregas, planificación de rutas, camiones y eventos RabbitMQ. | 🟢 Sincronizado |
 | [`docs/arquitectura/contratos-rest.md`](arquitectura/contratos-rest.md) | Contratos REST | Catálogo consolidado de endpoints, DTOs, Swagger UI y especificaciones OpenAPI 3.0. | 🟢 Sincronizado |
 | [`docs/arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) | Mensajería AMQP | Topología RabbitMQ, TopicExchange, routing keys, payloads JSON e idempotencia. | 🟢 Sincronizado |
+| [`docs/arquitectura/contratos/guia-migracion-notificaciones-e4.md`](arquitectura/contratos/guia-migracion-notificaciones-e4.md) | Migración E4 | Guía de migración técnica de contratos e ingesta AMQP/REST para `notificaciones-service`. | 🟢 Sincronizado |
 | [`scripts/validate-contracts.js`](../scripts/validate-contracts.js) | Testing Contratos | Suite de validación mecánica de JSON Schemas, auditoría semántica de OpenAPI 3.0 (tipos y nulabilidad) integrada en CI (`agent-governance.yml`) y tests de drift en Surefire. | 🟢 Sincronizado |
 | [`docs/arquitectura/diseno/README.md`](arquitectura/diseno/README.md) | Diseño de Dominio | Portal de diseño detallado de subsistemas y anexos técnicos. | 🟢 Sincronizado |
 | [`docs/arquitectura/diseno/anexos-tecnicos/README.md`](arquitectura/diseno/anexos-tecnicos/README.md) | Diagramas Técnicos | Modelos técnicos de bytecode autogenerados por Maven (`plantuml-generator`). | 🟢 Sincronizado |
@@ -189,14 +191,16 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/auditoria/README.md`](auditoria/README.md) | Portal Auditoría | Portal y catálogo de auditorías arquitectónicas, directivas y planes revisores. | 🟢 Sincronizado |
 | [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
 | [`docs/auditoria/revision-critica-devops-ci.md`](auditoria/revision-critica-devops-ci.md) | Auditoría DevOps | Revisión crítica experta de pipelines CI/CD, Dockerfiles, observabilidad y scripts auxiliares. | 🟢 Sincronizado |
-| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-12) con ADRs enlazados. | 🟢 Sincronizado |
+| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-13) con ADRs enlazados. | 🟢 Sincronizado |
 | [`docs/adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md`](adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) | ADR Deuda Técnica | DTI-07: Adaptador interino local para Crypto-Shredding mientras auth-service no exista. | 🟢 Sincronizado |
 | [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Deuda Técnica | DTI-08: Campos de observabilidad diferidos (spanId, executionTimeMs, errorCode estructurado). | 🟢 Sincronizado |
 | [`docs/adr/incentivos-service/20260905-dti-09-seguridad-y-asincronia-en-procesos-batch-de-incentivos.md`](adr/incentivos-service/20260905-dti-09-seguridad-y-asincronia-en-procesos-batch-de-incentivos.md) | ADR Deuda Técnica | DTI-09: Seguridad, control de acceso y asincronía en endpoints de procesos batch de incentivos. | 🟢 Sincronizado |
 | [`docs/adr/incentivos-service/20260905-dti-10-desacoplamiento-de-errores-de-dominio-en-global-exception-handler.md`](adr/incentivos-service/20260905-dti-10-desacoplamiento-de-errores-de-dominio-en-global-exception-handler.md) | ADR Deuda Técnica | DTI-10: Desacoplamiento de errores de dominio de incentivos en GlobalExceptionHandler. | 🟢 Sincronizado |
 | [`docs/adr/incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md`](adr/incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md) | ADR Deuda Técnica | DTI-11: Extracción de MisionMapper dedicado y purificación anémica de MisionDTO. | 🟢 Sincronizado |
+| [`docs/adr/20260910-dti-13-migracion-clientes-api-rest-deprecada-notificaciones-a-amqp.md`](adr/20260910-dti-13-migracion-clientes-api-rest-deprecada-notificaciones-a-amqp.md) | ADR Deuda Técnica | DTI-13: Migración de clientes consumidores de la API REST deprecada de notificaciones a ruta canónica y AMQP. | 🟢 Sincronizado |
 | [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
 | [`docs/adr/20260911-harness-skill-review-pr-adversarial-grepai.md`](adr/20260911-harness-skill-review-pr-adversarial-grepai.md) | ADR Gobernanza IA | Formalización de la skill canónica review-pr, protocolo GrepAI y tooling CLI de contexto. | 🟢 Sincronizado |
+| [`docs/adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) | ADR Arquitectura AMQP | Topología Pub/Sub canónica DDD, colas segregadas, clúster DLQ y Hard Cutover inter-servicios. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
 

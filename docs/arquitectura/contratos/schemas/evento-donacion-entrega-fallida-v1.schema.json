@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-entrega-fallida-v1.schema.json",
+  "title": "EventoDonacionEntregaFallidaV1",
+  "description": "Evento de dominio emitido cuando la entrega de una donación fracasa y se notifica a las partes y administradores",
+  "type": "object",
+  "properties": {
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona donante"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del reporte de fallo"
+    },
+    "personaBeneficiariaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la entidad beneficiaria destinataria"
+    },
+    "descripcion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Descripción de la donación afectada"
+    },
+    "personaAdminId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador del administrador notificado"
+    },
+    "justificacion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Causa documentada del fallo en la entrega"
+    },
+    "replanificable": {
+      "type": "boolean",
+      "description": "Indica si la entrega de la donación puede volver a planificarse"
+    }
+  },
+  "required": [
+    "personaDonanteId",
+    "fecha",
+    "personaBeneficiariaId",
+    "descripcion",
+    "personaAdminId",
+    "justificacion",
+    "replanificable"
+  ],
+  "additionalProperties": false
+}

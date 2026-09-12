@@ -58,7 +58,11 @@ class EventoMapperTest {
   void toEntity_donacionAsignada_deberiaMapearDonanteYBeneficiarioCorrectamente() {
     EventoDonacionAsignadaDTO dto =
         new EventoDonacionAsignadaDTO(
-            donante.getId(), TEST_DATE_TIME, beneficiario.getId(), "10kg de arroz");
+            UUID.randomUUID(),
+            donante.getId(),
+            TEST_DATE_TIME,
+            beneficiario.getId(),
+            "10kg de arroz");
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -72,7 +76,12 @@ class EventoMapperTest {
   void toEntity_donacionRecibida_deberiaMapearPatenteDeCamion() {
     EventoDonacionRecibidaDTO dto =
         new EventoDonacionRecibidaDTO(
-            donante.getId(), TEST_DATE_TIME, beneficiario.getId(), "ropa", "AB123CD");
+            UUID.randomUUID(),
+            donante.getId(),
+            TEST_DATE_TIME,
+            beneficiario.getId(),
+            "ropa",
+            "AB123CD");
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -86,6 +95,7 @@ class EventoMapperTest {
   void toEntity_donacionEnCamino_deberiaMapearEnlaceDeSeguimiento() {
     EventoDonacionEnCaminoDTO dto =
         new EventoDonacionEnCaminoDTO(
+            UUID.randomUUID(),
             donante.getId(),
             TEST_DATE_TIME,
             beneficiario.getId(),
@@ -104,6 +114,7 @@ class EventoMapperTest {
   void toEntity_entregaFallida_deberiaMapearDonanteBeneficiarioYAdminSinConfundirlos() {
     EventoEntregaFallidaDTO dto =
         new EventoEntregaFallidaDTO(
+            UUID.randomUUID(),
             donante.getId(),
             TEST_DATE_TIME,
             beneficiario.getId(),
@@ -115,8 +126,6 @@ class EventoMapperTest {
     EventoNotificable evento = mapper.toEntity(dto);
 
     EntregaFallida resultado = assertInstanceOf(EntregaFallida.class, evento);
-    // Se verifica explícitamente que cada id fue a su campo correspondiente
-    // y no se mezclaron beneficiario/admin en el switch del mapper.
     assertEquals(donante.getId(), resultado.getPersona().getId());
     assertEquals(beneficiario.getId(), resultado.getEntidadBeneficiaria().getId());
     assertEquals(admin.getId(), resultado.getAdministracion().getId());
@@ -127,7 +136,8 @@ class EventoMapperTest {
   @Test
   void toEntity_donanteRegistrado_deberiaMapearCredenciales() {
     EventoDonanteRegistradoDTO dto =
-        new EventoDonanteRegistradoDTO(donante.getId(), TEST_DATE_TIME, "usuario: Juan");
+        new EventoDonanteRegistradoDTO(
+            UUID.randomUUID(), donante.getId(), TEST_DATE_TIME, "usuario: Juan");
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -138,7 +148,7 @@ class EventoMapperTest {
   @Test
   void toEntity_donanteInactivo_deberiaMapearDiasInactivo() {
     EventoDonanteInactivoDTO dto =
-        new EventoDonanteInactivoDTO(donante.getId(), TEST_DATE_TIME, 21);
+        new EventoDonanteInactivoDTO(UUID.randomUUID(), donante.getId(), TEST_DATE_TIME, 21);
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -148,7 +158,8 @@ class EventoMapperTest {
   @Test
   void toEntity_misionCumplida_deberiaMapearNombreYRecompensa() {
     EventoMisionCumplidaDTO dto =
-        new EventoMisionCumplidaDTO(donante.getId(), TEST_DATE_TIME, "Racha", "Insignia Oro");
+        new EventoMisionCumplidaDTO(
+            UUID.randomUUID(), donante.getId(), TEST_DATE_TIME, "Racha", "Insignia Oro");
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -158,7 +169,8 @@ class EventoMapperTest {
   @Test
   void toEntity_subioCategoria_deberiaMapearCategorias() {
     EventoSubioCategoriaDTO dto =
-        new EventoSubioCategoriaDTO(donante.getId(), TEST_DATE_TIME, "Sostenedor", "Colaborador");
+        new EventoSubioCategoriaDTO(
+            UUID.randomUUID(), donante.getId(), TEST_DATE_TIME, "Sostenedor", "Colaborador");
 
     EventoNotificable evento = mapper.toEntity(dto);
 
@@ -170,10 +182,9 @@ class EventoMapperTest {
     UUID idInexistente = UUID.randomUUID();
     when(personaRepository.findById(idInexistente)).thenReturn(Optional.empty());
 
-    EventoDonanteInactivoDTO dto = new EventoDonanteInactivoDTO(idInexistente, TEST_DATE_TIME, 21);
+    EventoDonanteInactivoDTO dto =
+        new EventoDonanteInactivoDTO(UUID.randomUUID(), idInexistente, TEST_DATE_TIME, 21);
 
-    // Oleada 3 (RF-05): antes IllegalArgumentException cruda, ahora ValidationException +
-    // ErrorCatalog.RECURSO_NO_ENCONTRADO, mismo criterio que PersonasService.
     assertThrows(ValidationException.class, () -> mapper.toEntity(dto));
   }
 
@@ -181,6 +192,7 @@ class EventoMapperTest {
   void toEntity_donacionVencida_deberiaMapearCorrectamente() {
     EventoDonacionVencidaDTO dto =
         new EventoDonacionVencidaDTO(
+            UUID.randomUUID(),
             donante.getId(),
             TEST_DATE_TIME,
             admin.getId(),
@@ -205,6 +217,7 @@ class EventoMapperTest {
 
     EventoDonacionVencidaDTO dto =
         new EventoDonacionVencidaDTO(
+            UUID.randomUUID(),
             donante.getId(),
             TEST_DATE_TIME,
             adminInexistente,

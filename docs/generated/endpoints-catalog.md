@@ -1,7 +1,7 @@
 # Catálogo Unificado de Endpoints REST — DonaTrack
 
 > **Fuente Canónica:** Especificaciones OpenAPI 3.0 en [`docs/arquitectura/contratos/`](../arquitectura/contratos/)
-> **Total de Endpoints:** 94
+> **Total de Endpoints:** 98
 
 <!-- AUTO-GENERATED: DO NOT EDIT MANUALLY -->
 
@@ -130,7 +130,11 @@
 | Método | Path | Operación | Request Body | Códigos de Respuesta |
 |:---:|---|---|---|---|
 | `POST` | `/notificaciones` | `procesarEventoNotificable` | `EventoNotificableDTO` | `202 (-), 400 (-)` |
+| `POST` | `/api/notificaciones/eventos` | `procesarEventoNotificableApi` | `EventoNotificableDTO` | `202 (-), 400 (-)` |
 | `GET` | `/notificaciones/persona/{personaId}` | `obtenerNotificacionesPorPersona` | `-` | `200 (NotificacionDTO)` |
+| `GET` | `/api/notificaciones/persona/{personaId}` | `obtenerNotificacionesPorPersonaApi` | `-` | `200 (NotificacionDTO)` |
+| `GET` | `/api/notificaciones` | `obtenerNotificaciones` | `-` | `200 (NotificacionDTO), 400 (-)` |
+| `GET` | `/api/notificaciones/{id}` | `obtenerNotificacionPorId` | `-` | `200 (NotificacionDTO), 404 (-)` |
 | `PUT` | `/api/notificaciones/personas` | `sincronizarPersona` | `PersonaReplicaDTO` | `200 (-), 400 (-)` |
 | `GET` | `/api/notificaciones/personas/{id}` | `obtenerPersona` | `-` | `200 (PersonaReplicaDTO), 404 (-)` |
 | `DELETE` | `/api/notificaciones/personas/{id}` | `anonimizarPersona` | `-` | `204 (-)` |

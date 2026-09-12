@@ -8,6 +8,7 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
 import grupo5.notificaciones.models.repositories.impl.NotificacionRepositoryEnMemoria;
+import grupo5.notificaciones.mothers.NotificacionMother;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,9 +32,9 @@ class NotificacionRepositoryEnMemoriaTest {
   void deberiaFiltrarNotificacionesPorEstado() {
     Persona persona = crearPersona();
 
-    Notificacion notificacionPendiente = new Notificacion(persona.getId(), "Mensaje pendiente");
+    Notificacion notificacionPendiente = NotificacionMother.pendiente(persona, "Mensaje pendiente");
 
-    Notificacion notificacionEnviada = new Notificacion(persona.getId(), "Mensaje enviado");
+    Notificacion notificacionEnviada = NotificacionMother.pendiente(persona, "Mensaje enviado");
     notificacionEnviada.actualizarEstado(EstadoNotificacion.ENVIADA);
 
     repository.save(notificacionPendiente);
@@ -55,9 +56,9 @@ class NotificacionRepositoryEnMemoriaTest {
     Persona persona2 = crearPersona();
 
     Notificacion notificacionPersona1 =
-        new Notificacion(persona1.getId(), "Mensaje para persona 1");
+        NotificacionMother.pendiente(persona1, "Mensaje para persona 1");
     Notificacion notificacionPersona2 =
-        new Notificacion(persona2.getId(), "Mensaje para persona 2");
+        NotificacionMother.pendiente(persona2, "Mensaje para persona 2");
 
     repository.save(notificacionPersona1);
     repository.save(notificacionPersona2);
@@ -74,7 +75,7 @@ class NotificacionRepositoryEnMemoriaTest {
   @Test
   void deberiaDevolverListaVaciaSiLaPersonaNoTieneNotificaciones() {
     Persona persona1 = crearPersona();
-    Notificacion notificacion = new Notificacion(persona1.getId(), "Mensaje");
+    Notificacion notificacion = NotificacionMother.pendiente(persona1, "Mensaje");
     repository.save(notificacion);
 
     List<Notificacion> resultado =

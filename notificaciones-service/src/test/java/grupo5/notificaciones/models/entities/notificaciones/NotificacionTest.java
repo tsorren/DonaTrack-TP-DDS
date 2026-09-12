@@ -67,7 +67,7 @@ class NotificacionTest {
 
   @Test
   void constructor_deberiaRegistrarNotificacionCreada() {
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
 
     List<NotificacionDomainEvent> eventos = notificacion.getDomainEvents();
 
@@ -80,7 +80,7 @@ class NotificacionTest {
 
   @Test
   void constructor_conPersonaIdNulo_deberiaRegistrarNotificacionCreadaConPersonaIdNulo() {
-    Notificacion notificacion = new Notificacion(null, "Hola");
+    Notificacion notificacion = new Notificacion(null, "Hola", java.time.LocalDateTime.now());
 
     NotificacionCreada evento = (NotificacionCreada) notificacion.getDomainEvents().get(0);
 
@@ -89,7 +89,7 @@ class NotificacionTest {
 
   @Test
   void actualizarEstado_aEnviada_deberiaRegistrarNotificacionEnviada() {
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
 
     notificacion.actualizarEstado(EstadoNotificacion.ENVIADA);
 
@@ -101,7 +101,7 @@ class NotificacionTest {
 
   @Test
   void actualizarEstado_aFallida_deberiaRegistrarNotificacionFallida() {
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
 
     notificacion.actualizarEstado(EstadoNotificacion.FALLIDA);
 
@@ -112,7 +112,7 @@ class NotificacionTest {
 
   @Test
   void clearDomainEvents_deberiaVaciarLaListaInterna() {
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
 
     notificacion.clearDomainEvents();
 
@@ -121,7 +121,7 @@ class NotificacionTest {
 
   @Test
   void getDomainEvents_deberiaSerUnSnapshotInmutableQueNoCreceConTransicionesPosteriores() {
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
 
     List<NotificacionDomainEvent> snapshot = notificacion.getDomainEvents();
     notificacion.actualizarEstado(EstadoNotificacion.ENVIADA);
@@ -135,7 +135,7 @@ class NotificacionTest {
 
   @Test
   void getHistorialEstado_deberiaSerUnSnapshotInmutableQueNoCreceConTransicionesPosteriores() {
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
 
     List<CambioEstadoNotificacion> snapshot = notificacion.getHistorialEstado();
     notificacion.actualizarEstado(EstadoNotificacion.ENVIADA);
@@ -148,7 +148,7 @@ class NotificacionTest {
 
   @Test
   void getHistorialEstado_yGetDomainEvents_noDebenDevolverLaMismaInstanciaEntreLlamadas() {
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
 
     assertNotSame(notificacion.getHistorialEstado(), notificacion.getHistorialEstado());
     assertNotSame(notificacion.getDomainEvents(), notificacion.getDomainEvents());
@@ -158,7 +158,8 @@ class NotificacionTest {
 
   @Test
   void anonimizar_deberiaReemplazarElMensajePorElValorAnonimizadoYNoTocarOtrosCampos() {
-    Notificacion notificacion = new Notificacion(persona.getId(), "Mensaje con datos sensibles");
+    Notificacion notificacion =
+        NotificacionMother.pendiente(persona, "Mensaje con datos sensibles");
 
     notificacion.anonimizar();
 
@@ -173,7 +174,7 @@ class NotificacionTest {
   void historialEstado_deberiaAcumularCadaTransicionConTimestampDentroDeLaVentanaDeEjecucion() {
     LocalDateTime antesDeEjecutar = LocalDateTime.now();
 
-    Notificacion notificacion = new Notificacion(persona.getId(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
     notificacion.actualizarEstado(EstadoNotificacion.ENVIADA);
 
     LocalDateTime despuesDeEjecutar = LocalDateTime.now();
@@ -255,7 +256,7 @@ class NotificacionTest {
     // La resolución de "no hay destinatario" ahora vive un nivel más arriba (quien busca la
     // Persona por personaId antes de llamar a notificar(), ej. NotificacionGestor) — acá se
     // caracteriza pasando null directamente, sin importar qué personaId tenga la Notificacion.
-    Notificacion notificacion = new Notificacion(UUID.randomUUID(), "Hola");
+    Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
 
     notificacion.notificar(null, sender);
 

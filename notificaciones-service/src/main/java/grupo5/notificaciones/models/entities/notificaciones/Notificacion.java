@@ -35,12 +35,14 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
   private List<CambioEstadoNotificacion> historialEstado;
 
   public Notificacion(UUID personaId, String mensaje) {
+    this(personaId, mensaje, LocalDateTime.now());
+  }
+
+  public Notificacion(UUID personaId, String mensaje, LocalDateTime fechaCreacion) {
     this.id = UUID.randomUUID();
     this.personaId = personaId;
     this.mensaje = mensaje;
-    this.fechaCreacion =
-        LocalDateTime.now(
-            ZoneId.systemDefault()); // TODO: Corregir con fecha de evento en vez de now
+    this.fechaCreacion = fechaCreacion != null ? fechaCreacion : LocalDateTime.now();
     this.historialEstado = new ArrayList<>();
     this.actualizarEstado(
         EstadoNotificacion.PENDIENTE); // usa el método para que quede en el historial

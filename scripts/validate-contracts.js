@@ -450,6 +450,14 @@ assert('evento_notificable_entrega_fallida_valido', validateSchemaObject(eventoN
   motivo: 'Dirección inaccesible',
   replanificable: true
 }).valid);
+assert('evento_notificable_con_event_id_valido', validateSchemaObject(eventoNotificableSchema, {
+  eventId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+  tipo: 'DONANTE_REGISTRADO',
+  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  fecha: '2026-09-05T12:00:00Z',
+  credencialesDeAcceso: 'clave-inicial-123'
+}).valid);
+
 
 // 9. evento-ruta-asignada
 const eventoRutaAsignadaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-ruta-asignada.schema.json'), 'utf8'));

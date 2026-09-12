@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-donante-registrado-v1.schema.json",
+  "title": "EventoDonanteRegistradoV1",
+  "description": "Evento de dominio emitido cuando un nuevo donante es registrado en donaciones-service para despachar sus credenciales",
+  "type": "object",
+  "properties": {
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona registrada como donante"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del alta del donante"
+    },
+    "credencialesDeAcceso": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Credenciales o clave inicial de acceso generada para el donante"
+    }
+  },
+  "required": ["personaDonanteId", "fecha", "credencialesDeAcceso"],
+  "additionalProperties": false
+}

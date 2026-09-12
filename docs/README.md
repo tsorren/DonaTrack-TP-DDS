@@ -36,7 +36,7 @@ docs/
 │   ├── aggregates-notificaciones.md       # Réplica ligera y contratos REST sincrónicos
 │   ├── contratos-rest.md                  # Contratos REST consolidados, OpenAPI 3.0 y Swagger UI
 │   ├── eventos-amqp.md                    # Topología RabbitMQ y contratos de eventos asíncronos
-│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML) y Schemas JSON
+│   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de diseño y anexos técnicos
 │       ├── donaciones/
@@ -83,12 +83,12 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-12) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-13) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -146,6 +146,7 @@ docs/
 * 🧩 **Guía de Patrones de Diseño Aplicados:** [arquitectura/guia-patrones-diseno.md](arquitectura/guia-patrones-diseno.md)
 * ⚠️ **Catálogo Unificado de Errores:** [arquitectura/catalogo-errores.md](arquitectura/catalogo-errores.md)
 * 🏗️ **Dominio y Persistencia Compartida:** [arquitectura/shared-kernel.md](arquitectura/shared-kernel.md)
+* 🔄 **Guía de Migración de Contratos E4 (Notificaciones):** [arquitectura/contratos/guia-migracion-notificaciones-e4.md](arquitectura/contratos/guia-migracion-notificaciones-e4.md)
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)

@@ -7,10 +7,11 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
-import java.util.List;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Component
 public class NotificacionGestor {
@@ -30,25 +31,24 @@ public class NotificacionGestor {
     this.eventPublisher = eventPublisher;
   }
 
-  // Oleada 2 (RF-02): ya no se traduce a un ApplicationEvent propio — se escucha directamente el
-  // domain event que Notificacion generó sobre sí misma al quedar PENDIENTE ("Escucha creaciones
-  // de notificaciones").
-  @EventListener
+  @Async
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
   public void onNotificacionCreada(NotificacionCreada event) {
-    notificarPendientes();
-  }
-
-  public void notificarPendientes() {
-    List<Notificacion> pendientes = repository.findByEstado(EstadoNotificacion.PENDIENTE);
-    for (Notificacion notificacion : pendientes) {
-      Persona persona = personaRepository.findById(notificacion.getPersonaId()).orElse(null);
-      notificacion.notificar(persona, sender);
-      repository.save(notificacion);
-      // "regla de oro" del plan de refactor: si la mutación generó domain events (acá,
-      // NotificacionEnviada/NotificacionFallida), hay que publicarlos y limpiarlos, igual que
-      // hace NotificacionService al crear la notificación.
-      notificacion.getDomainEvents().forEach(eventPublisher::publishEvent);
-      notificacion.clearDomainEvents();
+    // Como NotificacionCreada hereda de DomainEvent, el id de la notificación suele venir en
+    // event.aggregateId()
+    Notificacion notificacion = repository.findById(event.notificacionId()).orElse(null);
+    if (notificacion == null
+        || notificacion.getEstadoNotificacion() != EstadoNotificacion.PENDIENTE) {
+      return;
     }
+
+    Persona persona = personaRepository.findById(notificacion.getPersonaId()).orElse(null);
+
+    notificacion.notificar(persona, sender);
+    repository.save(notificacion);
+
+    // Publicar eventos posteriores (ENVIADA o FALLIDA)
+    notificacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+    notificacion.clearDomainEvents();
   }
 }

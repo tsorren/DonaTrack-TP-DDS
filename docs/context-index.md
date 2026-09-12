@@ -27,10 +27,10 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 
 | Servicio | Doc primario | También cargar si... |
 | --- | --- | --- |
-| `donaciones-service` | [`arquitectura/aggregates-donaciones.md`](arquitectura/aggregates-donaciones.md) | State Pattern o algoritmos → ADRs en `docs/adr/donaciones-service/`; historial de refactor → `docs/arquitectura/diseno/donaciones/` |
+| `donaciones-service` | [`arquitectura/aggregates-donaciones.md`](arquitectura/aggregates-donaciones.md) | State Pattern o algoritmos → ADRs en `docs/adr/donaciones-service/`; AMQP / Pub-Sub → [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md), ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md); historial de refactor → `docs/arquitectura/diseno/donaciones/` |
 | `logistica-service` | [`arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Eventos RabbitMQ → ADR `20260703-uso-de-rabbitmq-*` en `docs/adr/logistica-service/`; trazabilidad → [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
-| `incentivos-service` | [`arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Scheduler / cron → ADRs en `docs/adr/incentivos-service/` |
-| `notificaciones-service` | [`arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | REST / Feign / Persistencia JPA → ADRs en `docs/adr/notificaciones-service/` |
+| `incentivos-service` | [`arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Scheduler / cron → ADRs en `docs/adr/incentivos-service/`; AMQP / Pub-Sub → [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md), ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) |
+| `notificaciones-service` | [`arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | REST / Persistencia JPA / AMQP RabbitMQ Pub-Sub → ADRs en `docs/adr/notificaciones-service/`, ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md), [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) y [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-13) |
 | `common-lib` | [`arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Impacto cross-service → aggregates docs de los servicios afectados |
 
 ---
@@ -66,7 +66,7 @@ Revisar esta sección si la tarea involucra: persistencia, repositorios, diseño
 
 | Constraint | Scope | Regla vigente | Fuente de autoridad | Drift signal |
 | --- | --- | --- | --- | --- |
-| Persistencia en memoria | `donaciones`, `logistica`, `incentivos` (Fase 1) | No introducir JPA, Hibernate ni SQL salvo ADR aprobado para ese servicio. En `notificaciones-service`: JPA activo con Flyway V1 (autorizado); persistencia en memoria retenida bajo `@Profile("!postgres")` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` activo en `pom.xml` del servicio — autorizado en `notificaciones-service`; para los demás servicios, revisar si la constraint fue reemplazada |
+| Persistencia en memoria | `donaciones`, `logistica`, `incentivos` (Fase 1) | No introducir JPA, Hibernate ni SQL salvo ADR aprobado para ese servicio. En `notificaciones-service`: JPA activo con Flyway V1+V2 (Transactional Inbox); persistencia en memoria retenida bajo `@Profile("!postgres")` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` activo en `pom.xml` del servicio — autorizado en `notificaciones-service`; para los demás servicios, revisar si la constraint fue reemplazada |
 | Pureza de dominio | Todos los servicios (Fase 1) | Entidades de dominio sin anotaciones JPA ni acoplamiento a infraestructura de persistencia | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 + DTI-06 | `@Entity` / `@Column` en `models/entities/` — revisar si existe ADR que autorice la excepción para ese servicio |
 
 

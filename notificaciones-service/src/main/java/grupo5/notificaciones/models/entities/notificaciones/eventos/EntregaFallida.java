@@ -29,10 +29,15 @@ public class EntregaFallida extends EventoDeDonacion {
 
   @Override
   public List<Notificacion> generarNotificaciones() {
-    Notificacion aDonante = new Notificacion(this.getPersona().getId(), this.armarMensajeDonante());
+    Notificacion aDonante =
+        new Notificacion(this.getPersona().getId(), this.armarMensajeDonante(), this.getFecha());
     Notificacion aBeneficiario =
-        new Notificacion(this.getEntidadBeneficiaria().getId(), this.armarMensajeBeneficiario());
-    Notificacion aAdmin = new Notificacion(this.administracion.getId(), this.armarMensajeAdmin());
+        new Notificacion(
+            this.getEntidadBeneficiaria().getId(),
+            this.armarMensajeBeneficiario(),
+            this.getFecha());
+    Notificacion aAdmin =
+        new Notificacion(this.administracion.getId(), this.armarMensajeAdmin(), this.getFecha());
     return List.of(aDonante, aBeneficiario, aAdmin);
   }
 
