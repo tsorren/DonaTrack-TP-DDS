@@ -7,6 +7,8 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.choferes.CambioEstadoChofer;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -292,5 +294,92 @@ class ChoferTest {
     assertThrows(ValidationException.class, chofer::habilitar); // ya está DISPONIBLE
 
     assertTrue(chofer.getHistorialEstados().isEmpty());
+  }
+
+  // ========================= RECONSTITUCIÓN (JPA) =========================
+
+  @Test
+  void testConstructorReconstitucionExitoso() {
+    UUID id = UUID.randomUUID();
+    UUID rutaId = UUID.randomUUID();
+    LocalDateTime timestamp = LocalDateTime.now();
+    CambioEstadoChofer cambio =
+        new CambioEstadoChofer(EstadoChofer.DISPONIBLE, EstadoChofer.EN_RUTA, timestamp);
+    List<CambioEstadoChofer> historial = new ArrayList<>(List.of(cambio));
+
+    Chofer chofer =
+        new Chofer(
+            id,
+            "Carlos",
+            "Gomez",
+            "LIC-99999",
+            "+541199998888",
+            EstadoChofer.EN_RUTA,
+            rutaId,
+            historial,
+            3L);
+
+    assertEquals(id, chofer.getId());
+    assertEquals("Carlos", chofer.getNombre());
+    assertEquals("Gomez", chofer.getApellido());
+    assertEquals("LIC-99999", chofer.getLicencia());
+    assertEquals("+541199998888", chofer.getTelefonoContacto());
+    assertEquals(EstadoChofer.EN_RUTA, chofer.getEstado());
+    assertEquals(rutaId, chofer.getRutaId());
+    assertEquals(1, chofer.getHistorialEstados().size());
+    assertEquals(cambio, chofer.getHistorialEstados().get(0));
+    assertEquals(3L, chofer.getVersion());
+  }
+
+  @Test
+  void testConstructorReconstitucionConColeccionNulaNoFalla() {
+    Chofer chofer =
+        new Chofer(
+            UUID.randomUUID(),
+            "Carlos",
+            "Gomez",
+            "LIC-99999",
+            "+541199998888",
+            EstadoChofer.DISPONIBLE,
+            null,
+            null,
+            1L);
+
+    assertNotNull(chofer.getHistorialEstados());
+    assertTrue(chofer.getHistorialEstados().isEmpty());
+    assertEquals(1L, chofer.getVersion());
+  }
+
+  @Test
+  void testConstructorNegocioMantieneVersionEnNull() {
+    Chofer chofer = new Chofer("Juan", "Perez", "LIC-12345", "+541123456789");
+    assertNull(chofer.getVersion());
+  }
+
+  @Test
+  void testConstructorReconstitucionAislaColeccionOriginal() {
+    LocalDateTime timestamp = LocalDateTime.now();
+    CambioEstadoChofer cambio =
+        new CambioEstadoChofer(EstadoChofer.DISPONIBLE, EstadoChofer.EN_RUTA, timestamp);
+    List<CambioEstadoChofer> historialOriginal = new ArrayList<>();
+    historialOriginal.add(cambio);
+
+    Chofer chofer =
+        new Chofer(
+            UUID.randomUUID(),
+            "Carlos",
+            "Gomez",
+            "LIC-99999",
+            "+541199998888",
+            EstadoChofer.DISPONIBLE,
+            null,
+            historialOriginal,
+            1L);
+
+    assertEquals(1, chofer.getHistorialEstados().size());
+    historialOriginal.add(
+        new CambioEstadoChofer(EstadoChofer.EN_RUTA, EstadoChofer.DISPONIBLE, timestamp));
+
+    assertEquals(1, chofer.getHistorialEstados().size());
   }
 }

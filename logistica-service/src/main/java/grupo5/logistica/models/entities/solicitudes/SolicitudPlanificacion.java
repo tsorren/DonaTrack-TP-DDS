@@ -85,7 +85,8 @@ public class SolicitudPlanificacion implements AggregateRoot {
     this.estado = estado;
     this.cantidadDonaciones = cantidadDonaciones;
     this.callbackUrl = callbackUrl;
-    this.rutasGeneradas = new ArrayList<>(rutasGeneradas);
+    this.rutasGeneradas =
+        rutasGeneradas != null ? new ArrayList<>(rutasGeneradas) : new ArrayList<>();
     this.intentosFallidos = intentosFallidos;
     this.motivoError = motivoError;
     this.version = version;

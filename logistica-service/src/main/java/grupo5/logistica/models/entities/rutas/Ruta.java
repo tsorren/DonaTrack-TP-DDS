@@ -69,11 +69,12 @@ public class Ruta extends AgregadoConEventos<EventoRuta> {
       Long version) {
     this.id = id;
     this.fecha = fecha;
-    this.entregas = new ArrayList<>(entregas);
+    this.entregas = entregas != null ? new ArrayList<>(entregas) : new ArrayList<>();
     this.choferId = choferId;
     this.camionId = camionId;
     this.estado = estado;
-    this.historialEstado = new ArrayList<>(historialEstado);
+    this.historialEstado =
+        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
     this.horaInicioReal = horaInicioReal;
     this.horaFinReal = horaFinReal;
     this.version = version;

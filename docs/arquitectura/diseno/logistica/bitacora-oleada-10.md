@@ -100,7 +100,7 @@ Tabla: entregas_historial_estado  (@ElementCollection)
 
 **Jerarquía `Direccion`:** se aplana a columnas escalares de `entregas`. `Localidad`, `Provincia` y `Pais` son strings en la misma fila (sin tablas separadas). `anonimizar()` actualiza esas columnas directamente.
 
-**`CambioEstadoEntrega`:** es un record Java; Hibernate 6 soporta records como `@Embeddable`. Si la versión de Hibernate no lo soporta, convertir a clase final con constructor protegido sin args y campos no-final.
+**`CambioEstadoEntrega` y records de historial:** Los `record` de dominio se mantienen inmutables y sin anotaciones JPA para preservar la pureza del modelo (§4.1). Cualquier necesidad futura de persistencia mediante `@Embeddable` (p. ej. en Hibernate) se resolverá mediante tipos específicos en la capa de infraestructura/mapeo (como `CambioEstadoEmbeddable` en infraestructura), sin alterar los records del dominio.
 
 ### `Ruta`
 
@@ -118,7 +118,7 @@ Tabla: rutas
 Tabla: rutas_entregas  (@ElementCollection de UUID)
   ruta_id          UUID NOT NULL FK → rutas.id
   entrega_id       UUID NOT NULL
-  UNIQUE(ruta_id, entrega_id)
+  UNIQUE(entrega_id)
 
 Tabla: rutas_historial_estado  (@ElementCollection)
   ruta_id          UUID NOT NULL FK → rutas.id
@@ -126,6 +126,9 @@ Tabla: rutas_historial_estado  (@ElementCollection)
   estado_nuevo     VARCHAR(30) NOT NULL
   timestamp        TIMESTAMP NOT NULL
 ```
+
+**Restricción de `rutas_entregas`:** Si se opta por persistir `List<UUID> entregas` mediante `@ElementCollection`, la restricción debe ser `UNIQUE(entrega_id)` en lugar de compuesta `UNIQUE(ruta_id, entrega_id)`. Esto responde a la invariante fundamental de dominio de que una entrega física no puede pertenecer simultáneamente a más de una ruta (`Entrega` valida que `idRuta == null`).
+Asimismo, existe una alternativa futura de persistencia en la que esta relación podría resolverse directamente mediante la columna `id_ruta` de la tabla `entregas` (`SELECT id FROM entregas WHERE id_ruta = ?`) sin requerir una tabla intermedia; dicha decisión queda asociada al diseño físico de persistencia y no se implementa en esta oleada.
 
 ### `Camion`
 
@@ -216,43 +219,25 @@ Tabla: domain_events_outbox
 
 **Eventos afectados:** `EntregaConfirmada`, `EntregaFallida`, `EventoRutaAsignada`, `EventoRutaIniciada`.
 
-**Verificar si `common-lib` ya lo provee:** antes de implementar, chequear si el refactor de otro servicio consolidó un `OutboxEventPublisher` en `common-lib`. Si existe, reutilizar.
+**Estado en `common-lib`:** Se verificó que actualmente `common-lib` no posee un `OutboxEventPublisher` compartido (el único mecanismo existente en el repositorio es un store en memoria local en `donaciones-service`). Su diseño e implementación formal quedan fuera del alcance de esta oleada y se abordarán al encarar la infraestructura física de mensajería.
 
 ---
 
 ## 📝 Optimistic Locking y coordinación distribuida del scheduler
 
-### `SolicitudPlanificacion` — `@Version`
+### Distinción de roles: `@Version` vs. ShedLock
 
-El `PlanificadorDeEntregas` corre via `@Scheduled`. Si el servicio escala horizontalmente (N instancias), N corridas simultáneas pueden:
-1. Leer las mismas entregas pendientes.
-2. Crear solicitudes duplicadas para el mismo lote.
-3. Invocar `GeneradorDeRutas` N veces para las mismas entregas.
+Es fundamental distinguir que `@Version` y ShedLock resuelven problemas de concurrencia enteramente distintos y **son mecanismos complementarios, no sustitutos**:
 
-**Opciones:**
+1. **`@Version` (Optimistic Locking a nivel de Agregado):**
+   * **Propósito:** Protege contra conflictos de actualización concurrente sobre entidades *ya persistidas* en la base de datos (detectando escrituras solapadas mediante `OptimisticLockException`).
+   * **Aplicación en Logística:** Se utiliza en `SolicitudPlanificacion` (y demás agregados) para asegurar que escrituras concurrentes (como recepciones simultáneas de callbacks para una misma solicitud) no generen actualizaciones perdidas (*lost updates*).
+   * **Limitación:** **No evita** que dos schedulers concurrentes se ejecuten en paralelo, ya que un scheduler realiza un `INSERT` de una nueva solicitud y no un `UPDATE` de una fila existente.
 
-| Opción | Mecanismo | Complejidad |
-|---|---|---|
-| A — `@Version` en `SolicitudPlanificacion` | Optimistic Locking; si dos instancias crean la misma solicitud, la segunda falla con `OptimisticLockException` | Bajo (ya tenemos el campo `version`) |
-| B — ShedLock | Lock distribuido en DB antes de que el scheduler corra; solo una instancia ejecuta | Medio (dep adicional: `net.javacrumbs.shedlock`) |
-| C — Ambos | `@Version` como red de seguridad + ShedLock como primera línea | Alto |
-
-**Decisión propuesta:** **Opción B (ShedLock)** como primera línea para `PlanificadorDeEntregas.ejecutar()` — es más limpio que manejar `OptimisticLockException` en el scheduler y reintentar. El campo `version` en `SolicitudPlanificacion` sigue siendo útil para escrituras concurrentes del callback (múltiples callbacks para la misma solicitud).
-
-```java
-// Dependencia a agregar en pom.xml cuando se implemente:
-// net.javacrumbs.shedlock:shedlock-spring
-// net.javacrumbs.shedlock:shedlock-provider-jdbc-template
-
-// Tabla requerida por ShedLock:
-// CREATE TABLE shedlock (
-//   name VARCHAR(64) NOT NULL,
-//   lock_until TIMESTAMP NOT NULL,
-//   locked_at TIMESTAMP NOT NULL,
-//   locked_by VARCHAR(255) NOT NULL,
-//   PRIMARY KEY (name)
-// );
-```
+2. **ShedLock (Coordinación distribuida del Scheduler):**
+   * **Propósito:** Coordina la ejecución de métodos anotados con `@Scheduled` en entornos de alta disponibilidad con múltiples instancias activas, garantizando ejecución a lo sumo una vez (*at-most-once execution*) en todo el clúster.
+   * **Aplicación en Logística:** Previene que múltiples réplicas ejecuten simultáneamente `PlanificadorDeEntregas.ejecutar()` a las 02:00, evitando lecturas duplicadas de entregas pendientes y la emisión múltiple de solicitudes para un mismo lote.
+   * **Alcance en esta oleada:** **ShedLock NO se implementa en esta oleada**, dado que requiere dependencias de infraestructura (`shedlock-spring`, `shedlock-provider-jdbc-template`) y tablas de base de datos relacional activas, las cuales forman parte de la fase física de persistencia.
 
 ---
 
@@ -329,18 +314,20 @@ La estrategia ORM, el DDL completo, el Transactional Outbox y ShedLock quedan do
 - Escritura de constructores de reconstitución (generación mecánica).
 - Verificación de límites de agregados y ghost objects (análisis estático).
 
-Decisiones humanas: opción ShedLock vs. `@Version` puro, política ante `OptimisticLockException` en el callback, si el Outbox se implementa vía `@Scheduled` propio o CDC.
+Decisiones documentadas: roles complementarios de ShedLock y `@Version` formalizados (ShedLock diferido a fase física), confirmación de ausencia de `OutboxEventPublisher` en `common-lib`, y preservación estricta de records inmutables de dominio.
 
 ---
 
 ## Verificación humana
 
-- [x] Constructores de reconstitución en los 5 agregados — firma completa con `version`.
-- [x] Campo `version: Long` en los 5 agregados.
-- [x] Suite del módulo en verde (319 tests).
+- [x] Constructores de reconstitución en los 5 agregados — firma completa con `version` y manejo defensivo de colecciones nulas.
+- [x] Campo `version: Long` en los 5 agregados con getter expuesto.
+- [x] Tests unitarios de reconstitución, version, nulos y aislamiento en los 5 agregados.
+- [x] Suite del módulo en verde.
 - [x] Formatter/linter en verde.
 - [x] Límites de agregados por UUID verificados — 0 referencias directas entre agregados.
 - [x] Ghost objects auditados — ninguno encontrado.
-- [ ] Confirmar opción ShedLock vs. `@Version` puro para el scheduler (decisión de arquitectura pendiente).
-- [ ] Confirmar si `common-lib` ya tiene `OutboxEventPublisher` antes de implementar el Outbox propio.
-- [ ] Confirmar si Hibernate 6 soporta los records de `CambioEstadoXXX` como `@Embeddable` en el entorno objetivo, o si hay que convertirlos a clases.
+- [x] Restricción de `rutas_entregas` clarificada a `UNIQUE(entrega_id)` y documentada alternativa vía `entregas.id_ruta`.
+- [x] Aclaración conceptual ShedLock vs. `@Version` (mecanismos complementarios; ShedLock no se implementa en esta oleada).
+- [x] Confirmado que `common-lib` no posee `OutboxEventPublisher` (diferido a fase física).
+- [x] Confirmado que los records de `CambioEstadoXXX` se mantienen inmutables y puros en el dominio (sin anotaciones JPA).

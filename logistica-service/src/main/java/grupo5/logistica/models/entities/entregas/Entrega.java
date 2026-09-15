@@ -96,7 +96,8 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.idBeneficiaria = idBeneficiaria;
     this.destino = destino;
     this.estadoActual = estadoActual;
-    this.historialEstado = new ArrayList<>(historialEstado);
+    this.historialEstado =
+        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
     this.horaArribo = horaArribo;
     this.horaSalida = horaSalida;
     this.fotoRecepcionUrl = fotoRecepcionUrl;

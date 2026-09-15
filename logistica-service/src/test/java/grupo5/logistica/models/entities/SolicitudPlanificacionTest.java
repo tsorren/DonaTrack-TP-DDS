@@ -1,6 +1,7 @@
 package grupo5.logistica.models.entities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -103,5 +104,87 @@ class SolicitudPlanificacionTest {
         () ->
             new SolicitudPlanificacion(
                 fecha, SolicitudPlanificacion.MAX_DONACIONES_POR_LOTE + 1, callback));
+  }
+
+  // ========================= RECONSTITUCIÓN (JPA) =========================
+
+  @Test
+  void testConstructorReconstitucionExitoso() {
+    UUID id = UUID.randomUUID();
+    LocalDate fecha = LocalDate.now();
+    UUID rutaId = UUID.randomUUID();
+    List<UUID> rutas = new ArrayList<>(List.of(rutaId));
+
+    SolicitudPlanificacion solicitud =
+        new SolicitudPlanificacion(
+            id,
+            fecha,
+            EstadoSolicitud.ERROR,
+            25,
+            "http://callback-url.com",
+            rutas,
+            2,
+            "Timeout proveedor",
+            3L);
+
+    assertEquals(id, solicitud.getId());
+    assertEquals(fecha, solicitud.getFecha());
+    assertEquals(EstadoSolicitud.ERROR, solicitud.getEstado());
+    assertEquals(25, solicitud.getCantidadDonaciones());
+    assertEquals("http://callback-url.com", solicitud.getCallbackUrl());
+    assertEquals(1, solicitud.getRutasGeneradas().size());
+    assertEquals(rutaId, solicitud.getRutasGeneradas().get(0));
+    assertEquals(2, solicitud.getIntentosFallidos());
+    assertEquals("Timeout proveedor", solicitud.getMotivoError());
+    assertEquals(3L, solicitud.getVersion());
+  }
+
+  @Test
+  void testConstructorReconstitucionConColeccionNulaNoFalla() {
+    SolicitudPlanificacion solicitud =
+        new SolicitudPlanificacion(
+            UUID.randomUUID(),
+            LocalDate.now(),
+            EstadoSolicitud.PENDIENTE,
+            10,
+            "http://callback-url.com",
+            null,
+            0,
+            null,
+            1L);
+
+    assertNotNull(solicitud.getRutasGeneradas());
+    assertTrue(solicitud.getRutasGeneradas().isEmpty());
+    assertEquals(1L, solicitud.getVersion());
+  }
+
+  @Test
+  void testConstructorNegocioMantieneVersionEnNull() {
+    SolicitudPlanificacion solicitud =
+        new SolicitudPlanificacion(LocalDate.now(), 10, "http://callback-url.com");
+    assertNull(solicitud.getVersion());
+  }
+
+  @Test
+  void testConstructorReconstitucionAislaColeccionOriginal() {
+    UUID rutaId = UUID.randomUUID();
+    List<UUID> rutasOriginal = new ArrayList<>();
+    rutasOriginal.add(rutaId);
+
+    SolicitudPlanificacion solicitud =
+        new SolicitudPlanificacion(
+            UUID.randomUUID(),
+            LocalDate.now(),
+            EstadoSolicitud.PROCESADA,
+            10,
+            "http://callback-url.com",
+            rutasOriginal,
+            0,
+            null,
+            1L);
+
+    assertEquals(1, solicitud.getRutasGeneradas().size());
+    rutasOriginal.add(UUID.randomUUID());
+    assertEquals(1, solicitud.getRutasGeneradas().size());
   }
 }

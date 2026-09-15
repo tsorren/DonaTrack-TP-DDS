@@ -61,7 +61,8 @@ public class Chofer implements AggregateRoot {
     this.telefonoContacto = telefonoContacto;
     this.estado = estado;
     this.rutaId = rutaId;
-    this.historialEstados = new ArrayList<>(historialEstados);
+    this.historialEstados =
+        historialEstados != null ? new ArrayList<>(historialEstados) : new ArrayList<>();
     this.version = version;
   }
 

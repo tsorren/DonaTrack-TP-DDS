@@ -66,7 +66,8 @@ public class Camion implements AggregateRoot {
     this.capacidadKG = capacidadKG;
     this.altura = altura;
     this.estado = estado;
-    this.historialEstado = new ArrayList<>(historialEstado);
+    this.historialEstado =
+        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
     this.version = version;
   }
 
