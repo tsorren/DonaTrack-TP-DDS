@@ -44,6 +44,7 @@ public class Chofer implements AggregateRoot {
    * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
    * ejecutar validaciones de negocio ni generar un nuevo UUID.
    */
+  @SuppressWarnings("java:S107")
   public Chofer(
       UUID id,
       String nombre,

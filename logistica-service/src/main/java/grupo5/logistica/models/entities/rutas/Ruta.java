@@ -56,6 +56,7 @@ public class Ruta extends AgregadoConEventos<EventoRuta> {
    * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
    * ejecutar validaciones de negocio ni generar un nuevo UUID.
    */
+  @SuppressWarnings("java:S107")
   public Ruta(
       UUID id,
       LocalDate fecha,

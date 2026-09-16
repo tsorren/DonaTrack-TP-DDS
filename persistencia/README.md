@@ -173,7 +173,7 @@ Parámetros de conexión:
 
 ```yaml
 minio:
-  image: minio/minio:RELEASE.2024-10-02T17-50-41Z
+  image: quay.io/minio/minio:RELEASE.2024-10-02T17-50-41Z
   command: server /data --console-address ":9001"
 ```
 

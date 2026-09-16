@@ -76,6 +76,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
    * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
    * ejecutar validaciones de negocio ni generar un nuevo UUID.
    */
+  @SuppressWarnings("java:S107")
   public Entrega(
       UUID id,
       UUID idRuta,
