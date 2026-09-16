@@ -19,8 +19,13 @@
       "type": "string",
       "minLength": 1,
       "description": "Nombre de la nueva categoría alcanzada por el donante"
+    },
+    "nombreViejaCategoria": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nombre de la anterior categoria del donante"
     }
   },
-  "required": ["personaDonanteId", "fecha", "nombreNuevaCategoria"],
+  "required": ["personaDonanteId", "fecha", "nombreNuevaCategoria", "nombreViejaCategoria"],
   "additionalProperties": false
 }
