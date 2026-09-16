@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { TEMPORAL_DRIFT_SKIP_MODULES } = require('../config');
+const { TEMPORAL_DRIFT_SKIP_MODULES, JPA_AUTHORIZED_SERVICES } = require('../config');
 const { passed, warned } = require('../lib/findings');
 const { walkFiles, toForwardSlash } = require('../lib/paths');
 const { parsePomModules } = require('../lib/pom');
@@ -25,9 +25,10 @@ function checkTemporalDrift(repoRoot) {
   let driftFound = false;
 
   for (const service of services) {
-    // Signal A: spring-boot-starter-data-jpa in service pom.xml
+    // Signal A: spring-boot-starter-data-jpa in service pom.xml (excluded if authorized)
+    const isJpaAuthorized = JPA_AUTHORIZED_SERVICES && JPA_AUTHORIZED_SERVICES.has(service);
     const servicePom = path.join(repoRoot, service, 'pom.xml');
-    if (fs.existsSync(servicePom)) {
+    if (fs.existsSync(servicePom) && !isJpaAuthorized) {
       const content = fs.readFileSync(servicePom, 'utf8');
       if (content.includes(JPA_DRIFT_SIGNAL)) {
         findings.push(warned('TEMPORAL_DRIFT',

@@ -52,6 +52,10 @@ const ROUTING_MODULE_EXCLUSIONS = new Set(['integration-tests']);
 // integration-tests: test infrastructure, no production domain code.
 const TEMPORAL_DRIFT_SKIP_MODULES = new Set(['integration-tests']);
 
+// Services with authorized JPA dependency per docs/context-index.md temporal constraints.
+// notificaciones-service: JPA active with Flyway V1 (persistencia en memoria bajo @Profile("!postgres")).
+const JPA_AUTHORIZED_SERVICES = new Set(['notificaciones-service']);
+
 module.exports = {
   SKIP_DIRS,
   AGENTS_ALLOWLIST,
@@ -62,4 +66,6 @@ module.exports = {
   VALID_ADR_STATUSES,
   ROUTING_MODULE_EXCLUSIONS,
   TEMPORAL_DRIFT_SKIP_MODULES,
+  JPA_AUTHORIZED_SERVICES,
 };
+

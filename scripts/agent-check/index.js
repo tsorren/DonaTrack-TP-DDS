@@ -12,6 +12,8 @@ const { checkDeuaTecnicaIntegrity, parseDeuaTecnicaFile } = require('./checks/de
 const { checkAdrStatus } = require('./checks/adr');
 const { checkModuleRouting, parseContextIndexServices } = require('./checks/modules');
 const { checkTemporalDrift } = require('./checks/temporal-drift');
+const { checkSkillsIntegrity } = require('./checks/skills');
+const { checkSpecsIntegrity, parseSpecFile } = require('./checks/specs');
 
 // lib helpers re-exported for unit testing
 const { extractMarkdownLinks, extractCodespanPaths } = require('./lib/markdown');
@@ -25,6 +27,7 @@ function runAllChecks(repoRoot) {
   return [
     ...checkAgentsCanonicity(repoRoot),
     ...checkEvaluatorPolicy(repoRoot),
+    ...checkSkillsIntegrity(repoRoot),
     ...checkStaleTerms(repoRoot),
     ...checkInternalLinks(repoRoot),
     ...checkContextIndexReferences(repoRoot),
@@ -32,6 +35,7 @@ function runAllChecks(repoRoot) {
     ...checkAdrStatus(repoRoot),
     ...checkModuleRouting(repoRoot),
     ...checkTemporalDrift(repoRoot),
+    ...checkSpecsIntegrity(repoRoot),
   ];
 }
 
@@ -67,6 +71,8 @@ module.exports = {
   checkAdrStatus,
   checkModuleRouting,
   checkTemporalDrift,
+  checkSkillsIntegrity,
+  checkSpecsIntegrity,
   // Aggregator + renderer
   runAllChecks,
   renderFindings,
@@ -79,4 +85,5 @@ module.exports = {
   parseAdrStatus,
   parsePomModules,
   parseContextIndexServices,
+  parseSpecFile,
 };

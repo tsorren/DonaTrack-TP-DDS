@@ -12,7 +12,7 @@
 | **Entrega 1** | Mayo 2026 | Modelo de Dominio y DDD | Diagrama de clases, Carátula, Roles del equipo, Justificaciones de decisiones | [Enunciado-1.pdf](1/Enunciado-1.pdf) |
 | **Entrega 2** | Julio 2026 | Comunicación entre servicios y Shared Kernel | Diagramas de integración, ADRs de arquitectura base, imprimibles | [Enunciado-2.pdf](2/Enunciado-2.pdf) |
 | **Entrega 3** | Julio 2026 | Logística, Notificaciones y mensajería AMQP | Eventos RabbitMQ, ciclo de vida de entregas y rutas, integración Donaciones ↔ Notificaciones | [Enunciado-3.pdf](3/Enunciado-3.pdf) |
-| **Entrega 4** | Semana del 14 de Septiembre 2026 | Persistencia con Spring Data JPA y PostgreSQL | Esquemas multi-tenant, Flyway migrations, Testcontainers, ADRs de persistencia | [Enunciado-4.pdf](4/Enunciado-4.pdf) |
+| **Entrega 4** | Semana del 14 de Septiembre 2026 | Persistencia con Spring Data JPA y PostgreSQL | [Principios arquitectónicos (Fase 0)](../entrega-4/arquitectura/principios.md), Esquemas multi-tenant, Flyway migrations, Testcontainers, ADRs de persistencia | [Enunciado-4.pdf](4/Enunciado-4.pdf) |
 
 ---
 

@@ -34,7 +34,7 @@ Las evals **no reemplazan** `agent-check`. Son complementarias.
 
 ---
 
-## Suite inicial — 9 scenarios
+## Suite de scenarios (11 scenarios)
 
 | Eval | Título | Waves | Fixture | CF relevantes |
 |---|---|---|---|---|
@@ -47,20 +47,24 @@ Las evals **no reemplazan** `agent-check`. Son complementarias.
 | [E07](scenarios/E07-review-capability.md) | review capability | 6 | reduced | INDEPENDENT_REVIEW_WHEN_SELF |
 | [E08](scenarios/E08-context-router.md) | context router | 7 | repo-pinned | — |
 | [E09](scenarios/E09-temporal-drift.md) | temporal drift | 3 | reduced | CONSTRAINT_BY_DRIFT |
+| [E10](scenarios/E10-design-review-rejection.md) | design-review rejection | 9 | reduced | DOMAIN_IN_COMMON_LIB, IMPLEMENT_BEFORE_SPEC_ARCH |
+| [E11](scenarios/E11-define-spec-alternatives.md) | define-spec alternatives | 9 | reduced | UNGROUNDED_INFERENCE, IMPLEMENT_BEFORE_SPEC_ARCH |
 
 Cobertura de oleadas:
 
-| Wave | 3 | 4 | 5 | 6 | 7 | 8 |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| E01 | | ✓ | ✓ | | | ✓ |
-| E02 | | ✓ | ✓ | | | |
-| E03 | | ✓ | ✓ | | | |
-| E04 | | ✓ | ✓ | | | |
-| E05 | ✓ | | | ✓ | | |
-| E06 | ✓ | | | ✓ | | |
-| E07 | | | | ✓ | | |
-| E08 | | | | | ✓ | |
-| E09 | ✓ | | | | | |
+| Wave | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| E01 | | ✓ | ✓ | | | ✓ | |
+| E02 | | ✓ | ✓ | | | | |
+| E03 | | ✓ | ✓ | | | | |
+| E04 | | ✓ | ✓ | | | | |
+| E05 | ✓ | | | ✓ | | | |
+| E06 | ✓ | | | ✓ | | | |
+| E07 | | | | ✓ | | | |
+| E08 | | | | | ✓ | | |
+| E09 | ✓ | | | | | | |
+| E10 | | | | | | | ✓ |
+| E11 | | | | | | | ✓ |
 
 ---
 
@@ -331,6 +335,32 @@ No evaluar en esta suite:
 
 ---
 
+## Arnés Automatizado de Evals (`scripts/run-evals.js`)
+
+El arnés provee un pipeline determinista en Node.js puro (`scripts/run-evals.js`) para evaluar los escenarios E01 a E11 y detectar fallas críticas:
+
+### Modos de Ejecución
+
+1. **Modo CI Determinista / Headless (por defecto):**
+   ```bash
+   node scripts/run-evals.js
+   ```
+   Evalúa el banco sintético canónico de respuestas de control contra los 11 graders deterministas en menos de 200 ms. Comprueba que los evaluadores matemáticos y la detección de fallas críticas (CF-01 a CF-12) funcionen con precisión y genera el scorecard en [`docs/IA/evals/results/latest-eval-scorecard.md`](results/latest-eval-scorecard.md).
+
+2. **Modo Evaluación de Trazas Reales (`--file <path>`):**
+   ```bash
+   node scripts/run-evals.js --eval E01 --file ./scratch/sesion-agente-e01.txt
+   ```
+   Permite pasar el archivo de salida real de una sesión de LLM para ser evaluado por el grader correspondiente, computando puntos y detección de fallas críticas sobre la interacción real.
+
+3. **Modo Filtrado y Silencioso:**
+   ```bash
+   node scripts/run-evals.js --eval E01 --no-report
+   ```
+   Filtra la evaluación a un escenario específico sin sobreescribir el scorecard global.
+
+---
+
 ## Ejecución de agent-check
 
 Los evals NO forman parte de `agent-check`. Sin embargo, ejecutar el checker después de crear/modificar scenarios sirve para confirmar que la nueva documentación no rompe la governance del repo.
@@ -339,3 +369,4 @@ Los evals NO forman parte de `agent-check`. Sin embargo, ejecutar el checker des
 node scripts/agent-check.js    # FAIL esperado: 0
 node scripts/tests/run-tests.js
 ```
+

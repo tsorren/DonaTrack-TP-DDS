@@ -57,7 +57,7 @@ La IA puede ayudar, pero la responsabilidad técnica sigue siendo humana.
   Suite de evaluación del harness de agentes. Output Contract v1, Critical Failure Taxonomy, metodología A/B (v3.5.0 vs v6.2.0), execution policy y result format.
 
 - [`evals/scenarios/`](./evals/scenarios/)  
-  9 scenarios (E01–E09): common-lib contamination, routine REST endpoint, sync→async, implement accepted ADR, baseline failure, false VERIFIED, review capability, context router, temporal drift.
+  11 scenarios (E01–E11): common-lib contamination, routine REST endpoint, sync→async, implement accepted ADR, baseline failure, false VERIFIED, review capability, context router, temporal drift, design-review rejection, define-spec alternatives.
 
 - [`evals/scorecards/scorecard-template.md`](./evals/scorecards/scorecard-template.md)  
   Plantilla reutilizable para registrar cada run de eval (output contract, scorecard, critical failures, tool calls, A/B comparison).
@@ -99,6 +99,9 @@ Los prompts se encuentran en [`prompts/`](./prompts/).
   Para generar o completar tests sobre escenarios ya definidos.
 
 ### Prompts transversales
+
+- [`prompts/transversal-mentoria-conceptos.md`](./prompts/transversal-mentoria-conceptos.md)  
+  Para solicitar explicaciones didácticas y mentoría de conceptos de arquitectura/diseño estructuradas en 4 pasos.
 
 - [`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)  
   Para revisar una PR antes de pedir review humana.

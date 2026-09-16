@@ -52,4 +52,5 @@ build/
 __pycache__/
 *.pyc
 .grepai/
-.agents/
+.agents/*
+!.agents/skills/

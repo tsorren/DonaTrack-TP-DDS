@@ -1,0 +1,1290 @@
+{
+  "generatedAt": "2026-09-11T03:28:42.555Z",
+  "harnessVersion": "6.4.0",
+  "stats": {
+    "servicesCount": 4,
+    "endpointsCount": 94,
+    "schemasCount": 11,
+    "eventsCount": 9
+  },
+  "services": [
+    {
+      "title": "DonaTrack - Donaciones Service API",
+      "fileName": "openapi-donaciones.yaml",
+      "version": "1.0.0",
+      "serverUrl": "http://localhost:8080",
+      "endpoints": [
+        {
+          "path": "/donaciones-independientes",
+          "method": "GET",
+          "summary": "Listar donaciones independientes con filtros",
+          "operationId": "listarDonacionesIndependientes",
+          "requestBody": "-",
+          "responses": {
+            "200": "DonacionIndependienteResponseDTO"
+          }
+        },
+        {
+          "path": "/donaciones-independientes/{id}",
+          "method": "GET",
+          "summary": "Consultar donación independiente por ID",
+          "operationId": "obtenerDonacionIndependientePorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "DonacionIndependienteResponseDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/donaciones-independientes/{id}/estado",
+          "method": "PATCH",
+          "summary": "Transicionar estado de la donación independiente (State Pattern)",
+          "operationId": "cambiarEstadoDonacionIndependiente",
+          "requestBody": "CambioEstadoDonacionIndependienteRequestDTO",
+          "responses": {
+            "200": "DonacionIndependienteResponseDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/donaciones",
+          "method": "POST",
+          "summary": "Registrar donación (donación general con ítems)",
+          "operationId": "registrarDonacion",
+          "requestBody": "DonacionInputDTO",
+          "responses": {
+            "201": "DonacionOutputDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/donaciones",
+          "method": "GET",
+          "summary": "Listar donaciones",
+          "operationId": "listarDonaciones",
+          "requestBody": "-",
+          "responses": {
+            "200": "DonacionOutputDTO"
+          }
+        },
+        {
+          "path": "/api/donaciones/{id}",
+          "method": "GET",
+          "summary": "Consultar donación por ID",
+          "operationId": "obtenerDonacionPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "DonacionOutputDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/necesidades",
+          "method": "POST",
+          "summary": "Registrar necesidad de entidad beneficiaria",
+          "operationId": "registrarNecesidad",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/necesidades",
+          "method": "GET",
+          "summary": "Listar necesidades activas",
+          "operationId": "listarNecesidades",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/necesidades/{id}",
+          "method": "GET",
+          "summary": "Consultar necesidad por ID",
+          "operationId": "obtenerNecesidadPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/necesidades/{id}",
+          "method": "PUT",
+          "summary": "Actualizar necesidad existente",
+          "operationId": "actualizarNecesidad",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/necesidades/{id}",
+          "method": "DELETE",
+          "summary": "Baja de necesidad",
+          "operationId": "eliminarNecesidad",
+          "requestBody": "-",
+          "responses": {
+            "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/asignaciones/ejecuciones",
+          "method": "POST",
+          "summary": "Ejecutar algoritmo de asignación y generar propuestas",
+          "operationId": "ejecutarAsignacion",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/asignaciones/ejecuciones",
+          "method": "GET",
+          "summary": "Historial de ejecuciones de asignación",
+          "operationId": "historialEjecucionesAsignacion",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/asignaciones/propuestas",
+          "method": "GET",
+          "summary": "Listar propuestas de asignación",
+          "operationId": "listarPropuestasAsignacion",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/asignaciones/propuestas/{id}/estado",
+          "method": "PUT",
+          "summary": "Actualizar estado de una propuesta de asignación",
+          "operationId": "actualizarEstadoPropuesta",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/entidades",
+          "method": "POST",
+          "summary": "Registrar entidad beneficiaria",
+          "operationId": "registrarEntidadBeneficiaria",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/entidades",
+          "method": "GET",
+          "summary": "Listar entidades beneficiarias",
+          "operationId": "listarEntidadesBeneficiarias",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/entidades/{id}",
+          "method": "GET",
+          "summary": "Consultar entidad beneficiaria por ID",
+          "operationId": "obtenerEntidadPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/entidades/{id}",
+          "method": "PUT",
+          "summary": "Actualizar entidad beneficiaria",
+          "operationId": "actualizarEntidad",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/entidades/{id}",
+          "method": "DELETE",
+          "summary": "Baja de entidad beneficiaria",
+          "operationId": "eliminarEntidad",
+          "requestBody": "-",
+          "responses": {
+            "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/donantes",
+          "method": "POST",
+          "summary": "Registrar nuevo donante",
+          "operationId": "registrarDonante",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/donantes",
+          "method": "GET",
+          "summary": "Listar donantes",
+          "operationId": "listarDonantes",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/donantes/{id}",
+          "method": "GET",
+          "summary": "Consultar donante por ID",
+          "operationId": "obtenerDonantePorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/donantes/{id}",
+          "method": "DELETE",
+          "summary": "Eliminar donante",
+          "operationId": "eliminarDonante",
+          "requestBody": "-",
+          "responses": {
+            "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/donantes/archivos",
+          "method": "POST",
+          "summary": "Cargar archivo/padrón de donantes para procesamiento asíncrono",
+          "operationId": "cargarArchivoDonantes",
+          "requestBody": "-",
+          "responses": {
+            "202": "-",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/donantes/archivos/{id}",
+          "method": "GET",
+          "summary": "Consultar estado de procesamiento de archivo de donantes",
+          "operationId": "obtenerArchivoDonantes",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/categorias",
+          "method": "GET",
+          "summary": "Listar categorías de donación",
+          "operationId": "listarCategorias",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/categorias",
+          "method": "POST",
+          "summary": "Crear categoría",
+          "operationId": "crearCategoria",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/categorias/{id}",
+          "method": "GET",
+          "summary": "Consultar categoría por ID",
+          "operationId": "obtenerCategoria",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/categorias/{id}",
+          "method": "PUT",
+          "summary": "Actualizar categoría",
+          "operationId": "actualizarCategoria",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/categorias/{id}",
+          "method": "DELETE",
+          "summary": "Eliminar categoría",
+          "operationId": "eliminarCategoria",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/subcategorias",
+          "method": "GET",
+          "summary": "Listar subcategorías",
+          "operationId": "listarSubcategorias",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/subcategorias",
+          "method": "POST",
+          "summary": "Crear subcategoría",
+          "operationId": "crearSubcategoria",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/subcategorias/{id}",
+          "method": "GET",
+          "summary": "Consultar subcategoría por ID",
+          "operationId": "obtenerSubcategoria",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/subcategorias/{id}",
+          "method": "PUT",
+          "summary": "Actualizar subcategoría",
+          "operationId": "actualizarSubcategoria",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/subcategorias/{id}",
+          "method": "DELETE",
+          "summary": "Eliminar subcategoría",
+          "operationId": "eliminarSubcategoria",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/subcategorias/{id}/aliases",
+          "method": "POST",
+          "summary": "Agregar alias semántico a una subcategoría",
+          "operationId": "agregarAliasSubcategoria",
+          "requestBody": "AliasSubcategoriaInputDTO",
+          "responses": {
+            "200": "SubcategoriaOutputDTO",
+            "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/subcategorias/{id}/aliases/{alias}",
+          "method": "DELETE",
+          "summary": "Quitar alias semántico de una subcategoría",
+          "operationId": "quitarAliasSubcategoria",
+          "requestBody": "-",
+          "responses": {
+            "200": "SubcategoriaOutputDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/items-normalizados/pendientes",
+          "method": "GET",
+          "summary": "Listar items normalizados pendientes de revisión",
+          "operationId": "listarItemsNormalizadosPendientes",
+          "requestBody": "-",
+          "responses": {
+            "200": "ItemDonacionNormalizadoOutputDTO"
+          }
+        },
+        {
+          "path": "/api/items-normalizados/{id}",
+          "method": "GET",
+          "summary": "Consultar item normalizado por ID",
+          "operationId": "obtenerItemNormalizadoPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "ItemDonacionNormalizadoOutputDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/items-normalizados/{id}",
+          "method": "PATCH",
+          "summary": "Actualizar estado y reclasificación de item normalizado",
+          "operationId": "actualizarEstadoItemNormalizado",
+          "requestBody": "ItemDonacionNormalizadoPatchDTO",
+          "responses": {
+            "200": "ItemDonacionNormalizadoOutputDTO",
+            "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/personas",
+          "method": "GET",
+          "summary": "Listar personas registradas",
+          "operationId": "listarPersonasDonaciones",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/personas",
+          "method": "POST",
+          "summary": "Crear persona",
+          "operationId": "crearPersonaDonaciones",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/personas/{id}",
+          "method": "PUT",
+          "summary": "Actualizar persona",
+          "operationId": "actualizarPersonaDonaciones",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/personas/{id}",
+          "method": "DELETE",
+          "summary": "Eliminar persona",
+          "operationId": "eliminarPersonaDonaciones",
+          "requestBody": "-",
+          "responses": {
+            "204": "-",
+            "404": "-"
+          }
+        }
+      ]
+    },
+    {
+      "title": "DonaTrack - Incentivos Service API",
+      "fileName": "openapi-incentivos.yaml",
+      "version": "1.0.0",
+      "serverUrl": "http://localhost:8082",
+      "endpoints": [
+        {
+          "path": "/api/incentivos/ranking/ultimo",
+          "method": "GET",
+          "summary": "Obtener el último ranking mensual calculado",
+          "operationId": "obtenerUltimoRanking",
+          "requestBody": "-",
+          "responses": {
+            "200": "RankingMensualDTO",
+            "204": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/ranking/historial",
+          "method": "GET",
+          "summary": "Obtener historial de rankings mensuales",
+          "operationId": "obtenerHistorialRankings",
+          "requestBody": "-",
+          "responses": {
+            "200": "RankingMensualDTO"
+          }
+        },
+        {
+          "path": "/api/incentivos/ranking/calcular",
+          "method": "POST",
+          "summary": "Calcular y persistir ranking mensual",
+          "operationId": "calcularRanking",
+          "requestBody": "-",
+          "responses": {
+            "200": "RankingMensualDTO"
+          }
+        },
+        {
+          "path": "/api/incentivos/ranking/posicion/{donanteId}",
+          "method": "GET",
+          "summary": "Obtener posición y estado en ranking de un donante",
+          "operationId": "obtenerPosicionRanking",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "204": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/ranking/{periodo}",
+          "method": "GET",
+          "summary": "Obtener ranking mensual de un período específico",
+          "operationId": "obtenerRankingPorPeriodo",
+          "requestBody": "-",
+          "responses": {
+            "200": "RankingMensualDTO",
+            "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}",
+          "method": "POST",
+          "summary": "Registrar un nuevo donante en el sistema de incentivos",
+          "operationId": "registrarDonanteIncentivos",
+          "requestBody": "RegistrarDonanteRequest",
+          "responses": {
+            "201": "DonanteRegistradoDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}",
+          "method": "DELETE",
+          "summary": "Dar de baja donante en incentivos",
+          "operationId": "darDeBajaDonanteIncentivos",
+          "requestBody": "-",
+          "responses": {
+            "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}",
+          "method": "PATCH",
+          "summary": "Modificar atributos de donante en incentivos",
+          "operationId": "modificarDonanteIncentivos",
+          "requestBody": "ModificarDonanteRequest",
+          "responses": {
+            "200": "-",
+            "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}",
+          "method": "GET",
+          "summary": "Consultar perfil consolidado del donante en incentivos",
+          "operationId": "obtenerDonantePerfil",
+          "requestBody": "-",
+          "responses": {
+            "200": "DonantePerfilDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}/ascensos",
+          "method": "GET",
+          "summary": "Consultar historial de ascensos de categoría del donante",
+          "operationId": "obtenerAscensosDonante",
+          "requestBody": "-",
+          "responses": {
+            "200": "CambioCategoriaDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}/metricas",
+          "method": "GET",
+          "summary": "Consultar métricas y nivel de un donante",
+          "operationId": "obtenerMetricasDonante",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/admin/resumen",
+          "method": "GET",
+          "summary": "Obtener resumen consolidado del sistema de incentivos para administración",
+          "operationId": "obtenerResumenSistema",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}/misiones",
+          "method": "GET",
+          "summary": "Listar misiones asignadas a un donante",
+          "operationId": "obtenerMisionesDonante",
+          "requestBody": "-",
+          "responses": {
+            "200": "MisionDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}/insignias",
+          "method": "GET",
+          "summary": "Listar insignias obtenidas por un donante",
+          "operationId": "obtenerInsigniasDonante",
+          "requestBody": "-",
+          "responses": {
+            "200": "InsigniaDTO"
+          }
+        },
+        {
+          "path": "/api/incentivos/donantes/{donanteId}/insignias/{nombreInsignia}/visibilidad",
+          "method": "PUT",
+          "summary": "Configurar visibilidad pública de una insignia",
+          "operationId": "configurarVisibilidadInsignia",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donaciones",
+          "method": "POST",
+          "summary": "Notificar nueva donación para evaluación de misiones",
+          "operationId": "procesarNuevaDonacion",
+          "requestBody": "NuevaDonacionRequest",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/donaciones/exitosa",
+          "method": "POST",
+          "summary": "Notificar donación completada exitosamente para evaluación de misiones",
+          "operationId": "procesarDonacionExitosa",
+          "requestBody": "DonacionExitosaRequest",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/evaluaciones-inactividad",
+          "method": "POST",
+          "summary": "Ejecutar evaluación de inactividad de donantes (on-demand)",
+          "operationId": "ejecutarEvaluacionInactividad",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/incentivos/verificaciones-racha",
+          "method": "POST",
+          "summary": "Ejecutar verificación de vigencia de rachas (on-demand)",
+          "operationId": "ejecutarVerificacionRachas",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        }
+      ]
+    },
+    {
+      "title": "DonaTrack - Logística Service API",
+      "fileName": "openapi-logistica.yaml",
+      "version": "1.0.0",
+      "serverUrl": "http://localhost:8083",
+      "endpoints": [
+        {
+          "path": "/api/entregas",
+          "method": "POST",
+          "summary": "Crear y registrar entrega para planificación",
+          "operationId": "crearEntrega",
+          "requestBody": "CrearEntregaRequestDTO",
+          "responses": {
+            "201": "EntregaResponseDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/entregas",
+          "method": "GET",
+          "summary": "Listar entregas registradas",
+          "operationId": "listarEntregas",
+          "requestBody": "-",
+          "responses": {
+            "200": "EntregaResponseDTO"
+          }
+        },
+        {
+          "path": "/api/entregas/{id}",
+          "method": "GET",
+          "summary": "Consultar entrega por ID",
+          "operationId": "obtenerEntregaPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "EntregaResponseDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/entregas/{id}/estado",
+          "method": "PATCH",
+          "summary": "Cambiar estado de una entrega",
+          "operationId": "cambiarEstadoEntrega",
+          "requestBody": "CambioEstadoEntregaRequestDTO",
+          "responses": {
+            "200": "EntregaResponseDTO",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/entregas/{id}/fotos",
+          "method": "PATCH",
+          "summary": "Adjuntar foto de recepción de entrega",
+          "operationId": "adjuntarFotoRecepcion",
+          "requestBody": "-",
+          "responses": {
+            "200": "EntregaResponseDTO"
+          }
+        },
+        {
+          "path": "/api/entregas/{id}/historial",
+          "method": "GET",
+          "summary": "Consultar historial de cambios de estado de una entrega",
+          "operationId": "obtenerHistorialEntrega",
+          "requestBody": "-",
+          "responses": {
+            "200": "CambioEstadoEntregaResponseDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/rutas",
+          "method": "GET",
+          "summary": "Listar rutas planificadas",
+          "operationId": "listarRutas",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/rutas/{id}",
+          "method": "GET",
+          "summary": "Consultar ruta con sus paradas y URL de seguimiento",
+          "operationId": "obtenerRutaPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/rutas/{id}/entregas",
+          "method": "GET",
+          "summary": "Consultar ruta junto con el detalle de sus entregas",
+          "operationId": "obtenerRutaConEntregas",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/rutas/{id}/entregas",
+          "method": "POST",
+          "summary": "Agregar entrega a una ruta existente",
+          "operationId": "agregarEntregaRuta",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/rutas/{id}/estado",
+          "method": "PATCH",
+          "summary": "Cambiar estado de la ruta",
+          "operationId": "cambiarEstadoRuta",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/camiones",
+          "method": "POST",
+          "summary": "Registrar nuevo camión en la flota",
+          "operationId": "registrarCamion",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/camiones",
+          "method": "GET",
+          "summary": "Listar camiones",
+          "operationId": "listarCamiones",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/camiones/{id}",
+          "method": "GET",
+          "summary": "Consultar camión por ID",
+          "operationId": "obtenerCamionPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/camiones/{id}",
+          "method": "DELETE",
+          "summary": "Dar de baja camión de la flota",
+          "operationId": "darDeBajaCamion",
+          "requestBody": "-",
+          "responses": {
+            "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/camiones/{id}/estado",
+          "method": "PATCH",
+          "summary": "Cambiar estado operativo de un camión",
+          "operationId": "cambiarEstadoCamion",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/choferes",
+          "method": "POST",
+          "summary": "Registrar chofer",
+          "operationId": "registrarChofer",
+          "requestBody": "-",
+          "responses": {
+            "201": "-"
+          }
+        },
+        {
+          "path": "/api/choferes",
+          "method": "GET",
+          "summary": "Listar choferes",
+          "operationId": "listarChoferes",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/choferes/{id}",
+          "method": "GET",
+          "summary": "Consultar chofer por ID",
+          "operationId": "obtenerChoferPorId",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/choferes/{id}",
+          "method": "DELETE",
+          "summary": "Dar de baja chofer",
+          "operationId": "darDeBajaChofer",
+          "requestBody": "-",
+          "responses": {
+            "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/choferes/{id}/estado",
+          "method": "PATCH",
+          "summary": "Cambiar estado de un chofer",
+          "operationId": "cambiarEstadoChofer",
+          "requestBody": "-",
+          "responses": {
+            "200": "-",
+            "400": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/logistica/planificaciones/ejecuciones",
+          "method": "POST",
+          "summary": "Iniciar planificación de rutas de forma manual",
+          "operationId": "iniciarPlanificacionManual",
+          "requestBody": "-",
+          "responses": {
+            "202": "-"
+          }
+        },
+        {
+          "path": "/api/logistica/planificaciones/{id}",
+          "method": "GET",
+          "summary": "Consultar estado de solicitud de planificación",
+          "operationId": "obtenerSolicitudPlanificacion",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/logistica/resultados",
+          "method": "POST",
+          "summary": "Procesar callback de resultados de optimización de rutas",
+          "operationId": "procesarCallbackPlanificacion",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        },
+        {
+          "path": "/api/logistica/callback/rutas",
+          "method": "POST",
+          "summary": "Webhook alias para recepción de resultados del optimizador de rutas",
+          "operationId": "procesarCallbackRutasAlias",
+          "requestBody": "-",
+          "responses": {
+            "200": "-"
+          }
+        }
+      ]
+    },
+    {
+      "title": "DonaTrack - Notificaciones Service API",
+      "fileName": "openapi-notificaciones.yaml",
+      "version": "1.0.0",
+      "serverUrl": "http://localhost:8081",
+      "endpoints": [
+        {
+          "path": "/notificaciones",
+          "method": "POST",
+          "summary": "Despachar notificación por evento de dominio",
+          "operationId": "procesarEventoNotificable",
+          "requestBody": "EventoNotificableDTO",
+          "responses": {
+            "202": "-",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/notificaciones/persona/{personaId}",
+          "method": "GET",
+          "summary": "Obtener historial de notificaciones de una persona",
+          "operationId": "obtenerNotificacionesPorPersona",
+          "requestBody": "-",
+          "responses": {
+            "200": "NotificacionDTO"
+          }
+        },
+        {
+          "path": "/api/notificaciones/personas",
+          "method": "PUT",
+          "summary": "Sincronizar réplica de persona y medios de contacto",
+          "operationId": "sincronizarPersona",
+          "requestBody": "PersonaReplicaDTO",
+          "responses": {
+            "200": "-",
+            "400": "-"
+          }
+        },
+        {
+          "path": "/api/notificaciones/personas/{id}",
+          "method": "GET",
+          "summary": "Consultar persona replicada",
+          "operationId": "obtenerPersona",
+          "requestBody": "-",
+          "responses": {
+            "200": "PersonaReplicaDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/notificaciones/personas/{id}",
+          "method": "DELETE",
+          "summary": "Anonimizar datos personales (Crypto-shredding / Baja)",
+          "operationId": "anonimizarPersona",
+          "requestBody": "-",
+          "responses": {
+            "204": "-"
+          }
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "EventoDonanteRegistradoDTO",
+      "schemaFile": "evento-notificable.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "donante.registrado",
+      "producer": "donaciones-service",
+      "consumers": [
+        "notificaciones-service"
+      ],
+      "description": "Emitido cuando se da de alta un nuevo donante. Despacha credenciales iniciales de acceso."
+    },
+    {
+      "name": "EventoDonanteInactivoDTO",
+      "schemaFile": "evento-notificable.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "donante.inactivo",
+      "producer": "incentivos-service",
+      "consumers": [
+        "notificaciones-service"
+      ],
+      "description": "Emitido cuando un donante supera el umbral de inactividad de donaciones configurado."
+    },
+    {
+      "name": "EventoMisionCumplidaDTO",
+      "schemaFile": "evento-notificable.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "mision.cumplida",
+      "producer": "incentivos-service",
+      "consumers": [
+        "notificaciones-service"
+      ],
+      "description": "Emitido cuando un donante completa una misión de fidelización (racha o volumen)."
+    },
+    {
+      "name": "EventoSubioCategoriaDTO",
+      "schemaFile": "evento-notificable.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "categoria.ascenso",
+      "producer": "incentivos-service",
+      "consumers": [
+        "notificaciones-service"
+      ],
+      "description": "Emitido cuando un donante asciende de categoría de fidelización."
+    },
+    {
+      "name": "EventoRutaAsignadaDTO",
+      "schemaFile": "evento-ruta-asignada.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "ruta.asignada",
+      "producer": "logistica-service",
+      "consumers": [
+        "donaciones-service",
+        "notificaciones-service"
+      ],
+      "description": "Emitido al consolidar y asignar una ruta logística para traslado de donaciones."
+    },
+    {
+      "name": "EventoRutaIniciadaDTO",
+      "schemaFile": "evento-ruta-iniciada.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "ruta.iniciada",
+      "producer": "logistica-service",
+      "consumers": [
+        "donaciones-service"
+      ],
+      "description": "Emitido cuando el transporte inicia el recorrido de la ruta asignada."
+    },
+    {
+      "name": "EventoEntregaExitosaDTO",
+      "schemaFile": "evento-entrega-exitosa.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "entrega.exitosa",
+      "producer": "logistica-service",
+      "consumers": [
+        "donaciones-service",
+        "incentivos-service",
+        "notificaciones-service"
+      ],
+      "description": "Notifica la recepción exitosa de la donación en la entidad beneficiaria."
+    },
+    {
+      "name": "EventoEntregaFallidaDTO",
+      "schemaFile": "evento-entrega-fallida.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "entrega.fallida",
+      "producer": "logistica-service",
+      "consumers": [
+        "donaciones-service",
+        "notificaciones-service"
+      ],
+      "description": "Notifica el fracaso del intento de entrega de la donación, activando justificación."
+    },
+    {
+      "name": "PersonaReplicaDTO",
+      "schemaFile": "persona-replica.schema.json",
+      "exchange": "donatrack.events",
+      "routingKey": "persona.replica",
+      "producer": "donaciones-service",
+      "consumers": [
+        "logistica-service",
+        "incentivos-service",
+        "notificaciones-service"
+      ],
+      "description": "Sincronización eventual de datos de contacto y roles de personas entre bounded contexts."
+    }
+  ],
+  "schemas": [
+    {
+      "fileName": "cambio-estado-donacion-request.schema.json",
+      "title": "CambioEstadoDonacionIndependienteRequestDTO",
+      "description": "Payload para transicionar el estado de una donación independiente (máquina de 7 estados)",
+      "type": "object",
+      "required": [
+        "estado"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "cambio-estado-entrega-request.schema.json",
+      "title": "CambioEstadoEntregaRequestDTO",
+      "description": "Payload para registrar un cambio de estado en una entrega de logística",
+      "type": "object",
+      "required": [
+        "estado"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "crear-entrega-request.schema.json",
+      "title": "CrearEntregaRequestDTO",
+      "description": "Payload para registrar y solicitar la planificación de una entrega de donación",
+      "type": "object",
+      "required": [
+        "idDonacion",
+        "idBeneficiaria",
+        "destino",
+        "volumenTotalM3"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "donacion-independiente-response.schema.json",
+      "title": "DonacionIndependienteResponseDTO",
+      "description": "Representación de respuesta para una donación independiente",
+      "type": "object",
+      "required": [
+        "id",
+        "donacionOriginalId",
+        "estadoActual",
+        "fechaRegistro"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "entrega-response.schema.json",
+      "title": "EntregaResponseDTO",
+      "description": "Representación de una entrega en el microservicio de logística",
+      "type": "object",
+      "required": [
+        "id",
+        "idDonacion",
+        "idBeneficiaria",
+        "estadoActual"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-entrega-exitosa.schema.json",
+      "title": "EventoEntregaExitosa",
+      "description": "Evento AMQP emitido cuando una donación fue entregada con éxito a la entidad beneficiaria",
+      "type": "object",
+      "required": [
+        "entregaId",
+        "donacionIndependienteId",
+        "fechaEntrega"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-entrega-fallida.schema.json",
+      "title": "EventoEntregaFallida",
+      "description": "Evento AMQP emitido cuando una entrega no pudo concretarse",
+      "type": "object",
+      "required": [
+        "entregaId",
+        "donacionIndependienteId",
+        "fechaFalla",
+        "replanificable"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-notificable.schema.json",
+      "title": "EventoNotificableDTO",
+      "description": "Payload polimórfico REST para despachar alertas y notificaciones a personas en notificaciones-service vía POST /notificaciones",
+      "type": "polymorphic (oneOf)",
+      "required": [],
+      "subtypes": [
+        "EventoDonanteRegistradoDTO",
+        "EventoDonanteInactivoDTO",
+        "EventoMisionCumplidaDTO",
+        "EventoSubioCategoriaDTO",
+        "EventoDonacionAsignadaDTO",
+        "EventoDonacionRecibidaDTO",
+        "EventoDonacionEnCaminoDTO",
+        "EventoEntregaFallidaDTO",
+        "EventoDonacionVencidaDTO"
+      ]
+    },
+    {
+      "fileName": "evento-ruta-asignada.schema.json",
+      "title": "EventoRutaAsignada",
+      "description": "Evento AMQP emitido por logística cuando una donación/entrega queda asignada a una ruta planificada",
+      "type": "object",
+      "required": [
+        "rutaId",
+        "donacionIndependienteId",
+        "fechaAsignacion"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-ruta-iniciada.schema.json",
+      "title": "EventoRutaIniciada",
+      "description": "Evento AMQP emitido por logística cuando un chofer y camión inician el viaje de una ruta",
+      "type": "object",
+      "required": [
+        "rutaId",
+        "camionId",
+        "patenteCamion",
+        "donacionesIndependientesIds",
+        "fechaInicio"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "persona-replica.schema.json",
+      "title": "PersonaReplicaDTO",
+      "description": "Payload para sincronizar la réplica de persona y medios de contacto en notificaciones-service",
+      "type": "object",
+      "required": [
+        "id",
+        "denominacion",
+        "tipoPersona"
+      ],
+      "subtypes": []
+    }
+  ]
+}
