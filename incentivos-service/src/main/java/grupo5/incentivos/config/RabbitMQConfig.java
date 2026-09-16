@@ -1,6 +1,7 @@
-package grupo5.logistica.config;
+package grupo5.incentivos.config;
 
-import grupo5.logistica.dto.eventos.EventoDonacionAsignadaV1;
+import grupo5.incentivos.dto.events.EventoDonacionAsignadaV1;
+import grupo5.incentivos.dto.events.EventoPersonaSincronizadaV1;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.amqp.core.Binding;
@@ -19,22 +20,27 @@ import tools.jackson.databind.json.JsonMapper;
 @Configuration
 public class RabbitMQConfig {
 
-  public static final String EXCHANGE = "logistica.exchange";
+  // Exchanges
+  public static final String EXCHANGE_INCENTIVOS = "incentivos.exchange";
   public static final String EXCHANGE_DONACIONES = "donaciones.exchange";
 
-  public static final String QUEUE_LOGISTICA_DONACIONES_ASIGNADAS =
-      "logistica.donaciones.asignadas";
+  // Colas suscriptoras
+  public static final String QUEUE_INCENTIVOS_DONACIONES = "incentivos.donaciones";
+  public static final String QUEUE_INCENTIVOS_PERSONAS = "incentivos.personas";
 
-  public static final String ROUTING_KEY_RUTA_ASIGNADA = "ruta.asignada";
-  public static final String ROUTING_KEY_RUTA_INICIADA = "ruta.iniciada";
-  public static final String ROUTING_KEY_ENTREGA_EXITOSA = "entrega.exitosa";
-  public static final String ROUTING_KEY_ENTREGA_FALLIDA = "entrega.fallida";
-
+  // Routing Keys consumidas
   public static final String ROUTING_KEY_DONACION_ASIGNADA = "donacion.asignada.v1";
+  public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
 
+  // Routing Keys emitidas
+  public static final String ROUTING_KEY_MISION_CUMPLIDA = "incentivo.mision-cumplida.v1";
+  public static final String ROUTING_KEY_SUBIO_CATEGORIA = "incentivo.subio-categoria.v1";
+  public static final String ROUTING_KEY_DONANTE_INACTIVO = "incentivo.donante-inactivo.v1";
+
+  // --- Exchanges ---
   @Bean
-  public TopicExchange logisticaExchange() {
-    return new TopicExchange(EXCHANGE, true, false);
+  public TopicExchange incentivosExchange() {
+    return new TopicExchange(EXCHANGE_INCENTIVOS, true, false);
   }
 
   @Bean
@@ -42,25 +48,42 @@ public class RabbitMQConfig {
     return new TopicExchange(EXCHANGE_DONACIONES, true, false);
   }
 
+  // --- Colas ---
   @Bean
-  public Queue queueLogisticaDonacionesAsignadas() {
-    return new Queue(QUEUE_LOGISTICA_DONACIONES_ASIGNADAS, true);
+  public Queue queueIncentivosDonaciones() {
+    return new Queue(QUEUE_INCENTIVOS_DONACIONES, true);
   }
 
   @Bean
-  public Binding bindingLogisticaDonacionesAsignadas(
-      Queue queueLogisticaDonacionesAsignadas, TopicExchange donacionesExchange) {
-    return BindingBuilder.bind(queueLogisticaDonacionesAsignadas)
+  public Queue queueIncentivosPersonas() {
+    return new Queue(QUEUE_INCENTIVOS_PERSONAS, true);
+  }
+
+  // --- Bindings ---
+  @Bean
+  public Binding bindingIncentivosDonaciones(
+      Queue queueIncentivosDonaciones, TopicExchange donacionesExchange) {
+    return BindingBuilder.bind(queueIncentivosDonaciones)
         .to(donacionesExchange)
         .with(ROUTING_KEY_DONACION_ASIGNADA);
   }
 
+  @Bean
+  public Binding bindingIncentivosPersonas(
+      Queue queueIncentivosPersonas, TopicExchange donacionesExchange) {
+    return BindingBuilder.bind(queueIncentivosPersonas)
+        .to(donacionesExchange)
+        .with(ROUTING_KEY_PERSONA_SINCRONIZADA);
+  }
+
+  // --- Serialización y Mapeo Tipado ---
   @Bean
   public DefaultClassMapper classMapper() {
     DefaultClassMapper classMapper = new DefaultClassMapper();
     classMapper.setTrustedPackages("*");
     Map<String, Class<?>> idClassMapping = new HashMap<>();
     idClassMapping.put(ROUTING_KEY_DONACION_ASIGNADA, EventoDonacionAsignadaV1.class);
+    idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
   }
