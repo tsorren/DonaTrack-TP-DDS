@@ -23,25 +23,27 @@ La interacción entre microservicios se desacopla temporal y espacialmente media
 ## 2. Topología de RabbitMQ
 
 ```text
-donaciones-service                      notificaciones-service (Consumidor)
-[donaciones.exchange] ──(donacion.*.v1)► [notificaciones.donaciones] ──► DonacionesEventListener
-   (TopicExchange)    ──(donante.*.v1)─►                                   ├── NotificacionService (Inbox)
-                      ──(persona.*.v1)─►                                   └── PersonasService (Sync)
+donaciones-service
+[donaciones.exchange] ──(donacion.asignada.v1)─► [notificaciones.donaciones]      ──► Notificaciones (Inbox)
+   (TopicExchange)    ──(donacion.asignada.v1)─► [logistica.donaciones.asignadas] ──► Logística (Entregas)
+                      ──(donacion.asignada.v1)─► [incentivos.donaciones]          ──► Incentivos (Gamificación)
+                      ──(persona.sincronizada.v1)► [incentivos.personas]          ──► Incentivos (Donantes)
+                      ──(donacion.*.v1 / etc.)──► [notificaciones.donaciones]
                              │
                      (x-dead-letter)
                              ▼
-                     [notificaciones.dlx] ──► [notificaciones.donaciones.dlq]
+                     [notificaciones.dlx] ────► [notificaciones.donaciones.dlq]
 
 incentivos-service
-[incentivos.exchange] ──(incentivo.*.v1) [notificaciones.incentivos] ──► IncentivosEventListener
-   (TopicExchange)           │                                            └── NotificacionService (Inbox)
+[incentivos.exchange] ──(incentivo.*.v1)───────► [notificaciones.incentivos]      ──► Notificaciones (Inbox)
+   (TopicExchange)           │
                      (x-dead-letter)
                              ▼
-                     [notificaciones.dlx] ──► [notificaciones.incentivos.dlq]
+                     [notificaciones.dlx] ────► [notificaciones.incentivos.dlq]
 
-logistica-service                       donaciones-service (Consumidor)
-[logistica.exchange]  ──(ruta.#)──────► [donaciones.ruta.asignada / iniciada] ──► LogisticaEventListener
-   (TopicExchange)    ──(entrega.#)───► [donaciones.entrega.exitosa / fallida]
+logistica-service
+[logistica.exchange]  ──(ruta.#)───────────────► [donaciones.ruta.asignada / iniciada] ──► LogisticaEventListener
+   (TopicExchange)    ──(entrega.#)────────────► [donaciones.entrega.exitosa / fallida]
 ```
 
 ### 2.1 Exchanges del Sistema
@@ -66,17 +68,17 @@ logistica-service                       donaciones-service (Consumidor)
 | `entrega.exitosa` | `donaciones.entrega.exitosa` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGADA` | [`evento-entrega-exitosa.schema.json`](./contratos/schemas/evento-entrega-exitosa.schema.json) |
 | `entrega.fallida` | `donaciones.entrega.fallida` | `donaciones-service` (`LogisticaEventListener`) | Transiciona donación a `ENTREGA_FALLIDA` y evalúa replanificación | [`evento-entrega-fallida.schema.json`](./contratos/schemas/evento-entrega-fallida.schema.json) |
 
-#### B. Eventos hacia `notificaciones-service` (Catálogo de 10 Eventos Versionados)
+#### B. Eventos hacia `notificaciones-service`, `logistica-service` e `incentivos-service`
 
-| N° | Evento de Dominio | Emisor | TopicExchange | Routing Key | Tipo AMQP (`__TypeId__`) | Cola Receptora | JSON Schema de Contrato |
+| N° | Evento de Dominio | Emisor | TopicExchange | Routing Key | Tipo AMQP (`__TypeId__`) | Colas Receptoras | JSON Schema de Contrato |
 |:---:|---|---|---|---|---|---|---|
-| 1 | Donación Asignada | `donaciones-service` | `donaciones.exchange` | `donacion.asignada.v1` | `donacion.asignada.v1` | `notificaciones.donaciones` | [`evento-donacion-asignada-v1.schema.json`](./contratos/schemas/evento-donacion-asignada-v1.schema.json) |
+| 1 | Donación Asignada (Enriquecido) | `donaciones-service` | `donaciones.exchange` | `donacion.asignada.v1` | `donacion.asignada.v1` | `notificaciones.donaciones`, `logistica.donaciones.asignadas`, `incentivos.donaciones` | [`evento-donacion-asignada-v1.schema.json`](./contratos/schemas/evento-donacion-asignada-v1.schema.json) |
 | 2 | Donación en Camino | `donaciones-service` | `donaciones.exchange` | `donacion.en-camino.v1` | `donacion.en-camino.v1` | `notificaciones.donaciones` | [`evento-donacion-en-camino-v1.schema.json`](./contratos/schemas/evento-donacion-en-camino-v1.schema.json) |
 | 3 | Donación Recibida | `donaciones-service` | `donaciones.exchange` | `donacion.recibida.v1` | `donacion.recibida.v1` | `notificaciones.donaciones` | [`evento-donacion-recibida-v1.schema.json`](./contratos/schemas/evento-donacion-recibida-v1.schema.json) |
 | 4 | Entrega Fallida | `donaciones-service` | `donaciones.exchange` | `donacion.entrega-fallida.v1` | `donacion.entrega-fallida.v1` | `notificaciones.donaciones` | [`evento-donacion-entrega-fallida-v1.schema.json`](./contratos/schemas/evento-donacion-entrega-fallida-v1.schema.json) |
 | 5 | Donación Vencida | `donaciones-service` | `donaciones.exchange` | `donacion.vencida.v1` | `donacion.vencida.v1` | `notificaciones.donaciones` | [`evento-donacion-vencida-v1.schema.json`](./contratos/schemas/evento-donacion-vencida-v1.schema.json) |
 | 6 | Donante Registrado | `donaciones-service` | `donaciones.exchange` | `donante.registrado.v1` | `donante.registrado.v1` | `notificaciones.donaciones` | [`evento-donante-registrado-v1.schema.json`](./contratos/schemas/evento-donante-registrado-v1.schema.json) |
-| 7 | Persona Sincronizada | `donaciones-service` | `donaciones.exchange` | `persona.sincronizada.v1` | `persona.sincronizada.v1` | `notificaciones.donaciones` | [`evento-persona-sincronizada-v1.schema.json`](./contratos/schemas/evento-persona-sincronizada-v1.schema.json) |
+| 7 | Persona Sincronizada | `donaciones-service` | `donaciones.exchange` | `persona.sincronizada.v1` | `persona.sincronizada.v1` | `notificaciones.donaciones`, `incentivos.personas` | [`evento-persona-sincronizada-v1.schema.json`](./contratos/schemas/evento-persona-sincronizada-v1.schema.json) |
 | 8 | Misión Cumplida | `incentivos-service` | `incentivos.exchange` | `incentivo.mision-cumplida.v1` | `incentivo.mision-cumplida.v1` | `notificaciones.incentivos` | [`evento-incentivo-mision-cumplida-v1.schema.json`](./contratos/schemas/evento-incentivo-mision-cumplida-v1.schema.json) |
 | 9 | Subió de Categoría | `incentivos-service` | `incentivos.exchange` | `incentivo.subio-categoria.v1` | `incentivo.subio-categoria.v1` | `notificaciones.incentivos` | [`evento-incentivo-subio-categoria-v1.schema.json`](./contratos/schemas/evento-incentivo-subio-categoria-v1.schema.json) |
 | 10 | Donante Inactivo | `incentivos-service` | `incentivos.exchange` | `incentivo.donante-inactivo.v1` | `incentivo.donante-inactivo.v1` | `notificaciones.incentivos` | [`evento-incentivo-donante-inactivo-v1.schema.json`](./contratos/schemas/evento-incentivo-donante-inactivo-v1.schema.json) |
@@ -92,7 +94,7 @@ logistica-service                       donaciones-service (Consumidor)
 
 ## 3. Envelope Nativo de Protocolo y Payloads JSON
 
-La serialización de mensajes se realiza mediante `Jackson2JsonMessageConverter`, garantizando compatibilidad tipada con records de Java 21 sin contaminación de datos de transporte en el cuerpo de dominio.
+La serialización de mensajes se realiza mediante `JacksonJsonMessageConverter`, garantizando compatibilidad tipada con records de Java 21 sin contaminación de datos de transporte en el cuerpo de dominio.
 
 ### 3.1 Envelope AMQP (Headers Estándar)
 
@@ -101,17 +103,30 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 * **`timestamp`:** Marca temporal de emisión del mensaje.
 * **`content_type`:** `application/json`.
 * **`X-Trace-Id`:** Identificador de trazabilidad distribuida propagado para correlación de logs.
-* **`__TypeId__`:** Alias lógico versionado canónico (ej. `donacion.asignada.v1`, `incentivo.mision-cumplida.v1`). Permite a `DefaultClassMapper` en `notificaciones-service` mapear el JSON al record Java específico sin acoplar los nombres de paquetes internos entre microservicios.
+* **`__TypeId__`:** Alias lógico versionado canónico (ej. `donacion.asignada.v1`, `incentivo.mision-cumplida.v1`). Permite a `DefaultClassMapper` en los servicios receptores mapear el JSON al record Java específico sin acoplar los nombres de paquetes internos entre microservicios.
 
 ### 3.2 Ejemplos de Payloads de Dominio Limpios
 
 #### Donación Asignada (`donacion.asignada.v1`)
 ```json
 {
-  "personaDonanteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  "fecha": "2026-09-11T14:30:00Z",
-  "personaBeneficiariaId": "b1ffcd88-8d1c-4fe9-aa7e-7cc8ae491b22",
-  "descripcion": "Caja de alimentos no perecederos (10 kg)"
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "personaDonanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+  "fecha": "2026-09-15T14:30:00Z",
+  "personaBeneficiariaId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+  "descripcion": "Caja de alimentos no perecederos (10 kg)",
+  "destino": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "codigoPostal": "C1179AAQ",
+    "localidad": "CABA",
+    "provincia": "Buenos Aires",
+    "pais": "Argentina"
+  },
+  "pesoTotalKG": 10.5,
+  "volumenTotalM3": 0.25,
+  "categorias": ["ALIMENTOS"],
+  "cantidades": 10
 }
 ```
 

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-11T23:53:58.817Z",
+  "generatedAt": "2026-09-15T22:29:08.903Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
@@ -1251,13 +1251,19 @@
     {
       "fileName": "evento-donacion-asignada-v1.schema.json",
       "title": "EventoDonacionAsignadaV1",
-      "description": "Evento de dominio emitido por donaciones-service cuando una donación es asignada a una entidad beneficiaria",
+      "description": "Evento de dominio canónico enriquecido emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service, logistica-service e incentivos-service",
       "type": "object",
       "required": [
+        "donacionIndependienteId",
         "personaDonanteId",
         "fecha",
         "personaBeneficiariaId",
-        "descripcion"
+        "descripcion",
+        "destino",
+        "pesoTotalKG",
+        "volumenTotalM3",
+        "categorias",
+        "cantidades"
       ],
       "subtypes": []
     },

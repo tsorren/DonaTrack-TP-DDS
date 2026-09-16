@@ -497,6 +497,54 @@ assert('persona_replica_invalido_tipo', !validateSchemaObject(personaReplicaSche
   tipoPersona: 'EXTRATERRESTRE'
 }).valid);
 
+// 12. evento-donacion-asignada-v1 (Enriquecido para Notificaciones, Logística e Incentivos)
+const eventoDonacionAsignadaV1Schema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-donacion-asignada-v1.schema.json'), 'utf8'));
+assert('evento_donacion_asignada_v1_valido', validateSchemaObject(eventoDonacionAsignadaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  descripcion: 'Caja de ropa de abrigo y calzado',
+  destino: {
+    calle: 'Av. Medrano',
+    altura: 951,
+    codigoPostal: 'C1179AAQ',
+    localidad: 'CABA',
+    provincia: 'Buenos Aires',
+    pais: 'Argentina'
+  },
+  pesoTotalKG: 15.5,
+  volumenTotalM3: 0.35,
+  categorias: ['ROPA', 'CALZADO'],
+  cantidades: 8
+}).valid);
+assert('evento_donacion_asignada_v1_invalido_missing_logistica', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  descripcion: 'Falta destino y peso',
+  categorias: ['ROPA'],
+  cantidades: 5
+}).valid);
+assert('evento_donacion_asignada_v1_invalido_missing_incentivos', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  descripcion: 'Faltan categorías y cantidades',
+  destino: {
+    calle: 'Av. Medrano',
+    altura: 951,
+    codigoPostal: 'C1179AAQ',
+    localidad: 'CABA',
+    provincia: 'Buenos Aires',
+    pais: 'Argentina'
+  },
+  pesoTotalKG: 15.5,
+  volumenTotalM3: 0.35
+}).valid);
+
 // 4. Pruebas Adversarias de Detección de Falsos Positivos (A03, B03)
 console.log('\n[4] Pruebas Adversarias de Detección de Falsos Positivos:');
 
