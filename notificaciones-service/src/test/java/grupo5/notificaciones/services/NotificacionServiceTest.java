@@ -5,10 +5,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import grupo5.notificaciones.dto.NotificacionDTO;
+import grupo5.notificaciones.dto.input.DestinoEventoDTO;
+import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
 import grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO;
 import grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
+import grupo5.notificaciones.models.entities.notificaciones.eventos.DonacionAsignada;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.DonanteInactivo;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EntregaFallida;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
@@ -32,6 +35,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class NotificacionServiceTest {
@@ -124,5 +128,67 @@ class NotificacionServiceTest {
     assertEquals(notificacion.getId(), resultado.get(0).id());
     assertEquals("Hola, tenés novedades", resultado.get(0).mensaje());
     assertEquals(EstadoNotificacion.PENDIENTE.name(), resultado.get(0).estado());
+  }
+
+  @Test
+  void procesar_conEventoDonacionAsignadaV1_deberiaPersistirNotificacionesYPublicarEventos() {
+    Persona donante = personaConCorreoQueSiempreEnvia("Juan");
+    Persona beneficiario = personaConCorreoQueSiempreEnvia("ComedorEsperanza");
+
+    DestinoEventoDTO destino =
+        new DestinoEventoDTO(
+            "Av. Corrientes", 1234, null, null, "C1043", "San Nicolás", "CABA", "Argentina");
+    EventoDonacionAsignadaV1 eventoV1 =
+        new EventoDonacionAsignadaV1(
+            UUID.randomUUID(),
+            donante.getId(),
+            TEST_DATE_TIME,
+            beneficiario.getId(),
+            "10kg de arroz",
+            destino,
+            10.0,
+            0.2,
+            List.of("ALIMENTOS"),
+            5);
+
+    DonacionAsignada entidad =
+        new DonacionAsignada(donante, beneficiario, "10kg de arroz", TEST_DATE_TIME);
+    when(mapper.toEntity(eventoV1)).thenReturn(entidad);
+
+    service.procesar(eventoV1, UUID.randomUUID().toString());
+
+    ArgumentCaptor<List<Notificacion>> captor = ArgumentCaptor.forClass(List.class);
+    verify(repository, times(1)).saveAll(captor.capture());
+    verify(eventPublisher, times(2)).publishEvent(any(NotificacionCreada.class));
+
+    assertEquals(2, captor.getValue().size());
+  }
+
+  @Test
+  void procesar_conEventoDonacionAsignadaV1_duplicadoEnInbox_noDeberiaProcesarNiGuardar() {
+    JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+    NotificacionService serviceConDb =
+        new NotificacionService(repository, mapper, eventPublisher, jdbcTemplate);
+
+    EventoDonacionAsignadaV1 eventoV1 =
+        new EventoDonacionAsignadaV1(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            TEST_DATE_TIME,
+            UUID.randomUUID(),
+            "Ropa",
+            new DestinoEventoDTO("Calle", 100, null, null, "1000", "Loc", "Prov", "Arg"),
+            5.0,
+            0.1,
+            List.of("ROPA"),
+            1);
+
+    when(jdbcTemplate.update(anyString(), any(UUID.class), any(LocalDateTime.class))).thenReturn(0);
+
+    serviceConDb.procesar(eventoV1, UUID.randomUUID().toString());
+
+    verify(repository, never()).saveAll(any());
+    verify(eventPublisher, never()).publishEvent(any());
+    verify(mapper, never()).toEntity(eventoV1);
   }
 }
