@@ -25,6 +25,9 @@ public class Chofer implements AggregateRoot {
   @Getter(AccessLevel.NONE)
   private final List<CambioEstadoChofer> historialEstados;
 
+  /** Para Optimistic Locking futuro — gestionado por el adaptador JPA, no por el dominio. */
+  private Long version;
+
   public Chofer(String nombre, String apellido, String licencia, String telefonoContacto) {
     validarDatos(nombre, apellido, licencia, telefonoContacto);
     this.id = UUID.randomUUID();
@@ -35,6 +38,33 @@ public class Chofer implements AggregateRoot {
     this.estado = EstadoChofer.DISPONIBLE;
     this.rutaId = null;
     this.historialEstados = new ArrayList<>();
+  }
+
+  /**
+   * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
+   * ejecutar validaciones de negocio ni generar un nuevo UUID.
+   */
+  @SuppressWarnings("java:S107")
+  public Chofer(
+      UUID id,
+      String nombre,
+      String apellido,
+      String licencia,
+      String telefonoContacto,
+      EstadoChofer estado,
+      UUID rutaId,
+      List<CambioEstadoChofer> historialEstados,
+      Long version) {
+    this.id = id;
+    this.nombre = nombre;
+    this.apellido = apellido;
+    this.licencia = licencia;
+    this.telefonoContacto = telefonoContacto;
+    this.estado = estado;
+    this.rutaId = rutaId;
+    this.historialEstados =
+        historialEstados != null ? new ArrayList<>(historialEstados) : new ArrayList<>();
+    this.version = version;
   }
 
   public void actualizarLicencia(String nuevaLicencia) {
