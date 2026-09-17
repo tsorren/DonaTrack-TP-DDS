@@ -31,4 +31,10 @@ public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
   public List<Entrega> findSinRuta() {
     return storage.values().stream().filter(entrega -> entrega.getIdRuta() == null).toList();
   }
+
+  @Override
+  public boolean existsByIdDonacion(UUID idDonacion) {
+    return storage.values().stream()
+        .anyMatch(entrega -> Objects.equals(entrega.getIdDonacion(), idDonacion));
+  }
 }
