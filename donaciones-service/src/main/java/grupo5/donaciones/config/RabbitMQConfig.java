@@ -26,6 +26,7 @@ public class RabbitMQConfig {
   public static final String QUEUE_ENTREGA_FALLIDA = "donaciones.entrega.fallida";
 
   // Routing Keys emitidas hacia donaciones.exchange
+  public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
   public static final String ROUTING_KEY_DONACION_ASIGNADA = "donacion.asignada.v1";
   public static final String ROUTING_KEY_DONACION_EN_CAMINO = "donacion.en-camino.v1";
   public static final String ROUTING_KEY_DONACION_RECIBIDA = "donacion.recibida.v1";
@@ -33,7 +34,6 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_DONACION_VENCIDA = "donacion.vencida.v1";
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
-  public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
 
   // --- Exchanges ---
   @Bean

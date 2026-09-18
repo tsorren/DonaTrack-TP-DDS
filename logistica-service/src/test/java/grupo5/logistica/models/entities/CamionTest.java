@@ -7,6 +7,8 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.models.entities.camiones.CambioEstadoCamion;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -267,5 +269,83 @@ class CamionTest {
     assertThrows(ValidationException.class, camion::habilitar); // ya está DISPONIBLE
 
     assertTrue(camion.getHistorialEstado().isEmpty());
+  }
+
+  // ========================= RECONSTITUCIÓN (JPA) =========================
+
+  @Test
+  void testConstructorReconstitucionExitoso() {
+    UUID id = UUID.randomUUID();
+    UUID rutaId = UUID.randomUUID();
+    LocalDateTime timestamp = LocalDateTime.now();
+    CambioEstadoCamion cambio =
+        new CambioEstadoCamion(EstadoCamion.DISPONIBLE, EstadoCamion.EN_RUTA, timestamp);
+    List<CambioEstadoCamion> historial = new ArrayList<>(List.of(cambio));
+
+    Camion camion =
+        new Camion(id, rutaId, "ABC123", 20.0f, 2500.0f, 3.0f, EstadoCamion.EN_RUTA, historial, 2L);
+
+    assertEquals(id, camion.getId());
+    assertEquals(rutaId, camion.getRutaId());
+    assertEquals("ABC123", camion.getPatente());
+    assertEquals(20.0f, camion.getCapacidadVolumen());
+    assertEquals(2500.0f, camion.getCapacidadKG());
+    assertEquals(3.0f, camion.getAltura());
+    assertEquals(EstadoCamion.EN_RUTA, camion.getEstado());
+    assertEquals(1, camion.getHistorialEstado().size());
+    assertEquals(cambio, camion.getHistorialEstado().get(0));
+    assertEquals(2L, camion.getVersion());
+  }
+
+  @Test
+  void testConstructorReconstitucionConColeccionNulaNoFalla() {
+    Camion camion =
+        new Camion(
+            UUID.randomUUID(),
+            null,
+            "ABC123",
+            20.0f,
+            2500.0f,
+            3.0f,
+            EstadoCamion.DISPONIBLE,
+            null,
+            1L);
+
+    assertNotNull(camion.getHistorialEstado());
+    assertTrue(camion.getHistorialEstado().isEmpty());
+    assertEquals(1L, camion.getVersion());
+  }
+
+  @Test
+  void testConstructorNegocioMantieneVersionEnNull() {
+    Camion camion = new Camion("ABC-123", 15.5f, 1500f, 2.5f);
+    assertNull(camion.getVersion());
+  }
+
+  @Test
+  void testConstructorReconstitucionAislaColeccionOriginal() {
+    LocalDateTime timestamp = LocalDateTime.now();
+    CambioEstadoCamion cambio =
+        new CambioEstadoCamion(EstadoCamion.DISPONIBLE, EstadoCamion.EN_RUTA, timestamp);
+    List<CambioEstadoCamion> historialOriginal = new ArrayList<>();
+    historialOriginal.add(cambio);
+
+    Camion camion =
+        new Camion(
+            UUID.randomUUID(),
+            null,
+            "ABC123",
+            20.0f,
+            2500.0f,
+            3.0f,
+            EstadoCamion.DISPONIBLE,
+            historialOriginal,
+            1L);
+
+    assertEquals(1, camion.getHistorialEstado().size());
+    historialOriginal.add(
+        new CambioEstadoCamion(EstadoCamion.EN_RUTA, EstadoCamion.DISPONIBLE, timestamp));
+
+    assertEquals(1, camion.getHistorialEstado().size());
   }
 }

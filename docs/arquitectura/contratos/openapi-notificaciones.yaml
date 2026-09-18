@@ -9,9 +9,26 @@ servers:
 paths:
   /notificaciones:
     post:
-      summary: Despachar notificación por evento de dominio
+      summary: Despachar notificación por evento de dominio (Legacy/Deprecated)
       description: Recibe un evento de dominio y programa el despacho asíncrono a los medios de contacto de la persona.
       operationId: procesarEventoNotificable
+      deprecated: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EventoNotificableDTO'
+      responses:
+        '202':
+          description: Evento aceptado para procesamiento asíncrono
+        '400':
+          description: Payload inválido o campos obligatorios faltantes
+  /api/notificaciones/eventos:
+    post:
+      summary: Despachar notificación por evento de dominio
+      description: Recibe un evento de dominio y programa el despacho asíncrono a los medios de contacto de la persona.
+      operationId: procesarEventoNotificableApi
       requestBody:
         required: true
         content:
@@ -25,8 +42,9 @@ paths:
           description: Payload inválido o campos obligatorios faltantes
   /notificaciones/persona/{personaId}:
     get:
-      summary: Obtener historial de notificaciones de una persona
+      summary: Obtener historial de notificaciones de una persona (Legacy/Deprecated)
       operationId: obtenerNotificacionesPorPersona
+      deprecated: true
       parameters:
         - name: personaId
           in: path
@@ -43,6 +61,74 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/NotificacionDTO'
+  /api/notificaciones/persona/{personaId}:
+    get:
+      summary: Obtener historial de notificaciones de una persona
+      operationId: obtenerNotificacionesPorPersonaApi
+      parameters:
+        - name: personaId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Historial de notificaciones despachadas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificacionDTO'
+  /api/notificaciones:
+    get:
+      summary: Obtener notificaciones por persona y/o estado
+      description: Devuelve una colección filtrada de notificaciones.
+      operationId: obtenerNotificaciones
+      parameters:
+        - name: personaId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de notificaciones devuelta
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/NotificacionDTO'
+        '400':
+          description: Estado inválido
+  /api/notificaciones/{id}:
+    get:
+      summary: Obtener una notificación específica por su ID
+      operationId: obtenerNotificacionPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Notificación encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificacionDTO'
+        '404':
+          description: Notificación no encontrada
   /api/notificaciones/personas:
     put:
       summary: Sincronizar réplica de persona y medios de contacto

@@ -25,7 +25,8 @@ public class DonanteInactivo extends EventoNotificable {
             + " días desde tu última actividad. "
             + "Las entidades beneficiarias aún necesitan tu ayuda. ¡Vuelve a hacer la diferencia!";
 
-    Notificacion notificacion = new Notificacion(this.getPersona().getId(), mensaje);
+    Notificacion notificacion =
+        new Notificacion(this.getPersona().getId(), mensaje, this.getFecha());
 
     return List.of(notificacion);
   }
