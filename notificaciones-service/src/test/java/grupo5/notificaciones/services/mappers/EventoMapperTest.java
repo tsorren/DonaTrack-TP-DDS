@@ -3,6 +3,7 @@ package grupo5.notificaciones.services.mappers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -70,6 +71,81 @@ class EventoMapperTest {
     assertEquals(donante.getId(), resultado.getPersona().getId());
     assertEquals(beneficiario.getId(), resultado.getEntidadBeneficiaria().getId());
     assertEquals("10kg de arroz", resultado.getDetalleDonacion());
+  }
+
+  @Test
+  void toEntity_donacionAsignadaV1_deberiaMapearDonanteBeneficiarioYDetalleCompleto() {
+    UUID donacionId = UUID.randomUUID();
+    DestinoEventoDTO destino =
+        new DestinoEventoDTO(
+            "Av. Corrientes", 1234, 3, "B", "C1043", "San Nicolás", "CABA", "Argentina");
+    EventoDonacionAsignadaV1 eventoV1 =
+        new EventoDonacionAsignadaV1(
+            donacionId,
+            donante.getId(),
+            TEST_DATE_TIME,
+            beneficiario.getId(),
+            "Ropa de invierno y frazadas",
+            destino,
+            12.5,
+            0.4,
+            java.util.List.of("ROPA", "ABRIGO"),
+            5);
+
+    DonacionAsignada resultado = mapper.toEntity(eventoV1);
+
+    assertEquals(donante.getId(), resultado.getPersona().getId());
+    assertEquals(beneficiario.getId(), resultado.getEntidadBeneficiaria().getId());
+    assertEquals(TEST_DATE_TIME, resultado.getFecha());
+
+    String detalle = resultado.getDetalleDonacion();
+    assertTrue(detalle.contains("Ropa de invierno y frazadas"));
+    assertTrue(detalle.contains(donacionId.toString()));
+    assertTrue(detalle.contains("Cantidad: 5"));
+    assertTrue(detalle.contains("Categorías: [ROPA, ABRIGO]"));
+    assertTrue(detalle.contains("Peso: 12.5 kg"));
+    assertTrue(detalle.contains("Volumen: 0.4 m³"));
+    assertTrue(
+        detalle.contains(
+            "Av. Corrientes 1234, Piso 3, Dpto B, San Nicolás, CABA (CP C1043), Argentina"));
+  }
+
+  /** Evento V1 mínimo para los casos en los que sólo importa qué persona no se encuentra. */
+  private EventoDonacionAsignadaV1 eventoV1Con(UUID donanteId, UUID beneficiarioId) {
+    DestinoEventoDTO destino =
+        new DestinoEventoDTO(
+            "Calle Falsa", 123, null, null, "1234", "La Plata", "Buenos Aires", "Argentina");
+    return new EventoDonacionAsignadaV1(
+        UUID.randomUUID(),
+        donanteId,
+        TEST_DATE_TIME,
+        beneficiarioId,
+        "Alimentos",
+        destino,
+        5.0,
+        0.1,
+        java.util.List.of("ALIMENTOS"),
+        2);
+  }
+
+  @Test
+  void toEntity_donacionAsignadaV1_conDonanteInexistente_deberiaLanzarExcepcion() {
+    UUID donanteInexistente = UUID.randomUUID();
+    when(personaRepository.findById(donanteInexistente)).thenReturn(Optional.empty());
+
+    EventoDonacionAsignadaV1 eventoV1 = eventoV1Con(donanteInexistente, beneficiario.getId());
+
+    assertThrows(ValidationException.class, () -> mapper.toEntity(eventoV1));
+  }
+
+  @Test
+  void toEntity_donacionAsignadaV1_conBeneficiarioInexistente_deberiaLanzarExcepcion() {
+    UUID beneficiarioInexistente = UUID.randomUUID();
+    when(personaRepository.findById(beneficiarioInexistente)).thenReturn(Optional.empty());
+
+    EventoDonacionAsignadaV1 eventoV1 = eventoV1Con(donante.getId(), beneficiarioInexistente);
+
+    assertThrows(ValidationException.class, () -> mapper.toEntity(eventoV1));
   }
 
   @Test
