@@ -45,7 +45,7 @@ public class DonacionVencida extends EventoNotificable {
             + " ha vencido. Motivo: "
             + motivo
             + ".";
-    Notificacion aAdmin = new Notificacion(this.administracion.getId(), mensaje);
+    Notificacion aAdmin = new Notificacion(this.administracion.getId(), mensaje, this.getFecha());
     return List.of(aAdmin);
   }
 }

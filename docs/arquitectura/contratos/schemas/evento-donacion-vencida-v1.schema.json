@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-vencida-v1.schema.json",
+  "title": "EventoDonacionVencidaV1",
+  "description": "Evento de dominio emitido cuando una donación supera su fecha de caducidad o vigencia sin ser asignada o retirada",
+  "type": "object",
+  "properties": {
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona donante"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal de la declaración de vencimiento"
+    },
+    "personaAdminId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador del administrador notificado"
+    },
+    "descripcion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Descripción de la donación vencida"
+    },
+    "motivo": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Motivo de la baja o vencimiento de la donación"
+    }
+  },
+  "required": ["personaDonanteId", "fecha", "personaAdminId", "descripcion", "motivo"],
+  "additionalProperties": false
+}
