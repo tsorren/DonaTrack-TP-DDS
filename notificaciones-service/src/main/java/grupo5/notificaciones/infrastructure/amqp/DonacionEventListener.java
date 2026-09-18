@@ -26,9 +26,10 @@ public class DonacionEventListener {
   // 1. Donación Asignada
   @RabbitHandler
   public void onDonacionAsignada(
-          @Valid EventoDonacionAsignadaV1 evento,
-          @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
-    log.info("Consumiendo evento donacion.asignada.v1: donacionId={}", evento.donacionIndependienteId());
+      @Valid EventoDonacionAsignadaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info(
+        "Consumiendo evento donacion.asignada.v1: donacionId={}", evento.donacionIndependienteId());
     notificacionService.procesar(evento, messageId);
   }
 
@@ -49,7 +50,8 @@ public class DonacionEventListener {
   // 4. Entrega Fallida
   @RabbitHandler
   public void onEntregaFallida(@Valid EventoEntregaFallidaDTO evento) {
-    log.info("Consumiendo evento donacion.entrega-fallida: donanteId={}", evento.idPersonaDonante());
+    log.info(
+        "Consumiendo evento donacion.entrega-fallida: donanteId={}", evento.idPersonaDonante());
     notificacionService.procesar(evento);
   }
 

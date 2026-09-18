@@ -17,29 +17,36 @@ import org.springframework.stereotype.Component;
 @RabbitListener(queues = RabbitMQConfig.QUEUE_NOTIFICACIONES_INCENTIVOS)
 public class IncentivoEventListener {
 
-    private static final Logger log = LoggerFactory.getLogger(IncentivoEventListener.class);
-    private final NotificacionService notificacionService;
+  private static final Logger log = LoggerFactory.getLogger(IncentivoEventListener.class);
+  private final NotificacionService notificacionService;
 
-    public IncentivoEventListener(NotificacionService notificacionService) {
-        this.notificacionService = notificacionService;
-    }
+  public IncentivoEventListener(NotificacionService notificacionService) {
+    this.notificacionService = notificacionService;
+  }
 
-    @RabbitHandler
-    public void onMisionCumplida(
-            @Valid EventoMisionCumplidaDTO evento,
-            @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+  @RabbitHandler
+  public void onMisionCumplida(
+      @Valid EventoMisionCumplidaDTO evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
 
-        log.info("Consumiendo evento mision.cumplida: donanteId={}, mision={}, messageId={}",
-                evento.idPersonaDonante(), evento.nombreMision(), messageId);
-        notificacionService.procesar(evento);
-    }
-    @RabbitHandler
-    public void onSubioCategoria(
-            @Valid EventoSubioCategoriaDTO evento,
-            @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info(
+        "Consumiendo evento mision.cumplida: donanteId={}, mision={}, messageId={}",
+        evento.idPersonaDonante(),
+        evento.nombreMision(),
+        messageId);
+    notificacionService.procesar(evento);
+  }
 
-        log.info("Consumiendo evento subio.categoria: donanteId={}, nuevaCategoria={}, messageId={}",
-                evento.idPersonaDonante(), evento.categoriaNueva(), messageId);
-        notificacionService.procesar(evento);
-    }
+  @RabbitHandler
+  public void onSubioCategoria(
+      @Valid EventoSubioCategoriaDTO evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+
+    log.info(
+        "Consumiendo evento subio.categoria: donanteId={}, nuevaCategoria={}, messageId={}",
+        evento.idPersonaDonante(),
+        evento.categoriaNueva(),
+        messageId);
+    notificacionService.procesar(evento);
+  }
 }

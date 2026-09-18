@@ -183,18 +183,32 @@ public class RabbitMQConfig {
 
     // Mapeos de Donaciones
     idClassMapping.put(ROUTING_KEY_DONACION_ASIGNADA, EventoDonacionAsignadaV1.class);
-    idClassMapping.put(ROUTING_KEY_DONACION_EN_CAMINO, grupo5.notificaciones.dto.input.EventoDonacionEnCaminoDTO.class);
-    idClassMapping.put(ROUTING_KEY_DONACION_RECIBIDA, grupo5.notificaciones.dto.input.EventoDonacionRecibidaDTO.class);
-    idClassMapping.put(ROUTING_KEY_DONACION_ENTREGA_FALLIDA, grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO.class);
-    idClassMapping.put(ROUTING_KEY_DONACION_VENCIDA, grupo5.notificaciones.dto.input.EventoDonacionVencidaDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONACION_EN_CAMINO,
+        grupo5.notificaciones.dto.input.EventoDonacionEnCaminoDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONACION_RECIBIDA,
+        grupo5.notificaciones.dto.input.EventoDonacionRecibidaDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONACION_ENTREGA_FALLIDA,
+        grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONACION_VENCIDA,
+        grupo5.notificaciones.dto.input.EventoDonacionVencidaDTO.class);
 
     // Mapeos de Donantes
-    idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, grupo5.notificaciones.dto.input.EventoDonanteRegistradoDTO.class);
-    idClassMapping.put(ROUTING_KEY_DONANTE_INACTIVO, grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONANTE_REGISTRADO,
+        grupo5.notificaciones.dto.input.EventoDonanteRegistradoDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONANTE_INACTIVO,
+        grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO.class);
 
     // Mapeos de Incentivos
-    idClassMapping.put(ROUTING_KEY_MISION_CUMPLIDA, grupo5.notificaciones.dto.input.EventoMisionCumplidaDTO.class);
-    idClassMapping.put(ROUTING_KEY_SUBIO_CATEGORIA, grupo5.notificaciones.dto.input.EventoSubioCategoriaDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_MISION_CUMPLIDA, grupo5.notificaciones.dto.input.EventoMisionCumplidaDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_SUBIO_CATEGORIA, grupo5.notificaciones.dto.input.EventoSubioCategoriaDTO.class);
 
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
