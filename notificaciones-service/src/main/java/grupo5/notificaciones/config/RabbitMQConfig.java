@@ -41,6 +41,10 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_PERSONAS_WILDCARD = "persona.#";
   public static final String ROUTING_KEY_INCENTIVOS_WILDCARD = "incentivo.#";
 
+  // Routing Keys para Incentivos
+  public static final String ROUTING_KEY_MISION_CUMPLIDA = "incentivo.mision-cumplida.v1";
+  public static final String ROUTING_KEY_SUBIO_CATEGORIA = "incentivo.subio-categoria.v1";
+
   // Legacy (Preservado hasta migración definitiva en Paso 3)
   public static final String EXCHANGE_NOTIFICACIONES = "notificaciones.exchange";
   public static final String QUEUE_NOTIFICACIONES = "cola.eventos.notificaciones";
@@ -166,7 +170,11 @@ public class RabbitMQConfig {
     DefaultClassMapper classMapper = new DefaultClassMapper();
     classMapper.setTrustedPackages("*");
     Map<String, Class<?>> idClassMapping = new HashMap<>();
+
     idClassMapping.put(ROUTING_KEY_DONACION_ASIGNADA, EventoDonacionAsignadaV1.class);
+    idClassMapping.put(ROUTING_KEY_MISION_CUMPLIDA, grupo5.notificaciones.dto.input.EventoMisionCumplidaDTO.class);
+    idClassMapping.put(ROUTING_KEY_SUBIO_CATEGORIA, grupo5.notificaciones.dto.input.EventoSubioCategoriaDTO.class);
+
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
   }
