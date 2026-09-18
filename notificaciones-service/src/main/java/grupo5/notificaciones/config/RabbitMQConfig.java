@@ -41,6 +41,20 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_PERSONAS_WILDCARD = "persona.#";
   public static final String ROUTING_KEY_INCENTIVOS_WILDCARD = "incentivo.#";
 
+  // Routing Keys para Incentivos
+  public static final String ROUTING_KEY_MISION_CUMPLIDA = "incentivo.mision-cumplida.v1";
+  public static final String ROUTING_KEY_SUBIO_CATEGORIA = "incentivo.subio-categoria.v1";
+
+  // Routing Keys de Donaciones
+  public static final String ROUTING_KEY_DONACION_EN_CAMINO = "donacion.en-camino.v1";
+  public static final String ROUTING_KEY_DONACION_RECIBIDA = "donacion.recibida.v1";
+  public static final String ROUTING_KEY_DONACION_ENTREGA_FALLIDA = "donacion.entrega-fallida.v1";
+  public static final String ROUTING_KEY_DONACION_VENCIDA = "donacion.vencida.v1";
+
+  // Routing Keys de Donantes (viajan por la misma cola por los comodines)
+  public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
+  public static final String ROUTING_KEY_DONANTE_INACTIVO = "donante.inactivo.v1";
+
   // Legacy (Preservado hasta migración definitiva en Paso 3)
   public static final String EXCHANGE_NOTIFICACIONES = "notificaciones.exchange";
   public static final String QUEUE_NOTIFICACIONES = "cola.eventos.notificaciones";
@@ -166,7 +180,36 @@ public class RabbitMQConfig {
     DefaultClassMapper classMapper = new DefaultClassMapper();
     classMapper.setTrustedPackages("*");
     Map<String, Class<?>> idClassMapping = new HashMap<>();
+
+    // Mapeos de Donaciones
     idClassMapping.put(ROUTING_KEY_DONACION_ASIGNADA, EventoDonacionAsignadaV1.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONACION_EN_CAMINO,
+        grupo5.notificaciones.dto.input.EventoDonacionEnCaminoDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONACION_RECIBIDA,
+        grupo5.notificaciones.dto.input.EventoDonacionRecibidaDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONACION_ENTREGA_FALLIDA,
+        grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONACION_VENCIDA,
+        grupo5.notificaciones.dto.input.EventoDonacionVencidaDTO.class);
+
+    // Mapeos de Donantes
+    idClassMapping.put(
+        ROUTING_KEY_DONANTE_REGISTRADO,
+        grupo5.notificaciones.dto.input.EventoDonanteRegistradoDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_DONANTE_INACTIVO,
+        grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO.class);
+
+    // Mapeos de Incentivos
+    idClassMapping.put(
+        ROUTING_KEY_MISION_CUMPLIDA, grupo5.notificaciones.dto.input.EventoMisionCumplidaDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_SUBIO_CATEGORIA, grupo5.notificaciones.dto.input.EventoSubioCategoriaDTO.class);
+
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
   }
