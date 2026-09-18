@@ -152,9 +152,7 @@ class NotificacionServiceTest {
             "10kg de arroz",
             destino,
             10.0,
-            0.2,
-            List.of("ALIMENTOS"),
-            5);
+            0.2);
 
     DonacionAsignada entidad =
         new DonacionAsignada(donante, beneficiario, "10kg de arroz", TEST_DATE_TIME);
@@ -180,9 +178,7 @@ class NotificacionServiceTest {
             "Ropa",
             new DestinoEventoDTO("Calle", 100, null, null, "1000", "Loc", "Prov", "Arg"),
             5.0,
-            0.1,
-            List.of("ROPA"),
-            1);
+            0.1);
 
     when(jdbcTemplate.update(anyString(), any(UUID.class), any(LocalDateTime.class))).thenReturn(0);
 

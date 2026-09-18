@@ -10,7 +10,7 @@
       "format": "uuid",
       "description": "Identificador de la persona donante"
     },
-    "categorías": {
+    "categorias": {
       "type": "array",
       "items": { "type": "string" },
       "description": "Lista de categorías de los ítems donados para procesamiento en incentivos"
@@ -28,7 +28,7 @@
   },
   "required": [
     "personaDonanteId",
-    "categorías",
+    "categorias",
     "cantidad",
     "fecha"
   ],

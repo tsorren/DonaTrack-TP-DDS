@@ -72,7 +72,8 @@ logistica-service
 
 | N° | Evento de Dominio | Emisor | TopicExchange | Routing Key | Tipo AMQP (`__TypeId__`) | Colas Receptoras | JSON Schema de Contrato |
 |:---:|---|---|---|---|---|---|---|
-| 1 | Donación Asignada (Enriquecido) | `donaciones-service` | `donaciones.exchange` | `donacion.asignada.v1` | `donacion.asignada.v1` | `notificaciones.donaciones`, `logistica.donaciones.asignadas`, `incentivos.donaciones` | [`evento-donacion-asignada-v1.schema.json`](./contratos/schemas/evento-donacion-asignada-v1.schema.json) |
+| 1 | Donación Asignada | `donaciones-service` | `donaciones.exchange` | `donacion.asignada.v1` | `donacion.asignada.v1` | `notificaciones.donaciones`, `logistica.donaciones.asignadas` | [`evento-donacion-asignada-v1.schema.json`](./contratos/schemas/evento-donacion-asignada-v1.schema.json) |
+| 1b | Donación Segmentada | `donaciones-service` | `donaciones.exchange` | `donacion.segmentada.v1` | `donacion.segmentada.v1` | `incentivos.donaciones` | [`evento-donacion-segmentada.schema.json`](./contratos/schemas/evento-donacion-segmentada.schema.json) |
 | 2 | Donación en Camino | `donaciones-service` | `donaciones.exchange` | `donacion.en-camino.v1` | `donacion.en-camino.v1` | `notificaciones.donaciones` | [`evento-donacion-en-camino-v1.schema.json`](./contratos/schemas/evento-donacion-en-camino-v1.schema.json) |
 | 3 | Donación Recibida | `donaciones-service` | `donaciones.exchange` | `donacion.recibida.v1` | `donacion.recibida.v1` | `notificaciones.donaciones` | [`evento-donacion-recibida-v1.schema.json`](./contratos/schemas/evento-donacion-recibida-v1.schema.json) |
 | 4 | Entrega Fallida | `donaciones-service` | `donaciones.exchange` | `donacion.entrega-fallida.v1` | `donacion.entrega-fallida.v1` | `notificaciones.donaciones` | [`evento-donacion-entrega-fallida-v1.schema.json`](./contratos/schemas/evento-donacion-entrega-fallida-v1.schema.json) |
@@ -103,7 +104,7 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 * **`timestamp`:** Marca temporal de emisión del mensaje.
 * **`content_type`:** `application/json`.
 * **`X-Trace-Id`:** Identificador de trazabilidad distribuida propagado para correlación de logs.
-* **`__TypeId__`:** Alias lógico versionado canónico (ej. `donacion.asignada.v1`, `incentivo.mision-cumplida.v1`). Permite a `DefaultClassMapper` en los servicios receptores mapear el JSON al record Java específico sin acoplar los nombres de paquetes internos entre microservicios.
+* **`__TypeId__`:** Alias lógico versionado canónico (ej. `donacion.asignada.v1`, `donacion.segmentada.v1`, `incentivo.mision-cumplida.v1`). Permite a `DefaultClassMapper` en los servicios receptores mapear el JSON al record Java específico sin acoplar los nombres de paquetes internos entre microservicios.
 
 ### 3.2 Ejemplos de Payloads de Dominio Limpios
 
@@ -124,9 +125,17 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
     "pais": "Argentina"
   },
   "pesoTotalKG": 10.5,
-  "volumenTotalM3": 0.25,
+  "volumenTotalM3": 0.25
+}
+```
+
+#### Donación Segmentada (`donacion.segmentada.v1`)
+```json
+{
+  "personaDonanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
   "categorias": ["ALIMENTOS"],
-  "cantidades": 10
+  "cantidad": 10,
+  "fecha": "2026-09-15T14:30:00Z"
 }
 ```
 
@@ -167,7 +176,17 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "personaDonanteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "fecha": "2026-09-11T16:00:00Z",
   "nombreMision": "Primera Donación del Mes",
-  "puntosObtenidos": 150
+  "recompensa": "Insignia de Bronce"
+}
+```
+
+#### Subió de Categoría (`incentivo.subio-categoria.v1`)
+```json
+{
+  "personaDonanteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "fecha": "2026-09-11T16:00:00Z",
+  "nombreNuevaCategoria": "Plata",
+  "nombreViejaCategoria": "Bronce"
 }
 ```
 

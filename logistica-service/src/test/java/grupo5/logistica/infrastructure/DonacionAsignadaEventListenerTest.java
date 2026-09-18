@@ -17,7 +17,6 @@ import grupo5.logistica.dto.eventos.EventoDonacionAsignadaV1;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.services.IEntregasService;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,9 +50,7 @@ class DonacionAsignadaEventListenerTest {
         "Caja de alimentos no perecederos",
         destino,
         10.5,
-        0.25,
-        List.of("ALIMENTOS"),
-        10);
+        0.25);
   }
 
   /**

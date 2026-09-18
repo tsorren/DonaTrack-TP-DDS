@@ -6,12 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -35,9 +33,4 @@ public record EventoDonacionAsignadaV1(
     @NotNull(message = "El volumen total es obligatorio")
         @Positive(message = "El volumen total debe ser positivo")
         @JsonAlias({"volumenTotal", "volumenTotalM3"})
-        Double volumenTotalM3,
-    @NotEmpty(message = "Las categorías son obligatorias") List<@NotBlank String> categorias,
-    @NotNull(message = "Las cantidades son obligatorias")
-        @Positive(message = "La cantidad debe ser positiva")
-        @JsonAlias({"cantidades", "cantidad", "cantidadBienes"})
-        Integer cantidades) {}
+        Double volumenTotalM3) {}
