@@ -14,12 +14,15 @@ services:
       - SPRING_DATASOURCE_USERNAME=notificaciones_user
       - SPRING_DATASOURCE_PASSWORD=notif_pass_2026
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - RABBITMQ_HOST=rabbitmq
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
       postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
@@ -45,10 +48,14 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
       - N8N_RANKING_WEBHOOK_URL=http://n8n:5678/webhook/ranking-calculado
+      - RABBITMQ_HOST=rabbitmq
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 5s
