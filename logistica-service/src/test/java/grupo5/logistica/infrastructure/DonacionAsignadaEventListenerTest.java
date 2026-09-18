@@ -1,6 +1,7 @@
 package grupo5.logistica.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -55,11 +56,20 @@ class DonacionAsignadaEventListenerTest {
         10);
   }
 
+  /**
+   * Arma un evento de ejemplo y deja stubeada la consulta de idempotencia para ese mismo
+   * donacionIndependienteId, que es el preámbulo común a todos los casos salvo el del evento nulo.
+   */
+  private EventoDonacionAsignadaV1 eventoConIdempotencia(boolean yaProcesada) {
+    EventoDonacionAsignadaV1 evento = eventoDeEjemplo(UUID.randomUUID());
+    when(entregasRepository.existsByIdDonacion(evento.donacionIndependienteId()))
+        .thenReturn(yaProcesada);
+    return evento;
+  }
+
   @Test
   void onDonacionAsignada_cuandoEventoNuevo_creaLaEntregaConLosDatosMapeados() {
-    UUID donacionId = UUID.randomUUID();
-    EventoDonacionAsignadaV1 evento = eventoDeEjemplo(donacionId);
-    when(entregasRepository.existsByIdDonacion(donacionId)).thenReturn(false);
+    EventoDonacionAsignadaV1 evento = eventoConIdempotencia(false);
 
     listener.onDonacionAsignada(evento);
 
@@ -68,20 +78,17 @@ class DonacionAsignadaEventListenerTest {
     verify(entregasService).crear(captor.capture());
 
     CrearEntregaRequestDTO dto = captor.getValue();
-    org.junit.jupiter.api.Assertions.assertEquals(donacionId, dto.idDonacion());
-    org.junit.jupiter.api.Assertions.assertEquals(
-        evento.personaBeneficiariaId(), dto.idBeneficiaria());
-    org.junit.jupiter.api.Assertions.assertEquals(10.5f, dto.pesoTotalKG());
-    org.junit.jupiter.api.Assertions.assertEquals(0.25f, dto.volumenTotalM3());
-    org.junit.jupiter.api.Assertions.assertEquals("Av. Medrano", dto.destino().calle());
-    org.junit.jupiter.api.Assertions.assertEquals("CABA", dto.destino().localidad());
+    assertEquals(evento.donacionIndependienteId(), dto.idDonacion());
+    assertEquals(evento.personaBeneficiariaId(), dto.idBeneficiaria());
+    assertEquals(10.5f, dto.pesoTotalKG());
+    assertEquals(0.25f, dto.volumenTotalM3());
+    assertEquals("Av. Medrano", dto.destino().calle());
+    assertEquals("CABA", dto.destino().localidad());
   }
 
   @Test
   void onDonacionAsignada_cuandoEventoDuplicado_noCreaNadaYNoRompe() {
-    UUID donacionId = UUID.randomUUID();
-    EventoDonacionAsignadaV1 evento = eventoDeEjemplo(donacionId);
-    when(entregasRepository.existsByIdDonacion(donacionId)).thenReturn(true);
+    EventoDonacionAsignadaV1 evento = eventoConIdempotencia(true);
 
     assertDoesNotThrow(() -> listener.onDonacionAsignada(evento));
 
@@ -90,9 +97,7 @@ class DonacionAsignadaEventListenerTest {
 
   @Test
   void onDonacionAsignada_cuandoServicioLanzaValidationException_noRelanzaLaExcepcion() {
-    UUID donacionId = UUID.randomUUID();
-    EventoDonacionAsignadaV1 evento = eventoDeEjemplo(donacionId);
-    when(entregasRepository.existsByIdDonacion(donacionId)).thenReturn(false);
+    EventoDonacionAsignadaV1 evento = eventoConIdempotencia(false);
     when(entregasService.crear(any()))
         .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_NULO));
 
@@ -101,9 +106,7 @@ class DonacionAsignadaEventListenerTest {
 
   @Test
   void onDonacionAsignada_cuandoServicioLanzaExcepcionTransitoria_sePropagaParaRetryYDlq() {
-    UUID donacionId = UUID.randomUUID();
-    EventoDonacionAsignadaV1 evento = eventoDeEjemplo(donacionId);
-    when(entregasRepository.existsByIdDonacion(donacionId)).thenReturn(false);
+    EventoDonacionAsignadaV1 evento = eventoConIdempotencia(false);
     when(entregasService.crear(any()))
         .thenThrow(new RuntimeException("timeout de infraestructura"));
 
