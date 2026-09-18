@@ -34,8 +34,9 @@ Solo publica. Cada consumidor (Notificaciones, Incentivos, Logística) declara s
 - **Tipo:** Event · **Productor:** Donaciones · **Consumidor:** Incentivos
 - **Routing key:** `donante.dado-de-baja.v1`
 - **Trigger:** baja de un `Donante` (`DonantesService.eliminarDonante`).
-- **Payload:** `donanteId: UUID`
+- **Payload:** `donanteId: UUID`, `personaId: UUID`, `fecha: DateTime`
 - **Consecuencia esperada:** Incentivos da de baja al donante en su esquema de gamificación.
+- **No reemplaza ni se fusiona con `PersonaSincronizadaV1`:** son hechos distintos. `eliminarDonante` borra el agregado `Donante` (el rol) y nunca pasa por `PersonasService` — la `Persona` sigue existiendo intacta. `persona.sincronizada` solo se dispara cuando cambia la `Persona` en sí (alta/edición/anonimización). Confirmado el 18/9, cierra el ítem que estaba "ABIERTO" en `matriz-productor-consumidor.md`.
 
 ## DonacionAsignadaV1
 

@@ -55,6 +55,20 @@
 - Había un cambio local sin commitear en `docs/entrega-4/arquitectura/principios.md` (la nota "Pendiente de decisión — Topología de exchange") — se guardó en `git stash` (mensaje: "local: nota topologia-exchange pendiente en principios.md..."), recuperable con `git stash pop` si hiciera falta.
 - `docs/entrega-4/integracion/catalogo-mensajes.md` ya fue **reescrito completo** con las 9 fichas finales (Fase 4 lista).
 
+## Comparación con `origin/ENTREGA_4` (18/9, post-commit `3623a761`)
+
+Mientras se hacía este commit local, en paralelo llegaron 2 commits de `tsorren` a `ENTREGA_4` (`b6bbae82`, `caf1f80c`, "fix(contratos): alinear contratos AMQP desacoplados de incentivos...") que tocan los mismos 6 schemas/records con decisiones **contrarias** a las cerradas acá:
+
+- `personaDonanteId` único (en `ENTREGA_4`) vs `donanteId`+`personaId` separados (local, decisión de la reunión del 15/9 — ver arriba). **Choque real, no un simple desactualizado.**
+- `@JsonAlias({"pesoTotal","pesoTotalKG"})`/`@JsonAlias({"volumenTotal","volumenTotalM3"})` reintroducido en `EventoDonacionAsignadaV1` (`ENTREGA_4`) — acá se había sacado a propósito por YAGNI.
+- `urlMapa` en `donacion.en-camino` perdió `format: uri` en `ENTREGA_4`.
+- `donante.registrado` en `ENTREGA_4` perdió el campo `nombre` (y no tiene todavía el record Java `EventoDonanteRegistradoV1`, solo el schema).
+- Naming: `EventoDonacionSegmentadaDTO` (`ENTREGA_4`) vs `EventoDonacionSegmentadaV1` (local, consistente con la convención sin sufijo `DTO` para el payload real de AMQP).
+- `ENTREGA_4` todavía no tiene los records Java de `en-camino`, `entrega-fallida`, `recibida`, `vencida`, `persona-sincronizada` (solo los schemas, algunos ya con `personaDonanteId`) — local va más adelantado ahí.
+- `catalogo-mensajes.md` y esta bitácora son 100% nuevos, no existen en `ENTREGA_4` todavía — sin conflicto.
+
+**Decisión (18/9):** dejar todo como está en local (`donanteId`+`personaId` separados, sin `@JsonAlias`, `format: uri` en `urlMapa`, `nombre` en `donante.registrado`, naming `...V1` sin `DTO`). **Pendiente comunicarle a tsorren/equipo de Incentivos** que `donaciones-service` ya había resuelto esto distinto en la reunión del 15/9, antes de que el PR de esta rama choque contra `ENTREGA_4`.
+
 ## Pendiente / próximos pasos
 
 ### ✅ Hecho (19/9 — esta rama, sin commitear todavía)
@@ -65,14 +79,32 @@
 - `docs/entrega-4/integracion/catalogo-mensajes.md` reescrito con las 9 fichas finales.
 - Apuntes de estudio completos en `~/2026/dsi/apuntes_comunicaciones_implementacion.md`.
 
+### ✅ Hecho (18/9, tarde — esta rama, sin commitear todavía)
+
+- **Choque de contrato con `ENTREGA_4` resuelto:** se mergeó `ENTREGA_4` a esta rama (commit `7c75c456`) y en la resolución de conflictos se mantuvo la decisión propia (`donanteId`+`personaId` separados, sin `@JsonAlias`, `format: uri` en `urlMapa`, `nombre` en `donante.registrado`, naming `...V1`). Ya se avisó a tsorren/equipo de Incentivos y se subió a una PR — punto cerrado, ya no es pendiente.
+  - Queda un resabio del merge sin resolver: **`EventoDonacionSegmentadaDTO.java` y `EventoDonacionSegmentadaV1.java` coexisten** en `dto/comunicaciones/` — el primero es el diseño viejo (por `DonacionIndependiente`, `categorias`/`cantidad` separados, `personaDonanteId`) traído por el merge desde el trabajo de Incentivos, el segundo es el nuestro (por `Donacion` completa, `items` consolidado, `donanteId`). Hay que decidir si se borra el `DTO` viejo o si Incentivos lo sigue necesitando por otro motivo — no se tocó todavía.
+- **`EventoDonanteRegistradoV1.java` creado** (`dto/comunicaciones/`) — faltaba desde el commit "9 schemas + 9 records" (en realidad eran 8 records + el schema de este evento sin su record). Seguía el patrón Bean Validation ya usado en los otros 7 (`@NotNull`/`@NotBlank`/`@PastOrPresent`/`@JsonFormat`), con `donanteId`+`personaId` separados y `nombre` incluido (igual que el schema).
+- **Publisher genérico escrito**, con interfaz (decisión y justificación abajo):
+  - `services/IDonacionesEventPublisher.java` — 8 métodos (uno por evento con contrato ya definido; `donante.dado-de-baja` queda afuera, ver pendiente más abajo).
+  - `infrastructure/events/DonacionesEventPublisher.java` — implementación con `RabbitTemplate`, un método público por evento + un helper privado `publicar(routingKey, evento)` que hace `convertAndSend` con un `MessagePostProcessor` que setea `messageId` (propiedad AMQP estándar, decisión de idempotencia ya cerrada) y el header `X-Trace-Id` (reusando `FeignTraceRequestInterceptor.MDC_TRACE_KEY`/`TRACE_HEADER` de `common-lib`, mismo mecanismo que ya usan las llamadas Feign).
+  - **Decisión de diseño (interfaz sí):** se investigó el precedente real del repo — `ComunicadorEventosLogistica` (interfaz, en `services`) + `ComunicadorEventosLogisticaRabbit` (impl, en `infrastructure`) en `logistica-service`, versus `LogisticaEventPublisher` (concreta, sin interfaz). Conclusión: la interfaz va donde una capa de aplicación (los 9 call-sites) depende directamente de infraestructura — ese es el lugar de `ComunicadorEventosLogistica`, no el de `LogisticaEventPublisher` (que es un colaborador interno, un nivel más abajo, sin otro consumidor). Como nuestros 9 call-sites van a inyectar el publisher directamente (reemplazando a los Feign clients, que también son interfaces), corresponde interfaz. Respaldado además por `docs/arquitectura/principios-diseno-arquitectura.md` (sección DIP), que nombra explícitamente `NotificacionesFeignClient`/`ComunicadorEventosLogistica` como el patrón ya adoptado. Detalle completo en la sección 14 de los apuntes.
+  - **No compilado todavía** (no hay `mvn`/`mvnw` disponible en el entorno de esta sesión) — pendiente de compilar/revisar en IntelliJ. **Revisado y aprobado por el usuario en IntelliJ el 18/9.**
+
+### ✅ Hecho (18/9, noche — cierre de `donante.dado-de-baja.v1`)
+
+- **`donante.dado-de-baja.v1` cerrado como 9º y último evento**, con payload `donanteId`+`personaId`+`fecha` (se agregó `personaId`+`fecha`, la ficha original del catálogo solo tenía `donanteId`). Se aclaró explícitamente por qué esto es un hecho distinto de `persona.sincronizada` y no se fusiona con él: `DonantesService.eliminarDonante` borra el agregado `Donante` (el rol) y nunca pasa por `PersonasService` — la `Persona` sigue existiendo, `persona.sincronizada` no se dispara en ese flujo. Esto también respondió una pregunta del usuario sobre si `donante.dado-de-baja` había quedado absorbido por la propuesta descartada `donante.modificado` — no, son eventos distintos con triggers distintos; `donante.modificado` sí se descartó (lo reemplaza `persona.sincronizada`), `donante.dado-de-baja` solo estaba "ABIERTO" sin cerrar.
+  - Nuevo: `docs/arquitectura/contratos/schemas/evento-donante-dado-de-baja-v1.schema.json`
+  - Nuevo: `dto/comunicaciones/EventoDonanteDadoDeBajaV1.java`
+  - `RabbitMQConfig.java`: agregada `ROUTING_KEY_DONANTE_DADO_DE_BAJA`
+  - `IDonacionesEventPublisher.java`/`DonacionesEventPublisher.java`: agregado el 9º método, `publicarDonanteDadoDeBaja` — el publisher ahora cubre los 9 eventos completos
+  - `catalogo-mensajes.md` y `matriz-productor-consumidor.md`: actualizado el payload y cerrado el estado "ABIERTO" de esa fila
+  - **Nota:** `matriz-productor-consumidor.md` tiene más contenido desactualizado (Command `EntregaSolicitadaV1`, nombres viejos `PersonaReplicaV1`/`EntregaFallidaV1`) que quedó superado por `catalogo-mensajes.md` — no se tocó, es una limpieza aparte, no se metió en este cambio.
+
 ### Pendiente
 
-1. **Commitear** lo de arriba (no se hizo todavía — sigue todo en el working tree de `E4_donaciones_comunicaciones`).
-2. Confirmar con Incentivos, Notificaciones y Logística los 9 contratos antes de darlos por definitivos (por si piden más ajustes).
-   - **Pregunta abierta planteada al grupo (18/9):** ¿agregar un campo `anonimizado: Boolean` (opcional, default `false`) a `PersonaSincronizadaV1`, para que un consumidor pueda reaccionar distinto cuando el evento viene de `PersonasService.eliminarPersona()` (que en realidad anonimiza, no borra) en vez de un alta/edición? Hoy ningún consumidor pidió esto — se decide con el resto del equipo, no unilateralmente.
-3. Escribir el publisher genérico (`IDonacionesEventPublisher`/`DonacionesEventPublisher`) reusando `RabbitTemplate` + el `OutboxStore` en memoria ya existente (no la tabla real todavía — decisión de equipo: comunicaciones primero, persistencia después).
-4. Cablear los 9 call-sites (reemplazar las llamadas Feign actuales) — ver la tabla de call-sites más arriba en este documento.
-5. Retirar `NotificacionesFeignClient`/`IncentivosFeignClient` cuando todo esté migrado (conservando los endpoints de los controllers, decisión ya tomada en la reunión).
-6. Agregar DLX al `LogisticaEventListener` existente.
-7. **Mergear `E4_n_bd` a `ENTREGA_4`** (tarea de Notificaciones, según Tadeo) — recién ahí se puede abrir el PR real de esta rama contra `ENTREGA_4`, porque hoy el diff incluiría contenido que en teoría debería venir de esa rama.
-8. Más adelante (no ahora): persistencia real (JPA/Postgres) de los 7 agregados que ahora hacen falta (los 6 originales + `Donacion`, por `donacion.segmentada`), y swap del Outbox en memoria al real.
+1. **Cablear los 9 call-sites** (reemplazar las llamadas Feign actuales por `IDonacionesEventPublisher`, ya completo con los 9 métodos) — ver la tabla de call-sites más arriba en este documento.
+2. Resolver el duplicado `EventoDonacionSegmentadaDTO` vs `EventoDonacionSegmentadaV1` (ver arriba) — se puede borrar el `DTO` ya, confirmado que no lo usa nadie en `donaciones-service` (ni código ni tests).
+3. Retirar `NotificacionesFeignClient`/`IncentivosFeignClient` cuando todo esté migrado (conservando los endpoints de los controllers, decisión ya tomada en la reunión).
+4. Limpieza aparte (no bloqueante): refrescar `matriz-productor-consumidor.md` completo, tiene contenido pre-reunión del 15/9 que ya no coincide con `catalogo-mensajes.md`.
+5. Agregar DLX al `LogisticaEventListener` existente.
+6. Más adelante (no ahora): persistencia real (JPA/Postgres) de los 7 agregados que ahora hacen falta (los 6 originales + `Donacion`, por `donacion.segmentada`), y swap del Outbox en memoria al real.
