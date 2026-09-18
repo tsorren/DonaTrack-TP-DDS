@@ -12,6 +12,7 @@ import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.SubcategoriasService;
+import grupo5.donaciones.services.mappers.CategoriaMapper;
 import grupo5.donaciones.services.mappers.SubcategoriaMapper;
 import java.util.List;
 import java.util.Optional;
@@ -23,18 +24,18 @@ class SubcategoriasServiceTest {
 
   private ISubcategoriasRepository subcategoriasRepositoryMock;
   private ICategoriasRepository categoriasRepositoryMock;
-  private SubcategoriaMapper subcategoriaMapperMock;
+  private SubcategoriaMapper subcategoriaMapper;
   private SubcategoriasService subcategoriasService;
 
   @BeforeEach
   void setUp() {
     subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
     categoriasRepositoryMock = mock(ICategoriasRepository.class);
-    subcategoriaMapperMock = mock(SubcategoriaMapper.class);
+    subcategoriaMapper = new SubcategoriaMapper(new CategoriaMapper(), categoriasRepositoryMock);
 
     subcategoriasService =
         new SubcategoriasService(
-            subcategoriasRepositoryMock, categoriasRepositoryMock, subcategoriaMapperMock);
+            subcategoriasRepositoryMock, categoriasRepositoryMock, subcategoriaMapper);
   }
 
   @Test
@@ -42,19 +43,14 @@ class SubcategoriasServiceTest {
     UUID categoriaId = UUID.randomUUID();
     Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
     SubcategoriaInputDTO input = new SubcategoriaInputDTO("Fideos", categoriaId, List.of());
-    Subcategoria entity = new Subcategoria(categoria.getId(), "Fideos");
-    SubcategoriaOutputDTO output =
-        new SubcategoriaOutputDTO(entity.getId(), "Fideos", null, List.of());
 
     when(categoriasRepositoryMock.findById(categoriaId)).thenReturn(Optional.of(categoria));
-    when(subcategoriaMapperMock.toEntity(input, categoria)).thenReturn(entity);
-    when(subcategoriaMapperMock.toOutputDTO(entity)).thenReturn(output);
 
     SubcategoriaOutputDTO result = subcategoriasService.crear(input);
 
     assertNotNull(result);
     assertEquals("Fideos", result.nombre());
-    verify(subcategoriasRepositoryMock, times(1)).save(entity);
+    verify(subcategoriasRepositoryMock, times(1)).save(any(Subcategoria.class));
   }
 
   @Test
@@ -63,11 +59,9 @@ class SubcategoriasServiceTest {
     Categoria categoria = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
     Subcategoria entity = new Subcategoria(categoria.getId(), "Fideos");
     AliasSubcategoriaInputDTO input = new AliasSubcategoriaInputDTO("tallarines");
-    SubcategoriaOutputDTO output =
-        new SubcategoriaOutputDTO(entity.getId(), "Fideos", null, List.of());
 
     when(subcategoriasRepositoryMock.findById(id)).thenReturn(Optional.of(entity));
-    when(subcategoriaMapperMock.toOutputDTO(entity)).thenReturn(output);
+    when(categoriasRepositoryMock.findById(categoria.getId())).thenReturn(Optional.of(categoria));
 
     SubcategoriaOutputDTO result = subcategoriasService.agregarAlias(id, input);
 

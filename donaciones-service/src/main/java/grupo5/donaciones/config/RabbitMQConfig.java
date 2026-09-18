@@ -6,6 +6,7 @@ import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,19 +15,35 @@ import tools.jackson.databind.json.JsonMapper;
 @Configuration
 public class RabbitMQConfig {
 
-  // Nombre del exchange (tiene que coincidir con el que declara logistica-service)
-  public static final String EXCHANGE = "logistica.exchange";
+  // Exchanges
+  public static final String EXCHANGE_LOGISTICA = "logistica.exchange";
+  public static final String EXCHANGE_DONACIONES = "donaciones.exchange";
 
-  // Una cola por tipo de evento
+  // Colas suscriptoras desde logistica-service
   public static final String QUEUE_RUTA_ASIGNADA = "donaciones.ruta.asignada";
   public static final String QUEUE_RUTA_INICIADA = "donaciones.ruta.iniciada";
   public static final String QUEUE_ENTREGA_EXITOSA = "donaciones.entrega.exitosa";
   public static final String QUEUE_ENTREGA_FALLIDA = "donaciones.entrega.fallida";
 
-  // --- Exchange ---
+  // Routing Keys emitidas hacia donaciones.exchange
+  public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
+  public static final String ROUTING_KEY_DONACION_ASIGNADA = "donacion.asignada.v1";
+  public static final String ROUTING_KEY_DONACION_EN_CAMINO = "donacion.en-camino.v1";
+  public static final String ROUTING_KEY_DONACION_RECIBIDA = "donacion.recibida.v1";
+  public static final String ROUTING_KEY_DONACION_ENTREGA_FALLIDA = "donacion.entrega-fallida.v1";
+  public static final String ROUTING_KEY_DONACION_VENCIDA = "donacion.vencida.v1";
+  public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
+  public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
+
+  // --- Exchanges ---
   @Bean
   public TopicExchange logisticaExchange() {
-    return new TopicExchange(EXCHANGE, true, false);
+    return new TopicExchange(EXCHANGE_LOGISTICA, true, false);
+  }
+
+  @Bean
+  public TopicExchange donacionesExchange() {
+    return new TopicExchange(EXCHANGE_DONACIONES, true, false);
   }
 
   // --- Colas ---
@@ -50,7 +67,7 @@ public class RabbitMQConfig {
     return new Queue(QUEUE_ENTREGA_FALLIDA, true);
   }
 
-  // --- Bindings
+  // --- Bindings ---
   @Bean
   public Binding bindingRutaAsignada(Queue queueRutaAsignada, TopicExchange logisticaExchange) {
     return BindingBuilder.bind(queueRutaAsignada).to(logisticaExchange).with("ruta.asignada");
@@ -71,11 +88,19 @@ public class RabbitMQConfig {
     return BindingBuilder.bind(queueEntregaFallida).to(logisticaExchange).with("entrega.fallida");
   }
 
-  // --- Serialización JSON ---
+  // --- Serialización JSON y Templates ---
   @Bean
   public JacksonJsonMessageConverter messageConverter() {
     JsonMapper mapper = JsonMapper.builder().build();
     return new JacksonJsonMessageConverter(mapper);
+  }
+
+  @Bean
+  public RabbitTemplate rabbitTemplate(
+      ConnectionFactory connectionFactory, JacksonJsonMessageConverter messageConverter) {
+    RabbitTemplate template = new RabbitTemplate(connectionFactory);
+    template.setMessageConverter(messageConverter);
+    return template;
   }
 
   @Bean

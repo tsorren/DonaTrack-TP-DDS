@@ -1,3 +1,5 @@
 package grupo5.logistica.dto.entregas;
 
-public record RegresarAlDepositoRequestDTO(String actor) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record RegresarAlDepositoRequestDTO(@NotBlank String actor) {}

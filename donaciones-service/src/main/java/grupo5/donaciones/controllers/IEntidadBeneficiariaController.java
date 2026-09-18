@@ -12,4 +12,9 @@ public interface IEntidadBeneficiariaController {
   ResponseEntity<EntidadBeneficiariaOutputDTO> obtenerEntidad(UUID id);
 
   ResponseEntity<List<EntidadBeneficiariaOutputDTO>> obtenerTodas();
+
+  ResponseEntity<EntidadBeneficiariaOutputDTO> actualizarEntidad(
+      UUID id, EntidadBeneficiariaInputDTO entidad);
+
+  ResponseEntity<Void> eliminarEntidad(UUID id);
 }

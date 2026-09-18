@@ -1,8 +1,13 @@
 package grupo5.donaciones.models.entities.donaciones;
 
+import grupo5.common.events.AgregadoConEventos;
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionCargada;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionSegmentada;
+import grupo5.donaciones.models.entities.donaciones.events.EventoDonacion;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +18,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter
-public class Donacion implements AggregateRoot {
+public class Donacion extends AgregadoConEventos<EventoDonacion> {
   private final UUID id;
 
   @Setter(AccessLevel.PACKAGE)
@@ -47,6 +52,7 @@ public class Donacion implements AggregateRoot {
     this.items = new ArrayList<>();
     this.estadoActual = EstadoDonacion.CARGADA;
     this.historialEstados = new ArrayList<>();
+    this.registrarEvento(new DonacionCargada(this.id, this.donanteId));
   }
 
   public Donacion(UUID donanteId, Deposito depositoRecepcion) {
@@ -80,18 +86,18 @@ public class Donacion implements AggregateRoot {
 
   public void marcarNormalizada() {
     if (this.estadoActual != EstadoDonacion.CARGADA) {
-      throw new IllegalStateException(
-          "Solo se puede normalizar una donación CARGADA. Estado actual: " + this.estadoActual);
+      throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
     }
     avanzarEstado(EstadoDonacion.NORMALIZADA);
+    this.registrarEvento(new DonacionNormalizada(this.id, this.donanteId));
   }
 
   public void marcarSegmentada() {
     if (this.estadoActual != EstadoDonacion.NORMALIZADA) {
-      throw new IllegalStateException(
-          "Solo se puede segmentar una donación NORMALIZADA. Estado actual: " + this.estadoActual);
+      throw new BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA);
     }
     avanzarEstado(EstadoDonacion.SEGMENTADA);
+    this.registrarEvento(new DonacionSegmentada(this.id, this.donanteId));
   }
 
   private void avanzarEstado(EstadoDonacion nuevoEstado) {

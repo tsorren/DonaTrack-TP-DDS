@@ -43,6 +43,25 @@ La IA puede ayudar, pero la responsabilidad técnica sigue siendo humana.
 - [`06-contexto-base-donatrack.md`](./06-contexto-base-donatrack.md)  
   Contexto base para copiar y pegar al iniciar una conversación con ChatGPT, Claude, Gemini, Cursor o cualquier asistente similar.
 
+- [`07-errores-frecuentes-sonarcloud-ia.md`](./07-errores-frecuentes-sonarcloud-ia.md)  
+  Guía viva de errores frecuentes y checklist pre-flight de SonarCloud para agentes de IA antes de finalizar tareas o abrir PRs.
+
+### Política de revisión
+
+- [`review/evaluator.md`](./review/evaluator.md)  
+  Fuente canónica de la política Generator/Evaluator. Roles, modos de independencia (INDEPENDENT_REVIEW / SELF_REVIEW / LIGHTWEIGHT_CLOSING_CHECK), Review Contract, vectores V1–V9, capability detection, ciclo de re-check y responsabilidad humana.
+
+### Evaluación del harness (Wave 9)
+
+- [`evals/README.md`](./evals/README.md)  
+  Suite de evaluación del harness de agentes. Output Contract v1, Critical Failure Taxonomy, metodología A/B (v3.5.0 vs v6.2.0), execution policy y result format.
+
+- [`evals/scenarios/`](./evals/scenarios/)  
+  11 scenarios (E01–E11): common-lib contamination, routine REST endpoint, sync→async, implement accepted ADR, baseline failure, false VERIFIED, review capability, context router, temporal drift, design-review rejection, define-spec alternatives.
+
+- [`evals/scorecards/scorecard-template.md`](./evals/scorecards/scorecard-template.md)  
+  Plantilla reutilizable para registrar cada run de eval (output contract, scorecard, critical failures, tool calls, A/B comparison).
+
 ---
 
 ## Prompts listos para usar
@@ -80,6 +99,9 @@ Los prompts se encuentran en [`prompts/`](./prompts/).
   Para generar o completar tests sobre escenarios ya definidos.
 
 ### Prompts transversales
+
+- [`prompts/transversal-mentoria-conceptos.md`](./prompts/transversal-mentoria-conceptos.md)  
+  Para solicitar explicaciones didácticas y mentoría de conceptos de arquitectura/diseño estructuradas en 4 pasos.
 
 - [`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)  
   Para revisar una PR antes de pedir review humana.

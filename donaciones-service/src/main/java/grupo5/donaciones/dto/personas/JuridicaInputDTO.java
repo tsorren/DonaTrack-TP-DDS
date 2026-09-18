@@ -5,16 +5,19 @@ import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
 public record JuridicaInputDTO(
-    TipoPersona tipo,
+    @NotNull(message = "El tipo de persona es obligatorio") TipoPersona tipo,
     TipoDocumento tipoDocumento,
     String documento,
-    DireccionInputDTO direccion,
-    List<MedioDeContactoInputDTO> mediosDeContacto,
-    String razonSocial,
-    TipoJuridico tipoJuridico,
+    @Valid DireccionInputDTO direccion,
+    List<@Valid MedioDeContactoInputDTO> mediosDeContacto,
+    @NotBlank(message = "La razón social es obligatoria") String razonSocial,
+    @NotNull(message = "El tipo jurídico es obligatorio") TipoJuridico tipoJuridico,
     String rubro,
-    List<HumanaInputDTO> representantes)
+    List<@Valid HumanaInputDTO> representantes)
     implements PersonaInputDTO {}

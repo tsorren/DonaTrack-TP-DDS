@@ -1,14 +1,19 @@
 package grupo5.incentivos.models.entities.ranking;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
+import grupo5.incentivos.fixtures.EventoDonacionMother;
+import grupo5.incentivos.fixtures.MisionMother;
+import grupo5.incentivos.fixtures.RankingMensualMother;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import grupo5.incentivos.models.entities.donante.misiones.MisionDonacionesExitosas;
-import grupo5.incentivos.models.entities.donante.misiones.MisionRacha;
-import java.time.LocalDate;
+import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
+import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
@@ -18,33 +23,38 @@ import org.junit.jupiter.api.Test;
 class RankingMensualTest {
 
   @Test
-  void rankingMensual_deberiaTenerPodioDeHastaTres() {
-    RankingMensual ranking = new RankingMensual(YearMonth.of(2026, Month.MAY));
-    ranking.agregarEntrada(new EntradaRanking(1, UUID.randomUUID(), "Ana", 5));
-    ranking.agregarEntrada(new EntradaRanking(2, UUID.randomUUID(), "Bob", 3));
-    ranking.agregarEntrada(new EntradaRanking(3, UUID.randomUUID(), "Carlos", 2));
-    ranking.agregarEntrada(new EntradaRanking(4, UUID.randomUUID(), "Diana", 1));
+  void rankingMensual_conCuatroDonantes_deberiaTenerPodioDeTres() {
+    RankingMensual ranking = RankingMensualMother.conNEntradas(YearMonth.of(2026, Month.MAY), 4);
 
     assertEquals(3, ranking.getPodio().size());
-    assertEquals("Ana", ranking.getPodio().getFirst().getNombreDonante());
+    assertEquals(
+        ranking.getEntradas().getFirst().getNombreDonante(),
+        ranking.getPodio().getFirst().getNombreDonante());
+  }
+
+  @Test
+  void rankingMensual_conUnSoloDonante_deberiaTenerPodioDeUno() {
+    RankingMensual ranking = RankingMensualMother.conNEntradas(YearMonth.of(2026, Month.MAY), 1);
+
+    assertEquals(1, ranking.getPodio().size());
+    assertEquals(
+        ranking.getEntradas().getFirst().getNombreDonante(),
+        ranking.getPodio().getFirst().getNombreDonante());
+  }
+
+  @Test
+  void rankingMensual_vacio_deberiaTenerPodioVacio() {
+    RankingMensual ranking = RankingMensualMother.vacioDeMayo2026();
+
+    assertTrue(ranking.getPodio().isEmpty());
   }
 
   @Test
   void donante_deberiaMostrarMisionesCompletadasEnMes() {
-    DonanteIncentivos donante = new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Test");
+    MisionDonacionesExitosas mision = MisionMother.exitosas(CategoriaDonante.COLABORADOR, 1);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(List.of(mision));
 
-    MisionDonacionesExitosas mision = new MisionDonacionesExitosas(CategoriaDonante.COLABORADOR, 1);
-    donante.getMisiones().add(mision);
-
-    EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(new UUID(0L, 1L))
-            .fecha(LocalDate.of(2026, Month.MAY, 10))
-            .cantidadBienes(1)
-            .categorias(List.of("x"))
-            .build();
-
-    donante.registrarDonacion(evento);
+    donante.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 10));
     donante.registrarDonacionExitosa(new UUID(0L, 100L));
 
     assertTrue(mision.isCompletada());
@@ -54,24 +64,84 @@ class RankingMensualTest {
 
   @Test
   void donante_deberiaAscenderDeCategoriaAlCompletarTodasLasMisionesDeCategoria() {
-    DonanteIncentivos donante = new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Test");
+    MisionRacha racha = MisionMother.rachaColaborador(1);
+    DonanteIncentivos donante = DonanteIncentivosMother.conMisiones(List.of(racha));
     assertEquals(CategoriaDonante.COLABORADOR, donante.getCategoria());
 
-    MisionRacha racha = new MisionRacha(CategoriaDonante.COLABORADOR, 1);
-    donante.getMisiones().add(racha);
+    donante.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 15));
 
-    EventoDonacion evento =
-        EventoDonacion.builder()
-            .donacionId(new UUID(0L, 1L))
-            .fecha(LocalDate.of(2026, Month.MAY, 15))
-            .cantidadBienes(1)
-            .categorias(List.of("x"))
-            .build();
-
-    donante.registrarDonacion(evento);
-    boolean ascendio = donante.intentarAscenso();
-
-    assertTrue(ascendio);
+    // El ascenso ocurre automáticamente al completarse la última misión de la categoría.
     assertEquals(CategoriaDonante.SOSTENEDOR, donante.getCategoria());
+  }
+
+  @Test
+  void constructor_deberiaLanzarExcepcionConPeriodoNulo() {
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> new RankingMensual(null));
+    assertEquals(ErrorCatalog.RANKING_PERIODO_NULO, ex.getError());
+  }
+
+  @Test
+  void agregarEntrada_deberiaLanzarExcepcionConEntradaNula() {
+    RankingMensual ranking = RankingMensualMother.vacioDeMayo2026();
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> ranking.agregarEntrada(null));
+    assertEquals(ErrorCatalog.RANKING_ENTRADA_NULA, ex.getError());
+  }
+
+  @Test
+  void gestorDeRankings_conEmpateDeMisiones_deberiaDesempatarDeterminísticamente() {
+    GestorDeRankings gestor = new GestorDeRankings();
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
+    UUID idA = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    UUID idB = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
+    DonanteIncentivos dA =
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(idA, "Donante A", mayo, 2);
+    DonanteIncentivos dB =
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(idB, "Donante B", mayo, 2);
+
+    RankingMensual ranking = gestor.calcular(List.of(dB, dA), mayo);
+
+    assertEquals(2, ranking.getEntradas().size());
+    assertEquals(idA, ranking.getEntradas().get(0).getDonanteId());
+    assertEquals(idB, ranking.getEntradas().get(1).getDonanteId());
+  }
+
+  @Test
+  void gestorDeRankings_conEmpateDeMisiones_deberiaDesempatarPorDonacionesTotalesEnMes() {
+    GestorDeRankings gestor = new GestorDeRankings();
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
+    UUID idConMenosDonaciones = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    UUID idConMasDonaciones = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
+    // Ambos donantes completaron 1 misión en Mayo
+    DonanteIncentivos dMenos =
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(
+            idConMenosDonaciones, "Donante 1", mayo, 1);
+    DonanteIncentivos dMas =
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(
+            idConMasDonaciones, "Donante 2", mayo, 1);
+
+    // dMas realiza 3 donaciones adicionales en Mayo
+    dMas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 20));
+    dMas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 21));
+    dMas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 22));
+
+    RankingMensual ranking = gestor.calcular(List.of(dMenos, dMas), mayo);
+
+    assertEquals(2, ranking.getEntradas().size());
+    // dMas debe estar en la 1° posición a pesar de tener un UUID mayor
+    assertEquals(idConMasDonaciones, ranking.getEntradas().get(0).getDonanteId());
+    assertEquals(idConMenosDonaciones, ranking.getEntradas().get(1).getDonanteId());
+  }
+
+  @Test
+  void gestorDeRankings_conListaNulaOVacia_deberiaRetornarRankingVacio() {
+    GestorDeRankings gestor = new GestorDeRankings();
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
+
+    assertTrue(gestor.calcular(null, mayo).getEntradas().isEmpty());
+    assertTrue(gestor.calcular(List.of(), mayo).getEntradas().isEmpty());
   }
 }

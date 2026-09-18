@@ -1,57 +1,155 @@
 package grupo5.notificaciones.services.impl;
 
 import grupo5.notificaciones.dto.NotificacionDTO;
+import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
+import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.EventoNotificable;
-import grupo5.notificaciones.models.entities.personas.Persona;
-import grupo5.notificaciones.models.ports.NotificacionSender;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
-import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.services.mappers.EventoMapper;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class NotificacionService {
+  private static final Logger log = LoggerFactory.getLogger(NotificacionService.class);
+
   private final INotificacionRepository repository;
-  private final IPersonaRepository personaRepository;
-  private final NotificacionSender sender;
   private final EventoMapper mapper;
+  private final ApplicationEventPublisher eventPublisher;
+  private final JdbcTemplate jdbcTemplate;
 
   public NotificacionService(
       INotificacionRepository repository,
-      IPersonaRepository personaRepository,
-      NotificacionSender sender,
-      EventoMapper mapper) {
-    this.repository = repository;
-    this.personaRepository = personaRepository;
-    this.sender = sender;
-    this.mapper = mapper;
+      EventoMapper mapper,
+      ApplicationEventPublisher eventPublisher) {
+    this(repository, mapper, eventPublisher, null);
   }
 
-  public void procesar(EventoNotificableDTO dto) {
-    EventoNotificable evento = mapper.toEntity(dto);
+  @Autowired
+  public NotificacionService(
+      INotificacionRepository repository,
+      EventoMapper mapper,
+      ApplicationEventPublisher eventPublisher,
+      @Nullable JdbcTemplate jdbcTemplate) {
+    this.repository = repository;
+    this.mapper = mapper;
+    this.eventPublisher = eventPublisher;
+    this.jdbcTemplate = jdbcTemplate;
+  }
 
-    List<Notificacion> notificaciones = evento.generarNotificaciones();
-
-    for (Notificacion notificacion : notificaciones) {
-      Persona persona = personaRepository.findById(notificacion.getPersonaId()).orElse(null);
-      notificacion.notificar(persona, sender);
-      repository.save(notificacion);
+  @Transactional
+  public void procesar(EventoDonacionAsignadaV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento, messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
     }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  /**
+   * Registra el evento en el inbox y devuelve true si ya estaba, es decir si esta entrega del
+   * mensaje es un duplicado que hay que ignorar. Sin jdbcTemplate (perfil en memoria) no hay inbox
+   * y nunca se considera duplicado.
+   */
+  private boolean yaRegistradoEnInbox(UUID eventId) {
+    if (jdbcTemplate == null) {
+      return false;
+    }
+    int rows =
+        jdbcTemplate.update(
+            "INSERT INTO evento_procesado (event_id, fecha_procesamiento) VALUES (?, ?)"
+                + " ON CONFLICT (event_id) DO NOTHING",
+            eventId,
+            LocalDateTime.now());
+    if (rows == 0) {
+      log.info("Evento duplicado ignorado (Inbox): {}", eventId);
+      return true;
+    }
+    return false;
+  }
+
+  private void persistirYPublicar(EventoNotificable evento) {
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+    repository.saveAll(notificaciones);
+    notificaciones.forEach(this::publicarYLimpiarDomainEvents);
+  }
+
+  private static UUID resolverEventId(EventoDonacionAsignadaV1 evento, @Nullable String messageId) {
+    if (messageId != null && !messageId.isBlank()) {
+      try {
+        return UUID.fromString(messageId);
+      } catch (IllegalArgumentException e) {
+        return UUID.nameUUIDFromBytes(messageId.getBytes(StandardCharsets.UTF_8));
+      }
+    }
+    if (evento.donacionIndependienteId() != null) {
+      return evento.donacionIndependienteId();
+    }
+    return UUID.randomUUID();
+  }
+
+  @Transactional
+  public void procesar(EventoNotificableDTO dto) {
+    UUID eventId = dto.eventId();
+    if (eventId == null) {
+      eventId = UUID.randomUUID();
+      log.info(
+          "[FALLBACK_LEGACY_EVENT_ID] Generado eventId {} para evento legacy de tipo {}",
+          eventId,
+          dto.getClass().getSimpleName());
+    }
+
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(dto));
+  }
+
+  private void publicarYLimpiarDomainEvents(Notificacion notificacion) {
+    notificacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+    notificacion.clearDomainEvents();
+  }
+
+  public Optional<NotificacionDTO> obtenerPorId(UUID id) {
+    return repository.findById(id).map(this::toDTO);
   }
 
   public List<NotificacionDTO> obtenerPorPersona(UUID personaId) {
-    return repository.findByPersonaId(personaId).stream()
-        .map(
-            n ->
-                new NotificacionDTO(
-                    n.getId(),
-                    n.getMensaje(),
-                    n.getEstadoNotificacion().name(),
-                    n.getFechaCreacion()))
-        .toList();
+    return obtenerNotificaciones(personaId, null);
+  }
+
+  public List<NotificacionDTO> obtenerNotificaciones(UUID personaId, EstadoNotificacion estado) {
+    List<Notificacion> notificaciones;
+    if (personaId != null && estado != null) {
+      notificaciones =
+          repository.findByPersonaId(personaId).stream()
+              .filter(n -> n.getEstadoNotificacion() == estado)
+              .toList();
+    } else if (personaId != null) {
+      notificaciones = repository.findByPersonaId(personaId);
+    } else if (estado != null) {
+      notificaciones = repository.findByEstado(estado);
+    } else {
+      notificaciones = repository.findAll();
+    }
+    return notificaciones.stream().map(this::toDTO).toList();
+  }
+
+  private NotificacionDTO toDTO(Notificacion n) {
+    return new NotificacionDTO(
+        n.getId(), n.getMensaje(), n.getEstadoNotificacion().name(), n.getFechaCreacion());
   }
 }

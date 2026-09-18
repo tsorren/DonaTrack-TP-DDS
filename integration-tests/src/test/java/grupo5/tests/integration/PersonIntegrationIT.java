@@ -1,29 +1,54 @@
 package grupo5.tests.integration;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import grupo5.tests.BaseIT;
-import io.restassured.http.ContentType;
+import grupo5.tests.builders.PersonaTestDataBuilder;
+import grupo5.tests.dto.PersonaTestDTO;
+import grupo5.tests.utils.PollingUtils;
+import grupo5.tests.utils.TestIdGenerator;
+import java.util.UUID;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import java.util.Map;
-
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-
+@Tag("integration")
 class PersonIntegrationIT extends BaseIT {
 
   @Test
-  void testCrearPersonaReplicada() {
-    Map<String, Object> payload = fixture("personas/crear-persona-humana.json");
+  void testCrearPersonaHumanaYVerificarReplicacion() {
+    String nombre = "Carlos";
+    String dni = TestIdGenerator.randomDni();
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana().conNombre(nombre).conDocumento(dni).build();
 
-    given()
-        .contentType(ContentType.JSON)
-        .body(payload)
-        .when()
-        .post(DONACIONES_URL + "/api/personas")
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
+    assertNotNull(personaId);
+
+    // Esperar replicación síncrona/asíncrona en notificaciones-service
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+
+    notificacionesClient
+        .obtenerPersona(personaId)
         .then()
-        .statusCode(201)
-        .body("id", notNullValue())
-        .body("nombre", equalTo("Preprod"));
+        .statusCode(200)
+        .body("denominacion", equalTo(nombre + " Perez"));
+  }
+
+  @Test
+  void testCrearPersonaJuridicaYVerificarReplicacion() {
+    String razonSocial = TestIdGenerator.uniqueName("Comedor Solidario");
+    PersonaTestDTO persona = PersonaTestDataBuilder.juridica().conRazonSocial(razonSocial).build();
+
+    UUID personaId = donacionesClient.crearPersonaOk(persona);
+    assertNotNull(personaId);
+
+    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
+
+    notificacionesClient
+        .obtenerPersona(personaId)
+        .then()
+        .statusCode(200)
+        .body("denominacion", equalTo(razonSocial));
   }
 }

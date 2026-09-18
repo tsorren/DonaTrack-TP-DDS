@@ -14,7 +14,8 @@ import java.util.UUID;
   @JsonSubTypes.Type(value = EventoDonacionAsignadaDTO.class, name = "DONACION_ASIGNADA"),
   @JsonSubTypes.Type(value = EventoDonacionRecibidaDTO.class, name = "DONACION_RECIBIDA"),
   @JsonSubTypes.Type(value = EventoDonacionEnCaminoDTO.class, name = "DONACION_EN_CAMINO"),
-  @JsonSubTypes.Type(value = EventoEntregaFallidaDTO.class, name = "ENTREGA_FALLIDA")
+  @JsonSubTypes.Type(value = EventoEntregaFallidaDTO.class, name = "ENTREGA_FALLIDA"),
+  @JsonSubTypes.Type(value = EventoDonacionVencidaDTO.class, name = "DONACION_VENCIDA")
 })
 public sealed interface EventoNotificableDTO
     permits EventoDonacionAsignadaDTO,
@@ -24,7 +25,10 @@ public sealed interface EventoNotificableDTO
         EventoMisionCumplidaDTO,
         EventoSubioCategoriaDTO,
         EventoDonacionEnCaminoDTO,
-        EventoEntregaFallidaDTO {
+        EventoEntregaFallidaDTO,
+        EventoDonacionVencidaDTO {
+  UUID eventId();
+
   UUID idPersonaDonante();
 
   LocalDateTime fecha();

@@ -1,4 +1,6 @@
 package grupo5.logistica.dto.entregas;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record ReportarNoRecepcionRequestDTO(
-    String actor, String justificacion, Boolean replanificable) {}
+    @NotBlank String actor, @NotBlank String justificacion, Boolean replanificable) {}

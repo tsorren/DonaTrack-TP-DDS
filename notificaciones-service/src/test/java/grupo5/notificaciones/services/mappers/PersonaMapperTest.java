@@ -50,7 +50,7 @@ class PersonaMapperTest {
 
     Correo correo = new Correo();
     correo.setDireccionCorreo("contacto@empresa.com");
-    correo.setEsPredeterminado(true);
+    correo.marcarComoPredeterminado();
     persona.agregarMedioDeContacto(correo);
 
     PersonaReplicaDTO replica = mapper.toReplicaDTO(persona);

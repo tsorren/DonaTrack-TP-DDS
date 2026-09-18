@@ -1,8 +1,11 @@
 package grupo5.logistica.models.entities.rutas;
 
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRuta;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
+import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,7 +17,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
-public class Ruta implements AggregateRoot {
+public class Ruta extends AgregadoConEventos<EventoRuta> {
 
   private final UUID id;
   private final LocalDate fecha;
@@ -25,8 +28,15 @@ public class Ruta implements AggregateRoot {
   private final UUID choferId;
   private final UUID camionId;
   private EstadoRuta estado;
+
+  @Getter(AccessLevel.NONE)
+  private final List<CambioEstadoRuta> historialEstado;
+
   private LocalDateTime horaInicioReal;
   private LocalDateTime horaFinReal;
+
+  /** Para Optimistic Locking futuro — gestionado por el adaptador JPA, no por el dominio. */
+  private Long version;
 
   public Ruta(LocalDate fecha, UUID choferId, UUID camionId) {
     validarFecha(fecha);
@@ -39,6 +49,36 @@ public class Ruta implements AggregateRoot {
     this.camionId = camionId;
     this.estado = EstadoRuta.PENDIENTE;
     this.entregas = new ArrayList<>();
+    this.historialEstado = new ArrayList<>();
+  }
+
+  /**
+   * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
+   * ejecutar validaciones de negocio ni generar un nuevo UUID.
+   */
+  @SuppressWarnings("java:S107")
+  public Ruta(
+      UUID id,
+      LocalDate fecha,
+      List<UUID> entregas,
+      UUID choferId,
+      UUID camionId,
+      EstadoRuta estado,
+      List<CambioEstadoRuta> historialEstado,
+      LocalDateTime horaInicioReal,
+      LocalDateTime horaFinReal,
+      Long version) {
+    this.id = id;
+    this.fecha = fecha;
+    this.entregas = entregas != null ? new ArrayList<>(entregas) : new ArrayList<>();
+    this.choferId = choferId;
+    this.camionId = camionId;
+    this.estado = estado;
+    this.historialEstado =
+        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
+    this.horaInicioReal = horaInicioReal;
+    this.horaFinReal = horaFinReal;
+    this.version = version;
   }
 
   public void iniciarRuta() {
@@ -46,9 +86,11 @@ public class Ruta implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoRuta.EN_TRASLADO;
+    actualizarEstado(EstadoRuta.EN_TRASLADO);
     this.horaInicioReal = LocalDateTime.now(ZoneId.of("UTC"));
     this.horaFinReal = null;
+    registrarEvento(
+        new EventoRutaIniciada(this.id, this.camionId, this.entregas, this.horaInicioReal));
   }
 
   public void completarRuta() {
@@ -56,7 +98,7 @@ public class Ruta implements AggregateRoot {
       throw new ValidationException(ErrorCatalog.ESTADO_RUTA_TRANSICION_INVALIDA);
     }
 
-    this.estado = EstadoRuta.COMPLETADA;
+    actualizarEstado(EstadoRuta.COMPLETADA);
     this.horaFinReal = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
@@ -72,18 +114,26 @@ public class Ruta implements AggregateRoot {
     }
 
     this.entregas.add(entregaId);
-  }
-
-  public List<UUID> obtenerEntregas() {
-    return List.copyOf(this.entregas);
-  }
-
-  public List<UUID> getEntregas() {
-    return obtenerEntregas();
+    registrarEvento(new EventoRutaAsignada(this.id, entregaId));
   }
 
   public List<UUID> getEntregaIds() {
-    return obtenerEntregas();
+    return List.copyOf(this.entregas);
+  }
+
+  public boolean tieneSeguimientoDisponible() {
+    return this.estado != EstadoRuta.PENDIENTE;
+  }
+
+  public List<CambioEstadoRuta> getHistorialEstado() {
+    return List.copyOf(historialEstado);
+  }
+
+  private void actualizarEstado(EstadoRuta estadoNuevo) {
+    EstadoRuta estadoAnterior = this.estado;
+    this.estado = estadoNuevo;
+    this.historialEstado.add(
+        new CambioEstadoRuta(estadoAnterior, estadoNuevo, LocalDateTime.now(ZoneId.of("UTC"))));
   }
 
   private static void validarFecha(LocalDate fecha) {

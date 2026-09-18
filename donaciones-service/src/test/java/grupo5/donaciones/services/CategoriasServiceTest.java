@@ -13,7 +13,6 @@ import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.CategoriasService;
 import grupo5.donaciones.services.mappers.CategoriaMapper;
 import grupo5.donaciones.services.mappers.SubcategoriaMapper;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,41 +22,34 @@ class CategoriasServiceTest {
 
   private ICategoriasRepository categoriasRepositoryMock;
   private ISubcategoriasRepository subcategoriasRepositoryMock;
-  private CategoriaMapper categoriaMapperMock;
-  private SubcategoriaMapper subcategoriaMapperMock;
+  private CategoriaMapper categoriaMapper;
+  private SubcategoriaMapper subcategoriaMapper;
   private CategoriasService categoriasService;
 
   @BeforeEach
   void setUp() {
     categoriasRepositoryMock = mock(ICategoriasRepository.class);
     subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
-    categoriaMapperMock = mock(CategoriaMapper.class);
-    subcategoriaMapperMock = mock(SubcategoriaMapper.class);
+    categoriaMapper = new CategoriaMapper();
+    subcategoriaMapper = new SubcategoriaMapper(categoriaMapper, categoriasRepositoryMock);
 
     categoriasService =
         new CategoriasService(
             categoriasRepositoryMock,
             subcategoriasRepositoryMock,
-            categoriaMapperMock,
-            subcategoriaMapperMock);
+            categoriaMapper,
+            subcategoriaMapper);
   }
 
   @Test
   void crear_DeberiaMapearYGuardar() {
     CategoriaInputDTO input = new CategoriaInputDTO("Alimentos", false, true, Unidad.KILOGRAMO);
-    Categoria entity = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
-    CategoriaOutputDTO output =
-        new CategoriaOutputDTO(
-            entity.getId(), "Alimentos", false, true, Unidad.KILOGRAMO, List.of());
-
-    when(categoriaMapperMock.toEntity(input)).thenReturn(entity);
-    when(categoriaMapperMock.toOutputDTO(eq(entity), any())).thenReturn(output);
 
     CategoriaOutputDTO result = categoriasService.crear(input);
 
     assertNotNull(result);
     assertEquals("Alimentos", result.nombre());
-    verify(categoriasRepositoryMock, times(1)).save(entity);
+    verify(categoriasRepositoryMock, times(1)).save(any(Categoria.class));
   }
 
   @Test
@@ -72,11 +64,8 @@ class CategoriasServiceTest {
   void obtenerPorId_DeberiaRetornarCategoria_CuandoExiste() {
     UUID id = UUID.randomUUID();
     Categoria entity = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);
-    CategoriaOutputDTO output =
-        new CategoriaOutputDTO(id, "Alimentos", false, true, Unidad.KILOGRAMO, List.of());
 
     when(categoriasRepositoryMock.findById(id)).thenReturn(Optional.of(entity));
-    when(categoriaMapperMock.toOutputDTO(eq(entity), any())).thenReturn(output);
 
     CategoriaOutputDTO result = categoriasService.obtener(id);
 

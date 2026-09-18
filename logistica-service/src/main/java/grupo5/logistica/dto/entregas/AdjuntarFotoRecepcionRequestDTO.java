@@ -1,3 +1,5 @@
 package grupo5.logistica.dto.entregas;
 
-public record AdjuntarFotoRecepcionRequestDTO(String fotoRecepcionUrl) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record AdjuntarFotoRecepcionRequestDTO(@NotBlank String fotoRecepcionUrl) {}

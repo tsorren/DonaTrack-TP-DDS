@@ -1,0 +1,847 @@
+{
+  "info": {
+    "_postman_id": "donatrack-flujo-08-e2e",
+    "name": "Flujo 8 - E2E Distribuido: Donación → Matching → Logística → Incentivos → Notificaciones",
+    "description": "El flujo estrella, réplica en Postman de integration-tests/FullDistributedDonationE2EIT.java. Atraviesa los 4 microservicios: crea donante+entidad+donación en donaciones-service, matchea contra una necesidad, aprueba la propuesta (dispara Feign síncrono hacia logistica-service que crea la Entrega), avanza la DonacionIndependiente hasta ENTREGADA (dispara Feign hacia incentivos-service + evento hacia notificaciones-service), y verifica los side-effects en los 3 servicios downstream. Usalo como smoke test de regresión completo después de cualquier cambio que toque la comunicación entre servicios.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "donacionesUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "notificacionesUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "incentivosUrl",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "logisticaUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "donantePersonaId",
+      "value": ""
+    },
+    {
+      "key": "donanteId",
+      "value": ""
+    },
+    {
+      "key": "benefPersonaId",
+      "value": ""
+    },
+    {
+      "key": "entidadId",
+      "value": ""
+    },
+    {
+      "key": "categoriaId",
+      "value": ""
+    },
+    {
+      "key": "subcategoriaId",
+      "value": ""
+    },
+    {
+      "key": "donacionId",
+      "value": ""
+    },
+    {
+      "key": "itemNormalizadoId",
+      "value": ""
+    },
+    {
+      "key": "necesidadId",
+      "value": ""
+    },
+    {
+      "key": "propuestaId",
+      "value": ""
+    },
+    {
+      "key": "donacionIndependienteId",
+      "value": ""
+    },
+    {
+      "key": "entregaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Donaciones: alta de donante y entidad",
+      "item": [
+        {
+          "name": "1. Crear Persona Donante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donantePersonaId', j.id); pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"tipoDocumento\": \"DNI\",\n  \"documento\": \"{{$timestamp}}\",\n  \"nombre\": \"Roberto\",\n  \"apellido\": \"E2E\",\n  \"genero\": \"HOMBRE\",\n  \"fechaNacimiento\": \"1988-03-20\",\n  \"mediosDeContacto\": [\n    { \"tipo\": \"CORREO\", \"esPredeterminado\": true, \"direccionCorreo\": \"roberto.e2e.{{$timestamp}}@example.com\" }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\", \"altura\": 951, \"codigoPostal\": \"1179\", \"localidad\": \"CABA\", \"provincia\": \"CABA\", \"pais\": \"Argentina\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/personas",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "personas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Crear Donante",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donanteId', j.idDonante); pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPersona\": \"{{donantePersonaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/donantes",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "donantes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Crear Persona Jurídica (beneficiaria)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('benefPersonaId', j.id); pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"JURIDICA\",\n  \"tipoDocumento\": \"CUIT\",\n  \"documento\": \"30-{{$timestamp}}-3\",\n  \"razonSocial\": \"Comedor Esperanza E2E {{$timestamp}}\",\n  \"tipoJuridico\": \"ONG\",\n  \"rubro\": \"Comedor\",\n  \"representantes\": [\n    { \"tipo\": \"HUMANA\", \"tipoDocumento\": \"DNI\", \"documento\": \"{{$timestamp}}\", \"nombre\": \"Representante\", \"apellido\": \"E2E\", \"genero\": \"MUJER\", \"fechaNacimiento\": \"1980-01-01\", \"mediosDeContacto\": [] }\n  ],\n  \"mediosDeContacto\": [\n    { \"tipo\": \"CORREO\", \"esPredeterminado\": true, \"direccionCorreo\": \"comedor.e2e.{{$timestamp}}@example.com\" }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\", \"altura\": 951, \"codigoPostal\": \"1179\", \"localidad\": \"CABA\", \"provincia\": \"CABA\", \"pais\": \"Argentina\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/personas",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "personas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Crear Entidad Beneficiaria",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('entidadId', j.id); pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juridicaId\": \"{{benefPersonaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/entidades",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "entidades"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Donaciones: catálogo, donación y matching",
+      "item": [
+        {
+          "name": "1. Crear Categoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('categoriaId', j.id); pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alimentos E2E\",\n  \"conUso\": false,\n  \"conVencimiento\": true,\n  \"unidad\": \"UNIDADES\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/categorias",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "categorias"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Crear Subcategoría (Arroz E2E)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('subcategoriaId', j.id); pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Subcategoria Sintetica F8\",\n  \"idCategoria\": \"{{categoriaId}}\",\n  \"aliases\": [{ \"alias\": \"zzqf8token\" }]\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/subcategorias",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "subcategorias"
+              ]
+            },
+            "description": "Alias sintético (zzqf8...), no una palabra real: este flujo reclasifica manualmente el ítem con subcategoriaId explícito (pasos 3b-3c), no depende de auto-match — pero un alias real como 'arroz' seguiría siendo evaluado contra donaciones de CUALQUIER otro flujo que corra sobre el mismo backend compartido. Token único = catálogo global limpio."
+          }
+        },
+        {
+          "name": "3. Cargar Donación (arroz, 10 un.)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donacionId', j.id); pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"descripcion\": \"Donación distribuida E2E\",\n  \"items\": [\n    { \"descripcionBien\": \"Articulo Inclasificable E2E\", \"cantidad\": 10, \"estadoBien\": \"NUEVO\", \"fechaVencimiento\": \"2027-12-31\", \"pesoUnitario\": 1.0, \"volumenUnitario\": 0.001 }\n  ],\n  \"nombreDeposito\": \"Depósito E2E\",\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\", \"altura\": 951, \"codigoPostal\": \"1179\", \"localidad\": \"CABA\", \"provincia\": \"CABA\", \"pais\": \"Argentina\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/donaciones",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "donaciones"
+              ]
+            },
+            "description": "descripcionBien inventada a propósito: donaciones-service siembra en cada arranque 8 subcategorías fijas con alias como 'arroz'. Si usás esa palabra, el ítem auto-acepta contra la subcategoría SEMBRADA, no contra 'Arroz E2E' (paso 2 de esta carpeta), y el matching nunca encuentra nada. Se reclasifica a mano en los pasos 3b-3c."
+          }
+        },
+        {
+          "name": "3b. Obtener Ítems Normalizados Pendientes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var item = json.find(function (i) { return i.descripcionBienOriginal === 'Articulo Inclasificable E2E'; });",
+                  "pm.test('Encontró el ítem (reintentar si no)', function () { pm.expect(item).to.not.be.undefined; });",
+                  "if (item) { pm.collectionVariables.set('itemNormalizadoId', item.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{donacionesUrl}}/api/items-normalizados/pendientes",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "items-normalizados",
+                "pendientes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3c. Reclasificar manualmente a Arroz E2E",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoNormalizacion\": \"ACEPTADO\",\n  \"subcategoriaId\": \"{{subcategoriaId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/items-normalizados/{{itemNormalizadoId}}",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "items-normalizados",
+                "{{itemNormalizadoId}}"
+              ]
+            },
+            "description": "ACEPTADO + subcategoriaId explícito: fuerza la subcategoría 'Arroz E2E' del paso 2, sin depender de ningún match semántico automático contra el catálogo sembrado."
+          }
+        },
+        {
+          "name": "4. Esperar segmentación (reintentar hasta SEGMENTADA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('estadoActual == SEGMENTADA (reintentar si no)', function () { pm.expect(pm.response.json().estadoActual).to.eql('SEGMENTADA'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{donacionesUrl}}/api/donaciones/{{donacionId}}",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "donaciones",
+                "{{donacionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Crear Necesidad Extraordinaria (misma subcategoría)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('necesidadId', j.id); pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad E2E arroz\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/necesidades",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "necesidades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. Ejecutar Algoritmo de Asignación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{donacionesUrl}}/api/asignaciones/ejecuciones",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "asignaciones",
+                "ejecuciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "7. Listar Propuestas (captura propuestaId + donacionIndependienteId)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var propuestas = pm.response.json();",
+                  "pm.test('200', function () { pm.response.to.have.status(200); });",
+                  "var propuesta = propuestas.find(function (p) { return p.necesidad && p.necesidad.descripcion === 'Necesidad E2E arroz'; });",
+                  "pm.test('Encontró la propuesta (reintentar el paso 6 si no)', function () { pm.expect(propuesta).to.not.be.undefined; });",
+                  "if (propuesta) {",
+                  "  pm.collectionVariables.set('propuestaId', propuesta.id);",
+                  "  pm.collectionVariables.set('donacionIndependienteId', propuesta.fragmentaciones[0].donacionIndependiente.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{donacionesUrl}}/api/asignaciones/propuestas",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "asignaciones",
+                "propuestas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "8. Aprobar Propuesta (dispara Feign → logistica-service)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"APROBADA\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/api/asignaciones/propuestas/{{propuestaId}}/estado",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "api",
+                "asignaciones",
+                "propuestas",
+                "{{propuestaId}}",
+                "estado"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Logística: verificar que se creó la Entrega",
+      "item": [
+        {
+          "name": "1. Buscar Entrega por idDonacion (reintentar — el Feign es async)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var entregas = pm.response.json();",
+                  "pm.test('200', function () { pm.response.to.have.status(200); });",
+                  "var target = entregas.find(function (e) { return e.idDonacion === pm.collectionVariables.get('donacionIndependienteId'); });",
+                  "pm.test('logistica-service recibió la entrega (reintentar si no)', function () { pm.expect(target).to.not.be.undefined; });",
+                  "if (target) { pm.collectionVariables.set('entregaId', target.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{logisticaUrl}}/api/entregas",
+              "host": [
+                "{{logisticaUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Verificar detalle: nace PENDIENTE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('estadoActual == PENDIENTE', function () { pm.expect(pm.response.json().estadoActual).to.eql('PENDIENTE'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{logisticaUrl}}/api/entregas/{{entregaId}}",
+              "host": [
+                "{{logisticaUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Donaciones: completar el ciclo de entrega",
+      "item": [
+        {
+          "name": "1. ASIGNACION_REALIZADA → LISTA_PARA_ENTREGAR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Actor",
+                "value": "TRANSPORTISTA"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"LISTA_PARA_ENTREGAR\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/donaciones-independientes/{{donacionIndependienteId}}/estado",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "donaciones-independientes",
+                "{{donacionIndependienteId}}",
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. LISTA_PARA_ENTREGAR → EN_TRASLADO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Actor",
+                "value": "TRANSPORTISTA"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_TRASLADO\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/donaciones-independientes/{{donacionIndependienteId}}/estado",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "donaciones-independientes",
+                "{{donacionIndependienteId}}",
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. EN_TRASLADO → ENTREGADA (dispara Feign → incentivos + evento → notificaciones)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Actor",
+                "value": "TRANSPORTISTA"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREGADA\"\n}"
+            },
+            "url": {
+              "raw": "{{donacionesUrl}}/donaciones-independientes/{{donacionIndependienteId}}/estado",
+              "host": [
+                "{{donacionesUrl}}"
+              ],
+              "path": [
+                "donaciones-independientes",
+                "{{donacionIndependienteId}}",
+                "estado"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Verificar side-effects downstream",
+      "item": [
+        {
+          "name": "1. Incentivos: donaciones exitosas > 0 (reintentar — side-effect best-effort/async)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('totalDonacionesExitosas > 0 (reintentar si no)', function () { pm.expect(pm.response.json().totalDonacionesExitosas).to.be.above(0); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{incentivosUrl}}/api/incentivos/donantes/{{donanteId}}/metricas",
+              "host": [
+                "{{incentivosUrl}}"
+              ],
+              "path": [
+                "api",
+                "incentivos",
+                "donantes",
+                "{{donanteId}}",
+                "metricas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Notificaciones: el donante recibió al menos 1 notificación (el test Java original espera >=3)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('al menos 1 notificación', function () { pm.expect(pm.response.json().length).to.be.above(0); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{notificacionesUrl}}/notificaciones/persona/{{donantePersonaId}}",
+              "host": [
+                "{{notificacionesUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "persona",
+                "{{donantePersonaId}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

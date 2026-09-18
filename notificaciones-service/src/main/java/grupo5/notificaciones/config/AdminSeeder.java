@@ -38,7 +38,7 @@ public class AdminSeeder implements ApplicationRunner {
 
     Correo correo = new Correo();
     correo.setDireccionCorreo(AdminConstantes.EMAIL_ADMIN);
-    correo.setEsPredeterminado(true);
+    correo.marcarComoPredeterminado();
 
     List<MedioDeContacto> medios = new ArrayList<>();
     medios.add(correo);
