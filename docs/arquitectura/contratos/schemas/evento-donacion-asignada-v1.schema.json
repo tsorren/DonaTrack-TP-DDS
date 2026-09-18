@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-asignada-v1.schema.json",
   "title": "EventoDonacionAsignadaV1",
-  "description": "Evento de dominio canónico enriquecido emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service, logistica-service e incentivos-service",
+  "description": "Evento de dominio canónico enriquecido emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service y logistica-service",
   "type": "object",
   "properties": {
     "donacionIndependienteId": {
@@ -55,16 +55,6 @@
       "type": "number",
       "exclusiveMinimum": 0,
       "description": "Volumen cúbico total en metros cúbicos de los bienes asignados"
-    },
-    "categorias": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Lista de categorías de los ítems donados para procesamiento en incentivos"
-    },
-    "cantidades": {
-      "type": "integer",
-      "exclusiveMinimum": 0,
-      "description": "Cantidad total de ítems donados para procesamiento en incentivos"
     }
   },
   "required": [
@@ -75,9 +65,7 @@
     "descripcion",
     "destino",
     "pesoTotalKG",
-    "volumenTotalM3",
-    "categorias",
-    "cantidades"
+    "volumenTotalM3"
   ],
   "additionalProperties": false
 }
