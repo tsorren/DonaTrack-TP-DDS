@@ -37,8 +37,4 @@ public class DonacionEventListener {
     // notificaciones.dlx
     notificacionService.procesar(evento, messageId);
   }
-
-  public void onDonacionAsignada(EventoDonacionAsignadaV1 evento) {
-    onDonacionAsignada(evento, null);
-  }
 }

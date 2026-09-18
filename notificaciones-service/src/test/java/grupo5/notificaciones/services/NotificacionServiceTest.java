@@ -64,6 +64,18 @@ class NotificacionServiceTest {
     return persona;
   }
 
+  /**
+   * Verifica el guardado único en el repositorio y la cantidad de NotificacionCreada publicadas, y
+   * devuelve las notificaciones capturadas. Es el cierre común de los casos de procesar(...).
+   */
+  private List<Notificacion> notificacionesGuardadas(int eventosPublicadosEsperados) {
+    ArgumentCaptor<List<Notificacion>> captor = ArgumentCaptor.forClass(List.class);
+    verify(repository, times(1)).saveAll(captor.capture());
+    verify(eventPublisher, times(eventosPublicadosEsperados))
+        .publishEvent(any(NotificacionCreada.class));
+    return captor.getValue();
+  }
+
   @Test
   void procesar_conEventoDeUnDestinatario_deberiaResolverPersonaNotificarYGuardar() {
     Persona donante = personaConCorreoQueSiempreEnvia("Juan");
@@ -75,12 +87,9 @@ class NotificacionServiceTest {
 
     service.procesar(dto);
 
-    ArgumentCaptor<List<Notificacion>> captor = ArgumentCaptor.forClass(List.class);
-    verify(repository, times(1)).saveAll(captor.capture());
-    verify(eventPublisher, times(1)).publishEvent(any(NotificacionCreada.class));
-
-    assertEquals(1, captor.getValue().size());
-    assertEquals(donante.getId(), captor.getValue().get(0).getPersonaId());
+    List<Notificacion> guardadas = notificacionesGuardadas(1);
+    assertEquals(1, guardadas.size());
+    assertEquals(donante.getId(), guardadas.get(0).getPersonaId());
   }
 
   @Test
@@ -108,11 +117,7 @@ class NotificacionServiceTest {
 
     service.procesar(dto);
 
-    ArgumentCaptor<List<Notificacion>> captor = ArgumentCaptor.forClass(List.class);
-    verify(repository, times(1)).saveAll(captor.capture());
-    verify(eventPublisher, times(3)).publishEvent(any(NotificacionCreada.class));
-
-    assertEquals(3, captor.getValue().size());
+    assertEquals(3, notificacionesGuardadas(3).size());
   }
 
   @Test
@@ -157,11 +162,7 @@ class NotificacionServiceTest {
 
     service.procesar(eventoV1, UUID.randomUUID().toString());
 
-    ArgumentCaptor<List<Notificacion>> captor = ArgumentCaptor.forClass(List.class);
-    verify(repository, times(1)).saveAll(captor.capture());
-    verify(eventPublisher, times(2)).publishEvent(any(NotificacionCreada.class));
-
-    assertEquals(2, captor.getValue().size());
+    assertEquals(2, notificacionesGuardadas(2).size());
   }
 
   @Test

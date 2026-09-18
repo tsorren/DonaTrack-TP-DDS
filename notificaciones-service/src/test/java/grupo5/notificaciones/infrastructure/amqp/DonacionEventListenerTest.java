@@ -67,15 +67,6 @@ class DonacionEventListenerTest {
   }
 
   @Test
-  void onDonacionAsignada_sobrecargaSinHeaders_deberiaDelegarCorrectamente() {
-    EventoDonacionAsignadaV1 evento = crearEventoValido();
-
-    listener.onDonacionAsignada(evento);
-
-    verify(notificacionService, times(1)).procesar(evento, null);
-  }
-
-  @Test
   void onDonacionAsignada_cuandoServicioFalla_deberiaPropagarExcepcionParaDLQ() {
     EventoDonacionAsignadaV1 evento = crearEventoValido();
     String messageId = UUID.randomUUID().toString();

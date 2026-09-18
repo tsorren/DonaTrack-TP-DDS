@@ -53,27 +53,38 @@ public class NotificacionService {
   @Transactional
   public void procesar(EventoDonacionAsignadaV1 evento, @Nullable String messageId) {
     UUID eventId = resolverEventId(evento, messageId);
-
-    if (jdbcTemplate != null) {
-      int rows =
-          jdbcTemplate.update(
-              "INSERT INTO evento_procesado (event_id, fecha_procesamiento) VALUES (?, ?) ON CONFLICT DO NOTHING",
-              eventId,
-              LocalDateTime.now());
-      if (rows == 0) {
-        log.info("Evento duplicado ignorado (Inbox): {}", eventId);
-        return;
-      }
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
     }
-
-    EventoNotificable entidadEvento = mapper.toEntity(evento);
-    List<Notificacion> notificaciones = entidadEvento.generarNotificaciones();
-    repository.saveAll(notificaciones);
-    notificaciones.forEach(this::publicarYLimpiarDomainEvents);
+    persistirYPublicar(mapper.toEntity(evento));
   }
 
-  public void procesar(EventoDonacionAsignadaV1 evento) {
-    procesar(evento, null);
+  /**
+   * Registra el evento en el inbox y devuelve true si ya estaba, es decir si esta entrega del
+   * mensaje es un duplicado que hay que ignorar. Sin jdbcTemplate (perfil en memoria) no hay inbox
+   * y nunca se considera duplicado.
+   */
+  private boolean yaRegistradoEnInbox(UUID eventId) {
+    if (jdbcTemplate == null) {
+      return false;
+    }
+    int rows =
+        jdbcTemplate.update(
+            "INSERT INTO evento_procesado (event_id, fecha_procesamiento) VALUES (?, ?)"
+                + " ON CONFLICT (event_id) DO NOTHING",
+            eventId,
+            LocalDateTime.now());
+    if (rows == 0) {
+      log.info("Evento duplicado ignorado (Inbox): {}", eventId);
+      return true;
+    }
+    return false;
+  }
+
+  private void persistirYPublicar(EventoNotificable evento) {
+    List<Notificacion> notificaciones = evento.generarNotificaciones();
+    repository.saveAll(notificaciones);
+    notificaciones.forEach(this::publicarYLimpiarDomainEvents);
   }
 
   private static UUID resolverEventId(EventoDonacionAsignadaV1 evento, @Nullable String messageId) {
@@ -101,22 +112,10 @@ public class NotificacionService {
           dto.getClass().getSimpleName());
     }
 
-    if (jdbcTemplate != null) {
-      int rows =
-          jdbcTemplate.update(
-              "INSERT INTO evento_procesado (event_id, fecha_procesamiento) VALUES (?, ?) ON CONFLICT (event_id) DO NOTHING",
-              eventId,
-              LocalDateTime.now());
-      if (rows == 0) {
-        log.info("Evento duplicado ignorado (Inbox): {}", eventId);
-        return;
-      }
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
     }
-
-    EventoNotificable evento = mapper.toEntity(dto);
-    List<Notificacion> notificaciones = evento.generarNotificaciones();
-    repository.saveAll(notificaciones);
-    notificaciones.forEach(this::publicarYLimpiarDomainEvents);
+    persistirYPublicar(mapper.toEntity(dto));
   }
 
   private void publicarYLimpiarDomainEvents(Notificacion notificacion) {

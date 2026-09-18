@@ -110,26 +110,30 @@ class EventoMapperTest {
             "Av. Corrientes 1234, Piso 3, Dpto B, San Nicolás, CABA (CP C1043), Argentina"));
   }
 
+  /** Evento V1 mínimo para los casos en los que sólo importa qué persona no se encuentra. */
+  private EventoDonacionAsignadaV1 eventoV1Con(UUID donanteId, UUID beneficiarioId) {
+    DestinoEventoDTO destino =
+        new DestinoEventoDTO(
+            "Calle Falsa", 123, null, null, "1234", "La Plata", "Buenos Aires", "Argentina");
+    return new EventoDonacionAsignadaV1(
+        UUID.randomUUID(),
+        donanteId,
+        TEST_DATE_TIME,
+        beneficiarioId,
+        "Alimentos",
+        destino,
+        5.0,
+        0.1,
+        java.util.List.of("ALIMENTOS"),
+        2);
+  }
+
   @Test
   void toEntity_donacionAsignadaV1_conDonanteInexistente_deberiaLanzarExcepcion() {
     UUID donanteInexistente = UUID.randomUUID();
     when(personaRepository.findById(donanteInexistente)).thenReturn(Optional.empty());
 
-    DestinoEventoDTO destino =
-        new DestinoEventoDTO(
-            "Calle Falsa", 123, null, null, "1234", "La Plata", "Buenos Aires", "Argentina");
-    EventoDonacionAsignadaV1 eventoV1 =
-        new EventoDonacionAsignadaV1(
-            UUID.randomUUID(),
-            donanteInexistente,
-            TEST_DATE_TIME,
-            beneficiario.getId(),
-            "Alimentos",
-            destino,
-            5.0,
-            0.1,
-            java.util.List.of("ALIMENTOS"),
-            2);
+    EventoDonacionAsignadaV1 eventoV1 = eventoV1Con(donanteInexistente, beneficiario.getId());
 
     assertThrows(ValidationException.class, () -> mapper.toEntity(eventoV1));
   }
@@ -139,21 +143,7 @@ class EventoMapperTest {
     UUID beneficiarioInexistente = UUID.randomUUID();
     when(personaRepository.findById(beneficiarioInexistente)).thenReturn(Optional.empty());
 
-    DestinoEventoDTO destino =
-        new DestinoEventoDTO(
-            "Calle Falsa", 123, null, null, "1234", "La Plata", "Buenos Aires", "Argentina");
-    EventoDonacionAsignadaV1 eventoV1 =
-        new EventoDonacionAsignadaV1(
-            UUID.randomUUID(),
-            donante.getId(),
-            TEST_DATE_TIME,
-            beneficiarioInexistente,
-            "Alimentos",
-            destino,
-            5.0,
-            0.1,
-            java.util.List.of("ALIMENTOS"),
-            2);
+    EventoDonacionAsignadaV1 eventoV1 = eventoV1Con(donante.getId(), beneficiarioInexistente);
 
     assertThrows(ValidationException.class, () -> mapper.toEntity(eventoV1));
   }
