@@ -1,6 +1,7 @@
 package grupo5.incentivos.config;
 
 import grupo5.incentivos.dto.events.EventoDonacionAsignadaV1;
+import grupo5.incentivos.dto.events.EventoDonacionSegmentadaDTO;
 import grupo5.incentivos.dto.events.EventoPersonaSincronizadaV1;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class RabbitMQConfig {
 
   // Routing Keys consumidas
   public static final String ROUTING_KEY_DONACION_ASIGNADA = "donacion.asignada.v1";
+  public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
 
   // Routing Keys emitidas
@@ -69,6 +71,14 @@ public class RabbitMQConfig {
   }
 
   @Bean
+  public Binding bindingIncentivosDonacionesSegmentadas(
+      Queue queueIncentivosDonaciones, TopicExchange donacionesExchange) {
+    return BindingBuilder.bind(queueIncentivosDonaciones)
+        .to(donacionesExchange)
+        .with(ROUTING_KEY_DONACION_SEGMENTADA);
+  }
+
+  @Bean
   public Binding bindingIncentivosPersonas(
       Queue queueIncentivosPersonas, TopicExchange donacionesExchange) {
     return BindingBuilder.bind(queueIncentivosPersonas)
@@ -83,6 +93,7 @@ public class RabbitMQConfig {
     classMapper.setTrustedPackages("*");
     Map<String, Class<?>> idClassMapping = new HashMap<>();
     idClassMapping.put(ROUTING_KEY_DONACION_ASIGNADA, EventoDonacionAsignadaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_SEGMENTADA, EventoDonacionSegmentadaDTO.class);
     idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;

@@ -88,9 +88,7 @@ class EventoMapperTest {
             "Ropa de invierno y frazadas",
             destino,
             12.5,
-            0.4,
-            java.util.List.of("ROPA", "ABRIGO"),
-            5);
+            0.4);
 
     DonacionAsignada resultado = mapper.toEntity(eventoV1);
 
@@ -101,8 +99,6 @@ class EventoMapperTest {
     String detalle = resultado.getDetalleDonacion();
     assertTrue(detalle.contains("Ropa de invierno y frazadas"));
     assertTrue(detalle.contains(donacionId.toString()));
-    assertTrue(detalle.contains("Cantidad: 5"));
-    assertTrue(detalle.contains("Categorías: [ROPA, ABRIGO]"));
     assertTrue(detalle.contains("Peso: 12.5 kg"));
     assertTrue(detalle.contains("Volumen: 0.4 m³"));
     assertTrue(
@@ -123,9 +119,7 @@ class EventoMapperTest {
         "Alimentos",
         destino,
         5.0,
-        0.1,
-        java.util.List.of("ALIMENTOS"),
-        2);
+        0.1);
   }
 
   @Test

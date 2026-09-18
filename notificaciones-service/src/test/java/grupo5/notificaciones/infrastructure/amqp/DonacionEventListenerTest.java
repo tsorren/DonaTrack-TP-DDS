@@ -10,7 +10,6 @@ import grupo5.notificaciones.dto.input.DestinoEventoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,9 +41,7 @@ class DonacionEventListenerTest {
         "Ropa de invierno",
         destino,
         15.5,
-        0.3,
-        List.of("ROPA", "ABRIGO"),
-        10);
+        0.3);
   }
 
   @Test

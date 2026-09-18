@@ -45,12 +45,10 @@ public class EventoMapper {
   }
 
   public String construirDetalleDonacion(EventoDonacionAsignadaV1 evento) {
-    return "%s (ID: %s, Cantidad: %s, Categorías: %s, Peso: %s kg, Volumen: %s m³, Destino: %s)"
+    return "%s (ID: %s, Peso: %s kg, Volumen: %s m³, Destino: %s)"
         .formatted(
             evento.descripcion() != null ? evento.descripcion() : "Donación",
             evento.donacionIndependienteId(),
-            evento.cantidades(),
-            evento.categorias(),
             evento.pesoTotalKG(),
             evento.volumenTotalM3(),
             formatearDestino(evento.destino()));
