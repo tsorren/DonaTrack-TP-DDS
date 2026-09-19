@@ -167,6 +167,16 @@ Comparada fila por fila contra `catalogo-mensajes.md` (fuente de verdad) y el c�
 - **Agregada la fila que faltaba**: `DonacionSegmentadaV1`, que no existía cuando se escribió la versión anterior.
 - Corregidas dos afirmaciones del encabezado que ya eran falsas: la topología de exchange decía "no decidida" (está confirmada desde el 15/9) y el alcance decía "van a migrar" (ya migraron).
 
+### Nota — gap de consumidores en otros servicios (no es trabajo nuestro, solo para que quede registrado)
+
+Al verificar el lado consumidor de los 9 eventos (con grep de `@RabbitListener`/`@RabbitHandler` real en cada servicio, no solo colas/bindings declarados en su `RabbitMQConfig.java`), esto era cierto al 19/9:
+
+- **`notificaciones-service`** tiene 7 de los 8 handlers que le corresponden (`DonanteRegistradoV1`, `DonacionAsignadaV1`, `DonacionRecibidaV1`, `DonacionEnCaminoV1`, `DonacionVencidaV1`, `DonacionEntregaFallidaV1`, y el de `donante.inactivo` que emite Incentivos). **Falta `PersonaSincronizadaV1`**: la cola está bindeada por el wildcard `persona.#`, pero no hay ningún `@RabbitHandler` que la procese. La lógica de persistencia ya existe (`IPersonasService.sincronizar()`, la misma que usaba el endpoint REST `PUT /api/notificaciones/personas` antes de esta migración) — solo falta cablear el consumer a esa lógica.
+- **`incentivos-service`** no tiene **ningún** `@RabbitListener` implementado en todo el servicio. Tiene cola/binding/`idClassMapping` listos para `DonacionAsignadaV1`, `DonacionSegmentadaV1` y `PersonaSincronizadaV1`, pero nada los procesa — y ni siquiera tiene binding declarado todavía para `DonanteRegistradoV1` ni `DonacionRecibidaV1` (los dos eventos que debería reusar por diseño).
+- **`logistica-service`** sí tiene su consumer andando (`DonacionAsignadaEventListener`, sobre `DonacionAsignadaV1`) — este servicio está al día.
+
+Esto significa que, hasta que los equipos de Notificaciones e Incentivos completen sus consumers, los tests de integración/e2e que dependen de la réplica de `Persona` (`PersonIntegrationIT`, `CrossServiceCommunicationIT`, `DonationIntegrationIT`, `FullDistributedDonationE2EIT`) van a seguir fallando — no por nada de `donaciones-service`, que está completo del lado productor. No se toca código de esos servicios desde acá.
+
 ### Pendiente
 
 1. Agregar DLX al `LogisticaEventListener` existente.
