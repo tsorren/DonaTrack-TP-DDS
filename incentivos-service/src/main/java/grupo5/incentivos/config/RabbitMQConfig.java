@@ -8,11 +8,13 @@ import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFacto
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
+@ConditionalOnProperty(name = "incentivos.rabbitmq.enabled", havingValue = "true")
 public class RabbitMQConfig {
 
   // Exchanges

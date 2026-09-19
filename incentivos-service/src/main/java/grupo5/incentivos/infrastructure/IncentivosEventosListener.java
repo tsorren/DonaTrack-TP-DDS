@@ -28,19 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.AmqpRejectAndDontRequeueException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-/**
- * Consume los eventos de dominio que llegan por RabbitMQ y los traduce a las operaciones que hoy
- * expone la API REST del servicio.
- *
- * <p>Está apagado por defecto para no procesar dos veces lo mismo mientras la comunicación siga
- * yendo por HTTP. Se activa con {@code incentivos.rabbitmq.listener.enabled=true}.
- *
- * <p>Si el payload no cumple el contrato o el procesamiento falla, se rechaza el mensaje sin
- * reencolarlo y termina en {@code incentivos.dlq}.
- */
 @Service
+@ConditionalOnProperty(name = "incentivos.rabbitmq.enabled", havingValue = "true")
 public class IncentivosEventosListener {
 
   private static final Logger log = LoggerFactory.getLogger(IncentivosEventosListener.class);
@@ -69,7 +61,7 @@ public class IncentivosEventosListener {
         () ->
             gestionDonanteService.registrarDonante(
                 new RegistrarDonanteRequest(
-                    evento.donanteId(), evento.personaId(), evento.denominacion())));
+                    evento.donanteId(), evento.personaId(), evento.nombre())));
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA)
@@ -120,8 +112,6 @@ public class IncentivosEventosListener {
     procesar(tipo, evento.personaId(), () -> sincronizarNombre(evento));
   }
 
-  // Este evento llega por cada persona del sistema (beneficiarias, admins, etc.): si la persona no
-  // es un donante de incentivos simplemente no hay nada que sincronizar.
   private void sincronizarNombre(EventoPersonaSincronizadaV1 evento) {
     Optional<DonanteIncentivos> donante =
         gestionDonanteService.buscarDonantePorPersonaId(evento.personaId());
@@ -135,8 +125,6 @@ public class IncentivosEventosListener {
     }
   }
 
-  // La baja es idempotente: RabbitMQ entrega "al menos una vez", así que un donante que ya no
-  // existe no es un error.
   private void darDeBaja(UUID donanteId) {
     try {
       gestionDonanteService.darDeBaja(donanteId);
@@ -164,7 +152,7 @@ public class IncentivosEventosListener {
     }
   }
 
-  private void procesar(String tipo, UUID id, Runnable accion) {
+  private static void procesar(String tipo, UUID id, Runnable accion) {
     log.info("Evento {} recibido (id {})", tipo, id);
     try {
       accion.run();

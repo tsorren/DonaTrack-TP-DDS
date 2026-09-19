@@ -4,4 +4,4 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record EventoIncentivoDonanteInactivoV1(
-    UUID idPersona, LocalDateTime fecha, Integer diasInactivo) {}
+    UUID personaDonanteId, LocalDateTime fecha, Integer diasInactividad) {}

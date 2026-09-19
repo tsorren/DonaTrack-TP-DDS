@@ -11,4 +11,4 @@ import java.util.UUID;
 public record EventoDonanteRegistradoV1(
     @NotNull(message = "El ID del donante es obligatorio") UUID donanteId,
     @NotNull(message = "El ID de la persona es obligatorio") UUID personaId,
-    @NotBlank(message = "La denominación es obligatoria") String denominacion) {}
+    @NotBlank(message = "La denominación es obligatoria") String nombre) {}
