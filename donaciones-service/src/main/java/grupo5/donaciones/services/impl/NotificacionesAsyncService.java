@@ -6,6 +6,7 @@ import grupo5.donaciones.dto.comunicaciones.MedioDeContactoReplicaDTO;
 import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.INotificacionesAsyncService;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -33,9 +34,11 @@ public class NotificacionesAsyncService implements INotificacionesAsyncService {
               dto.id(),
               dto.denominacion(),
               dto.tipoPersona().name(),
-              dto.mediosDeContacto().stream()
-                  .map(NotificacionesAsyncService::toMedioEvento)
-                  .toList()));
+              dto.mediosDeContacto() == null
+                  ? List.of()
+                  : dto.mediosDeContacto().stream()
+                      .map(NotificacionesAsyncService::toMedioEvento)
+                      .toList()));
     } catch (Exception e) {
       log.error(
           "Fallo al publicar persona.sincronizada.v1 para persona {}: {}",
