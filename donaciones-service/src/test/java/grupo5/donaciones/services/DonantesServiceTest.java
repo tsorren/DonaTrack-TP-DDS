@@ -4,12 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoDTO;
-import grupo5.donaciones.dto.comunicaciones.RegistrarDonanteRequest;
+import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
-import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
-import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
@@ -29,8 +27,7 @@ import org.mockito.MockitoAnnotations;
 class DonantesServiceTest {
 
   @Mock private IDonantesRepository donantesRepository;
-  @Mock private IncentivosFeignClient incentivosFeignClient;
-  @Mock private NotificacionesFeignClient notificacionesFeignClient;
+  @Mock private IDonacionesEventPublisher eventPublisher;
   @Mock private grupo5.donaciones.models.repositories.IPersonasRepository personasRepository;
 
   private DonanteMapper donanteMapper;
@@ -56,13 +53,9 @@ class DonantesServiceTest {
         new DonanteMapper(
             new PersonaMapper(new DireccionMapper(), new MedioDeContactoMapper()),
             personasRepository);
+
     donantesService =
-        new DonantesService(
-            donantesRepository,
-            donanteMapper,
-            incentivosFeignClient,
-            notificacionesFeignClient,
-            personasRepository);
+        new DonantesService(donantesRepository, donanteMapper, personasRepository, eventPublisher);
   }
 
   @Test
@@ -83,9 +76,8 @@ class DonantesServiceTest {
     assertNotNull(resultado);
     assertNotNull(resultado.idDonante());
     verify(donantesRepository, times(1)).save(any(Donante.class));
-    verify(incentivosFeignClient, times(1))
-        .registrarDonante(any(UUID.class), any(RegistrarDonanteRequest.class));
-    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoDonanteRegistradoDTO.class));
+    verify(eventPublisher, times(1))
+        .publicarDonanteRegistrado(any(EventoDonanteRegistradoV1.class));
   }
 
   @Test
@@ -98,7 +90,9 @@ class DonantesServiceTest {
 
     // Assert
     verify(donantesRepository, times(1)).delete(donante);
-    verify(incentivosFeignClient, times(1)).darDeBaja(donanteId);
+
+    verify(eventPublisher, times(1))
+        .publicarDonanteDadoDeBaja(any(EventoDonanteDadoDeBajaV1.class));
   }
 
   @Test

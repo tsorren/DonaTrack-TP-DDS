@@ -2,12 +2,9 @@ package grupo5.donaciones.services;
 
 import static org.mockito.Mockito.*;
 
-import grupo5.donaciones.dto.comunicaciones.DonacionExitosaRequest;
-import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaDTO;
-import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallidaDTO;
-import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciadaDTO;
-import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
-import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionEnCaminoV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionEntregaFallidaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaV1;
 import grupo5.donaciones.infrastructure.outbox.OutboxStore;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
@@ -35,8 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DonacionesIndependientesNotificacionesServiceTest {
 
-  @Mock private IncentivosFeignClient incentivosFeignClient;
-  @Mock private NotificacionesFeignClient notificacionesFeignClient;
+  @Mock private IDonacionesEventPublisher eventPublisher;
   @Mock private IDonacionesRepository donacionRepository;
   @Mock private IDonantesRepository donantesRepository;
   @Mock private IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
@@ -90,31 +86,29 @@ class DonacionesIndependientesNotificacionesServiceTest {
   }
 
   @Test
-  void procesarRutaIniciada_deberiaEnviarNotificacion() {
+  void procesarRutaIniciada_deberiaPublicarEvento() {
     EventoRutaIniciada event =
         new EventoRutaIniciada(
             donacionIndependienteId, donacionOriginalId, necesidadId, "http://mapa/ruta");
 
     notificacionesService.procesarRutaIniciada(event);
 
-    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoRutaIniciadaDTO.class));
+    verify(eventPublisher, times(1)).publicarDonacionEnCamino(any(EventoDonacionEnCaminoV1.class));
   }
 
   @Test
-  void procesarDonacionRecibida_deberiaRegistrarIncentivosYEnviarNotificacion() {
+  void procesarDonacionRecibida_deberiaPublicarUnSoloEvento() {
     EventoDonacionRecibida event =
         new EventoDonacionRecibida(
             donacionIndependienteId, donacionOriginalId, necesidadId, "ABC-123");
 
     notificacionesService.procesarDonacionRecibida(event);
 
-    verify(incentivosFeignClient, times(1))
-        .procesarDonacionExitosa(any(DonacionExitosaRequest.class));
-    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoDonacionRecibidaDTO.class));
+    verify(eventPublisher, times(1)).publicarDonacionRecibida(any(EventoDonacionRecibidaV1.class));
   }
 
   @Test
-  void procesarDonacionFallida_deberiaEnviarNotificacionConAdmin() {
+  void procesarDonacionFallida_deberiaPublicarEventoConAdmin() {
     when(personasService.obtenerIdPersonaAdministradora()).thenReturn(personaAdminId);
 
     EventoDonacionFallida event =
@@ -123,17 +117,18 @@ class DonacionesIndependientesNotificacionesServiceTest {
 
     notificacionesService.procesarDonacionFallida(event);
 
-    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoEntregaFallidaDTO.class));
+    verify(eventPublisher, times(1))
+        .publicarDonacionEntregaFallida(any(EventoDonacionEntregaFallidaV1.class));
   }
 
   @Test
-  void procesarRutaIniciada_cuandoNotificacionesFalla_encolarEnOutbox() {
+  void procesarRutaIniciada_cuandoPublicacionFalla_encolarEnOutbox() {
     EventoRutaIniciada event =
         new EventoRutaIniciada(
             donacionIndependienteId, donacionOriginalId, necesidadId, "http://mapa/ruta");
-    doThrow(new RuntimeException("notificaciones-service no disponible"))
-        .when(notificacionesFeignClient)
-        .enviarEvento(any());
+    doThrow(new RuntimeException("rabbitmq no disponible"))
+        .when(eventPublisher)
+        .publicarDonacionEnCamino(any());
 
     notificacionesService.procesarRutaIniciada(event);
 
@@ -141,34 +136,16 @@ class DonacionesIndependientesNotificacionesServiceTest {
   }
 
   @Test
-  void procesarDonacionRecibida_cuandoIncentivosFalla_encolarIncentivosPeroNotificacionesSeLlama() {
+  void procesarDonacionRecibida_cuandoPublicacionFalla_encolarEnOutbox() {
     EventoDonacionRecibida event =
         new EventoDonacionRecibida(
             donacionIndependienteId, donacionOriginalId, necesidadId, "ABC-123");
-    doThrow(new RuntimeException("incentivos-service no disponible"))
-        .when(incentivosFeignClient)
-        .procesarDonacionExitosa(any());
+    doThrow(new RuntimeException("rabbitmq no disponible"))
+        .when(eventPublisher)
+        .publicarDonacionRecibida(any());
 
     notificacionesService.procesarDonacionRecibida(event);
 
     verify(outboxStore, times(1)).agregar(any());
-    verify(notificacionesFeignClient, times(1)).enviarEvento(any(EventoDonacionRecibidaDTO.class));
-  }
-
-  @Test
-  void procesarDonacionRecibida_cuandoAmbosFallan_encolarAmbasLlamadasIndependientemente() {
-    EventoDonacionRecibida event =
-        new EventoDonacionRecibida(
-            donacionIndependienteId, donacionOriginalId, necesidadId, "ABC-123");
-    doThrow(new RuntimeException("incentivos-service no disponible"))
-        .when(incentivosFeignClient)
-        .procesarDonacionExitosa(any());
-    doThrow(new RuntimeException("notificaciones-service no disponible"))
-        .when(notificacionesFeignClient)
-        .enviarEvento(any());
-
-    notificacionesService.procesarDonacionRecibida(event);
-
-    verify(outboxStore, times(2)).agregar(any());
   }
 }

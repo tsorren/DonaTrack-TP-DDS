@@ -3,11 +3,13 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.dto.comunicaciones.NuevaEntregaRequest;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
+import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.propuestas.EjecucionAsignacion;
@@ -18,14 +20,19 @@ import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.entities.propuestas.PropuestaAprobada;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.IDonacionesRepository;
+import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
 import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +59,9 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final IPersonasRepository personasRepository;
   private final DireccionMapper direccionMapper;
-  private final LogisticaAsyncService logisticaAsyncService;
+  private final IDonacionesRepository donacionesRepository;
+  private final IDonantesRepository donantesRepository;
+  private final IDonacionesEventPublisher donacionesEventPublisher;
 
   @Override
   public List<PropuestaDTO> ejecutarAsignacion() {
@@ -119,41 +128,57 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
         donacionRepository.save(donacionAsignar);
       }
 
-      notificarLogistica(donacionAsignar, necesidad);
+      publicarDonacionAsignada(donacionAsignar, necesidad);
     }
 
     necesidadRepository.save(necesidad);
   }
 
-  private void notificarLogistica(DonacionIndependiente donacionAsignar, Necesidad necesidad) {
+  private void publicarDonacionAsignada(
+      DonacionIndependiente donacionAsignar, Necesidad necesidad) {
     try {
-      logisticaAsyncService.registrarEntregaPendiente(
-          construirSolicitudEntrega(donacionAsignar, necesidad));
+      donacionesEventPublisher.publicarDonacionAsignada(
+          construirEventoDonacionAsignada(donacionAsignar, necesidad));
     } catch (Exception e) {
       log.error(
-          "No se pudo armar la solicitud de entrega para logística (donación {}): {}",
+          "No se pudo publicar donacion.asignada.v1 (donación {}): {}",
           donacionAsignar.getId(),
           e.getMessage(),
           e);
     }
   }
 
-  private NuevaEntregaRequest construirSolicitudEntrega(
+  private EventoDonacionAsignadaV1 construirEventoDonacionAsignada(
       DonacionIndependiente donacionAsignar, Necesidad necesidad) {
     EntidadBeneficiaria entidad =
         entidadesBeneficiariasRepository
             .findById(necesidad.getEntidadId())
             .orElseThrow(() -> new RecursoNoEncontradoException(necesidad.getEntidadId()));
 
-    Persona persona =
+    Persona personaBeneficiaria =
         personasRepository
             .findById(entidad.juridicaId())
             .orElseThrow(() -> new RecursoNoEncontradoException(entidad.juridicaId()));
 
-    return new NuevaEntregaRequest(
+    Donacion donacionOriginal =
+        donacionesRepository
+            .findById(donacionAsignar.getDonacionOriginalId())
+            .orElseThrow(
+                () -> new RecursoNoEncontradoException(donacionAsignar.getDonacionOriginalId()));
+    UUID donanteId = donacionOriginal.getDonanteId();
+    Donante donante =
+        donantesRepository
+            .findById(donanteId)
+            .orElseThrow(() -> new RecursoNoEncontradoException(donanteId));
+
+    return new EventoDonacionAsignadaV1(
         donacionAsignar.getId(),
-        entidad.getId(),
-        direccionMapper.toOutputDTO(persona.getDireccion()),
+        donanteId,
+        donante.personaId(),
+        LocalDateTime.now(ZoneId.systemDefault()),
+        entidad.juridicaId(),
+        donacionAsignar.getDescripcion(),
+        direccionMapper.toDestinoEventoDTO(personaBeneficiaria.getDireccion()),
         donacionAsignar.getPesoTotal(),
         donacionAsignar.getVolumenTotal());
   }

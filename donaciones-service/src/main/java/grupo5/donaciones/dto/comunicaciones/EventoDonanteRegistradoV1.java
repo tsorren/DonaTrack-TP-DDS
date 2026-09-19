@@ -19,4 +19,5 @@ public record EventoDonanteRegistradoV1(
         @PastOrPresent(message = "La fecha no puede ser futura")
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
         LocalDateTime fecha,
-    @NotBlank(message = "Las credenciales de acceso son obligatorias") String credencialesDeAcceso) {}
+    @NotBlank(message = "Las credenciales de acceso son obligatorias")
+        String credencialesDeAcceso) {}

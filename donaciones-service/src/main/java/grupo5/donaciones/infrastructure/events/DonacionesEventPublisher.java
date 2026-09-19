@@ -20,7 +20,9 @@ import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
-/** Adaptador de salida: publica los eventos de dominio de Donaciones en {@code donaciones.exchange}. */
+/**
+ * Adaptador de salida: publica los eventos de dominio de Donaciones en {@code donaciones.exchange}.
+ */
 @Service
 public class DonacionesEventPublisher implements IDonacionesEventPublisher {
 
@@ -78,7 +80,10 @@ public class DonacionesEventPublisher implements IDonacionesEventPublisher {
   }
 
   private void publicar(String routingKey, Object evento) {
-    log.info("Publicando evento en {} con routingKey={}", RabbitMQConfig.EXCHANGE_DONACIONES, routingKey);
+    log.info(
+        "Publicando evento en {} con routingKey={}",
+        RabbitMQConfig.EXCHANGE_DONACIONES,
+        routingKey);
     rabbitTemplate.convertAndSend(
         RabbitMQConfig.EXCHANGE_DONACIONES, routingKey, evento, agregarHeadersDeTrazabilidad());
   }
