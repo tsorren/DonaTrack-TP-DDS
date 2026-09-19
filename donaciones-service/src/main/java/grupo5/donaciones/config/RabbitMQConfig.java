@@ -1,5 +1,20 @@
 package grupo5.donaciones.config;
 
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionEnCaminoV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionEntregaFallidaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionSegmentadaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionVencidaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
+import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -7,6 +22,7 @@ import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -91,9 +107,33 @@ public class RabbitMQConfig {
 
   // --- Serialización JSON y Templates ---
   @Bean
-  public JacksonJsonMessageConverter messageConverter() {
+  public DefaultClassMapper classMapper() {
+    DefaultClassMapper classMapper = new DefaultClassMapper();
+    classMapper.setTrustedPackages("*");
+    Map<String, Class<?>> idClassMapping = new HashMap<>();
+    idClassMapping.put(ROUTING_KEY_DONACION_SEGMENTADA, EventoDonacionSegmentadaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_ASIGNADA, EventoDonacionAsignadaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_EN_CAMINO, EventoDonacionEnCaminoV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_RECIBIDA, EventoDonacionRecibidaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_ENTREGA_FALLIDA, EventoDonacionEntregaFallidaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_VENCIDA, EventoDonacionVencidaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, EventoDonanteRegistradoV1.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_DADO_DE_BAJA, EventoDonanteDadoDeBajaV1.class);
+    idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
+    idClassMapping.put("ruta.asignada", EventoRutaAsignada.class);
+    idClassMapping.put("ruta.iniciada", EventoRutaIniciada.class);
+    idClassMapping.put("entrega.exitosa", EventoEntregaExitosa.class);
+    idClassMapping.put("entrega.fallida", EventoEntregaFallida.class);
+    classMapper.setIdClassMapping(idClassMapping);
+    return classMapper;
+  }
+
+  @Bean
+  public JacksonJsonMessageConverter messageConverter(DefaultClassMapper classMapper) {
     JsonMapper mapper = JsonMapper.builder().build();
-    return new JacksonJsonMessageConverter(mapper);
+    JacksonJsonMessageConverter converter = new JacksonJsonMessageConverter(mapper);
+    converter.setClassMapper(classMapper);
+    return converter;
   }
 
   @Bean
