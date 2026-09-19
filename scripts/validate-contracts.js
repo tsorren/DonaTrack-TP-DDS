@@ -501,7 +501,8 @@ assert('persona_replica_invalido_tipo', !validateSchemaObject(personaReplicaSche
 const eventoDonacionAsignadaV1Schema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-donacion-asignada-v1.schema.json'), 'utf8'));
 assert('evento_donacion_asignada_v1_valido', validateSchemaObject(eventoDonacionAsignadaV1Schema, {
   donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  personaId: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
   fecha: '2026-09-15T14:30:00Z',
   personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
   descripcion: 'Caja de ropa de abrigo y calzado',
@@ -518,14 +519,16 @@ assert('evento_donacion_asignada_v1_valido', validateSchemaObject(eventoDonacion
 }).valid);
 assert('evento_donacion_asignada_v1_invalido_missing_logistica', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
   donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  personaId: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
   fecha: '2026-09-15T14:30:00Z',
   personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
   descripcion: 'Falta destino y peso'
 }).valid);
 assert('evento_donacion_asignada_v1_invalido_extra_properties_rejected', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
   donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  personaId: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
   fecha: '2026-09-15T14:30:00Z',
   personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
   descripcion: 'Caja de ropa',

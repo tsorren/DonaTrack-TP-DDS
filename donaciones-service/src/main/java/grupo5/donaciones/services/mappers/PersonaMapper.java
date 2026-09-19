@@ -2,8 +2,8 @@ package grupo5.donaciones.services.mappers;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.dto.comunicaciones.MedioDeContactoReplicaDTO;
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
+import grupo5.donaciones.dto.comunicaciones.MedioDeContactoEventoDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
@@ -312,7 +312,7 @@ public class PersonaMapper {
     return null;
   }
 
-  public PersonaReplicaDTO toReplicaDTO(Persona p) {
+  public EventoPersonaSincronizadaV1 toEventoPersonaSincronizadaV1(Persona p) {
     if (p == null) {
       return null;
     }
@@ -325,20 +325,21 @@ public class PersonaMapper {
           case Juridica j -> j.getRazonSocial();
         };
 
-    List<MedioDeContactoReplicaDTO> medios =
-        p.getMediosDeContacto().stream().map(PersonaMapper::toMedioReplicaDTO).toList();
+    List<MedioDeContactoEventoDTO> medios =
+        p.getMediosDeContacto().stream().map(PersonaMapper::toMedioEventoDTO).toList();
 
-    return new PersonaReplicaDTO(p.getId(), denominacion, p.getTipoPersona(), medios);
+    return new EventoPersonaSincronizadaV1(
+        p.getId(), denominacion, p.getTipoPersona().name(), medios);
   }
 
-  private static MedioDeContactoReplicaDTO toMedioReplicaDTO(MedioDeContacto m) {
+  private static MedioDeContactoEventoDTO toMedioEventoDTO(MedioDeContacto m) {
     return switch (m) {
       case Correo c ->
-          new MedioDeContactoReplicaDTO(
+          new MedioDeContactoEventoDTO(
               "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
       case Telefono t -> {
         String tipoStr = t.getTipo() == TipoTelefono.WHATSAPP ? "WHATSAPP" : "TELEFONO";
-        yield new MedioDeContactoReplicaDTO(
+        yield new MedioDeContactoEventoDTO(
             tipoStr,
             t.getEsPredeterminado(),
             null,

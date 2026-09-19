@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
@@ -65,7 +65,7 @@ class PersonasServiceTest {
     assertInstanceOf(HumanaOutputDTO.class, result);
     assertEquals("Juan", ((HumanaOutputDTO) result).nombre());
     verify(repository).save(any(Persona.class));
-    verify(notificacionesAsyncService).sincronizarPersona(any(PersonaReplicaDTO.class));
+    verify(notificacionesAsyncService).sincronizarPersona(any(EventoPersonaSincronizadaV1.class));
   }
 
   @Test
@@ -80,7 +80,7 @@ class PersonasServiceTest {
     assertInstanceOf(HumanaOutputDTO.class, result);
     assertEquals("Juan", ((HumanaOutputDTO) result).nombre());
     verify(repository).save(humana);
-    verify(notificacionesAsyncService).sincronizarPersona(any(PersonaReplicaDTO.class));
+    verify(notificacionesAsyncService).sincronizarPersona(any(EventoPersonaSincronizadaV1.class));
   }
 
   @Test
@@ -105,11 +105,11 @@ class PersonasServiceTest {
     verify(notificacionesAsyncService)
         .sincronizarPersona(
             argThat(
-                dto ->
-                    dto != null
-                        && dto.id().equals(id)
+                (EventoPersonaSincronizadaV1 evento) ->
+                    evento != null
+                        && evento.personaId().equals(id)
                         && grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING.equals(
-                            dto.denominacion())));
+                            evento.denominacion())));
     assertEquals(grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING, humana.getNombre());
   }
 

@@ -33,6 +33,7 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_DONACION_ENTREGA_FALLIDA = "donacion.entrega-fallida.v1";
   public static final String ROUTING_KEY_DONACION_VENCIDA = "donacion.vencida.v1";
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
+  public static final String ROUTING_KEY_DONANTE_DADO_DE_BAJA = "donante.dado-de-baja.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
 
   // --- Exchanges ---
