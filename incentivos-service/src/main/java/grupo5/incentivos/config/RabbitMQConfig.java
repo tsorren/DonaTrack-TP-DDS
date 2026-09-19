@@ -1,5 +1,15 @@
 package grupo5.incentivos.config;
 
+import grupo5.incentivos.dto.events.EventoDonacionRecibidaV1;
+import grupo5.incentivos.dto.events.EventoDonacionSegmentadaV1;
+import grupo5.incentivos.dto.events.EventoDonanteDadoDeBajaV1;
+import grupo5.incentivos.dto.events.EventoDonanteRegistradoV1;
+import grupo5.incentivos.dto.events.EventoIncentivoDonanteInactivoV1;
+import grupo5.incentivos.dto.events.EventoIncentivoMisionCumplidaV1;
+import grupo5.incentivos.dto.events.EventoIncentivoSubioCategoriaV1;
+import grupo5.incentivos.dto.events.EventoPersonaSincronizadaV1;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -7,6 +17,7 @@ import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -125,11 +136,30 @@ public class RabbitMQConfig {
         .with(ROUTING_KEY_DONANTE_DADO_DE_BAJA);
   }
 
-  // --- Serialización ---
+  // --- Serialización y Mapeo Tipado ---
   @Bean
-  public JacksonJsonMessageConverter messageConverter() {
+  public DefaultClassMapper classMapper() {
+    DefaultClassMapper classMapper = new DefaultClassMapper();
+    classMapper.setTrustedPackages("*");
+    Map<String, Class<?>> idClassMapping = new HashMap<>();
+    idClassMapping.put(ROUTING_KEY_DONACION_SEGMENTADA, EventoDonacionSegmentadaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_RECIBIDA, EventoDonacionRecibidaV1.class);
+    idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, EventoDonanteRegistradoV1.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_DADO_DE_BAJA, EventoDonanteDadoDeBajaV1.class);
+    idClassMapping.put(ROUTING_KEY_MISION_CUMPLIDA, EventoIncentivoMisionCumplidaV1.class);
+    idClassMapping.put(ROUTING_KEY_SUBIO_CATEGORIA, EventoIncentivoSubioCategoriaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_INACTIVO, EventoIncentivoDonanteInactivoV1.class);
+    classMapper.setIdClassMapping(idClassMapping);
+    return classMapper;
+  }
+
+  @Bean
+  public JacksonJsonMessageConverter messageConverter(DefaultClassMapper classMapper) {
     JsonMapper mapper = JsonMapper.builder().build();
-    return new JacksonJsonMessageConverter(mapper);
+    JacksonJsonMessageConverter converter = new JacksonJsonMessageConverter(mapper);
+    converter.setClassMapper(classMapper);
+    return converter;
   }
 
   @Bean
