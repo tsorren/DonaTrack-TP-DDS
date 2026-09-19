@@ -4,8 +4,6 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.comunicaciones.MedioDeContactoEventoDTO;
-import grupo5.donaciones.dto.comunicaciones.MedioDeContactoReplicaDTO;
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
@@ -312,46 +310,6 @@ public class PersonaMapper {
       }
     }
     return null;
-  }
-
-  public PersonaReplicaDTO toReplicaDTO(Persona p) {
-    if (p == null) {
-      return null;
-    }
-    String denominacion =
-        switch (p) {
-          case Humana h ->
-              grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING.equals(h.getNombre())
-                  ? grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING
-                  : h.getNombre() + " " + h.getApellido();
-          case Juridica j -> j.getRazonSocial();
-        };
-
-    List<MedioDeContactoReplicaDTO> medios =
-        p.getMediosDeContacto().stream().map(PersonaMapper::toMedioReplicaDTO).toList();
-
-    return new PersonaReplicaDTO(p.getId(), denominacion, p.getTipoPersona(), medios);
-  }
-
-  private static MedioDeContactoReplicaDTO toMedioReplicaDTO(MedioDeContacto m) {
-    return switch (m) {
-      case Correo c ->
-          new MedioDeContactoReplicaDTO(
-              "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
-      case Telefono t -> {
-        String tipoStr = t.getTipo() == TipoTelefono.WHATSAPP ? "WHATSAPP" : "TELEFONO";
-        yield new MedioDeContactoReplicaDTO(
-            tipoStr,
-            t.getEsPredeterminado(),
-            null,
-            t.getCaracteristica(),
-            t.getCodigoArea(),
-            t.getNumero());
-      }
-      default ->
-          throw new IllegalArgumentException(
-              "Medio de contacto no soportado: " + m.getClass().getSimpleName());
-    };
   }
 
   public EventoPersonaSincronizadaV1 toEventoPersonaSincronizadaV1(Persona p) {

@@ -135,11 +135,31 @@ Mientras se hacía este commit local, en paralelo llegaron 2 commits de `tsorren
 - **Test nuevo** `onPropuestaAprobada_conVariasFragmentaciones_debeResolverEntidadYPersonaUnaSolaVez` (2 fragmentaciones en el mismo evento), verificando `times(1)` en `entidadesBeneficiariasRepository`/`personasRepository`/`direccionMapper` y `times(2)` en el publish. Los 2 tests viejos de este archivo **no necesitaron ningún cambio** (ninguno usaba más de una fragmentación).
 - **Verificado con Maven real** (se encontró JDK 21 + Maven bundleados con IntelliJ en la máquina, sin descargar nada — ver referencia nueva en memoria de Claude): `mvn -pl donaciones-service -am test` → **438 tests, 0 fallos, BUILD SUCCESS** (437 de Sofía + el nuevo). También se corrió `mvn spotless:apply` sobre los 2 archivos tocados — formateo aplicado limpio, sin cambios de comportamiento.
 
+### ✅ Hecho (19/9 — TODO 2 resuelto: doble mapeo en `NotificacionesAsyncService`)
+
+- `INotificacionesAsyncService.sincronizarPersona` pasa a recibir `EventoPersonaSincronizadaV1` (antes `PersonaReplicaDTO`) — el mapeo `Persona → Evento` se hace en un solo paso, en el hilo síncrono de `PersonasService`, **antes** de cruzar el límite `@Async` (se decidió así, y no pasando `Persona` directo, porque `CrudRepositoryEnMemoria` no hace copia defensiva — la `Persona` es mutable y compartida por referencia; pasarla directo al método `@Async` hubiera reintroducido una condición de carrera real).
+- Nuevo método `PersonaMapper.toEventoPersonaSincronizadaV1(Persona)` — mapeo directo, sin pasar por `PersonaReplicaDTO`.
+- `PersonasService` actualiza sus 3 call-sites a la nueva firma.
+- A propósito **no se tocó** en este paso: `NotificacionesFeignClient`, `PersonaReplicaDTO`, `MedioDeContactoReplicaDTO`, `PersonaMapper.toReplicaDTO`/`toMedioReplicaDTO` — quedaron con duplicación transitoria hasta el paso 3 (retiro de Feign clients), a pedido explícito del usuario para no mezclar pasos mientras trabaja dividido con Sofía.
+- Tests actualizados: `NotificacionesAsyncServiceTest` (+ 1 test nuevo para el guard de null), `PersonasServiceTest`, y `DonacionesServiceApplicationTest` (apareció recién al correr la suite completa — buena evidencia de por qué conviene correr todo, no solo lo que uno cree relacionado). **439 tests, 0 fallos.**
+
+### ✅ Hecho (19/9 — punto 3 resuelto: retiro completo de los Feign clients)
+
+Se verificó primero con `grep` en **todo el repo** (no solo `donaciones-service`) que ningún otro módulo (incluido `integration-tests`) importa estas clases — los tests de integración le pegan por HTTP a los controllers de cada servicio, no a estas clases Java. Sin contraindicación, se borró todo de una:
+
+- **Feign clients**: `NotificacionesFeignClient`, `IncentivosFeignClient`, `LogisticaFeignClient`, `FeignRetryConfig`.
+- **Wrapper huérfano**: `LogisticaAsyncService`/`ILogisticaAsyncService` (quedó sin llamador al cablear `donacion.asignada` el 18/9) + su test.
+- **DTOs que quedaron sin ningún uso**: `EventoNotificableDTO` (marcadora) + sus 6 implementaciones (`EventoDonacionVencidaDTO`, `EventoRutaIniciadaDTO`, `EventoDonanteRegistradoDTO`, `EventoDonacionRecibidaDTO`, `EventoDonacionAsignadaDTO`, `EventoEntregaFallidaDTO`), `DonanteRegistradoDTO`, `NuevaDonacionRequest`, `DonacionExitosaRequest`, `RegistrarDonanteRequest`, `NuevaEntregaRequest`, y **`PersonaReplicaDTO`/`MedioDeContactoReplicaDTO`** (el resabio que se dejó pendiente del TODO 2 — este era el momento correcto de sacarlos).
+- **`PersonaMapper.toReplicaDTO`/`toMedioReplicaDTO`** borrados — se cierra la duplicación transitoria con `toEventoPersonaSincronizadaV1`.
+- **Infraestructura Feign de fondo, también retirada** (nada la necesitaba ya): `@EnableFeignClients` en `DonacionesServiceApplication`, dependencia `spring-cloud-starter-openfeign` en `donaciones-service/pom.xml`.
+- Tests ajustados (no borrados salvo `LogisticaAsyncServiceTest`): `DonacionesServiceApplicationTest` (sacados los 3 `@MockitoBean` de Feign), `PersonaMapperTest` (reemplazado el test de `toReplicaDTO` por uno de `toEventoPersonaSincronizadaV1`).
+- **Verificado con el reactor completo** (los 7 módulos: `donatrack`, `common-lib`, `donaciones-service`, `notificaciones-service`, `incentivos-service`, `logistica-service`, `integration-tests`): `mvn test` → **BUILD SUCCESS** en todos, sin ninguna sorpresa cruzada. `donaciones-service` solo: **437 tests, 0 fallos** (439 - 2 del test borrado).
+- **No se tocó** (deliberadamente, es config de despliegue, otra capa): las properties `donatrack.notificaciones.url`/`donatrack.incentivos.url`/`donatrack.logistica.url` y sus variables de entorno en `docker-compose.yml` quedaron sin uso del lado de `donaciones-service`, pero no se limpiaron en este paso.
+
 ### Pendiente
 
 1. Investigar el tema de inconsistencia anidada antes de decidir si se agrega `cantidadTotal` a `donacion.segmentada` (ver más arriba) — y comunicar la decisión final a Incentivos, sea cual sea.
-2. **TODO 2**: doble mapeo en `NotificacionesAsyncService`/`PersonaMapper` (`Persona → PersonaReplicaDTO → EventoPersonaSincronizadaV1`) — pendiente, es el próximo paso. Más superficie que el TODO 1 (toca `INotificacionesAsyncService`, `PersonaMapper` y los 3 call-sites de `PersonasService`).
-3. Retirar `NotificacionesFeignClient`/`IncentivosFeignClient`/`LogisticaFeignClient` (y sus wrappers `LogisticaAsyncService`/`ILogisticaAsyncService`) cuando se decida la limpieza global (conservando los endpoints de los controllers, decisión ya tomada en la reunión). `LogisticaFeignClient` se sumó a esta lista tras cablear `donacion.asignada`.
-4. Limpieza aparte (no bloqueante): refrescar `matriz-productor-consumidor.md` completo, tiene contenido pre-reunión del 15/9 que ya no coincide con `catalogo-mensajes.md`.
-5. Agregar DLX al `LogisticaEventListener` existente.
-6. Más adelante (no ahora): persistencia real (JPA/Postgres) de los 7 agregados que ahora hacen falta (los 6 originales + `Donacion`, por `donacion.segmentada`), y swap del Outbox en memoria al real.
+2. **Punto 4 (usuario):** limpieza aparte de `matriz-productor-consumidor.md` completo, tiene contenido pre-reunión del 15/9 que ya no coincide con `catalogo-mensajes.md`.
+3. Agregar DLX al `LogisticaEventListener` existente.
+4. Más adelante (no ahora): persistencia real (JPA/Postgres) de los 7 agregados que ahora hacen falta (los 6 originales + `Donacion`, por `donacion.segmentada`), y swap del Outbox en memoria al real.
+5. (Opcional, no bloqueante) Limpiar las properties/env vars de Notificaciones/Incentivos/Logística que quedaron sin uso tras el retiro de Feign — es config de despliegue compartida, evaluar aparte.
