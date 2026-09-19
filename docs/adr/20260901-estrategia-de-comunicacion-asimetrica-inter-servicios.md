@@ -1,9 +1,12 @@
 # Estrategia de Comunicación Asimétrica Inter-Servicios
 
-- Status: proposed
+- Status: superseded by [ADR 20260911](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md)
 - Date: 2026-09-01
 - Deciders: Decisión Grupal
 - Tags: arquitectura, microservicios, comunicacion, feign, rabbitmq, resiliencia
+
+> [!NOTE]
+> **Evolución Arquitectónica:** Sucedido formalmente por [./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) al evolucionar la arquitectura hacia una topología Pub/Sub desacoplada sobre RabbitMQ (aprobado por revisor humano).
 
 ## Contexto y Problema
 

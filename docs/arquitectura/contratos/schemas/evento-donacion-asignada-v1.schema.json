@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-asignada-v1.schema.json",
+  "title": "EventoDonacionAsignadaV1",
+  "description": "Evento de dominio canónico enriquecido emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service y logistica-service",
+  "type": "object",
+  "properties": {
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador único de la donación independiente asignada"
+    },
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona donante"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del momento de asignación"
+    },
+    "personaBeneficiariaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona o entidad beneficiaria receptora"
+    },
+    "descripcion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Descripción detallada de la donación asignada"
+    },
+    "destino": {
+      "type": "object",
+      "properties": {
+        "calle": { "type": "string" },
+        "altura": { "type": "integer", "exclusiveMinimum": 0 },
+        "piso": { "type": "integer" },
+        "departamento": { "type": "string" },
+        "codigoPostal": { "type": "string" },
+        "localidad": { "type": "string" },
+        "provincia": { "type": "string" },
+        "pais": { "type": "string" }
+      },
+      "required": ["calle", "altura", "codigoPostal", "localidad", "provincia", "pais"],
+      "additionalProperties": false,
+      "description": "Dirección física de destino de la entrega (entidad beneficiaria)"
+    },
+    "pesoTotalKG": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Peso total en kilogramos de los bienes asignados"
+    },
+    "volumenTotalM3": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Volumen cúbico total en metros cúbicos de los bienes asignados"
+    }
+  },
+  "required": [
+    "donacionIndependienteId",
+    "personaDonanteId",
+    "fecha",
+    "personaBeneficiariaId",
+    "descripcion",
+    "destino",
+    "pesoTotalKG",
+    "volumenTotalM3"
+  ],
+  "additionalProperties": false
+}

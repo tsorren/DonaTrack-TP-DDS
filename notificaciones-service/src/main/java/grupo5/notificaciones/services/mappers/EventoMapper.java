@@ -2,7 +2,9 @@ package grupo5.notificaciones.services.mappers;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.notificaciones.dto.input.DestinoEventoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaDTO;
+import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
 import grupo5.notificaciones.dto.input.EventoDonacionEnCaminoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionRecibidaDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionVencidaDTO;
@@ -33,6 +35,44 @@ public class EventoMapper {
 
   public EventoMapper(IPersonaRepository personaRepository) {
     this.personaRepository = personaRepository;
+  }
+
+  public DonacionAsignada toEntity(EventoDonacionAsignadaV1 evento) {
+    Persona donante = buscarPersona(evento.personaDonanteId());
+    Persona beneficiario = buscarPersona(evento.personaBeneficiariaId());
+    return new DonacionAsignada(
+        donante, beneficiario, construirDetalleDonacion(evento), evento.fecha());
+  }
+
+  public String construirDetalleDonacion(EventoDonacionAsignadaV1 evento) {
+    return "%s (ID: %s, Peso: %s kg, Volumen: %s m³, Destino: %s)"
+        .formatted(
+            evento.descripcion() != null ? evento.descripcion() : "Donación",
+            evento.donacionIndependienteId(),
+            evento.pesoTotalKG(),
+            evento.volumenTotalM3(),
+            formatearDestino(evento.destino()));
+  }
+
+  private static String formatearDestino(DestinoEventoDTO d) {
+    if (d == null) {
+      return "Sin destino especificado";
+    }
+    String pisoDpto =
+        (d.piso() != null ? ", Piso " + d.piso() : "")
+            + (d.departamento() != null && !d.departamento().isBlank()
+                ? ", Dpto " + d.departamento()
+                : "");
+
+    return "%s %d%s, %s, %s (CP %s), %s"
+        .formatted(
+            d.calle(),
+            d.altura(),
+            pisoDpto,
+            d.localidad(),
+            d.provincia(),
+            d.codigoPostal(),
+            d.pais());
   }
 
   public EventoNotificable toEntity(EventoNotificableDTO dto) {

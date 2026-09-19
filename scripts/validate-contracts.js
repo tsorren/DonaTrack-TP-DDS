@@ -450,6 +450,14 @@ assert('evento_notificable_entrega_fallida_valido', validateSchemaObject(eventoN
   motivo: 'Dirección inaccesible',
   replanificable: true
 }).valid);
+assert('evento_notificable_con_event_id_valido', validateSchemaObject(eventoNotificableSchema, {
+  eventId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+  tipo: 'DONANTE_REGISTRADO',
+  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  fecha: '2026-09-05T12:00:00Z',
+  credencialesDeAcceso: 'clave-inicial-123'
+}).valid);
+
 
 // 9. evento-ruta-asignada
 const eventoRutaAsignadaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-ruta-asignada.schema.json'), 'utf8'));
@@ -487,6 +495,92 @@ assert('persona_replica_invalido_tipo', !validateSchemaObject(personaReplicaSche
   id: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   denominacion: 'Juan Perez',
   tipoPersona: 'EXTRATERRESTRE'
+}).valid);
+
+// 12. evento-donacion-asignada-v1 (Consumido por Notificaciones y Logística, desacoplado de Incentivos)
+const eventoDonacionAsignadaV1Schema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-donacion-asignada-v1.schema.json'), 'utf8'));
+assert('evento_donacion_asignada_v1_valido', validateSchemaObject(eventoDonacionAsignadaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  descripcion: 'Caja de ropa de abrigo y calzado',
+  destino: {
+    calle: 'Av. Medrano',
+    altura: 951,
+    codigoPostal: 'C1179AAQ',
+    localidad: 'CABA',
+    provincia: 'Buenos Aires',
+    pais: 'Argentina'
+  },
+  pesoTotalKG: 15.5,
+  volumenTotalM3: 0.35
+}).valid);
+assert('evento_donacion_asignada_v1_invalido_missing_logistica', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  descripcion: 'Falta destino y peso'
+}).valid);
+assert('evento_donacion_asignada_v1_invalido_extra_properties_rejected', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  descripcion: 'Caja de ropa',
+  destino: {
+    calle: 'Av. Medrano',
+    altura: 951,
+    codigoPostal: 'C1179AAQ',
+    localidad: 'CABA',
+    provincia: 'Buenos Aires',
+    pais: 'Argentina'
+  },
+  pesoTotalKG: 15.5,
+  volumenTotalM3: 0.35,
+  categorias: ['ROPA'],
+  cantidades: 5
+}).valid, 'No debe aceptar campos adicionales tras desacoplamiento');
+
+// 13. evento-donacion-segmentada (Consumido por Incentivos)
+const eventoDonacionSegmentadaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-donacion-segmentada.schema.json'), 'utf8'));
+assert('evento_donacion_segmentada_valido', validateSchemaObject(eventoDonacionSegmentadaSchema, {
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  categorias: ['ROPA', 'CALZADO'],
+  cantidad: 8,
+  fecha: '2026-09-15T14:30:00Z'
+}).valid);
+assert('evento_donacion_segmentada_invalido_missing', !validateSchemaObject(eventoDonacionSegmentadaSchema, {
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z'
+}).valid);
+
+// 14. evento-incentivo-mision-cumplida-v1 y evento-incentivo-subio-categoria-v1
+const eventoIncentivoMisionCumplidaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-incentivo-mision-cumplida-v1.schema.json'), 'utf8'));
+assert('evento_incentivo_mision_cumplida_valido', validateSchemaObject(eventoIncentivoMisionCumplidaSchema, {
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  nombreMision: 'Primera Donación',
+  recompensa: 'Insignia de Bronce'
+}).valid);
+assert('evento_incentivo_mision_cumplida_invalido_missing', !validateSchemaObject(eventoIncentivoMisionCumplidaSchema, {
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  nombreMision: 'Primera Donación'
+}).valid);
+
+const eventoIncentivoSubioCategoriaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-incentivo-subio-categoria-v1.schema.json'), 'utf8'));
+assert('evento_incentivo_subio_categoria_valido', validateSchemaObject(eventoIncentivoSubioCategoriaSchema, {
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  nombreNuevaCategoria: 'Plata',
+  nombreViejaCategoria: 'Bronce'
+}).valid);
+assert('evento_incentivo_subio_categoria_invalido_missing', !validateSchemaObject(eventoIncentivoSubioCategoriaSchema, {
+  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  fecha: '2026-09-15T14:30:00Z',
+  nombreNuevaCategoria: 'Plata'
 }).valid);
 
 // 4. Pruebas Adversarias de Detección de Falsos Positivos (A03, B03)

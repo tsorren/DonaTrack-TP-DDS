@@ -14,6 +14,8 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -281,5 +283,116 @@ class EntregaTest {
 
     // Justificación vacía o en blanco
     assertThrows(ValidationException.class, () -> entrega.negarEntrega("Comedor", "   ", true));
+  }
+
+  // ========================= RECONSTITUCIÓN (JPA) =========================
+
+  @Test
+  void testConstructorReconstitucionExitoso() {
+    UUID id = UUID.randomUUID();
+    UUID idRuta = UUID.randomUUID();
+    UUID idDonacion = UUID.randomUUID();
+    UUID idBeneficiaria = UUID.randomUUID();
+    Direccion destino = createTestDireccion();
+    LocalDateTime horaSalida = LocalDateTime.now().minusHours(2);
+    LocalDateTime horaArribo = LocalDateTime.now().minusHours(1);
+    LocalDateTime timestamp = LocalDateTime.now().minusHours(2);
+    CambioEstadoEntrega cambio =
+        new CambioEstadoEntrega(
+            EstadoEntrega.PENDIENTE, EstadoEntrega.EN_TRASLADO, timestamp, "Chofer Juan");
+    List<CambioEstadoEntrega> historial = new ArrayList<>(List.of(cambio));
+
+    Entrega entrega =
+        new Entrega(
+            id,
+            idRuta,
+            idDonacion,
+            idBeneficiaria,
+            destino,
+            EstadoEntrega.EN_TRASLADO,
+            historial,
+            horaArribo,
+            horaSalida,
+            "http://foto.jpg",
+            12.5f,
+            1.8f,
+            4L);
+
+    assertEquals(id, entrega.getId());
+    assertEquals(idRuta, entrega.getIdRuta());
+    assertEquals(idDonacion, entrega.getIdDonacion());
+    assertEquals(idBeneficiaria, entrega.getIdBeneficiaria());
+    assertEquals(destino, entrega.getDestino());
+    assertEquals(EstadoEntrega.EN_TRASLADO, entrega.getEstadoActual());
+    assertEquals(1, entrega.getHistorialEstado().size());
+    assertEquals(cambio, entrega.getHistorialEstado().get(0));
+    assertEquals(horaArribo, entrega.getHoraArribo());
+    assertEquals(horaSalida, entrega.getHoraSalida());
+    assertEquals("http://foto.jpg", entrega.getFotoRecepcionUrl());
+    assertEquals(12.5f, entrega.getPesoTotalKG());
+    assertEquals(1.8f, entrega.getVolumenTotalM3());
+    assertEquals(4L, entrega.getVersion());
+  }
+
+  @Test
+  void testConstructorReconstitucionConColeccionNulaNoFalla() {
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(),
+            null,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            createTestDireccion(),
+            EstadoEntrega.PENDIENTE,
+            null,
+            null,
+            null,
+            null,
+            10f,
+            1f,
+            1L);
+
+    assertNotNull(entrega.getHistorialEstado());
+    assertTrue(entrega.getHistorialEstado().isEmpty());
+    assertEquals(1L, entrega.getVersion());
+  }
+
+  @Test
+  void testConstructorNegocioMantieneVersionEnNull() {
+    Entrega entrega = crearEntregaValida();
+    assertNull(entrega.getVersion());
+  }
+
+  @Test
+  void testConstructorReconstitucionAislaColeccionOriginal() {
+    LocalDateTime timestamp = LocalDateTime.now();
+    CambioEstadoEntrega cambio =
+        new CambioEstadoEntrega(
+            EstadoEntrega.PENDIENTE, EstadoEntrega.EN_TRASLADO, timestamp, "Chofer Juan");
+    List<CambioEstadoEntrega> historialOriginal = new ArrayList<>();
+    historialOriginal.add(cambio);
+
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(),
+            null,
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            createTestDireccion(),
+            EstadoEntrega.PENDIENTE,
+            historialOriginal,
+            null,
+            null,
+            null,
+            10f,
+            1f,
+            1L);
+
+    assertEquals(1, entrega.getHistorialEstado().size());
+    historialOriginal.add(
+        new CambioEstadoEntrega(
+            EstadoEntrega.EN_TRASLADO, EstadoEntrega.ENTREGADA, timestamp, "Receptor Pedro"));
+
+    assertEquals(1, entrega.getHistorialEstado().size());
   }
 }
