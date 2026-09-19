@@ -583,6 +583,27 @@ assert('evento_incentivo_subio_categoria_invalido_missing', !validateSchemaObjec
   nombreNuevaCategoria: 'Plata'
 }).valid);
 
+// 15. evento-persona-sincronizada-v1
+const eventoPersonaSincronizadaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-persona-sincronizada-v1.schema.json'), 'utf8'));
+assert('evento_persona_sincronizada_valido', validateSchemaObject(eventoPersonaSincronizadaSchema, {
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  denominacion: 'Carlos Gardel',
+  tipoPersona: 'HUMANA',
+  mediosDeContacto: [
+    { tipo: 'CORREO', direccionCorreo: 'carlos@gardel.com', esPredeterminado: true }
+  ]
+}).valid);
+assert('evento_persona_sincronizada_invalido_missing', !validateSchemaObject(eventoPersonaSincronizadaSchema, {
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  denominacion: 'Carlos Gardel'
+}).valid);
+assert('evento_persona_sincronizada_invalido_extra_properties', !validateSchemaObject(eventoPersonaSincronizadaSchema, {
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  denominacion: 'Carlos Gardel',
+  tipoPersona: 'HUMANA',
+  propiedadInvalida: 'valor'
+}).valid);
+
 // 4. Pruebas Adversarias de Detección de Falsos Positivos (A03, B03)
 console.log('\n[4] Pruebas Adversarias de Detección de Falsos Positivos:');
 
