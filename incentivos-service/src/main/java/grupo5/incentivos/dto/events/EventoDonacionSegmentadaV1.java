@@ -23,10 +23,10 @@ public record EventoDonacionSegmentadaV1(
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
         LocalDateTime fecha) {
 
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        public record Item(
-                @NotBlank(message = "La categoría es obligatoria") String categoria,
-                @NotNull(message = "La cantidad es obligatoria")
-                @Positive(message = "La cantidad debe ser positiva")
-                Integer cantidad) {}
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public record Item(
+      @NotBlank(message = "La categoría es obligatoria") String categoria,
+      @NotNull(message = "La cantidad es obligatoria")
+          @Positive(message = "La cantidad debe ser positiva")
+          Integer cantidad) {}
 }

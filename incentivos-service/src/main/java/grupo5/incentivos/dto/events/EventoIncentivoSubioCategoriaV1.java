@@ -4,7 +4,4 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record EventoIncentivoSubioCategoriaV1(
-        UUID idPersona,
-        LocalDateTime fecha,
-        String categoriaNueva,
-        String categoriaVieja) {}
+    UUID idPersona, LocalDateTime fecha, String categoriaNueva, String categoriaVieja) {}

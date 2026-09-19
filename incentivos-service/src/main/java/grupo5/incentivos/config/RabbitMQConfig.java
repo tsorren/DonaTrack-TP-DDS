@@ -20,13 +20,14 @@ public class RabbitMQConfig {
   public static final String EXCHANGE_DONACIONES = "donaciones.exchange";
 
   // Colas suscriptoras
-  public static final String QUEUE_INCENTIVOS_DONACION_SEGMENTADA = "incentivos.donacion-segmentada";
+  public static final String QUEUE_INCENTIVOS_DONACION_SEGMENTADA =
+      "incentivos.donacion-segmentada";
   public static final String QUEUE_INCENTIVOS_DONACION_RECIBIDA = "incentivos.donacion-recibida";
   public static final String QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA =
-          "incentivos.persona-sincronizada";
+      "incentivos.persona-sincronizada";
   public static final String QUEUE_INCENTIVOS_DONANTE_REGISTRADO = "incentivos.donante-registrado";
   public static final String QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA =
-          "incentivos.donante-dado-de-baja";
+      "incentivos.donante-dado-de-baja";
 
   // Routing Keys consumidas
   public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
@@ -78,46 +79,48 @@ public class RabbitMQConfig {
   }
 
   // --- Bindings ---
-  // La routing key de cada binding es la del evento que publica el productor (constantes de arriba),
-  // no el nombre de la cola. Si donaciones publica con otra key, se cambia acá y en ningún otro lado.
+  // La routing key de cada binding es la del evento que publica el productor (constantes de
+  // arriba),
+  // no el nombre de la cola. Si donaciones publica con otra key, se cambia acá y en ningún otro
+  // lado.
   @Bean
   public Binding bindingIncentivosDonacionSegmentada(
-          Queue queueIncentivosDonacionSegmentada, TopicExchange donacionesExchange) {
+      Queue queueIncentivosDonacionSegmentada, TopicExchange donacionesExchange) {
     return BindingBuilder.bind(queueIncentivosDonacionSegmentada)
-            .to(donacionesExchange)
-            .with(ROUTING_KEY_DONACION_SEGMENTADA);
+        .to(donacionesExchange)
+        .with(ROUTING_KEY_DONACION_SEGMENTADA);
   }
 
   @Bean
   public Binding bindingIncentivosDonacionRecibida(
-          Queue queueIncentivosDonacionRecibida, TopicExchange donacionesExchange) {
+      Queue queueIncentivosDonacionRecibida, TopicExchange donacionesExchange) {
     return BindingBuilder.bind(queueIncentivosDonacionRecibida)
-            .to(donacionesExchange)
-            .with(ROUTING_KEY_DONACION_RECIBIDA);
+        .to(donacionesExchange)
+        .with(ROUTING_KEY_DONACION_RECIBIDA);
   }
 
   @Bean
   public Binding bindingIncentivosPersonaSincronizada(
-          Queue queueIncentivosPersonaSincronizada, TopicExchange donacionesExchange) {
+      Queue queueIncentivosPersonaSincronizada, TopicExchange donacionesExchange) {
     return BindingBuilder.bind(queueIncentivosPersonaSincronizada)
-            .to(donacionesExchange)
-            .with(ROUTING_KEY_PERSONA_SINCRONIZADA);
+        .to(donacionesExchange)
+        .with(ROUTING_KEY_PERSONA_SINCRONIZADA);
   }
 
   @Bean
   public Binding bindingIncentivosDonanteRegistrado(
-          Queue queueIncentivosDonanteRegistrado, TopicExchange donacionesExchange) {
+      Queue queueIncentivosDonanteRegistrado, TopicExchange donacionesExchange) {
     return BindingBuilder.bind(queueIncentivosDonanteRegistrado)
-            .to(donacionesExchange)
-            .with(ROUTING_KEY_DONANTE_REGISTRADO);
+        .to(donacionesExchange)
+        .with(ROUTING_KEY_DONANTE_REGISTRADO);
   }
 
   @Bean
   public Binding bindingIncentivosDonanteDadoDeBaja(
-          Queue queueIncentivosDonanteDadoDeBaja, TopicExchange donacionesExchange) {
+      Queue queueIncentivosDonanteDadoDeBaja, TopicExchange donacionesExchange) {
     return BindingBuilder.bind(queueIncentivosDonanteDadoDeBaja)
-            .to(donacionesExchange)
-            .with(ROUTING_KEY_DONANTE_DADO_DE_BAJA);
+        .to(donacionesExchange)
+        .with(ROUTING_KEY_DONANTE_DADO_DE_BAJA);
   }
 
   // --- Serialización ---
@@ -129,7 +132,7 @@ public class RabbitMQConfig {
 
   @Bean
   public RabbitTemplate rabbitTemplate(
-          ConnectionFactory connectionFactory, JacksonJsonMessageConverter messageConverter) {
+      ConnectionFactory connectionFactory, JacksonJsonMessageConverter messageConverter) {
     RabbitTemplate template = new RabbitTemplate(connectionFactory);
     template.setMessageConverter(messageConverter);
     return template;
@@ -137,7 +140,7 @@ public class RabbitMQConfig {
 
   @Bean
   public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
-          ConnectionFactory connectionFactory, JacksonJsonMessageConverter messageConverter) {
+      ConnectionFactory connectionFactory, JacksonJsonMessageConverter messageConverter) {
     SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
     factory.setConnectionFactory(connectionFactory);
     factory.setMessageConverter(messageConverter);

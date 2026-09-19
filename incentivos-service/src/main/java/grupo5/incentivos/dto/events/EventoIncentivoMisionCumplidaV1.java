@@ -4,8 +4,4 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record EventoIncentivoMisionCumplidaV1(
-        UUID idPersona,
-        LocalDateTime fecha,
-        String nombreMision,
-        String recompensa) {
-}
+    UUID idPersona, LocalDateTime fecha, String nombreMision, String recompensa) {}

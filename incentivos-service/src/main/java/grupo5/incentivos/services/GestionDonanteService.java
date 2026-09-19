@@ -57,7 +57,6 @@ public class GestionDonanteService implements IGestionDonanteService {
     return repository.findByIdPersona(idPersona);
   }
 
-
   @Override
   public void darDeBaja(UUID donanteId) {
     DonanteIncentivos donante = obtenerDonante(donanteId);
