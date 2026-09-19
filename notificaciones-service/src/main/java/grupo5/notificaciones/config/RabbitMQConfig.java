@@ -1,6 +1,15 @@
 package grupo5.notificaciones.config;
 
-import grupo5.notificaciones.dto.input.*;
+import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionEnCaminoV1;
+import grupo5.notificaciones.dto.input.EventoDonacionEntregaFallidaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionRecibidaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionVencidaV1;
+import grupo5.notificaciones.dto.input.EventoDonanteRegistradoV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoDonanteInactivoV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
+import grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.amqp.core.Binding;
