@@ -90,6 +90,33 @@ class GestionDonanteServiceTest {
   }
 
   @Test
+  void buscarDonantePorPersonaId_cuandoExiste_deberiaRetornarDonante() {
+    UUID id = UUID.randomUUID();
+    UUID idPersona = UUID.randomUUID();
+    service.registrarDonante(IncentivosFixtures.registrarDonante(id, idPersona, "Test"));
+
+    var resultado = service.buscarDonantePorPersonaId(idPersona);
+
+    assertTrue(resultado.isPresent());
+    assertEquals(id, resultado.get().getId());
+    assertEquals(idPersona, resultado.get().getIdPersona());
+  }
+
+  @Test
+  void buscarDonantePorPersonaId_cuandoNoExiste_deberiaRetornarVacio() {
+    var resultado = service.buscarDonantePorPersonaId(UUID.randomUUID());
+
+    assertTrue(resultado.isEmpty());
+  }
+
+  @Test
+  void buscarDonantePorPersonaId_cuandoIdPersonaEsNulo_deberiaRetornarVacio() {
+    var resultado = service.buscarDonantePorPersonaId(null);
+
+    assertTrue(resultado.isEmpty());
+  }
+
+  @Test
   void darDeBaja_cuandoExiste_deberiaEliminarDelRepositorio() {
     UUID id = UUID.randomUUID();
     service.registrarDonante(IncentivosFixtures.registrarDonante(id, id, "Test"));
