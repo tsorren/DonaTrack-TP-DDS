@@ -126,7 +126,7 @@ Mientras se hacía este commit local, en paralelo llegaron 2 commits de `tsorren
   - `PropuestaDeAsignacionService.construirEventoDonacionAsignada`: `entidad`/`personaBeneficiaria` se re-buscan en cada vuelta del `for` de `onPropuestaAprobada`, aunque dependen solo de `necesidad` (invariante en todo el loop) — se puede sacar esa búsqueda afuera del for. No es un problema de performance hoy (repos en memoria), pero se vuelve N consultas SQL evitables cuando llegue la persistencia real.
   - `NotificacionesAsyncService.sincronizarPersona`: doble mapeo — `Persona → PersonaReplicaDTO` (en `PersonaMapper`, pensado para el `PUT` Feign que ya no se llama) y después `PersonaReplicaDTO → EventoPersonaSincronizadaV1` (mapeo nuevo de Sofía). Confirmado con grep que `PersonaReplicaDTO`/`MedioDeContactoReplicaDTO` no tienen ya ningún otro consumidor real — candidatos a eliminarse junto con `PersonaMapper.toReplicaDTO`/`toMedioReplicaDTO`, mapeando `Persona → EventoPersonaSincronizadaV1` directo en un solo paso.
   - Detalle completo del razonamiento de ambos en la sección 16 de los apuntes.
-- **Pregunta de contrato abierta con Incentivos (`donacion.segmentada`):** Incentivos pidió un payload agregado (`categorias: [...]` + `cantidadTotal` único) en vez del detalle actual (`items: [{categoria, cantidad}]`). Se evaluaron 3 opciones (mantener el detalle / dar solo el agregado / mandar ambos) — **por ahora se deja el contrato tal cual está** (el detalle, opción "mandar ambos" quedaría pendiente si Incentivos insiste en el agregado), a la espera de investigar si agregar `cantidadTotal` no trae algún problema de inconsistencia anidada. Sin cambios de código. Detalle en sección 12 de los apuntes.
+- **Pregunta de contrato con Incentivos (`donacion.segmentada`) — CERRADA (19/9):** Incentivos había pedido un payload agregado (`categorias: [...]` + `cantidadTotal` único) en vez del detalle actual (`items: [{categoria, cantidad}]`). Se evaluaron 3 opciones (mantener el detalle / dar solo el agregado / mandar ambos). **Decisión final: no se agrega `cantidadTotal`** — Incentivos aceptó calcular la suma ellos mismos a partir de `items`. El contrato de `donacion.segmentada.v1` queda exactamente como está, sin cambios de código. Detalle en sección 12 de los apuntes.
 
 ### ✅ Hecho (19/9 — TODO 1 resuelto: lookups redundantes en `PropuestaDeAsignacionService`)
 
@@ -169,7 +169,6 @@ Comparada fila por fila contra `catalogo-mensajes.md` (fuente de verdad) y el c�
 
 ### Pendiente
 
-1. Investigar el tema de inconsistencia anidada antes de decidir si se agrega `cantidadTotal` a `donacion.segmentada` (ver más arriba) — y comunicar la decisión final a Incentivos, sea cual sea.
-2. Agregar DLX al `LogisticaEventListener` existente.
-3. Más adelante (no ahora): persistencia real (JPA/Postgres) de los 7 agregados que ahora hacen falta (los 6 originales + `Donacion`, por `donacion.segmentada`), y swap del Outbox en memoria al real.
-4. (Opcional, no bloqueante) Limpiar las properties/env vars de Notificaciones/Incentivos/Logística que quedaron sin uso tras el retiro de Feign — es config de despliegue compartida, evaluar aparte.
+1. Agregar DLX al `LogisticaEventListener` existente.
+2. Más adelante (no ahora): persistencia real (JPA/Postgres) de los 7 agregados que ahora hacen falta (los 6 originales + `Donacion`, por `donacion.segmentada`), y swap del Outbox en memoria al real.
+3. (Opcional, no bloqueante) Limpiar las properties/env vars de Notificaciones/Incentivos/Logística que quedaron sin uso tras el retiro de Feign — es config de despliegue compartida, evaluar aparte.
