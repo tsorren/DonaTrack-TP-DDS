@@ -8,6 +8,7 @@ import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record EventoPersonaSincronizadaV1(
+public record EventoDonanteRegistradoV1(
+    @NotNull(message = "El ID del donante es obligatorio") UUID donanteId,
     @NotNull(message = "El ID de la persona es obligatorio") UUID personaId,
-    @NotBlank(message = "La denominación es obligatoria") String denominacion) {}
+    @NotBlank(message = "La denominación es obligatoria") String nombre) {}
