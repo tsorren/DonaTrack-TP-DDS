@@ -156,10 +156,20 @@ Se verificó primero con `grep` en **todo el repo** (no solo `donaciones-service
 - **Verificado con el reactor completo** (los 7 módulos: `donatrack`, `common-lib`, `donaciones-service`, `notificaciones-service`, `incentivos-service`, `logistica-service`, `integration-tests`): `mvn test` → **BUILD SUCCESS** en todos, sin ninguna sorpresa cruzada. `donaciones-service` solo: **437 tests, 0 fallos** (439 - 2 del test borrado).
 - **No se tocó** (deliberadamente, es config de despliegue, otra capa): las properties `donatrack.notificaciones.url`/`donatrack.incentivos.url`/`donatrack.logistica.url` y sus variables de entorno en `docker-compose.yml` quedaron sin uso del lado de `donaciones-service`, pero no se limpiaron en este paso.
 
+### ✅ Hecho (19/9 — punto 4 resuelto: `matriz-productor-consumidor.md` reescrita)
+
+Comparada fila por fila contra `catalogo-mensajes.md` (fuente de verdad) y el código real. Reescrita por completo, no parcheada — la versión vieja tenía una estructura entera (por "Ola 1/2/3") que el propio catálogo dice que reemplaza. Cambios:
+
+- **9 filas, una por evento confirmado**, sin filas de "reuso" separadas — cuando un evento tiene 2 consumidores se listan ambos en la misma fila (`DonanteRegistradoV1`, `DonacionRecibidaV1`, `PersonaSincronizadaV1`).
+- **Se sacó la columna "Fase"/Ola** (decisión del usuario) — ya no hay eventos "por confirmar" en distintas oleadas, los 9 están igual de confirmados.
+- **La columna "Reemplaza (Feign)" se mantuvo, renombrada a "Origen (pre-RabbitMQ)"** (decisión del usuario) — valor histórico de dónde vino cada evento, aunque esas clases Feign ya no existan en el código (se borraron en el punto 3).
+- **3 filas eliminadas por completo** (no corregidas): `PersonaReplicaV1` (nombre/alcance viejo de `PersonaSincronizadaV1`), `EntregaSolicitadaV1` (el Command a Logística que se descartó en la reunión del 15/9), `DonacionCargadaV1` (versión temprana especulativa, sin relación real con ningún evento final).
+- **Agregada la fila que faltaba**: `DonacionSegmentadaV1`, que no existía cuando se escribió la versión anterior.
+- Corregidas dos afirmaciones del encabezado que ya eran falsas: la topología de exchange decía "no decidida" (está confirmada desde el 15/9) y el alcance decía "van a migrar" (ya migraron).
+
 ### Pendiente
 
 1. Investigar el tema de inconsistencia anidada antes de decidir si se agrega `cantidadTotal` a `donacion.segmentada` (ver más arriba) — y comunicar la decisión final a Incentivos, sea cual sea.
-2. **Punto 4 (usuario):** limpieza aparte de `matriz-productor-consumidor.md` completo, tiene contenido pre-reunión del 15/9 que ya no coincide con `catalogo-mensajes.md`.
-3. Agregar DLX al `LogisticaEventListener` existente.
-4. Más adelante (no ahora): persistencia real (JPA/Postgres) de los 7 agregados que ahora hacen falta (los 6 originales + `Donacion`, por `donacion.segmentada`), y swap del Outbox en memoria al real.
-5. (Opcional, no bloqueante) Limpiar las properties/env vars de Notificaciones/Incentivos/Logística que quedaron sin uso tras el retiro de Feign — es config de despliegue compartida, evaluar aparte.
+2. Agregar DLX al `LogisticaEventListener` existente.
+3. Más adelante (no ahora): persistencia real (JPA/Postgres) de los 7 agregados que ahora hacen falta (los 6 originales + `Donacion`, por `donacion.segmentada`), y swap del Outbox en memoria al real.
+4. (Opcional, no bloqueante) Limpiar las properties/env vars de Notificaciones/Incentivos/Logística que quedaron sin uso tras el retiro de Feign — es config de despliegue compartida, evaluar aparte.
