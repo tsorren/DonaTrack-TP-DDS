@@ -18,9 +18,13 @@ public class DonacionEventListener {
 
   private static final Logger log = LoggerFactory.getLogger(DonacionEventListener.class);
   private final NotificacionService notificacionService;
+  private final grupo5.notificaciones.services.mappers.PersonaMapper personaMapper;
 
-  public DonacionEventListener(NotificacionService notificacionService) {
+  public DonacionEventListener(
+      NotificacionService notificacionService,
+      grupo5.notificaciones.services.mappers.PersonaMapper personaMapper) {
     this.notificacionService = notificacionService;
+    this.personaMapper = personaMapper;
   }
 
   // 1. Donación Asignada
@@ -74,5 +78,17 @@ public class DonacionEventListener {
   public void onDonanteInactivo(@Valid EventoDonanteInactivoDTO evento) {
     log.info("Consumiendo evento donante.inactivo: donanteId={}", evento.idPersonaDonante());
     notificacionService.procesar(evento);
+  }
+
+  // 8. Persona Sincronizada
+  @RabbitHandler
+  public void onPersonaSincronizada(
+      @Valid EventoPersonaSincronizadaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info(
+        "Consumiendo evento persona.sincronizada.v1: personaId={}, messageId={}",
+        evento.personaId(),
+        messageId);
+    notificacionService.procesarPersonaSincronizada(personaMapper.toReplicaDTO(evento), messageId);
   }
 }

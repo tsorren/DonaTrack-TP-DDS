@@ -30,12 +30,21 @@ public class NotificacionService {
   private final EventoMapper mapper;
   private final ApplicationEventPublisher eventPublisher;
   private final JdbcTemplate jdbcTemplate;
+  private final grupo5.notificaciones.services.IPersonasService personasService;
 
   public NotificacionService(
       INotificacionRepository repository,
       EventoMapper mapper,
       ApplicationEventPublisher eventPublisher) {
-    this(repository, mapper, eventPublisher, null);
+    this(repository, mapper, eventPublisher, null, null);
+  }
+
+  public NotificacionService(
+      INotificacionRepository repository,
+      EventoMapper mapper,
+      ApplicationEventPublisher eventPublisher,
+      @Nullable JdbcTemplate jdbcTemplate) {
+    this(repository, mapper, eventPublisher, jdbcTemplate, null);
   }
 
   @Autowired
@@ -43,20 +52,38 @@ public class NotificacionService {
       INotificacionRepository repository,
       EventoMapper mapper,
       ApplicationEventPublisher eventPublisher,
-      @Nullable JdbcTemplate jdbcTemplate) {
+      @Nullable JdbcTemplate jdbcTemplate,
+      @Nullable grupo5.notificaciones.services.IPersonasService personasService) {
     this.repository = repository;
     this.mapper = mapper;
     this.eventPublisher = eventPublisher;
     this.jdbcTemplate = jdbcTemplate;
+    this.personasService = personasService;
   }
 
   @Transactional
   public void procesar(EventoDonacionAsignadaV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento, messageId);
+    UUID eventId = resolverEventId(evento.donacionIndependienteId(), messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
     persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesarPersonaSincronizada(
+      grupo5.notificaciones.dto.PersonaReplicaDTO dto, @Nullable String messageId) {
+    if (dto == null) {
+      return;
+    }
+    UUID eventId = resolverEventId(dto.id(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      log.info("Evento persona.sincronizada duplicado ignorado (Inbox): {}", eventId);
+      return;
+    }
+    if (personasService != null) {
+      personasService.sincronizar(dto);
+    }
   }
 
   /**
@@ -87,7 +114,7 @@ public class NotificacionService {
     notificaciones.forEach(this::publicarYLimpiarDomainEvents);
   }
 
-  private static UUID resolverEventId(EventoDonacionAsignadaV1 evento, @Nullable String messageId) {
+  private static UUID resolverEventId(@Nullable UUID fallbackId, @Nullable String messageId) {
     if (messageId != null && !messageId.isBlank()) {
       try {
         return UUID.fromString(messageId);
@@ -95,8 +122,8 @@ public class NotificacionService {
         return UUID.nameUUIDFromBytes(messageId.getBytes(StandardCharsets.UTF_8));
       }
     }
-    if (evento.donacionIndependienteId() != null) {
-      return evento.donacionIndependienteId();
+    if (fallbackId != null) {
+      return fallbackId;
     }
     return UUID.randomUUID();
   }

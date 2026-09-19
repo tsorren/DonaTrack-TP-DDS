@@ -7,10 +7,15 @@ import java.time.ZoneId;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(
+    name = "incentivos.rabbitmq.enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 public class NotificacionesClientAdapter implements INotificacionesClient {
 
   private static final Logger log = LoggerFactory.getLogger(NotificacionesClientAdapter.class);

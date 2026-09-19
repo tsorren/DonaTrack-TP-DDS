@@ -1,4 +1,4 @@
-package grupo5.incentivos.dto.events;
+package grupo5.notificaciones.dto.input;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
