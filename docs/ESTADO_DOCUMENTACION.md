@@ -201,6 +201,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/README.md`](adr/README.md) | Gobernanza ADR | Fuente canónica del ciclo de vida de ADRs, Two-Gate Rule y especificación MADR. | 🟢 Sincronizado |
 | [`docs/adr/20260911-harness-skill-review-pr-adversarial-grepai.md`](adr/20260911-harness-skill-review-pr-adversarial-grepai.md) | ADR Gobernanza IA | Formalización de la skill canónica review-pr, protocolo GrepAI y tooling CLI de contexto. | 🟢 Sincronizado |
 | [`docs/adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) | ADR Arquitectura AMQP | Topología Pub/Sub canónica DDD, colas segregadas, clúster DLQ y Hard Cutover inter-servicios. | 🟢 Sincronizado |
+| [`docs/adr/20260919-convencion-canonica-identificadores-y-contratos-amqp.md`](adr/20260919-convencion-canonica-identificadores-y-contratos-amqp.md) | ADR Estándar de Contratos | Convención canónica de identificadores (<entidad>Id), separación AMQP/REST y erradicación de JsonAlias. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
 

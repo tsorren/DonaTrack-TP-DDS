@@ -2,7 +2,7 @@ package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.models.entities.personas.Genero;
@@ -119,16 +119,16 @@ class PersonaMapperTest {
   }
 
   @Test
-  void toReplicaDTO_deberiaMapearCorrectamente() {
+  void toEventoPersonaSincronizadaV1_deberiaMapearCorrectamente() {
     Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
     humana.actualizarDocumento(null, "12345678");
 
-    PersonaReplicaDTO replica = mapper.toReplicaDTO(humana);
+    EventoPersonaSincronizadaV1 evento = mapper.toEventoPersonaSincronizadaV1(humana);
 
-    assertNotNull(replica);
-    assertEquals(humana.getId(), replica.id());
-    assertEquals("Juan Perez", replica.denominacion());
-    assertEquals(TipoPersona.HUMANA, replica.tipoPersona());
+    assertNotNull(evento);
+    assertEquals(humana.getId(), evento.personaId());
+    assertEquals("Juan Perez", evento.denominacion());
+    assertEquals(TipoPersona.HUMANA.name(), evento.tipoPersona());
   }
 
   @Test

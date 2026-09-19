@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-asignada-v1.schema.json",
   "title": "EventoDonacionAsignadaV1",
-  "description": "Evento de dominio canónico enriquecido emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service y logistica-service",
+  "description": "Evento de dominio emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service y logistica-service",
   "type": "object",
   "properties": {
     "donacionIndependienteId": {
@@ -10,10 +10,15 @@
       "format": "uuid",
       "description": "Identificador único de la donación independiente asignada"
     },
-    "personaDonanteId": {
+    "donanteId": {
       "type": "string",
       "format": "uuid",
-      "description": "Identificador de la persona donante"
+      "description": "Identificador del donante"
+    },
+    "personaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona asociada a ese donante"
     },
     "fecha": {
       "type": "string",
@@ -59,7 +64,8 @@
   },
   "required": [
     "donacionIndependienteId",
-    "personaDonanteId",
+    "donanteId",
+    "personaId",
     "fecha",
     "personaBeneficiariaId",
     "descripcion",

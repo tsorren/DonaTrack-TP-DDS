@@ -39,48 +39,50 @@ public class DonacionEventListener {
 
   // 2. Donación en Camino (Ruta iniciada)
   @RabbitHandler
-  public void onDonacionEnCamino(@Valid EventoDonacionEnCaminoDTO evento) {
-    log.info("Consumiendo evento donacion.en-camino: donanteId={}", evento.idPersonaDonante());
-    notificacionService.procesar(evento);
+  public void onDonacionEnCamino(
+      @Valid EventoDonacionEnCaminoV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info("Consumiendo evento donacion.en-camino: donanteId={}", evento.donanteId());
+    notificacionService.procesar(evento, messageId);
   }
 
   // 3. Donación Recibida (Entrega exitosa)
   @RabbitHandler
-  public void onDonacionRecibida(@Valid EventoDonacionRecibidaDTO evento) {
-    log.info("Consumiendo evento donacion.recibida: donanteId={}", evento.idPersonaDonante());
-    notificacionService.procesar(evento);
+  public void onDonacionRecibida(
+      @Valid EventoDonacionRecibidaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info("Consumiendo evento donacion.recibida: donanteId={}", evento.donanteId());
+    notificacionService.procesar(evento, messageId);
   }
 
   // 4. Entrega Fallida
   @RabbitHandler
-  public void onEntregaFallida(@Valid EventoEntregaFallidaDTO evento) {
-    log.info(
-        "Consumiendo evento donacion.entrega-fallida: donanteId={}", evento.idPersonaDonante());
-    notificacionService.procesar(evento);
+  public void onEntregaFallida(
+      @Valid EventoDonacionEntregaFallidaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info("Consumiendo evento donacion.entrega-fallida: donanteId={}", evento.donanteId());
+    notificacionService.procesar(evento, messageId);
   }
 
   // 5. Donación Vencida
   @RabbitHandler
-  public void onDonacionVencida(@Valid EventoDonacionVencidaDTO evento) {
-    log.info("Consumiendo evento donacion.vencida: donanteId={}", evento.idPersonaDonante());
-    notificacionService.procesar(evento);
+  public void onDonacionVencida(
+      @Valid EventoDonacionVencidaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info("Consumiendo evento donacion.vencida: donanteId={}", evento.donanteId());
+    notificacionService.procesar(evento, messageId);
   }
 
   // 6. Donante Registrado
   @RabbitHandler
-  public void onDonanteRegistrado(@Valid EventoDonanteRegistradoDTO evento) {
-    log.info("Consumiendo evento donante.registrado: donanteId={}", evento.idPersonaDonante());
-    notificacionService.procesar(evento);
+  public void onDonanteRegistrado(
+      @Valid EventoDonanteRegistradoV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+    log.info("Consumiendo evento donante.registrado: donanteId={}", evento.donanteId());
+    notificacionService.procesar(evento, messageId);
   }
 
-  // 7. Donante Inactivo
-  @RabbitHandler
-  public void onDonanteInactivo(@Valid EventoDonanteInactivoDTO evento) {
-    log.info("Consumiendo evento donante.inactivo: donanteId={}", evento.idPersonaDonante());
-    notificacionService.procesar(evento);
-  }
-
-  // 8. Persona Sincronizada
+  // 7. Persona Sincronizada
   @RabbitHandler
   public void onPersonaSincronizada(
       @Valid EventoPersonaSincronizadaV1 evento,

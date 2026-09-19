@@ -1,6 +1,5 @@
 package grupo5.donaciones.dto.comunicaciones;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -17,7 +16,8 @@ import java.util.UUID;
 public record EventoDonacionAsignadaV1(
     @NotNull(message = "El ID de la donación independiente es obligatorio")
         UUID donacionIndependienteId,
-    @NotNull(message = "El ID de la persona donante es obligatorio") UUID personaDonanteId,
+    @NotNull(message = "El ID del donante es obligatorio") UUID donanteId,
+    @NotNull(message = "El ID de la persona es obligatorio") UUID personaId,
     @NotNull(message = "La fecha es obligatoria")
         @PastOrPresent(message = "La fecha no puede ser futura")
         @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
@@ -28,9 +28,7 @@ public record EventoDonacionAsignadaV1(
     @NotNull(message = "El destino es obligatorio") @Valid DestinoEventoDTO destino,
     @NotNull(message = "El peso total es obligatorio")
         @Positive(message = "El peso total debe ser positivo")
-        @JsonAlias({"pesoTotal", "pesoTotalKG"})
         Double pesoTotalKG,
     @NotNull(message = "El volumen total es obligatorio")
         @Positive(message = "El volumen total debe ser positivo")
-        @JsonAlias({"volumenTotal", "volumenTotalM3"})
         Double volumenTotalM3) {}

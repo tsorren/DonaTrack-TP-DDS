@@ -430,30 +430,30 @@ assert('evento_entrega_fallida_invalido_missing', !validateSchemaObject(eventoEn
 const eventoNotificableSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-notificable.schema.json'), 'utf8'));
 assert('evento_notificable_donante_registrado_valido', validateSchemaObject(eventoNotificableSchema, {
   tipo: 'DONANTE_REGISTRADO',
-  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   fecha: '2026-09-05T12:00:00Z',
   credencialesDeAcceso: 'clave-inicial-123'
 }).valid);
 assert('evento_notificable_donante_inactivo_valido', validateSchemaObject(eventoNotificableSchema, {
   tipo: 'DONANTE_INACTIVO',
-  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   fecha: '2026-09-05T12:00:00Z',
   diasInactivo: 30
 }).valid);
 assert('evento_notificable_entrega_fallida_valido', validateSchemaObject(eventoNotificableSchema, {
   tipo: 'ENTREGA_FALLIDA',
-  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   fecha: '2026-09-05T12:00:00Z',
-  idPersonaBeneficiaria: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
-  detalleDonacion: 'Caja de leche en polvo',
-  idPersonaAdmin: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
-  motivo: 'Dirección inaccesible',
+  personaBeneficiariaId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  descripcion: 'Caja de leche en polvo',
+  personaAdminId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  justificacion: 'Dirección inaccesible',
   replanificable: true
 }).valid);
 assert('evento_notificable_con_event_id_valido', validateSchemaObject(eventoNotificableSchema, {
   eventId: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
   tipo: 'DONANTE_REGISTRADO',
-  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   fecha: '2026-09-05T12:00:00Z',
   credencialesDeAcceso: 'clave-inicial-123'
 }).valid);
@@ -501,7 +501,8 @@ assert('persona_replica_invalido_tipo', !validateSchemaObject(personaReplicaSche
 const eventoDonacionAsignadaV1Schema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-donacion-asignada-v1.schema.json'), 'utf8'));
 assert('evento_donacion_asignada_v1_valido', validateSchemaObject(eventoDonacionAsignadaV1Schema, {
   donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  personaId: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
   fecha: '2026-09-15T14:30:00Z',
   personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
   descripcion: 'Caja de ropa de abrigo y calzado',
@@ -518,14 +519,16 @@ assert('evento_donacion_asignada_v1_valido', validateSchemaObject(eventoDonacion
 }).valid);
 assert('evento_donacion_asignada_v1_invalido_missing_logistica', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
   donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  personaId: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
   fecha: '2026-09-15T14:30:00Z',
   personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
   descripcion: 'Falta destino y peso'
 }).valid);
 assert('evento_donacion_asignada_v1_invalido_extra_properties_rejected', !validateSchemaObject(eventoDonacionAsignadaV1Schema, {
   donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
-  personaDonanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  personaId: 'd0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44',
   fecha: '2026-09-15T14:30:00Z',
   personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
   descripcion: 'Caja de ropa',
@@ -623,7 +626,7 @@ assert('adversarial_rechazo_datetime_invalido', !validateSchemaObject(eventoRuta
 // B03 — Falsos Positivos en Polimorfismo de EventoNotificableDTO
 const payloadFalsoPositivoB03 = {
   tipo: 'DONANTE_REGISTRADO',
-  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   fecha: '2026-09-05T12:00:00Z'
   // falta credencialesDeAcceso
 };
@@ -631,7 +634,7 @@ assert('adversarial_rechazo_b03_subtipo_incompleto', !validateSchemaObject(event
 
 const payloadSubtipoInvalido = {
   tipo: 'DONANTE_INACTIVO',
-  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   fecha: '2026-09-05T12:00:00Z',
   diasInactivo: 0 // debe ser minimum: 1
 };
@@ -639,7 +642,7 @@ assert('adversarial_rechazo_subtipo_dias_inactivos_invalidos', !validateSchemaOb
 
 const payloadTipoInexistente = {
   tipo: 'TIPO_INEXISTENTE',
-  idPersonaDonante: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
   fecha: '2026-09-05T12:00:00Z'
 };
 assert('adversarial_rechazo_tipo_inexistente', !validateSchemaObject(eventoNotificableSchema, payloadTipoInexistente).valid, 'Tipo polimórfico desconocido debe ser RECHAZADO');

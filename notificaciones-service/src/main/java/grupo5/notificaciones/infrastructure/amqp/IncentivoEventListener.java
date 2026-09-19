@@ -1,8 +1,9 @@
 package grupo5.notificaciones.infrastructure.amqp;
 
 import grupo5.notificaciones.config.RabbitMQConfig;
-import grupo5.notificaciones.dto.input.EventoMisionCumplidaDTO;
-import grupo5.notificaciones.dto.input.EventoSubioCategoriaDTO;
+import grupo5.notificaciones.dto.input.EventoIncentivoDonanteInactivoV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -26,27 +27,40 @@ public class IncentivoEventListener {
 
   @RabbitHandler
   public void onMisionCumplida(
-      @Valid EventoMisionCumplidaDTO evento,
+      @Valid EventoIncentivoMisionCumplidaV1 evento,
       @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
 
     log.info(
         "Consumiendo evento mision.cumplida: donanteId={}, mision={}, messageId={}",
-        evento.idPersonaDonante(),
+        evento.personaDonanteId(),
         evento.nombreMision(),
         messageId);
-    notificacionService.procesar(evento);
+    notificacionService.procesar(evento, messageId);
   }
 
   @RabbitHandler
   public void onSubioCategoria(
-      @Valid EventoSubioCategoriaDTO evento,
+      @Valid EventoIncentivoSubioCategoriaV1 evento,
       @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
 
     log.info(
         "Consumiendo evento subio.categoria: donanteId={}, nuevaCategoria={}, messageId={}",
-        evento.idPersonaDonante(),
-        evento.categoriaNueva(),
+        evento.personaDonanteId(),
+        evento.nombreNuevaCategoria(),
         messageId);
-    notificacionService.procesar(evento);
+    notificacionService.procesar(evento, messageId);
+  }
+
+  @RabbitHandler
+  public void onDonanteInactivo(
+      @Valid EventoIncentivoDonanteInactivoV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
+
+    log.info(
+        "Consumiendo evento donante.inactivo: donanteId={}, diasInactividad={}, messageId={}",
+        evento.personaDonanteId(),
+        evento.diasInactividad(),
+        messageId);
+    notificacionService.procesar(evento, messageId);
   }
 }

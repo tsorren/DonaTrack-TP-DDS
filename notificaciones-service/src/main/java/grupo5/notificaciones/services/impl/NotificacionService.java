@@ -2,6 +2,14 @@ package grupo5.notificaciones.services.impl;
 
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionEnCaminoV1;
+import grupo5.notificaciones.dto.input.EventoDonacionEntregaFallidaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionRecibidaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionVencidaV1;
+import grupo5.notificaciones.dto.input.EventoDonanteRegistradoV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoDonanteInactivoV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import grupo5.notificaciones.models.entities.notificaciones.EstadoNotificacion;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
@@ -64,6 +72,78 @@ public class NotificacionService {
   @Transactional
   public void procesar(EventoDonacionAsignadaV1 evento, @Nullable String messageId) {
     UUID eventId = resolverEventId(evento.donacionIndependienteId(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesar(EventoDonanteRegistradoV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesar(EventoDonacionEnCaminoV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesar(EventoDonacionRecibidaV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesar(EventoDonacionEntregaFallidaV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesar(EventoDonacionVencidaV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesar(EventoIncentivoDonanteInactivoV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento.personaDonanteId(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesar(EventoIncentivoMisionCumplidaV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento.personaDonanteId(), messageId);
+    if (yaRegistradoEnInbox(eventId)) {
+      return;
+    }
+    persistirYPublicar(mapper.toEntity(evento));
+  }
+
+  @Transactional
+  public void procesar(EventoIncentivoSubioCategoriaV1 evento, @Nullable String messageId) {
+    UUID eventId = resolverEventId(evento.personaDonanteId(), messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }

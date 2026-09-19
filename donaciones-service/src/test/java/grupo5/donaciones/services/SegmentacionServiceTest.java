@@ -3,8 +3,7 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import grupo5.donaciones.dto.comunicaciones.NuevaDonacionRequest;
-import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionSegmentadaV1;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Bien;
@@ -21,9 +20,7 @@ import grupo5.donaciones.models.ports.Segmentador;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
-import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
-import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.SegmentacionService;
 import java.util.List;
@@ -43,12 +40,10 @@ class SegmentacionServiceTest {
   @Mock private IDonacionesRepository donacionRepository;
   @Mock private Segmentador segmentador;
   @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
-  @Mock private IncentivosFeignClient incentivosFeignClient;
   @Mock private ICategoriasRepository categoriasRepository;
   @Mock private ISubcategoriasRepository subcategoriasRepository;
-  @Mock private IPersonasRepository personasRepository;
-  @Mock private IDonantesRepository donantesRepository;
   @Mock private ApplicationEventPublisher eventPublisher;
+  @Mock private IDonacionesEventPublisher donacionesEventPublisher;
 
   @InjectMocks private SegmentacionService segmentacionService;
 
@@ -99,8 +94,6 @@ class SegmentacionServiceTest {
     when(subcategoriasRepository.findById(subcategoria.getId()))
         .thenReturn(Optional.of(subcategoria));
     when(categoriasRepository.findById(categoria.getId())).thenReturn(Optional.of(categoria));
-    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.of(donante));
-    when(personasRepository.findById(humana.getId())).thenReturn(Optional.of(humana));
 
     segmentacionService.procesarDonacionNormalizada(
         new DonacionNormalizada(donacion.getId(), donante.getId()));
@@ -110,7 +103,8 @@ class SegmentacionServiceTest {
     assertEquals(EstadoDonacion.SEGMENTADA, donacion.getEstadoActual());
 
     verify(segmentador, times(1)).segmentar(List.of(itemAceptado));
-    verify(incentivosFeignClient, times(1)).procesarDonacion(any(NuevaDonacionRequest.class));
+    verify(donacionesEventPublisher, times(1))
+        .publicarDonacionSegmentada(any(EventoDonacionSegmentadaV1.class));
     verify(donacionesIndependientesRepository, times(1)).saveAll(List.of(donacionIndependiente));
     verify(itemNormalizadoRepository, times(1)).save(itemAceptado);
     verify(itemNormalizadoRepository, never()).save(itemRechazado);
@@ -128,7 +122,7 @@ class SegmentacionServiceTest {
     assertEquals(EstadoDonacion.SEGMENTADA, donacion.getEstadoActual());
 
     verify(segmentador, never()).segmentar(any());
-    verify(incentivosFeignClient, never()).procesarDonacion(any());
+    verify(donacionesEventPublisher, never()).publicarDonacionSegmentada(any());
     verify(donacionesIndependientesRepository, never()).saveAll(any());
     verify(donacionRepository, times(1)).save(donacion);
   }

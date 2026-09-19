@@ -1,27 +1,25 @@
 package grupo5.donaciones.services.impl;
 
-import grupo5.donaciones.dto.comunicaciones.NuevaDonacionRequest;
-import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionSegmentadaV1;
+import grupo5.donaciones.dto.comunicaciones.ItemSegmentadoEventoDTO;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
-import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
-import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.entities.personas.Juridica;
-import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.ports.Segmentador;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
-import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
-import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.ISegmentacionService;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -38,34 +36,28 @@ public class SegmentacionService implements ISegmentacionService {
   private final IDonacionesRepository donacionRepository;
   private final Segmentador segmentador;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
-  private final IncentivosFeignClient incentivosFeignClient;
   private final ICategoriasRepository categoriasRepository;
   private final ISubcategoriasRepository subcategoriasRepository;
-  private final IPersonasRepository personasRepository;
-  private final IDonantesRepository donantesRepository;
   private final ApplicationEventPublisher eventPublisher;
+  private final IDonacionesEventPublisher donacionesEventPublisher;
 
   public SegmentacionService(
       IItemDonacionNormalizadoRepository itemNormalizadoRepository,
       IDonacionesRepository donacionRepository,
       Segmentador segmentador,
       IDonacionesIndependientesRepository donacionesIndependientesRepository,
-      IncentivosFeignClient incentivosFeignClient,
       ICategoriasRepository categoriasRepository,
       ISubcategoriasRepository subcategoriasRepository,
-      IPersonasRepository personasRepository,
-      IDonantesRepository donantesRepository,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      IDonacionesEventPublisher donacionesEventPublisher) {
     this.itemNormalizadoRepository = itemNormalizadoRepository;
     this.donacionRepository = donacionRepository;
     this.segmentador = segmentador;
     this.donacionesIndependientesRepository = donacionesIndependientesRepository;
-    this.incentivosFeignClient = incentivosFeignClient;
     this.categoriasRepository = categoriasRepository;
     this.subcategoriasRepository = subcategoriasRepository;
-    this.personasRepository = personasRepository;
-    this.donantesRepository = donantesRepository;
     this.eventPublisher = eventPublisher;
+    this.donacionesEventPublisher = donacionesEventPublisher;
   }
 
   @Override
@@ -96,7 +88,8 @@ public class SegmentacionService implements ISegmentacionService {
     List<DonacionIndependiente> donacionesIndependientes = segmentador.segmentar(itemsAceptados);
 
     logDonacionesIndependientes(donacionesIndependientes);
-    registrarEnIncentivos(donacionesIndependientes);
+    List<ItemSegmentadoEventoDTO> itemsSegmentados =
+        registrarEnIncentivos(donacionesIndependientes);
 
     donacionesIndependientesRepository.saveAll(donacionesIndependientes);
 
@@ -107,7 +100,29 @@ public class SegmentacionService implements ISegmentacionService {
         });
 
     marcarSegmentadaYPublicar(donacion);
+    publicarDonacionSegmentada(donacion, itemsSegmentados);
     log.info("Donación original ID {} movida a SEGMENTADA.", donacion.getId());
+  }
+
+  private void publicarDonacionSegmentada(Donacion donacion, List<ItemSegmentadoEventoDTO> items) {
+    if (items.isEmpty()) {
+      return;
+    }
+    try {
+      donacionesEventPublisher.publicarDonacionSegmentada(
+          new EventoDonacionSegmentadaV1(
+              donacion.getDonanteId(),
+              donacion.getFecha() != null
+                  ? donacion.getFecha()
+                  : LocalDateTime.now(ZoneId.systemDefault()),
+              items));
+    } catch (Exception e) {
+      log.error(
+          "Error al publicar donacion.segmentada.v1 para donación {}: {}",
+          donacion.getId(),
+          e.getMessage(),
+          e);
+    }
   }
 
   private void marcarSegmentadaYPublicar(Donacion donacion) {
@@ -150,60 +165,27 @@ public class SegmentacionService implements ISegmentacionService {
     }
   }
 
-  private void registrarEnIncentivos(List<DonacionIndependiente> donacionesIndependientes) {
+  private List<ItemSegmentadoEventoDTO> registrarEnIncentivos(
+      List<DonacionIndependiente> donacionesIndependientes) {
+    List<ItemSegmentadoEventoDTO> items = new ArrayList<>();
     for (DonacionIndependiente di : donacionesIndependientes) {
       List<String> categorias = obtenerCategoriasDeItems(di);
-
-      UUID donacionOriginalId = di.getDonacionOriginalId();
-      Donacion donacionOriginal =
-          donacionRepository
-              .findById(donacionOriginalId)
-              .orElseThrow(
-                  () ->
-                      new IllegalStateException(
-                          "Donación original no encontrada: " + donacionOriginalId));
-      UUID donanteId = donacionOriginal.getDonanteId();
-      Donante donante =
-          donantesRepository
-              .findById(donanteId)
-              .orElseThrow(() -> new IllegalStateException("Donante no encontrado: " + donanteId));
-      UUID personaId = donante.personaId();
-      Persona persona =
-          personasRepository
-              .findById(personaId)
-              .orElseThrow(() -> new IllegalStateException("Persona no encontrada: " + personaId));
-      String nombreDonante = obtenerNombrePersona(persona);
+      if (categorias.isEmpty()) {
+        log.warn(
+            "Ítem segmentado {} sin categoría resuelta, no se incluye en donacion.segmentada.v1",
+            di.getId());
+        continue;
+      }
+      String categoria = categorias.get(0);
 
       log.info(
-          "Registrando donación en incentivos: Donante ID {}, Nombre {}, Cantidad {}, Categorías {}",
-          donanteId,
-          nombreDonante,
-          di.getCantidad(),
-          categorias);
+          "Ítem segmentado para incentivos: Categoría {}, Cantidad {}",
+          categoria,
+          di.getCantidad());
 
-      try {
-        incentivosFeignClient.procesarDonacion(
-            new NuevaDonacionRequest(
-                donanteId,
-                categorias,
-                di.getCantidad(),
-                donacionOriginal.getFecha() != null
-                    ? donacionOriginal.getFecha().toLocalDate()
-                    : java.time.LocalDate.now(java.time.ZoneId.systemDefault()),
-                nombreDonante));
-      } catch (Exception e) {
-        log.error("Error al registrar donación en incentivos: {}", e.getMessage(), e);
-      }
+      items.add(new ItemSegmentadoEventoDTO(categoria, di.getCantidad()));
     }
-  }
-
-  private static String obtenerNombrePersona(Persona persona) {
-    if (persona instanceof Humana h) {
-      return h.getNombre() + " " + h.getApellido();
-    } else if (persona instanceof Juridica j) {
-      return j.getRazonSocial();
-    }
-    return "Donante Anónimo";
+    return items;
   }
 
   private List<String> obtenerCategoriasDeItems(DonacionIndependiente di) {

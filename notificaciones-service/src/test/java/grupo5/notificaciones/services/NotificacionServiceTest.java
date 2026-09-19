@@ -147,6 +147,7 @@ class NotificacionServiceTest {
         new EventoDonacionAsignadaV1(
             UUID.randomUUID(),
             donante.getId(),
+            donante.getId(),
             TEST_DATE_TIME,
             beneficiario.getId(),
             "10kg de arroz",
@@ -171,6 +172,7 @@ class NotificacionServiceTest {
 
     EventoDonacionAsignadaV1 eventoV1 =
         new EventoDonacionAsignadaV1(
+            UUID.randomUUID(),
             UUID.randomUUID(),
             UUID.randomUUID(),
             TEST_DATE_TIME,

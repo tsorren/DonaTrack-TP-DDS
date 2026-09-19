@@ -5,10 +5,15 @@
   "description": "Evento de dominio emitido cuando una donación supera su fecha de caducidad o vigencia sin ser asignada o retirada",
   "type": "object",
   "properties": {
-    "personaDonanteId": {
+    "donanteId": {
       "type": "string",
       "format": "uuid",
-      "description": "Identificador de la persona donante"
+      "description": "Identificador del donante"
+    },
+    "personaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona asociada a ese donante"
     },
     "fecha": {
       "type": "string",
@@ -31,6 +36,6 @@
       "description": "Motivo de la baja o vencimiento de la donación"
     }
   },
-  "required": ["personaDonanteId", "fecha", "personaAdminId", "descripcion", "motivo"],
+  "required": ["donanteId", "personaId", "fecha", "personaAdminId", "descripcion", "motivo"],
   "additionalProperties": false
 }

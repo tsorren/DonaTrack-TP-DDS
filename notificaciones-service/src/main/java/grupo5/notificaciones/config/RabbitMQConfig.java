@@ -1,6 +1,15 @@
 package grupo5.notificaciones.config;
 
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionEnCaminoV1;
+import grupo5.notificaciones.dto.input.EventoDonacionEntregaFallidaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionRecibidaV1;
+import grupo5.notificaciones.dto.input.EventoDonacionVencidaV1;
+import grupo5.notificaciones.dto.input.EventoDonanteRegistradoV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoDonanteInactivoV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
+import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
+import grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.amqp.core.Binding;
@@ -44,6 +53,7 @@ public class RabbitMQConfig {
   // Routing Keys para Incentivos
   public static final String ROUTING_KEY_MISION_CUMPLIDA = "incentivo.mision-cumplida.v1";
   public static final String ROUTING_KEY_SUBIO_CATEGORIA = "incentivo.subio-categoria.v1";
+  public static final String ROUTING_KEY_DONANTE_INACTIVO = "incentivo.donante-inactivo.v1";
 
   // Routing Keys de Donaciones
   public static final String ROUTING_KEY_DONACION_EN_CAMINO = "donacion.en-camino.v1";
@@ -53,7 +63,6 @@ public class RabbitMQConfig {
 
   // Routing Keys de Donantes (viajan por la misma cola por los comodines)
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
-  public static final String ROUTING_KEY_DONANTE_INACTIVO = "donante.inactivo.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
 
   // Legacy (Preservado hasta migración definitiva en Paso 3)
@@ -184,35 +193,19 @@ public class RabbitMQConfig {
 
     // Mapeos de Donaciones
     idClassMapping.put(ROUTING_KEY_DONACION_ASIGNADA, EventoDonacionAsignadaV1.class);
-    idClassMapping.put(
-        ROUTING_KEY_DONACION_EN_CAMINO,
-        grupo5.notificaciones.dto.input.EventoDonacionEnCaminoDTO.class);
-    idClassMapping.put(
-        ROUTING_KEY_DONACION_RECIBIDA,
-        grupo5.notificaciones.dto.input.EventoDonacionRecibidaDTO.class);
-    idClassMapping.put(
-        ROUTING_KEY_DONACION_ENTREGA_FALLIDA,
-        grupo5.notificaciones.dto.input.EventoEntregaFallidaDTO.class);
-    idClassMapping.put(
-        ROUTING_KEY_DONACION_VENCIDA,
-        grupo5.notificaciones.dto.input.EventoDonacionVencidaDTO.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_EN_CAMINO, EventoDonacionEnCaminoV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_RECIBIDA, EventoDonacionRecibidaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_ENTREGA_FALLIDA, EventoDonacionEntregaFallidaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_VENCIDA, EventoDonacionVencidaV1.class);
 
     // Mapeos de Donantes
-    idClassMapping.put(
-        ROUTING_KEY_DONANTE_REGISTRADO,
-        grupo5.notificaciones.dto.input.EventoDonanteRegistradoDTO.class);
-    idClassMapping.put(
-        ROUTING_KEY_DONANTE_INACTIVO,
-        grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO.class);
-    idClassMapping.put(
-        ROUTING_KEY_PERSONA_SINCRONIZADA,
-        grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, EventoDonanteRegistradoV1.class);
+    idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
 
     // Mapeos de Incentivos
-    idClassMapping.put(
-        ROUTING_KEY_MISION_CUMPLIDA, grupo5.notificaciones.dto.input.EventoMisionCumplidaDTO.class);
-    idClassMapping.put(
-        ROUTING_KEY_SUBIO_CATEGORIA, grupo5.notificaciones.dto.input.EventoSubioCategoriaDTO.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_INACTIVO, EventoIncentivoDonanteInactivoV1.class);
+    idClassMapping.put(ROUTING_KEY_MISION_CUMPLIDA, EventoIncentivoMisionCumplidaV1.class);
+    idClassMapping.put(ROUTING_KEY_SUBIO_CATEGORIA, EventoIncentivoSubioCategoriaV1.class);
 
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;

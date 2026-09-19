@@ -29,7 +29,7 @@ public sealed interface EventoNotificableDTO
         EventoDonacionVencidaDTO {
   UUID eventId();
 
-  UUID idPersonaDonante();
+  UUID personaId();
 
   LocalDateTime fecha();
 }

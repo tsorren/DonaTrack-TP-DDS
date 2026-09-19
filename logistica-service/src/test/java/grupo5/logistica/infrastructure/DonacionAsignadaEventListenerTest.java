@@ -45,6 +45,7 @@ class DonacionAsignadaEventListenerTest {
     return new EventoDonacionAsignadaV1(
         donacionId,
         UUID.randomUUID(),
+        UUID.randomUUID(),
         LocalDateTime.now(),
         UUID.randomUUID(),
         "Caja de alimentos no perecederos",

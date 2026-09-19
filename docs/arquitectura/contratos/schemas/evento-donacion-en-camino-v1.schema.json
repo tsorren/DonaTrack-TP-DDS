@@ -5,10 +5,15 @@
   "description": "Evento de dominio emitido cuando una donación se encuentra en traslado logístico hacia la entidad beneficiaria",
   "type": "object",
   "properties": {
-    "personaDonanteId": {
+    "donanteId": {
       "type": "string",
       "format": "uuid",
-      "description": "Identificador de la persona donante"
+      "description": "Identificador del donante"
+    },
+    "personaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona asociada a ese donante"
     },
     "fecha": {
       "type": "string",
@@ -27,9 +32,10 @@
     },
     "urlMapa": {
       "type": "string",
+      "format": "uri",
       "description": "URL de seguimiento o mapa en vivo del recorrido del camión"
     }
   },
-  "required": ["personaDonanteId", "fecha", "personaBeneficiariaId", "descripcion", "urlMapa"],
+  "required": ["donanteId", "personaId", "fecha", "personaBeneficiariaId", "descripcion", "urlMapa"],
   "additionalProperties": false
 }

@@ -53,7 +53,8 @@ class RabbitMQConfigTest {
         """
         {
           "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-          "personaDonanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+          "donanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+          "personaId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
           "fecha": "2026-09-15T14:30:00Z",
           "personaBeneficiariaId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
           "descripcion": "Caja de alimentos no perecederos (10 kg)",

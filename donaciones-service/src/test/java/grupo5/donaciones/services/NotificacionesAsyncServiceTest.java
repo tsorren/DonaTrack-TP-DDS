@@ -2,9 +2,9 @@ package grupo5.donaciones.services;
 
 import static org.mockito.Mockito.*;
 
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
-import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.services.impl.NotificacionesAsyncService;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,28 +15,38 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class NotificacionesAsyncServiceTest {
 
-  @Mock private NotificacionesFeignClient client;
+  @Mock private IDonacionesEventPublisher eventPublisher;
 
   @InjectMocks private NotificacionesAsyncService service;
 
   @Test
-  void sincronizarPersona_deberiaInvocarCliente_CuandoNoHayErrores() {
-    PersonaReplicaDTO dto = mock(PersonaReplicaDTO.class);
+  void sincronizarPersona_deberiaPublicarEvento_CuandoNoHayErrores() {
+    EventoPersonaSincronizadaV1 evento =
+        new EventoPersonaSincronizadaV1(UUID.randomUUID(), "Juan Perez", "HUMANA", List.of());
 
-    service.sincronizarPersona(dto);
+    service.sincronizarPersona(evento);
 
-    verify(client, times(1)).sincronizarPersona(dto);
+    verify(eventPublisher, times(1)).publicarPersonaSincronizada(evento);
   }
 
   @Test
-  void sincronizarPersona_deberiaCapturarExcepcionYNoPropagarla_CuandoClienteFalla() {
-    PersonaReplicaDTO dto = mock(PersonaReplicaDTO.class);
-    when(dto.id()).thenReturn(UUID.randomUUID());
-    doThrow(new RuntimeException("Error de conexión")).when(client).sincronizarPersona(dto);
+  void sincronizarPersona_deberiaCapturarExcepcionYNoPropagarla_CuandoPublisherFalla() {
+    EventoPersonaSincronizadaV1 evento =
+        new EventoPersonaSincronizadaV1(UUID.randomUUID(), "Juan Perez", "HUMANA", List.of());
+    doThrow(new RuntimeException("Error de conexión"))
+        .when(eventPublisher)
+        .publicarPersonaSincronizada(any());
 
     // No debe lanzar excepción
-    service.sincronizarPersona(dto);
+    service.sincronizarPersona(evento);
 
-    verify(client, times(1)).sincronizarPersona(dto);
+    verify(eventPublisher, times(1)).publicarPersonaSincronizada(evento);
+  }
+
+  @Test
+  void sincronizarPersona_noDebeLlamarAlPublisher_CuandoEventoEsNulo() {
+    service.sincronizarPersona(null);
+
+    verify(eventPublisher, never()).publicarPersonaSincronizada(any());
   }
 }
