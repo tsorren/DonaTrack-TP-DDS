@@ -8,14 +8,14 @@ import java.util.UUID;
 
 public record EventoEntregaFallidaDTO(
     UUID eventId,
-    @NotNull(message = "El ID del donante es obligatorio") UUID idPersonaDonante,
+    @NotNull(message = "El ID del donante es obligatorio") UUID personaId,
     @NotNull(message = "La fecha es obligatoria")
         @PastOrPresent(message = "La fecha no puede ser futura")
         LocalDateTime fecha,
     @NotNull(message = "El ID de la entidad beneficiaria es obligatorio")
-        UUID idPersonaBeneficiaria,
-    @NotBlank(message = "El detalle de la donación es obligatorio") String detalleDonacion,
-    @NotNull(message = "El ID de la persona administradora es obligatorio") UUID idPersonaAdmin,
-    @NotBlank(message = "El motivo es obligatorio") String motivo,
+        UUID personaBeneficiariaId,
+    @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion,
+    @NotNull(message = "El ID de la persona administradora es obligatorio") UUID personaAdminId,
+    @NotBlank(message = "La justificación es obligatoria") String justificacion,
     boolean replanificable)
     implements EventoNotificableDTO {}

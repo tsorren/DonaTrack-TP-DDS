@@ -83,6 +83,7 @@ class EventoMapperTest {
         new EventoDonacionAsignadaV1(
             donacionId,
             donante.getId(),
+            donante.getId(),
             TEST_DATE_TIME,
             beneficiario.getId(),
             "Ropa de invierno y frazadas",
@@ -113,6 +114,7 @@ class EventoMapperTest {
             "Calle Falsa", 123, null, null, "1234", "La Plata", "Buenos Aires", "Argentina");
     return new EventoDonacionAsignadaV1(
         UUID.randomUUID(),
+        donanteId,
         donanteId,
         TEST_DATE_TIME,
         beneficiarioId,

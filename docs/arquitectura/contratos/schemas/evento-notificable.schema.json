@@ -29,7 +29,7 @@
           "const": "DONANTE_REGISTRADO",
           "description": "Discriminador polimórfico del evento"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid",
           "description": "UUID del donante destinatario"
@@ -45,7 +45,7 @@
           "description": "Credenciales o clave inicial de acceso generada para el donante"
         }
       },
-      "required": ["tipo", "idPersonaDonante", "fecha", "credencialesDeAcceso"],
+      "required": ["tipo", "personaId", "fecha", "credencialesDeAcceso"],
       "additionalProperties": false
     },
     "EventoDonanteInactivoDTO": {
@@ -61,7 +61,7 @@
           "type": "string",
           "const": "DONANTE_INACTIVO"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid"
         },
@@ -75,7 +75,7 @@
           "description": "Cantidad de días transcurridos sin registrar donaciones"
         }
       },
-      "required": ["tipo", "idPersonaDonante", "fecha", "diasInactivo"],
+      "required": ["tipo", "personaId", "fecha", "diasInactivo"],
       "additionalProperties": false
     },
     "EventoMisionCumplidaDTO": {
@@ -91,7 +91,7 @@
           "type": "string",
           "const": "MISION_CUMPLIDA"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid"
         },
@@ -110,7 +110,7 @@
           "description": "Detalle de puntos, insignia o recompensa obtenida"
         }
       },
-      "required": ["tipo", "idPersonaDonante", "fecha", "nombreMision", "recompensa"],
+      "required": ["tipo", "personaId", "fecha", "nombreMision", "recompensa"],
       "additionalProperties": false
     },
     "EventoSubioCategoriaDTO": {
@@ -126,7 +126,7 @@
           "type": "string",
           "const": "SUBIO_CATEGORIA"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid"
         },
@@ -145,7 +145,7 @@
           "description": "Categoría previa"
         }
       },
-      "required": ["tipo", "idPersonaDonante", "fecha", "categoriaNueva", "categoriaVieja"],
+      "required": ["tipo", "personaId", "fecha", "categoriaNueva", "categoriaVieja"],
       "additionalProperties": false
     },
     "EventoDonacionAsignadaDTO": {
@@ -162,7 +162,7 @@
           "type": "string",
           "const": "DONACION_ASIGNADA"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid"
         },
@@ -170,18 +170,18 @@
           "type": "string",
           "format": "date-time"
         },
-        "idPersonaBeneficiaria": {
+        "personaBeneficiariaId": {
           "type": "string",
           "format": "uuid",
           "description": "UUID de la entidad beneficiaria asignada"
         },
-        "detalleDonacion": {
+        "descripcion": {
           "type": "string",
           "minLength": 1,
           "description": "Descripción sintética de la donación asignada"
         }
       },
-      "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaBeneficiaria", "detalleDonacion"],
+      "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
       "additionalProperties": false
     },
     "EventoDonacionRecibidaDTO": {
@@ -197,7 +197,7 @@
           "type": "string",
           "const": "DONACION_RECIBIDA"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid"
         },
@@ -205,11 +205,11 @@
           "type": "string",
           "format": "date-time"
         },
-        "idPersonaBeneficiaria": {
+        "personaBeneficiariaId": {
           "type": "string",
           "format": "uuid"
         },
-        "detalleDonacion": {
+        "descripcion": {
           "type": "string",
           "minLength": 1
         },
@@ -218,7 +218,7 @@
           "description": "Identificador del camión que completó la entrega (opcional)"
         }
       },
-      "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaBeneficiaria", "detalleDonacion"],
+      "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
       "additionalProperties": false
     },
     "EventoDonacionEnCaminoDTO": {
@@ -234,7 +234,7 @@
           "type": "string",
           "const": "DONACION_EN_CAMINO"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid"
         },
@@ -242,20 +242,20 @@
           "type": "string",
           "format": "date-time"
         },
-        "idPersonaBeneficiaria": {
+        "personaBeneficiariaId": {
           "type": "string",
           "format": "uuid"
         },
-        "detalleDonacion": {
+        "descripcion": {
           "type": "string",
           "minLength": 1
         },
-        "enlaceSeguimiento": {
+        "urlMapa": {
           "type": "string",
           "description": "URL pública o tracking code para seguir el camión (opcional)"
         }
       },
-      "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaBeneficiaria", "detalleDonacion"],
+      "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
       "additionalProperties": false
     },
     "EventoEntregaFallidaDTO": {
@@ -271,7 +271,7 @@
           "type": "string",
           "const": "ENTREGA_FALLIDA"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid"
         },
@@ -279,20 +279,20 @@
           "type": "string",
           "format": "date-time"
         },
-        "idPersonaBeneficiaria": {
+        "personaBeneficiariaId": {
           "type": "string",
           "format": "uuid"
         },
-        "detalleDonacion": {
+        "descripcion": {
           "type": "string",
           "minLength": 1
         },
-        "idPersonaAdmin": {
+        "personaAdminId": {
           "type": "string",
           "format": "uuid",
           "description": "UUID del administrador destinatario de la alerta de falla"
         },
-        "motivo": {
+        "justificacion": {
           "type": "string",
           "minLength": 1,
           "description": "Motivo justificado del rechazo o imposibilidad de entrega"
@@ -304,12 +304,12 @@
       },
       "required": [
         "tipo",
-        "idPersonaDonante",
+        "personaId",
         "fecha",
-        "idPersonaBeneficiaria",
-        "detalleDonacion",
-        "idPersonaAdmin",
-        "motivo",
+        "personaBeneficiariaId",
+        "descripcion",
+        "personaAdminId",
+        "justificacion",
         "replanificable"
       ],
       "additionalProperties": false
@@ -327,7 +327,7 @@
           "type": "string",
           "const": "DONACION_VENCIDA"
         },
-        "idPersonaDonante": {
+        "personaId": {
           "type": "string",
           "format": "uuid"
         },
@@ -335,11 +335,11 @@
           "type": "string",
           "format": "date-time"
         },
-        "idPersonaAdmin": {
+        "personaAdminId": {
           "type": "string",
           "format": "uuid"
         },
-        "detalleDonacion": {
+        "descripcion": {
           "type": "string",
           "minLength": 1
         },
@@ -348,8 +348,7 @@
           "minLength": 1
         }
       },
-
-      "required": ["tipo", "idPersonaDonante", "fecha", "idPersonaAdmin", "detalleDonacion", "motivo"],
+      "required": ["tipo", "personaId", "fecha", "personaAdminId", "descripcion", "motivo"],
       "additionalProperties": false
     }
   }

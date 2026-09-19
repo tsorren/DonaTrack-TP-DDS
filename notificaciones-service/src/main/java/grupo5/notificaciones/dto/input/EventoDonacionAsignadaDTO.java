@@ -8,11 +8,11 @@ import java.util.UUID;
 
 public record EventoDonacionAsignadaDTO(
     UUID eventId,
-    @NotNull(message = "El ID del donante es obligatorio") UUID idPersonaDonante,
+    @NotNull(message = "El ID del donante es obligatorio") UUID personaId,
     @NotNull(message = "La fecha es obligatoria")
         @PastOrPresent(message = "La fecha no puede ser futura")
         LocalDateTime fecha,
     @NotNull(message = "El ID de la entidad beneficiaria es obligatorio")
-        UUID idPersonaBeneficiaria,
-    @NotBlank(message = "El detalle de la donación es obligatorio") String detalleDonacion)
+        UUID personaBeneficiariaId,
+    @NotBlank(message = "La descripción de la donación es obligatoria") String descripcion)
     implements EventoNotificableDTO {}

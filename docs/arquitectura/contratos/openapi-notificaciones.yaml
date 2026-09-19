@@ -246,14 +246,14 @@ components:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
         - credencialesDeAcceso
       properties:
         tipo:
           type: string
           enum: [DONANTE_REGISTRADO]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
@@ -265,14 +265,14 @@ components:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
         - diasInactivo
       properties:
         tipo:
           type: string
           enum: [DONANTE_INACTIVO]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
@@ -285,7 +285,7 @@ components:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
         - nombreMision
         - recompensa
@@ -293,7 +293,7 @@ components:
         tipo:
           type: string
           enum: [MISION_CUMPLIDA]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
@@ -307,7 +307,7 @@ components:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
         - categoriaNueva
         - categoriaVieja
@@ -315,7 +315,7 @@ components:
         tipo:
           type: string
           enum: [SUBIO_CATEGORIA]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
@@ -329,47 +329,47 @@ components:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
-        - idPersonaBeneficiaria
-        - detalleDonacion
+        - personaBeneficiariaId
+        - descripcion
       properties:
         tipo:
           type: string
           enum: [DONACION_ASIGNADA]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
           type: string
           format: date-time
-        idPersonaBeneficiaria:
+        personaBeneficiariaId:
           type: string
           format: uuid
-        detalleDonacion:
+        descripcion:
           type: string
     EventoDonacionRecibidaDTO:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
-        - idPersonaBeneficiaria
-        - detalleDonacion
+        - personaBeneficiariaId
+        - descripcion
       properties:
         tipo:
           type: string
           enum: [DONACION_RECIBIDA]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
           type: string
           format: date-time
-        idPersonaBeneficiaria:
+        personaBeneficiariaId:
           type: string
           format: uuid
-        detalleDonacion:
+        descripcion:
           type: string
         patenteCamion:
           type: string
@@ -377,57 +377,57 @@ components:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
-        - idPersonaBeneficiaria
-        - detalleDonacion
+        - personaBeneficiariaId
+        - descripcion
       properties:
         tipo:
           type: string
           enum: [DONACION_EN_CAMINO]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
           type: string
           format: date-time
-        idPersonaBeneficiaria:
+        personaBeneficiariaId:
           type: string
           format: uuid
-        detalleDonacion:
+        descripcion:
           type: string
-        enlaceSeguimiento:
+        urlMapa:
           type: string
     EventoEntregaFallidaDTO:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
-        - idPersonaBeneficiaria
-        - detalleDonacion
-        - idPersonaAdmin
-        - motivo
+        - personaBeneficiariaId
+        - descripcion
+        - personaAdminId
+        - justificacion
         - replanificable
       properties:
         tipo:
           type: string
           enum: [ENTREGA_FALLIDA]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
           type: string
           format: date-time
-        idPersonaBeneficiaria:
+        personaBeneficiariaId:
           type: string
           format: uuid
-        detalleDonacion:
+        descripcion:
           type: string
-        idPersonaAdmin:
+        personaAdminId:
           type: string
           format: uuid
-        motivo:
+        justificacion:
           type: string
         replanificable:
           type: boolean
@@ -435,25 +435,25 @@ components:
       type: object
       required:
         - tipo
-        - idPersonaDonante
+        - personaId
         - fecha
-        - idPersonaAdmin
-        - detalleDonacion
+        - personaAdminId
+        - descripcion
         - motivo
       properties:
         tipo:
           type: string
           enum: [DONACION_VENCIDA]
-        idPersonaDonante:
+        personaId:
           type: string
           format: uuid
         fecha:
           type: string
           format: date-time
-        idPersonaAdmin:
+        personaAdminId:
           type: string
           format: uuid
-        detalleDonacion:
+        descripcion:
           type: string
         motivo:
           type: string

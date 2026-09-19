@@ -37,6 +37,7 @@ class DonacionEventListenerTest {
     return new EventoDonacionAsignadaV1(
         UUID.randomUUID(),
         UUID.randomUUID(),
+        UUID.randomUUID(),
         LocalDateTime.of(2026, 9, 17, 12, 0),
         UUID.randomUUID(),
         "Ropa de invierno",
