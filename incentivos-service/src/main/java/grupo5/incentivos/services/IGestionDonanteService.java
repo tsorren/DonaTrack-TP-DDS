@@ -5,6 +5,7 @@ import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.RegistrarDonanteRequest;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface IGestionDonanteService {
@@ -14,6 +15,8 @@ public interface IGestionDonanteService {
   void modificarDonante(UUID donanteId, ModificarDonanteRequest request);
 
   DonanteIncentivos obtenerDonante(UUID donanteId);
+
+  Optional<DonanteIncentivos> buscarDonantePorPersonaId(UUID idPersona);
 
   void darDeBaja(UUID donanteId);
 

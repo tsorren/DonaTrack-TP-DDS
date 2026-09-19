@@ -8,6 +8,7 @@ import grupo5.incentivos.dto.RegistrarDonanteRequest;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,12 @@ public class GestionDonanteService implements IGestionDonanteService {
         .orElseThrow(
             () -> new BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO));
   }
+
+  @Override
+  public Optional<DonanteIncentivos> buscarDonantePorPersonaId(UUID idPersona) {
+    return repository.findByIdPersona(idPersona);
+  }
+
 
   @Override
   public void darDeBaja(UUID donanteId) {
