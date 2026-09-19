@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
 import grupo5.donaciones.infrastructure.clients.LogisticaFeignClient;
 import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
@@ -33,9 +33,12 @@ class DonacionesServiceApplicationTest {
   void asyncMethod_deberiaEjecutarseSinLanzarAsyncConfigurerException() {
     doNothing().when(notificacionesFeignClient).sincronizarPersona(any());
 
-    PersonaReplicaDTO dto =
-        new PersonaReplicaDTO(
-            UUID.randomUUID(), "Test Organismo", TipoPersona.HUMANA, Collections.emptyList());
-    assertDoesNotThrow(() -> notificacionesAsyncService.sincronizarPersona(dto));
+    EventoPersonaSincronizadaV1 evento =
+        new EventoPersonaSincronizadaV1(
+            UUID.randomUUID(),
+            "Test Organismo",
+            TipoPersona.HUMANA.name(),
+            Collections.emptyList());
+    assertDoesNotThrow(() -> notificacionesAsyncService.sincronizarPersona(evento));
   }
 }

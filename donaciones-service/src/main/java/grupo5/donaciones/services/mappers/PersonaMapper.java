@@ -2,6 +2,8 @@ package grupo5.donaciones.services.mappers;
 
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
+import grupo5.donaciones.dto.comunicaciones.MedioDeContactoEventoDTO;
 import grupo5.donaciones.dto.comunicaciones.MedioDeContactoReplicaDTO;
 import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
@@ -339,6 +341,47 @@ public class PersonaMapper {
       case Telefono t -> {
         String tipoStr = t.getTipo() == TipoTelefono.WHATSAPP ? "WHATSAPP" : "TELEFONO";
         yield new MedioDeContactoReplicaDTO(
+            tipoStr,
+            t.getEsPredeterminado(),
+            null,
+            t.getCaracteristica(),
+            t.getCodigoArea(),
+            t.getNumero());
+      }
+      default ->
+          throw new IllegalArgumentException(
+              "Medio de contacto no soportado: " + m.getClass().getSimpleName());
+    };
+  }
+
+  public EventoPersonaSincronizadaV1 toEventoPersonaSincronizadaV1(Persona p) {
+    if (p == null) {
+      return null;
+    }
+    String denominacion =
+        switch (p) {
+          case Humana h ->
+              grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING.equals(h.getNombre())
+                  ? grupo5.donaciones.models.privacidad.Anonimizable.VALOR_STRING
+                  : h.getNombre() + " " + h.getApellido();
+          case Juridica j -> j.getRazonSocial();
+        };
+
+    List<MedioDeContactoEventoDTO> medios =
+        p.getMediosDeContacto().stream().map(PersonaMapper::toMedioEventoDTO).toList();
+
+    return new EventoPersonaSincronizadaV1(
+        p.getId(), denominacion, p.getTipoPersona().name(), medios);
+  }
+
+  private static MedioDeContactoEventoDTO toMedioEventoDTO(MedioDeContacto m) {
+    return switch (m) {
+      case Correo c ->
+          new MedioDeContactoEventoDTO(
+              "CORREO", c.getEsPredeterminado(), c.getDireccionCorreo(), null, null, null);
+      case Telefono t -> {
+        String tipoStr = t.getTipo() == TipoTelefono.WHATSAPP ? "WHATSAPP" : "TELEFONO";
+        yield new MedioDeContactoEventoDTO(
             tipoStr,
             t.getEsPredeterminado(),
             null,

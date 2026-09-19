@@ -280,4 +280,61 @@ class PropuestaDeAsignacionServiceTest {
                         && evento.pesoTotalKG().equals(12.5)
                         && evento.volumenTotalM3().equals(0.3)));
   }
+
+  @Test
+  void onPropuestaAprobada_conVariasFragmentaciones_debeResolverEntidadYPersonaUnaSolaVez() {
+    Necesidad necesidad = mock(Necesidad.class);
+    UUID necesidadId = UUID.randomUUID();
+    UUID entidadId = UUID.randomUUID();
+    UUID juridicaId = UUID.randomUUID();
+    when(necesidadRepository.findById(necesidadId)).thenReturn(Optional.of(necesidad));
+    when(necesidad.getEntidadId()).thenReturn(entidadId);
+
+    EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
+    when(entidad.juridicaId()).thenReturn(juridicaId);
+    when(entidadesBeneficiariasRepository.findById(entidadId)).thenReturn(Optional.of(entidad));
+
+    Juridica persona = mock(Juridica.class);
+    Direccion direccionPersona = mock(Direccion.class);
+    when(persona.getDireccion()).thenReturn(direccionPersona);
+    when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(persona));
+
+    PosibleFragmentacion fragmentacion1 = mock(PosibleFragmentacion.class);
+    PosibleFragmentacion fragmentacion2 = mock(PosibleFragmentacion.class);
+    UUID donacionOriginalId1 = UUID.randomUUID();
+    UUID donacionOriginalId2 = UUID.randomUUID();
+    DonacionIndependiente donacionOriginal1 = mock(DonacionIndependiente.class);
+    DonacionIndependiente donacionOriginal2 = mock(DonacionIndependiente.class);
+
+    when(fragmentacion1.getDonacionOriginalId()).thenReturn(donacionOriginalId1);
+    when(donacionRepository.findById(donacionOriginalId1))
+        .thenReturn(Optional.of(donacionOriginal1));
+    when(fragmentacion1.confirmar(necesidad, "actor")).thenReturn(donacionOriginal1);
+    when(donacionOriginal1.getDonacionOriginalId()).thenReturn(donacionOriginalId1);
+
+    when(fragmentacion2.getDonacionOriginalId()).thenReturn(donacionOriginalId2);
+    when(donacionRepository.findById(donacionOriginalId2))
+        .thenReturn(Optional.of(donacionOriginal2));
+    when(fragmentacion2.confirmar(necesidad, "actor")).thenReturn(donacionOriginal2);
+    when(donacionOriginal2.getDonacionOriginalId()).thenReturn(donacionOriginalId2);
+
+    UUID donanteId = UUID.randomUUID();
+    Donacion donacion = mock(Donacion.class);
+    when(donacion.getDonanteId()).thenReturn(donanteId);
+    when(donacionesRepository.findById(donacionOriginalId1)).thenReturn(Optional.of(donacion));
+    when(donacionesRepository.findById(donacionOriginalId2)).thenReturn(Optional.of(donacion));
+    Donante donante = mock(Donante.class);
+    when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
+
+    PropuestaAprobada event =
+        new PropuestaAprobada(
+            UUID.randomUUID(), necesidadId, List.of(fragmentacion1, fragmentacion2), "actor");
+
+    service.onPropuestaAprobada(event);
+
+    verify(entidadesBeneficiariasRepository, times(1)).findById(entidadId);
+    verify(personasRepository, times(1)).findById(juridicaId);
+    verify(direccionMapper, times(1)).toDestinoEventoDTO(direccionPersona);
+    verify(donacionesEventPublisher, times(2)).publicarDonacionAsignada(any());
+  }
 }

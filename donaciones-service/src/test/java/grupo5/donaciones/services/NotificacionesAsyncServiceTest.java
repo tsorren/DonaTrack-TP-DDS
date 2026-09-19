@@ -3,8 +3,6 @@ package grupo5.donaciones.services;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
-import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.services.impl.NotificacionesAsyncService;
 import java.util.List;
 import java.util.UUID;
@@ -23,27 +21,32 @@ class NotificacionesAsyncServiceTest {
 
   @Test
   void sincronizarPersona_deberiaPublicarEvento_CuandoNoHayErrores() {
-    PersonaReplicaDTO dto =
-        new PersonaReplicaDTO(UUID.randomUUID(), "Juan Perez", TipoPersona.HUMANA, List.of());
+    EventoPersonaSincronizadaV1 evento =
+        new EventoPersonaSincronizadaV1(UUID.randomUUID(), "Juan Perez", "HUMANA", List.of());
 
-    service.sincronizarPersona(dto);
+    service.sincronizarPersona(evento);
 
-    verify(eventPublisher, times(1))
-        .publicarPersonaSincronizada(any(EventoPersonaSincronizadaV1.class));
+    verify(eventPublisher, times(1)).publicarPersonaSincronizada(evento);
   }
 
   @Test
   void sincronizarPersona_deberiaCapturarExcepcionYNoPropagarla_CuandoPublisherFalla() {
-    PersonaReplicaDTO dto =
-        new PersonaReplicaDTO(UUID.randomUUID(), "Juan Perez", TipoPersona.HUMANA, List.of());
+    EventoPersonaSincronizadaV1 evento =
+        new EventoPersonaSincronizadaV1(UUID.randomUUID(), "Juan Perez", "HUMANA", List.of());
     doThrow(new RuntimeException("Error de conexión"))
         .when(eventPublisher)
         .publicarPersonaSincronizada(any());
 
     // No debe lanzar excepción
-    service.sincronizarPersona(dto);
+    service.sincronizarPersona(evento);
 
-    verify(eventPublisher, times(1))
-        .publicarPersonaSincronizada(any(EventoPersonaSincronizadaV1.class));
+    verify(eventPublisher, times(1)).publicarPersonaSincronizada(evento);
+  }
+
+  @Test
+  void sincronizarPersona_noDebeLlamarAlPublisher_CuandoEventoEsNulo() {
+    service.sincronizarPersona(null);
+
+    verify(eventPublisher, never()).publicarPersonaSincronizada(any());
   }
 }

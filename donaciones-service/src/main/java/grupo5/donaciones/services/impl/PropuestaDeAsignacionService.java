@@ -3,6 +3,7 @@ package grupo5.donaciones.services.impl;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.dto.comunicaciones.DestinoEventoDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
@@ -114,6 +115,11 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
             .orElseThrow(() -> new RecursoNoEncontradoException(event.necesidadId()));
     String actor = event.actor();
 
+    // La entidad beneficiaria y su dirección dependen únicamente de `necesidad`, que es la misma
+    // en todas las fragmentaciones de este evento — se resuelven una sola vez acá afuera del for,
+    // en vez de una vez por cada fragmentación.
+    DatosBeneficiario datosBeneficiario = resolverDatosBeneficiario(necesidad);
+
     for (PosibleFragmentacion f : event.fragmentaciones()) {
       DonacionIndependiente donacionOriginal =
           donacionRepository
@@ -128,17 +134,51 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
         donacionRepository.save(donacionAsignar);
       }
 
-      publicarDonacionAsignada(donacionAsignar, necesidad);
+      publicarDonacionAsignada(donacionAsignar, datosBeneficiario);
     }
 
     necesidadRepository.save(necesidad);
   }
 
+  private record DatosBeneficiario(UUID personaBeneficiariaId, DestinoEventoDTO destino) {}
+
+  private DatosBeneficiario resolverDatosBeneficiario(Necesidad necesidad) {
+    try {
+      EntidadBeneficiaria entidad =
+          entidadesBeneficiariasRepository
+              .findById(necesidad.getEntidadId())
+              .orElseThrow(() -> new RecursoNoEncontradoException(necesidad.getEntidadId()));
+
+      Persona personaBeneficiaria =
+          personasRepository
+              .findById(entidad.juridicaId())
+              .orElseThrow(() -> new RecursoNoEncontradoException(entidad.juridicaId()));
+
+      return new DatosBeneficiario(
+          entidad.juridicaId(),
+          direccionMapper.toDestinoEventoDTO(personaBeneficiaria.getDireccion()));
+    } catch (Exception e) {
+      log.error(
+          "No se pudieron resolver los datos de la entidad beneficiaria para donacion.asignada.v1 (necesidad {}): {}",
+          necesidad.getId(),
+          e.getMessage(),
+          e);
+      return null;
+    }
+  }
+
   private void publicarDonacionAsignada(
-      DonacionIndependiente donacionAsignar, Necesidad necesidad) {
+      DonacionIndependiente donacionAsignar, DatosBeneficiario datosBeneficiario) {
+    if (datosBeneficiario == null) {
+      log.warn(
+          "No se publica donacion.asignada.v1 para donación {}: no se pudieron resolver los datos"
+              + " de la entidad beneficiaria",
+          donacionAsignar.getId());
+      return;
+    }
     try {
       donacionesEventPublisher.publicarDonacionAsignada(
-          construirEventoDonacionAsignada(donacionAsignar, necesidad));
+          construirEventoDonacionAsignada(donacionAsignar, datosBeneficiario));
     } catch (Exception e) {
       log.error(
           "No se pudo publicar donacion.asignada.v1 (donación {}): {}",
@@ -149,17 +189,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   }
 
   private EventoDonacionAsignadaV1 construirEventoDonacionAsignada(
-      DonacionIndependiente donacionAsignar, Necesidad necesidad) {
-    EntidadBeneficiaria entidad =
-        entidadesBeneficiariasRepository
-            .findById(necesidad.getEntidadId())
-            .orElseThrow(() -> new RecursoNoEncontradoException(necesidad.getEntidadId()));
-
-    Persona personaBeneficiaria =
-        personasRepository
-            .findById(entidad.juridicaId())
-            .orElseThrow(() -> new RecursoNoEncontradoException(entidad.juridicaId()));
-
+      DonacionIndependiente donacionAsignar, DatosBeneficiario datosBeneficiario) {
     Donacion donacionOriginal =
         donacionesRepository
             .findById(donacionAsignar.getDonacionOriginalId())
@@ -176,9 +206,9 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
         donanteId,
         donante.personaId(),
         LocalDateTime.now(ZoneId.systemDefault()),
-        entidad.juridicaId(),
+        datosBeneficiario.personaBeneficiariaId(),
         donacionAsignar.getDescripcion(),
-        direccionMapper.toDestinoEventoDTO(personaBeneficiaria.getDireccion()),
+        datosBeneficiario.destino(),
         donacionAsignar.getPesoTotal(),
         donacionAsignar.getVolumenTotal());
   }

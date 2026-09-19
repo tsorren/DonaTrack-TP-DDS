@@ -1,12 +1,8 @@
 package grupo5.donaciones.services.impl;
 
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
-import grupo5.donaciones.dto.comunicaciones.MedioDeContactoEventoDTO;
-import grupo5.donaciones.dto.comunicaciones.MedioDeContactoReplicaDTO;
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.INotificacionesAsyncService;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -23,38 +19,19 @@ public class NotificacionesAsyncService implements INotificacionesAsyncService {
   }
 
   @Async
-  public void sincronizarPersona(PersonaReplicaDTO dto) {
-    if (dto == null) {
-      log.warn("sincronizarPersona invocado con dto nulo, se ignora");
+  public void sincronizarPersona(EventoPersonaSincronizadaV1 evento) {
+    if (evento == null) {
+      log.warn("sincronizarPersona invocado con evento nulo, se ignora");
       return;
     }
     try {
-      eventPublisher.publicarPersonaSincronizada(
-          new EventoPersonaSincronizadaV1(
-              dto.id(),
-              dto.denominacion(),
-              dto.tipoPersona().name(),
-              dto.mediosDeContacto() == null
-                  ? List.of()
-                  : dto.mediosDeContacto().stream()
-                      .map(NotificacionesAsyncService::toMedioEvento)
-                      .toList()));
+      eventPublisher.publicarPersonaSincronizada(evento);
     } catch (Exception e) {
       log.error(
           "Fallo al publicar persona.sincronizada.v1 para persona {}: {}",
-          dto.id(),
+          evento.personaId(),
           e.getMessage(),
           e);
     }
-  }
-
-  private static MedioDeContactoEventoDTO toMedioEvento(MedioDeContactoReplicaDTO medio) {
-    return new MedioDeContactoEventoDTO(
-        medio.tipo(),
-        medio.esPredeterminado(),
-        medio.direccionCorreo(),
-        medio.caracteristica(),
-        medio.codigoArea(),
-        medio.numero());
   }
 }
