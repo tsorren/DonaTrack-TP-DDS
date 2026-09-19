@@ -23,6 +23,10 @@ public class NotificacionesAsyncService implements INotificacionesAsyncService {
 
   @Async
   public void sincronizarPersona(PersonaReplicaDTO dto) {
+    if (dto == null) {
+      log.warn("sincronizarPersona invocado con dto nulo, se ignora");
+      return;
+    }
     try {
       eventPublisher.publicarPersonaSincronizada(
           new EventoPersonaSincronizadaV1(
