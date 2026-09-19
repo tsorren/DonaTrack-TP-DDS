@@ -54,6 +54,7 @@ public class RabbitMQConfig {
   // Routing Keys de Donantes (viajan por la misma cola por los comodines)
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
   public static final String ROUTING_KEY_DONANTE_INACTIVO = "donante.inactivo.v1";
+  public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
 
   // Legacy (Preservado hasta migración definitiva en Paso 3)
   public static final String EXCHANGE_NOTIFICACIONES = "notificaciones.exchange";
@@ -203,6 +204,9 @@ public class RabbitMQConfig {
     idClassMapping.put(
         ROUTING_KEY_DONANTE_INACTIVO,
         grupo5.notificaciones.dto.input.EventoDonanteInactivoDTO.class);
+    idClassMapping.put(
+        ROUTING_KEY_PERSONA_SINCRONIZADA,
+        grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1.class);
 
     // Mapeos de Incentivos
     idClassMapping.put(

@@ -21,12 +21,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class DonacionEventListenerTest {
 
   @Mock private NotificacionService notificacionService;
+  @Mock private grupo5.notificaciones.services.mappers.PersonaMapper personaMapper;
 
   private DonacionEventListener listener;
 
   @BeforeEach
   void setUp() {
-    listener = new DonacionEventListener(notificacionService);
+    listener = new DonacionEventListener(notificacionService, personaMapper);
   }
 
   private EventoDonacionAsignadaV1 crearEventoValido() {
@@ -76,5 +77,26 @@ class DonacionEventListenerTest {
 
     assertEquals("Error inesperado en procesamiento", ex.getMessage());
     verify(notificacionService, times(1)).procesar(evento, messageId);
+  }
+
+  @Test
+  void onPersonaSincronizada_conMessageId_deberiaDelegarEnServicioConDtoMapeado() {
+    UUID personaId = UUID.randomUUID();
+    grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1 evento =
+        new grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1(
+            personaId, "Comedor Sol", "JURIDICA", java.util.List.of());
+    grupo5.notificaciones.dto.PersonaReplicaDTO replicaDto =
+        new grupo5.notificaciones.dto.PersonaReplicaDTO(
+            personaId,
+            "Comedor Sol",
+            grupo5.notificaciones.models.entities.personas.TipoPersona.JURIDICA,
+            java.util.List.of());
+    String messageId = UUID.randomUUID().toString();
+
+    org.mockito.Mockito.when(personaMapper.toReplicaDTO(evento)).thenReturn(replicaDto);
+
+    listener.onPersonaSincronizada(evento, messageId);
+
+    verify(notificacionService).procesarPersonaSincronizada(replicaDto, messageId);
   }
 }

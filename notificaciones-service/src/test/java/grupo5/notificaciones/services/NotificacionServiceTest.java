@@ -188,4 +188,45 @@ class NotificacionServiceTest {
     verify(eventPublisher, never()).publishEvent(any());
     verify(mapper, never()).toEntity(eventoV1);
   }
+
+  @Test
+  void procesarPersonaSincronizada_conDtoValido_deberiaDelegarEnPersonasService() {
+    grupo5.notificaciones.services.IPersonasService personasService =
+        mock(grupo5.notificaciones.services.IPersonasService.class);
+    NotificacionService serviceConPersonas =
+        new NotificacionService(repository, mapper, eventPublisher, null, personasService);
+
+    grupo5.notificaciones.dto.PersonaReplicaDTO dto =
+        new grupo5.notificaciones.dto.PersonaReplicaDTO(
+            UUID.randomUUID(),
+            "Fundación Ayuda",
+            grupo5.notificaciones.models.entities.personas.TipoPersona.JURIDICA,
+            List.of());
+
+    serviceConPersonas.procesarPersonaSincronizada(dto, UUID.randomUUID().toString());
+
+    verify(personasService, times(1)).sincronizar(dto);
+  }
+
+  @Test
+  void procesarPersonaSincronizada_duplicadoEnInbox_noDeberiaSincronizar() {
+    JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+    grupo5.notificaciones.services.IPersonasService personasService =
+        mock(grupo5.notificaciones.services.IPersonasService.class);
+    NotificacionService serviceConDb =
+        new NotificacionService(repository, mapper, eventPublisher, jdbcTemplate, personasService);
+
+    grupo5.notificaciones.dto.PersonaReplicaDTO dto =
+        new grupo5.notificaciones.dto.PersonaReplicaDTO(
+            UUID.randomUUID(),
+            "Fundación Ayuda",
+            grupo5.notificaciones.models.entities.personas.TipoPersona.JURIDICA,
+            List.of());
+
+    when(jdbcTemplate.update(anyString(), any(UUID.class), any(LocalDateTime.class))).thenReturn(0);
+
+    serviceConDb.procesarPersonaSincronizada(dto, UUID.randomUUID().toString());
+
+    verify(personasService, never()).sincronizar(any());
+  }
 }
