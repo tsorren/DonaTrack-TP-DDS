@@ -1,7 +1,6 @@
 # Título
 
--
-Status: [draft | proposed | rejected | accepted | deprecated | … | superseded by [xxx](yyyymmdd-xxx.md)] <!-- optional -->
+- Status: [draft | proposed | rejected | accepted | deprecated | … | superseded by yyyymmdd-xxx.md] <!-- optional -->
 - Date: {YYYY-MM-DD}
 - Deciders: {lista de integrantes involucrados en la decisión}
 - Tags: {lista}
@@ -85,4 +84,4 @@ decisión? Ej: revisión de código, diagrama de secuencia o un test de arquitec
 
 ## Links <!-- optional -->
 
-<!-- example: Refined by [xxx](yyyymmdd-xxx.md), tienen que estar en la misma carpeta-->
+<!-- example: Refined by yyyymmdd-xxx.md, tienen que estar en la misma carpeta-->
