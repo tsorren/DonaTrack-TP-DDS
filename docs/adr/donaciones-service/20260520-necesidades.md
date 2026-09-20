@@ -1,6 +1,6 @@
 # Necesidades
 
-- Status: superseded by [20260609-gestion-de-necesidades-y-periodos.md](./20260609-gestion-de-necesidades-y-periodos.md)
+- Status: superseded by [Gestion de Necesidades y Periodos](./20260609-gestion-de-necesidades-y-periodos.md)
 - Date: 2026-05-20
 - Deciders: Decisión Grupal
 

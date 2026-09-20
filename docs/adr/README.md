@@ -158,3 +158,62 @@ log4brains adr new        # Crear nuevo ADR interactivo
 
 * Portal local de Log4brains: [`index.md`](index.md)
 * Base de conocimientos publicada: https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview
+
+---
+
+## Reglas de compatibilidad con Log4brains
+
+> [!IMPORTANT]
+> El build de GitHub Pages (job `Build Log4brains`) falla silenciosamente si el campo `Status:` no respeta estas reglas. Los errores `"You forgot to pass the superseder"` y `"No entry in the configuration for this package"` son señales directas de estas violaciones.
+
+### Regla 1 — El texto del link en `superseded by` debe ser el título H1 exacto del ADR sucesor
+
+Log4brains resuelve el ADR sucesor buscando el **texto del link** contra los títulos `# Título` de todos los ADRs. Si el texto es un filename, un identificador abreviado o cualquier otra cosa que no coincida con el `# H1` del archivo destino, el pre-render falla con:
+
+```
+Error: You forgot to pass the superseder
+```
+
+✅ **Correcto:**
+```markdown
+- Status: superseded by [Título Exacto del ADR Sucesor](./YYYYMMDD-nombre-del-archivo.md)
+```
+
+❌ **Incorrecto — texto es el filename:**
+```markdown
+- Status: superseded by [20260609-gestion-de-necesidades-y-periodos.md](./20260609-gestion-de-necesidades-y-periodos.md)
+```
+
+❌ **Incorrecto — texto es un identificador abreviado:**
+```markdown
+- Status: superseded by [ADR 20260911](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md)
+```
+
+### Regla 2 — Un ADR de paquete que referencia un ADR global NO puede usar el texto del link como path relativo con `../`
+
+Log4brains asigna cada ADR a un paquete (definido en [`.log4brains.yml`](../../.log4brains.yml)). Cuando el texto del link empieza con `../`, el `PackageRepository` intenta resolver el paquete del sucesor usando ese prefijo y no encuentra ninguna entrada, fallando con:
+
+```
+Error: No entry in the configuration for this package (..)
+```
+
+La URL (href) del link sí puede y debe usar `../` para apuntar a la carpeta raíz. Solo el **texto del link** debe ser el título, no un path.
+
+✅ **Correcto — ADR de paquete apuntando a un ADR global:**
+```markdown
+- Status: superseded by [Título del ADR Global](../YYYYMMDD-nombre-global.md)
+```
+
+❌ **Incorrecto — texto del link con path relativo:**
+```markdown
+- Status: superseded by [../YYYYMMDD-nombre-global.md](../YYYYMMDD-nombre-global.md)
+```
+
+### Checklist de verificación pre-PR
+
+Antes de hacer push de un ADR con `Status: superseded`, verificar:
+
+- [ ] El texto del link es una copia exacta del `# H1` del archivo sucesor (mayúsculas, tildes, puntuación incluidos).
+- [ ] El archivo sucesor existe en el path referenciado.
+- [ ] Si el sucesor está en un paquete distinto o en la carpeta raíz, el texto del link **no** empieza con `../`.
+- [ ] Previsualizar localmente con `log4brains preview` antes de la PR para detectar errores de pre-render.

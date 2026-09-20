@@ -1,6 +1,6 @@
 # Asignacion de Donaciones
 
-- Status: superseded by [20260609-asignacion-parcial-de-donacion-independiente.md](./20260609-asignacion-parcial-de-donacion-independiente.md)
+- Status: superseded by [Asignación parcial de donación independiente](./20260609-asignacion-parcial-de-donacion-independiente.md)
 - Date: 2026-05-21
 - Deciders: Decisión Grupal
 
