@@ -12,12 +12,18 @@ npx log4brains build --basePath /adr-preview
 Move-Item -Force .log4brains/out/* staging/adr-preview/
 
 Write-Host "3. Copiando Documentador..." -ForegroundColor Cyan
-if (Test-Path docs/documentador) {
+if (Test-Path docs/herramientas/documentador) {
+    Copy-Item -Recurse -Force docs/herramientas/documentador/* staging/documentador/
+} elseif (Test-Path docs/documentador) {
     Copy-Item -Recurse -Force docs/documentador/* staging/documentador/
 }
 
 Write-Host "4. Copiando archivos del Hub..." -ForegroundColor Cyan
-Copy-Item -Recurse -Force docs/hub/* staging/
+if (Test-Path docs/herramientas/hub) {
+    Copy-Item -Recurse -Force docs/herramientas/hub/* staging/
+} elseif (Test-Path docs/hub) {
+    Copy-Item -Recurse -Force docs/hub/* staging/
+}
 New-Item -ItemType File -Force -Path staging/.nojekyll | Out-Null
 
 Write-Host "5. Copiando PDFs de entregas..." -ForegroundColor Cyan

@@ -1,11 +1,28 @@
 package grupo5.donaciones.config;
 
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionEnCaminoV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionEntregaFallidaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionRecibidaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionSegmentadaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonacionVencidaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
+import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.support.converter.DefaultClassMapper;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,19 +31,36 @@ import tools.jackson.databind.json.JsonMapper;
 @Configuration
 public class RabbitMQConfig {
 
-  // Nombre del exchange (tiene que coincidir con el que declara logistica-service)
-  public static final String EXCHANGE = "logistica.exchange";
+  // Exchanges
+  public static final String EXCHANGE_LOGISTICA = "logistica.exchange";
+  public static final String EXCHANGE_DONACIONES = "donaciones.exchange";
 
-  // Una cola por tipo de evento
+  // Colas suscriptoras desde logistica-service
   public static final String QUEUE_RUTA_ASIGNADA = "donaciones.ruta.asignada";
   public static final String QUEUE_RUTA_INICIADA = "donaciones.ruta.iniciada";
   public static final String QUEUE_ENTREGA_EXITOSA = "donaciones.entrega.exitosa";
   public static final String QUEUE_ENTREGA_FALLIDA = "donaciones.entrega.fallida";
 
-  // --- Exchange ---
+  // Routing Keys emitidas hacia donaciones.exchange
+  public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
+  public static final String ROUTING_KEY_DONACION_ASIGNADA = "donacion.asignada.v1";
+  public static final String ROUTING_KEY_DONACION_EN_CAMINO = "donacion.en-camino.v1";
+  public static final String ROUTING_KEY_DONACION_RECIBIDA = "donacion.recibida.v1";
+  public static final String ROUTING_KEY_DONACION_ENTREGA_FALLIDA = "donacion.entrega-fallida.v1";
+  public static final String ROUTING_KEY_DONACION_VENCIDA = "donacion.vencida.v1";
+  public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
+  public static final String ROUTING_KEY_DONANTE_DADO_DE_BAJA = "donante.dado-de-baja.v1";
+  public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
+
+  // --- Exchanges ---
   @Bean
   public TopicExchange logisticaExchange() {
-    return new TopicExchange(EXCHANGE, true, false);
+    return new TopicExchange(EXCHANGE_LOGISTICA, true, false);
+  }
+
+  @Bean
+  public TopicExchange donacionesExchange() {
+    return new TopicExchange(EXCHANGE_DONACIONES, true, false);
   }
 
   // --- Colas ---
@@ -50,7 +84,7 @@ public class RabbitMQConfig {
     return new Queue(QUEUE_ENTREGA_FALLIDA, true);
   }
 
-  // --- Bindings
+  // --- Bindings ---
   @Bean
   public Binding bindingRutaAsignada(Queue queueRutaAsignada, TopicExchange logisticaExchange) {
     return BindingBuilder.bind(queueRutaAsignada).to(logisticaExchange).with("ruta.asignada");
@@ -71,11 +105,43 @@ public class RabbitMQConfig {
     return BindingBuilder.bind(queueEntregaFallida).to(logisticaExchange).with("entrega.fallida");
   }
 
-  // --- Serialización JSON ---
+  // --- Serialización JSON y Templates ---
   @Bean
-  public JacksonJsonMessageConverter messageConverter() {
+  public DefaultClassMapper classMapper() {
+    DefaultClassMapper classMapper = new DefaultClassMapper();
+    classMapper.setTrustedPackages("*");
+    Map<String, Class<?>> idClassMapping = new HashMap<>();
+    idClassMapping.put(ROUTING_KEY_DONACION_SEGMENTADA, EventoDonacionSegmentadaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_ASIGNADA, EventoDonacionAsignadaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_EN_CAMINO, EventoDonacionEnCaminoV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_RECIBIDA, EventoDonacionRecibidaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_ENTREGA_FALLIDA, EventoDonacionEntregaFallidaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONACION_VENCIDA, EventoDonacionVencidaV1.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, EventoDonanteRegistradoV1.class);
+    idClassMapping.put(ROUTING_KEY_DONANTE_DADO_DE_BAJA, EventoDonanteDadoDeBajaV1.class);
+    idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
+    idClassMapping.put("ruta.asignada", EventoRutaAsignada.class);
+    idClassMapping.put("ruta.iniciada", EventoRutaIniciada.class);
+    idClassMapping.put("entrega.exitosa", EventoEntregaExitosa.class);
+    idClassMapping.put("entrega.fallida", EventoEntregaFallida.class);
+    classMapper.setIdClassMapping(idClassMapping);
+    return classMapper;
+  }
+
+  @Bean
+  public JacksonJsonMessageConverter messageConverter(DefaultClassMapper classMapper) {
     JsonMapper mapper = JsonMapper.builder().build();
-    return new JacksonJsonMessageConverter(mapper);
+    JacksonJsonMessageConverter converter = new JacksonJsonMessageConverter(mapper);
+    converter.setClassMapper(classMapper);
+    return converter;
+  }
+
+  @Bean
+  public RabbitTemplate rabbitTemplate(
+      ConnectionFactory connectionFactory, JacksonJsonMessageConverter messageConverter) {
+    RabbitTemplate template = new RabbitTemplate(connectionFactory);
+    template.setMessageConverter(messageConverter);
+    return template;
   }
 
   @Bean

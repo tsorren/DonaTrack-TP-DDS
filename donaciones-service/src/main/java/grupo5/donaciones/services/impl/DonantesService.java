@@ -1,17 +1,15 @@
 package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoDTO;
-import grupo5.donaciones.dto.comunicaciones.RegistrarDonanteRequest;
+import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
+import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
-import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
-import grupo5.donaciones.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
+import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.mappers.DonanteMapper;
 import java.time.LocalDateTime;
@@ -24,21 +22,18 @@ import org.springframework.stereotype.Service;
 public class DonantesService implements IDonantesService {
   private final IDonantesRepository donantesRepository;
   private final DonanteMapper donanteMapper;
-  private final IncentivosFeignClient incentivosFeignClient;
-  private final NotificacionesFeignClient notificacionesFeignClient;
-  private final grupo5.donaciones.models.repositories.IPersonasRepository personasRepository;
+  private final IPersonasRepository personasRepository;
+  private final IDonacionesEventPublisher eventPublisher;
 
   public DonantesService(
       IDonantesRepository donantesRepository,
       DonanteMapper donanteMapper,
-      IncentivosFeignClient incentivosFeignClient,
-      NotificacionesFeignClient notificacionesFeignClient,
-      grupo5.donaciones.models.repositories.IPersonasRepository personasRepository) {
+      IPersonasRepository personasRepository,
+      IDonacionesEventPublisher eventPublisher) {
     this.donantesRepository = donantesRepository;
     this.donanteMapper = donanteMapper;
-    this.incentivosFeignClient = incentivosFeignClient;
-    this.notificacionesFeignClient = notificacionesFeignClient;
     this.personasRepository = personasRepository;
+    this.eventPublisher = eventPublisher;
   }
 
   @Override
@@ -52,30 +47,22 @@ public class DonantesService implements IDonantesService {
               .findById(guardado.personaId())
               .orElseThrow(() -> new RecursoNoEncontradoException(guardado.personaId()));
 
-      String nombre = obtenerNombrePersona(persona);
-      incentivosFeignClient.registrarDonante(
-          guardado.getId(), new RegistrarDonanteRequest(guardado.getId(), persona.getId(), nombre));
-
+      String nombre = persona.getNombreCompleto();
       String credenciales =
           "Usuario: "
               + persona.getId()
               + " / Password: "
               + UUID.randomUUID().toString().substring(0, 8);
-      notificacionesFeignClient.enviarEvento(
-          new EventoDonanteRegistradoDTO(
-              persona.getId(), LocalDateTime.now(ZoneId.systemDefault()), credenciales));
-    }
 
+      eventPublisher.publicarDonanteRegistrado(
+          new EventoDonanteRegistradoV1(
+              guardado.getId(),
+              persona.getId(),
+              nombre,
+              LocalDateTime.now(ZoneId.systemDefault()),
+              credenciales));
+    }
     return donanteMapper.toOutputDTO(guardado);
-  }
-
-  private static String obtenerNombrePersona(Persona persona) {
-    if (persona instanceof Humana humana) {
-      return humana.getNombre() + " " + humana.getApellido();
-    } else if (persona instanceof Juridica juridica) {
-      return juridica.getRazonSocial();
-    }
-    return "Anónimo";
   }
 
   @Override
@@ -119,6 +106,8 @@ public class DonantesService implements IDonantesService {
     Donante donante =
         donantesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
     donantesRepository.delete(donante);
-    incentivosFeignClient.darDeBaja(id);
+    eventPublisher.publicarDonanteDadoDeBaja(
+        new EventoDonanteDadoDeBajaV1(
+            id, donante.personaId(), LocalDateTime.now(ZoneId.systemDefault())));
   }
 }

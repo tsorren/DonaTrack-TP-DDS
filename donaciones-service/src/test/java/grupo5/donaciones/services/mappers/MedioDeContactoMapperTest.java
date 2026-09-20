@@ -2,7 +2,13 @@ package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.donaciones.dto.mediosDeContacto.*;
+import grupo5.donaciones.dto.mediosDeContacto.CorreoInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.CorreoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.TelefonoInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.TelefonoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.WhatsAppInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.WhatsAppOutputDTO;
 import grupo5.donaciones.models.entities.personas.Correo;
 import grupo5.donaciones.models.entities.personas.MedioDeContacto;
 import grupo5.donaciones.models.entities.personas.Telefono;
@@ -134,7 +140,9 @@ class MedioDeContactoMapperTest {
     MedioDeContacto anonimo =
         new MedioDeContacto() {
           @Override
-          public void anonimizar() {}
+          public void anonimizar() {
+            // No-op: clase anónima de prueba para simular tipo de medio de contacto no soportado
+          }
         };
 
     assertThrows(IllegalArgumentException.class, () -> mapper.toOutputDTO(anonimo));

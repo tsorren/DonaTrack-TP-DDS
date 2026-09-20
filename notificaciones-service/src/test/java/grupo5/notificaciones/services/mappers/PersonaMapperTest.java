@@ -50,7 +50,7 @@ class PersonaMapperTest {
 
     Correo correo = new Correo();
     correo.setDireccionCorreo("contacto@empresa.com");
-    correo.setEsPredeterminado(true);
+    correo.marcarComoPredeterminado();
     persona.agregarMedioDeContacto(correo);
 
     PersonaReplicaDTO replica = mapper.toReplicaDTO(persona);
@@ -61,5 +61,43 @@ class PersonaMapperTest {
     assertEquals(TipoPersona.JURIDICA, replica.tipoPersona());
     assertEquals(1, replica.mediosDeContacto().size());
     assertEquals("CORREO", replica.mediosDeContacto().get(0).tipo());
+  }
+
+  @Test
+  void toReplicaDTO_conEventoPersonaSincronizada_deberiaMapearCorrectamente() {
+    UUID id = UUID.randomUUID();
+    grupo5.notificaciones.dto.input.MedioDeContactoEventoDTO medio =
+        new grupo5.notificaciones.dto.input.MedioDeContactoEventoDTO(
+            "CORREO", true, "contacto@empresa.com", null, null, null);
+    grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1 evento =
+        new grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1(
+            id, "Empresa S.A.", "JURIDICA", List.of(medio));
+
+    PersonaReplicaDTO replica = mapper.toReplicaDTO(evento);
+
+    assertNotNull(replica);
+    assertEquals(id, replica.id());
+    assertEquals("Empresa S.A.", replica.denominacion());
+    assertEquals(TipoPersona.JURIDICA, replica.tipoPersona());
+    assertEquals(1, replica.mediosDeContacto().size());
+    assertEquals("CORREO", replica.mediosDeContacto().get(0).tipo());
+  }
+
+  @Test
+  void
+      toReplicaDTO_conEventoPersonaSincronizada_conTipoInvalido_deberiaLanzarValidationException() {
+    UUID id = UUID.randomUUID();
+    grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1 evento =
+        new grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1(
+            id, "Nombre", "TIPO_INVENTADO", List.of());
+
+    assertThrows(
+        grupo5.common.exceptions.ValidationException.class, () -> mapper.toReplicaDTO(evento));
+  }
+
+  @Test
+  void toReplicaDTO_conEventoNulo_deberiaRetornarNull() {
+    assertNull(
+        mapper.toReplicaDTO((grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1) null));
   }
 }

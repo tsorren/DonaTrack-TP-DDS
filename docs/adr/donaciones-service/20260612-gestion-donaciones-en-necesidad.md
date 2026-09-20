@@ -3,6 +3,9 @@
 - Date: 2026-06-12
 - Deciders: Decisión Grupal
 
+> **Nota de Resolución del Estado (2026-07-02 / 2026-09-01):**
+> La propuesta de unificar y subir la colección de donaciones a la clase abstracta `Necesidad` fue **rechazada formalmente** (fijada en commit `f786da2e`) debido a que forzaba a la clase abstracta a manejar estructuras de datos que violan la naturaleza periódica de `NecesidadRecurrente` (donde las donaciones pertenecen a cada `PeriodoNecesidad`). En su lugar, el equipo introdujo la interfaz puente `Asignable`. No obstante, el valor arquitectónico y la retención de `Asignable` frente al desacoplamiento puro mediante `UUID entidadBeneficiariaId` se evalúa formalmente en [20260901-evaluacion-de-interfaz-asignable-vs-identificador-entidad-beneficiaria.md](./20260901-evaluacion-de-interfaz-asignable-vs-identificador-entidad-beneficiaria.md).
+
 ## Contexto y Problema
 la gestión de donaciones independientes está fragmentada y acoplada de forma inconsistente: NecesidadExtraordinaria las maneja de forma directa en una lista local, mientras que NecesidadRecurrente delega esa lista dentro de cada ciclo en PeriodoNecesidad. Esto impide que las capas superiores (Servicios y Controladores) puedan operar de forma agnóstica con cualquier tipo de necesidad, rompiendo la transparencia y obligando a realizar preguntas de tipo (instanceof o casteos) para interactuar con las donaciones.
 

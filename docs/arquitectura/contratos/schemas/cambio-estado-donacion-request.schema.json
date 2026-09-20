@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/cambio-estado-donacion-request.schema.json",
+  "title": "CambioEstadoDonacionIndependienteRequestDTO",
+  "description": "Payload para transicionar el estado de una donación independiente (máquina de 7 estados)",
+  "type": "object",
+  "properties": {
+    "estado": {
+      "type": "string",
+      "enum": [
+        "EN_DEPOSITO",
+        "ASIGNACION_REALIZADA",
+        "EN_TRASLADO",
+        "LISTA_PARA_ENTREGAR",
+        "ENTREGADA",
+        "ENTREGA_FALLIDA",
+        "VENCIDA"
+      ],
+      "description": "Estado destino requerido según el State Pattern de donaciones"
+    },
+    "justificacion": {
+      "type": "string",
+      "description": "Motivo opcional del cambio de estado o causa de fallo de entrega"
+    },
+    "necesidadId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador único de la necesidad vinculada en asignación"
+    },
+    "urlMapa": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL de tracking o visualización del mapa provista por logística"
+    },
+    "patenteCamion": {
+      "type": "string",
+      "description": "Identificador de la patente del camión asignado a la entrega"
+    },
+    "replanificable": {
+      "type": "boolean",
+      "description": "Indica si la entrega fallida admite replanificación en nueva ruta"
+    }
+  },
+  "required": ["estado"],
+  "additionalProperties": false
+}

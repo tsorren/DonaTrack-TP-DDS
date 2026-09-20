@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/donacion-independiente-response.schema.json",
+  "title": "DonacionIndependienteResponseDTO",
+  "description": "Representación de respuesta para una donación independiente",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador único de la donación independiente"
+    },
+    "donacionOriginalId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la donación original"
+    },
+    "descripcion": {
+      "type": "string",
+      "description": "Descripción de la donación"
+    },
+    "estadoActual": {
+      "type": "string",
+      "enum": [
+        "EN_DEPOSITO",
+        "ASIGNACION_REALIZADA",
+        "EN_TRASLADO",
+        "LISTA_PARA_ENTREGAR",
+        "ENTREGADA",
+        "ENTREGA_FALLIDA",
+        "VENCIDA"
+      ],
+      "description": "Estado actual de la donación independiente"
+    },
+    "fechaRegistro": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha y hora de registro"
+    },
+    "historial": {
+      "type": "array",
+      "description": "Historial de transiciones de estado"
+    },
+    "items": {
+      "type": "array",
+      "description": "Ítems normalizados asignados"
+    },
+    "cantidad": {
+      "type": "integer",
+      "description": "Cantidad total de ítems"
+    }
+  },
+  "required": ["id", "donacionOriginalId", "estadoActual", "fechaRegistro"],
+  "additionalProperties": true
+}

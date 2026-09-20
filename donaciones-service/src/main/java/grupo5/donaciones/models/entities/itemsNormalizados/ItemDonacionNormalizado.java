@@ -35,4 +35,17 @@ public class ItemDonacionNormalizado implements AggregateRoot {
   public void actualizarBien(BienNormalizado nuevoBien) {
     this.bien = nuevoBien;
   }
+
+  public boolean estaPendienteDeRevision() {
+    return this.bien != null
+        && this.bien.estadoNormalizacion() == EstadoNormalizacion.PENDIENTE_REVISION;
+  }
+
+  public boolean estaResuelto() {
+    return !estaPendienteDeRevision();
+  }
+
+  public boolean estaAceptado() {
+    return this.bien != null && this.bien.estadoNormalizacion() == EstadoNormalizacion.ACEPTADO;
+  }
 }

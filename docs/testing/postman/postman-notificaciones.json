@@ -1,0 +1,249 @@
+{
+  "info": {
+    "_postman_id": "donatrack-notificaciones-swagger-verified-v2",
+    "name": "DonaTrack - Notificaciones Service (Swagger Verified)",
+    "description": "Colección verificada contra los Controllers de Swagger UI de notificaciones-service (:8081).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "personaId", "value": "11111111-1111-1111-1111-111111111111" }
+  ],
+  "item": [
+    {
+      "name": "01. Personas Controller",
+      "item": [
+        {
+          "name": "1. Sincronizar Réplica de Persona",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 200 OK / 201 Created', function() { pm.expect([200, 201]).to.include(pm.response.code); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{personaId}}\",\n  \"denominacion\": \"Juan Perez\",\n  \"tipoPersona\": \"HUMANA\",\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"CORREO\",\n      \"esPredeterminado\": true,\n      \"direccionCorreo\": \"juan.perez@example.com\"\n    },\n    {\n      \"tipo\": \"WHATSAPP\",\n      \"esPredeterminado\": false,\n      \"caracteristica\": \"11\",\n      \"codigoArea\": \"54\",\n      \"numero\": \"55554444\"\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/notificaciones/personas", "host": ["{{baseUrl}}"], "path": ["api", "notificaciones", "personas"] }
+          }
+        },
+        {
+          "name": "2. Obtener Persona Replicada por ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/notificaciones/personas/{{personaId}}", "host": ["{{baseUrl}}"], "path": ["api", "notificaciones", "personas", "{{personaId}}"] }
+          }
+        },
+        {
+          "name": "3. Anonimizar Persona",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/notificaciones/personas/{{personaId}}", "host": ["{{baseUrl}}"], "path": ["api", "notificaciones", "personas", "{{personaId}}"] }
+          }
+        },
+        {
+          "name": "4. Sincronizar Réplica de Persona (Jurídica + Teléfono)",
+          "description": "Variante no cubierta antes: tipoPersona JURIDICA y medio de contacto TELEFONO (distinto de WHATSAPP).",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"55555555-5555-5555-5555-555555555555\",\n  \"denominacion\": \"Comedor Solidario\",\n  \"tipoPersona\": \"JURIDICA\",\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"TELEFONO\",\n      \"esPredeterminado\": true,\n      \"caracteristica\": \"11\",\n      \"codigoArea\": \"54\",\n      \"numero\": \"40001111\"\n    }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/notificaciones/personas", "host": ["{{baseUrl}}"], "path": ["api", "notificaciones", "personas"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Notificación Controller",
+      "item": [
+        {
+          "name": "1. Procesar Evento (Donante Registrado)",
+          "description": "credencialesDeAcceso viaja como texto plano y el propio dominio (DonanteRegistrado.generarNotificaciones()) lo reenvía tal cual al donante por correo/WhatsApp — deuda de seguridad de fondo del servicio, no de este ejemplo. Considerar reemplazar por un token/link de primer acceso.",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 202 Accepted', function() { pm.response.to.have.status(202); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONANTE_REGISTRADO\",\n  \"idPersonaDonante\": \"{{personaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"credencialesDeAcceso\": \"USER: juan.perez | PASS: temp1234\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "2. Procesar Evento (Misión Cumplida)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 202 Accepted', function() { pm.response.to.have.status(202); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"MISION_CUMPLIDA\",\n  \"idPersonaDonante\": \"{{personaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"nombreMision\": \"Hábil Donador\",\n  \"recompensa\": \"Insignia de Bronce\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "3. Procesar Evento (Donante Inactivo)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 202 Accepted', function() { pm.response.to.have.status(202); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONANTE_INACTIVO\",\n  \"idPersonaDonante\": \"{{personaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"diasInactivo\": 45\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "4. Procesar Evento (Subió de Categoría)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 202 Accepted', function() { pm.response.to.have.status(202); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"SUBIO_CATEGORIA\",\n  \"idPersonaDonante\": \"{{personaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"categoriaNueva\": \"SOSTENEDOR\",\n  \"categoriaVieja\": \"COLABORADOR\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "5. Procesar Evento (Donación Asignada)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 202 Accepted', function() { pm.response.to.have.status(202); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONACION_ASIGNADA\",\n  \"idPersonaDonante\": \"{{personaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"idPersonaBeneficiaria\": \"33333333-3333-3333-3333-333333333333\",\n  \"detalleDonacion\": \"5 paquetes de fideos\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "6. Procesar Evento (Donación Recibida)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 202 Accepted', function() { pm.response.to.have.status(202); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONACION_RECIBIDA\",\n  \"idPersonaDonante\": \"{{personaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"idPersonaBeneficiaria\": \"33333333-3333-3333-3333-333333333333\",\n  \"detalleDonacion\": \"5 paquetes de fideos\",\n  \"patenteCamion\": \"AB123CD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "7. Procesar Evento (Donación en Camino)",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 202 Accepted', function() { pm.response.to.have.status(202); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"DONACION_EN_CAMINO\",\n  \"idPersonaDonante\": \"{{personaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"idPersonaBeneficiaria\": \"33333333-3333-3333-3333-333333333333\",\n  \"detalleDonacion\": \"5 paquetes de fideos\",\n  \"enlaceSeguimiento\": \"https://donatrack.org/seguimiento/abc123\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "8. Procesar Evento (Entrega Fallida)",
+          "description": "Único tipo con 0..N notificaciones reales: genera aviso tanto al admin (idPersonaAdmin) como al donante (idPersonaDonante).",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 202 Accepted', function() { pm.response.to.have.status(202); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"ENTREGA_FALLIDA\",\n  \"idPersonaDonante\": \"{{personaId}}\",\n  \"fecha\": \"{{$isoTimestamp}}\",\n  \"idPersonaBeneficiaria\": \"33333333-3333-3333-3333-333333333333\",\n  \"detalleDonacion\": \"5 paquetes de fideos\",\n  \"idPersonaAdmin\": \"44444444-4444-4444-4444-444444444444\",\n  \"motivo\": \"Nadie recibió el envío en el domicilio\",\n  \"replanificable\": true\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/notificaciones", "host": ["{{baseUrl}}"], "path": ["notificaciones"] }
+          }
+        },
+        {
+          "name": "9. Obtener Notificaciones por Persona ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/notificaciones/persona/{{personaId}}", "host": ["{{baseUrl}}"], "path": ["notificaciones", "persona", "{{personaId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}

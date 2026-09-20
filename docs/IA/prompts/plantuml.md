@@ -10,7 +10,7 @@ Ayudarme a crear o revisar diagramas PlantUML alineados con el diseño de la iss
 - No inventes relaciones que no estén justificadas.
 - Agrupá por paquetes lógicos si corresponde.
 - Indicá si conviene diagrama de clases, secuencia, actividad o componentes.
-- El archivo debe poder guardarse en docs/design/<modulo>/ con nombre en minúsculas y guiones.
+- El archivo debe poder guardarse en docs/arquitectura/diseno/<modulo>/ con nombre en minúsculas y guiones.
 
 # Material
 Issue:

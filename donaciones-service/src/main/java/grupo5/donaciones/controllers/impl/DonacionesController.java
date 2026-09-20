@@ -4,6 +4,7 @@ import grupo5.donaciones.controllers.IDonacionesController;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
 import grupo5.donaciones.services.IDonacionesService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,8 @@ public class DonacionesController implements IDonacionesController {
 
   @Override
   @PostMapping
-  public ResponseEntity<DonacionOutputDTO> cargarDonacion(@RequestBody DonacionInputDTO dto) {
+  public ResponseEntity<DonacionOutputDTO> cargarDonacion(
+      @Valid @RequestBody DonacionInputDTO dto) {
     return ResponseEntity.status(HttpStatus.CREATED).body(service.cargarDonacion(dto));
   }
 

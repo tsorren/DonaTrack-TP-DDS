@@ -8,6 +8,7 @@ import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.Estado;
@@ -50,7 +51,7 @@ class DonacionMapperTest {
 
   @Test
   void toEntity_conDtoValido_deberiaMapearCorrectamente() {
-    Humana persona = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
+    Humana persona = PersonaMother.humanaValida();
 
     DireccionInputDTO dirDTO =
         new DireccionInputDTO(
@@ -78,12 +79,12 @@ class DonacionMapperTest {
 
   @Test
   void toEntity_conDtoNulo_deberiaRetornarNulo() {
-    assertNull(mapper.toEntity(null, new Humana("A", "B", LocalDate.of(1990, Month.JANUARY, 1))));
+    assertNull(mapper.toEntity(null, PersonaMother.humanaValida()));
   }
 
   @Test
   void toOutputDTO_conDonacionValida_deberiaMapearCorrectamente() {
-    Humana persona = new Humana("Maria", "Lopez", LocalDate.of(1993, Month.APRIL, 10));
+    Humana persona = PersonaMother.humanaValida();
     Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Test", crearDireccion());
     Donacion donacion = new Donacion(donante.getId(), deposito, "una donacion", null);
@@ -124,7 +125,7 @@ class DonacionMapperTest {
 
   @Test
   void toEntity_conItems_deberiaMapearItems() {
-    Humana persona = new Humana("Ana", "Garcia", LocalDate.of(1995, Month.MARCH, 15));
+    Humana persona = PersonaMother.humanaValida();
 
     ItemDonacionInputDTO item1 =
         new ItemDonacionInputDTO(
@@ -154,7 +155,7 @@ class DonacionMapperTest {
 
   @Test
   void toOutputDTO_conHistorialEstados_deberiaMapearHistorial() {
-    Humana persona = new Humana("Carlos", "Ruiz", LocalDate.of(1988, Month.JULY, 20));
+    Humana persona = PersonaMother.humanaValida();
     Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Norte", crearDireccion());
     Donacion donacion = new Donacion(donante.getId(), deposito);

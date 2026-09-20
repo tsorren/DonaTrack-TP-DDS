@@ -6,13 +6,8 @@ import java.time.LocalDateTime;
 public class DonacionAsignada extends EventoDeDonacion {
   public DonacionAsignada(
       Persona persona, Persona entidadBeneficiaria, String detalleDonacion, LocalDateTime fecha) {
-    this.setPersona(persona);
-    this.setEntidadBeneficiaria(entidadBeneficiaria);
-    this.setDetalleDonacion(detalleDonacion);
-    this.setFecha(fecha);
+    super(persona, entidadBeneficiaria, detalleDonacion, fecha);
   }
-
-  public DonacionAsignada() {}
 
   @Override
   protected String armarMensajeDonante() {

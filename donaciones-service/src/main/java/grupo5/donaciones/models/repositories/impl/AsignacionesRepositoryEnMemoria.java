@@ -1,6 +1,8 @@
 package grupo5.donaciones.models.repositories.impl;
 
-import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
+import grupo5.donaciones.models.entities.propuestas.EjecucionAsignacion;
 import grupo5.donaciones.models.repositories.IAsignacionesRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,19 +13,19 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class AsignacionesRepositoryEnMemoria implements IAsignacionesRepository {
-  private final Map<UUID, EjecucionAsignacionDTO> storage = new ConcurrentHashMap<>();
+  private final Map<UUID, EjecucionAsignacion> storage = new ConcurrentHashMap<>();
 
   @Override
-  public EjecucionAsignacionDTO save(EjecucionAsignacionDTO aggregate) {
+  public EjecucionAsignacion save(EjecucionAsignacion aggregate) {
     if (aggregate == null || aggregate.getId() == null) {
-      throw new IllegalArgumentException("Aggregate or its ID cannot be null");
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
     storage.put(aggregate.getId(), aggregate);
     return aggregate;
   }
 
   @Override
-  public List<EjecucionAsignacionDTO> obtenerHistorial() {
+  public List<EjecucionAsignacion> obtenerHistorial() {
     return new ArrayList<>(storage.values());
   }
 

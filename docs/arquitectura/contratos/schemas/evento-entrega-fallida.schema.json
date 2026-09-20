@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-entrega-fallida.schema.json",
+  "title": "EventoEntregaFallida",
+  "description": "Evento AMQP emitido cuando una entrega no pudo concretarse",
+  "type": "object",
+  "properties": {
+    "entregaId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "justificacion": {
+      "type": "string"
+    },
+    "fechaFalla": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "replanificable": {
+      "type": "boolean"
+    }
+  },
+  "required": ["entregaId", "donacionIndependienteId", "fechaFalla", "replanificable"],
+  "additionalProperties": true
+}
