@@ -1,6 +1,6 @@
 # Herencia de BaseRepositoryEnMemoria en los repositories en memoria
 
-- Status: superseded by [Límites y Responsabilidades del Shared Kernel (common-lib)](../20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md)
+- Status: superseded by [20260901-limites-y-responsabilidades-del-shared-kernel-common-lib](../20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md)
 - Date: 2026-06-16
 - Deciders: Tadeo Sorrentino, Sofia Deane
 - Tags: repositories, patrones-de-diseño, common-lib

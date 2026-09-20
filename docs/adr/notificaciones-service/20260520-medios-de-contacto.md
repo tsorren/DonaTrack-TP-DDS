@@ -1,6 +1,6 @@
 # Medios de Contacto
 
-- Status: superseded by [Desacoplamiento de Medios de Contacto mediante Double Dispatch y Router](./20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router.md)
+- Status: superseded by [notificaciones/20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router](./20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router.md)
 - Date: 2026-05-20
 - Deciders: Decisión Grupal
 

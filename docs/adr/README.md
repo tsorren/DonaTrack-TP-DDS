@@ -166,54 +166,67 @@ log4brains adr new        # Crear nuevo ADR interactivo
 > [!IMPORTANT]
 > El build de GitHub Pages (job `Build Log4brains`) falla silenciosamente si el campo `Status:` no respeta estas reglas. Los errores `"You forgot to pass the superseder"` y `"No entry in the configuration for this package"` son señales directas de estas violaciones.
 
-### Regla 1 — El texto del link en `superseded by` debe ser el título H1 exacto del ADR sucesor
+### Mecanismo real de resolución
 
-Log4brains resuelve el ADR sucesor buscando el **texto del link** contra los títulos `# Título` de todos los ADRs. Si el texto es un filename, un identificador abreviado o cualquier otra cosa que no coincida con el `# H1` del archivo destino, el pre-render falla con:
+Log4brains usa el **texto del link** en `superseded by TEXTO(href)` como **slug** para llamar internamente a `getAdrBySlug(TEXTO)`. El href se usa solo para renderizar el hipervínculo, no para resolver el ADR sucesor en el índice.
 
-```
-Error: You forgot to pass the superseder
-```
+El slug sigue el formato `package/filename-sin-extension` para ADRs de paquete, y `filename-sin-extension` para ADRs globales, según los paquetes definidos en [`.log4brains.yml`](../../.log4brains.yml).
 
-✅ **Correcto:**
-```markdown
-- Status: superseded by [Título Exacto del ADR Sucesor](./YYYYMMDD-nombre-del-archivo.md)
-```
+### Regla 1 — Texto del link = slug canónico del ADR sucesor
 
-❌ **Incorrecto — texto es el filename:**
-```markdown
-- Status: superseded by [20260609-gestion-de-necesidades-y-periodos.md](./20260609-gestion-de-necesidades-y-periodos.md)
-```
+| Tipo de sucesor | Formato del texto del link |
+|---|---|
+| ADR en el mismo paquete | `paquete/YYYYMMDD-nombre-del-adr` |
+| ADR en paquete diferente | `otro-paquete/YYYYMMDD-nombre-del-adr` |
+| ADR global (carpeta raíz `docs/adr/`) | `YYYYMMDD-nombre-del-adr` |
 
-❌ **Incorrecto — texto es un identificador abreviado:**
-```markdown
-- Status: superseded by [ADR 20260911](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md)
-```
+Los paquetes disponibles son: `donaciones`, `notificaciones`, `logistica`, `incentivos`, `cliente-liviano`, `auth`.
 
-### Regla 2 — Un ADR de paquete que referencia un ADR global NO puede usar el texto del link como path relativo con `../`
-
-Log4brains asigna cada ADR a un paquete (definido en [`.log4brains.yml`](../../.log4brains.yml)). Cuando el texto del link empieza con `../`, el `PackageRepository` intenta resolver el paquete del sucesor usando ese prefijo y no encuentra ninguna entrada, fallando con:
+**Ejemplo — ADR de paquete superado por ADR del mismo paquete:**
 
 ```
-Error: No entry in the configuration for this package (..)
+- Status: superseded by donaciones/20260609-gestion-de-necesidades-y-periodos (href: ./20260609-gestion-de-necesidades-y-periodos.md)
 ```
 
-La URL (href) del link sí puede y debe usar `../` para apuntar a la carpeta raíz. Solo el **texto del link** debe ser el título, no un path.
+**Ejemplo — ADR de paquete superado por ADR global:**
 
-✅ **Correcto — ADR de paquete apuntando a un ADR global:**
-```markdown
-- Status: superseded by [Título del ADR Global](../YYYYMMDD-nombre-global.md)
+```
+- Status: superseded by 20260901-limites-y-responsabilidades-del-shared-kernel-common-lib (href: ../20260901-limites-y-responsabilidades-del-shared-kernel-common-lib.md)
 ```
 
-❌ **Incorrecto — texto del link con path relativo:**
-```markdown
-- Status: superseded by [../YYYYMMDD-nombre-global.md](../YYYYMMDD-nombre-global.md)
+**Ejemplo — ADR global superado por otro ADR global:**
+
 ```
+- Status: superseded by 20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones (href: ./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md)
+```
+
+### Regla 2 — El texto del link NO debe contener `/` si el sucesor es global
+
+Cuando el texto contiene `/`, Log4brains lo interpreta como `package/adr-id`. Si el texto fuera `Topología Pub/Sub AMQP...`, intentaría `PackageRepository.find("Topología Pub")` y fallaría con:
+
+```
+Error: No entry in the configuration for this package (Topología Pub)
+```
+
+Los ADRs globales no tienen prefijo de paquete: su slug es solo el filename sin `.md`.
+
+### Regla 3 — El href refleja la ruta real del archivo (para el hipervínculo)
+
+El href sí puede usar `./` para el mismo directorio o `../` para navegar a la raíz global. Esto no afecta la resolución del sucesor (que depende del texto), pero sí el enlace navegable en la UI.
+
+### Señales de error y su causa
+
+| Error en el build | Causa |
+|---|---|
+| `"You forgot to pass the superseder"` | El texto del link no corresponde a ningún slug en el índice de Log4brains |
+| `"No entry in the configuration for this package (X)"` | El texto contiene `/` y la parte antes de `/` no coincide con ningún paquete en `.log4brains.yml` |
 
 ### Checklist de verificación pre-PR
 
 Antes de hacer push de un ADR con `Status: superseded`, verificar:
 
-- [ ] El texto del link es una copia exacta del `# H1` del archivo sucesor (mayúsculas, tildes, puntuación incluidos).
-- [ ] El archivo sucesor existe en el path referenciado.
-- [ ] Si el sucesor está en un paquete distinto o en la carpeta raíz, el texto del link **no** empieza con `../`.
+- [ ] El texto del link usa el slug canónico: `paquete/YYYYMMDD-filename` para ADRs de paquete, o `YYYYMMDD-filename` para globales.
+- [ ] El texto del link **no** contiene `/` si el sucesor es un ADR global.
+- [ ] El archivo sucesor existe en el path indicado por el href.
 - [ ] Previsualizar localmente con `log4brains preview` antes de la PR para detectar errores de pre-render.
+
