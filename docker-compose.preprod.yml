@@ -49,7 +49,7 @@ services:
       - "8082:8082"
     environment:
       - PORT=8082
-      - SPRING_PROFILES_ACTIVE=preprod
+      - SPRING_PROFILES_ACTIVE=postgres,preprod
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada

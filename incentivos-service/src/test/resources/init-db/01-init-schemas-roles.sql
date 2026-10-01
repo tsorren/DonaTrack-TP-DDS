@@ -25,7 +25,23 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA notificaciones GRANT ALL ON SEQUENCES TO noti
 REVOKE ALL ON SCHEMA donaciones, logistica, incentivos FROM notificaciones_user;
 ALTER ROLE notificaciones_user SET search_path = notificaciones;
 
--- 3. Roles placeholder para los demás microservicios (para cuando migren a BD)
+-- 3. Rol y permisos para notificaciones-service
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'incentivos_user') THEN
+    CREATE ROLE incentivos_user WITH LOGIN PASSWORD 'inc_pass_2026';
+  END IF;
+END
+$$;
+
+GRANT USAGE, CREATE ON SCHEMA incentivos TO incentivos_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA incentivos GRANT ALL ON TABLES TO incentivos_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA incentivos GRANT ALL ON SEQUENCES TO incentivos_user;
+REVOKE ALL ON SCHEMA notificaciones, donaciones, logistica FROM incentivos_user;
+ALTER ROLE incentivos_user SET search_path = incentivos;
+
+
+-- 4. Roles placeholder para los demás microservicios (para cuando migren a BD)
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'donaciones_user') THEN
@@ -34,15 +50,5 @@ BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'logistica_user') THEN
     CREATE ROLE logistica_user WITH LOGIN PASSWORD 'logi_pass_2026';
   END IF;
-  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'incentivos_user') THEN
-    CREATE ROLE incentivos_user WITH LOGIN PASSWORD 'inc_pass_2026';
-  END IF;
 END
 $$;
-
--- 4. Permisos para incentivos-service (mismo esquema de aislamiento que notificaciones)
-GRANT USAGE, CREATE ON SCHEMA incentivos TO incentivos_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA incentivos GRANT ALL ON TABLES TO incentivos_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA incentivos GRANT ALL ON SEQUENCES TO incentivos_user;
-REVOKE ALL ON SCHEMA notificaciones, donaciones, logistica FROM incentivos_user;
-ALTER ROLE incentivos_user SET search_path = incentivos;

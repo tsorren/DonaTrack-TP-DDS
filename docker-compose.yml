@@ -44,6 +44,10 @@ services:
       - "8082:8082"
     environment:
       - PORT=8082
+      - SPRING_PROFILES_ACTIVE=postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=incentivos
+      - SPRING_DATASOURCE_USERNAME=incentivos_user
+      - SPRING_DATASOURCE_PASSWORD=inc_pass_2026
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
@@ -54,6 +58,8 @@ services:
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     healthcheck:
