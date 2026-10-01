@@ -11,13 +11,16 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
@@ -33,15 +36,13 @@ import org.hibernate.annotations.FetchMode;
  * ocurre fuera de la transacción del repo) y usan SUBSELECT para evitar el producto cartesiano.
  * Ninguna es un bag: se usan {@link Set} o {@link OrderColumn}, así que no hay
  * MultipleBagFetchException.
- *
- * <p>Deuda técnica: historialDonaciones crece sin límite y se carga completo en cada lectura.
  */
 @Entity
 @Table(name = "donante_incentivos")
 @Getter
 @Setter
 @NoArgsConstructor
-public class  DonanteIncentivosEntity {
+public class DonanteIncentivosEntity {
 
   @Id private UUID id;
 
@@ -97,12 +98,16 @@ public class  DonanteIncentivosEntity {
   private Set<MisionEntity> misiones = new LinkedHashSet<>();
 
   // FetchType.EAGER justificado: el mapeo a dominio ocurre fuera de la transacción del repo.
-  // Set: el orden lo reconstruye el mapper por la columna orden.
+  // Clave "yyyy-MM" como texto; crece con los meses de actividad, no con cada donación.
   @SuppressWarnings("squid:S1319")
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-  @JoinColumn(name = "donante_id", nullable = false)
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(
+      name = "donante_donaciones_por_periodo",
+      joinColumns = @JoinColumn(name = "donante_id", nullable = false))
+  @MapKeyColumn(name = "periodo", length = 7)
+  @Column(name = "cantidad", nullable = false)
   @Fetch(FetchMode.SUBSELECT)
-  private Set<DonanteHistorialDonacionEntity> historialDonaciones = new LinkedHashSet<>();
+  private Map<String, Long> donacionesPorPeriodo = new LinkedHashMap<>();
 
   // FetchType.EAGER justificado: el mapeo a dominio ocurre fuera de la transacción del repo.
   @SuppressWarnings("squid:S1319")

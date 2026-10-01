@@ -1,22 +1,21 @@
 package grupo5.incentivos.infrastructure.persistencia.mappers;
 
 import grupo5.incentivos.infrastructure.persistencia.entities.CambioCategoriaEmbeddable;
-import grupo5.incentivos.infrastructure.persistencia.entities.DonanteHistorialDonacionEntity;
 import grupo5.incentivos.infrastructure.persistencia.entities.DonanteIncentivosEntity;
 import grupo5.incentivos.infrastructure.persistencia.entities.InsigniaGanadaEmbeddable;
 import grupo5.incentivos.infrastructure.persistencia.entities.MisionEntity;
 import grupo5.incentivos.models.entities.donante.CambioCategoria;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
-import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
 import grupo5.incentivos.models.entities.metricas.Metricas;
 import grupo5.incentivos.models.entities.misiones.Mision;
-import java.nio.charset.StandardCharsets;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.TreeMap;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -72,10 +71,11 @@ public class DonanteIncentivosPersistenciaMapper {
     entity.setUltimaDonacion(metricas.getUltimaDonacion());
     entity.setOrganizacionesAyudadas(new LinkedHashSet<>(metricas.getOrganizacionesAyudadas()));
 
-    List<EventoDonacion> historial = metricas.getHistorialDonaciones();
-    for (int i = 0; i < historial.size(); i++) {
-      entity.getHistorialDonaciones().add(toHistorialEntity(donante.getId(), i, historial.get(i)));
-    }
+    metricas
+        .donacionesPorPeriodo()
+        .forEach(
+            (periodo, cantidad) ->
+                entity.getDonacionesPorPeriodo().put(periodo.toString(), cantidad));
     return entity;
   }
 
@@ -110,18 +110,18 @@ public class DonanteIncentivosPersistenciaMapper {
             .map(misionMapper::toDomain)
             .toList();
 
-    List<EventoDonacion> historialDonaciones =
-        entity.getHistorialDonaciones().stream()
-            .sorted(Comparator.comparingInt(DonanteHistorialDonacionEntity::getOrden))
-            .map(this::toEventoDonacion)
-            .toList();
+    Map<YearMonth, Long> donacionesPorPeriodo = new TreeMap<>();
+    entity
+        .getDonacionesPorPeriodo()
+        .forEach(
+            (periodo, cantidad) -> donacionesPorPeriodo.put(YearMonth.parse(periodo), cantidad));
 
     Metricas metricas =
         Metricas.reconstituir(
             entity.getTotalDonacionesHistoricas(),
             entity.getTotalDonacionesExitosas(),
             entity.getUltimaDonacion(),
-            historialDonaciones,
+            donacionesPorPeriodo,
             entity.getOrganizacionesAyudadas());
 
     return new DonanteIncentivos(
@@ -134,35 +134,5 @@ public class DonanteIncentivosPersistenciaMapper {
         new ArrayList<>(misiones),
         new ArrayList<>(insignias),
         metricas);
-  }
-
-  private DonanteHistorialDonacionEntity toHistorialEntity(
-      UUID donanteId, int orden, EventoDonacion e) {
-    DonanteHistorialDonacionEntity entity = new DonanteHistorialDonacionEntity();
-    entity.setId(idHistorial(donanteId, orden));
-    entity.setOrden(orden);
-    entity.setDonacionId(e.getDonacionId());
-    entity.setCantidadBienes(e.getCantidadBienes());
-    entity.setFecha(e.getFecha());
-    entity.setCategorias(new ArrayList<>(e.getCategorias()));
-    return entity;
-  }
-
-  private EventoDonacion toEventoDonacion(DonanteHistorialDonacionEntity entity) {
-    return new EventoDonacion(
-        entity.getDonacionId(),
-        entity.getCategorias(),
-        entity.getCantidadBienes(),
-        entity.getFecha());
-  }
-
-  /**
-   * EventoDonacion no tiene identidad de dominio y el historial solo crece por el final. Derivar el
-   * id del par (donante, posición) lo mantiene estable entre guardados: el merge actualiza las
-   * filas existentes en vez de borrarlas y reinsertarlas.
-   */
-  private UUID idHistorial(UUID donanteId, int orden) {
-    return UUID.nameUUIDFromBytes(
-        (donanteId + ":historial-donacion:" + orden).getBytes(StandardCharsets.UTF_8));
   }
 }

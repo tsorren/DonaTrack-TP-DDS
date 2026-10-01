@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -153,12 +154,9 @@ class RepositoriosJpaTest {
     assertEquals(2, leido.getMetricas().getTotalDonacionesHistoricas());
     assertEquals(1, leido.getMetricas().getTotalDonacionesExitosas());
     assertEquals(LocalDate.of(2026, 6, 11), leido.getMetricas().getUltimaDonacion());
-    List<EventoDonacion> historial = leido.getMetricas().getHistorialDonaciones();
-    assertEquals(2, historial.size());
-    assertEquals(List.of("alimentos", "ropa"), historial.get(0).getCategorias());
     assertEquals(
-        original.getMetricas().getHistorialDonaciones().get(0).getDonacionId(),
-        historial.get(0).getDonacionId());
+        Map.of(YearMonth.of(2026, 5), 1L, YearMonth.of(2026, 6), 1L),
+        leido.getMetricas().donacionesPorPeriodo());
     assertEquals(
         Set.copyOf(original.getMetricas().getOrganizacionesAyudadas()),
         leido.getMetricas().getOrganizacionesAyudadas());
@@ -197,11 +195,11 @@ class RepositoriosJpaTest {
             "SELECT COUNT(*) FROM incentivos.mision WHERE donante_id = ?",
             Integer.class,
             nuevo.getId()));
-    // El historial solo crece por el final: la primera donación conserva su fila.
+    // El conteo mensual se actualiza en su fila: no se duplica ni se borra.
     assertEquals(
         1,
         jdbc.queryForObject(
-            "SELECT COUNT(*) FROM incentivos.donante_historial_donacion WHERE donante_id = ?",
+            "SELECT COUNT(*) FROM incentivos.donante_donaciones_por_periodo WHERE donante_id = ?",
             Integer.class,
             nuevo.getId()));
   }
@@ -236,6 +234,68 @@ class RepositoriosJpaTest {
     assertEquals(donante.getId(), donanteRepository.findByIdPersona(persona).orElseThrow().getId());
     assertTrue(donanteRepository.findByIdPersona(UUID.randomUUID()).isEmpty());
     assertTrue(donanteRepository.findByIdPersona(null).isEmpty());
+  }
+
+  @Test
+  void deberiaActualizarElNombreSinCargarElAgregado() {
+    DonanteIncentivos donante = donanteConEstadoCompleto(UUID.randomUUID());
+    donanteRepository.save(donante);
+
+    assertTrue(donanteRepository.actualizarNombre(donante.getId(), "Nuevo Nombre"));
+
+    DonanteIncentivos leido = donanteRepository.findById(donante.getId()).orElseThrow();
+    assertEquals("Nuevo Nombre", leido.getNombre());
+    assertEquals(4, leido.getMisiones().size());
+    assertFalse(donanteRepository.actualizarNombre(UUID.randomUUID(), "X"));
+  }
+
+  @Test
+  void deberiaActualizarLaVisibilidadDeUnaInsignia() {
+    DonanteIncentivos donante = donanteConEstadoCompleto(UUID.randomUUID());
+    donanteRepository.save(donante);
+
+    assertTrue(
+        donanteRepository.actualizarVisibilidadInsignia(
+            donante.getId(), "Gran Aporte Test", false));
+    assertTrue(donanteRepository.actualizarVisibilidadInsignia(donante.getId(), "Extra", true));
+
+    List<InsigniaGanada> insignias =
+        donanteRepository.findById(donante.getId()).orElseThrow().getInsignias();
+    assertFalse(insignias.get(0).visible());
+    assertTrue(insignias.get(1).visible());
+    assertFalse(
+        donanteRepository.actualizarVisibilidadInsignia(donante.getId(), "Inexistente", true));
+    assertFalse(donanteRepository.actualizarVisibilidadInsignia(UUID.randomUUID(), "Extra", true));
+  }
+
+  @Test
+  void deberiaEliminarElDonanteYSusHijosPorId() {
+    DonanteIncentivos donante = donanteConEstadoCompleto(UUID.randomUUID());
+    donanteRepository.save(donante);
+
+    assertTrue(donanteRepository.eliminarPorId(donante.getId()));
+
+    assertTrue(donanteRepository.findById(donante.getId()).isEmpty());
+    for (String tabla :
+        List.of(
+            "mision",
+            "donante_insignia_ganada",
+            "donante_historial_categoria",
+            "donante_organizacion_ayudada",
+            "donante_donaciones_por_periodo")) {
+      assertEquals(
+          0,
+          jdbc.queryForObject(
+              "SELECT COUNT(*) FROM incentivos." + tabla + " WHERE donante_id = ?",
+              Integer.class,
+              donante.getId()),
+          tabla);
+    }
+    assertEquals(
+        0,
+        jdbc.queryForObject(
+            "SELECT COUNT(*) FROM incentivos.mision_categorias_donadas", Integer.class));
+    assertFalse(donanteRepository.eliminarPorId(donante.getId()));
   }
 
   @Test
@@ -364,7 +424,7 @@ class RepositoriosJpaTest {
         .registrarDonacion(
             EventoDonacion.builder()
                 .donacionId(UUID.randomUUID())
-                .fecha(LocalDate.of(2026, 6, 10))
+                .fecha(LocalDate.of(2026, 5, 10))
                 .cantidadBienes(3)
                 .categorias(List.of("alimentos", "ropa"))
                 .build());

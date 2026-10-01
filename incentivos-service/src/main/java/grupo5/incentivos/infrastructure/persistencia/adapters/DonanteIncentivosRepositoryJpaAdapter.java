@@ -34,4 +34,20 @@ public class DonanteIncentivosRepositoryJpaAdapter
     }
     return springDataRepo.findByPersonaId(idPersona).map(mapper::toDomain);
   }
+
+  @Override
+  public boolean actualizarNombre(UUID donanteId, String nombre) {
+    return springDataRepo.actualizarNombre(donanteId, nombre) > 0;
+  }
+
+  @Override
+  public boolean actualizarVisibilidadInsignia(
+      UUID donanteId, String nombreInsignia, boolean visible) {
+    return springDataRepo.actualizarVisibilidadInsignia(donanteId, nombreInsignia, visible) > 0;
+  }
+
+  @Override
+  public boolean eliminarPorId(UUID donanteId) {
+    return springDataRepo.eliminarPorId(donanteId) > 0;
+  }
 }

@@ -52,24 +52,13 @@ CREATE TABLE donante_organizacion_ayudada (
 );
 
 -- ----------------------------------------------------------------------------
--- 3. HISTORIAL DE DONACIONES (EventoDonacion + sus categorías)
+-- 3. DONACIONES POR PERÍODO (conteo mensual de Metricas)
 -- ----------------------------------------------------------------------------
--- id surrogate: EventoDonacion no tiene identidad de dominio (donacion_id puede ser nulo).
-CREATE TABLE donante_historial_donacion (
-    id              UUID    PRIMARY KEY,
-    donante_id      UUID    NOT NULL REFERENCES donante_incentivos (id) ON DELETE CASCADE,
-    orden           INTEGER NOT NULL,
-    donacion_id     UUID,
-    cantidad_bienes INTEGER,
-    fecha           DATE    NOT NULL,
-    CONSTRAINT uq_donante_historial_donacion_orden UNIQUE (donante_id, orden)
-);
-
-CREATE TABLE donante_historial_donacion_categoria (
-    historial_donacion_id UUID         NOT NULL REFERENCES donante_historial_donacion (id) ON DELETE CASCADE,
-    orden                 INTEGER      NOT NULL,
-    categoria             VARCHAR(255) NOT NULL,
-    PRIMARY KEY (historial_donacion_id, orden)
+CREATE TABLE donante_donaciones_por_periodo (
+    donante_id UUID       NOT NULL REFERENCES donante_incentivos (id) ON DELETE CASCADE,
+    periodo    VARCHAR(7) NOT NULL, -- formato yyyy-MM
+    cantidad   BIGINT     NOT NULL,
+    PRIMARY KEY (donante_id, periodo)
 );
 
 -- ----------------------------------------------------------------------------
