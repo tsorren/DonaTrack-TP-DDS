@@ -29,6 +29,26 @@ public class Metricas {
     this.organizacionesAyudadas = new HashSet<>();
   }
 
+  /** Reconstituye las métricas persistidas sin pasar por las reglas de registro. */
+  public static Metricas reconstituir(
+      Integer totalDonacionesHistoricas,
+      Integer totalDonacionesExitosas,
+      LocalDate ultimaDonacion,
+      List<EventoDonacion> historialDonaciones,
+      Set<UUID> organizacionesAyudadas) {
+    Metricas metricas = new Metricas();
+    metricas.totalDonacionesHistoricas = totalDonacionesHistoricas;
+    metricas.totalDonacionesExitosas = totalDonacionesExitosas;
+    metricas.ultimaDonacion = ultimaDonacion;
+    if (historialDonaciones != null) {
+      metricas.historialDonaciones.addAll(historialDonaciones);
+    }
+    if (organizacionesAyudadas != null) {
+      metricas.organizacionesAyudadas.addAll(organizacionesAyudadas);
+    }
+    return metricas;
+  }
+
   public Integer getTotalOrganizacionesAyudadas() {
     return organizacionesAyudadas.size();
   }

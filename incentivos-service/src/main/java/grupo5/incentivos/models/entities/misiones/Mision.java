@@ -45,6 +45,30 @@ public abstract class Mision {
     this.completada = false;
   }
 
+  /** Constructor de reconstitución: rearma una misión ya persistida conservando id y estado. */
+  protected Mision(
+      UUID id,
+      Integer numeroMision,
+      String nombre,
+      String descripcion,
+      CategoriaDonante categoria,
+      Integer objetivo,
+      Integer progresoActual,
+      boolean completada,
+      LocalDate fechaCompletada,
+      Insignia insignia) {
+    this.id = id;
+    this.numeroMision = numeroMision;
+    this.nombre = nombre;
+    this.descripcion = descripcion;
+    this.categoria = categoria;
+    this.objetivo = objetivo;
+    this.progresoActual = progresoActual;
+    this.completada = completada;
+    this.fechaCompletada = fechaCompletada;
+    this.insignia = insignia;
+  }
+
   public void setNumeroMision(Integer numeroMision) {
     this.numeroMision = numeroMision;
   }
