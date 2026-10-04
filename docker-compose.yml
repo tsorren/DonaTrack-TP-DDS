@@ -109,6 +109,10 @@ services:
       - "8083:8083"
     environment:
       - PORT=8083
+      - SPRING_PROFILES_ACTIVE=postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=logistica
+      - SPRING_DATASOURCE_USERNAME=logistica_user
+      - SPRING_DATASOURCE_PASSWORD=logi_pass_2026
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
@@ -117,6 +121,8 @@ services:
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     healthcheck:

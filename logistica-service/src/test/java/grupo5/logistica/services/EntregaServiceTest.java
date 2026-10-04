@@ -258,6 +258,35 @@ class EntregaServiceTest {
   }
 
   @Test
+  void cambiarEstado_deberiaRegistrarSolicitudDeTransicionEnAuditoria_cuandoRepositorioPresente() {
+    var transicionRepo =
+        mock(grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository.class);
+    var serviceConAuditoria =
+        new EntregasService(
+            entregasRepository,
+            rutasRepository,
+            camionRepository,
+            entregaMapper,
+            comunicadorEventos,
+            transicionRepo);
+
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    entrega.negarEntrega("actor", "Motivo", false);
+    UUID id = entrega.getId();
+
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.REVISION, "Admin Carlos", null, null);
+
+    when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
+    when(entregasRepository.save(entrega)).thenReturn(entrega);
+
+    serviceConAuditoria.cambiarEstado(id, request);
+
+    verify(transicionRepo).registrar(any());
+  }
+
+  @Test
   void cambiarEstado_deberiaLanzarExcepcion_cuandoIntentaPasarAEnTrasladoDirectamente() {
     Entrega entrega = EntregaMother.pendiente();
     UUID id = entrega.getId();

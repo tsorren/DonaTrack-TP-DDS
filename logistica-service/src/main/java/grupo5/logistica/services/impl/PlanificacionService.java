@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Prepara los casos de uso de planificación y delega las decisiones al dominio. */
 @Service
@@ -85,11 +86,13 @@ public class PlanificacionService implements IPlanificacionService {
   }
 
   @Override
+  @Transactional
   public void iniciarPlanificacion() {
     iniciarPlanificacion(LocalDate.now(clock).plusDays(1));
   }
 
   @Override
+  @Transactional
   public void iniciarPlanificacion(LocalDate fechaObjetivo) {
     List<Entrega> entregas = entregasRepository.findSinRuta();
     if (entregas.isEmpty()) {
@@ -113,6 +116,7 @@ public class PlanificacionService implements IPlanificacionService {
   }
 
   @Override
+  @Transactional
   public SolicitudPlanificacionResponseDTO procesarCallback(CallbackPlanificacionRequestDTO dto) {
     if (dto == null || dto.solicitudId() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -142,6 +146,7 @@ public class PlanificacionService implements IPlanificacionService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public SolicitudPlanificacionResponseDTO obtenerPorId(UUID id) {
     return solicitudMapper.toResponseDTO(buscarSolicitud(id));
   }

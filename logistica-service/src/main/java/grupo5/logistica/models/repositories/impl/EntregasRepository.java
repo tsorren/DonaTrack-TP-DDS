@@ -7,9 +7,11 @@ import grupo5.logistica.models.repositories.IEntregasRepository;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
     implements IEntregasRepository {
 
