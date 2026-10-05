@@ -239,4 +239,33 @@ public final class PollingUtils {
     }
     return entregaIdRef.get();
   }
+
+  public static void esperarBajaDonanteEnIncentivos(IncentivosApiClient client, UUID donanteId) {
+    AtomicReference<Response> lastResponse = new AtomicReference<>();
+    try {
+      Awaitility.await("Esperar baja de donante en incentivos " + donanteId)
+          .atMost(Duration.ofSeconds(5))
+          .pollInterval(Duration.ofMillis(100))
+          .ignoreExceptions()
+          .until(
+              () -> {
+                Response resp = client.obtenerMetricas(donanteId);
+                lastResponse.set(resp);
+                int code = resp.getStatusCode();
+                return code == 400 || code == 404;
+              });
+    } catch (ConditionTimeoutException e) {
+      Response r = lastResponse.get();
+      String details =
+          (r != null)
+              ? "Status: " + r.getStatusCode() + ", Body: " + r.asString()
+              : "Sin respuesta";
+      throw new AssertionError(
+          "Timeout esperando baja de donante en incentivos "
+              + donanteId
+              + ". Última respuesta: "
+              + details,
+          e);
+    }
+  }
 }
