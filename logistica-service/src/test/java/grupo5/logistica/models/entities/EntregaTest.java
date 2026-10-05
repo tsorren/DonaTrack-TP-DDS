@@ -149,6 +149,23 @@ class EntregaTest {
   }
 
   @Test
+  void testMandarARevisionDesdePendiente() {
+    Entrega entrega =
+        new Entrega(
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            UUID.randomUUID(),
+            createTestDireccion(),
+            10f,
+            1f);
+    assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+
+    entrega.mandarARevision("Admin Carlos");
+    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
+    assertEquals(1, entrega.getHistorialEstado().size());
+  }
+
+  @Test
   void testIniciarRutaConChoferVacioLanzaExcepcion() {
     Entrega entrega =
         new Entrega(
