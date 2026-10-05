@@ -69,7 +69,39 @@ public class LogisticaApiClient {
     return given().when().get(baseUrl + "/api/camiones");
   }
 
+  public Response crearCamion(Object body) {
+    return given().contentType(ContentType.JSON).body(body).when().post(baseUrl + "/api/camiones");
+  }
+
+  public UUID crearCamionOk(Object body) {
+    return UUID.fromString(crearCamion(body).then().statusCode(201).extract().path("id"));
+  }
+
+  public Response obtenerCamion(UUID camionId) {
+    return given().when().get(baseUrl + "/api/camiones/" + camionId);
+  }
+
   public Response listarChoferes() {
     return given().when().get(baseUrl + "/api/choferes");
+  }
+
+  public Response crearChofer(Object body) {
+    return given().contentType(ContentType.JSON).body(body).when().post(baseUrl + "/api/choferes");
+  }
+
+  public UUID crearChoferOk(Object body) {
+    return UUID.fromString(crearChofer(body).then().statusCode(201).extract().path("id"));
+  }
+
+  public Response obtenerChofer(UUID choferId) {
+    return given().when().get(baseUrl + "/api/choferes/" + choferId);
+  }
+
+  public Response crearEntrega(Object body) {
+    return given().contentType(ContentType.JSON).body(body).when().post(baseUrl + "/api/entregas");
+  }
+
+  public UUID crearEntregaOk(Object body) {
+    return UUID.fromString(crearEntrega(body).then().statusCode(201).extract().path("id"));
   }
 }
