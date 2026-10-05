@@ -126,10 +126,16 @@ class LogisticaIntegrationIT extends BaseIT {
         .body("estadoActual", equalTo("REVISION"));
 
     logisticaClient
+        .cambiarEstadoEntrega(entregaId, "PENDIENTE", "SUPERVISOR")
+        .then()
+        .statusCode(200)
+        .body("estadoActual", equalTo("PENDIENTE"));
+
+    logisticaClient
         .obtenerEntrega(entregaId)
         .then()
         .statusCode(200)
-        .body("estadoActual", equalTo("REVISION"))
+        .body("estadoActual", equalTo("PENDIENTE"))
         .body("historialEstado", hasSize(greaterThanOrEqualTo(2)));
   }
 }
