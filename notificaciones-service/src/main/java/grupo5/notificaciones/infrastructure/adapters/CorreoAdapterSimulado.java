@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class CorreoAdapterSimulado implements CorreoAdapter {
-
   private static final Logger log = LoggerFactory.getLogger(CorreoAdapterSimulado.class);
 
   private final CriterioFalloSimulado criterioFallo;
@@ -23,30 +22,47 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
 
   @Override
   public boolean enviarMail(String destinatario, String mensaje) {
-    if (criterioFallo.debeFallar(destinatario, mensaje)) {
-      log.warn(
-          """
-              [EMAIL SIMULADO FALLIDO]
+    simularLatenciaDeRed();
 
-              Destinatario: {}
-              Mensaje: {}
-              Motivo: Fallo simulado por criterio de política
-              """,
-          destinatario,
-          mensaje);
+    // 1. Falla permanente (HTTP 400) evaluada por la política original
+    if (criterioFallo.debeFallar(destinatario, mensaje)) {
+      log.warn("[SENDGRID-MOCK] Rechazo de la API: Destinatario inválido o bloqueado.");
       return false;
     }
 
-    log.info(
-        """
-            [EMAIL SIMULADO]
+    // 2. Falla temporal (HTTP 500 / Timeout) simulada aleatoriamente (5% de las veces)
+    if (new java.util.Random().nextInt(100) < 5) {
+      throw new RuntimeException(
+          "HTTP 503 Service Unavailable: Timeout conectando con el proveedor.");
+    }
 
-            Destinatario: {}
-            Mensaje: {}
-            """,
-        destinatario,
-        mensaje);
+    String messageId = java.util.UUID.randomUUID().toString();
+    String sendGridPayload =
+        String.format(
+            """
+            {
+              "personalizations": [{"to": [{"email": "%s"}]}],
+              "from": {"email": "no-reply@donatrack.org", "name": "DonaTrack"},
+              "subject": "Notificación de DonaTrack",
+              "content": [{"type": "text/plain", "value": "%s"}]
+            }""",
+            destinatario, mensaje.replace("\"", "\\\""));
+
+    log.info(
+        "[SENDGRID-MOCK] HTTP 202 Accepted | MessageId: {}\nPayload Enviado:\n{}",
+        messageId,
+        sendGridPayload);
 
     return true;
+  }
+
+  private void simularLatenciaDeRed() {
+    try {
+      // Simula un tiempo de respuesta de API entre 100 y 500 ms
+      long latencia = 100 + new java.util.Random().nextInt(400);
+      Thread.sleep(latencia);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 }

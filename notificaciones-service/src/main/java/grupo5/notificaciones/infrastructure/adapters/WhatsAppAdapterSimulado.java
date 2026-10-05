@@ -22,31 +22,54 @@ public class WhatsAppAdapterSimulado implements WhatsAppAdapter {
   }
 
   @Override
-  public boolean enviarWhatsApp(String telefono, String mensaje) {
-    if (criterioFallo.debeFallar(telefono, mensaje)) {
-      log.warn(
-          """
-              [WHATSAPP SIMULADO FALLIDO]
+  public boolean enviarWhatsApp(String numero, String mensaje) {
+    simularLatenciaDeRed();
 
-              Telefono: {}
-              Mensaje: {}
-              Motivo: Fallo simulado por criterio de política
-              """,
-          telefono,
-          mensaje);
+    // 1. Falla permanente (HTTP 400) evaluada por la política original
+    if (criterioFallo.debeFallar(numero, mensaje)) {
+      log.warn("[META-WHATSAPP-MOCK] Rechazo de la API: Número inválido o plantilla no aprobada.");
       return false;
     }
 
-    log.info(
-        """
-            [WHATSAPP SIMULADO]
+    // 2. Falla temporal (HTTP 500 / Timeout) simulada aleatoriamente (5% de las veces)
+    if (new java.util.Random().nextInt(100) < 5) {
+      throw new RuntimeException("HTTP 503 Service Unavailable: Error de conexión con Meta API.");
+    }
 
-            Telefono: {}
-            Mensaje: {}
-            """,
-        telefono,
-        mensaje);
+    String wamid =
+        "wamid." + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+
+    // Simula el Request exacto de Meta WhatsApp Cloud API
+    String metaPayload =
+        String.format(
+            """
+            {
+              "messaging_product": "whatsapp",
+              "recipient_type": "individual",
+              "to": "%s",
+              "type": "text",
+              "text": {
+                "preview_url": false,
+                "body": "%s"
+              }
+            }""",
+            numero, mensaje.replace("\"", "\\\""));
+
+    log.info(
+        "[META-WHATSAPP-MOCK] HTTP 200 OK | MessageId: {}\nPayload Enviado:\n{}",
+        wamid,
+        metaPayload);
 
     return true;
+  }
+
+  private void simularLatenciaDeRed() {
+    try {
+      // Simula un tiempo de respuesta de API entre 100 y 500 ms
+      long latencia = 100 + new java.util.Random().nextInt(400);
+      Thread.sleep(latencia);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 }

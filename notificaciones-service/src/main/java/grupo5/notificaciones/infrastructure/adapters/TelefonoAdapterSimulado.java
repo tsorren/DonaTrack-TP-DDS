@@ -22,31 +22,45 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
   }
 
   @Override
-  public boolean enviarSms(String telefono, String mensaje) {
-    if (criterioFallo.debeFallar(telefono, mensaje)) {
-      log.warn(
-          """
-              [SMS SIMULADO FALLIDO]
+  public boolean enviarSms(String numero, String mensaje) {
+    simularLatenciaDeRed();
 
-              Telefono: {}
-              Mensaje: {}
-              Motivo: Fallo simulado por criterio de política
-              """,
-          telefono,
-          mensaje);
+    // 1. Falla permanente (HTTP 400) evaluada por la política original
+    if (criterioFallo.debeFallar(numero, mensaje)) {
+      log.warn("[TWILIO-MOCK] Rechazo de la API: Número inválido o no ruteable para SMS.");
       return false;
     }
 
-    log.info(
-        """
-            [SMS SIMULADO]
+    // 2. Falla temporal (HTTP 500 / Timeout) simulada aleatoriamente (5% de las veces)
+    if (new java.util.Random().nextInt(100) < 5) {
+      throw new RuntimeException("HTTP 503 Service Unavailable: No se pudo contactar a Twilio.");
+    }
 
-            Telefono: {}
-            Mensaje: {}
-            """,
-        telefono,
-        mensaje);
+    String sid = "SM" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 32);
+
+    // Twilio usa form-urlencoded, pero en logs lo representamos como JSON por legibilidad
+    String twilioPayload =
+        String.format(
+            """
+            {
+              "To": "%s",
+              "From": "+1234567890",
+              "Body": "%s"
+            }""",
+            numero, mensaje.replace("\"", "\\\""));
+
+    log.info("[TWILIO-MOCK] HTTP 201 Created | SID: {}\nPayload Enviado:\n{}", sid, twilioPayload);
 
     return true;
+  }
+
+  private void simularLatenciaDeRed() {
+    try {
+      // Simula un tiempo de respuesta de API entre 100 y 500 ms
+      long latencia = 100 + new java.util.Random().nextInt(400);
+      Thread.sleep(latencia);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
   }
 }
