@@ -44,14 +44,11 @@ public class RutaPersistenciaMapper {
     }
 
     sincronizarHistorial(domain, entity);
+    sincronizarEntregas(domain, entity);
     return entity;
   }
 
   public Ruta toDomain(RutaEntity entity) {
-    return toDomain(entity, List.of());
-  }
-
-  public Ruta toDomain(RutaEntity entity, List<UUID> entregaIds) {
     if (entity == null) {
       return null;
     }
@@ -71,7 +68,7 @@ public class RutaPersistenciaMapper {
     return new Ruta(
         entity.getIdRuta(),
         entity.getFecha(),
-        entregaIds != null ? entregaIds : List.of(),
+        entity.getEntregaIds(),
         entity.getIdChofer(),
         entity.getIdCamion(),
         entity.getEstado(),
@@ -99,6 +96,12 @@ public class RutaPersistenciaMapper {
       nuevo.setTimestamp(aInstantUtc(cambio.timestamp()));
       historialEntity.add(nuevo);
     }
+  }
+
+  private static void sincronizarEntregas(Ruta domain, RutaEntity entity) {
+    List<UUID> persistidas = entity.getEntregaIds();
+    List<UUID> delDominio = domain.getEntregaIds();
+    persistidas.addAll(delDominio.subList(persistidas.size(), delDominio.size()));
   }
 
   private static Instant aInstantUtc(LocalDateTime fechaHora) {

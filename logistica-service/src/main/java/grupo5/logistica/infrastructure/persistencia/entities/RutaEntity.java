@@ -2,14 +2,18 @@ package grupo5.logistica.infrastructure.persistencia.entities;
 
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
@@ -59,6 +63,16 @@ public class RutaEntity {
   @Version
   @Column(name = "version", nullable = false)
   private Long version;
+
+  @SuppressWarnings("squid:S1319")
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(
+      name = "parada_ruta",
+      joinColumns = @JoinColumn(name = "id_ruta", nullable = false))
+  @OrderColumn(name = "orden_visita")
+  @Column(name = "id_entrega", nullable = false)
+  @Fetch(FetchMode.SUBSELECT)
+  private List<UUID> entregaIds = new ArrayList<>();
 
   @SuppressWarnings("squid:S1319")
   @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, fetch = FetchType.EAGER)

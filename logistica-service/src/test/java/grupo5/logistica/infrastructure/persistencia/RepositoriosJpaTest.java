@@ -241,7 +241,7 @@ class RepositoriosJpaTest {
   }
 
   @Test
-  void deberiaDerivarRutaIdEnCamionYChoferYOrdenarEntregasDeRutaPorUuidAsc() {
+  void deberiaDerivarRutaIdEnCamionYChoferYConservarElOrdenDeVisitaDeLaRuta() {
     Camion camion = camionRepository.save(new Camion("CD456EF", 80.0f, 4000.0f, 3.5f));
     Chofer chofer = choferesRepository.save(new Chofer("Maria", "Gomez", "LIC-002", "1199887766"));
 
@@ -293,7 +293,8 @@ class RepositoriosJpaTest {
     entregaMenor = entregasRepository.save(entregaMenor);
 
     Ruta rutaRecuperada = rutasRepository.findById(ruta.getId()).orElseThrow();
-    assertEquals(List.of(idMenor, idMayor), rutaRecuperada.getEntregaIds());
+    // Se agregó primero la de id mayor: el orden de visita no depende de los ids.
+    assertEquals(List.of(idMayor, idMenor), rutaRecuperada.getEntregaIds());
 
     GestorDeRutas.iniciarRuta(
         rutaRecuperada, camion, chofer, List.of(entregaMenor, entregaMayor), "Operador");

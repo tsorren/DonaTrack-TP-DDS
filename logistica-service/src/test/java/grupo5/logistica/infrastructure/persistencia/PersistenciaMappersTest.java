@@ -117,7 +117,7 @@ class PersistenciaMappersTest {
   @Test
   void rutaMapper_deberiaMapearIdaYVueltaYSincronizarHistorialAppendOnly() {
     assertNull(rutaMapper.toEntity(null));
-    assertNull(rutaMapper.toDomain(null, List.of()));
+    assertNull(rutaMapper.toDomain(null));
 
     UUID entregaId = UUID.randomUUID();
     Ruta ruta = new Ruta(LocalDate.of(2026, 10, 10), UUID.randomUUID(), UUID.randomUUID());
@@ -128,7 +128,7 @@ class PersistenciaMappersTest {
     entity.setVersion(0L);
     UUID idCambioInicial = entity.getHistorialEstado().getFirst().getIdCambioEstadoRuta();
 
-    Ruta reconstituida = rutaMapper.toDomain(entity, List.of(entregaId));
+    Ruta reconstituida = rutaMapper.toDomain(entity);
     assertEquals(ruta.getId(), reconstituida.getId());
     assertEquals(List.of(entregaId), reconstituida.getEntregaIds());
     assertEquals(0L, reconstituida.getVersion());

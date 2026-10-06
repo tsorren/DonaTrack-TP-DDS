@@ -1,10 +1,8 @@
 package grupo5.logistica.infrastructure.persistencia.adapters;
 
 import grupo5.common.repositories.CrudRepositoryJpaAdapter;
-import grupo5.logistica.infrastructure.persistencia.entities.EntregaEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.RutaEntity;
 import grupo5.logistica.infrastructure.persistencia.mappers.RutaPersistenciaMapper;
-import grupo5.logistica.infrastructure.persistencia.repositories.SpringDataEntregaRepository;
 import grupo5.logistica.infrastructure.persistencia.repositories.SpringDataRutaRepository;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
@@ -22,25 +20,11 @@ public class RutasRepositoryJpaAdapter
     extends CrudRepositoryJpaAdapter<Ruta, RutaEntity, SpringDataRutaRepository>
     implements IRutasRepository {
 
-  private final SpringDataEntregaRepository entregaRepo;
   private final RutaPersistenciaMapper mapper;
 
   public RutasRepositoryJpaAdapter(
-      SpringDataRutaRepository springDataRepo,
-      SpringDataEntregaRepository entregaRepo,
-      RutaPersistenciaMapper mapper) {
-    super(
-        springDataRepo,
-        mapper::toEntity,
-        entity ->
-            mapper.toDomain(
-                entity,
-                entity != null
-                    ? entregaRepo.findByIdRutaOrderByIdEntregaAsc(entity.getIdRuta()).stream()
-                        .map(EntregaEntity::getIdEntrega)
-                        .toList()
-                    : List.of()));
-    this.entregaRepo = entregaRepo;
+      SpringDataRutaRepository springDataRepo, RutaPersistenciaMapper mapper) {
+    super(springDataRepo, mapper::toEntity, mapper::toDomain);
     this.mapper = mapper;
   }
 
@@ -48,11 +32,7 @@ public class RutasRepositoryJpaAdapter
   public Ruta save(Ruta aggregate) {
     RutaEntity existing = springDataRepo.findById(aggregate.getId()).orElse(null);
     RutaEntity saved = springDataRepo.save(mapper.toEntity(aggregate, existing));
-    List<UUID> entregaIds =
-        entregaRepo.findByIdRutaOrderByIdEntregaAsc(saved.getIdRuta()).stream()
-            .map(EntregaEntity::getIdEntrega)
-            .toList();
-    return mapper.toDomain(saved, !entregaIds.isEmpty() ? entregaIds : aggregate.getEntregaIds());
+    return mapper.toDomain(saved);
   }
 
   @Override

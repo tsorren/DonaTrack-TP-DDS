@@ -159,10 +159,8 @@ class RepositoriosJpaAdaptersTest {
   @Test
   void rutasAdapter_deberiaGuardarYConsultarRutas() {
     SpringDataRutaRepository springDataRepo = mock(SpringDataRutaRepository.class);
-    SpringDataEntregaRepository entregaRepo = mock(SpringDataEntregaRepository.class);
     RutaPersistenciaMapper mapper = new RutaPersistenciaMapper();
-    RutasRepositoryJpaAdapter adapter =
-        new RutasRepositoryJpaAdapter(springDataRepo, entregaRepo, mapper);
+    RutasRepositoryJpaAdapter adapter = new RutasRepositoryJpaAdapter(springDataRepo, mapper);
 
     UUID entregaId = UUID.randomUUID();
     Ruta ruta = new Ruta(LocalDate.of(2026, 10, 12), UUID.randomUUID(), UUID.randomUUID());
@@ -170,10 +168,10 @@ class RepositoriosJpaAdaptersTest {
 
     when(springDataRepo.findById(ruta.getId())).thenReturn(Optional.empty());
     when(springDataRepo.save(any())).thenAnswer(inv -> inv.getArgument(0));
-    when(entregaRepo.findByIdRutaOrderByIdEntregaAsc(ruta.getId())).thenReturn(List.of());
 
     Ruta saved = adapter.save(ruta);
     assertEquals(ruta.getId(), saved.getId());
+    assertEquals(List.of(entregaId), saved.getEntregaIds());
     assertEquals(1, adapter.saveAll(List.of(ruta)).size());
     assertTrue(adapter.saveAll(null).isEmpty());
     assertTrue(adapter.findByFecha(null).isEmpty());
