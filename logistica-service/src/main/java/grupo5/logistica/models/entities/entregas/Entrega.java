@@ -172,8 +172,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
   public void mandarARevision(String administrador) {
     validarActor(administrador);
 
-    if (this.estadoActual != EstadoEntrega.NO_RECIBIDA
-        && this.estadoActual != EstadoEntrega.PENDIENTE) {
+    if (this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 

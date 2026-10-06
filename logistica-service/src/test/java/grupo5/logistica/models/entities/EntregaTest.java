@@ -149,20 +149,13 @@ class EntregaTest {
   }
 
   @Test
-  void testMandarARevisionDesdePendiente() {
-    Entrega entrega =
-        new Entrega(
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            UUID.randomUUID(),
-            createTestDireccion(),
-            10f,
-            1f);
-    assertEquals(EstadoEntrega.PENDIENTE, entrega.getEstadoActual());
+  void testMandarARevisionDesdePendienteLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
 
-    entrega.mandarARevision("Admin Carlos");
-    assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
-    assertEquals(1, entrega.getHistorialEstado().size());
+    // Solo una entrega NO_RECIBIDA pasa a REVISION
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entrega.mandarARevision("Admin Carlos"));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
   }
 
   @Test
