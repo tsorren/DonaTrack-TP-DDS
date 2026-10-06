@@ -1,12 +1,13 @@
 package grupo5.tests.integration;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import grupo5.tests.BaseIT;
+import grupo5.tests.utils.PollingUtils;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
@@ -26,15 +27,9 @@ class LogisticaIntegrationIT extends BaseIT {
 
   @Test
   void testCrearCamionYVerificarPersistencia() {
-    String patente = "AB" + ThreadLocalRandom.current().nextInt(100, 999) + "CD";
-    Map<String, Object> body =
-        Map.of(
-            "patente", patente,
-            "capacidadVolumen", 45.0f,
-            "altura", 2.8f,
-            "capacidadKG", 3500.0f);
+    Map<String, Object> camion = nuevoCamion();
 
-    UUID camionId = logisticaClient.crearCamionOk(body);
+    UUID camionId = logisticaClient.crearCamionOk(camion);
     assertNotNull(camionId, "El camión debería haberse creado con un ID asignado");
 
     logisticaClient
@@ -42,7 +37,7 @@ class LogisticaIntegrationIT extends BaseIT {
         .then()
         .statusCode(200)
         .body("id", equalTo(camionId.toString()))
-        .body("patente", equalTo(patente))
+        .body("patente", equalTo(camion.get("patente")))
         .body("capacidadVolumen", equalTo(45.0f))
         .body("capacidadKG", equalTo(3500.0f))
         .body("estado", equalTo("DISPONIBLE"));
@@ -56,18 +51,9 @@ class LogisticaIntegrationIT extends BaseIT {
 
   @Test
   void testCrearChoferYVerificarPersistencia() {
-    String nombre = "Roberto";
-    String apellido = "Gomez";
-    String licencia = "LIC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    String telefono = "+5411" + ThreadLocalRandom.current().nextInt(10000000, 99999999);
-    Map<String, Object> body =
-        Map.of(
-            "nombre", nombre,
-            "apellido", apellido,
-            "licencia", licencia,
-            "telefonoContacto", telefono);
+    Map<String, Object> chofer = nuevoChofer();
 
-    UUID choferId = logisticaClient.crearChoferOk(body);
+    UUID choferId = logisticaClient.crearChoferOk(chofer);
     assertNotNull(choferId, "El chofer debería haberse creado con un ID asignado");
 
     logisticaClient
@@ -75,9 +61,9 @@ class LogisticaIntegrationIT extends BaseIT {
         .then()
         .statusCode(200)
         .body("id", equalTo(choferId.toString()))
-        .body("nombre", equalTo(nombre))
-        .body("apellido", equalTo(apellido))
-        .body("licencia", equalTo(licencia))
+        .body("nombre", equalTo(chofer.get("nombre")))
+        .body("apellido", equalTo(chofer.get("apellido")))
+        .body("licencia", equalTo(chofer.get("licencia")))
         .body("estado", equalTo("DISPONIBLE"));
 
     logisticaClient
@@ -88,26 +74,8 @@ class LogisticaIntegrationIT extends BaseIT {
   }
 
   @Test
-  void testCrearEntregaYActualizarEstadoPersistido() {
-    UUID donacionId = UUID.randomUUID();
-    UUID beneficiariaId = UUID.randomUUID();
-    Map<String, Object> destino =
-        Map.of(
-            "calle", "Av. San Martin",
-            "altura", 1234,
-            "codigoPostal", "1416",
-            "localidad", "CABA",
-            "provincia", "Buenos Aires",
-            "pais", "Argentina");
-    Map<String, Object> body =
-        Map.of(
-            "idDonacion", donacionId,
-            "idBeneficiaria", beneficiariaId,
-            "destino", destino,
-            "pesoTotalKG", 20.0f,
-            "volumenTotalM3", 2.5f);
-
-    UUID entregaId = logisticaClient.crearEntregaOk(body);
+  void testEntregaNoRecibidaVuelveAPendienteSinRuta() {
+    UUID entregaId = logisticaClient.crearEntregaOk(nuevaEntrega());
     assertNotNull(entregaId, "La entrega debería haberse creado con un ID asignado");
 
     logisticaClient
@@ -119,12 +87,22 @@ class LogisticaIntegrationIT extends BaseIT {
         .body("destino.calle", equalTo("Av. San Martin"))
         .body("destino.altura", equalTo(1234));
 
+    logisticaClient.crearCamionOk(nuevoCamion());
+    logisticaClient.crearChoferOk(nuevoChofer());
+    logisticaClient.ejecutarPlanificacion().then().statusCode(202);
+    UUID rutaId = PollingUtils.esperarRutaAsignada(logisticaClient, entregaId);
+
+    logisticaClient.cambiarEstadoRuta(rutaId, "EN_TRASLADO", "CHOFER").then().statusCode(200);
+    logisticaClient
+        .cambiarEstadoEntrega(entregaId, "NO_RECIBIDA", "ENTIDAD", "Nadie atendió el timbre", true)
+        .then()
+        .statusCode(200)
+        .body("estadoActual", equalTo("NO_RECIBIDA"));
     logisticaClient
         .cambiarEstadoEntrega(entregaId, "REVISION", "SUPERVISOR")
         .then()
         .statusCode(200)
         .body("estadoActual", equalTo("REVISION"));
-
     logisticaClient
         .cambiarEstadoEntrega(entregaId, "PENDIENTE", "SUPERVISOR")
         .then()
@@ -136,6 +114,45 @@ class LogisticaIntegrationIT extends BaseIT {
         .then()
         .statusCode(200)
         .body("estadoActual", equalTo("PENDIENTE"))
-        .body("historialEstado", hasSize(greaterThanOrEqualTo(2)));
+        .body("idRuta", nullValue())
+        .body(
+            "historialEstado.estadoNuevo",
+            contains("EN_TRASLADO", "NO_RECIBIDA", "REVISION", "PENDIENTE"));
+  }
+
+  private static Map<String, Object> nuevoCamion() {
+    return Map.of(
+        "patente", "AB" + ThreadLocalRandom.current().nextInt(100, 999) + "CD",
+        "capacidadVolumen", 45.0f,
+        "altura", 2.8f,
+        "capacidadKG", 3500.0f);
+  }
+
+  private static Map<String, Object> nuevoChofer() {
+    return Map.of(
+        "nombre",
+        "Roberto",
+        "apellido",
+        "Gomez",
+        "licencia",
+        "LIC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(),
+        "telefonoContacto",
+        "+5411" + ThreadLocalRandom.current().nextInt(10000000, 99999999));
+  }
+
+  private static Map<String, Object> nuevaEntrega() {
+    return Map.of(
+        "idDonacion", UUID.randomUUID(),
+        "idBeneficiaria", UUID.randomUUID(),
+        "destino",
+            Map.of(
+                "calle", "Av. San Martin",
+                "altura", 1234,
+                "codigoPostal", "1416",
+                "localidad", "CABA",
+                "provincia", "Buenos Aires",
+                "pais", "Argentina"),
+        "pesoTotalKG", 20.0f,
+        "volumenTotalM3", 2.5f);
   }
 }
