@@ -40,12 +40,12 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
 
   @Override
   public void comunicarRutaAsignada(EventoRutaAsignada evento, Entrega entrega) {
-    if (eventosEntregaRepository != null) {
-      eventosEntregaRepository.registrarRutaAsignada(evento, entrega);
-    }
     eventPublisher.publicarRutaAsignada(
         new grupo5.logistica.dto.eventos.EventoRutaAsignada(
             evento.getRutaId(), entrega.getIdDonacion(), evento.getTimestamp()));
+    if (eventosEntregaRepository != null) {
+      eventosEntregaRepository.registrarRutaAsignada(evento, entrega);
+    }
   }
 
   @Override
@@ -64,9 +64,6 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
 
   @Override
   public void comunicarEntregaExitosa(EntregaConfirmada evento, Camion camion) {
-    if (eventosEntregaRepository != null) {
-      eventosEntregaRepository.registrarEntregaExitosa(evento);
-    }
     eventPublisher.publicarEntregaExitosa(
         new EventoEntregaExitosa(
             evento.getEntregaId(),
@@ -74,13 +71,13 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
             camion.getId(),
             camion.getPatente(),
             evento.getTimestamp()));
+    if (eventosEntregaRepository != null) {
+      eventosEntregaRepository.registrarEntregaExitosa(evento);
+    }
   }
 
   @Override
   public void comunicarEntregaFallida(EntregaFallida evento) {
-    if (eventosEntregaRepository != null) {
-      eventosEntregaRepository.registrarEntregaFallida(evento);
-    }
     eventPublisher.publicarEntregaFallida(
         new EventoEntregaFallida(
             evento.getEntregaId(),
@@ -88,5 +85,8 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
             evento.getJustificacion(),
             evento.getTimestamp(),
             evento.isReplanificable()));
+    if (eventosEntregaRepository != null) {
+      eventosEntregaRepository.registrarEntregaFallida(evento);
+    }
   }
 }
