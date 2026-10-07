@@ -1,4 +1,4 @@
-package grupo5.donaciones.infrastructure;
+package grupo5.donaciones.infrastructure.logistica;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,13 +26,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LogisticaEventListenerTest {
+class ProcesadorEventosLogisticaTest {
 
   @Mock private IDonacionesIndependientesService donacionesIndependientesService;
   @Mock private IEventosConsumidosRepository eventosConsumidosRepository;
   @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
 
-  @InjectMocks private LogisticaEventListener listener;
+  private static final String ORIGEN = "cola-de-prueba";
+
+  @InjectMocks private ProcesadorEventosLogistica procesador;
 
   @Test
   void onRutaAsignada_cuandoEventoNuevo_aplicaCambioEstadoYRegistraComoConsumido() {
@@ -43,7 +45,7 @@ class LogisticaEventListenerTest {
     when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
     when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
 
-    listener.onRutaAsignada(evento);
+    procesador.procesarRutaAsignada(evento, ORIGEN);
 
     verify(donacionesIndependientesService)
         .cambiarEstado(
@@ -58,7 +60,7 @@ class LogisticaEventListenerTest {
 
     when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(true);
 
-    listener.onRutaAsignada(evento);
+    procesador.procesarRutaAsignada(evento, ORIGEN);
 
     verify(donacionesIndependientesService, never()).cambiarEstado(any(), any(), any());
     verify(eventosConsumidosRepository, never()).registrar(any());
@@ -79,7 +81,7 @@ class LogisticaEventListenerTest {
     when(donacion.getEstadoActual()).thenReturn(estado);
     when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.of(donacion));
 
-    listener.onEntregaExitosa(evento);
+    procesador.procesarEntregaExitosa(evento, ORIGEN);
 
     verify(donacionesIndependientesService, never()).cambiarEstado(any(), any(), any());
     verify(eventosConsumidosRepository).registrar(any(EventoConsumido.class));
@@ -101,7 +103,7 @@ class LogisticaEventListenerTest {
     when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
     when(donacionesIndependientesRepository.findById(any())).thenReturn(Optional.empty());
 
-    listener.onRutaIniciada(evento);
+    procesador.procesarRutaIniciada(evento, ORIGEN);
 
     verify(donacionesIndependientesService, times(2)).cambiarEstado(any(), any(), any());
     verify(eventosConsumidosRepository, times(2)).registrar(any(EventoConsumido.class));
@@ -126,7 +128,7 @@ class LogisticaEventListenerTest {
         .thenReturn(false);
     when(donacionesIndependientesRepository.findById(donacionNuevaId)).thenReturn(Optional.empty());
 
-    listener.onRutaIniciada(evento);
+    procesador.procesarRutaIniciada(evento, ORIGEN);
 
     verify(donacionesIndependientesService, times(1))
         .cambiarEstado(eq(donacionNuevaId), any(), any());

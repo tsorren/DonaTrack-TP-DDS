@@ -1,6 +1,5 @@
-package grupo5.donaciones.infrastructure;
+package grupo5.donaciones.infrastructure.logistica;
 
-import grupo5.donaciones.config.RabbitMQConfig;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
@@ -15,20 +14,24 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
+/**
+ * Aplica sobre la donación independiente lo que informa un proveedor de logística (ruta asignada,
+ * ruta iniciada, entrega exitosa o fallida), con idempotencia por evento. Lo comparten los dos
+ * caminos de vuelta: el listener AMQP y el callback HTTP de los proveedores que no usan RabbitMQ.
+ */
 @Service
-public class LogisticaEventListener {
+public class ProcesadorEventosLogistica {
 
-  private static final Logger log = LoggerFactory.getLogger(LogisticaEventListener.class);
+  private static final Logger log = LoggerFactory.getLogger(ProcesadorEventosLogistica.class);
   private static final String ACTOR = "logistica-service";
 
   private final IDonacionesIndependientesService donacionesIndependientesService;
   private final IEventosConsumidosRepository eventosConsumidosRepository;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
 
-  public LogisticaEventListener(
+  public ProcesadorEventosLogistica(
       IDonacionesIndependientesService donacionesIndependientesService,
       IEventosConsumidosRepository eventosConsumidosRepository,
       IDonacionesIndependientesRepository donacionesIndependientesRepository) {
@@ -37,8 +40,7 @@ public class LogisticaEventListener {
     this.donacionesIndependientesRepository = donacionesIndependientesRepository;
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_ASIGNADA)
-  public void onRutaAsignada(EventoRutaAsignada evento) {
+  public void procesarRutaAsignada(EventoRutaAsignada evento, String origen) {
     log.info(
         "Evento RutaAsignada recibido: rutaId={}, donacionId={}",
         evento.rutaId(),
@@ -49,12 +51,11 @@ public class LogisticaEventListener {
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.LISTA_PARA_ENTREGAR, null, null, null, null, null),
         "RutaAsignada",
-        RabbitMQConfig.QUEUE_RUTA_ASIGNADA,
+        origen,
         evento.rutaId());
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_RUTA_INICIADA)
-  public void onRutaIniciada(EventoRutaIniciada evento) {
+  public void procesarRutaIniciada(EventoRutaIniciada evento, String origen) {
     log.info(
         "Evento RutaIniciada recibido: rutaId={}, donaciones={}",
         evento.rutaId(),
@@ -69,12 +70,11 @@ public class LogisticaEventListener {
                     new CambioEstadoDonacionIndependienteRequestDTO(
                         TipoEstadoDonacion.EN_TRASLADO, null, null, evento.urlMapa(), null, null),
                     "RutaIniciada",
-                    RabbitMQConfig.QUEUE_RUTA_INICIADA,
+                    origen,
                     evento.rutaId()));
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_EXITOSA)
-  public void onEntregaExitosa(EventoEntregaExitosa evento) {
+  public void procesarEntregaExitosa(EventoEntregaExitosa evento, String origen) {
     log.info(
         "Evento EntregaExitosa recibido: donacionId={}, camion={}",
         evento.donacionIndependienteId(),
@@ -85,12 +85,11 @@ public class LogisticaEventListener {
         new CambioEstadoDonacionIndependienteRequestDTO(
             TipoEstadoDonacion.ENTREGADA, null, null, null, evento.patenteCamion(), null),
         "EntregaExitosa",
-        RabbitMQConfig.QUEUE_ENTREGA_EXITOSA,
+        origen,
         evento.entregaId());
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_ENTREGA_FALLIDA)
-  public void onEntregaFallida(EventoEntregaFallida evento) {
+  public void procesarEntregaFallida(EventoEntregaFallida evento, String origen) {
     log.info(
         "Evento EntregaFallida recibido: donacionId={}, motivo={}",
         evento.donacionIndependienteId(),
@@ -106,7 +105,7 @@ public class LogisticaEventListener {
             null,
             evento.replanificable()),
         "EntregaFallida",
-        RabbitMQConfig.QUEUE_ENTREGA_FALLIDA,
+        origen,
         evento.entregaId());
   }
 
@@ -114,7 +113,7 @@ public class LogisticaEventListener {
       UUID donacionId,
       CambioEstadoDonacionIndependienteRequestDTO request,
       String eventType,
-      String queueName,
+      String origen,
       UUID businessId) {
 
     if (eventosConsumidosRepository.yaFueConsumido(eventType, businessId, donacionId)) {
@@ -134,12 +133,7 @@ public class LogisticaEventListener {
           request.estado());
       eventosConsumidosRepository.registrar(
           new EventoConsumido(
-              UUID.randomUUID(),
-              eventType,
-              queueName,
-              businessId,
-              donacionId,
-              LocalDateTime.now()));
+              UUID.randomUUID(), eventType, origen, businessId, donacionId, LocalDateTime.now()));
       return;
     }
 
@@ -147,12 +141,7 @@ public class LogisticaEventListener {
       donacionesIndependientesService.cambiarEstado(donacionId, request, ACTOR);
       eventosConsumidosRepository.registrar(
           new EventoConsumido(
-              UUID.randomUUID(),
-              eventType,
-              queueName,
-              businessId,
-              donacionId,
-              LocalDateTime.now()));
+              UUID.randomUUID(), eventType, origen, businessId, donacionId, LocalDateTime.now()));
     } catch (Exception e) {
       log.error(
           "Error al procesar donación {} en evento {} (estado destino={}): {}",

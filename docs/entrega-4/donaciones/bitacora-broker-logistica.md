@@ -10,14 +10,14 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 3 hecha y Gate 4 en verde; Etapa 4 hecha (adapter HTTP); la deduplicación en Logística se evaluó y se revirtió (D33).
+> Última actualización: **2026-10-07** — Etapa 3 hecha y Gate 4 en verde; Etapa 4 hecha (adapter HTTP; dedup en Logística revertida, D33); Etapa 5 hecha: procesador compartido (5.1), callback con verificación de pertenencia (5.2) y API key por proveedor (5.3).
 
 - **Qué estamos haciendo:** un broker dentro de `donaciones-service` que elige a qué proveedor de logística mandarle cada entrega: el nuestro por RabbitMQ, u otro por HTTP. Así se cumple el requerimiento de la Entrega 4.
 - **Cómo:** Broker + Adapter + Strategy. El pedido viaja como comando `entrega.solicitada.<proveedorId>.v1`; logística deja de escuchar el hecho `donacion.asignada.v1`. Ningún pedido se pierde en silencio (`mandatory` + espera de acuse) y no se reenvía a otro proveedor si no hay certeza de que el primero no lo recibió.
 - **Dónde estamos:** **Etapas 0, 1, 2 y 3 hechas**. Ya existen el broker, el adapter AMQP hacia nuestra logística y el comando `entrega.solicitada.<id>.v1`; logística ya escucha el comando y no el hecho. Si todos los proveedores rechazan un pedido, el broker reintenta la ronda completa más tarde (D27).
 - **Atención:** la asignación **ya llama al broker** (Etapa 3), pero el pedido sale recién cuando corre el relay del outbox (cada 10 s por defecto; en `docker-compose.preprod.yml` está en 1 s) y solo hay adapter AMQP para `donatrack`. **Gate 4 en verde (26/26)** con las Etapas 2 y 3 juntas, sin MinIO (ver Etapa 3).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 5, vuelta del proveedor HTTP (callback) y protección con API key.
+- **Próximo paso:** Etapa 6, controller de administración (recortable), reutilizando `ApiKeyFilter` con una clave de administración.
 
 ---
 
@@ -30,7 +30,7 @@
 | 2 — Contrato, adapter AMQP y cutover | `EntregaSolicitadaV1`, `mandatory` + acuse, cambios en Logística | ✅ Cerrada (sin commitear) |
 | 3 — Cableado | `PropuestaDeAsignacionService` → broker | ✅ Hecha (Gate 4 en verde) |
 | 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp` (hecho); 409 en `EntregasService.crear` (descartado, D33) | ✅ Hecha (sin tocar Logística) |
-| 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ⏳ Pendiente |
+| 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ✅ Hecha (5.1, 5.2 y 5.3) |
 | 6 — Controller admin (recortable) | Cambiar el proveedor preferido en caliente | ⏳ Pendiente |
 | 7 — Demo | Segunda instancia, Postman, guion | ⏳ Pendiente |
 | 8 — Cierre | Catálogo, matriz, diagrama, deuda, índices, gates | ⏳ Pendiente |
@@ -76,6 +76,9 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | D31 | **Clasificación del adapter HTTP:** 2xx y 409 → publicado; 503, conexión rechazada, host inexistente y timeout de conexión → rechazado; timeout de lectura y 500/502/504/otros 5xx → incierto; otros 4xx y redirecciones → error de contrato. Toda falla de red que no sea «no se pudo conectar» cuenta como incierta (prefiere reintentar al mismo proveedor antes que arriesgar dos entregas). | 2026-10-07 | Etapa 4 |
 | D32 | **Cliente HTTP:** `RestClient` sobre el `HttpClient` del JDK (HTTP/1.1), con timeout de conexión (1000 ms) y de lectura (3000 ms) separados y configurables por proveedor (`donatrack.logistica.proveedor.<id>.connect-timeout-ms` / `read-timeout-ms`). Un proveedor `http` sin `url` queda sin adapter (se trata como rechazado, igual que D20). Sin dependencias nuevas. | 2026-10-07 | Etapa 4 |
 | D33 | **No se modifica Logística para deduplicar.** Se implementó el 409 en `POST /api/entregas` (`ERR-EST-816`) y se revirtió: nuestra Logística interna se alcanza solo por AMQP (donde el listener ya deduplica) y la idempotencia de un proveedor HTTP es obligación suya (requisito de contrato del ADR). El stand-in `externo` de la demo (D9) no deduplica el camino REST: ante un timeout simulado puede quedar una entrega duplicada, y se explica en la defensa. Evita tocar `common-lib` y un servicio de otra área. | 2026-10-07 | Etapa 4 |
+| D34 | **El camino de vuelta se comparte por un procesador, no por los listeners:** `ProcesadorEventosLogistica` (en `infrastructure/logistica/`, igual que el listener `LogisticaEventListener`) concentra el cambio de estado de la donación con idempotencia por `(tipo, businessId, donacionId)`; `LogisticaEventListener` queda como adaptador AMQP que solo delega, indicando la cola de origen. Cada método recibe el `origen` (cola AMQP o, en 5.2, el proveedor HTTP) que se registra en el evento consumido. Así un mismo evento que llegara por los dos caminos se aplica una sola vez. | 2026-10-07 | Etapa 5 |
+| D35 | **Callback HTTP del proveedor (5.2):** `POST /api/logistica/proveedores/{proveedorId}/avisos` recibe un `AvisoProveedorRequestDTO` con un `tipo` (`RUTA_ASIGNADA`, `RUTA_INICIADA`, `ENTREGA_EXITOSA`, `ENTREGA_FALLIDA`); `AvisosProveedorService` lo traduce al evento que ya usa el camino AMQP y lo entrega al `ProcesadorEventosLogistica` con origen `http:<proveedorId>`. Responde `202`. Verificación de pertenencia: cada donación debe tener una solicitud activa cuyo `proveedorActual` sea el que avisa; si no, `404` (no se revela si la donación existe o es de otro proveedor), y en `RUTA_INICIADA` se valida toda la lista antes de aplicar nada. Faltan campos del tipo → `400`. No requiere código nuevo en `ErrorCatalog` ni cambios en `common-lib`. | 2026-10-07 | Etapa 5 |
+| D36 | **API key del callback (5.3):** `ApiKeyFilter` (`config/`, `OncePerRequestFilter`) protege todo lo que cuelga de `/api/logistica/proveedores/`. Exige `X-API-Key` igual a `donatrack.logistica.proveedor.<id>.callback-api-key` (una por proveedor, desde variable de entorno; la clave de un proveedor no sirve para avisar como otro). **Falla cerrado:** sin clave configurada, clave ausente o incorrecta, ruta no reconocida bajo ese prefijo, o URI no interpretable → `401` y no llega al controller. Compara los hashes SHA-256 con `MessageDigest.isEqual` y nunca loguea claves. La ruta se normaliza antes de decidir (barras repetidas y `.`/`..` no esquivan el filtro). Sin Spring Security ni dependencias nuevas. El `401` lleva el código provisional `ERR-AUT-401`, que **no está en `ErrorCatalog`** (agregarlo toca `common-lib`); queda para el `auth-service` de la Entrega 6. | 2026-10-07 | Etapa 5 |
 
 ---
 
@@ -294,6 +297,45 @@ Los tests contra RabbitMQ real usan Testcontainers: sin Docker se saltean (`@Dis
 
 **Validación previa a la reversión.** Reactor completo y Gate 4 (26/26) estaban en verde con el cambio; tras revertir, el estado de código es el del commit `1067e900`.
 
+### 2026-10-07 — Etapa 5, paso 1: Procesador compartido de eventos de logística
+
+**Qué se hizo.** Refactor sin cambio de comportamiento: la lógica de `LogisticaEventListener` pasó a `infrastructure/logistica/ProcesadorEventosLogistica` (D34), con un método por evento (`procesarRutaAsignada`, `procesarRutaIniciada`, `procesarEntregaExitosa`, `procesarEntregaFallida`) que recibe el origen. El listener quedó como adaptador AMQP delgado.
+
+**Tests.** `LogisticaEventListenerTest` se movió con `git mv` a `logistica/ProcesadorEventosLogisticaTest` (mismos 5 tests y mismas aserciones; solo cambiaron el nombre de la clase y la llamada, `procesar…(evento, origen)`). `LogisticaEventListenerTest` es nuevo (4 tests): cada `@RabbitListener` delega en el procesador con su cola.
+
+**Validación.** `mvn clean test -pl donaciones-service -am`: 527 tests, 0 fallos (+4); `spotless:apply` aplicado.
+
+### 2026-10-07 — Etapa 5, paso 2: Callback de los proveedores HTTP
+
+**Qué se hizo.** El camino de vuelta de un proveedor HTTP: `LogisticaCallbackController` (adaptador de entrada, sin lógica) → `AvisosProveedorService` (traduce el aviso, verifica pertenencia) → `ProcesadorEventosLogistica` (el mismo de AMQP). Además se movió `LogisticaEventListener` (y su test) a `infrastructure/logistica/`, donde ya vivían el procesador y los adapters.
+
+| Pieza | Archivo | Qué es |
+|---|---|---|
+| DTO | `dto/logistica/AvisoProveedorRequestDTO`, `TipoAvisoProveedor` | Aviso con `tipo`; el identificador de ruta o de entrega es la clave de idempotencia |
+| Puerto y servicio | `services/IAvisosProveedorService`, `services/impl/AvisosProveedorService` | Valida campos por tipo, verifica pertenencia con `ISolicitudesEntregaRepository` y delega |
+| Controller | `controllers/ILogisticaCallbackController`, `controllers/impl/LogisticaCallbackController` | `POST /api/logistica/proveedores/{proveedorId}/avisos` → `202` |
+
+**Tests** (+13): `AvisosProveedorServiceTest` (10: los 4 tipos con su mapeo, donación de otro proveedor, donación sin solicitud, lista con una donación ajena sin procesar ninguna, campos faltantes, tipo o proveedor nulos); `LogisticaCallbackControllerTest` (3, `@WebMvcTest`: 202, 400 sin tipo, 404 si no le pertenece). Los tests encontraron un bug propio: `List.of(...).contains(null)` lanza `NullPointerException`; se reemplazó por `anyMatch(Objects::isNull)`.
+
+**Validación.** `mvn clean test -pl donaciones-service -am`: 540 tests, 0 fallos (incluye `ArchitectureFitnessTest`: el controller no depende de repositorios); `spotless:check` OK.
+
+**Pendiente.** (1) ~~5.3: sin `ApiKeyFilter` el endpoint no está autenticado.~~ Resuelto en el paso 3. (2) La documentación de endpoints (`docs/arquitectura/contratos-rest.md`, `docs/generated/endpoints-catalog.md`) y la colección Postman se actualizan en la Etapa 8.
+
+### 2026-10-07 — Etapa 5, paso 3: API key del callback
+
+**Qué se hizo.** `ApiKeyFilter` protege el callback de los proveedores HTTP (D36). Es un filtro de servlet (`OncePerRequestFilter`) registrado como `@Component`, así que se aplica solo, antes del controller y sin Spring Security.
+
+| Pieza | Archivo | Qué es |
+|---|---|---|
+| Filtro | `config/ApiKeyFilter` | Exige `X-API-Key` para `/api/logistica/proveedores/{id}/avisos`; `401` JSON si falta, es incorrecta o no hay clave configurada |
+| Configuración | `application.properties` | `donatrack.logistica.proveedor.externo.callback-api-key=${LOGISTICA_EXTERNA_CALLBACK_API_KEY:}` (vacía = rechaza todo) |
+
+**Tests** (+14 sobre el 5.2): `ApiKeyFilterTest` (12: ruta ajena pasa sin clave, clave correcta pasa, sin clave, incorrecta, clave de otro proveedor, proveedor sin clave configurada, clave en blanco, ruta desconocida bajo el prefijo, id con caracteres raros, la respuesta no revela las claves, barras repetidas o `..` no esquivan el filtro, URI no interpretable); `LogisticaCallbackControllerTest` pasó a incluir el filtro (+2: sin clave y con clave de otro proveedor → `401` y el servicio no se llama).
+
+**Hallazgos de los tests.** Al normalizar la ruta, `URI.create("//api/...")` toma `api` por un host y descartaba ese segmento: un test lo atrapó y se corrigió colapsando las barras antes de parsear. Sin esa normalización, `//api/logistica/...` o `/api/x/../logistica/...` esquivaban el filtro porque Tomcat normaliza para mapear pero `getRequestURI()` devuelve la ruta cruda.
+
+**Validación.** `mvn clean test -pl donaciones-service -am`: 554 tests, 0 fallos (incluye `ArchitectureFitnessTest`); `spotless:check` OK. Gate 4 (sin MinIO): 26/26 en verde con el filtro activo en la app real.
+
 ---
 
 ## Q&A
@@ -383,3 +425,6 @@ Logística tiene dos entradas: el listener AMQP (deduplicaba desde antes) y `POS
 
 **Corrección: el adapter HTTP es para un servicio externo de logística, no para nuestro servicio interno. ¿Nuestra Logística se va a llamar por HTTP?**
 No. En el diseño real nuestra Logística se alcanza solo por AMQP (proveedor `donatrack`); el adapter HTTP existe para proveedores externos cuyo servidor no controlamos, y deduplicar es obligación de ellos (requisito de contrato del ADR, D12). La explicación anterior mezcló los dos planos: `POST /api/entregas` solo se llama por HTTP en la demo, porque el proveedor `externo` es una segunda instancia de nuestra Logística (D9) que hace de courier privado. El 409 se había agregado para que ese stand-in se comportara como un proveedor idempotente, no porque el flujo real lo necesite. Se decidió **revertirlo** (D33): no se toca Logística y la idempotencia queda como obligación del proveedor, con el riesgo, en la demo, de una entrega duplicada ante un timeout simulado.
+
+**¿`LogisticaEventListener` no tiene más sentido dentro de `/logistica`?**
+Sí. En `infrastructure/logistica/` ya vivían `ProcesadorEventosLogistica`, `ProveedorLogisticaAmqp`, `ProveedorLogisticaHttp` y `ProveedoresLogistica`, y el listener pasó a ser un adaptador de entrada delgado del mismo tema, así que se movió ahí junto con su test (movimiento puro de archivos, sin cambios de lógica). Los otros listeners (`SegmentacionEventListener`, etc.) siguen en `infrastructure/`.
