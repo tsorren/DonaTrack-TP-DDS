@@ -10,14 +10,14 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 3 hecha (la aprobación de una asignación le pasa el pedido al broker) y Gate 4 en verde.
+> Última actualización: **2026-10-07** — Etapa 3 hecha y Gate 4 en verde; Etapa 4 parte 1 (adapter HTTP) hecha, parte 2 (dedup REST en Logística) pendiente.
 
 - **Qué estamos haciendo:** un broker dentro de `donaciones-service` que elige a qué proveedor de logística mandarle cada entrega: el nuestro por RabbitMQ, u otro por HTTP. Así se cumple el requerimiento de la Entrega 4.
 - **Cómo:** Broker + Adapter + Strategy. El pedido viaja como comando `entrega.solicitada.<proveedorId>.v1`; logística deja de escuchar el hecho `donacion.asignada.v1`. Ningún pedido se pierde en silencio (`mandatory` + espera de acuse) y no se reenvía a otro proveedor si no hay certeza de que el primero no lo recibió.
 - **Dónde estamos:** **Etapas 0, 1, 2 y 3 hechas**. Ya existen el broker, el adapter AMQP hacia nuestra logística y el comando `entrega.solicitada.<id>.v1`; logística ya escucha el comando y no el hecho. Si todos los proveedores rechazan un pedido, el broker reintenta la ronda completa más tarde (D27).
 - **Atención:** la asignación **ya llama al broker** (Etapa 3), pero el pedido sale recién cuando corre el relay del outbox (cada 10 s por defecto; en `docker-compose.preprod.yml` está en 1 s) y solo hay adapter AMQP para `donatrack`. **Gate 4 en verde (26/26)** con las Etapas 2 y 3 juntas, sin MinIO (ver Etapa 3).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 4, adapter HTTP + deduplicación REST en Logística.
+- **Próximo paso:** Etapa 4 parte 2: deduplicación REST en Logística (`EntregasService.crear` → 409). Decisión pendiente: hacerla mínima o dejarla como deuda y proponérsela al equipo de Logística.
 
 ---
 
@@ -29,7 +29,7 @@
 | 1 — Núcleo sin cableado | Broker, estrategia, outbox, registro, excepciones | ✅ Cerrada |
 | 2 — Contrato, adapter AMQP y cutover | `EntregaSolicitadaV1`, `mandatory` + acuse, cambios en Logística | ✅ Cerrada (sin commitear) |
 | 3 — Cableado | `PropuestaDeAsignacionService` → broker | ✅ Hecha (Gate 4 en verde) |
-| 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp`, 409 en `EntregasService.crear` | ⏳ Pendiente |
+| 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp`, 409 en `EntregasService.crear` | 🟡 Parte 1 (adapter HTTP) hecha; parte 2 (dedup en Logística) pendiente |
 | 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ⏳ Pendiente |
 | 6 — Controller admin (recortable) | Cambiar el proveedor preferido en caliente | ⏳ Pendiente |
 | 7 — Demo | Segunda instancia, Postman, guion | ⏳ Pendiente |
@@ -73,6 +73,8 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | D28 | **No hay código de limpieza de la cola vieja** (`logistica.donaciones.asignadas`); se eliminó `LimpiezaColaObsoleta`. Motivo: los RabbitMQ del proyecto son descartables (los `docker-compose` no tienen volúmenes), así que la cola huérfana desaparece al recrear el contenedor, y CI/preprod arrancan siempre con uno nuevo. El código resolvía un problema que casi no existe y sumaba un caso borde. **Paso de cutover:** si un RabbitMQ viene de antes del broker (se detuvo y arrancó sin recrearse), recrearlo (`docker compose down` + `up`) o borrar la cola desde la consola de administración. | 2026-10-07 | Etapa 2 |
 | D29 | **El pedido al broker no lleva el donante.** `DatosEntregaLogistica` se arma con la donación asignada y los datos del beneficiario que ya se resuelven una vez por evento; Logística nunca usó el donante (`CrearEntregaRequestDTO` no lo tiene). Sumarlo sería un cambio aditivo de contrato aparte. | 2026-10-07 | Etapa 3 |
 | D30 | **Una falla del broker no tumba la aprobación:** `solicitarEntregaALogistica` captura la excepción y la loguea, igual que la publicación de `donacion.asignada.v1`; si faltan los datos del beneficiario no se llama al broker (`warn`). | 2026-10-07 | Etapa 3 |
+| D31 | **Clasificación del adapter HTTP:** 2xx y 409 → publicado; 503, conexión rechazada, host inexistente y timeout de conexión → rechazado; timeout de lectura y 500/502/504/otros 5xx → incierto; otros 4xx y redirecciones → error de contrato. Toda falla de red que no sea «no se pudo conectar» cuenta como incierta (prefiere reintentar al mismo proveedor antes que arriesgar dos entregas). | 2026-10-07 | Etapa 4 |
+| D32 | **Cliente HTTP:** `RestClient` sobre el `HttpClient` del JDK (HTTP/1.1), con timeout de conexión (1000 ms) y de lectura (3000 ms) separados y configurables por proveedor (`donatrack.logistica.proveedor.<id>.connect-timeout-ms` / `read-timeout-ms`). Un proveedor `http` sin `url` queda sin adapter (se trata como rechazado, igual que D20). Sin dependencias nuevas. | 2026-10-07 | Etapa 4 |
 
 ---
 
@@ -83,7 +85,7 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | P1 | ¿Se aprueba SPEC-04 tal como está? | Antes de la Etapa 1 | ✅ Cerrada: aprobada sin cambios (2026-10-07) |
 | P2 | ¿Qué estrategias adicionales de selección se implementan, y con qué criterio exacto? (Candidatas: RoundRobin, PorCarga, PorZona.) | Etapa 1 | ✅ Cerrada: ninguna, solo la base (D14) |
 | P3 | ¿Qué código de `ErrorCatalog` usa el 409 de Logística? | Etapa 4 | Abierta |
-| P4 | ¿Qué valores de `acuse-timeout-ms` y del read timeout HTTP usamos? (Propuesta: 5000 y 3000 ms.) | Etapas 2 y 4 | Parcial: acuse = 5000 ms (D24). Falta el read timeout HTTP (Etapa 4) |
+| P4 | ¿Qué valores de `acuse-timeout-ms` y del read timeout HTTP usamos? (Propuesta: 5000 y 3000 ms.) | Etapas 2 y 4 | Parcial: acuse = 5000 ms (D24). Read timeout HTTP = 3000 ms y connect timeout = 1000 ms (D32) ✅ |
 
 ---
 
@@ -269,6 +271,22 @@ Los tests contra RabbitMQ real usan Testcontainers: sin Docker se saltean (`@Dis
 
 ---
 
+### 2026-10-07 — Etapa 4, parte 1: Adapter HTTP
+
+**Qué se hizo.** El proveedor `externo` puede recibir los pedidos por HTTP: `ProveedorLogisticaHttp` traduce el modelo canónico al contrato de `POST /api/entregas` de Logística y clasifica la respuesta (D31). `LogisticaProveedoresConfig` arma el adapter cuando `transporte=http` (D32). La parte 2 (409 en `EntregasService.crear`, que toca Logística) queda pendiente.
+
+| Pieza | Archivo | Qué es |
+|---|---|---|
+| Adapter | `infrastructure/logistica/ProveedorLogisticaHttp` | Implementa `IProveedorLogistica`; record privado `PedidoEntregaHttp` con los nombres del contrato de Logística; header `X-Trace-Id` |
+| Configuración | `config/LogisticaProveedoresConfig` | Soporta `transporte=http`; `restClient(url, connectMs, readMs)` |
+| Properties | `application.properties` | `proveedor.externo.transporte=http`, `url` (`LOGISTICA_EXTERNA_URL`, por defecto `http://localhost:8084`), `connect-timeout-ms`, `read-timeout-ms` |
+
+**Tests** (+21): `ProveedorLogisticaHttpTest` (15, `MockRestServiceServer`: cuerpo, traza, 201/409, 503, 500/502/504, 400/404/422, redirección, conexión rechazada, host, timeout de conexión y de lectura); `ProveedorLogisticaHttpRedRealTest` (3, servidor real en loopback: éxito, timeout de lectura real → incierto, puerto cerrado real → rechazado); `LogisticaProveedoresConfigTest` (+3: http con url, http sin url, AMQP y HTTP juntos). El test existente «sin transporte soportado» usaba `http` como ejemplo de transporte no soportado; ahora usa `grpc`, con la misma intención y las mismas aserciones.
+
+**Validación.** `mvn clean test -pl donaciones-service -am`: 523 tests, 0 fallos; `spotless:check` OK. Con el valor por defecto `externo` tiene adapter pero no hay instancia en `localhost:8084`: solo se usaría si `donatrack` rechaza, y entonces la conexión rechazada vuelve a ser `RECHAZADO` (rondas con backoff, D27). Gate 4 no se repitió tras este cambio.
+
+---
+
 ## Q&A
 
 **¿Qué es el «broker» que pide la Entrega 4? ¿Es RabbitMQ?**
@@ -347,3 +365,6 @@ La creó la versión anterior de logística y RabbitMQ la conserva aunque el có
 
 **¿Por qué el nombre del tipo de mensaje no cambia aunque la dirección incluya el proveedor?**
 La dirección (routing key) cambia por proveedor, pero el tipo del contenido es siempre el mismo formulario. Por eso el header `__TypeId__` lleva un alias fijo, `entrega.solicitada.v1`. Si usara la dirección, el mismo tipo Java tendría varios nombres y no se podría saber cuál escribir al enviar.
+
+**¿El contrato REST del proveedor HTTP lo estamos infiriendo? ¿Un proveedor real nos diría qué nombres espera?**
+Sí, el contrato de `externo` sale de nuestro propio código (`CrearEntregaRequestDTO` de Logística), porque en la demo `externo` es una segunda instancia de nuestra Logística (D9); no lo definió un proveedor real. Un proveedor real publicaría una especificación (casi siempre OpenAPI) con endpoint, nombres y tipos de campos, unidades, autenticación y códigos de respuesta, y se escribiría un adapter contra ella: el modelo canónico (`DatosEntregaLogistica`) es el idioma de Donaciones y no cambia, solo se traduce en cada adapter. Hoy están fijos en `ProveedorLogisticaHttp`: el path, los nombres y tipos de campos, las unidades, la ausencia de autenticación y la lectura de códigos (409/503/5xx). Un proveedor real podría usar `200` con error en el cuerpo, `202` para «recibido, lo proceso después» o un header `Idempotency-Key`. Con un proveedor real habría que validar el adapter contra su OpenAPI (tests de contrato). Queda registrado como supuesto `[INFERRED]` en las consecuencias del ADR. Para la defensa: el aporte es el broker y el modelo canónico; un segundo adapter con otro formato no tocaría nada del broker.

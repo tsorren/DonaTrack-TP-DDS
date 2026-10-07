@@ -90,6 +90,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
 * El relay espera acuses de a una entrada (latencia de despacho de milisegundos a segundos).
 * Requiere un cutover coordinado en dos servicios. La cola vieja `logistica.donaciones.asignadas` queda huérfana en un RabbitMQ que haya corrido la versión anterior: hay que recrearlo o borrarla a mano (los RabbitMQ del proyecto no tienen volúmenes, así que recrear el contenedor alcanza).
 * Hay que mantener una traducción por cada proveedor HTTP.
+* `[INFERRED]` El contrato REST del único proveedor HTTP actual (`externo`) es el de nuestra propia Logística (`CrearEntregaRequestDTO`), porque en la demo es una segunda instancia de la misma imagen (D9). No lo definió un proveedor real. Con un proveedor real, el adapter se escribe contra su especificación (path, nombres y tipos de campos, unidades, autenticación, códigos de respuesta, idempotencia) y debe validarse con tests de contrato contra su OpenAPI. El broker, la estrategia y el outbox no cambian: lo que se reemplaza es el adapter.
 * El outbox es en memoria: sin atomicidad ni durabilidad hasta la migración a PostgreSQL (deuda declarada).
 * La protección por API key es mínima y de transición hasta el `auth-service` (Entrega 6).
 * Para un proveedor AMQP que no sea nuestra imagen, queda abierta la propiedad del exchange de vuelta.
