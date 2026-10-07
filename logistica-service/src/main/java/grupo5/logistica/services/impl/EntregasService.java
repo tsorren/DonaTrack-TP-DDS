@@ -1,5 +1,6 @@
 package grupo5.logistica.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
@@ -70,6 +71,9 @@ public class EntregasService implements IEntregasService {
     Entrega entrega = entregaMapper.toEntity(dto);
     if (entrega == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (entregasRepository.existsByIdDonacion(entrega.getIdDonacion())) {
+      throw new BusinessStateException(ErrorCatalog.ENTREGA_DONACION_DUPLICADA);
     }
 
     return entregaMapper.toResponseDTO(entregasRepository.save(entrega));

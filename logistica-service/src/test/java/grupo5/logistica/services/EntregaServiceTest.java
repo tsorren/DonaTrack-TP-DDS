@@ -3,6 +3,7 @@ package grupo5.logistica.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
@@ -80,6 +81,21 @@ class EntregaServiceTest {
   @Test
   void crear_deberiaLanzarExcepcion_cuandoMapperDevuelveNull() {
     assertThrows(ValidationException.class, () -> entregasService.crear(null));
+    verify(entregasRepository, never()).save(any());
+  }
+
+  @Test
+  void crear_deberiaLanzarConflicto_cuandoYaExisteEntregaParaLaDonacion() {
+    DireccionDTO destino =
+        new DireccionDTO("Calle Falsa", 123, 4, "B", "C1000", "CABA", "Buenos Aires", "Argentina");
+    CrearEntregaRequestDTO request =
+        new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), destino, 10f, 2f);
+
+    when(entregasRepository.existsByIdDonacion(request.idDonacion())).thenReturn(true);
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> entregasService.crear(request));
+    assertEquals(ErrorCatalog.ENTREGA_DONACION_DUPLICADA, ex.getError());
     verify(entregasRepository, never()).save(any());
   }
 
