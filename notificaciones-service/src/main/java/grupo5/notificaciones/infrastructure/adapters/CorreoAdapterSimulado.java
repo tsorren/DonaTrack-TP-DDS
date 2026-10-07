@@ -31,7 +31,7 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
     }
 
     // 2. Falla temporal (HTTP 500 / Timeout) simulada aleatoriamente (5% de las veces)
-    if (new java.util.Random().nextInt(100) < 5) {
+    if (simularFalloTemporalAleatorio()) {
       throw new RuntimeException(
           "HTTP 503 Service Unavailable: Timeout conectando con el proveedor.");
     }
@@ -56,7 +56,11 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
     return true;
   }
 
-  private void simularLatenciaDeRed() {
+  protected boolean simularFalloTemporalAleatorio() {
+    return new java.util.Random().nextInt(100) < 5;
+  }
+
+  protected void simularLatenciaDeRed() {
     try {
       // Simula un tiempo de respuesta de API entre 100 y 500 ms
       long latencia = 100 + new java.util.Random().nextInt(400);

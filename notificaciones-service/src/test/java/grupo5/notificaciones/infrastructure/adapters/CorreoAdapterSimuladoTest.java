@@ -19,7 +19,18 @@ class CorreoAdapterSimuladoTest {
   @BeforeEach
   void setUp() {
     criterioFallo = mock(CriterioFalloSimulado.class);
-    adapter = new CorreoAdapterSimulado(criterioFallo);
+    adapter =
+        new CorreoAdapterSimulado(criterioFallo) {
+          @Override
+          protected boolean simularFalloTemporalAleatorio() {
+            return false;
+          }
+
+          @Override
+          protected void simularLatenciaDeRed() {
+            // no-op para tests rápidos
+          }
+        };
   }
 
   @Test

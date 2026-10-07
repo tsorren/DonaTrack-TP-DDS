@@ -19,7 +19,18 @@ class TelefonoAdapterSimuladoTest {
   @BeforeEach
   void setUp() {
     criterioFallo = mock(CriterioFalloSimulado.class);
-    adapter = new TelefonoAdapterSimulado(criterioFallo);
+    adapter =
+        new TelefonoAdapterSimulado(criterioFallo) {
+          @Override
+          protected boolean simularFalloTemporalAleatorio() {
+            return false;
+          }
+
+          @Override
+          protected void simularLatenciaDeRed() {
+            // no-op para tests
+          }
+        };
   }
 
   @Test
