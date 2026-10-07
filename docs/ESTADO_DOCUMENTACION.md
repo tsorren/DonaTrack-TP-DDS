@@ -93,7 +93,7 @@ docs/
 │
 ├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🟢 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -138,6 +138,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`.agents/skills/`](../.agents/skills/) | Suite de Skills | Suite de 8 skills modulares para el Engineering Loop y auditoría adversarial de PRs con GrepAI. | 🟢 Sincronizado |
 | [`docs/specs/`](specs/README.md) | Especificaciones SDD | Catálogo centralizado de especificaciones funcionales y técnicas (active/completed). | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md`](specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) | Especificación SDD | Topología AMQP Pub/Sub canónica, colas segregadas, envelope nativo, 10 schemas y Hard Cutover. | 🟢 Sincronizado |
+| [`docs/specs/active/SPEC-04-broker-integracion-logistica.md`](specs/active/SPEC-04-broker-integracion-logistica.md) | Especificación SDD | Broker de Integración con Logística: selección de proveedor (AMQP/HTTP), comando dirigido, `mandatory` + acuse, outbox basado en datos. | 🟢 Sincronizado |
 | [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
 | [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
 | [`scripts/run-evals.js`](../scripts/run-evals.js) | Harness Evals Runner | Runner determinista de escenarios E01–E11 y taxonomía de fallas críticas CF-01 a CF-12 con emisión de scorecard. | 🟢 Sincronizado |
@@ -202,6 +203,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/20260911-harness-skill-review-pr-adversarial-grepai.md`](adr/20260911-harness-skill-review-pr-adversarial-grepai.md) | ADR Gobernanza IA | Formalización de la skill canónica review-pr, protocolo GrepAI y tooling CLI de contexto. | 🟢 Sincronizado |
 | [`docs/adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) | ADR Arquitectura AMQP | Topología Pub/Sub canónica DDD, colas segregadas, clúster DLQ y Hard Cutover inter-servicios. | 🟢 Sincronizado |
 | [`docs/adr/20260919-convencion-canonica-identificadores-y-contratos-amqp.md`](adr/20260919-convencion-canonica-identificadores-y-contratos-amqp.md) | ADR Estándar de Contratos | Convención canónica de identificadores (<entidad>Id), separación AMQP/REST y erradicación de JsonAlias. | 🟢 Sincronizado |
+| [`docs/adr/20261007-broker-de-integracion-con-logistica.md`](adr/20261007-broker-de-integracion-con-logistica.md) | ADR Integración | Broker in-process (Broker + Adapter + Strategy) entre Donaciones y Logística; regla de ruteo eventos por hecho / comandos por destinatario. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
 
@@ -241,6 +243,8 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación y Key Broker (Entrega 6). | 🟢 Sincronizado |
 | [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para interfaz Web MVC (Entrega 5). | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
+| [`docs/entrega-4/donaciones/plan-broker-logistica.md`](entrega-4/donaciones/plan-broker-logistica.md) | Plan Entrega 4 | Plan de implementación unificado del Broker de Integración con Logística. | 🟢 Sincronizado |
+| [`docs/entrega-4/donaciones/bitacora-broker-logistica.md`](entrega-4/donaciones/bitacora-broker-logistica.md) | Bitácora Entrega 4 | Registro vivo de decisiones, preguntas y avances del broker (TLDR + Q&A). | 🟢 Sincronizado |
 | [`docs/entregas/README.md`](entregas/README.md) | Currícula Cátedra | Matriz curricular e índice de enunciados oficiales y artefactos de Entregas 1 a 4. | 🟢 Sincronizado |
 
 
