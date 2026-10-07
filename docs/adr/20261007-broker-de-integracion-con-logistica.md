@@ -67,7 +67,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
    | Incierto (pudo haber llegado) | Sin acuse a tiempo · timeout de lectura · HTTP 500/502/504 | Reintento con backoff **al mismo** proveedor |
    | Error de contrato | HTTP 4xx (≠ 409) | Sin reintento ni reenvío; `FALLIDO` + log `error` |
 
-6. **Idempotencia del proveedor:** todo proveedor deduplica por `donacionIndependienteId`. Es un requisito de contrato. En Logística aplica tanto al listener AMQP (existente) como a `POST /api/entregas` (se agrega; responde 409 si ya existe).
+6. **Idempotencia del proveedor:** todo proveedor deduplica por `donacionIndependienteId`. Es un requisito de contrato. La obligación recae en el proveedor, no en Donaciones. Nuestra Logística interna se alcanza solo por AMQP, donde el listener ya deduplica. No se modifica `POST /api/entregas`: el stand-in HTTP `externo` de la demo (D9) no deduplica por ese camino, y ese riesgo se asume.
 7. **Camino de vuelta:** un proveedor AMQP publica en `logistica.exchange` los eventos existentes. Un proveedor HTTP avisa por un callback protegido con API key por proveedor y con verificación de que la donación le pertenece. Ambos caminos comparten la misma lógica idempotente (`ProcesadorEventosLogistica`).
 8. **Selección:** estrategia base «preferencia configurable + reenvío». Otras estrategias se implementan como **estrategias de prueba**, acordadas por el equipo, y no representan reglas de negocio reales.
 
@@ -90,6 +90,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
 * El relay espera acuses de a una entrada (latencia de despacho de milisegundos a segundos).
 * Requiere un cutover coordinado en dos servicios. La cola vieja `logistica.donaciones.asignadas` queda huérfana en un RabbitMQ que haya corrido la versión anterior: hay que recrearlo o borrarla a mano (los RabbitMQ del proyecto no tienen volúmenes, así que recrear el contenedor alcanza).
 * Hay que mantener una traducción por cada proveedor HTTP.
+* En la demo, el proveedor HTTP `externo` es una segunda instancia de nuestra Logística, cuyo `POST /api/entregas` no deduplica: ante un timeout simulado el reintento puede dejar una entrega duplicada en esa instancia. Es la razón por la que la idempotencia es un requisito de contrato para el proveedor.
 * `[INFERRED]` El contrato REST del único proveedor HTTP actual (`externo`) es el de nuestra propia Logística (`CrearEntregaRequestDTO`), porque en la demo es una segunda instancia de la misma imagen (D9). No lo definió un proveedor real. Con un proveedor real, el adapter se escribe contra su especificación (path, nombres y tipos de campos, unidades, autenticación, códigos de respuesta, idempotencia) y debe validarse con tests de contrato contra su OpenAPI. El broker, la estrategia y el outbox no cambian: lo que se reemplaza es el adapter.
 * El outbox es en memoria: sin atomicidad ni durabilidad hasta la migración a PostgreSQL (deuda declarada).
 * La protección por API key es mínima y de transición hasta el `auth-service` (Entrega 6).

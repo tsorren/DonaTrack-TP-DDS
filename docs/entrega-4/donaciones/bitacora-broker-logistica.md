@@ -10,14 +10,14 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 3 hecha y Gate 4 en verde; Etapa 4 parte 1 (adapter HTTP) hecha, parte 2 (dedup REST en Logística) pendiente.
+> Última actualización: **2026-10-07** — Etapa 3 hecha y Gate 4 en verde; Etapa 4 hecha (adapter HTTP); la deduplicación en Logística se evaluó y se revirtió (D33).
 
 - **Qué estamos haciendo:** un broker dentro de `donaciones-service` que elige a qué proveedor de logística mandarle cada entrega: el nuestro por RabbitMQ, u otro por HTTP. Así se cumple el requerimiento de la Entrega 4.
 - **Cómo:** Broker + Adapter + Strategy. El pedido viaja como comando `entrega.solicitada.<proveedorId>.v1`; logística deja de escuchar el hecho `donacion.asignada.v1`. Ningún pedido se pierde en silencio (`mandatory` + espera de acuse) y no se reenvía a otro proveedor si no hay certeza de que el primero no lo recibió.
 - **Dónde estamos:** **Etapas 0, 1, 2 y 3 hechas**. Ya existen el broker, el adapter AMQP hacia nuestra logística y el comando `entrega.solicitada.<id>.v1`; logística ya escucha el comando y no el hecho. Si todos los proveedores rechazan un pedido, el broker reintenta la ronda completa más tarde (D27).
 - **Atención:** la asignación **ya llama al broker** (Etapa 3), pero el pedido sale recién cuando corre el relay del outbox (cada 10 s por defecto; en `docker-compose.preprod.yml` está en 1 s) y solo hay adapter AMQP para `donatrack`. **Gate 4 en verde (26/26)** con las Etapas 2 y 3 juntas, sin MinIO (ver Etapa 3).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 4 parte 2: deduplicación REST en Logística (`EntregasService.crear` → 409). Decisión pendiente: hacerla mínima o dejarla como deuda y proponérsela al equipo de Logística.
+- **Próximo paso:** Etapa 5, vuelta del proveedor HTTP (callback) y protección con API key.
 
 ---
 
@@ -29,7 +29,7 @@
 | 1 — Núcleo sin cableado | Broker, estrategia, outbox, registro, excepciones | ✅ Cerrada |
 | 2 — Contrato, adapter AMQP y cutover | `EntregaSolicitadaV1`, `mandatory` + acuse, cambios en Logística | ✅ Cerrada (sin commitear) |
 | 3 — Cableado | `PropuestaDeAsignacionService` → broker | ✅ Hecha (Gate 4 en verde) |
-| 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp`, 409 en `EntregasService.crear` | 🟡 Parte 1 (adapter HTTP) hecha; parte 2 (dedup en Logística) pendiente |
+| 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp` (hecho); 409 en `EntregasService.crear` (descartado, D33) | ✅ Hecha (sin tocar Logística) |
 | 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ⏳ Pendiente |
 | 6 — Controller admin (recortable) | Cambiar el proveedor preferido en caliente | ⏳ Pendiente |
 | 7 — Demo | Segunda instancia, Postman, guion | ⏳ Pendiente |
@@ -75,6 +75,7 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | D30 | **Una falla del broker no tumba la aprobación:** `solicitarEntregaALogistica` captura la excepción y la loguea, igual que la publicación de `donacion.asignada.v1`; si faltan los datos del beneficiario no se llama al broker (`warn`). | 2026-10-07 | Etapa 3 |
 | D31 | **Clasificación del adapter HTTP:** 2xx y 409 → publicado; 503, conexión rechazada, host inexistente y timeout de conexión → rechazado; timeout de lectura y 500/502/504/otros 5xx → incierto; otros 4xx y redirecciones → error de contrato. Toda falla de red que no sea «no se pudo conectar» cuenta como incierta (prefiere reintentar al mismo proveedor antes que arriesgar dos entregas). | 2026-10-07 | Etapa 4 |
 | D32 | **Cliente HTTP:** `RestClient` sobre el `HttpClient` del JDK (HTTP/1.1), con timeout de conexión (1000 ms) y de lectura (3000 ms) separados y configurables por proveedor (`donatrack.logistica.proveedor.<id>.connect-timeout-ms` / `read-timeout-ms`). Un proveedor `http` sin `url` queda sin adapter (se trata como rechazado, igual que D20). Sin dependencias nuevas. | 2026-10-07 | Etapa 4 |
+| D33 | **No se modifica Logística para deduplicar.** Se implementó el 409 en `POST /api/entregas` (`ERR-EST-816`) y se revirtió: nuestra Logística interna se alcanza solo por AMQP (donde el listener ya deduplica) y la idempotencia de un proveedor HTTP es obligación suya (requisito de contrato del ADR). El stand-in `externo` de la demo (D9) no deduplica el camino REST: ante un timeout simulado puede quedar una entrega duplicada, y se explica en la defensa. Evita tocar `common-lib` y un servicio de otra área. | 2026-10-07 | Etapa 4 |
 
 ---
 
@@ -84,7 +85,7 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 |---|---|---|---|
 | P1 | ¿Se aprueba SPEC-04 tal como está? | Antes de la Etapa 1 | ✅ Cerrada: aprobada sin cambios (2026-10-07) |
 | P2 | ¿Qué estrategias adicionales de selección se implementan, y con qué criterio exacto? (Candidatas: RoundRobin, PorCarga, PorZona.) | Etapa 1 | ✅ Cerrada: ninguna, solo la base (D14) |
-| P3 | ¿Qué código de `ErrorCatalog` usa el 409 de Logística? | Etapa 4 | Abierta |
+| P3 | ¿Qué código de `ErrorCatalog` usa el 409 de Logística? | Etapa 4 | ✅ Cerrada: no aplica, no se modifica Logística (D33) |
 | P4 | ¿Qué valores de `acuse-timeout-ms` y del read timeout HTTP usamos? (Propuesta: 5000 y 3000 ms.) | Etapas 2 y 4 | Parcial: acuse = 5000 ms (D24). Read timeout HTTP = 3000 ms y connect timeout = 1000 ms (D32) ✅ |
 
 ---
@@ -285,6 +286,14 @@ Los tests contra RabbitMQ real usan Testcontainers: sin Docker se saltean (`@Dis
 
 **Validación.** `mvn clean test -pl donaciones-service -am`: 523 tests, 0 fallos; `spotless:check` OK. Con el valor por defecto `externo` tiene adapter pero no hay instancia en `localhost:8084`: solo se usaría si `donatrack` rechaza, y entonces la conexión rechazada vuelve a ser `RECHAZADO` (rondas con backoff, D27). Gate 4 no se repitió tras este cambio.
 
+### 2026-10-07 — Etapa 4, parte 2: Deduplicación REST en Logística (evaluada y revertida)
+
+**Qué pasó.** Se implementó un chequeo mínimo en `EntregasService.crear` (`existsByIdDonacion` → `BusinessStateException` → 409, con código nuevo `ERR-EST-816` en `ErrorCatalog`). Mientras se explicaba, se aclaró que nuestra Logística interna **nunca se llama por HTTP** (solo por AMQP, donde el listener ya deduplicaba) y que el adapter HTTP es para proveedores externos, cuya idempotencia es obligación suya. El cambio solo servía para que el stand-in `externo` de la demo (D9) se comportara como un proveedor idempotente, así que se **revirtió** (D33). El código y los tests no quedaron en ningún commit.
+
+**Efecto.** `common-lib` y `logistica-service` no cambian en la Etapa 4. Para el stand-in `externo` el `POST /api/entregas` sigue sin deduplicar: ante un timeout de lectura simulado el broker reintenta con el mismo proveedor y puede quedar una entrega duplicada en esa instancia. Se muestra y se explica en la defensa como la razón del requisito de idempotencia del contrato.
+
+**Validación previa a la reversión.** Reactor completo y Gate 4 (26/26) estaban en verde con el cambio; tras revertir, el estado de código es el del commit `1067e900`.
+
 ---
 
 ## Q&A
@@ -368,3 +377,9 @@ La dirección (routing key) cambia por proveedor, pero el tipo del contenido es 
 
 **¿El contrato REST del proveedor HTTP lo estamos infiriendo? ¿Un proveedor real nos diría qué nombres espera?**
 Sí, el contrato de `externo` sale de nuestro propio código (`CrearEntregaRequestDTO` de Logística), porque en la demo `externo` es una segunda instancia de nuestra Logística (D9); no lo definió un proveedor real. Un proveedor real publicaría una especificación (casi siempre OpenAPI) con endpoint, nombres y tipos de campos, unidades, autenticación y códigos de respuesta, y se escribiría un adapter contra ella: el modelo canónico (`DatosEntregaLogistica`) es el idioma de Donaciones y no cambia, solo se traduce en cada adapter. Hoy están fijos en `ProveedorLogisticaHttp`: el path, los nombres y tipos de campos, las unidades, la ausencia de autenticación y la lectura de códigos (409/503/5xx). Un proveedor real podría usar `200` con error en el cuerpo, `202` para «recibido, lo proceso después» o un header `Idempotency-Key`. Con un proveedor real habría que validar el adapter contra su OpenAPI (tests de contrato). Queda registrado como supuesto `[INFERRED]` en las consecuencias del ADR. Para la defensa: el aporte es el broker y el modelo canónico; un segundo adapter con otro formato no tocaría nada del broker.
+
+**¿Qué se introdujo ahora si ya había un listener AMQP que deduplicaba? ¿Por qué se deduplica en el camino REST de Logística?**
+Logística tiene dos entradas: el listener AMQP (deduplicaba desde antes) y `POST /api/entregas` (no deduplicaba). Lo nuevo es la deduplicación en la segunda, con el mismo método `existsByIdDonacion` que ya existía. Se hizo porque el adapter HTTP nuevo llama a ese endpoint en la demo; ver la corrección de la pregunta siguiente.
+
+**Corrección: el adapter HTTP es para un servicio externo de logística, no para nuestro servicio interno. ¿Nuestra Logística se va a llamar por HTTP?**
+No. En el diseño real nuestra Logística se alcanza solo por AMQP (proveedor `donatrack`); el adapter HTTP existe para proveedores externos cuyo servidor no controlamos, y deduplicar es obligación de ellos (requisito de contrato del ADR, D12). La explicación anterior mezcló los dos planos: `POST /api/entregas` solo se llama por HTTP en la demo, porque el proveedor `externo` es una segunda instancia de nuestra Logística (D9) que hace de courier privado. El 409 se había agregado para que ese stand-in se comportara como un proveedor idempotente, no porque el flujo real lo necesite. Se decidió **revertirlo** (D33): no se toca Logística y la idempotencia queda como obligación del proveedor, con el riesgo, en la demo, de una entrega duplicada ante un timeout simulado.
