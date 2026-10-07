@@ -1,6 +1,9 @@
 package grupo5.notificaciones.infrastructure.adapters;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.notificaciones.infrastructure.TelefonoAdapter;
+import grupo5.notificaciones.infrastructure.adapters.dtos.twilio.TwilioSmsRequest;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,7 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
   private static final Logger log = LoggerFactory.getLogger(TelefonoAdapterSimulado.class);
 
   private final CriterioFalloSimulado criterioFallo;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public TelefonoAdapterSimulado(CriterioFalloSimulado criterioFallo) {
     this.criterioFallo = criterioFallo;
@@ -38,16 +42,13 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
 
     String sid = "SM" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 32);
 
-    // Twilio usa form-urlencoded, pero en logs lo representamos como JSON por legibilidad
-    String twilioPayload =
-        String.format(
-            """
-            {
-              "To": "%s",
-              "From": "+1234567890",
-              "Body": "%s"
-            }""",
-            numero, mensaje.replace("\"", "\\\""));
+    TwilioSmsRequest requestDTO = new TwilioSmsRequest(numero, "+1234567890", mensaje);
+    String twilioPayload;
+    try {
+      twilioPayload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDTO);
+    } catch (JsonProcessingException e) {
+      twilioPayload = "Error serializing payload: " + e.getMessage();
+    }
 
     log.info("[TWILIO-MOCK] HTTP 201 Created | SID: {}\nPayload Enviado:\n{}", sid, twilioPayload);
 

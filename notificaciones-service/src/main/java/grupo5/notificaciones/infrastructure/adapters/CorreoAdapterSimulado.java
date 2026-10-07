@@ -1,7 +1,11 @@
 package grupo5.notificaciones.infrastructure.adapters;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.notificaciones.infrastructure.CorreoAdapter;
+import grupo5.notificaciones.infrastructure.adapters.dtos.sendgrid.SendGridEmailRequest;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,6 +19,7 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
   private static final Logger log = LoggerFactory.getLogger(CorreoAdapterSimulado.class);
 
   private final CriterioFalloSimulado criterioFallo;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public CorreoAdapterSimulado(CriterioFalloSimulado criterioFallo) {
     this.criterioFallo = criterioFallo;
@@ -37,16 +42,23 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
     }
 
     String messageId = java.util.UUID.randomUUID().toString();
-    String sendGridPayload =
-        String.format(
-            """
-            {
-              "personalizations": [{"to": [{"email": "%s"}]}],
-              "from": {"email": "no-reply@donatrack.org", "name": "DonaTrack"},
-              "subject": "Notificación de DonaTrack",
-              "content": [{"type": "text/plain", "value": "%s"}]
-            }""",
-            destinatario, mensaje.replace("\"", "\\\""));
+
+    SendGridEmailRequest requestDTO =
+        new SendGridEmailRequest(
+            List.of(
+                new SendGridEmailRequest.Personalization(
+                    List.of(new SendGridEmailRequest.EmailAddress(destinatario, null)))),
+            new SendGridEmailRequest.EmailAddress("no-reply@donatrack.org", "DonaTrack"),
+            "Notificación de DonaTrack",
+            List.of(new SendGridEmailRequest.Content("text/plain", mensaje)));
+
+    String sendGridPayload;
+    try {
+      sendGridPayload =
+          objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDTO);
+    } catch (JsonProcessingException e) {
+      sendGridPayload = "Error serializing payload: " + e.getMessage();
+    }
 
     log.info(
         "[SENDGRID-MOCK] HTTP 202 Accepted | MessageId: {}\nPayload Enviado:\n{}",

@@ -1,6 +1,9 @@
 package grupo5.notificaciones.infrastructure.adapters;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.notificaciones.infrastructure.WhatsAppAdapter;
+import grupo5.notificaciones.infrastructure.adapters.dtos.meta.MetaWhatsAppRequest;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,7 @@ public class WhatsAppAdapterSimulado implements WhatsAppAdapter {
   private static final Logger log = LoggerFactory.getLogger(WhatsAppAdapterSimulado.class);
 
   private final CriterioFalloSimulado criterioFallo;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   public WhatsAppAdapterSimulado(CriterioFalloSimulado criterioFallo) {
     this.criterioFallo = criterioFallo;
@@ -39,21 +43,20 @@ public class WhatsAppAdapterSimulado implements WhatsAppAdapter {
     String wamid =
         "wamid." + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 20);
 
-    // Simula el Request exacto de Meta WhatsApp Cloud API
-    String metaPayload =
-        String.format(
-            """
-            {
-              "messaging_product": "whatsapp",
-              "recipient_type": "individual",
-              "to": "%s",
-              "type": "text",
-              "text": {
-                "preview_url": false,
-                "body": "%s"
-              }
-            }""",
-            numero, mensaje.replace("\"", "\\\""));
+    MetaWhatsAppRequest requestDTO =
+        new MetaWhatsAppRequest(
+            "whatsapp",
+            "individual",
+            numero,
+            "text",
+            new MetaWhatsAppRequest.TextContent(false, mensaje));
+
+    String metaPayload;
+    try {
+      metaPayload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDTO);
+    } catch (JsonProcessingException e) {
+      metaPayload = "Error serializing payload: " + e.getMessage();
+    }
 
     log.info(
         "[META-WHATSAPP-MOCK] HTTP 200 OK | MessageId: {}\nPayload Enviado:\n{}",
