@@ -13,7 +13,8 @@ import lombok.Getter;
 
 /**
  * Pedido de entrega de una donación a un proveedor de logística: qué proveedor la tiene, cuáles ya
- * la rechazaron y en qué estado está. Solo se puede operar mientras está {@code PENDIENTE}.
+ * la rechazaron en la ronda actual y en qué estado está. Solo se puede operar mientras está {@code
+ * PENDIENTE}.
  */
 @Getter
 public class SolicitudEntrega implements AggregateRoot {
@@ -24,6 +25,7 @@ public class SolicitudEntrega implements AggregateRoot {
   private final Set<String> proveedoresDescartados = new LinkedHashSet<>();
   private String proveedorActual;
   private EstadoSolicitudEntrega estado;
+  private int ronda;
 
   public SolicitudEntrega(UUID donacionIndependienteId, LocalDateTime fechaCreacion) {
     if (donacionIndependienteId == null || fechaCreacion == null) {
@@ -33,6 +35,7 @@ public class SolicitudEntrega implements AggregateRoot {
     this.donacionIndependienteId = donacionIndependienteId;
     this.fechaCreacion = fechaCreacion;
     this.estado = EstadoSolicitudEntrega.PENDIENTE;
+    this.ronda = 1;
   }
 
   public void asignarProveedor(String proveedorId) {
@@ -61,6 +64,19 @@ public class SolicitudEntrega implements AggregateRoot {
     }
     proveedoresDescartados.add(proveedorActual);
     this.proveedorActual = null;
+  }
+
+  /**
+   * Todos los proveedores rechazaron el pedido en esta ronda: se olvidan los descartes para volver
+   * a probar la lista completa más tarde (por ejemplo, ante una caída pasajera de RabbitMQ).
+   */
+  public void iniciarNuevaRonda() {
+    exigirPendiente();
+    if (proveedorActual != null) {
+      throw new BusinessStateException(ErrorCatalog.SOLICITUD_ENTREGA_TRANSICION_INVALIDA);
+    }
+    proveedoresDescartados.clear();
+    ronda++;
   }
 
   public void marcarFallida() {

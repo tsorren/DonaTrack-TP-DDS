@@ -157,11 +157,31 @@ class LogisticaBrokerTest {
   }
 
   @Test
-  void rechazado_deberiaMarcarFallida_CuandoTodosLosProveedoresRechazaron() {
+  void rechazado_deberiaProgramarUnaNuevaRondaConEspera_CuandoTodosLosProveedoresRechazaron() {
     broker.solicitarEntrega(datos(UUID.randomUUID()));
     broker.registrarResultado(unicaPendiente().getId(), ResultadoEnvio.RECHAZADO);
 
     broker.registrarResultado(unicaPendiente().getId(), ResultadoEnvio.RECHAZADO);
+
+    SolicitudEntrega solicitud = unicaSolicitud();
+    assertEquals(EstadoSolicitudEntrega.PENDIENTE, solicitud.getEstado());
+    assertEquals(2, solicitud.getRonda());
+    assertTrue(solicitud.getProveedoresDescartados().isEmpty());
+    assertEquals("donatrack", solicitud.getProveedorActual());
+    EntradaOutboxLogistica nuevaRonda = unicaPendiente();
+    assertEquals("donatrack", nuevaRonda.getProveedorId());
+    assertEquals(AHORA.plusSeconds(60), nuevaRonda.getProximoIntento());
+    assertFalse(nuevaRonda.estaListaPara(AHORA));
+  }
+
+  @Test
+  void rechazado_deberiaMarcarFallida_CuandoSeAgotanLasRondas() {
+    broker = brokerCon(2);
+    broker.solicitarEntrega(datos(UUID.randomUUID()));
+
+    for (int i = 0; i < 4; i++) {
+      broker.registrarResultado(unicaPendiente().getId(), ResultadoEnvio.RECHAZADO);
+    }
 
     assertEquals(EstadoSolicitudEntrega.FALLIDA, unicaSolicitud().getEstado());
     assertTrue(outbox.pendientesListas(AHORA.plusYears(1)).isEmpty());

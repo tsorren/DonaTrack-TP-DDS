@@ -13,6 +13,7 @@ import grupo5.donaciones.services.logistica.ILogisticaOutbox;
 import grupo5.donaciones.services.logistica.ResultadoEnvio;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -27,7 +28,9 @@ import org.springframework.stereotype.Service;
  *
  * <ul>
  *   <li>{@code PUBLICADO}: la solicitud queda {@code ENVIADA}.
- *   <li>{@code RECHAZADO}: se descarta el proveedor y se prueba con el siguiente.
+ *   <li>{@code RECHAZADO}: se descarta el proveedor y se prueba con el siguiente. Si todos
+ *       rechazaron, se vuelve a probar la lista completa más tarde (otra ronda, con backoff); se
+ *       falla recién cuando se agotan las rondas.
  *   <li>{@code INCIERTO}: se reintenta con el mismo proveedor; agotados los intentos, falla.
  *   <li>{@code ERROR_CONTRATO}: falla sin reintentar.
  * </ul>
@@ -165,27 +168,40 @@ public class LogisticaBroker implements ILogisticaBroker {
 
   private void despacharAlSiguienteProveedor(
       SolicitudEntrega solicitud, DatosEntregaLogistica datos, String traceId) {
+    List<String> orden = estrategia.ordenar(datos);
     Optional<String> siguiente =
-        estrategia.ordenar(datos).stream().filter(id -> !solicitud.fueDescartado(id)).findFirst();
+        orden.stream().filter(id -> !solicitud.fueDescartado(id)).findFirst();
+    LocalDateTime disponibleDesde = ahora();
 
     if (siguiente.isEmpty()) {
-      marcarFallida(
-          solicitud,
-          "ningún proveedor disponible (descartados: "
-              + solicitud.getProveedoresDescartados()
-              + ")");
-      return;
+      if (solicitud.getRonda() >= maxIntentos) {
+        marcarFallida(
+            solicitud,
+            "todos los proveedores rechazaron el pedido en " + solicitud.getRonda() + " rondas");
+        return;
+      }
+      solicitud.iniciarNuevaRonda();
+      siguiente = orden.stream().findFirst();
+      disponibleDesde =
+          ahora().plusSeconds(backoffBaseSegundos * (1L << (solicitud.getRonda() - 1)));
+      log.warn(
+          "[BROKER-LOGISTICA] Todos los proveedores rechazaron la donación {}; ronda {}/{} a las {}",
+          solicitud.getDonacionIndependienteId(),
+          solicitud.getRonda(),
+          maxIntentos,
+          disponibleDesde);
     }
 
-    solicitud.asignarProveedor(siguiente.get());
+    String proveedorId = siguiente.orElseThrow();
+    solicitud.asignarProveedor(proveedorId);
     solicitudesRepository.save(solicitud);
     outbox.guardar(
         EntradaOutboxLogistica.nueva(
-            solicitud.getId(), siguiente.get(), datos, traceId, maxIntentos, ahora()));
+            solicitud.getId(), proveedorId, datos, traceId, maxIntentos, disponibleDesde));
     log.info(
         "[BROKER-LOGISTICA] Donación {} pendiente de envío al proveedor {}",
         solicitud.getDonacionIndependienteId(),
-        siguiente.get());
+        proveedorId);
   }
 
   private void marcarFallida(SolicitudEntrega solicitud, String motivo) {

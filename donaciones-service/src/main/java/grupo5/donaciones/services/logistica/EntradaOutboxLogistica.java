@@ -28,7 +28,7 @@ public class EntradaOutboxLogistica {
       DatosEntregaLogistica datos,
       String traceId,
       int maxIntentos,
-      LocalDateTime ahora) {
+      LocalDateTime disponibleDesde) {
     this.id = UUID.randomUUID();
     this.solicitudId = solicitudId;
     this.proveedorId = proveedorId;
@@ -36,18 +36,23 @@ public class EntradaOutboxLogistica {
     this.traceId = traceId;
     this.maxIntentos = maxIntentos;
     this.intentos = 0;
-    this.proximoIntento = ahora;
+    this.proximoIntento = disponibleDesde;
     this.estado = EstadoEntradaOutbox.PENDIENTE;
   }
 
+  /**
+   * @param disponibleDesde momento a partir del cual el relay puede enviarla (ahora, o más tarde si
+   *     es el primer intento de una nueva ronda)
+   */
   public static EntradaOutboxLogistica nueva(
       UUID solicitudId,
       String proveedorId,
       DatosEntregaLogistica datos,
       String traceId,
       int maxIntentos,
-      LocalDateTime ahora) {
-    return new EntradaOutboxLogistica(solicitudId, proveedorId, datos, traceId, maxIntentos, ahora);
+      LocalDateTime disponibleDesde) {
+    return new EntradaOutboxLogistica(
+        solicitudId, proveedorId, datos, traceId, maxIntentos, disponibleDesde);
   }
 
   public boolean estaPendiente() {

@@ -63,7 +63,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
    | Resultado | Señal | Acción del broker |
    |---|---|---|
    | Publicado | Ack sin devolución · HTTP 2xx o 409 | Solicitud `ENVIADA` |
-   | Rechazado (seguro que no llegó) | Mensaje devuelto · nack · conexión HTTP rechazada · 503 | Siguiente proveedor según la estrategia |
+   | Rechazado (seguro que no llegó) | Mensaje devuelto · nack · sin conexión con RabbitMQ · conexión HTTP rechazada · 503 | Siguiente proveedor según la estrategia. Si todos rechazaron, nueva ronda completa más tarde (backoff), hasta agotar las rondas |
    | Incierto (pudo haber llegado) | Sin acuse a tiempo · timeout de lectura · HTTP 500/502/504 | Reintento con backoff **al mismo** proveedor |
    | Error de contrato | HTTP 4xx (≠ 409) | Sin reintento ni reenvío; `FALLIDO` + log `error` |
 
@@ -76,6 +76,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
 * Se cumple la consigna con una selección explícita, testeable con JUnit y sin infraestructura adicional.
 * `donacion.asignada.v1` sigue siendo un hecho limpio, y Notificaciones no se ve afectado.
 * Ninguna entrega se pierde en silencio: la ausencia de cola se detecta y se reenvía.
+* Una caída pasajera de los proveedores (por ejemplo, RabbitMQ caído) no deja asignaciones sin entrega: si todos rechazan, la ronda se reintenta más tarde.
 * Ninguna donación queda con entregas en dos proveedores: solo se reenvía ante rechazo seguro.
 * Cada proveedor usa su transporte natural. Un proveedor AMQP nuevo se suma por configuración, y uno HTTP con un adapter.
 * El outbox basado en datos permite pasar a JPA sin tocar el broker.
@@ -96,7 +97,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
 
 ## Validación
 
-1. Tests unitarios del broker con proveedores fake: rechazado → siguiente; incierto → mismo proveedor; error de contrato → sin reenvío; todos descartados → `FALLIDA`.
+1. Tests unitarios del broker con proveedores fake: rechazado → siguiente; incierto → mismo proveedor; error de contrato → sin reenvío; todos rechazan → nueva ronda; rondas agotadas → `FALLIDA`.
 2. Test de integración con RabbitMQ real (Testcontainers): routing key sin binding → mensaje devuelto → `EnvioRechazado`; la cola de una instancia no recibe claves ajenas.
 3. Tests del adapter HTTP con `MockRestServiceServer`: mapeo de 2xx, 409, conexión rechazada, timeouts, 5xx y 4xx.
 4. Test en Logística: un segundo `POST /api/entregas` para la misma donación responde 409 y no duplica.

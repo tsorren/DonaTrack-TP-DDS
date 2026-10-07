@@ -1,6 +1,7 @@
 package grupo5.donaciones.infrastructure.outbox;
 
 import grupo5.common.logging.FeignTraceRequestInterceptor;
+import grupo5.donaciones.infrastructure.logistica.ProveedoresLogistica;
 import grupo5.donaciones.services.logistica.EntradaOutboxLogistica;
 import grupo5.donaciones.services.logistica.EnvioInciertoException;
 import grupo5.donaciones.services.logistica.EnvioRechazadoException;
@@ -11,13 +12,9 @@ import grupo5.donaciones.services.logistica.IProveedorLogistica;
 import grupo5.donaciones.services.logistica.ResultadoEnvio;
 import java.time.Clock;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -32,20 +29,17 @@ public class LogisticaOutboxRelay {
 
   private final ILogisticaOutbox outbox;
   private final ILogisticaBroker broker;
-  private final Map<String, IProveedorLogistica> proveedores;
+  private final ProveedoresLogistica proveedores;
   private final Clock clock;
 
   public LogisticaOutboxRelay(
       ILogisticaOutbox outbox,
       ILogisticaBroker broker,
-      ObjectProvider<IProveedorLogistica> proveedores,
+      ProveedoresLogistica proveedores,
       Clock clock) {
     this.outbox = outbox;
     this.broker = broker;
-    this.proveedores =
-        proveedores
-            .orderedStream()
-            .collect(Collectors.toMap(IProveedorLogistica::id, Function.identity()));
+    this.proveedores = proveedores;
     this.clock = clock;
   }
 
@@ -77,7 +71,7 @@ public class LogisticaOutboxRelay {
   }
 
   private ResultadoEnvio enviar(EntradaOutboxLogistica entrada) {
-    IProveedorLogistica proveedor = proveedores.get(entrada.getProveedorId());
+    IProveedorLogistica proveedor = proveedores.buscar(entrada.getProveedorId()).orElse(null);
     if (proveedor == null) {
       log.warn(
           "[OUTBOX-LOGISTICA] El proveedor {} no tiene adapter registrado; se trata como rechazo",

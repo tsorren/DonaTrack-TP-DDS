@@ -25,6 +25,7 @@ class SolicitudEntregaTest {
     assertNull(solicitud.getProveedorActual());
     assertTrue(solicitud.getProveedoresDescartados().isEmpty());
     assertTrue(solicitud.estaActiva());
+    assertEquals(1, solicitud.getRonda());
   }
 
   @Test
@@ -87,6 +88,27 @@ class SolicitudEntregaTest {
     SolicitudEntrega solicitud = nueva();
 
     assertThrows(ValidationException.class, () -> solicitud.asignarProveedor(" "));
+  }
+
+  @Test
+  void iniciarNuevaRonda_deberiaOlvidarLosDescartesYContarLaRonda() {
+    SolicitudEntrega solicitud = nueva();
+    solicitud.asignarProveedor("donatrack");
+    solicitud.descartarProveedorActual();
+
+    solicitud.iniciarNuevaRonda();
+
+    assertEquals(2, solicitud.getRonda());
+    assertFalse(solicitud.fueDescartado("donatrack"));
+    assertDoesNotThrow(() -> solicitud.asignarProveedor("donatrack"));
+  }
+
+  @Test
+  void iniciarNuevaRonda_deberiaFallar_CuandoHayUnProveedorAsignado() {
+    SolicitudEntrega solicitud = nueva();
+    solicitud.asignarProveedor("donatrack");
+
+    assertThrows(BusinessStateException.class, solicitud::iniciarNuevaRonda);
   }
 
   @Test

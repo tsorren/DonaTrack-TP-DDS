@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
+import grupo5.donaciones.infrastructure.logistica.ProveedoresLogistica;
 import grupo5.donaciones.services.logistica.EntradaOutboxLogistica;
 import grupo5.donaciones.services.logistica.EnvioInciertoException;
 import grupo5.donaciones.services.logistica.EnvioRechazadoException;
@@ -22,13 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.ObjectProvider;
 
 class LogisticaOutboxRelayTest {
 
@@ -72,11 +71,9 @@ class LogisticaOutboxRelayTest {
     MDC.clear();
   }
 
-  @SuppressWarnings("unchecked")
   private LogisticaOutboxRelay relayCon(IProveedorLogistica... proveedores) {
-    ObjectProvider<IProveedorLogistica> provider = mock(ObjectProvider.class);
-    when(provider.orderedStream()).thenReturn(Stream.of(proveedores));
-    return new LogisticaOutboxRelay(outbox, broker, provider, CLOCK);
+    return new LogisticaOutboxRelay(
+        outbox, broker, new ProveedoresLogistica(List.of(proveedores)), CLOCK);
   }
 
   private EntradaOutboxLogistica encolar(String proveedorId, LocalDateTime ahora) {

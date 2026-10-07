@@ -10,13 +10,14 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 1 cerrada (núcleo del broker sin cablear, 46 tests nuevos en verde).
+> Última actualización: **2026-10-07** — Etapa 2 cerrada (comando `EntregaSolicitadaV1`, adapter AMQP con acuse, logística escucha el comando).
 
 - **Qué estamos haciendo:** un broker dentro de `donaciones-service` que elige a qué proveedor de logística mandarle cada entrega: el nuestro por RabbitMQ, u otro por HTTP. Así se cumple el requerimiento de la Entrega 4.
 - **Cómo:** Broker + Adapter + Strategy. El pedido viaja como comando `entrega.solicitada.<proveedorId>.v1`; logística deja de escuchar el hecho `donacion.asignada.v1`. Ningún pedido se pierde en silencio (`mandatory` + espera de acuse) y no se reenvía a otro proveedor si no hay certeza de que el primero no lo recibió.
-- **Dónde estamos:** **Etapas 0 y 1 cerradas.** Ya existen el broker, la estrategia base, el registro de solicitudes y el outbox con su relay, todo probado con proveedores falsos. Todavía **no** está conectado a nada real: no hay adapters ni llamada desde la asignación.
+- **Dónde estamos:** **Etapas 0, 1 y 2 cerradas** (la 1 está commiteada). Ya existen el broker, el adapter AMQP hacia nuestra logística y el comando `entrega.solicitada.<id>.v1`; logística ya escucha el comando y no el hecho. Si todos los proveedores rechazan un pedido, el broker reintenta la ronda completa más tarde (D27).
+- **Atención:** **la asignación todavía no llama al broker** (eso es la Etapa 3). Mientras tanto, una donación asignada **no genera entrega** en logística, y el test end-to-end del Gate 4 (`FullDistributedDonationE2EIT`) falla. Las Etapas 2 y 3 tienen que llegar juntas a `ENTREGA_4`.
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 2, el contrato `EntregaSolicitadaV1`, el adapter AMQP con `mandatory` + espera de acuse, y el cambio de cola en logística.
+- **Próximo paso:** Etapa 3, conectar `PropuestaDeAsignacionService` con el broker.
 
 ---
 
@@ -26,7 +27,7 @@
 |---|---|---|
 | 0 — Preparación | Rama, baseline, spec, ADR, bitácora | ✅ Cerrada |
 | 1 — Núcleo sin cableado | Broker, estrategia, outbox, registro, excepciones | ✅ Cerrada |
-| 2 — Contrato, adapter AMQP y cutover | `EntregaSolicitadaV1`, `mandatory` + acuse, cambios en Logística | ⏳ Pendiente |
+| 2 — Contrato, adapter AMQP y cutover | `EntregaSolicitadaV1`, `mandatory` + acuse, cambios en Logística | ✅ Cerrada (sin commitear) |
 | 3 — Cableado | `PropuestaDeAsignacionService` → broker | ⏳ Pendiente |
 | 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp`, 409 en `EntregasService.crear` | ⏳ Pendiente |
 | 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ⏳ Pendiente |
@@ -64,6 +65,11 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | D20 | Un proveedor configurado **sin adapter registrado** se traduce como **`RECHAZADO`** (seguro que no salió) → siguiente proveedor, con log de advertencia. Permite tener la lista de proveedores configurada antes de que existan los adapters. | 2026-10-07 | Etapa 1 |
 | D21 | **Una solicitud activa por donación:** si ya hay una `PENDIENTE` o `ENVIADA`, un pedido nuevo se ignora con log (idempotencia). Si la anterior quedó `FALLIDA`, se permite crear una nueva (reintento manual o replanificación futura). | 2026-10-07 | Etapa 1 |
 | D22 | Las transiciones inválidas de `SolicitudEntrega` lanzan `BusinessStateException` con un **código nuevo en common-lib**: `SOLICITUD_ENTREGA_TRANSICION_INVALIDA` (`ERR-EST-413`). Sigue el precedente de un código por entidad con estados; `common-lib/AGENTS.md` permite extender el catálogo respetando los prefijos. | 2026-10-07 | Etapa 1 |
+| D23 | Se agregan **dependencias de test de Testcontainers** (`org.testcontainers:rabbitmq` y `junit-jupiter`, versión del BOM del pom raíz) para probar contra un RabbitMQ real que un sobre sin buzón vuelve devuelto. Los tests usan `@DisabledIfDockerUnavailable` (common-lib), como los de notificaciones. Aprobado por el usuario (AGENTS.md §6). | 2026-10-07 | Etapa 2 |
+| D24 | El adapter AMQP espera el acuse de RabbitMQ **5 segundos** (`donatrack.logistica.acuse-timeout-ms`, configurable). Pasado ese tiempo, el envío es `INCIERTO`. | 2026-10-07 | Etapa 2 |
+| D25 | **Logística borra la cola vieja al arrancar** (`RabbitAdmin.deleteQueue("logistica.donaciones.asignadas")`). Es idempotente y funciona sola en todos los ambientes, sin pasos manuales. **Solo la borra si está vacía** (confirmado por el usuario): si tiene mensajes, son donaciones asignadas sin entrega, así que la deja y avisa en el log para revisión manual. Se puede quitar en una entrega futura. | 2026-10-07 | Etapa 2 |
+| D26 | Los adapters AMQP se crean **de forma genérica desde la configuración**: `LogisticaProveedoresConfig` arma un `ProveedorLogisticaAmqp` por cada proveedor con `transporte=amqp`. En la Etapa 4 se agrega el caso `http`. | 2026-10-07 | Etapa 2 |
+| D27 | **Si todos los proveedores rechazan un pedido, se reintenta la ronda completa más tarde** en lugar de fallar en el acto: se olvidan los descartes y se vuelve a empezar por el preferido, con la misma espera creciente que los envíos inciertos (60 s, 120 s…), hasta 5 rondas (`outbox.max-intentos`); recién ahí la solicitud queda `FALLIDA`. Motivo: una caída pasajera (RabbitMQ caído y el proveedor HTTP también) no debe dejar asignaciones sin entrega para siempre. No hay riesgo de duplicar: solo se reintenta lo que es seguro que no llegó. Se descartaron «caída de RabbitMQ = incierto» (no aprovecha el otro proveedor y no resuelve HTTP) y «fallar en el acto». | 2026-10-07 | Etapa 2 |
 
 ---
 
@@ -74,7 +80,7 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | P1 | ¿Se aprueba SPEC-04 tal como está? | Antes de la Etapa 1 | ✅ Cerrada: aprobada sin cambios (2026-10-07) |
 | P2 | ¿Qué estrategias adicionales de selección se implementan, y con qué criterio exacto? (Candidatas: RoundRobin, PorCarga, PorZona.) | Etapa 1 | ✅ Cerrada: ninguna, solo la base (D14) |
 | P3 | ¿Qué código de `ErrorCatalog` usa el 409 de Logística? | Etapa 4 | Abierta |
-| P4 | ¿Qué valores de `acuse-timeout-ms` y del read timeout HTTP usamos? (Propuesta: 5000 y 3000 ms.) | Etapas 2 y 4 | Abierta |
+| P4 | ¿Qué valores de `acuse-timeout-ms` y del read timeout HTTP usamos? (Propuesta: 5000 y 3000 ms.) | Etapas 2 y 4 | Parcial: acuse = 5000 ms (D24). Falta el read timeout HTTP (Etapa 4) |
 
 ---
 
@@ -160,7 +166,7 @@ Discusión previa a la implementación, resumida para entender por qué el plan 
 | `LogisticaOutboxRelayTest` | 9 | Traducción excepción → resultado; proveedor sin adapter → `RECHAZADO`; excepción desconocida → `INCIERTO`; un error no corta el loop; MDC |
 | `LogisticaBrokerFlujoTest` | 4 | Broker + relay + outbox reales con reloj ajustable. **Un envío incierto nunca llega al otro proveedor**, ni siquiera cuando se agotan los intentos |
 
-**Regresión** `[VERIFIED]`: `mvn test -pl donaciones-service,logistica-service -am` → common-lib 60/60, donaciones 483/483 (antes 437), logística 355 (1 omitido, igual que el baseline). `ArchitectureFitnessTest` y la carga del contexto de Spring (`DonacionesServiceApplicationTest`) pasan con los beans nuevos.
+**Regresión** `[VERIFIED]`: `mvn test -pl donaciones-service,logistica-service -am` (con `spotless:check` incluido) → common-lib 60/60, donaciones 483/483 (antes 437), logística 355 (1 omitido, igual que el baseline). `ArchitectureFitnessTest` y la carga del contexto de Spring (`DonacionesServiceApplicationTest`) pasan con los beans nuevos.
 
 **Diferencias con el plan:**
 - Nombres: el formato canónico es `DatosEntregaLogistica` (no `SolicitudEntregaLogistica`) y el registro es `SolicitudEntrega` (D15).
@@ -174,6 +180,58 @@ Discusión previa a la implementación, resumida para entender por qué el plan 
 - Si se pidieran dos entregas **en simultáneo** para la misma donación, el chequeo «una solicitud activa por donación» no es atómico en memoria y podrían crearse dos. Hoy no pasa: `PropuestaDeAsignacionService` procesa cada donación una sola vez por aprobación. Con JPA se resuelve con una restricción única. Va a `DEUDA_TECNICA.md` en la Etapa 8.
 - Con la configuración por defecto (`donatrack,externo`) y sin adapters, cualquier pedido terminaría `FALLIDA` (los dos proveedores se tratan como `RECHAZADO`, D20). Hoy no hay impacto, porque nada llama al broker hasta la Etapa 3.
 - Revisión: `[SELF_REVIEW_FALLBACK]`. Se corrigieron, entre otras cosas, métodos auxiliares sin estado que no eran `static` (S2325) y la visibilidad del método `enviar` del relay. La revisión independiente queda para el cierre (Etapa 8).
+
+### 2026-10-07 — Etapa 2: Contrato, adapter AMQP y cutover
+
+**Hecho:**
+
+| Lado | Pieza | Qué es |
+|---|---|---|
+| Contrato | `docs/arquitectura/contratos/schemas/evento-entrega-solicitada-v1.schema.json` + 3 chequeos en `scripts/validate-contracts.js` | El formulario del pedido. El validador pasa 146/146 `[VERIFIED]` |
+| Contrato | `evento-donacion-asignada-v1.schema.json` | Solo cambia la descripción: logística ya no lo consume |
+| donaciones | `dto/comunicaciones/EventoEntregaSolicitadaV1` | Record del comando |
+| donaciones | `config/RabbitMQConfig` | `routingKeyEntregaSolicitada(id)` y alias fijo `entrega.solicitada.v1` en el `DefaultClassMapper` |
+| donaciones | `infrastructure/logistica/ProveedorLogisticaAmqp` | Adapter AMQP: publica con `CorrelationData`, espera el acuse (D11, D24) y traduce: devuelto, nack o sin conexión → `EnvioRechazado`; sin acuse a tiempo o error de canal → `EnvioIncierto`. `message_id` = id de la entrada del outbox y `X-Trace-Id` = traceId de la entrada |
+| donaciones | `config/LogisticaProveedoresConfig` + `infrastructure/logistica/ProveedoresLogistica` | Arma un adapter AMQP por cada proveedor con `transporte=amqp` (D26), con un template exclusivo con `mandatory=true` |
+| donaciones | `infrastructure/outbox/LogisticaOutboxRelay` | Ahora recibe `ProveedoresLogistica` en lugar de un `ObjectProvider` |
+| donaciones | `LogisticaBroker` + `SolicitudEntrega` | Reintento por rondas (D27): `SolicitudEntrega.iniciarNuevaRonda()` y contador `ronda` |
+| donaciones | `application.properties` | `spring.rabbitmq.publisher-confirm-type=correlated`, `publisher-returns=true`, `donatrack.logistica.acuse-timeout-ms=5000`, `donatrack.logistica.proveedor.donatrack.transporte=amqp` |
+| logística | `config/RabbitMQConfig` | Cola `logistica.<instancia>.entregas.solicitadas` bindeada con la clave exacta `entrega.solicitada.<instancia>.v1`; propiedad `logistica.instancia-id` (`LOGISTICA_INSTANCIA_ID`, default `donatrack`) |
+| logística | `infrastructure/EntregaSolicitadaEventListener` | Reemplaza a `DonacionAsignadaEventListener`. Misma lógica: idempotencia por `existsByIdDonacion` y mismo manejo de errores |
+| logística | `infrastructure/LimpiezaColaObsoleta` | Borra `logistica.donaciones.asignadas` al arrancar, solo si está vacía (D25) |
+| logística | Eliminados | `DonacionAsignadaEventListener`, `EventoDonacionAsignadaV1` (de logística) y su test |
+| poms | `donaciones-service` y `logistica-service` | `org.testcontainers:rabbitmq` y `junit-jupiter` en scope test (D23) |
+
+**Tests** `[VERIFIED]`:
+
+| Test | Casos | Qué protege |
+|---|---|---|
+| `ProveedorLogisticaAmqpTest` | 7 | Cada respuesta de RabbitMQ (acuse, devolución, nack, sin acuse, sin conexión, error de canal) se traduce al resultado correcto; sobre con `message_id` y `X-Trace-Id` |
+| `LogisticaProveedoresConfigTest` | 2 | Adapters armados desde la configuración; un proveedor sin transporte soportado queda sin adapter |
+| `ProveedorLogisticaAmqpRabbitTest` | 2 | **Contra un RabbitMQ real:** el pedido llega solo a la cola del proveedor elegido, con alias `entrega.solicitada.v1`; un pedido a un proveedor sin cola **vuelve devuelto** y no le llega a nadie |
+| `MensajeriaLogisticaRabbitTest` (logística) | 4 | **Contra un RabbitMQ real:** cada instancia recibe solo sus pedidos; la cola vieja se borra si está vacía y se conserva si tiene mensajes |
+| `RabbitMQConfigTest` (logística) | 4 | Binding exacto por instancia; alias del comando; deserialización de un comando real |
+| `EntregaSolicitadaEventListenerTest` (logística) | 5 | Los mismos 5 casos del listener anterior, ahora con el comando |
+| `LogisticaBrokerTest`, `SolicitudEntregaTest`, `LogisticaBrokerFlujoTest` | +5 | Rondas: nueva ronda con espera cuando todos rechazan; `FALLIDA` cuando se agotan las rondas; flujo «caída pasajera → sale en la ronda siguiente» |
+
+Los tests contra RabbitMQ real usan Testcontainers: sin Docker se saltean (`@DisabledIfDockerUnavailable`) y con Docker corren.
+
+**Regresión** `[VERIFIED]` (`mvn test -pl donaciones-service,logistica-service -am`, con `spotless:check` y Docker): common-lib 60/60, donaciones 498/498 (antes 483), logística 360 (1 omitido, igual que el baseline). `agent-check` pasa.
+
+**Hallazgos:**
+- `[VERIFIED]` Con `mandatory` y publisher confirms, **el mensaje devuelto queda cargado en el `CorrelationData` antes de que se complete el acuse**. Era el punto «a verificar» del plan (§2.2): el adapter detecta la devolución de forma determinista.
+- `[VERIFIED]` `DefaultClassMapper` arma el mapa clase → alias (lo que se escribe en `__TypeId__`) en `afterPropertiesSet()`, que Spring llama porque el mapper es un bean. En producción el header sale con el alias; en un test que lo construye a mano hay que llamarlo explícitamente. El test con RabbitMQ real lo detectó.
+- `[INFERRED]` Al publicar con `empty=true` sobre una cola que recién recibió un mensaje, RabbitMQ puede todavía informar 0 mensajes; el borrado igual falla con `PRECONDITION_FAILED` y la limpieza lo atrapa y conserva la cola. Hay doble protección.
+
+**Diferencias con el plan:**
+- El template de comandos no es un bean de Spring: lo crea `LogisticaProveedoresConfig`, para no generar dos `RabbitTemplate` candidatos a inyección en el resto del servicio.
+- Sin conexión con RabbitMQ (`AmqpConnectException`) se trata como **rechazado**: es seguro que el sobre no salió, así que se prueba con el siguiente proveedor y, si no hay, la ronda se reintenta (D27).
+- Se agregó el reintento por rondas (D27), que no estaba en el plan.
+
+**Pendientes que pasan a otras etapas:**
+- **Etapa 3:** sin el cableado, una asignación no genera entrega y el Gate 4 (`FullDistributedDonationE2EIT`) falla. Las Etapas 2 y 3 se mergean juntas.
+- **Etapa 8:** catálogo de mensajes, matriz productor-consumidor, regenerar `docs/generated/` (`node scripts/generate-repo-knowledge.js`) y el diagrama de componentes.
+- Revisión: `[SELF_REVIEW_FALLBACK]`; la revisión independiente queda para el cierre.
 
 ---
 
@@ -240,3 +298,18 @@ El registro de solicitudes guarda una solicitud por donación. Si llega otro ped
 
 **¿Cómo se prueba algo que depende del paso del tiempo, como los reintentos?**
 El broker y el relay no leen la hora del sistema directamente: usan un `Clock` inyectado. En los tests se usa un reloj que se puede adelantar a mano, lo que permite verificar que un reintento ocurre a los 60 segundos sin esperar 60 segundos.
+
+**¿Cómo se sabe que un pedido llegó a la logística elegida?**
+El adapter manda el sobre como carta certificada: RabbitMQ tiene que confirmar que lo recibió (publisher confirm) y, si no encuentra ninguna cola con esa dirección, lo devuelve (`mandatory`). El adapter espera esa respuesta antes de dar el envío por bueno. Está probado contra un RabbitMQ real: un pedido a un proveedor sin cola vuelve devuelto y no le llega a nadie.
+
+**¿Qué pasa si RabbitMQ está caído?**
+Es seguro que el pedido no salió, así que el broker prueba con el siguiente proveedor (por ejemplo, el que usa HTTP). Si todos fallan, no se da por perdido: el broker vuelve a intentar la ronda completa más tarde, con esperas crecientes, hasta 5 veces. Recién ahí la solicitud queda fallida para revisión manual.
+
+**¿Cómo se evita que una logística reciba los pedidos de otra?**
+Cada instancia de logística tiene su propia cola y la conecta al exchange con su dirección exacta (`entrega.solicitada.<instancia>.v1`), nunca con comodines. Está probado contra un RabbitMQ real: un pedido para `externo` no le llega a `donatrack`. En un entorno real se sumarían permisos por usuario en RabbitMQ.
+
+**¿Qué pasó con la cola que logística usaba antes?**
+RabbitMQ la conserva aunque el código ya no la declare, así que seguiría acumulando copias de `donacion.asignada.v1`. Logística la borra sola al arrancar, pero solo si está vacía: si tiene mensajes, son donaciones asignadas que todavía no tienen entrega, y se dejan para revisión manual en lugar de perderlas.
+
+**¿Por qué el nombre del tipo de mensaje no cambia aunque la dirección incluya el proveedor?**
+La dirección (routing key) cambia por proveedor, pero el tipo del contenido es siempre el mismo formulario. Por eso el header `__TypeId__` lleva un alias fijo, `entrega.solicitada.v1`. Si usara la dirección, el mismo tipo Java tendría varios nombres y no se podría saber cuál escribir al enviar.

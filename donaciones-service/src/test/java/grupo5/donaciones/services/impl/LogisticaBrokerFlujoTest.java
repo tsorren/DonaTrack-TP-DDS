@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
+import grupo5.donaciones.infrastructure.logistica.ProveedoresLogistica;
 import grupo5.donaciones.infrastructure.outbox.LogisticaOutboxEnMemoria;
 import grupo5.donaciones.infrastructure.outbox.LogisticaOutboxRelay;
 import grupo5.donaciones.models.entities.logistica.EstadoSolicitudEntrega;
@@ -20,10 +21,8 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.ObjectProvider;
 
 /** Broker + relay + outbox reales, con proveedores de prueba y un reloj que se puede adelantar. */
 class LogisticaBrokerFlujoTest {
@@ -61,7 +60,6 @@ class LogisticaBrokerFlujoTest {
   private LogisticaOutboxRelay relay;
 
   @BeforeEach
-  @SuppressWarnings("unchecked")
   void setUp() {
     reloj = new RelojAjustable();
     solicitudes = new SolicitudesEntregaRepositoryEnMemoria();
@@ -79,9 +77,9 @@ class LogisticaBrokerFlujoTest {
             reloj,
             3,
             30);
-    ObjectProvider<IProveedorLogistica> provider = mock(ObjectProvider.class);
-    when(provider.orderedStream()).thenReturn(Stream.of(donatrack, externo));
-    relay = new LogisticaOutboxRelay(outbox, broker, provider, reloj);
+    relay =
+        new LogisticaOutboxRelay(
+            outbox, broker, new ProveedoresLogistica(List.of(donatrack, externo)), reloj);
   }
 
   private static DatosEntregaLogistica pedido() {
@@ -119,6 +117,30 @@ class LogisticaBrokerFlujoTest {
     SolicitudEntrega solicitud = unicaSolicitud();
     assertEquals(EstadoSolicitudEntrega.ENVIADA, solicitud.getEstado());
     assertEquals("externo", solicitud.getProveedorActual());
+  }
+
+  @Test
+  void todosRechazanPorUnaCaidaPasajera_LaEntregaSaleEnLaRondaSiguiente() {
+    doThrow(new EnvioRechazadoException("donatrack", "sin conexión con RabbitMQ"))
+        .doNothing()
+        .when(donatrack)
+        .enviar(any(), any(), any());
+    doThrow(new EnvioRechazadoException("externo", "conexión rechazada"))
+        .when(externo)
+        .enviar(any(), any(), any());
+    broker.solicitarEntrega(pedido());
+
+    relay.procesarPendientes();
+    relay.procesarPendientes();
+    assertEquals(2, unicaSolicitud().getRonda());
+
+    reloj.adelantar(Duration.ofSeconds(60));
+    relay.procesarPendientes();
+
+    verify(donatrack, times(2)).enviar(any(), any(), any());
+    SolicitudEntrega solicitud = unicaSolicitud();
+    assertEquals(EstadoSolicitudEntrega.ENVIADA, solicitud.getEstado());
+    assertEquals("donatrack", solicitud.getProveedorActual());
   }
 
   @Test
