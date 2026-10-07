@@ -10,14 +10,14 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 3 hecha y Gate 4 en verde; Etapa 4 hecha (adapter HTTP; dedup en Logística revertida, D33); Etapa 5 hecha: procesador compartido (5.1), callback con verificación de pertenencia (5.2) y API key por proveedor (5.3).
+> Última actualización: **2026-10-07** — Etapa 3 hecha y Gate 4 en verde; Etapa 4 hecha (adapter HTTP; dedup en Logística revertida, D33); Etapa 5 commiteada (`48f334ad`); Etapa 6 hecha: controller de administración para ver y cambiar el proveedor preferido en caliente, protegido con una clave de administración. Sin commitear.
 
 - **Qué estamos haciendo:** un broker dentro de `donaciones-service` que elige a qué proveedor de logística mandarle cada entrega: el nuestro por RabbitMQ, u otro por HTTP. Así se cumple el requerimiento de la Entrega 4.
 - **Cómo:** Broker + Adapter + Strategy. El pedido viaja como comando `entrega.solicitada.<proveedorId>.v1`; logística deja de escuchar el hecho `donacion.asignada.v1`. Ningún pedido se pierde en silencio (`mandatory` + espera de acuse) y no se reenvía a otro proveedor si no hay certeza de que el primero no lo recibió.
 - **Dónde estamos:** **Etapas 0, 1, 2 y 3 hechas**. Ya existen el broker, el adapter AMQP hacia nuestra logística y el comando `entrega.solicitada.<id>.v1`; logística ya escucha el comando y no el hecho. Si todos los proveedores rechazan un pedido, el broker reintenta la ronda completa más tarde (D27).
 - **Atención:** la asignación **ya llama al broker** (Etapa 3), pero el pedido sale recién cuando corre el relay del outbox (cada 10 s por defecto; en `docker-compose.preprod.yml` está en 1 s) y solo hay adapter AMQP para `donatrack`. **Gate 4 en verde (26/26)** con las Etapas 2 y 3 juntas, sin MinIO (ver Etapa 3).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 6, controller de administración (recortable), reutilizando `ApiKeyFilter` con una clave de administración.
+- **Próximo paso:** Etapa 7, demo: segunda instancia de Logística en el docker-compose (con su flota cargada), colección Postman y guion de defensa.
 
 ---
 
@@ -31,7 +31,7 @@
 | 3 — Cableado | `PropuestaDeAsignacionService` → broker | ✅ Hecha (Gate 4 en verde) |
 | 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp` (hecho); 409 en `EntregasService.crear` (descartado, D33) | ✅ Hecha (sin tocar Logística) |
 | 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ✅ Hecha (5.1, 5.2 y 5.3) |
-| 6 — Controller admin (recortable) | Cambiar el proveedor preferido en caliente | ⏳ Pendiente |
+| 6 — Controller admin (recortable) | Cambiar el proveedor preferido en caliente | ✅ Hecha |
 | 7 — Demo | Segunda instancia, Postman, guion | ⏳ Pendiente |
 | 8 — Cierre | Catálogo, matriz, diagrama, deuda, índices, gates | ⏳ Pendiente |
 
@@ -79,6 +79,8 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | D34 | **El camino de vuelta se comparte por un procesador, no por los listeners:** `ProcesadorEventosLogistica` (en `infrastructure/logistica/`, igual que el listener `LogisticaEventListener`) concentra el cambio de estado de la donación con idempotencia por `(tipo, businessId, donacionId)`; `LogisticaEventListener` queda como adaptador AMQP que solo delega, indicando la cola de origen. Cada método recibe el `origen` (cola AMQP o, en 5.2, el proveedor HTTP) que se registra en el evento consumido. Así un mismo evento que llegara por los dos caminos se aplica una sola vez. | 2026-10-07 | Etapa 5 |
 | D35 | **Callback HTTP del proveedor (5.2):** `POST /api/logistica/proveedores/{proveedorId}/avisos` recibe un `AvisoProveedorRequestDTO` con un `tipo` (`RUTA_ASIGNADA`, `RUTA_INICIADA`, `ENTREGA_EXITOSA`, `ENTREGA_FALLIDA`); `AvisosProveedorService` lo traduce al evento que ya usa el camino AMQP y lo entrega al `ProcesadorEventosLogistica` con origen `http:<proveedorId>`. Responde `202`. Verificación de pertenencia: cada donación debe tener una solicitud activa cuyo `proveedorActual` sea el que avisa; si no, `404` (no se revela si la donación existe o es de otro proveedor), y en `RUTA_INICIADA` se valida toda la lista antes de aplicar nada. Faltan campos del tipo → `400`. No requiere código nuevo en `ErrorCatalog` ni cambios en `common-lib`. | 2026-10-07 | Etapa 5 |
 | D36 | **API key del callback (5.3):** `ApiKeyFilter` (`config/`, `OncePerRequestFilter`) protege todo lo que cuelga de `/api/logistica/proveedores/`. Exige `X-API-Key` igual a `donatrack.logistica.proveedor.<id>.callback-api-key` (una por proveedor, desde variable de entorno; la clave de un proveedor no sirve para avisar como otro). **Falla cerrado:** sin clave configurada, clave ausente o incorrecta, ruta no reconocida bajo ese prefijo, o URI no interpretable → `401` y no llega al controller. Compara los hashes SHA-256 con `MessageDigest.isEqual` y nunca loguea claves. La ruta se normaliza antes de decidir (barras repetidas y `.`/`..` no esquivan el filtro). Sin Spring Security ni dependencias nuevas. El `401` lleva el código provisional `ERR-AUT-401`, que **no está en `ErrorCatalog`** (agregarlo toca `common-lib`); queda para el `auth-service` de la Entrega 6. | 2026-10-07 | Etapa 5 |
+| D37 | **Controller de administración (Etapa 6):** `GET /api/logistica/proveedores` (id, transporte, si tiene adapter registrado y cuál es el preferido) y `PUT /api/logistica/proveedor-preferido` con `{"proveedorId":"..."}` (devuelve la lista actualizada). El preferido vive en memoria dentro de `SeleccionPorPreferenciaConFallback` (`volatile`, lista inmutable), que ahora implementa también el puerto `IPreferenciaProveedor`; no persiste: al reiniciar vuelve al configurado. El cambio vale para los despachos siguientes; lo ya encolado en el outbox sigue yendo al proveedor que ya tenía. Un id no configurado o vacío → `400` (`ValidationException`), sin tocar `ErrorCatalog`. No valida que el proveedor tenga adapter: si no lo tiene, sus pedidos se tratan como rechazados y se prueba con el siguiente (se ve en el campo `disponible`). | 2026-10-07 | Etapa 6 |
+| D38 | **Clave de administración:** `ApiKeyFilter` ahora cubre dos grupos de rutas con claves distintas: el callback (`donatrack.logistica.proveedor.<id>.callback-api-key`, una por proveedor) y la administración (`donatrack.logistica.admin-api-key`, desde `LOGISTICA_ADMIN_API_KEY`). La clave de un proveedor no sirve para administrar ni la de administración para avisar como proveedor. Todo lo que cuelga de `/api/logistica/proveedor…` y no es una de las rutas conocidas se rechaza con `401` (falla cerrado). | 2026-10-07 | Etapa 6 |
 
 ---
 
@@ -335,6 +337,25 @@ Los tests contra RabbitMQ real usan Testcontainers: sin Docker se saltean (`@Dis
 **Hallazgos de los tests.** Al normalizar la ruta, `URI.create("//api/...")` toma `api` por un host y descartaba ese segmento: un test lo atrapó y se corrigió colapsando las barras antes de parsear. Sin esa normalización, `//api/logistica/...` o `/api/x/../logistica/...` esquivaban el filtro porque Tomcat normaliza para mapear pero `getRequestURI()` devuelve la ruta cruda.
 
 **Validación.** `mvn clean test -pl donaciones-service -am`: 554 tests, 0 fallos (incluye `ArchitectureFitnessTest`); `spotless:check` OK. Gate 4 (sin MinIO): 26/26 en verde con el filtro activo en la app real.
+
+### 2026-10-07 — Etapa 6: Controller de administración
+
+**Qué se hizo.** Una ventanilla para que el administrador vea los proveedores y cambie el preferido sin reiniciar (D37), protegida con su propia clave (D38).
+
+| Pieza | Archivo | Qué es |
+|---|---|---|
+| Puerto | `services/logistica/IPreferenciaProveedor` | Proveedores configurados, preferido actual y cambio del preferido |
+| Estrategia | `services/impl/SeleccionPorPreferenciaConFallback` | Implementa también el puerto; el orden se guarda en un campo `volatile` con lista inmutable |
+| Servicio | `services/IAdministracionProveedoresService`, `services/impl/AdministracionProveedoresService` | Arma la lista (transporte leído de la configuración, `disponible` según los adapters registrados) y cambia el preferido |
+| DTOs | `dto/logistica/ProveedorLogisticaDTO`, `PreferenciaProveedorRequestDTO` | Respuesta y pedido |
+| Controller | `controllers/ILogisticaProveedorController`, `controllers/impl/LogisticaProveedorController` | `GET /api/logistica/proveedores`, `PUT /api/logistica/proveedor-preferido` |
+| Filtro | `config/ApiKeyFilter` | Suma el grupo de rutas de administración con su clave |
+
+**Tests** (+17): estrategia (+2: el cambio se aplica a los siguientes pedidos y el anterior pasa al fallback; un id no configurado, vacío o nulo se rechaza sin cambiar nada), `AdministracionProveedoresServiceTest` (3), `LogisticaProveedorControllerTest` (7: 200 con clave, 401 sin clave, 401 con la clave de un proveedor, 400 con proveedor vacío o no configurado), `ApiKeyFilterTest` (+5: las dos rutas pasan con la clave de administración, sin clave o incorrecta dan 401, la clave de administración no sirve para el callback, falla cerrado sin clave configurada, ruta de administración desconocida). Un test falló por mi propia preparación (el reemplazo del `setUp` no se aplicó porque el formateador había partido la línea) y se corrigió.
+
+**Validación.** `mvn clean test -pl donaciones-service -am`: 571 tests, 0 fallos (incluye `ArchitectureFitnessTest`); `spotless:check` OK. Gate 4 (sin MinIO): 26/26 en verde.
+
+**Para la demo.** Alternar en vivo entre `donatrack` (AMQP) y `externo` (HTTP): `PUT /api/logistica/proveedor-preferido` con `X-API-Key` de administración.
 
 ---
 

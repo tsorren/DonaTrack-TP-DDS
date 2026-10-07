@@ -18,6 +18,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 class ApiKeyFilterTest {
 
   private static final String CLAVE_EXTERNO = "clave-sintetica-externo";
+  private static final String CLAVE_ADMIN = "clave-sintetica-admin";
   private static final String RUTA_EXTERNO = "/api/logistica/proveedores/externo/avisos";
 
   private MockEnvironment environment;
@@ -29,7 +30,8 @@ class ApiKeyFilterTest {
         new MockEnvironment()
             .withProperty("donatrack.logistica.proveedor.externo.callback-api-key", CLAVE_EXTERNO)
             .withProperty(
-                "donatrack.logistica.proveedor.otro.callback-api-key", "clave-sintetica-otro");
+                "donatrack.logistica.proveedor.otro.callback-api-key", "clave-sintetica-otro")
+            .withProperty("donatrack.logistica.admin-api-key", CLAVE_ADMIN);
     filtro = new ApiKeyFilter(environment);
   }
 
@@ -181,6 +183,65 @@ class ApiKeyFilterTest {
 
     MockHttpServletResponse response =
         ejecutar("/api/logistica/proveedores/externo/avisos con espacio", CLAVE_EXTERNO, cadena);
+
+    assertEquals(401, response.getStatus());
+    assertFalse(pasoAlControlador(cadena));
+  }
+
+  @Test
+  void rutasDeAdministracion_pasanConLaClaveDeAdministracion() throws Exception {
+    for (String ruta :
+        new String[] {"/api/logistica/proveedores", "/api/logistica/proveedor-preferido"}) {
+      MockFilterChain cadena = new MockFilterChain();
+
+      MockHttpServletResponse response = ejecutar(ruta, CLAVE_ADMIN, cadena);
+
+      assertEquals(200, response.getStatus(), ruta);
+      assertTrue(pasoAlControlador(cadena), ruta);
+    }
+  }
+
+  @Test
+  void rutasDeAdministracion_sinClaveOConClaveIncorrecta_dan401() throws Exception {
+    for (String clave : new String[] {null, "otra-clave", CLAVE_EXTERNO}) {
+      MockFilterChain cadena = new MockFilterChain();
+
+      MockHttpServletResponse response =
+          ejecutar("/api/logistica/proveedor-preferido", clave, cadena);
+
+      assertEquals(401, response.getStatus(), String.valueOf(clave));
+      assertFalse(pasoAlControlador(cadena));
+    }
+  }
+
+  @Test
+  void laClaveDeAdministracion_noSirveParaElCallbackDeUnProveedor() throws Exception {
+    MockFilterChain cadena = new MockFilterChain();
+
+    MockHttpServletResponse response = ejecutar(RUTA_EXTERNO, CLAVE_ADMIN, cadena);
+
+    assertEquals(401, response.getStatus());
+    assertFalse(pasoAlControlador(cadena));
+  }
+
+  @Test
+  void sinClaveDeAdministracionConfigurada_lasRutasDeAdministracionFallanCerrado()
+      throws Exception {
+    environment.setProperty("donatrack.logistica.admin-api-key", "");
+    MockFilterChain cadena = new MockFilterChain();
+
+    MockHttpServletResponse response = ejecutar("/api/logistica/proveedores", "", cadena);
+
+    assertEquals(401, response.getStatus());
+    assertFalse(pasoAlControlador(cadena));
+  }
+
+  @Test
+  void rutaDeAdministracionDesconocida_seRechazaAunqueLaClaveSeaCorrecta() throws Exception {
+    MockFilterChain cadena = new MockFilterChain();
+
+    MockHttpServletResponse response =
+        ejecutar("/api/logistica/proveedor-preferido/extra", CLAVE_ADMIN, cadena);
 
     assertEquals(401, response.getStatus());
     assertFalse(pasoAlControlador(cadena));

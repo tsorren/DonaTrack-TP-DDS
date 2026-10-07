@@ -21,10 +21,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Protege con una API key los endpoints que expone el broker de logística. Hoy cubre el callback de
- * los proveedores HTTP ({@code /api/logistica/proveedores/{proveedorId}/avisos}): cada proveedor
- * tiene su propia clave en {@code donatrack.logistica.proveedor.<id>.callback-api-key}, que además
- * le da identidad al callback (la clave de un proveedor no sirve para avisar como otro).
+ * Protege con una API key los endpoints que expone el broker de logística. Cubre dos grupos de
+ * rutas, cada uno con su propia clave:
+ *
+ * <ul>
+ *   <li>El callback de los proveedores HTTP ({@code /api/logistica/proveedores/{id}/avisos}): una
+ *       clave por proveedor en {@code donatrack.logistica.proveedor.<id>.callback-api-key}, que
+ *       además le da identidad al callback (la clave de un proveedor no sirve para avisar como
+ *       otro).
+ *   <li>La administración ({@code /api/logistica/proveedores} y {@code
+ *       /api/logistica/proveedor-preferido}): una clave en {@code
+ *       donatrack.logistica.admin-api-key}. La clave de un proveedor no sirve para administrar.
+ * </ul>
  *
  * <p>Falla cerrado: sin clave configurada para ese proveedor, o con una clave ausente o incorrecta,
  * responde 401 y la petición no llega al controller. La comparación no depende del contenido de la
@@ -37,11 +45,14 @@ public class ApiKeyFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(ApiKeyFilter.class);
 
   static final String HEADER_API_KEY = "X-API-Key";
-  static final String PREFIJO_PROVEEDORES = "/api/logistica/proveedores/";
+  static final String PREFIJO_PROTEGIDO = "/api/logistica/proveedor";
+  static final String PROPIEDAD_CLAVE_ADMIN = "donatrack.logistica.admin-api-key";
   static final String CODIGO_NO_AUTORIZADO = "ERR-AUT-401";
 
   private static final Pattern RUTA_AVISOS =
       Pattern.compile("^/api/logistica/proveedores/([A-Za-z0-9_-]+)/avisos/?$");
+  private static final Pattern RUTA_ADMIN =
+      Pattern.compile("^/api/logistica/(proveedores|proveedor-preferido)/?$");
 
   private final Environment environment;
 
@@ -52,7 +63,7 @@ public class ApiKeyFilter extends OncePerRequestFilter {
   @Override
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String ruta = rutaNormalizada(request);
-    return ruta != null && !ruta.startsWith(PREFIJO_PROVEEDORES);
+    return ruta != null && !ruta.startsWith(PREFIJO_PROTEGIDO);
   }
 
   /**
@@ -75,26 +86,30 @@ public class ApiKeyFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain chain)
       throws ServletException, IOException {
     String rutaNormalizada = rutaNormalizada(request);
-    Matcher ruta = RUTA_AVISOS.matcher(rutaNormalizada == null ? "" : rutaNormalizada);
-    if (!ruta.matches()) {
-      log.warn("[API-KEY] Ruta no reconocida bajo {}: se rechaza", PREFIJO_PROVEEDORES);
+    String ruta = rutaNormalizada == null ? "" : rutaNormalizada;
+    Matcher avisos = RUTA_AVISOS.matcher(ruta);
+    String quien;
+    String propiedadClave;
+    if (avisos.matches()) {
+      quien = "el proveedor " + avisos.group(1);
+      propiedadClave = "donatrack.logistica.proveedor." + avisos.group(1) + ".callback-api-key";
+    } else if (RUTA_ADMIN.matcher(ruta).matches()) {
+      quien = "la administración";
+      propiedadClave = PROPIEDAD_CLAVE_ADMIN;
+    } else {
+      log.warn("[API-KEY] Ruta no reconocida bajo {}: se rechaza", PREFIJO_PROTEGIDO);
       rechazar(response);
       return;
     }
-    String proveedorId = ruta.group(1);
-    String esperada =
-        environment.getProperty(
-            "donatrack.logistica.proveedor." + proveedorId + ".callback-api-key");
+    String esperada = environment.getProperty(propiedadClave);
     if (esperada == null || esperada.isBlank()) {
-      log.warn(
-          "[API-KEY] El proveedor {} no tiene callback-api-key configurada: se rechaza",
-          proveedorId);
+      log.warn("[API-KEY] Falta configurar la clave de {} ({}): se rechaza", quien, propiedadClave);
       rechazar(response);
       return;
     }
     String recibida = request.getHeader(HEADER_API_KEY);
     if (recibida == null || !coinciden(recibida, esperada)) {
-      log.warn("[API-KEY] Clave ausente o incorrecta para el proveedor {}", proveedorId);
+      log.warn("[API-KEY] Clave ausente o incorrecta para {}", quien);
       rechazar(response);
       return;
     }

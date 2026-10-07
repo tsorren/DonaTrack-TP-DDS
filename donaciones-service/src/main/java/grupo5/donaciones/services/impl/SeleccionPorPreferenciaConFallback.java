@@ -1,7 +1,10 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.services.logistica.IEstrategiaSeleccionProveedor;
+import grupo5.donaciones.services.logistica.IPreferenciaProveedor;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,12 +12,15 @@ import org.springframework.stereotype.Component;
 
 /**
  * Estrategia base: primero el proveedor preferido y, como reenvío, el resto en el orden de la
- * configuración.
+ * configuración. El preferido arranca con el valor configurado y se puede cambiar en caliente (no
+ * persiste: al reiniciar vuelve al configurado).
  */
 @Component
-public class SeleccionPorPreferenciaConFallback implements IEstrategiaSeleccionProveedor {
+public class SeleccionPorPreferenciaConFallback
+    implements IEstrategiaSeleccionProveedor, IPreferenciaProveedor {
 
-  private final List<String> orden;
+  private final List<String> configurados;
+  private volatile List<String> orden;
 
   public SeleccionPorPreferenciaConFallback(
       @Value("${donatrack.logistica.proveedores:donatrack}") List<String> proveedores,
@@ -34,14 +40,38 @@ public class SeleccionPorPreferenciaConFallback implements IEstrategiaSeleccionP
               + configurados);
     }
 
+    this.configurados = List.copyOf(configurados);
+    this.orden = ordenConPreferido(preferidoNormalizado);
+  }
+
+  private List<String> ordenConPreferido(String preferido) {
     List<String> ordenados = new ArrayList<>();
-    ordenados.add(preferidoNormalizado);
-    configurados.stream().filter(id -> !id.equals(preferidoNormalizado)).forEach(ordenados::add);
-    this.orden = List.copyOf(ordenados);
+    ordenados.add(preferido);
+    configurados.stream().filter(id -> !id.equals(preferido)).forEach(ordenados::add);
+    return List.copyOf(ordenados);
   }
 
   @Override
   public List<String> ordenar(DatosEntregaLogistica datos) {
     return orden;
+  }
+
+  @Override
+  public List<String> proveedoresConfigurados() {
+    return configurados;
+  }
+
+  @Override
+  public String proveedorPreferido() {
+    return orden.get(0);
+  }
+
+  @Override
+  public void cambiarProveedorPreferido(String proveedorId) {
+    String normalizado = proveedorId == null ? "" : proveedorId.trim();
+    if (!configurados.contains(normalizado)) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+    this.orden = ordenConPreferido(normalizado);
   }
 }
