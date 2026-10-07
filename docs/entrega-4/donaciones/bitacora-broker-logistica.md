@@ -10,14 +10,14 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 2 cerrada (comando `EntregaSolicitadaV1`, adapter AMQP con acuse, logística escucha el comando).
+> Última actualización: **2026-10-07** — Etapa 3 hecha (la aprobación de una asignación le pasa el pedido al broker) y Gate 4 en verde.
 
 - **Qué estamos haciendo:** un broker dentro de `donaciones-service` que elige a qué proveedor de logística mandarle cada entrega: el nuestro por RabbitMQ, u otro por HTTP. Así se cumple el requerimiento de la Entrega 4.
 - **Cómo:** Broker + Adapter + Strategy. El pedido viaja como comando `entrega.solicitada.<proveedorId>.v1`; logística deja de escuchar el hecho `donacion.asignada.v1`. Ningún pedido se pierde en silencio (`mandatory` + espera de acuse) y no se reenvía a otro proveedor si no hay certeza de que el primero no lo recibió.
-- **Dónde estamos:** **Etapas 0, 1 y 2 cerradas** (commiteadas; D28 todavía no). Ya existen el broker, el adapter AMQP hacia nuestra logística y el comando `entrega.solicitada.<id>.v1`; logística ya escucha el comando y no el hecho. Si todos los proveedores rechazan un pedido, el broker reintenta la ronda completa más tarde (D27).
-- **Atención:** **la asignación todavía no llama al broker** (eso es la Etapa 3). Mientras tanto, una donación asignada **no genera entrega** en logística, y el test end-to-end del Gate 4 (`FullDistributedDonationE2EIT`) falla. Las Etapas 2 y 3 tienen que llegar juntas a `ENTREGA_4`.
+- **Dónde estamos:** **Etapas 0, 1, 2 y 3 hechas**. Ya existen el broker, el adapter AMQP hacia nuestra logística y el comando `entrega.solicitada.<id>.v1`; logística ya escucha el comando y no el hecho. Si todos los proveedores rechazan un pedido, el broker reintenta la ronda completa más tarde (D27).
+- **Atención:** la asignación **ya llama al broker** (Etapa 3), pero el pedido sale recién cuando corre el relay del outbox (cada 10 s por defecto; en `docker-compose.preprod.yml` está en 1 s) y solo hay adapter AMQP para `donatrack`. **Gate 4 en verde (26/26)** con las Etapas 2 y 3 juntas, sin MinIO (ver Etapa 3).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 3, conectar `PropuestaDeAsignacionService` con el broker.
+- **Próximo paso:** Etapa 4, adapter HTTP + deduplicación REST en Logística.
 
 ---
 
@@ -28,7 +28,7 @@
 | 0 — Preparación | Rama, baseline, spec, ADR, bitácora | ✅ Cerrada |
 | 1 — Núcleo sin cableado | Broker, estrategia, outbox, registro, excepciones | ✅ Cerrada |
 | 2 — Contrato, adapter AMQP y cutover | `EntregaSolicitadaV1`, `mandatory` + acuse, cambios en Logística | ✅ Cerrada (sin commitear) |
-| 3 — Cableado | `PropuestaDeAsignacionService` → broker | ⏳ Pendiente |
+| 3 — Cableado | `PropuestaDeAsignacionService` → broker | ✅ Hecha (Gate 4 en verde) |
 | 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp`, 409 en `EntregasService.crear` | ⏳ Pendiente |
 | 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ⏳ Pendiente |
 | 6 — Controller admin (recortable) | Cambiar el proveedor preferido en caliente | ⏳ Pendiente |
@@ -71,6 +71,8 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | D26 | Los adapters AMQP se crean **de forma genérica desde la configuración**: `LogisticaProveedoresConfig` arma un `ProveedorLogisticaAmqp` por cada proveedor con `transporte=amqp`. En la Etapa 4 se agrega el caso `http`. | 2026-10-07 | Etapa 2 |
 | D27 | **Si todos los proveedores rechazan un pedido, se reintenta la ronda completa más tarde** en lugar de fallar en el acto: se olvidan los descartes y se vuelve a empezar por el preferido, con la misma espera creciente que los envíos inciertos (60 s, 120 s…), hasta 5 rondas (`outbox.max-intentos`); recién ahí la solicitud queda `FALLIDA`. Motivo: una caída pasajera (RabbitMQ caído y el proveedor HTTP también) no debe dejar asignaciones sin entrega para siempre. No hay riesgo de duplicar: solo se reintenta lo que es seguro que no llegó. Se descartaron «caída de RabbitMQ = incierto» (no aprovecha el otro proveedor y no resuelve HTTP) y «fallar en el acto». | 2026-10-07 | Etapa 2 |
 | D28 | **No hay código de limpieza de la cola vieja** (`logistica.donaciones.asignadas`); se eliminó `LimpiezaColaObsoleta`. Motivo: los RabbitMQ del proyecto son descartables (los `docker-compose` no tienen volúmenes), así que la cola huérfana desaparece al recrear el contenedor, y CI/preprod arrancan siempre con uno nuevo. El código resolvía un problema que casi no existe y sumaba un caso borde. **Paso de cutover:** si un RabbitMQ viene de antes del broker (se detuvo y arrancó sin recrearse), recrearlo (`docker compose down` + `up`) o borrar la cola desde la consola de administración. | 2026-10-07 | Etapa 2 |
+| D29 | **El pedido al broker no lleva el donante.** `DatosEntregaLogistica` se arma con la donación asignada y los datos del beneficiario que ya se resuelven una vez por evento; Logística nunca usó el donante (`CrearEntregaRequestDTO` no lo tiene). Sumarlo sería un cambio aditivo de contrato aparte. | 2026-10-07 | Etapa 3 |
+| D30 | **Una falla del broker no tumba la aprobación:** `solicitarEntregaALogistica` captura la excepción y la loguea, igual que la publicación de `donacion.asignada.v1`; si faltan los datos del beneficiario no se llama al broker (`warn`). | 2026-10-07 | Etapa 3 |
 
 ---
 
@@ -238,6 +240,32 @@ Los tests contra RabbitMQ real usan Testcontainers: sin Docker se saltean (`@Dis
 - **Etapa 3:** sin el cableado, una asignación no genera entrega y el Gate 4 (`FullDistributedDonationE2EIT`) falla. Las Etapas 2 y 3 se mergean juntas.
 - **Etapa 8:** catálogo de mensajes, matriz productor-consumidor, regenerar `docs/generated/` (`node scripts/generate-repo-knowledge.js`) y el diagrama de componentes.
 - Revisión: `[SELF_REVIEW_FALLBACK]`; la revisión independiente queda para el cierre.
+
+---
+
+### 2026-10-07 — Etapa 3: Cableado
+
+**Qué se hizo.** `PropuestaDeAsignacionService.onPropuestaAprobada` llama al broker por cada fragmentación, justo después de publicar `donacion.asignada.v1` (que se sigue publicando).
+
+| Pieza | Archivo | Qué es |
+|---|---|---|
+| Dependencia | `services/impl/PropuestaDeAsignacionService` | Campo `ILogisticaBroker` (se inyecta por `@RequiredArgsConstructor`); depende del puerto, no de la implementación |
+| Llamada | mismo archivo, `solicitarEntregaALogistica` | Arma `DatosEntregaLogistica` (donación asignada, beneficiario y destino ya resueltos, peso, volumen, hora actual); sin datos de beneficiario no llama (D30); captura y loguea fallas (D30) |
+
+**Tests** (`PropuestaDeAsignacionServiceTest`, 4 nuevos, ninguno existente se modificó salvo el constructor del `setUp`):
+
+| Caso | Qué protege |
+|---|---|
+| Solicita la entrega con los datos del beneficiario | Mapeo de campos hacia el broker |
+| Varias fragmentaciones → una solicitud por cada una | Una entrega por fragmentación |
+| Sin datos del beneficiario → no llama al broker | Misma política que `donacion.asignada.v1` |
+| El broker falla → se procesan las demás fragmentaciones y se guarda la necesidad | La aprobación no se rompe por el broker |
+
+**Validación.** Baseline previo: `mvn test -pl donaciones-service -am` → `BASELINE_GREEN` (498 tests, 2 skipped). Después: 502 tests, 0 fallos, 2 skipped; `spotless:check` OK. Gate 4 `[VERIFIED]`: 26 tests de `integration-tests` en verde, incluido `FullDistributedDonationE2EIT` (aprobar propuesta → outbox → RabbitMQ → entrega creada en Logística).
+
+**Cómo se corrió el Gate 4.** `./run-preprod-tests.sh` falló al levantar el stack: `quay.io` devolvió `401` al bajar la imagen de MinIO (problema de red/registro local, no del código). Ningún servicio depende de MinIO, así que se levantó el mismo compose sin ese servicio y se repitieron los mismos pasos del script (n8n + `mvn verify -pl integration-tests`). `docker-compose.preprod.yml` y el script no se tocaron salvo lo de abajo.
+
+**Hallazgo.** La primera corrida falló el E2E (25/26): el relay corre cada 10 s y el test espera 8 s la entrega en Logística, así que pasaba o no según el momento del ciclo. Solución: `LOGISTICA_OUTBOX_INTERVALO_MS=1000` en el servicio `donaciones-service` de `docker-compose.preprod.yml` (solo entorno de pruebas; no se tocó ningún assert ni el valor por defecto de producción, D17). Segunda corrida: 26/26.
 
 ---
 

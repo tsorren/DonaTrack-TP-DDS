@@ -90,6 +90,9 @@ services:
       - LOGISTICA_SERVICE_URL=http://logistica-service:8083
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
+      # El relay del outbox de logística corre cada 1 s (por defecto 10 s) para que los tests E2E,
+      # que esperan hasta 8 s la entrega en logística, no dependan del ciclo del relay.
+      - LOGISTICA_OUTBOX_INTERVALO_MS=1000
       - SEED_CATALOGO_ENABLED=true
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
