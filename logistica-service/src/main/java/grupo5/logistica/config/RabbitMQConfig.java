@@ -23,15 +23,6 @@ public class RabbitMQConfig {
   public static final String EXCHANGE = "logistica.exchange";
   public static final String EXCHANGE_DONACIONES = "donaciones.exchange";
 
-  /**
-   * Cola que usaba logística para escuchar {@code donacion.asignada.v1} antes del broker. Ya no se
-   * declara; {@code LimpiezaColaObsoleta} la desengancha al arrancar y la borra si quedó vacía.
-   */
-  public static final String QUEUE_OBSOLETA_DONACIONES_ASIGNADAS = "logistica.donaciones.asignadas";
-
-  /** Routing key con la que la cola obsoleta estaba enganchada a {@code donaciones.exchange}. */
-  public static final String ROUTING_KEY_OBSOLETA_DONACION_ASIGNADA = "donacion.asignada.v1";
-
   /** Alias fijo de __TypeId__ del comando, independiente de la routing key de cada instancia. */
   public static final String TYPE_ID_ENTREGA_SOLICITADA = "entrega.solicitada.v1";
 

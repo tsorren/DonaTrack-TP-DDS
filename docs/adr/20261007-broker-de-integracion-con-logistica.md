@@ -88,7 +88,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
 * No hay failover por disponibilidad en AMQP: el reenvío solo cubre «no hay cola» y «nack». Si la cola existe, el mensaje espera a que el consumidor vuelva.
 * Un envío incierto no se reenvía. Si el proveedor nunca responde, la solicitud termina `FALLIDA` y requiere revisión manual.
 * El relay espera acuses de a una entrada (latencia de despacho de milisegundos a segundos).
-* Requiere un cutover coordinado en dos servicios y la eliminación manual de la cola vieja `logistica.donaciones.asignadas` en cada ambiente.
+* Requiere un cutover coordinado en dos servicios. La cola vieja `logistica.donaciones.asignadas` queda huérfana en un RabbitMQ que haya corrido la versión anterior: hay que recrearlo o borrarla a mano (los RabbitMQ del proyecto no tienen volúmenes, así que recrear el contenedor alcanza).
 * Hay que mantener una traducción por cada proveedor HTTP.
 * El outbox es en memoria: sin atomicidad ni durabilidad hasta la migración a PostgreSQL (deuda declarada).
 * La protección por API key es mínima y de transición hasta el `auth-service` (Entrega 6).
