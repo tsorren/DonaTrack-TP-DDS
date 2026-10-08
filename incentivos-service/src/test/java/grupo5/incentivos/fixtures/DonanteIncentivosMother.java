@@ -10,6 +10,7 @@ import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionHabilDonador;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,9 +131,9 @@ public final class DonanteIncentivosMother {
     completitud.evaluarProgreso(
         donante,
         EventoDonacionMother.conCategorias(
-            LocalDate.of(2026, 6, 10), List.of("Alimentos", "Ropa")));
+            LocalDate.of(2026, Month.JUNE, 10), List.of("Alimentos", "Ropa")));
     habil.evaluarProgreso(
-        donante, EventoDonacionMother.conCantidadBienes(LocalDate.of(2026, 6, 11), 5));
+        donante, EventoDonacionMother.conCantidadBienes(LocalDate.of(2026, Month.JUNE, 11), 5));
     exitosas.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 6, 12));
     exitosas.evaluarProgresoExitoso(donante);
 
@@ -141,7 +142,7 @@ public final class DonanteIncentivosMother {
     donante.getMetricas().registrarDonacionExitosa(UUID.randomUUID());
 
     donante.otorgarInsignia(
-        new Insignia("Extra", "Descripcion", "/extra.png"), LocalDate.of(2026, 6, 1));
+        new Insignia("Extra", "Descripcion", "/extra.png"), LocalDate.of(2026, Month.JUNE, 1));
     donante.configurarVisibilidadInsignia("Extra", false);
     return donante;
   }

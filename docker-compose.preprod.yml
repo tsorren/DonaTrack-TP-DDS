@@ -216,7 +216,7 @@ services:
       - preprod-network
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2024-10-02T17-50-41Z
+    image: scnd/minio-mirror:RELEASE.2025-09-07T16-13-09Z
     container_name: donatrack-minio
     command: server /data --console-address ":9001"
     environment:
