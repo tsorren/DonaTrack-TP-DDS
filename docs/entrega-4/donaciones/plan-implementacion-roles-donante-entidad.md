@@ -122,6 +122,8 @@ Cada etapa termina con Gate 1/2 en verde, revisión según nivel y tu aprobació
 
 ### Etapa 5 — Custodia del tipo + importador (parte b)
 
+> **Estado: implementada y verificada** (`[VERIFIED]`: reactor completo en verde, `spotless:check` OK; `donaciones-service` 506 tests). `PersonasService.actualizarPersona` valida (antes de mutar) que una jurídica con entidad activa no pase a EMPRESA ni se quede sin dirección, reutilizando la regla de dominio `EntidadBeneficiaria.validarRequisitos`. El importador registra el rol de donante de una persona existente con `registrarSiNoExiste` y **no reactiva** a un donante de baja (esa fila cuenta como error y no se actualiza). Sin códigos nuevos.
+
 - `PersonasService.actualizarPersona`: rechaza EMPRESA y dirección `null` si la jurídica es entidad activa.
 - `ImportadorService`: en update también registra el rol de donante (ahora idempotente).
 - Nivel STANDARD dentro de la iniciativa.

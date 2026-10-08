@@ -79,7 +79,7 @@ Justificación: es la de menor costo de migración, conserva la integridad refer
 | `DELETE /api/donantes/{id}` y `DELETE /api/entidades/{id}` pasan a ser baja lógica; un segundo `DELETE` no repite eventos ni cascada | Servicios |
 | `DonanteOutputDTO` y `EntidadBeneficiariaOutputDTO` exponen `activo` (cambio aditivo) | DTOs y mappers |
 
-El importador CSV, prerrequisito de esta decisión, ya no pisa los datos de una persona existente (`actualizarParcial`; el tipo jurídico nunca cambia).
+El importador CSV, prerrequisito de esta decisión, ya no pisa los datos de una persona existente (`actualizarParcial`; el tipo jurídico nunca cambia). Además registra el rol de donante de una persona existente que no lo tenía, pero **no reactiva** a un donante dado de baja: esa fila se cuenta como error y no se actualiza, para que un CSV desactualizado no pueda revertir una baja deliberada.
 
 ### Orden de eventos del ciclo de vida del donante
 
