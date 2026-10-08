@@ -128,6 +128,44 @@ class DonantesServiceTest {
     verify(eventPublisher, never()).publicarDonanteRegistrado(any());
   }
 
+  @Test
+  void registrarSiNoExiste_sinDonante_loCreaYPublicaEvento() {
+    Humana humana = personaConDonanteExistente();
+    when(donantesRepository.findById(humana.getId())).thenReturn(Optional.empty());
+    when(personasRepository.existsById(humana.getId())).thenReturn(true);
+    when(donantesRepository.save(any(Donante.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    assertEquals(EstadoRegistroDonante.CREADO, donantesService.registrarSiNoExiste(humana.getId()));
+    verify(eventPublisher, times(1))
+        .publicarDonanteRegistrado(any(EventoDonanteRegistradoV1.class));
+  }
+
+  @Test
+  void registrarSiNoExiste_conDonanteActivo_noHaceNada() {
+    Humana humana = personaConDonanteExistente();
+    when(donantesRepository.findById(humana.getId()))
+        .thenReturn(Optional.of(new Donante(humana.getId())));
+
+    assertEquals(
+        EstadoRegistroDonante.YA_REGISTRADO, donantesService.registrarSiNoExiste(humana.getId()));
+    verify(donantesRepository, never()).save(any(Donante.class));
+    verify(eventPublisher, never()).publicarDonanteRegistrado(any());
+  }
+
+  @Test
+  void registrarSiNoExiste_conDonanteDeBaja_noLoReactiva() {
+    Humana humana = personaConDonanteExistente();
+    Donante deBaja = new Donante(humana.getId());
+    deBaja.darDeBaja();
+    when(donantesRepository.findById(humana.getId())).thenReturn(Optional.of(deBaja));
+
+    assertEquals(
+        EstadoRegistroDonante.DADO_DE_BAJA, donantesService.registrarSiNoExiste(humana.getId()));
+    assertFalse(deBaja.estaActivo());
+    verify(donantesRepository, never()).save(any(Donante.class));
+    verify(eventPublisher, never()).publicarDonanteRegistrado(any());
+  }
+
   private Humana personaConDonanteExistente() {
     Humana humana =
         new Humana("Ana", "Lopez", java.time.LocalDate.of(1992, java.time.Month.MARCH, 3));

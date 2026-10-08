@@ -9,6 +9,7 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.EstadoRegistroDonante;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.ResultadoRegistro;
@@ -111,6 +112,18 @@ public class DonantesService implements IDonantesService {
     Donante donante =
         donantesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
     return donanteMapper.toOutputDTO(donante);
+  }
+
+  @Override
+  public EstadoRegistroDonante registrarSiNoExiste(UUID personaId) {
+    Optional<Donante> existente = donantesRepository.findById(personaId);
+    if (existente.isPresent()) {
+      return existente.get().estaActivo()
+          ? EstadoRegistroDonante.YA_REGISTRADO
+          : EstadoRegistroDonante.DADO_DE_BAJA;
+    }
+    crearDonante(new DonanteInputDTO(personaId));
+    return EstadoRegistroDonante.CREADO;
   }
 
   @Override

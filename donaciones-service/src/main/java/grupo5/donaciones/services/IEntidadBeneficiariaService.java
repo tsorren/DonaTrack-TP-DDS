@@ -18,6 +18,9 @@ public interface IEntidadBeneficiariaService {
   /** Baja lógica con cascada a sus necesidades. Idempotente. */
   void eliminarEntidad(UUID id);
 
+  /** Indica si esa jurídica es una entidad beneficiaria activa. */
+  boolean esEntidadActiva(UUID juridicaId);
+
   /** Da de baja a la entidad de esa jurídica si existe; si no es entidad no hace nada. */
   void darDeBajaSiExiste(UUID juridicaId);
 }

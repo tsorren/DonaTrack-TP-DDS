@@ -2,10 +2,13 @@ package grupo5.donaciones.services.impl;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.config.AdminConstantes;
+import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
+import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.IDonantesService;
@@ -68,6 +71,8 @@ public class PersonasService implements IPersonasService {
     Persona persona =
         repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
+    validarCustodiaDeEntidad(persona, input);
+
     mapper.updateEntity(persona, input);
 
     if (persona instanceof Juridica juridica) {
@@ -80,6 +85,20 @@ public class PersonasService implements IPersonasService {
     notificacionesAsyncService.sincronizarPersona(mapper.toEventoPersonaSincronizadaV1(guardada));
 
     return mapper.toOutputDTO(guardada);
+  }
+
+  /**
+   * Mientras una jurídica sea entidad beneficiaria activa, el pedido no puede volverla EMPRESA ni
+   * dejarla sin dirección. Se valida contra los datos resultantes y antes de modificar la persona.
+   */
+  private void validarCustodiaDeEntidad(Persona persona, PersonaInputDTO input) {
+    if (persona instanceof Juridica juridica
+        && input instanceof JuridicaInputDTO juridicaInput
+        && entidadBeneficiariaService.esEntidadActiva(persona.getId())) {
+      TipoJuridico tipoResultante =
+          juridicaInput.tipoJuridico() != null ? juridicaInput.tipoJuridico() : juridica.getTipo();
+      EntidadBeneficiaria.validarRequisitos(tipoResultante, juridicaInput.direccion() != null);
+    }
   }
 
   @Override

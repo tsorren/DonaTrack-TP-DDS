@@ -172,6 +172,47 @@ class ImportadorReimportacionTest {
   }
 
   @Test
+  void reimportarPersonaExistente_laRegistraComoDonanteSiNoLoEra() {
+    Humana juan = PersonaMother.juanPerez();
+    guardar(juan);
+    when(donantesService.registrarSiNoExiste(juan.getId()))
+        .thenReturn(EstadoRegistroDonante.CREADO);
+
+    Archivo archivo =
+        importar(
+            Map.of(
+                "TipoPersona", "HUMANA", "TIPO_DOCUMENTO", "DNI", "DOCUMENTO", DOCUMENTO_HUMANA));
+
+    assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
+    verify(donantesService).registrarSiNoExiste(juan.getId());
+  }
+
+  @Test
+  void reimportarPersonaConDonanteDeBaja_noLaReactivaNiActualizaYCuentaError() {
+    Humana juan = PersonaMother.juanPerez();
+    guardar(juan);
+    when(donantesService.registrarSiNoExiste(juan.getId()))
+        .thenReturn(EstadoRegistroDonante.DADO_DE_BAJA);
+
+    Archivo archivo =
+        importar(
+            Map.of(
+                "TipoPersona",
+                "HUMANA",
+                "TIPO_DOCUMENTO",
+                "DNI",
+                "DOCUMENTO",
+                DOCUMENTO_HUMANA,
+                "Nombre",
+                "Otro Nombre"));
+
+    Humana despues = (Humana) personasRepository.findById(juan.getId()).orElseThrow();
+    assertEquals(EstadoArchivo.PROCESADO_CON_ERRORES, archivo.getEstado());
+    assertEquals("Juan", despues.getNombre());
+    verify(donantesService, never()).crearDonante(any(DonanteInputDTO.class));
+  }
+
+  @Test
   void reimportarConTipoDePersonaDistintoAlExistente_cuentaErrorYNoModificaNada() {
     Humana juan = PersonaMother.juanPerez();
     guardar(juan);

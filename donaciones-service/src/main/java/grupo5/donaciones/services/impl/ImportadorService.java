@@ -13,6 +13,7 @@ import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.ports.CargadorDonantes;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
+import grupo5.donaciones.services.EstadoRegistroDonante;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
@@ -96,9 +97,15 @@ public class ImportadorService implements IImportadorService {
       Optional<Persona> personaExistenteOpt = validadorDuplicados.buscarDuplicado(personaClon);
 
       if (personaExistenteOpt.isPresent()) {
-        log.info("Actualizando persona existente con ID: {}", personaExistenteOpt.get().getId());
-        personaService.actualizarParcial(
-            personaExistenteOpt.get().getId(), personaMapper.mapToActualizacionParcial(fila));
+        UUID personaId = personaExistenteOpt.get().getId();
+        if (donantesService.registrarSiNoExiste(personaId) == EstadoRegistroDonante.DADO_DE_BAJA) {
+          log.warn(
+              "La persona {} fue dada de baja como donante: no se la reactiva ni se actualiza",
+              personaId);
+          return false;
+        }
+        log.info("Actualizando persona existente con ID: {}", personaId);
+        personaService.actualizarParcial(personaId, personaMapper.mapToActualizacionParcial(fila));
       } else {
         log.info("Creando nueva persona y donante...");
         PersonaOutputDTO personaCreada =

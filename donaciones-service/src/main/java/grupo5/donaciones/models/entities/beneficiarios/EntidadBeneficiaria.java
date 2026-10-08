@@ -32,13 +32,21 @@ public class EntidadBeneficiaria implements Anonimizable, AggregateRoot {
     if (!(persona instanceof Juridica juridica)) {
       throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
     }
-    if (juridica.getTipo() == TipoJuridico.EMPRESA) {
+    validarRequisitos(juridica.getTipo(), juridica.getDireccion() != null);
+    return juridica;
+  }
+
+  /**
+   * Reglas de una entidad beneficiaria expresadas sobre los datos resultantes: así se pueden
+   * validar antes de modificar la jurídica (ver {@code PersonasService.actualizarPersona}).
+   */
+  public static void validarRequisitos(TipoJuridico tipo, boolean tieneDireccion) {
+    if (tipo == TipoJuridico.EMPRESA) {
       throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_TIPO_INVALIDO);
     }
-    if (juridica.getDireccion() == null) {
+    if (!tieneDireccion) {
       throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_DIRECCION);
     }
-    return juridica;
   }
 
   public UUID juridicaId() {

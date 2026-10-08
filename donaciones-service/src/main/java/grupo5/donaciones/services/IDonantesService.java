@@ -13,6 +13,12 @@ public interface IDonantesService {
 
   DonanteOutputDTO obtenerPorId(UUID id);
 
+  /**
+   * Registra a la persona como donante solo si nunca lo fue. Si ya lo era (activo o de baja) no
+   * modifica nada, y devuelve cuál de los casos se dio.
+   */
+  EstadoRegistroDonante registrarSiNoExiste(UUID personaId);
+
   /** Baja lógica. Idempotente: si ya estaba de baja no hace nada. */
   void eliminarDonante(UUID id);
 

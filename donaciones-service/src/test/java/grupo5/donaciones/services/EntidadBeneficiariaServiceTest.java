@@ -316,4 +316,20 @@ class EntidadBeneficiariaServiceTest {
 
     assertFalse(service.obtenerEntidad(juridica.getId()).activo());
   }
+
+  @Test
+  void esEntidadActiva_distingueActivaDeBajaEInexistente() {
+    UUID activa = UUID.randomUUID();
+    UUID deBaja = UUID.randomUUID();
+    UUID inexistente = UUID.randomUUID();
+    EntidadBeneficiaria entidadDeBaja = new EntidadBeneficiaria(deBaja);
+    entidadDeBaja.darDeBaja();
+    when(repository.findById(activa)).thenReturn(Optional.of(new EntidadBeneficiaria(activa)));
+    when(repository.findById(deBaja)).thenReturn(Optional.of(entidadDeBaja));
+    when(repository.findById(inexistente)).thenReturn(Optional.empty());
+
+    assertTrue(service.esEntidadActiva(activa));
+    assertFalse(service.esEntidadActiva(deBaja));
+    assertFalse(service.esEntidadActiva(inexistente));
+  }
 }

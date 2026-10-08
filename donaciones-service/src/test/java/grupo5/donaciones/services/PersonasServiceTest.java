@@ -3,13 +3,22 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.HumanaOutputDTO;
+import grupo5.donaciones.dto.personas.JuridicaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
+import grupo5.donaciones.fixtures.DTOFixtures;
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.TipoDocumento;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
+import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.NotificacionesAsyncService;
 import grupo5.donaciones.services.impl.PersonasService;
@@ -143,5 +152,88 @@ class PersonasServiceTest {
     verify(notificacionesAsyncService, never()).sincronizarPersona(any());
     verify(donantesService, never()).darDeBajaSiExiste(any());
     verify(entidadBeneficiariaService, never()).darDeBajaSiExiste(any());
+  }
+
+  @Test
+  void actualizarPersona_aEmpresaConEntidadActiva_lanzaTipoInvalidoYNoMuta() {
+    Juridica ong = PersonaMother.fundacionEsperanza();
+    when(repository.findById(ong.getId())).thenReturn(Optional.of(ong));
+    when(entidadBeneficiariaService.esEntidadActiva(ong.getId())).thenReturn(true);
+
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class,
+            () ->
+                service.actualizarPersona(ong.getId(), juridicaInput(TipoJuridico.EMPRESA, true)));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_TIPO_INVALIDO, ex.getError());
+    assertEquals(TipoJuridico.ONG, ong.getTipo());
+    verify(repository, never()).save(any());
+  }
+
+  @Test
+  void actualizarPersona_sinDireccionConEntidadActiva_lanzaSinDireccionYNoMuta() {
+    Juridica ong = PersonaMother.fundacionEsperanza();
+    when(repository.findById(ong.getId())).thenReturn(Optional.of(ong));
+    when(entidadBeneficiariaService.esEntidadActiva(ong.getId())).thenReturn(true);
+
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class,
+            () -> service.actualizarPersona(ong.getId(), juridicaInput(TipoJuridico.ONG, false)));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_DIRECCION, ex.getError());
+    assertNotNull(ong.getDireccion());
+    verify(repository, never()).save(any());
+  }
+
+  @Test
+  void actualizarPersona_aEmpresaSinEntidadActiva_esValido() {
+    Juridica ong = PersonaMother.fundacionEsperanza();
+    when(repository.findById(ong.getId())).thenReturn(Optional.of(ong));
+    when(repository.save(any(Persona.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(entidadBeneficiariaService.esEntidadActiva(ong.getId())).thenReturn(false);
+
+    service.actualizarPersona(ong.getId(), juridicaInput(TipoJuridico.EMPRESA, true));
+
+    assertEquals(TipoJuridico.EMPRESA, ong.getTipo());
+  }
+
+  @Test
+  void actualizarPersona_conCambioValidoSobreEntidadActiva_loAplica() {
+    Juridica ong = PersonaMother.fundacionEsperanza();
+    when(repository.findById(ong.getId())).thenReturn(Optional.of(ong));
+    when(repository.save(any(Persona.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(entidadBeneficiariaService.esEntidadActiva(ong.getId())).thenReturn(true);
+
+    service.actualizarPersona(ong.getId(), juridicaInput(TipoJuridico.INSTITUCION, true));
+
+    assertEquals(TipoJuridico.INSTITUCION, ong.getTipo());
+    verify(repository).save(ong);
+  }
+
+  @Test
+  void actualizarPersona_sinTipoJuridicoEnElPedidoSobreEntidadActiva_conservaElActual() {
+    Juridica ong = PersonaMother.fundacionEsperanza();
+    when(repository.findById(ong.getId())).thenReturn(Optional.of(ong));
+    when(repository.save(any(Persona.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(entidadBeneficiariaService.esEntidadActiva(ong.getId())).thenReturn(true);
+
+    service.actualizarPersona(ong.getId(), juridicaInput(null, true));
+
+    assertEquals(TipoJuridico.ONG, ong.getTipo());
+  }
+
+  private static JuridicaInputDTO juridicaInput(TipoJuridico tipo, boolean conDireccion) {
+    return new JuridicaInputDTO(
+        TipoPersona.JURIDICA,
+        TipoDocumento.CUIT,
+        "30-87654321-9",
+        conDireccion ? DTOFixtures.direccionInput() : null,
+        java.util.Collections.emptyList(),
+        "Fundación Esperanza",
+        tipo,
+        "Social",
+        java.util.Collections.emptyList());
   }
 }

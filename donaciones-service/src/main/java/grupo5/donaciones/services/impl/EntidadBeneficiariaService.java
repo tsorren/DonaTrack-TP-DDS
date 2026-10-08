@@ -100,6 +100,11 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   }
 
   @Override
+  public boolean esEntidadActiva(UUID juridicaId) {
+    return repository.findById(juridicaId).map(EntidadBeneficiaria::estaActivo).orElse(false);
+  }
+
+  @Override
   public void darDeBajaSiExiste(UUID juridicaId) {
     repository.findById(juridicaId).ifPresent(this::darDeBaja);
   }

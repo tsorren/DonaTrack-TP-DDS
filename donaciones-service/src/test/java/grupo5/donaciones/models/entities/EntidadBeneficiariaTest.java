@@ -113,6 +113,33 @@ class EntidadBeneficiariaTest {
     assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA, ex.getError());
   }
 
+  @Test
+  void validarRequisitos_conTipoYDireccionValidos_noLanza() {
+    EntidadBeneficiaria.validarRequisitos(TipoJuridico.ONG, true);
+    EntidadBeneficiaria.validarRequisitos(TipoJuridico.INSTITUCION, true);
+    EntidadBeneficiaria.validarRequisitos(TipoJuridico.GUBERNAMENTAL, true);
+  }
+
+  @Test
+  void validarRequisitos_conEmpresa_lanzaTipoInvalido() {
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class,
+            () -> EntidadBeneficiaria.validarRequisitos(TipoJuridico.EMPRESA, true));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_TIPO_INVALIDO, ex.getError());
+  }
+
+  @Test
+  void validarRequisitos_sinDireccion_lanzaSinDireccion() {
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class,
+            () -> EntidadBeneficiaria.validarRequisitos(TipoJuridico.ONG, false));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_DIRECCION, ex.getError());
+  }
+
   private static Juridica juridicaDeTipo(TipoJuridico tipo) {
     Juridica j = new Juridica(PersonaMother.mariaGomez(), "Organización", tipo, "Social");
     j.actualizarDireccion(PersonaMother.direccionValida());
