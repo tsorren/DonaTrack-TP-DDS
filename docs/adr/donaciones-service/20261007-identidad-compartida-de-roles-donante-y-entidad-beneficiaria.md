@@ -94,7 +94,7 @@ Alternativas evaluadas:
 | Debilidad | Se rompe si se escalan consumidores o hay reencolado (hoy no hay ninguno); hay que retirar las colas viejas, que si quedan acumulan mensajes | Falla con una baja ya ejecutada: un alta atrasada recrearía el perfil de alguien dado de baja, porque la baja borró el perfil y no queda dónde comparar; haría falta una lápida (baja lógica en incentivos). `LocalDateTime` sin zona, con empates posibles |
 | Complejidad | Baja | Media-alta |
 
-**Elegida: cola única con un solo consumidor** (`incentivos.donante-ciclo-de-vida`, concurrencia 1, retirando las dos colas actuales). La comparación por `fecha` queda como defensa adicional solo si más adelante se escalara a varios consumidores.
+**Elegida: cola única con un solo consumidor** (`incentivos.donante-ciclo-de-vida`, concurrencia 1, retirando las dos colas actuales). La implementación corresponde al equipo de `incentivos-service` y no forma parte de los cambios de Donaciones; hasta que se haga, el riesgo descrito arriba sigue abierto. La comparación por `fecha` queda como defensa adicional solo si más adelante se escalara a varios consumidores.
 
 ### Consecuencias Positivas
 

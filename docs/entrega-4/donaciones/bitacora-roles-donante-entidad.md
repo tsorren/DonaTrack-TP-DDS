@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-08** — Etapa 5 hecha: custodia del tipo y la dirección de las entidades activas, y el importador registra el rol de donante sin reactivar bajas.
+> Última actualización: **2026-10-08** — Etapa 7 hecha: contratos y documentación sincronizados; Etapa 6 delegada a incentivos.
 
 - **Qué estamos haciendo:** que el id de `Donante` y de `EntidadBeneficiaria` sea el de su persona (`donanteId = personaId`, `entidadId = juridicaId`). Así una persona no puede quedar registrada dos veces, dar de baja un rol no deja referencias colgadas y nadie puede volver EMPRESA a una entidad beneficiaria.
 - **Cómo:** opción A3 de la issue (se mantienen las clases con id compartido), baja lógica con un bool `activo`, y una sola cola en incentivos para el ciclo de vida del donante.
 - **Dónde estamos:** plan cerrado y Etapas 0 a 5 hechas. Baseline 437 tests; tras la Etapa 1, 442; tras la Etapa 3, 474; tras la Etapa 4, 492; tras la Etapa 5, 506 en `donaciones-service` y reactor completo en verde. El ADR espera aprobación humana (`proposed`).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 6, incentivos: cola única para el ciclo de vida del donante.
+- **Pendiente ajeno:** Etapa 6 (cola única en incentivos), a cargo del equipo de incentivos; hasta entonces el riesgo de orden de eventos sigue abierto. **Próximo paso nuestro:** Etapa 8, validación y cierre.
 
 ---
 
@@ -30,8 +30,8 @@
 | 3 — Identidad compartida y unicidad | Roles con id compartido, `activo`, alta idempotente, REST 201/200, `ErrorCatalog` | ✅ Hecha |
 | 4 — Baja, cascada y guardas | Baja lógica, cascada a necesidades, anonimización, auto-donación | ✅ Hecha |
 | 5 — Custodia del tipo + importador (b) | Rechazar EMPRESA/sin dirección en entidad activa; el importador registra el rol | ✅ Hecha |
-| 6 — Incentivos | Cola única con un solo consumidor | ⏳ Pendiente |
-| 7 — Contratos y docs | Schemas (`donanteId` deprecated), OpenAPI, catálogos, DDL, diagramas | ⏳ Pendiente |
+| 6 — Incentivos | Cola única con un solo consumidor | 🔀 Delegada al equipo de incentivos |
+| 7 — Contratos y docs | Schemas (`donanteId` deprecated), OpenAPI, catálogos, DDL, diagramas | ✅ Hecha |
 | 8 — Validación y cierre | Reactor completo, `integration-tests`, Sonar, revisión | ⏳ Pendiente |
 
 ---
@@ -54,6 +54,8 @@
 | D12 | La no auto-donación se controla solo al aprobar la propuesta (no en el matching): se estimó que ocurre muy pocas veces. | 2026-10-08 | Equipo |
 | D13 | Las respuestas de donante y entidad exponen `activo` (cambio aditivo). | 2026-10-08 | Equipo |
 | D14 | El importador registra el rol de donante de una persona existente, pero **no reactiva** a un donante dado de baja (opción B): la fila cuenta como error y no se actualiza. | 2026-10-08 | Equipo |
+| D15 | La Etapa 6 (cola única en incentivos) la implementa el equipo de incentivos; Donaciones solo deja la decisión y las instrucciones de entrega en el plan. | 2026-10-08 | Equipo |
+| D16 | `donanteId` se marca `deprecated` en los 7 schemas que ya llevan `personaId`; en `donacion.segmentada` (sin `personaId`) solo se documenta que vale lo mismo. | 2026-10-08 | Equipo |
 
 ---
 
@@ -121,6 +123,24 @@ Ninguna.
 - **Tests:** primero (rojo confirmado: no compilaban), después implementación. Nuevos: 5 en `PersonasServiceTest`, 3 en `EntidadBeneficiariaTest`, 1 en `EntidadBeneficiariaServiceTest`, 3 en `DonantesServiceTest`, 2 en `ImportadorReimportacionTest`. Ninguno existente se modificó.
 - **Verificación `[VERIFIED]`:** reactor completo `mvn clean test` en verde (donaciones 506 tests), `spotless:check` OK. Sin códigos nuevos en `common-lib`.
 
+### 2026-10-08 — Etapa 6: delegada al equipo de incentivos
+
+- Se leyó el código de `incentivos-service` para planteársela al equipo: `RabbitMQConfig` declara dos colas durables (`incentivos.donante-registrado`, `incentivos.donante-dado-de-baja`) y `IncentivosEventosListener` tiene un `@RabbitListener` por cada una; las dos colas no se referencian fuera de ese servicio. El `classMapper` ya mapea el header de tipo a clase con las routing keys como id, así que una cola única con `@RabbitHandler` por evento es viable.
+- **Decisión (D15):** la implementa el equipo de incentivos porque es su servicio. Las instrucciones de entrega (cambios, tests, y el riesgo de las colas viejas durables, que no se borran solas del broker) quedaron en el plan, en la Etapa 6.
+- **Riesgo abierto hasta que se implemente:** baja + alta rápida con el mismo id puede llegar al revés a incentivos y dejar un donante activo sin perfil. Se declara en el reporte final de la iniciativa.
+
+### 2026-10-08 — Etapa 7: contratos y documentación
+
+- **Schemas AMQP (D16):** `"deprecated": true` y descripción «vale lo mismo que `personaId`» en `donanteId` de `asignada`, `en-camino`, `entrega-fallida`, `recibida`, `vencida`, `donante-registrado` y `donante-dado-de-baja`; el campo sigue en `required` (la forma no cambia). En `segmentada`, que no lleva `personaId`, solo se documenta la igualdad. Los schemas usan `draft/2020-12`, que soporta `deprecated`; todos siguen siendo JSON válido.
+- **REST:** `openapi-donaciones.yaml` y `contratos-rest.md` — `POST` idempotente 201/200 (donantes y entidades), el `{id}` pasa a ser `personaId` / `juridicaId`, `activo` en las respuestas, `PUT /api/entidades/{id}` que solo revalida (400/404/409), `DELETE` como baja lógica idempotente, y la nota de custodia en `PUT /api/personas/{id}` y de baja de roles en `DELETE /api/personas/{id}`. El OpenAPI no define schemas de componentes para estos DTOs, así que `activo` se documenta en las descripciones.
+- **Errores:** `catalogo-errores.md` con `ERR-VAL-517`, `ERR-VAL-518`, `ERR-EST-211`, `ERR-EST-519`, `ERR-EST-520` y `ERR-EST-521`.
+- **Mensajes:** `catalogo-mensajes.md` (nota `donanteId == personaId`, qué eventos lo deprecan y cuál no) y `matriz-productor-consumidor.md` (alta o reactivación; baja lógica o anonimización).
+- **Modelo:** `aggregates-donaciones.md` (identidad compartida, `activo`, reglas), DDL de `decisiones_futuras_en_oleada_10.md` (`id` = PK y FK a `persona(id)` / `persona_juridica(id)`, `activo`, sin `persona_id` / `juridica_id`), `persistencia.md` y los tres `.puml` de donaciones (`diagrama-de-clases-donaciones.puml`, `donaciones-clases.puml`, `lucid/donaciones-clases.puml`).
+- **No se tocó:** `informe-pre-der.md` (snapshot de la Fase 2), `diagrama_de_clases_servicio_de_donaciones_lucidchart.json` (export de Lucidchart), enunciados y ADRs aprobados.
+- **Postman:** revisadas las colecciones; capturan `json.idDonante` del `POST` y, como la forma de la respuesta no cambió, siguen válidas. Los flujos crean una persona nueva por corrida, así que el `POST` de donante sigue dando 201.
+- **Hallazgos fuera de alcance (no corregidos):** (1) toda `Persona` nace con un `Telefono` vacío de relleno (`Persona()`); (2) `docs/arquitectura/eventos-amqp.md` conserva ejemplos con `personaDonanteId`, un campo que el catálogo prohíbe y que no existe en los schemas actuales; (3) los `.puml` de donaciones eran copias casi idénticas entre sí y estaban desactualizados antes de este cambio (por ejemplo `Donante` mostraba `persona: Persona` y métodos que no existen).
+- **Verificación `[VERIFIED]`:** `node scripts/agent-check.js` → 67 PASS, 0 FAIL; `mvn clean test` (reactor completo) en verde. Los tests de contrato contra Docker (`ContractIT`) quedan `[DEFERRED_NO_DOCKER]`.
+
 ---
 
 ## Q&A
@@ -148,3 +168,6 @@ No. El importador corre dentro de `donaciones-service` y llama directamente a m�
 
 **P: ¿Un solo ADR o dos? ¿El plan hace de spec o creo una `SPEC-0X`?**
 Un solo ADR: la issue pide uno que cubra todo, y el orden de eventos queda como una sección propia (separarlo en dos agregaría papeleo sin cambiar la decisión). El plan ya tiene objetivo, alcance, restricciones y validación, que son los campos mínimos de una spec, así que se evita duplicar. → D11.
+
+**P: ¿Por qué se marcaría `donanteId` como deprecated?**
+Porque con el id compartido `donanteId` y `personaId` valen siempre lo mismo y los eventos llevan los dos: hay dos nombres para el mismo dato. Deprecar es el primer paso del ciclo de migración que exige AGENTS.md §8.2 (no se renombra ni elimina un campo sin ese ciclo): el campo se mantiene, pero se avisa a los consumidores que usen `personaId`. En `donacion.segmentada` no se puede deprecar todavía porque ese evento no lleva `personaId`; ahí solo se documenta. → D16.

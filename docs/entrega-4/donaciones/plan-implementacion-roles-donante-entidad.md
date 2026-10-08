@@ -130,9 +130,20 @@ Cada etapa termina con Gate 1/2 en verde, revisión según nivel y tu aprobació
 
 ### Etapa 6 — Incentivos: orden de eventos (D5)
 
+> **Estado: delegada al equipo de incentivos (no se implementa en esta iniciativa).** La decisión (D5, cola única) está tomada y documentada en el ADR; la implementación toca solo `incentivos-service`. **Mientras no se implemente, el riesgo de orden de eventos sigue abierto:** una baja seguida de un alta con el mismo id puede dejar a un donante activo sin perfil de incentivos.
+>
+> **Instrucciones de entrega para el equipo de incentivos:**
+> 1. En `RabbitMQConfig`: reemplazar `incentivos.donante-registrado` y `incentivos.donante-dado-de-baja` por una sola cola `incentivos.donante-ciclo-de-vida`, con dos bindings al `donaciones.exchange` (`donante.registrado.v1` y `donante.dado-de-baja.v1`).
+> 2. Crear un listener nuevo con `@RabbitListener(queues = ..., concurrency = "1")` a nivel de **clase** y dos `@RabbitHandler` (uno por evento). El tipo del mensaje lo decide el `classMapper` por el header, ya configurado con las routing keys como id. Quitar de `IncentivosEventosListener` los métodos `onDonanteRegistrado` y `onDonanteDadoDeBaja`, y mover sus tests (misma exigencia).
+> 3. Tests: bindings de la cola única, invariante de concurrencia 1 y un `@RabbitHandler` por evento (reflexión), y el escenario baja + alta con el mismo id procesado en orden.
+> 4. Las colas viejas son durables: quitarlas del código no las borra del broker y seguirían acumulando mensajes. Hay que borrarlas (`rabbitmqctl delete_queue`) o, si el equipo prefiere, borrarlas al arrancar con `RabbitAdmin.deleteQueue`. Verificar el orden real con Docker (Gate 3/4).
+> 5. No requiere cambios en Donaciones ni en los contratos.
+
 Ver §3. Cambios: una cola `incentivos.donante-ciclo-de-vida` con los dos bindings, un único listener con concurrencia 1, retiro de las dos colas viejas y de sus listeners.
 
 ### Etapa 7 — Contratos y documentación
+
+> **Estado: hecha** (`[VERIFIED]`: `agent-check` 67 PASS; reactor completo en verde). Se marcó `donanteId` como `deprecated` en 7 schemas AMQP y se documentó en `donacion.segmentada` (no lleva `personaId`); se actualizaron `openapi-donaciones.yaml`, `contratos-rest.md`, `catalogo-errores.md` (6 códigos), `catalogo-mensajes.md`, `matriz-productor-consumidor.md`, `aggregates-donaciones.md`, el DDL de `decisiones_futuras_en_oleada_10.md`, `persistencia.md` y los tres `.puml` de donaciones. **No se tocaron** (a propósito): `informe-pre-der.md` (snapshot de Fase 2), el export `…lucidchart.json`, los enunciados ni ADRs aprobados. Colecciones Postman: revisadas, no requieren cambios (capturan el id que devuelve el `POST` y la forma de la respuesta no cambió).
 
 - `docs/arquitectura/contratos/schemas/*.schema.json`: marcar `donanteId` como *deprecated* en los 8 schemas.
 - `openapi-donaciones.yaml` (semántica de `{id}`, 201/200), `catalogo-mensajes.md`, `matriz-productor-consumidor.md`, `catalogo-errores.md`, `aggregates-donaciones.md`, `decisiones_futuras_en_oleada_10.md` (DDL: `donante` y `entidad_beneficiaria` con PK = FK, `activo BOOLEAN NOT NULL DEFAULT TRUE`), `.puml` de clases de donaciones, `persistencia.md`.
