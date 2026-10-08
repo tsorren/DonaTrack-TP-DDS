@@ -241,6 +241,8 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación y Key Broker (Entrega 6). | 🟢 Sincronizado |
 | [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para interfaz Web MVC (Entrega 5). | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
+| [`docs/entrega-4/donaciones/plan-implementacion-roles-donante-entidad.md`](entrega-4/donaciones/plan-implementacion-roles-donante-entidad.md) | Plan Entrega 4 | Plan por etapas del rediseño de los roles Donante y EntidadBeneficiaria (issue #888): identidad compartida, baja lógica y orden de eventos. | 🟢 Sincronizado |
+| [`docs/entrega-4/donaciones/bitacora-roles-donante-entidad.md`](entrega-4/donaciones/bitacora-roles-donante-entidad.md) | Bitácora Entrega 4 | Registro vivo de decisiones, preguntas y avances del rediseño de los roles Donante y EntidadBeneficiaria (issue #888). | 🟢 Sincronizado |
 | [`docs/entregas/README.md`](entregas/README.md) | Currícula Cátedra | Matriz curricular e índice de enunciados oficiales y artefactos de Entregas 1 a 4. | 🟢 Sincronizado |
 
 
