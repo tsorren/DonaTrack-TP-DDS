@@ -13,13 +13,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionIndependiente> {
   private final UUID id;
   private UUID donacionOriginalId;
+
+  @Getter(AccessLevel.NONE)
   private List<ItemDonacionIndependiente> items;
+
   private EstadoDonacionIndependiente estadoActual;
 
   void setEstadoActual(EstadoDonacionIndependiente estadoActual) {
@@ -42,6 +46,10 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.estadoActual = new EnDeposito();
     this.historial = new ArrayList<>();
     this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  public List<ItemDonacionIndependiente> getItems() {
+    return Collections.unmodifiableList(items);
   }
 
   public String getDescripcion() {

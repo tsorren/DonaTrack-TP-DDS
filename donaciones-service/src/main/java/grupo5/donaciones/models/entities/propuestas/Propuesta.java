@@ -8,15 +8,20 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   private UUID id;
   private UUID necesidadQueSatisfaceId;
+
+  @Getter(AccessLevel.NONE)
   private List<PosibleFragmentacion> posiblesFragmentaciones;
+
   private EstadoPropuesta estado;
   private LocalDateTime fechaCreacion;
 
@@ -34,6 +39,10 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
 
   public void asociarNecesidad(UUID necesidadId) {
     this.necesidadQueSatisfaceId = necesidadId;
+  }
+
+  public List<PosibleFragmentacion> getPosiblesFragmentaciones() {
+    return Collections.unmodifiableList(posiblesFragmentaciones);
   }
 
   void setId(UUID id) {
