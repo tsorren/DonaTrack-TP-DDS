@@ -14,7 +14,7 @@ Un único servidor **PostgreSQL 16** ([OBSERVED]) aloja cuatro schemas lógicos,
 donatrack (base de datos)
 ├── schema: notificaciones  ← notificaciones-service
 ├── schema: donaciones       ← donaciones-service (placeholder)
-├── schema: logistica        ← logistica-service  (placeholder)
+├── schema: logistica        ← logistica-service
 └── schema: incentivos       ← incentivos-service (placeholder)
 ```
 
@@ -31,7 +31,7 @@ Todos los roles se crean idempotentemente en [`01-init-schemas-roles.sql`](init-
 | `admin`               | `admin_secure_password` | —                | Superusuario Docker        |
 | `notificaciones_user` | `notif_pass_2026`       | `notificaciones` | **Activo** — JPA conectado |
 | `donaciones_user`     | `dona_pass_2026`        | `donaciones`     | Placeholder                |
-| `logistica_user`      | `logi_pass_2026`        | `logistica`      | Placeholder                |
+| `logistica_user`      | `logi_pass_2026`        | `logistica`      | **Activo** — JPA conectado |
 | `incentivos_user`     | `inc_pass_2026`         | `incentivos`     | Placeholder                |
 
 ### Política de permisos (aislamiento cruzado)
@@ -73,7 +73,7 @@ PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-i
 |--------------------------|--------|----------------------------------------------------------------------------|-----------------------|
 | `notificaciones-service` | 8081   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones`   | `notificaciones_user` |
 | `donaciones-service`     | 8080   | pendiente (sin datasource configurado aún)                                 | `donaciones_user`     |
-| `logistica-service`      | 8083   | pendiente (sin datasource configurado aún)                                 | `logistica_user`      |
+| `logistica-service`      | 8083   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=logistica`        | `logistica_user`      |
 | `incentivos-service`     | 8082   | pendiente (sin datasource configurado aún)                                 | `incentivos_user`     |
 
 ### Acceso local (fuera de Docker)
