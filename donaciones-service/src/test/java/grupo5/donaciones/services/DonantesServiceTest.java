@@ -67,17 +67,71 @@ class DonantesServiceTest {
 
     when(personasRepository.existsById(humana.getId())).thenReturn(true);
     when(personasRepository.findById(humana.getId())).thenReturn(Optional.of(humana));
+    when(donantesRepository.findById(humana.getId())).thenReturn(Optional.empty());
     when(donantesRepository.save(any(Donante.class))).thenAnswer(inv -> inv.getArgument(0));
 
     // Act
-    DonanteOutputDTO resultado = donantesService.crearDonante(donanteInputDTO);
+    ResultadoRegistro<DonanteOutputDTO> resultado = donantesService.crearDonante(donanteInputDTO);
 
     // Assert
-    assertNotNull(resultado);
-    assertNotNull(resultado.idDonante());
+    assertTrue(resultado.creado());
+    assertNotNull(resultado.recurso());
+    assertEquals(humana.getId(), resultado.recurso().idDonante());
     verify(donantesRepository, times(1)).save(any(Donante.class));
     verify(eventPublisher, times(1))
         .publicarDonanteRegistrado(any(EventoDonanteRegistradoV1.class));
+  }
+
+  @Test
+  void crearDonante_cuandoLaPersonaYaEsDonanteActivo_noDuplicaNiPublicaEvento() {
+    Humana humana = personaConDonanteExistente();
+    Donante existente = new Donante(humana.getId());
+    when(donantesRepository.findById(humana.getId())).thenReturn(Optional.of(existente));
+
+    ResultadoRegistro<DonanteOutputDTO> resultado =
+        donantesService.crearDonante(new DonanteInputDTO(humana.getId()));
+
+    assertFalse(resultado.creado());
+    assertEquals(humana.getId(), resultado.recurso().idDonante());
+    verify(donantesRepository, never()).save(any(Donante.class));
+    verify(eventPublisher, never()).publicarDonanteRegistrado(any());
+  }
+
+  @Test
+  void crearDonante_cuandoElDonanteEstabaDeBaja_loReactivaYPublicaEvento() {
+    Humana humana = personaConDonanteExistente();
+    Donante dadoDeBaja = new Donante(humana.getId());
+    dadoDeBaja.darDeBaja();
+    when(donantesRepository.findById(humana.getId())).thenReturn(Optional.of(dadoDeBaja));
+    when(donantesRepository.save(any(Donante.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    ResultadoRegistro<DonanteOutputDTO> resultado =
+        donantesService.crearDonante(new DonanteInputDTO(humana.getId()));
+
+    assertFalse(resultado.creado());
+    assertTrue(dadoDeBaja.estaActivo());
+    verify(donantesRepository).save(dadoDeBaja);
+    verify(eventPublisher, times(1))
+        .publicarDonanteRegistrado(any(EventoDonanteRegistradoV1.class));
+  }
+
+  @Test
+  void crearDonante_conPersonaInexistente_lanzaRecursoNoEncontrado() {
+    UUID personaId = UUID.randomUUID();
+    when(donantesRepository.findById(personaId)).thenReturn(Optional.empty());
+    when(personasRepository.existsById(personaId)).thenReturn(false);
+
+    assertThrows(
+        RecursoNoEncontradoException.class,
+        () -> donantesService.crearDonante(new DonanteInputDTO(personaId)));
+    verify(eventPublisher, never()).publicarDonanteRegistrado(any());
+  }
+
+  private Humana personaConDonanteExistente() {
+    Humana humana =
+        new Humana("Ana", "Lopez", java.time.LocalDate.of(1992, java.time.Month.MARCH, 3));
+    when(personasRepository.findById(humana.getId())).thenReturn(Optional.of(humana));
+    return humana;
   }
 
   @Test

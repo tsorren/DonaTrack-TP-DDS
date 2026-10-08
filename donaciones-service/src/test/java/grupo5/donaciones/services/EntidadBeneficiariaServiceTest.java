@@ -1,10 +1,21 @@
 package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.fixtures.PersonaMother;
@@ -42,37 +53,166 @@ class EntidadBeneficiariaServiceTest {
   }
 
   @Test
-  void crearEntidad_debeCrearYRetornarDTO() {
-    UUID juridicaId = UUID.randomUUID();
-
+  void crearEntidad_debeCrearConElIdDeLaJuridicaYRetornarDTO() {
     Juridica juridica = PersonaMother.fundacionEsperanza();
+    UUID juridicaId = juridica.getId();
     when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
-
+    when(repository.findById(juridicaId)).thenReturn(Optional.empty());
     when(repository.save(any(EntidadBeneficiaria.class))).thenAnswer(inv -> inv.getArgument(0));
 
-    EntidadBeneficiariaOutputDTO resultado =
+    ResultadoRegistro<EntidadBeneficiariaOutputDTO> resultado =
         service.crearEntidad(new EntidadBeneficiariaInputDTO(juridicaId));
 
-    assertNotNull(resultado);
-    assertNotNull(resultado.id());
-    assertEquals("Fundación Esperanza", resultado.juridica().razonSocial());
-
-    verify(personasRepository, times(2)).findById(juridicaId);
+    assertTrue(resultado.creado());
+    assertNotNull(resultado.recurso());
+    assertEquals(juridicaId, resultado.recurso().id());
+    assertEquals("Fundación Esperanza", resultado.recurso().juridica().razonSocial());
     verify(repository).save(any(EntidadBeneficiaria.class));
   }
 
   @Test
-  void obtenerEntidad_debeRetornarDTO() {
-    UUID id = UUID.randomUUID();
-    UUID juridicaId = UUID.randomUUID();
-
+  void crearEntidad_cuandoYaExisteActiva_noDuplica() {
     Juridica juridica = PersonaMother.fundacionEsperanza();
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridicaId);
-
-    when(repository.findById(id)).thenReturn(Optional.of(entidad));
+    UUID juridicaId = juridica.getId();
+    EntidadBeneficiaria existente = new EntidadBeneficiaria(juridicaId);
     when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
+    when(repository.findById(juridicaId)).thenReturn(Optional.of(existente));
 
-    EntidadBeneficiariaOutputDTO resultado = service.obtenerEntidad(id);
+    ResultadoRegistro<EntidadBeneficiariaOutputDTO> resultado =
+        service.crearEntidad(new EntidadBeneficiariaInputDTO(juridicaId));
+
+    assertFalse(resultado.creado());
+    assertEquals(juridicaId, resultado.recurso().id());
+    verify(repository, never()).save(any(EntidadBeneficiaria.class));
+  }
+
+  @Test
+  void crearEntidad_cuandoEstabaDeBaja_laReactiva() {
+    Juridica juridica = PersonaMother.fundacionEsperanza();
+    UUID juridicaId = juridica.getId();
+    EntidadBeneficiaria dadaDeBaja = new EntidadBeneficiaria(juridicaId);
+    dadaDeBaja.darDeBaja();
+    when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
+    when(repository.findById(juridicaId)).thenReturn(Optional.of(dadaDeBaja));
+    when(repository.save(any(EntidadBeneficiaria.class))).thenAnswer(inv -> inv.getArgument(0));
+
+    ResultadoRegistro<EntidadBeneficiariaOutputDTO> resultado =
+        service.crearEntidad(new EntidadBeneficiariaInputDTO(juridicaId));
+
+    assertFalse(resultado.creado());
+    assertTrue(dadaDeBaja.estaActivo());
+    verify(repository).save(dadaDeBaja);
+  }
+
+  @Test
+  void crearEntidad_conEmpresa_lanzaTipoInvalidoYNoGuarda() {
+    Juridica empresa = PersonaMother.empresaSA();
+    when(personasRepository.findById(empresa.getId())).thenReturn(Optional.of(empresa));
+    EntidadBeneficiariaInputDTO input = new EntidadBeneficiariaInputDTO(empresa.getId());
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> service.crearEntidad(input));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_TIPO_INVALIDO, ex.getError());
+    verify(repository, never()).save(any(EntidadBeneficiaria.class));
+  }
+
+  @Test
+  void crearEntidad_conPersonaHumana_lanzaSinPersonaJuridica() {
+    var humana = PersonaMother.juanPerez();
+    when(personasRepository.findById(humana.getId())).thenReturn(Optional.of(humana));
+    EntidadBeneficiariaInputDTO input = new EntidadBeneficiariaInputDTO(humana.getId());
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> service.crearEntidad(input));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA, ex.getError());
+  }
+
+  @Test
+  void crearEntidad_conPersonaInexistente_lanzaRecursoNoEncontrado() {
+    UUID id = UUID.randomUUID();
+    when(personasRepository.findById(id)).thenReturn(Optional.empty());
+    EntidadBeneficiariaInputDTO input = new EntidadBeneficiariaInputDTO(id);
+
+    assertThrows(RecursoNoEncontradoException.class, () -> service.crearEntidad(input));
+  }
+
+  @Test
+  void actualizarEntidad_revalidaYNoCambiaElEstado() {
+    Juridica juridica = PersonaMother.fundacionEsperanza();
+    UUID id = juridica.getId();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(id);
+    when(repository.findById(id)).thenReturn(Optional.of(entidad));
+    when(personasRepository.findById(id)).thenReturn(Optional.of(juridica));
+
+    EntidadBeneficiariaOutputDTO resultado =
+        service.actualizarEntidad(id, new EntidadBeneficiariaInputDTO(id));
+
+    assertEquals(id, resultado.id());
+    assertTrue(entidad.estaActivo());
+    verify(repository, never()).save(any(EntidadBeneficiaria.class));
+  }
+
+  @Test
+  void actualizarEntidad_conIdDistintoAlDeLaJuridica_lanzaArgumentoInvalido() {
+    UUID id = UUID.randomUUID();
+    EntidadBeneficiariaInputDTO input = new EntidadBeneficiariaInputDTO(UUID.randomUUID());
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> service.actualizarEntidad(id, input));
+
+    assertEquals(ErrorCatalog.ARGUMENTO_INVALIDO, ex.getError());
+  }
+
+  @Test
+  void actualizarEntidad_inexistente_lanzaRecursoNoEncontrado() {
+    UUID id = UUID.randomUUID();
+    when(repository.findById(id)).thenReturn(Optional.empty());
+    EntidadBeneficiariaInputDTO input = new EntidadBeneficiariaInputDTO(id);
+
+    assertThrows(RecursoNoEncontradoException.class, () -> service.actualizarEntidad(id, input));
+  }
+
+  @Test
+  void actualizarEntidad_deBaja_lanzaEntidadInactiva() {
+    Juridica juridica = PersonaMother.fundacionEsperanza();
+    UUID id = juridica.getId();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(id);
+    entidad.darDeBaja();
+    when(repository.findById(id)).thenReturn(Optional.of(entidad));
+    when(personasRepository.findById(id)).thenReturn(Optional.of(juridica));
+    EntidadBeneficiariaInputDTO input = new EntidadBeneficiariaInputDTO(id);
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.actualizarEntidad(id, input));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_INACTIVA, ex.getError());
+  }
+
+  @Test
+  void actualizarEntidad_siLaJuridicaPasoAEmpresa_lanzaTipoInvalido() {
+    Juridica empresa = PersonaMother.empresaSA();
+    UUID id = empresa.getId();
+    when(repository.findById(id)).thenReturn(Optional.of(new EntidadBeneficiaria(id)));
+    when(personasRepository.findById(id)).thenReturn(Optional.of(empresa));
+    EntidadBeneficiariaInputDTO input = new EntidadBeneficiariaInputDTO(id);
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> service.actualizarEntidad(id, input));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_TIPO_INVALIDO, ex.getError());
+  }
+
+  @Test
+  void obtenerEntidad_debeRetornarDTO() {
+    Juridica juridica = PersonaMother.fundacionEsperanza();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica.getId());
+
+    when(repository.findById(juridica.getId())).thenReturn(Optional.of(entidad));
+    when(personasRepository.findById(juridica.getId())).thenReturn(Optional.of(juridica));
+
+    EntidadBeneficiariaOutputDTO resultado = service.obtenerEntidad(juridica.getId());
 
     assertNotNull(resultado);
     assertEquals("Fundación Esperanza", resultado.juridica().razonSocial());
@@ -80,16 +220,16 @@ class EntidadBeneficiariaServiceTest {
 
   @Test
   void obtenerTodas_debeRetornarListaDeDTOs() {
-    UUID juridicaId = UUID.randomUUID();
     Juridica juridica = PersonaMother.fundacionEsperanza();
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridicaId);
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica.getId());
 
     when(repository.findAll()).thenReturn(List.of(entidad));
-    when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
+    when(personasRepository.findById(juridica.getId())).thenReturn(Optional.of(juridica));
 
     List<EntidadBeneficiariaOutputDTO> resultado = service.obtenerTodas();
 
     assertEquals(1, resultado.size());
     assertEquals("Fundación Esperanza", resultado.getFirst().juridica().razonSocial());
+    verify(personasRepository, times(1)).findById(juridica.getId());
   }
 }

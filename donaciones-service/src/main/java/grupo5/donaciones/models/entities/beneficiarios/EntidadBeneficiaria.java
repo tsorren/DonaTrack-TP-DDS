@@ -3,29 +3,69 @@ package grupo5.donaciones.models.entities.beneficiarios;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
+import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.UUID;
-import lombok.Getter;
 
-@Getter
+/**
+ * Rol de entidad beneficiaria. Su identidad es la de la {@link Juridica}: {@code id == juridicaId}.
+ */
 public class EntidadBeneficiaria implements Anonimizable, AggregateRoot {
   private final UUID id;
-  private final UUID juridicaId;
+  private boolean activo;
 
   public EntidadBeneficiaria(UUID juridicaId) {
-    this(UUID.randomUUID(), juridicaId);
-  }
-
-  public EntidadBeneficiaria(UUID id, UUID juridicaId) {
     if (juridicaId == null) {
       throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
     }
-    this.id = id != null ? id : UUID.randomUUID();
-    this.juridicaId = juridicaId;
+    this.id = juridicaId;
+    this.activo = true;
+  }
+
+  /**
+   * Una entidad beneficiaria es una organización sin fines de lucro: tiene que ser jurídica, no
+   * puede ser una empresa y necesita dirección (la entrega se hace allí).
+   */
+  public static Juridica validarApta(Persona persona) {
+    if (!(persona instanceof Juridica juridica)) {
+      throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
+    }
+    if (juridica.getTipo() == TipoJuridico.EMPRESA) {
+      throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_TIPO_INVALIDO);
+    }
+    if (juridica.getDireccion() == null) {
+      throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_DIRECCION);
+    }
+    return juridica;
   }
 
   public UUID juridicaId() {
-    return this.juridicaId;
+    return this.id;
+  }
+
+  @Override
+  public UUID getId() {
+    return this.id;
+  }
+
+  public boolean estaActivo() {
+    return this.activo;
+  }
+
+  /** Devuelve {@code true} solo si hubo transición de activa a inactiva. */
+  public boolean darDeBaja() {
+    boolean estabaActiva = this.activo;
+    this.activo = false;
+    return estabaActiva;
+  }
+
+  /** Devuelve {@code true} solo si hubo transición de inactiva a activa. */
+  public boolean reactivar() {
+    boolean estabaInactiva = !this.activo;
+    this.activo = true;
+    return estabaInactiva;
   }
 
   @Override

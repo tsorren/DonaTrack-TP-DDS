@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IDonantesService {
-  DonanteOutputDTO crearDonante(DonanteInputDTO dto);
+  /** Registro idempotente: {@code creado = false} si la persona ya era donante. */
+  ResultadoRegistro<DonanteOutputDTO> crearDonante(DonanteInputDTO dto);
 
   List<DonanteOutputDTO> listarDonantesPorContacto(String canal);
 

@@ -7,6 +7,7 @@ import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
 import grupo5.donaciones.services.IArchivoDonantesService;
 import grupo5.donaciones.services.IDonantesService;
+import grupo5.donaciones.services.ResultadoRegistro;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -37,8 +38,9 @@ public class DonantesController implements IDonantesController {
   @Override
   @PostMapping
   public ResponseEntity<DonanteOutputDTO> crearDonante(@Valid @RequestBody DonanteInputDTO dto) {
-    DonanteOutputDTO nuevoDonante = donantesService.crearDonante(dto);
-    return ResponseEntity.status(HttpStatus.CREATED).body(nuevoDonante);
+    ResultadoRegistro<DonanteOutputDTO> resultado = donantesService.crearDonante(dto);
+    HttpStatus status = resultado.creado() ? HttpStatus.CREATED : HttpStatus.OK;
+    return ResponseEntity.status(status).body(resultado.recurso());
   }
 
   @Override

@@ -1,18 +1,20 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
-import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
+import grupo5.donaciones.services.ResultadoRegistro;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -32,19 +34,26 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
     this.mapper = mapper;
   }
 
-  public EntidadBeneficiariaOutputDTO crearEntidad(EntidadBeneficiariaInputDTO input) {
+  @Override
+  public ResultadoRegistro<EntidadBeneficiariaOutputDTO> crearEntidad(
+      EntidadBeneficiariaInputDTO input) {
     Persona persona =
         personasRepository
             .findById(input.juridicaId())
             .orElseThrow(() -> new RecursoNoEncontradoException(input.juridicaId()));
+    EntidadBeneficiaria.validarApta(persona);
 
-    if (!(persona instanceof Juridica)) {
-      throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
+    Optional<EntidadBeneficiaria> existente = repository.findById(persona.getId());
+    if (existente.isPresent()) {
+      EntidadBeneficiaria entidad = existente.get();
+      if (entidad.reactivar()) {
+        repository.save(entidad);
+      }
+      return new ResultadoRegistro<>(mapper.toOutputDTO(entidad), false);
     }
 
-    EntidadBeneficiaria guardada = repository.save(new EntidadBeneficiaria(input.juridicaId()));
-
-    return mapper.toOutputDTO(guardada);
+    EntidadBeneficiaria guardada = repository.save(new EntidadBeneficiaria(persona.getId()));
+    return new ResultadoRegistro<>(mapper.toOutputDTO(guardada), true);
   }
 
   public EntidadBeneficiariaOutputDTO obtenerEntidad(UUID id) {
@@ -62,21 +71,21 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   @Override
   public EntidadBeneficiariaOutputDTO actualizarEntidad(
       UUID id, EntidadBeneficiariaInputDTO input) {
-    repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
-
-    Persona persona =
-        personasRepository
-            .findById(input.juridicaId())
-            .orElseThrow(() -> new RecursoNoEncontradoException(input.juridicaId()));
-
-    if (!(persona instanceof Juridica)) {
-      throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
+    if (!id.equals(input.juridicaId())) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
 
-    EntidadBeneficiaria actualizada = new EntidadBeneficiaria(id, input.juridicaId());
-    EntidadBeneficiaria guardada = repository.save(actualizada);
+    EntidadBeneficiaria entidad =
+        repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    Persona persona =
+        personasRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    EntidadBeneficiaria.validarApta(persona);
 
-    return mapper.toOutputDTO(guardada);
+    if (!entidad.estaActivo()) {
+      throw new BusinessStateException(ErrorCatalog.ENTIDAD_BENEFICIARIA_INACTIVA);
+    }
+
+    return mapper.toOutputDTO(entidad);
   }
 
   @Override

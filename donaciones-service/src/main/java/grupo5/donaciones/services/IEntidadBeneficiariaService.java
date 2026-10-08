@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IEntidadBeneficiariaService {
-  EntidadBeneficiariaOutputDTO crearEntidad(EntidadBeneficiariaInputDTO input);
+  /** Registro idempotente: {@code creado = false} si la jurídica ya era entidad. */
+  ResultadoRegistro<EntidadBeneficiariaOutputDTO> crearEntidad(EntidadBeneficiariaInputDTO input);
 
   EntidadBeneficiariaOutputDTO obtenerEntidad(UUID id);
 

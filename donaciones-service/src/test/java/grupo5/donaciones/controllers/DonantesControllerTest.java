@@ -18,6 +18,7 @@ import grupo5.donaciones.dto.personas.HumanaOutputDTO;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
+import grupo5.donaciones.services.ResultadoRegistro;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -48,7 +49,8 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
             LocalDate.of(1990, Month.JANUARY, 1));
     DonanteOutputDTO output = new DonanteOutputDTO(donanteId, personaOutput);
 
-    when(donantesService.crearDonante(any(DonanteInputDTO.class))).thenReturn(output);
+    when(donantesService.crearDonante(any(DonanteInputDTO.class)))
+        .thenReturn(new ResultadoRegistro<>(output, true));
 
     mockMvc
         .perform(
@@ -58,6 +60,24 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
         .andExpect(status().isCreated())
         .andExpect(header().exists("X-Trace-Id"))
         .andExpect(jsonPath("$.idDonante").value(donanteId.toString()));
+  }
+
+  @Test
+  void crearDonante_cuandoLaPersonaYaEraDonante_DeberiaRetornarOkYDto() throws Exception {
+    UUID personaId = UUID.randomUUID();
+    DonanteInputDTO input = new DonanteInputDTO(personaId);
+    DonanteOutputDTO output = new DonanteOutputDTO(personaId, null);
+
+    when(donantesService.crearDonante(any(DonanteInputDTO.class)))
+        .thenReturn(new ResultadoRegistro<>(output, false));
+
+    mockMvc
+        .perform(
+            post("/api/donantes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.idDonante").value(personaId.toString()));
   }
 
   @Test
