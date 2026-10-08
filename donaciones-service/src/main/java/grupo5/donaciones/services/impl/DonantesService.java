@@ -117,9 +117,20 @@ public class DonantesService implements IDonantesService {
   public void eliminarDonante(UUID id) {
     Donante donante =
         donantesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
-    donantesRepository.delete(donante);
-    eventPublisher.publicarDonanteDadoDeBaja(
-        new EventoDonanteDadoDeBajaV1(
-            id, donante.personaId(), LocalDateTime.now(ZoneId.systemDefault())));
+    darDeBaja(donante);
+  }
+
+  @Override
+  public void darDeBajaSiExiste(UUID personaId) {
+    donantesRepository.findById(personaId).ifPresent(this::darDeBaja);
+  }
+
+  private void darDeBaja(Donante donante) {
+    if (donante.darDeBaja()) {
+      donantesRepository.save(donante);
+      eventPublisher.publicarDonanteDadoDeBaja(
+          new EventoDonanteDadoDeBajaV1(
+              donante.getId(), donante.personaId(), LocalDateTime.now(ZoneId.systemDefault())));
+    }
   }
 }

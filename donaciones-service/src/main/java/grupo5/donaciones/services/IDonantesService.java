@@ -13,5 +13,9 @@ public interface IDonantesService {
 
   DonanteOutputDTO obtenerPorId(UUID id);
 
+  /** Baja lógica. Idempotente: si ya estaba de baja no hace nada. */
   void eliminarDonante(UUID id);
+
+  /** Da de baja al donante de esa persona si existe; si la persona no es donante no hace nada. */
+  void darDeBajaSiExiste(UUID personaId);
 }

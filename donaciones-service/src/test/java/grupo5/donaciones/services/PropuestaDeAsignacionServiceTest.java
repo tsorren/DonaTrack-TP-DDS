@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
@@ -150,15 +153,123 @@ class PropuestaDeAsignacionServiceTest {
   void actualizarEstado_cuandoEsAprobada_debeAprobarYPublicarEvento() {
     UUID id = UUID.randomUUID();
     Propuesta propuesta = new Propuesta();
-    propuesta.asociarNecesidad(UUID.randomUUID());
+    Necesidad necesidad = necesidadActivaDe(UUID.randomUUID());
+    propuesta.asociarNecesidad(necesidad.getId());
 
     when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+    when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
 
     service.actualizarEstado(id, EstadoPropuesta.APROBADA);
 
     assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
     verify(eventPublisher, times(1)).publishEvent(any(PropuestaAprobada.class));
     verify(propuestaRepository).save(propuesta);
+  }
+
+  @Test
+  void actualizarEstado_aprobadaConNecesidadInactiva_lanzaNecesidadInactivaYNoPublica() {
+    UUID id = UUID.randomUUID();
+    Propuesta propuesta = new Propuesta();
+    Necesidad necesidad = mock(Necesidad.class);
+    when(necesidad.getId()).thenReturn(UUID.randomUUID());
+    when(necesidad.isActiva()).thenReturn(false);
+    propuesta.asociarNecesidad(necesidad.getId());
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+    when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+
+    BusinessStateException ex =
+        assertThrows(
+            BusinessStateException.class,
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+
+    assertEquals(ErrorCatalog.NECESIDAD_INACTIVA, ex.getError());
+    assertEquals(EstadoPropuesta.PENDIENTE, propuesta.getEstado());
+    verify(eventPublisher, never()).publishEvent(any());
+    verify(propuestaRepository, never()).save(any());
+  }
+
+  @Test
+  void actualizarEstado_aprobadaConDonacionDeLaPropiaEntidad_lanzaDonacionASiMismo() {
+    UUID id = UUID.randomUUID();
+    UUID entidadYDonanteId = UUID.randomUUID();
+    Necesidad necesidad = necesidadActivaDe(entidadYDonanteId);
+
+    UUID donacionOriginalId = UUID.randomUUID();
+    DonacionIndependiente independiente = mock(DonacionIndependiente.class);
+    when(independiente.getId()).thenReturn(UUID.randomUUID());
+    when(independiente.getDonacionOriginalId()).thenReturn(donacionOriginalId);
+    Donacion donacion = mock(Donacion.class);
+    when(donacion.getDonanteId()).thenReturn(entidadYDonanteId);
+
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.agregarFragmentacion(independiente, 3);
+
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+    when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+    when(donacionRepository.findById(independiente.getId())).thenReturn(Optional.of(independiente));
+    when(donacionesRepository.findById(donacionOriginalId)).thenReturn(Optional.of(donacion));
+
+    BusinessStateException ex =
+        assertThrows(
+            BusinessStateException.class,
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+
+    assertEquals(ErrorCatalog.DONACION_A_SI_MISMO, ex.getError());
+    assertEquals(EstadoPropuesta.PENDIENTE, propuesta.getEstado());
+    verify(eventPublisher, never()).publishEvent(any());
+  }
+
+  @Test
+  void actualizarEstado_aprobadaConDonacionDeOtroDonante_esValida() {
+    UUID id = UUID.randomUUID();
+    Necesidad necesidad = necesidadActivaDe(UUID.randomUUID());
+
+    UUID donacionOriginalId = UUID.randomUUID();
+    DonacionIndependiente independiente = mock(DonacionIndependiente.class);
+    when(independiente.getId()).thenReturn(UUID.randomUUID());
+    when(independiente.getDonacionOriginalId()).thenReturn(donacionOriginalId);
+    Donacion donacion = mock(Donacion.class);
+    when(donacion.getDonanteId()).thenReturn(UUID.randomUUID());
+
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.agregarFragmentacion(independiente, 3);
+
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+    when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+    when(donacionRepository.findById(independiente.getId())).thenReturn(Optional.of(independiente));
+    when(donacionesRepository.findById(donacionOriginalId)).thenReturn(Optional.of(donacion));
+
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA);
+
+    assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
+    verify(eventPublisher, times(1)).publishEvent(any(PropuestaAprobada.class));
+  }
+
+  @Test
+  void actualizarEstado_aprobadaConNecesidadSinEntidad_noEsAutoDonacion() {
+    UUID id = UUID.randomUUID();
+    Necesidad necesidad = necesidadActivaDe(null);
+    DonacionIndependiente independiente = mock(DonacionIndependiente.class);
+    when(independiente.getId()).thenReturn(UUID.randomUUID());
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(necesidad.getId());
+    propuesta.agregarFragmentacion(independiente, 3);
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+    when(necesidadRepository.findById(necesidad.getId())).thenReturn(Optional.of(necesidad));
+
+    service.actualizarEstado(id, EstadoPropuesta.APROBADA);
+
+    assertEquals(EstadoPropuesta.APROBADA, propuesta.getEstado());
+  }
+
+  private static Necesidad necesidadActivaDe(UUID entidadId) {
+    Necesidad necesidad = mock(Necesidad.class);
+    when(necesidad.getId()).thenReturn(UUID.randomUUID());
+    when(necesidad.isActiva()).thenReturn(true);
+    when(necesidad.getEntidadId()).thenReturn(entidadId);
+    return necesidad;
   }
 
   @Test

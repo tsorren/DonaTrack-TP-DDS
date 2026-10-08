@@ -29,6 +29,8 @@ class PersonasServiceTest {
 
   @Mock private IPersonasRepository repository;
   @Mock private NotificacionesAsyncService notificacionesAsyncService;
+  @Mock private IDonantesService donantesService;
+  @Mock private IEntidadBeneficiariaService entidadBeneficiariaService;
 
   private PersonaMapper mapper;
   private PersonasService service;
@@ -39,7 +41,13 @@ class PersonasServiceTest {
   @BeforeEach
   void setUp() {
     mapper = new PersonaMapper(new DireccionMapper(), new MedioDeContactoMapper());
-    service = new PersonasService(repository, mapper, notificacionesAsyncService);
+    service =
+        new PersonasService(
+            repository,
+            mapper,
+            notificacionesAsyncService,
+            donantesService,
+            entidadBeneficiariaService);
 
     humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     inputDTO =
@@ -114,6 +122,18 @@ class PersonasServiceTest {
   }
 
   @Test
+  void eliminarPersona_daDeBajaSusRolesDeDonanteYDeEntidad() {
+    UUID id = humana.getId();
+    when(repository.findById(id)).thenReturn(Optional.of(humana));
+    when(repository.save(humana)).thenReturn(humana);
+
+    service.eliminarPersona(id);
+
+    verify(donantesService).darDeBajaSiExiste(id);
+    verify(entidadBeneficiariaService).darDeBajaSiExiste(id);
+  }
+
+  @Test
   void eliminarPersona_siNoExiste_deberiaLanzarExcepcion() {
     UUID id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.empty());
@@ -121,5 +141,7 @@ class PersonasServiceTest {
     assertThrows(RecursoNoEncontradoException.class, () -> service.eliminarPersona(id));
     verify(repository, never()).save(any());
     verify(notificacionesAsyncService, never()).sincronizarPersona(any());
+    verify(donantesService, never()).darDeBajaSiExiste(any());
+    verify(entidadBeneficiariaService, never()).darDeBajaSiExiste(any());
   }
 }

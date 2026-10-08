@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
@@ -58,6 +60,7 @@ class NecesidadesServiceTest {
 
     Subcategoria subcategoriaMock = mock(Subcategoria.class);
     EntidadBeneficiaria entidadMock = mock(EntidadBeneficiaria.class);
+    when(entidadMock.estaActivo()).thenReturn(true);
 
     when(subcategoriaRepositoryMock.findById(subcategoriaId))
         .thenReturn(Optional.of(subcategoriaMock));
@@ -69,6 +72,34 @@ class NecesidadesServiceTest {
     assertNotNull(resultado);
     assertEquals("RECURRENTE", resultado.tipo());
     verify(necesidadRepositoryMock, times(1)).save(any(Necesidad.class));
+  }
+
+  @Test
+  void guardar_conEntidadDeBaja_lanzaEntidadInactivaYNoGuarda() {
+    UUID entidadId = UUID.randomUUID();
+    NecesidadDTO inputDto =
+        new NecesidadDTO(
+            UUID.randomUUID(),
+            "EXTRAORDINARIA",
+            entidadId,
+            UUID.randomUUID(),
+            5,
+            "Mantas",
+            false,
+            null,
+            null);
+    EntidadBeneficiaria entidadDeBaja = mock(EntidadBeneficiaria.class);
+    when(entidadDeBaja.estaActivo()).thenReturn(false);
+    when(subcategoriaRepositoryMock.findById(inputDto.idSubcategoria()))
+        .thenReturn(Optional.of(mock(Subcategoria.class)));
+    when(entidadesBeneficiariasRepositoryMock.findById(entidadId))
+        .thenReturn(Optional.of(entidadDeBaja));
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> necesidadesService.guardar(inputDto));
+
+    assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_INACTIVA, ex.getError());
+    verify(necesidadRepositoryMock, never()).save(any(Necesidad.class));
   }
 
   @Test
@@ -90,6 +121,7 @@ class NecesidadesServiceTest {
 
     Subcategoria subcategoriaMock = mock(Subcategoria.class);
     EntidadBeneficiaria entidadMock = mock(EntidadBeneficiaria.class);
+    when(entidadMock.estaActivo()).thenReturn(true);
 
     when(subcategoriaRepositoryMock.findById(subcategoriaId))
         .thenReturn(Optional.of(subcategoriaMock));

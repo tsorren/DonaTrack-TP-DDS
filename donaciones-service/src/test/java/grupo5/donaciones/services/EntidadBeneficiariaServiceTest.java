@@ -20,8 +20,10 @@ import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.EntidadBeneficiariaService;
 import grupo5.donaciones.services.mappers.DireccionMapper;
@@ -37,6 +39,7 @@ import org.junit.jupiter.api.Test;
 class EntidadBeneficiariaServiceTest {
   private IEntidadesBeneficiariasRepository repository;
   private IPersonasRepository personasRepository;
+  private INecesidadesRepository necesidadesRepository;
   private EntidadBeneficiariaMapper mapper;
   private EntidadBeneficiariaService service;
 
@@ -44,12 +47,15 @@ class EntidadBeneficiariaServiceTest {
   void setUp() {
     repository = mock(IEntidadesBeneficiariasRepository.class);
     personasRepository = mock(IPersonasRepository.class);
+    necesidadesRepository = mock(INecesidadesRepository.class);
     mapper =
         new EntidadBeneficiariaMapper(
             new PersonaMapper(new DireccionMapper(), new MedioDeContactoMapper()),
             personasRepository);
 
-    service = new EntidadBeneficiariaService(repository, personasRepository, mapper);
+    service =
+        new EntidadBeneficiariaService(
+            repository, personasRepository, necesidadesRepository, mapper);
   }
 
   @Test
@@ -66,6 +72,7 @@ class EntidadBeneficiariaServiceTest {
     assertTrue(resultado.creado());
     assertNotNull(resultado.recurso());
     assertEquals(juridicaId, resultado.recurso().id());
+    assertTrue(resultado.recurso().activo());
     assertEquals("Fundación Esperanza", resultado.recurso().juridica().razonSocial());
     verify(repository).save(any(EntidadBeneficiaria.class));
   }
@@ -231,5 +238,82 @@ class EntidadBeneficiariaServiceTest {
     assertEquals(1, resultado.size());
     assertEquals("Fundación Esperanza", resultado.getFirst().juridica().razonSocial());
     verify(personasRepository, times(1)).findById(juridica.getId());
+  }
+
+  @Test
+  void eliminarEntidad_daDeBajaDesactivaSusNecesidadesYNoBorra() {
+    UUID id = UUID.randomUUID();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(id);
+    Necesidad n1 = mock(Necesidad.class);
+    Necesidad n2 = mock(Necesidad.class);
+    when(repository.findById(id)).thenReturn(Optional.of(entidad));
+    when(necesidadesRepository.buscarNecesidadesPorEntidad(id)).thenReturn(List.of(n1, n2));
+
+    service.eliminarEntidad(id);
+
+    assertFalse(entidad.estaActivo());
+    verify(repository).save(entidad);
+    verify(repository, never()).delete(any(EntidadBeneficiaria.class));
+    verify(n1).desactivar();
+    verify(n2).desactivar();
+    verify(necesidadesRepository).save(n1);
+    verify(necesidadesRepository).save(n2);
+  }
+
+  @Test
+  void eliminarEntidad_yaDadaDeBaja_noRepiteLaCascada() {
+    UUID id = UUID.randomUUID();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(id);
+    entidad.darDeBaja();
+    when(repository.findById(id)).thenReturn(Optional.of(entidad));
+
+    service.eliminarEntidad(id);
+
+    verify(repository, never()).save(any(EntidadBeneficiaria.class));
+    verify(necesidadesRepository, never()).buscarNecesidadesPorEntidad(any());
+  }
+
+  @Test
+  void eliminarEntidad_inexistente_lanzaRecursoNoEncontrado() {
+    UUID id = UUID.randomUUID();
+    when(repository.findById(id)).thenReturn(Optional.empty());
+
+    assertThrows(RecursoNoEncontradoException.class, () -> service.eliminarEntidad(id));
+  }
+
+  @Test
+  void darDeBajaSiExiste_conEntidadActiva_laDaDeBajaConCascada() {
+    UUID id = UUID.randomUUID();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(id);
+    Necesidad necesidad = mock(Necesidad.class);
+    when(repository.findById(id)).thenReturn(Optional.of(entidad));
+    when(necesidadesRepository.buscarNecesidadesPorEntidad(id)).thenReturn(List.of(necesidad));
+
+    service.darDeBajaSiExiste(id);
+
+    assertFalse(entidad.estaActivo());
+    verify(necesidad).desactivar();
+  }
+
+  @Test
+  void darDeBajaSiExiste_sinEntidad_noHaceNada() {
+    UUID personaSinRol = UUID.randomUUID();
+    when(repository.findById(personaSinRol)).thenReturn(Optional.empty());
+
+    service.darDeBajaSiExiste(personaSinRol);
+
+    verify(repository, never()).save(any(EntidadBeneficiaria.class));
+    verify(necesidadesRepository, never()).buscarNecesidadesPorEntidad(any());
+  }
+
+  @Test
+  void obtenerEntidad_deUnaEntidadDeBaja_laDevuelveMarcadaInactiva() {
+    Juridica juridica = PersonaMother.fundacionEsperanza();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridica.getId());
+    entidad.darDeBaja();
+    when(repository.findById(juridica.getId())).thenReturn(Optional.of(entidad));
+    when(personasRepository.findById(juridica.getId())).thenReturn(Optional.of(juridica));
+
+    assertFalse(service.obtenerEntidad(juridica.getId()).activo());
   }
 }

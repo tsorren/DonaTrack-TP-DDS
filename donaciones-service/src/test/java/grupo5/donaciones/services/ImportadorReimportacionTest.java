@@ -64,7 +64,11 @@ class ImportadorReimportacionTest {
     PersonaMapper personaMapper = new PersonaMapper(new DireccionMapper(), medioMapper);
     PersonasService personasService =
         new PersonasService(
-            personasRepository, personaMapper, mock(NotificacionesAsyncService.class));
+            personasRepository,
+            personaMapper,
+            mock(NotificacionesAsyncService.class),
+            donantesService,
+            mock(IEntidadBeneficiariaService.class));
 
     importador =
         new ImportadorService(

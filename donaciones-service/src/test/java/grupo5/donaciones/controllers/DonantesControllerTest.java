@@ -47,7 +47,7 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
             "Pérez",
             Genero.HOMBRE,
             LocalDate.of(1990, Month.JANUARY, 1));
-    DonanteOutputDTO output = new DonanteOutputDTO(donanteId, personaOutput);
+    DonanteOutputDTO output = new DonanteOutputDTO(donanteId, personaOutput, true);
 
     when(donantesService.crearDonante(any(DonanteInputDTO.class)))
         .thenReturn(new ResultadoRegistro<>(output, true));
@@ -66,7 +66,7 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
   void crearDonante_cuandoLaPersonaYaEraDonante_DeberiaRetornarOkYDto() throws Exception {
     UUID personaId = UUID.randomUUID();
     DonanteInputDTO input = new DonanteInputDTO(personaId);
-    DonanteOutputDTO output = new DonanteOutputDTO(personaId, null);
+    DonanteOutputDTO output = new DonanteOutputDTO(personaId, null, true);
 
     when(donantesService.crearDonante(any(DonanteInputDTO.class)))
         .thenReturn(new ResultadoRegistro<>(output, false));
@@ -97,7 +97,7 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
   @Test
   void listarDonantes_DeberiaRetornarOkYLista() throws Exception {
     UUID donanteId = UUID.randomUUID();
-    DonanteOutputDTO output = new DonanteOutputDTO(donanteId, null);
+    DonanteOutputDTO output = new DonanteOutputDTO(donanteId, null, true);
 
     when(donantesService.listarDonantesPorContacto(null)).thenReturn(List.of(output));
 
@@ -110,7 +110,7 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
   @Test
   void obtenerDonante_DeberiaRetornarOkYDto() throws Exception {
     UUID donanteId = UUID.randomUUID();
-    DonanteOutputDTO output = new DonanteOutputDTO(donanteId, null);
+    DonanteOutputDTO output = new DonanteOutputDTO(donanteId, null, true);
 
     when(donantesService.obtenerPorId(donanteId)).thenReturn(output);
 

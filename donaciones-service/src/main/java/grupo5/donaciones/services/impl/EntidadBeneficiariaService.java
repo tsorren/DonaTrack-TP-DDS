@@ -9,6 +9,7 @@ import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.ResultadoRegistro;
@@ -22,15 +23,18 @@ import org.springframework.stereotype.Service;
 public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   private final IEntidadesBeneficiariasRepository repository;
   private final IPersonasRepository personasRepository;
+  private final INecesidadesRepository necesidadesRepository;
   private final EntidadBeneficiariaMapper mapper;
 
   public EntidadBeneficiariaService(
       IEntidadesBeneficiariasRepository repository,
       IPersonasRepository personasRepository,
+      INecesidadesRepository necesidadesRepository,
       EntidadBeneficiariaMapper mapper) {
 
     this.repository = repository;
     this.personasRepository = personasRepository;
+    this.necesidadesRepository = necesidadesRepository;
     this.mapper = mapper;
   }
 
@@ -92,6 +96,24 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
   public void eliminarEntidad(UUID id) {
     EntidadBeneficiaria entidad =
         repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
-    repository.delete(entidad);
+    darDeBaja(entidad);
+  }
+
+  @Override
+  public void darDeBajaSiExiste(UUID juridicaId) {
+    repository.findById(juridicaId).ifPresent(this::darDeBaja);
+  }
+
+  private void darDeBaja(EntidadBeneficiaria entidad) {
+    if (entidad.darDeBaja()) {
+      repository.save(entidad);
+      necesidadesRepository
+          .buscarNecesidadesPorEntidad(entidad.getId())
+          .forEach(
+              necesidad -> {
+                necesidad.desactivar();
+                necesidadesRepository.save(necesidad);
+              });
+    }
   }
 }

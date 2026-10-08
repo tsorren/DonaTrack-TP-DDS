@@ -77,6 +77,7 @@ class DonantesServiceTest {
     assertTrue(resultado.creado());
     assertNotNull(resultado.recurso());
     assertEquals(humana.getId(), resultado.recurso().idDonante());
+    assertTrue(resultado.recurso().activo());
     verify(donantesRepository, times(1)).save(any(Donante.class));
     verify(eventPublisher, times(1))
         .publicarDonanteRegistrado(any(EventoDonanteRegistradoV1.class));
@@ -135,18 +136,66 @@ class DonantesServiceTest {
   }
 
   @Test
-  void testEliminarDonante() {
-    // Arrange
+  void eliminarDonante_daDeBajaSinBorrarYPublicaElEvento() {
     when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
 
-    // Act
     donantesService.eliminarDonante(donanteId);
 
-    // Assert
-    verify(donantesRepository, times(1)).delete(donante);
-
+    assertFalse(donante.estaActivo());
+    verify(donantesRepository).save(donante);
+    verify(donantesRepository, never()).delete(any(Donante.class));
     verify(eventPublisher, times(1))
         .publicarDonanteDadoDeBaja(any(EventoDonanteDadoDeBajaV1.class));
+  }
+
+  @Test
+  void eliminarDonante_yaDadoDeBaja_noRepiteElEvento() {
+    donante.darDeBaja();
+    when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
+
+    donantesService.eliminarDonante(donanteId);
+
+    verify(donantesRepository, never()).save(any(Donante.class));
+    verify(eventPublisher, never()).publicarDonanteDadoDeBaja(any());
+  }
+
+  @Test
+  void eliminarDonante_inexistente_lanzaRecursoNoEncontrado() {
+    UUID idInexistente = UUID.randomUUID();
+    when(donantesRepository.findById(idInexistente)).thenReturn(Optional.empty());
+
+    assertThrows(
+        RecursoNoEncontradoException.class, () -> donantesService.eliminarDonante(idInexistente));
+  }
+
+  @Test
+  void darDeBajaSiExiste_conDonanteActivo_loDaDeBajaYPublica() {
+    when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
+
+    donantesService.darDeBajaSiExiste(donanteId);
+
+    assertFalse(donante.estaActivo());
+    verify(eventPublisher, times(1))
+        .publicarDonanteDadoDeBaja(any(EventoDonanteDadoDeBajaV1.class));
+  }
+
+  @Test
+  void darDeBajaSiExiste_sinDonante_noHaceNada() {
+    UUID personaSinRol = UUID.randomUUID();
+    when(donantesRepository.findById(personaSinRol)).thenReturn(Optional.empty());
+
+    donantesService.darDeBajaSiExiste(personaSinRol);
+
+    verify(donantesRepository, never()).save(any(Donante.class));
+    verify(eventPublisher, never()).publicarDonanteDadoDeBaja(any());
+  }
+
+  @Test
+  void obtenerPorId_deUnDonanteDeBaja_loDevuelveMarcadoInactivo() {
+    donante.darDeBaja();
+    when(donantesRepository.findById(donanteId)).thenReturn(Optional.of(donante));
+
+    assertFalse(donantesService.obtenerPorId(donanteId).activo());
   }
 
   @Test

@@ -9,6 +9,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
@@ -86,6 +88,20 @@ class DonacionesServiceTest {
     verify(donacionesRepository).save(any(Donacion.class));
     verify(eventPublisher, times(1)).publishEvent(any(DonacionCargada.class));
     verify(procesadorDonaciones).procesar(any(Donacion.class));
+  }
+
+  @Test
+  void cargarDonacion_cuandoElDonanteEstaDeBaja_lanzaDonanteInactivoYNoGuarda() {
+    donante.darDeBaja();
+    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.of(donante));
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.cargarDonacion(inputDTO));
+
+    assertEquals(ErrorCatalog.DONANTE_INACTIVO, ex.getError());
+    verify(donacionesRepository, never()).save(any());
+    verify(eventPublisher, never()).publishEvent(any());
+    verify(procesadorDonaciones, never()).procesar(any());
   }
 
   @Test

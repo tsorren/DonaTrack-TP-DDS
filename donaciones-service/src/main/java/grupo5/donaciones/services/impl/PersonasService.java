@@ -8,6 +8,8 @@ import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.IDonantesService;
+import grupo5.donaciones.services.IEntidadBeneficiariaService;
 import grupo5.donaciones.services.IPersonasService;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.util.List;
@@ -20,14 +22,20 @@ public class PersonasService implements IPersonasService {
   private final IPersonasRepository repository;
   private final PersonaMapper mapper;
   private final NotificacionesAsyncService notificacionesAsyncService;
+  private final IDonantesService donantesService;
+  private final IEntidadBeneficiariaService entidadBeneficiariaService;
 
   public PersonasService(
       IPersonasRepository repository,
       PersonaMapper mapper,
-      NotificacionesAsyncService notificacionesAsyncService) {
+      NotificacionesAsyncService notificacionesAsyncService,
+      IDonantesService donantesService,
+      IEntidadBeneficiariaService entidadBeneficiariaService) {
     this.repository = repository;
     this.mapper = mapper;
     this.notificacionesAsyncService = notificacionesAsyncService;
+    this.donantesService = donantesService;
+    this.entidadBeneficiariaService = entidadBeneficiariaService;
   }
 
   @Override
@@ -95,6 +103,10 @@ public class PersonasService implements IPersonasService {
 
     persona.anonimizar();
     repository.save(persona);
+
+    // Una persona anonimizada deja de operar: se dan de baja sus roles (con eventos y cascada).
+    donantesService.darDeBajaSiExiste(id);
+    entidadBeneficiariaService.darDeBajaSiExiste(id);
 
     // Sincronizar asincrónicamente con el servicio de notificaciones
     notificacionesAsyncService.sincronizarPersona(mapper.toEventoPersonaSincronizadaV1(persona));
