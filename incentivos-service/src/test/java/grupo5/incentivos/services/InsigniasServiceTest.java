@@ -3,6 +3,8 @@ package grupo5.incentivos.services;
 import static org.junit.jupiter.api.Assertions.*;
 
 import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.dto.InsigniaDTO;
 import grupo5.incentivos.fixtures.DonanteIncentivosMother;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
@@ -107,5 +109,96 @@ class InsigniasServiceTest {
     assertThrows(
         BusinessStateException.class,
         () -> service.configurarVisibilidadInsignia(donanteId, "Insignia Inexistente", false));
+  }
+
+  @Test
+  void configurarVisibilidad_cuandoDonanteNoExiste_deberiaLanzarDonanteNoEncontrado() {
+    UUID donanteId = UUID.randomUUID();
+
+    BusinessStateException ex =
+        assertThrows(
+            BusinessStateException.class,
+            () -> service.configurarVisibilidadInsignia(donanteId, "Insignia 1", false));
+
+    assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
+  }
+
+  @Test
+  void
+      configurarVisibilidad_cuandoDonanteNoExisteYNombreEsBlank_deberiaPriorizarDonanteNoEncontrado() {
+    UUID donanteId = UUID.randomUUID();
+
+    BusinessStateException ex =
+        assertThrows(
+            BusinessStateException.class,
+            () -> service.configurarVisibilidadInsignia(donanteId, "   ", false));
+
+    assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
+  }
+
+  @Test
+  void configurarVisibilidad_cuandoNombreEsBlank_deberiaLanzarInsigniaSinNombre() {
+    UUID donanteId = UUID.randomUUID();
+    repository.save(DonanteIncentivosMother.colaboradorSinMisiones(donanteId));
+
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class,
+            () -> service.configurarVisibilidadInsignia(donanteId, "   ", false));
+
+    assertEquals(ErrorCatalog.INSIGNIA_SIN_NOMBRE, ex.getError());
+  }
+
+  @Test
+  void configurarVisibilidad_cuandoNombreEsNulo_deberiaLanzarInsigniaSinNombre() {
+    UUID donanteId = UUID.randomUUID();
+    repository.save(DonanteIncentivosMother.colaboradorSinMisiones(donanteId));
+
+    ValidationException ex =
+        assertThrows(
+            ValidationException.class,
+            () -> service.configurarVisibilidadInsignia(donanteId, null, false));
+
+    assertEquals(ErrorCatalog.INSIGNIA_SIN_NOMBRE, ex.getError());
+  }
+
+  @Test
+  void configurarVisibilidad_cuandoNombreEsBlankYLaInsigniaExiste_noDeberiaModificarNada() {
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
+    donante.otorgarInsignia(new Insignia("Insignia 1", "Desc", "url1"));
+    repository.save(donante);
+
+    assertThrows(
+        ValidationException.class,
+        () -> service.configurarVisibilidadInsignia(donanteId, "", false));
+
+    assertTrue(repository.findById(donanteId).orElseThrow().getInsignias().getFirst().visible());
+  }
+
+  @Test
+  void configurarVisibilidad_cuandoInsigniaNoExiste_deberiaLanzarInsigniaNoEncontrada() {
+    UUID donanteId = UUID.randomUUID();
+    repository.save(DonanteIncentivosMother.colaboradorSinMisiones(donanteId));
+
+    BusinessStateException ex =
+        assertThrows(
+            BusinessStateException.class,
+            () -> service.configurarVisibilidadInsignia(donanteId, "Insignia Inexistente", false));
+
+    assertEquals(ErrorCatalog.INSIGNIA_NO_ENCONTRADA, ex.getError());
+  }
+
+  @Test
+  void configurarVisibilidad_cuandoInsigniaExiste_deberiaPoderVolverAHacerseVisible() {
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
+    donante.otorgarInsignia(new Insignia("Insignia 1", "Desc", "url1"));
+    repository.save(donante);
+
+    service.configurarVisibilidadInsignia(donanteId, "Insignia 1", false);
+    service.configurarVisibilidadInsignia(donanteId, "Insignia 1", true);
+
+    assertTrue(repository.findById(donanteId).orElseThrow().getInsignias().getFirst().visible());
   }
 }

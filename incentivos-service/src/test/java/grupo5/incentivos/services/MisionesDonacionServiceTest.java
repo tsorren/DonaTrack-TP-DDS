@@ -19,16 +19,19 @@ import grupo5.incentivos.models.entities.misiones.Mision;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import grupo5.incentivos.services.mappers.MisionMapper;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -218,5 +221,51 @@ class MisionesDonacionServiceTest {
 
     assertEquals(0, r1.getProgresoActual()); // Venció por saltarse marzo
     assertEquals(1, r2.getProgresoActual()); // Sigue vigente (donó en marzo)
+  }
+
+  @Test
+  void
+      procesarDonacion_cuandoSaveDevuelveOtraInstanciaSinEventos_deberiaPublicarLosEventosDeLaOriginalDespuesDeGuardar() {
+    // Con Postgres save() devuelve un agregado nuevo (toDomain) sin eventos de dominio.
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID donanteId = UUID.randomUUID();
+    MisionRacha racha =
+        MisionMother.rachaConInsignia(CategoriaDonante.COLABORADOR, 1, "Racha de Bronce");
+    DonanteIncentivos original = DonanteIncentivosMother.conMisiones(donanteId, List.of(racha));
+    when(repo.findById(donanteId)).thenReturn(Optional.of(original));
+    when(repo.save(any())).thenReturn(DonanteIncentivosMother.colaboradorSinMisiones(donanteId));
+    MisionesDonacionService servicio =
+        new MisionesDonacionService(repo, eventPublisher, new MisionMapper());
+
+    servicio.procesarDonacion(
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10)));
+
+    InOrder orden = inOrder(repo, eventPublisher);
+    orden.verify(repo).save(original);
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    orden.verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
+    assertTrue(captor.getAllValues().stream().anyMatch(MisionCompletada.class::isInstance));
+    assertTrue(captor.getAllValues().stream().anyMatch(AscensoDonante.class::isInstance));
+  }
+
+  @Test
+  void
+      procesarDonacionExitosa_cuandoSaveDevuelveOtraInstanciaSinEventos_deberiaPublicarLosEventosDeLaOriginalDespuesDeGuardar() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID donanteId = UUID.randomUUID();
+    MisionDonacionesExitosas exitosas = MisionMother.exitosas(CategoriaDonante.COLABORADOR, 1);
+    DonanteIncentivos original = DonanteIncentivosMother.conMisiones(donanteId, List.of(exitosas));
+    when(repo.findById(donanteId)).thenReturn(Optional.of(original));
+    when(repo.save(any())).thenReturn(DonanteIncentivosMother.colaboradorSinMisiones(donanteId));
+    MisionesDonacionService servicio =
+        new MisionesDonacionService(repo, eventPublisher, new MisionMapper());
+
+    servicio.procesarDonacionExitosa(IncentivosFixtures.donacionExitosa(donanteId));
+
+    InOrder orden = inOrder(repo, eventPublisher);
+    orden.verify(repo).save(original);
+    ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
+    orden.verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
+    assertTrue(captor.getAllValues().stream().anyMatch(MisionCompletada.class::isInstance));
   }
 }

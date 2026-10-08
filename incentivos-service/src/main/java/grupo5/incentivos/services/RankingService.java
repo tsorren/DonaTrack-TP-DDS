@@ -37,11 +37,10 @@ public class RankingService implements IRankingService {
 
   @Override
   public RankingMensualDTO calcularYPersistir(YearMonth periodo) {
-    rankingRepository.findByPeriodo(periodo).ifPresent(rankingRepository::delete);
     List<DonanteIncentivos> todos = donanteRepository.findAll();
-
     RankingMensual ranking = gestorDeRankings.calcular(todos, periodo);
 
+    rankingRepository.findByPeriodo(periodo).ifPresent(rankingRepository::delete);
     rankingRepository.save(ranking);
     return RankingMensualDTO.desde(ranking);
   }
