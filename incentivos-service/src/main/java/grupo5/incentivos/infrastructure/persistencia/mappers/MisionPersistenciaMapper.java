@@ -7,11 +7,7 @@ import grupo5.incentivos.infrastructure.persistencia.entities.MisionEntity;
 import grupo5.incentivos.infrastructure.persistencia.entities.MisionHabilDonadorEntity;
 import grupo5.incentivos.infrastructure.persistencia.entities.MisionRachaEntity;
 import grupo5.incentivos.models.entities.insignias.Insignia;
-import grupo5.incentivos.models.entities.misiones.Mision;
-import grupo5.incentivos.models.entities.misiones.MisionCompletitud;
-import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
-import grupo5.incentivos.models.entities.misiones.MisionHabilDonador;
-import grupo5.incentivos.models.entities.misiones.MisionRacha;
+import grupo5.incentivos.models.entities.misiones.*;
 import grupo5.incentivos.models.storage.IImagenesInsignias;
 import java.util.LinkedHashSet;
 import org.springframework.beans.factory.ObjectProvider;
@@ -79,64 +75,35 @@ public class MisionPersistenciaMapper {
     if (entity == null) {
       return null;
     }
-    Insignia insignia = toInsignia(entity.getInsignia());
+    MisionEstado estado = toEstado(entity);
     if (entity instanceof MisionCompletitudEntity e) {
-      return MisionCompletitud.reconstituir(
-          e.getId(),
-          e.getNumeroMision(),
-          e.getNombre(),
-          e.getDescripcion(),
-          e.getCategoria(),
-          e.getObjetivo(),
-          e.getProgresoActual(),
-          e.isCompletada(),
-          e.getFechaCompletada(),
-          insignia,
-          e.getCategoriasDonadas());
+      return MisionCompletitud.reconstituir(estado, e.getCategoriasDonadas());
     }
     if (entity instanceof MisionDonacionesExitosasEntity e) {
-      return MisionDonacionesExitosas.reconstituir(
-          e.getId(),
-          e.getNumeroMision(),
-          e.getNombre(),
-          e.getDescripcion(),
-          e.getCategoria(),
-          e.getObjetivo(),
-          e.getProgresoActual(),
-          e.isCompletada(),
-          e.getFechaCompletada(),
-          insignia,
-          e.getFechaUltimoDonacion());
+      return MisionDonacionesExitosas.reconstituir(estado, e.getFechaUltimoDonacion());
     }
-    if (entity instanceof MisionHabilDonadorEntity e) {
-      return MisionHabilDonador.reconstituir(
-          e.getId(),
-          e.getNumeroMision(),
-          e.getNombre(),
-          e.getDescripcion(),
-          e.getCategoria(),
-          e.getObjetivo(),
-          e.getProgresoActual(),
-          e.isCompletada(),
-          e.getFechaCompletada(),
-          insignia);
+    if (entity instanceof MisionHabilDonadorEntity) {
+      return MisionHabilDonador.reconstituir(estado);
     }
     if (entity instanceof MisionRachaEntity e) {
-      return MisionRacha.reconstituir(
-          e.getId(),
-          e.getNumeroMision(),
-          e.getNombre(),
-          e.getDescripcion(),
-          e.getCategoria(),
-          e.getObjetivo(),
-          e.getProgresoActual(),
-          e.isCompletada(),
-          e.getFechaCompletada(),
-          insignia,
-          e.getUltimoMesDonado());
+      return MisionRacha.reconstituir(estado, e.getUltimoMesDonado());
     }
     throw new IllegalArgumentException(
         "Tipo de misión sin mapeo de persistencia: " + entity.getClass().getName());
+  }
+
+  private MisionEstado toEstado(MisionEntity e) {
+    return new MisionEstado(
+        e.getId(),
+        e.getNumeroMision(),
+        e.getNombre(),
+        e.getDescripcion(),
+        e.getCategoria(),
+        e.getObjetivo(),
+        e.getProgresoActual(),
+        e.isCompletada(),
+        e.getFechaCompletada(),
+        toInsignia(e.getInsignia()));
   }
 
   private InsigniaEmbeddable toEmbeddable(Insignia insignia) {

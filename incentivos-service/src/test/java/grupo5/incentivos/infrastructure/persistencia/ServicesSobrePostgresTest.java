@@ -183,13 +183,12 @@ class ServicesSobrePostgresTest {
   @Test
   void modificarDonante_cuandoNoExiste_deberiaLanzarDonanteNoEncontrado() {
     UUID id = UUID.randomUUID();
+    var request = IncentivosFixtures.modificarDonante("X");
 
     BusinessStateException ex =
         assertThrows(
             BusinessStateException.class,
-            () ->
-                gestionDonanteService.modificarDonante(
-                    id, IncentivosFixtures.modificarDonante("X")));
+            () -> gestionDonanteService.modificarDonante(id, request));
 
     assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
   }
@@ -352,14 +351,12 @@ class ServicesSobrePostgresTest {
     UUID id = UUID.randomUUID();
     donanteRepository.save(donanteConRachaDeUnMes(id));
     eventos.fallarAlRecibir();
+    var donacion = IncentivosFixtures.nuevaDonacion(id, FECHA_DONACION);
 
     // Hoy el fallo de un listener sale hacia el llamador; lo que fija este test es que el avance
     // ya estaba confirmado en la base y no se revierte.
     assertThrows(
-        IllegalStateException.class,
-        () ->
-            misionesDonacionService.procesarDonacion(
-                IncentivosFixtures.nuevaDonacion(id, FECHA_DONACION)));
+        IllegalStateException.class, () -> misionesDonacionService.procesarDonacion(donacion));
 
     DonanteIncentivos leido = donanteRepository.findById(id).orElseThrow();
     assertEquals(CategoriaDonante.SOSTENEDOR, leido.getCategoria());

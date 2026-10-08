@@ -201,6 +201,48 @@ public final class PollingUtils {
     }
   }
 
+  public static void esperarDonanteEnIncentivos(IncentivosApiClient client, UUID donanteId) {
+    esperarEstadoDonanteEnIncentivos(client, donanteId, true);
+  }
+
+  public static void esperarDonanteEliminadoEnIncentivos(
+      IncentivosApiClient client, UUID donanteId) {
+    esperarEstadoDonanteEnIncentivos(client, donanteId, false);
+  }
+
+  private static void esperarEstadoDonanteEnIncentivos(
+      IncentivosApiClient client, UUID donanteId, boolean debeExistir) {
+    AtomicReference<Response> lastResponse = new AtomicReference<>();
+    String descripcion = debeExistir ? "exista" : "no exista";
+    try {
+      Awaitility.await("Esperar que el donante " + donanteId + " " + descripcion + " en incentivos")
+          .atMost(Duration.ofSeconds(10))
+          .pollInterval(Duration.ofMillis(200))
+          .ignoreExceptions()
+          .until(
+              () -> {
+                Response resp = client.obtenerMetricas(donanteId);
+                lastResponse.set(resp);
+                int status = resp.getStatusCode();
+                return debeExistir ? status == 200 : (status == 400 || status == 404);
+              });
+    } catch (ConditionTimeoutException e) {
+      Response r = lastResponse.get();
+      String details =
+          (r != null)
+              ? "Status: " + r.getStatusCode() + ", Body: " + r.asString()
+              : "Sin respuesta";
+      throw new AssertionError(
+          "Timeout esperando que el donante "
+              + donanteId
+              + " "
+              + descripcion
+              + " en incentivos. Última respuesta: "
+              + details,
+          e);
+    }
+  }
+
   public static UUID esperarEntregaCreadaParaDonacion(LogisticaApiClient client, UUID donacionId) {
     AtomicReference<UUID> entregaIdRef = new AtomicReference<>();
     AtomicReference<Response> lastResponse = new AtomicReference<>();

@@ -3,10 +3,7 @@ package grupo5.incentivos.models.entities.misiones;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
-import grupo5.incentivos.models.entities.insignias.Insignia;
-import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.UUID;
 import lombok.Getter;
 
 @Getter
@@ -22,56 +19,13 @@ public class MisionRacha extends Mision {
         mesesConsecutivosObjetivo);
   }
 
-  private MisionRacha(
-      UUID id,
-      Integer numeroMision,
-      String nombre,
-      String descripcion,
-      CategoriaDonante categoria,
-      Integer objetivo,
-      Integer progresoActual,
-      boolean completada,
-      LocalDate fechaCompletada,
-      Insignia insignia,
-      YearMonth ultimoMesDonado) {
-    super(
-        id,
-        numeroMision,
-        nombre,
-        descripcion,
-        categoria,
-        objetivo,
-        progresoActual,
-        completada,
-        fechaCompletada,
-        insignia);
+  private MisionRacha(MisionEstado estado, YearMonth ultimoMesDonado) {
+    super(estado);
     this.ultimoMesDonado = ultimoMesDonado;
   }
 
-  public static MisionRacha reconstituir(
-      UUID id,
-      Integer numeroMision,
-      String nombre,
-      String descripcion,
-      CategoriaDonante categoria,
-      Integer objetivo,
-      Integer progresoActual,
-      boolean completada,
-      LocalDate fechaCompletada,
-      Insignia insignia,
-      YearMonth ultimoMesDonado) {
-    return new MisionRacha(
-        id,
-        numeroMision,
-        nombre,
-        descripcion,
-        categoria,
-        objetivo,
-        progresoActual,
-        completada,
-        fechaCompletada,
-        insignia,
-        ultimoMesDonado);
+  public static MisionRacha reconstituir(MisionEstado estado, YearMonth ultimoMesDonado) {
+    return new MisionRacha(estado, ultimoMesDonado);
   }
 
   @Override

@@ -7,7 +7,10 @@ import io.minio.PutObjectArgs;
 import io.minio.SetBucketPolicyArgs;
 import io.minio.StatObjectArgs;
 import io.minio.errors.ErrorResponseException;
+import io.minio.errors.MinioException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -39,12 +42,12 @@ public class MinioInsigniasSeeder implements ApplicationRunner {
   public void run(ApplicationArguments args) {
     try {
       sembrar();
-    } catch (Exception e) {
+    } catch (MinioException | IOException | GeneralSecurityException | RuntimeException e) {
       log.error("No se pudieron sembrar las imágenes de insignias en el bucket '{}'", bucket, e);
     }
   }
 
-  void sembrar() throws Exception {
+  void sembrar() throws MinioException, IOException, GeneralSecurityException {
     asegurarBucketPublico();
     for (Resource imagen :
         new PathMatchingResourcePatternResolver().getResources(PATRON_IMAGENES)) {
@@ -52,7 +55,8 @@ public class MinioInsigniasSeeder implements ApplicationRunner {
     }
   }
 
-  private void asegurarBucketPublico() throws Exception {
+  private void asegurarBucketPublico()
+      throws MinioException, IOException, GeneralSecurityException {
     if (!client.bucketExists(BucketExistsArgs.builder().bucket(bucket).build())) {
       try {
         client.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
@@ -68,7 +72,8 @@ public class MinioInsigniasSeeder implements ApplicationRunner {
         SetBucketPolicyArgs.builder().bucket(bucket).config(politicaLecturaAnonima()).build());
   }
 
-  private void subirSiFalta(Resource imagen) throws Exception {
+  private void subirSiFalta(Resource imagen)
+      throws MinioException, IOException, GeneralSecurityException {
     String clave = imagen.getFilename();
     if (existe(clave)) {
       return;
@@ -83,7 +88,8 @@ public class MinioInsigniasSeeder implements ApplicationRunner {
     log.info("Imagen de insignia '{}' subida al bucket '{}'", clave, bucket);
   }
 
-  private boolean existe(String clave) throws Exception {
+  private boolean existe(String clave)
+      throws MinioException, IOException, GeneralSecurityException {
     try {
       client.statObject(StatObjectArgs.builder().bucket(bucket).object(clave).build());
       return true;
