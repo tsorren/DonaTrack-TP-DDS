@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-15T22:29:08.903Z",
+  "generatedAt": "2026-10-08T01:34:49.084Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
-    "endpointsCount": 98,
-    "schemasCount": 21,
+    "endpointsCount": 101,
+    "schemasCount": 25,
     "eventsCount": 9
   },
   "services": [
@@ -491,6 +491,42 @@
           "requestBody": "-",
           "responses": {
             "204": "-",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/logistica/proveedores",
+          "method": "GET",
+          "summary": "Listar los proveedores de logística del broker",
+          "operationId": "listarProveedoresLogistica",
+          "requestBody": "-",
+          "responses": {
+            "200": "ProveedorLogisticaDTO",
+            "401": "-"
+          }
+        },
+        {
+          "path": "/api/logistica/proveedor-preferido",
+          "method": "PUT",
+          "summary": "Cambiar el proveedor de logística preferido",
+          "operationId": "cambiarProveedorLogisticaPreferido",
+          "requestBody": "PreferenciaProveedorRequestDTO",
+          "responses": {
+            "200": "ProveedorLogisticaDTO",
+            "400": "-",
+            "401": "-"
+          }
+        },
+        {
+          "path": "/api/logistica/proveedores/{proveedorId}/avisos",
+          "method": "POST",
+          "summary": "Callback de un proveedor de logística HTTP",
+          "operationId": "recibirAvisoProveedorLogistica",
+          "requestBody": "AvisoProveedorRequestDTO",
+          "responses": {
+            "202": "-",
+            "400": "-",
+            "401": "-",
             "404": "-"
           }
         }
@@ -1251,19 +1287,18 @@
     {
       "fileName": "evento-donacion-asignada-v1.schema.json",
       "title": "EventoDonacionAsignadaV1",
-      "description": "Evento de dominio canónico enriquecido emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service, logistica-service e incentivos-service",
+      "description": "Evento de dominio emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service. Logística ya no lo consume: recibe el comando entrega.solicitada.<proveedorId>.v1 del broker (ADR 20261007-broker-de-integracion-con-logistica)",
       "type": "object",
       "required": [
         "donacionIndependienteId",
-        "personaDonanteId",
+        "donanteId",
+        "personaId",
         "fecha",
         "personaBeneficiariaId",
         "descripcion",
         "destino",
         "pesoTotalKG",
-        "volumenTotalM3",
-        "categorias",
-        "cantidades"
+        "volumenTotalM3"
       ],
       "subtypes": []
     },
@@ -1273,7 +1308,8 @@
       "description": "Evento de dominio emitido cuando una donación se encuentra en traslado logístico hacia la entidad beneficiaria",
       "type": "object",
       "required": [
-        "personaDonanteId",
+        "donanteId",
+        "personaId",
         "fecha",
         "personaBeneficiariaId",
         "descripcion",
@@ -1287,7 +1323,8 @@
       "description": "Evento de dominio emitido cuando la entrega de una donación fracasa y se notifica a las partes y administradores",
       "type": "object",
       "required": [
-        "personaDonanteId",
+        "donanteId",
+        "personaId",
         "fecha",
         "personaBeneficiariaId",
         "descripcion",
@@ -1300,14 +1337,40 @@
     {
       "fileName": "evento-donacion-recibida-v1.schema.json",
       "title": "EventoDonacionRecibidaV1",
-      "description": "Evento de dominio emitido cuando una donación es entregada y recibida conforme por la entidad beneficiaria",
+      "description": "Evento de dominio emitido cuando una donación es entregada y recibida conforme por la entidad beneficiaria, consumido por notificaciones-service e incentivos-service (para otorgar puntos)",
       "type": "object",
       "required": [
-        "personaDonanteId",
+        "donanteId",
+        "personaId",
         "fecha",
         "personaBeneficiariaId",
         "descripcion",
         "patenteCamion"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-donacion-segmentada-v1.schema.json",
+      "title": "EventoDonacionSegmentadaV1",
+      "description": "Evento de dominio emitido por donaciones-service cuando una donación termina de segmentarse en categorías, consumido por incentivos-service para calcular puntos por lo donado",
+      "type": "object",
+      "required": [
+        "donanteId",
+        "fecha",
+        "items"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-donacion-segmentada.schema.json",
+      "title": "EventoDonacionSegmentada",
+      "description": "Evento de dominio canónico emitido por donaciones-service cuando una donación independiente es segmentada, consumido por incentivos-service",
+      "type": "object",
+      "required": [
+        "personaDonanteId",
+        "categorias",
+        "cantidad",
+        "fecha"
       ],
       "subtypes": []
     },
@@ -1317,11 +1380,24 @@
       "description": "Evento de dominio emitido cuando una donación supera su fecha de caducidad o vigencia sin ser asignada o retirada",
       "type": "object",
       "required": [
-        "personaDonanteId",
+        "donanteId",
+        "personaId",
         "fecha",
         "personaAdminId",
         "descripcion",
         "motivo"
+      ],
+      "subtypes": []
+    },
+    {
+      "fileName": "evento-donante-dado-de-baja-v1.schema.json",
+      "title": "EventoDonanteDadoDeBajaV1",
+      "description": "Evento de dominio emitido por donaciones-service cuando se da de baja a un donante, consumido por incentivos-service para dar de baja su esquema de gamificación",
+      "type": "object",
+      "required": [
+        "donanteId",
+        "personaId",
+        "fecha"
       ],
       "subtypes": []
     },
@@ -1331,7 +1407,9 @@
       "description": "Evento de dominio emitido cuando un nuevo donante es registrado en donaciones-service para despachar sus credenciales",
       "type": "object",
       "required": [
-        "personaDonanteId",
+        "donanteId",
+        "personaId",
+        "nombre",
         "fecha",
         "credencialesDeAcceso"
       ],
@@ -1363,6 +1441,21 @@
       "subtypes": []
     },
     {
+      "fileName": "evento-entrega-solicitada-v1.schema.json",
+      "title": "EventoEntregaSolicitadaV1",
+      "description": "Comando AMQP que el broker de logística de donaciones-service publica en donaciones.exchange con routing key entrega.solicitada.<proveedorId>.v1 (alias __TypeId__ fijo: entrega.solicitada.v1). Pide a un único proveedor de logística elegido que cree la entrega de una donación independiente.",
+      "type": "object",
+      "required": [
+        "donacionIndependienteId",
+        "personaBeneficiariaId",
+        "destino",
+        "pesoTotalKG",
+        "volumenTotalM3",
+        "fecha"
+      ],
+      "subtypes": []
+    },
+    {
       "fileName": "evento-incentivo-donante-inactivo-v1.schema.json",
       "title": "EventoIncentivoDonanteInactivoV1",
       "description": "Evento de dominio emitido por incentivos-service al detectar que un donante superó el umbral de días sin registrar donaciones",
@@ -1383,7 +1476,7 @@
         "personaDonanteId",
         "fecha",
         "nombreMision",
-        "puntosObtenidos"
+        "recompensa"
       ],
       "subtypes": []
     },
@@ -1395,7 +1488,8 @@
       "required": [
         "personaDonanteId",
         "fecha",
-        "nombreNuevaCategoria"
+        "nombreNuevaCategoria",
+        "nombreViejaCategoria"
       ],
       "subtypes": []
     },

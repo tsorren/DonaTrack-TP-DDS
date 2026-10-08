@@ -8,10 +8,10 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.dto.logistica.AvisoProveedorRequestDTO;
-import grupo5.donaciones.infrastructure.logistica.ProcesadorEventosLogistica;
 import grupo5.donaciones.models.entities.logistica.SolicitudEntrega;
 import grupo5.donaciones.models.repositories.ISolicitudesEntregaRepository;
 import grupo5.donaciones.services.IAvisosProveedorService;
+import grupo5.donaciones.services.logistica.IProcesadorEventosLogistica;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -29,10 +29,10 @@ public class AvisosProveedorService implements IAvisosProveedorService {
   private static final String ORIGEN_HTTP = "http:";
 
   private final ISolicitudesEntregaRepository solicitudesRepository;
-  private final ProcesadorEventosLogistica procesador;
+  private final IProcesadorEventosLogistica procesador;
 
   public AvisosProveedorService(
-      ISolicitudesEntregaRepository solicitudesRepository, ProcesadorEventosLogistica procesador) {
+      ISolicitudesEntregaRepository solicitudesRepository, IProcesadorEventosLogistica procesador) {
     this.solicitudesRepository = solicitudesRepository;
     this.procesador = procesador;
   }
@@ -85,12 +85,18 @@ public class AvisosProveedorService implements IAvisosProveedorService {
     }
   }
 
-  /** Todas las donaciones deben estar asignadas a este proveedor; si no, no se aplica ninguna. */
+  /**
+   * Todas las donaciones deben estar asignadas a este proveedor; si no, no se aplica ninguna. Vale
+   * la solicitud activa de la donación o, si no hay, la más reciente aunque esté {@code FALLIDA}:
+   * si falló tras envíos inciertos, el proveedor quizás sí tiene la entrega y sus avances no deben
+   * perderse. Una solicitud que falló por rechazos no tiene proveedor actual, así que no aplica.
+   */
   private void verificarPertenencia(String proveedorId, List<UUID> donaciones) {
     for (UUID donacionId : donaciones) {
       boolean asignada =
           solicitudesRepository
               .findActivaPorDonacion(donacionId)
+              .or(() -> solicitudesRepository.findMasRecientePorDonacion(donacionId))
               .map(SolicitudEntrega::getProveedorActual)
               .filter(proveedorId::equals)
               .isPresent();

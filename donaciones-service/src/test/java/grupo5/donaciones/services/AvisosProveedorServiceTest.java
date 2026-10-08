@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
@@ -17,10 +18,10 @@ import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import grupo5.donaciones.dto.logistica.AvisoProveedorRequestDTO;
 import grupo5.donaciones.dto.logistica.TipoAvisoProveedor;
-import grupo5.donaciones.infrastructure.logistica.ProcesadorEventosLogistica;
 import grupo5.donaciones.models.entities.logistica.SolicitudEntrega;
 import grupo5.donaciones.models.repositories.ISolicitudesEntregaRepository;
 import grupo5.donaciones.services.impl.AvisosProveedorService;
+import grupo5.donaciones.services.logistica.IProcesadorEventosLogistica;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -34,13 +35,13 @@ class AvisosProveedorServiceTest {
   private static final String ORIGEN = "http:externo";
 
   private ISolicitudesEntregaRepository solicitudesRepository;
-  private ProcesadorEventosLogistica procesador;
+  private IProcesadorEventosLogistica procesador;
   private AvisosProveedorService service;
 
   @BeforeEach
   void setUp() {
     solicitudesRepository = mock(ISolicitudesEntregaRepository.class);
-    procesador = mock(ProcesadorEventosLogistica.class);
+    procesador = mock(IProcesadorEventosLogistica.class);
     service = new AvisosProveedorService(solicitudesRepository, procesador);
   }
 
@@ -159,6 +160,39 @@ class AvisosProveedorServiceTest {
                     null)));
 
     verify(procesador, never()).procesarEntregaExitosa(any(), any());
+  }
+
+  @Test
+  void aviso_deUnaSolicitudFallidaTrasEnviosInciertos_delMismoProveedor_seProcesa() {
+    UUID donacionId = UUID.randomUUID();
+    SolicitudEntrega fallida = new SolicitudEntrega(donacionId, LocalDateTime.now());
+    fallida.asignarProveedor(PROVEEDOR);
+    fallida.marcarFallida();
+    when(solicitudesRepository.findMasRecientePorDonacion(donacionId))
+        .thenReturn(Optional.of(fallida));
+    UUID rutaId = UUID.randomUUID();
+
+    service.registrarAviso(
+        PROVEEDOR, aviso(TipoAvisoProveedor.RUTA_ASIGNADA, rutaId, null, donacionId, null));
+
+    verify(procesador).procesarRutaAsignada(any(EventoRutaAsignada.class), eq(ORIGEN));
+  }
+
+  @Test
+  void aviso_deUnaSolicitudFallidaPorRechazos_seRechaza() {
+    UUID donacionId = UUID.randomUUID();
+    SolicitudEntrega fallida = new SolicitudEntrega(donacionId, LocalDateTime.now());
+    fallida.asignarProveedor(PROVEEDOR);
+    fallida.descartarProveedorActual();
+    fallida.marcarFallida();
+    when(solicitudesRepository.findMasRecientePorDonacion(donacionId))
+        .thenReturn(Optional.of(fallida));
+    AvisoProveedorRequestDTO aviso =
+        aviso(TipoAvisoProveedor.RUTA_ASIGNADA, UUID.randomUUID(), null, donacionId, null);
+
+    assertThrows(
+        RecursoNoEncontradoException.class, () -> service.registrarAviso(PROVEEDOR, aviso));
+    verifyNoInteractions(procesador);
   }
 
   @Test

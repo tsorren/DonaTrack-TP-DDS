@@ -168,6 +168,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`scripts/validate-contracts.js`](../scripts/validate-contracts.js) | Testing Contratos | Suite de validación mecánica de JSON Schemas, auditoría semántica de OpenAPI 3.0 (tipos y nulabilidad) integrada en CI (`agent-governance.yml`) y tests de drift en Surefire. | 🟢 Sincronizado |
 | [`docs/arquitectura/diseno/README.md`](arquitectura/diseno/README.md) | Diseño de Dominio | Portal de diseño detallado de subsistemas y anexos técnicos. | 🟢 Sincronizado |
 | [`docs/arquitectura/diseno/anexos-tecnicos/README.md`](arquitectura/diseno/anexos-tecnicos/README.md) | Diagramas Técnicos | Modelos técnicos de bytecode autogenerados por Maven (`plantuml-generator`). | 🟢 Sincronizado |
+| [`docs/arquitectura/diseno/diagrama-de-componentes.puml`](arquitectura/diseno/diagrama-de-componentes.puml) | Diagrama de Componentes | Componentes del sistema y de integración (RabbitMQ, broker de logística, callback HTTP, n8n, planificador externo); imagen en `diagrama-de-componentes.png`. | 🟢 Sincronizado |
 | [`docs/adr/20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md`](adr/20260903-estandarizacion-de-codigos-de-estado-http-para-enrutamiento-y-recursos-no-encontrados.md) | ADR Contratos HTTP | Estandarización de respuestas 405 (con header Allow RFC 9110) y 404 en GlobalExceptionHandler. | 🟢 Sincronizado |
 
 ### 3.3 Persistencia y Base de Datos

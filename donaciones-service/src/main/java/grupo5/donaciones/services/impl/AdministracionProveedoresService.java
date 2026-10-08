@@ -1,8 +1,8 @@
 package grupo5.donaciones.services.impl;
 
 import grupo5.donaciones.dto.logistica.ProveedorLogisticaDTO;
-import grupo5.donaciones.infrastructure.logistica.ProveedoresLogistica;
 import grupo5.donaciones.services.IAdministracionProveedoresService;
+import grupo5.donaciones.services.logistica.ICatalogoProveedoresLogistica;
 import grupo5.donaciones.services.logistica.IPreferenciaProveedor;
 import java.util.List;
 import org.slf4j.Logger;
@@ -16,12 +16,12 @@ public class AdministracionProveedoresService implements IAdministracionProveedo
   private static final Logger log = LoggerFactory.getLogger(AdministracionProveedoresService.class);
 
   private final IPreferenciaProveedor preferencia;
-  private final ProveedoresLogistica proveedores;
+  private final ICatalogoProveedoresLogistica proveedores;
   private final Environment environment;
 
   public AdministracionProveedoresService(
       IPreferenciaProveedor preferencia,
-      ProveedoresLogistica proveedores,
+      ICatalogoProveedoresLogistica proveedores,
       Environment environment) {
     this.preferencia = preferencia;
     this.proveedores = proveedores;
@@ -35,7 +35,7 @@ public class AdministracionProveedoresService implements IAdministracionProveedo
         .map(
             id ->
                 new ProveedorLogisticaDTO(
-                    id, transporteDe(id), proveedores.buscar(id).isPresent(), id.equals(preferido)))
+                    id, transporteDe(id), proveedores.tieneAdapter(id), id.equals(preferido)))
         .toList();
   }
 

@@ -63,8 +63,8 @@ Se adopta un **broker in-process en `donaciones-service`**:
    | Resultado | Señal | Acción del broker |
    |---|---|---|
    | Publicado | Ack sin devolución · HTTP 2xx o 409 | Solicitud `ENVIADA` |
-   | Rechazado (seguro que no llegó) | Mensaje devuelto · nack · sin conexión con RabbitMQ · conexión HTTP rechazada · 503 | Siguiente proveedor según la estrategia. Si todos rechazaron, nueva ronda completa más tarde (backoff), hasta agotar las rondas |
-   | Incierto (pudo haber llegado) | Sin acuse a tiempo · timeout de lectura · HTTP 500/502/504 | Reintento con backoff **al mismo** proveedor |
+   | Rechazado (seguro que no llegó) | Mensaje devuelto · sin conexión con RabbitMQ · conexión HTTP rechazada · 503 | Siguiente proveedor según la estrategia. Si todos rechazaron, nueva ronda completa más tarde (backoff), hasta agotar las rondas |
+   | Incierto (pudo haber llegado) | Nack · sin acuse a tiempo · timeout de lectura · HTTP 500/502/504 | Reintento con backoff **al mismo** proveedor |
    | Error de contrato | HTTP 4xx (≠ 409) | Sin reintento ni reenvío; `FALLIDO` + log `error` |
 
 6. **Idempotencia del proveedor:** todo proveedor deduplica por `donacionIndependienteId`. Es un requisito de contrato. La obligación recae en el proveedor, no en Donaciones. Nuestra Logística interna se alcanza solo por AMQP, donde el listener ya deduplica. No se modifica `POST /api/entregas`: el stand-in HTTP `externo` de la demo (D9) no deduplica por ese camino, y ese riesgo se asume.
@@ -85,7 +85,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
 
 * Una capa más de indirección y un mensaje más en el catálogo.
 * Se revierte una decisión previa del equipo, y Logística deja de enterarse de la asignación «como hecho».
-* No hay failover por disponibilidad en AMQP: el reenvío solo cubre «no hay cola» y «nack». Si la cola existe, el mensaje espera a que el consumidor vuelva.
+* No hay failover por disponibilidad en AMQP: el reenvío solo cubre «no hay cola» y «sin conexión». Un nack se trata como incierto: si el canal se corta con acuses pendientes, spring-rabbit genera él mismo un nack y el mensaje pudo haber quedado en la cola. Si la cola existe, el mensaje espera a que el consumidor vuelva.
 * Un envío incierto no se reenvía. Si el proveedor nunca responde, la solicitud termina `FALLIDA` y requiere revisión manual.
 * El relay espera acuses de a una entrada (latencia de despacho de milisegundos a segundos).
 * Requiere un cutover coordinado en dos servicios. La cola vieja `logistica.donaciones.asignadas` queda huérfana en un RabbitMQ que haya corrido la versión anterior: hay que recrearlo o borrarla a mano (los RabbitMQ del proyecto no tienen volúmenes, así que recrear el contenedor alcanza).

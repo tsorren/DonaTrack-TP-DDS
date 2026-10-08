@@ -24,10 +24,11 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
  *
  * <ul>
  *   <li>Acuse positivo sin devolución: publicado.
- *   <li>Mensaje devuelto (no hay cola con esa routing key), nack o sin conexión con RabbitMQ: es
- *       seguro que no llegó → {@link EnvioRechazadoException}.
- *   <li>Sin acuse a tiempo o error de canal durante el envío: no se sabe → {@link
- *       EnvioInciertoException}.
+ *   <li>Mensaje devuelto (no hay cola con esa routing key) o sin conexión con RabbitMQ: es seguro
+ *       que no llegó → {@link EnvioRechazadoException}.
+ *   <li>Nack, sin acuse a tiempo o error de canal durante el envío: no se sabe → {@link
+ *       EnvioInciertoException}. Un nack no garantiza que el mensaje no se haya guardado: si el
+ *       canal se corta con acuses pendientes, spring-rabbit genera él mismo un nack para cada uno.
  * </ul>
  */
 public class ProveedorLogisticaAmqp implements IProveedorLogistica {
@@ -97,7 +98,7 @@ public class ProveedorLogisticaAmqp implements IProveedorLogistica {
               + ")");
     }
     if (!confirm.ack()) {
-      throw new EnvioRechazadoException(proveedorId, "nack de RabbitMQ: " + confirm.reason());
+      throw new EnvioInciertoException(proveedorId, "nack de RabbitMQ: " + confirm.reason());
     }
   }
 

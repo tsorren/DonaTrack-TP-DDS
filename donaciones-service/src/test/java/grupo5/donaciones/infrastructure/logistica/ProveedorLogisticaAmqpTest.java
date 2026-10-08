@@ -119,10 +119,27 @@ class ProveedorLogisticaAmqpTest {
   }
 
   @Test
-  void enviar_deberiaRechazar_CuandoRabbitHaceNack() {
+  void enviar_deberiaSerIncierto_CuandoRabbitHaceNack() {
     cuandoRabbitResponde(false, false);
 
-    assertThrows(EnvioRechazadoException.class, () -> proveedor.enviar(ENVIO_ID, DATOS, "t"));
+    assertThrows(EnvioInciertoException.class, () -> proveedor.enviar(ENVIO_ID, DATOS, "t"));
+  }
+
+  @Test
+  void enviar_deberiaSerIncierto_CuandoSpringGeneraElNackPorqueSeCortoElCanal() {
+    doAnswer(
+            invocacion -> {
+              CorrelationData correlacion = invocacion.getArgument(4);
+              correlacion
+                  .getFuture()
+                  .complete(new CorrelationData.Confirm(false, "Channel closed by application"));
+              return null;
+            })
+        .when(template)
+        .convertAndSend(
+            anyString(), anyString(), any(Object.class), any(MessagePostProcessor.class), any());
+
+    assertThrows(EnvioInciertoException.class, () -> proveedor.enviar(ENVIO_ID, DATOS, "t"));
   }
 
   @Test

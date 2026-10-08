@@ -2,8 +2,8 @@
 
 > **Catálogo Canónico de Mensajería Asíncrona, Topología de Colas y Schemas de Eventos**  
 > **Productores:** `logistica-service`, `donaciones-service`, `incentivos-service`  
-> **Consumidores:** `donaciones-service`, `notificaciones-service`  
-> **ADR de Referencia:** [`20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](../adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md)
+> **Consumidores:** `donaciones-service`, `notificaciones-service`, `incentivos-service`, `logistica-service`  
+> **ADRs de Referencia:** [`20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](../adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) · [`20261007-broker-de-integracion-con-logistica.md`](../adr/20261007-broker-de-integracion-con-logistica.md)
 
 ---
 
@@ -18,6 +18,8 @@ La interacción entre microservicios se desacopla temporal y espacialmente media
    * `notificaciones-service` actúa como consumidor desacoplado, siendo dueño de sus colas dedicadas segregadas por bounded context (`notificaciones.donaciones` y `notificaciones.incentivos`), procesando mensajes mediante listeners `@RabbitHandler` tipados y deduplicando atómicamente con **Transactional Inbox** relacional sobre PostgreSQL.
    * Como arquitectura objetivo de la Etapa 2 de SPEC-03, se erradicará el uso de clientes HTTP síncronos OpenFeign para la emisión de notificaciones inter-servicios, saldando definitivamente la deuda técnica [DTI-13](../adr/DEUDA_TECNICA.md#dti-13-migracion-de-clientes-consumidores-de-la-api-rest-deprecada-de-notificaciones-a-ruta-canonica-y-amqp) (actualmente en estado `[OBSERVED] in-progress`).
 
+3. **Donaciones hacia Logística (broker de integración):** el broker de `donaciones-service` elige, para cada donación asignada, a qué proveedor de logística pedirle la entrega. A un proveedor AMQP le manda el **comando** `entrega.solicitada.<proveedorId>.v1` en `donaciones.exchange` (ver §2.2 B2); a un proveedor HTTP, un `POST` por REST. Logística ya no consume el hecho `donacion.asignada.v1`.
+
 ---
 
 ## 2. Topología de RabbitMQ
@@ -25,7 +27,7 @@ La interacción entre microservicios se desacopla temporal y espacialmente media
 ```text
 donaciones-service
 [donaciones.exchange] ──(donacion.asignada.v1)─► [notificaciones.donaciones]      ──► Notificaciones (Inbox)
-   (TopicExchange)    ──(donacion.asignada.v1)─► [logistica.donaciones.asignadas] ──► Logística (Entregas)
+   (TopicExchange)    ──(entrega.solicitada.donatrack.v1)► [logistica.donatrack.entregas.solicitadas] ──► Logística (comando del broker)
                       ──(donacion.asignada.v1)─► [incentivos.donaciones]          ──► Incentivos (Gamificación)
                       ──(persona.sincronizada.v1)► [incentivos.personas]          ──► Incentivos (Donantes)
                       ──(donacion.*.v1 / etc.)──► [notificaciones.donaciones]
@@ -72,7 +74,7 @@ logistica-service
 
 | N° | Evento de Dominio | Emisor | TopicExchange | Routing Key | Tipo AMQP (`__TypeId__`) | Colas Receptoras | JSON Schema de Contrato |
 |:---:|---|---|---|---|---|---|---|
-| 1 | Donación Asignada | `donaciones-service` | `donaciones.exchange` | `donacion.asignada.v1` | `donacion.asignada.v1` | `notificaciones.donaciones`, `logistica.donaciones.asignadas` | [`evento-donacion-asignada-v1.schema.json`](./contratos/schemas/evento-donacion-asignada-v1.schema.json) |
+| 1 | Donación Asignada | `donaciones-service` | `donaciones.exchange` | `donacion.asignada.v1` | `donacion.asignada.v1` | `notificaciones.donaciones` | [`evento-donacion-asignada-v1.schema.json`](./contratos/schemas/evento-donacion-asignada-v1.schema.json) |
 | 1b | Donación Segmentada | `donaciones-service` | `donaciones.exchange` | `donacion.segmentada.v1` | `donacion.segmentada.v1` | `incentivos.donaciones` | [`evento-donacion-segmentada.schema.json`](./contratos/schemas/evento-donacion-segmentada.schema.json) |
 | 2 | Donación en Camino | `donaciones-service` | `donaciones.exchange` | `donacion.en-camino.v1` | `donacion.en-camino.v1` | `notificaciones.donaciones` | [`evento-donacion-en-camino-v1.schema.json`](./contratos/schemas/evento-donacion-en-camino-v1.schema.json) |
 | 3 | Donación Recibida | `donaciones-service` | `donaciones.exchange` | `donacion.recibida.v1` | `donacion.recibida.v1` | `notificaciones.donaciones` | [`evento-donacion-recibida-v1.schema.json`](./contratos/schemas/evento-donacion-recibida-v1.schema.json) |
@@ -83,6 +85,16 @@ logistica-service
 | 8 | Misión Cumplida | `incentivos-service` | `incentivos.exchange` | `incentivo.mision-cumplida.v1` | `incentivo.mision-cumplida.v1` | `notificaciones.incentivos` | [`evento-incentivo-mision-cumplida-v1.schema.json`](./contratos/schemas/evento-incentivo-mision-cumplida-v1.schema.json) |
 | 9 | Subió de Categoría | `incentivos-service` | `incentivos.exchange` | `incentivo.subio-categoria.v1` | `incentivo.subio-categoria.v1` | `notificaciones.incentivos` | [`evento-incentivo-subio-categoria-v1.schema.json`](./contratos/schemas/evento-incentivo-subio-categoria-v1.schema.json) |
 | 10 | Donante Inactivo | `incentivos-service` | `incentivos.exchange` | `incentivo.donante-inactivo.v1` | `incentivo.donante-inactivo.v1` | `notificaciones.incentivos` | [`evento-incentivo-donante-inactivo-v1.schema.json`](./contratos/schemas/evento-incentivo-donante-inactivo-v1.schema.json) |
+
+#### B2. Comando del broker de logística hacia `logistica-service`
+
+Único **comando** del sistema: va a un destinatario elegido por el broker de logística de `donaciones-service`, así que su routing key identifica al destinatario (regla «eventos por hecho, comandos por destinatario», [ADR 20261007](../adr/20261007-broker-de-integracion-con-logistica.md)).
+
+| Mensaje | Emisor | TopicExchange | Routing Key | Tipo AMQP (`__TypeId__`) | Cola Receptora | JSON Schema de Contrato |
+|---|---|---|---|---|---|---|
+| Entrega Solicitada | `donaciones-service` (broker) | `donaciones.exchange` | `entrega.solicitada.<proveedorId>.v1` | `entrega.solicitada.v1` (fijo) | `logistica.<instancia>.entregas.solicitadas` (binding exacto por `LOGISTICA_INSTANCIA_ID`) | [`evento-entrega-solicitada-v1.schema.json`](./contratos/schemas/evento-entrega-solicitada-v1.schema.json) |
+
+Se publica con `mandatory=true` y publisher confirms (`correlated`); el broker espera el acuse. Si RabbitMQ lo devuelve (no hay cola para esa routing key), es un rechazo seguro y el broker prueba con el siguiente proveedor. Un nack o la falta de acuse son inciertos: el mensaje pudo haber quedado en la cola, así que se reintenta con el mismo proveedor. Un proveedor HTTP no usa este comando: recibe el pedido por REST y avisa por el callback `POST /api/logistica/proveedores/{proveedorId}/avisos`.
 
 #### C. Clúster de Dead Letter Queues (Aislamiento de Fallas)
 

@@ -9,4 +9,7 @@ public interface ISolicitudesEntregaRepository extends CrudRepository<SolicitudE
 
   /** Solicitud {@code PENDIENTE} o {@code ENVIADA} de la donación, si existe. */
   Optional<SolicitudEntrega> findActivaPorDonacion(UUID donacionIndependienteId);
+
+  /** La solicitud más reciente de la donación, en cualquier estado (incluida {@code FALLIDA}). */
+  Optional<SolicitudEntrega> findMasRecientePorDonacion(UUID donacionIndependienteId);
 }

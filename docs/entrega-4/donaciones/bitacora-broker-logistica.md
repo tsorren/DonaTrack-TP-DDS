@@ -84,6 +84,13 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | D40 | **La configuración de la demo va en `docker-compose.demo.yml`**, que se suma al base (`docker-compose -f docker-compose.yml -f docker-compose.demo.yml up`). El compose de desarrollo y el de preprod (Gate 4) no cambian. | 2026-10-07 | Etapa 7 |
 | D41 | **El escenario «envío incierto» entra en el guion:** con un timeout de lectura mínimo contra `externo`, el broker no cambia de proveedor; si aparece una entrega duplicada en `externo` (no deduplica, D33), se usa para explicar por qué el contrato exige idempotencia al proveedor. | 2026-10-07 | Etapa 7 |
 | D42 | **La colección de la demo se verifica con newman** (runner oficial de Postman por línea de comandos), sin agregarlo como dependencia del repo. | 2026-10-07 | Etapa 7 |
+| D43 | **Diagrama de componentes del sistema completo en PlantUML** (`docs/arquitectura/diseno/diagrama-de-componentes.puml`), con el estilo común del repo: los 4 servicios, RabbitMQ (exchanges y colas), n8n y, dentro de donaciones, el broker con sus adapters. No había ninguno en el repo. | 2026-10-07 | Etapa 8 |
+| D44 | **Los 3 endpoints del broker se agregan al contrato `openapi-donaciones.yaml`**, con el esquema de seguridad `X-API-Key`, y se regenera `docs/generated/`. | 2026-10-07 | Etapa 8 |
+| D45 | **SPEC-04 pasa a `docs/specs/completed/`** cuando pasen la revisión independiente y los gates. El ADR sigue `proposed` hasta que lo acepte una persona del equipo. | 2026-10-07 | Etapa 8 |
+| D46 | **Todo nack de RabbitMQ es `INCIERTO`**, no rechazo (corrige D11/D24 en ese punto; hallazgo BLOCKING-1 de la revisión independiente). Si el canal se corta con acuses pendientes, spring-rabbit genera él mismo un nack (`PublisherCallbackChannelImpl.generateNacksForPendingAcks`) aunque RabbitMQ ya haya guardado el mensaje; tratarlo como rechazo podía crear la entrega en dos proveedores. La devolución por falta de cola (`mandatory`) y la falta de conexión siguen siendo rechazo seguro. | 2026-10-07 | Etapa 8 |
+| D47 | **Puertos de aplicación para el camino de vuelta y el catálogo de adapters** (MINOR-1): `IProcesadorEventosLogistica` y `ICatalogoProveedoresLogistica` en `services/logistica/`; `AvisosProveedorService` y `AdministracionProveedoresService` ya no importan clases de infraestructura. | 2026-10-07 | Etapa 8 |
+| D48 | **El callback acepta avisos de la solicitud más reciente aunque esté `FALLIDA`** si su `proveedorActual` es quien avisa (MINOR-2): si falló tras envíos inciertos, el proveedor quizás sí tiene la entrega y sus avances no deben perderse. Una solicitud fallida por rechazos no tiene proveedor actual, así que esos avisos siguen dando 404. Nuevo `ISolicitudesEntregaRepository.findMasRecientePorDonacion`. | 2026-10-07 | Etapa 8 |
+| D49 | **No se configura `spring.task.scheduling.pool.size`** (MINOR-4 resultó un falso positivo). El usuario eligió un pool de 2 hilos, pero `[VERIFIED]` con `spring.threads.virtual.enabled=true` Spring Boot 4.0.7 crea un `SimpleAsyncTaskScheduler` de hilos virtuales (`TaskSchedulingConfigurations`, `@ConditionalOnThreading(VIRTUAL)`): cada ejecución de `@Scheduled` corre en su propio hilo virtual y el relay no puede frenar a los demás jobs. `pool.size` solo aplica al `ThreadPoolTaskScheduler` (hilos de plataforma), así que la propiedad no tendría efecto. Si se desactivaran los hilos virtuales, habría que revisarlo. | 2026-10-07 | Etapa 8 |
 
 ---
 
@@ -205,7 +212,7 @@ Discusión previa a la implementación, resumida para entender por qué el plan 
 | Contrato | `evento-donacion-asignada-v1.schema.json` | Solo cambia la descripción: logística ya no lo consume |
 | donaciones | `dto/comunicaciones/EventoEntregaSolicitadaV1` | Record del comando |
 | donaciones | `config/RabbitMQConfig` | `routingKeyEntregaSolicitada(id)` y alias fijo `entrega.solicitada.v1` en el `DefaultClassMapper` |
-| donaciones | `infrastructure/logistica/ProveedorLogisticaAmqp` | Adapter AMQP: publica con `CorrelationData`, espera el acuse (D11, D24) y traduce: devuelto, nack o sin conexión → `EnvioRechazado`; sin acuse a tiempo o error de canal → `EnvioIncierto`. `message_id` = id de la entrada del outbox y `X-Trace-Id` = traceId de la entrada |
+| donaciones | `infrastructure/logistica/ProveedorLogisticaAmqp` | Adapter AMQP: publica con `CorrelationData`, espera el acuse (D11, D24) y traduce: devuelto, nack o sin conexión → `EnvioRechazado`; sin acuse a tiempo o error de canal → `EnvioIncierto`. **Corregido en la Etapa 8 (D46): el nack pasó a `EnvioIncierto`.** `message_id` = id de la entrada del outbox y `X-Trace-Id` = traceId de la entrada |
 | donaciones | `config/LogisticaProveedoresConfig` + `infrastructure/logistica/ProveedoresLogistica` | Arma un adapter AMQP por cada proveedor con `transporte=amqp` (D26), con un template exclusivo con `mandatory=true` |
 | donaciones | `infrastructure/outbox/LogisticaOutboxRelay` | Ahora recibe `ProveedoresLogistica` en lugar de un `ObjectProvider` |
 | donaciones | `LogisticaBroker` + `SolicitudEntrega` | Reintento por rondas (D27): `SolicitudEntrega.iniciarNuevaRonda()` y contador `ronda` |
@@ -219,7 +226,7 @@ Discusión previa a la implementación, resumida para entender por qué el plan 
 
 | Test | Casos | Qué protege |
 |---|---|---|
-| `ProveedorLogisticaAmqpTest` | 7 | Cada respuesta de RabbitMQ (acuse, devolución, nack, sin acuse, sin conexión, error de canal) se traduce al resultado correcto; sobre con `message_id` y `X-Trace-Id` |
+| `ProveedorLogisticaAmqpTest` | 7 | Cada respuesta de RabbitMQ (acuse, devolución, nack, sin acuse, sin conexión, error de canal) se traduce al resultado correcto (el nack, según D46, desde la Etapa 8); sobre con `message_id` y `X-Trace-Id` |
 | `LogisticaProveedoresConfigTest` | 2 | Adapters armados desde la configuración; un proveedor sin transporte soportado queda sin adapter |
 | `ProveedorLogisticaAmqpRabbitTest` | 2 | **Contra un RabbitMQ real:** el pedido llega solo a la cola del proveedor elegido, con alias `entrega.solicitada.v1`; un pedido a un proveedor sin cola **vuelve devuelto** y no le llega a nadie |
 | `MensajeriaLogisticaRabbitTest` (logística) | 1 | **Contra un RabbitMQ real:** cada instancia recibe solo sus pedidos |

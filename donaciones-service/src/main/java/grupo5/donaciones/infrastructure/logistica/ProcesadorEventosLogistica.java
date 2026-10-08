@@ -10,6 +10,7 @@ import grupo5.donaciones.infrastructure.idempotency.IEventosConsumidosRepository
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.services.IDonacionesIndependientesService;
+import grupo5.donaciones.services.logistica.IProcesadorEventosLogistica;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Service;
  * caminos de vuelta: el listener AMQP y el callback HTTP de los proveedores que no usan RabbitMQ.
  */
 @Service
-public class ProcesadorEventosLogistica {
+public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
 
   private static final Logger log = LoggerFactory.getLogger(ProcesadorEventosLogistica.class);
   private static final String ACTOR = "logistica-service";
@@ -40,6 +41,7 @@ public class ProcesadorEventosLogistica {
     this.donacionesIndependientesRepository = donacionesIndependientesRepository;
   }
 
+  @Override
   public void procesarRutaAsignada(EventoRutaAsignada evento, String origen) {
     log.info(
         "Evento RutaAsignada recibido: rutaId={}, donacionId={}",
@@ -55,6 +57,7 @@ public class ProcesadorEventosLogistica {
         evento.rutaId());
   }
 
+  @Override
   public void procesarRutaIniciada(EventoRutaIniciada evento, String origen) {
     log.info(
         "Evento RutaIniciada recibido: rutaId={}, donaciones={}",
@@ -74,6 +77,7 @@ public class ProcesadorEventosLogistica {
                     evento.rutaId()));
   }
 
+  @Override
   public void procesarEntregaExitosa(EventoEntregaExitosa evento, String origen) {
     log.info(
         "Evento EntregaExitosa recibido: donacionId={}, camion={}",
@@ -89,6 +93,7 @@ public class ProcesadorEventosLogistica {
         evento.entregaId());
   }
 
+  @Override
   public void procesarEntregaFallida(EventoEntregaFallida evento, String origen) {
     log.info(
         "Evento EntregaFallida recibido: donacionId={}, motivo={}",

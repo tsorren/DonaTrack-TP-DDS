@@ -1,0 +1,150 @@
+@startuml diagrama-de-componentes
+' ============================================================
+' Diagrama de componentes de DonaTrack (Entrega 4)
+' Incluye los componentes de integración: mensajería RabbitMQ (pub/sub de eventos y comando
+' dirigido del broker), Broker de Integración con Logística, callback HTTP de proveedores,
+' webhooks a n8n y el planificador externo de rutas.
+' ADRs: 20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones,
+'       20261007-broker-de-integracion-con-logistica
+' ============================================================
+' Misma paleta que common/donatrack-style.puml (no se incluye: ese estilo es para diagramas de clases).
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam componentStyle uml2
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #444444
+  BackgroundColor<<broker>> #FDEEBB
+  BorderColor<<broker>> #C99A1E
+  BackgroundColor<<adapter>> #CFF5EA
+  BorderColor<<adapter>> #2E9E7C
+  BackgroundColor<<listener>> #DCEEFB
+  BorderColor<<listener>> #3B82C4
+}
+skinparam queue {
+  BackgroundColor #F5F5F5
+  BorderColor #777777
+}
+skinparam linetype polyline
+
+actor "Administrador /\nCliente liviano" as usuario
+
+cloud "Planificador externo\nde rutas" as planificador
+cloud "Proveedor de logística\nHTTP (externo)" as proveedorHttp
+cloud "Redes sociales" as redes
+
+node "RabbitMQ" as rabbit {
+  frame "donaciones.exchange\n(TopicExchange)" as exDon {
+    queue "notificaciones.donaciones" as qNotifDon
+    queue "incentivos.*\n(donante, donación, persona)" as qIncDon
+    queue "logistica.<instancia>.\nentregas.solicitadas\n(binding exacto)" as qLogEntregas
+  }
+  frame "incentivos.exchange\n(TopicExchange)" as exInc {
+    queue "notificaciones.incentivos" as qNotifInc
+  }
+  frame "logistica.exchange\n(TopicExchange)" as exLog {
+    queue "donaciones.ruta.*\ndonaciones.entrega.*" as qDonLog
+  }
+  queue "notificaciones.dlx → *.dlq" as dlq
+}
+
+package "donaciones-service :8080" as donaciones {
+  component "API REST\n(controllers)" as donApi
+  component "PropuestaDeAsignacionService" as propuestas
+  component "DonacionesEventPublisher" as donPublisher <<adapter>>
+
+  package "Broker de Integración con Logística" as brokerPkg {
+    component "LogisticaBroker" as broker <<broker>>
+    component "SeleccionPorPreferenciaConFallback\n(Strategy)" as estrategia <<broker>>
+    component "Outbox del broker\n+ LogisticaOutboxRelay" as relay <<broker>>
+    component "ProveedorLogisticaAmqp" as adapterAmqp <<adapter>>
+    component "ProveedorLogisticaHttp" as adapterHttp <<adapter>>
+    component "LogisticaCallbackController\n+ ApiKeyFilter" as callback <<adapter>>
+    component "LogisticaProveedorController\n(administración)" as adminBroker <<adapter>>
+  }
+
+  component "LogisticaEventListener" as donListener <<listener>>
+  component "ProcesadorEventosLogistica\n(idempotente)" as procesador
+}
+
+package "logistica-service :8083\n(instancia donatrack)" as logistica {
+  component "EntregaSolicitadaEventListener" as logListener <<listener>>
+  component "API REST\n(camiones, rutas, entregas)" as logApi
+  component "Planificación de rutas\n(scheduler + callback)" as logPlan
+  component "Publicador de eventos\nde logística" as logPublisher <<adapter>>
+}
+
+package "notificaciones-service :8081" as notificaciones {
+  component "DonacionEventListener /\nIncentivoEventListener" as notifListener <<listener>>
+  component "NotificacionService\n(Transactional Inbox)" as notifService
+  component "Medios: correo,\nSMS, WhatsApp" as medios <<adapter>>
+}
+database "PostgreSQL\n(schema notificaciones)" as postgres
+
+package "incentivos-service :8082" as incentivos {
+  component "Listeners de donaciones" as incListener <<listener>>
+  component "Misiones, insignias\ny rankings" as incDominio
+  component "Publicador de\nincentivos" as incPublisher <<adapter>>
+  component "Cliente n8n" as incN8n <<adapter>>
+}
+node "n8n" as n8n
+
+' --- Entrada de usuarios ---
+usuario --> donApi : REST
+usuario --> logApi : REST
+usuario --> adminBroker : REST + X-API-Key
+
+' --- Donaciones: eventos de dominio (pub/sub) ---
+donApi --> propuestas
+propuestas --> donPublisher : donacion.asignada.v1\n(y demás eventos)
+donPublisher --> exDon : publica eventos
+qNotifDon --> notifListener
+qIncDon --> incListener
+
+' --- Broker de Integración con Logística ---
+propuestas --> broker : solicitarEntrega()
+broker --> estrategia : ordenar proveedores
+broker --> relay : entrada pendiente
+relay --> adapterAmqp : proveedor AMQP
+relay --> adapterHttp : proveedor HTTP
+adminBroker --> estrategia : cambiar preferido
+adapterAmqp --> exDon : entrega.solicitada.<id>.v1\n(mandatory + acuse)
+qLogEntregas --> logListener
+adapterHttp --> proveedorHttp : POST /api/entregas
+proveedorHttp --> callback : POST /api/logistica/\nproveedores/{id}/avisos
+callback --> procesador
+
+' --- Logística: planificación y vuelta ---
+logListener --> logApi : crea Entrega
+logPlan --> planificador : solicitud por lotes
+planificador --> logPlan : callback de resultados
+logPublisher --> exLog : ruta.* / entrega.*
+qDonLog --> donListener
+donListener --> procesador
+procesador --> donPublisher : en-camino / recibida /\nentrega-fallida
+
+' --- Incentivos ---
+incListener --> incDominio
+incDominio --> incPublisher
+incPublisher --> exInc : incentivo.*.v1
+qNotifInc --> notifListener
+incDominio --> incN8n
+incN8n --> n8n : webhooks
+n8n --> redes : publicación
+
+' --- Notificaciones ---
+notifListener --> notifService
+notifService --> postgres
+notifService --> medios
+qNotifDon ..> dlq : x-dead-letter
+qNotifInc ..> dlq : x-dead-letter
+
+legend right
+  |= Color |= Rol |
+  |<#FDEEBB>| Broker de logística (decide) |
+  |<#CFF5EA>| Adapter de integración (habla con afuera) |
+  |<#DCEEFB>| Listener AMQP (entrada) |
+  Eventos: se rutean por hecho (N interesados).
+  Comando entrega.solicitada: se rutea por destinatario.
+endlegend
+@enduml
