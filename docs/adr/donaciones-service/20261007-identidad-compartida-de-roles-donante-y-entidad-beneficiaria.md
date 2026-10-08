@@ -74,9 +74,10 @@ Justificación: es la de menor costo de migración, conserva la integridad refer
 | Baja de entidad → `Necesidad.desactivar()` en cascada; al reactivarla las necesidades **no** se reactivan (se vuelven a registrar) | `EntidadBeneficiariaService` |
 | Una propuesta cuya necesidad ya está inactiva no se puede aceptar ni confirmar | `PropuestaDeAsignacionService` |
 | Anonimizar una persona → baja de sus roles activos + eventos + cascada | `PersonasService.eliminarPersona` |
-| Una jurídica no puede recibir su propia donación (`donacion.donanteId == necesidad.entidadId`) | Matching y confirmación |
+| Una jurídica no puede recibir su propia donación (`donacion.donanteId == necesidad.entidadId`) | Solo al aprobar la propuesta (`PropuestaDeAsignacionService`, `409 DONACION_A_SI_MISMO`). El matching puede seguir generando esas propuestas: se estimó que ocurre muy pocas veces, y filtrarlo ahí exigiría que `DonacionIndependiente` conozca a su donante |
 | `PUT /api/entidades/{id}` exige `id == juridicaId`, **solo revalida** y responde `409 ENTIDAD_BENEFICIARIA_INACTIVA` si la entidad está de baja; reactivar es solo por `POST` | `EntidadBeneficiariaService` |
-| `DELETE /api/donantes/{id}` y `DELETE /api/entidades/{id}` pasan a ser baja lógica | Servicios |
+| `DELETE /api/donantes/{id}` y `DELETE /api/entidades/{id}` pasan a ser baja lógica; un segundo `DELETE` no repite eventos ni cascada | Servicios |
+| `DonanteOutputDTO` y `EntidadBeneficiariaOutputDTO` exponen `activo` (cambio aditivo) | DTOs y mappers |
 
 El importador CSV, prerrequisito de esta decisión, ya no pisa los datos de una persona existente (`actualizarParcial`; el tipo jurídico nunca cambia).
 

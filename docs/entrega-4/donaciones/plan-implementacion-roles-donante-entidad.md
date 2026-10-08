@@ -113,6 +113,8 @@ Cada etapa termina con Gate 1/2 en verde, revisión según nivel y tu aprobació
 
 ### Etapa 4 — Baja, cascada, guardas y anonimización
 
+> **Estado: implementada y verificada** (`[VERIFIED]`: reactor completo en verde, `spotless:check` OK; `donaciones-service` 492 tests). Se hizo en una sola etapa (sin dividir). `DELETE` de donante y de entidad son baja lógica e idempotentes; la baja de entidad desactiva sus necesidades; guardas en `cargarDonacion` (`DONANTE_INACTIVO`), en el alta de necesidades (`ENTIDAD_BENEFICIARIA_INACTIVA`) y al aprobar una propuesta (`NECESIDAD_INACTIVA`, `DONACION_A_SI_MISMO`); `PersonasService.eliminarPersona` da de baja los roles; `DonanteOutputDTO` y `EntidadBeneficiariaOutputDTO` exponen `activo`. **Decisión:** la no auto-donación se controla solo al aprobar (el matching puede seguir generando esas propuestas; se estimó muy infrecuente). Códigos nuevos: `ERR-EST-211`, `ERR-EST-520`, `ERR-EST-521`.
+
 - `eliminarDonante` → `darDeBaja()` + `donante.dado-de-baja` solo si hubo transición. `eliminarEntidad` → `darDeBaja()` + cascada de `Necesidad.desactivar()` (`[A VERIFICAR]` si `INecesidadesRepository` ya tiene búsqueda por `entidadId`; si no, se agrega).
 - Guardas de §1.3 en `DonacionesService`, `NecesidadesService`, `PropuestaDeAsignacionService` (aceptar y confirmar fragmentación) y D3 en el matching.
 - `PersonasService.eliminarPersona`: baja de roles activos + eventos + cascada.

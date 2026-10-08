@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 3 hecha: los roles usan el id de la persona, alta idempotente (201/200) y `PUT` que solo revalida.
+> Última actualización: **2026-10-08** — Etapa 4 hecha: baja lógica con cascada, guardas, anonimización que da de baja los roles y `activo` en las respuestas.
 
 - **Qué estamos haciendo:** que el id de `Donante` y de `EntidadBeneficiaria` sea el de su persona (`donanteId = personaId`, `entidadId = juridicaId`). Así una persona no puede quedar registrada dos veces, dar de baja un rol no deja referencias colgadas y nadie puede volver EMPRESA a una entidad beneficiaria.
 - **Cómo:** opción A3 de la issue (se mantienen las clases con id compartido), baja lógica con un bool `activo`, y una sola cola en incentivos para el ciclo de vida del donante.
-- **Dónde estamos:** plan cerrado y Etapas 0 a 3 hechas. Baseline 437 tests; tras la Etapa 1, 442; tras la Etapa 3, 474 en `donaciones-service` y reactor completo en verde. El ADR espera aprobación humana (`proposed`).
+- **Dónde estamos:** plan cerrado y Etapas 0 a 4 hechas. Baseline 437 tests; tras la Etapa 1, 442; tras la Etapa 3, 474; tras la Etapa 4, 492 en `donaciones-service` y reactor completo en verde. El ADR espera aprobación humana (`proposed`).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 4, baja lógica, cascada, guardas y anonimización.
+- **Próximo paso:** Etapa 5, custodia del tipo y de la dirección (+ importador, parte b).
 
 ---
 
@@ -28,7 +28,7 @@
 | 1 — Importador CSV | Dejar de pisar datos al reimportar (`actualizarParcial`) | ✅ Hecha |
 | 2 — ADR y spec | ADR `proposed` (el plan hace de spec) | ✅ Hecha |
 | 3 — Identidad compartida y unicidad | Roles con id compartido, `activo`, alta idempotente, REST 201/200, `ErrorCatalog` | ✅ Hecha |
-| 4 — Baja, cascada y guardas | Baja lógica, cascada a necesidades, anonimización, auto-donación | ⏳ Pendiente |
+| 4 — Baja, cascada y guardas | Baja lógica, cascada a necesidades, anonimización, auto-donación | ✅ Hecha |
 | 5 — Custodia del tipo + importador (b) | Rechazar EMPRESA/sin dirección en entidad activa; el importador registra el rol | ⏳ Pendiente |
 | 6 — Incentivos | Cola única con un solo consumidor | ⏳ Pendiente |
 | 7 — Contratos y docs | Schemas (`donanteId` deprecated), OpenAPI, catálogos, DDL, diagramas | ⏳ Pendiente |
@@ -51,6 +51,8 @@
 | D9 | El importador CSV nunca cambia el tipo jurídico de una persona existente; una celda vacía significa "dejar lo que hay". | 2026-10-07 | Equipo |
 | D10 | La actualización parcial vive como método de servicio (`actualizarParcial`), sin endpoint nuevo. | 2026-10-07 | Equipo |
 | D11 | Un solo ADR para toda la iniciativa (identidad, baja lógica y orden de eventos), y el plan hace de spec (no se crea `SPEC-0X`). | 2026-10-07 | Equipo |
+| D12 | La no auto-donación se controla solo al aprobar la propuesta (no en el matching): se estimó que ocurre muy pocas veces. | 2026-10-08 | Equipo |
+| D13 | Las respuestas de donante y entidad exponen `activo` (cambio aditivo). | 2026-10-08 | Equipo |
 
 ---
 
@@ -97,6 +99,17 @@ Ninguna.
 - **Tests:** nuevos `DonanteTest` y casos en `EntidadBeneficiariaTest`, `DonantesServiceTest`, `EntidadBeneficiariaServiceTest` y los dos controller tests. En `EntidadBeneficiariaServiceTest` ajusté los fixtures para que `persona.getId() == juridicaId` (antes usaban ids distintos, algo que el modelo nuevo no admite); las aserciones no se debilitaron. `DonantesServiceTest.testCrearDonante` pasó a `resultado.recurso()` por el cambio de tipo de retorno.
 - **Verificación `[VERIFIED]`:** `mvn clean test` (reactor completo, por tocar `common-lib`) → todos los módulos en verde (donaciones 474 tests, 0 fallos; 1 test omitido en notificaciones, preexistente); `mvn spotless:check` OK. Gate 3/4 `[DEFERRED_NO_DOCKER]` hasta la Etapa 8.
 - **Pendiente de documentar (Etapa 7):** `catalogo-errores.md` con los tres códigos nuevos y `openapi-donaciones.yaml` con el `200` del `POST`.
+
+### 2026-10-08 — Etapa 4: baja lógica, cascada, guardas y anonimización
+
+- **`DELETE` es baja lógica:** `DonantesService.eliminarDonante` y `EntidadBeneficiariaService.eliminarEntidad` llaman a `darDeBaja()` y guardan (no hay `delete`). Solo si hubo transición: el donante publica `donante.dado-de-baja`; la entidad desactiva en cascada todas sus necesidades (`buscarNecesidadesPorEntidad`). Un segundo `DELETE` no repite eventos ni cascada; un id inexistente sigue dando 404. Nuevo `darDeBajaSiExiste(id)` en ambos servicios, tolerante a que la persona no tenga el rol.
+- **Guardas:** `DonacionesService.cargarDonacion` rechaza un donante de baja (`DONANTE_INACTIVO`, `ERR-EST-211`); `NecesidadesService` rechaza una necesidad nueva para una entidad de baja (`ENTIDAD_BENEFICIARIA_INACTIVA`); `PropuestaDeAsignacionService.actualizarEstado(APROBADA)` valida antes de aprobar que la necesidad siga activa (`NECESIDAD_INACTIVA`, `ERR-EST-521`) y que ninguna donación sea de la propia entidad (`DONACION_A_SI_MISMO`, `ERR-EST-520`). El matching ya excluía necesidades inactivas (`findByEstaSatisfechaFalseActivaTrue`), así que la cascada alcanza para que no se generen propuestas nuevas.
+- **No auto-donación (D12):** solo al aprobar. La alternativa de filtrarla en el matching exigía agregar `donanteId` a `DonacionIndependiente` (2 sitios de creación, 15 usos en tests) y tocar el Template Method del algoritmo; se descartó porque el caso es muy poco frecuente. La guarda es null-safe: una necesidad sin entidad no cuenta como auto-donación.
+- **Anonimización:** `PersonasService.eliminarPersona` anonimiza y después llama a `darDeBajaSiExiste` de donantes y de entidades (nuevas dependencias del constructor).
+- **`activo` en las respuestas (D13):** `DonanteOutputDTO(idDonante, persona, activo)` y `EntidadBeneficiariaOutputDTO(id, juridica, activo)`; cambio aditivo (AGENTS.md §8.2).
+- **Tests:** se escribieron antes de la implementación, pero implementé todo antes de la primera compilación, así que no llegué a ver el estado rojo (en la Etapa 3 sí). Cambios en tests existentes: `testEliminarDonante` verificaba `delete(donante)` y ahora verifica baja lógica; las necesidades de `NecesidadesServiceTest` stubbean `estaActivo()` en los mocks; `actualizarEstado_cuandoEsAprobada` ahora provee una necesidad activa. Ninguna aserción se debilitó.
+- **Verificación `[VERIFIED]`:** reactor completo `mvn clean test` en verde (donaciones 492 tests), `spotless:check` OK. Gate 3/4 `[DEFERRED_NO_DOCKER]`.
+- **Pendiente de documentar (Etapa 7):** `catalogo-errores.md` (ahora seis códigos nuevos) y `openapi-donaciones.yaml` (`activo`, `200` del `POST`).
 
 ---
 
