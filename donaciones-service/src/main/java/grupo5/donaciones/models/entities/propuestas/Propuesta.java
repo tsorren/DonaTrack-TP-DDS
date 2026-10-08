@@ -8,7 +8,6 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -42,7 +41,7 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
   }
 
   public List<PosibleFragmentacion> getPosiblesFragmentaciones() {
-    return Collections.unmodifiableList(posiblesFragmentaciones);
+    return List.copyOf(posiblesFragmentaciones);
   }
 
   void setId(UUID id) {

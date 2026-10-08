@@ -6,7 +6,6 @@ import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -28,7 +27,7 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
 
   @Override
   public List<DonacionIndependiente> getDonacionesAsignadas() {
-    return Collections.unmodifiableList(donacionesAsignadas);
+    return List.copyOf(donacionesAsignadas);
   }
 
   @Override

@@ -114,13 +114,15 @@ class NecesidadRecurrenteTest {
   void renovarPeriodoSiCorresponde_cuandoNoTienePeriodos_deberiaRetornarTrueYCrearPeriodo() {
     NecesidadRecurrente sinPeriodo = necesidadSinPeriodoActual();
 
+    LocalDate antes = LocalDate.now(ZoneId.systemDefault());
     assertTrue(sinPeriodo.renovarPeriodoSiCorresponde(TEST_DATE));
+    LocalDate despues = LocalDate.now(ZoneId.systemDefault());
 
     // El período inicial sigue en la lista (solo está oculto); el nuevo parte de hoy.
     assertEquals(2, sinPeriodo.getPeriodos().size());
-    assertEquals(
-        LocalDate.now(ZoneId.systemDefault()).plus(Period.ofWeeks(1)),
-        sinPeriodo.getPeriodos().getLast().fechaFin());
+    LocalDate fechaFin = sinPeriodo.getPeriodos().getLast().fechaFin();
+    assertFalse(fechaFin.isBefore(antes.plus(Period.ofWeeks(1))));
+    assertFalse(fechaFin.isAfter(despues.plus(Period.ofWeeks(1))));
   }
 
   /** Los períodos no se pueden vaciar desde afuera: se simula que no hay período actual. */

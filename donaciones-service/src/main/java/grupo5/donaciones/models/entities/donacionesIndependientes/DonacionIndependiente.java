@@ -49,7 +49,7 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   }
 
   public List<ItemDonacionIndependiente> getItems() {
-    return Collections.unmodifiableList(items);
+    return List.copyOf(items);
   }
 
   public String getDescripcion() {

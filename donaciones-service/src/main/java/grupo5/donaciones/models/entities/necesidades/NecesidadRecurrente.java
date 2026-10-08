@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -66,7 +65,7 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   public List<PeriodoNecesidad> getPeriodos() {
-    return Collections.unmodifiableList(periodos);
+    return List.copyOf(periodos);
   }
 
   public PeriodoNecesidad obtenerPeriodoActual() {
