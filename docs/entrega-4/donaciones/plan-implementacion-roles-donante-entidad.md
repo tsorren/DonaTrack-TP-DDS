@@ -6,7 +6,7 @@
 >
 > **Etiquetas epistémicas (AGENTS.md §3):** `[OBSERVED]` leído en el código · `[DOCUMENTED]` en un ADR/doc · `[INFERRED]` deducido · `[PROPOSED]` no existe aún · `[A VERIFICAR]` supuesto a confirmar en la etapa indicada.
 >
-> **Estado:** plan aprobado en sus decisiones (D1–D7); pendiente de ejecución etapa por etapa. No se tocó código. Cada etapa se implementa solo después de que la apruebes.
+> **Estado:** Etapas 0 a 5 y 7 hechas y verificadas; Etapa 6 delegada al equipo de incentivos; Etapa 8 (cierre) en curso. Cada etapa se implementó después de que el equipo la aprobó. El estado de cada una está en su sección y en la bitácora.
 
 ### Decisiones tomadas
 
@@ -151,6 +151,8 @@ Ver §3. Cambios: una cola `incentivos.donante-ciclo-de-vida` con los dos bindin
 - No se editan ADRs aprobados ni enunciados.
 
 ### Etapa 8 — Validación y cierre
+
+> **Estado: hecha, con Gates 3 y 4 `[DEFERRED_NO_DOCKER]`.** Reactor completo `mvn clean test` en verde (donaciones 511 tests), `spotless:check` OK, `agent-check` 67 PASS, pre-flight de Sonar por lectura. Revisión `INDEPENDENT_REVIEW` (subagente que recibió solo los artefactos y la política): veredicto `CHANGES_REQUIRED` con 1 hallazgo BLOCKING (409 sin documentar en el contrato REST) y 8 ADVISORY. Se corrigieron el BLOCKING, el orden de validación al aprobar (A8), la documentación desactualizada (D1 a D4), la deuda mal declarada (A6) y la reactivación sobre persona anonimizada (A1, nuevo `ERR-EST-108 PERSONA_ANONIMIZADA`). **Quedan declarados:** falla parcial de la baja (A2) y carrera check-then-act (A3), ambos para JPA con `@Transactional`; orden de eventos con incentivos (A4), a cargo de incentivos; Gates 3 y 4.
 
 - `mvn spotless:check`, `mvn clean test` (reactor completo, por tocar `common-lib`), `mvn verify -pl integration-tests -DskipTests=false` (incluye `CrossServiceCommunicationIT`; sin Docker se declara `[DEFERRED_NO_DOCKER]`), pre-flight SonarCloud (`docs/IA/07-…`), Review Contract (`ENHANCED_REVIEW_REQUIRED`) y reporte (`docs/IA/04-…`).
 

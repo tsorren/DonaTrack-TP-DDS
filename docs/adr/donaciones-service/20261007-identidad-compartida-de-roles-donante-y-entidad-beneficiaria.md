@@ -61,7 +61,7 @@ Justificación: es la de menor costo de migración, conserva la integridad refer
 
 * `Donante.id = personaId` y `EntidadBeneficiaria.id = juridicaId`. Se elimina el constructor de `EntidadBeneficiaria` que acepta un id independiente del de la jurídica.
 * Los roles llevan **un único campo propio: `activo` (bool)**, con `darDeBaja()`, `reactivar()` y `estaActivo()`. La baja de un rol es **lógica**. Se descartó `fechaBaja`: nadie lee el «cuándo» (el evento de baja ya lleva `fecha`) y reactivar lo borraría igual.
-* `EntidadBeneficiaria.registrar(Juridica)` valida el tipo y la dirección.
+* `EntidadBeneficiaria.validarApta(Persona)` valida que sea jurídica, que no sea EMPRESA y que tenga dirección; `validarRequisitos(tipo, tieneDireccion)` expresa la misma regla sobre datos, para validar antes de modificar la persona.
 
 ### Reglas de negocio
 
@@ -72,8 +72,9 @@ Justificación: es la de menor costo de migración, conserva la integridad refer
 | Mientras la entidad esté activa, su `Juridica` no puede pasar a `EMPRESA` ni quedarse sin dirección | `PersonasService.actualizarPersona`, validando contra el input **antes** de mutar |
 | Solo donantes activos cargan donaciones; solo entidades activas registran necesidades | `DonacionesService`, `NecesidadesService` |
 | Baja de entidad → `Necesidad.desactivar()` en cascada; al reactivarla las necesidades **no** se reactivan (se vuelven a registrar) | `EntidadBeneficiariaService` |
-| Una propuesta cuya necesidad ya está inactiva no se puede aceptar ni confirmar | `PropuestaDeAsignacionService` |
+| Una propuesta cuya necesidad ya está inactiva no se puede aprobar (`409 NECESIDAD_INACTIVA`); la guarda corre en `actualizarEstado(APROBADA)`, único productor del evento que dispara la confirmación | `PropuestaDeAsignacionService` |
 | Anonimizar una persona → baja de sus roles activos + eventos + cascada | `PersonasService.eliminarPersona` |
+| Una persona anonimizada no puede volver a operar: registrar o reactivar un rol sobre ella responde `409 PERSONA_ANONIMIZADA` (se detecta por `Persona.estaAnonimizada()`, que compara el valor `ANONIMIZADO` de nombre o razón social, porque no hay un flag) | `DonantesService.crearDonante`, `EntidadBeneficiariaService.crearEntidad` |
 | Una jurídica no puede recibir su propia donación (`donacion.donanteId == necesidad.entidadId`) | Solo al aprobar la propuesta (`PropuestaDeAsignacionService`, `409 DONACION_A_SI_MISMO`). El matching puede seguir generando esas propuestas: se estimó que ocurre muy pocas veces, y filtrarlo ahí exigiría que `DonacionIndependiente` conozca a su donante |
 | `PUT /api/entidades/{id}` exige `id == juridicaId`, **solo revalida** y responde `409 ENTIDAD_BENEFICIARIA_INACTIVA` si la entidad está de baja; reactivar es solo por `POST` | `EntidadBeneficiariaService` |
 | `DELETE /api/donantes/{id}` y `DELETE /api/entidades/{id}` pasan a ser baja lógica; un segundo `DELETE` no repite eventos ni cascada | Servicios |
@@ -110,6 +111,8 @@ Alternativas evaluadas:
 * `donanteId` queda *deprecated* en 8 schemas AMQP, a retirar en un ciclo posterior.
 * Las clases rol conservan un solo campo propio (`activo`): la custodia de reglas entre agregados (tipo, dirección, unicidad) vive en servicios, con una condición de carrera check-then-act que en memoria es aceptable y con JPA se resuelve con la transacción.
 * **Re-alta del donante:** incentivos crea un perfil nuevo y se pierde el historial, igual que hoy. Conservarlo requeriría un evento `donante.reactivado.v1`, fuera de alcance.
+* **Falla parcial de la baja:** si la cascada de una baja (necesidades de una entidad, o la publicación del evento de un donante) falla a la mitad, un segundo `DELETE` no la reintenta, porque la transición activo→inactivo ya ocurrió. En memoria es improbable; con JPA se resuelve con una transacción (`@Transactional`) que cubra el cambio de estado y la cascada.
+* **Detección de anonimización sin flag:** `estaAnonimizada()` se apoya en el valor `ANONIMIZADO` de nombre o razón social. Una persona con ese nombre literal sería tratada como anonimizada; si molesta, el reemplazo natural es un flag explícito en `Persona`.
 * La cola única depende de mantener un solo consumidor y no reencolar; hay que eliminar las colas viejas para que no acumulen mensajes.
 
 ### Validación
@@ -184,4 +187,4 @@ Alternativas evaluadas:
 * Simplificar los tres saltos `donanteId → personaId`, que con id compartido son la identidad.
 * Evento `donante.reactivado.v1` para conservar el historial de incentivos en una re-alta.
 * Retirar `donanteId` de los schemas AMQP tras el ciclo de deprecación.
-* Hallazgo: toda `Persona` nace con un `Telefono` vacío de relleno (`Persona()`); queda registrado como deuda.
+* Hallazgo: toda `Persona` nace con un `Telefono` vacío de relleno (`Persona()`). Queda registrado como hallazgo en la bitácora y en el reporte; **no** está en `DEUDA_TECNICA.md`.

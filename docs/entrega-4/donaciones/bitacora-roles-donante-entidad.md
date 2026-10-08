@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-08** — Etapa 7 hecha: contratos y documentación sincronizados; Etapa 6 delegada a incentivos.
+> Última actualización: **2026-10-08** — Etapa 8 hecha (Gates 3 y 4 diferidos por falta de Docker): revisión independiente aplicada; Etapa 6 delegada a incentivos.
 
 - **Qué estamos haciendo:** que el id de `Donante` y de `EntidadBeneficiaria` sea el de su persona (`donanteId = personaId`, `entidadId = juridicaId`). Así una persona no puede quedar registrada dos veces, dar de baja un rol no deja referencias colgadas y nadie puede volver EMPRESA a una entidad beneficiaria.
 - **Cómo:** opción A3 de la issue (se mantienen las clases con id compartido), baja lógica con un bool `activo`, y una sola cola en incentivos para el ciclo de vida del donante.
-- **Dónde estamos:** plan cerrado y Etapas 0 a 5 hechas. Baseline 437 tests; tras la Etapa 1, 442; tras la Etapa 3, 474; tras la Etapa 4, 492; tras la Etapa 5, 506 en `donaciones-service` y reactor completo en verde. El ADR espera aprobación humana (`proposed`).
+- **Dónde estamos:** plan cerrado; Etapas 0 a 5 y 7 hechas, Etapa 6 delegada al equipo de incentivos, Etapa 8 (cierre) hecha. Baseline 437 tests; tras la Etapa 1, 442; tras la Etapa 3, 474; tras la Etapa 4, 492; tras la Etapa 5, 506; tras la revisión (Etapa 8), 511 en `donaciones-service` y reactor completo en verde. El ADR espera aprobación humana (`proposed`).
 - **Bloqueante para seguir:** ninguno.
-- **Pendiente ajeno:** Etapa 6 (cola única en incentivos), a cargo del equipo de incentivos; hasta entonces el riesgo de orden de eventos sigue abierto. **Próximo paso nuestro:** Etapa 8, validación y cierre.
+- **Pendiente ajeno:** Etapa 6 (cola única en incentivos), a cargo del equipo de incentivos; hasta entonces el riesgo de orden de eventos sigue abierto. **Próximo paso nuestro:** PR (lo abre el equipo) y correr los Gates 3 y 4 con Docker.
 
 ---
 
@@ -32,7 +32,7 @@
 | 5 — Custodia del tipo + importador (b) | Rechazar EMPRESA/sin dirección en entidad activa; el importador registra el rol | ✅ Hecha |
 | 6 — Incentivos | Cola única con un solo consumidor | 🔀 Delegada al equipo de incentivos |
 | 7 — Contratos y docs | Schemas (`donanteId` deprecated), OpenAPI, catálogos, DDL, diagramas | ✅ Hecha |
-| 8 — Validación y cierre | Reactor completo, `integration-tests`, Sonar, revisión | ⏳ Pendiente |
+| 8 — Validación y cierre | Reactor completo, `integration-tests`, Sonar, revisión | ✅ Hecha (Gates 3 y 4 diferidos) |
 
 ---
 
@@ -56,6 +56,7 @@
 | D14 | El importador registra el rol de donante de una persona existente, pero **no reactiva** a un donante dado de baja (opción B): la fila cuenta como error y no se actualiza. | 2026-10-08 | Equipo |
 | D15 | La Etapa 6 (cola única en incentivos) la implementa el equipo de incentivos; Donaciones solo deja la decisión y las instrucciones de entrega en el plan. | 2026-10-08 | Equipo |
 | D16 | `donanteId` se marca `deprecated` en los 7 schemas que ya llevan `personaId`; en `donacion.segmentada` (sin `personaId`) solo se documenta que vale lo mismo. | 2026-10-08 | Equipo |
+| D17 | Una persona anonimizada no puede volver a operar: registrar o reactivar un rol sobre ella da `409 PERSONA_ANONIMIZADA` (opción A del hallazgo A1 de la revisión). | 2026-10-08 | Equipo |
 
 ---
 
@@ -141,6 +142,21 @@ Ninguna.
 - **Hallazgos fuera de alcance (no corregidos):** (1) toda `Persona` nace con un `Telefono` vacío de relleno (`Persona()`); (2) `docs/arquitectura/eventos-amqp.md` conserva ejemplos con `personaDonanteId`, un campo que el catálogo prohíbe y que no existe en los schemas actuales; (3) los `.puml` de donaciones eran copias casi idénticas entre sí y estaban desactualizados antes de este cambio (por ejemplo `Donante` mostraba `persona: Persona` y métodos que no existen).
 - **Verificación `[VERIFIED]`:** `node scripts/agent-check.js` → 67 PASS, 0 FAIL; `mvn clean test` (reactor completo) en verde. Los tests de contrato contra Docker (`ContractIT`) quedan `[DEFERRED_NO_DOCKER]`.
 
+### 2026-10-08 — Etapa 8: validación, revisión independiente y cierre
+
+- **Gates `[VERIFIED]`:** `mvn clean test` (reactor completo) en verde; `spotless:check` OK; `node scripts/agent-check.js` 67 PASS. **Gates 3 y 4 `[DEFERRED_NO_DOCKER]`** (`docker info` falla en esta máquina): faltan `mvn verify -pl integration-tests -DskipTests=false` y `./run-preprod-tests.sh`. Revisión estática de los ITs: el builder de jurídicas crea ONG con dirección y los tests usan el id que devuelve el `POST`, así que no se detectaron incompatibilidades.
+- **Sonar pre-flight (por lectura):** 2 hallazgos propios en tests nuevos (test sin aserción, claves repetidas del CSV), corregidos.
+- **Mergeabilidad con `E4_donaciones_broker` (simulada con `git merge-tree`):** el código Java (`PropuestaDeAsignacionService`, su test y `ErrorCatalog`) se fusiona sin conflictos; hay 3 conflictos de documentación (`ESTADO_DOCUMENTACION.md`, `contratos-rest.md`, `matriz-productor-consumidor.md`) a resolver a mano.
+- **Revisión `INDEPENDENT_REVIEW`:** un subagente recibió solo los artefactos (rango `ENTREGA_4..HEAD`, plan, ADR, política de revisión) y no mi razonamiento. Veredicto `CHANGES_REQUIRED`: 1 BLOCKING y 8 ADVISORY; puntaje del ADR 4.1/5.0 (estimado por el revisor). Contrastó ejecutando el reactor (506 tests en ese momento) y `spotless:check`.
+  - **B1 (BLOCKING), corregido:** tres 409 nuevos (`POST /api/donaciones`, `POST /api/necesidades`, `PUT /api/asignaciones/propuestas/{id}/estado`) no estaban en `contratos-rest.md` ni en el OpenAPI. Mi Etapa 7 los había omitido.
+  - **A1, corregido (D17):** reactivar un rol sobre una persona anonimizada la «resucitaba» y publicaba `donante.registrado` con `ANONIMIZADO`. Nueva `Persona.estaAnonimizada()` y `409 PERSONA_ANONIMIZADA` (`ERR-EST-108`) en `crearDonante` y `crearEntidad`. Limitación: se detecta por el valor `ANONIMIZADO` (no hay flag).
+  - **A8, corregido:** `validarAprobable` corría antes que el chequeo de estado; ahora solo si la propuesta está `PENDIENTE` (una ya aprobada vuelve a dar el error de transición).
+  - **A5/A6, corregidos:** encabezado del plan, resumen de la bitácora y tres frases del ADR desactualizados (`registrar`, «ni confirmar», «registrado como deuda» siendo falso).
+  - **A2/A3, declarados:** falla parcial de la baja (cascada o evento) no reintentable, y carrera check-then-act en el alta; ambos se resuelven con una transacción al pasar a JPA. Agregados a las consecuencias del ADR.
+  - **A4, declarado:** el orden de eventos baja/alta con incentivos sigue abierto hasta la Etapa 6 (a cargo del equipo de incentivos). El revisor recomienda no mergear a `main` sin ella o sin una nota de riesgo explícita en el PR.
+  - **A7:** se agregaron tests para A1 (donante y entidad, incluida la no reactivación de un rol de baja) y para A8. No se agregó test de la falla parcial (A2): requeriría inyectar fallos que el modelo en memoria no tiene.
+- **Verificación `[VERIFIED]` final:** donaciones 511 tests, 0 fallos; reactor completo en verde.
+
 ---
 
 ## Q&A
@@ -171,3 +187,6 @@ Un solo ADR: la issue pide uno que cubra todo, y el orden de eventos queda como 
 
 **P: ¿Por qué se marcaría `donanteId` como deprecated?**
 Porque con el id compartido `donanteId` y `personaId` valen siempre lo mismo y los eventos llevan los dos: hay dos nombres para el mismo dato. Deprecar es el primer paso del ciclo de migración que exige AGENTS.md §8.2 (no se renombra ni elimina un campo sin ese ciclo): el campo se mantiene, pero se avisa a los consumidores que usen `personaId`. En `donacion.segmentada` no se puede deprecar todavía porque ese evento no lleva `personaId`; ahí solo se documenta. → D16.
+
+**P: ¿Cuál es el problema de A1? ¿Una persona dada de baja queda anonimizada y luego se quiere crear de nuevo?**
+No: hay dos bajas distintas. `DELETE /api/donantes/{id}` solo marca al donante como inactivo (se puede reactivar con un `POST`, y es lo esperado). `DELETE /api/personas/{id}` anonimiza a la persona (irreversible) y da de baja sus roles. El problema es que el **id viejo sigue existiendo** como cáscara: un cliente o script con ese id podía hacer `POST /api/donantes` y reactivar al donante, publicando `donante.registrado` con nombre `ANONIMIZADO`. Una persona real que quiera donar de nuevo se carga como persona nueva, con otro id, y no se ve afectada. → D17.

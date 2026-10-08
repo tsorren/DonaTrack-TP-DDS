@@ -26,13 +26,13 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
-| `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems | `DonacionInputDTO` | `201`, `400` |
+| `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems (`409` si el donante está dado de baja) | `DonacionInputDTO` | `201`, `400`, `409` |
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
 | `GET` | `/donaciones-independientes` | Listado con filtros (`estado`, `subcategoriaId`, `donanteId`) | — | `200` |
 | `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
-| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias | `NecesidadDTO` | `201`, `400` |
+| `POST` | `/api/necesidades` | Registro de necesidades de entidades beneficiarias (`409` si la entidad está dada de baja) | `NecesidadDTO` | `201`, `400`, `409` |
 | `GET` | `/api/necesidades` | Listado de necesidades activas (filtros `entidadId`, `tipo`) | — | `200` |
 | `GET` | `/api/necesidades/{id}` | Consulta de necesidad por ID | — | `200`, `404` |
 | `PUT` | `/api/necesidades/{id}` | Actualización de necesidad existente | `NecesidadDTO` | `200`, `400`, `404` |
@@ -40,13 +40,13 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/asignaciones/ejecuciones` | Ejecución del algoritmo de asignación | — | `201`, `400` |
 | `GET` | `/api/asignaciones/ejecuciones` | Historial de ejecuciones de asignación | — | `200` |
 | `GET` | `/api/asignaciones/propuestas` | Listado de propuestas de asignación generadas | — | `200` |
-| `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta | `ActualizarEstadoRequestDTO` | `200`, `400`, `404` |
-| `POST` | `/api/entidades` | Alta idempotente de entidad beneficiaria (id = `juridicaId`; `200` si ya existía o se reactivó) | `EntidadBeneficiariaInputDTO` | `201`, `200`, `400`, `404` |
+| `PUT` | `/api/asignaciones/propuestas/{id}/estado` | Actualización de estado de propuesta (al aprobar: `409` si la necesidad ya no está activa o si una donación es de la propia entidad) | `ActualizarEstadoRequestDTO` | `200`, `400`, `404`, `409` |
+| `POST` | `/api/entidades` | Alta idempotente de entidad beneficiaria (id = `juridicaId`; `200` si ya existía o se reactivó; `409` si la jurídica fue anonimizada) | `EntidadBeneficiariaInputDTO` | `201`, `200`, `400`, `404`, `409` |
 | `GET` | `/api/entidades` | Listado de entidades beneficiarias | — | `200` |
 | `GET` | `/api/entidades/{id}` | Consulta de entidad beneficiaria por ID | — | `200`, `404` |
 | `PUT` | `/api/entidades/{id}` | Revalidación de entidad beneficiaria (no cambia estado; `409` si está de baja) | `EntidadBeneficiariaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/entidades/{id}` | Baja lógica e idempotente de entidad beneficiaria (desactiva sus necesidades) | — | `204`, `404` |
-| `POST` | `/api/donantes` | Registro idempotente de donante (id = `personaId`; `200` si ya existía o se reactivó) | `DonanteInputDTO` | `201`, `200`, `400`, `404` |
+| `POST` | `/api/donantes` | Registro idempotente de donante (id = `personaId`; `200` si ya existía o se reactivó; `409` si la persona fue anonimizada) | `DonanteInputDTO` | `201`, `200`, `400`, `404`, `409` |
 | `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`) | — | `200` |
 | `GET` | `/api/donantes/{id}` | Consulta de donante por ID | — | `200`, `404` |
 | `DELETE` | `/api/donantes/{id}` | Baja lógica e idempotente de donante | — | `204`, `404` |

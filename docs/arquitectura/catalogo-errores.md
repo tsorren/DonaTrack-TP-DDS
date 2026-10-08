@@ -213,6 +213,7 @@
 | Código | Constante enum | Descripción | HTTP Status | Nota |
 |---|---|---|---|---|
 | `ERR-EST-107` | `JURIDICA_SIN_REPRESENTANTES_RESTANTES` | Operación dejaría a la jurídica sin representantes | `409` | |
+| `ERR-EST-108` | `PERSONA_ANONIMIZADA` | La persona fue anonimizada: no se le puede registrar ni reactivar un rol de donante o de entidad | `409` | |
 | `ERR-EST-211` | `DONANTE_INACTIVO` | El donante está dado de baja y no puede cargar donaciones | `409` | |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
 | `ERR-EST-409` | `ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA` | Fragmentación de ítem independiente inválida | `409` | |
