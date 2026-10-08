@@ -1,5 +1,6 @@
 package grupo5.donaciones.infrastructure.logistica;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -134,5 +135,23 @@ class ProcesadorEventosLogisticaTest {
         .cambiarEstado(eq(donacionNuevaId), any(), any());
     verify(donacionesIndependientesService, never())
         .cambiarEstado(eq(donacionDuplicadaId), any(), any());
+  }
+
+  @Test
+  void onEntregaExitosa_cuandoServicioFalla_noPropagaNiRegistraComoConsumido() {
+    UUID donacionId = UUID.randomUUID();
+    EventoEntregaExitosa evento =
+        new EventoEntregaExitosa(
+            UUID.randomUUID(), donacionId, UUID.randomUUID(), "ABC-123", LocalDateTime.now());
+
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+    when(donacionesIndependientesService.cambiarEstado(any(), any(), any()))
+        .thenThrow(new RuntimeException("Fallo al cambiar estado"));
+
+    assertDoesNotThrow(() -> procesador.procesarEntregaExitosa(evento, ORIGEN));
+
+    // No queda como consumido: si el mismo evento vuelve a llegar, se procesa de nuevo.
+    verify(eventosConsumidosRepository, never()).registrar(any());
   }
 }
