@@ -57,10 +57,18 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+      - INCENTIVOS_MINIO_ENABLED=true
+      - INCENTIVOS_MINIO_ENDPOINT=http://minio:9000
+      - INCENTIVOS_MINIO_PUBLIC_BASE_URL=http://localhost:9000
+      - INCENTIVOS_MINIO_ACCESS_KEY=minioadmin
+      - INCENTIVOS_MINIO_SECRET_KEY=minioadminpassword
+      - INCENTIVOS_MINIO_BUCKET=insignias
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
@@ -225,6 +233,8 @@ services:
       retries: 10
     networks:
       - donatrack-network
+    volumes:
+      - minio_data:/data
 
 networks:
   donatrack-network:
@@ -232,4 +242,5 @@ networks:
 
 volumes:
   postgres_data:
+  minio_data:
 

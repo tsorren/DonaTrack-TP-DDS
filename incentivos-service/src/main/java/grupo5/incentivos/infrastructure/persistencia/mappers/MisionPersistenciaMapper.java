@@ -12,12 +12,32 @@ import grupo5.incentivos.models.entities.misiones.MisionCompletitud;
 import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
 import grupo5.incentivos.models.entities.misiones.MisionHabilDonador;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
+import grupo5.incentivos.models.storage.IImagenesInsignias;
 import java.util.LinkedHashSet;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Mapea cada subtipo de {@link Mision} conservando el id de dominio (evita key churn). */
 @Component
 public class MisionPersistenciaMapper {
+
+  private final IImagenesInsignias imagenes;
+
+  // ObjectProvider: sin MinIO (en memoria, slices de test) no hay bean y se usa la identidad.
+  @Autowired
+  public MisionPersistenciaMapper(ObjectProvider<IImagenesInsignias> imagenes) {
+    this(imagenes.getIfAvailable(() -> IImagenesInsignias.IDENTIDAD));
+  }
+
+  public MisionPersistenciaMapper(IImagenesInsignias imagenes) {
+    this.imagenes = imagenes;
+  }
+
+  /** Referencia de imagen -> URL pública. También lo usa el mapper de insignias ganadas. */
+  public String resolverImagenUrl(String referencia) {
+    return imagenes.urlPublica(referencia);
+  }
 
   public MisionEntity toEntity(Mision mision) {
     if (mision == null) {
@@ -123,7 +143,8 @@ public class MisionPersistenciaMapper {
     if (insignia == null) {
       return null;
     }
-    return new InsigniaEmbeddable(insignia.nombre(), insignia.descripcion(), insignia.imagenUrl());
+    return new InsigniaEmbeddable(
+        insignia.nombre(), insignia.descripcion(), resolverImagenUrl(insignia.imagenUrl()));
   }
 
   private Insignia toInsignia(InsigniaEmbeddable embeddable) {
@@ -131,6 +152,8 @@ public class MisionPersistenciaMapper {
       return null;
     }
     return new Insignia(
-        embeddable.getNombre(), embeddable.getDescripcion(), embeddable.getImagenUrl());
+        embeddable.getNombre(),
+        embeddable.getDescripcion(),
+        resolverImagenUrl(embeddable.getImagenUrl()));
   }
 }
