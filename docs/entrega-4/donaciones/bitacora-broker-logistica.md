@@ -10,7 +10,7 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 7 hecha: demo verificada de punta a punta con newman (`docker-compose.demo.yml`, colección `flujo-9`, guion). Sin commitear.
+> Última actualización: **2026-10-07** — Etapa 7 hecha: demo verificada de punta a punta con newman (`docker-compose.demo.yml`, colección `flujo-9`, guion).
 
 - **Qué estamos haciendo:** un broker dentro de `donaciones-service` que elige a qué proveedor de logística mandarle cada entrega: el nuestro por RabbitMQ, u otro por HTTP. Así se cumple el requerimiento de la Entrega 4.
 - **Cómo:** Broker + Adapter + Strategy. El pedido viaja como comando `entrega.solicitada.<proveedorId>.v1`; logística deja de escuchar el hecho `donacion.asignada.v1`. Ningún pedido se pierde en silencio (`mandatory` + espera de acuse) y no se reenvía a otro proveedor si no hay certeza de que el primero no lo recibió.
@@ -26,12 +26,12 @@
 |---|---|---|
 | 0 — Preparación | Rama, baseline, spec, ADR, bitácora | ✅ Cerrada |
 | 1 — Núcleo sin cableado | Broker, estrategia, outbox, registro, excepciones | ✅ Cerrada |
-| 2 — Contrato, adapter AMQP y cutover | `EntregaSolicitadaV1`, `mandatory` + acuse, cambios en Logística | ✅ Cerrada (sin commitear) |
+| 2 — Contrato, adapter AMQP y cutover | `EntregaSolicitadaV1`, `mandatory` + acuse, cambios en Logística | ✅ Cerrada |
 | 3 — Cableado | `PropuestaDeAsignacionService` → broker | ✅ Hecha (Gate 4 en verde) |
 | 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp` (hecho); 409 en `EntregasService.crear` (descartado, D33) | ✅ Hecha (sin tocar Logística) |
 | 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ✅ Hecha (5.1, 5.2 y 5.3) |
 | 6 — Controller admin (recortable) | Cambiar el proveedor preferido en caliente | ✅ Hecha |
-| 7 — Demo | Segunda instancia, Postman, guion | ✅ Hecha (sin commitear) |
+| 7 — Demo | Segunda instancia, Postman, guion | ✅ Hecha |
 | 8 — Cierre | Catálogo, matriz, diagrama, deuda, índices, gates | ⏳ Pendiente |
 
 ---
@@ -486,3 +486,12 @@ Porque el enunciado habla de un servicio potencial que cumple el mismo objetivo,
 
 **¿Cómo se ve, en vivo, que un timeout no termina en otro proveedor?**
 Se configura un tiempo de espera mínimo contra `externo` y se lo elige como preferido. El log muestra «envío incierto… se reintenta con el mismo proveedor» varias veces, y en nuestra logística no aparece ninguna entrega para esa donación.
+
+**¿Qué hace la Fase 6 y cómo se cambia el proveedor en vivo?**
+El broker elige a qué proveedor mandar cada pedido con una estrategia (`SeleccionPorPreferenciaConFallback`): el preferido va primero y el resto queda de reenvío. La Fase 6 deja cambiar ese preferido con una llamada HTTP, sin reiniciar. Se ve con `GET /api/logistica/proveedores` y se cambia con `PUT /api/logistica/proveedor-preferido` y cuerpo `{"proveedorId":"externo"}`, ambos con el header `X-API-Key` de administración (`LOGISTICA_ADMIN_API_KEY`, que debe estar configurada en el contenedor de Donaciones; vacía rechaza todo). El cambio vale para los pedidos que se despachen de ahí en adelante; lo que ya está en el outbox sigue yendo al proveedor que tenía. Si el nuevo preferido no tiene adapter o no responde, el pedido se trata como rechazado y pasa al siguiente. No persiste: al reiniciar vuelve a `LOGISTICA_PROVEEDOR`. Verificado con tests unitarios y de controller y con el Gate 4 (la app levanta); el cambio en vivo de punta a punta con una segunda instancia se verifica en la Etapa 7.
+
+**¿Dónde se ven en el código los endpoints nuevos declarados?**
+En los controllers de `donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/`. `LogisticaProveedorController` declara `GET /api/logistica/proveedores` (`@GetMapping("/proveedores")`, línea 30) y `PUT /api/logistica/proveedor-preferido` (`@PutMapping("/proveedor-preferido")`, línea 36), con `@RequestMapping("/api/logistica")` en la línea 20. `LogisticaCallbackController` declara `POST /api/logistica/proveedores/{proveedorId}/avisos` (`@PostMapping("/{proveedorId}/avisos")`, línea 26), con `@RequestMapping("/api/logistica/proveedores")` en la línea 16. Las interfaces `ILogisticaProveedorController` e `ILogisticaCallbackController` (carpeta `controllers/`) solo tienen las firmas, sin rutas, igual que el resto de los controllers del servicio. Las rutas que protege la API key están en `config/ApiKeyFilter.java` (`RUTA_AVISOS`, línea 52, y `RUTA_ADMIN`, línea 54).
+
+**¿Está bien que un controller sea el que declare los endpoints?**
+Sí. En Spring MVC la ruta, el verbo HTTP y el formato de entrada y salida se declaran en el controller: es el adaptador de entrada HTTP, y AGENTS.md §4.2 le asigna recibir requests, validar los DTOs de frontera, delegar en servicios y mapear la respuesta, sin lógica de dominio. Los dos controllers nuevos cumplen eso: `LogisticaProveedorController` y `LogisticaCallbackController` solo llaman a `IAdministracionProveedoresService` y `IAvisosProveedorService`, y `ArchitectureFitnessTest` exige que estén en `controllers..` y que no dependan de repositorios. Lo discutible es otra cosa: las rutas protegidas por la API key se repiten como patrones en `ApiKeyFilter` (conocimiento de rutas en dos lugares), y los dos controllers comparten el prefijo `/api/logistica/proveedores` aunque cumplen funciones distintas (administración y callback). Se mantienen separados porque tienen claves y dueños distintos; unificar las rutas protegidas en una constante compartida queda como mejora posible, no se hizo.
