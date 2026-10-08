@@ -32,7 +32,7 @@ class MinioInsigniasIntegracionTest {
   @Container
   static GenericContainer<?> minio =
       new GenericContainer<>(
-              DockerImageName.parse("quay.io/minio/minio:RELEASE.2024-10-02T17-50-41Z"))
+              DockerImageName.parse("scnd/minio-mirror:RELEASE.2025-09-07T16-13-09Z"))
           .withEnv("MINIO_ROOT_USER", "minioadmin")
           .withEnv("MINIO_ROOT_PASSWORD", "minioadmin")
           .withCommand("server", "/data")

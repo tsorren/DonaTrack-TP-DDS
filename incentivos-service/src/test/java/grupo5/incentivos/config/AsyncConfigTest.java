@@ -2,9 +2,12 @@ package grupo5.incentivos.config;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.common.logging.MdcTaskDecorator;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.task.TaskDecorator;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 class AsyncConfigTest {
@@ -12,7 +15,7 @@ class AsyncConfigTest {
   @Test
   void notificacionesTaskExecutor_deberiaConfigurarPoolCorrectamente() {
     AsyncConfig config = new AsyncConfig();
-    Executor executor = config.notificacionesTaskExecutor(new MdcTaskDecorator());
+    Executor executor = config.notificacionesTaskExecutor(r -> r);
 
     assertNotNull(executor);
     assertInstanceOf(ThreadPoolTaskExecutor.class, executor);
@@ -27,25 +30,24 @@ class AsyncConfigTest {
   }
 
   @Test
-  void notificacionesTaskExecutor_deberiaPropagarMdcContextoAHiloDeTrabajo() throws Exception {
-    AsyncConfig config = new AsyncConfig();
+  void notificacionesTaskExecutor_deberiaAplicarElTaskDecoratorRecibido() throws Exception {
+    AtomicBoolean decorado = new AtomicBoolean(false);
+    TaskDecorator decorator =
+        r -> {
+          decorado.set(true);
+          return r;
+        };
+
     ThreadPoolTaskExecutor executor =
-        (ThreadPoolTaskExecutor) config.notificacionesTaskExecutor(new MdcTaskDecorator());
+        (ThreadPoolTaskExecutor) new AsyncConfig().notificacionesTaskExecutor(decorator);
+    try {
+      CountDownLatch latch = new CountDownLatch(1);
+      executor.execute(latch::countDown);
 
-    org.slf4j.MDC.put("traceId", "trace-12345");
-    java.util.concurrent.CompletableFuture<String> future =
-        new java.util.concurrent.CompletableFuture<>();
-
-    executor.execute(
-        () -> {
-          String traceIdEnWorker = org.slf4j.MDC.get("traceId");
-          future.complete(traceIdEnWorker);
-        });
-
-    String traceIdCapturado = future.get(5, java.util.concurrent.TimeUnit.SECONDS);
-    org.slf4j.MDC.clear();
-
-    assertEquals("trace-12345", traceIdCapturado);
-    executor.shutdown();
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertTrue(decorado.get());
+    } finally {
+      executor.shutdown();
+    }
   }
 }

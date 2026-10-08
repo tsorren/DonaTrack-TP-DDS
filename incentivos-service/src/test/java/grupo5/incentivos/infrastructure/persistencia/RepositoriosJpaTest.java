@@ -39,6 +39,7 @@ import grupo5.incentivos.models.repositories.IRankingRepository;
 import grupo5.incentivos.services.RankingService;
 import jakarta.persistence.EntityManagerFactory;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.time.ZoneId;
 import java.util.List;
@@ -123,39 +124,52 @@ class RepositoriosJpaTest {
     // Se lee fuera de toda transacción: si alguna colección fuera LAZY fallaría acá.
     DonanteIncentivos leido = donanteRepository.findById(id).orElseThrow();
 
+    verificarDatosBasicos(original, leido);
+    verificarInsignias(leido);
+    verificarMisiones(leido);
+    verificarMetricas(original, leido);
+  }
+
+  private static void verificarDatosBasicos(DonanteIncentivos original, DonanteIncentivos leido) {
     assertEquals(original.getIdPersona(), leido.getIdPersona());
     assertEquals("Ana", leido.getNombre());
     assertEquals(CategoriaDonante.COLABORADOR, leido.getCategoria());
     assertEquals(original.getFechaRegistro(), leido.getFechaRegistro());
+  }
 
+  private static void verificarInsignias(DonanteIncentivos leido) {
     List<InsigniaGanada> insignias = leido.getInsignias();
     assertEquals(2, insignias.size());
     assertEquals("Gran Aporte Test", insignias.get(0).nombre());
     assertEquals("Extra", insignias.get(1).nombre());
     assertFalse(insignias.get(1).visible());
-    assertEquals(LocalDate.of(2026, 6, 1), insignias.get(1).fechaObtenida());
+    assertEquals(LocalDate.of(2026, Month.JUNE, 1), insignias.get(1).fechaObtenida());
+  }
 
+  private static void verificarMisiones(DonanteIncentivos leido) {
     List<Mision> misiones = leido.getMisiones();
     assertEquals(4, misiones.size());
     MisionRacha racha = assertInstanceOf(MisionRacha.class, misiones.get(0));
     assertEquals(2, racha.getProgresoActual());
-    assertEquals(YearMonth.of(2026, 6), racha.getUltimoMesDonado());
+    assertEquals(YearMonth.of(2026, Month.JUNE), racha.getUltimoMesDonado());
     assertEquals("Racha Test", racha.getInsignia().nombre());
     MisionCompletitud completitud = assertInstanceOf(MisionCompletitud.class, misiones.get(1));
     assertEquals(Set.of("alimentos", "ropa"), completitud.getCategoriasDonadas());
     MisionHabilDonador habil = assertInstanceOf(MisionHabilDonador.class, misiones.get(2));
     assertTrue(habil.isCompletada());
-    assertEquals(LocalDate.of(2026, 6, 11), habil.getFechaCompletada());
+    assertEquals(LocalDate.of(2026, Month.JUNE, 11), habil.getFechaCompletada());
     MisionDonacionesExitosas exitosas =
         assertInstanceOf(MisionDonacionesExitosas.class, misiones.get(3));
     assertEquals(1, exitosas.getProgresoActual());
-    assertEquals(LocalDate.of(2026, 6, 12), exitosas.getFechaUltimoDonacion());
+    assertEquals(LocalDate.of(2026, Month.JUNE, 12), exitosas.getFechaUltimoDonacion());
+  }
 
+  private static void verificarMetricas(DonanteIncentivos original, DonanteIncentivos leido) {
     assertEquals(2, leido.getMetricas().getTotalDonacionesHistoricas());
     assertEquals(1, leido.getMetricas().getTotalDonacionesExitosas());
-    assertEquals(LocalDate.of(2026, 6, 11), leido.getMetricas().getUltimaDonacion());
+    assertEquals(LocalDate.of(2026, Month.JUNE, 11), leido.getMetricas().getUltimaDonacion());
     assertEquals(
-        Map.of(YearMonth.of(2026, 5), 1L, YearMonth.of(2026, 6), 1L),
+        Map.of(YearMonth.of(2026, Month.MAY), 1L, YearMonth.of(2026, Month.JUNE), 1L),
         leido.getMetricas().donacionesPorPeriodo());
     assertEquals(
         Set.copyOf(original.getMetricas().getOrganizacionesAyudadas()),
@@ -166,7 +180,7 @@ class RepositoriosJpaTest {
   void deberiaMantenerLosIdsDeMisionesAlGuardarDeNuevoSinBorrarFilas() {
     DonanteIncentivos nuevo =
         new DonanteIncentivos(
-            UUID.randomUUID(), UUID.randomUUID(), "Ana", LocalDate.of(2026, 1, 1));
+            UUID.randomUUID(), UUID.randomUUID(), "Ana", LocalDate.of(2026, Month.JANUARY, 1));
     donanteRepository.save(nuevo);
 
     DonanteIncentivos guardado = donanteRepository.findById(nuevo.getId()).orElseThrow();
@@ -311,7 +325,7 @@ class RepositoriosJpaTest {
 
   @Test
   void deberiaBorrarLosHijosDelDonanteYConservarElRankingHistorico() {
-    YearMonth periodo = YearMonth.of(2026, 5);
+    YearMonth periodo = YearMonth.of(2026, Month.MAY);
     DonanteIncentivos donante =
         DonanteIncentivosMother.conMisionesCompletadasEnMes(UUID.randomUUID(), "Ana", periodo, 2);
     donanteRepository.save(donante);
@@ -333,7 +347,7 @@ class RepositoriosJpaTest {
 
   @Test
   void deberiaGuardarElPeriodoComoTextoYBuscarPorYearMonth() {
-    YearMonth periodo = YearMonth.of(2026, 8);
+    YearMonth periodo = YearMonth.of(2026, Month.AUGUST);
     RankingMensual ranking = RankingMensualMother.conNEntradas(periodo, 3);
 
     rankingRepository.save(ranking);
@@ -346,7 +360,7 @@ class RepositoriosJpaTest {
     assertEquals(
         List.of(1, 2, 3),
         encontrado.getEntradas().stream().map(EntradaRanking::getPosicion).toList());
-    assertTrue(rankingRepository.findByPeriodo(YearMonth.of(2026, 9)).isEmpty());
+    assertTrue(rankingRepository.findByPeriodo(YearMonth.of(2026, Month.SEPTEMBER)).isEmpty());
   }
 
   @Test
@@ -365,7 +379,7 @@ class RepositoriosJpaTest {
 
   @Test
   void deberiaRecalcularElMismoPeriodoDosVecesSinViolarElUnicoDePeriodo() {
-    YearMonth periodo = YearMonth.of(2026, 5);
+    YearMonth periodo = YearMonth.of(2026, Month.MAY);
     donanteRepository.save(
         DonanteIncentivosMother.conMisionesCompletadasEnMes(new UUID(0L, 10L), "Ana", periodo, 2));
     donanteRepository.save(
@@ -413,9 +427,9 @@ class RepositoriosJpaTest {
     completitud.evaluarProgreso(
         donante,
         EventoDonacionMother.conCategorias(
-            LocalDate.of(2026, 6, 10), List.of("Alimentos", "Ropa")));
+            LocalDate.of(2026, Month.JUNE, 10), List.of("Alimentos", "Ropa")));
     habil.evaluarProgreso(
-        donante, EventoDonacionMother.conCantidadBienes(LocalDate.of(2026, 6, 11), 5));
+        donante, EventoDonacionMother.conCantidadBienes(LocalDate.of(2026, Month.JUNE, 11), 5));
     exitosas.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 6, 12));
     exitosas.evaluarProgresoExitoso(donante);
 
@@ -424,7 +438,7 @@ class RepositoriosJpaTest {
         .registrarDonacion(
             EventoDonacion.builder()
                 .donacionId(UUID.randomUUID())
-                .fecha(LocalDate.of(2026, 5, 10))
+                .fecha(LocalDate.of(2026, Month.MAY, 10))
                 .cantidadBienes(3)
                 .categorias(List.of("alimentos", "ropa"))
                 .build());
@@ -432,7 +446,7 @@ class RepositoriosJpaTest {
     donante.getMetricas().registrarDonacionExitosa(UUID.randomUUID());
 
     donante.otorgarInsignia(
-        new Insignia("Extra", "Descripcion", "/extra.png"), LocalDate.of(2026, 6, 1));
+        new Insignia("Extra", "Descripcion", "/extra.png"), LocalDate.of(2026, Month.JUNE, 1));
     donante.configurarVisibilidadInsignia("Extra", false);
     return donante;
   }
