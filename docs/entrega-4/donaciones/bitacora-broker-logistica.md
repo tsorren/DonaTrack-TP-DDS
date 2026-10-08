@@ -10,14 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 3 hecha y Gate 4 en verde; Etapa 4 hecha (adapter HTTP; dedup en Logística revertida, D33); Etapa 5 commiteada (`48f334ad`); Etapa 6 hecha: controller de administración para ver y cambiar el proveedor preferido en caliente, protegido con una clave de administración. Sin commitear.
+> Última actualización: **2026-10-07** — Etapa 7 hecha: demo verificada de punta a punta con newman (`docker-compose.demo.yml`, colección `flujo-9`, guion). Sin commitear.
 
 - **Qué estamos haciendo:** un broker dentro de `donaciones-service` que elige a qué proveedor de logística mandarle cada entrega: el nuestro por RabbitMQ, u otro por HTTP. Así se cumple el requerimiento de la Entrega 4.
 - **Cómo:** Broker + Adapter + Strategy. El pedido viaja como comando `entrega.solicitada.<proveedorId>.v1`; logística deja de escuchar el hecho `donacion.asignada.v1`. Ningún pedido se pierde en silencio (`mandatory` + espera de acuse) y no se reenvía a otro proveedor si no hay certeza de que el primero no lo recibió.
-- **Dónde estamos:** **Etapas 0, 1, 2 y 3 hechas**. Ya existen el broker, el adapter AMQP hacia nuestra logística y el comando `entrega.solicitada.<id>.v1`; logística ya escucha el comando y no el hecho. Si todos los proveedores rechazan un pedido, el broker reintenta la ronda completa más tarde (D27).
-- **Atención:** la asignación **ya llama al broker** (Etapa 3), pero el pedido sale recién cuando corre el relay del outbox (cada 10 s por defecto; en `docker-compose.preprod.yml` está en 1 s) y solo hay adapter AMQP para `donatrack`. **Gate 4 en verde (26/26)** con las Etapas 2 y 3 juntas, sin MinIO (ver Etapa 3).
+- **Dónde estamos:** **Etapas 0 a 7 hechas.** El broker elige entre `donatrack` (AMQP, 8083) y `externo` (HTTP, 8084), reenvía ante rechazos seguros, reintenta con el mismo proveedor ante inciertos y por rondas si todos rechazan; los proveedores HTTP avisan por un callback protegido; el preferido se cambia en caliente. La demo está lista: `docker-compose.demo.yml` + `postman/flujo-9-broker-logistica.json` + [guion](guion-demo-broker.md).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 7, demo: segunda instancia de Logística en el docker-compose (con su flota cargada), colección Postman y guion de defensa.
+- **Próximo paso:** Etapa 8, cierre: catálogo de mensajes, matriz, diagrama de componentes, `DEUDA_TECNICA.md`, `docs/generated/`, gates y revisión independiente.
 
 ---
 
@@ -32,7 +31,7 @@
 | 4 — Adapter HTTP + dedup REST | `ProveedorLogisticaHttp` (hecho); 409 en `EntregasService.crear` (descartado, D33) | ✅ Hecha (sin tocar Logística) |
 | 5 — Vuelta HTTP + protección | Callback, `ProcesadorEventosLogistica`, `ApiKeyFilter` | ✅ Hecha (5.1, 5.2 y 5.3) |
 | 6 — Controller admin (recortable) | Cambiar el proveedor preferido en caliente | ✅ Hecha |
-| 7 — Demo | Segunda instancia, Postman, guion | ⏳ Pendiente |
+| 7 — Demo | Segunda instancia, Postman, guion | ✅ Hecha (sin commitear) |
 | 8 — Cierre | Catálogo, matriz, diagrama, deuda, índices, gates | ⏳ Pendiente |
 
 ---
@@ -81,6 +80,10 @@ Registro acumulado. Las decisiones D1 a D12 vienen del plan; las que se tomen du
 | D36 | **API key del callback (5.3):** `ApiKeyFilter` (`config/`, `OncePerRequestFilter`) protege todo lo que cuelga de `/api/logistica/proveedores/`. Exige `X-API-Key` igual a `donatrack.logistica.proveedor.<id>.callback-api-key` (una por proveedor, desde variable de entorno; la clave de un proveedor no sirve para avisar como otro). **Falla cerrado:** sin clave configurada, clave ausente o incorrecta, ruta no reconocida bajo ese prefijo, o URI no interpretable → `401` y no llega al controller. Compara los hashes SHA-256 con `MessageDigest.isEqual` y nunca loguea claves. La ruta se normaliza antes de decidir (barras repetidas y `.`/`..` no esquivan el filtro). Sin Spring Security ni dependencias nuevas. El `401` lleva el código provisional `ERR-AUT-401`, que **no está en `ErrorCatalog`** (agregarlo toca `common-lib`); queda para el `auth-service` de la Entrega 6. | 2026-10-07 | Etapa 5 |
 | D37 | **Controller de administración (Etapa 6):** `GET /api/logistica/proveedores` (id, transporte, si tiene adapter registrado y cuál es el preferido) y `PUT /api/logistica/proveedor-preferido` con `{"proveedorId":"..."}` (devuelve la lista actualizada). El preferido vive en memoria dentro de `SeleccionPorPreferenciaConFallback` (`volatile`, lista inmutable), que ahora implementa también el puerto `IPreferenciaProveedor`; no persiste: al reiniciar vuelve al configurado. El cambio vale para los despachos siguientes; lo ya encolado en el outbox sigue yendo al proveedor que ya tenía. Un id no configurado o vacío → `400` (`ValidationException`), sin tocar `ErrorCatalog`. No valida que el proveedor tenga adapter: si no lo tiene, sus pedidos se tratan como rechazados y se prueba con el siguiente (se ve en el campo `disponible`). | 2026-10-07 | Etapa 6 |
 | D38 | **Clave de administración:** `ApiKeyFilter` ahora cubre dos grupos de rutas con claves distintas: el callback (`donatrack.logistica.proveedor.<id>.callback-api-key`, una por proveedor) y la administración (`donatrack.logistica.admin-api-key`, desde `LOGISTICA_ADMIN_API_KEY`). La clave de un proveedor no sirve para administrar ni la de administración para avisar como proveedor. Todo lo que cuelga de `/api/logistica/proveedor…` y no es una de las rutas conocidas se rechaza con `401` (falla cerrado). | 2026-10-07 | Etapa 6 |
+| D39 | **La demo termina cuando la entrega existe en el proveedor elegido:** no se le carga flota a la instancia `externo` ni se planifican rutas (las rutas dependen del scheduler y del planificador externo, y no muestran nada del broker). La vuelta de un proveedor HTTP se muestra con el callback desde Postman. Corrige el plan (§2.8), que pedía cargar flota. | 2026-10-07 | Etapa 7 |
+| D40 | **La configuración de la demo va en `docker-compose.demo.yml`**, que se suma al base (`docker-compose -f docker-compose.yml -f docker-compose.demo.yml up`). El compose de desarrollo y el de preprod (Gate 4) no cambian. | 2026-10-07 | Etapa 7 |
+| D41 | **El escenario «envío incierto» entra en el guion:** con un timeout de lectura mínimo contra `externo`, el broker no cambia de proveedor; si aparece una entrega duplicada en `externo` (no deduplica, D33), se usa para explicar por qué el contrato exige idempotencia al proveedor. | 2026-10-07 | Etapa 7 |
+| D42 | **La colección de la demo se verifica con newman** (runner oficial de Postman por línea de comandos), sin agregarlo como dependencia del repo. | 2026-10-07 | Etapa 7 |
 
 ---
 
@@ -357,6 +360,31 @@ Los tests contra RabbitMQ real usan Testcontainers: sin Docker se saltean (`@Dis
 
 **Para la demo.** Alternar en vivo entre `donatrack` (AMQP) y `externo` (HTTP): `PUT /api/logistica/proveedor-preferido` con `X-API-Key` de administración.
 
+### 2026-10-07 — Etapa 7: Demo
+
+**Qué se hizo.** Todo lo necesario para mostrar el broker en vivo, sin tocar código de los servicios.
+
+| Pieza | Archivo | Qué es |
+|---|---|---|
+| Compose de la demo | `docker-compose.demo.yml` (D40) | Se suma al base. Agrega `logistica-externo` (misma imagen, `LOGISTICA_INSTANCIA_ID=externo`, puerto 8084) y configura el broker con `donatrack` (AMQP), `externo` (HTTP → `logistica-externo:8084`) y `otra` (AMQP sin instancia). Tiempos cortos para ver los escenarios (relay 1 s, backoff base 5 s). Las claves de administración y del callback son obligatorias y salen de variables de entorno: si faltan, el compose no arranca (nada de claves en el repo) |
+| Colección | `postman/flujo-9-broker-logistica.json` (68 requests) | 0 Preparación · A `donatrack` por AMQP · B `externo` por HTTP · C `otra` sin cola → devuelto → `donatrack` · F callback del proveedor HTTP (401 sin clave, 404 por donación ajena, 202 y cambio de estado) · G negativos de administración y restaurar · D y E manuales (proveedor caído y timeout). Los pasos asincrónicos se reintentan solos (`pm.execution.setNextRequest`, 1 s). Cada corrida usa un identificador propio, así que se puede correr varias veces sin reiniciar |
+| Guion | [`guion-demo-broker.md`](guion-demo-broker.md) | Qué hay en escena, preparación, y por escenario: qué hacer, qué mirar (logs, RabbitMQ) y qué explicar |
+| Índices | `postman/README.md`, `docs/ESTADO_DOCUMENTACION.md` | Flujo 9 y guion agregados; el README aclara que la colección 9 usa `X-API-Key` |
+
+**Verificación** `[VERIFIED]` con newman contra el stack de `docker-compose.demo.yml`:
+
+| Escenarios | Aserciones | Evidencia en el log de donaciones |
+|---|---|---|
+| 0, A, B, C, F, G (dos corridas seguidas, y otra al final con la configuración restaurada) | 52/52 | C: `Envío rechazado: Proveedor otra: mensaje devuelto, no hay cola para entrega.solicitada.otra.v1 (NO_ROUTE)` → `se prueba con el siguiente` |
+| 0 + D (con `logistica-externo` detenido) | 19/19 | `Envío rechazado: Proveedor externo: no se pudo conectar con el proveedor`; la entrega terminó en 8083 |
+| 0 + E (donaciones con `LOGISTICA_EXTERNA_READ_TIMEOUT_MS=1`) | 20/20 | `Envío incierto … (intento 1/5); se reintenta con el mismo proveedor` y el intento 2 diez segundos después; nada en 8083 tras 25 s |
+
+**Hallazgos.**
+- La API de donaciones devuelve el estado como `ListaParaEntregar` (nombre de la clase), no como `LISTA_PARA_ENTREGAR`. La colección y el guion usan el valor real.
+- Con un timeout de lectura de 1 ms, el adapter corta **antes** de que `externo` procese el pedido: en la práctica no queda ninguna entrega, en lugar de duplicadas. Que aparezcan duplicados depende de que el proveedor llegue a procesar antes del corte, así que el escenario E verifica lo garantizado (nunca pasa a otro proveedor) y muestra la cantidad de entregas en `externo` solo a modo informativo. Coincide con D41 («si aparece una entrega duplicada…»).
+
+**Diferencias con el plan.** No se carga flota en `externo` ni se planifican rutas (D39). El escenario E no depende del 409, que se descartó en D33.
+
 ---
 
 ## Q&A
@@ -371,7 +399,7 @@ Porque quien decide a quién mandar el pedido es quien lo origina, y porque la E
 - **Broker:** el intermediario que conoce a los proveedores.
 - **Strategy:** el criterio de selección es intercambiable. Es el mismo patrón que ya usamos en los algoritmos de asignación.
 - **Adapter:** uno por proveedor, cada uno con su transporte.
-- **Canonical Data Model:** un formato interno único (`SolicitudEntregaLogistica`).
+- **Canonical Data Model:** un formato interno único (`DatosEntregaLogistica`).
 - **Message Translator:** el adapter HTTP traduce al formato del proveedor.
 - **Outbox:** los pedidos pendientes no se pierden.
 
@@ -396,7 +424,7 @@ Porque un timeout no significa que el pedido no llegó; significa que no sabemos
 **¿Cómo evitan entregas duplicadas?**
 De tres formas:
 1. Solo se cambia de proveedor ante un rechazo seguro.
-2. Cada proveedor deduplica por `donacionIndependienteId`: el listener de logística ya lo hacía, y agregamos el chequeo al endpoint REST, que responde 409.
+2. Cada proveedor tiene que deduplicar por `donacionIndependienteId`. Nuestra logística lo hace en su listener AMQP, que es su única entrada desde el broker; para un proveedor HTTP externo es un requisito del contrato (ver D33).
 3. Los bindings de los comandos son exactos, nunca con comodines.
 
 **¿Por qué no usar un alternate exchange para no perder mensajes?**
@@ -449,3 +477,12 @@ No. En el diseño real nuestra Logística se alcanza solo por AMQP (proveedor `d
 
 **¿`LogisticaEventListener` no tiene más sentido dentro de `/logistica`?**
 Sí. En `infrastructure/logistica/` ya vivían `ProcesadorEventosLogistica`, `ProveedorLogisticaAmqp`, `ProveedorLogisticaHttp` y `ProveedoresLogistica`, y el listener pasó a ser un adaptador de entrada delgado del mismo tema, así que se movió ahí junto con su test (movimiento puro de archivos, sin cambios de lógica). Los otros listeners (`SegmentacionEventListener`, etc.) siguen en `infrastructure/`.
+
+**¿Cómo demuestran que el broker puede elegir entre más de un proveedor?**
+Con dos logísticas levantadas a la vez: la nuestra (`donatrack`, por RabbitMQ) y una segunda instancia que hace de courier privado (`externo`, por HTTP). Se cambia el proveedor preferido en caliente y se asigna una donación: la entrega aparece en la logística elegida y no en la otra. También se muestra qué pasa si el elegido no tiene cola, si está caído o si no responde a tiempo.
+
+**¿Por qué el «otro proveedor» es una copia de nuestra logística y no un servicio distinto?**
+Porque el enunciado habla de un servicio potencial que cumple el mismo objetivo, y no existe un proveedor real. Lo que importa es que se le habla con otro transporte (HTTP en lugar de RabbitMQ) y otro contrato, traducido por su propio adapter. El broker no sabe que por dentro es la misma imagen.
+
+**¿Cómo se ve, en vivo, que un timeout no termina en otro proveedor?**
+Se configura un tiempo de espera mínimo contra `externo` y se lo elige como preferido. El log muestra «envío incierto… se reintenta con el mismo proveedor» varias veces, y en nuestra logística no aparece ninguna entrega para esa donación.

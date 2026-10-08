@@ -245,6 +245,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
 | [`docs/entrega-4/donaciones/plan-broker-logistica.md`](entrega-4/donaciones/plan-broker-logistica.md) | Plan Entrega 4 | Plan de implementación unificado del Broker de Integración con Logística. | 🟢 Sincronizado |
 | [`docs/entrega-4/donaciones/bitacora-broker-logistica.md`](entrega-4/donaciones/bitacora-broker-logistica.md) | Bitácora Entrega 4 | Registro vivo de decisiones, preguntas y avances del broker (TLDR + Q&A). | 🟢 Sincronizado |
+| [`docs/entrega-4/donaciones/guion-demo-broker.md`](entrega-4/donaciones/guion-demo-broker.md) | Guion Entrega 4 | Guion de la demo del broker de logística (escenarios, comandos y qué explicar). | 🟢 Sincronizado |
 | [`docs/entregas/README.md`](entregas/README.md) | Currícula Cátedra | Matriz curricular e índice de enunciados oficiales y artefactos de Entregas 1 a 4. | 🟢 Sincronizado |
 
 

@@ -1,0 +1,57 @@
+# Demo del Broker de Integración con Logística (Entrega 4, Etapa 7).
+#
+# Se suma al compose base: agrega una segunda instancia de logística ("externo", puerto 8084) que
+# hace de proveedor HTTP, y configura el broker de donaciones con tres proveedores:
+#   donatrack -> AMQP (logistica-service, 8083)
+#   externo   -> HTTP (logistica-externo, 8084)
+#   otra      -> AMQP sin instancia levantada (para mostrar el reenvío por devolución)
+#
+# Uso (las dos claves son obligatorias y no se guardan en el repo):
+#   export LOGISTICA_ADMIN_API_KEY=<clave-admin> LOGISTICA_EXTERNA_CALLBACK_API_KEY=<clave-externo>
+#   docker-compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build \
+#     rabbitmq donaciones-service logistica-service logistica-externo
+#
+# Guion: docs/entrega-4/donaciones/guion-demo-broker.md
+services:
+  donaciones-service:
+    environment:
+      - LOGISTICA_PROVEEDORES=donatrack,externo,otra
+      - LOGISTICA_PROVEEDOR=${LOGISTICA_PROVEEDOR:-donatrack}
+      - DONATRACK_LOGISTICA_PROVEEDOR_OTRA_TRANSPORTE=amqp
+      - LOGISTICA_EXTERNA_URL=http://logistica-externo:8084
+      - LOGISTICA_EXTERNA_READ_TIMEOUT_MS=${LOGISTICA_EXTERNA_READ_TIMEOUT_MS:-3000}
+      # Tiempos cortos para que los escenarios se vean en vivo (los de producción: D17).
+      - LOGISTICA_OUTBOX_INTERVALO_MS=1000
+      - LOGISTICA_OUTBOX_BACKOFF_BASE_SEGUNDOS=${LOGISTICA_OUTBOX_BACKOFF_BASE_SEGUNDOS:-5}
+      - LOGISTICA_ADMIN_API_KEY=${LOGISTICA_ADMIN_API_KEY:?definí LOGISTICA_ADMIN_API_KEY}
+      - LOGISTICA_EXTERNA_CALLBACK_API_KEY=${LOGISTICA_EXTERNA_CALLBACK_API_KEY:?definí LOGISTICA_EXTERNA_CALLBACK_API_KEY}
+
+  logistica-externo:
+    image: donatrack/logistica-service:local
+    build:
+      context: .
+      dockerfile: logistica-service/Dockerfile
+      target: local
+    ports:
+      - "8084:8084"
+    environment:
+      - PORT=8084
+      - LOGISTICA_INSTANCIA_ID=externo
+      - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - RABBITMQ_HOST=rabbitmq
+      - SPRING_MAIN_LAZY_INITIALIZATION=false
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+      start_interval: 1s
+    networks:
+      - donatrack-network
