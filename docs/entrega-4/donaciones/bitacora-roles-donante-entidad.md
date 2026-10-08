@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-07** — Etapa 1 hecha: el importador CSV deja de pisar datos al reimportar.
+> Última actualización: **2026-10-07** — Etapa 3 hecha: los roles usan el id de la persona, alta idempotente (201/200) y `PUT` que solo revalida.
 
 - **Qué estamos haciendo:** que el id de `Donante` y de `EntidadBeneficiaria` sea el de su persona (`donanteId = personaId`, `entidadId = juridicaId`). Así una persona no puede quedar registrada dos veces, dar de baja un rol no deja referencias colgadas y nadie puede volver EMPRESA a una entidad beneficiaria.
 - **Cómo:** opción A3 de la issue (se mantienen las clases con id compartido), baja lógica con un bool `activo`, y una sola cola en incentivos para el ciclo de vida del donante.
-- **Dónde estamos:** plan cerrado (D1 a D7) y Etapas 0 y 1 hechas. Baseline en verde (437 tests); tras la Etapa 1, 442.
+- **Dónde estamos:** plan cerrado y Etapas 0 a 3 hechas. Baseline 437 tests; tras la Etapa 1, 442; tras la Etapa 3, 474 en `donaciones-service` y reactor completo en verde. El ADR espera aprobación humana (`proposed`).
 - **Bloqueante para seguir:** ninguno.
-- **Próximo paso:** Etapa 2, ADR `proposed` (sin código).
+- **Próximo paso:** Etapa 4, baja lógica, cascada, guardas y anonimización.
 
 ---
 
@@ -26,8 +26,8 @@
 |---|---|---|
 | 0 — Baseline y rama | Rama desde `ENTREGA_4`, baseline, búsqueda en tests | ✅ Cerrada |
 | 1 — Importador CSV | Dejar de pisar datos al reimportar (`actualizarParcial`) | ✅ Hecha |
-| 2 — ADR y spec | ADR `proposed` | ⏳ Pendiente |
-| 3 — Identidad compartida y unicidad | Roles con id compartido, `activo`, alta idempotente, REST 201/200, `ErrorCatalog` | ⏳ Pendiente |
+| 2 — ADR y spec | ADR `proposed` (el plan hace de spec) | ✅ Hecha |
+| 3 — Identidad compartida y unicidad | Roles con id compartido, `activo`, alta idempotente, REST 201/200, `ErrorCatalog` | ✅ Hecha |
 | 4 — Baja, cascada y guardas | Baja lógica, cascada a necesidades, anonimización, auto-donación | ⏳ Pendiente |
 | 5 — Custodia del tipo + importador (b) | Rechazar EMPRESA/sin dirección en entidad activa; el importador registra el rol | ⏳ Pendiente |
 | 6 — Incentivos | Cola única con un solo consumidor | ⏳ Pendiente |
@@ -50,6 +50,7 @@
 | D8 | Una entidad beneficiaria no puede ser EMPRESA; se aceptan ONG, INSTITUCION y GUBERNAMENTAL (como dice la issue). | 2026-10-07 | Equipo |
 | D9 | El importador CSV nunca cambia el tipo jurídico de una persona existente; una celda vacía significa "dejar lo que hay". | 2026-10-07 | Equipo |
 | D10 | La actualización parcial vive como método de servicio (`actualizarParcial`), sin endpoint nuevo. | 2026-10-07 | Equipo |
+| D11 | Un solo ADR para toda la iniciativa (identidad, baja lógica y orden de eventos), y el plan hace de spec (no se crea `SPEC-0X`). | 2026-10-07 | Equipo |
 
 ---
 
@@ -78,6 +79,25 @@ Ninguna.
 - **Hallazgo fuera de alcance:** toda `Persona` nace con un `Telefono` vacío de relleno (`Persona()` hace `mediosDeContacto.add(new Telefono())`). No se corrige acá (AGENTS.md §6). Registrar en la Etapa 7.
 - **Pendiente de la parte b (Etapa 5):** que el importador registre el rol de donante cuando la persona ya existía; hoy crearía un donante duplicado.
 
+### 2026-10-07 — Etapa 2: ADR `proposed`
+
+- Escrito `docs/adr/donaciones-service/20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria.md` (`Status: proposed`; la promoción a `accepted` la hace una persona al integrar el PR).
+- Cubre: los tres defectos con su evidencia, las cinco alternativas (A0 a A4) con la tabla de puntajes de la issue, la decisión A3 con todas las reglas (identidad, `activo`, alta idempotente, custodia del tipo, guardas, cascada, anonimización, auto-donación, `PUT` que revalida), el orden de eventos (cola única frente a comparar `fecha`), consecuencias, validación y relación con los ADRs `20260521-personas`, `20260702` (`rejected`), `20260919`, mapeo ORM, DTI-01 y DTI-06.
+- Sobre el ADR `20260702` (`rejected`): no se edita ni se reabre; el ADR nuevo responde en sus propios términos (baja lógica de un **rol** con id compartido, no de la persona).
+- No se crea `SPEC-0X`: el plan tiene objetivo, alcance, restricciones y validación. Evita además un choque de numeración con `SPEC-04` de la rama del broker.
+- Verificación: `node scripts/agent-check.js` → 67 PASS, 0 WARN, 0 FAIL; los links relativos del ADR resuelven.
+
+### 2026-10-07 — Etapa 3: identidad compartida y unicidad
+
+- **Dominio:** `Donante.id = personaId` y `EntidadBeneficiaria.id = juridicaId`. Ambos tienen `activo` (nace en `true`) con `estaActivo()`, `darDeBaja()` y `reactivar()`; los dos últimos devuelven `true` solo si hubo transición, para que el servicio sepa cuándo publicar un evento. Se eliminó el constructor de dos argumentos de `EntidadBeneficiaria` (permitía ids desalineados).
+- **`EntidadBeneficiaria.validarApta(persona)`:** jurídica, tipo distinto de EMPRESA y con dirección; lanza `ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA`, `..._TIPO_INVALIDO` (`ERR-VAL-517`) o `..._SIN_DIRECCION` (`ERR-VAL-518`). La usan el alta y el `PUT`, y la va a usar la custodia del tipo (Etapa 5).
+- **Alta idempotente:** `DonantesService.crearDonante` y `EntidadBeneficiariaService.crearEntidad` devuelven `ResultadoRegistro<T>(recurso, creado)`. No existe → crea (`creado=true`); existe activo → lo devuelve sin guardar ni publicar; existe de baja → lo reactiva (el donante publica `donante.registrado`). Los controllers traducen a **201** o **200**.
+- **`PUT /api/entidades/{id}`:** exige `id == juridicaId` (si no, `ARGUMENTO_INVALIDO`), revalida con `validarApta` y no cambia el estado; si la entidad está de baja → `BusinessStateException(ENTIDAD_BENEFICIARIA_INACTIVA)` (`ERR-EST-519`, 409).
+- **Recorte de alcance respecto del plan:** `DELETE` sigue siendo borrado físico hasta la Etapa 4 (con id compartido un `POST` posterior crea de nuevo); los códigos `DONANTE_INACTIVO` y `DONACION_A_SI_MISMO` se agregan cuando se usen. La rama «reactivar un inactivo» se prueba con roles sembrados de baja, porque todavía nada los da de baja.
+- **Tests:** nuevos `DonanteTest` y casos en `EntidadBeneficiariaTest`, `DonantesServiceTest`, `EntidadBeneficiariaServiceTest` y los dos controller tests. En `EntidadBeneficiariaServiceTest` ajusté los fixtures para que `persona.getId() == juridicaId` (antes usaban ids distintos, algo que el modelo nuevo no admite); las aserciones no se debilitaron. `DonantesServiceTest.testCrearDonante` pasó a `resultado.recurso()` por el cambio de tipo de retorno.
+- **Verificación `[VERIFIED]`:** `mvn clean test` (reactor completo, por tocar `common-lib`) → todos los módulos en verde (donaciones 474 tests, 0 fallos; 1 test omitido en notificaciones, preexistente); `mvn spotless:check` OK. Gate 3/4 `[DEFERRED_NO_DOCKER]` hasta la Etapa 8.
+- **Pendiente de documentar (Etapa 7):** `catalogo-errores.md` con los tres códigos nuevos y `openapi-donaciones.yaml` con el `200` del `POST`.
+
 ---
 
 ## Q&A
@@ -102,3 +122,6 @@ No. `TipoJuridico` tiene cuatro valores: `GUBERNAMENTAL`, `ONG`, `EMPRESA` e `IN
 
 **P: ¿El importador usaría el endpoint de PATCH en vez de PUT?**
 No. El importador corre dentro de `donaciones-service` y llama directamente a métodos Java del servicio, sin HTTP. Lo nuevo es un método de servicio (`actualizarParcial`), no un endpoint. Agregar `PATCH /api/personas/{id}` sería un cambio de contrato público que nadie pidió; si más adelante se quiere, se expone ese mismo método. → D10.
+
+**P: ¿Un solo ADR o dos? ¿El plan hace de spec o creo una `SPEC-0X`?**
+Un solo ADR: la issue pide uno que cubra todo, y el orden de eventos queda como una sección propia (separarlo en dos agregaría papeleo sin cambiar la decisión). El plan ya tiene objetivo, alcance, restricciones y validación, que son los campos mínimos de una spec, así que se evita duplicar. → D11.

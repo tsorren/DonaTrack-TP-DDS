@@ -94,11 +94,15 @@ Cada etapa termina con Gate 1/2 en verde, revisión según nivel y tu aprobació
 
 ### Etapa 2 — ADR `proposed` y spec
 
+> **Estado: hecha.** Un solo ADR `proposed`: [`20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria`](../../adr/donaciones-service/20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria.md). Este plan hace de spec (no se crea `SPEC-0X`). `node scripts/agent-check.js` en verde.
+
 - `docs/adr/donaciones-service/2026XXXX-identidad-compartida-roles-donante-entidad.md` (Log4brains, estado `proposed`).
 - Cubre: D1–D6, el orden de eventos (§3), CRUD de entidades, relación con `20260702` (rejected), `20260521-personas`, `20260919-convencion-canonica-identificadores…`, `20260901-estrategia-de-mapeo-orm…` y `…dti-01…surrogate-keys-para-jpa`.
 - Sin código. Sin esta etapa aprobada no avanzamos (la implementación sobre un ADR `proposed` es posible, pero con riesgo de rollback; vos decidís si la aceptás).
 
 ### Etapa 3 — Donaciones: identidad compartida y unicidad
+
+> **Estado: implementada y verificada** (`[VERIFIED]`: reactor completo `mvn clean test` en verde, `spotless:check` OK; `donaciones-service` pasa de 442 a 474 tests). Alcance final de esta etapa: identidad compartida, `activo` en el dominio, alta idempotente con reactivación, `POST` 201/200 (`ResultadoRegistro`), validación de entidad apta (`EntidadBeneficiaria.validarApta`), `PUT /api/entidades/{id}` que solo revalida, y tres códigos en `ErrorCatalog` (`ERR-VAL-517`, `ERR-VAL-518`, `ERR-EST-519`). **Se movieron a la Etapa 4:** `DELETE` como baja lógica (en la Etapa 3 sigue siendo borrado físico) y los códigos `DONANTE_INACTIVO` / `DONACION_A_SI_MISMO`, que se agregan cuando se usen. `EntidadBeneficiaria.registrar` se descartó por redundante: el servicio valida con `validarApta` y construye con el id de la jurídica.
 
 - `common-lib` (`ErrorCatalog`): `DONANTE_INACTIVO`, `ENTIDAD_BENEFICIARIA_INACTIVA`, `ENTIDAD_BENEFICIARIA_TIPO_INVALIDO`, `ENTIDAD_BENEFICIARIA_SIN_DIRECCION`, `DONACION_A_SI_MISMO` (códigos y mapeo HTTP en `GlobalExceptionHandler` según el rango libre). Obliga a validar con el reactor completo.
 - `Donante` / `EntidadBeneficiaria`: id compartido, `activo`, `darDeBaja()`, `reactivar()`, `estaActivo()`; `EntidadBeneficiaria.registrar(Juridica)` valida tipo y dirección.
