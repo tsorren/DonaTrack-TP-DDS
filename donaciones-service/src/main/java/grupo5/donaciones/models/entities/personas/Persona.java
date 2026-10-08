@@ -57,6 +57,10 @@ public abstract sealed class Persona implements Anonimizable, AggregateRoot
     }
   }
 
+  public boolean tieneMedioDeContacto(MedioDeContacto medio) {
+    return this.mediosDeContacto.stream().anyMatch(propio -> coincidenMedios(propio, medio));
+  }
+
   public void limpiarMediosDeContacto() {
     this.mediosDeContacto.clear();
   }

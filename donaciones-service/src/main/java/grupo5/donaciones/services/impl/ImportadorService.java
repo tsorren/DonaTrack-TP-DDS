@@ -95,14 +95,14 @@ public class ImportadorService implements IImportadorService {
 
       Optional<Persona> personaExistenteOpt = validadorDuplicados.buscarDuplicado(personaClon);
 
-      PersonaInputDTO dto = transformarAPersonaInputDTO(personaClon, fila);
-
       if (personaExistenteOpt.isPresent()) {
         log.info("Actualizando persona existente con ID: {}", personaExistenteOpt.get().getId());
-        personaService.actualizarPersona(personaExistenteOpt.get().getId(), dto);
+        personaService.actualizarParcial(
+            personaExistenteOpt.get().getId(), personaMapper.mapToActualizacionParcial(fila));
       } else {
         log.info("Creando nueva persona y donante...");
-        PersonaOutputDTO personaCreada = personaService.crearPersona(dto);
+        PersonaOutputDTO personaCreada =
+            personaService.crearPersona(transformarAPersonaInputDTO(personaClon, fila));
         donantesService.crearDonante(new DonanteInputDTO(personaCreada.id()));
       }
       return true;

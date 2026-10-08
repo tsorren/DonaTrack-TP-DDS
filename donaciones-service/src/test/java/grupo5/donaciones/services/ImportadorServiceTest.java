@@ -115,7 +115,7 @@ class ImportadorServiceTest {
     service.procesarImportacionAsincronica(archivoId);
 
     assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
-    verify(personaService).actualizarPersona(any(UUID.class), any(PersonaInputDTO.class));
+    verify(personaService).actualizarParcial(any(UUID.class), any(PersonaInputDTO.class));
     verify(archivoRepository, times(2)).save(archivo);
   }
 

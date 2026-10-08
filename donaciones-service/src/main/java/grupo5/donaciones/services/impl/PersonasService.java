@@ -75,6 +75,20 @@ public class PersonasService implements IPersonasService {
   }
 
   @Override
+  public PersonaOutputDTO actualizarParcial(UUID id, PersonaInputDTO input) {
+    Persona persona =
+        repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+
+    mapper.mergeEntity(persona, input);
+
+    Persona guardada = repository.save(persona);
+
+    notificacionesAsyncService.sincronizarPersona(mapper.toEventoPersonaSincronizadaV1(guardada));
+
+    return mapper.toOutputDTO(guardada);
+  }
+
+  @Override
   public void eliminarPersona(UUID id) {
     Persona persona =
         repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
