@@ -241,12 +241,23 @@ paths:
   /api/entidades:
     post:
       summary: Registrar entidad beneficiaria
+      description: >
+        Registro idempotente. El id de la entidad es el de su persona jurídica (`juridicaId`).
+        La jurídica debe existir, no ser EMPRESA y tener dirección. Si ya era entidad no se
+        duplica; si estaba de baja se reactiva (sus necesidades no se reactivan).
       operationId: registrarEntidadBeneficiaria
       responses:
         '201':
-          description: Entidad creada
+          description: Entidad creada. La respuesta incluye `activo`.
+        '200':
+          description: La jurídica ya era entidad (activa, o reactivada ahora). No se duplica.
+        '400':
+          description: La persona no es jurídica, es EMPRESA o no tiene dirección
+        '404':
+          description: Persona no encontrada
     get:
       summary: Listar entidades beneficiarias
+      description: Incluye las entidades dadas de baja; cada una expone `activo`.
       operationId: listarEntidadesBeneficiarias
       responses:
         '200':
@@ -254,6 +265,7 @@ paths:
   /api/entidades/{id}:
     get:
       summary: Consultar entidad beneficiaria por ID
+      description: El `id` es el de la persona jurídica (`juridicaId`).
       operationId: obtenerEntidadPorId
       parameters:
         - name: id
@@ -262,11 +274,16 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Detalle de la entidad
+          description: Detalle de la entidad (incluye `activo`)
         '404':
           description: Entidad no encontrada
     put:
-      summary: Actualizar entidad beneficiaria
+      summary: Revalidar entidad beneficiaria
+      description: >
+        Solo revalida: exige que el `id` coincida con `juridicaId` y que la jurídica siga
+        cumpliendo los requisitos (no EMPRESA, con dirección). No cambia el estado de la entidad;
+        los datos se editan con `PUT /api/personas/{id}`. Para reactivar una entidad de baja se
+        usa `POST /api/entidades`.
       operationId: actualizarEntidad
       parameters:
         - name: id
@@ -275,13 +292,18 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Entidad actualizada
+          description: Entidad revalidada
         '400':
-          description: Datos inválidos
+          description: El id no coincide con juridicaId, o la jurídica ya no cumple los requisitos
         '404':
           description: Entidad no encontrada
+        '409':
+          description: La entidad está dada de baja
     delete:
       summary: Baja de entidad beneficiaria
+      description: >
+        Baja lógica e idempotente: marca la entidad como inactiva y desactiva en cascada sus
+        necesidades. No borra el registro; las donaciones históricas siguen resolviéndose.
       operationId: eliminarEntidad
       parameters:
         - name: id
@@ -290,18 +312,27 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '204':
-          description: Entidad eliminada exitosamente
+          description: Entidad dada de baja (o ya lo estaba)
         '404':
           description: Entidad no encontrada
   /api/donantes:
     post:
       summary: Registrar nuevo donante
+      description: >
+        Registro idempotente. El id del donante es el de su persona (`idPersona`). Si la persona
+        ya era donante activa no se duplica ni se publica evento; si estaba de baja se reactiva y
+        se publica `donante.registrado.v1`.
       operationId: registrarDonante
       responses:
         '201':
-          description: Donante registrado
+          description: Donante registrado. La respuesta incluye `activo`.
+        '200':
+          description: La persona ya era donante (activa, o reactivada ahora). No se duplica.
+        '404':
+          description: Persona no encontrada
     get:
       summary: Listar donantes
+      description: Incluye los donantes dados de baja; cada uno expone `activo`.
       operationId: listarDonantes
       parameters:
         - name: canal
@@ -314,6 +345,7 @@ paths:
   /api/donantes/{id}:
     get:
       summary: Consultar donante por ID
+      description: El `id` es el de la persona (`personaId`).
       operationId: obtenerDonantePorId
       parameters:
         - name: id
@@ -322,11 +354,14 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '200':
-          description: Detalle del donante
+          description: Detalle del donante (incluye `activo`)
         '404':
           description: Donante no encontrado
     delete:
-      summary: Eliminar donante
+      summary: Dar de baja donante
+      description: >
+        Baja lógica e idempotente: marca al donante como inactivo y publica
+        `donante.dado-de-baja.v1` solo si estaba activo. No borra el registro.
       operationId: eliminarDonante
       parameters:
         - name: id
@@ -335,7 +370,7 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         '204':
-          description: Donante eliminado exitosamente
+          description: Donante dado de baja (o ya lo estaba)
         '404':
           description: Donante no encontrado
   /api/donantes/archivos:
