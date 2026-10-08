@@ -1,5 +1,6 @@
 package grupo5.donaciones.models.entities;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -115,9 +116,10 @@ class EntidadBeneficiariaTest {
 
   @Test
   void validarRequisitos_conTipoYDireccionValidos_noLanza() {
-    EntidadBeneficiaria.validarRequisitos(TipoJuridico.ONG, true);
-    EntidadBeneficiaria.validarRequisitos(TipoJuridico.INSTITUCION, true);
-    EntidadBeneficiaria.validarRequisitos(TipoJuridico.GUBERNAMENTAL, true);
+    assertDoesNotThrow(() -> EntidadBeneficiaria.validarRequisitos(TipoJuridico.ONG, true));
+    assertDoesNotThrow(() -> EntidadBeneficiaria.validarRequisitos(TipoJuridico.INSTITUCION, true));
+    assertDoesNotThrow(
+        () -> EntidadBeneficiaria.validarRequisitos(TipoJuridico.GUBERNAMENTAL, true));
   }
 
   @Test

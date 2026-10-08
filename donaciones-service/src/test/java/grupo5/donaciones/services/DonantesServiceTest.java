@@ -3,6 +3,8 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
@@ -114,6 +116,37 @@ class DonantesServiceTest {
     verify(donantesRepository).save(dadoDeBaja);
     verify(eventPublisher, times(1))
         .publicarDonanteRegistrado(any(EventoDonanteRegistradoV1.class));
+  }
+
+  @Test
+  void crearDonante_conPersonaAnonimizada_lanzaPersonaAnonimizadaYNoGuardaNiPublica() {
+    Humana anonimizada = personaConDonanteExistente();
+    anonimizada.anonimizar();
+    when(donantesRepository.findById(anonimizada.getId())).thenReturn(Optional.empty());
+    DonanteInputDTO input = new DonanteInputDTO(anonimizada.getId());
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> donantesService.crearDonante(input));
+
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
+    verify(donantesRepository, never()).save(any(Donante.class));
+    verify(eventPublisher, never()).publicarDonanteRegistrado(any());
+  }
+
+  @Test
+  void crearDonante_conDonanteDeBajaDeUnaPersonaAnonimizada_noLoReactiva() {
+    Humana anonimizada = personaConDonanteExistente();
+    anonimizada.anonimizar();
+    Donante deBaja = new Donante(anonimizada.getId());
+    deBaja.darDeBaja();
+    when(donantesRepository.findById(anonimizada.getId())).thenReturn(Optional.of(deBaja));
+    DonanteInputDTO input = new DonanteInputDTO(anonimizada.getId());
+
+    assertThrows(BusinessStateException.class, () -> donantesService.crearDonante(input));
+
+    assertFalse(deBaja.estaActivo());
+    verify(donantesRepository, never()).save(any(Donante.class));
+    verify(eventPublisher, never()).publicarDonanteRegistrado(any());
   }
 
   @Test

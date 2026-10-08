@@ -45,6 +45,9 @@ public class EntidadBeneficiariaService implements IEntidadBeneficiariaService {
         personasRepository
             .findById(input.juridicaId())
             .orElseThrow(() -> new RecursoNoEncontradoException(input.juridicaId()));
+    if (persona.estaAnonimizada()) {
+      throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA);
+    }
     EntidadBeneficiaria.validarApta(persona);
 
     Optional<EntidadBeneficiaria> existente = repository.findById(persona.getId());

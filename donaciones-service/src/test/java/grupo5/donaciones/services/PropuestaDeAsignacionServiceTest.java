@@ -189,6 +189,24 @@ class PropuestaDeAsignacionServiceTest {
   }
 
   @Test
+  void
+      actualizarEstado_aprobarUnaPropuestaYaAprobada_informaTransicionInvalidaNoNecesidadInactiva() {
+    UUID id = UUID.randomUUID();
+    Propuesta propuesta = new Propuesta();
+    propuesta.asociarNecesidad(UUID.randomUUID());
+    propuesta.aceptar("SISTEMA");
+    when(propuestaRepository.findById(id)).thenReturn(Optional.of(propuesta));
+
+    BusinessStateException ex =
+        assertThrows(
+            BusinessStateException.class,
+            () -> service.actualizarEstado(id, EstadoPropuesta.APROBADA));
+
+    assertEquals(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA, ex.getError());
+    verify(necesidadRepository, never()).findById(any());
+  }
+
+  @Test
   void actualizarEstado_aprobadaConDonacionDeLaPropiaEntidad_lanzaDonacionASiMismo() {
     UUID id = UUID.randomUUID();
     UUID entidadYDonanteId = UUID.randomUUID();

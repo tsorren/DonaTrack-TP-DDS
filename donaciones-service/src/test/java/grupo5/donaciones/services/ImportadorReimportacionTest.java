@@ -44,6 +44,9 @@ import org.junit.jupiter.api.Test;
  */
 class ImportadorReimportacionTest {
 
+  private static final String CLAVE_TIPO_PERSONA = "TipoPersona";
+  private static final String CLAVE_TIPO_DOCUMENTO = "TIPO_DOCUMENTO";
+  private static final String CLAVE_DOCUMENTO = "DOCUMENTO";
   private static final String DOCUMENTO_JURIDICA = "30-87654321-9";
   private static final String DOCUMENTO_HUMANA = "12345678";
 
@@ -90,7 +93,8 @@ class ImportadorReimportacionTest {
     int mediosAntes = ong.getMediosDeContacto().size();
     UUID representanteOriginal = ong.getRepresentantes().getFirst().getId();
 
-    Archivo archivo = importar(Map.of("TipoPersona", "JURIDICA", "DOCUMENTO", DOCUMENTO_JURIDICA));
+    Archivo archivo =
+        importar(Map.of(CLAVE_TIPO_PERSONA, "JURIDICA", CLAVE_DOCUMENTO, DOCUMENTO_JURIDICA));
 
     Juridica despues = (Juridica) personasRepository.findById(ong.getId()).orElseThrow();
     assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
@@ -115,9 +119,12 @@ class ImportadorReimportacionTest {
 
     importar(
         Map.of(
-            "TipoPersona", "JURIDICA",
-            "DOCUMENTO", DOCUMENTO_JURIDICA,
-            "EMAIL", "nuevo@fundacion.org"));
+            CLAVE_TIPO_PERSONA,
+            "JURIDICA",
+            CLAVE_DOCUMENTO,
+            DOCUMENTO_JURIDICA,
+            "EMAIL",
+            "nuevo@fundacion.org"));
 
     Juridica despues = (Juridica) personasRepository.findById(ong.getId()).orElseThrow();
     assertEquals(mediosAntes + 1, despues.getMediosDeContacto().size());
@@ -138,7 +145,12 @@ class ImportadorReimportacionTest {
     Archivo archivo =
         importar(
             Map.of(
-                "TipoPersona", "HUMANA", "TIPO_DOCUMENTO", "DNI", "DOCUMENTO", DOCUMENTO_HUMANA));
+                CLAVE_TIPO_PERSONA,
+                "HUMANA",
+                CLAVE_TIPO_DOCUMENTO,
+                "DNI",
+                CLAVE_DOCUMENTO,
+                DOCUMENTO_HUMANA));
 
     Humana despues = (Humana) personasRepository.findById(juan.getId()).orElseThrow();
     assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
@@ -158,11 +170,16 @@ class ImportadorReimportacionTest {
 
     importar(
         Map.of(
-            "TipoPersona", "HUMANA",
-            "TIPO_DOCUMENTO", "DNI",
-            "DOCUMENTO", DOCUMENTO_HUMANA,
-            "Nombre", "Juan Carlos",
-            "FECHA_NACIMIENTO", "1985-03-20"));
+            CLAVE_TIPO_PERSONA,
+            "HUMANA",
+            CLAVE_TIPO_DOCUMENTO,
+            "DNI",
+            CLAVE_DOCUMENTO,
+            DOCUMENTO_HUMANA,
+            "Nombre",
+            "Juan Carlos",
+            "FECHA_NACIMIENTO",
+            "1985-03-20"));
 
     Humana despues = (Humana) personasRepository.findById(juan.getId()).orElseThrow();
     assertEquals("Juan Carlos", despues.getNombre());
@@ -181,7 +198,12 @@ class ImportadorReimportacionTest {
     Archivo archivo =
         importar(
             Map.of(
-                "TipoPersona", "HUMANA", "TIPO_DOCUMENTO", "DNI", "DOCUMENTO", DOCUMENTO_HUMANA));
+                CLAVE_TIPO_PERSONA,
+                "HUMANA",
+                CLAVE_TIPO_DOCUMENTO,
+                "DNI",
+                CLAVE_DOCUMENTO,
+                DOCUMENTO_HUMANA));
 
     assertEquals(EstadoArchivo.PROCESADO, archivo.getEstado());
     verify(donantesService).registrarSiNoExiste(juan.getId());
@@ -197,11 +219,11 @@ class ImportadorReimportacionTest {
     Archivo archivo =
         importar(
             Map.of(
-                "TipoPersona",
+                CLAVE_TIPO_PERSONA,
                 "HUMANA",
-                "TIPO_DOCUMENTO",
+                CLAVE_TIPO_DOCUMENTO,
                 "DNI",
-                "DOCUMENTO",
+                CLAVE_DOCUMENTO,
                 DOCUMENTO_HUMANA,
                 "Nombre",
                 "Otro Nombre"));
@@ -219,7 +241,13 @@ class ImportadorReimportacionTest {
 
     Archivo archivo =
         importar(
-            Map.of("TipoPersona", "JURIDICA", "DOCUMENTO", DOCUMENTO_HUMANA, "RAZON_SOCIAL", "X"));
+            Map.of(
+                CLAVE_TIPO_PERSONA,
+                "JURIDICA",
+                CLAVE_DOCUMENTO,
+                DOCUMENTO_HUMANA,
+                "RAZON_SOCIAL",
+                "X"));
 
     Humana despues = (Humana) personasRepository.findById(juan.getId()).orElseThrow();
     assertEquals(EstadoArchivo.PROCESADO_CON_ERRORES, archivo.getEstado());

@@ -1,5 +1,7 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
@@ -41,6 +43,14 @@ public class DonantesService implements IDonantesService {
 
   @Override
   public ResultadoRegistro<DonanteOutputDTO> crearDonante(DonanteInputDTO input) {
+    Persona persona =
+        personasRepository
+            .findById(input.idPersona())
+            .orElseThrow(() -> new RecursoNoEncontradoException(input.idPersona()));
+    if (persona.estaAnonimizada()) {
+      throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA);
+    }
+
     Optional<Donante> existente = donantesRepository.findById(input.idPersona());
     if (existente.isPresent()) {
       Donante donante = existente.get();

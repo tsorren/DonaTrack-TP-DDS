@@ -91,7 +91,10 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
 
     switch (estado) {
       case APROBADA -> {
-        validarAprobable(propuesta);
+        if (propuesta.getEstado() == EstadoPropuesta.PENDIENTE) {
+          // Si ya no está pendiente, aceptar() informa la transición inválida.
+          validarAprobable(propuesta);
+        }
         propuesta.aceptar("SISTEMA");
         propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
         propuesta.clearDomainEvents();

@@ -125,6 +125,24 @@ class EntidadBeneficiariaServiceTest {
   }
 
   @Test
+  void crearEntidad_conJuridicaAnonimizada_lanzaPersonaAnonimizadaYNoReactiva() {
+    Juridica anonimizada = PersonaMother.fundacionEsperanza();
+    anonimizada.anonimizar();
+    EntidadBeneficiaria deBaja = new EntidadBeneficiaria(anonimizada.getId());
+    deBaja.darDeBaja();
+    when(personasRepository.findById(anonimizada.getId())).thenReturn(Optional.of(anonimizada));
+    when(repository.findById(anonimizada.getId())).thenReturn(Optional.of(deBaja));
+    EntidadBeneficiariaInputDTO input = new EntidadBeneficiariaInputDTO(anonimizada.getId());
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.crearEntidad(input));
+
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
+    assertFalse(deBaja.estaActivo());
+    verify(repository, never()).save(any(EntidadBeneficiaria.class));
+  }
+
+  @Test
   void crearEntidad_conPersonaHumana_lanzaSinPersonaJuridica() {
     var humana = PersonaMother.juanPerez();
     when(personasRepository.findById(humana.getId())).thenReturn(Optional.of(humana));
