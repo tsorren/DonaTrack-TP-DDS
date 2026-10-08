@@ -2,9 +2,12 @@ package grupo5.notificaciones.infrastructure.adapters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import grupo5.notificaciones.exceptions.ProveedorMensajeriaException;
 import grupo5.notificaciones.infrastructure.TelefonoAdapter;
 import grupo5.notificaciones.infrastructure.adapters.dtos.twilio.TwilioSmsRequest;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
+import java.security.SecureRandom;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -20,6 +23,7 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
 
   private final CriterioFalloSimulado criterioFallo;
   private final ObjectMapper objectMapper = new ObjectMapper();
+  private final SecureRandom random = new SecureRandom();
 
   public TelefonoAdapterSimulado(CriterioFalloSimulado criterioFallo) {
     this.criterioFallo = criterioFallo;
@@ -37,10 +41,11 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
 
     // 2. Falla temporal (HTTP 500 / Timeout) simulada aleatoriamente (5% de las veces)
     if (simularFalloTemporalAleatorio()) {
-      throw new RuntimeException("HTTP 503 Service Unavailable: No se pudo contactar a Twilio.");
+      throw new ProveedorMensajeriaException(
+          "HTTP 503 Service Unavailable: No se pudo contactar a Twilio.");
     }
 
-    String sid = "SM" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 32);
+    String sid = "SM" + UUID.randomUUID().toString().replace("-", "").substring(0, 32);
 
     TwilioSmsRequest requestDTO = new TwilioSmsRequest(numero, "+1234567890", mensaje);
     String twilioPayload;
@@ -56,13 +61,13 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
   }
 
   protected boolean simularFalloTemporalAleatorio() {
-    return new java.util.Random().nextInt(100) < 5;
+    return this.random.nextInt(100) < 5;
   }
 
   protected void simularLatenciaDeRed() {
     try {
       // Simula un tiempo de respuesta de API entre 100 y 500 ms
-      long latencia = 100 + new java.util.Random().nextInt(400);
+      long latencia = 100L + this.random.nextInt(400);
       Thread.sleep(latencia);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
