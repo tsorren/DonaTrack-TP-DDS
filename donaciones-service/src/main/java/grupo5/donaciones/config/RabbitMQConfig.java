@@ -57,6 +57,11 @@ public class RabbitMQConfig {
   // tipo es fijo y no depende del proveedor, para que el mapeo clase -> __TypeId__ no sea ambiguo.
   public static final String TYPE_ID_ENTREGA_SOLICITADA = "entrega.solicitada.v1";
 
+  // Identidad de quien publica un evento de vuelta en logistica.exchange: el id del proveedor y
+  // un token propio de ese proveedor (donatrack.logistica.proveedor.<id>.token-vuelta).
+  public static final String HEADER_PROVEEDOR_ID = "X-Proveedor-Id";
+  public static final String HEADER_PROVEEDOR_TOKEN = "X-Proveedor-Token";
+
   public static String routingKeyEntregaSolicitada(String proveedorId) {
     return "entrega.solicitada." + proveedorId + ".v1";
   }

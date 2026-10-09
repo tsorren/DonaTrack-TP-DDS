@@ -7,8 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.regex.Pattern;
@@ -89,25 +87,12 @@ public class ApiKeyFilter extends OncePerRequestFilter {
       return;
     }
     String recibida = request.getHeader(HEADER_API_KEY);
-    if (recibida == null || !coinciden(recibida, esperada)) {
+    if (recibida == null || !ClaveSegura.coinciden(recibida, esperada)) {
       log.warn("[API-KEY] Clave de administración ausente o incorrecta");
       rechazar(response);
       return;
     }
     chain.doFilter(request, response);
-  }
-
-  /** Compara los hashes de las claves, así el tiempo no depende de cuánto coincidan. */
-  private static boolean coinciden(String recibida, String esperada) {
-    return MessageDigest.isEqual(sha256(recibida), sha256(esperada));
-  }
-
-  private static byte[] sha256(String valor) {
-    try {
-      return MessageDigest.getInstance("SHA-256").digest(valor.getBytes(StandardCharsets.UTF_8));
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("SHA-256 no disponible en la JVM", e);
-    }
   }
 
   private static void rechazar(HttpServletResponse response) throws IOException {

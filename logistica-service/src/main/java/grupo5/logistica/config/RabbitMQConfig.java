@@ -26,6 +26,15 @@ public class RabbitMQConfig {
   /** Alias fijo de __TypeId__ del comando, independiente de la routing key de cada instancia. */
   public static final String TYPE_ID_ENTREGA_SOLICITADA = "entrega.solicitada.v1";
 
+  /**
+   * Identidad con la que esta instancia firma los eventos que publica en logistica.exchange: su id
+   * de proveedor y el token acordado con Donaciones ({@code logistica.token-vuelta}). Donaciones
+   * descarta los eventos que no los traen.
+   */
+  public static final String HEADER_PROVEEDOR_ID = "X-Proveedor-Id";
+
+  public static final String HEADER_PROVEEDOR_TOKEN = "X-Proveedor-Token";
+
   public static final String ROUTING_KEY_RUTA_ASIGNADA = "ruta.asignada";
   public static final String ROUTING_KEY_RUTA_INICIADA = "ruta.iniciada";
   public static final String ROUTING_KEY_ENTREGA_EXITOSA = "entrega.exitosa";

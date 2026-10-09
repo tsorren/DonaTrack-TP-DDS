@@ -19,8 +19,9 @@ import org.springframework.stereotype.Service;
 
 /**
  * Aplica sobre la donación independiente lo que informa un proveedor de logística (ruta asignada,
- * ruta iniciada, entrega exitosa o fallida), con idempotencia por evento. Lo comparten los dos
- * caminos de vuelta: el listener AMQP y el callback HTTP de los proveedores que no usan RabbitMQ.
+ * ruta iniciada, entrega exitosa o fallida), con idempotencia por evento. Es el único camino de
+ * vuelta: todo proveedor informa por mensajería y el listener AMQP lo invoca después de verificar
+ * de qué proveedor viene el evento.
  */
 @Service
 public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
