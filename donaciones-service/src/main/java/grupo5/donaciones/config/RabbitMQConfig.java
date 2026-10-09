@@ -10,6 +10,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
+import grupo5.donaciones.dto.comunicaciones.EventoEntregaSolicitadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
@@ -51,6 +52,19 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
   public static final String ROUTING_KEY_DONANTE_DADO_DE_BAJA = "donante.dado-de-baja.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
+
+  // Comando dirigido a un proveedor de logística: entrega.solicitada.<proveedorId>.v1. El alias de
+  // tipo es fijo y no depende del proveedor, para que el mapeo clase -> __TypeId__ no sea ambiguo.
+  public static final String TYPE_ID_ENTREGA_SOLICITADA = "entrega.solicitada.v1";
+
+  // Identidad de quien publica un evento de vuelta en logistica.exchange: el id del proveedor y
+  // un token propio de ese proveedor (donatrack.logistica.proveedor.<id>.token-vuelta).
+  public static final String HEADER_PROVEEDOR_ID = "X-Proveedor-Id";
+  public static final String HEADER_PROVEEDOR_TOKEN = "X-Proveedor-Token";
+
+  public static String routingKeyEntregaSolicitada(String proveedorId) {
+    return "entrega.solicitada." + proveedorId + ".v1";
+  }
 
   // --- Exchanges ---
   @Bean
@@ -120,6 +134,7 @@ public class RabbitMQConfig {
     idClassMapping.put(ROUTING_KEY_DONANTE_REGISTRADO, EventoDonanteRegistradoV1.class);
     idClassMapping.put(ROUTING_KEY_DONANTE_DADO_DE_BAJA, EventoDonanteDadoDeBajaV1.class);
     idClassMapping.put(ROUTING_KEY_PERSONA_SINCRONIZADA, EventoPersonaSincronizadaV1.class);
+    idClassMapping.put(TYPE_ID_ENTREGA_SOLICITADA, EventoEntregaSolicitadaV1.class);
     idClassMapping.put("ruta.asignada", EventoRutaAsignada.class);
     idClassMapping.put("ruta.iniciada", EventoRutaIniciada.class);
     idClassMapping.put("entrega.exitosa", EventoEntregaExitosa.class);

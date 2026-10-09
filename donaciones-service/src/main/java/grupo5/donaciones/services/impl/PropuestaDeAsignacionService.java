@@ -5,6 +5,7 @@ import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.comunicaciones.DestinoEventoDTO;
 import grupo5.donaciones.dto.comunicaciones.EventoDonacionAsignadaV1;
+import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.dto.propuestas.EjecucionAsignacionDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
@@ -29,6 +30,7 @@ import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IPropuestaDeAsignacionService;
+import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EjecucionAsignacionMapper;
 import grupo5.donaciones.services.mappers.PropuestaMapper;
@@ -63,6 +65,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   private final IDonacionesRepository donacionesRepository;
   private final IDonantesRepository donantesRepository;
   private final IDonacionesEventPublisher donacionesEventPublisher;
+  private final ILogisticaBroker logisticaBroker;
 
   @Override
   public List<PropuestaDTO> ejecutarAsignacion() {
@@ -135,6 +138,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
       }
 
       publicarDonacionAsignada(donacionAsignar, datosBeneficiario);
+      solicitarEntregaALogistica(donacionAsignar, datosBeneficiario);
     }
 
     necesidadRepository.save(necesidad);
@@ -182,6 +186,39 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     } catch (Exception e) {
       log.error(
           "No se pudo publicar donacion.asignada.v1 (donación {}): {}",
+          donacionAsignar.getId(),
+          e.getMessage(),
+          e);
+    }
+  }
+
+  /**
+   * Le pide al broker que consiga un proveedor de logística para la donación. Logística ya no
+   * escucha {@code donacion.asignada.v1}: recibe el pedido solo si el broker la eligió. El broker
+   * solo registra el pedido y lo deja en su outbox, no habla con la red; aun así, una falla acá no
+   * debe tumbar la aprobación ni las demás fragmentaciones.
+   */
+  private void solicitarEntregaALogistica(
+      DonacionIndependiente donacionAsignar, DatosBeneficiario datosBeneficiario) {
+    if (datosBeneficiario == null) {
+      log.warn(
+          "No se solicita la entrega de la donación {} a logística: no se pudieron resolver los"
+              + " datos de la entidad beneficiaria",
+          donacionAsignar.getId());
+      return;
+    }
+    try {
+      logisticaBroker.solicitarEntrega(
+          new DatosEntregaLogistica(
+              donacionAsignar.getId(),
+              datosBeneficiario.personaBeneficiariaId(),
+              datosBeneficiario.destino(),
+              donacionAsignar.getPesoTotal(),
+              donacionAsignar.getVolumenTotal(),
+              LocalDateTime.now(ZoneId.systemDefault())));
+    } catch (Exception e) {
+      log.error(
+          "No se pudo solicitar la entrega de la donación {} a logística: {}",
           donacionAsignar.getId(),
           e.getMessage(),
           e);

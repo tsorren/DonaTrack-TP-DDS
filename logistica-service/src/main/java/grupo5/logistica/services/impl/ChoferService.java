@@ -12,6 +12,7 @@ import grupo5.logistica.services.mappers.ChoferMapper;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChoferService implements IChoferesService {
@@ -25,6 +26,7 @@ public class ChoferService implements IChoferesService {
   }
 
   @Override
+  @Transactional
   public ChoferResponseDTO crear(ChoferRequestDTO request) {
     Chofer chofer = choferMapper.toDomain(request);
     choferesRepository.save(chofer);
@@ -32,16 +34,19 @@ public class ChoferService implements IChoferesService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ChoferResponseDTO> consultarTodos() {
     return choferesRepository.findActivos().stream().map(choferMapper::toResponseDTO).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ChoferResponseDTO consultarPorId(UUID id) {
     return choferMapper.toResponseDTO(buscarChoferActivo(id));
   }
 
   @Override
+  @Transactional
   public ChoferResponseDTO cambiarEstado(UUID id, CambioEstadoChoferRequestDTO request) {
     Chofer chofer =
         choferesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
@@ -52,6 +57,7 @@ public class ChoferService implements IChoferesService {
   }
 
   @Override
+  @Transactional
   public void darDeBaja(UUID id) {
     Chofer chofer = buscarChoferActivo(id);
     chofer.cambiarEstado(EstadoChofer.DESHABILITADO);

@@ -10,6 +10,7 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 2.  **Referencias por ID entre Agregados**: La comunicación y relaciones cruzadas entre distintos agregados se realizan **únicamente mediante su identificador (`UUID`)**.
 3.  **Inmutabilidad de los Objetos de Valor**: Los objetos como `Bien` o `Direccion` son inmutables (sin *setters*). Los cambios de estado de un agregado que los involucren se realizan reemplazando la referencia completa en lugar de modificarlos internamente.
 4.  **Desacoplamiento de Inventario y Carga Histórica**: La carga original (`Donacion`) no mantiene referencias hacia las subdivisiones de stock (`DonacionIndependiente`). Esto evita mutaciones en el registro histórico de aportes y previene problemas de carga en memoria de grandes colecciones.
+5.  **Inmutabilidad de Colecciones**: `DonacionIndependiente.getItems`, `NecesidadExtraordinaria.getDonacionesAsignadas`, `NecesidadRecurrente.getPeriodos` y `Propuesta.getPosiblesFragmentaciones` devuelven copias inmutables (`List.copyOf`). El record `PeriodoNecesidad` copia sus donaciones al construirse. Las colecciones solo cambian a través de los métodos de comportamiento del agregado. Pendiente: `Persona`, `Donacion`, `Juridica`, `Subcategoria` y `DonacionIndependiente.getHistorial` siguen exponiendo vistas `Collections.unmodifiableList`.
 
 ---
 

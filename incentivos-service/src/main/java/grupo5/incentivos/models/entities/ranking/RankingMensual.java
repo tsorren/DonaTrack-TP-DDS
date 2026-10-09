@@ -24,6 +24,21 @@ public class RankingMensual implements AggregateRoot {
     this.entradas = new ArrayList<>();
   }
 
+  private RankingMensual(UUID id, YearMonth periodo, List<EntradaRanking> entradas) {
+    if (periodo == null) {
+      throw new ValidationException(ErrorCatalog.RANKING_PERIODO_NULO);
+    }
+    this.id = id;
+    this.periodo = periodo;
+    this.entradas = entradas != null ? new ArrayList<>(entradas) : new ArrayList<>();
+  }
+
+  /** Reconstituye un ranking ya calculado (p. ej. desde la base) conservando su id. */
+  public static RankingMensual reconstituir(
+      UUID id, YearMonth periodo, List<EntradaRanking> entradas) {
+    return new RankingMensual(id, periodo, entradas);
+  }
+
   public void agregarEntrada(EntradaRanking entrada) {
     if (entrada == null) {
       throw new ValidationException(ErrorCatalog.RANKING_ENTRADA_NULA);

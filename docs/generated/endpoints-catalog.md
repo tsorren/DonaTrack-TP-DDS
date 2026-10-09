@@ -1,7 +1,7 @@
 # Catálogo Unificado de Endpoints REST — DonaTrack
 
 > **Fuente Canónica:** Especificaciones OpenAPI 3.0 en [`docs/arquitectura/contratos/`](../arquitectura/contratos/)
-> **Total de Endpoints:** 98
+> **Total de Endpoints:** 100
 
 <!-- AUTO-GENERATED: DO NOT EDIT MANUALLY -->
 
@@ -58,6 +58,8 @@
 | `POST` | `/api/personas` | `crearPersonaDonaciones` | `-` | `201 (-)` |
 | `PUT` | `/api/personas/{id}` | `actualizarPersonaDonaciones` | `-` | `200 (-), 404 (-)` |
 | `DELETE` | `/api/personas/{id}` | `eliminarPersonaDonaciones` | `-` | `204 (-), 404 (-)` |
+| `GET` | `/api/logistica/proveedores` | `listarProveedoresLogistica` | `-` | `200 (ProveedorLogisticaDTO), 401 (-)` |
+| `PUT` | `/api/logistica/proveedor-preferido` | `cambiarProveedorLogisticaPreferido` | `PreferenciaProveedorRequestDTO` | `200 (ProveedorLogisticaDTO), 400 (-), 401 (-)` |
 
 ## Microservicio: DonaTrack - Incentivos Service API (`openapi-incentivos.yaml`)
 
@@ -95,7 +97,7 @@
 
 | Método | Path | Operación | Request Body | Códigos de Respuesta |
 |:---:|---|---|---|---|
-| `POST` | `/api/entregas` | `crearEntrega` | `CrearEntregaRequestDTO` | `201 (EntregaResponseDTO), 400 (-)` |
+| `POST` | `/api/entregas` | `crearEntrega` | `CrearEntregaRequestDTO` | `201 (EntregaResponseDTO), 400 (-), 409 (-)` |
 | `GET` | `/api/entregas` | `listarEntregas` | `-` | `200 (EntregaResponseDTO)` |
 | `GET` | `/api/entregas/{id}` | `obtenerEntregaPorId` | `-` | `200 (EntregaResponseDTO), 404 (-)` |
 | `PATCH` | `/api/entregas/{id}/estado` | `cambiarEstadoEntrega` | `CambioEstadoEntregaRequestDTO` | `200 (EntregaResponseDTO), 400 (-)` |

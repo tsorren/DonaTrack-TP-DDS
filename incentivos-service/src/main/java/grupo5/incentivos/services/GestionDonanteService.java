@@ -10,6 +10,8 @@ import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -23,25 +25,31 @@ public class GestionDonanteService implements IGestionDonanteService {
 
   @Override
   public DonanteRegistradoDTO registrarDonante(RegistrarDonanteRequest request) {
-    DonanteIncentivos donante =
-        repository
-            .findById(request.idDonante())
-            .orElseGet(
-                () -> {
-                  DonanteIncentivos nuevo =
-                      new DonanteIncentivos(
-                          request.idDonante(), request.idPersona(), request.nombre());
-                  repository.save(nuevo);
-                  return nuevo;
-                });
-    return DonanteRegistradoDTO.desde(donante);
+    Optional<DonanteIncentivos> existente = repository.findById(request.idDonante());
+    if (existente.isPresent()) {
+      return DonanteRegistradoDTO.desde(existente.get());
+    }
+
+    DonanteIncentivos nuevo =
+        new DonanteIncentivos(request.idDonante(), request.idPersona(), request.nombre());
+    try {
+      repository.save(nuevo);
+    } catch (DataIntegrityViolationException | ConcurrencyFailureException e) {
+      DonanteIncentivos ganador = repository.findById(request.idDonante()).orElseThrow(() -> e);
+      return DonanteRegistradoDTO.desde(ganador);
+    }
+    return DonanteRegistradoDTO.desde(nuevo);
   }
 
   @Override
   public void modificarDonante(UUID donanteId, ModificarDonanteRequest request) {
-    DonanteIncentivos donante = obtenerDonante(donanteId);
-    donante.cambiarNombre(request.nombre());
-    repository.save(donante);
+    ReintentoPorConcurrencia.ejecutar(
+        "cambio de nombre del donante " + donanteId,
+        () -> {
+          DonanteIncentivos donante = obtenerDonante(donanteId);
+          donante.cambiarNombre(request.nombre());
+          repository.save(donante);
+        });
   }
 
   @Override
@@ -59,8 +67,9 @@ public class GestionDonanteService implements IGestionDonanteService {
 
   @Override
   public void darDeBaja(UUID donanteId) {
-    DonanteIncentivos donante = obtenerDonante(donanteId);
-    repository.delete(donante);
+    if (!repository.eliminarPorId(donanteId)) {
+      throw new BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO);
+    }
   }
 
   @Override
