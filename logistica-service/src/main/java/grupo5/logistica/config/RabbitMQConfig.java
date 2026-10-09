@@ -1,6 +1,10 @@
 package grupo5.logistica.config;
 
+import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
+import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoEntregaSolicitadaV1;
+import grupo5.logistica.dto.eventos.EventoRutaAsignada;
+import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.amqp.core.Binding;
@@ -85,6 +89,12 @@ public class RabbitMQConfig {
     classMapper.setTrustedPackages("*");
     Map<String, Class<?>> idClassMapping = new HashMap<>();
     idClassMapping.put(TYPE_ID_ENTREGA_SOLICITADA, EventoEntregaSolicitadaV1.class);
+    // Alias de los eventos que Logística publica: el tipo viaja como la routing key (no como el
+    // nombre de la clase), que es lo que esperan los consumidores en sus propios mapeos.
+    idClassMapping.put(ROUTING_KEY_RUTA_ASIGNADA, EventoRutaAsignada.class);
+    idClassMapping.put(ROUTING_KEY_RUTA_INICIADA, EventoRutaIniciada.class);
+    idClassMapping.put(ROUTING_KEY_ENTREGA_EXITOSA, EventoEntregaExitosa.class);
+    idClassMapping.put(ROUTING_KEY_ENTREGA_FALLIDA, EventoEntregaFallida.class);
     classMapper.setIdClassMapping(idClassMapping);
     return classMapper;
   }

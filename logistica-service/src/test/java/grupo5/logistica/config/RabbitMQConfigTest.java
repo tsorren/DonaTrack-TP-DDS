@@ -4,8 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import grupo5.logistica.dto.eventos.EventoEntregaExitosa;
+import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoEntregaSolicitadaV1;
+import grupo5.logistica.dto.eventos.EventoRutaAsignada;
+import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.Binding;
@@ -93,5 +98,25 @@ class RabbitMQConfigTest {
     assertEquals(0.25, comando.volumenTotalM3());
     assertEquals("Av. Medrano", comando.destino().calle());
     assertEquals("CABA", comando.destino().localidad());
+  }
+
+  @Test
+  void classMapper_publicaLosEventosDeVueltaConElAliasDeLaRoutingKeyYNoConElNombreDeLaClase() {
+    DefaultClassMapper classMapper = config.classMapper();
+    // El mapeo clase -> alias se arma al inicializar el bean; Spring lo hace al crearlo.
+    classMapper.afterPropertiesSet();
+    Map<Class<?>, String> esperados =
+        Map.of(
+            EventoRutaAsignada.class, "ruta.asignada",
+            EventoRutaIniciada.class, "ruta.iniciada",
+            EventoEntregaExitosa.class, "entrega.exitosa",
+            EventoEntregaFallida.class, "entrega.fallida");
+
+    esperados.forEach(
+        (clase, alias) -> {
+          MessageProperties props = new MessageProperties();
+          classMapper.fromClass(clase, props);
+          assertEquals(alias, props.getHeaders().get("__TypeId__"), clase.getSimpleName());
+        });
   }
 }
