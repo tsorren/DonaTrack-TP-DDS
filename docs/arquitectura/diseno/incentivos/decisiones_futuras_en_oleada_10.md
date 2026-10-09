@@ -410,6 +410,12 @@ class IncentivosPersistenceIT {
 }
 ```
 
+> **Implementado (PR "Persistencia Incentivos"):** `donante_incentivos.version` con `@Version`. El test está en `RepositoriosIncentivosJpaTest`.
+> - **Recuperación:** las actualizaciones de un donante (eventos de donación, `persona.sincronizada`, visibilidad de insignias y el job de rachas) pasan por `ReintentoPorConcurrencia`. Ante `ConcurrencyFailureException` relee el donante y reaplica el cambio, hasta 3 intentos.
+> - **Por qué:** el contenedor AMQP de incentivos no reencola (`setDefaultRequeueRejected(false)`) ni tiene DLQ. Sin el reintento, un choque descartaría el evento y se perdería el contador o el avance de la misión.
+> - **Job de rachas:** si un donante agota los intentos, se loguea `error` y se sigue con los demás. El próximo ciclo lo vuelve a verificar.
+> - **El alta** ya era idempotente ante el choque: `GestionDonanteService.registrarDonante` devuelve el donante que ganó.
+
 ---
 
 ## 6. Estrategia de Cómputo de Ranking Escalable en PostgreSQL (SQL Aggregation vs. Heap Memory)
@@ -487,6 +493,9 @@ public class GestionDonanteService implements IGestionDonanteService {
   }
 }
 ```
+
+> **Desvío implementado (PR "Persistencia Incentivos"):** no se usó Spring Retry. No está en el proyecto, y el ejemplo de la §8.2 usa `@Transactional`, que los servicios de incentivos no usan. El reintento lo hace `services/ReintentoPorConcurrencia`: relee, reaplica y guarda, hasta 3 intentos sin backoff. Atrapa `ConcurrencyFailureException`, que incluye a `ObjectOptimisticLockingFailureException`. Detalle y alcance en la nota de la §5.
+> - **Riesgo residual:** si se agotan los 3 intentos, el evento AMQP se descarta igual, porque el contenedor no reencola ni tiene DLQ. Queda acotado porque cada cola tiene un solo consumidor (no hay `concurrency` configurada): solo chocan eventos de colas distintas, o un evento contra el job o contra REST. Por REST, un reintento agotado responde 500, porque `common-lib` no mapea `ConcurrencyFailureException` a 409.
 
 ---
 

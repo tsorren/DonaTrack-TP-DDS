@@ -35,6 +35,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 @ExtendWith(MockitoExtension.class)
 class MisionesDonacionServiceTest {
@@ -267,5 +268,54 @@ class MisionesDonacionServiceTest {
     ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
     orden.verify(eventPublisher, atLeastOnce()).publishEvent(captor.capture());
     assertTrue(captor.getAllValues().stream().anyMatch(MisionCompletada.class::isInstance));
+  }
+
+  @Test
+  void procesarDonacion_cuandoOtraEscrituraGana_deberiaReleerYAplicarSobreLaVersionNueva() {
+    UUID donanteId = UUID.randomUUID();
+    DonanteIncentivos versionVieja = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
+    DonanteIncentivos versionNueva = DonanteIncentivosMother.colaboradorSinMisiones(donanteId);
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    when(repo.findById(donanteId)).thenReturn(Optional.of(versionVieja), Optional.of(versionNueva));
+    when(repo.save(any()))
+        .thenThrow(new OptimisticLockingFailureException("versión vieja"))
+        .thenAnswer(invocacion -> invocacion.getArgument(0));
+    MisionesDonacionService conChoque =
+        new MisionesDonacionService(repo, eventPublisher, new MisionMapper());
+
+    conChoque.procesarDonacion(
+        IncentivosFixtures.nuevaDonacion(donanteId, LocalDate.of(2026, Month.MAY, 10)));
+
+    verify(repo, times(2)).findById(donanteId);
+    verify(repo, times(2)).save(any());
+    assertTrue(versionNueva.tuvoActividadEnMes(YearMonth.of(2026, Month.MAY)));
+  }
+
+  @Test
+  void verificarRachasVencidas_cuandoUnDonanteChocaSiempre_deberiaSeguirConLosDemas() {
+    UUID idQueChoca = UUID.randomUUID();
+    UUID idSinChoque = UUID.randomUUID();
+    DonanteIncentivos queChoca = DonanteIncentivosMother.colaboradorSinMisiones(idQueChoca);
+    DonanteIncentivos sinChoque = DonanteIncentivosMother.colaboradorSinMisiones(idSinChoque);
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    when(repo.findAll()).thenReturn(List.of(queChoca, sinChoque));
+    when(repo.findById(idQueChoca)).thenReturn(Optional.of(queChoca));
+    when(repo.findById(idSinChoque)).thenReturn(Optional.of(sinChoque));
+    when(repo.save(any()))
+        .thenAnswer(
+            invocacion -> {
+              DonanteIncentivos donante = invocacion.getArgument(0);
+              if (donante.getId().equals(idQueChoca)) {
+                throw new OptimisticLockingFailureException("versión vieja");
+              }
+              return donante;
+            });
+    MisionesDonacionService conChoque =
+        new MisionesDonacionService(repo, eventPublisher, new MisionMapper());
+
+    conChoque.verificarRachasVencidas(YearMonth.of(2026, Month.APRIL));
+
+    verify(repo, times(ReintentoPorConcurrencia.INTENTOS)).findById(idQueChoca);
+    verify(repo).save(sinChoque);
   }
 }

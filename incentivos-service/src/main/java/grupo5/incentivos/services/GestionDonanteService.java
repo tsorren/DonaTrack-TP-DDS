@@ -43,9 +43,13 @@ public class GestionDonanteService implements IGestionDonanteService {
 
   @Override
   public void modificarDonante(UUID donanteId, ModificarDonanteRequest request) {
-    DonanteIncentivos donante = obtenerDonante(donanteId);
-    donante.cambiarNombre(request.nombre());
-    repository.save(donante);
+    ReintentoPorConcurrencia.ejecutar(
+        "cambio de nombre del donante " + donanteId,
+        () -> {
+          DonanteIncentivos donante = obtenerDonante(donanteId);
+          donante.cambiarNombre(request.nombre());
+          repository.save(donante);
+        });
   }
 
   @Override
