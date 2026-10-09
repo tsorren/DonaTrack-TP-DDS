@@ -61,7 +61,7 @@ volumes:
   - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
 ```
 
-PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-initdb.d` al crear la base de datos por primera vez. Los bloques `DO $$` garantizan **idempotencia**: el script puede re-ejecutarse sin error si los roles ya existen. [OBSERVED]
+PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-initdb.d` únicamente al inicializar el volumen `pg_data` por primera vez. Los bloques `DO $$` garantizan **idempotencia** si el script se ejecuta manualmente; sin embargo, si ya tenías un volumen local creado antes de un cambio en `01-init-schemas-roles.sql`, recrealo con `docker compose down -v` (o ejecutá el script manualmente contra el contenedor). [OBSERVED]
 
 ---
 

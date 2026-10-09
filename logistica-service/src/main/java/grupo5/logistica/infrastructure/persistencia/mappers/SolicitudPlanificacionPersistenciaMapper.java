@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +39,13 @@ public class SolicitudPlanificacionPersistenciaMapper {
     entity.setCallbackUrl(domain.getCallbackUrl());
     entity.setIntentosFallidos(domain.getIntentosFallidos());
     entity.setMotivoError(domain.getMotivoError());
-    entity.setRutasGeneradas(new LinkedHashSet<>(domain.getRutasGeneradas()));
+    Set<UUID> rutasGeneradas = entity.getRutasGeneradas();
+    if (rutasGeneradas == null) {
+      entity.setRutasGeneradas(new LinkedHashSet<>(domain.getRutasGeneradas()));
+    } else {
+      rutasGeneradas.retainAll(domain.getRutasGeneradas());
+      rutasGeneradas.addAll(domain.getRutasGeneradas());
+    }
     if (existing == null && domain.getVersion() != null) {
       entity.setVersion(domain.getVersion());
     }

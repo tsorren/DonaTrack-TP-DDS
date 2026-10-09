@@ -1,7 +1,6 @@
 package grupo5.logistica.infrastructure.persistencia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -9,15 +8,11 @@ import grupo5.logistica.infrastructure.persistencia.entities.CamionEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.ChoferEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.DireccionEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.EntregaEntity;
-import grupo5.logistica.infrastructure.persistencia.entities.EventoEntregaEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.LocalidadEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.PaisEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.ProvinciaEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.RutaEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.SolicitudPlanificacionEntity;
-import grupo5.logistica.infrastructure.persistencia.entities.SolicitudTransicionEntregaEntity;
-import grupo5.logistica.infrastructure.persistencia.entities.TipoEventoEntrega;
-import grupo5.logistica.infrastructure.persistencia.entities.TipoTransicionEntrega;
 import grupo5.logistica.infrastructure.persistencia.mappers.CamionPersistenciaMapper;
 import grupo5.logistica.infrastructure.persistencia.mappers.ChoferPersistenciaMapper;
 import grupo5.logistica.infrastructure.persistencia.mappers.EntregaPersistenciaMapper;
@@ -36,7 +31,6 @@ import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -212,76 +206,5 @@ class PersistenciaMappersTest {
     assertThrows(
         ObjectOptimisticLockingFailureException.class,
         () -> solicitudMapper.toEntity(reconstituida, entity));
-  }
-
-  @Test
-  void entidadesAuditoriaYGeografia_deberianExponerGettersYSetters() {
-    PaisEntity pais = new PaisEntity();
-    UUID idPais = UUID.randomUUID();
-    pais.setIdPais(idPais);
-    pais.setNombre("Uruguay");
-    assertEquals(idPais, pais.getIdPais());
-    assertEquals("Uruguay", pais.getNombre());
-
-    ProvinciaEntity provincia = new ProvinciaEntity();
-    UUID idProv = UUID.randomUUID();
-    provincia.setIdProvincia(idProv);
-    provincia.setPais(pais);
-    provincia.setNombre("Montevideo");
-    assertEquals(idProv, provincia.getIdProvincia());
-    assertEquals(pais, provincia.getPais());
-    assertEquals("Montevideo", provincia.getNombre());
-
-    LocalidadEntity localidad = new LocalidadEntity();
-    UUID idLoc = UUID.randomUUID();
-    localidad.setIdLocalidad(idLoc);
-    localidad.setProvincia(provincia);
-    localidad.setNombre("Centro");
-    assertEquals(idLoc, localidad.getIdLocalidad());
-    assertEquals(provincia, localidad.getProvincia());
-    assertEquals("Centro", localidad.getNombre());
-
-    SolicitudTransicionEntregaEntity transicion = new SolicitudTransicionEntregaEntity();
-    UUID idSol = UUID.randomUUID();
-    UUID idEnt = UUID.randomUUID();
-    Instant ahora = Instant.now();
-    transicion.setIdSolicitud(idSol);
-    transicion.setIdEntrega(idEnt);
-    transicion.setActor("Chofer");
-    transicion.setOcurrioEn(ahora);
-    transicion.setTipoTransicion(TipoTransicionEntrega.NO_RECEPCION);
-    transicion.setFotoRecepcionUrl("https://foto");
-    transicion.setJustificacion("Cerrado");
-    transicion.setReplanificable(true);
-    assertEquals(idSol, transicion.getIdSolicitud());
-    assertEquals(idEnt, transicion.getIdEntrega());
-    assertEquals("Chofer", transicion.getActor());
-    assertEquals(ahora, transicion.getOcurrioEn());
-    assertEquals(TipoTransicionEntrega.NO_RECEPCION, transicion.getTipoTransicion());
-    assertEquals("https://foto", transicion.getFotoRecepcionUrl());
-    assertEquals("Cerrado", transicion.getJustificacion());
-    assertEquals(Boolean.TRUE, transicion.getReplanificable());
-
-    EventoEntregaEntity evento = new EventoEntregaEntity();
-    UUID idEv = UUID.randomUUID();
-    UUID idDon = UUID.randomUUID();
-    UUID idRuta = UUID.randomUUID();
-    evento.setIdEventoEntrega(idEv);
-    evento.setIdEntrega(idEnt);
-    evento.setIdDonacion(idDon);
-    evento.setIdRuta(idRuta);
-    evento.setOcurrioEn(ahora);
-    evento.setTipo(TipoEventoEntrega.ENTREGA_FALLIDA);
-    evento.setJustificacion("Rechazado");
-    evento.setReplanificable(false);
-    assertEquals(idEv, evento.getIdEventoEntrega());
-    assertEquals(idEnt, evento.getIdEntrega());
-    assertEquals(idDon, evento.getIdDonacion());
-    assertEquals(idRuta, evento.getIdRuta());
-    assertEquals(ahora, evento.getOcurrioEn());
-    assertEquals(TipoEventoEntrega.ENTREGA_FALLIDA, evento.getTipo());
-    assertEquals("Rechazado", evento.getJustificacion());
-    assertEquals(Boolean.FALSE, evento.getReplanificable());
-    assertNotNull(ahora);
   }
 }

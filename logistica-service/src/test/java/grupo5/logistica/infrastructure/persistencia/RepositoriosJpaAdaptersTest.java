@@ -362,6 +362,26 @@ class RepositoriosJpaAdaptersTest {
     publisherDirecto.publicarRutaIniciada(evRutaIniciada);
     publisherDirecto.publicarEntregaExitosa(evExitosa);
     publisherDirecto.publicarEntregaFallida(evFallida);
+    verify(rabbitTemplate)
+        .convertAndSend(
+            grupo5.logistica.config.RabbitMQConfig.EXCHANGE,
+            grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_RUTA_ASIGNADA,
+            evRutaAsignada);
+    verify(rabbitTemplate)
+        .convertAndSend(
+            grupo5.logistica.config.RabbitMQConfig.EXCHANGE,
+            grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_RUTA_INICIADA,
+            evRutaIniciada);
+    verify(rabbitTemplate)
+        .convertAndSend(
+            grupo5.logistica.config.RabbitMQConfig.EXCHANGE,
+            grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_ENTREGA_EXITOSA,
+            evExitosa);
+    verify(rabbitTemplate)
+        .convertAndSend(
+            grupo5.logistica.config.RabbitMQConfig.EXCHANGE,
+            grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_ENTREGA_FALLIDA,
+            evFallida);
 
     EventosEntregaRepository memEventoRepo = new EventosEntregaRepository();
     ComunicadorEventosLogisticaRabbit comunicador =
