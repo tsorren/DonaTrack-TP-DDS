@@ -1,0 +1,52 @@
+@startuml 01-mapa-sistema
+' Figura 1 del cuerpo: mapa del sistema (servicios y comunicación).
+' Derivada de docs/arquitectura/diseno/diagrama-de-componentes.puml.
+' Continua = sincrónica (HTTP, JDBC, S3). Discontinua violeta = mensajería AMQP.
+' Gris punteado = planificado (E5, E6). Logística solo conecta con RabbitMQ y su base (H1, H2).
+!pragma layout smetana
+!include ../../diagramas/estilo-e4.iuml
+
+actor "Usuarios" as usr
+component "Cliente Liviano (E5)" as cli <<planificado>>
+component "Autenticación (E6)" as auth <<planificado>>
+
+rectangle "Servicios DonaTrack" as svcs {
+  component "Donaciones" as don <<servicio>> {
+    component "broker de integración" as broker <<broker de integración>>
+  }
+  component "Logística DonaTrack" as log <<servicio>>
+  component "Notificaciones" as not <<servicio>>
+  component "Incentivos" as inc <<servicio>>
+}
+' Solo layout: dos filas de servicios para no superar 730 px de ancho.
+log -[hidden]down- not
+log -[hidden]down- inc
+
+component "Logística externa" as ext <<simulado>>
+queue "RabbitMQ" as rmq
+database "PostgreSQL" as pg
+component "MinIO · n8n" as aux <<infraestructura>>
+
+usr -[#9A9A9A,dotted]-> cli
+cli -[#9A9A9A,dotted]-> svcs : HTTP
+cli -[#9A9A9A,dotted]right-> auth
+
+broker ----> ext : HTTP
+broker -[#5E4B8B,dashed]-> rmq
+don -[#5E4B8B,dashed]-> rmq
+log -[#5E4B8B,dashed]-> rmq
+ext -[#5E4B8B,dashed]-> rmq
+not -[#5E4B8B,dashed]-> rmq
+inc -[#5E4B8B,dashed]-> rmq
+
+log --> pg
+not --> pg
+inc --> pg
+inc --> aux : HTTP
+
+legend left
+  ── sincrónica (HTTP, JDBC)
+  <color:#5E4B8B>- - mensajería AMQP</color>
+  <color:#6E6E6E>· · · planificado</color>
+endlegend
+@enduml

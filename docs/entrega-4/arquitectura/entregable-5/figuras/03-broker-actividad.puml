@@ -1,0 +1,60 @@
+@startuml 03-broker-actividad
+' Figura 3 del cuerpo: actividad UML de cómo elige proveedor el broker de integración.
+' Fuente: arquitectura-sistema.md, §5.3 (política de resultados de la ida) y ADR 20261007.
+' Rechazo seguro: siguiente proveedor; sin proveedores, nueva ronda con espera (hasta 5) y luego fallida.
+' Incierto: reintento al mismo proveedor con espera; agotado, fallida. Error de contrato: fallida.
+' Nota: un color por acción (#RRGGBB:texto;) rompe el parseo con este include; no se usa.
+!include ../../diagramas/estilo-e4.iuml
+!pragma useVerticalIf on
+skinparam activity {
+  BackgroundColor #E6EEF8
+  BorderColor #2F5D8A
+  DiamondBackgroundColor #FFF1CC
+  DiamondBorderColor #B7791F
+}
+
+start
+:Donación asignada;
+if (¿Solicitud activa?) then (sí)
+  stop
+else (no)
+endif
+:Ordenar proveedores;
+note right: preferido primero
+:Registrar pedido;
+repeat
+  :Enviar al proveedor;
+  if (¿Aceptado?) then (sí)
+    :Solicitud enviada;
+    note right
+      La vuelta llega
+      por mensajería
+      con identidad.
+    end note
+    stop
+  elseif (¿Error de contrato?) then (sí)
+    :Fallida;
+    stop
+  else (no)
+    if (¿Rechazo seguro?) then (sí)
+      if (¿Hay otro?) then (sí)
+        :Siguiente proveedor;
+      else (no)
+        if (¿Hay rondas?) then (sí)
+          :Nueva ronda;
+        else (no)
+          :Fallida;
+          stop
+        endif
+      endif
+    else (incierto)
+      if (¿Hay intentos?) then (sí)
+        :Reintentar mismo;
+      else (no)
+        :Fallida;
+        stop
+      endif
+    endif
+  endif
+repeat while ()
+@enduml

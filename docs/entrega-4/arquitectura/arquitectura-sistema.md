@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Versión | 1.0 · borrador para revisión del grupo |
+| Versión | 1.1 · respaldo técnico verificado del entregable 5 |
 | Fecha | 2026-10-09 |
-| Baseline | `ENTREGA_4` @ `76003bf4` (incluye #886 y #889) más los PRs #887 y #892, que se asumen integrados. Ref de verificación local: `baseline/e4-prs` @ `dcd66fe5`. |
-| Alcance | Entregable 5 (este documento) · entregable 4 (Figura 1) · entregable 3 (Figuras 2 a 8, ADRs del Anexo E y [`anexo-servicios.md`](anexo-servicios.md)). |
+| Baseline | `ENTREGA_4` @ `5cf8563b` (incluye #886, #887 y #889) más el PR #892, que se asume integrado. Ref de verificación local: `baseline/e4-prs` @ `dcd66fe5`. |
+| Alcance | Respaldo técnico del entregable 5, que se entrega como informe en [`entregable-5/`](entregable-5/README.md) · entregable 4 (Figura 1) · entregable 3 (Figuras 2 a 8, ADRs del Anexo E y [`anexo-servicios.md`](anexo-servicios.md)). |
 | Cómo leer | §1–§10: vista de sistema. Anexo E: índice de decisiones. Detalle por servicio: [`anexo-servicios.md`](anexo-servicios.md) (entregable 3). |
 | Convenciones | El número de figura coincide con el del archivo del diagrama. "Diseño" = decidido pero no está en el código. "Deuda" = desvío declarado en §9. |
 
@@ -204,6 +204,8 @@ Cada patrón responde a un driver. Ubicación a nivel servicio o módulo.
 ### 5.2 Cola hacia Notificaciones (D2)
 
 ![Figura 3 — Topología de integración AMQP](diagramas/03-integracion-amqp.png)
+
+Detalle legible por flujo, verificado contra el código: [`diagramas/rabbit/`](diagramas/rabbit/README.md) (4 diagramas).
 
 Responde: ¿Quién publica qué, en qué exchange, y quién lo consume?
 
