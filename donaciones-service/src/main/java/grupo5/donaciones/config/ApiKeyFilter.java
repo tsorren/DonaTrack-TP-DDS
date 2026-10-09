@@ -11,7 +11,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,23 +20,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Protege con una API key los endpoints que expone el broker de logística. Cubre dos grupos de
- * rutas, cada uno con su propia clave:
+ * Protege con una API key las rutas de administración del broker de logística ({@code
+ * /api/logistica/proveedores} y {@code /api/logistica/proveedor-preferido}). La clave está en
+ * {@code donatrack.logistica.admin-api-key}.
  *
- * <ul>
- *   <li>El callback de los proveedores HTTP ({@code /api/logistica/proveedores/{id}/avisos}): una
- *       clave por proveedor en {@code donatrack.logistica.proveedor.<id>.callback-api-key}, que
- *       además le da identidad al callback (la clave de un proveedor no sirve para avisar como
- *       otro).
- *   <li>La administración ({@code /api/logistica/proveedores} y {@code
- *       /api/logistica/proveedor-preferido}): una clave en {@code
- *       donatrack.logistica.admin-api-key}. La clave de un proveedor no sirve para administrar.
- * </ul>
- *
- * <p>Falla cerrado: sin clave configurada para ese proveedor, o con una clave ausente o incorrecta,
- * responde 401 y la petición no llega al controller. La comparación no depende del contenido de la
- * clave y las claves nunca se loguean. Es una protección mínima hasta el {@code auth-service} de la
- * Entrega 6; no usa Spring Security (no está en el proyecto).
+ * <p>Falla cerrado: sin clave configurada, o con una clave ausente o incorrecta, responde 401 y la
+ * petición no llega al controller. Cualquier otra ruta bajo {@code /api/logistica/proveedor}
+ * también se rechaza (por ejemplo la del callback HTTP de proveedores, que ya no existe: los
+ * proveedores informan por mensajería). La comparación no depende del contenido de la clave y las
+ * claves nunca se loguean. Es una protección mínima hasta el {@code auth-service} de la Entrega 6;
+ * no usa Spring Security (no está en el proyecto).
  */
 @Component
 public class ApiKeyFilter extends OncePerRequestFilter {
@@ -49,8 +41,6 @@ public class ApiKeyFilter extends OncePerRequestFilter {
   static final String PROPIEDAD_CLAVE_ADMIN = "donatrack.logistica.admin-api-key";
   static final String CODIGO_NO_AUTORIZADO = "ERR-AUT-401";
 
-  private static final Pattern RUTA_AVISOS =
-      Pattern.compile("^/api/logistica/proveedores/([A-Za-z0-9_-]+)/avisos/?$");
   private static final Pattern RUTA_ADMIN =
       Pattern.compile("^/api/logistica/(proveedores|proveedor-preferido)/?$");
 
@@ -87,29 +77,20 @@ public class ApiKeyFilter extends OncePerRequestFilter {
       throws ServletException, IOException {
     String rutaNormalizada = rutaNormalizada(request);
     String ruta = rutaNormalizada == null ? "" : rutaNormalizada;
-    Matcher avisos = RUTA_AVISOS.matcher(ruta);
-    String quien;
-    String propiedadClave;
-    if (avisos.matches()) {
-      quien = "el proveedor " + avisos.group(1);
-      propiedadClave = "donatrack.logistica.proveedor." + avisos.group(1) + ".callback-api-key";
-    } else if (RUTA_ADMIN.matcher(ruta).matches()) {
-      quien = "la administración";
-      propiedadClave = PROPIEDAD_CLAVE_ADMIN;
-    } else {
+    if (!RUTA_ADMIN.matcher(ruta).matches()) {
       log.warn("[API-KEY] Ruta no reconocida bajo {}: se rechaza", PREFIJO_PROTEGIDO);
       rechazar(response);
       return;
     }
-    String esperada = environment.getProperty(propiedadClave);
+    String esperada = environment.getProperty(PROPIEDAD_CLAVE_ADMIN);
     if (esperada == null || esperada.isBlank()) {
-      log.warn("[API-KEY] Falta configurar la clave de {} ({}): se rechaza", quien, propiedadClave);
+      log.warn("[API-KEY] Falta configurar {}: se rechaza", PROPIEDAD_CLAVE_ADMIN);
       rechazar(response);
       return;
     }
     String recibida = request.getHeader(HEADER_API_KEY);
     if (recibida == null || !coinciden(recibida, esperada)) {
-      log.warn("[API-KEY] Clave ausente o incorrecta para {}", quien);
+      log.warn("[API-KEY] Clave de administración ausente o incorrecta");
       rechazar(response);
       return;
     }

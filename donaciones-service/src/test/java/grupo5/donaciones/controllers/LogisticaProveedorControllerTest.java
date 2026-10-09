@@ -32,11 +32,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(LogisticaProveedorController.class)
 @Import({CommonLibAutoConfiguration.class, LoggingAutoConfiguration.class, ApiKeyFilter.class})
-@TestPropertySource(
-    properties = {
-      "donatrack.logistica.admin-api-key=clave-sintetica-admin",
-      "donatrack.logistica.proveedor.externo.callback-api-key=clave-sintetica-externo"
-    })
+@TestPropertySource(properties = "donatrack.logistica.admin-api-key=clave-sintetica-admin")
 @Execution(ExecutionMode.SAME_THREAD)
 @ResourceLock("donaciones-webmvc-context")
 class LogisticaProveedorControllerTest {
@@ -72,9 +68,9 @@ class LogisticaProveedorControllerTest {
   }
 
   @Test
-  void listar_conLaClaveDeUnProveedor_da401() throws Exception {
+  void listar_conUnaClaveIncorrecta_da401() throws Exception {
     mockMvc
-        .perform(get("/api/logistica/proveedores").header("X-API-Key", "clave-sintetica-externo"))
+        .perform(get("/api/logistica/proveedores").header("X-API-Key", "clave-incorrecta"))
         .andExpect(status().isUnauthorized());
   }
 
