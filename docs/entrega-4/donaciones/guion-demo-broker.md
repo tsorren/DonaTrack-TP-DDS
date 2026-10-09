@@ -114,11 +114,11 @@ Cada escenario asigna una donación nueva (cargar → normalizar → segmentar �
 - **Qué mirar:**
   - en el log: `Envío incierto … (intento 1/5); se reintenta con el mismo proveedor` y, unos segundos después, el intento 2;
   - **nunca** aparece una entrega en `8083`, ni siquiera tras varios reintentos;
-  - en `8084` puede haber **ninguna o varias** entregas para la misma donación: depende de si `externo` llegó a procesar el pedido antes de que el adapter cortara por timeout. Con 1 ms casi siempre corta antes, así que suele no haber ninguna.
+  - en `8084` hay **cero o una** entrega para la donación: depende de si `externo` llegó a procesar algún pedido antes de que el adapter cortara por timeout. Con 1 ms casi siempre corta antes, así que suele no haber ninguna. Nunca hay más de una: desde #886, `POST /api/entregas` deduplica por donación y responde 409 (`ERR-EST-816`) a los reintentos (D55).
 - **Qué explicar:**
   - Un timeout no significa que el pedido no llegó; significa que **no sabemos**. Por eso el broker **nunca cambia de proveedor** ante un timeout: si lo hiciera, la donación podría terminar con dos entregas en dos empresas distintas.
   - Reintenta con el mismo proveedor, que tiene que deduplicar por donación. Es un requisito del contrato con cualquier proveedor.
-  - Si en `8084` aparecen varias entregas, es porque la instancia de prueba `externo` **no deduplica** su `POST /api/entregas`, y eso muestra justamente por qué el contrato lo exige. Nuestra logística real se alcanza por AMQP, donde sí deduplica.
+  - Que `externo` no cree una segunda entrega es justamente lo que el contrato le exige a cualquier proveedor. Con 1 ms el broker no llega a leer ese 409, así que registra cada intento como incierto. Con un timeout normal, el 409 se toma como éxito (`ProveedorLogisticaHttp`). Nuestra logística real se alcanza por AMQP, donde también deduplica.
 
 ### F. Vuelta de un proveedor por mensajería
 

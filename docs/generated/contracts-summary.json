@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-09T00:50:18.696Z",
+  "generatedAt": "2026-10-09T05:52:56.033Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
@@ -743,7 +743,8 @@
           "requestBody": "CrearEntregaRequestDTO",
           "responses": {
             "201": "EntregaResponseDTO",
-            "400": "-"
+            "400": "-",
+            "409": "-"
           }
         },
         {

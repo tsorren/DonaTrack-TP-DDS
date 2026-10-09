@@ -89,7 +89,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
-| `POST` | `/api/entregas` | Registrar entrega de donación para planificar | [`crear-entrega-request.schema.json`](./contratos/schemas/crear-entrega-request.schema.json) | `201`, `400` |
+| `POST` | `/api/entregas` | Registrar entrega de donación para planificar | [`crear-entrega-request.schema.json`](./contratos/schemas/crear-entrega-request.schema.json) | `201`, `400`, `409` |
 | `GET` | `/api/entregas` | Listar entregas registradas | — | `200` |
 | `GET` | `/api/entregas/{id}` | Consulta de entrega por ID | — | `200`, `404` |
 | `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |

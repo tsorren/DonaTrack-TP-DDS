@@ -97,7 +97,7 @@
 
 | Método | Path | Operación | Request Body | Códigos de Respuesta |
 |:---:|---|---|---|---|
-| `POST` | `/api/entregas` | `crearEntrega` | `CrearEntregaRequestDTO` | `201 (EntregaResponseDTO), 400 (-)` |
+| `POST` | `/api/entregas` | `crearEntrega` | `CrearEntregaRequestDTO` | `201 (EntregaResponseDTO), 400 (-), 409 (-)` |
 | `GET` | `/api/entregas` | `listarEntregas` | `-` | `200 (EntregaResponseDTO)` |
 | `GET` | `/api/entregas/{id}` | `obtenerEntregaPorId` | `-` | `200 (EntregaResponseDTO), 404 (-)` |
 | `PATCH` | `/api/entregas/{id}/estado` | `cambiarEstadoEntrega` | `CambioEstadoEntregaRequestDTO` | `200 (EntregaResponseDTO), 400 (-)` |
