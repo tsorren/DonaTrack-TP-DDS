@@ -47,10 +47,9 @@ public class WhatsAppAdapterSimulado implements WhatsAppAdapter {
     return true;
   }
 
-  private String enmascararNumero(String numero) {
+  private static String enmascararNumero(String numero) {
     if (numero == null || numero.length() < 4) return "***";
-    return numero.substring(0, numero.length() - 4).replaceAll(".", "*")
-        + numero.substring(numero.length() - 4);
+    return "*".repeat(numero.length() - 4) + numero.substring(numero.length() - 4);
   }
 
   protected void simularLatenciaDeRed() {

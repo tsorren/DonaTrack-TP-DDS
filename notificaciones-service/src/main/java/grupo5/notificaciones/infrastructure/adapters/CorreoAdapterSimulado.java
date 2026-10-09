@@ -46,7 +46,7 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
     return true;
   }
 
-  private String enmascararCorreo(String correo) {
+  private static String enmascararCorreo(String correo) {
     if (correo == null || !correo.contains("@")) return "***";
     String[] partes = correo.split("@");
     String local = partes[0];
