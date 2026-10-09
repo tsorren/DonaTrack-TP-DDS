@@ -1,0 +1,168 @@
+# HYBRID DOCKER FILE
+# Servicios locales en Docker (donaciones, notificaciones, incentivos y n8n) contra
+# Logística en Render, RabbitMQ en CloudAMQP y Postgres en Neon.
+#
+# Las credenciales de CloudAMQP se interpolan desde el .env de Logística. --env-file solo
+# alimenta la interpolación: el resto de sus variables (perfil y base de Logística/Neon)
+# no llega a los contenedores. Hace falta pasarlo también en down/logs:
+#   docker compose -f docker-compose.hybrid.yml --env-file donatrack-logistica.env up -d --build --wait
+#   docker compose -f docker-compose.hybrid.yml --env-file donatrack-logistica.env down -v --remove-orphans
+name: donatrack-hybrid
+
+services:
+  notificaciones-service:
+    image: donatrack/notificaciones-service:hybrid
+    build:
+      context: .
+      dockerfile: notificaciones-service/Dockerfile
+      target: ci
+      args:
+        JAR_FILE: notificaciones-service/target/notificaciones-service-1.0.jar
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      # Sin perfil postgres: repositorios en memoria
+      - SPRING_PROFILES_ACTIVE=preprod
+      - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - RABBITMQ_HOST=${RABBITMQ_HOST:?falta RABBITMQ_HOST, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_PORT=${RABBITMQ_PORT:?falta RABBITMQ_PORT, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_USER=${RABBITMQ_USER:?falta RABBITMQ_USER, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_PASS=${RABBITMQ_PASS:?falta RABBITMQ_PASS, pasá --env-file donatrack-logistica.env}
+      - SPRING_RABBITMQ_VIRTUAL_HOST=${SPRING_RABBITMQ_VIRTUAL_HOST:?falta SPRING_RABBITMQ_VIRTUAL_HOST, pasá --env-file donatrack-logistica.env}
+      - SPRING_RABBITMQ_SSL_ENABLED=${SPRING_RABBITMQ_SSL_ENABLED:?falta SPRING_RABBITMQ_SSL_ENABLED, pasá --env-file donatrack-logistica.env}
+      - SPRING_MAIN_LAZY_INITIALIZATION=false
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+      start_interval: 1s
+    networks:
+      - hybrid-network
+
+  incentivos-service:
+    image: donatrack/incentivos-service:hybrid
+    build:
+      context: .
+      dockerfile: incentivos-service/Dockerfile
+      target: ci
+      args:
+        JAR_FILE: incentivos-service/target/incentivos-service-1.0.jar
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - SPRING_PROFILES_ACTIVE=preprod
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+      - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
+      - N8N_RANKING_WEBHOOK_URL=http://n8n:5678/webhook/ranking-calculado
+      - RABBITMQ_HOST=${RABBITMQ_HOST:?falta RABBITMQ_HOST, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_PORT=${RABBITMQ_PORT:?falta RABBITMQ_PORT, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_USER=${RABBITMQ_USER:?falta RABBITMQ_USER, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_PASS=${RABBITMQ_PASS:?falta RABBITMQ_PASS, pasá --env-file donatrack-logistica.env}
+      - SPRING_RABBITMQ_VIRTUAL_HOST=${SPRING_RABBITMQ_VIRTUAL_HOST:?falta SPRING_RABBITMQ_VIRTUAL_HOST, pasá --env-file donatrack-logistica.env}
+      - SPRING_RABBITMQ_SSL_ENABLED=${SPRING_RABBITMQ_SSL_ENABLED:?falta SPRING_RABBITMQ_SSL_ENABLED, pasá --env-file donatrack-logistica.env}
+      - SPRING_MAIN_LAZY_INITIALIZATION=false
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+    depends_on:
+      notificaciones-service:
+        condition: service_healthy
+      n8n:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+      start_interval: 1s
+    networks:
+      - hybrid-network
+
+  donaciones-service:
+    image: donatrack/donaciones-service:hybrid
+    build:
+      context: .
+      dockerfile: donaciones-service/Dockerfile
+      target: ci
+      args:
+        JAR_FILE: donaciones-service/target/donaciones-service-1.0.jar
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - SPRING_PROFILES_ACTIVE=preprod
+      - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
+      - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
+      - LOGISTICA_SERVICE_URL=${LOGISTICA_URL:-https://donatrack-logistica-0op2.onrender.com}
+      - EXECUTION_ID=${EXECUTION_ID:-local_run}
+      - RABBITMQ_HOST=${RABBITMQ_HOST:?falta RABBITMQ_HOST, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_PORT=${RABBITMQ_PORT:?falta RABBITMQ_PORT, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_USER=${RABBITMQ_USER:?falta RABBITMQ_USER, pasá --env-file donatrack-logistica.env}
+      - RABBITMQ_PASS=${RABBITMQ_PASS:?falta RABBITMQ_PASS, pasá --env-file donatrack-logistica.env}
+      - SPRING_RABBITMQ_VIRTUAL_HOST=${SPRING_RABBITMQ_VIRTUAL_HOST:?falta SPRING_RABBITMQ_VIRTUAL_HOST, pasá --env-file donatrack-logistica.env}
+      - SPRING_RABBITMQ_SSL_ENABLED=${SPRING_RABBITMQ_SSL_ENABLED:?falta SPRING_RABBITMQ_SSL_ENABLED, pasá --env-file donatrack-logistica.env}
+      # Token de los eventos de vuelta de logística: valor sintético solo para desarrollo y pruebas
+      - LOGISTICA_TOKEN_DONATRACK=${LOGISTICA_TOKEN_DONATRACK:-token-sintetico-solo-desarrollo}
+      # El relay del outbox de logística corre cada 1 s (por defecto 10 s) para que los tests E2E,
+      # que esperan hasta 8 s la entrega en logística, no dependan del ciclo del relay.
+      - LOGISTICA_OUTBOX_INTERVALO_MS=1000
+      - SEED_CATALOGO_ENABLED=true
+      - SPRING_MAIN_LAZY_INITIALIZATION=false
+      - SPRING_JMX_ENABLED=false
+      - SPRING_MAIN_BANNER_MODE=off
+      - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+    depends_on:
+      notificaciones-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 30s
+      start_interval: 1s
+    networks:
+      - hybrid-network
+
+  n8n:
+    image: n8nio/n8n:2.37.7
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=n8n
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - N8N_SECURE_COOKIE=false
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      - N8N_METRICS_ENABLED=false
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=false
+      - NODE_OPTIONS=--max-old-space-size=384
+    volumes:
+      - ./n8n:/etc/n8n/workflows
+      - n8n_data:/home/node/.n8n
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:5678/healthz', (res) => { res.resume(); process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1))\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+      start_interval: 1s
+    networks:
+      - hybrid-network
+
+networks:
+  hybrid-network:
+    driver: bridge
+
+volumes:
+  n8n_data:

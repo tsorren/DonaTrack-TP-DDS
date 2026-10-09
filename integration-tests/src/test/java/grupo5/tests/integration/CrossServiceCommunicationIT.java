@@ -92,6 +92,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 2. Registrar persona como donante
     PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
     UUID donanteId = donacionesClient.crearDonanteOk(personaId);
+    PollingUtils.esperarDonanteEnIncentivos(incentivosClient, donanteId);
     assertNotNull(donanteId);
 
     // 3. Verificar métricas del donante en incentivos-service
@@ -124,6 +125,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     UUID personaId = donacionesClient.crearPersonaOk(persona);
     PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
     UUID donanteId = donacionesClient.crearDonanteOk(personaId);
+    PollingUtils.esperarDonanteEnIncentivos(incentivosClient, donanteId);
 
     // Verificar perfil en incentivos
     incentivosClient.obtenerMetricas(donanteId).then().statusCode(200);
@@ -249,6 +251,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     UUID personaId = donacionesClient.crearPersonaOk(persona);
     PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
     UUID donanteId = donacionesClient.crearDonanteOk(personaId);
+    PollingUtils.esperarDonanteEnIncentivos(incentivosClient, donanteId);
 
     // 2. Enviar 3 donaciones mensuales consecutivas con fechas dinámicas
     LocalDate now = LocalDate.now();
@@ -295,6 +298,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     UUID personaId = donacionesClient.crearPersonaOk(persona);
     PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
     UUID donanteId = donacionesClient.crearDonanteOk(personaId);
+    PollingUtils.esperarDonanteEnIncentivos(incentivosClient, donanteId);
 
     // 2. Enviar 3 eventos consecutivos para completar misión de racha
     LocalDate now = LocalDate.now();

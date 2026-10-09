@@ -272,6 +272,38 @@ public final class PollingUtils {
     return UUID.fromString(rutaIdRef.get());
   }
 
+  /**
+   * Espera a que incentivos-service registre al donante. El alta llega por el evento
+   * donante.registrado, así que con un broker remoto (CloudAMQP) tarda más que el request HTTP.
+   */
+  public static void esperarDonanteEnIncentivos(IncentivosApiClient client, UUID donanteId) {
+    AtomicReference<Response> lastResponse = new AtomicReference<>();
+    try {
+      Awaitility.await("Esperar alta de donante en incentivos " + donanteId)
+          .atMost(Duration.ofSeconds(10))
+          .pollInterval(Duration.ofMillis(200))
+          .ignoreExceptions()
+          .until(
+              () -> {
+                Response resp = client.obtenerMetricas(donanteId);
+                lastResponse.set(resp);
+                return resp.getStatusCode() == 200;
+              });
+    } catch (ConditionTimeoutException e) {
+      Response r = lastResponse.get();
+      String details =
+          (r != null)
+              ? "Status: " + r.getStatusCode() + ", Body: " + r.asString()
+              : "Sin respuesta";
+      throw new AssertionError(
+          "Timeout esperando alta de donante en incentivos "
+              + donanteId
+              + ". Última respuesta: "
+              + details,
+          e);
+    }
+  }
+
   public static void esperarBajaDonanteEnIncentivos(IncentivosApiClient client, UUID donanteId) {
     AtomicReference<Response> lastResponse = new AtomicReference<>();
     try {

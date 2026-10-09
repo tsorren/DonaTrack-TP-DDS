@@ -190,3 +190,19 @@
 7. **La identidad del proveedor en los eventos de vuelta es un token en un header** (`VerificadorOrigenEventos`, D51; ADR [20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad](./20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md)): cada evento lleva `X-Proveedor-Id` y `X-Proveedor-Token`, Donaciones compara el token con `donatrack.logistica.proveedor.<id>.token-vuelta` y contrasta la donación con el registro de solicitudes; sin identidad válida el evento se descarta. Es el único camino de vuelta (el callback HTTP se quitó, D50). Límites: el token viaja en el mensaje (lo ve cualquier consumidor de `logistica.exchange`), no hay rotación ni firma del cuerpo ni protección contra repeticiones, y los tokens son por variable de entorno. Para un entorno real corresponde un usuario de RabbitMQ por proveedor con topic permissions de publicación (ítem 5, sin implementar).
 8. **Un evento de vuelta que falla al aplicarse no se reintenta** (`ProcesadorEventosLogistica`): si `cambiarEstado` lanza, el procesador deja el error en el log y no marca el evento como consumido, pero el listener termina normal y RabbitMQ hace ack. Como el consumo no tiene requeue ni DLQ, la donación queda en su estado anterior hasta que alguien republique el evento a mano. Se cierra con una DLQ y reintentos acotados en las colas de vuelta, o propagando el error para que el contenedor rechace el mensaje. El comportamiento actual lo fija `ProcesadorEventosLogisticaTest.onEntregaExitosa_cuandoServicioFalla_noPropagaNiRegistraComoConsumido`.
 
+
+---
+
+## DTI-15 — Incentivos descarta en silencio los eventos que llegan antes que el alta del donante
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests](./20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests.md) |
+| ADR complementario | [20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) (clúster DLQ, hoy solo en Notificaciones) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] not-started` — solo se ajustaron los 4 tests de `CrossServiceCommunicationIT` que fallaron (`PollingUtils.esperarDonanteEnIncentivos`) |
+| Target | `incentivos-service` (`RabbitMQConfig`, `IncentivosEventosListener`) · `integration-tests` |
+| Cuándo se saldará | A definir por el equipo |
+
+1. **Pérdida de eventos por desorden entre colas:** cada evento de Incentivos tiene su propia cola y RabbitMQ no ordena entre colas. Si `donacion.segmentada` o `donacion.recibida` llega antes que `donante.registrado`, `MisionesDonacionService.obtenerDonante` lanza `DONANTE_INCENTIVOS_NO_ENCONTRADO` y, con `defaultRequeueRejected=false` y sin DLQ, el mensaje se descarta.
+2. **Tests que suponen propagación inmediata:** las lecturas cruzadas entre servicios no siempre esperan al evento; con el RabbitMQ local la carrera no se manifiesta.
