@@ -28,7 +28,7 @@
 | 6 | `flujo-6-logistica-completo.json` | 26 | logistica (8083) | Ciclo de vida de Camión y Chofer; creación de Entrega; rutas solo nacen del scheduler (2 AM por defecto) |
 | 7 | `flujo-7-notificaciones-eventos.json` | 22 | notificaciones (8081) | Sincroniza 3 réplicas de persona; dispara los 8 tipos de evento reales; cierra con anonimización |
 | 8 | `flujo-8-e2e-distribuido.json` | 21 | **todos (8080–8083)** | Smoke test E2E: Donación → Matching → Logística → Incentivos → Notificaciones |
-| 9 | `flujo-9-broker-logistica.json` | 70 | donaciones (8080) + logística **8083 y 8084** | Demo del broker de logística: el preferido elige la logística (AMQP o HTTP), devolución por falta de cola, vuelta del proveedor por mensajería (RabbitMQ). Requiere `docker-compose.demo.yml`; carpetas D y E manuales ([guion](../docs/entrega-4/donaciones/guion-demo-broker.md)) |
+| 9 | `flujo-9-broker-logistica.json` | 80 | donaciones (8080) + logística **8083 y 8084** | Demo del broker de logística: el preferido elige la logística (AMQP o HTTP), devolución por falta de cola, vuelta del proveedor por mensajería (RabbitMQ), y vuelta real de nuestra Logística con flota, planificación y eventos firmados (carpeta H). Requiere `docker-compose.demo.yml`; carpetas D y E manuales ([guion](../docs/entrega-4/donaciones/guion-demo-broker.md)) |
 
 **Total: 238 requests** distribuidas en 9 colecciones.
 

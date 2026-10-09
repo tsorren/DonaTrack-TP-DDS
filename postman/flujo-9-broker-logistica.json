@@ -1430,6 +1430,286 @@
       ]
     },
     {
+      "name": "H. Vuelta real de nuestra Logística: flota, planificación y eventos firmados",
+      "description": "Los eventos de vuelta los genera de verdad nuestra Logística (donatrack, 8083), con su id y su token en los headers, y Donaciones los acepta. Se carga un camión y un chofer, se dispara la planificación manual y se avanza ruta y entrega; en cada paso se confirma que la donación A cambió de estado en Donaciones. Requiere haber corrido 0 y A (la entrega de la donación A tiene que estar en donatrack) y que logistica-service tenga LOGISTICA_PLANIFICACION_MANUAL_ENABLED=true (lo pone docker-compose.demo.yml). Conviene correrla con newman --delay-request 250, porque las esperas reintentan sin pausa.",
+      "item": [
+        {
+          "name": "H.1 Cargar un camión en donatrack (8083)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{logisticaUrl}}/api/camiones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"{{patenteH}}\",\n  \"capacidadKG\": 5000.0,\n  \"capacidadVolumen\": 50.0,\n  \"altura\": 2.8\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('patenteH', 'FLT' + String(Math.floor(100 + Math.random() * 900)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.2 Cargar un chofer en donatrack (8083)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{logisticaUrl}}/api/choferes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Demo\",\n  \"apellido\": \"Broker\",\n  \"licencia\": \"H-{{$randomInt}}-{{runId}}\",\n  \"telefonoContacto\": \"+541166667777\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.3 Disparar la planificación de rutas (requiere LOGISTICA_PLANIFICACION_MANUAL_ENABLED)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/logistica/planificaciones/ejecuciones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202', function(){pm.response.to.have.status(202);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.4 Esperar la ruta planificada",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/rutas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var rs = pm.response.json(); if (rs.length > 0) { pm.collectionVariables.set('rutaId', rs[0].id); return true; } return false; })();",
+                  "",
+                  "if (!listo && intentos < 80) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('Hay una ruta planificada', function () { pm.expect(listo).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.5 La ruta incluye la entrega de la donación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/rutas/{{rutaId}}/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var id = pm.collectionVariables.get('donacionA');",
+                  "var e = (pm.response.json().entregas || []).find(function (x) { return x.idDonacion === id; });",
+                  "pm.test('La ruta incluye la entrega de la donación A', function () { pm.expect(e).to.not.be.undefined; });",
+                  "if (e) { pm.collectionVariables.set('entregaIdA', e.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.6 [Evento ruta.asignada de nuestra Logística] La donación pasó a ListaParaEntregar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'ListaParaEntregar'; })();",
+                  "",
+                  "if (!listo && intentos < 80) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación pasó a ListaParaEntregar', function () { pm.expect(listo).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.7 Iniciar la ruta (el chofer sale)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{logisticaUrl}}/api/rutas/{{rutaId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_TRASLADO\",\n  \"actor\": \"QA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.8 [Evento ruta.iniciada] La donación pasó a EnTraslado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'EnTraslado'; })();",
+                  "",
+                  "if (!listo && intentos < 80) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación pasó a EnTraslado', function () { pm.expect(listo).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.9 Confirmar la entrega",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{logisticaUrl}}/api/entregas/{{entregaIdA}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREGADA\",\n  \"actor\": \"QA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.10 [Evento entrega.exitosa] La donación pasó a Entregada",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'Entregada'; })();",
+                  "",
+                  "if (!listo && intentos < 80) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación pasó a Entregada', function () { pm.expect(listo).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "D. [Manual] externo caído → rechazo → donatrack",
       "item": [
         {
@@ -2130,6 +2410,18 @@
     {
       "key": "entregasEncontradas",
       "value": "0"
+    },
+    {
+      "key": "patenteH",
+      "value": ""
+    },
+    {
+      "key": "rutaId",
+      "value": ""
+    },
+    {
+      "key": "entregaIdA",
+      "value": ""
     }
   ]
 }

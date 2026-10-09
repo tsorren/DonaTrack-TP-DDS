@@ -28,6 +28,11 @@ services:
       - LOGISTICA_TOKEN_DONATRACK=${LOGISTICA_TOKEN_DONATRACK:?definí LOGISTICA_TOKEN_DONATRACK}
       - LOGISTICA_TOKEN_EXTERNO=${LOGISTICA_TOKEN_EXTERNO:?definí LOGISTICA_TOKEN_EXTERNO}
 
+  logistica-service:
+    environment:
+      # Disparador manual de la planificación de rutas, para la carpeta H de la colección
+      - LOGISTICA_PLANIFICACION_MANUAL_ENABLED=true
+
   logistica-externo:
     image: donatrack/logistica-service:local
     build:

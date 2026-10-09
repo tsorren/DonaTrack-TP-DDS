@@ -44,7 +44,7 @@ docker-compose -f docker-compose.yml -f docker-compose.demo.yml logs -f donacion
 **newman** (la misma colección, desde la terminal):
 
 ```bash
-newman run postman/flujo-9-broker-logistica.json --env-var adminApiKey=$LOGISTICA_ADMIN_API_KEY --env-var rabbitUser=<usuario-rabbit> --env-var rabbitPass=<clave-rabbit> --env-var tokenDonatrack=$LOGISTICA_TOKEN_DONATRACK --env-var tokenExterno=$LOGISTICA_TOKEN_EXTERNO --folder "0. Preparación (una vez por arranque)" --folder "A. Preferido donatrack → AMQP a logística 8083" --folder "B. Preferido externo → HTTP a logística 8084" --folder "C. Preferido otra (sin cola) → devuelto → donatrack" --folder "F. Vuelta del proveedor por mensajería (RabbitMQ)" --folder "G. Administración: negativos y restaurar"
+newman run postman/flujo-9-broker-logistica.json --env-var adminApiKey=$LOGISTICA_ADMIN_API_KEY --env-var rabbitUser=<usuario-rabbit> --env-var rabbitPass=<clave-rabbit> --env-var tokenDonatrack=$LOGISTICA_TOKEN_DONATRACK --env-var tokenExterno=$LOGISTICA_TOKEN_EXTERNO --folder "0. Preparación (una vez por arranque)" --folder "A. Preferido donatrack → AMQP a logística 8083" --folder "B. Preferido externo → HTTP a logística 8084" --folder "C. Preferido otra (sin cola) → devuelto → donatrack" --folder "F. Vuelta del proveedor por mensajería (RabbitMQ)" --folder "G. Administración: negativos y restaurar" --folder "H. Vuelta real de nuestra Logística: flota, planificación y eventos firmados" --delay-request 250
 ```
 
 ---
@@ -141,6 +141,20 @@ Cada escenario asigna una donación nueva (cargar → normalizar → segmentar �
 - **Qué hacer:** carpeta **G**.
 - **Qué mirar:** `401` sin clave de administración; `400` con un proveedor no configurado; el preferido vuelve a `donatrack`.
 
+### H. Vuelta real de nuestra Logística (flota, planificación y eventos firmados)
+
+- **Qué hacer:** carpeta **H**. Requiere haber corrido 0 y A (la entrega de la donación A tiene que estar en `donatrack`, 8083). `docker-compose.demo.yml` habilita el disparador manual de la planificación (`LOGISTICA_PLANIFICACION_MANUAL_ENABLED=true`). Con newman conviene `--delay-request 250`, porque las esperas reintentan sin pausa.
+- **Qué hacer, paso a paso:** se carga un camión y un chofer en 8083, se dispara la planificación y se avanza la ruta y la entrega. En cada paso se consulta la donación en Donaciones.
+- **Qué mirar:**
+  - H.6: la donación pasa a `ListaParaEntregar` porque Logística publicó `ruta.asignada`;
+  - H.8: pasa a `EnTraslado` por `ruta.iniciada`;
+  - H.10: pasa a `Entregada` por `entrega.exitosa`;
+  - en el log de Donaciones aparecen `Evento RutaAsignada recibido`, `Evento RutaIniciada recibido` y `Evento EntregaExitosa recibido`, y ningún `[ORIGEN-EVENTO]` ni `Fatal message conversion error`.
+- **Qué explicar:**
+  - Estos eventos **no los simula Postman**: los genera de verdad nuestra Logística y los firma con su id y su token en los headers (`X-Proveedor-Id`, `X-Proveedor-Token`). Es el mismo contrato que se le exige a cualquier proveedor.
+  - El tipo del mensaje (`__TypeId__`) viaja como la routing key (`ruta.asignada`, etc.), no como el nombre de la clase. Un proveedor tiene que respetarlo: si manda el nombre de su clase, Donaciones no puede convertir el mensaje.
+  - Falta cubrir el camino de `entrega.fallida` de punta a punta.
+
 ---
 
 ## 4. Si algo no sale
@@ -150,6 +164,7 @@ Cada escenario asigna una donación nueva (cargar → normalizar → segmentar �
 | El compose no arranca y pide `LOGISTICA_ADMIN_API_KEY` | Falta exportar la clave de administración o los tokens de vuelta (`LOGISTICA_TOKEN_DONATRACK`, `LOGISTICA_TOKEN_EXTERNO`) |
 | `401` en los requests de administración | La variable `adminApiKey` de Postman no coincide con `LOGISTICA_ADMIN_API_KEY` |
 | `401` en el escenario F.1 | `rabbitUser` o `rabbitPass` no coinciden con las credenciales del RabbitMQ del compose |
+| En H.6 la donación no pasa a `ListaParaEntregar` | Revisar el log de Donaciones: `Fatal message conversion error` indica un `__TypeId__` que no es el alias de la routing key; `[ORIGEN-EVENTO]` indica un token o un id que no coinciden |
 | En F.4 la donación no pasa a `ListaParaEntregar` | `tokenExterno` no coincide con `LOGISTICA_TOKEN_EXTERNO` (en el log de Donaciones aparece `Token ausente o incorrecto`) |
 | La carpeta A no encuentra la propuesta | No se corrió la carpeta 0 desde el último reinicio de Donaciones |
 | La entrega no aparece | Revisar el log del broker: rechazos, inciertos y rondas quedan con el prefijo `[BROKER-LOGISTICA]` |
