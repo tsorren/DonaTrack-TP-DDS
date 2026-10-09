@@ -43,6 +43,7 @@ docs/arquitectura/
 * [**Logging y Trazabilidad**](logging-trazabilidad.md): Propagación de `traceId`, MDC en Spring Boot, interceptores Feign y observabilidad estructurada.
 * [**Catálogo Unificado de Errores**](catalogo-errores.md): Normalización exhaustiva de los 111 códigos de error estructurados del sistema (`ERR-INF`, `ERR-CSR`, `ERR-VAL`, `ERR-EST`).
 * [**Guía de Patrones de Diseño**](guia-patrones-diseno.md): Catálogo de patrones GoF aplicados (State Machine, Strategy, Template Method, Observer, Factory, Adapter).
+* [**Documento de Arquitectura del Sistema (Entrega 4)**](../entrega-4/arquitectura/arquitectura-sistema.md): Estilo, capas, patrones, integración, datos, despliegue, escenarios de calidad y deuda, con diagramas complementarios y anexo por servicio.
 * [**Análisis Arquitectónico**](analisis-arquitectonico.md): Diagnóstico estructural de acoplamiento, cohesión y modularidad del monorepo.
 
 ---

@@ -106,8 +106,11 @@ docs/
 │   ├── informe-orquestadores-control-planes-coding-agents.md
 │   └── evals-agentes-resumen.md
 │
-├── entrega-4/                             # 🟢 Principios arquitectónicos de Entrega 4 (Fase 0)
-│   └── arquitectura/principios.md         # Reglas comunes de persistencia, outbox, aislamiento e idempotencia
+├── entrega-4/                             # 🟢 Principios y documento de arquitectura de Entrega 4
+│   ├── arquitectura/principios.md         # Reglas comunes de persistencia, outbox, aislamiento e idempotencia
+│   ├── arquitectura/arquitectura-sistema.md # Documento de arquitectura del sistema (entregable 5)
+│   ├── arquitectura/anexo-servicios.md     # Anexo por servicio del documento de arquitectura (entregable 3)
+│   └── arquitectura/diagramas/            # Diagramas complementarios (PlantUML + PNG)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 4
@@ -150,6 +153,7 @@ docs/
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
+* 🏗️ **Documento de Arquitectura del Sistema (Entrega 4):** [entrega-4/arquitectura/arquitectura-sistema.md](entrega-4/arquitectura/arquitectura-sistema.md)
 * 🏛️ **Auditoría Integral y Blueprint de Testing y QA (Documento Maestro):** [testing/auditoria-arquitectura-testing.md](testing/auditoria-arquitectura-testing.md)
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
