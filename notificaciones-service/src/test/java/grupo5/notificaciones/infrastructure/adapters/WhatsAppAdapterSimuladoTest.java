@@ -1,5 +1,6 @@
 package grupo5.notificaciones.infrastructure.adapters;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -19,7 +20,13 @@ class WhatsAppAdapterSimuladoTest {
   @BeforeEach
   void setUp() {
     criterioFallo = mock(CriterioFalloSimulado.class);
-    adapter = new WhatsAppAdapterSimulado(criterioFallo);
+    adapter =
+        new WhatsAppAdapterSimulado(criterioFallo) {
+          @Override
+          protected void simularLatenciaDeRed() {
+            // no-op para tests
+          }
+        };
   }
 
   @Test
@@ -46,5 +53,21 @@ class WhatsAppAdapterSimuladoTest {
 
     assertFalse(resultado);
     verify(criterioFallo).debeFallar(telefono, mensaje);
+  }
+
+  @Test
+  @DisplayName("simularLatenciaDeRed ejecuta sin error y restaura interrupción")
+  void metodosDeSimulacion_ejecutanCorrectamente() {
+    WhatsAppAdapterSimulado realAdapter = new WhatsAppAdapterSimulado(criterioFallo);
+
+    assertDoesNotThrow(realAdapter::simularLatenciaDeRed);
+
+    Thread.currentThread().interrupt();
+    try {
+      realAdapter.simularLatenciaDeRed();
+      assertTrue(Thread.interrupted());
+    } finally {
+      Thread.interrupted();
+    }
   }
 }
