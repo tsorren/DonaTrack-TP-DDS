@@ -51,10 +51,17 @@ public abstract sealed class Persona implements Anonimizable, AggregateRoot
 
   public abstract String getNombreCompleto();
 
+  /** Una persona anonimizada conserva su id (para el historial) pero ya no es nadie. */
+  public abstract boolean estaAnonimizada();
+
   public void agregarMedioDeContacto(MedioDeContacto medioDeContacto) {
     if (medioDeContacto != null) {
       mediosDeContacto.add(medioDeContacto);
     }
+  }
+
+  public boolean tieneMedioDeContacto(MedioDeContacto medio) {
+    return this.mediosDeContacto.stream().anyMatch(propio -> coincidenMedios(propio, medio));
   }
 
   public void limpiarMediosDeContacto() {

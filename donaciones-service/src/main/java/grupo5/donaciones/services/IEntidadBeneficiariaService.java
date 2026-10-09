@@ -6,7 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IEntidadBeneficiariaService {
-  EntidadBeneficiariaOutputDTO crearEntidad(EntidadBeneficiariaInputDTO input);
+  /** Registro idempotente: {@code creado = false} si la jurídica ya era entidad. */
+  ResultadoRegistro<EntidadBeneficiariaOutputDTO> crearEntidad(EntidadBeneficiariaInputDTO input);
 
   EntidadBeneficiariaOutputDTO obtenerEntidad(UUID id);
 
@@ -14,5 +15,12 @@ public interface IEntidadBeneficiariaService {
 
   EntidadBeneficiariaOutputDTO actualizarEntidad(UUID id, EntidadBeneficiariaInputDTO input);
 
+  /** Baja lógica con cascada a sus necesidades. Idempotente. */
   void eliminarEntidad(UUID id);
+
+  /** Indica si esa jurídica es una entidad beneficiaria activa. */
+  boolean esEntidadActiva(UUID juridicaId);
+
+  /** Da de baja a la entidad de esa jurídica si existe; si no es entidad no hace nada. */
+  void darDeBajaSiExiste(UUID juridicaId);
 }

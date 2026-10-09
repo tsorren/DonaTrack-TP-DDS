@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
 import grupo5.donaciones.fixtures.DTOFixtures;
+import grupo5.donaciones.services.ResultadoRegistro;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,8 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
     EntidadBeneficiariaInputDTO input = DTOFixtures.entidadBeneficiariaInput(juridicaId);
     EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
 
-    when(entidadBeneficiariaService.crearEntidad(any())).thenReturn(outputMock);
+    when(entidadBeneficiariaService.crearEntidad(any()))
+        .thenReturn(new ResultadoRegistro<>(outputMock, true));
 
     mockMvc
         .perform(
@@ -38,6 +40,24 @@ class EntidadBeneficiariaControllerTest extends AbstractDonacionesWebMvcTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
         .andExpect(status().isCreated())
+        .andExpect(header().exists("X-Trace-Id"));
+  }
+
+  @Test
+  void crearEntidad_cuandoYaExistia_debeRetornarOk() throws Exception {
+    UUID juridicaId = UUID.randomUUID();
+    EntidadBeneficiariaInputDTO input = DTOFixtures.entidadBeneficiariaInput(juridicaId);
+    EntidadBeneficiariaOutputDTO outputMock = mock(EntidadBeneficiariaOutputDTO.class);
+
+    when(entidadBeneficiariaService.crearEntidad(any()))
+        .thenReturn(new ResultadoRegistro<>(outputMock, false));
+
+    mockMvc
+        .perform(
+            post("/api/entidades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+        .andExpect(status().isOk())
         .andExpect(header().exists("X-Trace-Id"));
   }
 

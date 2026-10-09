@@ -41,7 +41,7 @@ public class DonanteMapper {
       }
     }
 
-    return new DonanteOutputDTO(entity.getId(), personaOutput);
+    return new DonanteOutputDTO(entity.getId(), personaOutput, entity.estaActivo());
   }
 
   public void updateEntity(Donante entity, DonanteInputDTO dto) {

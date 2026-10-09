@@ -1,5 +1,7 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
@@ -9,12 +11,15 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.EstadoRegistroDonante;
 import grupo5.donaciones.services.IDonacionesEventPublisher;
 import grupo5.donaciones.services.IDonantesService;
+import grupo5.donaciones.services.ResultadoRegistro;
 import grupo5.donaciones.services.mappers.DonanteMapper;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -37,32 +42,50 @@ public class DonantesService implements IDonantesService {
   }
 
   @Override
-  public DonanteOutputDTO crearDonante(DonanteInputDTO input) {
-    Donante donanteDominio = donanteMapper.toEntity(input);
-    Donante guardado = donantesRepository.save(donanteDominio);
-
-    if (guardado.personaId() != null) {
-      Persona persona =
-          personasRepository
-              .findById(guardado.personaId())
-              .orElseThrow(() -> new RecursoNoEncontradoException(guardado.personaId()));
-
-      String nombre = persona.getNombreCompleto();
-      String credenciales =
-          "Usuario: "
-              + persona.getId()
-              + " / Password: "
-              + UUID.randomUUID().toString().substring(0, 8);
-
-      eventPublisher.publicarDonanteRegistrado(
-          new EventoDonanteRegistradoV1(
-              guardado.getId(),
-              persona.getId(),
-              nombre,
-              LocalDateTime.now(ZoneId.systemDefault()),
-              credenciales));
+  public ResultadoRegistro<DonanteOutputDTO> crearDonante(DonanteInputDTO input) {
+    Persona persona =
+        personasRepository
+            .findById(input.idPersona())
+            .orElseThrow(() -> new RecursoNoEncontradoException(input.idPersona()));
+    if (persona.estaAnonimizada()) {
+      throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA);
     }
-    return donanteMapper.toOutputDTO(guardado);
+
+    Optional<Donante> existente = donantesRepository.findById(input.idPersona());
+    if (existente.isPresent()) {
+      Donante donante = existente.get();
+      if (donante.reactivar()) {
+        donantesRepository.save(donante);
+        publicarDonanteRegistrado(donante);
+      }
+      return new ResultadoRegistro<>(donanteMapper.toOutputDTO(donante), false);
+    }
+
+    Donante guardado = donantesRepository.save(donanteMapper.toEntity(input));
+    publicarDonanteRegistrado(guardado);
+    return new ResultadoRegistro<>(donanteMapper.toOutputDTO(guardado), true);
+  }
+
+  private void publicarDonanteRegistrado(Donante donante) {
+    Persona persona =
+        personasRepository
+            .findById(donante.personaId())
+            .orElseThrow(() -> new RecursoNoEncontradoException(donante.personaId()));
+
+    String nombre = persona.getNombreCompleto();
+    String credenciales =
+        "Usuario: "
+            + persona.getId()
+            + " / Password: "
+            + UUID.randomUUID().toString().substring(0, 8);
+
+    eventPublisher.publicarDonanteRegistrado(
+        new EventoDonanteRegistradoV1(
+            donante.getId(),
+            persona.getId(),
+            nombre,
+            LocalDateTime.now(ZoneId.systemDefault()),
+            credenciales));
   }
 
   @Override
@@ -102,12 +125,35 @@ public class DonantesService implements IDonantesService {
   }
 
   @Override
+  public EstadoRegistroDonante registrarSiNoExiste(UUID personaId) {
+    Optional<Donante> existente = donantesRepository.findById(personaId);
+    if (existente.isPresent()) {
+      return existente.get().estaActivo()
+          ? EstadoRegistroDonante.YA_REGISTRADO
+          : EstadoRegistroDonante.DADO_DE_BAJA;
+    }
+    crearDonante(new DonanteInputDTO(personaId));
+    return EstadoRegistroDonante.CREADO;
+  }
+
+  @Override
   public void eliminarDonante(UUID id) {
     Donante donante =
         donantesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
-    donantesRepository.delete(donante);
-    eventPublisher.publicarDonanteDadoDeBaja(
-        new EventoDonanteDadoDeBajaV1(
-            id, donante.personaId(), LocalDateTime.now(ZoneId.systemDefault())));
+    darDeBaja(donante);
+  }
+
+  @Override
+  public void darDeBajaSiExiste(UUID personaId) {
+    donantesRepository.findById(personaId).ifPresent(this::darDeBaja);
+  }
+
+  private void darDeBaja(Donante donante) {
+    if (donante.darDeBaja()) {
+      donantesRepository.save(donante);
+      eventPublisher.publicarDonanteDadoDeBaja(
+          new EventoDonanteDadoDeBajaV1(
+              donante.getId(), donante.personaId(), LocalDateTime.now(ZoneId.systemDefault())));
+    }
   }
 }

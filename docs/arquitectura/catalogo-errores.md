@@ -144,6 +144,8 @@
 | `ERR-VAL-513` | `FECHA_INICIO_NULA` | Fecha de inicio nula | `400` |
 | `ERR-VAL-514` | `FECHA_INICIO_FUTURA` | Fecha de inicio está en el futuro | `400` |
 | `ERR-VAL-516` | `PERIODO_DONACION_NULA` | Donación de periodo es nula | `400` |
+| `ERR-VAL-517` | `ENTIDAD_BENEFICIARIA_TIPO_INVALIDO` | Una entidad beneficiaria no puede ser una empresa (organización sin fines de lucro) | `400` |
+| `ERR-VAL-518` | `ENTIDAD_BENEFICIARIA_SIN_DIRECCION` | Una entidad beneficiaria requiere dirección (la entrega se hace allí) | `400` |
 
 ### Matchmaking (6xx)
 
@@ -211,9 +213,14 @@
 | Código | Constante enum | Descripción | HTTP Status | Nota |
 |---|---|---|---|---|
 | `ERR-EST-107` | `JURIDICA_SIN_REPRESENTANTES_RESTANTES` | Operación dejaría a la jurídica sin representantes | `409` | |
+| `ERR-EST-108` | `PERSONA_ANONIMIZADA` | La persona fue anonimizada: no se le puede registrar ni reactivar un rol de donante o de entidad | `409` | |
+| `ERR-EST-211` | `DONANTE_INACTIVO` | El donante está dado de baja y no puede cargar donaciones | `409` | |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
 | `ERR-EST-409` | `ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA` | Fragmentación de ítem independiente inválida | `409` | |
 | `ERR-EST-515` | `SIN_PERIODO_ACTIVO` | No existe período activo para la operación | `409` | |
+| `ERR-EST-519` | `ENTIDAD_BENEFICIARIA_INACTIVA` | La entidad beneficiaria está dada de baja | `409` | |
+| `ERR-EST-520` | `DONACION_A_SI_MISMO` | Una jurídica no puede recibir su propia donación | `409` | Se controla al aprobar la propuesta |
+| `ERR-EST-521` | `NECESIDAD_INACTIVA` | La necesidad ya no está activa y no se puede aprobar la propuesta | `409` | |
 | `ERR-EST-702` | `DONANTE_INCENTIVOS_NO_ENCONTRADO` | Donante no encontrado en servicio de incentivos | **`404`** | Excepción especial en handler |
 | `ERR-EST-708` | `INSIGNIA_NO_ENCONTRADA` | Insignia no encontrada | **`404`** | Excepción especial en handler |
 | `ERR-EST-716` | `RANKING_NO_ENCONTRADO` | Ranking mensual no encontrado para el período solicitado | **`404`** | Excepción especial en handler |

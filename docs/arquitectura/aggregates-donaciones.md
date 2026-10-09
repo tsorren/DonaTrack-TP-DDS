@@ -26,7 +26,8 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 
 ### 2.2. Agregado: Donante
 *   **Aggregate Root**: `Donante`.
-*   **Referencias Externas (por ID)**: `personaId` (UUID de la persona asociada).
+*   **Identidad**: el `id` del donante **es el `personaId`** de su persona (identidad compartida, ver ADR `20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria`, `proposed`). Por eso una persona no puede quedar registrada como donante dos veces.
+*   **Estado**: `activo` (baja lógica). `darDeBaja()` y `reactivar()` devuelven `true` solo si hubo transición, para que el servicio publique el evento una única vez. Un donante dado de baja no puede cargar donaciones (`DONANTE_INACTIVO`) y su historial se conserva.
 *   **Responsabilidad**: Modelar el perfil del donante para gamificación, historial de aportes y canal de contacto predeterminado.
 *   **Paquete**: `grupo5.donaciones.models.entities.donantes`
 
@@ -61,6 +62,9 @@ Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** par
 
 ### 2.5. Agregado: Entidad Beneficiaria
 *   **Aggregate Root**: `EntidadBeneficiaria` (Actor que recibe las donaciones).
+*   **Identidad**: el `id` de la entidad **es el `juridicaId`** de su persona jurídica (identidad compartida, ver ADR `20261007-…`).
+*   **Estado**: `activo` (baja lógica). La baja de una entidad desactiva en cascada sus necesidades; al reactivarla las necesidades no se reactivan (se vuelven a registrar).
+*   **Reglas**: `EntidadBeneficiaria.validarRequisitos` exige que la jurídica no sea `EMPRESA` (organización sin fines de lucro) y tenga dirección, tanto al registrarla como mientras esté activa (`PersonasService.actualizarPersona` rechaza el cambio). Una jurídica no puede recibir su propia donación (se controla al aprobar la propuesta).
 *   **Objetos de Valor Internos**: `Direccion`, `Localidad` (dirección postal física, en `grupo5.donaciones.models.entities.ubicaciones`).
 *   **Responsabilidad**: Validar los datos de contacto y direcciones físicas para coordinar los puntos de entrega de logística.
 *   **Paquete**: `grupo5.donaciones.models.entities.beneficiarios`

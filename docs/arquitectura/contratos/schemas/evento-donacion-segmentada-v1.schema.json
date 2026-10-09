@@ -8,7 +8,7 @@
     "donanteId": {
       "type": "string",
       "format": "uuid",
-      "description": "Identificador del donante"
+      "description": "Identificador del donante. Vale lo mismo que el id de su persona (el id del donante es el de su persona). Este evento todavía no lleva personaId, por eso el campo no se marca como deprecated."
     },
     "fecha": {
       "type": "string",

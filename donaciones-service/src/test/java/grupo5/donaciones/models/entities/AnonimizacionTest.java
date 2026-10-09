@@ -1,7 +1,9 @@
 package grupo5.donaciones.models.entities;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.personas.Humana;
@@ -28,6 +30,18 @@ class AnonimizacionTest {
     assertEquals(Anonimizable.VALOR_STRING, persona.getNombre());
     assertEquals(Anonimizable.VALOR_STRING, persona.getApellido());
     assertNull(persona.getDocumento(), "El documento debe ser nulo tras anonimizar");
+  }
+
+  @Test
+  void estaAnonimizada_esFalsaParaUnaPersonaNormalYVerdaderaTrasAnonimizar() {
+    assertFalse(persona.estaAnonimizada());
+    assertFalse(juridica.estaAnonimizada());
+
+    persona.anonimizar();
+    juridica.anonimizar();
+
+    assertTrue(persona.estaAnonimizada());
+    assertTrue(juridica.estaAnonimizada());
   }
 
   @Test

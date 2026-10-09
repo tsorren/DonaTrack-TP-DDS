@@ -153,16 +153,19 @@ CREATE INDEX idx_persona_contacto_persona ON persona_medio_contacto(persona_id);
 -- ----------------------------------------------------------------------------
 -- 2. AGREGADOS DONANTE Y ENTIDAD BENEFICIARIA (REFERENCIAS POR ID)
 -- ----------------------------------------------------------------------------
+-- Identidad compartida (ADR 20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria,
+-- proposed): el id del rol ES el id de la persona (PK = FK, @MapsId). La unicidad es por
+-- construcción y desaparecen persona_id / juridica_id. La baja es lógica (activo).
 CREATE TABLE donante (
-    id UUID PRIMARY KEY,
-    persona_id UUID NOT NULL UNIQUE REFERENCES persona(id) ON DELETE RESTRICT,
+    id UUID PRIMARY KEY REFERENCES persona(id) ON DELETE RESTRICT,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
     version BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 CREATE TABLE entidad_beneficiaria (
-    id UUID PRIMARY KEY,
-    juridica_id UUID NOT NULL UNIQUE REFERENCES persona_juridica(id) ON DELETE RESTRICT,
+    id UUID PRIMARY KEY REFERENCES persona_juridica(id) ON DELETE RESTRICT,
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
     version BIGINT NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
 );

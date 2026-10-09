@@ -1,5 +1,6 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
@@ -90,6 +91,10 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
 
     switch (estado) {
       case APROBADA -> {
+        if (propuesta.getEstado() == EstadoPropuesta.PENDIENTE) {
+          // Si ya no está pendiente, aceptar() informa la transición inválida.
+          validarAprobable(propuesta);
+        }
         propuesta.aceptar("SISTEMA");
         propuesta.getDomainEvents().forEach(eventPublisher::publishEvent);
         propuesta.clearDomainEvents();
@@ -99,6 +104,43 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
     }
 
     propuestaRepository.save(propuesta);
+  }
+
+  /**
+   * Una propuesta solo se aprueba si su necesidad sigue activa y ninguna de sus donaciones
+   * pertenece a la propia entidad beneficiaria (una jurídica no se auto-dona).
+   */
+  private void validarAprobable(Propuesta propuesta) {
+    UUID necesidadId = propuesta.getNecesidadQueSatisfaceId();
+    Necesidad necesidad =
+        necesidadRepository
+            .findById(necesidadId)
+            .orElseThrow(() -> new RecursoNoEncontradoException(necesidadId));
+    if (!necesidad.isActiva()) {
+      throw new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA);
+    }
+
+    List<PosibleFragmentacion> fragmentaciones = propuesta.getPosiblesFragmentaciones();
+    if (fragmentaciones == null) {
+      return;
+    }
+    UUID entidadId = necesidad.getEntidadId();
+    boolean autoDonacion =
+        entidadId != null
+            && fragmentaciones.stream()
+                .anyMatch(f -> entidadId.equals(donanteDe(f.getDonacionOriginalId())));
+    if (autoDonacion) {
+      throw new BusinessStateException(ErrorCatalog.DONACION_A_SI_MISMO);
+    }
+  }
+
+  private UUID donanteDe(UUID donacionIndependienteId) {
+    return donacionRepository
+        .findById(donacionIndependienteId)
+        .flatMap(
+            independiente -> donacionesRepository.findById(independiente.getDonacionOriginalId()))
+        .map(Donacion::getDonanteId)
+        .orElse(null);
   }
 
   @Override
