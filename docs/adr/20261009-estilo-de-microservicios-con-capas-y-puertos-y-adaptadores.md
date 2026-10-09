@@ -7,7 +7,7 @@
 
 ## Contexto y Problema
 
-`[OBSERVED] El código actual ya implementa esta decisión` (rama `ENTREGA_4` más los PRs #887, #889 y #892; ref de verificación `baseline/e4-prs`):
+`[OBSERVED] El código actual ya implementa esta decisión` (rama `ENTREGA_4` (incluye #889) más los PRs #887 y #892; ref de verificación `baseline/e4-prs`):
 
 * Cuatro servicios de dominio (`donaciones-service`, `logistica-service`, `incentivos-service`, `notificaciones-service`), cada uno con su `Dockerfile` y su schema de PostgreSQL. Se comunican por REST y AMQP.
 * En cada servicio, los mismos paquetes: `controllers/` (entrada HTTP), `services/` (aplicación), `models/` (dominio y puertos de repositorio) e `infrastructure/` (adaptadores).

@@ -1,6 +1,6 @@
 @startuml 05-secuencia-planificacion
 ' Figura 5 — ¿Cómo se planifican las rutas en lotes y con callback?
-' Verificado contra baseline/e4-prs (844ec4b9). Requisitos: H3 · H4 · H5.
+' Verificado contra baseline/e4-prs (dcd66fe5). Requisitos: H3 · H4 · H5.
 ' Los límites de transacción van como group con rótulo, no como critical: en UML 2, critical es una
 ' región que no se intercala con otras, no un bloque atómico.
 !include estilo-e4.iuml

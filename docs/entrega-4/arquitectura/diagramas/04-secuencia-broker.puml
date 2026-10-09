@@ -1,6 +1,6 @@
 @startuml 04-secuencia-broker
 ' Figura 4 — ¿Cómo elige proveedor el broker de integración y cómo vuelve el estado?
-' Verificado contra baseline/e4-prs (844ec4b9). Requisitos: R2 · D3 · D4.
+' Verificado contra baseline/e4-prs (dcd66fe5). Requisitos: R2 · D3 · D4.
 ' Vuelta: LogisticaEventListener llama al verificador y, si pasa, a ProcesadorEventosLogistica,
 ' que hace la dedup en memoria antes de cambiar el estado. Por eso la dedup va en ese participante.
 ' Ese procesador de eventos de logística no es parte del broker de integración (va sin ámbar), como en las Figuras 1 y 3.

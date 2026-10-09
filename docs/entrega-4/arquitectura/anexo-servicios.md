@@ -41,9 +41,9 @@ Vuelta al documento: [`arquitectura-sistema.md`](arquitectura-sistema.md). Los I
 | Patrones propios | Template Method en misiones · Factory de misiones estándar · Strategy de inactividad · gestores puros de ranking e inactividad · insignia como plantilla y como logro |
 | Entradas | AMQP: 5 colas desde `donaciones.exchange` · REST `/api/incentivos/**` · 3 procesos programados: inactividad (diario), rachas (mensual), ranking (fin de mes) |
 | Salidas | AMQP: `incentivo.mision-cumplida.v1`, `incentivo.subio-categoria.v1`, `incentivo.donante-inactivo.v1` en `incentivos.exchange` · n8n: 2 webhooks (insignia ganada, ranking), sin esperar respuesta; un fallo solo deja un aviso · MinIO |
-| Datos | PostgreSQL (perfil `postgres`, #889): 7 entidades, Flyway V1, SINGLE_TABLE en misiones · MinIO, bucket `insignias`; si MinIO no responde, el servicio arranca igual |
+| Datos | PostgreSQL (perfil `postgres`): 7 entidades, Flyway V1, SINGLE_TABLE en misiones, bloqueo optimista en el perfil de donante con reintento · MinIO, bucket `insignias`; si MinIO no responde, el servicio arranca igual |
 | Interino | Feign hacia Notificaciones solo con `incentivos.rabbitmq.enabled=false`; por defecto `true` (DTI-13) |
-| Deuda propia | T4, T5, T6, T7, T9 · n8n difunde contra un servicio de eco HTTP externo, sin reintento |
+| Deuda propia | T4, T5, T6, T7 · n8n difunde contra un servicio de eco HTTP externo, sin reintento |
 
 ## Anexo D — Notificaciones
 

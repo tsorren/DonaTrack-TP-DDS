@@ -29,7 +29,7 @@ package "Servicio DonaTrack (mismo esqueleto en los 4)" as svc {
   package "Aplicación" as pApp {
     component "Servicios de aplicación\n(casos de uso y transacciones)" as appSvc
     component "Mappers DTO ↔ dominio" as appMap
-    rectangle "Puertos de aplicación\npublicador de eventos,\nclientes externos,\nbroker de integración" <<interface>> as portsApp
+    rectangle "Puertos de aplicación\npublicador de eventos,\nclientes externos,\nproveedor de logística" <<interface>> as portsApp
   }
   package "Dominio" as pDom {
     component "Agregados y entidades\nState · Strategy · Template Method\ngestores de dominio puros" as domModel

@@ -22,7 +22,7 @@
 ' El detalle de colas, routing keys y DLQ está en docs/entrega-4/arquitectura/diagramas/03-integracion-amqp.puml.
 ' T19: la vuelta de la instancia externo depende de LOGISTICA_SELF_BASE_URL, que
 '   docker-compose.demo.yml no fija (su callback apunta a localhost:8083).
-' Fuente de verdad: baseline/e4-prs (ENTREGA_4 + PRs #887, #889, #892).
+' Fuente de verdad: baseline/e4-prs (ENTREGA_4 con #889, más PRs #887 y #892).
 ' ADRs: 20260911 (pub/sub hacia Notificaciones), 20261007 (broker de integración),
 '       20261008 (vuelta de proveedores por mensajería con identidad).
 ' Layout (smetana, sin Graphviz), de arriba hacia abajo:
@@ -215,7 +215,7 @@ legend right
   Socket sin rótulo: el canal es el que nombra la interfaz (REST, JDBC).
   «simulado» dentro de un servicio: corre en su proceso y simula un externo.
   El planificador llama por HTTP al callback de su propio servicio; los medios no usan red.
-  JDBC solo con el perfil postgres. Donaciones: JDBC «planificado», hoy 100 % en memoria.
+  JDBC solo con el perfil postgres. Donaciones: sin JDBC, hoy 100 % en memoria (T1).
   Colas, routing keys y DLQ: Figura 3.
 endlegend
 @enduml

@@ -1,6 +1,6 @@
 @startuml 06-secuencia-eventos-logistica
 ' Figura 6 — ¿Cómo llega un hecho de Logística a una notificación sin que Logística invoque a nadie?
-' Verificado contra baseline/e4-prs (844ec4b9). Requisitos: H1 · H2 · H8.
+' Verificado contra baseline/e4-prs (dcd66fe5). Requisitos: H1 · H2 · H8.
 ' La dedup de la vuelta está en ProcesadorEventosLogistica (Donaciones), después del verificador.
 ' Ese procesador de eventos de logística no es parte del broker de integración (Figuras 1, 3 y 4).
 ' El Núcleo no publica directo: lo hace el adapter DonacionesEventPublisher, como en la Figura 1.

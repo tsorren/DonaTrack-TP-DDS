@@ -4,7 +4,7 @@
 |---|---|
 | Versión | 1.0 · borrador para revisión del grupo |
 | Fecha | 2026-10-09 |
-| Baseline | `ENTREGA_4` @ `89cea0be` (incluye #886) más los PRs #887, #889 y #892, que se asumen integrados. Ref de verificación local: `baseline/e4-prs` @ `844ec4b9`. |
+| Baseline | `ENTREGA_4` @ `76003bf4` (incluye #886 y #889) más los PRs #887 y #892, que se asumen integrados. Ref de verificación local: `baseline/e4-prs` @ `dcd66fe5`. |
 | Alcance | Entregable 5 (este documento) · entregable 4 (Figura 1) · entregable 3 (Figuras 2 a 8, ADRs del Anexo E y [`anexo-servicios.md`](anexo-servicios.md)). |
 | Cómo leer | §1–§10: vista de sistema. Anexo E: índice de decisiones. Detalle por servicio: [`anexo-servicios.md`](anexo-servicios.md) (entregable 3). |
 | Convenciones | El número de figura coincide con el del archivo del diagrama. "Diseño" = decidido pero no está en el código. "Deuda" = desvío declarado en §9. |
@@ -28,7 +28,7 @@
 | H2 | Logística no se comunica con Notificaciones | E3 p.22, impl. 4 | §5.5 | 3, 6 | ídem H1 · `docs/entrega-4/integracion/matriz-productor-consumidor.md` | Restricción respetada |
 | H3 | URL de callback para el planificador externo | E3 p.22, impl. 1 | §5.4 | 1, 5 | `logistica.self.base-url` en `logistica-service/src/main/resources/application.properties` | Cumple, con un planificador simulado dentro de Logística (T19) |
 | H4 | Lotes de ≤ 100 donaciones por solicitud | E3 p.22, impl. 2 | §5.4 | 5 | `logistica.planificacion.max-donaciones-por-lote=100` (ídem) | Cumple |
-| H5 | Rutas en horario de baja carga | E2 p.16 · E3 p.22 | §5.4 | 5 | `logistica.planificacion.cron.expression` = `0 0 2 * * ?` (ídem) | Cumple |
+| H5 | Rutas y algoritmos de asignación en horario de baja carga | E2 p.16 · E3 p.22 | §5.4 · Anexo A | 5 | Rutas: `logistica.planificacion.cron.expression` = `0 0 2 * * ?` (ídem) · Asignación: `planificador.algoritmos.cron.expression` = `0 0 0 * * ?` en `donaciones-service/src/main/resources/application.properties` | Cumple |
 | H6 | Flujo low-code (n8n) para difundir insignias | E2 p.17 | §5.1 · anexo por servicio (Incentivos) | 1 | `n8n/workflow-insignias.json` · `n8n.webhook.*` en `incentivos-service/src/main/resources/application.properties` | Cumple, red social simulada |
 | H7 | Cada servicio en contenedor y desplegado | E3 p.22 | §7 | 8 | 4 `Dockerfile` · `docker-compose.yml`, `.demo.yml`, `.preprod.yml` | Cumple |
 | H8 | Notificar inicio de ruta, entrega exitosa y fallida, sin violar H2 | E3 p.22 | §5.5 | 6 | `donaciones-service/src/main/java/grupo5/donaciones/infrastructure/logistica/` · `matriz-productor-consumidor.md` | Cumple, vía Donaciones |
@@ -409,12 +409,12 @@ Responde: ¿Cómo se aíslan los datos de cada servicio?
 |---|---|---|---|---|
 | Motor | Memoria, sin JPA | PostgreSQL 16, perfil `postgres` | PostgreSQL 16, perfil `postgres` | PostgreSQL 16, perfil `postgres` |
 | Perfil por defecto | Memoria | Memoria | Memoria | Memoria |
-| Schema / rol | `donaciones` / `donaciones_user` (rol sin permisos: no persiste) | `logistica` / `logistica_user` | `incentivos` / `incentivos_user` (ver §9, T15) | `notificaciones` / `notificaciones_user` |
+| Schema / rol | `donaciones` / `donaciones_user` (rol sin permisos: no persiste) | `logistica` / `logistica_user` | `incentivos` / `incentivos_user` | `notificaciones` / `notificaciones_user` |
 | Modelo de persistencia | — | Separado, con mappers | Separado, con mappers | Separado, con mappers |
 | Migraciones | — | Flyway V1–V2 | Flyway V1 | Flyway V1–V2 |
 | Validación del esquema | — | `ddl-auto=validate` | `ddl-auto=validate` | `ddl-auto=validate` |
 | Herencia | — | Sin herencia; enums nativos de PostgreSQL | SINGLE_TABLE (misiones) | SINGLE_TABLE (medios de contacto) |
-| Concurrencia | — | Bloqueo optimista (columna `version`) | — | — |
+| Concurrencia | — | Bloqueo optimista (columna `version`) | Bloqueo optimista en el perfil de donante, con reintento ante conflicto | — |
 | Tablas de integración | Outbox, solicitudes y dedup en memoria | `evento_entrega` (base de un outbox futuro, sin relay) · `UNIQUE (id_donacion)` | — | Inbox `evento_procesado` |
 | Referencias a otros servicios | — | UUID sin clave foránea | UUID sin clave foránea | UUID sin clave foránea |
 | Objetos binarios | — | Solo la URL de la foto | MinIO, bucket `insignias` | — |
@@ -532,7 +532,7 @@ El documento no promete entrega exactamente una vez ni efecto único global. S3�
 | # | Estímulo | Respuesta | Mecanismo | Estado |
 |---|---|---|---|---|
 | S1 | Notificaciones caído 10 min durante un pico de donaciones | Donaciones sigue operando. Los mensajes se procesan al volver | Colas durables declaradas por Notificaciones · publicación asincrónica | Cubierto. Condición: Notificaciones arrancó antes al menos una vez (declara su cola); sin cola, el hecho se pierde (inferido: los hechos se publican sin `mandatory`) |
-| S2 | El proveedor elegido no responde o rechaza | Rechazo seguro → siguiente proveedor. Incierto → mismo proveedor con backoff. Agotado → fallida con log de error | Política de resultados del broker de integración (§5.3) · `mandatory` y confirms en el comando | Cubierto, con límites: la fallida solo se ve en el log; una solicitud activa por donación no es atómica (DTI-14, ítem 2); si Logística descarta el comando por validación después del acuse de RabbitMQ, Donaciones no se entera (T20) |
+| S2 | El proveedor elegido no responde o rechaza | Rechazo seguro → siguiente proveedor. Incierto → mismo proveedor con backoff. Agotado → fallida con log de error | Política de resultados del broker de integración (§5.3) · `mandatory` y confirms en el comando | Cubierto, con límites: la fallida solo se ve en el log; una solicitud activa por donación no es atómica (DTI-14, ítem 2); si Logística descarta el comando por validación después del acuse de RabbitMQ, Donaciones no se entera (T20); sin failover por disponibilidad: si el proveedor AMQP elegido está caído pero su cola existe, el comando espera en la cola y no se reenvía a otro proveedor (ADR 20261007) |
 | S3 | El mismo mensaje llega dos veces | Efecto único donde hay dedup | Inbox persistente en Notificaciones · clave única por donación en Logística · dedup en memoria en Donaciones | Parcial: Incentivos no deduplica donaciones y no envía `messageId` (DTI-16); la dedup de Donaciones se pierde al reiniciar (DTI-14) |
 | S4 | Falla la publicación después del commit, o el proceso cae antes de publicar | Sin evento perdido | Solo el comando del broker de integración pasa por outbox (en memoria) | No cubierto: Logística publica después del commit sin outbox (DTI-16); outbox de Donaciones sin durabilidad (DTI-14, ítem 1) |
 | S5 | RabbitMQ reinicia | Colas y mensajes durables; publicador informado | Exchanges y colas durables · confirms y `mandatory` solo en el comando | Parcial: el resto de los publicadores no confirma; en compose RabbitMQ no tiene volumen, así que recrear el contenedor pierde colas y mensajes |
@@ -543,7 +543,7 @@ El documento no promete entrega exactamente una vez ni efecto único global. S3�
 |---|---|---|---|
 | Unitarias | Reglas, transiciones, algoritmos, broker de integración con proveedores simulados | JUnit | Sí |
 | Arquitectura | Reglas de capas de §3 (parciales) | ArchUnit | Sí |
-| Persistencia | Adaptadores, mappers y migraciones contra PostgreSQL 16 | Testcontainers | Parcial: los de Incentivos y Notificaciones quedan excluidos (DTI-16) |
+| Persistencia | Adaptadores, mappers y migraciones contra PostgreSQL 16 | Testcontainers | Parcial: los de Notificaciones quedan excluidos (DTI-16) |
 | Mensajería | Adapter AMQP del broker de integración (mensaje devuelto) · mensajería de Logística | Testcontainers con RabbitMQ | Sí. Sin Docker se saltean |
 | Contratos | Respuestas contra OpenAPI · mensajes contra JSON Schema | Validador OpenAPI · script de contratos | Sí |
 | Integración y E2E | Flujos entre servicios sobre el preprod efímero | Failsafe + compose | Sí |
@@ -551,7 +551,7 @@ El documento no promete entrega exactamente una vez ni efecto único global. S3�
 | Mutación | Algoritmo de compatibilidad | Pitest | No, manual |
 | Análisis estático | Calidad y cobertura | Sonar · JaCoCo | Sonar no bloquea el merge |
 
-- Tests: Donaciones 643 · Logística 383 · Incentivos 302 · Notificaciones 191 · integración 29 · common-lib 60.
+- Tests: Donaciones 643 · Logística 383 · Incentivos 314 · Notificaciones 192 · integración 29 · common-lib 60.
 
 ---
 
@@ -567,13 +567,13 @@ El documento no promete entrega exactamente una vez ni efecto único global. S3�
 | T6 | Incentivos: sin lock distribuido de schedulers | Jobs duplicados con más de una réplica | ShedLock sobre PostgreSQL | DTI-16, ítem 5 · ADR ShedLock (`proposed`) |
 | T7 | Incentivos: pool que ejecuta en el hilo llamador al saturarse | La publicación bloquea al llamador · errores solo en el log | Pool con rechazo explícito o publicación con outbox | DTI-16, ítem 6 |
 | T8 | Traza AMQP solo de ida | No se sigue un flujo asíncrono de punta a punta | Restaurar `X-Trace-Id` al consumir y enviarlo en todos los publicadores | DTI-16, ítem 7 · ADR de trazabilidad (`proposed`) |
-| T9 | Tests JPA de Incentivos y Notificaciones fuera de CI | Una regresión de mapeo no frena el merge | Renombrar o reincluir en Surefire | DTI-16, ítem 8 |
+| T9 | Tests JPA de Notificaciones fuera de CI | Una regresión de mapeo no frena el merge | Renombrar o reincluir en Surefire | DTI-16, ítem 8 |
 | T10 | Reglas ArchUnit faltantes, alcance limitado a `models.entities` y fugas de capas | Las fugas de §3 pueden crecer sin aviso | Reglas del ADR 20260906 | DTI-16, ítem 9 · DTI-02 |
 | T11 | Un evento de vuelta que falla no se reintenta | La donación queda en el estado anterior | DLQ y reintentos acotados en las colas de vuelta | DTI-14, ítem 8 |
 | T12 | Seguridad de transición: API key y token en header | Protección mínima, sin rotación ni identidad de usuario | Autenticación (E6) · usuarios de RabbitMQ por proveedor | DTI-14, ítems 3, 5, 7 · DTI-07 |
 | T13 | Feign interino de Incentivos a Notificaciones | Con el flag en `false` se apaga también el consumo AMQP de Incentivos | Eliminar el cliente | DTI-13 |
 | T14 | Un proveedor que solo habla HTTP no puede devolver estado | Sin integración con un tercero real solo-HTTP | Polling como evolución | ADR 20261008 |
-| T15 | Integración de #889: el script de roles en conflicto con ENTREGA_4 | Si el merge no conserva los bloques completos de Logística e Incentivos, uno de los dos queda sin permisos sobre su schema | Fusionar ambos bloques al integrar #889 | ADR 20260902 |
+| T15 | Script de roles en conflicto al integrar #889 | Cerrado: el merge en `ENTREGA_4` (`76003bf4`) conserva los GRANT de Logística e Incentivos | — | — |
 | T16 | Despliegue en la nube fuera del repo | URL pendiente · no reproducible desde el repo · RabbitMQ compartido (CloudAMQP) sin configuración en el repo, ni para Donaciones ni para Logística | Publicar la URL y configurar CloudAMQP en ambos servicios antes de la defensa | ADR D6 |
 | T17 | Restos legados: `notificaciones.exchange` sin publicadores · `PUT /api/notificaciones/personas` sin llamador en producción | Superficie sin uso | Retirar al cerrar la migración | DTI-13 · ADR 20260911 |
 | T18 | Notificaciones recibe por comodín `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, sin tipo que los procese | Esos mensajes terminan en su DLQ (inferido, sin ejecutar): ruido para la revisión manual | Bindings explícitos o descarte controlado | DTI-16, ítem 10 |

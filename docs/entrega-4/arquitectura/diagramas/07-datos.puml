@@ -67,7 +67,7 @@ note as nOrm
   Modelo JPA separado del dominio, con mappers.
   JPA solo con el perfil postgres; el perfil
   por defecto usa repositorios en memoria.
-  @Version solo en Logística.
+  @Version en Logística (5 tablas) e Incentivos (perfil de donante).
   Tests de persistencia con Testcontainers (sin H2).
   Un motor único: punto común de falla (ADR 20260902).
 end note
