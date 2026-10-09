@@ -96,6 +96,17 @@ logistica-service
 
 Se publica con `mandatory=true` y publisher confirms (`correlated`); el broker espera el acuse. Si RabbitMQ lo devuelve (no hay cola para esa routing key), es un rechazo seguro y el broker prueba con el siguiente proveedor. Un nack o la falta de acuse son inciertos: el mensaje pudo haber quedado en la cola, así que se reintenta con el mismo proveedor. Un proveedor HTTP no usa este comando: recibe el pedido por REST, y como todo proveedor informa su avance publicando en `logistica.exchange` los eventos de vuelta (no invoca a Donaciones por HTTP).
 
+#### B3. Eventos de vuelta de los proveedores de logística
+
+Todo proveedor de logística informa el avance de una entrega publicando en `logistica.exchange` los eventos `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa` y `entrega.fallida` (los mismos que ya publica nuestra Logística). No invoca a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Cada mensaje debe llevar dos headers:
+
+| Header | Valor |
+|---|---|
+| `X-Proveedor-Id` | Id del proveedor (el de `donatrack.logistica.proveedores`) |
+| `X-Proveedor-Token` | Token propio del proveedor, acordado con Donaciones (`donatrack.logistica.proveedor.<id>.token-vuelta`) |
+
+`donaciones-service` descarta, con un aviso en el log, los eventos sin esos headers, con un token incorrecto o sobre una donación que no está asignada a ese proveedor en el registro del broker. Nuestra Logística firma así sus eventos con `logistica.instancia-id` y `logistica.token-vuelta`. Es una protección mínima (DTI-14, ítem 7).
+
 #### C. Clúster de Dead Letter Queues (Aislamiento de Fallas)
 
 | Cola Principal | Argumento DLX | Exchange DLX | Routing Key | Cola Terminal (DLQ) |
