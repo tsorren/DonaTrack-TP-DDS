@@ -12,6 +12,8 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 @Entity
 @DiscriminatorValue("COMPLETITUD")
@@ -27,5 +29,6 @@ public class MisionCompletitudEntity extends MisionEntity {
       name = "mision_categorias_donadas",
       joinColumns = @JoinColumn(name = "mision_id", nullable = false))
   @Column(name = "categoria", nullable = false, length = 255)
+  @Fetch(FetchMode.SUBSELECT)
   private Set<String> categoriasDonadas = new LinkedHashSet<>();
 }

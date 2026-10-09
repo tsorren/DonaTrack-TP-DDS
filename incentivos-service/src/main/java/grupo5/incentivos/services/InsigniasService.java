@@ -2,7 +2,6 @@ package grupo5.incentivos.services;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.common.exceptions.ValidationException;
 import grupo5.incentivos.dto.InsigniaDTO;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.insignias.InsigniaGanada;
@@ -36,18 +35,9 @@ public class InsigniasService implements IInsigniasService {
   @Override
   public void configurarVisibilidadInsignia(
       UUID donanteId, String nombreInsignia, boolean visible) {
-    boolean nombreValido = nombreInsignia != null && !nombreInsignia.isBlank();
-    if (nombreValido
-        && repository.actualizarVisibilidadInsignia(donanteId, nombreInsignia, visible)) {
-      return;
-    }
-    if (!repository.existsById(donanteId)) {
-      throw new BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO);
-    }
-    if (!nombreValido) {
-      throw new ValidationException(ErrorCatalog.INSIGNIA_SIN_NOMBRE);
-    }
-    throw new BusinessStateException(ErrorCatalog.INSIGNIA_NO_ENCONTRADA);
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    donante.configurarVisibilidadInsignia(nombreInsignia, visible);
+    repository.save(donante);
   }
 
   private DonanteIncentivos obtenerDonante(UUID donanteId) {

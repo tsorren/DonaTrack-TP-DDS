@@ -37,19 +37,21 @@ class ImagenesInsigniasPersistenciaMapperTest {
   void preparar() {
     when(imagenes.urlPublica(REFERENCIA)).thenReturn(URL);
     when(imagenes.urlPublica(URL)).thenReturn(URL);
+    when(imagenes.referencia(URL)).thenReturn(REFERENCIA);
+    when(imagenes.referencia(REFERENCIA)).thenReturn(REFERENCIA);
     misionMapper = new MisionPersistenciaMapper(imagenes);
     donanteMapper = new DonanteIncentivosPersistenciaMapper(misionMapper);
   }
 
   @Test
-  void toEntity_deberiaGuardarLaUrlPublicaDeLaInsigniaDeLaMision() {
-    Mision mision = misionConInsignia(REFERENCIA);
+  void toEntity_deberiaGuardarLaReferenciaYNoLaUrlAbsolutaDeLaInsigniaDeLaMision() {
+    Mision mision = misionConInsignia(URL);
 
     MisionEntity entity = misionMapper.toEntity(mision);
 
-    assertEquals(URL, entity.getInsignia().getImagenUrl());
+    assertEquals(REFERENCIA, entity.getInsignia().getImagenUrl());
     assertEquals("Explorador", entity.getInsignia().getNombre());
-    verify(imagenes).urlPublica(REFERENCIA);
+    verify(imagenes).referencia(URL);
   }
 
   @Test
@@ -72,15 +74,14 @@ class ImagenesInsigniasPersistenciaMapperTest {
   }
 
   @Test
-  void deberiaGuardarYLeerLaUrlPublicaDeLasInsigniasGanadas() {
+  void deberiaGuardarLaReferenciaYLeerLaUrlPublicaDeLasInsigniasGanadas() {
     DonanteIncentivos donante =
         new DonanteIncentivos(UUID.randomUUID(), UUID.randomUUID(), "Ana", List.of());
-    donante.otorgarInsignia(new Insignia("Explorador", "desc", REFERENCIA));
+    donante.otorgarInsignia(new Insignia("Explorador", "desc", URL));
 
     DonanteIncentivosEntity entity = donanteMapper.toEntity(donante);
-    assertEquals(URL, entity.getInsignias().get(0).getImagenUrl());
+    assertEquals(REFERENCIA, entity.getInsignias().get(0).getImagenUrl());
 
-    entity.getInsignias().get(0).setImagenUrl(REFERENCIA);
     DonanteIncentivos leido = donanteMapper.toDomain(entity);
     assertEquals(URL, leido.getInsignias().get(0).imagenUrl());
   }

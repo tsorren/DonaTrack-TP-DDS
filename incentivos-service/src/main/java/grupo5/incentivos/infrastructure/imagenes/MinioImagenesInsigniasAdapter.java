@@ -27,4 +27,12 @@ public class MinioImagenesInsigniasAdapter implements IImagenesInsignias {
     }
     return urlBaseDelBucket + referencia.substring(PREFIJO_REFERENCIA.length());
   }
+
+  @Override
+  public String referencia(String url) {
+    if (url == null || !url.startsWith(urlBaseDelBucket)) {
+      return url;
+    }
+    return PREFIJO_REFERENCIA + url.substring(urlBaseDelBucket.length());
+  }
 }

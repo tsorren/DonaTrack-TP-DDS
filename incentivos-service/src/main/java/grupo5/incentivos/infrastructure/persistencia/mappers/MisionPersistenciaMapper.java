@@ -35,6 +35,11 @@ public class MisionPersistenciaMapper {
     return imagenes.urlPublica(referencia);
   }
 
+  /** URL pública -> referencia que se guarda en la base. */
+  public String referenciaImagen(String url) {
+    return imagenes.referencia(url);
+  }
+
   public MisionEntity toEntity(Mision mision) {
     if (mision == null) {
       return null;
@@ -111,7 +116,7 @@ public class MisionPersistenciaMapper {
       return null;
     }
     return new InsigniaEmbeddable(
-        insignia.nombre(), insignia.descripcion(), resolverImagenUrl(insignia.imagenUrl()));
+        insignia.nombre(), insignia.descripcion(), referenciaImagen(insignia.imagenUrl()));
   }
 
   private Insignia toInsignia(InsigniaEmbeddable embeddable) {

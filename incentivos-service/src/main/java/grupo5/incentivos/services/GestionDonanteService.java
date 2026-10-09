@@ -43,9 +43,9 @@ public class GestionDonanteService implements IGestionDonanteService {
 
   @Override
   public void modificarDonante(UUID donanteId, ModificarDonanteRequest request) {
-    if (!repository.actualizarNombre(donanteId, request.nombre())) {
-      throw new BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO);
-    }
+    DonanteIncentivos donante = obtenerDonante(donanteId);
+    donante.cambiarNombre(request.nombre());
+    repository.save(donante);
   }
 
   @Override

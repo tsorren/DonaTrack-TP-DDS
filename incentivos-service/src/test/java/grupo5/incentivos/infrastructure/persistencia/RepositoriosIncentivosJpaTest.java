@@ -242,21 +242,6 @@ class RepositoriosIncentivosJpaTest {
   }
 
   @Test
-  void deberiaInvalidarUnaCopiaViejaTrasActualizarElNombrePorUpdateMasivo() {
-    DonanteIncentivos nuevo =
-        new DonanteIncentivos(
-            UUID.randomUUID(), UUID.randomUUID(), "Ana", LocalDate.of(2026, Month.JANUARY, 1));
-    donanteRepository.save(nuevo);
-    DonanteIncentivos copiaVieja = donanteRepository.findById(nuevo.getId()).orElseThrow();
-
-    donanteRepository.actualizarNombre(nuevo.getId(), "Nuevo");
-
-    copiaVieja.registrarDonacion(EventoDonacionMother.enFecha(2026, 6, 10));
-    assertThrows(
-        ObjectOptimisticLockingFailureException.class, () -> donanteRepository.save(copiaVieja));
-  }
-
-  @Test
   void noDeberiaPersistirEventosDeDominioYElOriginalLosConserva() {
     DonanteIncentivos donante = DonanteIncentivosMother.colaboradorConMisionRacha(1);
     donante.registrarDonacion(EventoDonacionMother.valido());
@@ -289,35 +274,33 @@ class RepositoriosIncentivosJpaTest {
   }
 
   @Test
-  void deberiaActualizarElNombreSinCargarElAgregado() {
+  void deberiaPersistirElCambioDeNombreConservandoElResto() {
     DonanteIncentivos donante = donanteConEstadoCompleto(UUID.randomUUID());
     donanteRepository.save(donante);
 
-    assertTrue(donanteRepository.actualizarNombre(donante.getId(), "Nuevo Nombre"));
+    DonanteIncentivos cargado = donanteRepository.findById(donante.getId()).orElseThrow();
+    cargado.cambiarNombre("Nuevo Nombre");
+    donanteRepository.save(cargado);
 
     DonanteIncentivos leido = donanteRepository.findById(donante.getId()).orElseThrow();
     assertEquals("Nuevo Nombre", leido.getNombre());
     assertEquals(4, leido.getMisiones().size());
-    assertFalse(donanteRepository.actualizarNombre(UUID.randomUUID(), "X"));
   }
 
   @Test
-  void deberiaActualizarLaVisibilidadDeUnaInsignia() {
+  void deberiaPersistirLaVisibilidadDeUnaInsignia() {
     DonanteIncentivos donante = donanteConEstadoCompleto(UUID.randomUUID());
     donanteRepository.save(donante);
 
-    assertTrue(
-        donanteRepository.actualizarVisibilidadInsignia(
-            donante.getId(), "Gran Aporte Test", false));
-    assertTrue(donanteRepository.actualizarVisibilidadInsignia(donante.getId(), "Extra", true));
+    DonanteIncentivos cargado = donanteRepository.findById(donante.getId()).orElseThrow();
+    cargado.configurarVisibilidadInsignia("Gran Aporte Test", false);
+    cargado.configurarVisibilidadInsignia("Extra", true);
+    donanteRepository.save(cargado);
 
     List<InsigniaGanada> insignias =
         donanteRepository.findById(donante.getId()).orElseThrow().getInsignias();
     assertFalse(insignias.get(0).visible());
     assertTrue(insignias.get(1).visible());
-    assertFalse(
-        donanteRepository.actualizarVisibilidadInsignia(donante.getId(), "Inexistente", true));
-    assertFalse(donanteRepository.actualizarVisibilidadInsignia(UUID.randomUUID(), "Extra", true));
   }
 
   @Test

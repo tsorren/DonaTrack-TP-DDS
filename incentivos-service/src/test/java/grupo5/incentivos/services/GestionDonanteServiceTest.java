@@ -167,31 +167,30 @@ class GestionDonanteServiceTest {
   }
 
   @Test
-  void modificarDonante_cuandoRepositorioNoEncuentraDonante_noDeberiaCargarNiGuardarElAgregado() {
+  void modificarDonante_cuandoRepositorioNoEncuentraDonante_noDeberiaGuardarNada() {
     IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
     UUID id = UUID.randomUUID();
-    when(repo.actualizarNombre(id, "Nuevo")).thenReturn(false);
+    when(repo.findById(id)).thenReturn(java.util.Optional.empty());
     GestionDonanteService servicio = new GestionDonanteService(repo);
     ModificarDonanteRequest request = IncentivosFixtures.modificarDonante("Nuevo");
 
     assertThrows(BusinessStateException.class, () -> servicio.modificarDonante(id, request));
 
-    verify(repo, never()).findById(any());
     verify(repo, never()).save(any());
   }
 
   @Test
-  void modificarDonante_cuandoExiste_deberiaDelegarEnActualizarNombreSinReescribirElAgregado() {
+  void modificarDonante_cuandoExiste_deberiaCambiarElNombreEnElAgregadoYGuardarlo() {
     IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
     UUID id = UUID.randomUUID();
-    when(repo.actualizarNombre(id, "Nuevo")).thenReturn(true);
+    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Inicial", java.util.List.of());
+    when(repo.findById(id)).thenReturn(java.util.Optional.of(donante));
     GestionDonanteService servicio = new GestionDonanteService(repo);
 
     servicio.modificarDonante(id, IncentivosFixtures.modificarDonante("Nuevo"));
 
-    verify(repo).actualizarNombre(id, "Nuevo");
-    verify(repo, never()).findById(any());
-    verify(repo, never()).save(any());
+    assertEquals("Nuevo", donante.getNombre());
+    verify(repo).save(donante);
   }
 
   @Test

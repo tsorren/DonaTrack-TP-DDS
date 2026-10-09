@@ -128,6 +128,11 @@ classDiagram
     - `ultima_donacion_fecha DATE`
   - El detalle de eventos históricos de donación (`EventoDonacion`) se mantendrá desacoplado o como `@ElementCollection` con carga estrictamente diferida (`FetchType.LAZY`) en tabla secundaria `donante_historial_donacion`.
 
+> **Desvío implementado (PR "Persistencia Incentivos", V1):** no se persiste el historial de eventos (`donante_historial_donacion`) ni `donaciones_consecutivas` / `max_donaciones_consecutivas`. `Metricas` guarda en `donante_incentivos` los escalares `total_donaciones_historicas`, `total_donaciones_exitosas` y `ultima_donacion`, más dos colecciones acotadas: `donante_donaciones_por_periodo` (conteo mensual, clave `yyyy-MM`) y `donante_organizacion_ayudada`.
+> - **Por qué:** el único consumidor del historial era `MetricasIncentivosService.obtenerMetricas()`, que solo necesita el conteo por mes. Persistir el conteo mensual es equivalente para esa consulta y su tamaño crece con los meses de actividad, no con cada donación.
+> - **Cambio de dominio:** `Metricas.getHistorialDonaciones()` se eliminó (sin llamadores) y se reemplazó por `donacionesPorPeriodo()`.
+> - **Consecuencia:** el detalle por donación no se conserva; si se necesita auditoría por evento, hay que reintroducir `donante_historial_donacion` en una migración nueva.
+
 ---
 
 ### 1.3. Mapeo de Value Objects `Insignia` e `InsigniaGanada`

@@ -36,6 +36,17 @@ class MinioImagenesInsigniasAdapterTest {
   }
 
   @Test
+  void deberiaConvertirLaUrlPublicaDeVueltaALaReferenciaParaPersistir() {
+    assertEquals(
+        "/insignias/explorador.png",
+        adapter.referencia("http://localhost:9000/insignias/explorador.png"));
+    assertEquals("/insignias/explorador.png", adapter.referencia("/insignias/explorador.png"));
+    assertEquals(
+        "http://otro-host/insignias/x.png", adapter.referencia("http://otro-host/insignias/x.png"));
+    assertNull(adapter.referencia(null));
+  }
+
+  @Test
   void deberiaDejarSinCambiosLosValoresQueNoSonReferenciasDeInsignia() {
     assertEquals("/icon.png", adapter.urlPublica("/icon.png"));
     assertEquals("http://img.png", adapter.urlPublica("http://img.png"));

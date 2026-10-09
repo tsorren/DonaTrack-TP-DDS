@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @Profile("postgres")
@@ -34,23 +33,6 @@ public class DonanteIncentivosRepositoryJpaAdapter
       return Optional.empty();
     }
     return springDataRepo.findByPersonaId(idPersona).map(mapper::toDomain);
-  }
-
-  @Override
-  public boolean actualizarNombre(UUID donanteId, String nombre) {
-    return springDataRepo.actualizarNombre(donanteId, nombre) > 0;
-  }
-
-  @Override
-  @Transactional
-  public boolean actualizarVisibilidadInsignia(
-      UUID donanteId, String nombreInsignia, boolean visible) {
-    boolean actualizado =
-        springDataRepo.actualizarVisibilidadInsignia(donanteId, nombreInsignia, visible) > 0;
-    if (actualizado) {
-      springDataRepo.incrementarVersion(donanteId);
-    }
-    return actualizado;
   }
 
   @Override

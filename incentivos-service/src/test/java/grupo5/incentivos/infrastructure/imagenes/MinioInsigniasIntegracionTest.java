@@ -56,8 +56,11 @@ class MinioInsigniasIntegracionTest {
         new MisionPersistenciaMapper(new MinioImagenesInsigniasAdapter(endpoint, BUCKET));
 
     for (Mision mision : MisionFactory.crearMisionesEstandar()) {
-      String url = mapper.toEntity(mision).getInsignia().getImagenUrl();
+      // En la base se persiste la referencia relativa; la URL pública se resuelve al leer.
+      String referencia = mapper.toEntity(mision).getInsignia().getImagenUrl();
+      assertTrue(referencia.startsWith("/" + BUCKET + "/"), referencia);
 
+      String url = mapper.resolverImagenUrl(referencia);
       assertTrue(url.startsWith(endpoint + "/" + BUCKET + "/"), url);
       HttpResponse<byte[]> respuesta = get(url);
       assertEquals(200, respuesta.statusCode(), url);

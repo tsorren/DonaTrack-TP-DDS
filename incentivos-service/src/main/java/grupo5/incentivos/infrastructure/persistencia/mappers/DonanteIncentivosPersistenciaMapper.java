@@ -59,7 +59,7 @@ public class DonanteIncentivosPersistenciaMapper {
                         new InsigniaGanadaEmbeddable(
                             i.nombre(),
                             i.descripcion(),
-                            misionMapper.resolverImagenUrl(i.imagenUrl()),
+                            misionMapper.referenciaImagen(i.imagenUrl()),
                             i.visible(),
                             i.fechaObtenida())));
 
