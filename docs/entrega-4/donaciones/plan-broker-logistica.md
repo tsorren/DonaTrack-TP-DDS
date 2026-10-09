@@ -137,7 +137,7 @@ ProveedorLogisticaAmqp          ProveedorLogisticaHttp
 | `IEstrategiaSeleccionProveedor` | Strategy | El criterio puede cambiar. `[DOCUMENTED]` Es el mismo patrón que usan los algoritmos de asignación (`20260615-strategy-gestor-algoritmos`). |
 | `ILogisticaOutbox` + `LogisticaOutboxRelay` | Transactional Outbox (versión interina en memoria) | El error final no se pierde, y el día de pasar a base de datos solo cambia la implementación (§2.4). |
 | `LogisticaProveedorController` | Adaptador HTTP de entrada | Consulta y cambia el proveedor preferido en caliente (recortable). |
-| `LogisticaCallbackController` | Adaptador HTTP de entrada | Recibe los avisos de un proveedor HTTP y los traduce a los eventos de siempre (§2.5). |
+| ~~`LogisticaCallbackController`~~ | — | **Quitado (decisión D50):** los proveedores ya no avisan por HTTP; informan por mensajería (§2.5). |
 
 ### 1.2 Por qué el broker vive en Donaciones
 
@@ -170,12 +170,11 @@ donaciones-service/src/main/java/grupo5/donaciones/
 ├── models/repositories/ISolicitudesEntregaRepository.java   NUEVO (+ impl en memoria)
 ├── controllers/
 │   ├── ILogisticaProveedorController.java          NUEVO  (recortable)
-│   ├── ILogisticaCallbackController.java           NUEVO
-│   └── impl/ {LogisticaProveedorController, LogisticaCallbackController}.java
+│   └── impl/ LogisticaProveedorController.java
 ├── config/ {RabbitMQConfig (CAMBIA), LogisticaProveedoresConfig (NUEVO), ApiKeyFilter (NUEVO)}
 ├── dto/comunicaciones/EventoEntregaSolicitadaV1.java   NUEVO (contrato AMQP)
 ├── dto/logistica/ {SolicitudEntregaLogistica, ProveedorLogisticaDTO,
-│                   PreferenciaProveedorRequestDTO, AvisoProveedorRequestDTO}.java  NUEVOS
+│                   PreferenciaProveedorRequestDTO}.java  NUEVOS
 └── infrastructure/LogisticaEventListener.java      CAMBIA: delega en el procesador
 ```
 
@@ -322,13 +321,13 @@ Donaciones ─▶ [ donaciones.exchange ]
 
 ### 2.5 Camino de vuelta (D4)
 
-> 🗣️ **En criollo:** nuestra empresa de reparto nos avisa por correo, como siempre. El courier privado nos llama por teléfono, y anotamos lo que nos dice en el mismo formulario que usan las cartas, para que lo procese la misma persona.
+> 🗣️ **En criollo:** todas las empresas de reparto nos avisan por correo, como siempre: publican en la misma casilla (`logistica.exchange`) el mismo formulario que usa nuestra empresa. Nadie nos llama por teléfono a la oficina de Donaciones.
 
-- **Proveedor AMQP** (incluida otra instancia de nuestro `logistica-service`): publica en `logistica.exchange` los mismos eventos de hoy, y Donaciones los consume por `donacionIndependienteId`. No cambia nada en Donaciones. `[A VERIFICAR]` Para un proveedor real que no sea nuestra imagen, quién es dueño de ese exchange queda como límite a registrar en el ADR.
-- **Proveedor HTTP:** necesita su propio camino de vuelta. Sin él, el proveedor podría tomar la entrega y la donación nunca avanzaría de estado.
-  1. Extraer de `LogisticaEventListener` la lógica de `aplicarCambioEstado` (con idempotencia) a `ProcesadorEventosLogistica`, para que la misma idempotencia aplique a los dos caminos.
-  2. `LogisticaCallbackController` (`POST /api/logistica/proveedores/{proveedorId}/avisos`) traduce el aviso a los mismos records (`EventoRutaAsignada`, `EventoRutaIniciada`, `EventoEntregaExitosa`, `EventoEntregaFallida`) y delega en el procesador. No tiene lógica de dominio (AGENTS.md §4.2).
-  3. Está protegido con una API key por proveedor (§2.7) y con una **verificación de pertenencia**: el aviso de un proveedor solo se acepta para una donación que el registro de solicitudes (§2.6) le asignó a ese mismo proveedor.
+- **Todo proveedor** (incluida otra instancia de nuestro `logistica-service`): publica en `logistica.exchange` los mismos eventos de hoy (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`), y Donaciones los consume por `donacionIndependienteId`. Es un **requisito de contrato** (decisión D50). `[A VERIFICAR]` Para un proveedor real que no sea nuestra imagen, quién es dueño de ese exchange queda como límite a registrar en el ADR.
+- **Por qué no hay callback HTTP:** el requerimiento de implementación 3 del enunciado (p. 22) dice que el servicio de logística no debe invocar a Donaciones ni a Incentivos sino dejar disponible la información. Un proveedor que llamara a un endpoint de Donaciones lo contradiría en la letra (la p. 24 llama «servicio de logística» también al «otro servicio potencial»). HTTP queda solo de ida: Donaciones → proveedor. La primera versión del plan tenía un callback con API key por proveedor y verificación de pertenencia; se implementó y se quitó (D50).
+  1. La lógica de cambio de estado con idempotencia vive en `ProcesadorEventosLogistica`, extraída de `LogisticaEventListener`, que quedó como adaptador AMQP delgado.
+  2. **Límite conocido:** este camino no verifica qué proveedor manda cada evento (`DEUDA_TECNICA.md`, DTI-14, ítem 7). En un entorno real se resuelve con usuarios y topic permissions por proveedor en RabbitMQ.
+  3. **Evolución posible:** polling. Donaciones consulta el estado al proveedor (método de consulta en `IProveedorLogistica`, traductor de estados y planificador), para un proveedor que no pueda publicar en nuestro RabbitMQ.
 
 ### 2.6 Idempotencia, correlación y trazabilidad (D12)
 
@@ -349,14 +348,13 @@ Donaciones ─▶ [ donaciones.exchange ]
 |---|---|---|---|---|
 | GET | `/api/logistica/proveedores` | Lista los proveedores configurados (id, transporte, cuál es el preferido). | API key de administración | Sí |
 | PUT | `/api/logistica/proveedor-preferido` | Cambia el preferido en caliente. Body: `{ "proveedorId": "externo" }`. Un id no configurado devuelve el error del catálogo (ADR `20260903-estandarizacion-de-codigos-de-estado-http`). | API key de administración | Sí |
-| POST | `/api/logistica/proveedores/{proveedorId}/avisos` | Callback del proveedor HTTP (§2.5). | API key del proveedor | **No**, si se expone el callback |
 
 **Protección implementada (no solo recomendada):**
 - `ApiKeyFilter` en `config/`, un `OncePerRequestFilter` común que exige el header `X-API-Key` en estas rutas. `[OBSERVED]` **Spring Security no está en ningún `pom.xml`**. No se agrega, porque sería una dependencia nueva que requiere aprobación (AGENTS.md §6).
-- Claves por configuración (`donatrack.logistica.admin-api-key` y `donatrack.logistica.proveedor.<id>.callback-api-key`), leídas de variables de entorno. **Nunca hardcodeadas** (AGENTS.md §4.3); los tests usan valores sintéticos.
+- Clave de administración por configuración (`donatrack.logistica.admin-api-key`), leída de una variable de entorno. **Nunca hardcodeada** (AGENTS.md §4.3); los tests usan valores sintéticos.
 - **Falla cerrado:** si no hay clave configurada, el endpoint rechaza todo.
 - Comparación en tiempo constante (`MessageDigest.isEqual`). Responde 401 sin clave o con clave incorrecta. Las claves no se loguean.
-- La clave por proveedor le da identidad real al callback: sin ella no se sabría qué proveedor está avisando.
+- Cualquier otra ruta bajo `/api/logistica/proveedor` se rechaza con 401 (falla cerrado).
 - No reemplaza al `auth-service` de la Entrega 6: es una protección mínima y así se declara en el ADR.
 
 ### 2.8 Demo sin proveedor real: una segunda instancia de Logística (D9)
@@ -367,14 +365,14 @@ Donaciones ─▶ [ donaciones.exchange ]
 
 - `[OBSERVED]` En `docker-compose.yml`, `logistica-service` usa la imagen local `donatrack/logistica-service:local`. La segunda instancia es otra entrada del compose con la misma imagen y otras variables de entorno.
 - `[INFERRED]` **Necesita sus propios datos:** cada instancia tiene repositorios en memoria independientes, así que la instancia `externo` necesita su flota de camiones (y choferes) cargada para poder planificar rutas en la demo.
-- `[INFERRED]` **Su vuelta llega por AMQP, no por el callback:** al ser nuestra misma imagen, publica sus eventos en `logistica.exchange` con las mismas routing keys, y Donaciones los procesa por `donacionIndependienteId`. Así hay que contarlo en la defensa. El callback HTTP se demuestra con Postman.
+- `[INFERRED]` **Su vuelta llega por AMQP:** al ser nuestra misma imagen, publica sus eventos en `logistica.exchange` con las mismas routing keys, y Donaciones los procesa por `donacionIndependienteId`. En la demo el escenario F lo simula publicando el evento con la API de gestión de RabbitMQ.
 
 **Guion de demo:**
 - **Alternar en vivo:** el controller admin, o la variable `LOGISTICA_PROVEEDOR` + reinicio si se recortó el controller, cambia el preferido entre `donatrack` (AMQP) y `externo` (HTTP).
 - **Reenvío por devolución (AMQP):** se configura un proveedor AMQP `otra` sin levantar su instancia. Al elegirlo, RabbitMQ devuelve el mensaje y el broker pasa al siguiente.
 - **Reenvío por rechazo HTTP:** se baja la instancia `externo` y se la elige como preferida. La conexión es rechazada y el broker pasa al siguiente.
 - **Envío incierto:** con un `read-timeout-ms` muy bajo contra la instancia `externo`, el broker **no** cambia de proveedor y reintenta con el mismo. La entrega se crea una sola vez gracias al 409 (D12).
-- **Callback:** con Postman, llamando al endpoint de avisos con la API key del proveedor. También se muestra que un aviso de otro proveedor es rechazado.
+- **Vuelta por mensajería:** con Postman se publica en `logistica.exchange` el evento de ruta asignada de `externo` (API de gestión de RabbitMQ) y se ve cómo la donación pasa a `ListaParaEntregar`.
 
 **Sin WireMock ni dependencias nuevas.** Los tests del adapter HTTP usan `MockRestServiceServer` sobre `RestClient.Builder`. `[A VERIFICAR]` que esté disponible con el `spring-boot-starter-test` actual (`[INFERRED]` viene en `spring-test`).
 
@@ -391,7 +389,7 @@ Cada fase es verificable e independiente. No se avanza sin baseline ni sin cerra
 | **2 — Contrato, adapter AMQP y cutover** | Imprimimos el formulario de pedido, mandamos por carta certificada esperando el acuse, y nuestra Logística cambia su cartel en la oficina. | `EventoEntregaSolicitadaV1` + schema validado por `validate-contracts.js`. Alias de tipo único en ambos `RabbitMQConfig`. `rabbitTemplateComandos` con `mandatory` + confirms + returns. `ProveedorLogisticaAmqp` con espera de acuse (§2.2). En Logística: `LOGISTICA_INSTANCIA_ID`, cola y binding exactos por instancia, `EntregaSolicitadaEventListener`. Eliminación de la cola y el binding viejos. **Un solo PR para ambos servicios.** | Gate 2 de ambos módulos. Test de serialización del alias. Test de contrato AMQP. **Testcontainers con RabbitMQ real:** routing key sin binding → `getReturned() != null` → `EnvioRechazado`; routing key con binding → `PUBLICADO`; la cola propia no recibe claves ajenas |
 | **3 — Cableado** | Cuando se aprueba una asignación, además de publicar la noticia, le pasamos el pedido al secretario. | `PropuestaDeAsignacionService` llama a `ILogisticaBroker` después de publicar `donacion.asignada.v1`, dentro del mismo loop por fragmentación y reusando `DatosBeneficiario`. | Gate 2. Los tests de `PropuestaDeAsignacionService` existentes siguen en verde sin debilitarlos. El broker se invoca una vez por fragmentación. `donacion.asignada.v1` se sigue publicando |
 | **4 — Adapter HTTP + dedup REST en Logística** *(antes era la Fase 5)* | Damos de alta al courier privado: lo llamamos por teléfono con su propio formulario, y nuestra Logística aprende a decir «esta donación ya la tengo». | `ProveedorLogisticaHttp` (traducción + `RestClient` con timeouts de properties, **mapeo de errores según la tabla de §2.2**). `LogisticaProveedoresConfig`, que arma los proveedores configurados. **En Logística: chequeo `existsByIdDonacion` en `EntregasService.crear` → 409** (D12). | Tests del adapter (`MockRestServiceServer`): 2xx → `PUBLICADO` · 409 → `PUBLICADO` · conexión rechazada / 503 → `EnvioRechazado` · timeout / 500 / 502 / 504 → `EnvioIncierto` · otros 4xx → `ErrorContrato`. Test en Logística: el segundo `crear` con la misma donación devuelve 409 y no duplica |
-| **5 — Vuelta del proveedor HTTP + protección** | El courier nos puede llamar para contar cómo fue la entrega, pero solo si se identifica y solo sobre donaciones que le dimos a él. | `ProcesadorEventosLogistica` extraído, `LogisticaCallbackController`, `ApiKeyFilter` con la API key por proveedor, verificación de pertenencia donación↔proveedor, tests de idempotencia compartida. | Los tests existentes de `LogisticaEventListener` siguen en verde. 401 sin clave. Un aviso de otro proveedor es rechazado. Un aviso duplicado no cambia el estado dos veces |
+| **5 — Camino de vuelta compartido** *(el callback HTTP se quitó, D50)* | Todas las empresas nos avisan por correo; el procesador que lee la casilla es el mismo. | `ProcesadorEventosLogistica` extraído del listener AMQP. El callback HTTP, `AvisosProveedorService` y la clave por proveedor se implementaron y se quitaron. | Los tests existentes de `LogisticaEventListener` siguen en verde. Un evento duplicado no cambia el estado dos veces |
 | **6 — Controller admin** *(antes era la Fase 4; recortable)* | La ventanilla para cambiar la empresa preferida sin reiniciar. | `LogisticaProveedorController`, DTOs, la clave de administración en `ApiKeyFilter`. | `@WebMvcTest`: 200 con clave, 401 sin clave o con clave incorrecta, falla cerrado sin clave configurada. ArchUnit en verde |
 | **7 — Demo** | Abrimos la segunda sucursal y ensayamos la función. | Segunda instancia de Logística en el docker-compose con su flota cargada, colección Postman, guion de defensa (§2.8). | Gate 4 (o `[DEFERRED_NO_DOCKER]`) |
 | **8 — Cierre** | Actualizamos la guía de la oficina. | `catalogo-mensajes.md`, matriz, ADR, diagrama de componentes (entregable 4 de E4), `docs/README.md`, `ESTADO_DOCUMENTACION.md`, `DEUDA_TECNICA.md`, pre-flight SonarCloud, `mvn spotless:check`, Gate 3/4. | Checklist AGENTS.md §12 |
@@ -492,7 +490,7 @@ Para esta entrega, la mitigación del lado de RabbitMQ es solo la convención (b
 | Binding con comodín que recibe solicitudes ajenas | Bindings exactos; test de que la cola propia no recibe claves ajenas; usuarios y permisos por proveedor en un entorno real (§4) |
 | Alias de tipo ambiguo con varias routing keys para una clase | Alias único `entrega.solicitada.v1`; test de serialización en ambos servicios |
 | Relay lento por esperar acuses o llamadas HTTP | Timeouts cortos y explícitos; las esperas nunca ocurren en el hilo de la petición; paralelizar el relay si hiciera falta |
-| Callback falsificado o de un proveedor que no corresponde | API key por proveedor + verificación de pertenencia (§2.5, §2.7) |
+| Evento de vuelta de un proveedor que no corresponde | Límite conocido (DTI-14, ítem 7): permisos por proveedor en RabbitMQ (sin implementar) |
 | Claves en el código, los logs o los tests | Variables de entorno, falla cerrado, valores sintéticos en tests, nunca se loguean (AGENTS.md §4.3) |
 | Outbox en memoria pierde pendientes al reiniciar y no es atómico con el estado | Declarado como deuda; el puerto permite pasar a `LogisticaOutboxJpa` sin tocar el broker |
 | Reutilizar `OutboxStore` (guarda un `Runnable`, no persistible) | El broker usa su propio outbox basado en datos (§2.4) |

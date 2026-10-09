@@ -2,7 +2,7 @@
 ' ============================================================
 ' Diagrama de componentes de DonaTrack (Entrega 4)
 ' Incluye los componentes de integración: mensajería RabbitMQ (pub/sub de eventos y comando
-' dirigido del broker), Broker de Integración con Logística, callback HTTP de proveedores,
+' dirigido del broker), Broker de Integración con Logística, vuelta de proveedores por mensajería,
 ' webhooks a n8n y el planificador externo de rutas.
 ' ADRs: 20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones,
 '       20261007-broker-de-integracion-con-logistica
@@ -59,8 +59,7 @@ package "donaciones-service :8080" as donaciones {
     component "Outbox del broker\n+ LogisticaOutboxRelay" as relay <<broker>>
     component "ProveedorLogisticaAmqp" as adapterAmqp <<adapter>>
     component "ProveedorLogisticaHttp" as adapterHttp <<adapter>>
-    component "LogisticaCallbackController\n+ ApiKeyFilter" as callback <<adapter>>
-    component "LogisticaProveedorController\n(administración)" as adminBroker <<adapter>>
+    component "LogisticaProveedorController\n+ ApiKeyFilter\n(administración)" as adminBroker <<adapter>>
   }
 
   component "LogisticaEventListener" as donListener <<listener>>
@@ -111,8 +110,7 @@ adminBroker --> estrategia : cambiar preferido
 adapterAmqp --> exDon : entrega.solicitada.<id>.v1\n(mandatory + acuse)
 qLogEntregas --> logListener
 adapterHttp --> proveedorHttp : POST /api/entregas
-proveedorHttp --> callback : POST /api/logistica/\nproveedores/{id}/avisos
-callback --> procesador
+proveedorHttp --> exLog : informa publicando eventos\n(no llama a Donaciones por HTTP)
 
 ' --- Logística: planificación y vuelta ---
 logListener --> logApi : crea Entrega

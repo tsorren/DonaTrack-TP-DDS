@@ -1,7 +1,7 @@
 # Catálogo Unificado de Endpoints REST — DonaTrack
 
 > **Fuente Canónica:** Especificaciones OpenAPI 3.0 en [`docs/arquitectura/contratos/`](../arquitectura/contratos/)
-> **Total de Endpoints:** 101
+> **Total de Endpoints:** 100
 
 <!-- AUTO-GENERATED: DO NOT EDIT MANUALLY -->
 
@@ -60,7 +60,6 @@
 | `DELETE` | `/api/personas/{id}` | `eliminarPersonaDonaciones` | `-` | `204 (-), 404 (-)` |
 | `GET` | `/api/logistica/proveedores` | `listarProveedoresLogistica` | `-` | `200 (ProveedorLogisticaDTO), 401 (-)` |
 | `PUT` | `/api/logistica/proveedor-preferido` | `cambiarProveedorLogisticaPreferido` | `PreferenciaProveedorRequestDTO` | `200 (ProveedorLogisticaDTO), 400 (-), 401 (-)` |
-| `POST` | `/api/logistica/proveedores/{proveedorId}/avisos` | `recibirAvisoProveedorLogistica` | `AvisoProveedorRequestDTO` | `202 (-), 400 (-), 401 (-), 404 (-)` |
 
 ## Microservicio: DonaTrack - Incentivos Service API (`openapi-incentivos.yaml`)
 

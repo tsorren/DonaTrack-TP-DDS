@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-08T01:34:49.084Z",
+  "generatedAt": "2026-10-09T00:04:17.487Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
-    "endpointsCount": 101,
+    "endpointsCount": 100,
     "schemasCount": 25,
     "eventsCount": 9
   },
@@ -515,19 +515,6 @@
             "200": "ProveedorLogisticaDTO",
             "400": "-",
             "401": "-"
-          }
-        },
-        {
-          "path": "/api/logistica/proveedores/{proveedorId}/avisos",
-          "method": "POST",
-          "summary": "Callback de un proveedor de logística HTTP",
-          "operationId": "recibirAvisoProveedorLogistica",
-          "requestBody": "AvisoProveedorRequestDTO",
-          "responses": {
-            "202": "-",
-            "400": "-",
-            "401": "-",
-            "404": "-"
           }
         }
       ]

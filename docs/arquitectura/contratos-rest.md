@@ -73,7 +73,6 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `DELETE` | `/api/personas/{id}` | Baja y supresión de persona | — | `204`, `404` |
 | `GET` | `/api/logistica/proveedores` | Broker de logística: proveedores configurados, transporte, disponibilidad y preferido (header `X-API-Key` de administración) | — | `200`, `401` |
 | `PUT` | `/api/logistica/proveedor-preferido` | Broker de logística: cambia en caliente el proveedor preferido (header `X-API-Key` de administración) | `PreferenciaProveedorRequestDTO` | `200`, `400`, `401` |
-| `POST` | `/api/logistica/proveedores/{proveedorId}/avisos` | Broker de logística: callback de un proveedor HTTP (ruta asignada/iniciada, entrega exitosa/fallida). Header `X-API-Key` del proveedor; solo para donaciones que el broker le asignó | `AvisoProveedorRequestDTO` | `202`, `400`, `401`, `404` |
 
 > **Notas de reconciliación con el código fuente Java (`donaciones-service`):**
 > - **D1:** `/api/items-normalizados` no implementa un CRUD estándar; expone `GET /pendientes`, `GET /{id}` y `PATCH /{id}` conforme a `ItemDonacionNormalizadoController.java`.

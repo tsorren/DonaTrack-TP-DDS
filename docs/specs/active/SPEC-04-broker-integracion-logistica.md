@@ -19,7 +19,7 @@ Implementar el requerimiento «Broker de Integración con Logística» de la Ent
 
 ### In-Scope
 
-* **donaciones-service:** broker in-process (`ILogisticaBroker`, `IProveedorLogistica`, `IEstrategiaSeleccionProveedor`), adapters AMQP y HTTP, outbox propio basado en datos (en memoria, detrás de un puerto), registro de solicitudes, callback para proveedores HTTP, controller de administración del proveedor preferido (recortable), `ApiKeyFilter`, cableado en `PropuestaDeAsignacionService`.
+* **donaciones-service:** broker in-process (`ILogisticaBroker`, `IProveedorLogistica`, `IEstrategiaSeleccionProveedor`), adapters AMQP y HTTP, outbox propio basado en datos (en memoria, detrás de un puerto), registro de solicitudes, procesador compartido de los eventos de vuelta (los proveedores informan por mensajería, no por HTTP), controller de administración del proveedor preferido (recortable), `ApiKeyFilter`, cableado en `PropuestaDeAsignacionService`.
 * **Contrato:** comando `EntregaSolicitadaV1` (`entrega.solicitada.<proveedorId>.v1`) + JSON Schema.
 * **logistica-service:** consumir el comando en lugar de `donacion.asignada.v1` (cola y binding por `LOGISTICA_INSTANCIA_ID`), deduplicación por donación en `POST /api/entregas` (409).
 * **Demo:** segunda instancia de `logistica-service` en `docker-compose.yml`, usada como proveedor HTTP.

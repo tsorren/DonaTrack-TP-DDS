@@ -46,6 +46,8 @@ Además, en la reunión del 15/9 (`docs/entrega-4/donaciones/bitacora-comunicaci
 | Alternate exchange en lugar de `mandatory` | ❌ Rescata el mensaje, pero RabbitMQ lo considera ruteado: el broker no se entera de la falla y no puede reenviar. |
 | `ReturnsCallback` asincrónico para disparar reenvíos | ❌ Exige correlación por header, estados intermedios y un pool dedicado. Esperar el acuse en el relay logra lo mismo de forma determinista. |
 | Reenviar a otro proveedor ante cualquier error, incluido el timeout | ❌ Un timeout no garantiza que el pedido no haya llegado: podría dejar dos entregas para una misma donación. |
+| Callback HTTP: el proveedor avisa a Donaciones por un endpoint propio (protegido con API key) | ❌ Se implementó en una primera versión y se quitó: contradice la letra del requerimiento 3 del enunciado si el proveedor se considera un servicio de logística. |
+| Polling: Donaciones consulta periódicamente el estado al proveedor | ⏳ No se implementó. Es la evolución natural para un proveedor que no pueda publicar en nuestro RabbitMQ: cumple el enunciado al pie de la letra, pero exige un método de consulta por adapter, un traductor de los estados de cada proveedor a nuestros eventos y un planificador. |
 | **Broker in-process (Broker + Adapter + Strategy) en Donaciones, un adapter por transporte, comando direccionado por routing key, `mandatory` con espera de acuse, reenvío solo ante rechazo seguro y outbox basado en datos** | ✅ Elegida. |
 
 ## Resultado de la Decisión
@@ -68,7 +70,7 @@ Se adopta un **broker in-process en `donaciones-service`**:
    | Error de contrato | HTTP 4xx (≠ 409) | Sin reintento ni reenvío; `FALLIDO` + log `error` |
 
 6. **Idempotencia del proveedor:** todo proveedor deduplica por `donacionIndependienteId`. Es un requisito de contrato. La obligación recae en el proveedor, no en Donaciones. Nuestra Logística interna se alcanza solo por AMQP, donde el listener ya deduplica. No se modifica `POST /api/entregas`: el stand-in HTTP `externo` de la demo (D9) no deduplica por ese camino, y ese riesgo se asume.
-7. **Camino de vuelta:** un proveedor AMQP publica en `logistica.exchange` los eventos existentes. Un proveedor HTTP avisa por un callback protegido con API key por proveedor y con verificación de que la donación le pertenece. Ambos caminos comparten la misma lógica idempotente (`ProcesadorEventosLogistica`).
+7. **Camino de vuelta, solo por mensajería:** todo proveedor informa publicando en `logistica.exchange` los eventos existentes (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`), y Donaciones los aplica con la misma lógica idempotente (`ProcesadorEventosLogistica`). HTTP se usa solo de ida (Donaciones → proveedor). Es un requisito de contrato. Un proveedor **no** invoca a Donaciones por HTTP: el requerimiento de implementación 3 del enunciado (p. 22) dice que el servicio de logística no debe invocar a Donaciones ni a Incentivos sino dejar disponible la información, y la p. 24 llama «servicio de logística» también al «otro servicio potencial». Publicar eventos es la forma en que nuestra Logística ya «deja disponible la información».
 8. **Selección:** estrategia base «preferencia configurable + reenvío». Otras estrategias se implementan como **estrategias de prueba**, acordadas por el equipo, y no representan reglas de negocio reales.
 
 ## Consecuencias Positivas
@@ -94,7 +96,8 @@ Se adopta un **broker in-process en `donaciones-service`**:
 * `[INFERRED]` El contrato REST del único proveedor HTTP actual (`externo`) es el de nuestra propia Logística (`CrearEntregaRequestDTO`), porque en la demo es una segunda instancia de la misma imagen (D9). No lo definió un proveedor real. Con un proveedor real, el adapter se escribe contra su especificación (path, nombres y tipos de campos, unidades, autenticación, códigos de respuesta, idempotencia) y debe validarse con tests de contrato contra su OpenAPI. El broker, la estrategia y el outbox no cambian: lo que se reemplaza es el adapter.
 * El outbox es en memoria: sin atomicidad ni durabilidad hasta la migración a PostgreSQL (deuda declarada).
 * La protección por API key es mínima y de transición hasta el `auth-service` (Entrega 6).
-* Para un proveedor AMQP que no sea nuestra imagen, queda abierta la propiedad del exchange de vuelta.
+* Para un proveedor que no sea nuestra imagen, queda abierta la propiedad del exchange de vuelta. Además se le exige publicar en nuestro RabbitMQ (credenciales, red y permisos), lo que un tercero que solo hable HTTP no podría cumplir sin la evolución por polling.
+* El único camino de vuelta no verifica qué proveedor manda cada evento (`DEUDA_TECNICA.md`, DTI-14, ítem 7): cualquier publicador en `logistica.exchange` puede avanzar el estado de una donación. En un entorno real se resuelve con usuarios y topic permissions por proveedor en RabbitMQ (sin implementar).
 * Con credenciales de RabbitMQ compartidas, un binding con comodín podría recibir comandos ajenos. Se mitiga por convención y con un test; en un entorno real se recomiendan usuarios y topic permissions por proveedor (sin implementar).
 
 ## Validación
@@ -102,6 +105,6 @@ Se adopta un **broker in-process en `donaciones-service`**:
 1. Tests unitarios del broker con proveedores fake: rechazado → siguiente; incierto → mismo proveedor; error de contrato → sin reenvío; todos rechazan → nueva ronda; rondas agotadas → `FALLIDA`.
 2. Test de integración con RabbitMQ real (Testcontainers): routing key sin binding → mensaje devuelto → `EnvioRechazado`; la cola de una instancia no recibe claves ajenas.
 3. Tests del adapter HTTP con `MockRestServiceServer`: mapeo de 2xx, 409, conexión rechazada, timeouts, 5xx y 4xx.
-4. Test en Logística: un segundo `POST /api/entregas` para la misma donación responde 409 y no duplica.
+4. Tests del procesador de vuelta (`ProcesadorEventosLogisticaTest`) y del listener AMQP: el mismo evento, por el camino que sea, se aplica una sola vez, y un evento duplicado se ignora.
 5. `node scripts/validate-contracts.js` valida `evento-entrega-solicitada-v1.schema.json`.
 6. Implementación de referencia: [`docs/specs/active/SPEC-04-broker-integracion-logistica.md`](../specs/active/SPEC-04-broker-integracion-logistica.md) y [`plan-broker-logistica.md`](../entrega-4/donaciones/plan-broker-logistica.md).

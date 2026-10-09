@@ -94,7 +94,7 @@ logistica-service
 |---|---|---|---|---|---|---|
 | Entrega Solicitada | `donaciones-service` (broker) | `donaciones.exchange` | `entrega.solicitada.<proveedorId>.v1` | `entrega.solicitada.v1` (fijo) | `logistica.<instancia>.entregas.solicitadas` (binding exacto por `LOGISTICA_INSTANCIA_ID`) | [`evento-entrega-solicitada-v1.schema.json`](./contratos/schemas/evento-entrega-solicitada-v1.schema.json) |
 
-Se publica con `mandatory=true` y publisher confirms (`correlated`); el broker espera el acuse. Si RabbitMQ lo devuelve (no hay cola para esa routing key), es un rechazo seguro y el broker prueba con el siguiente proveedor. Un nack o la falta de acuse son inciertos: el mensaje pudo haber quedado en la cola, así que se reintenta con el mismo proveedor. Un proveedor HTTP no usa este comando: recibe el pedido por REST y avisa por el callback `POST /api/logistica/proveedores/{proveedorId}/avisos`.
+Se publica con `mandatory=true` y publisher confirms (`correlated`); el broker espera el acuse. Si RabbitMQ lo devuelve (no hay cola para esa routing key), es un rechazo seguro y el broker prueba con el siguiente proveedor. Un nack o la falta de acuse son inciertos: el mensaje pudo haber quedado en la cola, así que se reintenta con el mismo proveedor. Un proveedor HTTP no usa este comando: recibe el pedido por REST, y como todo proveedor informa su avance publicando en `logistica.exchange` los eventos de vuelta (no invoca a Donaciones por HTTP).
 
 #### C. Clúster de Dead Letter Queues (Aislamiento de Fallas)
 

@@ -114,5 +114,5 @@ Regla formalizada en el [ADR 20261007-broker-de-integracion-con-logistica](../..
 - **Envelope:** `message_id` = id del intento de envío; `X-Trace-Id` del pedido original.
 - **Publicación:** `mandatory=true` + publisher confirms; el broker espera el acuse. Si RabbitMQ devuelve el mensaje (no hay cola para esa routing key), el envío es un rechazo seguro y el broker prueba con el siguiente proveedor. Un nack o la falta de acuse son inciertos: se reintenta con el mismo proveedor.
 - **Consumidor:** cada instancia de logística declara su cola `logistica.<instancia>.entregas.solicitadas` bindeada con la clave exacta de su `LOGISTICA_INSTANCIA_ID`. Debe deduplicar por `donacionIndependienteId` (`EntregaSolicitadaEventListener` usa `existsByIdDonacion`).
-- **Consecuencia esperada:** el proveedor crea la Entrega. Los avances vuelven por `logistica.exchange` (proveedor AMQP) o por el callback HTTP (proveedor HTTP).
+- **Consecuencia esperada:** el proveedor crea la Entrega. Los avances vuelven siempre por `logistica.exchange`: todo proveedor, AMQP o HTTP, informa publicando los eventos existentes (el HTTP es solo de ida).
 - **Compatibilidad futura:** aditivo permitido; un cambio incompatible es v2.

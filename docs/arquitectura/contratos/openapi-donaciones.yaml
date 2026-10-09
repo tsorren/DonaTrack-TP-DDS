@@ -632,29 +632,6 @@ paths:
                   $ref: '#/components/schemas/ProveedorLogisticaDTO'
         '400': { description: Proveedor vacío o no configurado }
         '401': { description: Falta la clave de administración o es incorrecta }
-  /api/logistica/proveedores/{proveedorId}/avisos:
-    post:
-      summary: Callback de un proveedor de logística HTTP
-      description: Un proveedor HTTP avisa avances de una entrega (ruta asignada o iniciada, entrega exitosa o fallida). Requiere la clave del proveedor que avisa y solo se acepta para donaciones que el broker le asignó a ese proveedor. Es idempotente por rutaId o entregaId.
-      operationId: recibirAvisoProveedorLogistica
-      security:
-        - ApiKeyProveedor: []
-      parameters:
-        - name: proveedorId
-          in: path
-          required: true
-          schema: { type: string }
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AvisoProveedorRequestDTO'
-      responses:
-        '202': { description: Aviso aceptado (si el cambio de estado falla se registra en el log del servicio; reenviar el mismo aviso es idempotente) }
-        '400': { description: Faltan los campos que requiere el tipo de aviso }
-        '401': { description: Falta la clave del proveedor o es incorrecta }
-        '404': { description: La donación no tiene una solicitud activa asignada a este proveedor }
 components:
   schemas:
     CambioEstadoDonacionIndependienteRequestDTO:
@@ -835,36 +812,9 @@ components:
         - proveedorId
       properties:
         proveedorId: { type: string }
-    AvisoProveedorRequestDTO:
-      type: object
-      required:
-        - tipo
-      properties:
-        tipo:
-          type: string
-          enum:
-            - RUTA_ASIGNADA
-            - RUTA_INICIADA
-            - ENTREGA_EXITOSA
-            - ENTREGA_FALLIDA
-        rutaId: { type: string, format: uuid }
-        entregaId: { type: string, format: uuid }
-        donacionIndependienteId: { type: string, format: uuid }
-        donacionesIndependientesIds:
-          type: array
-          items: { type: string, format: uuid }
-        patenteCamion: { type: string }
-        urlMapa: { type: string }
-        justificacion: { type: string }
-        replanificable: { type: boolean }
   securitySchemes:
     ApiKeyAdministracion:
       type: apiKey
       in: header
       name: X-API-Key
       description: Clave de administración del broker (LOGISTICA_ADMIN_API_KEY)
-    ApiKeyProveedor:
-      type: apiKey
-      in: header
-      name: X-API-Key
-      description: Clave del proveedor que avisa (donatrack.logistica.proveedor.<id>.callback-api-key)
