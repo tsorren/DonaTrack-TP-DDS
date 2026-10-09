@@ -1135,7 +1135,7 @@
       "name": "F. Vuelta del proveedor por mensajería (RabbitMQ)",
       "item": [
         {
-          "name": "F.1 externo informa RUTA_ASIGNADA publicando en RabbitMQ → routed",
+          "name": "F.1 [Negativo] donatrack publica SIN token (donación C) → routed, pero Donaciones lo descarta",
           "request": {
             "method": "POST",
             "header": [
@@ -1160,7 +1160,7 @@
             "url": "{{rabbitUrl}}/api/exchanges/%2F/logistica.exchange/publish",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"properties\": {\n    \"delivery_mode\": 2,\n    \"content_type\": \"application/json\",\n    \"headers\": { \"__TypeId__\": \"ruta.asignada\" }\n  },\n  \"routing_key\": \"ruta.asignada\",\n  \"payload\": \"{\\\"rutaId\\\":\\\"{{$guid}}\\\",\\\"donacionIndependienteId\\\":\\\"{{donacionB}}\\\",\\\"fechaAsignacion\\\":\\\"2026-10-08T12:00:00\\\"}\",\n  \"payload_encoding\": \"string\"\n}"
+              "raw": "{\n  \"properties\": {\n    \"delivery_mode\": 2,\n    \"content_type\": \"application/json\",\n    \"headers\": {\n      \"__TypeId__\": \"ruta.asignada\",\n      \"X-Proveedor-Id\": \"donatrack\"\n    }\n  },\n  \"routing_key\": \"ruta.asignada\",\n  \"payload\": \"{\\\"rutaId\\\":\\\"{{$guid}}\\\",\\\"donacionIndependienteId\\\":\\\"{{donacionC}}\\\",\\\"fechaAsignacion\\\":\\\"2026-10-08T12:00:00\\\"}\",\n  \"payload_encoding\": \"string\"\n}"
             }
           },
           "event": [
@@ -1177,7 +1177,91 @@
           ]
         },
         {
-          "name": "F.2 La donación pasó a ListaParaEntregar",
+          "name": "F.2 [Negativo] externo publica con su token una donación de donatrack (donación A) → descartado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{rabbitUser}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{rabbitPass}}"
+                }
+              ]
+            },
+            "url": "{{rabbitUrl}}/api/exchanges/%2F/logistica.exchange/publish",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"properties\": {\n    \"delivery_mode\": 2,\n    \"content_type\": \"application/json\",\n    \"headers\": {\n      \"__TypeId__\": \"ruta.asignada\",\n      \"X-Proveedor-Id\": \"externo\",\n      \"X-Proveedor-Token\": \"{{tokenExterno}}\"\n    }\n  },\n  \"routing_key\": \"ruta.asignada\",\n  \"payload\": \"{\\\"rutaId\\\":\\\"{{$guid}}\\\",\\\"donacionIndependienteId\\\":\\\"{{donacionA}}\\\",\\\"fechaAsignacion\\\":\\\"2026-10-08T12:00:00\\\"}\",\n  \"payload_encoding\": \"string\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "pm.test('RabbitMQ lo enrutó a una cola', function(){pm.expect(pm.response.json().routed).to.be.true;});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F.3 externo informa RUTA_ASIGNADA de su donación con su token → routed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{rabbitUser}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{rabbitPass}}"
+                }
+              ]
+            },
+            "url": "{{rabbitUrl}}/api/exchanges/%2F/logistica.exchange/publish",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"properties\": {\n    \"delivery_mode\": 2,\n    \"content_type\": \"application/json\",\n    \"headers\": {\n      \"__TypeId__\": \"ruta.asignada\",\n      \"X-Proveedor-Id\": \"externo\",\n      \"X-Proveedor-Token\": \"{{tokenExterno}}\"\n    }\n  },\n  \"routing_key\": \"ruta.asignada\",\n  \"payload\": \"{\\\"rutaId\\\":\\\"{{$guid}}\\\",\\\"donacionIndependienteId\\\":\\\"{{donacionB}}\\\",\\\"fechaAsignacion\\\":\\\"2026-10-08T12:00:00\\\"}\",\n  \"payload_encoding\": \"string\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "pm.test('RabbitMQ lo enrutó a una cola', function(){pm.expect(pm.response.json().routed).to.be.true;});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F.4 La donación de externo pasó a ListaParaEntregar",
           "request": {
             "method": "GET",
             "header": [],
@@ -1204,9 +1288,47 @@
               }
             }
           ]
+        },
+        {
+          "name": "F.5 La donación C (evento sin token) no cambió",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionC}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Los eventos descartados no cambiaron el estado', function(){pm.expect(pm.response.json().estadoActual).to.not.equal('ListaParaEntregar');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F.6 La donación A (evento de otro proveedor) no cambió",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Los eventos descartados no cambiaron el estado', function(){pm.expect(pm.response.json().estadoActual).to.not.equal('ListaParaEntregar');});"
+                ]
+              }
+            }
+          ]
         }
       ],
-      "description": "La vuelta de un proveedor: informa publicando en logistica.exchange el mismo evento que publica nuestra Logística, sin llamar a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Aquí se simula con la API de gestión de RabbitMQ. Requiere haber corrido B y completar rabbitUser y rabbitPass con las credenciales del RabbitMQ del compose."
+      "description": "La vuelta de un proveedor: informa publicando en logistica.exchange el mismo evento que publica nuestra Logística, con su id y su token en los headers X-Proveedor-Id y X-Proveedor-Token. No llama a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Aquí se simula con la API de gestión de RabbitMQ. Los eventos sin token, con token incorrecto o sobre una donación que no es del proveedor se descartan (F.1 y F.2); como la cola es FIFO, F.4 confirma que ya se procesaron. Requiere haber corrido A, B y C, y completar rabbitUser, rabbitPass, tokenDonatrack y tokenExterno."
     },
     {
       "name": "G. Administración: negativos y restaurar",
@@ -1927,6 +2049,14 @@
     },
     {
       "key": "rabbitPass",
+      "value": ""
+    },
+    {
+      "key": "tokenDonatrack",
+      "value": ""
+    },
+    {
+      "key": "tokenExterno",
       "value": ""
     },
     {

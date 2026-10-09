@@ -6,8 +6,9 @@
 #   externo   -> HTTP (logistica-externo, 8084)
 #   otra      -> AMQP sin instancia levantada (para mostrar el reenvío por devolución)
 #
-# Uso (la clave de administración es obligatoria y no se guarda en el repo):
+# Uso (la clave de administración y los tokens de vuelta son obligatorios y no se guardan en el repo):
 #   export LOGISTICA_ADMIN_API_KEY=<clave-admin>
+#   export LOGISTICA_TOKEN_DONATRACK=<token-donatrack> LOGISTICA_TOKEN_EXTERNO=<token-externo>
 #   docker-compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build \
 #     rabbitmq donaciones-service logistica-service logistica-externo
 #
@@ -24,6 +25,8 @@ services:
       - LOGISTICA_OUTBOX_INTERVALO_MS=1000
       - LOGISTICA_OUTBOX_BACKOFF_BASE_SEGUNDOS=${LOGISTICA_OUTBOX_BACKOFF_BASE_SEGUNDOS:-5}
       - LOGISTICA_ADMIN_API_KEY=${LOGISTICA_ADMIN_API_KEY:?definí LOGISTICA_ADMIN_API_KEY}
+      - LOGISTICA_TOKEN_DONATRACK=${LOGISTICA_TOKEN_DONATRACK:?definí LOGISTICA_TOKEN_DONATRACK}
+      - LOGISTICA_TOKEN_EXTERNO=${LOGISTICA_TOKEN_EXTERNO:?definí LOGISTICA_TOKEN_EXTERNO}
 
   logistica-externo:
     image: donatrack/logistica-service:local
@@ -36,6 +39,7 @@ services:
     environment:
       - PORT=8084
       - LOGISTICA_INSTANCIA_ID=externo
+      - LOGISTICA_TOKEN_VUELTA=${LOGISTICA_TOKEN_EXTERNO:?definí LOGISTICA_TOKEN_EXTERNO}
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
       - SPRING_MAIN_LAZY_INITIALIZATION=false

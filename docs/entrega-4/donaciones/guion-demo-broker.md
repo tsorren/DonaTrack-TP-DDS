@@ -26,6 +26,7 @@ En la demo los tiempos están acortados: el relay revisa la bandeja cada 1 s y l
 
 ```bash
 export LOGISTICA_ADMIN_API_KEY=<clave-admin>
+export LOGISTICA_TOKEN_DONATRACK=<token-donatrack> LOGISTICA_TOKEN_EXTERNO=<token-externo>
 ```
 
 ```bash
@@ -38,12 +39,12 @@ Para ver al broker trabajando, en otra terminal:
 docker-compose -f docker-compose.yml -f docker-compose.demo.yml logs -f donaciones-service | grep -E "BROKER-LOGISTICA|OUTBOX-LOGISTICA"
 ```
 
-**Postman:** importar `postman/flujo-9-broker-logistica.json` y completar las variables de colección `adminApiKey` (la misma clave exportada), y `rabbitUser` y `rabbitPass` (las credenciales de RabbitMQ del compose, solo para el escenario F). Correr primero la carpeta **0. Preparación**. Los datos de Donaciones son en memoria: si se reinicia `donaciones-service`, hay que volver a correrla.
+**Postman:** importar `postman/flujo-9-broker-logistica.json` y completar las variables de colección `adminApiKey` (la misma clave exportada), y, solo para el escenario F, `rabbitUser` y `rabbitPass` (las credenciales de RabbitMQ del compose) y `tokenDonatrack` y `tokenExterno` (los mismos tokens exportados). Correr primero la carpeta **0. Preparación**. Los datos de Donaciones son en memoria: si se reinicia `donaciones-service`, hay que volver a correrla.
 
 **newman** (la misma colección, desde la terminal):
 
 ```bash
-newman run postman/flujo-9-broker-logistica.json --env-var adminApiKey=$LOGISTICA_ADMIN_API_KEY --env-var rabbitUser=<usuario-rabbit> --env-var rabbitPass=<clave-rabbit> --folder "0. Preparación (una vez por arranque)" --folder "A. Preferido donatrack → AMQP a logística 8083" --folder "B. Preferido externo → HTTP a logística 8084" --folder "C. Preferido otra (sin cola) → devuelto → donatrack" --folder "F. Vuelta del proveedor por mensajería (RabbitMQ)" --folder "G. Administración: negativos y restaurar"
+newman run postman/flujo-9-broker-logistica.json --env-var adminApiKey=$LOGISTICA_ADMIN_API_KEY --env-var rabbitUser=<usuario-rabbit> --env-var rabbitPass=<clave-rabbit> --env-var tokenDonatrack=$LOGISTICA_TOKEN_DONATRACK --env-var tokenExterno=$LOGISTICA_TOKEN_EXTERNO --folder "0. Preparación (una vez por arranque)" --folder "A. Preferido donatrack → AMQP a logística 8083" --folder "B. Preferido externo → HTTP a logística 8084" --folder "C. Preferido otra (sin cola) → devuelto → donatrack" --folder "F. Vuelta del proveedor por mensajería (RabbitMQ)" --folder "G. Administración: negativos y restaurar"
 ```
 
 ---
@@ -121,15 +122,18 @@ Cada escenario asigna una donación nueva (cargar → normalizar → segmentar �
 
 ### F. Vuelta de un proveedor por mensajería
 
-- **Qué hacer:** carpeta **F**. Requiere haber corrido A y B, y completar `rabbitUser` y `rabbitPass`.
+- **Qué hacer:** carpeta **F**. Requiere haber corrido A, B y C, y completar `rabbitUser`, `rabbitPass`, `tokenDonatrack` y `tokenExterno`.
 - **Qué mirar:**
-  - F.1: la API de gestión de RabbitMQ responde `routed: true`, es decir que el evento `ruta.asignada` llegó a la cola de Donaciones;
-  - F.2: la donación de `externo` pasa a `ListaParaEntregar` (así lo devuelve la API). En el log de Donaciones aparece el procesador aplicando el evento.
+  - F.1 y F.2: RabbitMQ responde `routed: true` (el broker de mensajes no sabe de identidades), pero el log de Donaciones muestra `[ORIGEN-EVENTO] ... se descarta`: el primero no traía token y el segundo era de `externo` sobre una donación de `donatrack`;
+  - F.3 y F.4: el evento de `externo`, con su id y su token, se acepta y su donación pasa a `ListaParaEntregar` (así lo devuelve la API);
+  - F.5 y F.6: las donaciones de los eventos descartados no cambiaron. Como la cola es FIFO, cuando F.4 ve el cambio los eventos anteriores ya se procesaron.
 - **Qué explicar:**
   - Un proveedor informa **publicando en `logistica.exchange`** los mismos eventos que publica nuestra Logística (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`). No llama a Donaciones por HTTP: el enunciado de la Entrega 4 (requerimiento de implementación 3) dice que el servicio de logística no debe invocar a Donaciones sino dejar disponible la información.
   - HTTP se usa solo de ida (Donaciones → proveedor). Es un **requisito de contrato** para cualquier proveedor.
-  - El evento pasa por el **mismo procesador idempotente**: repetirlo no cambia el estado dos veces.
-  - Límite conocido: este camino no verifica qué proveedor manda cada evento (DTI-14, ítem 7); en un entorno real se resuelve con usuarios y permisos por proveedor en RabbitMQ.
+  - **Cómo sabe Donaciones quién mandó el evento:** cada evento lleva en headers el id del proveedor (`X-Proveedor-Id`) y un token propio (`X-Proveedor-Token`). Donaciones compara el token con el configurado para ese proveedor y después comprueba que la donación le pertenezca según el registro del broker. Nuestra Logística firma así todos sus eventos.
+  - **Falla cerrado:** sin id, sin token, con un token incorrecto o sobre una donación ajena, el evento se descarta con un aviso en el log.
+  - El evento aceptado pasa por el **mismo procesador idempotente**: repetirlo no cambia el estado dos veces.
+  - Límite conocido: el token viaja en un header del mensaje, sin rotación ni firma del cuerpo; para un entorno real, la recomendación es un usuario de RabbitMQ por proveedor con permisos de publicación acotados (DTI-14, ítem 7).
   - Evolución posible: que Donaciones consulte el estado al proveedor (polling), para un proveedor que no pueda publicar en nuestro RabbitMQ.
 
 ### G. Administración
@@ -143,8 +147,9 @@ Cada escenario asigna una donación nueva (cargar → normalizar → segmentar �
 
 | Síntoma | Causa probable |
 |---|---|
-| El compose no arranca y pide `LOGISTICA_ADMIN_API_KEY` | Falta exportar la variable de entorno con la clave de administración |
+| El compose no arranca y pide `LOGISTICA_ADMIN_API_KEY` | Falta exportar la clave de administración o los tokens de vuelta (`LOGISTICA_TOKEN_DONATRACK`, `LOGISTICA_TOKEN_EXTERNO`) |
 | `401` en los requests de administración | La variable `adminApiKey` de Postman no coincide con `LOGISTICA_ADMIN_API_KEY` |
 | `401` en el escenario F.1 | `rabbitUser` o `rabbitPass` no coinciden con las credenciales del RabbitMQ del compose |
+| En F.4 la donación no pasa a `ListaParaEntregar` | `tokenExterno` no coincide con `LOGISTICA_TOKEN_EXTERNO` (en el log de Donaciones aparece `Token ausente o incorrecto`) |
 | La carpeta A no encuentra la propuesta | No se corrió la carpeta 0 desde el último reinicio de Donaciones |
 | La entrega no aparece | Revisar el log del broker: rechazos, inciertos y rondas quedan con el prefijo `[BROKER-LOGISTICA]` |
