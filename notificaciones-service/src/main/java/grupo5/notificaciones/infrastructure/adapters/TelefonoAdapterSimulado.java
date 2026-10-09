@@ -1,10 +1,6 @@
 package grupo5.notificaciones.infrastructure.adapters;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.notificaciones.exceptions.ProveedorMensajeriaException;
 import grupo5.notificaciones.infrastructure.TelefonoAdapter;
-import grupo5.notificaciones.infrastructure.adapters.dtos.twilio.TwilioSmsRequest;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
 import java.security.SecureRandom;
 import java.util.UUID;
@@ -22,7 +18,6 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
   private static final Logger log = LoggerFactory.getLogger(TelefonoAdapterSimulado.class);
 
   private final CriterioFalloSimulado criterioFallo;
-  private final ObjectMapper objectMapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
 
   public TelefonoAdapterSimulado(CriterioFalloSimulado criterioFallo) {
@@ -39,29 +34,19 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
       return false;
     }
 
-    // 2. Falla temporal (HTTP 500 / Timeout) simulada aleatoriamente (5% de las veces)
-    if (simularFalloTemporalAleatorio()) {
-      throw new ProveedorMensajeriaException(
-          "HTTP 503 Service Unavailable: No se pudo contactar a Twilio.");
-    }
-
     String sid = "SM" + UUID.randomUUID().toString().replace("-", "").substring(0, 32);
+    String numeroEnmascarado = enmascararNumero(numero);
 
-    TwilioSmsRequest requestDTO = new TwilioSmsRequest(numero, "+1234567890", mensaje);
-    String twilioPayload;
-    try {
-      twilioPayload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDTO);
-    } catch (JsonProcessingException e) {
-      twilioPayload = "Error serializing payload: " + e.getMessage();
-    }
-
-    log.info("[TWILIO-MOCK] HTTP 201 Created | SID: {}\nPayload Enviado:\n{}", sid, twilioPayload);
+    log.info("[TWILIO-MOCK] HTTP 201 Created | SID: {} | Destinatario: {}", sid, numeroEnmascarado);
+    log.debug("[TWILIO-MOCK] Payload original: {}", mensaje);
 
     return true;
   }
 
-  protected boolean simularFalloTemporalAleatorio() {
-    return this.random.nextInt(100) < 5;
+  private String enmascararNumero(String numero) {
+    if (numero == null || numero.length() < 4) return "***";
+    return numero.substring(0, numero.length() - 4).replaceAll(".", "*")
+        + numero.substring(numero.length() - 4);
   }
 
   protected void simularLatenciaDeRed() {

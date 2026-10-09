@@ -1,10 +1,6 @@
 package grupo5.notificaciones.infrastructure.adapters;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.notificaciones.exceptions.ProveedorMensajeriaException;
 import grupo5.notificaciones.infrastructure.WhatsAppAdapter;
-import grupo5.notificaciones.infrastructure.adapters.dtos.meta.MetaWhatsAppRequest;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
 import java.security.SecureRandom;
 import java.util.UUID;
@@ -22,7 +18,6 @@ public class WhatsAppAdapterSimulado implements WhatsAppAdapter {
   private static final Logger log = LoggerFactory.getLogger(WhatsAppAdapterSimulado.class);
 
   private final CriterioFalloSimulado criterioFallo;
-  private final ObjectMapper objectMapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
 
   public WhatsAppAdapterSimulado(CriterioFalloSimulado criterioFallo) {
@@ -39,39 +34,23 @@ public class WhatsAppAdapterSimulado implements WhatsAppAdapter {
       return false;
     }
 
-    // 2. Falla temporal (HTTP 500 / Timeout) simulada aleatoriamente (5% de las veces)
-    if (simularFalloTemporalAleatorio()) {
-      throw new ProveedorMensajeriaException(
-          "HTTP 503 Service Unavailable: Error de conexión con Meta API.");
-    }
-
     String wamid = "wamid." + UUID.randomUUID().toString().replace("-", "").substring(0, 20);
-
-    MetaWhatsAppRequest requestDTO =
-        new MetaWhatsAppRequest(
-            "whatsapp",
-            "individual",
-            numero,
-            "text",
-            new MetaWhatsAppRequest.TextContent(false, mensaje));
-
-    String metaPayload;
-    try {
-      metaPayload = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDTO);
-    } catch (JsonProcessingException e) {
-      metaPayload = "Error serializing payload: " + e.getMessage();
-    }
+    String numeroEnmascarado = enmascararNumero(numero);
 
     log.info(
-        "[META-WHATSAPP-MOCK] HTTP 200 OK | MessageId: {}\nPayload Enviado:\n{}",
+        "[META-WHATSAPP-MOCK] HTTP 200 OK | MessageId: {} | Destinatario: {}",
         wamid,
-        metaPayload);
+        numeroEnmascarado);
+
+    log.debug("[META-WHATSAPP-MOCK] Payload original: {}", mensaje);
 
     return true;
   }
 
-  protected boolean simularFalloTemporalAleatorio() {
-    return this.random.nextInt(100) < 5;
+  private String enmascararNumero(String numero) {
+    if (numero == null || numero.length() < 4) return "***";
+    return numero.substring(0, numero.length() - 4).replaceAll(".", "*")
+        + numero.substring(numero.length() - 4);
   }
 
   protected void simularLatenciaDeRed() {

@@ -1,13 +1,8 @@
 package grupo5.notificaciones.infrastructure.adapters;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.notificaciones.exceptions.ProveedorMensajeriaException;
 import grupo5.notificaciones.infrastructure.CorreoAdapter;
-import grupo5.notificaciones.infrastructure.adapters.dtos.sendgrid.SendGridEmailRequest;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
 import java.security.SecureRandom;
-import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +17,6 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
   private static final Logger log = LoggerFactory.getLogger(CorreoAdapterSimulado.class);
 
   private final CriterioFalloSimulado criterioFallo;
-  private final ObjectMapper objectMapper = new ObjectMapper();
   private final SecureRandom random = new SecureRandom();
 
   public CorreoAdapterSimulado(CriterioFalloSimulado criterioFallo) {
@@ -39,41 +33,25 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
       return false;
     }
 
-    // 2. Falla temporal (HTTP 500 / Timeout) simulada aleatoriamente (5% de las veces)
-    if (simularFalloTemporalAleatorio()) {
-      throw new ProveedorMensajeriaException(
-          "HTTP 503 Service Unavailable: Timeout conectando con el proveedor.");
-    }
-
     String messageId = UUID.randomUUID().toString();
-
-    SendGridEmailRequest requestDTO =
-        new SendGridEmailRequest(
-            List.of(
-                new SendGridEmailRequest.Personalization(
-                    List.of(new SendGridEmailRequest.EmailAddress(destinatario, null)))),
-            new SendGridEmailRequest.EmailAddress("no-reply@donatrack.org", "DonaTrack"),
-            "Notificación de DonaTrack",
-            List.of(new SendGridEmailRequest.Content("text/plain", mensaje)));
-
-    String sendGridPayload;
-    try {
-      sendGridPayload =
-          objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestDTO);
-    } catch (JsonProcessingException e) {
-      sendGridPayload = "Error serializing payload: " + e.getMessage();
-    }
+    String destinatarioEnmascarado = enmascararCorreo(destinatario);
 
     log.info(
-        "[SENDGRID-MOCK] HTTP 202 Accepted | MessageId: {}\nPayload Enviado:\n{}",
+        "[SENDGRID-MOCK] HTTP 202 Accepted | MessageId: {} | Destinatario: {}",
         messageId,
-        sendGridPayload);
+        destinatarioEnmascarado);
+
+    log.debug("[SENDGRID-MOCK] Payload original: {}", mensaje);
 
     return true;
   }
 
-  protected boolean simularFalloTemporalAleatorio() {
-    return this.random.nextInt(100) < 5;
+  private String enmascararCorreo(String correo) {
+    if (correo == null || !correo.contains("@")) return "***";
+    String[] partes = correo.split("@");
+    String local = partes[0];
+    if (local.length() <= 2) return local + "***@" + partes[1];
+    return local.substring(0, 2) + "***@" + partes[1];
   }
 
   protected void simularLatenciaDeRed() {

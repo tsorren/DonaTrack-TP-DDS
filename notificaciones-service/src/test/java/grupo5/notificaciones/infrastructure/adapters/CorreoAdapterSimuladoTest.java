@@ -2,13 +2,11 @@ package grupo5.notificaciones.infrastructure.adapters;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import grupo5.notificaciones.exceptions.ProveedorMensajeriaException;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,11 +22,6 @@ class CorreoAdapterSimuladoTest {
     criterioFallo = mock(CriterioFalloSimulado.class);
     adapter =
         new CorreoAdapterSimulado(criterioFallo) {
-          @Override
-          protected boolean simularFalloTemporalAleatorio() {
-            return false;
-          }
-
           @Override
           protected void simularLatenciaDeRed() {
             // no-op para tests rápidos
@@ -63,38 +56,10 @@ class CorreoAdapterSimuladoTest {
   }
 
   @Test
-  @DisplayName(
-      "enviarMail lanza ProveedorMensajeriaException cuando ocurre fallo temporal aleatorio")
-  void enviarMail_conFalloTemporalAleatorio_lanzaExcepcion() {
-    String destinatario = "donante@test.com";
-    String mensaje = "Hola donante";
-    when(criterioFallo.debeFallar(destinatario, mensaje)).thenReturn(false);
-
-    CorreoAdapterSimulado adapterConFalloTemporal =
-        new CorreoAdapterSimulado(criterioFallo) {
-          @Override
-          protected boolean simularFalloTemporalAleatorio() {
-            return true;
-          }
-
-          @Override
-          protected void simularLatenciaDeRed() {
-            // no-op para tests rápidos
-          }
-        };
-
-    assertThrows(
-        ProveedorMensajeriaException.class,
-        () -> adapterConFalloTemporal.enviarMail(destinatario, mensaje));
-  }
-
-  @Test
-  @DisplayName(
-      "simularFalloTemporalAleatorio y simularLatenciaDeRed ejecutan sin error y restauran interrupción")
+  @DisplayName("simularLatenciaDeRed ejecuta sin error y restaura interrupción")
   void metodosDeSimulacion_ejecutanCorrectamente() {
     CorreoAdapterSimulado realAdapter = new CorreoAdapterSimulado(criterioFallo);
 
-    assertDoesNotThrow(realAdapter::simularFalloTemporalAleatorio);
     assertDoesNotThrow(realAdapter::simularLatenciaDeRed);
 
     Thread.currentThread().interrupt();
