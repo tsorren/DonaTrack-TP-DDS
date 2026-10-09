@@ -34,6 +34,7 @@ public class SolicitudPlanificacionRepositoryJpaAdapter
   public SolicitudPlanificacion save(SolicitudPlanificacion aggregate) {
     SolicitudPlanificacionEntity existing = springDataRepo.findById(aggregate.getId()).orElse(null);
     SolicitudPlanificacionEntity saved = springDataRepo.save(mapper.toEntity(aggregate, existing));
+    springDataRepo.flush();
     return mapper.toDomain(saved);
   }
 

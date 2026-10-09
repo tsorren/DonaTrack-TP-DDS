@@ -32,6 +32,7 @@ public class RutasRepositoryJpaAdapter
   public Ruta save(Ruta aggregate) {
     RutaEntity existing = springDataRepo.findById(aggregate.getId()).orElse(null);
     RutaEntity saved = springDataRepo.save(mapper.toEntity(aggregate, existing));
+    springDataRepo.flush();
     return mapper.toDomain(saved);
   }
 

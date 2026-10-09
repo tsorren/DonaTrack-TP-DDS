@@ -70,6 +70,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
@@ -128,20 +129,15 @@ class RepositoriosLogisticaJpaTest {
   @Autowired private SpringDataDireccionRepository springDataDireccionRepo;
   @Autowired private SpringDataSolicitudTransicionEntregaRepository springDataTransicionRepo;
   @Autowired private SpringDataEventoEntregaRepository springDataEventoRepo;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   @BeforeEach
   void limpiarTablas() {
-    springDataEventoRepo.deleteAll();
-    springDataTransicionRepo.deleteAll();
-    entregasRepository.deleteAll();
-    rutasRepository.deleteAll();
-    solicitudPlanificacionRepository.deleteAll();
-    camionRepository.deleteAll();
-    choferesRepository.deleteAll();
-    springDataDireccionRepo.deleteAll();
-    springDataLocalidadRepo.deleteAll();
-    springDataProvinciaRepo.deleteAll();
-    springDataPaisRepo.deleteAll();
+    jdbcTemplate.execute(
+        "TRUNCATE TABLE evento_entrega, solicitud_transicion_entrega, parada_ruta, "
+            + "solicitud_planificacion_ruta, solicitud_planificacion, cambio_estado_entrega, "
+            + "entrega, cambio_estado_ruta, ruta, cambio_estado_camion, camion, "
+            + "cambio_estado_chofer, chofer, direccion, localidad, provincia, pais CASCADE");
   }
 
   @Test
@@ -301,8 +297,8 @@ class RepositoriosLogisticaJpaTest {
     rutasRepository.save(rutaRecuperada);
     camionRepository.save(camion);
     choferesRepository.save(chofer);
-    entregasRepository.save(entregaMenor);
-    entregasRepository.save(entregaMayor);
+    entregaMenor = entregasRepository.save(entregaMenor);
+    entregaMayor = entregasRepository.save(entregaMayor);
 
     Camion camionEnRuta = camionRepository.findById(camion.getId()).orElseThrow();
     Chofer choferEnRuta = choferesRepository.findById(chofer.getId()).orElseThrow();
@@ -330,6 +326,11 @@ class RepositoriosLogisticaJpaTest {
 
   @Test
   void deberiaPersistirSolicitudPlanificacionYActualizarEstado() {
+    Camion camion = camionRepository.save(new Camion("CD789EF", 60.0f, 3000.0f, 3.0f));
+    Chofer chofer = choferesRepository.save(new Chofer("Luis", "Diaz", "LIC-004", "1133445566"));
+    Ruta ruta =
+        rutasRepository.save(new Ruta(LocalDate.of(2026, 10, 6), chofer.getId(), camion.getId()));
+
     SolicitudPlanificacion solicitud =
         new SolicitudPlanificacion(
             UUID.randomUUID(),
@@ -341,7 +342,7 @@ class RepositoriosLogisticaJpaTest {
     assertEquals(EstadoSolicitud.PENDIENTE, guardada.getEstado());
     assertNotNull(guardada.getVersion());
 
-    UUID rutaGenerada = UUID.randomUUID();
+    UUID rutaGenerada = ruta.getId();
     guardada.procesarResultados(List.of(rutaGenerada));
     SolicitudPlanificacion procesada = solicitudPlanificacionRepository.save(guardada);
 

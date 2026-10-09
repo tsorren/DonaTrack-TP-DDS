@@ -50,6 +50,7 @@ public class ChoferesRepositoryJpaAdapter
   public Chofer save(Chofer aggregate) {
     ChoferEntity existing = springDataRepo.findById(aggregate.getId()).orElse(null);
     ChoferEntity saved = springDataRepo.save(mapper.toEntity(aggregate, existing));
+    springDataRepo.flush();
     return toDomain.apply(saved);
   }
 

@@ -52,6 +52,7 @@ public class CamionRepositoryJpaAdapter
   public Camion save(Camion aggregate) {
     CamionEntity existing = springDataRepo.findById(aggregate.getId()).orElse(null);
     CamionEntity saved = springDataRepo.save(mapper.toEntity(aggregate, existing));
+    springDataRepo.flush();
     return toDomain.apply(saved);
   }
 

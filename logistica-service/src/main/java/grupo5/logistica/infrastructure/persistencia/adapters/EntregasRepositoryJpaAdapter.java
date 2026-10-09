@@ -58,6 +58,7 @@ public class EntregasRepositoryJpaAdapter
             ? persistirDireccionInmutable(aggregate.getDestino())
             : null;
     EntregaEntity saved = springDataRepo.save(mapper.toEntity(aggregate, existing, direccionNueva));
+    springDataRepo.flush();
     return mapper.toDomain(saved);
   }
 
