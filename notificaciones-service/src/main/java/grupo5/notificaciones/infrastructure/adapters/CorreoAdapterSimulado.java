@@ -2,7 +2,6 @@ package grupo5.notificaciones.infrastructure.adapters;
 
 import grupo5.notificaciones.infrastructure.CorreoAdapter;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
-import java.security.SecureRandom;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,14 +12,11 @@ import org.springframework.stereotype.Component;
  * para admitir escenarios de fallo controlado.
  */
 @Component
-public class CorreoAdapterSimulado implements CorreoAdapter {
+public class CorreoAdapterSimulado extends BaseAdapterSimulado implements CorreoAdapter {
   private static final Logger log = LoggerFactory.getLogger(CorreoAdapterSimulado.class);
 
-  private final CriterioFalloSimulado criterioFallo;
-  private final SecureRandom random = new SecureRandom();
-
   public CorreoAdapterSimulado(CriterioFalloSimulado criterioFallo) {
-    this.criterioFallo = criterioFallo;
+    super(criterioFallo);
   }
 
   @Override
@@ -52,15 +48,5 @@ public class CorreoAdapterSimulado implements CorreoAdapter {
     String local = partes[0];
     if (local.length() <= 2) return local + "***@" + partes[1];
     return local.substring(0, 2) + "***@" + partes[1];
-  }
-
-  protected void simularLatenciaDeRed() {
-    try {
-      // Simula un tiempo de respuesta de API entre 100 y 500 ms
-      long latencia = 100L + this.random.nextInt(400);
-      Thread.sleep(latencia);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
   }
 }

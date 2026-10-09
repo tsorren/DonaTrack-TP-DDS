@@ -2,7 +2,6 @@ package grupo5.notificaciones.infrastructure.adapters;
 
 import grupo5.notificaciones.infrastructure.TelefonoAdapter;
 import grupo5.notificaciones.infrastructure.adapters.politicas.CriterioFalloSimulado;
-import java.security.SecureRandom;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,15 +12,12 @@ import org.springframework.stereotype.Component;
  * admitir escenarios de fallo controlado.
  */
 @Component
-public class TelefonoAdapterSimulado implements TelefonoAdapter {
+public class TelefonoAdapterSimulado extends BaseAdapterSimulado implements TelefonoAdapter {
 
   private static final Logger log = LoggerFactory.getLogger(TelefonoAdapterSimulado.class);
 
-  private final CriterioFalloSimulado criterioFallo;
-  private final SecureRandom random = new SecureRandom();
-
   public TelefonoAdapterSimulado(CriterioFalloSimulado criterioFallo) {
-    this.criterioFallo = criterioFallo;
+    super(criterioFallo);
   }
 
   @Override
@@ -41,20 +37,5 @@ public class TelefonoAdapterSimulado implements TelefonoAdapter {
     log.debug("[TWILIO-MOCK] Payload original: {}", mensaje);
 
     return true;
-  }
-
-  private static String enmascararNumero(String numero) {
-    if (numero == null || numero.length() < 4) return "***";
-    return "*".repeat(numero.length() - 4) + numero.substring(numero.length() - 4);
-  }
-
-  protected void simularLatenciaDeRed() {
-    try {
-      // Simula un tiempo de respuesta de API entre 100 y 500 ms
-      long latencia = 100L + this.random.nextInt(400);
-      Thread.sleep(latencia);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
   }
 }
