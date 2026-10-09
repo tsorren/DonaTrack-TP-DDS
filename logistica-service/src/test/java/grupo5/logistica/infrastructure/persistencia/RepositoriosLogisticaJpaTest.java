@@ -297,8 +297,8 @@ class RepositoriosLogisticaJpaTest {
     rutasRepository.save(rutaRecuperada);
     camionRepository.save(camion);
     choferesRepository.save(chofer);
-    entregaMenor = entregasRepository.save(entregaMenor);
-    entregaMayor = entregasRepository.save(entregaMayor);
+    entregasRepository.save(entregaMenor);
+    entregasRepository.save(entregaMayor);
 
     Camion camionEnRuta = camionRepository.findById(camion.getId()).orElseThrow();
     Chofer choferEnRuta = choferesRepository.findById(chofer.getId()).orElseThrow();
