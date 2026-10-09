@@ -2,7 +2,7 @@
 
 Propósito: lo propio de cada servicio, como justificación (entregable 3) del documento de arquitectura.
 
-Vuelta al documento: [`arquitectura-sistema.md`](arquitectura-sistema.md). Los IDs T1–T19 remiten a su §9.
+Vuelta al documento: [`arquitectura-sistema.md`](arquitectura-sistema.md). Los IDs T1–T20 remiten a su §9.
 
 ---
 
@@ -30,7 +30,7 @@ Vuelta al documento: [`arquitectura-sistema.md`](arquitectura-sistema.md). Los I
 | Salidas | AMQP: `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida` en `logistica.exchange`, firmados con `logistica.instancia-id` y su token · HTTP solo hacia su propio callback, desde su planificador simulado interno |
 | Datos | PostgreSQL (perfil `postgres`): 15 entidades JPA, Flyway V1–V2, `validate`, bloqueo optimista en 5 tablas, 4 tablas de historial, UUID sin clave foránea hacia Donaciones |
 | Despliegue | Único servicio con despliegue en la nube (§7 del documento) |
-| Deuda propia | T3, T19 · consumo del comando sin DLQ · `evento_entrega` sin relay |
+| Deuda propia | T3, T19, T20 · consumo del comando sin DLQ · `evento_entrega` sin relay |
 
 ## Anexo C — Incentivos
 
