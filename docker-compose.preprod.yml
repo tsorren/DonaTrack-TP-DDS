@@ -209,7 +209,9 @@ services:
       - preprod-network
 
   minio:
-    image: cgr.dev/chainguard/minio:latest
+    # quay.io/minio ya no permite pull anónimo (401). Imagen de Chainguard fijada por digest;
+    # no trae curl, por eso el healthcheck usa `mc ready local`.
+    image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
     container_name: donatrack-minio
     command: server /data --console-address ":9001"
     environment:

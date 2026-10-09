@@ -99,7 +99,7 @@ import org.testcontainers.utility.MountableFile;
 })
 @Testcontainers
 @DisabledIfDockerUnavailable
-class RepositoriosJpaTest {
+class RepositoriosLogisticaJpaTest {
 
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgres =
