@@ -79,7 +79,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 > - **D2:** Se incorporan los endpoints de gestión de alias semánticos de subcategorías: `POST /api/subcategorias/{id}/aliases` y `DELETE /api/subcategorias/{id}/aliases/{alias}` (`SubcategoriasController.java`).
 > - **D3:** `GET /api/personas/{id}` no existe en `donaciones-service` (la consulta por ID reside en `notificaciones-service` vía `GET /api/notificaciones/personas/{id}`). En `donaciones-service`, el listado general con filtro `?tipo=` cubre la consulta.
 > - **D4:** `DELETE /api/categorias/{id}` y `DELETE /api/subcategorias/{id}` devuelven código `200 OK` retornando el DTO del recurso eliminado (`CategoriaOutputDTO` y `SubcategoriaOutputDTO`), en lugar de `204 No Content`.
-> - **D7:** Los tres endpoints `/api/logistica/...` pertenecen al broker de integración con logística ([ADR 20261007](../adr/20261007-broker-de-integracion-con-logistica.md)). Los protege `ApiKeyFilter` con dos claves distintas (administración y una por proveedor); sin clave configurada rechazan todo (`401`). El `401` usa el código provisional `ERR-AUT-401`, que no está en `ErrorCatalog`.
+> - **D7:** Los dos endpoints `/api/logistica/...` de administración pertenecen al broker de integración con logística ([ADR 20261007](../adr/20261007-broker-de-integracion-con-logistica.md)); el callback de proveedores se quitó ([ADR 20261008](../adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md)). Los protege `ApiKeyFilter` con la clave de administración; sin clave configurada rechazan todo (`401`). El `401` usa el código provisional `ERR-AUT-401`, que no está en `ErrorCatalog`.
 
 ---
 
