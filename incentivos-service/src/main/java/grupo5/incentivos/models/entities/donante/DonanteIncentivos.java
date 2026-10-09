@@ -36,6 +36,9 @@ public class DonanteIncentivos extends AgregadoConEventos<EventoDonanteIncentivo
   private List<InsigniaGanada> insignias;
   private Metricas metricas;
 
+  /** Versión de persistencia (optimistic locking). null = agregado nuevo, aún no guardado. */
+  private Long version;
+
   public DonanteIncentivos(
       UUID idDonante,
       UUID idPersona,
@@ -93,6 +96,11 @@ public class DonanteIncentivos extends AgregadoConEventos<EventoDonanteIncentivo
 
   public DonanteIncentivos(UUID idDonante, UUID idPersona, String nombre) {
     this(idDonante, idPersona, nombre, MisionFactory.crearMisionesEstandar());
+  }
+
+  /** Lo asigna el mapper de persistencia al reconstituir el agregado. */
+  public void asignarVersion(Long version) {
+    this.version = version;
   }
 
   public void cambiarNombre(String nombre) {

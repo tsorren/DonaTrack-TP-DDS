@@ -16,6 +16,14 @@ public class MisionHabilDonador extends Mision {
         cantidadBienesObjetivo);
   }
 
+  private MisionHabilDonador(MisionEstado estado) {
+    super(estado);
+  }
+
+  public static MisionHabilDonador reconstituir(MisionEstado estado) {
+    return new MisionHabilDonador(estado);
+  }
+
   @Override
   protected Integer calcularNuevoProgreso(DonanteIncentivos donante, EventoDonacion evento) {
     Integer cantidadActual = evento.getCantidadBienes() != null ? evento.getCantidadBienes() : 0;

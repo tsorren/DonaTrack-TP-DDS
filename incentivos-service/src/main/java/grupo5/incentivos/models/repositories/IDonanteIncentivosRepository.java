@@ -7,4 +7,7 @@ import java.util.UUID;
 
 public interface IDonanteIncentivosRepository extends CrudRepository<DonanteIncentivos> {
   Optional<DonanteIncentivos> findByIdPersona(UUID idPersona);
+
+  /** Elimina el donante y tod lo suyo. Devuelve false si no existía. */
+  boolean eliminarPorId(UUID donanteId);
 }

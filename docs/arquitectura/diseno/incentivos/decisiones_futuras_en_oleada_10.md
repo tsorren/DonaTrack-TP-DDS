@@ -128,6 +128,11 @@ classDiagram
     - `ultima_donacion_fecha DATE`
   - El detalle de eventos históricos de donación (`EventoDonacion`) se mantendrá desacoplado o como `@ElementCollection` con carga estrictamente diferida (`FetchType.LAZY`) en tabla secundaria `donante_historial_donacion`.
 
+> **Desvío implementado (PR "Persistencia Incentivos", V1):** no se persiste el historial de eventos (`donante_historial_donacion`) ni `donaciones_consecutivas` / `max_donaciones_consecutivas`. `Metricas` guarda en `donante_incentivos` los escalares `total_donaciones_historicas`, `total_donaciones_exitosas` y `ultima_donacion`, más dos colecciones acotadas: `donante_donaciones_por_periodo` (conteo mensual, clave `yyyy-MM`) y `donante_organizacion_ayudada`.
+> - **Por qué:** el único consumidor del historial era `MetricasIncentivosService.obtenerMetricas()`, que solo necesita el conteo por mes. Persistir el conteo mensual es equivalente para esa consulta y su tamaño crece con los meses de actividad, no con cada donación.
+> - **Cambio de dominio:** `Metricas.getHistorialDonaciones()` se eliminó (sin llamadores) y se reemplazó por `donacionesPorPeriodo()`.
+> - **Consecuencia:** el detalle por donación no se conserva; si se necesita auditoría por evento, hay que reintroducir `donante_historial_donacion` en una migración nueva.
+
 ---
 
 ### 1.3. Mapeo de Value Objects `Insignia` e `InsigniaGanada`
@@ -405,6 +410,12 @@ class IncentivosPersistenceIT {
 }
 ```
 
+> **Implementado (PR "Persistencia Incentivos"):** `donante_incentivos.version` con `@Version`. El test está en `RepositoriosIncentivosJpaTest`.
+> - **Recuperación:** las actualizaciones de un donante (eventos de donación, `persona.sincronizada`, visibilidad de insignias y el job de rachas) pasan por `ReintentoPorConcurrencia`. Ante `ConcurrencyFailureException` relee el donante y reaplica el cambio, hasta 3 intentos.
+> - **Por qué:** el contenedor AMQP de incentivos no reencola (`setDefaultRequeueRejected(false)`) ni tiene DLQ. Sin el reintento, un choque descartaría el evento y se perdería el contador o el avance de la misión.
+> - **Job de rachas:** si un donante agota los intentos, se loguea `error` y se sigue con los demás. El próximo ciclo lo vuelve a verificar.
+> - **El alta** ya era idempotente ante el choque: `GestionDonanteService.registrarDonante` devuelve el donante que ganó.
+
 ---
 
 ## 6. Estrategia de Cómputo de Ranking Escalable en PostgreSQL (SQL Aggregation vs. Heap Memory)
@@ -482,6 +493,9 @@ public class GestionDonanteService implements IGestionDonanteService {
   }
 }
 ```
+
+> **Desvío implementado (PR "Persistencia Incentivos"):** no se usó Spring Retry. No está en el proyecto, y el ejemplo de la §8.2 usa `@Transactional`, que los servicios de incentivos no usan. El reintento lo hace `services/ReintentoPorConcurrencia`: relee, reaplica y guarda, hasta 3 intentos sin backoff. Atrapa `ConcurrencyFailureException`, que incluye a `ObjectOptimisticLockingFailureException`. Detalle y alcance en la nota de la §5.
+> - **Riesgo residual:** si se agotan los 3 intentos, el evento AMQP se descarta igual, porque el contenedor no reencola ni tiene DLQ. Queda acotado porque cada cola tiene un solo consumidor (no hay `concurrency` configurada): solo chocan eventos de colas distintas, o un evento contra el job o contra REST. Por REST, un reintento agotado responde 500, porque `common-lib` no mapea `ConcurrencyFailureException` a 409.
 
 ---
 

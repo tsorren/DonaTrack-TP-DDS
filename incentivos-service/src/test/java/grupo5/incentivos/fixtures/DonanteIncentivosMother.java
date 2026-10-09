@@ -3,9 +3,14 @@ package grupo5.incentivos.fixtures;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.entities.donante.EventoDonacion;
+import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.entities.misiones.Mision;
+import grupo5.incentivos.models.entities.misiones.MisionCompletitud;
+import grupo5.incentivos.models.entities.misiones.MisionDonacionesExitosas;
+import grupo5.incentivos.models.entities.misiones.MisionHabilDonador;
 import grupo5.incentivos.models.entities.misiones.MisionRacha;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,5 +101,49 @@ public final class DonanteIncentivosMother {
       misiones.add(mision);
     }
     return new DonanteIncentivos(id, id, nombre, misiones);
+  }
+
+  /**
+   * Donante con filas en todas las tablas hijas (misiones de los cuatro tipos, categorías donadas,
+   * insignias, organizaciones ayudadas y donaciones por período). Insignias: "Gran Aporte Test"
+   * (visible) y "Extra" (oculta).
+   */
+  public static DonanteIncentivos conEstadoCompleto(UUID id) {
+    MisionRacha racha =
+        MisionMother.rachaConInsignia(CategoriaDonante.COLABORADOR, 3, "Racha Test");
+    racha.setNumeroMision(1);
+    MisionCompletitud completitud =
+        MisionMother.completitudConInsignia(CategoriaDonante.COLABORADOR, 3, "Explorador Test");
+    completitud.setNumeroMision(2);
+    MisionHabilDonador habil =
+        MisionMother.habilDonadorConInsignia(CategoriaDonante.SOSTENEDOR, 5, "Gran Aporte Test");
+    habil.setNumeroMision(3);
+    MisionDonacionesExitosas exitosas =
+        MisionMother.exitosasConInsignia(CategoriaDonante.TRANSFORMADOR, 3, "Impacto Test");
+    exitosas.setNumeroMision(4);
+
+    DonanteIncentivos donante =
+        new DonanteIncentivos(
+            id, UUID.randomUUID(), "Ana", List.of(racha, completitud, habil, exitosas));
+
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 5, 10));
+    racha.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 6, 10));
+    completitud.evaluarProgreso(
+        donante,
+        EventoDonacionMother.conCategorias(
+            LocalDate.of(2026, Month.JUNE, 10), List.of("Alimentos", "Ropa")));
+    habil.evaluarProgreso(
+        donante, EventoDonacionMother.conCantidadBienes(LocalDate.of(2026, Month.JUNE, 11), 5));
+    exitosas.evaluarProgreso(donante, EventoDonacionMother.enFecha(2026, 6, 12));
+    exitosas.evaluarProgresoExitoso(donante);
+
+    donante.getMetricas().registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 10));
+    donante.getMetricas().registrarDonacion(EventoDonacionMother.enFecha(2026, 6, 11));
+    donante.getMetricas().registrarDonacionExitosa(UUID.randomUUID());
+
+    donante.otorgarInsignia(
+        new Insignia("Extra", "Descripcion", "/extra.png"), LocalDate.of(2026, Month.JUNE, 1));
+    donante.configurarVisibilidadInsignia("Extra", false);
+    return donante;
   }
 }

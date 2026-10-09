@@ -15,7 +15,7 @@ donatrack (base de datos)
 ├── schema: notificaciones  ← notificaciones-service
 ├── schema: donaciones       ← donaciones-service (placeholder)
 ├── schema: logistica        ← logistica-service
-└── schema: incentivos       ← incentivos-service (placeholder)
+└── schema: incentivos       ← incentivos-service
 ```
 
 > **Por qué un único servidor:** Reduce el consumo de ~800 MB (4 × 200 MB por contenedor separado) a un único demonio PostgreSQL. En producción, cada schema puede migrarse a instancias RDS/Aurora independientes sin cambios en el código JPA.
@@ -32,7 +32,7 @@ Todos los roles se crean idempotentemente en [`01-init-schemas-roles.sql`](init-
 | `notificaciones_user` | `notif_pass_2026`       | `notificaciones` | **Activo** — JPA conectado |
 | `donaciones_user`     | `dona_pass_2026`        | `donaciones`     | Placeholder                |
 | `logistica_user`      | `logi_pass_2026`        | `logistica`      | **Activo** — JPA conectado |
-| `incentivos_user`     | `inc_pass_2026`         | `incentivos`     | Placeholder                |
+| `incentivos_user`     | `inc_pass_2026`         | `incentivos`     | **Activo** — JPA conectado |
 
 ### Política de permisos (aislamiento cruzado)
 
@@ -69,12 +69,12 @@ PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-i
 
 [OBSERVED] desde `docker-compose.yml` y `application-postgres.properties`:
 
-| Servicio                 | Puerto | JDBC URL                                                                   | Usuario               |
-|--------------------------|--------|----------------------------------------------------------------------------|-----------------------|
-| `notificaciones-service` | 8081   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones`   | `notificaciones_user` |
-| `donaciones-service`     | 8080   | pendiente (sin datasource configurado aún)                                 | `donaciones_user`     |
-| `logistica-service`      | 8083   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=logistica`        | `logistica_user`      |
-| `incentivos-service`     | 8082   | pendiente (sin datasource configurado aún)                                 | `incentivos_user`     |
+| Servicio                 | Puerto | JDBC URL                                                                 | Usuario               |
+|--------------------------|--------|--------------------------------------------------------------------------|-----------------------|
+| `notificaciones-service` | 8081   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones` | `notificaciones_user` |
+| `donaciones-service`     | 8080   | pendiente (sin datasource configurado aún)                               | `donaciones_user`     |
+| `logistica-service`      | 8083   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=logistica`      | `logistica_user`      |
+| `incentivos-service`     | 8082   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=incentivos`     | `incentivos_user`     |
 
 ### Acceso local (fuera de Docker)
 
