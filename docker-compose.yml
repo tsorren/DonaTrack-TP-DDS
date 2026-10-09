@@ -203,7 +203,9 @@ services:
       - postgres
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2024-10-02T17-50-41Z
+    # quay.io/minio ya no permite pull anónimo (401). Imagen de Chainguard fijada por digest;
+    # no trae curl, por eso el healthcheck usa `mc ready local`.
+    image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
     container_name: donatrack-minio-local
     ports:
       - "9000:9000"
@@ -213,7 +215,7 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadminpassword
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      test: [ "CMD", "mc", "ready", "local" ]
       interval: 5s
       timeout: 3s
       retries: 10
