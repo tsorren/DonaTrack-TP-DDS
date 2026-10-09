@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-entrega-solicitada-v1.schema.json",
+  "title": "EventoEntregaSolicitadaV1",
+  "description": "Comando AMQP que el broker de logística de donaciones-service publica en donaciones.exchange con routing key entrega.solicitada.<proveedorId>.v1 (alias __TypeId__ fijo: entrega.solicitada.v1). Pide a un único proveedor de logística elegido que cree la entrega de una donación independiente.",
+  "type": "object",
+  "properties": {
+    "donacionIndependienteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la donación independiente a entregar; clave de idempotencia del proveedor"
+    },
+    "personaBeneficiariaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona de la entidad beneficiaria receptora"
+    },
+    "destino": {
+      "type": "object",
+      "properties": {
+        "calle": { "type": "string" },
+        "altura": { "type": "integer", "exclusiveMinimum": 0 },
+        "piso": { "type": "integer" },
+        "departamento": { "type": "string" },
+        "codigoPostal": { "type": "string" },
+        "localidad": { "type": "string" },
+        "provincia": { "type": "string" },
+        "pais": { "type": "string" }
+      },
+      "required": ["calle", "altura", "codigoPostal", "localidad", "provincia", "pais"],
+      "additionalProperties": false,
+      "description": "Dirección física de destino de la entrega (entidad beneficiaria)"
+    },
+    "pesoTotalKG": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Peso total en kilogramos de los bienes a entregar"
+    },
+    "volumenTotalM3": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Volumen total en metros cúbicos de los bienes a entregar"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Fecha del hecho original (asignación de la donación), según event-time"
+    }
+  },
+  "required": [
+    "donacionIndependienteId",
+    "personaBeneficiariaId",
+    "destino",
+    "pesoTotalKG",
+    "volumenTotalM3",
+    "fecha"
+  ],
+  "additionalProperties": false
+}

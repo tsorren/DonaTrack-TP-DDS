@@ -13,7 +13,7 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.eventos.DestinoEventoDTO;
-import grupo5.logistica.dto.eventos.EventoDonacionAsignadaV1;
+import grupo5.logistica.dto.eventos.EventoEntregaSolicitadaV1;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.services.IEntregasService;
 import java.time.LocalDateTime;
@@ -26,58 +26,50 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class DonacionAsignadaEventListenerTest {
+class EntregaSolicitadaEventListenerTest {
 
   @Mock private IEntregasService entregasService;
   @Mock private IEntregasRepository entregasRepository;
 
-  private DonacionAsignadaEventListener listener;
+  private EntregaSolicitadaEventListener listener;
 
   @BeforeEach
   void setUp() {
-    listener = new DonacionAsignadaEventListener(entregasService, entregasRepository);
+    listener = new EntregaSolicitadaEventListener(entregasService, entregasRepository);
   }
 
-  private static EventoDonacionAsignadaV1 eventoDeEjemplo(UUID donacionId) {
+  private static EventoEntregaSolicitadaV1 comandoDeEjemplo(UUID donacionId) {
     DestinoEventoDTO destino =
         new DestinoEventoDTO(
             "Av. Medrano", 951, null, null, "C1179AAQ", "CABA", "Buenos Aires", "Argentina");
-    return new EventoDonacionAsignadaV1(
-        donacionId,
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        LocalDateTime.now(),
-        UUID.randomUUID(),
-        "Caja de alimentos no perecederos",
-        destino,
-        10.5,
-        0.25);
+    return new EventoEntregaSolicitadaV1(
+        donacionId, UUID.randomUUID(), destino, 10.5, 0.25, LocalDateTime.now());
   }
 
   /**
-   * Arma un evento de ejemplo y deja stubeada la consulta de idempotencia para ese mismo
-   * donacionIndependienteId, que es el preámbulo común a todos los casos salvo el del evento nulo.
+   * Arma un comando de ejemplo y deja stubeada la consulta de idempotencia para ese mismo
+   * donacionIndependienteId, que es el preámbulo común a todos los casos salvo el del comando nulo.
    */
-  private EventoDonacionAsignadaV1 eventoConIdempotencia(boolean yaProcesada) {
-    EventoDonacionAsignadaV1 evento = eventoDeEjemplo(UUID.randomUUID());
-    when(entregasRepository.existsByIdDonacion(evento.donacionIndependienteId()))
+  private EventoEntregaSolicitadaV1 comandoConIdempotencia(boolean yaProcesada) {
+    EventoEntregaSolicitadaV1 comando = comandoDeEjemplo(UUID.randomUUID());
+    when(entregasRepository.existsByIdDonacion(comando.donacionIndependienteId()))
         .thenReturn(yaProcesada);
-    return evento;
+    return comando;
   }
 
   @Test
-  void onDonacionAsignada_cuandoEventoNuevo_creaLaEntregaConLosDatosMapeados() {
-    EventoDonacionAsignadaV1 evento = eventoConIdempotencia(false);
+  void onEntregaSolicitada_cuandoComandoNuevo_creaLaEntregaConLosDatosMapeados() {
+    EventoEntregaSolicitadaV1 comando = comandoConIdempotencia(false);
 
-    listener.onDonacionAsignada(evento);
+    listener.onEntregaSolicitada(comando);
 
     ArgumentCaptor<CrearEntregaRequestDTO> captor =
         ArgumentCaptor.forClass(CrearEntregaRequestDTO.class);
     verify(entregasService).crear(captor.capture());
 
     CrearEntregaRequestDTO dto = captor.getValue();
-    assertEquals(evento.donacionIndependienteId(), dto.idDonacion());
-    assertEquals(evento.personaBeneficiariaId(), dto.idBeneficiaria());
+    assertEquals(comando.donacionIndependienteId(), dto.idDonacion());
+    assertEquals(comando.personaBeneficiariaId(), dto.idBeneficiaria());
     assertEquals(10.5f, dto.pesoTotalKG());
     assertEquals(0.25f, dto.volumenTotalM3());
     assertEquals("Av. Medrano", dto.destino().calle());
@@ -85,35 +77,35 @@ class DonacionAsignadaEventListenerTest {
   }
 
   @Test
-  void onDonacionAsignada_cuandoEventoDuplicado_noCreaNadaYNoRompe() {
-    EventoDonacionAsignadaV1 evento = eventoConIdempotencia(true);
+  void onEntregaSolicitada_cuandoComandoDuplicado_noCreaNadaYNoRompe() {
+    EventoEntregaSolicitadaV1 comando = comandoConIdempotencia(true);
 
-    assertDoesNotThrow(() -> listener.onDonacionAsignada(evento));
+    assertDoesNotThrow(() -> listener.onEntregaSolicitada(comando));
 
     verify(entregasService, never()).crear(any());
   }
 
   @Test
-  void onDonacionAsignada_cuandoServicioLanzaValidationException_noRelanzaLaExcepcion() {
-    EventoDonacionAsignadaV1 evento = eventoConIdempotencia(false);
+  void onEntregaSolicitada_cuandoServicioLanzaValidationException_noRelanzaLaExcepcion() {
+    EventoEntregaSolicitadaV1 comando = comandoConIdempotencia(false);
     when(entregasService.crear(any()))
         .thenThrow(new ValidationException(ErrorCatalog.ARGUMENTO_NULO));
 
-    assertDoesNotThrow(() -> listener.onDonacionAsignada(evento));
+    assertDoesNotThrow(() -> listener.onEntregaSolicitada(comando));
   }
 
   @Test
-  void onDonacionAsignada_cuandoServicioLanzaExcepcionTransitoria_sePropagaParaRetryYDlq() {
-    EventoDonacionAsignadaV1 evento = eventoConIdempotencia(false);
+  void onEntregaSolicitada_cuandoServicioLanzaExcepcionTransitoria_sePropagaParaRetryYDlq() {
+    EventoEntregaSolicitadaV1 comando = comandoConIdempotencia(false);
     when(entregasService.crear(any()))
         .thenThrow(new RuntimeException("timeout de infraestructura"));
 
-    assertThrows(RuntimeException.class, () -> listener.onDonacionAsignada(evento));
+    assertThrows(RuntimeException.class, () -> listener.onEntregaSolicitada(comando));
   }
 
   @Test
-  void onDonacionAsignada_cuandoEventoEsNulo_noRompeYNoLlamaAlServicio() {
-    assertDoesNotThrow(() -> listener.onDonacionAsignada(null));
+  void onEntregaSolicitada_cuandoComandoEsNulo_noRompeYNoLlamaAlServicio() {
+    assertDoesNotThrow(() -> listener.onEntregaSolicitada(null));
 
     verifyNoInteractions(entregasService);
   }
