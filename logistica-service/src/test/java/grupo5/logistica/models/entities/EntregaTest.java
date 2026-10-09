@@ -149,6 +149,16 @@ class EntregaTest {
   }
 
   @Test
+  void testMandarARevisionDesdePendienteLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
+
+    // Solo una entrega NO_RECIBIDA pasa a REVISION
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entrega.mandarARevision("Admin Carlos"));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
+  }
+
+  @Test
   void testIniciarRutaConChoferVacioLanzaExcepcion() {
     Entrega entrega =
         new Entrega(

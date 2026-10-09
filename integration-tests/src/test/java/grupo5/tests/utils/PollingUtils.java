@@ -239,4 +239,65 @@ public final class PollingUtils {
     }
     return entregaIdRef.get();
   }
+
+  /** Espera a que el planificador asigne la entrega a una ruta y devuelve el id de esa ruta. */
+  public static UUID esperarRutaAsignada(LogisticaApiClient client, UUID entregaId) {
+    AtomicReference<String> rutaIdRef = new AtomicReference<>();
+    AtomicReference<Response> lastResponse = new AtomicReference<>();
+    try {
+      Awaitility.await("Esperar que el planificador asigne una ruta a la entrega " + entregaId)
+          .atMost(Duration.ofSeconds(10))
+          .pollInterval(Duration.ofMillis(300))
+          .ignoreExceptions()
+          .until(
+              () -> {
+                Response resp = client.obtenerEntrega(entregaId);
+                lastResponse.set(resp);
+                rutaIdRef.set(resp.path("idRuta"));
+                return resp.getStatusCode() == 200 && rutaIdRef.get() != null;
+              });
+    } catch (ConditionTimeoutException e) {
+      Response r = lastResponse.get();
+      String details =
+          (r != null)
+              ? "Status: " + r.getStatusCode() + ", Body: " + r.asString()
+              : "Sin respuesta";
+      throw new AssertionError(
+          "Timeout esperando ruta asignada para la entrega "
+              + entregaId
+              + ". Última respuesta: "
+              + details,
+          e);
+    }
+    return UUID.fromString(rutaIdRef.get());
+  }
+
+  public static void esperarBajaDonanteEnIncentivos(IncentivosApiClient client, UUID donanteId) {
+    AtomicReference<Response> lastResponse = new AtomicReference<>();
+    try {
+      Awaitility.await("Esperar baja de donante en incentivos " + donanteId)
+          .atMost(Duration.ofSeconds(5))
+          .pollInterval(Duration.ofMillis(100))
+          .ignoreExceptions()
+          .until(
+              () -> {
+                Response resp = client.obtenerMetricas(donanteId);
+                lastResponse.set(resp);
+                int code = resp.getStatusCode();
+                return code == 400 || code == 404;
+              });
+    } catch (ConditionTimeoutException e) {
+      Response r = lastResponse.get();
+      String details =
+          (r != null)
+              ? "Status: " + r.getStatusCode() + ", Body: " + r.asString()
+              : "Sin respuesta";
+      throw new AssertionError(
+          "Timeout esperando baja de donante en incentivos "
+              + donanteId
+              + ". Última respuesta: "
+              + details,
+          e);
+    }
+  }
 }

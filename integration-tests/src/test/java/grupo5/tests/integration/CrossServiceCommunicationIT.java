@@ -132,10 +132,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     donacionesClient.eliminarDonante(donanteId).then().statusCode(204);
 
     // 3. Verificar que el perfil esté eliminado o no disponible en incentivos
-    incentivosClient
-        .obtenerMetricas(donanteId)
-        .then()
-        .statusCode(anyOf(equalTo(400), equalTo(404)));
+    PollingUtils.esperarBajaDonanteEnIncentivos(incentivosClient, donanteId);
   }
 
   @Test
