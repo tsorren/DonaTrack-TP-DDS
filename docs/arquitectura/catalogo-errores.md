@@ -213,12 +213,14 @@
 | `ERR-EST-107` | `JURIDICA_SIN_REPRESENTANTES_RESTANTES` | Operación dejaría a la jurídica sin representantes | `409` | |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
 | `ERR-EST-409` | `ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA` | Fragmentación de ítem independiente inválida | `409` | |
+| `ERR-EST-413` | `SOLICITUD_ENTREGA_TRANSICION_INVALIDA` | Transición de estado de solicitud de entrega a logística inválida (broker) | `409` | |
 | `ERR-EST-515` | `SIN_PERIODO_ACTIVO` | No existe período activo para la operación | `409` | |
 | `ERR-EST-702` | `DONANTE_INCENTIVOS_NO_ENCONTRADO` | Donante no encontrado en servicio de incentivos | **`404`** | Excepción especial en handler |
 | `ERR-EST-708` | `INSIGNIA_NO_ENCONTRADA` | Insignia no encontrada | **`404`** | Excepción especial en handler |
 | `ERR-EST-716` | `RANKING_NO_ENCONTRADO` | Ranking mensual no encontrado para el período solicitado | **`404`** | Excepción especial en handler |
 | `ERR-EST-804` | `ENTREGA_YA_ASIGNADA_A_RUTA` | La entrega ya está asignada a otra ruta | `409` | |
 | `ERR-EST-810` | `SOLICITUD_PLANIFICACION_TRANSICION_INVALIDA` | Transición de estado de solicitud de planificación inválida | `409` | |
+| `ERR-EST-816` | `ENTREGA_DONACION_DUPLICADA` | Ya existe una entrega registrada para la donación indicada | `409` | |
 
 ---
 
@@ -249,5 +251,5 @@ Estos errores no se originan en `ErrorCatalog` directamente, pero el handler los
 | `ERR-INF` | Infraestructura | 3 | `500` |
 | `ERR-CSR` | Comunes / Transversales | 4 | `400` / `404` / `500` |
 | `ERR-VAL` | Validación de dominio | 93 | `400` |
-| `ERR-EST` | Estado de negocio | 9 | `409` (excepto 702, 708 y 716 → `404`) |
-| **Total** | | **109** | |
+| `ERR-EST` | Estado de negocio | 11 | `409` (excepto 702, 708 y 716 → `404`) |
+| **Total** | | **111** | |

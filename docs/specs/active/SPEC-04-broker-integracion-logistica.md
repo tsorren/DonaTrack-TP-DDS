@@ -3,7 +3,7 @@
 > **Estado:** APPROVED_BY_USER (2026-10-07)  
 > **Nivel:** ARCHITECTURAL  
 > **Fecha:** 2026-10-07  
-> **Última modificación:** 2026-10-09: se completaron §2, §3, §5 y §7 según la plantilla de spec y se corrigió la deriva (D12/D33, compose de la demo). El estado no se promovió y §7 no pasó por design review.  
+> **Última modificación:** 2026-10-09: se completaron §2, §3, §5 y §7 según la plantilla de spec y se corrigió la deriva (D12/D33, compose de la demo). El estado no se promovió y §7 no pasó por design review. Después, el mismo día: D55 (Logística deduplica desde #886).  
 > **Rama:** `E4_donaciones_broker`  
 > **Módulos Impactados:** `donaciones-service`, `logistica-service`, `docker-compose.yml`, `docker-compose.demo.yml`, `postman/`, `docs/`  
 > **ADR:** [`20261007-broker-de-integracion-con-logistica.md`](../../adr/20261007-broker-de-integracion-con-logistica.md) y [`20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md`](../../adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md) (ambos `proposed`)  
@@ -22,7 +22,7 @@ Implementar el requerimiento «Broker de Integración con Logística» de la Ent
 
 * **donaciones-service:** broker in-process (`ILogisticaBroker`, `IProveedorLogistica`, `IEstrategiaSeleccionProveedor`), adapters AMQP y HTTP, outbox propio basado en datos (en memoria, detrás de un puerto), registro de solicitudes, procesador compartido de los eventos de vuelta (los proveedores informan por mensajería, no por HTTP: D50), verificación del origen de esos eventos (`VerificadorOrigenEventos`, token por proveedor en headers: D51), controller de administración del proveedor preferido (recortable), `ApiKeyFilter`, cableado en `PropuestaDeAsignacionService`.
 * **Contrato:** comando `EntregaSolicitadaV1` (`entrega.solicitada.<proveedorId>.v1`) + JSON Schema.
-* **logistica-service:** consumir el comando en lugar de `donacion.asignada.v1` (cola y binding por `LOGISTICA_INSTANCIA_ID`); firmar sus eventos de vuelta con `X-Proveedor-Id`/`X-Proveedor-Token` (D51) y publicarlos con el alias de la routing key en `__TypeId__` (D52). La deduplicación por donación en `POST /api/entregas` se evaluó y se revirtió (D33).
+* **logistica-service:** consumir el comando en lugar de `donacion.asignada.v1` (cola y binding por `LOGISTICA_INSTANCIA_ID`); firmar sus eventos de vuelta con `X-Proveedor-Id`/`X-Proveedor-Token` (D51) y publicarlos con el alias de la routing key en `__TypeId__` (D52). La deduplicación por donación en `POST /api/entregas` se evaluó y se revirtió desde el broker (D33); después la agregó el equipo de logística en #886 (409, `ERR-EST-816`, D55).
 * **Demo:** segunda instancia de `logistica-service` (`logistica-externo`, `LOGISTICA_INSTANCIA_ID=externo`) en `docker-compose.demo.yml`, usada como proveedor HTTP, y la colección `postman/flujo-9-broker-logistica.json` con su guion.
 * **Docs:** ADRs, catálogo de mensajes, matriz productor-consumidor, diagrama de componentes, `DEUDA_TECNICA.md`, índices.
 
@@ -72,7 +72,7 @@ Resumidas; el detalle y la justificación están en los ADRs y en la bitácora (
 | D9 | Segunda instancia de Logística para la demo. |
 | D10 | Rechazado → siguiente proveedor; incierto → mismo proveedor. |
 | D11 | El relay espera el acuse (`CorrelationData`); sin `ReturnsCallback` que dispare reenvíos. |
-| D12 | ~~`POST /api/entregas` deduplica por donación (409).~~ Revertida por D33: nuestra Logística se alcanza solo por AMQP, donde el listener ya deduplica, y la idempotencia de un proveedor HTTP es requisito de su contrato. |
+| D12 | ~~`POST /api/entregas` deduplica por donación (409).~~ Revertida por D33: nuestra Logística se alcanza solo por AMQP, donde el listener ya deduplica, y la idempotencia de un proveedor HTTP es requisito de su contrato. Desde #886 el 409 existe, agregado por el equipo de logística (D55). |
 | D50 | Los proveedores informan solo por mensajería (`logistica.exchange`). HTTP queda solo de ida. Se quitó el callback HTTP. |
 | D51 | Identidad del proveedor en los eventos de vuelta: `X-Proveedor-Id` y `X-Proveedor-Token`, verificados en Donaciones con falla cerrado. |
 | D52 | Logística publica sus eventos de vuelta con el alias de la routing key en `__TypeId__`, no con el nombre de su clase. |

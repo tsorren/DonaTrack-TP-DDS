@@ -2299,7 +2299,7 @@
           ]
         }
       ],
-      "description": "ANTES de correrla: recrear donaciones con LOGISTICA_EXTERNA_READ_TIMEOUT_MS=1 (ver guion) y correr también la carpeta 0. El broker nunca pasa a otro proveedor ante un timeout: reintenta con el mismo (ver el log). Espera ~25 s para que ocurran reintentos y verifica que donatrack no recibió nada. Las entregas en externo son informativas: si externo llegó a procesar antes del corte, cada reintento crea otra (no deduplica, D33)."
+      "description": "ANTES de correrla: recrear donaciones con LOGISTICA_EXTERNA_READ_TIMEOUT_MS=1 (ver guion) y correr también la carpeta 0. El broker nunca pasa a otro proveedor ante un timeout: reintenta con el mismo (ver el log). Espera ~25 s para que ocurran reintentos y verifica que donatrack no recibió nada. Las entregas en externo son informativas: si externo llegó a procesar antes del corte, queda como mucho una (desde #886 POST /api/entregas deduplica con 409, D55)."
     }
   ],
   "variable": [

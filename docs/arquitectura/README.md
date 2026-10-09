@@ -16,7 +16,7 @@ docs/arquitectura/
 ├── principios-diseno-arquitectura.md      # 🏛️ Documento Maestro: Atributos de calidad, SOLID, GRASP, DDD
 ├── shared-kernel.md                       # 🏗️ Núcleo compartido (common-lib): CrudRepository, DTOs neutros
 ├── logging-trazabilidad.md                # 📊 Observabilidad distribuida: traceId, MDC, NDJSON
-├── catalogo-errores.md                    # ⚠️ Catálogo unificado de 109 códigos de error
+├── catalogo-errores.md                    # ⚠️ Catálogo unificado de 111 códigos de error
 ├── guia-patrones-diseno.md                # 🧩 Catálogo de patrones de diseño aplicados
 ├── analisis-arquitectonico.md             # 🔍 Diagnóstico estructural del monorepo
 │
@@ -41,7 +41,7 @@ docs/arquitectura/
 * [**Principios de Diseño y Arquitectura**](principios-diseno-arquitectura.md): Fundamentación teórica de los 8 atributos de calidad (Disponibilidad, Mantenibilidad, Modificabilidad, Seguridad, Rendimiento, Testeabilidad, Escalabilidad, Auditabilidad), principios SOLID, GRASP, patrones GoF y fitness checks operacionales.
 * [**Shared Kernel (`common-lib`)**](shared-kernel.md): Reglas de gobierno para componentes transversales, contratos de repositorio (`CrudRepository`), excepciones unificadas y trazabilidad.
 * [**Logging y Trazabilidad**](logging-trazabilidad.md): Propagación de `traceId`, MDC en Spring Boot, interceptores Feign y observabilidad estructurada.
-* [**Catálogo Unificado de Errores**](catalogo-errores.md): Normalización exhaustiva de los 109 códigos de error estructurados del sistema (`ERR-INF`, `ERR-CSR`, `ERR-VAL`, `ERR-EST`).
+* [**Catálogo Unificado de Errores**](catalogo-errores.md): Normalización exhaustiva de los 111 códigos de error estructurados del sistema (`ERR-INF`, `ERR-CSR`, `ERR-VAL`, `ERR-EST`).
 * [**Guía de Patrones de Diseño**](guia-patrones-diseno.md): Catálogo de patrones GoF aplicados (State Machine, Strategy, Template Method, Observer, Factory, Adapter).
 * [**Análisis Arquitectónico**](analisis-arquitectonico.md): Diagnóstico estructural de acoplamiento, cohesión y modularidad del monorepo.
 
