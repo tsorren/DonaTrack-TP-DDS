@@ -1,0 +1,143 @@
+@startuml 08-despliegue
+' ============================================================
+' Figura 8 — Despliegue.
+' Pregunta: ¿dónde corre cada pieza, local y en la nube?
+' (a) Local y preprod con docker compose. (b) Nube para Logística.
+' Notación UML 2: cada contenedor es un entorno de ejecución (node «container»)
+' con la imagen desplegada adentro (artifact). El estereotipo del artifact
+' («servicio», «simulado», «infraestructura») es el mismo que en la Figura 1.
+' GHCR, la base de Postgres, Neon y CloudAMQP van como node «infraestructura» (entorno de ejecución)
+' y las imágenes como artifact: no se usa el símbolo database de PlantUML, que no es UML.
+' Las aristas AMQP y JDBC llevan solo el protocolo; puerto y rol están en la leyenda.
+' Las aristas hacia rabbitmq, postgres, minio y n8n son largas (--->): bajan en diagonal y
+' no comparten un tramo horizontal (DG-m5).
+' Fuentes: docker-compose.yml, docker-compose.preprod.yml, docker-compose.demo.yml,
+'          */Dockerfile, .github/workflows/{main,merge}.yml en baseline/e4-prs.
+'   Imágenes: local = donatrack/<servicio>:local (target local);
+'   preprod en CI = ghcr.io/<repo>/<servicio>:pr-N (o el tag de la rama base),
+'   re-etiquetada donatrack/<servicio>:preprod (target ci). logistica-externo usa
+'   la imagen de logistica-service.
+'   Healthchecks: todos los servicios de los compose salvo adminer (local) y k6 (perfil perf).
+' Nube: la única huella en el repo es el comentario "Render" de
+'       logistica-service/src/main/resources/db/migration/V2__orden_visita_rutas.sql.
+'       Neon y CloudAMQP son la plataforma elegida; URL y credenciales están fuera del repo.
+'       Que Donaciones comparta CloudAMQP con Logística es configuración pendiente:
+'       no hay evidencia en el repo, por eso va como nota y no como conexión.
+' ============================================================
+!pragma layout smetana
+!include estilo-e4.iuml
+
+title Figura 8 — Despliegue: local y preprod con docker compose, Logística en la nube
+
+node "GitHub Actions (CI)" as ci <<infraestructura>> {
+  artifact "imagen OCI por servicio\n(Dockerfile multi-stage:\nJRE 21 alpine · uid 1001)" as imgCi
+}
+node "GHCR (registro de imágenes OCI)" as ghcr <<infraestructura>> {
+  artifact "ghcr.io/<repo>/<servicio>\ntags pr-N · <rama> · sha · latest" as aGhcr
+}
+
+frame "(a) Local y preprod — docker compose" as fLocal {
+  node "Host Docker\nred donatrack-network (local) · preprod-network (CI)" as host {
+    node "donaciones-service :8080\nen memoria" as cDon <<container>> {
+      artifact "donatrack/\ndonaciones-service" as aDon <<servicio>>
+    }
+    node "logistica-service :8083\nperfil postgres · instancia donatrack" as cLog <<container>> {
+      artifact "donatrack/\nlogistica-service" as aLog <<servicio>>
+    }
+    node "incentivos-service :8082\nperfil postgres" as cInc <<container>> {
+      artifact "donatrack/\nincentivos-service" as aInc <<servicio>>
+    }
+    node "notificaciones-service :8081\nperfil postgres" as cNot <<container>> {
+      artifact "donatrack/\nnotificaciones-service" as aNot <<servicio>>
+    }
+    node "logistica-externo :8084\nen memoria · instancia externo\nsolo docker-compose.demo.yml" as cExt <<container>> {
+      artifact "donatrack/\nlogistica-service" as aExt <<simulado>>
+    }
+    node "rabbitmq :5672\n(+ :15672 solo local)" as cRmq <<container>> {
+      artifact "rabbitmq:3.13" as aRmq <<infraestructura>>
+    }
+    node "postgres :5432\nbase donatrack, un schema y un rol\npor servicio" as cPgNode <<container>> {
+      artifact "postgres:16-alpine" as aPg <<infraestructura>>
+    }
+    node "minio :9000 / :9001\nbucket insignias" as cMinio <<container>> {
+      artifact "chainguard/minio" as aMinio <<infraestructura>>
+    }
+    node "n8n :5678" as cN8n <<container>> {
+      artifact "n8nio/n8n:2.37.7" as aN8n <<infraestructura>>
+    }
+    node "adminer :8085\n(solo local)" as cAdm <<container>> {
+      artifact "adminer" as aAdm <<infraestructura>>
+    }
+  }
+}
+cloud "Internet\nhttpbin.org (mock de red social)" as inet
+
+actor "Cliente web\n(navegador o Postman)" as web
+
+frame "(b) Nube — Logística (URL pública: PENDIENTE)" as fCloud {
+  node "Render — Web Service" as render <<infraestructura>> {
+    node "logistica-service\nperfil postgres · puerto ${PORT}" as rLog <<container>> {
+      artifact "imagen de\nlogistica-service" as aRLog <<servicio>>
+    }
+  }
+  node "Neon\nPostgreSQL gestionado\n(schema logistica)" as neon <<infraestructura>>
+  node "CloudAMQP\nRabbitMQ gestionado" as cloudamqp <<infraestructura>>
+  note as nCloud
+    R4 y H7: contenedor desplegado,
+    accesible por URI; puede estar pausado.
+    URL, credenciales y configuración
+    de Render, Neon y CloudAMQP:
+    fuera del repo. URL: pendiente.
+  end note
+  note as nAmqp
+    Integración en la nube: Donaciones y
+    Logística deben compartir este RabbitMQ.
+    Configuración pendiente, sin evidencia
+    en el repo (T16 del documento).
+  end note
+}
+
+' ---------- Imágenes ----------
+ci --> ghcr : publica imágenes\n(merge.yml, docker-build)
+ghcr --> host : pull pr-N o tag de rama\n(preprod efímero en CI)
+ghcr ......> render : origen de la imagen\nfuera del repo (pendiente)
+
+' ---------- Conexiones locales ----------
+cDon ---> cRmq : AMQP
+cLog ---> cRmq : AMQP
+cInc ---> cRmq : AMQP
+cNot ---> cRmq : AMQP
+cExt ---> cRmq : AMQP
+cLog ---> cPgNode : JDBC
+cInc ---> cPgNode : JDBC
+cNot ---> cPgNode : JDBC
+cInc ---> cMinio : S3/HTTP
+cInc ---> cN8n : HTTP webhooks
+cDon --> cExt : HTTP POST /api/entregas
+cAdm ---> cPgNode : SQL
+cN8n --> inet : HTTP POST
+
+' ---------- Nube ----------
+web --> rLog : HTTPS <URL pendiente>
+rLog --> neon : JDBC
+rLog --> cloudamqp : AMQP
+nAmqp .. cloudamqp
+
+legend right
+  |= Elemento |= Significado |
+  | node «container» | Entorno de ejecución: un contenedor Docker |
+  | artifact | Imagen desplegada en el contenedor |
+  |<#E6EEF8> «servicio» | Imagen de un microservicio DonaTrack |
+  |<#F3F3F3> «simulado» | Imagen de logistica-service como 2ª instancia (proveedor externo) |
+  |<#F2F2F2> «infraestructura» | Imagen o plataforma de infraestructura |
+  | frame | Entorno de despliegue |
+  | cloud | Internet: servicio de terceros, fuera de DonaTrack |
+  | ──> | Conexión de red, con su protocolo |
+  | - - -> | Relación no documentada en el repo (pendiente) |
+  AMQP va al 5672 de rabbitmq. JDBC va al 5432 de postgres, con el rol de cada servicio
+  (logistica_user, incentivos_user, notificaciones_user).
+  Healthchecks en todos los contenedores salvo adminer y k6; depends_on espera service_healthy.
+  Preprod (CI): imágenes target ci, Postgres sin volumen,
+  RabbitMQ sin management, k6 solo con el perfil perf.
+endlegend
+@enduml

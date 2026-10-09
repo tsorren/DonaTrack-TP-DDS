@@ -1,0 +1,98 @@
+@startuml 05-secuencia-planificacion
+' Figura 5 — ¿Cómo se planifican las rutas en lotes y con callback?
+' Verificado contra baseline/e4-prs (844ec4b9). Requisitos: H3 · H4 · H5.
+' Los límites de transacción van como group con rótulo, no como critical: en UML 2, critical es una
+' región que no se intercala con otras, no un bloque atómico.
+!include estilo-e4.iuml
+skinparam maxMessageSize 230
+hide footbox
+
+title Figura 5 — Planificación de rutas en lotes de hasta 100, con callback
+autonumber
+
+box "Logística DonaTrack" #F5F8FC
+  participant "Scheduler de\nplanificación" as sched
+  participant "Servicio de\nplanificación" as plan
+  database "Base de Logística\n(PostgreSQL con perfil postgres;\nen memoria por defecto)" as db
+  participant "API de callback" as cb <<adapter>>
+  participant "Planificador\nde rutas" as ext <<simulado>>
+  participant "Publicador\nde hechos" as pub <<adapter>>
+end box
+queue "RabbitMQ\n(message broker)" as mq
+participant "Donaciones" as don <<servicio>>
+
+== Disparo en horario de baja carga (H5) ==
+alt disparo programado
+  sched -> plan : iniciar planificación (fecha objetivo: mañana)
+  note right of sched : cron logistica.planificacion.cron.expression\ndefault 0 0 2 * * ? (02:00)
+else disparo manual (solo demo)
+  [-> plan : POST /api/logistica/planificaciones/ejecuciones\n(solo con manual-enabled=true;\ndefault false)
+end
+
+group transacción de planificación (commit al final)
+  plan -> db : entregas sin ruta
+  db --> plan : entregas pendientes
+  alt no hay entregas
+    plan -> plan : fin (log)
+  else no hay camiones o choferes disponibles
+    plan -> plan : se pospone (aviso en el log)
+  else hay entregas y recursos
+    plan -> plan : particionar en lotes de ≤ 100 (H4)\nmín(max-donaciones-por-lote, 100)
+    loop por lote
+      plan -> db : guardar solicitud PENDIENTE\ncon la URL de callback
+      plan -> plan : registrar «solicitud registrada»\n(despacho diferido al commit)
+    end
+  end
+  plan -> db : commit
+end
+
+== Después del commit: pedido al planificador (H3) ==
+loop por solicitud registrada
+  plan ->> ext : pedir planificación asíncrona\n(lote, camiones, choferes, URL de callback)
+end
+note over plan, ext : Pool acotado: 2 a 5 hilos, cola de 50.\nCon la cola llena corre en el hilo del scheduler (contrapresión).
+ext -> ext : ordenar entregas y\nasignarlas a camiones y choferes
+alt planificación exitosa
+  ext -> cb : HTTP POST {logistica.self.base-url}\n/api/logistica/callback/rutas\n(OK; por camión: chofer, fecha\ny entregas en orden)
+else error del planificador
+  ext -> cb : HTTP POST .../api/logistica/callback/rutas\n(ERROR, motivo)
+end
+cb -> plan : procesar callback
+
+group transacción del callback (commit al final)
+  alt solicitud ya PROCESADA (callback repetido)
+    plan --> cb : estado actual, sin reprocesar
+  else callback con ERROR
+    plan -> db : solicitud ERROR
+  else callback OK
+    plan -> plan : validar: sin camión, chofer ni entrega\nrepetidos; una sola fecha
+    plan -> plan : crear rutas y paradas\nen el orden recibido
+    plan -> db : guardar rutas y entregas;\nsolicitud PROCESADA
+    plan -> pub : registrar ruta.asignada por entrega\n(diferido al commit)
+  end
+  plan -> db : commit
+end
+cb --> ext : 200 + estado de la solicitud
+note right of ext : Si el callback falla: solo log, sin reintento.\nLa solicitud queda PENDIENTE y sus entregas\nvuelven a entrar en la corrida siguiente.
+
+== Después del commit del callback ==
+loop por entrega asignada
+  pub -[#5E4B8B]>> mq : ruta.asignada en logistica.exchange\nX-Proveedor-Id · X-Proveedor-Token
+end
+note over pub, mq : Sin outbox ni publisher confirms:\nventana de pérdida (DTI-16)
+mq -[#5E4B8B]>> don : cola donaciones.ruta.asignada
+don -> don : verifica origen →\nlista para entregar
+
+legend bottom left
+  |= Notación |= Significado |
+  | flecha continua, punta llena | llamada sincrónica en proceso o HTTP |
+  | flecha negra continua, punta abierta | llamada asíncrona en proceso (pool de hilos) |
+  | <color:#5E4B8B>flecha violeta continua, punta abierta</color> | mensaje asíncrono AMQP, en el sentido del mensaje |
+  | flecha discontinua | respuesta |
+  | group «transacción» | límite de una transacción local: los cambios se confirman juntos en el commit |
+  | <<adapter>> verde | adaptador de entrada o de salida: API de callback, publicador de hechos |
+  | <<simulado>> | simula al planificador externo dentro del proceso; llama por HTTP al callback propio |
+  Logística no invoca a Donaciones (H1): solo publica en su exchange.
+  El único HTTP saliente de Logística es el del planificador simulado hacia su propio callback.
+endlegend
+@enduml

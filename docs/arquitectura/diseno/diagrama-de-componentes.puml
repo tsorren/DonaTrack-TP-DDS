@@ -1,148 +1,221 @@
 @startuml diagrama-de-componentes
 ' ============================================================
-' Diagrama de componentes de DonaTrack (Entrega 4)
-' Incluye los componentes de integración: mensajería RabbitMQ (pub/sub de eventos y comando
-' dirigido del broker), Broker de Integración con Logística, vuelta de proveedores por mensajería,
-' webhooks a n8n y el planificador externo de rutas.
-' ADRs: 20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones,
-'       20261007-broker-de-integracion-con-logistica
+' Diagrama de componentes de DonaTrack — Entrega 4 (entregable 4).
+' Pregunta: ¿qué componentes hay, qué interfaces proveen y requieren,
+' y por qué canal se conectan?
+' Nivel: servicio. Excepciones, como subcomponentes de su dueño:
+'   el broker de integración, el publicador de eventos y el procesador de eventos de logística
+'   (Donaciones), el planificador de rutas simulado (Logística) y los medios de notificación
+'   simulados (Notificaciones). Los dos simulados corren en el proceso de su servicio (Figuras 5 y 6).
+' Clases de referencia en baseline/e4-prs:
+'   Broker de integración = services/impl/LogisticaBroker + SeleccionPorPreferenciaConFallback,
+'     infrastructure/outbox/LogisticaOutbox*, infrastructure/logistica/ProveedorLogistica{Amqp,Http};
+'   Procesador de eventos de logística (la vuelta; no es parte del broker) =
+'     infrastructure/logistica/LogisticaEventListener -> services/impl/VerificadorOrigenEventos
+'     -> infrastructure/logistica/ProcesadorEventosLogistica (dedup en memoria);
+'   Publicador de eventos = infrastructure/events/DonacionesEventPublisher (Donaciones);
+'   Planificador de rutas = infrastructure/clients/ProveedorExternoPlanificacionSimulado (Logística);
+'   Medios de notificación = infrastructure/adapters/*AdapterSimulado (Notificaciones);
+'   Admin del broker = controllers/impl/LogisticaProveedorController
+'     (GET /api/logistica/proveedores, PUT /api/logistica/proveedor-preferido, X-API-Key).
+' RabbitMQ va como una sola caja con una interfaz por exchange.
+' El detalle de colas, routing keys y DLQ está en docs/entrega-4/arquitectura/diagramas/03-integracion-amqp.puml.
+' T19: la vuelta de la instancia externo depende de LOGISTICA_SELF_BASE_URL, que
+'   docker-compose.demo.yml no fija (su callback apunta a localhost:8083).
+' Fuente de verdad: baseline/e4-prs (ENTREGA_4 + PRs #887, #889, #892).
+' ADRs: 20260911 (pub/sub hacia Notificaciones), 20261007 (broker de integración),
+'       20261008 (vuelta de proveedores por mensajería con identidad).
+' Layout (smetana, sin Graphviz), de arriba hacia abajo:
+'   "--" baja una fila, "-" queda en la misma fila; más guiones = arista más larga.
+'   Columnas invisibles fijan el orden Donaciones · Logística · Datos · Notificaciones e Incentivos.
+'   PostgreSQL va en su propia columna, entre Logística y Notificaciones y por encima de los
+'   exchanges: el JDBC ya no atraviesa la franja AMQP. Por eso las aristas JDBC son cortas (--()
+'   y las AMQP de Logística, Notificaciones e Incentivos, largas (----().
+'   logistica.exchange va fuera del rectángulo Infraestructura, a su izquierda: la alcanzan
+'   Donaciones, Logística y Logística externa sin cruzar las líneas de Notificaciones e Incentivos.
+'   Cruces entre conectores (contados sobre el SVG, ronda 4): 6; la versión anterior tenía 10.
+'     - Rutas y entregas -> logistica.exchange cruza las dos líneas de Donaciones a donaciones.exchange (2).
+'     - Procesador de eventos -> logistica.exchange cruza Adapter AMQP -> donaciones.exchange (1).
+'     - El JDBC de Incentivos cruza las dos sub de Notificaciones (2).
+'     - sub 5 colas de Incentivos cruza la sub de incentivos.exchange de Notificaciones (1).
+'   Por qué quedan: donaciones.exchange recibe a los cuatro servicios, y RabbitMQ y PostgreSQL
+'   son hubs compartidos. Logística, Notificaciones e Incentivos se conectan los tres con
+'   donaciones.exchange, RabbitMQ y PostgreSQL: es un K3,3, que no se dibuja sin al menos un cruce.
+'   Donaciones y Logística comparten los dos exchanges de RabbitMQ (K2,3), igual que Notificaciones
+'   e Incentivos: con los servicios en fila y RabbitMQ debajo, cada par deja un cruce como mínimo.
+'   Se probaron unas 740 variantes de agrupación, largo de aristas y aristas ocultas; ninguna
+'   bajó de 6. Las ocultas horizontales y el orden de declaración no cambian el orden en smetana.
+'   iDonRest se declara antes que iAdmin: así el broker queda a la izquierda de Donaciones,
+'   sobre el proveedor externo, y el Adapter HTTP no cruza las líneas AMQP de Donaciones.
+'   Las aristas de Donaciones son más largas: sus líneas bajan en diagonal y no corren
+'   pegadas al borde de las cajas. El proveedor externo va más abajo por lo mismo.
+'   Las aristas JDBC no llevan rótulo en el tramo del socket (el nombre está en iJdbc -- pg).
+'   El rótulo del admin del broker lleva espacios duros (U+00A0) a los costados:
+'   smetana no reserva el margen del borde de Donaciones y, sin ellos, el texto lo pisa.
+'   El callback de rutas es parte de la REST de Logística (PlanificacionController,
+'   POST /api/logistica/callback/rutas); el planificador simulado lo llama por HTTP (Figura 5).
 ' ============================================================
-' Misma paleta que common/donatrack-style.puml (no se incluye: ese estilo es para diagramas de clases).
-skinparam backgroundColor #FFFFFF
-skinparam shadowing false
-skinparam componentStyle uml2
-skinparam component {
-  BackgroundColor #FFFFFF
-  BorderColor #444444
-  BackgroundColor<<broker>> #FDEEBB
-  BorderColor<<broker>> #C99A1E
-  BackgroundColor<<adapter>> #CFF5EA
-  BorderColor<<adapter>> #2E9E7C
-  BackgroundColor<<listener>> #DCEEFB
-  BorderColor<<listener>> #3B82C4
-}
-skinparam queue {
-  BackgroundColor #F5F5F5
-  BorderColor #777777
-}
-skinparam linetype polyline
+!pragma layout smetana
+!include ../../entrega-4/arquitectura/diagramas/estilo-e4.iuml
 
-actor "Administrador /\nCliente liviano" as usuario
+title Figura 1 — DonaTrack: diagrama de componentes (Entrega 4)
 
-cloud "Planificador externo\nde rutas" as planificador
-cloud "Proveedor de logística\nHTTP (externo)" as proveedorHttp
-cloud "Redes sociales" as redes
+' ---------- Clientes (planificados) ----------
+component "Cliente Liviano\n(Entrega 5)" as cli <<planificado>>
+component "Autenticación\nauth-service (Entrega 6)" as auth <<planificado>>
+interface " " as iAuth
 
-node "RabbitMQ" as rabbit {
-  frame "donaciones.exchange\n(TopicExchange)" as exDon {
-    queue "notificaciones.donaciones" as qNotifDon
-    queue "incentivos.*\n(donante, donación, persona)" as qIncDon
-    queue "logistica.<instancia>.\nentregas.solicitadas\n(binding exacto)" as qLogEntregas
+' ---------- Columnas invisibles (#line:transparent): solo ordenan el layout ----------
+
+' Columna izquierda: Donaciones y, debajo del Adapter HTTP, el proveedor externo.
+rectangle " " as colDon #line:transparent {
+  interface " " as iDonRest
+  interface " " as iAdmin
+  component "Donaciones :8080" as don <<servicio>> {
+    component "Núcleo de donaciones\n(asignación y estados)" as donCore
+    component "Publicador\nde eventos\nde dominio" as donPub <<adapter>>
+    component "Procesador de\neventos de logística\n(verificador de origen\n+ dedup en memoria)" as procLog
+    component "Broker de integración con logística" as broker <<broker de integración>> {
+      component "Selección de proveedor\n(preferido + fallback)\noutbox y relay\nen memoria" as brSel
+      component "Adapter HTTP" as adHttp <<adapter>>
+      component "Adapter AMQP\n(confirms +\nmandatory)" as adAmqp <<adapter>>
+    }
   }
-  frame "incentivos.exchange\n(TopicExchange)" as exInc {
-    queue "notificaciones.incentivos" as qNotifInc
+  rectangle "Proveedor externo (simulado)" as gExtLog {
+    component "Logística externa :8084\n(2ª instancia de\nlogistica-service)" as logExt <<simulado>>
+    interface " " as iExt
   }
-  frame "logistica.exchange\n(TopicExchange)" as exLog {
-    queue "donaciones.ruta.*\ndonaciones.entrega.*" as qDonLog
+}
+
+' Segunda columna: Logística DonaTrack.
+rectangle " " as colLog #line:transparent {
+  interface " " as iLogRest
+  component "Logística DonaTrack :8083\n(instancia donatrack)" as log <<servicio>> {
+    component "Rutas y\nentregas" as logCore
+    component "Planificador\nde rutas" as plan <<simulado>>
   }
-  queue "notificaciones.dlx → *.dlq" as dlq
 }
 
-package "donaciones-service :8080" as donaciones {
-  component "API REST\n(controllers)" as donApi
-  component "PropuestaDeAsignacionService" as propuestas
-  component "DonacionesEventPublisher" as donPublisher <<adapter>>
+' Columna de datos: PostgreSQL entre Logística y Notificaciones, por encima de los exchanges.
+rectangle " " as colDat #line:transparent {
+  interface " " as iJdbc
+  database "PostgreSQL 16\nun schema y un rol\npor servicio" as pg
+}
 
-  package "Broker de Integración con Logística" as brokerPkg {
-    component "LogisticaBroker" as broker <<broker>>
-    component "SeleccionPorPreferenciaConFallback\n(Strategy)" as estrategia <<broker>>
-    component "Outbox del broker\n+ LogisticaOutboxRelay" as relay <<broker>>
-    component "ProveedorLogisticaAmqp" as adapterAmqp <<adapter>>
-    component "ProveedorLogisticaHttp" as adapterHttp <<adapter>>
-    component "LogisticaProveedorController\n+ ApiKeyFilter\n(administración)" as adminBroker <<adapter>>
+' Tercera columna: Notificaciones, Incentivos y, debajo, la infraestructura y lo que solo usa Incentivos.
+rectangle " " as colMid #line:transparent {
+  interface " " as iNotRest
+  component "Notificaciones :8081" as not <<servicio>> {
+    component "Consumo\ny envío" as notCore
+    component "Medios de\nnotificación\ncorreo · SMS ·\nWhatsApp" as medios <<simulado>>
   }
-
-  component "LogisticaEventListener" as donListener <<listener>>
-  component "ProcesadorEventosLogistica\n(idempotente)" as procesador
+  rectangle "Infraestructura" as gInf {
+    component "RabbitMQ :5672\n(message broker)" as rmq <<infraestructura>>
+    interface " " as iExDon
+    interface " " as iExInc
+  }
+  interface " " as iIncRest
+  component "Incentivos :8082" as inc <<servicio>>
+  interface " " as iS3
+  component "MinIO :9000\n(bucket insignias)" as minio <<infraestructura>>
+  component "n8n :5678" as n8n <<infraestructura>>
+  component "Red social\n(mock: httpbin.org)" as red <<externo>>
+  interface " " as iWebhooks
 }
 
-package "logistica-service :8083\n(instancia donatrack)" as logistica {
-  component "EntregaSolicitadaEventListener" as logListener <<listener>>
-  component "API REST\n(camiones, rutas, entregas)" as logApi
-  component "Planificación de rutas\n(scheduler + callback)" as logPlan
-  component "Publicador de eventos\nde logística" as logPublisher <<adapter>>
-}
+' logistica.exchange, fuera de Infraestructura (ver Layout en la cabecera).
+interface " " as iExLog
 
-package "notificaciones-service :8081" as notificaciones {
-  component "DonacionEventListener /\nIncentivoEventListener" as notifListener <<listener>>
-  component "NotificacionService\n(Transactional Inbox)" as notifService
-  component "Medios: correo,\nSMS, WhatsApp" as medios <<adapter>>
-}
-database "PostgreSQL\n(schema notificaciones)" as postgres
+' Las interfaces no llevan nombre propio: el nombre va en el tramo lollipop
+' (interfaz -- proveedor) para que smetana reserve su espacio y no se encime.
+' ---------- Fila 0 → 1: clientes planificados → REST ----------
+cli -[#9A9A9A,dotted]-( iDonRest
+cli -[#9A9A9A,dotted]-( iLogRest
+cli -[#9A9A9A,dotted]-( iNotRest
+cli -[#9A9A9A,dotted]-( iIncRest
+cli -[#9A9A9A,dotted]-( iAuth
+auth -- iAuth : Autenticación
 
-package "incentivos-service :8082" as incentivos {
-  component "Listeners de donaciones" as incListener <<listener>>
-  component "Misiones, insignias\ny rankings" as incDominio
-  component "Publicador de\nincentivos" as incPublisher <<adapter>>
-  component "Cliente n8n" as incN8n <<adapter>>
-}
-node "n8n" as n8n
+' ---------- Fila 1 → 2: interfaces provistas (lollipop) ----------
+iDonRest -- donCore : REST Donaciones\n/api/donaciones, …
+iAdmin -- broker :       Admin del broker (X-API-Key)                \n      GET /api/logistica/proveedores                \n      PUT /api/logistica/proveedor-preferido                
+iLogRest -- log : REST Logística\n/api/rutas,\n/api/entregas, …\ncallback de rutas:\n/api/logistica/\ncallback/rutas
+iIncRest -- inc : REST Incentivos\n/api/incentivos/**
+iNotRest -- not : REST Notificaciones\n/api/notificaciones
+iNotRest )-[#9A9A9A,dotted]- inc : REST «interino»\n(DTI-13)
 
-' --- Entrada de usuarios ---
-usuario --> donApi : REST
-usuario --> logApi : REST
-usuario --> adminBroker : REST + X-API-Key
+' ---------- Dentro de cada servicio (en proceso) ----------
+donCore --> brSel : solicita\nentrega
+brSel --> adAmqp : envía
+brSel --> adHttp : envía
+donCore <--- procLog : cambia\nestado
+donCore ---> donPub : publica
+logCore -> plan : planifica\nlotes ≤ 100
+plan -> logCore : HTTP POST\nal callback
+notCore -> medios : envía por\nmedio
 
-' --- Donaciones: eventos de dominio (pub/sub) ---
-donApi --> propuestas
-propuestas --> donPublisher : donacion.asignada.v1\n(y demás eventos)
-donPublisher --> exDon : publica eventos
-qNotifDon --> notifListener
-qIncDon --> incListener
+' ---------- Conectores sincrónicos (socket --( lollipop) ----------
+adHttp ------( iExt : HTTP
+iExt -- logExt : POST /api/entregas
+inc ---( iWebhooks : HTTP POST\nsin esperar\nrespuesta
+iWebhooks -- n8n : Webhooks
+n8n --> red : HTTP POST
+logCore --( iJdbc
+inc --( iJdbc
+notCore --( iJdbc
+iJdbc -- pg : JDBC
+inc ---( iS3 : S3/HTTP
+iS3 -- minio : S3 API
 
-' --- Broker de Integración con Logística ---
-propuestas --> broker : solicitarEntrega()
-broker --> estrategia : ordenar proveedores
-broker --> relay : entrada pendiente
-relay --> adapterAmqp : proveedor AMQP
-relay --> adapterHttp : proveedor HTTP
-adminBroker --> estrategia : cambiar preferido
-adapterAmqp --> exDon : entrega.solicitada.<id>.v1\n(mandatory + acuse)
-qLogEntregas --> logListener
-adapterHttp --> proveedorHttp : POST /api/entregas
-proveedorHttp --> exLog : informa publicando eventos\n(no llama a Donaciones por HTTP)
+' ---------- Conectores AMQP (pub = publica en el exchange, sub = consume de su cola) ----------
+donPub -[#5E4B8B,dashed]---( iExDon : pub donacion.*,\ndonante.*,\npersona.*
+adAmqp -[#5E4B8B,dashed]---( iExDon : pub comando\nentrega.solicitada.\n<id>.v1
+logCore -[#5E4B8B,dashed]----( iExDon : sub comando\nentrega.solicitada.\ndonatrack.v1
+inc -[#5E4B8B,dashed]----( iExDon : sub 5 colas\nincentivos.*\n(Figura 3)
+notCore -[#5E4B8B,dashed]----( iExDon : sub cola\nnotificaciones.\ndonaciones (+ DLQ)
+logCore -[#5E4B8B,dashed]----( iExLog : pub ruta.*,\nentrega.*
+iExLog )-[#5E4B8B,dashed]- logExt : pub ruta.*, entrega.*\ncondicional (T19)
+procLog -[#5E4B8B,dashed]---( iExLog : sub ruta.*,\nentrega.*
+inc -[#5E4B8B,dashed]----( iExInc : pub incentivo.*
+notCore -[#5E4B8B,dashed]----( iExInc : sub cola\nnotificaciones.\nincentivos (+ DLQ)
+iExLog -- rmq : logistica.\nexchange
+iExDon -- rmq : donaciones.\nexchange
+iExInc -- rmq : incentivos.\nexchange
 
-' --- Logística: planificación y vuelta ---
-logListener --> logApi : crea Entrega
-logPlan --> planificador : solicitud por lotes
-planificador --> logPlan : callback de resultados
-logPublisher --> exLog : ruta.* / entrega.*
-qDonLog --> donListener
-donListener --> procesador
-procesador --> donPublisher : en-camino / recibida /\nentrega-fallida
-
-' --- Incentivos ---
-incListener --> incDominio
-incDominio --> incPublisher
-incPublisher --> exInc : incentivo.*.v1
-qNotifInc --> notifListener
-incDominio --> incN8n
-incN8n --> n8n : webhooks
-n8n --> redes : publicación
-
-' --- Notificaciones ---
-notifListener --> notifService
-notifService --> postgres
-notifService --> medios
-qNotifDon ..> dlq : x-dead-letter
-qNotifInc ..> dlq : x-dead-letter
+note as nH1
+  **H1/H2:** Logística solo publica en logistica.exchange
+  y solo Donaciones lo consume: no invoca a Donaciones,
+  Incentivos ni Notificaciones.
+  **Vuelta:** todo proveedor publica en logistica.exchange
+  firmado con X-Proveedor-Id/Token. No hay callback HTTP
+  hacia Donaciones.
+  La de Logística externa depende de su callback de
+  planificación: sin LOGISTICA_SELF_BASE_URL no vuelve (T19).
+  **Comando por instancia:** Logística externa también liga
+  logistica.externo.entregas.solicitadas, pero nadie publica
+  ahí: el broker le habla por HTTP.
+  **Demo:** el proveedor otra (AMQP, sin instancia) muestra
+  el reenvío ante un mensaje devuelto.
+end note
 
 legend right
-  |= Color |= Rol |
-  |<#FDEEBB>| Broker de logística (decide) |
-  |<#CFF5EA>| Adapter de integración (habla con afuera) |
-  |<#DCEEFB>| Listener AMQP (entrada) |
-  Eventos: se rutean por hecho (N interesados).
-  Comando entrega.solicitada: se rutea por destinatario.
+  |= Elemento |= Significado |
+  |<#E6EEF8> «servicio» | Microservicio DonaTrack |
+  |<#FFF1CC> «broker de integración» | Elige proveedor de logística (no es RabbitMQ) |
+  |<#E1F2EC> «adapter» | Adaptador de salida: traduce a AMQP o HTTP |
+  |<#F3F3F3> «simulado» (borde discontinuo) | Existe en código y simula un externo |
+  |<#FFFFFF> «planificado» (borde punteado) | No existe en código (E5, E6) |
+  |<#F2F2F2> «infraestructura» | RabbitMQ, PostgreSQL, MinIO, n8n |
+  |<#F2F2F2> «externo» | Servicio de terceros: httpbin.org hace de red social |
+  | ──( ○ | Interfaz requerida (socket) y provista (lollipop) |
+  | - - ( ○ violeta | AMQP. pub: publica en el exchange. sub: consume de su cola |
+  | · · · gris | Interino: Feign de Incentivos, solo con incentivos.rabbitmq.enabled=false |
+  | ──> | Llamada directa sin interfaz propia (en proceso, a un mock o al callback propio) |
+  El nombre de cada interfaz va sobre el tramo ○── hacia quien la provee.
+  Socket sin rótulo: el canal es el que nombra la interfaz (REST, JDBC).
+  «simulado» dentro de un servicio: corre en su proceso y simula un externo.
+  El planificador llama por HTTP al callback de su propio servicio; los medios no usan red.
+  JDBC solo con el perfil postgres. Donaciones: JDBC «planificado», hoy 100 % en memoria.
+  Colas, routing keys y DLQ: Figura 3.
 endlegend
 @enduml

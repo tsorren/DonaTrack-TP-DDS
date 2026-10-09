@@ -1,0 +1,104 @@
+@startuml 06-secuencia-eventos-logistica
+' Figura 6 — ¿Cómo llega un hecho de Logística a una notificación sin que Logística invoque a nadie?
+' Verificado contra baseline/e4-prs (844ec4b9). Requisitos: H1 · H2 · H8.
+' La dedup de la vuelta está en ProcesadorEventosLogistica (Donaciones), después del verificador.
+' Ese procesador de eventos de logística no es parte del broker de integración (Figuras 1, 3 y 4).
+' El Núcleo no publica directo: lo hace el adapter DonacionesEventPublisher, como en la Figura 1.
+' El límite de transacción va como group con rótulo, no como critical: en UML 2, critical es una
+' región que no se intercala con otras, no un bloque atómico.
+' Confirma la recepción la entidad beneficiaria (E3 p.21): Entrega.confirmarEntrega(entidad) y negarEntrega(entidad, ...).
+' El envío por medio es asíncrono (NotificacionGestor: @Async + AFTER_COMMIT): no tiene respuesta.
+' El gestor guarda ENVIADA o FALLIDA en la notificación (repository.save); va como nota.
+!include estilo-e4.iuml
+skinparam maxMessageSize 180
+hide footbox
+
+title Figura 6 — De un hecho de Logística a una notificación, sin que Logística invoque a nadie
+autonumber
+
+actor "Chofer" as chofer
+actor "Entidad\nbeneficiaria" as entidad
+box "Logística DonaTrack" #F5F8FC
+  participant "API de rutas\ny entregas" as api
+  database "Base de\nLogística" as ldb
+  participant "Publicador\nde hechos" as lpub <<adapter>>
+end box
+queue "RabbitMQ\n(message broker)" as mq
+box "Donaciones" #F5F8FC
+  participant "Procesador de\neventos de logística\n(verificador + dedup)" as verif
+  participant "Núcleo de\ndonaciones" as nucleo
+  participant "Publicador\nde eventos" as dpub <<adapter>>
+end box
+box "Notificaciones" #F5F8FC
+  participant "Consumidor de\nnotificaciones" as ncons
+  database "Inbox\nevento_procesado" as inbox
+  participant "Medios de\nnotificación" as medios <<simulado>>
+end box
+
+== Inicio de ruta ==
+chofer -> api : PATCH /api/rutas/{id}/estado\n(EN_TRASLADO)
+group transacción de Logística (commit al final)
+  api -> api : iniciar ruta: ruta, camión, chofer\ny entregas pasan a en traslado
+  api -> ldb : guardar ruta, camión,\nchofer y entregas
+  api -> lpub : registrar ruta.iniciada\n(diferido al commit)
+  api -> ldb : commit
+end
+api --> chofer : 200
+lpub -[#5E4B8B]>> mq : ruta.iniciada en logistica.exchange\nX-Proveedor-Id · X-Proveedor-Token
+note over lpub, mq #FFE8E0 : Ventana de pérdida: publica después del commit,\nsin outbox ni publisher confirms. Si el envío falla\no el proceso cae, el hecho se pierde (DTI-16).
+
+mq -[#5E4B8B]>> verif : cola donaciones.ruta.iniciada
+verif -> verif : verificar id, token y\npertenencia de cada donación
+alt origen o pertenencia inválidos
+  verif -> verif : descarta con aviso en el log
+else origen válido
+  loop por donación de la ruta
+    verif -> verif : dedup en memoria\n(tipo · id de negocio · donación)
+    verif -> nucleo : estado → en traslado
+    nucleo -> dpub : publicar el hecho
+    dpub -[#5E4B8B]>> mq : donacion.en-camino.v1 en donaciones.exchange\nmessageId (UUID) · X-Trace-Id
+  end
+  note over nucleo : Si el envío lanza error, se reintenta\ndesde un outbox en memoria.
+end
+
+mq -[#5E4B8B]>> ncons : cola notificaciones.donaciones\n(binding donacion.#)
+ncons -> inbox : insertar messageId\n(si existe, no inserta)
+alt ya estaba registrado
+  ncons -> ncons : duplicado: se ignora
+else nuevo
+  ncons -> ncons : generar y guardar\nnotificaciones; commit
+  ncons ->> medios : después del commit, asíncrono:\nmedio predeterminado;\nsi falla, el siguiente
+  note right of medios : El resultado (ENVIADA o FALLIDA)\nse guarda en la notificación;\nno vuelve al consumidor.
+end
+note over ncons, medios : Inbox solo con perfil postgres.\nError de conversión → notificaciones.\ndonaciones.dlq vía notificaciones.dlx.
+
+== Entrega exitosa o fallida: mismo camino ==
+entidad -> api : PATCH /api/entregas/{id}/estado\n(ENTREGADA | NO_RECIBIDA):\nconfirma o informa no recibida
+api -> ldb : guardar entrega; commit
+lpub -[#5E4B8B]>> mq : entrega.exitosa | entrega.fallida\nen logistica.exchange, con identidad
+mq -[#5E4B8B]>> verif : cola donaciones.entrega.exitosa |\ndonaciones.entrega.fallida
+verif -> verif : verificar origen; dedup en memoria
+verif -> nucleo : estado → entregada | entrega fallida
+nucleo -> dpub : publicar el hecho
+dpub -[#5E4B8B]>> mq : donacion.recibida.v1 |\ndonacion.entrega-fallida.v1\nen donaciones.exchange
+note left of mq : donacion.recibida.v1 también\nva a Incentivos (incentivos.donacion-recibida)
+mq -[#5E4B8B]>> ncons : cola notificaciones.donaciones
+ncons ->> medios : mismo inbox y envío por medio predeterminado
+
+legend bottom left
+  |= Notación |= Significado |
+  | flecha continua, punta llena | llamada sincrónica (REST o en proceso) |
+  | flecha negra continua, punta abierta | llamada asíncrona en proceso |
+  | <color:#5E4B8B>flecha violeta continua, punta abierta</color> | mensaje asíncrono AMQP, en el sentido del mensaje |
+  | flecha discontinua | respuesta a una llamada sincrónica (un mensaje asíncrono no tiene respuesta) |
+  | figura de cola (cilindro acostado) | RabbitMQ (message broker) |
+  | cilindro | base de datos: schema de Logística, inbox de Notificaciones |
+  | group «transacción» | límite de una transacción local: los cambios se confirman juntos en el commit |
+  | <<adapter>> verde | publicador de hechos (Logística) o de eventos (Donaciones) hacia RabbitMQ |
+  | <<simulado>> | correo, SMS y WhatsApp simulados dentro del proceso |
+  | <back:#FFE8E0>nota salmón</back> | límite de garantía declarado en DTI-16 |
+  Logística no conoce a Notificaciones (H2) ni invoca a Donaciones (H1):
+  solo publica sus hechos en logistica.exchange. Donaciones es el único consumidor
+  y reemite hechos propios en donaciones.exchange (H8).
+endlegend
+@enduml

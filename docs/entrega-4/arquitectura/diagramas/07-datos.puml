@@ -1,0 +1,86 @@
+@startuml 07-datos
+' ============================================================
+' Figura 7 — Datos y persistencia.
+' Pregunta: ¿cómo se aíslan los datos de cada servicio?
+' Fuentes en baseline/e4-prs: persistencia/init-db/01-init-schemas-roles.sql,
+'   */src/main/resources/db/migration/*.sql, docker-compose.yml (perfil postgres y roles),
+'   donaciones-service (repositorios, outbox y dedup en memoria), incentivos-service (MinIO).
+' ADRs: 20260902 (multi-schema y roles), logistica-service/20261007 (referencias sin FK).
+' ============================================================
+!pragma layout smetana
+!include estilo-e4.iuml
+
+title Figura 7 — Datos: un schema y un rol por servicio, sin FK entre schemas
+
+component "Logística :8083\nperfil postgres" as sLog <<servicio>>
+component "Incentivos :8082\nperfil postgres" as sInc <<servicio>>
+component "Notificaciones :8081\nperfil postgres" as sNot <<servicio>>
+
+component "Donaciones :8080" as sDon <<servicio>> {
+  rectangle "Almacenes en memoria (se pierden al reiniciar)\n· 13 repositorios del dominio\n· outbox del broker + solicitudes de entrega\n· dedup de eventos de vuelta\n· reintento de 4 eventos de notificación\n· proveedor preferido" as donMem
+}
+
+node "PostgreSQL 16 — una instancia, base donatrack" as pg <<infraestructura>> {
+  frame "schema logistica\nrol logistica_user" as schLog {
+    rectangle "chofer · camion · ruta · parada_ruta\nentrega (UNIQUE id_donacion)\ncambio_estado_* (4 historiales)\nsolicitud_planificacion · solicitud_planificacion_ruta\nsolicitud_transicion_entrega\ndireccion · localidad · provincia · pais\n**evento_entrega** (base de un outbox futuro, sin relay)" as tLog
+  }
+  frame "schema incentivos\nrol incentivos_user" as schInc {
+    rectangle "donante_incentivos (persona_id único)\ndonante_* (historial, insignias,\norganizaciones, donaciones por período)\nmision (SINGLE_TABLE) · mision_categorias_donadas\nranking_mensual · ranking_mensual_entrada" as tInc
+  }
+  frame "schema notificaciones\nrol notificaciones_user" as schNot {
+    rectangle "persona (réplica local) · medio_de_contacto\nnotificacion · notificacion_historial_estado\n**evento_procesado** (inbox, efecto único)" as tNot
+  }
+  frame "schema donaciones\nrol donaciones_user" as schDon {
+    rectangle "sin tablas\npersistencia relacional\nde Donaciones" as tDon <<planificado>>
+  }
+}
+
+node "MinIO :9000" as minio <<infraestructura>> {
+  rectangle "bucket insignias\n6 PNG de insignias\nlectura anónima (s3:GetObject)" as bucket
+}
+
+' ---------- Acceso de cada servicio a su schema ----------
+sLog --> tLog : JDBC · search_path logistica\nFlyway V1-V2 · ddl validate
+sInc --> tInc : JDBC · Flyway V1\nddl validate
+sNot --> tNot : JDBC · Flyway V1-V2\nddl validate
+sDon -[#9A9A9A,dotted]-> tDon : JDBC «planificado»
+sInc --> minio : S3/HTTP (solo Incentivos)
+
+' ---------- Referencias entre servicios: por UUID, sin FK ----------
+tLog -[#9A9A9A,dashed]-> sDon : id_donacion, id_beneficiario\nUUID sin FK
+tInc -[#9A9A9A,dashed]-> sDon : persona_id, organizacion_id\nUUID sin FK
+tNot -[#9A9A9A,dashed]-> sDon : persona_id (réplica por\npersona.sincronizada.v1)
+
+note as nRoles
+  **Aislamiento (init-db)**
+  notificaciones_user y logistica_user:
+  GRANT USAGE, CREATE en su schema,
+  REVOKE sobre los otros 3, search_path fijo.
+  incentivos_user y donaciones_user: solo CREATE ROLE.
+  Los permisos de incentivos_user quedan
+  pendientes en init-db.
+  Sin test que verifique el acceso cruzado.
+end note
+
+note as nOrm
+  **Mapeo objeto-relacional**
+  Modelo JPA separado del dominio, con mappers.
+  JPA solo con el perfil postgres; el perfil
+  por defecto usa repositorios en memoria.
+  @Version solo en Logística.
+  Tests de persistencia con Testcontainers (sin H2).
+  Un motor único: punto común de falla (ADR 20260902).
+end note
+
+legend right
+  |= Elemento |= Significado |
+  |<#E6EEF8> «servicio» | Microservicio DonaTrack |
+  |<#F2F2F2> «infraestructura» | Instancia de PostgreSQL o MinIO |
+  | frame | Schema con su rol propio |
+  |<#FFFFFF> «planificado» (borde punteado) | No existe en código |
+  | ──> | Acceso a datos propios |
+  | - - -> gris | Referencia lógica por UUID, sin FK |
+  | · · · gris | Planificado |
+  En negrita: tablas de integración.
+endlegend
+@enduml
