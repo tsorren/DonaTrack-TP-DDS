@@ -173,8 +173,10 @@ Parámetros de conexión:
 
 ```yaml
 minio:
-  image: quay.io/minio/minio:RELEASE.2024-10-02T17-50-41Z
+  image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
   command: server /data --console-address ":9001"
+  healthcheck:
+    test: [ "CMD", "mc", "ready", "local" ]   # la imagen no trae curl
 ```
 
 ---
