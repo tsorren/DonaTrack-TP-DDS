@@ -35,9 +35,13 @@ public class InsigniasService implements IInsigniasService {
   @Override
   public void configurarVisibilidadInsignia(
       UUID donanteId, String nombreInsignia, boolean visible) {
-    DonanteIncentivos donante = obtenerDonante(donanteId);
-    donante.configurarVisibilidadInsignia(nombreInsignia, visible);
-    repository.save(donante);
+    ReintentoPorConcurrencia.ejecutar(
+        "visibilidad de insignia del donante " + donanteId,
+        () -> {
+          DonanteIncentivos donante = obtenerDonante(donanteId);
+          donante.configurarVisibilidadInsignia(nombreInsignia, visible);
+          repository.save(donante);
+        });
   }
 
   private DonanteIncentivos obtenerDonante(UUID donanteId) {

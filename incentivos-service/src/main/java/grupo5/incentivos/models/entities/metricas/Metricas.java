@@ -4,13 +4,13 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
@@ -19,14 +19,39 @@ public class Metricas {
   private Integer totalDonacionesHistoricas;
   private Integer totalDonacionesExitosas;
   private LocalDate ultimaDonacion;
-  private List<EventoDonacion> historialDonaciones;
+
+  // Cantidad de donaciones por mes. Reemplaza al historial completo de eventos: el agregado solo
+  // necesita contar, asi que crece con los meses de actividad y no con cada donacion.
+  @Getter(AccessLevel.NONE)
+  private final Map<YearMonth, Long> conteoPorPeriodo;
+
   private Set<UUID> organizacionesAyudadas;
 
   public Metricas() {
     this.totalDonacionesHistoricas = 0;
     this.totalDonacionesExitosas = 0;
-    this.historialDonaciones = new ArrayList<>();
+    this.conteoPorPeriodo = new TreeMap<>();
     this.organizacionesAyudadas = new HashSet<>();
+  }
+
+  /** Reconstituye las métricas persistidas sin pasar por las reglas de registro. */
+  public static Metricas reconstituir(
+      Integer totalDonacionesHistoricas,
+      Integer totalDonacionesExitosas,
+      LocalDate ultimaDonacion,
+      Map<YearMonth, Long> conteoPorPeriodo,
+      Set<UUID> organizacionesAyudadas) {
+    Metricas metricas = new Metricas();
+    metricas.totalDonacionesHistoricas = totalDonacionesHistoricas;
+    metricas.totalDonacionesExitosas = totalDonacionesExitosas;
+    metricas.ultimaDonacion = ultimaDonacion;
+    if (conteoPorPeriodo != null) {
+      metricas.conteoPorPeriodo.putAll(conteoPorPeriodo);
+    }
+    if (organizacionesAyudadas != null) {
+      metricas.organizacionesAyudadas.addAll(organizacionesAyudadas);
+    }
+    return metricas;
   }
 
   public Integer getTotalOrganizacionesAyudadas() {
@@ -36,7 +61,7 @@ public class Metricas {
   public void registrarDonacion(EventoDonacion evento) {
     this.totalDonacionesHistoricas++;
     this.ultimaDonacion = evento.getFecha();
-    this.historialDonaciones.add(evento);
+    this.conteoPorPeriodo.merge(YearMonth.from(evento.getFecha()), 1L, Long::sum);
   }
 
   public void registrarDonacionExitosa(UUID organizacionId) {
@@ -55,12 +80,7 @@ public class Metricas {
   }
 
   public Map<YearMonth, Long> donacionesPorPeriodo() {
-    return historialDonaciones.stream()
-        .collect(Collectors.groupingBy(e -> YearMonth.from(e.getFecha()), Collectors.counting()));
-  }
-
-  public List<EventoDonacion> getHistorialDonaciones() {
-    return List.copyOf(this.historialDonaciones);
+    return Collections.unmodifiableMap(new TreeMap<>(conteoPorPeriodo));
   }
 
   public Set<UUID> getOrganizacionesAyudadas() {
@@ -68,9 +88,7 @@ public class Metricas {
   }
 
   public long donacionesEnMes(YearMonth periodo) {
-    return historialDonaciones.stream()
-        .filter(e -> YearMonth.from(e.getFecha()).equals(periodo))
-        .count();
+    return conteoPorPeriodo.getOrDefault(periodo, 0L);
   }
 
   public long donacionesMesActual() {
