@@ -132,12 +132,8 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 2. Dar de baja donante en donaciones-service
     donacionesClient.eliminarDonante(donanteId).then().statusCode(204);
 
-    // 3. Verificar que el perfil esté eliminado o no disponible en incentivos (baja asíncrona)
-    PollingUtils.esperarDonanteEliminadoEnIncentivos(incentivosClient, donanteId);
-    incentivosClient
-        .obtenerMetricas(donanteId)
-        .then()
-        .statusCode(anyOf(equalTo(400), equalTo(404)));
+    // 3. Verificar que el perfil esté eliminado o no disponible en incentivos
+    PollingUtils.esperarBajaDonanteEnIncentivos(incentivosClient, donanteId);
   }
 
   @Test

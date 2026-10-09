@@ -3,6 +3,7 @@ package grupo5.logistica.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
@@ -80,6 +81,21 @@ class EntregaServiceTest {
   @Test
   void crear_deberiaLanzarExcepcion_cuandoMapperDevuelveNull() {
     assertThrows(ValidationException.class, () -> entregasService.crear(null));
+    verify(entregasRepository, never()).save(any());
+  }
+
+  @Test
+  void crear_deberiaLanzarConflicto_cuandoYaExisteEntregaParaLaDonacion() {
+    DireccionDTO destino =
+        new DireccionDTO("Calle Falsa", 123, 4, "B", "C1000", "CABA", "Buenos Aires", "Argentina");
+    CrearEntregaRequestDTO request =
+        new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), destino, 10f, 2f);
+
+    when(entregasRepository.existsByIdDonacion(request.idDonacion())).thenReturn(true);
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> entregasService.crear(request));
+    assertEquals(ErrorCatalog.ENTREGA_DONACION_DUPLICADA, ex.getError());
     verify(entregasRepository, never()).save(any());
   }
 
@@ -255,6 +271,35 @@ class EntregaServiceTest {
     assertEquals(EstadoEntrega.REVISION, entrega.getEstadoActual());
     assertEquals(EstadoEntrega.REVISION, resultado.estadoActual());
     verify(entregasRepository).save(entrega);
+  }
+
+  @Test
+  void cambiarEstado_deberiaRegistrarSolicitudDeTransicionEnAuditoria_cuandoRepositorioPresente() {
+    var transicionRepo =
+        mock(grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository.class);
+    var serviceConAuditoria =
+        new EntregasService(
+            entregasRepository,
+            rutasRepository,
+            camionRepository,
+            entregaMapper,
+            comunicadorEventos,
+            transicionRepo);
+
+    Entrega entrega = EntregaMother.pendiente();
+    entrega.iniciarRuta("Chofer");
+    entrega.negarEntrega("actor", "Motivo", false);
+    UUID id = entrega.getId();
+
+    CambioEstadoEntregaRequestDTO request =
+        new CambioEstadoEntregaRequestDTO(EstadoEntrega.REVISION, "Admin Carlos", null, null);
+
+    when(entregasRepository.findById(id)).thenReturn(Optional.of(entrega));
+    when(entregasRepository.save(entrega)).thenReturn(entrega);
+
+    serviceConAuditoria.cambiarEstado(id, request);
+
+    verify(transicionRepo).registrar(any());
   }
 
   @Test

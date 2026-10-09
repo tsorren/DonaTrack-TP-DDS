@@ -43,11 +43,25 @@ ALTER ROLE incentivos_user SET search_path = incentivos;
 -- 4. Roles placeholder para los demás microservicios (para cuando migren a BD)
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'donaciones_user') THEN
-    CREATE ROLE donaciones_user WITH LOGIN PASSWORD 'dona_pass_2026';
-  END IF;
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'logistica_user') THEN
     CREATE ROLE logistica_user WITH LOGIN PASSWORD 'logi_pass_2026';
+  END IF;
+END
+$$;
+
+GRANT USAGE, CREATE ON SCHEMA logistica TO logistica_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA logistica GRANT ALL ON TABLES TO logistica_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA logistica GRANT ALL ON SEQUENCES TO logistica_user;
+
+-- REGLA CLAVE DE EVALUACIÓN: Restricción de permisos cruzados (Aislamiento)
+REVOKE ALL ON SCHEMA notificaciones, donaciones, incentivos FROM logistica_user;
+ALTER ROLE logistica_user SET search_path = logistica;
+
+-- 4. Roles placeholder para los demás microservicios (para cuando migren a BD)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'donaciones_user') THEN
+    CREATE ROLE donaciones_user WITH LOGIN PASSWORD 'dona_pass_2026';
   END IF;
 END
 $$;

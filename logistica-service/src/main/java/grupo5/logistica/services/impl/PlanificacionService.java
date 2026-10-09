@@ -36,7 +36,11 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /** Prepara los casos de uso de planificación y delega las decisiones al dominio. */
 @Service
@@ -52,6 +56,7 @@ public class PlanificacionService implements IPlanificacionService {
   private final SolicitudPlanificacionMapper solicitudMapper;
   private final ComunicadorEventosLogistica comunicadorEventos;
   private final IServicioExternoPlanificacion planificadorExterno;
+  private final ApplicationEventPublisher eventPublisher;
   private final GeneradorDeRutas generadorDeRutas;
   private final Clock clock;
   private final int maximoPorLote;
@@ -66,6 +71,7 @@ public class PlanificacionService implements IPlanificacionService {
       SolicitudPlanificacionMapper solicitudMapper,
       ComunicadorEventosLogistica comunicadorEventos,
       IServicioExternoPlanificacion planificadorExterno,
+      ApplicationEventPublisher eventPublisher,
       GeneradorDeRutas generadorDeRutas,
       Clock clock,
       @Value("${logistica.planificacion.max-donaciones-por-lote:100}") int maximoPorLote,
@@ -78,6 +84,7 @@ public class PlanificacionService implements IPlanificacionService {
     this.solicitudMapper = solicitudMapper;
     this.comunicadorEventos = comunicadorEventos;
     this.planificadorExterno = planificadorExterno;
+    this.eventPublisher = eventPublisher;
     this.generadorDeRutas = generadorDeRutas;
     this.clock = clock != null ? clock : Clock.systemUTC();
     this.maximoPorLote = Math.min(maximoPorLote, GeneradorDeRutas.MAX_ENTREGAS_POR_SOLICITUD);
@@ -85,11 +92,13 @@ public class PlanificacionService implements IPlanificacionService {
   }
 
   @Override
+  @Transactional
   public void iniciarPlanificacion() {
     iniciarPlanificacion(LocalDate.now(clock).plusDays(1));
   }
 
   @Override
+  @Transactional
   public void iniciarPlanificacion(LocalDate fechaObjetivo) {
     List<Entrega> entregas = entregasRepository.findSinRuta();
     if (entregas.isEmpty()) {
@@ -113,6 +122,7 @@ public class PlanificacionService implements IPlanificacionService {
   }
 
   @Override
+  @Transactional
   public SolicitudPlanificacionResponseDTO procesarCallback(CallbackPlanificacionRequestDTO dto) {
     if (dto == null || dto.solicitudId() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -142,6 +152,7 @@ public class PlanificacionService implements IPlanificacionService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public SolicitudPlanificacionResponseDTO obtenerPorId(UUID id) {
     return solicitudMapper.toResponseDTO(buscarSolicitud(id));
   }
@@ -154,8 +165,17 @@ public class PlanificacionService implements IPlanificacionService {
             planificacion.entregas().size(),
             callbackUrl);
     solicitudesRepository.save(seguimiento);
-    planificadorExterno.solicitarPlanificacion(seguimiento, planificacion);
+    eventPublisher.publishEvent(new SolicitudPlanificacionRegistrada(seguimiento, planificacion));
   }
+
+  /** Envía al proveedor con la solicitud ya confirmada, para que el callback la encuentre. */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+  public void despacharAlProveedor(SolicitudPlanificacionRegistrada evento) {
+    planificadorExterno.solicitarPlanificacion(evento.seguimiento(), evento.planificacion());
+  }
+
+  public record SolicitudPlanificacionRegistrada(
+      SolicitudPlanificacion seguimiento, PlanificacionSolicitada planificacion) {}
 
   private RespuestaPlanificacion mapearRespuesta(CallbackPlanificacionRequestDTO dto) {
     LocalDate fecha = null;

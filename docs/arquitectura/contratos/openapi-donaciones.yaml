@@ -591,6 +591,47 @@ paths:
       responses:
         '204': { description: Persona eliminada }
         '404': { description: Persona no encontrada }
+  /api/logistica/proveedores:
+    get:
+      summary: Listar los proveedores de logística del broker
+      description: Proveedores configurados, su transporte, si tienen adapter registrado y cuál es el preferido. Requiere la clave de administración.
+      operationId: listarProveedoresLogistica
+      security:
+        - ApiKeyAdministracion: []
+      responses:
+        '200':
+          description: Proveedores configurados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProveedorLogisticaDTO'
+        '401': { description: Falta la clave de administración o es incorrecta }
+  /api/logistica/proveedor-preferido:
+    put:
+      summary: Cambiar el proveedor de logística preferido
+      description: Cambia en caliente el proveedor que el broker prueba primero. No persiste entre reinicios; vale para los despachos siguientes. Requiere la clave de administración.
+      operationId: cambiarProveedorLogisticaPreferido
+      security:
+        - ApiKeyAdministracion: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreferenciaProveedorRequestDTO'
+      responses:
+        '200':
+          description: Proveedores con el preferido actualizado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProveedorLogisticaDTO'
+        '400': { description: Proveedor vacío o no configurado }
+        '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
     CambioEstadoDonacionIndependienteRequestDTO:
@@ -749,4 +790,31 @@ components:
         subcategoriaId:
           type: string
           format: uuid
-
+    ProveedorLogisticaDTO:
+      type: object
+      required:
+        - id
+        - transporte
+        - disponible
+        - preferido
+      properties:
+        id: { type: string }
+        transporte:
+          type: string
+          description: Transporte configurado (amqp, http); vacío si no tiene
+        disponible:
+          type: boolean
+          description: Tiene adapter registrado; si no, sus pedidos se tratan como rechazados
+        preferido: { type: boolean }
+    PreferenciaProveedorRequestDTO:
+      type: object
+      required:
+        - proveedorId
+      properties:
+        proveedorId: { type: string }
+  securitySchemes:
+    ApiKeyAdministracion:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Clave de administración del broker (LOGISTICA_ADMIN_API_KEY)

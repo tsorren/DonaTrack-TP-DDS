@@ -88,6 +88,17 @@
             <artifactId>swagger-request-validator-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- RabbitMQ real para los tests del broker de logística (ADR 20261007, D23) -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>rabbitmq</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

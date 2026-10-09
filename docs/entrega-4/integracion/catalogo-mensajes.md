@@ -18,6 +18,13 @@
 
 Solo publica. Cada consumidor (Notificaciones, Incentivos, Logística) declara su propia cola/binding contra `donaciones.exchange`, en su propio código. Agregar un segundo consumidor a una routing key ya existente es cero cambios en `donaciones-service`.
 
+## Eventos y comandos: cómo se rutean
+
+Regla formalizada en el [ADR 20261007-broker-de-integracion-con-logistica](../../adr/20261007-broker-de-integracion-con-logistica.md): **los eventos se rutean por hecho; los comandos, por destinatario.**
+
+- **Evento** (todos los mensajes de este catálogo salvo uno): comunica un hecho que puede interesarle a N consumidores desconocidos. Su routing key nunca dice quién escucha.
+- **Comando** (`EntregaSolicitadaV1`): una orden a un único destinatario elegido por el broker de logística. Su routing key identifica al destinatario (`entrega.solicitada.<proveedorId>.v1`) y el consumidor se bindea con la clave **exacta**, nunca con comodines.
+
 ---
 
 ## DonanteRegistradoV1
@@ -40,11 +47,12 @@ Solo publica. Cada consumidor (Notificaciones, Incentivos, Logística) declara s
 
 ## DonacionAsignadaV1
 
-- **Tipo:** Event · **Productor:** Donaciones · **Consumidor/es:** Notificaciones, Logística
+- **Tipo:** Event · **Productor:** Donaciones · **Consumidor/es:** Notificaciones
 - **Routing key:** `donacion.asignada.v1`
 - **Trigger:** una `Propuesta` se aprueba y la `DonacionIndependiente` queda confirmada contra una `Necesidad`/`EntidadBeneficiaria` (`PropuestaDeAsignacionService.onPropuestaAprobada`).
 - **Payload:** `donanteId: UUID`, `personaId: UUID`, `fecha: DateTime`, `personaBeneficiariaId: UUID`, `descripcion: String`, `destino: {calle, altura, piso?, departamento?, codigoPostal, localidad, provincia, pais}`, `pesoTotalKG: Number`, `volumenTotalM3: Number`
-- **Consecuencia esperada:** Notificaciones avisa al donante del vínculo; Logística crea la Entrega directamente a partir de este evento (reemplaza lo que iba a ser un Command `EntregaSolicitadaV1` separado — Logística se suscribe a este mismo evento).
+- **Consecuencia esperada:** Notificaciones avisa al donante del vínculo.
+- **Logística ya no lo consume** (revisión de la decisión del 15/9, ADR 20261007): con un hecho público no se puede elegir proveedor de logística, así que la entrega se pide con el comando dirigido `EntregaSolicitadaV1` (ver abajo).
 - **Nota:** no lleva categorías ni cantidades — eso es exclusivo de `DonacionSegmentadaV1`, que se dispara antes, en un punto distinto del flujo.
 
 ## DonacionRecibidaV1
@@ -96,3 +104,15 @@ Solo publica. Cada consumidor (Notificaciones, Incentivos, Logística) declara s
 - **Payload:** `donanteId: UUID`, `fecha: DateTime`, `items: [{categoria: String, cantidad: Integer}]` (una entrada por cada `DonacionIndependiente` resultante de esa `Donacion`, no un evento por cada una).
 - **Consecuencia esperada:** Incentivos calcula puntos según categoría y cantidad donada.
 - **Nota de diseño:** se decidió consolidar en **un solo evento por `Donacion`** (no uno por `DonacionIndependiente`, que era la granularidad del código actual) — cambia el punto de publish de "dentro del `for` de `registrarEnIncentivos`" a "después del `for`, una sola vez".
+
+## EntregaSolicitadaV1
+
+- **Tipo:** **Command** · **Productor:** Donaciones (broker de logística) · **Consumidor:** el proveedor de logística elegido; hoy `logistica-service` (instancia `donatrack`)
+- **Routing key:** `entrega.solicitada.<proveedorId>.v1` (por ejemplo `entrega.solicitada.donatrack.v1`) · **`__TypeId__`:** alias fijo `entrega.solicitada.v1`, independiente del proveedor
+- **Trigger:** el broker despacha un pedido de entrega a un proveedor AMQP. El pedido nace en `PropuestaDeAsignacionService.onPropuestaAprobada`, después de publicar `DonacionAsignadaV1`, y sale desde el outbox propio del broker (`LogisticaOutboxRelay`), no desde `OutboxStore`.
+- **Payload:** `donacionIndependienteId: UUID`, `personaBeneficiariaId: UUID`, `destino: {calle, altura, piso?, departamento?, codigoPostal, localidad, provincia, pais}`, `pesoTotalKG: Number`, `volumenTotalM3: Number`, `fecha: DateTime` — schema [`evento-entrega-solicitada-v1.schema.json`](../../arquitectura/contratos/schemas/evento-entrega-solicitada-v1.schema.json)
+- **Envelope:** `message_id` = id del intento de envío; `X-Trace-Id` del pedido original.
+- **Publicación:** `mandatory=true` + publisher confirms; el broker espera el acuse. Si RabbitMQ devuelve el mensaje (no hay cola para esa routing key), el envío es un rechazo seguro y el broker prueba con el siguiente proveedor. Un nack o la falta de acuse son inciertos: se reintenta con el mismo proveedor.
+- **Consumidor:** cada instancia de logística declara su cola `logistica.<instancia>.entregas.solicitadas` bindeada con la clave exacta de su `LOGISTICA_INSTANCIA_ID`. Debe deduplicar por `donacionIndependienteId` (`EntregaSolicitadaEventListener` usa `existsByIdDonacion`).
+- **Consecuencia esperada:** el proveedor crea la Entrega. Los avances vuelven siempre por `logistica.exchange`: todo proveedor, AMQP o HTTP, informa publicando los eventos existentes (el HTTP es solo de ida).
+- **Compatibilidad futura:** aditivo permitido; un cambio incompatible es v2.
