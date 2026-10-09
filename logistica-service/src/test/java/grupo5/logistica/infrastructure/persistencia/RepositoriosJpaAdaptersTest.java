@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -68,6 +69,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -324,8 +326,9 @@ class RepositoriosJpaAdaptersTest {
     RabbitTemplate rabbitTemplate = mock(RabbitTemplate.class);
     ApplicationEventPublisher appPublisher = mock(ApplicationEventPublisher.class);
     LogisticaEventPublisher publisherConSpring =
-        new LogisticaEventPublisher(rabbitTemplate, appPublisher);
-    LogisticaEventPublisher publisherDirecto = new LogisticaEventPublisher(rabbitTemplate);
+        new LogisticaEventPublisher(rabbitTemplate, appPublisher, "donatrack", "token-sintetico");
+    LogisticaEventPublisher publisherDirecto =
+        new LogisticaEventPublisher(rabbitTemplate, "donatrack", "token-sintetico");
 
     var evRutaAsignada =
         new grupo5.logistica.dto.eventos.EventoRutaAsignada(
@@ -364,24 +367,28 @@ class RepositoriosJpaAdaptersTest {
     publisherDirecto.publicarEntregaFallida(evFallida);
     verify(rabbitTemplate)
         .convertAndSend(
-            grupo5.logistica.config.RabbitMQConfig.EXCHANGE,
-            grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_RUTA_ASIGNADA,
-            evRutaAsignada);
+            eq(grupo5.logistica.config.RabbitMQConfig.EXCHANGE),
+            eq(grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_RUTA_ASIGNADA),
+            eq(evRutaAsignada),
+            any(MessagePostProcessor.class));
     verify(rabbitTemplate)
         .convertAndSend(
-            grupo5.logistica.config.RabbitMQConfig.EXCHANGE,
-            grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_RUTA_INICIADA,
-            evRutaIniciada);
+            eq(grupo5.logistica.config.RabbitMQConfig.EXCHANGE),
+            eq(grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_RUTA_INICIADA),
+            eq(evRutaIniciada),
+            any(MessagePostProcessor.class));
     verify(rabbitTemplate)
         .convertAndSend(
-            grupo5.logistica.config.RabbitMQConfig.EXCHANGE,
-            grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_ENTREGA_EXITOSA,
-            evExitosa);
+            eq(grupo5.logistica.config.RabbitMQConfig.EXCHANGE),
+            eq(grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_ENTREGA_EXITOSA),
+            eq(evExitosa),
+            any(MessagePostProcessor.class));
     verify(rabbitTemplate)
         .convertAndSend(
-            grupo5.logistica.config.RabbitMQConfig.EXCHANGE,
-            grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_ENTREGA_FALLIDA,
-            evFallida);
+            eq(grupo5.logistica.config.RabbitMQConfig.EXCHANGE),
+            eq(grupo5.logistica.config.RabbitMQConfig.ROUTING_KEY_ENTREGA_FALLIDA),
+            eq(evFallida),
+            any(MessagePostProcessor.class));
 
     EventosEntregaRepository memEventoRepo = new EventosEntregaRepository();
     ComunicadorEventosLogisticaRabbit comunicador =

@@ -1,5 +1,6 @@
-package grupo5.donaciones.infrastructure;
+package grupo5.donaciones.infrastructure.logistica;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -26,13 +27,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class LogisticaEventListenerTest {
+class ProcesadorEventosLogisticaTest {
 
   @Mock private IDonacionesIndependientesService donacionesIndependientesService;
   @Mock private IEventosConsumidosRepository eventosConsumidosRepository;
   @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
 
-  @InjectMocks private LogisticaEventListener listener;
+  private static final String ORIGEN = "cola-de-prueba";
+
+  @InjectMocks private ProcesadorEventosLogistica procesador;
 
   @Test
   void onRutaAsignada_cuandoEventoNuevo_aplicaCambioEstadoYRegistraComoConsumido() {
@@ -43,7 +46,7 @@ class LogisticaEventListenerTest {
     when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
     when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
 
-    listener.onRutaAsignada(evento);
+    procesador.procesarRutaAsignada(evento, ORIGEN);
 
     verify(donacionesIndependientesService)
         .cambiarEstado(
@@ -58,7 +61,7 @@ class LogisticaEventListenerTest {
 
     when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(true);
 
-    listener.onRutaAsignada(evento);
+    procesador.procesarRutaAsignada(evento, ORIGEN);
 
     verify(donacionesIndependientesService, never()).cambiarEstado(any(), any(), any());
     verify(eventosConsumidosRepository, never()).registrar(any());
@@ -79,7 +82,7 @@ class LogisticaEventListenerTest {
     when(donacion.getEstadoActual()).thenReturn(estado);
     when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.of(donacion));
 
-    listener.onEntregaExitosa(evento);
+    procesador.procesarEntregaExitosa(evento, ORIGEN);
 
     verify(donacionesIndependientesService, never()).cambiarEstado(any(), any(), any());
     verify(eventosConsumidosRepository).registrar(any(EventoConsumido.class));
@@ -101,7 +104,7 @@ class LogisticaEventListenerTest {
     when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
     when(donacionesIndependientesRepository.findById(any())).thenReturn(Optional.empty());
 
-    listener.onRutaIniciada(evento);
+    procesador.procesarRutaIniciada(evento, ORIGEN);
 
     verify(donacionesIndependientesService, times(2)).cambiarEstado(any(), any(), any());
     verify(eventosConsumidosRepository, times(2)).registrar(any(EventoConsumido.class));
@@ -126,11 +129,29 @@ class LogisticaEventListenerTest {
         .thenReturn(false);
     when(donacionesIndependientesRepository.findById(donacionNuevaId)).thenReturn(Optional.empty());
 
-    listener.onRutaIniciada(evento);
+    procesador.procesarRutaIniciada(evento, ORIGEN);
 
     verify(donacionesIndependientesService, times(1))
         .cambiarEstado(eq(donacionNuevaId), any(), any());
     verify(donacionesIndependientesService, never())
         .cambiarEstado(eq(donacionDuplicadaId), any(), any());
+  }
+
+  @Test
+  void onEntregaExitosa_cuandoServicioFalla_noPropagaNiRegistraComoConsumido() {
+    UUID donacionId = UUID.randomUUID();
+    EventoEntregaExitosa evento =
+        new EventoEntregaExitosa(
+            UUID.randomUUID(), donacionId, UUID.randomUUID(), "ABC-123", LocalDateTime.now());
+
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+    when(donacionesIndependientesService.cambiarEstado(any(), any(), any()))
+        .thenThrow(new RuntimeException("Fallo al cambiar estado"));
+
+    assertDoesNotThrow(() -> procesador.procesarEntregaExitosa(evento, ORIGEN));
+
+    // No queda como consumido: si el mismo evento vuelve a llegar, se procesa de nuevo.
+    verify(eventosConsumidosRepository, never()).registrar(any());
   }
 }

@@ -81,6 +81,8 @@ services:
       - LOGISTICA_SERVICE_URL=http://logistica-service:8083
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
+      # Token de los eventos de vuelta de logística: valor sintético solo para desarrollo y pruebas
+      - LOGISTICA_TOKEN_DONATRACK=${LOGISTICA_TOKEN_DONATRACK:-token-sintetico-solo-desarrollo}
       - SEED_CATALOGO_ENABLED=false
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
@@ -116,6 +118,8 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
+      # Mismo token que Donaciones espera para el proveedor donatrack (solo desarrollo y pruebas)
+      - LOGISTICA_TOKEN_VUELTA=${LOGISTICA_TOKEN_DONATRACK:-token-sintetico-solo-desarrollo}
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
@@ -209,7 +213,9 @@ services:
       - postgres
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2024-10-02T17-50-41Z
+    # quay.io/minio ya no permite pull anónimo (401). Imagen de Chainguard fijada por digest;
+    # no trae curl, por eso el healthcheck usa `mc ready local`.
+    image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
     container_name: donatrack-minio-local
     ports:
       - "9000:9000"
@@ -219,7 +225,7 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadminpassword
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      test: [ "CMD", "mc", "ready", "local" ]
       interval: 5s
       timeout: 3s
       retries: 10
