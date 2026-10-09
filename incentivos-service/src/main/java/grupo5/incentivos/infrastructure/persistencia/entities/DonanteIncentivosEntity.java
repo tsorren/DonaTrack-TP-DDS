@@ -15,6 +15,7 @@ import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -45,6 +46,11 @@ import org.hibernate.annotations.FetchMode;
 public class DonanteIncentivosEntity {
 
   @Id private UUID id;
+
+  /** Optimistic locking: la segunda escritura sobre la misma versión lanza una excepción. */
+  @Version
+  @Column(name = "version", nullable = false)
+  private Long version;
 
   @Column(name = "persona_id", nullable = false)
   private UUID personaId;

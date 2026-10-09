@@ -15,7 +15,8 @@ CREATE TABLE donante_incentivos (
     fecha_registro              DATE         NOT NULL,
     total_donaciones_historicas INTEGER      NOT NULL DEFAULT 0,
     total_donaciones_exitosas   INTEGER      NOT NULL DEFAULT 0,
-    ultima_donacion             DATE
+    ultima_donacion             DATE,
+    version                     BIGINT       NOT NULL DEFAULT 0 -- optimistic locking (@Version)
 );
 
 -- Un donante por persona. Habilita la futura búsqueda por persona_id sin otra migración.

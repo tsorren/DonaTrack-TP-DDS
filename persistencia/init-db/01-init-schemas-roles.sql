@@ -25,7 +25,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA notificaciones GRANT ALL ON SEQUENCES TO noti
 REVOKE ALL ON SCHEMA donaciones, logistica, incentivos FROM notificaciones_user;
 ALTER ROLE notificaciones_user SET search_path = notificaciones;
 
--- 3. Rol y permisos para notificaciones-service
+-- 3. Rol y permisos para incentivos-service
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'incentivos_user') THEN

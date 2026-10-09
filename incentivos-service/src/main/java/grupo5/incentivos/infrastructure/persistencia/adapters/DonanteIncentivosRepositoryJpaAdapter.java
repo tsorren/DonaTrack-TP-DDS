@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @Profile("postgres")
@@ -41,9 +42,15 @@ public class DonanteIncentivosRepositoryJpaAdapter
   }
 
   @Override
+  @Transactional
   public boolean actualizarVisibilidadInsignia(
       UUID donanteId, String nombreInsignia, boolean visible) {
-    return springDataRepo.actualizarVisibilidadInsignia(donanteId, nombreInsignia, visible) > 0;
+    boolean actualizado =
+        springDataRepo.actualizarVisibilidadInsignia(donanteId, nombreInsignia, visible) > 0;
+    if (actualizado) {
+      springDataRepo.incrementarVersion(donanteId);
+    }
+    return actualizado;
   }
 
   @Override

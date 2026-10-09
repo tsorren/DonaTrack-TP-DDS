@@ -33,6 +33,7 @@ public class DonanteIncentivosPersistenciaMapper {
     }
     DonanteIncentivosEntity entity = new DonanteIncentivosEntity();
     entity.setId(donante.getId());
+    entity.setVersion(donante.getVersion());
     entity.setPersonaId(donante.getIdPersona());
     entity.setNombre(donante.getNombre());
     entity.setCategoria(donante.getCategoria());
@@ -124,15 +125,18 @@ public class DonanteIncentivosPersistenciaMapper {
             donacionesPorPeriodo,
             entity.getOrganizacionesAyudadas());
 
-    return new DonanteIncentivos(
-        entity.getId(),
-        entity.getPersonaId(),
-        entity.getNombre(),
-        entity.getCategoria(),
-        entity.getFechaRegistro(),
-        new ArrayList<>(historialCategorias),
-        new ArrayList<>(misiones),
-        new ArrayList<>(insignias),
-        metricas);
+    DonanteIncentivos donante =
+        new DonanteIncentivos(
+            entity.getId(),
+            entity.getPersonaId(),
+            entity.getNombre(),
+            entity.getCategoria(),
+            entity.getFechaRegistro(),
+            new ArrayList<>(historialCategorias),
+            new ArrayList<>(misiones),
+            new ArrayList<>(insignias),
+            metricas);
+    donante.asignarVersion(entity.getVersion());
+    return donante;
   }
 }
