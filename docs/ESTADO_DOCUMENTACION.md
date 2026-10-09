@@ -205,6 +205,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) | ADR Arquitectura AMQP | Topología Pub/Sub canónica DDD, colas segregadas, clúster DLQ y Hard Cutover inter-servicios. | 🟢 Sincronizado |
 | [`docs/adr/20260919-convencion-canonica-identificadores-y-contratos-amqp.md`](adr/20260919-convencion-canonica-identificadores-y-contratos-amqp.md) | ADR Estándar de Contratos | Convención canónica de identificadores (<entidad>Id), separación AMQP/REST y erradicación de JsonAlias. | 🟢 Sincronizado |
 | [`docs/adr/20261007-broker-de-integracion-con-logistica.md`](adr/20261007-broker-de-integracion-con-logistica.md) | ADR Integración | Broker in-process (Broker + Adapter + Strategy) entre Donaciones y Logística; regla de ruteo eventos por hecho / comandos por destinatario. | 🟢 Sincronizado |
+| [`docs/adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md`](adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md) | ADR Integración | Los proveedores de logística informan solo por mensajería (HTTP solo de ida), con id y token en headers verificados por Donaciones; refina la decisión 7 del ADR del broker. `proposed`. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
 

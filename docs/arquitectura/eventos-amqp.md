@@ -106,7 +106,7 @@ Todo proveedor de logística informa el avance de una entrega publicando en `log
 | `X-Proveedor-Token` | Token propio del proveedor, acordado con Donaciones (`donatrack.logistica.proveedor.<id>.token-vuelta`) |
 | `__TypeId__` | El alias del evento, igual a su routing key (`ruta.asignada`, `ruta.iniciada`, `entrega.exitosa`, `entrega.fallida`), **no** el nombre de la clase del emisor: Donaciones solo conoce esos alias y descarta con un error de conversión cualquier otro valor |
 
-`donaciones-service` descarta, con un aviso en el log, los eventos sin esos headers, con un token incorrecto o sobre una donación que no está asignada a ese proveedor en el registro del broker. Nuestra Logística firma así sus eventos con `logistica.instancia-id` y `logistica.token-vuelta`. Es una protección mínima (DTI-14, ítem 7).
+`donaciones-service` descarta, con un aviso en el log, los eventos sin esos headers, con un token incorrecto o sobre una donación que no está asignada a ese proveedor en el registro del broker. Nuestra Logística firma así sus eventos con `logistica.instancia-id` y `logistica.token-vuelta`. Es una protección mínima (DTI-14, ítem 7). Decisión y alternativas: ADR [20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad](../adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md).
 
 #### C. Clúster de Dead Letter Queues (Aislamiento de Fallas)
 
