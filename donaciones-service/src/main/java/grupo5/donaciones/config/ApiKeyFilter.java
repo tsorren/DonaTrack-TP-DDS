@@ -55,14 +55,18 @@ public class ApiKeyFilter extends OncePerRequestFilter {
   }
 
   /**
-   * La ruta tal como la mapea el servidor: sin {@code .}/{@code ..} ni barras repetidas. Comparar
-   * contra la URI cruda se podría esquivar con {@code //api/...} o {@code /api/x/../logistica/...}.
-   * Devuelve {@code null} si la URI no es interpretable: en ese caso se filtra (falla cerrado).
+   * La ruta sin parámetros de ruta ({@code ;...}), {@code .}/{@code ..} ni barras repetidas: al
+   * menos tan estricta como la que usa Spring para elegir el handler. Comparar contra la URI cruda
+   * se podría esquivar con {@code /api;x=1/logistica/...}, {@code //api/...} o {@code
+   * /api/x/../logistica/...}. Devuelve {@code null} si la URI no es interpretable: en ese caso se
+   * filtra (falla cerrado).
    */
   private static String rutaNormalizada(HttpServletRequest request) {
     try {
+      // Spring quita los ";..." de cada segmento al elegir el handler; se quitan igual acá.
       // Las barras se colapsan antes de parsear: URI.create("//api/x") tomaría "api" por un host.
-      String sinBarrasRepetidas = request.getRequestURI().replaceAll("/{2,}", "/");
+      String sinBarrasRepetidas =
+          request.getRequestURI().replaceAll(";[^/]*", "").replaceAll("/{2,}", "/");
       return URI.create(sinBarrasRepetidas).normalize().getPath();
     } catch (IllegalArgumentException e) {
       return null;

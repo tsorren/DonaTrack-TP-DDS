@@ -132,6 +132,39 @@ class ApiKeyFilterTest {
   }
 
   @Test
+  void parametrosDeRuta_noEsquivanLaProteccion() throws Exception {
+    // Spring quita los ";..." de cada segmento al elegir el handler.
+    for (String ruta :
+        new String[] {
+          "/api;x=1/logistica/proveedores",
+          "/api/logistica;x=1/proveedor-preferido",
+          "/api/logistica/proveedores;jsessionid=abc"
+        }) {
+      MockFilterChain cadena = new MockFilterChain();
+
+      MockHttpServletResponse response = ejecutar(ruta, null, cadena);
+
+      assertEquals(401, response.getStatus(), ruta);
+      assertFalse(pasoAlControlador(cadena), ruta);
+    }
+  }
+
+  @Test
+  void parametrosDeRuta_conLaClaveDeAdministracion_pasan() throws Exception {
+    for (String ruta :
+        new String[] {
+          "/api/logistica;x=1/proveedores", "/api/logistica/proveedores;jsessionid=abc"
+        }) {
+      MockFilterChain cadena = new MockFilterChain();
+
+      MockHttpServletResponse response = ejecutar(ruta, CLAVE_ADMIN, cadena);
+
+      assertEquals(200, response.getStatus(), ruta);
+      assertTrue(pasoAlControlador(cadena), ruta);
+    }
+  }
+
+  @Test
   void uriNoInterpretable_fallaCerrado() throws Exception {
     MockFilterChain cadena = new MockFilterChain();
 

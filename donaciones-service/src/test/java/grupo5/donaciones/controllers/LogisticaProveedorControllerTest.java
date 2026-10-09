@@ -101,6 +101,19 @@ class LogisticaProveedorControllerTest {
   }
 
   @Test
+  void cambiarPreferido_conParametroDeRutaYSinClave_da401YNoCambiaNada() throws Exception {
+    // Spring quita los ";..." al elegir el handler: el filtro tiene que verlos igual.
+    mockMvc
+        .perform(
+            put("/api/logistica;x=1/proveedor-preferido")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"proveedorId\":\"externo\"}"))
+        .andExpect(status().isUnauthorized());
+
+    verify(administracionService, never()).cambiarProveedorPreferido(any());
+  }
+
+  @Test
   void cambiarPreferido_sinProveedor_da400() throws Exception {
     mockMvc
         .perform(

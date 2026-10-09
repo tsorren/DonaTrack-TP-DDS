@@ -7,6 +7,7 @@ import grupo5.donaciones.services.logistica.IEstrategiaSeleccionProveedor;
 import grupo5.donaciones.services.logistica.IPreferenciaProveedor;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,28 +21,28 @@ public class SeleccionPorPreferenciaConFallback
     implements IEstrategiaSeleccionProveedor, IPreferenciaProveedor {
 
   private final List<String> configurados;
-  private volatile List<String> orden;
+  private final AtomicReference<List<String>> orden;
 
   public SeleccionPorPreferenciaConFallback(
       @Value("${donatrack.logistica.proveedores:donatrack}") List<String> proveedores,
       @Value("${donatrack.logistica.proveedor-preferido:donatrack}") String preferido) {
-    List<String> configurados =
+    List<String> normalizados =
         proveedores.stream().map(String::trim).filter(id -> !id.isEmpty()).distinct().toList();
-    if (configurados.isEmpty()) {
+    if (normalizados.isEmpty()) {
       throw new IllegalArgumentException(
           "donatrack.logistica.proveedores debe listar al menos un proveedor");
     }
     String preferidoNormalizado = preferido == null ? "" : preferido.trim();
-    if (!configurados.contains(preferidoNormalizado)) {
+    if (!normalizados.contains(preferidoNormalizado)) {
       throw new IllegalArgumentException(
           "El proveedor preferido '"
               + preferidoNormalizado
               + "' no está en donatrack.logistica.proveedores "
-              + configurados);
+              + normalizados);
     }
 
-    this.configurados = List.copyOf(configurados);
-    this.orden = ordenConPreferido(preferidoNormalizado);
+    this.configurados = List.copyOf(normalizados);
+    this.orden = new AtomicReference<>(ordenConPreferido(preferidoNormalizado));
   }
 
   private List<String> ordenConPreferido(String preferido) {
@@ -53,7 +54,7 @@ public class SeleccionPorPreferenciaConFallback
 
   @Override
   public List<String> ordenar(DatosEntregaLogistica datos) {
-    return orden;
+    return orden.get();
   }
 
   @Override
@@ -63,7 +64,7 @@ public class SeleccionPorPreferenciaConFallback
 
   @Override
   public String proveedorPreferido() {
-    return orden.get(0);
+    return orden.get().get(0);
   }
 
   @Override
@@ -72,6 +73,6 @@ public class SeleccionPorPreferenciaConFallback
     if (!configurados.contains(normalizado)) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
-    this.orden = ordenConPreferido(normalizado);
+    orden.set(ordenConPreferido(normalizado));
   }
 }
