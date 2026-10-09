@@ -6,8 +6,8 @@
 #   externo   -> HTTP (logistica-externo, 8084)
 #   otra      -> AMQP sin instancia levantada (para mostrar el reenvío por devolución)
 #
-# Uso (las dos claves son obligatorias y no se guardan en el repo):
-#   export LOGISTICA_ADMIN_API_KEY=<clave-admin> LOGISTICA_EXTERNA_CALLBACK_API_KEY=<clave-externo>
+# Uso (la clave de administración es obligatoria y no se guarda en el repo):
+#   export LOGISTICA_ADMIN_API_KEY=<clave-admin>
 #   docker-compose -f docker-compose.yml -f docker-compose.demo.yml up -d --build \
 #     rabbitmq donaciones-service logistica-service logistica-externo
 #
@@ -24,7 +24,6 @@ services:
       - LOGISTICA_OUTBOX_INTERVALO_MS=1000
       - LOGISTICA_OUTBOX_BACKOFF_BASE_SEGUNDOS=${LOGISTICA_OUTBOX_BACKOFF_BASE_SEGUNDOS:-5}
       - LOGISTICA_ADMIN_API_KEY=${LOGISTICA_ADMIN_API_KEY:?definí LOGISTICA_ADMIN_API_KEY}
-      - LOGISTICA_EXTERNA_CALLBACK_API_KEY=${LOGISTICA_EXTERNA_CALLBACK_API_KEY:?definí LOGISTICA_EXTERNA_CALLBACK_API_KEY}
 
   logistica-externo:
     image: donatrack/logistica-service:local

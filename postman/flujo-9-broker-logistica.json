@@ -1132,10 +1132,10 @@
       "description": "otra es AMQP pero no tiene cola: RabbitMQ devuelve el sobre (mandatory), el broker lo ve en el acuse y pasa al siguiente: donatrack."
     },
     {
-      "name": "F. Callback del proveedor HTTP (vuelta)",
+      "name": "F. Vuelta del proveedor por mensajería (RabbitMQ)",
       "item": [
         {
-          "name": "F.1 [Negativo] Aviso sin clave → 401",
+          "name": "F.1 externo informa RUTA_ASIGNADA publicando en RabbitMQ → routed",
           "request": {
             "method": "POST",
             "header": [
@@ -1144,10 +1144,23 @@
                 "value": "application/json"
               }
             ],
-            "url": "{{donacionesUrl}}/api/logistica/proveedores/externo/avisos",
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{rabbitUser}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{rabbitPass}}"
+                }
+              ]
+            },
+            "url": "{{rabbitUrl}}/api/exchanges/%2F/logistica.exchange/publish",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tipo\": \"RUTA_ASIGNADA\",\n  \"rutaId\": \"{{$guid}}\",\n  \"donacionIndependienteId\": \"{{donacionB}}\"\n}"
+              "raw": "{\n  \"properties\": {\n    \"delivery_mode\": 2,\n    \"content_type\": \"application/json\",\n    \"headers\": { \"__TypeId__\": \"ruta.asignada\" }\n  },\n  \"routing_key\": \"ruta.asignada\",\n  \"payload\": \"{\\\"rutaId\\\":\\\"{{$guid}}\\\",\\\"donacionIndependienteId\\\":\\\"{{donacionB}}\\\",\\\"fechaAsignacion\\\":\\\"2026-10-08T12:00:00\\\"}\",\n  \"payload_encoding\": \"string\"\n}"
             }
           },
           "event": [
@@ -1156,78 +1169,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('401', function(){pm.response.to.have.status(401);});"
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "pm.test('RabbitMQ lo enrutó a una cola', function(){pm.expect(pm.response.json().routed).to.be.true;});"
                 ]
               }
             }
           ]
         },
         {
-          "name": "F.2 [Negativo] externo avisa por una donación que no le pertenece → 404",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-API-Key",
-                "value": "{{callbackApiKeyExterno}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{donacionesUrl}}/api/logistica/proveedores/externo/avisos",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"tipo\": \"RUTA_ASIGNADA\",\n  \"rutaId\": \"{{$guid}}\",\n  \"donacionIndependienteId\": \"{{donacionA}}\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('404', function(){pm.response.to.have.status(404);});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "F.3 externo avisa RUTA_ASIGNADA de su donación → 202",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "X-API-Key",
-                "value": "{{callbackApiKeyExterno}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": "{{donacionesUrl}}/api/logistica/proveedores/externo/avisos",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"tipo\": \"RUTA_ASIGNADA\",\n  \"rutaId\": \"{{$guid}}\",\n  \"donacionIndependienteId\": \"{{donacionB}}\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('202', function(){pm.response.to.have.status(202);});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "F.4 La donación pasó a ListaParaEntregar",
+          "name": "F.2 La donación pasó a ListaParaEntregar",
           "request": {
             "method": "GET",
             "header": [],
@@ -1256,7 +1206,7 @@
           ]
         }
       ],
-      "description": "La vuelta de un proveedor HTTP: el aviso entra por el callback protegido con su clave y solo vale para donaciones que le asignó el broker. Requiere haber corrido B (y A para el negativo F.2)."
+      "description": "La vuelta de un proveedor: informa publicando en logistica.exchange el mismo evento que publica nuestra Logística, sin llamar a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Aquí se simula con la API de gestión de RabbitMQ. Requiere haber corrido B y completar rabbitUser y rabbitPass con las credenciales del RabbitMQ del compose."
     },
     {
       "name": "G. Administración: negativos y restaurar",
@@ -1968,7 +1918,15 @@
       "value": ""
     },
     {
-      "key": "callbackApiKeyExterno",
+      "key": "rabbitUrl",
+      "value": "http://localhost:15672"
+    },
+    {
+      "key": "rabbitUser",
+      "value": ""
+    },
+    {
+      "key": "rabbitPass",
       "value": ""
     },
     {
