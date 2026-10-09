@@ -53,12 +53,10 @@ tNot -[#9A9A9A,dashed]-> sDon : persona_id (réplica por\npersona.sincronizada.v
 
 note as nRoles
   **Aislamiento (init-db)**
-  notificaciones_user y logistica_user:
+  notificaciones_user, logistica_user e incentivos_user:
   GRANT USAGE, CREATE en su schema,
   REVOKE sobre los otros 3, search_path fijo.
-  incentivos_user y donaciones_user: solo CREATE ROLE.
-  Los permisos de incentivos_user quedan
-  pendientes en init-db.
+  donaciones_user: solo CREATE ROLE (Donaciones no persiste).
   Sin test que verifique el acceso cruzado.
 end note
 
