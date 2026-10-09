@@ -166,3 +166,15 @@
 | Target | `donaciones-service` (`NotificacionesFeignClient`) · `incentivos-service` (`NotificacionesFeignClient`, `NotificacionesClientAdapter`) |
 | Cuándo se saldará | **En ejecución en Entrega 4 (Septiembre 2026)** — desacoplamiento AMQP completo y eliminación de clientes Feign mediante ADR transversal [20260911](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) y [SPEC-03](../specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) (al verificar la implementación en código de la Etapa 2) |
 
+
+---
+
+## DTI-14 — Normalización y geocodificación de direcciones
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261009-dti-14](./20261009-dti-14-normalizacion-y-geocodificacion-de-direcciones.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] not-started` — `Direccion` guarda `localidad`/`provincia`/`pais` como texto libre sin validar en `donaciones-service` y en `logistica-service`; `AlgoritmoOrdenadorSimple` ordena entregas por UUID por falta de coordenadas |
+| Target | `donaciones-service` (validación contra API Georef al cargar direcciones) · `logistica-service` (geocodificación y ordenamiento geográfico de entregas) |
+| Cuándo se saldará | **A definir** — posterior a la migración de `donaciones-service` a PostgreSQL |
