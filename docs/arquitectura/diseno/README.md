@@ -52,8 +52,8 @@ docs/arquitectura/diseno/
 
 ## 4. Recursos Compartidos y Anexos Técnicos
 
-* [**Diagrama de Componentes (`diagrama-de-componentes.puml`)**](diagrama-de-componentes.puml) · [imagen](diagrama-de-componentes.png):  
-  Componentes del sistema y de integración de la Entrega 4 (entregable 4): interfaces provistas y requeridas, pub/sub en RabbitMQ, comando dirigido, Broker de Integración con Logística con dos proveedores y vuelta por mensajería con identidad, n8n y planificador de rutas simulado dentro de Logística. Componentes planificados (E5/E6) y simulados marcados con estereotipo.
+* [**Diagrama de Componentes (`diagrama-de-componentes.png`)**](diagrama-de-componentes.png):  
+  Componentes del sistema y de integración de la Entrega 4 (entregable 4): servicios internos, externos simulados (APIs de WhatsApp, SMS y correo, planificador de rutas, proveedor de logística externo, red social) e infraestructura (PostgreSQL, RabbitMQ, MinIO, n8n), con interfaces provistas y requeridas y el protocolo de cada conector. Imagen elaborada por el grupo; reemplaza a la versión PlantUML.
 * [**Estilos Compartidos (`common/donatrack-style.puml`)**](common/donatrack-style.puml):  
   Paleta de colores, estereotipos y convenciones visuales para diagramas de arquitectura PlantUML.
 * [**Anexos Técnicos (`anexos-tecnicos/README.md`)**](anexos-tecnicos/README.md):  

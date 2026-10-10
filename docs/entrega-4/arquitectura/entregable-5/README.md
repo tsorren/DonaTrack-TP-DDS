@@ -32,5 +32,3 @@ Las figuras usan `../diagramas/estilo-e4.iuml` y no superan 730 px de ancho, par
 ## Pendiente
 
 - El cuerpo ocupa 23 páginas: las Figuras 1 y 3 son altas y dejan blancos.
-- El subgrupo de Donaciones tiene que confirmar el motivo de la decisión "Persistencia relacional diferida" (ficha 11.1).
-- La URL pública de Logística todavía no está publicada.

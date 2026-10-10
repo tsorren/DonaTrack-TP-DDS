@@ -74,7 +74,7 @@ cloud "Internet\nhttpbin.org (mock de red social)" as inet
 
 actor "Cliente web\n(navegador o Postman)" as web
 
-frame "(b) Nube — Logística (URL pública: PENDIENTE)" as fCloud {
+frame "(b) Nube — Logística (URL pública: donatrack-logistica-0op2.onrender.com)" as fCloud {
   node "Render — Web Service" as render <<infraestructura>> {
     node "logistica-service\nperfil postgres · puerto ${PORT}" as rLog <<container>> {
       artifact "imagen de\nlogistica-service" as aRLog <<servicio>>
@@ -87,7 +87,7 @@ frame "(b) Nube — Logística (URL pública: PENDIENTE)" as fCloud {
     accesible por URI; puede estar pausado.
     URL, credenciales y configuración
     de Render, Neon y CloudAMQP:
-    fuera del repo. URL: pendiente.
+    fuera del repo. URL publicada.
   end note
   note as nAmqp
     Integración en la nube: Donaciones y
@@ -118,7 +118,7 @@ cAdm ---> cPgNode : SQL
 cN8n --> inet : HTTP POST
 
 ' ---------- Nube ----------
-web --> rLog : HTTPS <URL pendiente>
+web --> rLog : HTTPS (onrender.com)
 rLog --> neon : JDBC
 rLog --> cloudamqp : AMQP
 nAmqp .. cloudamqp

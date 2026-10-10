@@ -18,7 +18,7 @@ La Entrega 4 exige que el servicio de logística quede desplegado y accesible po
 * CI publica las imágenes en GHCR (`.github/workflows/merge.yml`). No hay despliegue automático a la nube.
 
 Fuera del repo: el servicio en Render, la base en Neon, el RabbitMQ en CloudAMQP, sus credenciales y la URL pública.
-**URL de Logística: pendiente de publicar.** No hay `render.yaml` ni otro manifiesto de nube.
+**URL de Logística: https://donatrack-logistica-0op2.onrender.com** (publicada el 2026-10-09). No hay `render.yaml` ni otro manifiesto de nube.
 
 Requisitos del servicio que condicionan la plataforma:
 

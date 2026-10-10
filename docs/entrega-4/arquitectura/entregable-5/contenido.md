@@ -14,7 +14,7 @@ Tabla 1. Requisitos de E4 y cómo se resolvieron
 | Cola asincrónica hacia Notificaciones | Publicación y suscripción sobre RabbitMQ, con cola durable por consumidor | 6.2 |
 | Broker de integración que elige entre al menos dos proveedores de logística | Componente dentro de Donaciones con orden de preferencia y un adaptador por transporte; el segundo proveedor es simulado | 6.3 |
 | Persistencia relacional con mapeo objeto-relacional | PostgreSQL con un schema y un rol por servicio; por ahora, en tres de los cuatro servicios | 7 |
-| Logística desplegada y accesible por web | Contenedor en una plataforma como servicio; la URL (*Uniform Resource Locator*) pública todavía no está publicada | 9 |
+| Logística desplegada y accesible por web | Contenedor en una plataforma como servicio, publicado en https://donatrack-logistica-0op2.onrender.com (URL, *Uniform Resource Locator*) | 9 |
 
 ## 1.2 Mapa de servicios
 
@@ -374,10 +374,10 @@ Tabla 8. Entornos de ejecución
 |---|---|---|
 | Local y demo | Cuatro servicios, RabbitMQ, PostgreSQL, MinIO y n8n; la demo agrega la Logística externa | En uso |
 | Preproducción efímera | Lo mismo, con imágenes publicadas por CI, dentro de la corrida de CI | En uso |
-| Nube | Solo Logística, en Render, con PostgreSQL en Neon y RabbitMQ en CloudAMQP | Imagen y configuración listas; falta publicar la URL |
+| Nube | Solo Logística, en Render, con PostgreSQL en Neon y RabbitMQ en CloudAMQP | Publicado y accesible por HTTPS |
 
-La URL pública de Logística todavía no está publicada; se completará antes de la defensa.
-Para eso, Donaciones y Logística deben compartir RabbitMQ en la nube y fijar la URL de callback de planificación.
+Logística está publicada en https://donatrack-logistica-0op2.onrender.com; la documentación interactiva de su API está en Swagger UI, en la misma dirección.
+Para la demo integrada en la nube falta que Donaciones comparta RabbitMQ con Logística y fijar la URL de callback de planificación.
 
 ## 9.3 Decisión de plataforma
 
@@ -392,7 +392,7 @@ Por qué: costo con pausa, acceso por URL y reutilizar la imagen que valida CI.
 Costo:
 - Pausada, Logística no consume pedidos ni planifica.
 - Credenciales fuera del repositorio.
-- La URL pública todavía no está publicada.
+- En el plan gratuito, la instancia se suspende sin tráfico: la primera respuesta puede tardar cerca de un minuto.
 Referencia: ADR del 9/10/2026 «Despliegue de Logística en PaaS con contenedores»; ver Figura 5 y Anexo A.
 :::
 
@@ -426,7 +426,7 @@ Tabla 10. Deuda técnica por tema
 | Durabilidad y acuse de la mensajería | Ventana de pérdida de hechos de Logística | Registro previo sobre la tabla de eventos existente |
 | Duplicados y traza | Métricas duplicadas; flujos asíncronos sin traza completa | Inbox, identificador de mensaje y traza al consumir |
 | Seguridad de transición | Clave y credencial sin rotación ni identidad de usuario | Autenticación en E6 |
-| Despliegue y demo | URL todavía sin publicar; callback de la segunda instancia sin configurar | Publicar la URL y configurar la mensajería en la nube |
+| Despliegue y demo | Callback de la segunda instancia sin configurar; RabbitMQ en la nube todavía no compartido con Donaciones | Configurar la mensajería en la nube |
 | Reglas y pruebas pendientes | Fugas de capas sin aviso; regresiones de mapeo sin freno | Reglas faltantes y pruebas de vuelta a CI |
 
 # 11 Cómo aplica la arquitectura cada servicio
@@ -460,9 +460,9 @@ El mapeo relacional de Donaciones tiene ADR y puertos listos, pero todavía no t
 Decisión: Donaciones guarda en memoria en E4; la persistencia relacional queda diseñada, sin implementar.
 Alternativas:
 - **JPA en E4**: compite por esfuerzo con el broker de integración, prioridad de E4.
-Por qué: prioriza el requisito de integración; los puertos admiten JPA sin tocar el dominio.
+Por qué: la persistencia relacional de Donaciones no era requisito de la entrega; el esfuerzo fue al broker de integración y los puertos admiten JPA sin tocar el dominio.
 Costo:
-- El requisito de persistencia relacional queda cubierto en tres de los cuatro servicios.
+- La persistencia relacional queda aplicada en tres de los cuatro servicios.
 - Un reinicio pierde el estado.
 Referencia: ADR de mapeo ORM de Donaciones; ver la deuda sobre persistencia en el Anexo C.
 :::
@@ -483,7 +483,7 @@ Tabla 12. Ficha de Logística
 | Integración | Consume pedidos, publica estado y planifica rutas en lotes de hasta 100 con callback |
 | Persistencia | Bloqueo optimista, historial de estados y referencias a donaciones por identificador |
 | Pruebas | Persistencia y migraciones contra una base real efímera |
-| Despliegue | Único servicio en la nube; la URL todavía no está publicada |
+| Despliegue | Único servicio en la nube, publicado en Render |
 | Decisiones diferidas | Publicación sin registro previo, URL de callback de planificación y descarte sin aviso de pedidos inválidos |
 
 :::decision | Planificación por lotes con callback
@@ -589,7 +589,7 @@ Tabla 16. Requisitos y restricciones
 | Los servicios de dominio avisan a Notificaciones por una cola asincrónica | Sección 6.2 y Figura 1. Incentivos conserva un cliente HTTP transitorio, apagado por defecto |
 | Un broker de integración elige entre al menos dos proveedores de logística | Sección 6.3 y Figura 3 |
 | Persistencia relacional con mapeo objeto-relacional | Capítulo 7 y Figura 4. Por ahora, en tres de los cuatro servicios: falta Donaciones |
-| Logística desplegada y accesible por sus URL | Capítulo 9 y Figura 5. La URL todavía no está publicada |
+| Logística desplegada y accesible por sus URL | Capítulo 9 y Figura 5. Publicada en https://donatrack-logistica-0op2.onrender.com |
 | Diagrama de componentes con la integración de E4 | Entregable 4 y Figura 1 |
 | Documento de arquitectura sin detalle de componentes | Este documento |
 | Justificaciones con diagramas complementarios | Capítulos 3 a 9, Anexo A y entregable 3 |
@@ -625,7 +625,7 @@ Tabla 17. Deuda técnica
 | Seguridad de transición: clave de administración y credencial en el mensaje | Protección mínima, sin rotación ni identidad de usuario | Autenticación en E6; usuarios de RabbitMQ por proveedor |
 | Cliente HTTP transitorio de Incentivos a Notificaciones | Al encenderlo se apaga también el consumo por mensajería de Incentivos | Eliminar el cliente |
 | Un proveedor que solo habla HTTP no puede devolver estado | Sin integración con un tercero real que solo use HTTP | Consulta periódica como evolución |
-| Despliegue en la nube fuera del repositorio | URL todavía sin publicar; no reproducible; mensajería compartida sin configurar | Publicar la URL y configurar CloudAMQP en ambos servicios antes de la defensa |
+| Despliegue en la nube fuera del repositorio | No reproducible desde el repositorio; mensajería compartida sin configurar | Configurar CloudAMQP en ambos servicios antes de la defensa |
 | Restos legados en Notificaciones: canal sin publicadores y operación de personas sin llamador | Superficie sin uso | Retirarlos al cerrar la migración |
 | Notificaciones recibe dos tipos de hecho que no procesa | Riesgo identificado: terminan en su cola de fallidos y agregan ruido | Ligar solo los hechos que procesa |
 | URL de callback de planificación con valor local por defecto | Riesgo identificado: la segunda instancia no recibe su callback ni asigna rutas | Fijar la URL en la demo y en la nube |

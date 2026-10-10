@@ -1,6 +1,6 @@
 @startuml 01-mapa-sistema
 ' Figura 1 del cuerpo: mapa del sistema (servicios y comunicación).
-' Derivada de docs/arquitectura/diseno/diagrama-de-componentes.puml.
+' Derivada del diagrama de componentes PlantUML anterior (reemplazado por docs/arquitectura/diseno/diagrama-de-componentes.png).
 ' Continua = sincrónica (HTTP, JDBC, S3). Discontinua violeta = mensajería AMQP.
 ' Gris punteado = planificado (E5, E6). Logística solo conecta con RabbitMQ y su base (H1, H2).
 !pragma layout smetana

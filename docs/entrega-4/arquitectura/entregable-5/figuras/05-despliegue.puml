@@ -2,7 +2,7 @@
 ' Figura 5 del cuerpo: despliegue local y en la nube (variante simplificada de
 ' docs/entrega-4/arquitectura/diagramas/08-despliegue.puml, sin tags, puertos ni imágenes).
 ' La CI construye y publica la imagen de cada servicio en el registro; el preprod de CI la usa.
-' Nube: solo Logística (Render, Neon, CloudAMQP). URL pública pendiente (T16).
+' Nube: solo Logística (Render, Neon, CloudAMQP). URL pública publicada.
 !pragma layout smetana
 !include ../../diagramas/estilo-e4.iuml
 
@@ -29,7 +29,7 @@ frame "Nube" as fCloud {
 }
 
 ci --> host : publica imagen
-web --> rLog : HTTPS\n(URL pendiente)
+web --> rLog : HTTPS\n(URL pública)
 rLog --> neon : JDBC
 rLog --> cloudamqp : AMQP
 @enduml

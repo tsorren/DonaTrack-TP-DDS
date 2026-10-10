@@ -20,8 +20,8 @@
 | R1 | Servicios de dominio → Notificaciones por cola asincrónica | E4 p.24 | §5.2 | 1, 3 | `notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/amqp/` · `docs/entrega-4/integracion/matriz-productor-consumidor.md` | Cumple. Camino HTTP interino de Incentivos, apagado por defecto (DTI-13) |
 | R2 | Broker de integración Donaciones → Logística que elige entre ≥ 2 proveedores | E4 p.24 | §5.3 | 1, 4 | `donaciones-service/src/main/java/grupo5/donaciones/infrastructure/logistica/` · `donatrack.logistica.proveedores` en `donaciones-service/src/main/resources/application.properties` | Cumple |
 | R3 | Persistencia relacional con mapeo objeto-relacional | E4 p.24 | §6 | 7 | `*/src/main/resources/db/migration/` · `*/infrastructure/persistencia/` | Parcial: 3 de 4 servicios. Donaciones en memoria (§9, T1) |
-| R4 | Logística desplegada y accesible por sus URIs | E4 p.24 | §7 | 8 | `logistica-service/Dockerfile` · ADR D6 | Pendiente: URL a publicar |
-| R5 | Diagrama de componentes con la integración de E4 | E4 p.24, entregable 4 | §2 | 1 | `docs/arquitectura/diseno/diagrama-de-componentes.puml` | Cumple |
+| R4 | Logística desplegada y accesible por sus URIs | E4 p.24 | §7 | 8 | `logistica-service/Dockerfile` · ADR D6 · https://donatrack-logistica-0op2.onrender.com | Cumple (verificado: 200 en `/v3/api-docs`, 2026-10-09) |
+| R5 | Diagrama de componentes con la integración de E4 | E4 p.24, entregable 4 | §2 | 1 | `docs/arquitectura/diseno/diagrama-de-componentes.png` | Cumple |
 | R6 | Documento de arquitectura sin detalle de componentes | E4 p.24, entregable 5 | todo | — | este documento | Cumple |
 | R7 | Justificaciones con diagramas complementarios | E4 p.24, entregable 3 | §2–§7 · Anexo E · anexo por servicio | 2–8 | `docs/entrega-4/arquitectura/diagramas/` · `docs/adr/` · `docs/entrega-4/arquitectura/anexo-servicios.md` | Cumple |
 | H1 | Logística no invoca a Donaciones ni a Incentivos | E3 p.22, impl. 3 | §5.5 | 3, 6 | `logistica-service/src/main/resources/application.properties` (sin URLs de otros servicios) · `logistica-service/pom.xml` (sin Feign) | Restricción respetada |
@@ -486,9 +486,9 @@ Responde: ¿Dónde corre cada pieza, local y en la nube?
 | Local | 4 servicios, RabbitMQ, PostgreSQL, MinIO, n8n, adminer | `docker-compose.yml` | Implementado |
 | Demo del broker de integración | Lo anterior más Logística externa (8084, en memoria) | `docker-compose.demo.yml`. Tokens y clave de administración por variable obligatoria | Implementado |
 | Preprod efímero | Lo mismo, con imágenes publicadas por CI y PostgreSQL sin volumen | `docker-compose.preprod.yml`, dentro del runner de GitHub Actions | Implementado |
-| Nube, solo Logística | Logística en Render · PostgreSQL en Neon · RabbitMQ en CloudAMQP | Plataforma elegida. Configuración y credenciales fuera del repo | **URL: pendiente de publicar** |
+| Nube, solo Logística | Logística en Render · PostgreSQL en Neon · RabbitMQ en CloudAMQP | Plataforma elegida. Configuración y credenciales fuera del repo | **URL: https://donatrack-logistica-0op2.onrender.com** |
 
-- **URL pública de Logística: pendiente de publicar.** El cliente llega a Logística en Render por HTTPS. El despliegue puede quedar pausado hasta la defensa (E4 p.24).
+- **URL pública de Logística: https://donatrack-logistica-0op2.onrender.com** (Swagger UI en `/swagger-ui/index.html`). El cliente llega a Logística en Render por HTTPS. En el plan gratuito la instancia se suspende sin tráfico: la primera respuesta tardó más de 60 s y las siguientes, menos de 1 s (medido el 2026-10-09).
 - Integración en la nube: Donaciones y Logística deben compartir el RabbitMQ de CloudAMQP. Configuración pendiente, sin evidencia en el repo (T16).
 - El callback de planificación usa `http://localhost:8083` por defecto. Si la plataforma asigna otro `PORT`, hay que fijar `LOGISTICA_SELF_BASE_URL` (T19).
 - Imagen: multi-stage (Maven → JRE 21 alpine), usuario no root 1001, memoria relativa al contenedor.
@@ -576,7 +576,7 @@ El documento no promete entrega exactamente una vez ni efecto único global. S3�
 | T13 | Feign interino de Incentivos a Notificaciones | Con el flag en `false` se apaga también el consumo AMQP de Incentivos | Eliminar el cliente | DTI-13 |
 | T14 | Un proveedor que solo habla HTTP no puede devolver estado | Sin integración con un tercero real solo-HTTP | Polling como evolución | ADR 20261008 |
 | T15 | Script de roles en conflicto al integrar #889 | Cerrado: el merge en `ENTREGA_4` (`76003bf4`) conserva los GRANT de Logística e Incentivos | — | — |
-| T16 | Despliegue en la nube fuera del repo | URL pendiente · no reproducible desde el repo · RabbitMQ compartido (CloudAMQP) sin configuración en el repo, ni para Donaciones ni para Logística | Publicar la URL y configurar CloudAMQP en ambos servicios antes de la defensa | ADR D6 |
+| T16 | Despliegue en la nube fuera del repo | No reproducible desde el repo · RabbitMQ compartido (CloudAMQP) sin configuración en el repo, ni para Donaciones ni para Logística | Configurar CloudAMQP en ambos servicios antes de la defensa | ADR D6 |
 | T17 | Restos legados: `notificaciones.exchange` sin publicadores · `PUT /api/notificaciones/personas` sin llamador en producción | Superficie sin uso | Retirar al cerrar la migración | DTI-13 · ADR 20260911 |
 | T18 | Notificaciones recibe por comodín `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, sin tipo que los procese | Esos mensajes terminan en su DLQ (inferido, sin ejecutar): ruido para la revisión manual | Bindings explícitos o descarte controlado | DTI-16, ítem 10 |
 | T19 | Callback de planificación con URL por defecto `http://localhost:8083` | La instancia `externo` (8084) no la redefine: su callback falla y no emite `ruta.asignada` (inferido, sin ejecutar) | Fijar `LOGISTICA_SELF_BASE_URL` en la demo y en la nube | DTI-16, ítem 11 |
