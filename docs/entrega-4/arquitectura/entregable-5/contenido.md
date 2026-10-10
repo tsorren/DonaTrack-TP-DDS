@@ -42,7 +42,9 @@ Tabla 2. Servicios del sistema
 ## 1.4 Relación con otros entregables
 
 Este documento es el entregable 5.
-El diagrama de componentes es el entregable 4.
+El diagrama de componentes es el entregable 4 y representa la arquitectura deseada, el objetivo hacia el que evoluciona el sistema.
+Difiere del estado actual en tres puntos: Donaciones todavía guarda en memoria, solo Incentivos usa el almacenamiento de objetos y los medios de notificación se simulan dentro del servicio en lugar de llamarse por HTTP.
+Este documento describe el estado actual; la Figura 1 lo resume.
 Los diagramas, los registros de decisión de arquitectura (ADR, *Architecture Decision Record*) y el detalle por servicio forman el entregable 3.
 
 # 2 Atributos de calidad
@@ -590,7 +592,7 @@ Tabla 16. Requisitos y restricciones
 | Un broker de integración elige entre al menos dos proveedores de logística | Sección 6.3 y Figura 3 |
 | Persistencia relacional con mapeo objeto-relacional | Capítulo 7 y Figura 4. Por ahora, en tres de los cuatro servicios: falta Donaciones |
 | Logística desplegada y accesible por sus URL | Capítulo 9 y Figura 5. Publicada en https://donatrack-logistica-0op2.onrender.com |
-| Diagrama de componentes con la integración de E4 | Entregable 4 y Figura 1 |
+| Diagrama de componentes con la integración de E4 | Entregable 4 (arquitectura deseada) y Figura 1 (estado actual) |
 | Documento de arquitectura sin detalle de componentes | Este documento |
 | Justificaciones con diagramas complementarios | Capítulos 3 a 9, Anexo A y entregable 3 |
 | Restricción heredada: Logística no invoca a Donaciones ni a Incentivos | Sección 6.5 |

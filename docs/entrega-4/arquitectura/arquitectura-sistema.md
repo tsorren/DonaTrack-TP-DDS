@@ -5,7 +5,7 @@
 | Versión | 1.1 · respaldo técnico verificado del entregable 5 |
 | Fecha | 2026-10-09 |
 | Baseline | `ENTREGA_4` @ `5cf8563b` (incluye #886, #887 y #889) más el PR #892, que se asume integrado. Ref de verificación local: `baseline/e4-prs` @ `dcd66fe5`. |
-| Alcance | Respaldo técnico del entregable 5, que se entrega como informe en [`entregable-5/`](entregable-5/README.md) · entregable 4 (Figura 1) · entregable 3 (Figuras 2 a 8, ADRs del Anexo E y [`anexo-servicios.md`](anexo-servicios.md)). |
+| Alcance | Respaldo técnico del entregable 5, que se entrega como informe en [`entregable-5/`](entregable-5/README.md) · entregable 4 (Figura 1, arquitectura objetivo) · entregable 3 (Figuras 2 a 8, ADRs del Anexo E y [`anexo-servicios.md`](anexo-servicios.md)). |
 | Cómo leer | §1–§10: vista de sistema. Anexo E: índice de decisiones. Detalle por servicio: [`anexo-servicios.md`](anexo-servicios.md) (entregable 3). |
 | Convenciones | El número de figura coincide con el del archivo del diagrama. "Diseño" = decidido pero no está en el código. "Deuda" = desvío declarado en §9. |
 
@@ -21,7 +21,7 @@
 | R2 | Broker de integración Donaciones → Logística que elige entre ≥ 2 proveedores | E4 p.24 | §5.3 | 1, 4 | `donaciones-service/src/main/java/grupo5/donaciones/infrastructure/logistica/` · `donatrack.logistica.proveedores` en `donaciones-service/src/main/resources/application.properties` | Cumple |
 | R3 | Persistencia relacional con mapeo objeto-relacional | E4 p.24 | §6 | 7 | `*/src/main/resources/db/migration/` · `*/infrastructure/persistencia/` | Parcial: 3 de 4 servicios. Donaciones en memoria (§9, T1) |
 | R4 | Logística desplegada y accesible por sus URIs | E4 p.24 | §7 | 8 | `logistica-service/Dockerfile` · ADR D6 · https://donatrack-logistica-0op2.onrender.com | Cumple (verificado: 200 en `/v3/api-docs`, 2026-10-09) |
-| R5 | Diagrama de componentes con la integración de E4 | E4 p.24, entregable 4 | §2 | 1 | `docs/arquitectura/diseno/diagrama-de-componentes.png` | Cumple |
+| R5 | Diagrama de componentes con la integración de E4 | E4 p.24, entregable 4 | §2 | 1 | `docs/arquitectura/diseno/diagrama-de-componentes.png` | Cumple. Muestra la arquitectura objetivo; diferencias con el código en §2 |
 | R6 | Documento de arquitectura sin detalle de componentes | E4 p.24, entregable 5 | todo | — | este documento | Cumple |
 | R7 | Justificaciones con diagramas complementarios | E4 p.24, entregable 3 | §2–§7 · Anexo E · anexo por servicio | 2–8 | `docs/entrega-4/arquitectura/diagramas/` · `docs/adr/` · `docs/entrega-4/arquitectura/anexo-servicios.md` | Cumple |
 | H1 | Logística no invoca a Donaciones ni a Incentivos | E3 p.22, impl. 3 | §5.5 | 3, 6 | `logistica-service/src/main/resources/application.properties` (sin URLs de otros servicios) · `logistica-service/pom.xml` (sin Feign) | Restricción respetada |
@@ -78,9 +78,17 @@
 | common-lib | Shared kernel técnico: errores, trazabilidad, repositorio genérico | — | Implementado. Biblioteca, no se despliega |
 | Infraestructura | RabbitMQ (message broker) · PostgreSQL 16 · MinIO (solo Incentivos) · n8n | — | Implementado |
 
-![Figura 1 — Diagrama de componentes](../../arquitectura/diseno/diagrama-de-componentes.png)
+![Figura 1 — Diagrama de componentes deseado (arquitectura objetivo)](../../arquitectura/diseno/diagrama-de-componentes.png)
 
-Responde: ¿Qué componentes hay, qué interfaces proveen y requieren, y por qué canal se conectan?
+Responde: ¿Qué componentes tendrá el sistema, qué interfaces proveen y requieren, y por qué canal se conectan?
+
+**La Figura 1 es el diagrama deseado (objetivo), no el estado actual.** Diferencias con el código de `ENTREGA_4`:
+
+| En la Figura 1 (objetivo) | Estado actual | Deuda |
+|---|---|---|
+| Donaciones persiste en PostgreSQL | Donaciones trabaja en memoria: sin JPA ni datasource | T1 |
+| Donaciones y Logística usan MinIO | Solo Incentivos usa MinIO (imágenes de insignias) | — |
+| Notificaciones llama por HTTP a las APIs de WhatsApp, SMS y correo | Adaptadores simulados dentro del proceso, sin cliente HTTP | — |
 
 ### D1 — Estilo interno y capas de cada servicio
 
