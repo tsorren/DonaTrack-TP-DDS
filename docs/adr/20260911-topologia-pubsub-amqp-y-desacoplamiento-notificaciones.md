@@ -126,6 +126,9 @@ incentivos-service
   > [!NOTE]
   > Se pospone la creación de tablas SQL físicas `outbox_events` con Flyway en `donaciones` e `incentivos` a la Oleada 10 como deuda técnica justificada, evitando forzar una migración prematura a PostgreSQL en servicios en memoria.
 
+  > [!NOTE]
+  > **Evolución (2026-10-09):** `incentivos-service` ya persiste en PostgreSQL con el perfil `postgres` (repositorios JPA y Flyway). Publica en `incentivos.exchange` sin outbox. `donaciones-service` sigue en memoria. Estado vigente y deuda: [documento de arquitectura E4](../entrega-4/arquitectura/arquitectura-sistema.md) §5.6 y §6 · [`DEUDA_TECNICA.md`](DEUDA_TECNICA.md) DTI-16.
+
 ### Hard Cutover y Adaptadores Secundarios
 
 > [!NOTE]

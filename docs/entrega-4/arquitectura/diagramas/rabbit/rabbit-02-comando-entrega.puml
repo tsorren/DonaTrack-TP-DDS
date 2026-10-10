@@ -1,0 +1,77 @@
+@startuml rabbit-02-comando-entrega
+' Comando de entrega: donaciones.exchange con binding exacto por proveedor hacia cada instancia de Logística.
+' Fuente (rama baseline/e4-prs):
+'   donaciones-service/src/main/java/grupo5/donaciones/config/RabbitMQConfig.java:56-58,65-67,137
+'   donaciones-service/src/main/java/grupo5/donaciones/infrastructure/logistica/ProveedorLogisticaAmqp.java:56-103
+'   donaciones-service/src/main/java/grupo5/donaciones/config/LogisticaProveedoresConfig.java:52-56,118-124
+'   donaciones-service/src/main/resources/application.properties:23,28-30,47-48
+'   logistica-service/src/main/java/grupo5/logistica/config/RabbitMQConfig.java:49-61,68-84
+'   docker-compose.demo.yml:19-21,46 (instancia externo y proveedor otra, solo demo)
+!pragma layout smetana
+!include ../estilo-e4.iuml
+skinparam nodesep 18
+skinparam ranksep 28
+skinparam collections {
+  BackgroundColor<<topic exchange>> #EEE8F7
+  BorderColor<<topic exchange>> #5E4B8B
+}
+skinparam queue {
+  BackgroundColor<<durable>> #F7F5FB
+  BorderColor<<durable>> #5E4B8B
+}
+
+component "Donaciones\nbroker de integración\n(ProveedorLogisticaAmqp)" as broker <<broker de integración>>
+collections "donaciones.exchange" as ex <<topic exchange>>
+
+queue "logistica.donatrack.entregas.solicitadas" as qD <<durable>>
+queue "logistica.externo.entregas.solicitadas" as qE <<durable>>
+component "Logística DonaTrack :8083\ninstancia-id = donatrack" as logD <<servicio>>
+component "Logística externa :8084\ninstancia-id = externo\n(solo demo)" as logE <<simulado>>
+
+broker -[#5E4B8B,dashed]-> ex : publica\nentrega.solicitada.<proveedorId>.v1\n__TypeId__ = entrega.solicitada.v1
+ex -[#5E4B8B]-> qD : entrega.solicitada.\ndonatrack.v1
+ex -[#5E4B8B]-> qE : entrega.solicitada.\nexterno.v1
+qD -[#5E4B8B,dashed]-> logD : consume
+qE -[#5E4B8B,dashed]-> logE : consume
+
+note right of broker
+  <b>Carta certificada</b>
+  mandatory = true (template propio)
+  publisher-confirm-type = correlated
+  publisher-returns = true
+  · devuelto (sin cola para la clave)
+    o sin conexión → rechazado:
+    el broker prueba otro proveedor
+  · nack o sin acuse en 5000 ms
+    → incierto
+end note
+
+note bottom of logD
+  <b>Comando, no hecho</b>
+  · binding con clave exacta,
+    nunca con comodines
+  · el destinatario va en la clave
+  · ningún comodín de los hechos
+    (donacion.#, donante.#,
+    persona.#) captura entrega.*
+end note
+
+note bottom of logE
+  Cola declarada solo si corre
+  la instancia externo. Con la
+  config por defecto nadie publica
+  en ella: el broker le habla a
+  externo por HTTP.
+  La demo suma el proveedor otra
+  (AMQP, sin instancia): su clave
+  no tiene cola y RabbitMQ la
+  devuelve (mandatory).
+end note
+
+legend right
+  |= Símbolo |= Significado |
+  | «topic exchange» · «durable» | exchange topic y cola durables |
+  | ──> rotulada | binding con su routing key |
+  | - - -> | publica o consume |
+endlegend
+@enduml
