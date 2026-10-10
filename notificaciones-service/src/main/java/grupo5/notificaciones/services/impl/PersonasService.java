@@ -3,8 +3,10 @@ package grupo5.notificaciones.services.impl;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
+import grupo5.notificaciones.exceptions.PersonaYaAnonimizadaException;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
+import grupo5.notificaciones.models.ports.Anonimizable;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.services.IPersonasService;
@@ -30,6 +32,16 @@ public class PersonasService implements IPersonasService {
 
   @Override
   public void sincronizar(PersonaReplicaDTO dto) {
+    if (dto != null && dto.id() != null) {
+      repository
+          .findById(dto.id())
+          .ifPresent(
+              existente -> {
+                if (Anonimizable.VALOR_STRING.equals(existente.getDenominacion())) {
+                  throw new PersonaYaAnonimizadaException(dto.id());
+                }
+              });
+    }
     Persona persona = mapper.toEntity(dto);
     repository.save(persona);
   }

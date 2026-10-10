@@ -454,17 +454,56 @@ Deberías obtener:
 
 ---
 
+# 12. Cuando necesitás comprender un concepto nuevo antes de diseñar o implementar
+
+## Estado posible
+
+- En diseño.
+- Lista para implementar.
+- Bloqueada por duda conceptual o tecnológica.
+
+## Objetivo
+
+Comprender los fundamentos teóricos, atributos de calidad y cómo aplican a DonaTrack de forma pedagógica, sin recibir "código mágico".
+
+## Prompt recomendado
+
+[`prompts/transversal-mentoria-conceptos.md`](./prompts/transversal-mentoria-conceptos.md)
+
+## Cuándo usarlo
+
+Usalo si te toca abordar conceptos o tecnologías nuevas como:
+
+- Persistencia relacional, JPA/Hibernate, Flyway, transacciones ACID.
+- RabbitMQ, AMQP, tópicos, fanout, consistencia eventual, at-least-once.
+- Cliente liviano, SPA vs SSR, consumo desacoplado de contratos OpenAPI.
+- Servicio de Auth, JWT stateless, roles y permisos, Spring Security.
+- Observabilidad, tracing distribuido, MDC, métricas Actuator.
+- Despliegue en la nube, contenedores Docker, Docker Compose, 12-Factor App.
+
+## Resultado esperado
+
+Deberías obtener:
+
+- intuición y analogía cotidiana del problema real;
+- fundamento teórico formal (atributos de calidad y trade-offs);
+- aterrizaje quirúrgico en clases y contratos de DonaTrack (Java 21 / Spring Boot 3);
+- trampas comunes y pregunta socrática de validación.
+
+---
+
 # Regla práctica
 
 Si no sabés qué prompt usar:
 
 1. Si no entendés la issue: `media-analisis-issue.md`.
-2. Si hay riesgo de arquitectura: `alta-diseno-arquitectura.md`.
-3. Si hay que revisar diseño: `alta-review-diseno.md`.
-4. Si hay que implementar sobre diseño aprobado: `media-plan-implementacion.md`.
-5. Si es tarea chica y clara: `baja-implementacion-guiada.md`.
-6. Si falló algo: `baja-debugger.md`.
-7. Si hay que pensar pruebas: `media-diseno-testing.md`.
-8. Si ya sabés qué testear: `baja-tests-predefinidos.md`.
-9. Si terminaste código: `reviewer-pr-implementacion.md`.
-10. Si terminó una etapa: `retrospectiva.md`.
+2. Si necesitás entender un concepto nuevo: `transversal-mentoria-conceptos.md`.
+3. Si hay riesgo de arquitectura: `alta-diseno-arquitectura.md`.
+4. Si hay que revisar diseño: `alta-review-diseno.md`.
+5. Si hay que implementar sobre diseño aprobado: `media-plan-implementacion.md`.
+6. Si es tarea chica y clara: `baja-implementacion-guiada.md`.
+7. Si falló algo: `baja-debugger.md`.
+8. Si hay que pensar pruebas: `media-diseno-testing.md`.
+9. Si ya sabés qué testear: `baja-tests-predefinidos.md`.
+10. Si terminaste código: `reviewer-pr-implementacion.md`.
+11. Si terminó una etapa: `retrospectiva.md`.

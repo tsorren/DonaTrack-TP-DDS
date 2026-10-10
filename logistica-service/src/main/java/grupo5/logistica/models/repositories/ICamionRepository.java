@@ -11,5 +11,7 @@ public interface ICamionRepository extends CrudRepository<Camion> {
 
   Optional<Camion> findByPatente(String patente);
 
+  List<Camion> findActivos();
+
   List<Camion> findDisponibles();
 }

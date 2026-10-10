@@ -9,6 +9,8 @@ import org.springframework.http.ResponseEntity;
 public interface IItemDonacionNormalizadoController {
   ResponseEntity<List<ItemDonacionNormalizadoOutputDTO>> obtenerPendientes();
 
+  ResponseEntity<ItemDonacionNormalizadoOutputDTO> obtenerPorId(UUID id);
+
   ResponseEntity<ItemDonacionNormalizadoOutputDTO> actualizarEstado(
       UUID id, ItemDonacionNormalizadoPatchDTO dto);
 }

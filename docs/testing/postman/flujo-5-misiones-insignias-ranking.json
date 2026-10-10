@@ -1,0 +1,238 @@
+{
+  "info": {
+    "_postman_id": "donatrack-flujo-05-misiones",
+    "name": "Flujo 5 - Misiones, Insignias y Ranking (incentivos-service)",
+    "description": "Autocontenido. Recorre las 6 misiones/insignias reales en el ÚNICO orden en que pueden completarse (solo hay una misión activa por vez, la de menor número dentro de la categoría actual): Racha Inicial (3 meses) → Explorador (3 categorías) → asciende a SOSTENEDOR → Gran Aporte (50 bienes) → Constancia (6 meses) → asciende a TRANSFORMADOR → Impacto Real (10 donaciones exitosas) → Diversidad Solidaria (8 categorías). 22 llamadas en total. donanteId/personaId/organizacionId se generan una sola vez con {{$guid}} al arrancar (podés correr esta colección varias veces sin colisión).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [{
+    "listen": "prerequest",
+    "script": {
+      "type": "text/javascript",
+      "exec": [
+        "if (!pm.collectionVariables.get('donanteId')) { pm.collectionVariables.set('donanteId', pm.variables.replaceIn('{{$guid}}')); }",
+        "if (!pm.collectionVariables.get('personaId')) { pm.collectionVariables.set('personaId', pm.variables.replaceIn('{{$guid}}')); }",
+        "if (!pm.collectionVariables.get('organizacionId')) { pm.collectionVariables.set('organizacionId', pm.variables.replaceIn('{{$guid}}')); }"
+      ]
+    }
+  }],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8082" },
+    { "key": "donanteId", "value": "" },
+    { "key": "personaId", "value": "" },
+    { "key": "organizacionId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "0. Alta de Donante",
+      "item": [
+        {
+          "name": "1. Registrar Donante",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 201 Created', function () { pm.response.to.have.status(201); });",
+            "pm.test('Categoría inicial COLABORADOR', function () { pm.expect(pm.response.json().categoria).to.eql('COLABORADOR'); });"
+          ], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"idPersona\": \"{{personaId}}\",\n  \"nombre\": \"QA Misiones\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Racha Inicial (COLABORADOR, 3 meses consecutivos)",
+      "item": [
+        { "name": "1. Procesar Donación — mes 1 (2026-01)", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-01-15\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } },
+        { "name": "2. Procesar Donación — mes 2 (2026-02)", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-02-10\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } },
+        { "name": "3. Procesar Donación — mes 3 (2026-03) → completa Racha Inicial", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-03-05\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } }
+      ]
+    },
+    {
+      "name": "2. Explorador (COLABORADOR, 3 categorías) → asciende a SOSTENEDOR",
+      "item": [
+        {
+          "name": "1. Procesar Donación con 3 categorías distintas",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Ropa\", \"Higiene\", \"Alimentos\"],\n  \"cantidadBienes\": 6,\n  \"fecha\": \"2026-03-10\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } }
+        },
+        {
+          "name": "2. Verificar ascenso a SOSTENEDOR",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('categoria == SOSTENEDOR', function () { pm.expect(pm.response.json().categoria).to.eql('SOSTENEDOR'); });"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/metricas", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "metricas"] } }
+        }
+      ]
+    },
+    {
+      "name": "3. Gran Aporte (SOSTENEDOR, ≥50 bienes en 1 donación)",
+      "item": [
+        { "name": "1. Procesar Donación con cantidadBienes=50", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }], "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 50,\n  \"fecha\": \"2026-04-01\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } }
+      ]
+    },
+    {
+      "name": "4. Constancia (SOSTENEDOR, 6 meses consecutivos) → asciende a TRANSFORMADOR",
+      "item": [
+        { "name": "1. Procesar Donación — mes 1 (2026-05)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-05-01\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } },
+        { "name": "2. Procesar Donación — mes 2 (2026-06)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-06-01\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } },
+        { "name": "3. Procesar Donación — mes 3 (2026-07)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-07-01\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } },
+        { "name": "4. Procesar Donación — mes 4 (2026-08)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-08-01\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } },
+        { "name": "5. Procesar Donación — mes 5 (2026-09)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-09-01\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } } },
+        {
+          "name": "6. Procesar Donación — mes 6 (2026-10) → completa Constancia",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 5,\n  \"fecha\": \"2026-10-01\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } }
+        },
+        {
+          "name": "7. Verificar ascenso a TRANSFORMADOR",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('categoria == TRANSFORMADOR', function () { pm.expect(pm.response.json().categoria).to.eql('TRANSFORMADOR'); });"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/metricas", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "metricas"] } }
+        }
+      ]
+    },
+    {
+      "name": "5. Impacto Real (TRANSFORMADOR, 10 donaciones exitosas)",
+      "description": "OJO: esta misión NO avanza con /donaciones normal, solo con /donaciones/exitosa.",
+      "item": [
+        { "name": "1. Procesar Donación Exitosa (1/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        { "name": "2. Procesar Donación Exitosa (2/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        { "name": "3. Procesar Donación Exitosa (3/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        { "name": "4. Procesar Donación Exitosa (4/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        { "name": "5. Procesar Donación Exitosa (5/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        { "name": "6. Procesar Donación Exitosa (6/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        { "name": "7. Procesar Donación Exitosa (7/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        { "name": "8. Procesar Donación Exitosa (8/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        { "name": "9. Procesar Donación Exitosa (9/10)", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } } },
+        {
+          "name": "10. Procesar Donación Exitosa (10/10) → completa Impacto Real",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] } }
+        }
+      ]
+    },
+    {
+      "name": "6. Diversidad Solidaria (TRANSFORMADOR, 8 categorías) — última misión",
+      "item": [
+        {
+          "name": "1. Procesar Donación con 8 categorías distintas",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\", \"Ropa\", \"Higiene\", \"Calzado\", \"Juguetes\", \"Libros\", \"Electrodomesticos\", \"Muebles\"],\n  \"cantidadBienes\": 8,\n  \"fecha\": \"2026-11-01\"\n}" }, "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] } }
+        },
+        {
+          "name": "2. Verificar 6/6 misiones completadas",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "var misiones = pm.response.json();",
+            "var completadas = misiones.filter(function (m) { return m.completada; }).length;",
+            "pm.test('6 misiones completadas', function () { pm.expect(completadas).to.eql(6); });"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/misiones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "misiones"] } }
+        }
+      ]
+    },
+    {
+      "name": "7. Insignias y visibilidad",
+      "item": [
+        {
+          "name": "1. Obtener todas las insignias del donante",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+            "pm.test('6 insignias, todas visibles por defecto', function () {",
+            "  var insignias = pm.response.json();",
+            "  pm.expect(insignias.length).to.eql(6);",
+            "  insignias.forEach(function (i) { pm.expect(i.visible).to.eql(true); });",
+            "});"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/insignias?soloVisibles=false", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "insignias"], "query": [{ "key": "soloVisibles", "value": "false" }] } }
+        },
+        {
+          "name": "2. Ocultar insignia Explorador",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "PUT", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/insignias/Explorador/visibilidad?visible=false", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "insignias", "Explorador", "visibilidad"], "query": [{ "key": "visible", "value": "false" }] } }
+        },
+        {
+          "name": "3. Verificar que soloVisibles=true ya no la incluye",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var insignias = pm.response.json();",
+            "pm.test('5 insignias visibles (Explorador oculta)', function () { pm.expect(insignias.length).to.eql(5); });",
+            "pm.test('Explorador no está', function () { pm.expect(insignias.find(function (i) { return i.nombre === 'Explorador'; })).to.be.undefined; });"
+          ], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/insignias?soloVisibles=true", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "insignias"], "query": [{ "key": "soloVisibles", "value": "true" }] } }
+        },
+        {
+          "name": "4. [Negativo] Configurar visibilidad de insignia no ganada",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 404 INSIGNIA_NO_ENCONTRADA', function () { pm.response.to.have.status(404); });"], "type": "text/javascript" } }],
+          "request": { "method": "PUT", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/insignias/InsigniaQueNoExiste/visibilidad?visible=true", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "insignias", "InsigniaQueNoExiste", "visibilidad"], "query": [{ "key": "visible", "value": "true" }] } }
+        }
+      ]
+    },
+    {
+      "name": "8. Ranking mensual",
+      "item": [
+        {
+          "name": "1. Calcular Ranking del período 2026-03 (2 misiones completadas ese mes)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/calcular?periodo=2026-03", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "calcular"], "query": [{ "key": "periodo", "value": "2026-03" }] } }
+        },
+        {
+          "name": "2. Obtener Último Ranking",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/ultimo", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "ultimo"] } }
+        },
+        {
+          "name": "3. Obtener Posición del Donante en 2026-03",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200 (el donante completó misiones ese mes)', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/posicion/{{donanteId}}?periodo=2026-03", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "posicion", "{{donanteId}}"], "query": [{ "key": "periodo", "value": "2026-03" }] } }
+        },
+        {
+          "name": "4. Obtener Historial de Rankings",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/historial", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "historial"] } }
+        },
+        {
+          "name": "5. [Negativo] Calcular ranking con período mal formado",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 400', function () { pm.response.to.have.status(400); });"], "type": "text/javascript" } }],
+          "request": { "method": "POST", "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/calcular?periodo=2026-13", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "calcular"], "query": [{ "key": "periodo", "value": "2026-13" }] } }
+        },
+        {
+          "name": "6. [Nota] Posición de un donante que nunca existió → 204, no 404",
+          "description": "Asimetría documentada: este es el único endpoint scoped por donanteId que nunca valida existencia del donante.",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 204', function () { pm.response.to.have.status(204); });"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/posicion/00000000-0000-0000-0000-000000000000?periodo=2026-03", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "posicion", "00000000-0000-0000-0000-000000000000"], "query": [{ "key": "periodo", "value": "2026-03" }] } }
+        }
+      ]
+    },
+    {
+      "name": "9. Resumen admin",
+      "item": [
+        { "name": "1. Obtener Resumen General del Sistema", "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }], "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/admin/resumen", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "admin", "resumen"] } } }
+      ]
+    },
+    {
+      "name": "Z. Cleanup (correr al final)",
+      "item": [
+        {
+          "name": "1. Dar de Baja Donante",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 204', function () { pm.response.to.have.status(204); });"], "type": "text/javascript" } }],
+          "request": { "method": "DELETE", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}"] } }
+        },
+        {
+          "name": "2. [Verificación] Métricas del donante dado de baja → 404",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 404 (borrado físico)', function () { pm.response.to.have.status(404); });"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/metricas", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "metricas"] } }
+        },
+        {
+          "name": "3. [Verificación] El ranking histórico lo sigue mostrando",
+          "description": "El ranking guarda una copia de los datos al momento del cálculo — no se limpia al dar de baja al donante.",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200 (dato histórico persiste)', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/posicion/{{donanteId}}?periodo=2026-03", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "posicion", "{{donanteId}}"], "query": [{ "key": "periodo", "value": "2026-03" }] } }
+        }
+      ]
+    }
+  ]
+}

@@ -2,59 +2,29 @@ package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import grupo5.donaciones.controllers.impl.PersonasController;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.PersonaOutputDTO;
+import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.models.entities.personas.Genero;
 import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
-import grupo5.donaciones.services.IPersonasService;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class PersonasControllerTest {
+class PersonasControllerTest extends AbstractDonacionesWebMvcTest {
 
-  private MockMvc mockMvc;
-
-  @Mock private IPersonasService service;
-
-  @InjectMocks private PersonasController controller;
-
-  private ObjectMapper objectMapper;
-
-  @BeforeEach
-  void setUp() {
-    mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
-    objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-  }
+  private final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
   @Test
   void crearPersona_deberiaRetornarStatusCreated() throws Exception {
-    HumanaInputDTO input =
-        new HumanaInputDTO(
-            TipoPersona.HUMANA,
-            TipoDocumento.DNI,
-            "12345678",
-            null,
-            java.util.Collections.emptyList(),
-            "Juan",
-            "Perez",
-            Genero.HOMBRE,
-            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
+    HumanaInputDTO input = DTOFixtures.humanaInput();
     PersonaOutputDTO output =
         new grupo5.donaciones.dto.personas.HumanaOutputDTO(
             TipoPersona.HUMANA,
@@ -67,30 +37,35 @@ class PersonasControllerTest {
             "Perez",
             Genero.HOMBRE,
             java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    when(service.crearPersona(any())).thenReturn(output);
+    when(personasService.crearPersona(any())).thenReturn(output);
 
     mockMvc
         .perform(
             post("/api/personas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
-        .andExpect(status().isCreated());
+        .andExpect(status().isCreated())
+        .andExpect(header().exists("X-Trace-Id"));
+  }
+
+  @Test
+  void crearPersona_conNombreVacio_deberiaRetornarBadRequest() throws Exception {
+    HumanaInputDTO input = DTOFixtures.humanaInput("", "Perez", "12345678");
+
+    mockMvc
+        .perform(
+            post("/api/personas")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(input)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
+        .andExpect(jsonPath("$.errors[0].field").value("nombre"));
   }
 
   @Test
   void actualizarPersona_deberiaRetornarStatusOk() throws Exception {
     UUID id = UUID.randomUUID();
-    HumanaInputDTO input =
-        new HumanaInputDTO(
-            TipoPersona.HUMANA,
-            TipoDocumento.DNI,
-            "12345678",
-            null,
-            java.util.Collections.emptyList(),
-            "Juan",
-            "Perez",
-            Genero.HOMBRE,
-            java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
+    HumanaInputDTO input = DTOFixtures.humanaInput();
     PersonaOutputDTO output =
         new grupo5.donaciones.dto.personas.HumanaOutputDTO(
             TipoPersona.HUMANA,
@@ -103,21 +78,25 @@ class PersonasControllerTest {
             "Perez",
             Genero.HOMBRE,
             java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
-    when(service.actualizarPersona(eq(id), any())).thenReturn(output);
+    when(personasService.actualizarPersona(eq(id), any())).thenReturn(output);
 
     mockMvc
         .perform(
             put("/api/personas/" + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(input)))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 
   @Test
   void eliminarPersona_deberiaRetornarStatusNoContent() throws Exception {
     UUID id = UUID.randomUUID();
-    doNothing().when(service).eliminarPersona(id);
+    doNothing().when(personasService).eliminarPersona(id);
 
-    mockMvc.perform(delete("/api/personas/" + id)).andExpect(status().isNoContent());
+    mockMvc
+        .perform(delete("/api/personas/" + id))
+        .andExpect(status().isNoContent())
+        .andExpect(header().exists("X-Trace-Id"));
   }
 }

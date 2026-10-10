@@ -1,0 +1,112 @@
+@startuml 04-secuencia-broker
+' Figura 4 — ¿Cómo elige proveedor el broker de integración y cómo vuelve el estado?
+' Verificado contra baseline/e4-prs (dcd66fe5). Requisitos: R2 · D3 · D4.
+' Vuelta: LogisticaEventListener llama al verificador y, si pasa, a ProcesadorEventosLogistica,
+' que hace la dedup en memoria antes de cambiar el estado. Por eso la dedup va en ese participante.
+' Ese procesador de eventos de logística no es parte del broker de integración (va sin ámbar), como en las Figuras 1 y 3.
+' El Núcleo no publica directo: lo hace el adapter DonacionesEventPublisher, como en la Figura 1.
+' T19: la vuelta de externo depende de su callback de planificación. docker-compose.demo.yml no fija
+' LOGISTICA_SELF_BASE_URL (default http://localhost:8083, y externo escucha en 8084): sin rutas no hay
+' ruta.* ni entrega.* de externo (inferido, sin ejecución). Por eso va en un fragmento opt.
+' El publisher confirm y el return son mensajes asíncronos de RabbitMQ al adapter (UML 2: un mensaje
+' asíncrono no tiene respuesta). Resultados, según LogisticaOutboxRelay.enviar,
+' ProveedorLogisticaAmqp.enviar/esperarAcuse y ProveedorLogisticaHttp.clasificarRespuestaDeError/
+' clasificarFalloDeRed: RECHAZADO = devuelto, AmqpConnectException, ConnectException,
+' UnknownHostException, HttpConnectTimeoutException, 503, sin adapter; INCIERTO = nack, sin acuse,
+' otra AmqpException, otra falla de red, otro 5xx, excepción no clasificada; ERROR_CONTRATO = otro 4xx
+' o respuesta no 2xx sin excepción.
+!include estilo-e4.iuml
+skinparam maxMessageSize 220
+hide footbox
+
+title Figura 4 — Broker de integración con logística: selección de proveedor y vuelta del estado
+autonumber
+
+box "Donaciones" #F5F8FC
+  participant "Núcleo de\ndonaciones" as nucleo
+  participant "Publicador\nde eventos" as dpub <<adapter>>
+  participant "Broker de\nintegración" as broker <<broker de integración>>
+  participant "Estrategia de\nselección" as estr <<broker de integración>>
+  participant "Outbox del broker\ny relay\n«en memoria»" as outbox <<broker de integración>>
+  participant "Adapter\nAMQP" as aamqp <<adapter>>
+  participant "Adapter\nHTTP" as ahttp <<adapter>>
+  participant "Procesador de\neventos de logística\n(verificador + dedup)" as verif
+end box
+queue "RabbitMQ\n(message broker)" as mq
+box "Proveedores de logística" #F7F7F7
+  participant "Logística\nDonaTrack" as logd <<servicio>>
+  participant "Logística externa" as loge <<simulado>>
+end box
+
+== Ida: pedido de entrega ==
+[-> nucleo : PUT /api/asignaciones/\npropuestas/{id}/estado\n(propuesta aprobada)
+nucleo -> dpub : publicar el hecho
+dpub -[#5E4B8B]>> mq : hecho donacion.asignada.v1 en\ndonaciones.exchange (para Notificaciones)
+note left of mq : El hecho no elige proveedor:\nLogística no lo escucha.
+nucleo -> broker : solicitar entrega\nde la donación asignada
+alt la donación ya tiene una solicitud activa
+  broker --> nucleo : pedido ignorado\n(una sola entrega por donación)
+else sin solicitud activa
+  broker -> estr : ordenar proveedores
+  estr --> broker : preferido + resto en orden\nde configuración\n(default: donatrack, externo)
+  broker -> outbox : registrar entrada PENDIENTE\npara el primer proveedor
+  broker --> nucleo : retorna sin tocar la red
+end
+
+loop relay cada intervalo-ms (default 10 s), por entrada lista
+  alt proveedor AMQP (donatrack)
+    outbox -> aamqp : enviar la entrada
+    aamqp -[#5E4B8B]>> mq : comando entrega.solicitada.donatrack.v1\nen donaciones.exchange · mandatory\nmessageId = id de entrada · X-Trace-Id
+    mq -[#5E4B8B]>> logd : cola logistica.donatrack.\nentregas.solicitadas\n(binding exacto; dedup por donación)
+    mq -[#5E4B8B]>> aamqp : publisher confirm (ack / nack)\ny return si no hay cola (mensaje devuelto)
+    note over aamqp : espera el acuse\n≤ acuse-timeout-ms (5 s)
+  else proveedor HTTP (externo)
+    outbox -> ahttp : enviar la entrada
+    ahttp -> loge : POST /api/entregas (X-Trace-Id), solo de ida
+    loge --> ahttp : 2xx · 409 (ya tiene la donación) ·\n503 · otro 4xx · 5xx o timeout
+  end
+  outbox -> broker : registrar resultado
+  alt PUBLICADO: ack sin devolución · 2xx · 409
+    broker -> broker : solicitud ENVIADA
+  else RECHAZADO (no llegó): devuelto · sin conexión con RabbitMQ · HTTP sin conexión (rechazada, host desconocido o timeout de conexión) · 503 · proveedor sin adapter
+    broker -> estr : siguiente proveedor no descartado
+    broker -> outbox : nueva entrada para ese proveedor
+    note right of broker : Sin proveedores: nueva ronda con backoff\n30 s · 2^(ronda−1), hasta 5 rondas → FALLIDA
+  else INCIERTO (pudo llegar): nack · sin acuse · error de canal AMQP · timeout de lectura u otra falla de red · otro 5xx · excepción no clasificada
+    broker -> outbox : reintento al MISMO proveedor\ncon backoff (agotado → FALLIDA)
+  else ERROR_CONTRATO: 4xx distinto de 409 · respuesta no 2xx sin error
+    broker -> broker : FALLIDA sin reintento\n(log de error para revisión manual)
+  end
+end
+
+== Vuelta del estado: mensajería con identidad, sin callback HTTP ==
+note over logd, loge : Tras planificar (Figura 5) y en cada\ncambio de ruta o entrega (Figura 6)
+logd -[#5E4B8B]>> mq : ruta.* · entrega.* en logistica.exchange\nX-Proveedor-Id = donatrack\nX-Proveedor-Token
+opt externo con callback de planificación configurado (T19)
+  loge -[#5E4B8B]>> mq : ruta.* · entrega.* en logistica.exchange\nX-Proveedor-Id = externo\nX-Proveedor-Token
+end
+mq -[#5E4B8B]>> verif : colas donaciones.ruta.asignada ·\ndonaciones.ruta.iniciada ·\ndonaciones.entrega.exitosa ·\ndonaciones.entrega.fallida
+verif -> verif : verificar: id válido ·\ntoken = token-vuelta del proveedor ·\ndonación asignada a ese proveedor
+alt origen o pertenencia inválidos
+  verif -> verif : descarta con aviso en el log\n(sin reintento ni DLQ)
+else origen válido
+  verif -> verif : dedup en memoria\n(tipo · id de negocio · donación);\nsi ya se aplicó, se ignora
+  verif -> nucleo : cambiar estado de la donación\n(lista para entregar · en traslado ·\nentregada · entrega fallida)
+end
+
+legend bottom left
+  |= Notación |= Significado |
+  | flecha continua, punta llena | llamada sincrónica en proceso o HTTP |
+  | <color:#5E4B8B>flecha violeta continua, punta abierta</color> | mensaje asíncrono AMQP, en el sentido del mensaje |
+  | flecha discontinua | respuesta a una llamada sincrónica (un mensaje asíncrono no tiene respuesta) |
+  | figura de cola (cilindro acostado) | RabbitMQ (message broker) |
+  | <<broker de integración>> ámbar | piezas del broker de integración dentro de Donaciones |
+  | <<adapter>> verde | adapter de salida: hacia un proveedor o hacia RabbitMQ (publicador de eventos) |
+  | opt | fragmento que ocurre solo si se cumple su condición |
+  | <<simulado>> | segunda instancia de logistica-service (8084, en memoria) |
+  Ningún proveedor invoca a Donaciones: la vuelta es por logistica.exchange (ADR 20261008).
+  Outbox, solicitudes y preferido viven en memoria (DTI-14, ítems 1, 2 y 4); la dedup de la vuelta, también.
+  Un hecho que falla al aplicarse no se reintenta ni va a una DLQ (DTI-14, ítem 8).
+  T19: la demo no fija LOGISTICA_SELF_BASE_URL. El callback de externo falla y su vuelta no ocurre (inferido).
+endlegend
+@enduml

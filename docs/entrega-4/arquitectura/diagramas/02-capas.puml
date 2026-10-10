@@ -1,0 +1,103 @@
+@startuml 02-capas
+' ============================================================
+' Figura 2 — Capas e inversión de dependencias dentro de un servicio.
+' Pregunta: ¿cómo se organiza cada servicio por dentro y qué reglas lo protegen?
+' Vale para Donaciones, Logística, Incentivos y Notificaciones (mismo esqueleto de paquetes).
+' Fuente: paquetes controllers/, services/, models/, infrastructure/, config/ en baseline/e4-prs;
+'         reglas en */src/test/java/**/architecture/ArchitectureFitnessTest.java y CommonArchitectureTest.java.
+' Puertos de salida, según dónde se declara la interfaz:
+'   Dominio: models/repositories (4 servicios), models/storage/IImagenesInsignias (Incentivos),
+'            models/ports/NotificacionSender (Notificaciones).
+'   Aplicación: services/IDonacionesEventPublisher, services/logistica/ILogisticaBroker e
+'            IProveedorLogistica (Donaciones), services/ComunicadorEventosLogistica e
+'            IServicioExternoPlanificacion (Logística).
+'   Excepción: Incentivos declara IN8nClient e INotificacionesClient en infrastructure/ (DTI-16, ítem 9).
+' Notación de puertos: una sola. Cada puerto es un clasificador «interface»; la aplicación lo usa
+' (dependencia ..> «use») y el adaptador lo realiza (<|..). No se mezcla con bola y socket.
+' ============================================================
+!pragma layout smetana
+!include estilo-e4.iuml
+
+title Figura 2 — Capas, puertos y adaptadores de un servicio DonaTrack
+
+package "Servicio DonaTrack (mismo esqueleto en los 4)" as svc {
+  package "Adaptadores de entrada" as pIn {
+    component "Controllers REST\n+ DTO de frontera" as inHttp <<adapter>>
+    component "Listeners AMQP" as inAmqp <<adapter>>
+    component "Jobs programados (cron)\nno en Notificaciones" as inJob <<adapter>>
+  }
+  package "Aplicación" as pApp {
+    component "Servicios de aplicación\n(casos de uso y transacciones)" as appSvc
+    component "Mappers DTO ↔ dominio" as appMap
+    rectangle "Puertos de aplicación\npublicador de eventos,\nclientes externos,\nproveedor de logística" <<interface>> as portsApp
+  }
+  package "Dominio" as pDom {
+    component "Agregados y entidades\nState · Strategy · Template Method\ngestores de dominio puros" as domModel
+    component "Eventos de dominio" as domEv
+    rectangle "Puertos de dominio\nrepositorios\n(+ almacén de imágenes\ny envío por medio)" <<interface>> as portsDom
+  }
+  package "Adaptadores de salida" as pOut {
+    component "Repositorios\nen memoria\n(perfil por defecto)" as outMem <<adapter>>
+    component "Repositorios JPA\n+ mappers\n+ Flyway\n(perfil postgres)" as outJpa <<adapter>>
+    component "Publicadores AMQP" as outAmqp <<adapter>>
+    component "Clientes HTTP\n(planificador, n8n,\nproveedor de logística,\nFeign interino)" as outHttp <<adapter>>
+    component "Almacén de objetos\n(MinIO,\nsolo Incentivos)" as outS3 <<adapter>>
+    component "Envío por medio\n(simulado,\nNotificaciones)" as outMedios <<adapter>>
+  }
+  component "Configuración\n(compone el dominio puro\ny elige adaptador por perfil)" as cfg
+}
+
+component "common-lib\n(shared kernel técnico)\nbase de agregados y eventos,\nrepositorio genérico, errores,\ntraza y logging" as common <<infraestructura>>
+
+' ---------- Sentido de las dependencias: de afuera hacia el dominio ----------
+inHttp --> appSvc : invoca
+inAmqp --> appSvc : invoca
+inJob --> appSvc : invoca
+appSvc -> appMap : usa
+appSvc --> domModel : orquesta
+appSvc ..> portsApp : <<use>>
+appSvc ..> portsDom : <<use>>
+domModel --> domEv : registra
+portsDom <|.. outMem
+portsDom <|.. outJpa
+portsDom <|.. outS3
+portsDom <|.. outMedios
+portsApp <|.. outAmqp
+portsApp <|.. outHttp
+cfg ..> pDom : instancia
+svc ..> common : depende de
+
+' ---------- Fugas conocidas (no las detecta ArchUnit) ----------
+appSvc -[#B03A2E,dotted]-> pOut : fuga: aplicación importa\ninfraestructura\n(Donaciones, Incentivos, Logística)
+inHttp <-[#B03A2E,dotted]- domModel : fuga: dominio de Donaciones\nusa un DTO de necesidades
+
+note as nPers
+  **Persistencia por servicio**
+  Donaciones: solo memoria (sin JPA).
+  Logística, Incentivos, Notificaciones:
+  memoria por defecto; JPA con perfil postgres.
+  El modelo JPA está separado del dominio.
+end note
+
+note as nArch
+  **ArchUnit:** reglas forzadas y fugas
+  en §3 y DTI-16, ítem 9.
+end note
+
+' Notas debajo de common-lib, apiladas (solo layout).
+common -[hidden]- nPers
+nPers -[hidden]- nArch
+
+legend right
+  |= Elemento |= Significado |
+  |<#E1F2EC> «adapter» | Adaptador de entrada o de salida |
+  |<#FFFFFF> componente blanco | Aplicación, dominio o configuración |
+  |<#F2F2F2> «infraestructura» | Módulo compartido (common-lib) |
+  | ──> | Invoca o usa (en proceso) |
+  |<#FFFFFF> «interface» | Puerto de salida, declarado en Aplicación o en Dominio |
+  | - - -> «use» | La aplicación usa el puerto: depende de la abstracción |
+  | - - - con triángulo hueco | El adaptador realiza el puerto (inversión de dependencias) |
+  | - - -> | Otra dependencia: instancia o depende de |
+  | · · · roja | Fuga conocida entre capas |
+endlegend
+@enduml

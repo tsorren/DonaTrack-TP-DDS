@@ -1,0 +1,156 @@
+@startuml 03-integracion-amqp
+' ============================================================
+' Figura 3 — Topología AMQP (RabbitMQ).
+' Pregunta: ¿quién publica qué, en qué exchange, y quién lo consume?
+' Cada servicio aparece en el rol que cumple: a la izquierda publica, a la derecha consume.
+' Fuente: RabbitMQConfig de los 4 servicios en baseline/e4-prs.
+' Cola de comando por instancia: logistica-service/config/RabbitMQConfig (logistica.<instancia>.entregas.solicitadas,
+' clave entrega.solicitada.<instancia>.v1). La instancia externo existe con docker-compose.demo.yml
+' (LOGISTICA_INSTANCIA_ID=externo); el broker le habla por HTTP, así que su cola no tiene publicador.
+' T19: la vuelta de externo depende de su callback de planificación. docker-compose.demo.yml fija PORT=8084
+' pero no LOGISTICA_SELF_BASE_URL, que vale http://localhost:8083 por defecto: el callback falla, no hay rutas
+' y externo no publica ruta.* ni entrega.* (inferido, sin ejecución). Por eso su publicación va punteada.
+' Donaciones consume la vuelta en su procesador de eventos de logística (LogisticaEventListener →
+' VerificadorOrigenEventos → ProcesadorEventosLogistica), fuera del broker de integración.
+' Incentivos: alta y baja de donante idempotentes (GestionDonanteService.registrarDonante,
+' IncentivosEventosListener.darDeBaja); las donaciones no se deduplican (DTI-16, ítem 3).
+' Contratos: docs/arquitectura/eventos-amqp.md, docs/entrega-4/integracion/catalogo-mensajes.md.
+' ============================================================
+!pragma layout smetana
+!include estilo-e4.iuml
+left to right direction
+
+title Figura 3 — Integración por RabbitMQ: exchanges, routing keys y colas
+
+rectangle "Publicadores" as gPub {
+  component "Donaciones :8080\neventos de dominio" as pubDon <<servicio>>
+  component "Donaciones :8080\nbroker de integración" as pubBroker <<broker de integración>>
+  component "Incentivos :8082" as pubInc <<servicio>>
+  component "Logística DonaTrack :8083" as pubLog <<servicio>>
+  component "Logística externa :8084" as pubExt <<simulado>>
+}
+
+node "RabbitMQ :5672 (message broker)" as rmq <<infraestructura>> {
+  component "donaciones.exchange\n(topic, durable)" as exDon <<exchange>>
+  component "incentivos.exchange\n(topic, durable)" as exInc <<exchange>>
+  component "logistica.exchange\n(topic, durable)" as exLog <<exchange>>
+  component "notificaciones.dlx\n(topic, durable)" as dlx <<exchange>>
+
+  queue "notificaciones.donaciones" as qND
+  queue "incentivos.donacion-segmentada" as qIS
+  queue "incentivos.donacion-recibida" as qIR
+  queue "incentivos.persona-sincronizada" as qIP
+  queue "incentivos.donante-registrado" as qIDR
+  queue "incentivos.donante-dado-de-baja" as qIDB
+  queue "logistica.donatrack.entregas.solicitadas" as qCmd
+  queue "logistica.externo.entregas.solicitadas\n(solo demo)" as qCmdExt
+  queue "notificaciones.incentivos" as qNI
+  queue "donaciones.ruta.asignada" as qRA
+  queue "donaciones.ruta.iniciada" as qRI
+  queue "donaciones.entrega.exitosa" as qEE
+  queue "donaciones.entrega.fallida" as qEF
+  queue "notificaciones.donaciones.dlq" as dlqD
+  queue "notificaciones.incentivos.dlq" as dlqI
+}
+
+rectangle "Consumidores (cada uno declara sus colas)" as gCon {
+  component "Notificaciones :8081\ninbox evento_procesado\n(perfil postgres)" as conNot <<servicio>>
+  component "Incentivos :8082\ndedup solo en alta y\nbaja de donante · sin DLQ" as conInc <<servicio>>
+  component "Logística DonaTrack :8083\ndedup por donación" as conLog <<servicio>>
+  component "Logística externa :8084\n(solo demo)" as conExt <<simulado>>
+  component "Donaciones :8080\nprocesador de eventos de logística\n(verificador de origen\n+ dedup en memoria)" as conDon <<servicio>>
+}
+
+' ---------- Publicación (productor → exchange) ----------
+pubDon -[#5E4B8B,dashed]-> exDon : donacion.segmentada.v1\ndonacion.asignada.v1\ndonacion.en-camino.v1 (H8)\ndonacion.recibida.v1 (H8)\ndonacion.entrega-fallida.v1 (H8)\ndonacion.vencida.v1\ndonante.registrado.v1\ndonante.dado-de-baja.v1\npersona.sincronizada.v1
+pubBroker -[#5E4B8B,dashed]-> exDon : comando dirigido\nentrega.solicitada.<id>.v1\nconfirms + mandatory
+pubInc -[#5E4B8B,dashed]-> exInc : incentivo.mision-cumplida.v1\nincentivo.subio-categoria.v1\nincentivo.donante-inactivo.v1
+pubLog -[#5E4B8B,dashed]-> exLog : ruta.asignada · ruta.iniciada\nentrega.exitosa · entrega.fallida\nX-Proveedor-Id/Token
+pubExt -[#5E4B8B,dotted]-> exLog : mismas claves\nfirmadas como externo\nsolo si su callback\nde planificación vuelve (T19)
+
+' ---------- Bindings (exchange → cola, con su clave) ----------
+exDon -[#5E4B8B]-> qND : donacion.#\ndonante.#\npersona.#
+exDon -[#5E4B8B]-> qIS : donacion.segmentada.v1
+exDon -[#5E4B8B]-> qIR : donacion.recibida.v1
+exDon -[#5E4B8B]-> qIP : persona.sincronizada.v1
+exDon -[#5E4B8B]-> qIDR : donante.registrado.v1
+exDon -[#5E4B8B]-> qIDB : donante.dado-de-baja.v1
+exDon -[#5E4B8B]-> qCmd : entrega.solicitada.donatrack.v1\n(clave exacta)
+exDon -[#5E4B8B]-> qCmdExt : entrega.solicitada.externo.v1\n(clave exacta)
+exInc -[#5E4B8B]-> qNI : incentivo.#
+exLog -[#5E4B8B]-> qRA : ruta.asignada
+exLog -[#5E4B8B]-> qRI : ruta.iniciada
+exLog -[#5E4B8B]-> qEE : entrega.exitosa
+exLog -[#5E4B8B]-> qEF : entrega.fallida
+
+' ---------- Consumo (cola → consumidor) ----------
+qND -[#5E4B8B,dashed]-> conNot
+qNI -[#5E4B8B,dashed]-> conNot
+qIS -[#5E4B8B,dashed]-> conInc
+qIR -[#5E4B8B,dashed]-> conInc
+qIP -[#5E4B8B,dashed]-> conInc
+qIDR -[#5E4B8B,dashed]-> conInc
+qIDB -[#5E4B8B,dashed]-> conInc
+qCmd -[#5E4B8B,dashed]-> conLog
+qCmdExt -[#5E4B8B,dashed]-> conExt
+qRA -[#5E4B8B,dashed]-> conDon
+qRI -[#5E4B8B,dashed]-> conDon
+qEE -[#5E4B8B,dashed]-> conDon
+qEF -[#5E4B8B,dashed]-> conDon
+
+' ---------- Dead letter (solo Notificaciones) ----------
+qND -[#9A9A9A,dashed]> dlx
+qNI -[#9A9A9A,dashed]> dlx
+dlx -[#9A9A9A]> dlqD
+dlx -[#9A9A9A]> dlqI
+
+note right of conDon
+  **H8:** Donaciones aplica el estado y reemite
+  en donaciones.exchange:
+  ruta.iniciada → donacion.en-camino.v1
+  entrega.exitosa → donacion.recibida.v1
+  entrega.fallida → donacion.entrega-fallida.v1
+  (ruta.asignada no se reemite)
+end note
+
+note right of conLog
+  **H1/H2:** Logística solo publica en
+  logistica.exchange y su único consumidor
+  es Donaciones. Solo consume su comando.
+end note
+
+note as nCmd
+  El comando va por destinatario: cada instancia
+  de Logística liga su cola con clave exacta
+  (logistica.<instancia>.entregas.solicitadas).
+  Sin cola ligada, RabbitMQ devuelve el mensaje
+  (mandatory) y el broker prueba otro proveedor.
+  La cola de externo existe, pero nadie publica
+  en ella: el broker le habla por HTTP.
+  Todo lo AMQP de Incentivos existe con
+  incentivos.rabbitmq.enabled=true (default).
+end note
+
+note as nGap
+  Por comodín, notificaciones.donaciones también
+  recibe donacion.segmentada.v1 y donante.dado-de-baja.v1:
+  sin handler, van a la DLQ (inferido, sin ejecución).
+  notificaciones.exchange y cola.eventos.notificaciones
+  siguen declarados sin publicador (legado).
+end note
+
+legend right
+  |= Elemento |= Significado |
+  |<#E6EEF8> «servicio» | Servicio en el rol que cumple (publica o consume) |
+  |<#FFF1CC> «broker de integración» | Publica el comando dirigido a un proveedor |
+  |<#F3F3F3> «simulado» | 2ª instancia de logistica-service (proveedor externo, solo demo) |
+  |<#EEE8F7> «exchange» | Exchange topic durable |
+  |<#F7F5FB> cola | Cola durable, declarada por su consumidor |
+  | - - -> violeta | Publicación o consumo, con sus routing keys |
+  | ──> violeta | Binding exchange → cola, con su clave |
+  | - - -> gris | Dead letter (x-dead-letter-exchange) hacia notificaciones.dlx |
+  | · · · > violeta | Publicación condicional: hoy la demo no fija el callback de externo (T19) |
+  La clave de dead-letter de cada cola es el nombre de su DLQ.
+  Las claves de logistica.exchange no llevan sufijo de versión.
+endlegend
+@enduml

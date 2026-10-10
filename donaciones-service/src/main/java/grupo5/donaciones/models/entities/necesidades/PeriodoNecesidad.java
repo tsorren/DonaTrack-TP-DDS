@@ -17,6 +17,10 @@ public record PeriodoNecesidad(
 
   private static final Logger logger = Logger.getLogger(PeriodoNecesidad.class.getName());
 
+  public PeriodoNecesidad {
+    donacionesAsignadas = List.copyOf(donacionesAsignadas);
+  }
+
   public PeriodoNecesidad(LocalDate fechaFin, Integer cantidadObjetivo) {
     this(fechaFin, new ArrayList<>(), cantidadObjetivo, null);
   }

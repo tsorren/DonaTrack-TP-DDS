@@ -21,9 +21,9 @@ crea uno nuevo que lo reemplaza, manteniendo asi la trazabilidad de la evolucion
 
 Para gestionar este conocimiento, el equipo utiliza dos herramientas principales:
 
-1. [Documentador](../documentador/): Una aplicacion web personalizada que facilita la redaccion de estos
+1. [Documentador](../herramientas/documentador/index.html): Una aplicacion web personalizada que facilita la redaccion de estos
    documentos siguiendo el formato requerido.
-2. [Display de Decisiones (Log4brains)](../adr-preview/): Esta interfaz interactiva que permite navegar por todos los
+2. [Display de Decisiones (Log4brains)](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview): Esta interfaz interactiva que permite navegar por todos los
    registros de forma organizada.
 
 ## Flujo de Trabajo

@@ -8,5 +8,7 @@ import java.util.UUID;
 public interface IItemDonacionNormalizadoService {
   List<ItemDonacionNormalizadoOutputDTO> obtenerPendientes();
 
+  ItemDonacionNormalizadoOutputDTO obtener(UUID id);
+
   ItemDonacionNormalizadoOutputDTO actualizarEstado(UUID id, ItemDonacionNormalizadoPatchDTO dto);
 }

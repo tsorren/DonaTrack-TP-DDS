@@ -1,0 +1,673 @@
+@startuml diagrama-de-clases-donaciones
+!include ../../common/donatrack-style.puml
+
+title Servicio de Donaciones - Dominio
+
+' ==================== DIRECCION ====================
+package DIRECCION {
+  class Pais <<entity>> {
+    - nombre: String
+    --
+    + anonimizar(): void
+  }
+
+  class Provincia <<entity>> {
+    - nombre: String
+    - pais: Pais
+    --
+    + anonimizar(): void
+  }
+
+  class Localidad <<entity>> {
+    - nombre: String
+    - provincia: Provincia
+    --
+    + anonimizar(): void
+  }
+
+  class Direccion <<entity>> {
+    - localidad: Localidad
+    - calle: String
+    - altura: Integer
+    - piso: Integer
+    - departamento: String
+    - codigoPostal: String
+    --
+    + Direccion(calle: String, altura: Integer, piso: Integer, departamento: String, codigoPostal: String, localidad: Localidad)
+    - {static} validarDireccion(calle: String, altura: Integer, codigoPostal: String, localidad: Localidad): void
+    + anonimizar(): void
+  }
+
+  Direccion --> Localidad
+  Localidad --> Provincia
+  Provincia --> Pais
+}
+
+' ==================== PERSONAS ====================
+package PERSONAS {
+  enum TipoPersona <<enum>> {
+    HUMANA
+    JURIDICA
+  }
+
+  enum TipoDocumento <<enum>> {
+    DNI
+    PASAPORTE
+    LIBRETA
+    CUIT
+  }
+
+  enum Genero <<enum>> {
+    PREFIERO_NO_DECIR
+    HOMBRE
+    MUJER
+    NO_BINARIO
+  }
+
+  enum TipoTelefono <<enum>> {
+    WHATSAPP
+    ESTANDAR
+  }
+
+  enum TipoJuridico <<enum>> {
+    GUBERNAMENTAL
+    ONG
+    EMPRESA
+    INSTITUCION
+  }
+
+  abstract class Persona <<entity>> {
+    - id: UUID {final}
+    - documento: String
+    - tipoDocumento: TipoDocumento
+    - mediosDeContacto: List<MedioDeContacto>
+    - direccion: Direccion
+    - fechaAlta: LocalDateTime
+    --
+    + agregarMedioDeContacto(MedioDeContacto): void
+    + quitarMedioDeContacto(MedioDeContacto): void
+    + definirMedioDeContactoPredeterminado(MedioDeContacto): void
+    + esDuplicadaDe(Persona): Boolean
+    + {abstract} getTipoPersona(): TipoPersona
+    + {abstract} anonimizar(): void
+  }
+
+  class Humana <<entity>> {
+    - nombre: String
+    - apellido: String
+    - genero: Genero
+    - fechaNacimiento: LocalDate
+    --
+    + Humana(nombre: String, apellido: String, fechaNacimiento: LocalDate)
+    - {static} validarDatosHumanos(nombre: String, apellido: String, fechaNacimiento: LocalDate): void
+    + getTipoPersona(): TipoPersona
+    + anonimizar(): void
+    + esDuplicadaDe(Persona): Boolean
+  }
+
+  class Juridica <<entity>> {
+    - representantes: List<Humana> {final}
+    - razonSocial: String
+    - tipo: TipoJuridico
+    - rubro: String
+    --
+    + agregarRepresentante(Humana): void
+    + quitarRepresentante(Humana): void
+    + getTipoPersona(): TipoPersona
+    + esDuplicadaDe(Persona): Boolean
+    + anonimizar(): void
+  }
+
+  abstract class MedioDeContacto <<entity>> {
+    - predeterminado: Boolean
+    --
+    + {abstract} anonimizar(): void
+  }
+
+  class Correo <<entity>> {
+    - direccionCorreo: String
+    --
+    + anonimizar(): void
+  }
+
+  class Telefono <<entity>> {
+    - caracteristica: String
+    - codigoArea: String
+    - numero: String
+    - tipo: TipoTelefono
+    --
+    + obtenerNumeroCompleto(): String
+    + anonimizar(): void
+  }
+
+  class Donante <<entity>> {
+    - id: UUID {final}
+    - persona: Persona
+    --
+    + anonimizar(): void
+    + agregarDonacion(Donacion): void
+    + quitarDonacion(Donacion): void
+  }
+
+  Persona <|-- Humana
+  Persona <|-- Juridica
+  MedioDeContacto <|-- Correo
+  MedioDeContacto <|-- Telefono
+
+  Persona *-- TipoPersona
+  Persona *-- TipoDocumento
+  Persona *-- MedioDeContacto
+  Persona --> Direccion
+  Humana *-- Genero
+  Juridica *-- TipoJuridico
+  Juridica --> Humana
+  Telefono --> TipoTelefono
+  Donante --> Persona
+  Donante --> Direccion
+}
+
+' ==================== CATEGORIAS ====================
+package CATEGORIAS {
+  class Categoria <<entity>> {
+    - nombre: String
+    - conUso: Boolean
+    - conVencimiento: Boolean
+    --
+    + Categoria(nombre: String, conUso: Boolean, conVencimiento: Boolean, unidad: Unidad)
+    - {static} validarCategoria(nombre: String, conUso: Boolean, conVencimiento: Boolean, unidad: Unidad): void
+  }
+
+  class SubCategoria <<entity>> {
+    - id: UUID {final}
+    - categoria: Categoria
+    - nombre: String
+    - aliases: List<AliasSubcategoria> {final}
+    --
+    + Subcategoria(categoria: Categoria, nombre: String)
+    + agregarAlias(alias: String): void
+    + removerAlias(alias: String): void
+    + tieneAlias(alias: String): boolean
+    - {static} validarSubCategoria(categoria: Categoria, nombre: String): void
+  }
+
+  class AliasSubcategoria <<entity>> {
+    - id: UUID {final}
+    - subcategoria: SubCategoria
+    - alias: String
+  }
+
+  SubCategoria *-- Categoria
+  AliasSubcategoria *-- SubCategoria
+}
+
+' ==================== DONACIONES ====================
+package DONACIONES {
+  enum EstadoDonacion <<enum>> {
+    CARGADA
+    NORMALIZADA
+    SEGMENTADA
+  }
+
+  enum Estado <<enum>> {
+    NUEVO
+    USADO
+    DESGASTADO
+  }
+
+  enum EstadoNormalizacion <<enum>> {
+    PENDIENTE_REVISION
+    NORMALIZADO
+  }
+
+  class cambioEstadoDonacion <<entity>> {
+    - estadoAnterior: EstadoDonacion
+    - estadoNuevo: EstadoDonacion
+    - timestamp: LocalDateTime
+  }
+
+  class Bien <<entity>> {
+    - id: UUID {final}
+    - nombre: String
+    - descripcion: String
+    - volumen: Float
+    - peso: Float
+    - fechaVencimiento: LocalDate
+    - imagen: String
+    - estado: Estado
+    - estadoNormalizacion: EstadoNormalizacion
+  }
+
+  class ItemDonacion <<entity>> {
+    - bien: Bien
+    - cantidad: Integer
+  }
+
+  class Deposito <<entity>> {
+    - id: UUID
+    - nombre: String
+    - direccion: Direccion
+  }
+
+  class Donacion <<entity>> {
+    - id: UUID {final}
+    - donante: Donante
+    - items: List<ItemDonacion>
+    - descripcion: String
+    - fecha: LocalDateTime
+    - depositoRecepcion: Deposito
+    - estadoActual: EstadoDonacion
+    - historialEstados: List<CambioEstadoDonacion> {final}
+    - eventos: List<EventoDonacion>
+    --
+    + marcarNormalizada(): void
+    + marcarSegmentada(): void
+    - avanzarEstado(nuevoEstado: EstadoDonacion): void
+    + limpiarEventos(): void
+    - registrarEvento(evento: EventoDonacion): void
+  }
+
+  Donacion --> EstadoDonacion
+  Donacion *-- ItemDonacion
+  Donacion *-- cambioEstadoDonacion
+  Donacion *-- Deposito
+  ItemDonacion *-- Bien
+  Bien *-- Estado
+  Bien *-- EstadoNormalizacion
+  Deposito *-- Direccion
+  EstadoDonacion *-- cambioEstadoDonacion
+}
+
+' ==================== ITEMS_NORMALIZADOS ====================
+package ITEMS_NORMALIZADOS {
+  class BienNormalizado <<entity>> {
+    - bienOriginal: Bien
+    - idSubcategoria: UUID
+    - confianza: Double
+    --
+    + estaVencido(): Boolean
+    + pesoUnitario(): Double
+    + volumenUnitario(): Double
+    + cambiarEstado(estado: EstadoNormalizacion, idSubcategoria: UUID): void
+    - lanzarEventoDeNormalizacion(): void
+  }
+
+  class ItemDonacionNormalizado <<entity>> {
+    - idDonacionOriginal: UUID {final}
+    - bien: BienNormalizado {final}
+    - cantidad: Integer {final}
+    - segmentado: Boolean
+  }
+
+  class EventoBienNormalizado <<entity>> {
+  }
+
+  BienNormalizado --> Bien
+  BienNormalizado --> SubCategoria
+  BienNormalizado *-- ItemDonacionNormalizado
+}
+
+' ==================== DONACIONES_INDEPENDIENTES ====================
+package DONACIONES_INDEPENDIENTES {
+  enum TipoEstadoDonacion <<enum>> {
+    EN_DEPOSITO
+    ASIGNACION_REALIZADA
+    EN_TRASLADO
+    LISTA_PARA_ENTREGAR
+    ENTREGADA
+    ENTREGA_FALLIDA
+    VENCIDA
+  }
+
+  interface EstadoDonacionIndependiente <<interface>> {
+  }
+
+  class EnDeposito <<entity>> {
+    --
+    + reservar(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+    + vencer(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+  }
+
+  class AsignacionRealizada <<entity>> {
+    --
+    + planificarRuta(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+  }
+
+  class EnTraslado <<entity>> {
+    - patenteCamion: String
+    --
+    + confirmarEntrega(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+    + registrarFalla(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+  }
+
+  class ListaParaEntregar <<entity>> {
+    --
+    + iniciarRecorrido(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+  }
+
+  class Entregada <<entity>> {
+  }
+
+  class EntregaFallida <<entity>> {
+    - replanificable: Boolean
+    --
+    + retornar(donacion: DonacionIndependiente, solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+  }
+
+  class Vencida <<entity>> {
+  }
+
+  class CambioEstado <<entity>> {
+    - estadoAnterior: EstadoDonacionIndependiente
+    - estadoNuevo: EstadoDonacionIndependiente
+    - timestamp: LocalDateTime
+    - justificacion: String
+    - actor: String
+  }
+
+  class ItemDonacionIndependiente <<entity>> {
+    - donacionIndependiente: DonacionIndependiente
+    - bien: BienNormalizado
+    - cantidad: Integer
+    --
+    + fragmentarse(cantidad: Integer): ItemDonacionIndependiente
+  }
+
+  class SolicitudCambioEstadoDonacionIndependiente <<entity>> {
+    - Estado: TipoEstadoDonacion
+    - necesidad: Necesidad
+    - justificacion: String
+    - urlMapa: String
+    - patenteCamion: String
+    - replanificable: Boolean
+  }
+
+  class DonacionIndependiente <<entity>> {
+    - id: UUID {final}
+    - donacionOriginal: Donacion {final}
+    - items: List<ItemDonacionIndependiente>
+    - estado: EstadoDonacionIndependiente
+    - historialEstados: List<CambioEstado>
+    - eventos: List<EventoDonacionIndependiente>
+    - cantidadTotal: Integer
+    --
+    + DonacionIndependiente(donacionOriginal: Donacion, items: List<ItemDonacionIndependiente>)
+    + cambiarEstado(solicitud: SolicitudCambioEstadoDonacionIndependiente): void
+    + fragmentar(cantidadNecesaria: Integer): DonacionIndependiente
+    + tieneSubcategoria(subcategoria: SubCategoria): boolean
+    + estaVencida(): boolean
+    + pesoTotal(): Double
+    + volumenTotal(): Double
+    - registrarCambioEstado(solicitud: SolicitudCambioEstadoDonacionIndependiente, estadoNuevo: EstadoDonacionIndependiente): void
+    - registrarEvento(evento: EventoDonacionIndependiente): void
+    + limpiarEventos(): void
+    + getTipoEstado(): TipoEstadoDonacion
+  }
+
+  EstadoDonacionIndependiente <|.. EnDeposito
+  EstadoDonacionIndependiente <|.. AsignacionRealizada
+  EstadoDonacionIndependiente <|.. EnTraslado
+  EstadoDonacionIndependiente <|.. ListaParaEntregar
+  EstadoDonacionIndependiente <|.. Entregada
+  EstadoDonacionIndependiente <|.. EntregaFallida
+  EstadoDonacionIndependiente <|.. Vencida
+
+  DonacionIndependiente --> Donacion
+  DonacionIndependiente *-- TipoEstadoDonacion
+  DonacionIndependiente *-- EstadoDonacionIndependiente
+  DonacionIndependiente *-- CambioEstado
+  DonacionIndependiente o-- ItemDonacionIndependiente
+  ItemDonacionIndependiente *-- DonacionIndependiente
+  BienNormalizado *-- ItemDonacionIndependiente
+  CambioEstado *-- DonacionIndependiente
+  CambioEstado *-- EstadoDonacionIndependiente
+  DonacionIndependiente --> SolicitudCambioEstadoDonacionIndependiente
+  EstadoDonacionIndependiente --> SolicitudCambioEstadoDonacionIndependiente
+}
+
+' ==================== NECESIDADES ====================
+package NECESIDADES {
+  abstract class Necesidad <<entity>> {
+    - id: UUID {final}
+    - entidadBeneficiaria: EntidadBeneficiaria {final}
+    - subcategoria: SubCategoria {final}
+    - cantidadTotal: Integer
+    - descripcion: String
+    - fechaPublicacion: LocalDate
+    - fechaFinalizacion: LocalDate
+    --
+    + Necesidad(subcategoria: SubCategoria, cantidadTotal: Integer, descripcion: String)
+    + {abstract} asignarDonacion(donacion: DonacionIndependiente): void
+    + {abstract} quitarDonacion(donacion: DonacionIndependiente): void
+    + {abstract} cantidadAcumulada(): Integer
+    + {abstract} estaSatisfecha(): boolean
+    + cantidadRestante(): Integer
+    + toDTO(): NecesidadDTO
+  }
+
+  class NecesidadExtraordinaria <<entity>> {
+    - donacionesAsignadas: List<DonacionIndependiente>
+    --
+    + NecesidadExtraordinaria(subcategoria: SubCategoria, cantidad: Integer, descripcion: String)
+    + toDTO(): NecesidadDTO
+    + asignarDonacion(donacion: DonacionIndependiente): void
+    + quitarDonacion(donacion: DonacionIndependiente): void
+    + cantidadAcumulada(): Integer
+    + estaSatisfecha(): boolean
+    + obtenerNecesidad(): Necesidad
+  }
+
+  class PeriodoNecesidad <<entity>> {
+    - logger: Logger
+    - fechaFin: LocalDate
+    - donacionesAsignadas: List<DonacionIndependiente>
+    - cantidadObjetivo: Integer
+    - necesidadRecurrente: NecesidadRecurrente
+    --
+    + PeriodoNecesidad(fechaFin: LocalDate, cantidadObjetivo: Integer)
+    + asignarDonacion(donacion: DonacionIndependiente): void
+    + quitarDonacion(donacion: DonacionIndependiente): void
+    + cantidadAcumulada(): Integer
+    + estaSatisfecha(): boolean
+    + estaEnPeriodo(fecha: LocalDate): boolean
+    + finalizo(): void
+    + obtenerNecesidad(): Necesidad
+  }
+
+  class NecesidadRecurrente <<entity>> {
+    - periodo: Period
+    - periodos: List<PeriodoNecesidad>
+    - activa: Boolean
+    --
+    + NecesidadRecurrente(subcategoria: SubCategoria, cantidad: Integer, descripcion: String, periodo: Period, fechaInicio: LocalDate)
+    - validarNecesidadRecurrente(fechaInicio: LocalDate): void
+    + getDonacionesAsignadas(): List<DonacionIndependiente>
+    + obtenerPeriodoActual(): PeriodoNecesidad
+    + asignarDonacion(donacion: DonacionIndependiente): void
+    + quitarDonacion(donacion: DonacionIndependiente): void
+    + cantidadAcumulada(): Integer
+    + estaSatisfecha(): boolean
+    + hayQueGenerarNuevo(fechaActual: LocalDate): boolean
+    + generarNuevoPeriodo(): void
+    + getActiva(): boolean
+    + toDTO(): NecesidadDTO
+  }
+
+  class GestorNecesidades <<service>> {
+    --
+    + generarNuevosPeriodosParaNecesidadesRecurrentes(necesidades: List<NecesidadRecurrente>): void
+    - {static} crearPeriodoPara(necesidad: NecesidadRecurrente): void
+  }
+
+  Necesidad <|-- NecesidadExtraordinaria
+  Necesidad <|-- NecesidadRecurrente
+
+  Necesidad --> SubCategoria
+  Necesidad --> EntidadBeneficiaria
+  NecesidadExtraordinaria o-- DonacionIndependiente
+  NecesidadRecurrente *-- PeriodoNecesidad : "*"
+  PeriodoNecesidad o-- DonacionIndependiente
+  GestorNecesidades --> NecesidadRecurrente
+}
+
+' ==================== BENEFICIARIOS ====================
+package BENEFICIARIOS {
+  class EntidadBeneficiaria <<entity>> {
+    - id: UUID
+    - juridica: UUID
+    --
+    + anonimizar(): void
+  }
+
+  EntidadBeneficiaria --> Juridica
+}
+
+' ==================== PROPUESTAS ====================
+package PROPUESTAS {
+  enum EstadoPropuesta <<enum>> {
+    PENDIENTE
+    APROBADA
+    DESCARTADA
+  }
+
+  class PosibleFragmentacion <<entity>> {
+    - id: UUID
+    - donacionOriginal: DonacionIndependiente
+    - cantidadNecesaria: Integer
+    --
+    + confirmar(necesidad: Necesidad, actor: String): DonacionIndependiente
+  }
+
+  class Propuesta <<entity>> {
+    - id: UUID
+    - necesidadQueSatisface: Necesidad
+    - posiblesFragmentaciones: List<PosibleFragmentacion>
+    - estado: EstadoPropuesta
+    - fechaCreacion: LocalDateTime
+    --
+    + agregarFragmentacion(donacion: DonacionIndependiente, cantidad: int): void
+    + estaActiva(): boolean
+    + aceptar(actor: String): void
+    + rechazar(): void
+  }
+
+  class GestorPropuestasDeAsignacion <<service>> {
+    - algoritmos: List<AlgoritmoAsignacion>
+    --
+    + generarPropuestas(): void
+    - consolidar(propuestas1: List<Propuesta>, propuestas2: List<Propuesta>): List<Propuesta>
+    + actualizarEstadoPropuesta(id: UUID, estado: EstadoPropuesta): void
+    + onPropuestaAprobada(evento: PropuestaAprobada): void <<@EventListener>>
+  }
+
+  Propuesta *-- EstadoPropuesta
+  Propuesta *-- PosibleFragmentacion
+  PosibleFragmentacion --> DonacionIndependiente
+  PosibleFragmentacion --> Propuesta
+  GestorPropuestasDeAsignacion --> EstadoPropuesta
+  GestorPropuestasDeAsignacion --> Propuesta
+}
+
+' ==================== ALGORITMOS _ ASIGNACION ====================
+package "ALGORITMOS _ ASIGNACION" {
+  class StockDeDonaciones <<entity>> {
+    - cantidades: Map<DonacionIndependiente, Integer>
+    --
+    + StockDeDonaciones(donaciones: List<DonacionIndependiente>)
+    + disponibles(): List<DonacionIndependiente>
+    + disponibleDe(donacion: DonacionIndependiente): Integer
+    + registrarReservas(propuesta: Propuesta): void
+  }
+
+  abstract class AlgoritmoAsignacion <<entity>> {
+    --
+    + {abstract} asignar(necesidades: List<Necesidad>, stock: StockDeDonaciones): List<Propuesta>
+  }
+
+  class AlgoritmoCompatibilidadSemantica <<entity>> {
+    --
+    + asignar(necesidades: List<Necesidad>, stock: StockDeDonaciones): List<Propuesta>
+  }
+
+  class AlgoritmoPrioridadSubAtendidos <<entity>> {
+    --
+    + ordenarNecesidades(necesidades: List<Necesidad>): List<Necesidad>
+    + filtrarDonaciones(necesidad: Necesidad, donaciones: List<DonacionIndependiente>): List<DonacionIndependiente>
+    - contarDonacionesRecientes(necesidad: Necesidad, fecha: LocalDateTime): Integer
+  }
+
+  AlgoritmoAsignacion <|-- AlgoritmoCompatibilidadSemantica
+  AlgoritmoAsignacion <|-- AlgoritmoPrioridadSubAtendidos
+  AlgoritmoAsignacion --> StockDeDonaciones
+  StockDeDonaciones --> DonacionIndependiente
+  GestorPropuestasDeAsignacion *-- AlgoritmoAsignacion
+}
+
+' ==================== EVENTOS ====================
+package EVENTOS {
+  class EventoDonacion <<entity>> {
+    - idDonacion: UUID
+    - fechaHora: LocalDateTime
+    - tipo: EstadoDonacion
+  }
+
+  abstract class EventoDonacionIndependiente <<entity>> {
+    - idDonacionIndependiente: UUID
+    - fechaHora: LocalDateTime
+  }
+
+  class EventoDonacionAsignada <<entity>> {
+    - idNecesidad: UUID
+  }
+
+  class EventoRutaIniciada <<entity>> {
+    - idNecesidad: UUID
+    - urlMapa: String
+  }
+
+  class EventoDonacionRecibida <<entity>> {
+    - idNecesidad: UUID
+    - patenteCamion: String
+  }
+
+  class EventoDonacionFallida <<entity>> {
+    - idNecesidad: UUID
+    - justificacion: String
+    - replanificable: Boolean
+  }
+
+  EventoDonacionIndependiente <|-- EventoDonacionAsignada
+  EventoDonacionIndependiente <|-- EventoRutaIniciada
+  EventoDonacionIndependiente <|-- EventoDonacionRecibida
+  EventoDonacionIndependiente <|-- EventoDonacionFallida
+
+  Donacion *-- EventoDonacion
+  EstadoDonacion *-- EventoDonacion
+  DonacionIndependiente *-- EventoDonacionIndependiente
+}
+
+' ==================== CARGA_MASIVA ====================
+package CARGA_MASIVA {
+  enum EstadoArchivo <<enum>> {
+    PENDIENTE
+    PROCESANDO
+    PROCESADO
+    PROCESADO_CON_ERRORES
+    ERROR
+  }
+
+  class Archivo <<entity>> {
+    - id: UUID {final}
+    - path: String
+    - estado: EstadoArchivo
+    --
+    + marcarComoProcesando(): void
+    + marcarComoProcesado(): void
+    + marcarComoError(): void
+    + marcarComoCompletadoConErrores(): void
+    + finalizarProcesamiento(erroresNegocio: Int): void
+  }
+
+  Archivo --> EstadoArchivo
+}
+
+@enduml

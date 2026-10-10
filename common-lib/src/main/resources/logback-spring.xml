@@ -18,7 +18,7 @@
     <property name="CONSOLE_LOG_PATTERN" 
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5level | ${appName} | ${instanceId} | %X{traceId:-NO_TRACE} | %logger{36} | %msg%n"/>
 
-    <!-- Console Appender -->
+    <!-- Console Appender (Human readable) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
@@ -26,7 +26,19 @@
         </encoder>
     </appender>
 
-    <!-- Actual File Appender (Overwritten per run) -->
+    <!-- Console Appender Structured NDJSON (Logstash Logback) -->
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>eventType</includeMdcKeyName>
+            <includeMdcKeyName>httpMethod</includeMdcKeyName>
+            <includeMdcKeyName>endpoint</includeMdcKeyName>
+            <includeMdcKeyName>serviceName</includeMdcKeyName>
+            <customFields>{"service":"${appName}","instanceId":"${instanceId}"}</customFields>
+        </encoder>
+    </appender>
+
+    <!-- Actual File Appender (Overwritten per run - local dev only) -->
     <appender name="FILE_ACTUAL" class="ch.qos.logback.core.FileAppender">
         <file>${ACTUAL_FILE}</file>
         <append>false</append>
@@ -36,7 +48,7 @@
         </encoder>
     </appender>
 
-    <!-- Registro File Appender (Persistent historical) -->
+    <!-- Registro File Appender (Persistent historical - local dev only) -->
     <appender name="FILE_REGISTRO" class="ch.qos.logback.core.FileAppender">
         <file>${REGISTRO_FILE}</file>
         <append>true</append>
@@ -52,9 +64,19 @@
 
     <logger name="grupo5" level="${grupo5LogLevel}"/>
 
-    <root level="${rootLogLevel}">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE_ACTUAL"/>
-        <appender-ref ref="FILE_REGISTRO"/>
-    </root>
+    <!-- Perfil preprod, prod o json: Emisión NDJSON estructurada por consola (12-Factor App XI) -->
+    <springProfile name="preprod,prod,json">
+        <root level="${rootLogLevel}">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </root>
+    </springProfile>
+
+    <!-- Perfil local / default: Consola legible y archivos en logs/ -->
+    <springProfile name="!(preprod | prod | json)">
+        <root level="${rootLogLevel}">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE_ACTUAL"/>
+            <appender-ref ref="FILE_REGISTRO"/>
+        </root>
+    </springProfile>
 </configuration>

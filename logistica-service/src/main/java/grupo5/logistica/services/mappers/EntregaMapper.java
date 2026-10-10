@@ -3,10 +3,16 @@ package grupo5.logistica.services.mappers;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
+import grupo5.logistica.dto.entregas.ConfirmarRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
+import grupo5.logistica.dto.entregas.RegresarAlDepositoRequestDTO;
+import grupo5.logistica.dto.entregas.ReportarNoRecepcionRequestDTO;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
+import grupo5.logistica.models.entities.entregas.ConfirmacionRecepcion;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.NoRecepcion;
+import grupo5.logistica.models.entities.entregas.RegresoDeposito;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,6 +56,19 @@ public class EntregaMapper {
         entrega.getPesoTotalKG(),
         entrega.getVolumenTotalM3(),
         entrega.getHistorialEstado().stream().map(this::toCambioEstadoResponseDTO).toList());
+  }
+
+  public ConfirmacionRecepcion toSolicitud(Entrega entrega, ConfirmarRecepcionRequestDTO dto) {
+    return new ConfirmacionRecepcion(entrega, dto.actor(), null);
+  }
+
+  public NoRecepcion toSolicitud(Entrega entrega, ReportarNoRecepcionRequestDTO dto) {
+    boolean replanificable = dto.replanificable() == null || dto.replanificable();
+    return new NoRecepcion(entrega, dto.actor(), dto.justificacion(), replanificable);
+  }
+
+  public RegresoDeposito toSolicitud(Entrega entrega, RegresarAlDepositoRequestDTO dto) {
+    return new RegresoDeposito(entrega, dto.actor());
   }
 
   public CambioEstadoEntregaResponseDTO toCambioEstadoResponseDTO(CambioEstadoEntrega cambio) {

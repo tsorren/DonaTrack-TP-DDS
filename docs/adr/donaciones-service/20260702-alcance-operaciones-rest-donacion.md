@@ -1,5 +1,5 @@
 # Alcance de las operaciones REST expuestas para Donacion (sin PUT ni DELETE)
-- Status: proposed
+- Status: accepted
 - Date: 2026-07-02
 - Deciders: Grupal
 - Tags: donaciones, api-rest, ddd, auditoria

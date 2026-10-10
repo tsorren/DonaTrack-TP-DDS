@@ -5,30 +5,26 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class MisionCumplida extends EventoNotificable {
-  private String nombreMision;
-  private String recompensa;
+  private final String nombreMision;
+  private final String recompensa;
 
   public MisionCumplida(
       Persona persona, String nombreMision, String recompensa, LocalDateTime fecha) {
-    this.setPersona(persona);
-    this.setFecha(fecha);
+    super(persona, fecha);
     this.nombreMision = nombreMision;
     this.recompensa = recompensa;
   }
-
-  public MisionCumplida() {}
 
   @Override
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacion =
         new Notificacion(
             this.getPersona().getId(),
-            "Completaste la misión " + nombreMision + ". Recompensa: " + recompensa);
+            "Completaste la misión " + nombreMision + ". Recompensa: " + recompensa,
+            this.getFecha());
 
     return List.of(notificacion);
   }

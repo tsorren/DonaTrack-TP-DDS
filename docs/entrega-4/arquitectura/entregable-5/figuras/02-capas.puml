@@ -1,0 +1,44 @@
+@startuml 02-capas
+' Figura 2 del cuerpo: capas con puertos y adaptadores (variante simplificada de
+' docs/entrega-4/arquitectura/diagramas/02-capas.puml, sin fugas, notas ni leyenda tabular).
+' Las excepciones conocidas se listan en el capítulo 10 (epígrafe del docx).
+!pragma layout smetana
+!include ../../diagramas/estilo-e4.iuml
+
+package "Servicio DonaTrack" as svc {
+  package "Adaptadores de entrada" as pIn {
+    component "REST" as inHttp <<adapter>>
+    component "Oyentes AMQP" as inAmqp <<adapter>>
+    component "Tareas programadas" as inJob <<adapter>>
+  }
+  package "Aplicación" as pApp {
+    component "Casos de uso" as appSvc
+    rectangle "Puertos de aplicación" <<interface>> as portsApp
+  }
+  package "Dominio" as pDom {
+    component "Modelo de dominio" as domModel
+    rectangle "Puertos de dominio" <<interface>> as portsDom
+  }
+  package "Adaptadores de salida" as pOut {
+    component "Repositorios" as outRepo <<adapter>>
+    component "Publicadores AMQP" as outAmqp <<adapter>>
+    component "Clientes HTTP" as outHttp <<adapter>>
+  }
+  component "Configuración" as cfg
+}
+component "common-lib" as common <<infraestructura>>
+
+inHttp --> appSvc
+inAmqp --> appSvc
+inJob --> appSvc
+appSvc --> domModel : orquesta
+appSvc ..> portsApp : <<use>>
+appSvc ..> portsDom : <<use>>
+portsDom <|.. outRepo
+portsApp <|.. outAmqp
+portsApp <|.. outHttp
+cfg ..> pDom : instancia
+svc ..> common
+' Solo layout: common-lib debajo del servicio para no superar 730 px.
+outHttp -[hidden]down- common
+@enduml

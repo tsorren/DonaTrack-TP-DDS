@@ -3,11 +3,20 @@ package grupo5.donaciones.controllers.impl;
 import grupo5.donaciones.controllers.INecesidadesController;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.services.INecesidadesService;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/necesidades")
@@ -15,23 +24,17 @@ public class NecesidadesController implements INecesidadesController {
 
   private final INecesidadesService necesidadesService;
 
-  // Inyección de dependencias por constructor
   public NecesidadesController(INecesidadesService necesidadesService) {
     this.necesidadesService = necesidadesService;
   }
 
-  // ENDPOINTS
-
-  // POST: crear necesidad
   @Override
   @PostMapping
-  public ResponseEntity<NecesidadDTO> crearNecesidad(@RequestBody NecesidadDTO dto) {
+  public ResponseEntity<NecesidadDTO> crearNecesidad(@Valid @RequestBody NecesidadDTO dto) {
     NecesidadDTO creada = necesidadesService.guardar(dto);
-    // Retorna HTTP 201 Created junto con el objeto persistido en memoria
     return ResponseEntity.status(HttpStatus.CREATED).body(creada);
   }
 
-  // GET: mostrar todas las necesidades
   @Override
   @GetMapping
   public ResponseEntity<List<NecesidadDTO>> listarNecesidades(
@@ -40,10 +43,23 @@ public class NecesidadesController implements INecesidadesController {
     return ResponseEntity.ok(lista);
   }
 
-  // GET: mostrar una necesidad puntual
   @Override
   @GetMapping("/{id}")
   public ResponseEntity<NecesidadDTO> obtenerNecesidad(@PathVariable UUID id) {
     return ResponseEntity.ok(necesidadesService.obtenerPorId(id));
+  }
+
+  @Override
+  @PutMapping("/{id}")
+  public ResponseEntity<NecesidadDTO> actualizarNecesidad(
+      @PathVariable UUID id, @Valid @RequestBody NecesidadDTO dto) {
+    return ResponseEntity.ok(necesidadesService.actualizar(id, dto));
+  }
+
+  @Override
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> eliminarNecesidad(@PathVariable UUID id) {
+    necesidadesService.eliminar(id);
+    return ResponseEntity.noContent().build();
   }
 }

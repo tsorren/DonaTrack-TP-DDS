@@ -14,6 +14,8 @@ public interface IRankingService {
 
   Optional<Integer> obtenerPosicionDonante(UUID donanteId);
 
+  Optional<Integer> obtenerPosicionDonante(UUID donanteId, YearMonth periodo);
+
   Optional<RankingMensual> obtenerRankingPorPeriodo(YearMonth periodo);
 
   List<RankingMensualDTO> obtenerHistorial();

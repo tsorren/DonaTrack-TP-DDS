@@ -1,19 +1,23 @@
 package grupo5.logistica.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.camiones.CambioEstadoCamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionResponseDTO;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
+import grupo5.logistica.models.entities.camiones.GestorDeCamiones;
+import grupo5.logistica.models.entities.camiones.SolicitudNuevoCamion;
+import grupo5.logistica.models.entities.camiones.ValidadorPatentes;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.services.ICamionesService;
 import grupo5.logistica.services.mappers.CamionMapper;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CamionesService implements ICamionesService {
@@ -32,47 +36,46 @@ public class CamionesService implements ICamionesService {
   }
 
   @Override
+  @Transactional
   public CamionResponseDTO crear(CamionRequestDTO request) {
     validadorPatentes.validar(request.patente());
-    Camion camion = camionMapper.toDomain(request);
+    SolicitudNuevoCamion solicitud = camionMapper.toSolicitud(request, List.of());
+    Camion camion =
+        GestorDeCamiones.procesarSolicitudNuevoCamion(solicitud)
+            .orElseThrow(() -> new BusinessStateException(ErrorCatalog.CAMION_PATENTE_DUPLICADA));
     camionRepository.save(camion);
     return camionMapper.toResponseDTO(camion);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<CamionResponseDTO> consultarTodos() {
-    return camionRepository.findAll().stream()
-        .filter(c -> c.getEstado() != EstadoCamion.DESHABILITADO)
-        .map(camionMapper::toResponseDTO)
-        .toList();
+    return camionRepository.findActivos().stream().map(camionMapper::toResponseDTO).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public CamionResponseDTO consultarPorId(UUID id) {
     return camionMapper.toResponseDTO(buscarCamionActivo(id));
   }
 
   @Override
+  @Transactional
   public CamionResponseDTO cambiarEstado(UUID id, CambioEstadoCamionRequestDTO request) {
-    // Usa buscarCamion() sin filtro — el dominio valida si la transición es válida
-    // desde cualquier estado, incluyendo DESHABILITADO → DISPONIBLE (habilitar)
     Camion camion =
         camionRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
-    switch (request.estado()) {
-      case DISPONIBLE -> camion.habilitar();
-      case DESHABILITADO -> camion.deshabilitar();
-      case EN_RUTA -> throw new ValidationException(ErrorCatalog.ESTADO_CAMION_TRANSICION_INVALIDA);
-    }
+    GestorDeCamiones.cambiarEstado(camion, request.estado());
 
     camionRepository.save(camion);
     return camionMapper.toResponseDTO(camion);
   }
 
   @Override
+  @Transactional
   public void darDeBaja(UUID id) {
     Camion camion = buscarCamionActivo(id);
-    camion.deshabilitar();
+    GestorDeCamiones.cambiarEstado(camion, EstadoCamion.DESHABILITADO);
     camionRepository.save(camion);
   }
 

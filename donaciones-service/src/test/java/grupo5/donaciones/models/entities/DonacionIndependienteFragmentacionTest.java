@@ -1,49 +1,33 @@
 package grupo5.donaciones.models.entities;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.donaciones.models.entities.categorias.Categoria;
-import grupo5.donaciones.models.entities.categorias.Subcategoria;
-import grupo5.donaciones.models.entities.categorias.Unidad;
+import grupo5.donaciones.fixtures.BienMother;
 import grupo5.donaciones.models.entities.donaciones.Bien;
-import grupo5.donaciones.models.entities.donaciones.Donacion;
-import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
-import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
-import grupo5.donaciones.models.entities.personas.Humana;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DonacionIndependienteFragmentacionTest {
-  private static final LocalDate TEST_DATE = LocalDate.of(2026, Month.JUNE, 9);
 
-  private Donacion donacion;
   private BienNormalizado bienNormalizado;
   private DonacionIndependiente donacionIndependiente;
 
   @BeforeEach
   void setUp() {
-    Humana humana = new Humana("nombre", "apellido", TEST_DATE);
-    Donante donante = new Donante(humana.getId());
-    donacion = new Donacion(donante.getId());
-    Categoria categoria = new Categoria("Ropa", false, true, Unidad.UNIDADES);
-    Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Ropa de Invierno");
-
-    Bien bienOriginal =
-        new Bien("descripcion", "imagen.png", TEST_DATE.plusMonths(2), Estado.NUEVO, 1.0, 1.0);
-    bienNormalizado =
-        new BienNormalizado(
-            bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
+    UUID subcategoriaId = UUID.randomUUID();
+    Bien bienOriginal = BienMother.prendaRopa("Campera de invierno");
+    bienNormalizado = BienMother.aceptado(bienOriginal, subcategoriaId);
 
     ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 10);
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 15);
@@ -52,28 +36,26 @@ class DonacionIndependienteFragmentacionTest {
     items.add(item1);
     items.add(item2);
 
-    donacionIndependiente = new DonacionIndependiente(donacion.getId(), items);
+    donacionIndependiente = new DonacionIndependiente(UUID.randomUUID(), items);
   }
 
   @Test
-  void fragmentarse_cuandoPideMenosQuantidadDelTotal_debeLanzarExcepcion() {
+  void fragmentarse_cuandoPideCantidadIgualAlTotal_debeLanzarExcepcion() {
     BusinessStateException exception =
         assertThrows(
             BusinessStateException.class,
             () -> donacionIndependiente.fragmentarse(25),
-            "Debería lanzar excepción cuando la cantidad es igual o mayor al total");
-    assertNotNull(exception);
+            "Debería lanzar excepción cuando la cantidad es igual al total");
     assertEquals(ErrorCatalog.FRAGMENTACION_CANTIDAD_INSUFICIENTE, exception.getError());
   }
 
   @Test
-  void fragmentarse_cuandoPideMasQuantidadDelTotal_debeLanzarExcepcion() {
+  void fragmentarse_cuandoPideMasCantidadDelTotal_debeLanzarExcepcion() {
     BusinessStateException exception =
         assertThrows(
             BusinessStateException.class,
             () -> donacionIndependiente.fragmentarse(30),
             "Debería lanzar excepción cuando la cantidad solicitada es mayor al total");
-    assertNotNull(exception);
     assertEquals(ErrorCatalog.FRAGMENTACION_CANTIDAD_INSUFICIENTE, exception.getError());
   }
 
@@ -101,12 +83,9 @@ class DonacionIndependienteFragmentacionTest {
     ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 8);
     ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bienNormalizado, 12);
 
-    List<ItemDonacionIndependiente> items = new ArrayList<>();
-    items.add(item1);
-    items.add(item2);
-    items.add(item3);
+    List<ItemDonacionIndependiente> items = new ArrayList<>(List.of(item1, item2, item3));
 
-    DonacionIndependiente donacionLocal = new DonacionIndependiente(donacion.getId(), items);
+    DonacionIndependiente donacionLocal = new DonacionIndependiente(UUID.randomUUID(), items);
 
     DonacionIndependiente fragmentada = donacionLocal.fragmentarse(13);
 

@@ -52,4 +52,4 @@ Cada servicio escuchará y enviará los eventos que le sean relevantes en base a
 * La implementación es más compleja.
 
 ## Links
-* [Eventos Notificables](../20260519-eventos-como-disparadores-de-notificaciones)
+* [Eventos Notificables](./20260519-eventos-como-disparadores-de-notificaciones.md)

@@ -9,46 +9,22 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.handlers.GlobalExceptionHandler;
-import grupo5.logistica.controllers.impl.CamionesController;
 import grupo5.logistica.dto.camiones.CambioEstadoCamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionRequestDTO;
 import grupo5.logistica.dto.camiones.CamionResponseDTO;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
-import grupo5.logistica.services.ICamionesService;
 import java.util.List;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@ExtendWith(MockitoExtension.class)
-class CamionesControllerTest {
+class CamionesControllerTest extends AbstractLogisticaWebMvcTest {
 
-  private MockMvc mockMvc;
-  private ObjectMapper objectMapper;
-
-  @Mock private ICamionesService camionesService;
-  @InjectMocks private CamionesController controller;
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   private static final UUID ID = UUID.randomUUID();
   private static final CamionResponseDTO RESPONSE_DTO =
       new CamionResponseDTO(ID, "AB123CD", 10f, 2f, 5000f, EstadoCamion.DISPONIBLE, null);
-
-  @BeforeEach
-  void setUp() {
-    mockMvc =
-        MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new GlobalExceptionHandler())
-            .build();
-    objectMapper = new ObjectMapper();
-  }
 
   // ===================== POST /api/camiones =====================
 

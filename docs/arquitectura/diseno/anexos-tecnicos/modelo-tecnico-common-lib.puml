@@ -1,0 +1,227 @@
+@startuml
+title Modelo Técnico Autogenerado - Common Lib (Shared Kernel)
+
+class grupo5.common.CommonLibAutoConfiguration {
+}
+
+abstract class grupo5.common.events.AgregadoConEventos {
+	{field} -domainEvents : java.util.List
+	{method} +clearDomainEvents () : void
+	{method} +registrarEvento ( evento : grupo5.common.events.EventoDeDominio ) : void
+}
+
+abstract class grupo5.common.events.EventoDeDominio {
+	{field} -id : java.util.UUID
+	{field} -timestamp : java.time.LocalDateTime
+}
+
+class grupo5.common.exceptions.BusinessStateException {
+}
+
+abstract class grupo5.common.exceptions.DonaTrackException {
+	{method} +getErrorCode () : String
+}
+
+enum grupo5.common.exceptions.ErrorCatalog {
+	{field} +AGREGAR_NECESIDAD_NULA
+	{field} +ALGORITMO_DONACIONES_NULAS
+	{field} +ALGORITMO_NECESIDADES_NULAS
+	{field} +ALGORITMO_NECESIDAD_NULA
+	{field} +ARGUMENTO_INVALIDO
+	{field} +ARGUMENTO_NULO
+	{field} +ASIGNAR_DONACION_NULA
+	{field} +BIEN_ESTADO_REQUERIDO
+	{field} +BIEN_NORMALIZADO_RANGO_CONFIANZA
+	{field} +BIEN_NORMALIZADO_SIN_BIEN
+	{field} +BIEN_NORMALIZADO_SIN_ESTADO
+	{field} +BIEN_NORMALIZADO_SIN_SUBCATEGORIA
+	{field} +BIEN_VENCIMIENTO_NO_PERMITIDO
+	{field} +BIEN_VENCIMIENTO_REQUERIDO
+	{field} +CAMION_PATENTE_DUPLICADA
+	{field} +CAMION_PATENTE_FORMATO_INVALIDO
+	{field} +CAMION_PATENTE_VACIA
+	{field} +CANTIDAD_NECESITADA_INVALIDA
+	{field} +CATEGORIA_SIN_NOMBRE
+	{field} +CATEGORIA_SIN_UNIDAD
+	{field} +CATEGORIA_SIN_USO_DEFINIDO
+	{field} +CATEGORIA_SIN_VENCIMIENTO_DEFINIDO
+	{field} +CSV_PROCESS_ERROR
+	{field} +CSV_READ_ERROR
+	{field} +DEPOSITO_DIRECCION_NULA
+	{field} +DEPOSITO_NOMBRE_NULO
+	{field} +DESCRIPCION_BIEN_VACIA
+	{field} +DESCRIPCION_NECESIDAD_VACIA
+	{field} +DIMENSIONES_BIEN_INVALIDAS
+	{field} +DIRECCION_ALTURA_INVALIDA
+	{field} +DIRECCION_CALLE_VACIA
+	{field} +DIRECCION_LOCALIDAD_NULA
+	{field} +DONACION_ASIGNADA_A_OTRA_NECESIDAD
+	{field} +DONACION_ESTADO_INVALIDO_PARA_RUTA
+	{field} +DONACION_YA_ASIGNADA
+	{field} +DONACION_YA_EN_ESTADO
+	{field} +DONANTE_DUPLICADO
+	{field} +DONANTE_NO_ENCONTRADO
+	{field} +DONANTE_PUNTOS_NEGATIVOS
+	{field} +ENTIDAD_BENEFICIARIA_DUPLICADA
+	{field} +ENTREGA_DATOS_INVALIDOS
+	{field} +ENTREGA_ESTADO_INVALIDO
+	{field} +ENTREGA_NO_ENCONTRADA
+	{field} +ERROR_INTERNO_SERVIDOR
+	{field} +FECHA_INICIO_POSTERIOR_A_FIN
+	{field} +FORMATO_FECHA_INVALIDO
+	{field} +ID_INVALIDO
+	{field} +INSIGNIA_DUPLICADA
+	{field} +INSIGNIA_NO_ENCONTRADA
+	{field} +LOCALIDAD_NOMBRE_NULO
+	{field} +LOCALIDAD_PROVINCIA_NULA
+	{field} +METRICAS_DONANTE_NO_ENCONTRADAS
+	{field} +MISION_DONACIONES_INSUFICIENTES
+	{field} +MISION_NO_ENCONTRADA
+	{field} +MISION_PERIODO_INVALIDO
+	{field} +NECESIDAD_CANTIDAD_NO_DISPONIBLE
+	{field} +NECESIDAD_CANTIDAD_NO_NUMERICA
+	{field} +NECESIDAD_CANTIDAD_REQUERIDA
+	{field} +NECESIDAD_FECHA_FIN_INVALIDA
+	{field} +NECESIDAD_FECHA_INICIO_FALTANTE
+	{field} +NECESIDAD_FECHA_INICIO_INVALIDA
+	{field} +NECESIDAD_NO_ENCONTRADA
+	{field} +NECESIDAD_PERIODO_FALTANTE
+	{field} +NECESIDAD_PERIODO_INVALIDO
+	{field} +NECESIDAD_SUBCATEGORIA_NO_DEFINIDA
+	{field} +PAIS_NOMBRE_NULO
+	{field} +PROVINCIA_NOMBRE_NULO
+	{field} +PROVINCIA_PAIS_NULO
+	{field} +RANKING_ANIO_INVALIDO
+	{field} +RANKING_MES_INVALIDO
+	{field} +RECURSO_NO_ENCONTRADO
+	{field} +REGLA_DE_NEGOCIO_ROTA
+	{field} +REGLA_NO_ENCONTRADA
+	{field} +RUTA_CAMION_NO_ASIGNADO
+	{field} +RUTA_CAPACIDAD_EXCEDIDA
+	{field} +RUTA_CHOFER_NO_ASIGNADO
+	{field} +RUTA_ESTADO_INVALIDO
+	{field} +RUTA_NO_ENCONTRADA
+	{field} +RUTA_SIN_ENTREGAS
+	{field} +SOLICITUD_PLANIFICACION_NO_ENCONTRADA
+	{field} +SUBCATEGORIA_DUPLICADA
+	{field} +SUBCATEGORIA_NO_ENCONTRADA
+	{field} +SUBCATEGORIA_SIN_CATEGORIA
+	{field} +SUBCATEGORIA_SIN_NOMBRE
+	{field} +TIPO_PERSONA_INVALIDO
+	{field} +VALIDACION_FALLIDA
+	{field} -code : String
+	{method} +getCode () : String
+	{method} +valueOf ( name : String ) : grupo5.common.exceptions.ErrorCatalog
+	{method} +values () : grupo5.common.exceptions.ErrorCatalog[]
+}
+
+class grupo5.common.handlers.GlobalExceptionHandler {
+	{field} -log : org.slf4j.Logger
+	{method} +handleBusinessState ( ex : grupo5.common.exceptions.BusinessStateException ) : org.springframework.http.ResponseEntity
+	{method} +handleGenericException ( ex : java.lang.Exception ) : org.springframework.http.ResponseEntity
+	{method} +handleRecursoNoEncontrado ( ex : grupo5.common.exceptions.RecursoNoEncontradoException ) : org.springframework.http.ResponseEntity
+	{method} +handleValidation ( ex : grupo5.common.exceptions.ValidationException ) : org.springframework.http.ResponseEntity
+}
+
+class grupo5.common.exceptions.RecursoNoEncontradoException {
+}
+
+class grupo5.common.exceptions.InfrastructureException {
+}
+
+class grupo5.common.exceptions.ValidationException {
+}
+
+class grupo5.common.logging.ControllerLoggingInterceptor {
+	{field} -ENDPOINT : String
+	{field} -EVENT_TYPE : String
+	{field} -HTTP_IN : String
+	{field} -HTTP_METHOD : String
+	{field} -logger : org.slf4j.Logger
+	{method} +afterCompletion ( request : jakarta.servlet.http.HttpServletRequest , response : jakarta.servlet.http.HttpServletResponse , handler : Object , ex : java.lang.Exception ) : void
+	{method} +preHandle ( request : jakarta.servlet.http.HttpServletRequest , response : jakarta.servlet.http.HttpServletResponse , handler : Object ) : boolean
+}
+
+class grupo5.common.logging.FeignTraceRequestInterceptor {
+	{field} +MDC_TRACE_KEY : String
+	{field} +TRACE_HEADER : String
+	{method} +apply ( template : feign.RequestTemplate ) : void
+}
+
+class grupo5.common.logging.LoggingAutoConfiguration {
+}
+
+class grupo5.common.logging.MdcTaskDecorator {
+	{method} +decorate ( runnable : java.lang.Runnable ) : java.lang.Runnable
+}
+
+class grupo5.common.logging.ServiceLoggingAspect {
+	{field} -EVENT_TYPE : String
+	{field} -SERVICE_ERROR : String
+	{field} -SERVICE_SUCCESS : String
+	{field} -logger : org.slf4j.Logger
+	{method} +logServiceMethods ( joinPoint : org.aspectj.lang.ProceedingJoinPoint ) : Object
+}
+
+class grupo5.common.logging.TraceResponseHeaderFilter {
+	{field} +MDC_TRACE_KEY : String
+	{field} +REQUEST_ID_HEADER : String
+	{field} +TRACE_HEADER : String
+	{method} #doFilterInternal ( request : jakarta.servlet.http.HttpServletRequest , response : jakarta.servlet.http.HttpServletResponse , filterChain : jakarta.servlet.FilterChain ) : void
+}
+
+class grupo5.common.openapi.DonaTrackOpenApiAutoConfiguration {
+	{method} +donaTrackOpenApi ( properties : grupo5.common.openapi.DonaTrackOpenApiProperties , environment : org.springframework.core.env.Environment ) : io.swagger.v3.oas.models.OpenAPI
+}
+
+class grupo5.common.openapi.DonaTrackOpenApiProperties {
+	{field} -description : String
+	{field} -serverDescription : String
+	{field} -serverUrl : String
+	{field} -title : String
+	{field} -version : String
+	{method} +getDescription () : String
+	{method} +getServerDescription () : String
+	{method} +getServerUrl () : String
+	{method} +getTitle () : String
+	{method} +getVersion () : String
+	{method} +setDescription ( description : String ) : void
+	{method} +setServerDescription ( serverDescription : String ) : void
+	{method} +setServerUrl ( serverUrl : String ) : void
+	{method} +setTitle ( title : String ) : void
+	{method} +setVersion ( version : String ) : void
+}
+
+abstract class grupo5.common.repositories.CrudRepositoryEnMemoria {
+	{field} #entidades : java.util.Map
+	{method} +count () : long
+	{method} +delete ( entidad : Object ) : void
+	{method} +deleteAll () : void
+	{method} +deleteById ( id : Object ) : void
+	{method} +existsById ( id : Object ) : boolean
+	{method} +findAll () : java.util.List
+	{method} +findById ( id : Object ) : java.util.Optional
+	{method} #getId ( entidad : Object ) : Object
+	{method} +save ( entidad : Object ) : Object
+	{method} +saveAll ( entidades : java.lang.Iterable ) : java.util.List
+}
+
+interface grupo5.common.repositories.CrudRepository {
+	{method} +count () : long
+	{method} +delete ( entidad : Object ) : void
+	{method} +deleteAll () : void
+	{method} +deleteById ( id : Object ) : void
+	{method} +existsById ( id : Object ) : boolean
+	{method} +findAll () : java.util.List
+	{method} +findById ( id : Object ) : java.util.Optional
+	{method} +save ( entidad : Object ) : Object
+	{method} +saveAll ( entidades : java.lang.Iterable ) : java.util.List
+}
+
+grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.BusinessStateException
+grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.InfrastructureException
+grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.RecursoNoEncontradoException
+grupo5.common.exceptions.DonaTrackException <|-- grupo5.common.exceptions.ValidationException
+grupo5.common.repositories.CrudRepository <|.. grupo5.common.repositories.CrudRepositoryEnMemoria
+
+@enduml

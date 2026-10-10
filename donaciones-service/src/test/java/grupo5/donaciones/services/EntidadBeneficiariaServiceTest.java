@@ -1,18 +1,22 @@
 package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaInputDTO;
 import grupo5.donaciones.dto.entidadBeneficiaria.EntidadBeneficiariaOutputDTO;
-import grupo5.donaciones.dto.personas.JuridicaOutputDTO;
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.services.impl.EntidadBeneficiariaService;
+import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.EntidadBeneficiariaMapper;
+import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
+import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,7 +33,10 @@ class EntidadBeneficiariaServiceTest {
   void setUp() {
     repository = mock(IEntidadesBeneficiariasRepository.class);
     personasRepository = mock(IPersonasRepository.class);
-    mapper = mock(EntidadBeneficiariaMapper.class);
+    mapper =
+        new EntidadBeneficiariaMapper(
+            new PersonaMapper(new DireccionMapper(), new MedioDeContactoMapper()),
+            personasRepository);
 
     service = new EntidadBeneficiariaService(repository, personasRepository, mapper);
   }
@@ -38,55 +45,51 @@ class EntidadBeneficiariaServiceTest {
   void crearEntidad_debeCrearYRetornarDTO() {
     UUID juridicaId = UUID.randomUUID();
 
-    Juridica juridica = mock(Juridica.class);
+    Juridica juridica = PersonaMother.fundacionEsperanza();
     when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
 
-    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridicaId);
-
-    when(repository.save(any(EntidadBeneficiaria.class))).thenReturn(entidad);
-
-    EntidadBeneficiariaOutputDTO dto =
-        new EntidadBeneficiariaOutputDTO(entidad.getId(), mock(JuridicaOutputDTO.class));
-
-    when(mapper.toOutputDTO(entidad)).thenReturn(dto);
+    when(repository.save(any(EntidadBeneficiaria.class))).thenAnswer(inv -> inv.getArgument(0));
 
     EntidadBeneficiariaOutputDTO resultado =
         service.crearEntidad(new EntidadBeneficiariaInputDTO(juridicaId));
 
-    assertEquals(dto, resultado);
+    assertNotNull(resultado);
+    assertNotNull(resultado.id());
+    assertEquals("Fundación Esperanza", resultado.juridica().razonSocial());
 
-    verify(personasRepository).findById(juridicaId);
+    verify(personasRepository, times(2)).findById(juridicaId);
     verify(repository).save(any(EntidadBeneficiaria.class));
   }
 
   @Test
   void obtenerEntidad_debeRetornarDTO() {
     UUID id = UUID.randomUUID();
+    UUID juridicaId = UUID.randomUUID();
 
-    EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
+    Juridica juridica = PersonaMother.fundacionEsperanza();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridicaId);
 
     when(repository.findById(id)).thenReturn(Optional.of(entidad));
-
-    EntidadBeneficiariaOutputDTO dto = mock(EntidadBeneficiariaOutputDTO.class);
-
-    when(mapper.toOutputDTO(entidad)).thenReturn(dto);
+    when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
 
     EntidadBeneficiariaOutputDTO resultado = service.obtenerEntidad(id);
 
-    assertEquals(dto, resultado);
+    assertNotNull(resultado);
+    assertEquals("Fundación Esperanza", resultado.juridica().razonSocial());
   }
 
   @Test
   void obtenerTodas_debeRetornarListaDeDTOs() {
-    EntidadBeneficiaria entidad = mock(EntidadBeneficiaria.class);
-    EntidadBeneficiariaOutputDTO dto = mock(EntidadBeneficiariaOutputDTO.class);
+    UUID juridicaId = UUID.randomUUID();
+    Juridica juridica = PersonaMother.fundacionEsperanza();
+    EntidadBeneficiaria entidad = new EntidadBeneficiaria(juridicaId);
 
     when(repository.findAll()).thenReturn(List.of(entidad));
-    when(mapper.toOutputDTO(entidad)).thenReturn(dto);
+    when(personasRepository.findById(juridicaId)).thenReturn(Optional.of(juridica));
 
     List<EntidadBeneficiariaOutputDTO> resultado = service.obtenerTodas();
 
     assertEquals(1, resultado.size());
-    assertEquals(dto, resultado.getFirst());
+    assertEquals("Fundación Esperanza", resultado.getFirst().juridica().razonSocial());
   }
 }

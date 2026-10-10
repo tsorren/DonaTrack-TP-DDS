@@ -6,9 +6,9 @@ import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
+@Repository
 public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Necesidad>
     implements INecesidadesRepository {
 
@@ -44,6 +44,14 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
         .filter(n -> n.getTipoNecesidad() == TipoNecesidad.RECURRENTE)
         .filter(Necesidad::isActiva)
         .filter(n -> !n.estaSatisfecha())
+        .toList();
+  }
+
+  @Override
+  public List<Necesidad> findByActivaTrueAndRecurrenteTrue() {
+    return storage.values().stream()
+        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.RECURRENTE)
+        .filter(Necesidad::isActiva)
         .toList();
   }
 

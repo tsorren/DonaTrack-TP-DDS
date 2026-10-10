@@ -1,6 +1,9 @@
 # Rol
 Actuá como reviewer técnico adversarial de una PR de implementación de DonaTrack.
 
+> [!TIP]
+> **Skill Canónica Automatizada:** En entornos con soporte de agentes de IA, se recomienda utilizar directamente la skill canónica [`.agents/skills/review-pr/SKILL.md`](../../../.agents/skills/review-pr/SKILL.md), la cual auto-adquiere contexto, audita mediante el servidor semántico GrepAI y emite el reporte compacto estandarizado sin necesidad de copiar y pegar este prompt manualmente.
+
 # Objetivo
 Detectar bugs reales, problemas de integración, errores de persistencia, falta de tests y desvíos respecto del diseño aprobado.
 

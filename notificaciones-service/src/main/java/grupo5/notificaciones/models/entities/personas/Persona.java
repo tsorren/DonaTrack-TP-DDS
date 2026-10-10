@@ -15,7 +15,7 @@ public class Persona implements Anonimizable, AggregateRoot {
   private final List<MedioDeContacto> mediosDeContacto;
 
   public List<MedioDeContacto> getMediosDeContacto() {
-    return java.util.Collections.unmodifiableList(this.mediosDeContacto);
+    return List.copyOf(this.mediosDeContacto);
   }
 
   private String denominacion;
@@ -50,9 +50,9 @@ public class Persona implements Anonimizable, AggregateRoot {
     mediosDeContacto.stream()
         .filter(m -> m.getEsPredeterminado() != null && m.getEsPredeterminado())
         .findFirst()
-        .ifPresent(m -> m.setEsPredeterminado(false));
+        .ifPresent(MedioDeContacto::desmarcarComoPredeterminado);
 
-    medioDeContacto.setEsPredeterminado(true);
+    medioDeContacto.marcarComoPredeterminado();
   }
 
   @Override

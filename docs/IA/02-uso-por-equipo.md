@@ -133,6 +133,7 @@ No debería usarse para:
 
 - [`prompts/media-analisis-issue.md`](./prompts/media-analisis-issue.md)
 - [`prompts/media-plan-implementacion.md`](./prompts/media-plan-implementacion.md)
+- [`prompts/transversal-mentoria-conceptos.md`](./prompts/transversal-mentoria-conceptos.md)
 - [`prompts/media-diseno-testing.md`](./prompts/media-diseno-testing.md)
 - [`prompts/baja-debugger.md`](./prompts/baja-debugger.md)
 - [`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)
@@ -206,6 +207,7 @@ No debería usarse para:
 ## Prompts recomendados
 
 - [`prompts/baja-implementacion-guiada.md`](./prompts/baja-implementacion-guiada.md)
+- [`prompts/transversal-mentoria-conceptos.md`](./prompts/transversal-mentoria-conceptos.md)
 - [`prompts/baja-debugger.md`](./prompts/baja-debugger.md)
 - [`prompts/baja-tests-predefinidos.md`](./prompts/baja-tests-predefinidos.md)
 - [`prompts/media-analisis-issue.md`](./prompts/media-analisis-issue.md)

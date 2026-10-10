@@ -4,27 +4,27 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
-import grupo5.donaciones.services.impl.PropuestaService;
+import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class PlanificadorDeAlgoritmosTest {
 
-  private PropuestaService propuestaServiceMock;
+  private PropuestaDeAsignacionService propuestaDeAsignacionServiceMock;
   private PlanificadorDeAlgoritmos planificador;
 
   @BeforeEach
   void setUp() {
-    propuestaServiceMock = mock(PropuestaService.class);
-    planificador = new PlanificadorDeAlgoritmos(propuestaServiceMock);
+    propuestaDeAsignacionServiceMock = mock(PropuestaDeAsignacionService.class);
+    planificador = new PlanificadorDeAlgoritmos(propuestaDeAsignacionServiceMock);
   }
 
   @Test
   void ejecutarAlgoritmos_deberiaInvocarPropuestaService() {
     planificador.ejecutarAlgoritmos();
 
-    verify(propuestaServiceMock, times(1)).ejecutarAsignacion();
+    verify(propuestaDeAsignacionServiceMock, times(1)).ejecutarAsignacion();
   }
 
   @Test

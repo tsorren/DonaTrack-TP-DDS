@@ -1,0 +1,202 @@
+{
+  "info": {
+    "_postman_id": "donatrack-incentivos-swagger-verified-v2",
+    "name": "DonaTrack - Incentivos Service (Swagger Verified)",
+    "description": "Colección verificada contra los Controllers de Swagger UI de incentivos-service (:8082).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8082" },
+    { "key": "donanteId", "value": "11111111-1111-1111-1111-111111111111" },
+    { "key": "personaId", "value": "22222222-2222-2222-2222-222222222222" },
+    { "key": "organizacionId", "value": "33333333-3333-3333-3333-333333333333" }
+  ],
+  "item": [
+    {
+      "name": "01. Donante Incentivos Controller",
+      "item": [
+        {
+          "name": "1. Registrar Donante",
+          "description": "Service-to-service: en producción lo invoca donaciones-service vía IncentivosFeignClient (no un usuario/frontend). Se deja como request manual para poder probar incentivos-service aislado.",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "pm.test('Status 201 Created', function() { pm.response.to.have.status(201); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"idPersona\": \"{{personaId}}\",\n  \"nombre\": \"Preprod CD\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}"] }
+          }
+        },
+        {
+          "name": "2. Modificar Donante",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Preprod CD Modificado\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Misiones Donación Controller",
+      "item": [
+        {
+          "name": "1. Procesar Donación (Impacto Misiones) - Alimentos",
+          "description": "Service-to-service (ver nota en 01.1). Primera de 3 donaciones con categorías distintas: la insignia 'Explorador' (03.2) exige donaciones en 3 categorías diferentes (MisionCompletitud(COLABORADOR, 3)) — con una sola categoría esa insignia nunca se gana.",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Alimentos\"],\n  \"cantidadBienes\": 15,\n  \"fecha\": \"2026-06-30\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] }
+          }
+        },
+        {
+          "name": "2. Procesar Donación (Impacto Misiones) - Ropa",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Ropa\"],\n  \"cantidadBienes\": 8,\n  \"fecha\": \"2026-07-15\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] }
+          }
+        },
+        {
+          "name": "3. Procesar Donación (Impacto Misiones) - Higiene",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"categorias\": [\"Higiene\"],\n  \"cantidadBienes\": 12,\n  \"fecha\": \"2026-08-01\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones"] }
+          }
+        },
+        {
+          "name": "4. Procesar Donación Exitosa (Entregada)",
+          "description": "Service-to-service (ver nota en 01.1).",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"donanteId\": \"{{donanteId}}\",\n  \"organizacionId\": \"{{organizacionId}}\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donaciones/exitosa", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donaciones", "exitosa"] }
+          }
+        },
+        {
+          "name": "5. Obtener Misiones del Donante",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/misiones", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "misiones"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Insignias Controller",
+      "item": [
+        {
+          "name": "1. Obtener Insignias del Donante",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/insignias?soloVisibles=false", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "insignias"], "query": [{ "key": "soloVisibles", "value": "false" }] }
+          }
+        },
+        {
+          "name": "2. Configurar Visibilidad de Insignia",
+          "request": {
+            "method": "PUT",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/insignias/Explorador/visibilidad?visible=true", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "insignias", "Explorador", "visibilidad"], "query": [{ "key": "visible", "value": "true" }] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Ranking Controller",
+      "item": [
+        {
+          "name": "1. Calcular y Persistir Ranking Mensual",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/calcular?periodo=2026-06", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "calcular"], "query": [{ "key": "periodo", "value": "2026-06" }] }
+          }
+        },
+        {
+          "name": "2. Obtener Último Ranking",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/ultimo", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "ultimo"] }
+          }
+        },
+        {
+          "name": "3. Obtener Posición del Donante en Ranking",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/posicion/{{donanteId}}?periodo=2026-06", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "posicion", "{{donanteId}}"], "query": [{ "key": "periodo", "value": "2026-06" }] }
+          }
+        },
+        {
+          "name": "4. Obtener Historial de Rankings",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/ranking/historial", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "ranking", "historial"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Métricas Incentivos Controller",
+      "item": [
+        {
+          "name": "1. Obtener Métricas del Donante",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}/metricas", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}", "metricas"] }
+          }
+        },
+        {
+          "name": "2. Obtener Resumen General del Sistema (Admin)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/admin/resumen", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "admin", "resumen"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Cleanup",
+      "description": "Correr al final de TODA la colección, no antes: 02, 03 y 05 dependen de que {{donanteId}} siga existiendo.",
+      "item": [
+        {
+          "name": "1. Dar de Baja Donante",
+          "description": "Service-to-service (ver nota en 01.1). Movido acá desde la carpeta 01 — si se corre antes, 02/03/05 fallan con 404 DONANTE_INCENTIVOS_NO_ENCONTRADO.",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/incentivos/donantes/{{donanteId}}", "host": ["{{baseUrl}}"], "path": ["api", "incentivos", "donantes", "{{donanteId}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}
