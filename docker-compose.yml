@@ -90,6 +90,10 @@ services:
       - "8080:8080"
     environment:
       - PORT=8080
+      - SPRING_PROFILES_ACTIVE=postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=donaciones
+      - SPRING_DATASOURCE_USERNAME=donaciones_user
+      - SPRING_DATASOURCE_PASSWORD=dona_pass_2026
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
       - LOGISTICA_SERVICE_URL=http://logistica-service:8083
@@ -103,6 +107,8 @@ services:
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     healthcheck:
@@ -197,7 +203,10 @@ services:
       - donatrack-network
 
   postgres:
-    image: postgres:16-alpine
+    image: donatrack/postgres:local
+    build:
+      context: .
+      dockerfile: persistencia/Dockerfile
     container_name: donatrack-postgres-local
     ports:
       - "5432:5432"
@@ -207,7 +216,6 @@ services:
       POSTGRES_PASSWORD: admin_secure_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U admin -d donatrack" ]
       interval: 3s

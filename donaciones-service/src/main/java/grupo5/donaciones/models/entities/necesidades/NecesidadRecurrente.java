@@ -44,6 +44,27 @@ public class NecesidadRecurrente extends Necesidad {
         new PeriodoNecesidad(fechaInicio.plus(this.periodo), List.of(), cantidadNecesitada, this));
   }
 
+  /** Constructor de reconstitución para el adaptador JPA */
+  public NecesidadRecurrente(
+      UUID id,
+      UUID subcategoriaId,
+      Integer cantidadNecesitada,
+      String descripcion,
+      LocalDate fechaInicio,
+      UUID entidadId,
+      Period periodo,
+      Boolean activa,
+      List<PeriodoNecesidad> periodos) {
+    super(id, subcategoriaId, cantidadNecesitada, descripcion, fechaInicio, entidadId);
+    this.periodo = periodo;
+    this.activa = activa != null ? activa : true;
+    this.periodos = periodos != null ? new ArrayList<>(periodos) : new ArrayList<>();
+  }
+
+  public void actualizarPeriodos(List<PeriodoNecesidad> periodos) {
+    this.periodos = periodos != null ? new ArrayList<>(periodos) : new ArrayList<>();
+  }
+
   private void validarNecesidadRecurrente(LocalDate fechaInicio) {
     if (periodo == null) {
       throw new ValidationException(ErrorCatalog.NECESIDAD_RECURRENTE_SIN_PERIODO);

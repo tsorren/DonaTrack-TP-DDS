@@ -6,9 +6,11 @@ import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Necesidad>
     implements INecesidadesRepository {
 

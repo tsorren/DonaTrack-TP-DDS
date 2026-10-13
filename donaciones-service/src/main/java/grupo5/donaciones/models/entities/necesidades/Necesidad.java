@@ -31,6 +31,22 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
     validarNecesidad();
   }
 
+  /** Constructor de reconstitución para el adaptador JPA */
+  protected Necesidad(
+      UUID id,
+      UUID subcategoriaId,
+      Integer cantidadNecesitada,
+      String descripcion,
+      LocalDate fechaInicio,
+      UUID entidadId) {
+    this.id = id;
+    this.subcategoriaId = subcategoriaId;
+    this.cantidadNecesitada = cantidadNecesitada;
+    this.descripcion = descripcion;
+    this.fechaInicio = fechaInicio;
+    this.entidadId = entidadId;
+  }
+
   public void asociarAEntidad(UUID entidadId) {
     if (entidadId == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);

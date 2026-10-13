@@ -65,3 +65,9 @@ BEGIN
   END IF;
 END
 $$;
+
+GRANT USAGE, CREATE ON SCHEMA donaciones TO donaciones_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA donaciones GRANT ALL ON TABLES TO donaciones_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA donaciones GRANT ALL ON SEQUENCES TO donaciones_user;
+REVOKE ALL ON SCHEMA notificaciones, logistica, incentivos FROM donaciones_user;
+ALTER ROLE donaciones_user SET search_path = donaciones;
