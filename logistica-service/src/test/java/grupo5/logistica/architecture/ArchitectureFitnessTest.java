@@ -49,6 +49,17 @@ class ArchitectureFitnessTest {
   }
 
   @Test
+  void entidadesDeDominio_noDebenDependerDeSpringDataMongo() {
+    noClasses()
+        .that()
+        .resideInAPackage("grupo5.logistica.models.entities..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("org.springframework.data.mongodb..")
+        .check(importedClasses);
+  }
+
+  @Test
   void controladores_debenResidirEnPaqueteControllers() {
     classes()
         .that()
