@@ -38,7 +38,7 @@ Problema: ¿dónde y cómo se despliega Logística para que sea accesible por UR
 
 ## Relaciones Arquitectónicas
 
-1. **Aplica:** [20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host](../20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md) (contenedor no root, logs por consola) y [20260426-pipeline-unificado-de-cicd-y-automatizacin-de-calidad](../20260426-pipeline-unificado-de-cicd-y-automatizacin-de-calidad.md) (imágenes construidas por CI).
+1. **Aplica:** [20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host](../20260903-aislamiento-contenedores-y-recoleccion-logs-sin-volumenes-host.md) (contenedor no root, logs por consola) y [20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad](../20260426-pipeline-unificado-de-cicd-y-automatizacion-de-calidad.md) (imágenes construidas por CI).
 2. **Depende de:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](../20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) (schema `logistica`) y [20261007-broker-de-integracion-con-logistica](../20261007-broker-de-integracion-con-logistica.md) (Logística recibe el comando por RabbitMQ).
 3. **Vista resumida:** [`docs/entrega-4/arquitectura/arquitectura-sistema.md`](../../entrega-4/arquitectura/arquitectura-sistema.md), §7 y Figura 8.
 

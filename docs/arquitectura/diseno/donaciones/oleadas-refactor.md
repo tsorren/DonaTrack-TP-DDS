@@ -106,11 +106,11 @@ Oleada 2:
 ## Problema
 
 1. **Falta de Domain Events internos en Aggregate Root**:
-   [`Donacion`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/Donacion.java) no gestionaba sus propios eventos de dominio durante sus transiciones de estado (`CARGADA`, `NORMALIZADA`, `SEGMENTADA`). Las notificaciones se disparaban mediante eventos de aplicación ad-hoc creados y publicados manualmente desde servicios e infraestructura (`eventPublisher.publishEvent(new DonacionNormalizadaEvent(...))`).
+   [`Donacion`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/Donacion.java) no gestionaba sus propios eventos de dominio durante sus transiciones de estado (`CARGADA`, `NORMALIZADA`, `SEGMENTADA`). Las notificaciones se disparaban mediante eventos de aplicación ad-hoc creados y publicados manualmente desde servicios e infraestructura (`eventPublisher.publishEvent(new DonacionNormalizadaEvent(...))`).
 2. **Duplicación de Regla de Negocio (Normalización)**:
-   La regla para evaluar si una donación completó su normalización (verificar que no queden ítems en `PENDIENTE_REVISION`) estaba duplicada con idéntica lógica imperativa en dos clases: [`ProcesadorDeDonaciones`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/infrastructure/ProcesadorDeDonaciones.java) e [`ItemDonacionNormalizadoService`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/services/impl/ItemDonacionNormalizadoService.java).
+   La regla para evaluar si una donación completó su normalización (verificar que no queden ítems en `PENDIENTE_REVISION`) estaba duplicada con idéntica lógica imperativa en dos clases: [`ProcesadorDeDonaciones`](../../../../donaciones-service/src/main/java/grupo5/donaciones/infrastructure/ProcesadorDeDonaciones.java) e [`ItemDonacionNormalizadoService`](../../../../donaciones-service/src/main/java/grupo5/donaciones/services/impl/ItemDonacionNormalizadoService.java).
 3. **Violación de *Tell, Don't Ask***:
-   [`ItemDonacionNormalizado`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/ItemDonacionNormalizado.java) actuaba como una entidad anémica donde los servicios navegaban sus atributos internos (`item.getBien().estadoNormalizacion() == PENDIENTE_REVISION`) para tomar decisiones.
+   [`ItemDonacionNormalizado`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/ItemDonacionNormalizado.java) actuaba como una entidad anémica donde los servicios navegaban sus atributos internos (`item.getBien().estadoNormalizacion() == PENDIENTE_REVISION`) para tomar decisiones.
 
 ---
 
@@ -135,14 +135,14 @@ Oleada 2:
 
 ## Objetivo
 
-1. **Implementar Domain Events en [`Donacion`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/Donacion.java) (RF-04)**:
-   - Crear jerarquía [`EventoDonacion`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/EventoDonacion.java) (`DonacionCargada`, [`DonacionNormalizada`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionNormalizada.java), [`DonacionSegmentada`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionSegmentada.java)) extendiendo de [`EventoDeDominio`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/common-lib/src/main/java/grupo5/common/events/EventoDeDominio.java) de `common-lib`.
+1. **Implementar Domain Events en [`Donacion`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/Donacion.java) (RF-04)**:
+   - Crear jerarquía [`EventoDonacion`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/EventoDonacion.java) (`DonacionCargada`, [`DonacionNormalizada`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionNormalizada.java), [`DonacionSegmentada`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionSegmentada.java)) extendiendo de [`EventoDeDominio`](../../../../common-lib/src/main/java/grupo5/common/events/EventoDeDominio.java) de `common-lib`.
    - Encapsular `domainEvents` en `Donacion` con `getDomainEvents()` inmodificable y `clearDomainEvents()`.
    - Reemplazar `IllegalStateException` por `BusinessStateException(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA)`.
 2. **Encapsular y Desduplicar la Normalización (RF-05)**:
-   - Añadir métodos de comportamiento semántico en [`ItemDonacionNormalizado`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/ItemDonacionNormalizado.java): `estaPendienteDeRevision()`, `estaResuelto()`, `estaAceptado()`.
-   - Crear la política de dominio [`EvaluadorNormalizacion.estanTodosNormalizados(items)`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/EvaluadorNormalizacion.java).
-   - Eliminar `DonacionNormalizadaEvent` y suscribir [`SegmentacionEventListener`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/infrastructure/events/SegmentacionEventListener.java) directamente al domain event [`DonacionNormalizada`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionNormalizada.java).
+   - Añadir métodos de comportamiento semántico en [`ItemDonacionNormalizado`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/ItemDonacionNormalizado.java): `estaPendienteDeRevision()`, `estaResuelto()`, `estaAceptado()`.
+   - Crear la política de dominio [`EvaluadorNormalizacion.estanTodosNormalizados(items)`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/itemsNormalizados/EvaluadorNormalizacion.java).
+   - Eliminar `DonacionNormalizadaEvent` y suscribir [`SegmentacionEventListener`](../../../../donaciones-service/src/main/java/grupo5/donaciones/infrastructure/events/SegmentacionEventListener.java) directamente al domain event [`DonacionNormalizada`](../../../../donaciones-service/src/main/java/grupo5/donaciones/models/entities/donaciones/events/DonacionNormalizada.java).
    - Unificar el ciclo en Application Services: mutar entidad $\rightarrow$ guardar $\rightarrow$ publicar eventos $\rightarrow$ limpiar eventos.
 
 ---
@@ -159,17 +159,17 @@ Oleada 2:
 
 ## Tests
 
-1. **[`DonacionTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/models/entities/donaciones/DonacionTest.java)**:
+1. **[`DonacionTest.java`](../../../../donaciones-service/src/test/java/grupo5/donaciones/models/entities/donaciones/DonacionTest.java)**:
    - Validación de creación e inicialización con `DonacionCargada`.
    - Transiciones válidas e inválidas de estados (`CARGADA` $\rightarrow$ `NORMALIZADA` $\rightarrow$ `SEGMENTADA`).
    - Inmutabilidad de la lista de `domainEvents` y limpieza con `clearDomainEvents()`.
    - Invariantes de agregación y remoción de `ItemDonacion`.
-2. **[`EvaluadorNormalizacionTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/models/entities/itemsNormalizados/EvaluadorNormalizacionTest.java)**:
+2. **[`EvaluadorNormalizacionTest.java`](../../../../donaciones-service/src/test/java/grupo5/donaciones/models/entities/itemsNormalizados/EvaluadorNormalizacionTest.java)**:
    - Evaluación de listas con ítems pendientes (retorna `false`).
    - Evaluación de listas con todos los ítems resueltos/aceptados/rechazados (retorna `true`).
    - Comportamiento de métodos semánticos en `ItemDonacionNormalizado`.
 3. **Tests de Servicios y Listeners Actualizados**:
-   - [`ProcesadorDeDonacionesTest`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/infrastructure/ProcesadorDeDonacionesTest.java), [`ItemDonacionNormalizadoServiceTest`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/services/ItemDonacionNormalizadoServiceTest.java), [`SegmentacionEventListenerTest`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/infrastructure/SegmentacionEventListenerTest.java), [`DonacionesServiceTest`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/donaciones-service/src/test/java/grupo5/donaciones/services/DonacionesServiceTest.java).
+   - [`ProcesadorDeDonacionesTest`](../../../../donaciones-service/src/test/java/grupo5/donaciones/infrastructure/ProcesadorDeDonacionesTest.java), [`ItemDonacionNormalizadoServiceTest`](../../../../donaciones-service/src/test/java/grupo5/donaciones/services/ItemDonacionNormalizadoServiceTest.java), [`SegmentacionEventListenerTest`](../../../../donaciones-service/src/test/java/grupo5/donaciones/infrastructure/SegmentacionEventListenerTest.java), [`DonacionesServiceTest`](../../../../donaciones-service/src/test/java/grupo5/donaciones/services/DonacionesServiceTest.java).
 
 ---
 

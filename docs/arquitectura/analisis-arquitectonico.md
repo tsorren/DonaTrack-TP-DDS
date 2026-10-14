@@ -404,7 +404,7 @@ interface EstadoDonacion
     └── Vencida             → (terminal)
 ```
 
-Transiciones inválidas lanzan `BusinessStateException`. El ADR [20260616-identificacion-estado-donacion-independiente.md](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/adr/donaciones-service/20260616-identificacion-estado-donacion-independiente.md) documenta la decisión de usar `TipoEstadoDonacion` enum + `getTipo()`.
+Transiciones inválidas lanzan `BusinessStateException`. El ADR [20260616-identificacion-estado-donacion-independiente.md](../adr/donaciones-service/20260616-identificacion-estado-donacion-independiente.md) documenta la decisión de usar `TipoEstadoDonacion` enum + `getTipo()`.
 
 ### 6.4 Contraste: `Donacion` vs `DonacionIndependiente`
 

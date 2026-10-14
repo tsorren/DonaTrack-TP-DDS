@@ -377,11 +377,11 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 
 ### Objetivo
 1. **Reorganizar la Capa de Infraestructura**:
-   - `infrastructure/adapters/`: [`NotificacionesClientAdapter.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/adapters/NotificacionesClientAdapter.java) y [`N8nClientAdapter.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/adapters/N8nClientAdapter.java).
-   - `infrastructure/clients/`: [`NotificacionesFeignClient.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/clients/NotificacionesFeignClient.java).
-   - `infrastructure/schedulers/`: Reubicar [`InactividadJob.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/InactividadJob.java), [`RachaJob.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/RachaJob.java) y [`RankingMensualJob.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/RankingMensualJob.java) (así como sus suites de tests unitarios correspondientes).
+   - `infrastructure/adapters/`: [`NotificacionesClientAdapter.java`](../../../../incentivos-service/src/main/java/grupo5/incentivos/infrastructure/adapters/NotificacionesClientAdapter.java) y [`N8nClientAdapter.java`](../../../../incentivos-service/src/main/java/grupo5/incentivos/infrastructure/adapters/N8nClientAdapter.java).
+   - `infrastructure/clients/`: [`NotificacionesFeignClient.java`](../../../../incentivos-service/src/main/java/grupo5/incentivos/infrastructure/clients/NotificacionesFeignClient.java).
+   - `infrastructure/schedulers/`: Reubicar [`InactividadJob.java`](../../../../incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/InactividadJob.java), [`RachaJob.java`](../../../../incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/RachaJob.java) y [`RankingMensualJob.java`](../../../../incentivos-service/src/main/java/grupo5/incentivos/infrastructure/schedulers/RankingMensualJob.java) (así como sus suites de tests unitarios correspondientes).
 2. **Erradicar el 100% de Wildcard Imports**: Reemplazar por imports explícitos clase por clase en `RankingController`, `MisionFactory` y `CrudRepositoryEnMemoria`.
-3. **Estandarizar Nomenclatura de Tests**: Renombrar a singular [`IncentivosServiceApplicationTest.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/test/java/grupo5/incentivos/IncentivosServiceApplicationTest.java).
+3. **Estandarizar Nomenclatura de Tests**: Renombrar a singular [`IncentivosServiceApplicationTest.java`](../../../../incentivos-service/src/test/java/grupo5/incentivos/IncentivosServiceApplicationTest.java).
 
 ### Fuera de scope
 - Construcción de Object Mothers centralizados (Oleada 8).
@@ -699,7 +699,7 @@ Existían múltiples violaciones al principio Tell, Don't Ask donde los servicio
 4. **Encapsulamiento Defensivo en `Metricas`**:
    - Sobrescribir getters para retornar `List.copyOf(this.historialDonaciones)` y `Set.copyOf(this.organizacionesAyudadas)`.
 5. **Aislamiento y Backpressure en Infraestructura Asíncrona (`AsyncConfig`)**:
-   - Crear [`AsyncConfig.java`](file:///c:/IdeaProjects/DonaTrack-TP-DDS/incentivos-service/src/main/java/grupo5/incentivos/config/AsyncConfig.java) declarando `@Bean(name = "notificacionesTaskExecutor") ThreadPoolTaskExecutor` con límites estrictos (`corePoolSize=2`, `maxPoolSize=10`, `queueCapacity=500`, `CallerRunsPolicy` y prefijo `async-notif-`).
+   - Crear [`AsyncConfig.java`](../../../../incentivos-service/src/main/java/grupo5/incentivos/config/AsyncConfig.java) declarando `@Bean(name = "notificacionesTaskExecutor") ThreadPoolTaskExecutor` con límites estrictos (`corePoolSize=2`, `maxPoolSize=10`, `queueCapacity=500`, `CallerRunsPolicy` y prefijo `async-notif-`).
    - Enrutar `@Async("notificacionesTaskExecutor")` en `NotificacionesClientAdapter`.
 6. **Auditoría de Invariantes y Estado Terminal (`TRANSFORMADOR`)**:
    - Incorporar tests de estabilidad para donantes en categoría máxima que completan todas sus misiones y continúan donando.

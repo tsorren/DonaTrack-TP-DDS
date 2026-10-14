@@ -233,7 +233,7 @@ Responde: ¿Quién publica qué, en qué exchange, y quién lo consume?
 
 **Problema.** R1: Notificaciones no debe afectar la disponibilidad de los servicios de dominio ante picos o fallas transitorias.
 
-**Drivers.** QA1 · desacople productor–consumidor · costo operativo · stack existente (RabbitMQ ya adoptado por Logística, ADR `logistica-service/20260703-uso-de-rabbitmq-para-la-comunicacin-entre-logstica-y-los-dems-servicios`, `accepted`).
+**Drivers.** QA1 · desacople productor–consumidor · costo operativo · stack existente (RabbitMQ ya adoptado por Logística, ADR `logistica-service/20260703-uso-de-rabbitmq-para-la-comunicacion-entre-logistica-y-los-demas-servicios`, `accepted`).
 
 | Criterio (peso) | **A. RabbitMQ: exchange por emisor, cola por consumidor, DLX** | B. Kafka (log particionado) | C. REST síncrono (Feign) con reintentos | D. Exchange único de Notificaciones con mensaje polimórfico | E. Outbox + polling HTTP, sin message broker |
 |---|---|---|---|---|---|
