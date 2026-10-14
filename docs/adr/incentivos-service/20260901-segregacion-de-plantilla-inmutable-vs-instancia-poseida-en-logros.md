@@ -36,7 +36,7 @@ Utilizar la misma clase para ambos roles provocaba una violación grave de encap
 Alternativa elegida: "Segregación Estricta de Clases (`Insignia` e `InsigniaGanada`)"
 
 Justificación:
-Es la solución arquitectónicamente correcta según DDD. Elimina cualquier posibilidad de que la mutación de preferencias de un usuario (como ocultar una medalla de su perfil público) altere la plantilla base. Además, simplifica el mapeo a base de datos relacional: una tabla de catálogo `insignias` y una tabla relacional `donante_insignias_ganadas`.
+Es la solución arquitectónicamente correcta según DDD. Elimina cualquier posibilidad de que la mutación de preferencias de un usuario (como ocultar una medalla de su perfil público) altere la plantilla base. Además, simplifica el mapeo a base de datos relacional: una tabla de catálogo `insignias` y una tabla relacional `donante_insignia_ganada` (`[OBSERVED]` solo existe esta última, con los atributos de la insignia copiados; no hay tabla de catálogo en `V1__init_incentivos.sql:37-47`).
 
 ### Consecuencias Positivas
 

@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: logística, despliegue, docker, paas, render, neon, cloudamqp, entrega-4
 
+> **Nota de auditoría (2026-10-14):** la parte de la decisión que depende del repositorio ya está implementada (`logistica-service/Dockerfile`, `logistica-service/src/main/resources/application.properties`); el servicio en Render, la base en Neon y el RabbitMQ en CloudAMQP están fuera del repo y no se verificaron. El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 La Entrega 4 exige que el servicio de logística quede desplegado y accesible por web a través de sus URIs. El despliegue puede quedar pausado para reducir consumos hasta la defensa (`docs/entregas/4/Enunciado-4.pdf`, p. 24). E3 ya pedía cada servicio en un contenedor (p. 22).

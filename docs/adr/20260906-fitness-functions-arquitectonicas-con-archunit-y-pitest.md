@@ -71,7 +71,7 @@ ArchUnit inspecciona el bytecode compilado en memoria utilizando Reflection/ASM 
        .should().beAnnotatedWith(SpringBootTest.class)
    ```
    > [!NOTE]
-   > Las 4 clases preexistentes con `@SpringBootTest` que finalizan en `*Test.java` (`DonacionesServiceApplicationTest`, `IncentivosServiceApplicationTest`, `PlanificacionManualFlowIntegrationTest` y `RepositoriosJpaTest`) deben excluirse formalmente por nombre/paquete (como se muestra arriba) o renombrarse a `*IT.java` (Maven Failsafe) antes de activar la regla en el build diario para evitar roturas prematuras.
+   > Las 4 clases preexistentes con `@SpringBootTest` que finalizan en `*Test.java` (`DonacionesServiceApplicationTest`, `IncentivosServiceApplicationTest`, `PlanificacionManualFlowIntegrationIT` —renombrada a `*IT` en `logistica-service/src/test/java/grupo5/logistica/integration/`— y `RepositoriosJpaTest`) deben excluirse formalmente por nombre/paquete (como se muestra arriba) o renombrarse a `*IT.java` (Maven Failsafe) antes de activar la regla en el build diario para evitar roturas prematuras.
 
 ### Consecuencias Positivas
 

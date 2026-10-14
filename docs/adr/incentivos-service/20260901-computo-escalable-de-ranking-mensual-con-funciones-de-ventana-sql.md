@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: incentivos, performance, sql, postgresql, rankings, persistencia
 
+> **Nota de auditoría (2026-10-14):** `[OBSERVED]` el SQL de ventana de esta propuesta no está implementado: no hay `ROW_NUMBER` en `incentivos-service`. Las tablas reales son `ranking_mensual` y `ranking_mensual_entrada` (`incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql:98-111`, columnas `ranking_id`, `posicion`, `donante_id`, `nombre_donante`, `misiones_completadas`); el SQL de abajo usa nombres y columnas (`ranking_mensual_posicion`, `puntos_totales`, `activo`) que no existen.
+
 ## Contexto y Problema
 
 En `incentivos-service`, al finalizar cada mes, el sistema debe calcular el **Ranking Mensual de Donantes** para determinar el podio, asignar insignias de honor y publicar los balances en la cartelera comunitaria. En la implementación en memoria (Fase 1), el job invoca `donantesRepository.findAll()`, carga a todos los donantes del sistema a la memoria heap de la JVM, itera sobre ellos en un stream de Java, los ordena por puntos acumulados y construye los objetos del ranking. Si bien esto funciona para pruebas con 50 usuarios, con una base real de 100.000 o 500.000 donantes este enfoque colapsará la memoria JVM (OutOfMemoryError), provocará pausas masivas de Garbage Collection (Stop-The-World) y degradará severamente la latencia del microservicio.

@@ -2,6 +2,7 @@
 - Status: accepted
 - Date: 2026-07-02
 - Deciders: Decisión Grupal
+- Tags: logistica, notificaciones, eventos, granularidad
 
 ## Contexto y Problema
 La consigna de la Entrega 3 pide que, al iniciar el recorrido, "se notificará a todas las entidades beneficiarias y a los donantes cuyas entregas formen parte de la ruta iniciada por el chofer". Una ruta de un camión puede incluir múltiples donaciones, cada una con su propio donante y su propia entidad beneficiaria. Debemos decidir si el evento DonacionEnCamino (y de forma análoga EntregaFallida) representa la ruta completa de un camión (con una lista de destinatarios) o una única donación dentro de esa ruta, delegando en quien dispara el evento (Servicio de Donaciones) la responsabilidad de emitir un evento por cada donación transportada.

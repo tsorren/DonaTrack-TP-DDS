@@ -25,9 +25,9 @@ En `incentivos-service`, el agregado principal `DonanteIncentivos` mantiene las 
 ## Alternativas Consideradas
 
 * **Mapeo Relacional Optimizado (SINGLE_TABLE para Misiones y Columnas Escalares para Métricas):**
-  1. *Jerarquía Mision:* `@Inheritance(strategy = InheritanceType.SINGLE_TABLE)` con columna discriminadora `tipo_mision VARCHAR(30)` y parámetros de configuración serializados o en columnas opcionales. Justificación: el conjunto de misiones activas es pequeño (< 100 filas) y se consultan frecuentemente juntas.
-  2. *Métricas en Donante:* Aplanar los campos de `Metricas` (`puntos_totales INT`, `racha_actual INT`, `nivel VARCHAR(20)`) directamente en la tabla principal `donante_incentivos`.
-  3. *Insignias Ganadas:* Mapeadas en la tabla de asociación `donante_insignia_ganada` con `@ManyToOne` hacia el catálogo inmutable `insignia`.
+  1. *Jerarquía Mision:* `@Inheritance(strategy = InheritanceType.SINGLE_TABLE)` con columna discriminadora `tipo_mision VARCHAR(20)` (`V1__init_incentivos.sql:71`) y parámetros de configuración serializados o en columnas opcionales. Justificación: el conjunto de misiones activas es pequeño (< 100 filas) y se consultan frecuentemente juntas.
+  2. *Métricas en Donante:* Aplanar los campos de `Metricas` directamente en la tabla principal `donante_incentivos`. `[OBSERVED]` El DDL real (`V1__init_incentivos.sql:10-20`) aplana `total_donaciones_historicas`, `total_donaciones_exitosas` y `ultima_donacion` (no existen columnas `puntos_totales`, `racha_actual` ni `nivel`) y guarda el conteo mensual en la tabla hija `donante_donaciones_por_periodo`.
+  3. *Insignias Ganadas:* Mapeadas en la tabla hija `donante_insignia_ganada` (`V1__init_incentivos.sql:37-47`), que guarda `nombre`, `descripcion`, `imagen_url`, `visible` y `fecha_obtenida` por donante; `[OBSERVED]` no hay clave foránea a un catálogo `insignia`.
   4. *Fechas de Períodos:* `YearMonthAttributeConverter` para persistir tipos `YearMonth` como enteros `YYYYMM` o cadenas legibles `VARCHAR(7)`.
 * **Herencia JOINED para Misiones:** Crear una tabla por cada subclase de misión (`mision_completitud`, `mision_racha`).
 * **Entidad Separada para Métricas:** Crear una tabla `metricas_donante` vinculada por `@OneToOne`.

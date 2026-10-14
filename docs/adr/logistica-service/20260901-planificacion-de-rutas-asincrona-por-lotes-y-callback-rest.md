@@ -24,7 +24,7 @@ En el diseño conceptual original de `logistica-service` plasmado en el Diagrama
 
 * **Planificación Asíncrona por Lotes con Endpoint de Callback REST:**
   1. Un job programado (`PlanificadorDeEntregas`) agrupa entregas pendientes en un lote y dispara la solicitud de cálculo hacia el motor planificador.
-  2. La solicitud incluye un identificador único de lote (`batchId`) y una URL de callback (`/api/planificacion/callback`).
+  2. La solicitud incluye un identificador único de lote (`batchId`) y una URL de callback (`/api/logistica/callback/rutas`).
   3. El endpoint `PlanificacionController.procesarCallback` recibe de forma asíncrona el plan de rutas generado, valida la respuesta y delega en el Application Service para persistir las nuevas rutas y actualizar el estado de los camiones.
 * **Cálculo Síncrono en Memoria (DC Original):** Ejecutar el algoritmo directamente en el hilo llamador de Spring.
 * **Polling Periódico por Parte del Backend:** Consultar cada 5 segundos al servicio externo hasta que responda con las rutas calculadas.
@@ -50,7 +50,7 @@ Representa un diseño de arquitectura distribuida maduro y profesional. Libera c
 ### Validación
 
 Se valida mediante:
-1. Existencia del endpoint `POST /api/planificacion/callback` en `PlanificacionController`.
+1. Existencia del endpoint `POST /api/logistica/callback/rutas` en `PlanificacionController`.
 2. Tests unitarios y de integración simulando el envío del callback y comprobando la creación automática de las rutas correspondientes.
 
 ## Análisis de Alternativas

@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: deuda-tecnica, dti-03, eventos, cohesion, srp, refactor
 
+> **Nota de auditoría (2026-10-14):** la decisión está casi saldada: `SegmentacionEventListener` inyecta únicamente `ISegmentacionService` y delega en `procesarDonacionNormalizada` (`donaciones-service/src/main/java/grupo5/donaciones/infrastructure/events/SegmentacionEventListener.java:17-22`); la lógica vive en `donaciones-service/src/main/java/grupo5/donaciones/services/impl/SegmentacionService.java`. [DEUDA_TECNICA.md](../DEUDA_TECNICA.md) todavía la registra como `deferred` por la ubicación del listener. El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 En `donaciones-service`, la clase `SegmentacionEventListener` escucha el evento de normalización de donaciones. Sin embargo, en lugar de actuar como un listener ligero que simplemente traduce el evento e invoca un caso de uso, acumula **9 dependencias inyectadas** (`DonantesRepository`, `PersonasRepository`, `CategoriasRepository`, `IncentivosFeignClient`, `IDonacionesIndependientesRepository`, entre otros) y ejecuta directamente toda la lógica de negocio de la segmentación de lotes, obtención de entidades y persistencia de stock. Esto genera un componente altamente acoplado, difícil de testear y propenso a fallas en cascada.

@@ -13,15 +13,15 @@ En la Entrega 4, el servicio `notificaciones-service` evolucionó arquitectónic
 3. **Ruta canónica REST** `/api/notificaciones/eventos` conforme al estándar de nomenclatura de endpoints `/api/*`.
 
 Sin embargo, los microservicios emisores que despachan alertas a `notificaciones-service` conservan implementaciones heredadas de la Entrega 3:
-* **`donaciones-service`:** Su cliente Feign [`NotificacionesFeignClient`](../../donaciones-service/src/main/java/grupo5/donaciones/infrastructure/clients/NotificacionesFeignClient.java) invoca `@PostMapping("/notificaciones")` y sus eventos de dominio no generan un `eventId` unívoco persistente.
+* **`donaciones-service`:** `[OBSERVED]` ya no tiene cliente Feign hacia notificaciones (`NotificacionesFeignClient` no existe en el servicio); publica por AMQP mediante [`NotificacionesAsyncService`](../../donaciones-service/src/main/java/grupo5/donaciones/services/impl/NotificacionesAsyncService.java) (`persona.sincronizada.v1`). El texto original de este ADR describía un cliente Feign que fue eliminado.
 * **`incentivos-service`:** Su cliente Feign [`NotificacionesFeignClient`](../../incentivos-service/src/main/java/grupo5/incentivos/infrastructure/clients/NotificacionesFeignClient.java) invoca `@PostMapping("/notificaciones")` con payloads anónimos (`Object`) y los records de [`NotificacionesClientAdapter`](../../incentivos-service/src/main/java/grupo5/incentivos/infrastructure/adapters/NotificacionesClientAdapter.java) carecen de `eventId`.
 
 Para no quebrar la integración durante la remediación del PR 874 (`notificaciones-service`), se implementó una **capa de compatibilidad retrocompatible** en `notificaciones-service`:
-* Se preserva el alias HTTP `POST /notificaciones` marcado como `@Deprecated`.
+* Se preserva el alias HTTP `POST /notificaciones` junto a la ruta canónica (`@PostMapping({"/api/notificaciones/eventos", "/notificaciones"})` en `NotificacionController.java:27`; no lleva la anotación `@Deprecated`).
 * Si un payload no contiene `eventId` (`null`), el servicio genera un fallback `UUID.randomUUID()` y registra un log estructurado `[FALLBACK_LEGACY_EVENT_ID]`.
 
 Esta solución interina permite que `donaciones-service` e `incentivos-service` sigan funcionando sin cambios de código inmediatos, pero introduce **deuda técnica catalogada**:
-1. **Falta de Idempotencia Real en Clientes Legacy:** Al generar un `eventId` aleatorio en cada request sin `eventId`, si `FeignRetryConfig` reintenta una petición ante timeouts de red, el reintento recibe un nuevo UUID y se despachan notificaciones duplicadas (vulnerabilidad de spam al usuario final).
+1. **Falta de Idempotencia Real en Clientes Legacy:** Al generar un `eventId` aleatorio en cada request sin `eventId`, si el cliente Feign reintenta una petición ante timeouts de red, el reintento recibe un nuevo UUID y se despachan notificaciones duplicadas (vulnerabilidad de spam al usuario final).
 2. **Acoplamiento Temporal Sincrónico:** Los emisores continúan bloqueando hilos HTTP en lugar de publicar asíncronamente en RabbitMQ.
 3. **Mantenimiento de Rutas Deprecadas:** `notificaciones-service` debe soportar endpoints legacy fuera de la convención `/api/*`.
 
@@ -37,7 +37,7 @@ Esta solución interina permite que `donaciones-service` e `incentivos-service` 
 Formalizar la migración pendiente de los clientes como **Deuda Técnica DTI-13**, estructurada en las siguientes etapas:
 
 ### Fase A: Adopción de `eventId` y Migración a Ruta Canónica REST (Corto Plazo)
-1. **En `donaciones-service`:**
+1. **En `donaciones-service`** (obsoleto: el cliente Feign ya no existe; el servicio publica por AMQP):
    - Actualizar `NotificacionesFeignClient` para apuntar a `@PostMapping("/api/notificaciones/eventos")`.
    - Propagar `eventId: UUID` en cada instancia de evento notificable (utilizando el identificador de evento de dominio de `donaciones`).
 2. **En `incentivos-service`:**
@@ -46,11 +46,11 @@ Formalizar la migración pendiente de los clientes como **Deuda Técnica DTI-13*
 
 ### Fase B: Migración a Producción Asíncrona AMQP (Medio Plazo / Target)
 1. Reemplazar los clientes Feign HTTP sincrónicos por despachadores AMQP que utilicen `RabbitTemplate.convertAndSend("notificaciones.exchange", routingKey, eventoDto)`.
-2. Una vez completada la migración en ambos servicios, eliminar definitivamente el endpoint deprecated `POST /notificaciones` en `notificaciones-service` y remover el fallback de generación de UUIDs aleatorios.
+2. Una vez completada la migración en ambos servicios, eliminar definitivamente el alias legacy `POST /notificaciones` en `notificaciones-service` y remover el fallback de generación de UUIDs aleatorios.
 
 ## Estado de Implementación y Cuándo se Saldará
 
-* **Implementation Status:** `[OBSERVED] deferred` — `donaciones-service` e `incentivos-service` continúan invocando `POST /notificaciones` sin `eventId`.
+* **Implementation Status:** `[OBSERVED] in-progress` — `donaciones-service` ya publica a notificaciones por AMQP (`NotificacionesAsyncService`) y no tiene cliente Feign. `incentivos-service` conserva `NotificacionesFeignClient` (`@PostMapping("/notificaciones")`, `NotificacionesFeignClient.java:9`) y los records de `NotificacionesClientAdapter` no incluyen `eventId`. El alias `POST /notificaciones` sigue activo en `notificaciones-service`.
 * **Servicios Afectados:** `donaciones-service`, `incentivos-service`.
 * **Cuándo se saldará:**
   * **Fase A (Ruta canónica REST + `eventId`):** **Entrega 4 (Semana del 14 de Septiembre 2026)** — durante la estabilización de integración de contratos inter-servicios.

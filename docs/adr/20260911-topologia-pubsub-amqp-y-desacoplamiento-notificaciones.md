@@ -44,7 +44,7 @@ Sin embargo, dicho esquema preliminar presenta serias limitaciones arquitectóni
 * **Hard Cutover Inter-Servicios:** Erradicación total de `NotificacionesFeignClient` planificada como arquitectura objetivo para la Etapa 2.
 
 ### Opción 2 (Rechazada): Exchange Único de Consumidor con Body Polimórfico (Topología Preliminar de `E4_n_bd`)
-* Mantener `notificaciones.exchange` único donde todos los productores publican hacia una única cola `cola.eventos.notificaciones`.
+* `[OBSERVED]` La cola legacy `cola.eventos.notificaciones` sigue declarada (`notificaciones-service/.../config/RabbitMQConfig.java:70`) junto a las colas segregadas. Mantener `notificaciones.exchange` único donde todos los productores publican hacia una única cola `cola.eventos.notificaciones`.
 * Los eventos comparten el DTO polimórfico `EventoNotificableDTO` discriminado por `"tipo"` y con `eventId` en el payload JSON.
 * *Motivo de rechazo:* Viola la inversión de dependencias y el alineamiento DDD. Acopla a todos los productores a un DTO propietario de notificaciones y genera cuellos de botella e interferencia de fallas entre bounded contexts en una sola cola.
 
@@ -60,7 +60,7 @@ Se aprueba la **Opción 1: Pub/Sub Canónico DDD con TopicExchanges de Emisor, C
 
 ```text
 donaciones-service                      notificaciones-service (Consumer)
-[donaciones.exchange] ──(donacion.*.v1)► [notificaciones.donaciones] ──► DonacionesEventListener
+[donaciones.exchange] ──(donacion.*.v1)► [notificaciones.donaciones] ──► DonacionEventListener
    (TopicExchange)    ──(donante.*.v1)─►                                   ├── NotificacionService (Inbox)
                       ──(persona.*.v1)─►                                   └── PersonasService (Sync)
                              │
@@ -69,7 +69,7 @@ donaciones-service                      notificaciones-service (Consumer)
                      [notificaciones.dlx] ──► [notificaciones.donaciones.dlq]
 
 incentivos-service
-[incentivos.exchange] ──(incentivo.*.v1) [notificaciones.incentivos] ──► IncentivosEventListener
+[incentivos.exchange] ──(incentivo.*.v1) [notificaciones.incentivos] ──► IncentivoEventListener
    (TopicExchange)           │                                            └── NotificacionService (Inbox)
                      (x-dead-letter)
                              ▼
@@ -157,7 +157,7 @@ incentivos-service
 
 ## Validación y Criterios de Aceptación
 
-1. **Unitarios y Modulares:** Tests de listeners AMQP (`DonacionesEventListenerTest`, `IncentivosEventListenerTest`) y publishers (`DonacionesEventPublisherTest`) pasando en verde.
-2. **Integración con Testcontainers:** `NotificacionesAmqpInboxIT` (ArchUnit-compliant con sufijo `*IT`) valida el ciclo de vida completo: publicación hacia exchanges, recepción en colas segregadas, inserción en `evento_procesado`, descarte de duplicados y ruteo a DLQ.
+1. **Unitarios y Modulares:** Tests de listeners AMQP (`DonacionEventListenerTest`, `IncentivoEventListenerTest`) y publishers (`DonacionesEventPublisherTest`) pasando en verde.
+2. **Integración con Testcontainers:** `NotificacionesAmqpInboxIT` (ArchUnit-compliant con sufijo `*IT`) **no existe todavía en el repositorio (pendiente)**; debería validar el ciclo de vida completo: publicación hacia exchanges, recepción en colas segregadas, inserción en `evento_procesado`, descarte de duplicados y ruteo a DLQ.
 3. **Contratos y Schemas:** Validación mecánica de los 10 JSON Schemas mediante `node scripts/validate-contracts.js`.
 4. **Regresión E2E y QA:** Pruebas de `ContractIT` y colecciones Postman operando exitosamente contra la ruta canónica `/api/notificaciones/eventos`.
