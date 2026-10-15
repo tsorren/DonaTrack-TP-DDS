@@ -127,8 +127,10 @@ mvn clean package -DskipTests
 ### 2. Despliegue del Entorno Local con Docker Compose
 Para levantar manualmente el ecosistema virtualizado completo de microservicios y la plataforma n8n en segundo plano:
 ```bash
+cp .env.example .env   # credenciales de Postgres; o scripts/generar-env-db.sh para valores aleatorios
 docker compose -f docker-compose.preprod.yml up --build -d
 ```
+*Las contraseñas de Postgres no están versionadas: compose las toma de `.env` (ver [`persistencia/README.md`](persistencia/README.md)).*
 *Los contenedores utilizan healthchecks basados en Actuator (/actuator/health) para asegurar una secuencia de arranque ordenada y segura.*
 
 ### 3. Suite de Validacion y Pruebas de Integracion Automatizadas

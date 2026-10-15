@@ -15,7 +15,7 @@ services:
       - SPRING_PROFILES_ACTIVE=postgres,preprod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones
       - SPRING_DATASOURCE_USERNAME=notificaciones_user
-      - SPRING_DATASOURCE_PASSWORD=notif_pass_2026
+      - SPRING_DATASOURCE_PASSWORD=${NOTIFICACIONES_DB_PASSWORD:?ver .env.example}
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
       - SPRING_MAIN_LAZY_INITIALIZATION=false
@@ -52,7 +52,7 @@ services:
       - SPRING_PROFILES_ACTIVE=postgres,preprod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=incentivos
       - SPRING_DATASOURCE_USERNAME=incentivos_user
-      - SPRING_DATASOURCE_PASSWORD=inc_pass_2026
+      - SPRING_DATASOURCE_PASSWORD=${INCENTIVOS_DB_PASSWORD:?ver .env.example}
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
@@ -141,7 +141,7 @@ services:
       - SPRING_PROFILES_ACTIVE=postgres,preprod
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=logistica
       - SPRING_DATASOURCE_USERNAME=logistica_user
-      - SPRING_DATASOURCE_PASSWORD=logi_pass_2026
+      - SPRING_DATASOURCE_PASSWORD=${LOGISTICA_DB_PASSWORD:?ver .env.example}
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - LOGISTICA_PLANIFICACION_MANUAL_ENABLED=true
@@ -216,7 +216,11 @@ services:
     environment:
       POSTGRES_DB: donatrack
       POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin_secure_password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?ver .env.example}
+      NOTIFICACIONES_DB_PASSWORD: ${NOTIFICACIONES_DB_PASSWORD:?ver .env.example}
+      INCENTIVOS_DB_PASSWORD: ${INCENTIVOS_DB_PASSWORD:?ver .env.example}
+      LOGISTICA_DB_PASSWORD: ${LOGISTICA_DB_PASSWORD:?ver .env.example}
+      DONACIONES_DB_PASSWORD: ${DONACIONES_DB_PASSWORD:?ver .env.example}
     volumes:
       - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
     healthcheck:
