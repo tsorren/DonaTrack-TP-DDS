@@ -237,8 +237,8 @@
 | Qué hace el código | `Camion.habilitar()` acepta `DESHABILITADO` y vuelve a `DISPONIBLE` (`logistica-service/src/main/java/grupo5/logistica/models/entities/camiones/Camion.java:97-103`); `GestorDeCamiones.cambiarEstado` lo invoca con `DISPONIBLE` (`.../camiones/GestorDeCamiones.java:34`) y `CamionesController.cambiarEstado` lo expone (`.../controllers/impl/CamionesController.java:52-54`). |
 | Impacto | La trazabilidad que justifica el ADR depende de que la baja sea definitiva; hoy cualquier cliente de la API puede reactivar un camión dado de baja. |
 | Decision status | `accepted` (ADR) |
-| Implementation status | `[OBSERVED] undocumented` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
-| Acción sugerida | Registrar la decisión vigente en un ADR nuevo |
+| Implementation status | `[OBSERVED] divergence` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
+| Acción sugerida | Decidir si se ajusta el código o se reemplaza el ADR |
 | Cuándo se saldará | Sin fecha asignada — pendiente de decisión del equipo |
 
 ---
@@ -301,7 +301,7 @@
 | Qué hace el código | `EntidadBeneficiariaController` expone `@PutMapping("/{id}")` y `@DeleteMapping("/{id}")` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:52-63`); el servicio hace `repository.delete(entidad)` (`.../services/impl/EntidadBeneficiariaService.java:83-87`). |
 | Impacto | La decisión vigente (mutación y borrado físico) no tiene ADR que registre su justificación ni su efecto sobre las `Necesidad` que referencian la entidad. |
 | Decision status | `rejected` (ADR) |
-| Implementation status | `[OBSERVED] divergence` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
-| Acción sugerida | Decidir si se ajusta el código o se reemplaza el ADR |
+| Implementation status | `[OBSERVED] undocumented` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
+| Acción sugerida | Registrar la decisión vigente en un ADR nuevo |
 | Cuándo se saldará | Sin fecha asignada — pendiente de decisión del equipo |
 
