@@ -13,7 +13,7 @@ graph TD
         N8N["Orquestador n8n (Webhooks)"]
     end
 
-    subgraph Microservicios["Core Platform (Java 21 / Spring Boot 3)"]
+    subgraph Microservicios["Core Platform (Java 21 / Spring Boot 4.0.7)"]
         DON["donaciones-service<br/>(Port 8081)"]
         LOG["logistica-service<br/>(Port 8082)"]
         INC["incentivos-service<br/>(Port 8083)"]

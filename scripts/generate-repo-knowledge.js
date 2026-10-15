@@ -21,6 +21,12 @@ const contratosDir = path.join(repoRoot, 'docs', 'arquitectura', 'contratos');
 const schemasDir = path.join(contratosDir, 'schemas');
 const generatedDir = path.join(repoRoot, 'docs', 'generated');
 
+// Versiones de plataforma leídas del pom.xml raíz (fuente única; evita literales desactualizados).
+const rootPom = fs.readFileSync(path.join(repoRoot, 'pom.xml'), 'utf8');
+const pomProperty = (name) => (rootPom.match(new RegExp(`<${name}>([^<]+)</${name}>`)) || [])[1] || '?';
+const javaVersion = pomProperty('java.version');
+const springBootVersion = pomProperty('spring.boot.dependencies.version');
+
 // ─── Parser Liviano de OpenAPI YAML (Pure Node.js) ─────────────────────────────
 function parseOpenApiYaml(filePath) {
   const content = fs.readFileSync(filePath, 'utf8');
@@ -392,7 +398,7 @@ function generateRepoKnowledge() {
   grMd += `        Web["Frontend / Web SPA"]\n`;
   grMd += `        N8N["Orquestador n8n (Webhooks)"]\n`;
   grMd += `    end\n\n`;
-  grMd += `    subgraph Microservicios["Core Platform (Java 21 / Spring Boot 3)"]\n`;
+  grMd += `    subgraph Microservicios["Core Platform (Java ${javaVersion} / Spring Boot ${springBootVersion})"]\n`;
   grMd += `        DON["donaciones-service<br/>(Port 8081)"]\n`;
   grMd += `        LOG["logistica-service<br/>(Port 8082)"]\n`;
   grMd += `        INC["incentivos-service<br/>(Port 8083)"]\n`;

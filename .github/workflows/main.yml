@@ -503,11 +503,13 @@ jobs:
         run: |
           echo "📐 Generando diagrama de clase para ${{ matrix.service }} en rama Base..."
           if [ -d "${{ matrix.service }}" ]; then
-            mvn -B clean test \
+            if ! mvn -B clean test \
               -pl ${{ matrix.service }} -am \
               -DskipTests=true \
               -Dspotless.check.skip=true \
-              -Dplantuml-generator.skip=false || true
+              -Dplantuml-generator.skip=false; then
+              echo "::warning::No se pudo generar el diagrama de ${{ matrix.service }} en la rama base; la comparación queda sin línea base."
+            fi
           fi
 
           if [ ! -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]; then
@@ -698,6 +700,7 @@ jobs:
 
       - name: Provisionar Entorno de Pre-Producción (Sin recompilar)
         run: |
+          scripts/generar-env-db.sh
           docker compose -f docker-compose.preprod.yml up --no-build --wait -d
           echo "✅ Stack de Pre-Producción levantado y healthy."
 
@@ -741,7 +744,7 @@ jobs:
               attempt=$((attempt+1))
               if [ $attempt -ge 60 ]; then
                 echo "::error:: $url no respondió con HTTP 200 tras 60 intentos."
-                docker compose -f docker-compose.preprod.yml logs --no-color || true
+                docker compose -f docker-compose.preprod.yml logs --no-color
                 exit 1
               fi
               sleep 2
@@ -769,7 +772,7 @@ jobs:
         if: always()
         run: |
           mkdir -p docker-logs
-          docker compose -f docker-compose.preprod.yml logs --no-color --timestamps > docker-logs/docker-preprod-full.log || true
+          docker compose -f docker-compose.preprod.yml logs --no-color --timestamps > docker-logs/docker-preprod-full.log
 
       - name: Analizar Logs de Contenedores y Diagnóstico
         if: always()
