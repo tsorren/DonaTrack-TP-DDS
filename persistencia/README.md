@@ -34,7 +34,7 @@ Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas
 | `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | **Activo** — JPA conectado |
 | `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
 
-Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`.
+Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) y `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (MinIO y la access/secret key de incentivos); `application.properties` no les da valor por defecto.
 
 ### Política de permisos (aislamiento cruzado)
 
@@ -171,7 +171,7 @@ Parámetros de conexión:
 | Acceso       | URL                     | Credenciales                        |
 |--------------|-------------------------|-------------------------------------|
 | API S3       | `http://localhost:9000` | —                                   |
-| Console (UI) | `http://localhost:9001` | `minioadmin` / `minioadminpassword` |
+| Console (UI) | `http://localhost:9001` | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` de `.env` |
 
 ```yaml
 minio:

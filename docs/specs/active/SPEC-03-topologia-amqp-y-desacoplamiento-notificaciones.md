@@ -84,7 +84,7 @@ Escenario: Publicación asíncrona de evento de donación asignada
 
 Escenario: Ruteo y consumo en cola segregada notificaciones.donaciones
   Dado un mensaje publicado en "donaciones.exchange" con routing key "donacion.en-camino.v1"
-  Cuando RabbitMQ procesa el mensaje a través del binding "donacion.*.v1" (o "donacion.#")
+  Cuando RabbitMQ procesa el mensaje a través del binding exacto "donacion.en-camino.v1" (una clave por handler, RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS)
   Entonces el mensaje es entregado en la cola "notificaciones.donaciones"
   Y DonacionesEventListener deserializa el mensaje directamente en un record EventoDonacionEnCaminoV1
   Y el listener delega a NotificacionService para su registro e inserción atómica en Inbox.
@@ -173,7 +173,7 @@ flowchart TD
         DLQ_DON["notificaciones.donaciones.dlq\n(Queue)"]
         DLQ_INC["notificaciones.incentivos.dlq\n(Queue)"]
 
-        D_EX -->|Binding: donacion.#\ndonante.#\npersona.#| Q_DON
+        D_EX -->|Bindings exactos:\ndonacion.asignada.v1\ndonacion.en-camino.v1\ndonacion.recibida.v1\ndonacion.entrega-fallida.v1\ndonacion.vencida.v1\ndonante.registrado.v1\npersona.sincronizada.v1| Q_DON
         I_EX -->|Binding: incentivo.#| Q_INC
         Q_DON -.->|Fallo terminal| DLX
         Q_INC -.->|Fallo terminal| DLX
@@ -203,7 +203,7 @@ flowchart TD
 * **`RabbitMQConfig.java`:**
   * Define las colas `notificaciones.donaciones` y `notificaciones.incentivos` configurando el argumento `x-dead-letter-exchange = notificaciones.dlx`.
   * Declara `TopicExchange notificaciones.dlx` y las colas `notificaciones.donaciones.dlq` y `notificaciones.incentivos.dlq`.
-  * Declara externamente `donaciones.exchange` e `incentivos.exchange` junto con sus respectivos `Binding` (rutas `*.v1`).
+  * Declara externamente `donaciones.exchange` e `incentivos.exchange` junto con sus respectivos `Binding`: hacia `notificaciones.donaciones`, una clave exacta por handler (`ROUTING_KEYS_DONACIONES_CONSUMIDAS`, 7 claves `.v1`).
   * Configura el bean `MessageConverter`:
     ```java
     @Bean

@@ -42,7 +42,7 @@ q3 -[hidden]down- q4
 q4 -[hidden]down- q5
 
 don -[#5E4B8B,dashed]-> ex : publica 9 hechos:\ndonacion.segmentada.v1\ndonacion.asignada.v1\ndonacion.en-camino.v1\ndonacion.recibida.v1\ndonacion.entrega-fallida.v1\ndonacion.vencida.v1\ndonante.registrado.v1\ndonante.dado-de-baja.v1\npersona.sincronizada.v1
-ex -[#5E4B8B]-> qN : donacion.#\ndonante.#\npersona.#
+ex -[#5E4B8B]-> qN : 7 bindings exactos:\ndonacion.asignada.v1\ndonacion.en-camino.v1\ndonacion.recibida.v1\ndonacion.entrega-fallida.v1\ndonacion.vencida.v1\ndonante.registrado.v1\npersona.sincronizada.v1
 ex -[#5E4B8B]-> pInc : 5 bindings
 qN -[#5E4B8B,dashed]-> notif : consume
 qN -[#C0392B,dotted]-> dlx : rechazo
@@ -50,11 +50,11 @@ dlx -[#C0392B]-> dlq : notificaciones.\ndonaciones.dlq
 pInc -[#5E4B8B,dashed]-> inc : consume
 
 note bottom of dlq
-  Por comodín también llegan
+  Solo llegan los mensajes que
+  Notificaciones no pudo procesar.
   donacion.segmentada.v1 y
-  donante.dado-de-baja.v1, sin
-  handler en Notificaciones:
-  terminan acá (inferido).
+  donante.dado-de-baja.v1 no se
+  ligan a su cola.
 end note
 
 legend right
