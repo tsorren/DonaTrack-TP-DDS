@@ -13,6 +13,7 @@ import grupo5.notificaciones.services.IPersonasService;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PersonasService implements IPersonasService {
@@ -47,6 +48,7 @@ public class PersonasService implements IPersonasService {
   }
 
   @Override
+  @Transactional
   public void anonimizar(UUID id) {
     Persona persona =
         repository

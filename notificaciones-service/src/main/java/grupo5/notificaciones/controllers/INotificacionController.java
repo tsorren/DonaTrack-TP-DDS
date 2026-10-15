@@ -18,8 +18,19 @@ public interface INotificacionController {
       summary = "Procesar un evento de dominio de forma asincrónica",
       description = "Recibe un evento y genera las notificaciones correspondientes.")
   @ApiResponse(responseCode = "202", description = "Evento aceptado para procesamiento")
-  @PostMapping({"/api/notificaciones/eventos", "/notificaciones"})
+  @PostMapping("/api/notificaciones/eventos")
   ResponseEntity<Void> procesarEvento(@Valid @RequestBody EventoNotificableDTO dto);
+
+  /**
+   * Alias legado de {@link #procesarEvento}. Se retira cuando los clientes Feign migren a AMQP.
+   *
+   * @deprecated usar {@code POST /api/notificaciones/eventos} o los eventos AMQP (DTI-13).
+   */
+  @Deprecated
+  @Operation(summary = "Procesar un evento de dominio (alias legado)", deprecated = true)
+  @ApiResponse(responseCode = "202", description = "Evento aceptado para procesamiento")
+  @PostMapping("/notificaciones")
+  ResponseEntity<Void> procesarEventoLegacy(@Valid @RequestBody EventoNotificableDTO dto);
 
   @Operation(
       summary = "Obtener notificaciones por persona y/o estado",

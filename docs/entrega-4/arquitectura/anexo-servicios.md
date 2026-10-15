@@ -52,7 +52,7 @@ Vuelta al documento: [`arquitectura-sistema.md`](arquitectura-sistema.md). Los I
 | Responsabilidad | Avisos a personas por su medio preferido, con fallback entre medios |
 | Agregados | Notificación, con historial de estados · Persona (réplica de contacto) |
 | Patrones propios | Adapter + Router por medio de notificación · Strategy de fallo simulado · Template Method en los simuladores · Transactional Inbox · Dead Letter Channel |
-| Entradas | AMQP: `notificaciones.donaciones` (`donacion.#`, `donante.#`, `persona.#`) y `notificaciones.incentivos` (`incentivo.#`) · REST `/api/notificaciones` (más alias legado) |
+| Entradas | AMQP: `notificaciones.donaciones` (7 claves explícitas, una por handler: `RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`) y `notificaciones.incentivos` (`incentivo.#`) · REST `/api/notificaciones` (más alias legado) |
 | Salidas | Medios de notificación (correo, SMS y WhatsApp) simulados en el proceso, sin red |
 | Datos | PostgreSQL (perfil `postgres`): 5 entidades, Flyway V1–V2, SINGLE_TABLE en medios de contacto, inbox `evento_procesado` |
 | Garantía | Efecto único de la persistencia de la notificación, en perfil `postgres`. El envío ocurre después del commit, de forma asíncrona. Una notificación fallida no se reintenta |

@@ -219,7 +219,7 @@ Responde: ¿Quién publica qué, en qué exchange, y quién lo consume?
 
 | Exchange (dueño) | Routing keys | Cola (la declara el consumidor) | Consumidor | DLQ |
 |---|---|---|---|---|
-| `donaciones.exchange` (Donaciones) | `donacion.#` · `donante.#` · `persona.#` | `notificaciones.donaciones` | Notificaciones | `notificaciones.donaciones.dlq` vía `notificaciones.dlx` |
+| `donaciones.exchange` (Donaciones) | Una clave por handler: `donacion.{asignada,en-camino,recibida,entrega-fallida,vencida}.v1` · `donante.registrado.v1` · `persona.sincronizada.v1` | `notificaciones.donaciones` | Notificaciones | `notificaciones.donaciones.dlq` vía `notificaciones.dlx` |
 | `donaciones.exchange` | `donante.registrado.v1` · `donante.dado-de-baja.v1` · `donacion.segmentada.v1` · `donacion.recibida.v1` · `persona.sincronizada.v1` | una por clave: `incentivos.donante-registrado`, `incentivos.donante-dado-de-baja`, `incentivos.donacion-segmentada`, `incentivos.donacion-recibida`, `incentivos.persona-sincronizada` | Incentivos | No |
 | `donaciones.exchange` | `entrega.solicitada.<proveedorId>.v1` (comando, binding exacto) | `logistica.<instancia>.entregas.solicitadas` | Logística (cada instancia) | No |
 | `incentivos.exchange` (Incentivos) | `incentivo.#` | `notificaciones.incentivos` | Notificaciones | `notificaciones.incentivos.dlq` vía `notificaciones.dlx` |
