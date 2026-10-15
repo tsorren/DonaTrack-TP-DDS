@@ -24,15 +24,17 @@ donatrack (base de datos)
 
 ## Roles PostgreSQL y permisos
 
-Todos los roles se crean idempotentemente en [`01-init-schemas-roles.sql`](init-db/01-init-schemas-roles.sql) ([OBSERVED]).
+Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas-roles.sql`](init-db/01-init-schemas-roles.sql); [`02-set-role-passwords.sh`](init-db/02-set-role-passwords.sh) les fija la contraseña desde variables de entorno ([OBSERVED]). Ninguna contraseña está versionada.
 
-| Role                  | Password                | Schema propio    | Estado                     |
-|-----------------------|-------------------------|------------------|----------------------------|
-| `admin`               | `admin_secure_password` | —                | Superusuario Docker        |
-| `notificaciones_user` | `notif_pass_2026`       | `notificaciones` | **Activo** — JPA conectado |
-| `donaciones_user`     | `dona_pass_2026`        | `donaciones`     | Placeholder                |
-| `logistica_user`      | `logi_pass_2026`        | `logistica`      | **Activo** — JPA conectado |
-| `incentivos_user`     | `inc_pass_2026`         | `incentivos`     | **Activo** — JPA conectado |
+| Role                  | Variable de contraseña (`.env`) | Schema propio    | Estado                     |
+|-----------------------|---------------------------------|------------------|----------------------------|
+| `admin`               | `POSTGRES_PASSWORD`             | —                | Superusuario Docker        |
+| `notificaciones_user` | `NOTIFICACIONES_DB_PASSWORD`    | `notificaciones` | **Activo** — JPA conectado |
+| `donaciones_user`     | `DONACIONES_DB_PASSWORD`        | `donaciones`     | Placeholder                |
+| `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | **Activo** — JPA conectado |
+| `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
+
+Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) y `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (MinIO y la access/secret key de incentivos); `application.properties` no les da valor por defecto.
 
 ### Política de permisos (aislamiento cruzado)
 
@@ -130,7 +132,7 @@ postgres:
   environment:
     POSTGRES_DB: donatrack
     POSTGRES_USER: admin
-    POSTGRES_PASSWORD: admin_secure_password
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?ver .env.example}  # más NOTIFICACIONES_DB_PASSWORD, etc.
   volumes:
     - postgres_data:/var/lib/postgresql/data
     - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
@@ -159,17 +161,17 @@ Parámetros de conexión:
 | Motor          | PostgreSQL               |
 | Servidor       | `postgres`              |
 | Usuario        | `notificaciones_user`   |
-| Contraseña     | `notif_pass_2026`       |
+| Contraseña     | `NOTIFICACIONES_DB_PASSWORD` de `.env` |
 | Base de datos  | `donatrack`             |
 
-> Para explorar como superusuario usar `admin` / `admin_secure_password`.
+> Para explorar como superusuario usar `admin` / `POSTGRES_PASSWORD` de `.env`.
 
 ### MinIO (almacenamiento de objetos) [OBSERVED]
 
 | Acceso       | URL                     | Credenciales                        |
 |--------------|-------------------------|-------------------------------------|
 | API S3       | `http://localhost:9000` | —                                   |
-| Console (UI) | `http://localhost:9001` | `minioadmin` / `minioadminpassword` |
+| Console (UI) | `http://localhost:9001` | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` de `.env` |
 
 ```yaml
 minio:

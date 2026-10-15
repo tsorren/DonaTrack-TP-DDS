@@ -69,7 +69,7 @@ pubLog -[#5E4B8B,dashed]-> exLog : ruta.asignada · ruta.iniciada\nentrega.exito
 pubExt -[#5E4B8B,dotted]-> exLog : mismas claves\nfirmadas como externo\nsolo si su callback\nde planificación vuelve (T19)
 
 ' ---------- Bindings (exchange → cola, con su clave) ----------
-exDon -[#5E4B8B]-> qND : donacion.#\ndonante.#\npersona.#
+exDon -[#5E4B8B]-> qND : 7 claves exactas\n(una por handler)
 exDon -[#5E4B8B]-> qIS : donacion.segmentada.v1
 exDon -[#5E4B8B]-> qIR : donacion.recibida.v1
 exDon -[#5E4B8B]-> qIP : persona.sincronizada.v1
@@ -132,9 +132,11 @@ note as nCmd
 end note
 
 note as nGap
-  Por comodín, notificaciones.donaciones también
-  recibe donacion.segmentada.v1 y donante.dado-de-baja.v1:
-  sin handler, van a la DLQ (inferido, sin ejecución).
+  notificaciones.donaciones se liga con una clave exacta
+  por handler: donacion.{asignada, en-camino, recibida,
+  entrega-fallida, vencida}.v1, donante.registrado.v1 y
+  persona.sincronizada.v1. Sin comodines: donacion.segmentada.v1
+  y donante.dado-de-baja.v1 no llegan a su cola.
   notificaciones.exchange y cola.eventos.notificaciones
   siguen declarados sin publicador (legado).
 end note
