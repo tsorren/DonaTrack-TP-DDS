@@ -50,7 +50,7 @@ Formalizar la migración pendiente de los clientes como **Deuda Técnica DTI-13*
 
 ## Estado de Implementación y Cuándo se Saldará
 
-* **Implementation Status:** `[OBSERVED] in-progress` — `donaciones-service` ya publica a notificaciones por AMQP (`NotificacionesAsyncService`) y no tiene cliente Feign. `incentivos-service` conserva `NotificacionesFeignClient` (`@PostMapping("/notificaciones")`, `NotificacionesFeignClient.java:9`) y los records de `NotificacionesClientAdapter` no incluyen `eventId`. El alias `POST /notificaciones` sigue activo en `notificaciones-service`.
+* **Implementation Status:** `[OBSERVED] in-progress` — `donaciones-service` ya publica a notificaciones por AMQP (`NotificacionesAsyncService`) y no tiene cliente Feign. `incentivos-service` conserva `NotificacionesFeignClient` (`@PostMapping("/notificaciones")`, `NotificacionesFeignClient.java:10`) y los records de `NotificacionesClientAdapter` no incluyen `eventId`. El alias `POST /notificaciones` sigue activo en `notificaciones-service`.
 * **Servicios Afectados:** `donaciones-service`, `incentivos-service`.
 * **Cuándo se saldará:**
   * **Fase A (Ruta canónica REST + `eventId`):** **Entrega 4 (Semana del 14 de Septiembre 2026)** — durante la estabilización de integración de contratos inter-servicios.

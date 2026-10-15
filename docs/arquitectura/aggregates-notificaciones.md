@@ -23,7 +23,7 @@ El *Servicio de Notificaciones* es un servicio mayoritariamente de soporte, enca
     *   `MedioDeContacto` (Clase base abstracta de tipo Objeto de Valor/Entidad interna que implementa `Anonimizable`).
     *   `Correo`, `Telefono` (Especializaciones del medio de contacto; los canales físicos de salida como Correo, SMS/Teléfono y WhatsApp se despachan mediante adaptadores de infraestructura).
     *   `TipoPersona`, `TipoTelefono` (Enums).
-*   **Responsabilidad**: Almacenar la denominación y el ruteo de medios de contacto del usuario destinatario. Este agregado se sincroniza por AMQP con el evento `persona.sincronizada.v1` que publica `donaciones-service` cuando se crea o actualiza una persona (`DonacionEventListener`). Además expone el endpoint REST `PUT /api/notificaciones/personas` (`PersonasController`); no existe un alias `PUT /notificaciones/personas`.
+*   **Responsabilidad**: Almacenar la denominación y el ruteo de medios de contacto del usuario destinatario. Este agregado se sincroniza por AMQP con el evento `persona.sincronizada.v1` que publica `donaciones-service` cuando se crea o actualiza una persona, y que consume `DonacionEventListener`. Además expone el endpoint REST `PUT /api/notificaciones/personas` (`PersonasController`); no existe un alias `PUT /notificaciones/personas`.
 *   **Reconciliación Diferencial (JPA / Flyway V1)**: Para evitar violaciones de clave foránea y *Key Churn* en `notificaciones.medio_contacto`, la actualización de medios de contacto se realiza de forma diferencial: actualiza los existentes en sitio, añade los nuevos y remueve exclusivamente los ausentes, preservando la identidad de los registros existentes.
 *   **Paquete**: `grupo5.notificaciones.models.entities.personas`
 

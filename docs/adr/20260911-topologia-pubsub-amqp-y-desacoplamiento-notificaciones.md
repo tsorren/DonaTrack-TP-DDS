@@ -157,7 +157,7 @@ incentivos-service
 
 ## Validación y Criterios de Aceptación
 
-1. **Unitarios y Modulares:** Tests de listeners AMQP (`DonacionEventListenerTest`, `IncentivoEventListenerTest`) y publishers (`DonacionesEventPublisherTest`) pasando en verde.
+1. **Unitarios y Modulares:** Tests de listeners AMQP (`DonacionEventListenerTest`, `IncentivoEventListenerTest`) pasando en verde. El test del publisher de donaciones (`DonacionesEventPublisherTest`) `[OBSERVED]` no existe; queda pendiente.
 2. **Integración con Testcontainers:** `NotificacionesAmqpInboxIT` (ArchUnit-compliant con sufijo `*IT`) **no existe todavía en el repositorio (pendiente)**; debería validar el ciclo de vida completo: publicación hacia exchanges, recepción en colas segregadas, inserción en `evento_procesado`, descarte de duplicados y ruteo a DLQ.
 3. **Contratos y Schemas:** Validación mecánica de los 10 JSON Schemas mediante `node scripts/validate-contracts.js`.
 4. **Regresión E2E y QA:** Pruebas de `ContractIT` y colecciones Postman operando exitosamente contra la ruta canónica `/api/notificaciones/eventos`.

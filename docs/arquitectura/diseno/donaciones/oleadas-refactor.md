@@ -1,4 +1,4 @@
-> **Documento histórico.** Diagnóstico al 2026-06-13 (última entrada de la bitácora); no describe el estado vigente. Estado actual: [Auditoría final del proyecto](../auditoria-final-proyecto.md).
+> **Documento histórico.** Diagnóstico al 2026-06-13 (última entrada de la bitácora); no describe el estado vigente. Estado actual: [arquitectura-sistema.md](../../../entrega-4/arquitectura/arquitectura-sistema.md).
 
 Comentarios de oleadas previas:
 

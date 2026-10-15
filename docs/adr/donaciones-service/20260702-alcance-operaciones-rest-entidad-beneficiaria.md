@@ -86,8 +86,8 @@ Completar únicamente la lectura faltante, dejando explícita la ausencia de `PU
 Esta propuesta de restringir la API a solo lectura fue descartada en la implementación real: el commit `19273a2b` (2026-08-29) incorporó formalmente los métodos `actualizarEntidad` (`PUT /api/entidades/{id}`) y `eliminarEntidad` (`DELETE /api/entidades/{id}`) en `IEntidadBeneficiariaController` y `EntidadBeneficiariaController`, completando las operaciones de mutación del recurso para satisfacer los requerimientos integrales del ciclo de vida de la entidad. Por consiguiente, este registro se mantiene con estado `rejected` para preservar la memoria histórica de la alternativa evaluada.
 
 
-## Desvío de implementación (auditoría 2026-10-14)
+## Nota de auditoría (2026-10-14)
 
-- **Decide el ADR (estado `rejected`):** exponer solo `POST` y `GET`, sin `PUT` ni `DELETE`, para `EntidadBeneficiaria`.
-- **Hace hoy el código:** `EntidadBeneficiariaController` expone `@PutMapping("/{id}")` y `@DeleteMapping("/{id}")` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:52,59`), además de `POST` y los dos `GET`. La "Nota de Actualización y Rechazo" del propio ADR ya lo reconoce.
+- **Propuesta rechazada:** exponer solo `POST` y `GET`, sin `PUT` ni `DELETE`, para `EntidadBeneficiaria`.
+- **Decisión vigente sin ADR propio:** el código `EntidadBeneficiariaController` expone `@PutMapping("/{id}")` y `@DeleteMapping("/{id}")` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:52,59`), además de `POST` y los dos `GET`. No hay un ADR que registre esa decisión vigente.
 - Registrado como [DTI-21](../DEUDA_TECNICA.md#dti-21).

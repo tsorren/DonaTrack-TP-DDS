@@ -1,6 +1,6 @@
 # Plan de Refactor — `incentivos-service`
 
-> **Documento histórico.** Diagnóstico al 2026-08-26; no describe el estado vigente. Estado actual: [Auditoría final del proyecto](../auditoria-final-proyecto.md).
+> **Documento histórico.** Diagnóstico al 2026-08-26; no describe el estado vigente. Estado actual: [arquitectura-sistema.md](../../../entrega-4/arquitectura/arquitectura-sistema.md). El crítico 1 ya está resuelto: `getDomainEvents()` vive en [`AgregadoConEventos.java`](../../../../common-lib/src/main/java/grupo5/common/events/AgregadoConEventos.java#L23) y devuelve `List.copyOf`.
 
 > Instanciación del [Plan Genérico de Refactor por Oleadas](../plan-generico-refactor-servicios.md) aplicada al microservicio de incentivos.
 > Fecha de auditoría inicial: 2026-08-26.
@@ -181,7 +181,7 @@ Cero validaciones declarativas en DTOs. Sin `@Valid` en controllers.
 
 ### 🔴 Críticos (bloquean correctitud en producción)
 
-1. ~~**`getDomainEvents()` retorna `Collections.unmodifiableList()`** en `DonanteIncentivos.java` L.111 — riesgo real de `ConcurrentModificationException`. Corregir a `List.copyOf()` **inmediatamente**.~~ **Resuelto:** `DonanteIncentivos` extiende `AgregadoConEventos` de `common-lib` ([`AgregadoConEventos.java`](../../../../common-lib/src/main/java/grupo5/common/events/AgregadoConEventos.java#L23)), cuyo `getDomainEvents()` devuelve `List.copyOf` (Oleada 14).
+1. **`getDomainEvents()` retorna `Collections.unmodifiableList()`** en `DonanteIncentivos.java` L.111 — riesgo real de `ConcurrentModificationException`. Corregir a `List.copyOf()` **inmediatamente**.
 2. **`IllegalArgumentException` en 4 clases de dominio** — viola el contrato del plan genérico. Corregir con `ValidationException(ErrorCatalog.X)` y agregar los códigos faltantes al `ErrorCatalog`.
 
 ### 🟡 Importantes (degradan el diseño)

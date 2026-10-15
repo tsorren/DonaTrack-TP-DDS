@@ -1,6 +1,6 @@
 # Plan Genérico de Refactor por Oleadas — v2
 
-> **Documento histórico.** Diagnóstico al 2026-08-30; no describe el estado vigente. Estado actual: [Auditoría final del proyecto](auditoria-final-proyecto.md).
+> **Documento histórico.** Diagnóstico al 2026-08-30; no describe el estado vigente. Estado actual: [arquitectura-sistema.md](../../entrega-4/arquitectura/arquitectura-sistema.md).
 
 > **Fuentes de esta versión:**
 > 1. `plan-generico-refactor-servicios.md` (v1) — extraído de las Oleadas 0–10 de `donaciones-service`.

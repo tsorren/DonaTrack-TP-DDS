@@ -13,7 +13,7 @@
 El repositorio DonaTrack mantiene su grafo documental estrictamente alineado con el código fuente ejecutable:
 
 * **Sincronización:** 🟢 Plena. Todos los agregados de dominio, adaptadores, contratos REST, eventos AMQP y configuraciones de persistencia cuentan con respaldo documental canónico en `docs/`.
-* **Discrepancias Críticas:** la auditoría del 2026-10-14 detectó divergencias entre documentación y código; las de dato factual se corrigieron en esta ronda y las de decisión quedan registradas como deuda técnica o pendientes del equipo (estado del ADR de comunicación asimétrica frente a SPEC-03, cierre de SPEC-04, avance parcial de SPEC-03 Etapa 2). El cierre del recuento lo registra el coordinador de la auditoría.
+* **Discrepancias Críticas:** la auditoría del 2026-10-14 detectó divergencias entre documentación y código; las de dato factual se corrigieron en esta ronda y las de decisión quedan registradas como deuda técnica o pendientes del equipo (estado del ADR de comunicación asimétrica frente a SPEC-03, cierre de SPEC-04, avance parcial de SPEC-03 Etapa 2).
 * **Verificación Mecánica:** La vigencia de enlaces internos, canonicidad de reglas de agentes, detección de términos obsoletos y validez de estados de ADRs se auditan automáticamente en CI/CD mediante el arnés de gobernanza (`scripts/agent-check.js`).
 
 ---
