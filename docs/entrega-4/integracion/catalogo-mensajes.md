@@ -8,10 +8,11 @@
 
 - **Transporte:** `TopicExchange` durable, un exchange por servicio productor — `donaciones.exchange` para todo lo que sale de Donaciones. **Confirmado** en la reunión del 15/9 (Donaciones e Incentivos tienen su propio topic exchange; Notificaciones tiene colas dedicadas por productor). Ya no es una decisión abierta.
 - **IDs:** nunca un campo combinado ambiguo (tipo `personaDonanteId`). Cuando un evento necesita el donante, viaja `donanteId`; si además hace falta correlacionar con la persona, viaja `personaId` por separado (solo donde el consumidor lo necesita, no en todos).
-- **Outbox:** todo publish se escribe vía el mecanismo de reintento en memoria ya existente (`OutboxStore`/`OutboxEntry`), no la tabla física todavía — el equipo decidió priorizar comunicaciones antes que persistencia real para esta entrega. Migración a Outbox durable (JPA + `outbox_events`) queda para una oleada posterior.
+- **Outbox:** solo los cuatro hechos que `DonacionesIndependientesNotificacionesService` reemite (`donacion.en-camino.v1`, `donacion.recibida.v1`, `donacion.vencida.v1`, `donacion.entrega-fallida.v1`) se escriben vía el mecanismo de reintento en memoria (`OutboxStore`/`OutboxEntry`); el resto se publica directo. No hay tabla física todavía. Migración a Outbox durable (JPA + `outbox_events`) queda para una oleada posterior.
 - **Idempotencia:** todo mensaje lleva su identificador único como propiedad AMQP estándar `messageId`, no como campo del payload. **Confirmado** en la reunión del 15/9 ("el protocolo AMQP ya trae Message ID en el encabezado, no hace falta duplicarlo").
 - **Versionado:** routing key versionado (`.v1`) + nombre de clase versionado (`Evento<Nombre>V1`, sin sufijo `DTO`). Confirmado como patrón ya en uso en la rama `E4_n_bd`.
-- **Retry/DLQ (lado consumidor):** pendiente en todos los módulos (mandato de la reunión del 15/9, tres reintentos y luego Dead Letter Exchange). No es responsabilidad de Donaciones configurarlo del lado de quien consume.
+- **Retry/DLQ (lado consumidor):** `notificaciones-service` ya declara `notificaciones.dlx` y las colas `notificaciones.donaciones.dlq` / `notificaciones.incentivos.dlq` (`RabbitMQConfig`). Sigue pendiente en el resto de los consumidores (mandato de la reunión del 15/9, tres reintentos y luego Dead Letter Exchange). No es responsabilidad de Donaciones configurarlo del lado de quien consume.
+- **Consumo accidental en Notificaciones:** `notificaciones.donaciones` se bindea con los comodines `donacion.#`, `donante.#` y `persona.#`, así que también recibe `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, que no tienen `@RabbitHandler` en `DonacionEventListener`; esos mensajes terminan en la DLQ (observación del test T18, no es un comportamiento diseñado).
 - **`fecha`:** timestamp real del hecho de negocio, no `now()` del publisher.
 
 ## Donaciones nunca declara colas en su propio exchange
@@ -50,7 +51,7 @@ Regla formalizada en el [ADR 20261007-broker-de-integracion-con-logistica](../..
 - **Tipo:** Event · **Productor:** Donaciones · **Consumidor/es:** Notificaciones
 - **Routing key:** `donacion.asignada.v1`
 - **Trigger:** una `Propuesta` se aprueba y la `DonacionIndependiente` queda confirmada contra una `Necesidad`/`EntidadBeneficiaria` (`PropuestaDeAsignacionService.onPropuestaAprobada`).
-- **Payload:** `donanteId: UUID`, `personaId: UUID`, `fecha: DateTime`, `personaBeneficiariaId: UUID`, `descripcion: String`, `destino: {calle, altura, piso?, departamento?, codigoPostal, localidad, provincia, pais}`, `pesoTotalKG: Number`, `volumenTotalM3: Number`
+- **Payload:** `donacionIndependienteId: UUID`, `donanteId: UUID`, `personaId: UUID`, `fecha: DateTime`, `personaBeneficiariaId: UUID`, `descripcion: String`, `destino: {calle, altura, piso?, departamento?, codigoPostal, localidad, provincia, pais}`, `pesoTotalKG: Number`, `volumenTotalM3: Number`
 - **Consecuencia esperada:** Notificaciones avisa al donante del vínculo.
 - **Logística ya no lo consume** (revisión de la decisión del 15/9, ADR 20261007): con un hecho público no se puede elegir proveedor de logística, así que la entrega se pide con el comando dirigido `EntregaSolicitadaV1` (ver abajo).
 - **Nota:** no lleva categorías ni cantidades — eso es exclusivo de `DonacionSegmentadaV1`, que se dispara antes, en un punto distinto del flujo.

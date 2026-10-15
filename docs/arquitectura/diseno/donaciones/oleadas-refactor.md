@@ -1,3 +1,5 @@
+> **Documento histórico.** Diagnóstico al 2026-06-13 (última entrada de la bitácora); no describe el estado vigente. Estado actual: [Auditoría final del proyecto](../auditoria-final-proyecto.md).
+
 Comentarios de oleadas previas:
 
 Oleada 1:

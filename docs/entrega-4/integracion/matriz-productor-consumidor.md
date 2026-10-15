@@ -14,7 +14,7 @@ Donaciones-service **nunca declara colas en su propio exchange** — solo public
 |---|---|---|---|---|---|
 | `DonanteRegistradoV1` | `donante.registrado.v1` | Notificaciones, Incentivos | Alta de un `Donante` (`DonantesService.crearDonante`) | Notificaciones envía credenciales de bienvenida; Incentivos crea su `DonanteIncentivos` con el mapeo `donanteId↔personaId` | `NotificacionesFeignClient.enviarEvento` + `IncentivosFeignClient.registrarDonante` |
 | `DonanteDadoDeBajaV1` | `donante.dado-de-baja.v1` | Incentivos | Baja de un `Donante` (`DonantesService.eliminarDonante`) | Incentivos da de baja al donante en su esquema de gamificación | `IncentivosFeignClient.darDeBaja` |
-| `DonacionAsignadaV1` | `donacion.asignada.v1` | Notificaciones | `Propuesta` aprobada y confirmada (`PropuestaDeAsignacionService.onPropuestaAprobada`) | Notificaciones avisa al donante | `NotificacionesFeignClient.enviarEvento` (Logística dejó de consumirlo: recibe `EntregaSolicitadaV1`) |
+| `DonacionAsignadaV1` | `donacion.asignada.v1` | Notificaciones | `Propuesta` aprobada y confirmada (`PropuestaDeAsignacionService.onPropuestaAprobada`); el payload incluye `donacionIndependienteId` | Notificaciones avisa al donante | `NotificacionesFeignClient.enviarEvento` (Logística dejó de consumirlo: recibe `EntregaSolicitadaV1`) |
 | `DonacionRecibidaV1` | `donacion.recibida.v1` | Notificaciones, Incentivos | Logística confirma `entrega.exitosa` (`procesarDonacionRecibida`) | Notificaciones envía comprobante; Incentivos otorga puntos/medalla (mismo hecho que un eventual `donacion.entregada`, no hizo falta crear uno aparte) | `NotificacionesFeignClient.enviarEvento` + `IncentivosFeignClient.procesarDonacionExitosa` |
 | `DonacionEnCaminoV1` | `donacion.en-camino.v1` | Notificaciones | Reemisión de `EventoRutaIniciada` de Logística (`procesarRutaIniciada`) | Notificar inicio de traslado | `NotificacionesFeignClient.enviarEvento` |
 | `DonacionVencidaV1` | `donacion.vencida.v1` | Notificaciones | Vencimiento sin asignar (`procesarDonacionVencida`) | Alertar vencimiento | `NotificacionesFeignClient.enviarEvento` |
@@ -22,6 +22,10 @@ Donaciones-service **nunca declara colas en su propio exchange** — solo public
 | `PersonaSincronizadaV1` | `persona.sincronizada.v1` | Notificaciones, Incentivos | Alta, edición o anonimización de una `Persona` (`PersonasService.crearPersona`/`actualizarPersona`/`eliminarPersona`) | Notificaciones actualiza su réplica de contacto; Incentivos actualiza el nombre solo si el `personaId` corresponde a un donante ya registrado | `NotificacionesFeignClient.sincronizarPersona` (también reemplaza el `donante.modificado` que se había propuesto por separado) |
 | `EntregaSolicitadaV1` (**Command**) | `entrega.solicitada.<proveedorId>.v1` | El proveedor de logística elegido por el broker (hoy `logistica-service`, instancia `donatrack`) | El broker despacha el pedido de entrega de una donación asignada | El proveedor crea la Entrega | `LogisticaFeignClient.registrarEntregaPendiente` |
 | `DonacionSegmentadaV1` | `donacion.segmentada.v1` | Incentivos | `Donacion` completa termina de segmentarse (`SegmentacionService`) | Incentivos calcula puntos según categoría y cantidad donada | `IncentivosFeignClient.procesarDonacion` |
+
+## Consumo accidental en Notificaciones
+
+`notificaciones.donaciones` se bindea a `donacion.#`, `donante.#` y `persona.#`. Por eso también recibe `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, que no tienen `@RabbitHandler` en `DonacionEventListener`: terminan en `notificaciones.donaciones.dlq` (observado en T18; ver `catalogo-mensajes.md`).
 
 ## Notas que ya no aplican (dejadas fuera a propósito)
 

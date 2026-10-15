@@ -1,5 +1,7 @@
 # Bitácora de Refactor por Oleadas — `incentivos-service`
 
+> **Documento histórico.** Diagnóstico al 2026-08-30; no describe el estado vigente. Estado actual: [Auditoría final del proyecto](../auditoria-final-proyecto.md).
+
 > Registro de auditoría, transformaciones arquitectónicas y gobernanza del refactor de `incentivos-service`.
 > Cada oleada debe cumplir estrictamente la regla de gobernanza (Problema, Evidencia, Objetivo, Fuera de scope, Tests / Verificación, Diseño resultante, IA utilizada).
 

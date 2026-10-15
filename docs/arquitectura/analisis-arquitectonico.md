@@ -1,5 +1,7 @@
 # Diagnóstico Arquitectónico de DonaTrack
 
+> **Documento histórico.** Diagnóstico al 2026-08-30; no describe el estado vigente. Estado actual: [README de arquitectura](README.md).
+
 > [!NOTE]
 > Este documento es un **diagnóstico de estado actual**, no un plan de refactor. Sirve como base para diseñar intervenciones controladas en una etapa posterior.
 
