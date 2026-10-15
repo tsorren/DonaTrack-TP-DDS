@@ -26,7 +26,7 @@ public interface INotificacionController {
    *
    * @deprecated usar {@code POST /api/notificaciones/eventos} o los eventos AMQP (DTI-13).
    */
-  @Deprecated
+  @Deprecated(since = "ENTREGA_4", forRemoval = true)
   @Operation(summary = "Procesar un evento de dominio (alias legado)", deprecated = true)
   @ApiResponse(responseCode = "202", description = "Evento aceptado para procesamiento")
   @PostMapping("/notificaciones")

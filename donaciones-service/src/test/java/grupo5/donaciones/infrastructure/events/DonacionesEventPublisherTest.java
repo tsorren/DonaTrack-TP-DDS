@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import grupo5.common.logging.FeignTraceRequestInterceptor;
@@ -98,7 +99,7 @@ class DonacionesEventPublisherTest {
     publisher.publicarDonacionRecibida(null);
     ArgumentCaptor<MessagePostProcessor> postProcessor =
         ArgumentCaptor.forClass(MessagePostProcessor.class);
-    verify(rabbitTemplate, org.mockito.Mockito.times(2))
+    verify(rabbitTemplate, times(2))
         .convertAndSend(any(String.class), any(String.class), isNull(), postProcessor.capture());
 
     var ids =

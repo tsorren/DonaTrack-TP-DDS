@@ -30,8 +30,11 @@ public class NotificacionController implements INotificacionController {
     return ResponseEntity.status(HttpStatus.ACCEPTED).build();
   }
 
+  /**
+   * @deprecated usar {@code POST /api/notificaciones/eventos} o los eventos AMQP (DTI-13).
+   */
   @Override
-  @Deprecated
+  @Deprecated(since = "ENTREGA_4", forRemoval = true)
   @PostMapping("/notificaciones")
   public ResponseEntity<Void> procesarEventoLegacy(@Valid @RequestBody EventoNotificableDTO dto) {
     return procesarEvento(dto);
