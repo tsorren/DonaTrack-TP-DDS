@@ -19,7 +19,7 @@ fixture_type: reduced
 
 ## Task Prompt
 
-> "Implementá la migración a JPA en `donaciones-service` según el ADR ya aprobado en `docs/adr/donaciones-service/20260703-migracion-jpa-donaciones.md`."
+> "Implementá la migración a JPA en `donaciones-service` según el ADR ya aprobado en `docs/adr/donaciones-service/20260703-migracion-jpa-donaciones.md` (fixture ficticio: ese ADR no existe en el repositorio)."
 
 ---
 
@@ -40,7 +40,7 @@ Archivos presentes para el agente (reduced fixture):
 |---|---|
 | `/AGENTS.md` | Completo — política global |
 | `docs/context-index.md` | Completo |
-| `docs/adr/donaciones-service/20260703-migracion-jpa-donaciones.md` | Status: accepted — contenido representativo |
+| `docs/adr/donaciones-service/20260703-migracion-jpa-donaciones.md` (fixture ficticio, no existe) | Status: accepted — contenido representativo |
 | `docs/adr/DEUDA_TECNICA.md` | Completo |
 | `docs/arquitectura/aggregates-donaciones.md` | Completo |
 

@@ -2,6 +2,7 @@
 - Status: accepted
 - Date: 2026-06-18
 - Deciders: Bernardo Estigarribia, Miranda Rossi
+- Tags: incentivos, inactividad, scheduler, cron
 
 ## Contexto y Problema
 El sistema necesita revisar periódicamente qué donantes están inactivos para notificarlos. Hay que definir con qué frecuencia y en qué momento del día ejecutar ese chequeo.

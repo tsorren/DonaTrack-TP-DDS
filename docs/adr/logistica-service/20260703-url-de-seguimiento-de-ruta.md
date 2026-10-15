@@ -18,12 +18,12 @@ Además de viajar en el evento, surgió la necesidad de poder **consultar ese mi
 Alternativa elegida para esta entrega: **"Calcular la URL bajo demanda (sin persistir)"**
 
 Justificación:
-La URL es 100% derivable de forma determinística a partir de `ruta.getId()` y una configuración de ambiente (`logistica.tracking.base-url`). Persistirla en `Ruta` implicaría cachear un dato calculado, acoplando el aggregate de dominio a un detalle de infraestructura (el dominio donde corre el front de seguimiento) que cambia entre ambientes y que, de cambiar, dejaría desactualizadas las URLs ya guardadas. Se optó por un componente dedicado (`GeneradorDeUrlSeguimiento`) que arma la URL en el momento en que se la necesita, tanto para publicar el evento (`RutasService`) como para las respuestas HTTP (`RutaMapper`), devolviendo `null` mientras la ruta está en estado `PENDIENTE` (no hay nada que seguir todavía).
+La URL es 100% derivable de forma determinística a partir de `ruta.getId()` y una configuración de ambiente (`logistica.tracking.base-url`). Persistirla en `Ruta` implicaría cachear un dato calculado, acoplando el aggregate de dominio a un detalle de infraestructura (el dominio donde corre el front de seguimiento) que cambia entre ambientes y que, de cambiar, dejaría desactualizadas las URLs ya guardadas. Se optó por un componente dedicado (`GeneradorDeURLSeguimiento`) que arma la URL en el momento en que se la necesita, tanto para publicar el evento (`RutasService`) como para las respuestas HTTP (`RutaMapper`), devolviendo `null` mientras la ruta está en estado `PENDIENTE` (no hay nada que seguir todavía).
 
 ### Consecuencias Positivas
 * `Ruta` no conoce ningún detalle de infraestructura ni de despliegue; se mantiene la separación de capas (Ports & Adapters) ya aplicada en el resto del dominio.
 * Un cambio de `logistica.tracking.base-url` entre ambientes (local/staging/prod) se refleja automáticamente en todas las consultas, sin necesidad de migrar datos.
-* Un único punto de cálculo (`GeneradorDeUrlSeguimiento`) reutilizado por el publicador del evento y por el mapper de respuestas, evitando que ambos usos diverjan.
+* Un único punto de cálculo (`GeneradorDeURLSeguimiento`) reutilizado por el publicador del evento y por el mapper de respuestas, evitando que ambos usos diverjan.
 
 ### Consecuencias Negativas
 * No queda registro histórico de la URL exacta que efectivamente se envió en la notificación original: si la configuración cambia luego de que una ruta se completó, recalcularla puede devolver un valor distinto al que recibió el donante/entidad beneficiaria en su momento.
@@ -46,7 +46,7 @@ Agregar un campo `String urlMapa` a `Ruta`, seteado en `iniciarRuta()` y devuelt
 
 ### Calcular la URL bajo demanda (sin persistir)
 
-Reutilizar `GeneradorDeUrlSeguimiento` desde `RutaMapper` al armar cada `RutaResponseDTO` / `RutaConEntregasResponseDTO`, devolviendo `null` si la ruta todavía está `PENDIENTE`.
+Reutilizar `GeneradorDeURLSeguimiento` desde `RutaMapper` al armar cada `RutaResponseDTO` / `RutaConEntregasResponseDTO`, devolviendo `null` si la ruta todavía está `PENDIENTE`.
 
 #### Pros
 * Cero acoplamiento del dominio a infraestructura.
@@ -60,11 +60,11 @@ Reutilizar `GeneradorDeUrlSeguimiento` desde `RutaMapper` al armar cada `RutaRes
 
 Durante la revisión de esta decisión se identificó una preocupación legítima y distinta: no la de "poder consultar el link ahora" (que esta decisión resuelve), sino la de **auditar qué URL se envió efectivamente en la notificación de una donación puntual**, en línea con el enfoque de trazabilidad que el proyecto aplica en otras entidades (por ejemplo, `historial` de `CambioEstado` en `DonacionIndependiente`).
 
-Hoy ese dato se pierde: `EventoRutaIniciada.urlMapa` llega a `donaciones-service` (`LogisticaEventListener.onRutaIniciada`) empaquetado en `CambioEstadoDonacionIndependienteRequestDTO.urlMapa()`, pero `DonacionesIndependientesService.cambiarEstado()` lo descarta — el caso `EN_TRASLADO` solo llama a `donacion.planificarRuta(actor)`, sin persistir la URL recibida.
+Hoy el dato se consume pero no se audita: `EventoRutaIniciada.urlMapa` llega a `donaciones-service` (`ProcesadorEventosLogistica.procesarRutaIniciada`), se empaqueta en `CambioEstadoDonacionIndependienteRequestDTO.urlMapa()` y `DonacionesIndependientesService.cambiarEstado()` lo propaga a `SolicitudCambioEstadoDonacionIndependiente` y a `ListaParaEntregar.iniciarRecorrido`, que emite el evento de dominio `EventoRutaIniciada`; `DonacionesIndependientesNotificacionesService.procesarRutaIniciada` lo publica en `donacion.en-camino.v1`. Lo que no existe es el registro en el historial: `CambioEstado` no tiene campo `urlMapa`.
 
 Para una próxima entrega, se propone:
 * Agregar `urlMapa` como campo opcional en `CambioEstado` (donaciones-service), análogo al ya existente `justificacion`.
-* `DonacionIndependiente.planificarRuta(actor, urlMapa)` — recibir y guardar el dato en el historial.
-* `DonacionesIndependientesService.cambiarEstado(...)` — propagar `request.urlMapa()` en el caso `EN_TRASLADO`.
+* `ListaParaEntregar.iniciarRecorrido(d, urlMapa, actor)` — ya recibe la URL; falta guardarla en el historial.
+* `DonacionesIndependientesService.cambiarEstado(...)` — ya propaga `request.urlMapa()` hasta la solicitud de cambio de estado.
 
 Esto persiste el dato en el lugar correcto (la entidad que efectivamente le importa al donante/entidad beneficiaria, con un patrón de auditoría ya existente), sin reabrir esta decisión sobre `Ruta`.

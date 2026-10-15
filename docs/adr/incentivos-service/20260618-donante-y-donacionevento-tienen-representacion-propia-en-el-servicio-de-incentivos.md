@@ -2,6 +2,7 @@
 - Status: accepted
 - Date: 2026-06-18
 - Deciders: Decisión Grupal
+- Tags: incentivos, dominio, desacoplamiento, donante
 
 ## Contexto y Problema
 El servicio de incentivos necesita procesar información de donantes y donaciones,

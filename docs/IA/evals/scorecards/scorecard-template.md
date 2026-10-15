@@ -11,7 +11,7 @@
 |---|---|
 | Eval ID | E01 / E02 / ... |
 | Suite version | Wave 9 v1 |
-| Harness version | v6.2.0 / OLD v3.5.0 |
+| Harness version | v6.4.0 / OLD v3.5.0 |
 | Model / Tool | claude-sonnet-4-6 / claude-code / otro |
 | Repo commit | `<sha>` |
 | Date | YYYY-MM-DD |
@@ -152,7 +152,7 @@ Notas libres del evaluador. Máximo 5 líneas.
 
 Si este run es parte de una comparación OLD vs CURRENT:
 
-| Dimensión | OLD (v3.5.0) | CURRENT (v6.2.0) |
+| Dimensión | OLD (v3.5.0) | CURRENT (v6.4.0) |
 |---|---|---|
 | Task Level | | |
 | ADR decision | | |

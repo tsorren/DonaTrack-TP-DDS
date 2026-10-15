@@ -16,6 +16,8 @@ El método `cambiarEstado()` en `DonacionesIndependientesService` concentra en u
 6. Marcar vencimiento
 Además de violar SRP, este método mezcla la mutación interna del agregado con llamadas condicionadas a OpenFeign hacia `notificaciones-service` y lógica de inventario, volviendo el código frágil, difícil de extender y complejo de auditar.
 
+> **Estado verificado en el código (2026-10-14):** `DonacionesIndependientesService.cambiarEstado` (`donaciones-service/src/main/java/grupo5/donaciones/services/impl/DonacionesIndependientesService.java:92-123`) ya no contiene el `switch` ni llamadas a OpenFeign: arma una `SolicitudCambioEstadoDonacionIndependiente` y delega en `DonacionIndependiente.cambiarEstado`, donde está hoy el `switch` de 7 casos que despacha al State Pattern (`EstadoDonacionIndependiente`) (`donaciones-service/src/main/java/grupo5/donaciones/models/entities/donacionesIndependientes/DonacionIndependiente.java:122-136`). Las notificaciones salen por eventos de dominio y AMQP (`DonacionesIndependientesNotificacionesService`).
+
 ## Atributos de Calidad y Drivers de Decisión
 
 * **Mantenibilidad y Legibilidad:** Reemplazar switches anémicos gigantes por métodos de intención semántica clara.

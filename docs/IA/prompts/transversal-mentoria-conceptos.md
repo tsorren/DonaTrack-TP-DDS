@@ -28,7 +28,7 @@ Tu respuesta debe estructurarse obligatoriamente bajo los siguientes 4 pasos:
 
 ### 3. 🛠️ Aterrizaje Quirúrgico en DonaTrack (El "Cómo Aplica Acá")
 - Mapeá el concepto a las capas y clases específicas de DonaTrack (`Controller`, `Service`, `Repository`, `Entity`, `DTO`, `Listener AMQP`).
-- Explicá el flujo con un snippet de código limpio y autocontenido en **Java 21 / Spring Boot 3 / AMQP**.
+- Explicá el flujo con un snippet de código limpio y autocontenido en **Java 21 / Spring Boot 4.0.7 / AMQP**.
 
 ### 4. ⚠️ Trampas Comunes & Pregunta Socrática de Cierre
 - Advertí sobre los antipatrones y errores frecuentes que suelen cometer los estudiantes en este tema.

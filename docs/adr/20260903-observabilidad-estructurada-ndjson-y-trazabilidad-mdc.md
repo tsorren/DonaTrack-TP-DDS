@@ -32,7 +32,7 @@ Se requiere formalizar una arquitectura de telemetría que garantice **observabi
   - **Contexto MDC Tipado (diferido — ver [DTI-08](./DEUDA_TECNICA.md#dti-08-campos-de-observabilidad-diferidos-spanid-executiontimems-errorcode-estructurado-amqp_dispatchexception-filtro-bootstrap)):** `spanId`, `executionTimeMs`, `errorCode` como campo MDC/JSON estructurado (hoy `errorCode` solo existe embebido en el texto del mensaje de `GlobalExceptionHandler`, no como clave estructurada), y los valores de `eventType` `AMQP_DISPATCH`/`EXCEPTION`.
   - **Parsing Determinístico en Python:** `analyze_preprod_logs.py` procesa cada línea mediante `json.loads(line)`. La clasificación se basa en atributos estructurados (p. ej. `entry.get("eventType") == "SERVICE_ERROR"`) en lugar de expresiones regulares. La clasificación por `eventType == "EXCEPTION"` queda pendiente hasta que ese valor se emita (ver diferido arriba).
   - **Filtro Anti-Fatiga (diferido — ver DTI-08):** Se planea incorporar la dimensión `stage: "BOOTSTRAP"` para ignorar reintentos transitorios durante los primeros $N$ segundos de arranque del contenedor. Aún no implementado.
-  - **Perfil de Desarrollo Amigable:** Se conserva un perfil `local-dev` con salida tradicional por consola para desarrolladores que no deseen leer JSON en su terminal local.
+  - **Perfil de Desarrollo Amigable:** Se conserva una salida tradicional por consola (en `common-lib/src/main/resources/logback-spring.xml:75` aplica al perfil `!(preprod | prod | json)`; no existe un perfil llamado `local-dev`) para desarrolladores que no deseen leer JSON en su terminal local.
 
 * **Alternativa 4.B — Robustecer Expresiones Regulares sobre Texto Plano:**
   - Mantener el logging en texto plano delimitado por pipes pero actualizar la expresión regular en Python para hacerla más flexible y tolerante a fallos.
@@ -58,7 +58,7 @@ El desacoplamiento entre la producción del log y su consumo es absoluto: los an
 
 ### Consecuencias Negativas y Mitigaciones:
 * **Legibilidad Humana en Terminal Cruda:** Una traza de logs en formato JSON en una consola local sin herramientas auxiliares puede resultar abrumadora para lectura humana.
-  - *Mitigación:* Se preserva el perfil de desarrollo local `local-dev` en Logback que emite salida coloreada legible por humanos cuando no se ejecute en entorno de preproducción/CI.
+  - *Mitigación:* Se preserva la salida de desarrollo local en Logback (perfil `!(preprod | prod | json)`, `logback-spring.xml:75`) que emite salida coloreada legible por humanos cuando no se ejecute en entorno de preproducción/CI.
 
 ## Referencias y Trabajo Futuro
 

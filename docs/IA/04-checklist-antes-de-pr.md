@@ -138,7 +138,7 @@ Confirmo que:
 - [ ] Se auditó la integridad del grafo documental (V9): `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md` sincronizados si correspondía.
 - [ ] Findings BLOCKING resueltos y Gate 1 re-ejecutado antes de cerrar.
 - [ ] Findings ADVISORY documentados en el Review Contract; el equipo humano decide si requieren acción.
-- [ ] Si ARCHITECTURAL con `SELF_REVIEW`: reportado como `[SELF_REVIEW_FALLBACK]` en Reporte de Fase 7.
+- [ ] Si ARCHITECTURAL con `SELF_REVIEW`: reportado como `[SELF_REVIEW_FALLBACK]` en Reporte de cierre (AGENTS.md §12).
 
 ---
 
@@ -164,7 +164,7 @@ Confirmo que:
 - [ ] La issue está actualizada.
 - [ ] La PR referencia la issue correspondiente.
 - [ ] El grafo documental está íntegro: no hay documentos huérfanos ni desfasajes en `docs/README.md` o `docs/ESTADO_DOCUMENTACION.md`.
-- [ ] La descripción de la PR incluye el **Reporte Operativo Estructurado** (Fase 7 de `AGENTS.md`) documentando baseline, cambios, correcciones de la Fase 6 y Quality Gates superados.
+- [ ] La descripción de la PR incluye el **Reporte Operativo Estructurado** (reporte de cierre, `AGENTS.md` §12) documentando baseline, cambios, correcciones de la Fase 6 y Quality Gates superados.
 - [ ] Si no hubo acceso al daemon de Docker en local, se declaró formalmente `[DEFERRED_NO_DOCKER]`.
 - [ ] La PR es revisable y no demasiado grande.
 - [ ] Si hubo decisiones relevantes, quedaron documentadas en un ADR o en la issue.
@@ -182,7 +182,7 @@ Si no puedo afirmar eso, todavía no debería pedir review.
 
 ---
 
-## Apéndice: Plantilla de Reporte Operativo (Fase 7 de AGENTS.md)
+## Apéndice: Plantilla de Reporte Operativo (reporte de cierre, AGENTS.md §12)
 
 Incluir en la descripción de la PR:
 

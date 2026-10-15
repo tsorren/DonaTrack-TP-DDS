@@ -4,7 +4,7 @@
 > **Proyecto:** DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones  
 > **Cátedra:** UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
 > **Fecha de Emisión Canónica:** 2026-08-29  
-> **Estado:** 🟢 Vigente y Sincronizado (100% Factual con Java 21 / Spring Boot 3)
+> **Estado:** 🟢 Vigente y Sincronizado (100% Factual con Java 21 / Spring Boot 4.0.7)
 
 ---
 
@@ -64,17 +64,17 @@ La arquitectura y el diseño de software de DonaTrack combinan las mejores prác
 
 ### 4) Simplicidad e Integridad Conceptual (KISS / YAGNI)
 * **Definición Formal (Brooks / Fowler):** Principio que establece que el diseño de un sistema debe mantener una uniformidad y coherencia estilística global, resolviendo la complejidad esencial del dominio sin introducir capas o abstracciones innecesarias.
-* **Motivación en DonaTrack:** Asegurar que cualquier desarrollador o auditor reconozca patrones consistentes en los 4 microservicios (mismo esquema de paquetes, mismo manejo de errores, misma estructura de persistencia en memoria).
+* **Motivación en DonaTrack:** Asegurar que cualquier desarrollador o auditor reconozca patrones consistentes en los 4 microservicios (mismo esquema de paquetes, mismo manejo de errores, misma estructura de persistencia: en memoria por defecto y JPA con el perfil `postgres`).
 * **Evidencia en Código Fuente:**
   1. **Homogeneidad Arquitectónica:** Los 4 microservicios comparten la estructura idéntica de capas: `controllers/`, `services/`, `models/`, `dto/`, `infrastructure/`.
   2. **Manejo Centralizado de Excepciones:** Todos los servicios usan `GlobalExceptionHandler` capturando las excepciones base de `common-lib` (`RecursoNoEncontradoException`, `BusinessStateException`, `ValidationException`) traduciéndolas a respuestas HTTP estándar RFC 7807 (`ProblemDetail` / `ErrorResponse`).
-  3. **YAGNI en Persistencia:** Uso transparente de `CrudRepositoryEnMemoria<T>` con `ConcurrentHashMap`, posponiendo la complejidad relacional de JPA/Hibernate hasta la Entrega 2 según lo acordado en `docs/adr/DEUDA_TECNICA.md` (`DTI-01`).
+  3. **YAGNI en Persistencia:** Uso transparente de `CrudRepositoryEnMemoria<T>` con `ConcurrentHashMap` como implementación por defecto (`@Profile("!postgres")`). `incentivos-service`, `logistica-service` y `notificaciones-service` tienen además repositorios JPA con el perfil `postgres`; `donaciones-service` no tiene entidades `@Entity` y sigue solo en memoria (ver `docs/adr/DEUDA_TECNICA.md`, `DTI-01`).
 
 ### 5) Disponibilidad y Tolerancia a Fallos
 * **Definición Formal (Bass et al.):** Capacidad del sistema para mantenerse operativo ante fallas parciales, caídas de servicios dependientes o saturación temporal de la red.
 * **Motivación en DonaTrack:** Las operaciones críticas de logística y transporte no deben bloquearse si el servicio de donaciones experimenta lentitud o indisponibilidad momentánea.
 * **Evidencia en Código Fuente:**
-  1. **Desacoplamiento Temporal con RabbitMQ:** `logistica-service` publica eventos de cambio de estado (`EventoEntregaExitosa`, `EventoEntregaFallida`, `EventoRutaIniciada`) en colas AMQP vía `ComunicadorEventosLogisticaRabbit`. `donaciones-service` consume estos eventos asíncronamente mediante `@RabbitListener` en `LogisticaEventListener`, asegurando que `logistica-service` no se detenga si `donaciones-service` está saturado.
+  1. **Desacoplamiento Temporal con RabbitMQ:** `logistica-service` publica eventos de cambio de estado (`EventoRutaAsignada`, `EventoRutaIniciada`, `EventoEntregaExitosa`, `EventoEntregaFallida`) hacia `logistica.exchange` vía `ComunicadorEventosLogisticaRabbit`, que delega en `LogisticaEventPublisher`. `donaciones-service` consume estos eventos asíncronamente mediante `@RabbitListener` en `LogisticaEventListener`, asegurando que `logistica-service` no se detenga si `donaciones-service` está saturado.
   2. **Manejo de Trazabilidad en Fallos:** Si una operación falla, el `traceId` propagado permite reconstruir el flujo de extremo a extremo en los logs de los 4 microservicios.
 
 ### 6) Escalabilidad y Performance (Eficiencia / Rendimiento)
@@ -89,7 +89,7 @@ La arquitectura y el diseño de software de DonaTrack combinan las mejores prác
 * **Definición Formal (ISO/IEC 25010):** Capacidad de dos o más componentes de software para intercambiar información y utilizar los datos transferidos de forma confiable.
 * **Motivación en DonaTrack:** Integrar la plataforma con automatizaciones no-code de gamificación (n8n), pasarelas de mensajería externa (Email, WhatsApp, SMS) y clientes de prueba automatizados.
 * **Evidencia en Código Fuente:**
-  1. **Clientes Declarativos OpenFeign:** Comunicación inter-servicios tipada (`DonacionesFeignClient`, `NotificacionesFeignClient`, `IncentivosFeignClient`, `LogisticaFeignClient`) con contratos explícitos de DTOs y reintentos configurados.
+  1. **Clientes Declarativos OpenFeign:** Único `@FeignClient` vigente: `NotificacionesFeignClient` en `incentivos-service` (hacia `notificaciones-service`, deuda DTI-13). El resto de la comunicación entre servicios es AMQP; los clientes Feign de donaciones fueron reemplazados por publicación en `donaciones.exchange`.
   2. **Webhooks con n8n Engine:** `incentivos-service` expone endpoints REST para que workflows externos de n8n (`workflow-insignias.json`, `workflow-ranking-mensual.json`) disparen evaluaciones periódicas y otorgamiento de insignias vía HTTP.
   3. **Colecciones Postman y OpenAPI:** Contratos REST documentados para interoperabilidad con clientes livianos y suites de integración.
 
@@ -113,7 +113,7 @@ La arquitectura y el diseño de software de DonaTrack combinan las mejores prác
 │ Open/Closed Principle (OCP)            │ Template Method en AlgoritmoAsignacion y Mision (abiertos a extensión).│
 │ Liskov Substitution Principle (LSP)    │ Jerarquía polimórfica de EstadoDonacionIndependiente y CrudRepository. │
 │ Interface Segregation Principle (ISP)  │ Interfaces pequeñas y específicas en common-lib y adaptadores.         │
-│ Dependency Inversion Principle (DIP)   │ Inyección de dependencias de Spring Boot y uso de interfaces Feign.    │
+│ Dependency Inversion Principle (DIP)   │ Inyección de dependencias de Spring Boot y uso de interfaces (por ejemplo el cliente Feign de incentivos hacia notificaciones).    │
 └────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -220,13 +220,13 @@ DonaTrack implementa la **Regla de Dependencia Unidireccional** de la Arquitectu
 2. **Bounded Context Incentivos (Supporting):** Gamificación, misiones, niveles, acumulación de puntos, rachas y rankings de donantes.
 3. **Bounded Context Logística (Generic / Supporting):** Planificación de rutas, camiones, capacidad de carga, paradas y control de entregas.
 4. **Bounded Context Notificaciones (Generic):** Despacho multicanal no bloqueante y réplicas ligeras de destinatarios.
-5. **Shared Kernel (`common-lib`):** Abstracciones compartidas de repositorios en memoria, logging distribuido y excepciones base.
+5. **Shared Kernel (`common-lib`):** Abstracciones compartidas de repositorios (en memoria), logging distribuido y excepciones base.
 
 ### 7.2. Diseño Táctico (Aggregates y Building Blocks)
 * **Aggregate Roots:** `DonacionIndependiente`, `Necesidad` (`NecesidadExtraordinaria`, `NecesidadRecurrente`), `Propuesta`, `Camion`, `Ruta`, `Entrega`, `DonanteIncentivos`, `RankingMensual`, `Persona`, `Notificacion`.
 * **Value Objects (Inmutables por Valor):** `Direccion`, `PeriodoNecesidad`, `Localidad`, `Provincia`, `Pais`.
 * **Domain Events:** `PropuestaAprobada`, `EventoEntrega`, `EventoRuta`, `InsigniaOtorgadaEvent` / `MisionCompletada`.
-* **Repositories:** `CrudRepository<T extends AggregateRoot>` implementado en memoria con `ConcurrentHashMap`.
+* **Repositories:** `CrudRepository<T extends AggregateRoot>` implementado en memoria con `ConcurrentHashMap` (por defecto) o con JPA bajo el perfil `postgres` (excepto `donaciones-service`).
 
 ---
 
@@ -235,7 +235,7 @@ DonaTrack implementa la **Regla de Dependencia Unidireccional** de la Arquitectu
 1. **Trazabilidad Distribuida de Extremo a Extremo:**  
    Todo request entrante pasa por `TraceResponseHeaderFilter`, que extrae o genera un `traceId` único y lo inyecta en el Mapped Diagnostic Context (MDC) de SLF4J / Logback. Cuando un microservicio invoca a otro mediante OpenFeign, el interceptor `FeignTraceRequestInterceptor` propaga el header HTTP `X-Trace-Id`.
 2. **Aislamiento de Persistencia en Fase 1:**  
-   Todos los repositorios heredan de `CrudRepositoryEnMemoria<T>`, aislando los datos en memoria por microservicio y garantizando tests reproducibles y determinísticos.
+   Los repositorios en memoria heredan de `CrudRepositoryEnMemoria<T>` (implementación por defecto; JPA con perfil `postgres` salvo en donaciones), aislando los datos por microservicio y garantizando tests reproducibles y determinísticos.
 3. **Evolución Hacia Entrega 2:**  
    La migración a bases de datos relacionales (JPA/Hibernate) y surrogate keys se encuentra planificada en `docs/adr/DEUDA_TECNICA.md` (`DTI-01` a `DTI-06`), preservando la integridad del modelo de dominio.
 
