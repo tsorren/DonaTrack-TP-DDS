@@ -56,4 +56,4 @@ Vuelta al documento: [`arquitectura-sistema.md`](arquitectura-sistema.md). Los I
 | Salidas | Medios de notificación (correo, SMS y WhatsApp) simulados en el proceso, sin red |
 | Datos | PostgreSQL (perfil `postgres`): 5 entidades, Flyway V1–V2, SINGLE_TABLE en medios de contacto, inbox `evento_procesado` |
 | Garantía | Efecto único de la persistencia de la notificación, en perfil `postgres`. El envío ocurre después del commit, de forma asíncrona. Una notificación fallida no se reintenta |
-| Deuda propia | T9, T17, T18 · fallback de dedup por id de negocio cuando falta `messageId` (T4) |
+| Deuda propia | T9, T17 (T4 y T18 resueltos) |
