@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: logistica, planificacion, async, callback, arquitectura, divergencia
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`logistica-service/src/main/java/grupo5/logistica/controllers/impl/PlanificacionController.java:32`, `logistica-service/src/main/java/grupo5/logistica/services/impl/PlanificacionService.java:91`). El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 En el diseño conceptual original de `logistica-service` plasmado en el Diagrama de Clases (DC), la planificación de rutas se modeló como una operación síncrona en memoria a través de una clase `PlanificadorDeRutas` que invocaba un algoritmo directo y retornaba de inmediato las rutas conformadas. Sin embargo, en un escenario de distribución física real con algoritmos de optimización de rutas (como el Problema del Viajante / VRP - *Vehicle Routing Problem*) o la delegación en motores externos de mapas (OpenStreetMap, Google Maps o servicios de optimización logística), el cálculo puede demorar desde varios segundos hasta minutos. Mantener una llamada HTTP síncrona o bloquear un hilo de la aplicación durante ese tiempo provocaría timeouts en clientes, saturación de conexiones HTTP y fragilidad operacional.

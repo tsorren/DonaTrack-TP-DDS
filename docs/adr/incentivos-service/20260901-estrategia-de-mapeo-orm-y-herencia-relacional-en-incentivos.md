@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: persistencia, jpa, hibernate, orm, single-table, incentivos
 
+> **Nota de auditoría (2026-10-14):** la decisión está implementada (`incentivos-service/src/main/java/grupo5/incentivos/infrastructure/persistencia/entities/`, `incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql`), con las diferencias de DDL señaladas en el texto. El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 En `incentivos-service`, el agregado principal `DonanteIncentivos` mantiene las métricas acumuladas de cada donante (puntos totales, nivel actual, racha histórica de meses consecutivos) y su colección de logros (`InsigniaGanada`). Por otro lado, la entidad abstracta `Mision` es extendida por múltiples especializaciones polimórficas (`MisionCompletitud`, `MisionRacha`, etc.). Al diseñar el esquema relacional con JPA/Hibernate 6 para Fase 2, se deben resolver dos desafíos:
