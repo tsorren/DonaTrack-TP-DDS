@@ -1,5 +1,6 @@
 package grupo5.notificaciones.controllers;
 
+import grupo5.notificaciones.dto.ConteoNoLeidasDTO;
 import grupo5.notificaciones.dto.NotificacionDTO;
 import grupo5.notificaciones.dto.input.EventoNotificableDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,8 +38,29 @@ public interface INotificacionController {
   @GetMapping("/api/notificaciones/{id}")
   ResponseEntity<NotificacionDTO> obtenerPorId(@PathVariable UUID id);
 
-  @Operation(summary = "Obtener historial de notificaciones de una persona (legacy/alias)")
+  @Operation(
+      summary = "Obtener historial de notificaciones de una persona con filtro opcional de lectura",
+      description = "Si leida=false devuelve solo pendientes de lectura (campana/inbox).")
   @ApiResponse(responseCode = "200", description = "Historial de notificaciones devuelto")
   @GetMapping({"/notificaciones/persona/{personaId}", "/api/notificaciones/persona/{personaId}"})
-  ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(@PathVariable UUID personaId);
+  ResponseEntity<List<NotificacionDTO>> obtenerPorPersona(
+      @PathVariable UUID personaId, @RequestParam(required = false) Boolean leida);
+
+  @Operation(
+      summary = "Obtener el conteo de notificaciones no leídas de una persona (para badge UI)")
+  @ApiResponse(responseCode = "200", description = "Conteo devuelto exitosamente")
+  @GetMapping("/api/notificaciones/persona/{personaId}/no-leidas/conteo")
+  ResponseEntity<ConteoNoLeidasDTO> contarNoLeidas(@PathVariable UUID personaId);
+
+  @Operation(summary = "Marcar una notificación como leída o no leída")
+  @ApiResponse(responseCode = "200", description = "Estado de lectura actualizado")
+  @ApiResponse(responseCode = "404", description = "Notificación no encontrada")
+  @PatchMapping("/api/notificaciones/{id}/leida")
+  ResponseEntity<NotificacionDTO> marcarLeida(
+      @PathVariable UUID id, @RequestParam(required = false, defaultValue = "true") boolean leida);
+
+  @Operation(summary = "Marcar todas las notificaciones de una persona como leídas")
+  @ApiResponse(responseCode = "204", description = "Todas las notificaciones marcadas como leídas")
+  @PatchMapping("/api/notificaciones/persona/{personaId}/marcar-todas-leidas")
+  ResponseEntity<Void> marcarTodasComoLeidas(@PathVariable UUID personaId);
 }

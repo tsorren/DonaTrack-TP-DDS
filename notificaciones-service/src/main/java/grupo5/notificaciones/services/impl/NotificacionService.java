@@ -234,8 +234,18 @@ public class NotificacionService {
     return repository.findById(id).map(this::toDTO);
   }
 
+  public List<NotificacionDTO> obtenerPorPersona(UUID personaId, @Nullable Boolean leida) {
+    if (personaId == null) {
+      return List.of();
+    }
+    if (leida == null) {
+      return repository.findByPersonaId(personaId).stream().map(this::toDTO).toList();
+    }
+    return repository.findByPersonaIdAndLeida(personaId, leida).stream().map(this::toDTO).toList();
+  }
+
   public List<NotificacionDTO> obtenerPorPersona(UUID personaId) {
-    return obtenerNotificaciones(personaId, null);
+    return obtenerPorPersona(personaId, null);
   }
 
   public List<NotificacionDTO> obtenerNotificaciones(UUID personaId, EstadoNotificacion estado) {
@@ -257,6 +267,50 @@ public class NotificacionService {
 
   private NotificacionDTO toDTO(Notificacion n) {
     return new NotificacionDTO(
-        n.getId(), n.getMensaje(), n.getEstadoNotificacion().name(), n.getFechaCreacion());
+        n.getId(),
+        n.getMensaje(),
+        n.getEstadoNotificacion().name(),
+        n.getFechaCreacion(),
+        n.isLeida(),
+        n.getFechaLectura());
+  }
+
+  @Transactional
+  public Optional<NotificacionDTO> marcarComoLeida(UUID id) {
+    return repository
+        .findById(id)
+        .map(
+            notificacion -> {
+              notificacion.marcarComoLeida();
+              Notificacion guardada = repository.save(notificacion);
+              return toDTO(guardada);
+            });
+  }
+
+  @Transactional
+  public Optional<NotificacionDTO> marcarComoNoLeida(UUID id) {
+    return repository
+        .findById(id)
+        .map(
+            notificacion -> {
+              notificacion.marcarComoNoLeida();
+              Notificacion guardada = repository.save(notificacion);
+              return toDTO(guardada);
+            });
+  }
+
+  @Transactional
+  public void marcarTodasComoLeidas(UUID personaId) {
+    if (personaId == null) {
+      return;
+    }
+    repository.marcarTodasComoLeidas(personaId);
+  }
+
+  public long contarNoLeidas(UUID personaId) {
+    if (personaId == null) {
+      return 0L;
+    }
+    return repository.countByPersonaIdAndLeidaFalse(personaId);
   }
 }
