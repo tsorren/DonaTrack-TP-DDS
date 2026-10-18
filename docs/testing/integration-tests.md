@@ -59,6 +59,7 @@ integration-tests/
     │   ├── CrossServiceCommunicationIT.java     # Replicación REST y side-effects
     │   ├── DonationIntegrationIT.java
     │   ├── PersonIntegrationIT.java
+    │   ├── LogisticaIntegrationIT.java          # Camiones, choferes y entregas de logística
     │   └── ErrorHandlingIntegrationIT.java      # Contratos de error 400, 404, 409 y fieldErrors
     │
     ├── e2e/                                     # @Tag("e2e")

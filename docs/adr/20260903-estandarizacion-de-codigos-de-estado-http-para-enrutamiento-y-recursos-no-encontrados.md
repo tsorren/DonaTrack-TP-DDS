@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: api, rest, http, global-exception-handler, common-lib, spring-boot-3, observabilidad, contratos
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`common-lib/src/main/java/grupo5/common/handlers/GlobalExceptionHandler.java:310`). El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 En la arquitectura de microservicios de DonaTrack, todas las APIs REST delegan el tratamiento uniforme de excepciones en el componente centralizado `GlobalExceptionHandler` (`@RestControllerAdvice`) ubicado en el Shared Kernel `common-lib`.

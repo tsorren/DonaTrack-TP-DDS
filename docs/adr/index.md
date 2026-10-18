@@ -26,6 +26,8 @@ Para gestionar este conocimiento, el equipo utiliza dos herramientas principales
 2. [Display de Decisiones (Log4brains)](https://tsorren.github.io/DonaTrack-TP-DDS/adr-preview): Esta interfaz interactiva que permite navegar por todos los
    registros de forma organizada.
 
+El listado de ADRs de este sitio no se escribe a mano: lo genera Log4brains al construir la vista previa (paso «Build Log4brains (Preview)» de `.github/workflows/deploy-pages.yml`, publicada en `/adr-preview`). El modelo de estados, la plantilla y el índice de deuda técnica están en [README de ADR](./README.md).
+
 ## Flujo de Trabajo
 
 El proceso para documentar una decision es el siguiente:

@@ -6,6 +6,8 @@
 - Tags: testing, performance, k6, grafana, docker, carga, estres, latencia, sla
 - Hallazgo Relacionado: AP-02 (*Sequential Load Loop* en `PerformanceStressIT.java`)
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`tests/performance/k6/`). El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 `[OBSERVED]` La prueba de rendimiento y estrés de la plataforma DonaTrack está implementada actualmente en la clase Java `integration-tests/src/test/java/grupo5/tests/performance/PerformanceStressIT.java`.

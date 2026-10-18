@@ -7,7 +7,7 @@
 
 ## Contexto y Problema
 
-En `notificaciones-service`, existe una rica jerarquía polimórfica de 10 clases que representan eventos entrantes: la interfaz `EventoNotificable`, la clase abstracta `EventoDeDonacion` y 8 subclases concretas (`DonacionAsignada`, `DonacionEnTraslado`, `DonacionEntregada`, `DonacionFallida`, `DonacionRecibida`, etc.). Cada una implementa un Template Method (`armarMensajeDonante()`, `armarMensajeBeneficiario()`) y contiene validaciones estrictas en sus constructores. Al diseñar la persistencia física relacional (Fase 2 / PostgreSQL), surge la duda arquitectónica de si estas clases deben mapearse como entidades `@Entity` de JPA con tablas relacionales (`evento_notificable`, etc.).
+En `notificaciones-service`, existe una jerarquía polimórfica de 11 clases que representan eventos entrantes: la clase abstracta `EventoNotificable`, la clase abstracta `EventoDeDonacion` (subclase de `EventoNotificable`) con 4 subclases concretas (`DonacionAsignada`, `DonacionEnCamino`, `DonacionRecibida`, `EntregaFallida`) y 5 subclases directas de `EventoNotificable` (`DonacionVencida`, `DonanteInactivo`, `DonanteRegistrado`, `MisionCumplida`, `SubioCategoria`). Cada una implementa un Template Method (`armarMensajeDonante()`, `armarMensajeBeneficiario()`) y contiene validaciones estrictas en sus constructores. Al diseñar la persistencia física relacional (Fase 2 / PostgreSQL), surge la duda arquitectónica de si estas clases deben mapearse como entidades `@Entity` de JPA con tablas relacionales (`evento_notificable`, etc.).
 
 ## Atributos de Calidad y Drivers de Decisión
 
@@ -22,7 +22,7 @@ En `notificaciones-service`, existe una rica jerarquía polimórfica de 10 clase
 
 ## Alternativas Consideradas
 
-* **Políticas de Dominio Transitorias (POJOs en Memoria Sin `@Entity`):** Tratar a `EventoNotificable` y sus subtipos estrictamente como objetos de dominio transitorios en memoria (patrón Strategy / Factory Policy). Reciben los datos del evento, aplican sus guardas de validación, generan los textos de los mensajes para la entidad `Notificacion`, y son recolectados por el Garbage Collector sin persistirse en base de datos.
+* **Políticas de Dominio Transitorias (POJOs en Memoria Sin `@Entity`):** Tratar a `EventoNotificable` y sus subclases estrictamente como objetos de dominio transitorios en memoria (patrón Strategy / Factory Policy). Reciben los datos del evento, aplican sus guardas de validación, generan los textos de los mensajes para la entidad `Notificacion`, y son recolectados por el Garbage Collector sin persistirse en base de datos.
 * **Persistencia Relacional Completa con Herencia JPA (`SINGLE_TABLE`):** Crear una tabla `evento_notificable` y guardar una fila por cada evento recibido antes de despacharlo.
 * **Almacenamiento como Documentos JSONB:** Guardar el payload crudo del evento en una columna JSONB dentro de la tabla de notificaciones.
 
@@ -46,8 +46,8 @@ Justificación:
 ### Validación
 
 Se valida mediante:
-1. Clases de `grupo5.notificaciones.models.eventos` sin ninguna anotación `@Entity`, `@Table` ni `@Id`.
-2. El script DDL de notificaciones solo contiene las tablas `notificaciones`, `medios_de_contacto` y `eventos_procesados`.
+1. Clases de `grupo5.notificaciones.models.entities.notificaciones.eventos` sin ninguna anotación `@Entity`, `@Table` ni `@Id`.
+2. El script DDL de notificaciones (`V1__init_notificaciones.sql` y `V2__inbox_notificaciones.sql`) solo contiene las tablas `persona`, `medio_de_contacto`, `notificacion`, `notificacion_historial_estado` y `evento_procesado`.
 
 ## Análisis de Alternativas
 

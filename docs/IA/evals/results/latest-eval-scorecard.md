@@ -3,7 +3,7 @@
 > **Fecha de Evaluación:** 2026-09-11  
 > **Versión de Harness:** v6.4.0  
 > **Nivel de Madurez:** Nivel 4 (Agent-First)  
-> **Grader:** Determinista Headless Pipeline (`scripts/run-evals.js`)  
+> **Grader:** Determinista Headless Pipeline (`scripts/run-evals.js`) — grader determinista sobre respuestas de control (no mide el comportamiento de un agente real)  
 
 <!-- AUTO-GENERATED: DO NOT EDIT MANUALLY -->
 

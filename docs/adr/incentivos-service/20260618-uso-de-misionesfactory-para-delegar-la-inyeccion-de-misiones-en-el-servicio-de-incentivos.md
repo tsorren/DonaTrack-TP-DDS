@@ -1,27 +1,28 @@
-# Uso de MisionesFactory para delegar la inyección de misiones en el servicio de incentivos
+# Uso de MisionFactory para delegar la inyección de misiones en el servicio de incentivos
 - Status: accepted
 - Date: 2026-06-18
 - Deciders: Bernardo Estigarribia, Miranda Rossi
+- Tags: incentivos, misiones, factory, patrones-de-diseño
 
 ## Contexto y Problema
 El método registrarDonante necesita instanciar misiones, lo que le agrega responsabilidades que no le corresponden. Se necesita delegar esa tarea para mantener el método cohesivo.
 
 ## Alternativas Consideradas
-* MisionesFactory para inyección de misiones
+* MisionFactory para inyección de misiones
 * Inyección de misiones directamente en registrarDonante
 
 ## Resultado de la Decisión
 
-Alternativa elegida: "MisionesFactory para inyección de misiones"
+Alternativa elegida: "MisionFactory para inyección de misiones"
 
 Justificación:
 Delegar la creación de misiones a una Factory respeta SRP, manteniendo registrarDonante enfocado en su responsabilidad principal y haciendo el código más mantenible y extensible.
 
 ## Análisis de Alternativas
 
-### MisionesFactory para inyección de misiones
+### MisionFactory para inyección de misiones
 
-El servicio de incentivos delega en MisionesFactory la responsabilidad de instanciar e inyectar las misiones, desacoplando esa lógica del método registrarDonante
+El servicio de incentivos delega en MisionFactory la responsabilidad de instanciar e inyectar las misiones, desacoplando esa lógica del método registrarDonante
 
 #### Pros
 * Reduce la responsabilidad del método registrarDonante

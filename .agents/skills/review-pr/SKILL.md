@@ -132,7 +132,7 @@ Cuando el PR esté disponible localmente en el working tree o rama local, ejecut
   mvn test -pl <modulo-afectado> -Dtest=<SuiteTestRelevante>
   ```
 * **Auto-auditoría pre-flight SonarCloud:**
-  Verificar el diff contra los 12 errores frecuentes de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../../../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
+  Verificar el diff contra los 17 errores frecuentes de [`docs/IA/07-errores-frecuentes-sonarcloud-ia.md`](../../../docs/IA/07-errores-frecuentes-sonarcloud-ia.md).
 
 ---
 

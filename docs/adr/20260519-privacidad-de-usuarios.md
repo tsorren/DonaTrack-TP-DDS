@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: privacidad
 
+> **Nota de auditoría (2026-10-14):** reemplazo pendiente de aprobación por [Estrategia de Crypto-Shredding para Supresión de Datos Personales](./20260901-estrategia-de-crypto-shredding-para-supresion-de-datos-personales.md). El cambio de Status queda a aprobación del equipo. El sucesor no está implementado: no hay código de crypto-shredding en `*-service/src/main`.
+
 ## Contexto y Problema
 
 Los datos de las personas (Jurídicas o Humanas) deben ser tratados según la ley de protección de datos, por lo que se

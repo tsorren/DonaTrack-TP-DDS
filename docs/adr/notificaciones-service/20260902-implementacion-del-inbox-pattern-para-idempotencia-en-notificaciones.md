@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: idempotencia, inbox-pattern, event-id, feign, at-least-once, deduplicacion, notificaciones
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`notificaciones-service/src/main/java/grupo5/notificaciones/services/impl/NotificacionService.java:75,160,197-209`). Salvedad: cuando no hay `messageId` ni identificador de respaldo (`eventId` nulo), `resolverEventId` genera un `UUID.randomUUID()` y se pierde la deduplicación de ese mensaje. El contexto describe el estado previo: `donaciones-service` ya no usa clientes Feign y `FeignRetryConfig` no existe. El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 En DonaTrack, la integración entre microservicios hacia `notificaciones-service` se produce mediante peticiones HTTP REST (`POST /notificaciones`) disparadas por clientes Feign desde `donaciones-service` e `incentivos-service`. Estos clientes cuentan con políticas de tolerancia a fallos y reintentos automáticos configuradas en `FeignRetryConfig` (hasta 5 reintentos ante timeouts o desconexiones transitorias de red).

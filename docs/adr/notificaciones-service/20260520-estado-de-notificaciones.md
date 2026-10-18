@@ -70,7 +70,6 @@ comportamiento real de `Notificacion.notificar()` es: dentro de un mismo intento
 medios ordenados (predeterminado primero) y hace fallback al siguiente si el actual lanza excepción
 o devuelve `false`; si todos los medios fallan, pasa a `FALLIDA` de inmediato — no hay reintento
 automático posterior ni un mecanismo que vuelva a intentar una notificación ya `FALLIDA`. La
-responsabilidad de reintentar, si existe, está del lado del llamador (`FeignRetryConfig` en
-`donaciones-service`, ver Oleada 9.5 en el plan de oleadas) y opera a nivel de la llamada HTTP
+responsabilidad de reintentar, si existe, está del lado del llamador y opera a nivel de la llamada HTTP
 completa, no a nivel de "un medio de contacto" — un reintento ahí reprocesaría el evento entero,
 no reanudaría una `Notificacion` `FALLIDA` puntual (riesgo de duplicados documentado como `RF-10`).
