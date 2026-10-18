@@ -54,7 +54,7 @@ graph TD
 
 ### 1.3. Detalle de las Etapas
 
-1. **validate-git-flow**: Valida mediante bash regex que la rama origen de la PR respete los prefijos y nomenclatura correspondientes según la rama base destino (`main` o `ENTREGA_N`). Lógica genérica basada en el número de entrega sin hardcoding de ramas específicas.
+1. **validate-git-flow**: Valida mediante bash regex que la rama origen de la PR respete los prefijos y nomenclatura correspondientes según la rama base destino (`main` o `ENTREGA_N`): hacia `main` solo entran ramas `ENTREGA_N`; hacia `ENTREGA_N`, ramas `E<N>_*` o `ENTREGA_<N>_*`, y también `E<N-1>_*` para reapuntar sin renombrar el trabajo que quedó abierto al cerrar la entrega anterior (deja un `::notice::`). Lógica genérica basada en el número de entrega sin hardcoding de ramas específicas.
 2. **detect-changes**: Usa `dorny/paths-filter` para detectar cambios globales y `git diff --name-only origin/base...HEAD` (triple punto, comparación desde ancestro común) para detectar cambios por servicio. Genera dos matrices: `services-matrix` (módulos a compilar) y `docker-matrix` (módulos con Dockerfile). Exporta dos outputs booleanos: `any-service` y `any-docker-service`.
 3. **lint-and-format**: Ejecuta `mvn spotless:check` validando el formato de código.
 4. **build-and-test**: Compila y testea los microservicios afectados con matriz paralela. Sube JARs, reportes JaCoCo, Surefire y archivos PUML como artefactos de Actions.

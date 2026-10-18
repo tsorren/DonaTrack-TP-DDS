@@ -80,7 +80,9 @@ jobs:
             fi
           fi
 
-          # Caso 2: Merge a ENTREGA_N — solo desde ramas E<N>_* o ENTREGA_<N>_*
+          # Caso 2: Merge a ENTREGA_N — desde ramas E<N>_* o ENTREGA_<N>_*, o desde
+          # E<N-1>_* (trabajo que quedó abierto al cerrar la entrega anterior y se
+          # reapunta a la nueva, sin renombrar la rama ni recrear la PR).
           # [FIX-7] La excepción hardcodeada para E1_CORREGIDA fue eliminada.
           # La regla genérica ya acepta E1_CORREGIDA porque comienza con "E1_".
           # Si se necesitan excepciones adicionales, parametrizar via variable de
@@ -89,9 +91,23 @@ jobs:
             DELIVERY_NUM="${BASH_REMATCH[1]}"
             REQUIRED_PREFIX="E${DELIVERY_NUM}_"
             REQUIRED_LONG_PREFIX="ENTREGA_${DELIVERY_NUM}_"
+            # 10# evita que un número con cero a la izquierda (ENTREGA_08) se lea como octal
+            PREVIOUS_NUM=$((10#$DELIVERY_NUM - 1))
+            PREVIOUS_PREFIX=""
+            if (( PREVIOUS_NUM >= 1 )); then
+              PREVIOUS_PREFIX="E${PREVIOUS_NUM}_"
+            fi
 
-            if [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* && ! "$SRC_BRANCH" =~ ^${REQUIRED_LONG_PREFIX}.* ]]; then
-              echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX' o '$REQUIRED_LONG_PREFIX'."
+            if [[ "$SRC_BRANCH" == "$REQUIRED_PREFIX"* || "$SRC_BRANCH" == "$REQUIRED_LONG_PREFIX"* ]]; then
+              :
+            elif [[ -n "$PREVIOUS_PREFIX" && "$SRC_BRANCH" == "$PREVIOUS_PREFIX"* ]]; then
+              echo "::notice::Rama de la entrega anterior ('$PREVIOUS_PREFIX') aceptada hacia '$BASE_BRANCH'."
+            else
+              ALLOWED="'$REQUIRED_PREFIX' o '$REQUIRED_LONG_PREFIX'"
+              if [[ -n "$PREVIOUS_PREFIX" ]]; then
+                ALLOWED="'$REQUIRED_PREFIX', '$REQUIRED_LONG_PREFIX' o '$PREVIOUS_PREFIX' (entrega anterior)"
+              fi
+              echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con $ALLOWED."
               echo "  Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
               exit 1
             fi
