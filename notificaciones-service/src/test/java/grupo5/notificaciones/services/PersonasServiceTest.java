@@ -2,6 +2,7 @@ package grupo5.notificaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.ValidationException;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 @ExtendWith(MockitoExtension.class)
 class PersonasServiceTest {
@@ -96,5 +98,13 @@ class PersonasServiceTest {
 
     assertThrows(ValidationException.class, () -> service.anonimizar(id));
     verify(repository, never()).save(any());
+  }
+
+  @Test
+  void anonimizar_esTransaccional_paraNoDejarPersonaYNotificacionesAMedias() throws Exception {
+    assertTrue(
+        PersonasService.class
+            .getMethod("anonimizar", UUID.class)
+            .isAnnotationPresent(Transactional.class));
   }
 }

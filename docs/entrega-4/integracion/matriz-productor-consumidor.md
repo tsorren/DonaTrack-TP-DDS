@@ -25,7 +25,7 @@ Donaciones-service **nunca declara colas en su propio exchange** — solo public
 
 ## Consumo accidental en Notificaciones
 
-`notificaciones.donaciones` se bindea a `donacion.#`, `donante.#` y `persona.#`. Por eso también recibe `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, que no tienen `@RabbitHandler` en `DonacionEventListener`: terminan en `notificaciones.donaciones.dlq` (observado en T18; ver `catalogo-mensajes.md`).
+`notificaciones.donaciones` se bindea solo con las 7 claves que procesa (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`). `donacion.segmentada.v1` y `donante.dado-de-baja.v1` ya no llegan a su cola; antes, con los comodines `donacion.#`, `donante.#` y `persona.#`, terminaban en `notificaciones.donaciones.dlq` (T18, resuelto; ver `catalogo-mensajes.md`).
 
 ## Notas que ya no aplican (dejadas fuera a propósito)
 

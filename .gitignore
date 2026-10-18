@@ -54,3 +54,6 @@ __pycache__/
 .grepai/
 .agents/*
 !.agents/skills/
+
+# Credenciales locales de docker compose (ver .env.example)
+.env

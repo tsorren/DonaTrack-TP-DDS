@@ -219,7 +219,7 @@ Responde: ¿Quién publica qué, en qué exchange, y quién lo consume?
 
 | Exchange (dueño) | Routing keys | Cola (la declara el consumidor) | Consumidor | DLQ |
 |---|---|---|---|---|
-| `donaciones.exchange` (Donaciones) | `donacion.#` · `donante.#` · `persona.#` | `notificaciones.donaciones` | Notificaciones | `notificaciones.donaciones.dlq` vía `notificaciones.dlx` |
+| `donaciones.exchange` (Donaciones) | Una clave por handler: `donacion.{asignada,en-camino,recibida,entrega-fallida,vencida}.v1` · `donante.registrado.v1` · `persona.sincronizada.v1` | `notificaciones.donaciones` | Notificaciones | `notificaciones.donaciones.dlq` vía `notificaciones.dlx` |
 | `donaciones.exchange` | `donante.registrado.v1` · `donante.dado-de-baja.v1` · `donacion.segmentada.v1` · `donacion.recibida.v1` · `persona.sincronizada.v1` | una por clave: `incentivos.donante-registrado`, `incentivos.donante-dado-de-baja`, `incentivos.donacion-segmentada`, `incentivos.donacion-recibida`, `incentivos.persona-sincronizada` | Incentivos | No |
 | `donaciones.exchange` | `entrega.solicitada.<proveedorId>.v1` (comando, binding exacto) | `logistica.<instancia>.entregas.solicitadas` | Logística (cada instancia) | No |
 | `incentivos.exchange` (Incentivos) | `incentivo.#` | `notificaciones.incentivos` | Notificaciones | `notificaciones.incentivos.dlq` vía `notificaciones.dlx` |
@@ -228,7 +228,7 @@ Responde: ¿Quién publica qué, en qué exchange, y quién lo consume?
 
 - Exchanges topic y colas durables. Sin TTL.
 - El tipo de cada mensaje viaja como alias corto, no como nombre de clase: la routing key en los hechos; `entrega.solicitada.v1` en el comando.
-- Los comodines de Notificaciones también reciben `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, que no procesa: terminan en su DLQ (inferido, T18).
+- Notificaciones bindea solo las 7 claves que procesa, así que `donacion.segmentada.v1` y `donante.dado-de-baja.v1` ya no llegan a su cola (T18, resuelto).
 - Contratos: `docs/arquitectura/eventos-amqp.md` · `docs/entrega-4/integracion/catalogo-mensajes.md`.
 
 **Problema.** R1: Notificaciones no debe afectar la disponibilidad de los servicios de dominio ante picos o fallas transitorias.
@@ -543,7 +543,7 @@ El documento no promete entrega exactamente una vez ni efecto único global. S3�
 |---|---|---|---|---|
 | S1 | Notificaciones caído 10 min durante un pico de donaciones | Donaciones sigue operando. Los mensajes se procesan al volver | Colas durables declaradas por Notificaciones · publicación asincrónica | Cubierto. Condición: Notificaciones arrancó antes al menos una vez (declara su cola); sin cola, el hecho se pierde (inferido: los hechos se publican sin `mandatory`) |
 | S2 | El proveedor elegido no responde o rechaza | Rechazo seguro → siguiente proveedor. Incierto → mismo proveedor con backoff. Agotado → fallida con log de error | Política de resultados del broker de integración (§5.3) · `mandatory` y confirms en el comando | Cubierto, con límites: la fallida solo se ve en el log; una solicitud activa por donación no es atómica (DTI-14, ítem 2); si Logística descarta el comando por validación después del acuse de RabbitMQ, Donaciones no se entera (T20); sin failover por disponibilidad: si el proveedor AMQP elegido está caído pero su cola existe, el comando espera en la cola y no se reenvía a otro proveedor (ADR 20261007) |
-| S3 | El mismo mensaje llega dos veces | Efecto único donde hay dedup | Inbox persistente en Notificaciones · clave única por donación en Logística · dedup en memoria en Donaciones | Parcial: Incentivos no deduplica donaciones y no envía `messageId` (DTI-16); la dedup de Donaciones se pierde al reiniciar (DTI-14) |
+| S3 | El mismo mensaje llega dos veces | Efecto único donde hay dedup | Inbox persistente en Notificaciones · clave única por donación en Logística · dedup en memoria en Donaciones | Parcial: Incentivos no deduplica donaciones (DTI-16); la dedup de Donaciones se pierde al reiniciar (DTI-14) |
 | S4 | Falla la publicación después del commit, o el proceso cae antes de publicar | Sin evento perdido | Solo el comando del broker de integración pasa por outbox (en memoria) | No cubierto: Logística publica después del commit sin outbox (DTI-16); outbox de Donaciones sin durabilidad (DTI-14, ítem 1) |
 | S5 | RabbitMQ reinicia | Colas y mensajes durables; publicador informado | Exchanges y colas durables · confirms y `mandatory` solo en el comando | Parcial: el resto de los publicadores no confirma; en compose RabbitMQ no tiene volumen, así que recrear el contenedor pierde colas y mensajes |
 
@@ -572,7 +572,7 @@ El documento no promete entrega exactamente una vez ni efecto único global. S3�
 | T1 | Donaciones sin persistencia relacional | R3 parcial. Un reinicio pierde todo el estado | Puertos listos para JPA. Fuera de alcance de E4 | SPEC-04 · ADR de mapeo ORM de Donaciones (`proposed`) · DTI-01 |
 | T2 | Outbox, solicitudes y preferido del broker de integración en memoria | Pedidos pendientes perdidos al reiniciar · "una solicitud activa" no atómica | Puerto de outbox basado en datos, reemplazable por tabla | DTI-14, ítems 1, 2, 4 |
 | T3 | Logística publica después del commit, sin outbox ni confirms | Ventana de pérdida de hechos de logística | Tabla `evento_entrega` como base de un outbox | DTI-16, ítem 1 |
-| T4 | Incentivos publica sin `messageId` | Notificaciones puede descartar como duplicado un aviso legítimo de la misma persona (inferido, sin ejecutar) | Asignar `messageId` al publicar | DTI-16, ítem 2 |
+| T4 | Incentivos publicaba sin `messageId` | Notificaciones podía descartar como duplicado un aviso legítimo de la misma persona | Resuelto: `messageId` por publicación; el inbox ya no usa ids de negocio como clave | DTI-16, ítem 2 (resuelto) |
 | T5 | Incentivos: sin dedup de donaciones y sin DLQ | Métricas duplicadas ante un reenvío · mensajes que fallan se pierden | Inbox y DLX como en Notificaciones | DTI-16, ítems 3 y 4 |
 | T6 | Incentivos: sin lock distribuido de schedulers | Jobs duplicados con más de una réplica | ShedLock sobre PostgreSQL | DTI-16, ítem 5 · ADR ShedLock (`proposed`) |
 | T7 | Incentivos: pool que ejecuta en el hilo llamador al saturarse | La publicación bloquea al llamador · errores solo en el log | Pool con rechazo explícito o publicación con outbox | DTI-16, ítem 6 |
@@ -586,7 +586,7 @@ El documento no promete entrega exactamente una vez ni efecto único global. S3�
 | T15 | Script de roles en conflicto al integrar #889 | Cerrado: el merge en `ENTREGA_4` (`76003bf4`) conserva los GRANT de Logística e Incentivos | — | — |
 | T16 | Despliegue en la nube fuera del repo | No reproducible desde el repo · RabbitMQ compartido (CloudAMQP) sin configuración en el repo, ni para Donaciones ni para Logística | Configurar CloudAMQP en ambos servicios antes de la defensa | ADR D6 |
 | T17 | Restos legados: `notificaciones.exchange` sin publicadores · `PUT /api/notificaciones/personas` sin llamador en producción | Superficie sin uso | Retirar al cerrar la migración | DTI-13 · ADR 20260911 |
-| T18 | Notificaciones recibe por comodín `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, sin tipo que los procese | Esos mensajes terminan en su DLQ (inferido, sin ejecutar): ruido para la revisión manual | Bindings explícitos o descarte controlado | DTI-16, ítem 10 |
+| T18 | Notificaciones recibía por comodín `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, sin tipo que los procese | Esos mensajes terminaban en su DLQ | Resuelto: bindings explícitos por clave | DTI-16, ítem 10 (resuelto) |
 | T19 | Callback de planificación con URL por defecto `http://localhost:8083` | La instancia `externo` (8084) no la redefine: su callback falla y no emite `ruta.asignada` (inferido, sin ejecutar) | Fijar `LOGISTICA_SELF_BASE_URL` en la demo y en la nube | DTI-16, ítem 11 |
 | T20 | Logística descarta un comando inválido después del acuse | Hace ack y solo deja un log de error: la solicitud queda `ENVIADA` en Donaciones y la donación en "Asignación realizada", sin reenvío ni aviso | Publicar `entrega.fallida` (u otro hecho de rechazo) al descartar | DTI-16, ítem 12 |
 

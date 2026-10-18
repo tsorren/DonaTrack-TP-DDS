@@ -178,5 +178,5 @@ docs/
 * 📮 **Colecciones Postman y Newman CLI:** [../postman/README.md](../postman/README.md)
 * 🔒 **Auth Service (Bounded Context Reservado):** [../auth-service/README.md](../auth-service/README.md)
 * 💻 **Cliente Liviano (Bounded Context Reservado):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
-* 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql)
+* 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql) y [../persistencia/init-db/02-set-role-passwords.sh](../persistencia/init-db/02-set-role-passwords.sh) (contraseñas desde `.env`, ver [../.env.example](../.env.example))
 

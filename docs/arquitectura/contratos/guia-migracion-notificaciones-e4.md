@@ -71,13 +71,14 @@ UUID eventId()
   ```
 * Si la sentencia reporta `0` filas insertadas, el evento es detectado como duplicado (por ejemplo, producto de un reintento de red de Feign o redelivery AMQP) y se descarta de forma segura sin emitir notificaciones repetidas al usuario.
 
-### 3.2 Manejo de Clientes Legacy (Fallback UUID)
+### 3.2 Manejo de Clientes Legacy (sin `eventId`)
 
-Si un cliente REST legacy despacha un payload donde `eventId` es `null`, `notificaciones-service` **no rechaza la petición con 400 Bad Request**. En su lugar:
-1. Asigna automáticamente un `UUID.randomUUID()`.
-2. Emite una advertencia estructurada en el log de auditoría:
-   `[FALLBACK_LEGACY_EVENT_ID] Generado eventId <uuid> para evento legacy de tipo <EventoDTO>`.
+Si un cliente REST legacy despacha un payload donde `eventId` es `null` (o un mensaje AMQP llega sin `message_id`), `notificaciones-service` **no rechaza la petición con 400 Bad Request**. En su lugar:
+1. No registra el evento en el inbox: no hay clave estable para deduplicar. (Hasta octubre de 2026 se generaba un `UUID.randomUUID()`, que nunca deduplicaba, y en AMQP se usaba un id de negocio como `donanteId`, que descartaba eventos distintos del mismo donante.)
+2. Emite una advertencia en el log: `[INBOX_SIN_CLAVE] Evento sin eventId/messageId: se procesa sin deduplicar`.
 3. Procesa normalmente la notificación.
+
+El alias `POST /notificaciones` está marcado `@Deprecated` en el controller y `deprecated: true` en el contrato; el endpoint canónico es `POST /api/notificaciones/eventos`.
 
 ---
 

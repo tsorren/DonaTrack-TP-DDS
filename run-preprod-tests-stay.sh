@@ -66,6 +66,7 @@ fi
 # ── Paso 2: Levantar stack y esperar healthchecks ────────────────────────────
 step "Levantando stack pre-producción (esperando healthchecks)"
 # --wait bloquea hasta que todos los servicios con healthcheck reportan 'healthy'
+scripts/generar-env-db.sh
 docker compose -f "$COMPOSE_FILE" up --build --wait -d
 ok "Todos los servicios están healthy."
 

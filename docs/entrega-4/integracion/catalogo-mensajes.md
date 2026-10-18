@@ -12,7 +12,7 @@
 - **Idempotencia:** todo mensaje lleva su identificador único como propiedad AMQP estándar `messageId`, no como campo del payload. **Confirmado** en la reunión del 15/9 ("el protocolo AMQP ya trae Message ID en el encabezado, no hace falta duplicarlo").
 - **Versionado:** routing key versionado (`.v1`) + nombre de clase versionado (`Evento<Nombre>V1`, sin sufijo `DTO`). Confirmado como patrón ya en uso en la rama `E4_n_bd`.
 - **Retry/DLQ (lado consumidor):** `notificaciones-service` ya declara `notificaciones.dlx` y las colas `notificaciones.donaciones.dlq` / `notificaciones.incentivos.dlq` (`RabbitMQConfig`). Sigue pendiente en el resto de los consumidores (mandato de la reunión del 15/9, tres reintentos y luego Dead Letter Exchange). No es responsabilidad de Donaciones configurarlo del lado de quien consume.
-- **Consumo accidental en Notificaciones:** `notificaciones.donaciones` se bindea con los comodines `donacion.#`, `donante.#` y `persona.#`, así que también recibe `donacion.segmentada.v1` y `donante.dado-de-baja.v1`, que no tienen `@RabbitHandler` en `DonacionEventListener`; esos mensajes terminan en la DLQ (observación del test T18, no es un comportamiento diseñado).
+- **Bindings de Notificaciones:** `notificaciones.donaciones` se bindea solo con las 7 claves que procesa (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`), así que `donacion.segmentada.v1` y `donante.dado-de-baja.v1` ya no llegan a su cola. Antes se bindeaba con los comodines `donacion.#`, `donante.#` y `persona.#` y esos mensajes terminaban en la DLQ (test T18, resuelto; DTI-16, ítem 10).
 - **`fecha`:** timestamp real del hecho de negocio, no `now()` del publisher.
 
 ## Donaciones nunca declara colas en su propio exchange
