@@ -21,6 +21,7 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.net.http.HttpConnectTimeoutException;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,7 @@ class ProveedorLogisticaHttpTest {
               "Av. Siempreviva", 742, null, null, "1000", "CABA", "Buenos Aires", "Argentina"),
           12.5,
           0.3,
-          LocalDateTime.of(2026, 10, 7, 12, 0));
+          LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0));
 
   private MockRestServiceServer servidor;
   private ProveedorLogisticaHttp proveedor;

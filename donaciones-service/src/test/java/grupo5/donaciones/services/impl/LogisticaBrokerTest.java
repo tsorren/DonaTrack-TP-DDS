@@ -14,6 +14,7 @@ import grupo5.donaciones.services.logistica.EstadoEntradaOutbox;
 import grupo5.donaciones.services.logistica.ResultadoEnvio;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -25,7 +26,7 @@ import org.slf4j.MDC;
 
 class LogisticaBrokerTest {
 
-  private static final LocalDateTime AHORA = LocalDateTime.of(2026, 10, 7, 12, 0);
+  private static final LocalDateTime AHORA = LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0);
   private static final Clock CLOCK = Clock.fixed(AHORA.toInstant(ZoneOffset.UTC), ZoneId.of("UTC"));
 
   private SolicitudesEntregaRepositoryEnMemoria solicitudes;

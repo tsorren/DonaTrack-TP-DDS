@@ -80,13 +80,7 @@ public abstract class AlgoritmoAsignacion {
       Necesidad necesidad, List<DonacionIndependiente> donaciones) {
     if (necesidad == null) throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDAD_NULA);
     if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
-    List<DonacionIndependiente> filtradas = new ArrayList<>();
-    for (DonacionIndependiente donacion : donaciones) {
-      if (mismaSubcategoria(donacion, necesidad)) {
-        filtradas.add(donacion);
-      }
-    }
-    return filtradas;
+    return donaciones.stream().filter(donacion -> mismaSubcategoria(donacion, necesidad)).toList();
   }
 
   public abstract List<DonacionIndependiente> filtrarDonaciones(

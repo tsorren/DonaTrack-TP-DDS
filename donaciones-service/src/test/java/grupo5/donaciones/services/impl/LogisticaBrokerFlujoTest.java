@@ -17,6 +17,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -27,7 +28,7 @@ import org.junit.jupiter.api.Test;
 /** Broker + relay + outbox reales, con proveedores de prueba y un reloj que se puede adelantar. */
 class LogisticaBrokerFlujoTest {
 
-  private static final LocalDateTime INICIO = LocalDateTime.of(2026, 10, 7, 12, 0);
+  private static final LocalDateTime INICIO = LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0);
 
   private static final class RelojAjustable extends Clock {
     private Instant ahora = INICIO.toInstant(ZoneOffset.UTC);

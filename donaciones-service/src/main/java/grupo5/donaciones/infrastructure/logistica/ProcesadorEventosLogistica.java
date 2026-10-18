@@ -12,6 +12,7 @@ import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository
 import grupo5.donaciones.services.IDonacionesIndependientesService;
 import grupo5.donaciones.services.logistica.IProcesadorEventosLogistica;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Service;
 /**
  * Aplica sobre la donación independiente lo que informa un proveedor de logística (ruta asignada,
  * ruta iniciada, entrega exitosa o fallida), con idempotencia por evento. Es el único camino de
- * vuelta: todo proveedor informa por mensajería y el listener AMQP lo invoca después de verificar
+ * vuelta: cada proveedor informa por mensajería y el listener AMQP lo invoca después de verificar
  * de qué proveedor viene el evento.
  */
 @Service
@@ -28,6 +29,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
 
   private static final Logger log = LoggerFactory.getLogger(ProcesadorEventosLogistica.class);
   private static final String ACTOR = "logistica-service";
+  private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
   private final IDonacionesIndependientesService donacionesIndependientesService;
   private final IEventosConsumidosRepository eventosConsumidosRepository;
@@ -139,7 +141,12 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
           request.estado());
       eventosConsumidosRepository.registrar(
           new EventoConsumido(
-              UUID.randomUUID(), eventType, origen, businessId, donacionId, LocalDateTime.now()));
+              UUID.randomUUID(),
+              eventType,
+              origen,
+              businessId,
+              donacionId,
+              LocalDateTime.now(ZONA_HORARIA)));
       return;
     }
 
@@ -147,7 +154,12 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       donacionesIndependientesService.cambiarEstado(donacionId, request, ACTOR);
       eventosConsumidosRepository.registrar(
           new EventoConsumido(
-              UUID.randomUUID(), eventType, origen, businessId, donacionId, LocalDateTime.now()));
+              UUID.randomUUID(),
+              eventType,
+              origen,
+              businessId,
+              donacionId,
+              LocalDateTime.now(ZONA_HORARIA)));
     } catch (Exception e) {
       log.error(
           "Error al procesar donación {} en evento {} (estado destino={}): {}",

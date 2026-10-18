@@ -88,7 +88,7 @@ public class DonacionesEventPublisher implements IDonacionesEventPublisher {
         RabbitMQConfig.EXCHANGE_DONACIONES, routingKey, evento, agregarHeadersDeTrazabilidad());
   }
 
-  private MessagePostProcessor agregarHeadersDeTrazabilidad() {
+  private static MessagePostProcessor agregarHeadersDeTrazabilidad() {
     String traceId = MDC.get(FeignTraceRequestInterceptor.MDC_TRACE_KEY);
     String traceIdEfectivo =
         (traceId == null || traceId.isBlank())

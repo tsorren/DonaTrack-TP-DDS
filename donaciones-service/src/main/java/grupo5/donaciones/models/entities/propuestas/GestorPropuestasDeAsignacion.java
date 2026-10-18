@@ -9,10 +9,10 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.normalizacion.ComparadorTexto;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,17 +60,13 @@ public class GestorPropuestasDeAsignacion {
   }
 
   List<Propuesta> consolidar(List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
-    Set<UUID> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
-    for (Propuesta propuesta : propuesta1) {
-      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisfaceId());
-    }
+    Set<UUID> necesidadesCubiertasEnPropuesta1 =
+        propuesta1.stream().map(Propuesta::getNecesidadQueSatisfaceId).collect(Collectors.toSet());
 
-    List<Propuesta> propuestasEnAmbos = new ArrayList<>();
-    for (Propuesta propuesta : propuesta2) {
-      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisfaceId())) {
-        propuestasEnAmbos.add(propuesta);
-      }
-    }
+    List<Propuesta> propuestasEnAmbos =
+        propuesta2.stream()
+            .filter(p -> necesidadesCubiertasEnPropuesta1.contains(p.getNecesidadQueSatisfaceId()))
+            .toList();
 
     if (!propuestasEnAmbos.isEmpty()) {
       return propuestasEnAmbos;
