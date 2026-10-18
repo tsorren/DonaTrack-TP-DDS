@@ -268,6 +268,8 @@ grupo5.donaciones/
 │   └── ...
 ```
 
+> **Nota:** los nombres de clases y paquetes de los dos bloques anteriores (`DonacionController`, `DonacionIndependienteController`, `IDonacionesIndependientesRepository`, etc.) son **ilustrativos**. En `donaciones-service` los reales son `controllers/` (por ejemplo `IDonacionesIndependientesController` con su implementación en `controllers/impl/`), `services/` y `models/entities/donacionesIndependientes/` (agregado `DonacionIndependiente`); el empaquetado por feature se aplica solo en `models/entities/<agregado>/`, no a controladores ni servicios.
+
 ### Ventajas de este Diseño
 1.  **Encapsulamiento Nativo:** El repositorio (`IDonacionesIndependientesRepository`), las entidades internas (`ItemDonacionIndependiente`) y el mapeador pueden declararse con visibilidad de paquete por defecto (sin la palabra clave `public`). Solo las clases que representan la interfaz pública (el controlador, los DTOs y la raíz del agregado) son accesibles desde el exterior.
 2.  **Alta Cohesión:** Todo el código relacionado con un concepto de negocio específico reside en el mismo directorio.

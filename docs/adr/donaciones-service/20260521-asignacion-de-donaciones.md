@@ -1,4 +1,4 @@
-# Asignacion de Donaciones
+# Asignación de Donaciones
 
 - Status: superseded by [donaciones/20260609-asignacion-parcial-de-donacion-independiente](./20260609-asignacion-parcial-de-donacion-independiente.md)
 - Date: 2026-05-21

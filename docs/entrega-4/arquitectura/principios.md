@@ -1,5 +1,7 @@
 # Principios arquitectónicos comunes — Entrega 4
 
+> **Documento histórico.** Diagnóstico al 2026-09-09 (Fase 0); no describe el estado vigente (el código ya migró a RabbitMQ con routing keys `.v1` y `messageId`). Estado actual: [catálogo de mensajes](../integracion/catalogo-mensajes.md).
+
 > Entregable de **Fase 0** (`plan_entrega_4_aprendizaje_diseno_agentes.md`, §4). Reglas comunes que afectan a los 4 servicios (Donaciones, Logística, Incentivos, Notificaciones), previas al diseño independiente de cada subgrupo.
 >
 > Criterio de salida: todos los subgrupos pueden explicar estos principios sin depender de un integrante específico.

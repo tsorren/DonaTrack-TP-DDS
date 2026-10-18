@@ -11,8 +11,8 @@
 En arquitecturas distribuidas de microservicios, las rupturas de contrato en los límites de integración (*Breaking Changes*) constituyen una de las fuentes más frecuentes de fallos en producción.
 
 `[OBSERVED]` Actualmente, DonaTrack posee dos realidades desconectadas:
-1. **Infraestructura de Contratos Estática Robusta:** Dispone de 4 especificaciones OpenAPI 3.0 YAML en `docs/arquitectura/contratos/` y 11 esquemas JSON formales en `docs/arquitectura/contratos/schemas/`, cuya sintaxis e integridad son auditadas exitosamente por el script Node.js `scripts/validate-contracts.js` en CI.
-2. **Pruebas de Contrato en Java Superficiales (Smell AP-01):** La clase `ContractIT.java` únicamente comprueba que los paths existan en el JSON generado dinámicamente por Springdoc (ej. `paths."/api/notificaciones/personas".put != null`). No valida tipos de campos, enums, propiedades requeridas ni esquemas de respuesta, creando una falsa sensación de seguridad (*Green Smoke Contract*).
+1. **Infraestructura de Contratos Estática Robusta:** Dispone de 4 especificaciones OpenAPI 3.0 YAML en `docs/arquitectura/contratos/` y 25 esquemas JSON formales en `docs/arquitectura/contratos/schemas/`, cuya sintaxis e integridad son auditadas exitosamente por el script Node.js `scripts/validate-contracts.js` en CI.
+2. **Pruebas de Contrato en Java Superficiales (Smell AP-01; `[OBSERVED]` resuelto: `ContractIT` valida hoy con `OpenApiValidationFilter`, `integration-tests/src/test/java/grupo5/tests/contract/ContractIT.java:46`; el texto siguiente describe el estado previo):** La clase `ContractIT.java` únicamente comprueba que los paths existan en el JSON generado dinámicamente por Springdoc (ej. `paths."/api/notificaciones/personas".put != null`). No valida tipos de campos, enums, propiedades requeridas ni esquemas de respuesta, creando una falsa sensación de seguridad (*Green Smoke Contract*).
 
 Además, las pruebas de clientes Feign en los consumidores (`NotificacionesFeignClient`, `LogisticaFeignClient`) carecen de stubs formales y dependen de la presencia de los microservicios reales levantados en Docker Compose.
 
@@ -22,7 +22,7 @@ Además, las pruebas de clientes Feign en los consumidores (`NotificacionesFeign
 
 * **Integridad Contractual y Compatibilidad Retroactiva:** Detección inmediata en CI de cualquier cambio que rompa el contrato de un endpoint o el payload de un evento AMQP.
 * **Aislamiento y Velocidad:** Posibilidad de testear clientes Feign en tiempo de compilación/slicing en milisegundos mediante stubs en proceso.
-* **Bajo Costo Operativo:** Aprovechar la inversión ya realizada en las 4 specs OpenAPI y 11 JSON Schemas sin introducir infraestructura externa pesada.
+* **Bajo Costo Operativo:** Aprovechar la inversión ya realizada en las 4 specs OpenAPI y 25 JSON Schemas sin introducir infraestructura externa pesada.
 
 ## Alternativas Consideradas
 
@@ -38,7 +38,7 @@ Además, las pruebas de clientes Feign en los consumidores (`NotificacionesFeign
 Alternativa elegida: **"Enfoque Pragmático: OpenAPI 3.0 + JSON Schema + WireMock en Java"**
 
 Justificación:
-Aprovecha al 100% los activos ya desarrollados en el repositorio (las 4 especificaciones OpenAPI en `docs/arquitectura/contratos/` y los 11 JSON Schemas en `schemas/`). La validación Java en runtime mediante `swagger-request-validator` **complementa armónicamente al validador Node.js existente**:
+Aprovecha al 100% los activos ya desarrollados en el repositorio (las 4 especificaciones OpenAPI en `docs/arquitectura/contratos/` y los 25 JSON Schemas en `schemas/`). La validación Java en runtime mediante `swagger-request-validator` **complementa armónicamente al validador Node.js existente**:
 - `scripts/validate-contracts.js` opera en tiempo de CI auditando estáticamente los archivos YAML y JSON Schema.
 - La validación Java opera dinámicamente en tiempo de ejecución de tests interceptando las peticiones y respuestas reales contra los controladores y clientes Feign.
 

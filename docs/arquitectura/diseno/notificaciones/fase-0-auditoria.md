@@ -1,5 +1,7 @@
 # Fase 0 — Auditoría y Baseline: Servicio de Notificaciones
 
+> **Documento histórico.** Diagnóstico al 2026-08-30; no describe el estado vigente (por ejemplo, Donaciones ya no usa Feign y `FeignRetryConfig` no existe). Estado actual: [arquitectura-sistema.md](../../../entrega-4/arquitectura/arquitectura-sistema.md).
+
 > Documento de **auditoría/reviewer**, siguiendo `plan-refactor-oleadas-generico-v2.md` §4. No modifica código, no corrige nada. Todo lo que contiene es observación (con archivo/línea citado), inferencia (marcada explícitamente) o recomendación futura (marcada, sin implementar). Rama de trabajo: `E4_refactor-notificaciones` (auditoría hecha sobre `E4_refactor_Notificaciones`, commit `2f6aab6e`).
 
 **Fuentes utilizadas, en el orden de prioridad del template:**

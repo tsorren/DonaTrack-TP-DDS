@@ -30,7 +30,7 @@
 | 8 | `flujo-8-e2e-distribuido.json` | 21 | **todos (8080–8083)** | Smoke test E2E: Donación → Matching → Logística → Incentivos → Notificaciones |
 | 9 | `flujo-9-broker-logistica.json` | 80 | donaciones (8080) + logística **8083 y 8084** | Demo del broker de logística: el preferido elige la logística (AMQP o HTTP), devolución por falta de cola, vuelta del proveedor por mensajería (RabbitMQ), y vuelta real de nuestra Logística con flota, planificación y eventos firmados (carpeta H). Requiere `docker-compose.demo.yml`; carpetas D y E manuales ([guion](../docs/entrega-4/donaciones/guion-demo-broker.md)) |
 
-**Total: 238 requests** distribuidas en 9 colecciones.
+**Total: 250 requests** distribuidas en 9 colecciones.
 
 ---
 
@@ -183,5 +183,6 @@ postman/
 ├── flujo-5-misiones-insignias-ranking.json           # 40 requests — incentivos-service
 ├── flujo-6-logistica-completo.json                   # 26 requests — logistica-service
 ├── flujo-7-notificaciones-eventos.json               # 22 requests — notificaciones-service
-└── flujo-8-e2e-distribuido.json                      # 21 requests — todos los servicios
+├── flujo-8-e2e-distribuido.json                      # 21 requests — todos los servicios
+└── flujo-9-broker-logistica.json                     # 80 requests — donaciones + logística (8083 y 8084)
 ```

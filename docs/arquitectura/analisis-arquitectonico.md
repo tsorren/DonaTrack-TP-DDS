@@ -1,5 +1,7 @@
 # Diagnóstico Arquitectónico de DonaTrack
 
+> **Documento histórico.** Diagnóstico al 2026-08-30; no describe el estado vigente. Estado actual: [README de arquitectura](README.md).
+
 > [!NOTE]
 > Este documento es un **diagnóstico de estado actual**, no un plan de refactor. Sirve como base para diseñar intervenciones controladas en una etapa posterior.
 
@@ -404,7 +406,7 @@ interface EstadoDonacion
     └── Vencida             → (terminal)
 ```
 
-Transiciones inválidas lanzan `BusinessStateException`. El ADR [20260616-identificacion-estado-donacion-independiente.md](file:///c:/IdeaProjects/DonaTrack-TP-DDS/docs/adr/donaciones-service/20260616-identificacion-estado-donacion-independiente.md) documenta la decisión de usar `TipoEstadoDonacion` enum + `getTipo()`.
+Transiciones inválidas lanzan `BusinessStateException`. El ADR [20260616-identificacion-estado-donacion-independiente.md](../adr/donaciones-service/20260616-identificacion-estado-donacion-independiente.md) documenta la decisión de usar `TipoEstadoDonacion` enum + `getTipo()`.
 
 ### 6.4 Contraste: `Donacion` vs `DonacionIndependiente`
 

@@ -1,7 +1,7 @@
 # DonaTrack
 
 [![Java 21](https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=openjdk)](https://openjdk.org/)
-[![Spring Boot 3](https://img.shields.io/badge/Spring_Boot-3-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
+[![Spring Boot 4.0.7](https://img.shields.io/badge/Spring_Boot-4.0.7-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
 [![Maven](https://img.shields.io/badge/Maven-build-blue?style=flat-square&logo=apachemaven)](https://maven.apache.org/)
 [![Docker](https://img.shields.io/badge/Docker-compose-blue?style=flat-square&logo=docker)](https://www.docker.com/)
 [![SonarCloud](https://img.shields.io/badge/SonarCloud-quality_gate-green?style=flat-square&logo=sonarcloud)](https://sonarcloud.io/)
@@ -73,6 +73,12 @@ DonaTrack-TP-DDS/
 ├── .github/                      # Flujos de integracion continua, reviews y calidad automatizada
 ├── docs/                         # Documentacion tecnica, arquitectura, testing y decisiones (ADRs)
 ├── n8n/                          # Workflows serializados para la integracion externa
+├── postman/                      # Colecciones Postman y flujos E2E (fuente vigente)
+├── persistencia/                 # Esquemas, init-db y arquitectura de persistencia PostgreSQL
+├── scripts/                      # Utilidades de validacion (agent-check, enlaces de docs, contratos)
+├── tests/                        # Tests de soporte del repositorio
+├── docker-compose*.yml           # Stacks local, demo y preproduccion
+├── run-preprod-tests*.sh         # Orquestadores de la suite de integracion
 ├── integration-tests/            # Suite de pruebas funcionales y de extremo a extremo (E2E)
 ├── common-lib/                   # Shared kernel: CrudRepository, logging estructurado y excepciones
 ├── donaciones-service/           # Modulo central de inventario, normalizacion y matchmaking (:8080)
@@ -89,9 +95,9 @@ DonaTrack-TP-DDS/
 
 La seleccion de tecnologias responde a la necesidad de construir un producto confiable, mantenible a largo plazo y facilmente adaptable:
 
-* **Java 21 y Spring Boot 3:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
+* **Java 21 y Spring Boot 4.0.7:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
 * **RabbitMQ (AMQP 3.13):** Broker de mensajeria asincrono para desacoplar eventos logisticos de alto volumen.
-* **Spring Cloud OpenFeign:** Clientes HTTP declarativos para comunicacion inter-servicios resiliente.
+* **Spring Cloud OpenFeign:** Cliente HTTP declarativo; hoy lo usa solo `incentivos-service` para invocar a `notificaciones-service` (el resto de la comunicacion inter-servicios es por RabbitMQ).
 * **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema en preproduccion y desarrollo local.
 * **n8n Workflow Engine:** Agilidad logica para automatizar integraciones mediante flujos de trabajo independientes, liberando a los microservicios de dependencias de APIs de terceros.
 * **Spotless & SonarCloud:** Estandarizacion de formato y analisis estatico continuo de calidad de codigo.
@@ -152,7 +158,7 @@ El repositorio cuenta con dos scripts orquestadores en Bash diseñados para auto
 # Ejecutar una unica clase de test de integracion en particular:
 ./run-preprod-tests.sh --test NombreDeClaseIT
 ```
-*Nota en Windows: Ambos scripts se pueden ejecutar en PowerShell mediante `powershell -File ./run-preprod-tests.sh`.*
+*Nota en Windows: son scripts Bash; ejecutarlos desde Git Bash o WSL (`bash ./run-preprod-tests.sh`), no con `powershell -File`.*
 
 ---
 
