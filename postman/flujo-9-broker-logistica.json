@@ -1,0 +1,2427 @@
+{
+  "info": {
+    "_postman_id": "donatrack-flujo-09-broker-logistica",
+    "name": "Flujo 9 - Broker de Integración con Logística (demo)",
+    "description": "Demo del broker de logística (Entrega 4). Requiere el stack de docker-compose.demo.yml y las claves en las variables adminApiKey y callbackApiKeyExterno. Guion: docs/entrega-4/donaciones/guion-demo-broker.md. Orden automático: 0, A, B, C, F, G. Las carpetas D y E son manuales: cambian la infraestructura antes de correrlas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Preparación (una vez por arranque)",
+      "item": [
+        {
+          "name": "0.1 Crear persona donante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/personas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"HUMANA\",\n  \"tipoDocumento\": \"DNI\",\n  \"documento\": \"{{$timestamp}}\",\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Demo\",\n  \"genero\": \"MUJER\",\n  \"fechaNacimiento\": \"1990-05-10\",\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"CORREO\",\n      \"esPredeterminado\": true,\n      \"direccionCorreo\": \"ana.demo.{{$timestamp}}@example.com\"\n    }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donantePersonaId', j.id);",
+                  "pm.collectionVariables.set('runId', String(Date.now()));",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.2 Crear donante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/donantes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPersona\": \"{{donantePersonaId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donanteId', j.idDonante);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.3 Crear persona jurídica beneficiaria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/personas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"JURIDICA\",\n  \"tipoDocumento\": \"CUIT\",\n  \"documento\": \"30-{{$timestamp}}-3\",\n  \"razonSocial\": \"Comedor Demo Broker {{$timestamp}}\",\n  \"tipoJuridico\": \"ONG\",\n  \"rubro\": \"Comedor\",\n  \"representantes\": [\n    {\n      \"tipo\": \"HUMANA\",\n      \"tipoDocumento\": \"DNI\",\n      \"documento\": \"{{$timestamp}}\",\n      \"nombre\": \"Representante\",\n      \"apellido\": \"Demo\",\n      \"genero\": \"MUJER\",\n      \"fechaNacimiento\": \"1980-01-01\",\n      \"mediosDeContacto\": []\n    }\n  ],\n  \"mediosDeContacto\": [\n    {\n      \"tipo\": \"CORREO\",\n      \"esPredeterminado\": true,\n      \"direccionCorreo\": \"comedor.demo.{{$timestamp}}@example.com\"\n    }\n  ],\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('benefPersonaId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.4 Crear entidad beneficiaria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/entidades",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"juridicaId\": \"{{benefPersonaId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('entidadId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.5 Crear categoría",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/categorias",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alimentos Demo Broker {{$timestamp}}\",\n  \"conUso\": false,\n  \"conVencimiento\": true,\n  \"unidad\": \"UNIDADES\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('categoriaId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.6 Crear subcategoría",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/subcategorias",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Subcategoria Demo Broker {{$timestamp}}\",\n  \"idCategoria\": \"{{categoriaId}}\",\n  \"aliases\": [\n    {\n      \"alias\": \"zzqdemobroker{{$timestamp}}\"\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('subcategoriaId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.7 Ver proveedores configurados",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{adminApiKey}}"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedores"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "var ids = pm.response.json().map(function (p) { return p.id; });",
+                  "pm.test('Están donatrack, externo y otra', function () { pm.expect(ids).to.include.members(['donatrack', 'externo', 'otra']); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Crea donante, entidad beneficiaria y catálogo. Los datos de donaciones son en memoria: hay que correrla de nuevo cada vez que se reinicia donaciones-service."
+    },
+    {
+      "name": "A. Preferido donatrack → AMQP a logística 8083",
+      "item": [
+        {
+          "name": "A.0 Preferido = donatrack",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{adminApiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedor-preferido",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"donatrack\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "var pref = pm.response.json().find(function (p) { return p.preferido; });",
+                  "pm.test('El preferido es donatrack', function () { pm.expect(pref.id).to.eql('donatrack'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.1 Cargar donación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/donaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"descripcion\": \"Donación demo broker A\",\n  \"items\": [\n    {\n      \"descripcionBien\": \"Articulo Demo Broker A {{runId}}\",\n      \"cantidad\": 10,\n      \"estadoBien\": \"NUEVO\",\n      \"fechaVencimiento\": \"2027-12-31\",\n      \"pesoUnitario\": 1.0,\n      \"volumenUnitario\": 0.001\n    }\n  ],\n  \"nombreDeposito\": \"Depósito demo\",\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donacionId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.2 Esperar ítem pendiente de normalizar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/items-normalizados/pendientes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var buscado = pm.variables.replaceIn('Articulo Demo Broker A {{runId}}'); var it = pm.response.json().find(function (i) { return i.descripcionBienOriginal === buscado; }); if (it) { pm.collectionVariables.set('itemNormalizadoId', it.id); } return !!it; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('El ítem quedó pendiente de normalizar', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.3 Reclasificar el ítem",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/items-normalizados/{{itemNormalizadoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoNormalizacion\": \"ACEPTADO\",\n  \"subcategoriaId\": \"{{subcategoriaId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.4 Esperar segmentación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/donaciones/{{donacionId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'SEGMENTADA'; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación quedó SEGMENTADA', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.5 Crear necesidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/necesidades",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker A {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.6 Ejecutar algoritmo de asignación",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/ejecuciones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.7 Buscar la propuesta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var buscada = pm.variables.replaceIn('Necesidad demo broker A {{runId}}');",
+                  "var p = pm.response.json().find(function (x) { return x.necesidad && x.necesidad.descripcion === buscada; });",
+                  "pm.test('Encontró la propuesta', function () { pm.expect(p).to.not.be.undefined; });",
+                  "if (p) {",
+                  "  pm.collectionVariables.set('propuestaId', p.id);",
+                  "  pm.collectionVariables.set('donacionIndependienteId', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "  pm.collectionVariables.set('donacionA', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.8 Aprobar la propuesta (dispara el broker)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas/{{propuestaId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"APROBADA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.9 La entrega aparece en donatrack (8083)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var id = pm.collectionVariables.get('donacionIndependienteId'); var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length; pm.collectionVariables.set('entregasEncontradas', n); return n >= 1; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('donatrack (8083) recibió la entrega', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A.10 La entrega NO aparece en externo (8084)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaExternoUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var id = pm.collectionVariables.get('donacionIndependienteId');",
+                  "var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length;",
+                  "pm.test('externo (8084) no recibió la entrega', function () { pm.expect(n).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "El broker publica entrega.solicitada.donatrack.v1 por RabbitMQ y espera el acuse."
+    },
+    {
+      "name": "B. Preferido externo → HTTP a logística 8084",
+      "item": [
+        {
+          "name": "B.0 Preferido = externo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{adminApiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedor-preferido",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"externo\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "var pref = pm.response.json().find(function (p) { return p.preferido; });",
+                  "pm.test('El preferido es externo', function () { pm.expect(pref.id).to.eql('externo'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.1 Cargar donación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/donaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"descripcion\": \"Donación demo broker B\",\n  \"items\": [\n    {\n      \"descripcionBien\": \"Articulo Demo Broker B {{runId}}\",\n      \"cantidad\": 10,\n      \"estadoBien\": \"NUEVO\",\n      \"fechaVencimiento\": \"2027-12-31\",\n      \"pesoUnitario\": 1.0,\n      \"volumenUnitario\": 0.001\n    }\n  ],\n  \"nombreDeposito\": \"Depósito demo\",\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donacionId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.2 Esperar ítem pendiente de normalizar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/items-normalizados/pendientes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var buscado = pm.variables.replaceIn('Articulo Demo Broker B {{runId}}'); var it = pm.response.json().find(function (i) { return i.descripcionBienOriginal === buscado; }); if (it) { pm.collectionVariables.set('itemNormalizadoId', it.id); } return !!it; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('El ítem quedó pendiente de normalizar', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.3 Reclasificar el ítem",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/items-normalizados/{{itemNormalizadoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoNormalizacion\": \"ACEPTADO\",\n  \"subcategoriaId\": \"{{subcategoriaId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.4 Esperar segmentación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/donaciones/{{donacionId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'SEGMENTADA'; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación quedó SEGMENTADA', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.5 Crear necesidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/necesidades",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker B {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.6 Ejecutar algoritmo de asignación",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/ejecuciones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.7 Buscar la propuesta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var buscada = pm.variables.replaceIn('Necesidad demo broker B {{runId}}');",
+                  "var p = pm.response.json().find(function (x) { return x.necesidad && x.necesidad.descripcion === buscada; });",
+                  "pm.test('Encontró la propuesta', function () { pm.expect(p).to.not.be.undefined; });",
+                  "if (p) {",
+                  "  pm.collectionVariables.set('propuestaId', p.id);",
+                  "  pm.collectionVariables.set('donacionIndependienteId', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "  pm.collectionVariables.set('donacionB', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.8 Aprobar la propuesta (dispara el broker)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas/{{propuestaId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"APROBADA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.9 La entrega aparece en externo (8084)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaExternoUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var id = pm.collectionVariables.get('donacionIndependienteId'); var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length; pm.collectionVariables.set('entregasEncontradas', n); return n >= 1; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('externo (8084) recibió la entrega', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B.10 La entrega NO aparece en donatrack (8083)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var id = pm.collectionVariables.get('donacionIndependienteId');",
+                  "var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length;",
+                  "pm.test('donatrack (8083) no recibió la entrega', function () { pm.expect(n).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "El broker llama por HTTP a POST /api/entregas de la segunda instancia (el courier privado)."
+    },
+    {
+      "name": "C. Preferido otra (sin cola) → devuelto → donatrack",
+      "item": [
+        {
+          "name": "C.0 Preferido = otra",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{adminApiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedor-preferido",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"otra\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "var pref = pm.response.json().find(function (p) { return p.preferido; });",
+                  "pm.test('El preferido es otra', function () { pm.expect(pref.id).to.eql('otra'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.1 Cargar donación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/donaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"descripcion\": \"Donación demo broker C\",\n  \"items\": [\n    {\n      \"descripcionBien\": \"Articulo Demo Broker C {{runId}}\",\n      \"cantidad\": 10,\n      \"estadoBien\": \"NUEVO\",\n      \"fechaVencimiento\": \"2027-12-31\",\n      \"pesoUnitario\": 1.0,\n      \"volumenUnitario\": 0.001\n    }\n  ],\n  \"nombreDeposito\": \"Depósito demo\",\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donacionId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.2 Esperar ítem pendiente de normalizar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/items-normalizados/pendientes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var buscado = pm.variables.replaceIn('Articulo Demo Broker C {{runId}}'); var it = pm.response.json().find(function (i) { return i.descripcionBienOriginal === buscado; }); if (it) { pm.collectionVariables.set('itemNormalizadoId', it.id); } return !!it; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('El ítem quedó pendiente de normalizar', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.3 Reclasificar el ítem",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/items-normalizados/{{itemNormalizadoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoNormalizacion\": \"ACEPTADO\",\n  \"subcategoriaId\": \"{{subcategoriaId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.4 Esperar segmentación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/donaciones/{{donacionId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'SEGMENTADA'; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación quedó SEGMENTADA', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.5 Crear necesidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/necesidades",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker C {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.6 Ejecutar algoritmo de asignación",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/ejecuciones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.7 Buscar la propuesta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var buscada = pm.variables.replaceIn('Necesidad demo broker C {{runId}}');",
+                  "var p = pm.response.json().find(function (x) { return x.necesidad && x.necesidad.descripcion === buscada; });",
+                  "pm.test('Encontró la propuesta', function () { pm.expect(p).to.not.be.undefined; });",
+                  "if (p) {",
+                  "  pm.collectionVariables.set('propuestaId', p.id);",
+                  "  pm.collectionVariables.set('donacionIndependienteId', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "  pm.collectionVariables.set('donacionC', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.8 Aprobar la propuesta (dispara el broker)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas/{{propuestaId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"APROBADA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.9 La entrega aparece en donatrack (8083)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var id = pm.collectionVariables.get('donacionIndependienteId'); var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length; pm.collectionVariables.set('entregasEncontradas', n); return n >= 1; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('donatrack (8083) recibió la entrega', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C.10 La entrega NO aparece en externo (8084)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaExternoUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var id = pm.collectionVariables.get('donacionIndependienteId');",
+                  "var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length;",
+                  "pm.test('externo (8084) no recibió la entrega', function () { pm.expect(n).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "otra es AMQP pero no tiene cola: RabbitMQ devuelve el sobre (mandatory), el broker lo ve en el acuse y pasa al siguiente: donatrack."
+    },
+    {
+      "name": "F. Vuelta del proveedor por mensajería (RabbitMQ)",
+      "item": [
+        {
+          "name": "F.1 [Negativo] donatrack publica SIN token (donación C) → routed, pero Donaciones lo descarta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{rabbitUser}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{rabbitPass}}"
+                }
+              ]
+            },
+            "url": "{{rabbitUrl}}/api/exchanges/%2F/logistica.exchange/publish",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"properties\": {\n    \"delivery_mode\": 2,\n    \"content_type\": \"application/json\",\n    \"headers\": {\n      \"__TypeId__\": \"ruta.asignada\",\n      \"X-Proveedor-Id\": \"donatrack\"\n    }\n  },\n  \"routing_key\": \"ruta.asignada\",\n  \"payload\": \"{\\\"rutaId\\\":\\\"{{$guid}}\\\",\\\"donacionIndependienteId\\\":\\\"{{donacionC}}\\\",\\\"fechaAsignacion\\\":\\\"2026-10-08T12:00:00\\\"}\",\n  \"payload_encoding\": \"string\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "pm.test('RabbitMQ lo enrutó a una cola', function(){pm.expect(pm.response.json().routed).to.be.true;});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F.2 [Negativo] externo publica con su token una donación de donatrack (donación A) → descartado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{rabbitUser}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{rabbitPass}}"
+                }
+              ]
+            },
+            "url": "{{rabbitUrl}}/api/exchanges/%2F/logistica.exchange/publish",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"properties\": {\n    \"delivery_mode\": 2,\n    \"content_type\": \"application/json\",\n    \"headers\": {\n      \"__TypeId__\": \"ruta.asignada\",\n      \"X-Proveedor-Id\": \"externo\",\n      \"X-Proveedor-Token\": \"{{tokenExterno}}\"\n    }\n  },\n  \"routing_key\": \"ruta.asignada\",\n  \"payload\": \"{\\\"rutaId\\\":\\\"{{$guid}}\\\",\\\"donacionIndependienteId\\\":\\\"{{donacionA}}\\\",\\\"fechaAsignacion\\\":\\\"2026-10-08T12:00:00\\\"}\",\n  \"payload_encoding\": \"string\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "pm.test('RabbitMQ lo enrutó a una cola', function(){pm.expect(pm.response.json().routed).to.be.true;});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F.3 externo informa RUTA_ASIGNADA de su donación con su token → routed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{rabbitUser}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{rabbitPass}}"
+                }
+              ]
+            },
+            "url": "{{rabbitUrl}}/api/exchanges/%2F/logistica.exchange/publish",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"properties\": {\n    \"delivery_mode\": 2,\n    \"content_type\": \"application/json\",\n    \"headers\": {\n      \"__TypeId__\": \"ruta.asignada\",\n      \"X-Proveedor-Id\": \"externo\",\n      \"X-Proveedor-Token\": \"{{tokenExterno}}\"\n    }\n  },\n  \"routing_key\": \"ruta.asignada\",\n  \"payload\": \"{\\\"rutaId\\\":\\\"{{$guid}}\\\",\\\"donacionIndependienteId\\\":\\\"{{donacionB}}\\\",\\\"fechaAsignacion\\\":\\\"2026-10-08T12:00:00\\\"}\",\n  \"payload_encoding\": \"string\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "pm.test('RabbitMQ lo enrutó a una cola', function(){pm.expect(pm.response.json().routed).to.be.true;});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F.4 La donación de externo pasó a ListaParaEntregar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionB}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'ListaParaEntregar'; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('Estado ListaParaEntregar', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F.5 La donación C (evento sin token) no cambió",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionC}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Los eventos descartados no cambiaron el estado', function(){pm.expect(pm.response.json().estadoActual).to.not.equal('ListaParaEntregar');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F.6 La donación A (evento de otro proveedor) no cambió",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Los eventos descartados no cambiaron el estado', function(){pm.expect(pm.response.json().estadoActual).to.not.equal('ListaParaEntregar');});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "La vuelta de un proveedor: informa publicando en logistica.exchange el mismo evento que publica nuestra Logística, con su id y su token en los headers X-Proveedor-Id y X-Proveedor-Token. No llama a Donaciones por HTTP (Enunciado 4, requerimiento de implementación 3). Aquí se simula con la API de gestión de RabbitMQ. Los eventos sin token, con token incorrecto o sobre una donación que no es del proveedor se descartan (F.1 y F.2); como la cola es FIFO, F.4 confirma que ya se procesaron. Requiere haber corrido A, B y C, y completar rabbitUser, rabbitPass, tokenDonatrack y tokenExterno."
+    },
+    {
+      "name": "G. Administración: negativos y restaurar",
+      "item": [
+        {
+          "name": "G.1 [Negativo] Cambiar preferido sin clave → 401",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedor-preferido",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"externo\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401', function(){pm.response.to.have.status(401);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "G.2 [Negativo] Proveedor no configurado → 400",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{adminApiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedor-preferido",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"fantasma\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', function(){pm.response.to.have.status(400);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "G.3.0 Preferido = donatrack",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{adminApiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedor-preferido",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"donatrack\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "var pref = pm.response.json().find(function (p) { return p.preferido; });",
+                  "pm.test('El preferido es donatrack', function () { pm.expect(pref.id).to.eql('donatrack'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "H. Vuelta real de nuestra Logística: flota, planificación y eventos firmados",
+      "description": "Los eventos de vuelta los genera de verdad nuestra Logística (donatrack, 8083), con su id y su token en los headers, y Donaciones los acepta. Se carga un camión y un chofer, se dispara la planificación manual y se avanza ruta y entrega; en cada paso se confirma que la donación A cambió de estado en Donaciones. Requiere haber corrido 0 y A (la entrega de la donación A tiene que estar en donatrack) y que logistica-service tenga LOGISTICA_PLANIFICACION_MANUAL_ENABLED=true (lo pone docker-compose.demo.yml). Conviene correrla con newman --delay-request 250, porque las esperas reintentan sin pausa.",
+      "item": [
+        {
+          "name": "H.1 Cargar un camión en donatrack (8083)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{logisticaUrl}}/api/camiones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"{{patenteH}}\",\n  \"capacidadKG\": 5000.0,\n  \"capacidadVolumen\": 50.0,\n  \"altura\": 2.8\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('patenteH', 'FLT' + String(Math.floor(100 + Math.random() * 900)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.2 Cargar un chofer en donatrack (8083)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{logisticaUrl}}/api/choferes",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Demo\",\n  \"apellido\": \"Broker\",\n  \"licencia\": \"H-{{$randomInt}}-{{runId}}\",\n  \"telefonoContacto\": \"+541166667777\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.3 Disparar la planificación de rutas (requiere LOGISTICA_PLANIFICACION_MANUAL_ENABLED)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/logistica/planificaciones/ejecuciones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202', function(){pm.response.to.have.status(202);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.4 Esperar la ruta planificada",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/rutas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var rs = pm.response.json(); if (rs.length > 0) { pm.collectionVariables.set('rutaId', rs[0].id); return true; } return false; })();",
+                  "",
+                  "if (!listo && intentos < 80) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('Hay una ruta planificada', function () { pm.expect(listo).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.5 La ruta incluye la entrega de la donación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/rutas/{{rutaId}}/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var id = pm.collectionVariables.get('donacionA');",
+                  "var e = (pm.response.json().entregas || []).find(function (x) { return x.idDonacion === id; });",
+                  "pm.test('La ruta incluye la entrega de la donación A', function () { pm.expect(e).to.not.be.undefined; });",
+                  "if (e) { pm.collectionVariables.set('entregaIdA', e.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.6 [Evento ruta.asignada de nuestra Logística] La donación pasó a ListaParaEntregar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'ListaParaEntregar'; })();",
+                  "",
+                  "if (!listo && intentos < 80) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación pasó a ListaParaEntregar', function () { pm.expect(listo).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.7 Iniciar la ruta (el chofer sale)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{logisticaUrl}}/api/rutas/{{rutaId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_TRASLADO\",\n  \"actor\": \"QA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.8 [Evento ruta.iniciada] La donación pasó a EnTraslado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'EnTraslado'; })();",
+                  "",
+                  "if (!listo && intentos < 80) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación pasó a EnTraslado', function () { pm.expect(listo).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.9 Confirmar la entrega",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{logisticaUrl}}/api/entregas/{{entregaIdA}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREGADA\",\n  \"actor\": \"QA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H.10 [Evento entrega.exitosa] La donación pasó a Entregada",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/donaciones-independientes/{{donacionA}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'Entregada'; })();",
+                  "",
+                  "if (!listo && intentos < 80) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación pasó a Entregada', function () { pm.expect(listo).to.be.true; });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "D. [Manual] externo caído → rechazo → donatrack",
+      "item": [
+        {
+          "name": "D.0 Preferido = externo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{adminApiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedor-preferido",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"externo\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "var pref = pm.response.json().find(function (p) { return p.preferido; });",
+                  "pm.test('El preferido es externo', function () { pm.expect(pref.id).to.eql('externo'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.1 Cargar donación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/donaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"descripcion\": \"Donación demo broker D\",\n  \"items\": [\n    {\n      \"descripcionBien\": \"Articulo Demo Broker D {{runId}}\",\n      \"cantidad\": 10,\n      \"estadoBien\": \"NUEVO\",\n      \"fechaVencimiento\": \"2027-12-31\",\n      \"pesoUnitario\": 1.0,\n      \"volumenUnitario\": 0.001\n    }\n  ],\n  \"nombreDeposito\": \"Depósito demo\",\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donacionId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.2 Esperar ítem pendiente de normalizar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/items-normalizados/pendientes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var buscado = pm.variables.replaceIn('Articulo Demo Broker D {{runId}}'); var it = pm.response.json().find(function (i) { return i.descripcionBienOriginal === buscado; }); if (it) { pm.collectionVariables.set('itemNormalizadoId', it.id); } return !!it; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('El ítem quedó pendiente de normalizar', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.3 Reclasificar el ítem",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/items-normalizados/{{itemNormalizadoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoNormalizacion\": \"ACEPTADO\",\n  \"subcategoriaId\": \"{{subcategoriaId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.4 Esperar segmentación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/donaciones/{{donacionId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'SEGMENTADA'; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación quedó SEGMENTADA', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.5 Crear necesidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/necesidades",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker D {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.6 Ejecutar algoritmo de asignación",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/ejecuciones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.7 Buscar la propuesta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var buscada = pm.variables.replaceIn('Necesidad demo broker D {{runId}}');",
+                  "var p = pm.response.json().find(function (x) { return x.necesidad && x.necesidad.descripcion === buscada; });",
+                  "pm.test('Encontró la propuesta', function () { pm.expect(p).to.not.be.undefined; });",
+                  "if (p) {",
+                  "  pm.collectionVariables.set('propuestaId', p.id);",
+                  "  pm.collectionVariables.set('donacionIndependienteId', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "  pm.collectionVariables.set('donacionD', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.8 Aprobar la propuesta (dispara el broker)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas/{{propuestaId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"APROBADA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D.9 La entrega aparece en donatrack (8083)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var id = pm.collectionVariables.get('donacionIndependienteId'); var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length; pm.collectionVariables.set('entregasEncontradas', n); return n >= 1; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('donatrack (8083) recibió la entrega', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "ANTES de correrla: docker-compose -f docker-compose.yml -f docker-compose.demo.yml stop logistica-externo. La conexión a externo falla (rechazo seguro) y el broker pasa a donatrack. Después: start logistica-externo."
+    },
+    {
+      "name": "E. [Manual] timeout con externo → incierto → mismo proveedor",
+      "item": [
+        {
+          "name": "E.0 Preferido = externo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{adminApiKey}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/logistica/proveedor-preferido",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proveedorId\": \"externo\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});",
+                  "var pref = pm.response.json().find(function (p) { return p.preferido; });",
+                  "pm.test('El preferido es externo', function () { pm.expect(pref.id).to.eql('externo'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.1 Cargar donación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/donaciones",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonante\": \"{{donanteId}}\",\n  \"descripcion\": \"Donación demo broker E\",\n  \"items\": [\n    {\n      \"descripcionBien\": \"Articulo Demo Broker E {{runId}}\",\n      \"cantidad\": 10,\n      \"estadoBien\": \"NUEVO\",\n      \"fechaVencimiento\": \"2027-12-31\",\n      \"pesoUnitario\": 1.0,\n      \"volumenUnitario\": 0.001\n    }\n  ],\n  \"nombreDeposito\": \"Depósito demo\",\n  \"direccion\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  }\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j=pm.response.json(); pm.collectionVariables.set('donacionId', j.id);",
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.2 Esperar ítem pendiente de normalizar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/items-normalizados/pendientes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { var buscado = pm.variables.replaceIn('Articulo Demo Broker E {{runId}}'); var it = pm.response.json().find(function (i) { return i.descripcionBienOriginal === buscado; }); if (it) { pm.collectionVariables.set('itemNormalizadoId', it.id); } return !!it; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('El ítem quedó pendiente de normalizar', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.3 Reclasificar el ítem",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/items-normalizados/{{itemNormalizadoId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estadoNormalizacion\": \"ACEPTADO\",\n  \"subcategoriaId\": \"{{subcategoriaId}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.4 Esperar segmentación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/donaciones/{{donacionId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "var listo = (function () { return pm.response.json().estadoActual === 'SEGMENTADA'; })();",
+                  "if (!listo && intentos < 30) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  pm.test('La donación quedó SEGMENTADA', function () { pm.expect(listo).to.be.true; });",
+                  "  ",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.5 Crear necesidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/necesidades",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"EXTRAORDINARIA\",\n  \"idEntidad\": \"{{entidadId}}\",\n  \"idSubcategoria\": \"{{subcategoriaId}}\",\n  \"cantidadNecesitada\": 10,\n  \"descripcion\": \"Necesidad demo broker E {{runId}}\",\n  \"fechaInicio\": \"2026-01-01\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.6 Ejecutar algoritmo de asignación",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/ejecuciones"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', function(){pm.response.to.have.status(201);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.7 Buscar la propuesta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var buscada = pm.variables.replaceIn('Necesidad demo broker E {{runId}}');",
+                  "var p = pm.response.json().find(function (x) { return x.necesidad && x.necesidad.descripcion === buscada; });",
+                  "pm.test('Encontró la propuesta', function () { pm.expect(p).to.not.be.undefined; });",
+                  "if (p) {",
+                  "  pm.collectionVariables.set('propuestaId', p.id);",
+                  "  pm.collectionVariables.set('donacionIndependienteId', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "  pm.collectionVariables.set('donacionE', p.fragmentaciones[0].donacionIndependiente.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.8 Aprobar la propuesta (dispara el broker)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{donacionesUrl}}/api/asignaciones/propuestas/{{propuestaId}}/estado",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"APROBADA\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', function(){pm.response.to.have.status(200);});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.9 Entregas en externo tras los primeros reintentos (informativo)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaExternoUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var intentos = Number(pm.collectionVariables.get('intentos') || 0);",
+                  "if (intentos < 25) {",
+                  "  pm.collectionVariables.set('intentos', intentos + 1);",
+                  "  setTimeout(function () {}, 1000);",
+                  "  pm.execution.setNextRequest(pm.info.requestName);",
+                  "} else {",
+                  "  pm.collectionVariables.set('intentos', 0);",
+                  "  var id = pm.collectionVariables.get('donacionIndependienteId');",
+                  "  var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length;",
+                  "  console.log('Entregas en externo para la donación: ' + n);",
+                  "  pm.test('Informativo: externo tiene ' + n + ' entrega(s) de esta donación (0 si el timeout cortó antes de procesar; varias si procesó en cada reintento)', function () { pm.expect(n).to.be.at.least(0); });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E.10 La entrega NO aparece en donatrack (8083), ni siquiera tras los reintentos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{logisticaUrl}}/api/entregas"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var id = pm.collectionVariables.get('donacionIndependienteId');",
+                  "var n = pm.response.json().filter(function (e) { return e.idDonacion === id; }).length;",
+                  "pm.test('donatrack (8083), ni siquiera tras los reintentos no recibió la entrega', function () { pm.expect(n).to.eql(0); });"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "ANTES de correrla: recrear donaciones con LOGISTICA_EXTERNA_READ_TIMEOUT_MS=1 (ver guion) y correr también la carpeta 0. El broker nunca pasa a otro proveedor ante un timeout: reintenta con el mismo (ver el log). Espera ~25 s para que ocurran reintentos y verifica que donatrack no recibió nada. Las entregas en externo son informativas: si externo llegó a procesar antes del corte, queda como mucho una (desde #886 POST /api/entregas deduplica con 409, D55)."
+    }
+  ],
+  "variable": [
+    {
+      "key": "donacionesUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "logisticaUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "logisticaExternoUrl",
+      "value": "http://localhost:8084"
+    },
+    {
+      "key": "adminApiKey",
+      "value": ""
+    },
+    {
+      "key": "rabbitUrl",
+      "value": "http://localhost:15672"
+    },
+    {
+      "key": "rabbitUser",
+      "value": ""
+    },
+    {
+      "key": "rabbitPass",
+      "value": ""
+    },
+    {
+      "key": "tokenDonatrack",
+      "value": ""
+    },
+    {
+      "key": "tokenExterno",
+      "value": ""
+    },
+    {
+      "key": "intentos",
+      "value": "0"
+    },
+    {
+      "key": "runId",
+      "value": ""
+    },
+    {
+      "key": "donantePersonaId",
+      "value": ""
+    },
+    {
+      "key": "donanteId",
+      "value": ""
+    },
+    {
+      "key": "benefPersonaId",
+      "value": ""
+    },
+    {
+      "key": "entidadId",
+      "value": ""
+    },
+    {
+      "key": "categoriaId",
+      "value": ""
+    },
+    {
+      "key": "subcategoriaId",
+      "value": ""
+    },
+    {
+      "key": "donacionId",
+      "value": ""
+    },
+    {
+      "key": "itemNormalizadoId",
+      "value": ""
+    },
+    {
+      "key": "propuestaId",
+      "value": ""
+    },
+    {
+      "key": "donacionIndependienteId",
+      "value": ""
+    },
+    {
+      "key": "donacionA",
+      "value": ""
+    },
+    {
+      "key": "donacionB",
+      "value": ""
+    },
+    {
+      "key": "donacionC",
+      "value": ""
+    },
+    {
+      "key": "donacionD",
+      "value": ""
+    },
+    {
+      "key": "donacionE",
+      "value": ""
+    },
+    {
+      "key": "entregasEncontradas",
+      "value": "0"
+    },
+    {
+      "key": "patenteH",
+      "value": ""
+    },
+    {
+      "key": "rutaId",
+      "value": ""
+    },
+    {
+      "key": "entregaIdA",
+      "value": ""
+    }
+  ]
+}

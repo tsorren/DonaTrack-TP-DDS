@@ -1,4 +1,4 @@
-# Relacion entre Ruta y Camion
+# Relación entre Ruta y Camión
 - Status: accepted
 - Date: 2026-06-30
 - Deciders: Decisión Grupal
@@ -40,7 +40,7 @@ Referencia Unidireccional (Modelo Puro DDD): La entidad Camion no tiene ninguna 
 
 ### Referencia Bidireccional por ID (Modelo Híbrido)
 
-La entidad Camion mantiene un enum de estado (EstadoCamion) y un campo rutaActualId para saber a qué ruta está asignado, gestionando sus propias transiciones de estado.
+La entidad Camion mantiene un enum de estado (EstadoCamion) y un campo rutaId para saber a qué ruta está asignado, gestionando sus propias transiciones de estado.
 
 #### Pros
 * La lógica de negocio y las reglas de validación del ciclo de vida del camión residen en la propia entidad Camion. La entidad protege su propia consistencia.

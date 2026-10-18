@@ -1,28 +1,28 @@
 package grupo5.donaciones.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import grupo5.donaciones.infrastructure.analizadores.NormalizadorSemanticoBien;
-import grupo5.donaciones.infrastructure.clients.IncentivosFeignClient;
-import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
+import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donantes.Donante;
-import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
-import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
 import grupo5.donaciones.models.entities.personas.Humana;
-import grupo5.donaciones.models.ports.Segmentador;
-import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
+import grupo5.donaciones.models.repositories.ICategoriasRepository;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,100 +30,78 @@ import org.springframework.context.ApplicationEventPublisher;
 
 class ProcesadorDeDonacionesTest {
 
-  private NormalizadorSemanticoBien normalizadorMock;
-  private Segmentador segmentadorMock;
   private IDonacionesRepository donacionRepositoryMock;
-  private IDonacionesIndependientesRepository donacionesIndependientesRepositoryMock;
-  private IncentivosFeignClient incentivosFeignClientMock;
   private IItemDonacionNormalizadoRepository itemNormalizadoRepositoryMock;
   private ISubcategoriasRepository subcategoriasRepositoryMock;
+  private ICategoriasRepository categoriasRepositoryMock;
   private ApplicationEventPublisher eventPublisherMock;
 
   private ProcesadorDeDonaciones procesador;
 
   @BeforeEach
   void setUp() {
-    normalizadorMock = mock(NormalizadorSemanticoBien.class);
-    segmentadorMock = mock(Segmentador.class);
     donacionRepositoryMock = mock(IDonacionesRepository.class);
-    donacionesIndependientesRepositoryMock = mock(IDonacionesIndependientesRepository.class);
-    incentivosFeignClientMock = mock(IncentivosFeignClient.class);
     itemNormalizadoRepositoryMock = mock(IItemDonacionNormalizadoRepository.class);
     subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
+    categoriasRepositoryMock = mock(ICategoriasRepository.class);
     eventPublisherMock = mock(ApplicationEventPublisher.class);
 
     procesador =
         new ProcesadorDeDonaciones(
-            normalizadorMock,
-            segmentadorMock,
             donacionRepositoryMock,
-            donacionesIndependientesRepositoryMock,
-            incentivosFeignClientMock,
             itemNormalizadoRepositoryMock,
             subcategoriasRepositoryMock,
-            eventPublisherMock);
+            categoriasRepositoryMock,
+            eventPublisherMock,
+            0.6);
   }
 
   @Test
   void procesar_conTodosAceptados_deberiaNormalizarYPublicarEvento() {
-    Humana humana =
-        new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
+    Humana humana = PersonaMother.humanaValida();
     Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante.getId());
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
-    Bien bien = new Bien("Abrigo", null, null, null, 1.0, 1.0);
-    BienNormalizado bienNormalizado =
-        new BienNormalizado(
-            bien, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, false, false);
+    subcategoria.agregarAlias("campera de abrigo");
 
-    ItemDonacionNormalizado itemNormalizado =
-        new ItemDonacionNormalizado(donacion.getId(), bienNormalizado, 5);
-    List<ItemDonacionNormalizado> itemsNormalizados = Collections.singletonList(itemNormalizado);
+    Bien bien = new Bien("campera de abrigo", null, null, null, 1.0, 1.0);
+    donacion.agregarItem(new ItemDonacion(bien, 5));
 
-    when(normalizadorMock.normalizar(donacion)).thenReturn(itemsNormalizados);
+    when(subcategoriasRepositoryMock.findAll()).thenReturn(List.of(subcategoria));
+    when(categoriasRepositoryMock.findAll()).thenReturn(List.of(categoria));
 
     procesador.procesar(donacion);
 
     assertEquals(EstadoDonacion.NORMALIZADA, donacion.getEstadoActual());
-    verify(normalizadorMock, times(1)).normalizar(donacion);
-    verify(itemNormalizadoRepositoryMock, times(1)).saveAll(itemsNormalizados);
+    verify(itemNormalizadoRepositoryMock, times(1)).saveAll(any());
     verify(donacionRepositoryMock, times(1)).save(donacion);
-    verify(eventPublisherMock, times(1)).publishEvent(any(DonacionNormalizadaEvent.class));
+    verify(eventPublisherMock, times(1)).publishEvent(any(DonacionNormalizada.class));
   }
 
   @Test
   void procesar_conPendientesDeRevision_deberiaGuardarNormalizacionesYQuedarEnCargada() {
-    Humana humana =
-        new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
+    Humana humana = PersonaMother.humanaValida();
     Donante donante = new Donante(humana.getId());
     Donacion donacion = new Donacion(donante.getId());
 
     Categoria categoria = new Categoria("Ropa", false, false, Unidad.UNIDADES);
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Abrigos");
-    Bien bien = new Bien("Abrigo", null, null, null, 1.0, 1.0);
-    BienNormalizado bienNormalizado =
-        new BienNormalizado(
-            bien,
-            subcategoria.getId(),
-            0.4, // Confianza baja
-            EstadoNormalizacion.PENDIENTE_REVISION,
-            false,
-            false);
+    subcategoria.agregarAlias("campera impermeable muy abrigada");
 
-    ItemDonacionNormalizado itemNormalizado =
-        new ItemDonacionNormalizado(donacion.getId(), bienNormalizado, 5);
-    List<ItemDonacionNormalizado> itemsNormalizados = Collections.singletonList(itemNormalizado);
+    // Coincidencia parcial con confianza < 0.6
+    Bien bien = new Bien("campera", null, null, null, 1.0, 1.0);
+    donacion.agregarItem(new ItemDonacion(bien, 5));
 
-    when(normalizadorMock.normalizar(donacion)).thenReturn(itemsNormalizados);
+    when(subcategoriasRepositoryMock.findAll()).thenReturn(List.of(subcategoria));
+    when(categoriasRepositoryMock.findAll()).thenReturn(List.of(categoria));
 
     procesador.procesar(donacion);
 
     assertEquals(EstadoDonacion.CARGADA, donacion.getEstadoActual());
-    verify(normalizadorMock, times(1)).normalizar(donacion);
-    verify(itemNormalizadoRepositoryMock, times(1)).saveAll(itemsNormalizados);
+    verify(itemNormalizadoRepositoryMock, times(1)).saveAll(any());
     verify(donacionRepositoryMock, never()).save(donacion);
-    verify(eventPublisherMock, never()).publishEvent(any(DonacionNormalizadaEvent.class));
+    verify(eventPublisherMock, never()).publishEvent(any(DonacionNormalizada.class));
   }
 }

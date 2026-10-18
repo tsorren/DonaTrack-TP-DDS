@@ -4,6 +4,8 @@
 - Deciders: Sofia Deane
 - Tags: donaciones, api-rest, consistencia, mantenibilidad
 
+> **Nota de auditoría (2026-10-14):** resuelto. `AsignacionController` y `PropuestasController` ya no existen: ambos se unificaron en `PropuestaDeAsignacionController implements IPropuestaDeAsignacionController` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/PropuestaDeAsignacionController.java:25`), y todos los controllers de `donaciones-service` tienen interfaz `I<Nombre>Controller`.
+
 ## Contexto y Problema
 Al auditar la exposición REST de `donaciones-service` para esta issue se detectó que todos los controllers del servicio siguen el patrón `I<Nombre>Controller` (interfaz) + `impl/<Nombre>Controller` (implementación) — confirmado en `IDonacionesController`, `IPersonasController`, `IDonantesController`, `IEntidadBeneficiariaController` y `INecesidadesController` — excepto `AsignacionController` y `PropuestasController`, que están implementados directamente sin una interfaz que declare su contrato. ¿Se agregan las interfaces faltantes para uniformar el criterio, o se documenta la excepción como aceptable?
 

@@ -1,0 +1,993 @@
+{
+  "info": {
+    "_postman_id": "donatrack-flujo-06-logistica",
+    "name": "Flujo 6 - Camiones, Choferes, Entregas y Rutas (logistica-service)",
+    "description": "Autocontenido. Cubre el ciclo de vida completo de Camión y Chofer, la creación de Entrega y sus transiciones inválidas desde PENDIENTE. IMPORTANTE: no existe POST /api/rutas — una Ruta solo nace del scheduler diario de planificación (PlanificadorDeEntregas, cron por defecto 2 AM) + el proveedor externo simulado. Por eso EN_TRASLADO/ENTREGADA de una Entrega y el callback de planificación NO son 100% testeables solo con Postman sin que ese proceso corra primero — la última carpeta lo documenta y deja los requests listos para cuando exista una Ruta real.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "patenteSufijo",
+      "value": ""
+    },
+    {
+      "key": "camionId",
+      "value": ""
+    },
+    {
+      "key": "choferId",
+      "value": ""
+    },
+    {
+      "key": "entregaId",
+      "value": ""
+    },
+    {
+      "key": "rutaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Ciclo de vida de Camión",
+      "item": [
+        {
+          "name": "1. Crear Camión",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var n = parseInt(pm.variables.replaceIn('{{$randomInt}}'), 10);",
+                  "var tresDigitos = String(100 + (n % 900));",
+                  "pm.collectionVariables.set('patenteSufijo', tresDigitos);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('camionId', json.id);",
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Nace DISPONIBLE', function () { pm.expect(json.estado).to.eql('DISPONIBLE'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"QA{{patenteSufijo}}CD\",\n  \"capacidadKG\": 2000.0,\n  \"capacidadVolumen\": 25.0,\n  \"altura\": 2.8\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/camiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "camiones"
+              ]
+            },
+            "description": "El formato real de patente exige exactamente 3 dígitos (^[A-Z]{2}\\d{3}[A-Z]{2}$). {{$randomInt}} solo (rango 0-1000) genera entre 1 y 4 dígitos, así que este request fallaba de forma intermitente según la suerte del número. El pre-request script arma un número de 3 dígitos garantizado."
+          }
+        },
+        {
+          "name": "2. [Negativo] Patente con formato inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 CAMION_PATENTE_FORMATO_INVALIDO', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patente\": \"1234\",\n  \"capacidadKG\": 2000.0,\n  \"capacidadVolumen\": 25.0,\n  \"altura\": 2.8\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/camiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "camiones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Consultar Camión por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/camiones/{{camionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "camiones",
+                "{{camionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. [Negativo] EN_RUTA nunca es un destino válido vía API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 ESTADO_CAMION_TRANSICION_INVALIDA', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_RUTA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/camiones/{{camionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "camiones",
+                "{{camionId}}",
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Dar de Baja Camión (DISPONIBLE → DESHABILITADO)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/camiones/{{camionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "camiones",
+                "{{camionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. [Negativo] Camión deshabilitado ya no aparece en consulta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404 (soft-delete lógico)', function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/camiones/{{camionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "camiones",
+                "{{camionId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "7. Re-habilitar Camión (DESHABILITADO → DISPONIBLE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"DISPONIBLE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/camiones/{{camionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "camiones",
+                "{{camionId}}",
+                "estado"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Ciclo de vida de Chofer",
+      "item": [
+        {
+          "name": "1. Crear Chofer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('choferId', json.id);",
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"QA\",\n  \"apellido\": \"Chofer\",\n  \"licencia\": \"B2-{{$randomInt}}\",\n  \"telefonoContacto\": \"+541166667777\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/choferes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "choferes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. [Negativo] Campo obligatorio vacío",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"apellido\": \"Chofer\",\n  \"licencia\": \"B2-1\",\n  \"telefonoContacto\": \"+541166667777\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/choferes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "choferes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Consultar Chofer por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/choferes/{{choferId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "choferes",
+                "{{choferId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. [Negativo] EN_RUTA nunca es un destino válido vía API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 ESTADO_CHOFER_TRANSICION_INVALIDA', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_RUTA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/choferes/{{choferId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "choferes",
+                "{{choferId}}",
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Dar de Baja Chofer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', function () { pm.response.to.have.status(204); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/choferes/{{choferId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "choferes",
+                "{{choferId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Entrega: creación y transiciones inválidas desde PENDIENTE",
+      "item": [
+        {
+          "name": "1. Crear Entrega",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('entregaId', json.id);",
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Nace PENDIENTE', function () { pm.expect(json.estadoActual).to.eql('PENDIENTE'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idDonacion\": \"{{$guid}}\",\n  \"idBeneficiaria\": \"{{$guid}}\",\n  \"destino\": {\n    \"calle\": \"Av. Medrano\",\n    \"altura\": 951,\n    \"codigoPostal\": \"1179\",\n    \"localidad\": \"CABA\",\n    \"provincia\": \"CABA\",\n    \"pais\": \"Argentina\"\n  },\n  \"pesoTotalKG\": 15.0,\n  \"volumenTotalM3\": 0.2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas"
+              ]
+            },
+            "description": "idDonacion/idBeneficiaria son sintéticos: en producción los provee donaciones-service vía Feign al aprobar una propuesta (ver Flujo 8 - E2E Distribuido). Acá se usan para testear logistica-service aislado."
+          }
+        },
+        {
+          "name": "2. [Negativo] ENTREGADA directo desde PENDIENTE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 ESTADO_ENTREGA_TRANSICION_INVALIDA', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREGADA\",\n  \"actor\": \"QA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}",
+                "estado"
+              ]
+            },
+            "description": "confirmarEntrega exige EN_TRASLADO. Este estado solo se alcanza vía Ruta, nunca directo."
+          }
+        },
+        {
+          "name": "3. [Negativo] EN_TRASLADO como destino directo (nunca permitido)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 (EN_TRASLADO no es un destino directo del endpoint)', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_TRASLADO\",\n  \"actor\": \"QA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}",
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. [Negativo] REVISION como destino directo (nunca permitido)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"REVISION\",\n  \"actor\": \"QA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}",
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. [Negativo] Adjuntar foto sin estar ENTREGADA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400 ESTADO_ENTREGA_TRANSICION_INVALIDA', function () { pm.response.to.have.status(400); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fotoRecepcionUrl\": \"https://donatrack.org/evidencia-qa.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/fotos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}",
+                "fotos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. Obtener Historial de la Entrega",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/historial",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}",
+                "historial"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. [Requiere que el scheduler haya corrido] Ruta y resto de la máquina de Entrega",
+      "description": "PRECONDICIÓN: para que exista una Ruta, PlanificadorDeEntregas tiene que haber corrido (cron por defecto 2 AM, configurable con logistica.planificacion.cron.expression) con al menos 1 entrega sin ruta, 1 camión y 1 chofer DISPONIBLE. Si estás probando en caliente, esperá al próximo disparo del cron o bajá el cron a algo como '*/30 * * * * ?' en application.properties y reiniciá el servicio. Estos requests asumen que ya existe una ruta con la entrega de la carpeta 3 asignada.",
+      "item": [
+        {
+          "name": "1. Listar Rutas (reintentar hasta ver alguna con la entrega)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var rutas = pm.response.json();",
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var ruta = rutas.find(function (r) { return (r.entregaIds || []).indexOf(pm.collectionVariables.get('entregaId')) !== -1; });",
+                  "if (ruta) { pm.collectionVariables.set('rutaId', ruta.id); }",
+                  "pm.test('Encontró una ruta con esta entrega (si falla, esperá al cron y reintentá)', function () { pm.expect(ruta).to.not.be.undefined; });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/rutas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rutas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. Ruta PENDIENTE → EN_TRASLADO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_TRASLADO\",\n  \"actor\": \"QA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rutas/{{rutaId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rutas",
+                "{{rutaId}}",
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Verificar que la Entrega pasó a EN_TRASLADO",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('estadoActual == EN_TRASLADO', function () { pm.expect(pm.response.json().estadoActual).to.eql('EN_TRASLADO'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas/{{entregaId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Entrega EN_TRASLADO → ENTREGADA",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREGADA\",\n  \"actor\": \"QA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}",
+                "estado"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Adjuntar Foto de Recepción",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fotoRecepcionUrl\": \"https://donatrack.org/evidencia-qa.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/entregas/{{entregaId}}/fotos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "entregas",
+                "{{entregaId}}",
+                "fotos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. Ruta EN_TRASLADO → COMPLETADA (libera camión y chofer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"COMPLETADA\",\n  \"actor\": \"QA\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rutas/{{rutaId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rutas",
+                "{{rutaId}}",
+                "estado"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Planificación (solo negativos testeables sin el scheduler)",
+      "item": [
+        {
+          "name": "1. [Negativo] Callback con solicitudId inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"solicitudId\": \"{{$guid}}\",\n  \"rutas\": [],\n  \"estado\": \"OK\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/logistica/resultados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "logistica",
+                "resultados"
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. [Negativo] Consultar planificación inexistente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/logistica/planificaciones/{{$guid}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "logistica",
+                "planificaciones",
+                "{{$guid}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

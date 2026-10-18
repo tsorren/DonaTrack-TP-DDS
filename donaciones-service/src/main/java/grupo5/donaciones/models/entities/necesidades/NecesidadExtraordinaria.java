@@ -4,19 +4,30 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 public class NecesidadExtraordinaria extends Necesidad implements Asignable {
+  @Getter(AccessLevel.NONE)
   private List<DonacionIndependiente> donacionesAsignadas;
+
+  private boolean activa;
 
   public NecesidadExtraordinaria(
       UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
     super(subcategoriaId, cantidadNecesitada, descripcion);
     this.donacionesAsignadas = new ArrayList<>();
+    this.activa = true;
+  }
+
+  @Override
+  public List<DonacionIndependiente> getDonacionesAsignadas() {
+    return List.copyOf(donacionesAsignadas);
   }
 
   @Override
@@ -58,7 +69,21 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
 
   @Override
   public boolean isActiva() {
-    return true;
+    return this.activa;
+  }
+
+  @Override
+  public void desactivar() {
+    this.activa = false;
+  }
+
+  @Override
+  public int contarDonacionesAsignadasDesde(LocalDateTime desde) {
+    if (this.donacionesAsignadas == null || desde == null) return 0;
+    return (int)
+        this.donacionesAsignadas.stream()
+            .filter(d -> d.getFechaRegistro() != null && d.getFechaRegistro().isAfter(desde))
+            .count();
   }
 
   @Override

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/crear-entrega-request.schema.json",
+  "title": "CrearEntregaRequestDTO",
+  "description": "Payload para registrar y solicitar la planificación de una entrega de donación",
+  "type": "object",
+  "properties": {
+    "idDonacion": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador único de la donación asociada en donaciones-service"
+    },
+    "idBeneficiaria": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la entidad beneficiaria de destino"
+    },
+    "destino": {
+      "type": "object",
+      "properties": {
+        "calle": { "type": "string" },
+        "altura": { "type": "integer", "exclusiveMinimum": 0 },
+        "piso": { "type": "integer" },
+        "departamento": { "type": "string" },
+        "codigoPostal": { "type": "string" },
+        "localidad": { "type": "string" },
+        "provincia": { "type": "string" },
+        "pais": { "type": "string" }
+      },
+      "required": ["calle", "altura", "codigoPostal", "localidad", "provincia", "pais"],
+      "additionalProperties": false
+    },
+    "pesoTotalKG": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Peso total en kilogramos de la carga de la entrega"
+    },
+    "volumenTotalM3": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Volumen cúbico total requerido en metros cúbicos"
+    }
+  },
+  "required": ["idDonacion", "idBeneficiaria", "destino", "volumenTotalM3"],
+  "additionalProperties": false
+}

@@ -44,7 +44,7 @@ para probar que el sistema hace fallback al teléfono).
 
 ### Consecuencias Negativas
 
-* Añade una nueva dependencia externa al `pom.xml` del proyecto.
+* Añade una dependencia externa de testing; Mockito llega de forma transitiva por `spring-boot-starter-test` (`notificaciones-service/pom.xml:56`), sin declararse por separado.
 * Las pruebas que abusan de los mocks pueden acoplarse demasiado a la implementación técnica en lugar de probar el
   comportamiento, volviéndose frágiles ante refactorizaciones menores.
 
@@ -83,4 +83,4 @@ Utilizar el framework Mockito para crear objetos simulados y programar su compor
 
 ## Links
 
-* [Contexto - NotificacionRouter](../20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router)
+* [Contexto - NotificacionRouter](./20260521-desacoplamiento-de-medios-de-contacto-mediante-double-dispatch-y-router.md)

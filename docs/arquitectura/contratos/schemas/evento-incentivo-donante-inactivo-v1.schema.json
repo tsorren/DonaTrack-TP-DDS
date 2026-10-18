@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-incentivo-donante-inactivo-v1.schema.json",
+  "title": "EventoIncentivoDonanteInactivoV1",
+  "description": "Evento de dominio emitido por incentivos-service al detectar que un donante superó el umbral de días sin registrar donaciones",
+  "type": "object",
+  "properties": {
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona donante inactiva"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal de la detección de inactividad"
+    },
+    "diasInactividad": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Cantidad de días transcurridos sin registrar donaciones"
+    }
+  },
+  "required": ["personaDonanteId", "fecha", "diasInactividad"],
+  "additionalProperties": false
+}

@@ -86,10 +86,16 @@ public final class Juridica extends Persona {
   }
 
   @Override
+  public String getNombreCompleto() {
+    return this.razonSocial;
+  }
+
+  @Override
   public void anonimizar() {
     this.razonSocial = Anonimizable.VALOR_STRING;
     this.representantes.forEach(Anonimizable::anonimizar);
     this.actualizarDocumento(null, null);
+    this.getMediosDeContacto().forEach(Anonimizable::anonimizar);
     if (this.getDireccion() != null) {
       this.actualizarDireccion(
           new Direccion(

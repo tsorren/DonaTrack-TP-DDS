@@ -1,6 +1,6 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
-public class EntregaFallida implements EstadoDonacion {
+public class EntregaFallida implements EstadoDonacionIndependiente {
 
   @Override
   public TipoEstadoDonacion getTipo() {
@@ -13,7 +13,19 @@ public class EntregaFallida implements EstadoDonacion {
   }
 
   @Override
+  public void retornar(
+      DonacionIndependiente d, SolicitudCambioEstadoDonacionIndependiente solicitud) {
+    retornar(d, solicitud != null ? solicitud.getActor() : "SISTEMA");
+  }
+
+  @Override
   public void replanificar(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new AsignacionRealizada(), null, actor);
+  }
+
+  @Override
+  public void replanificar(
+      DonacionIndependiente d, SolicitudCambioEstadoDonacionIndependiente solicitud) {
+    replanificar(d, solicitud != null ? solicitud.getActor() : "SISTEMA");
   }
 }

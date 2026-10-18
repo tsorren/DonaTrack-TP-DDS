@@ -45,12 +45,12 @@ esa responsabilidad es del dominio, que lanza
 `ValidationException(ESTADO_CAMION_TRANSICION_INVALIDA)` si la
 transición no es válida. Agregar una nueva transición futura (ej.
 `EN_MANTENIMIENTO` si se decide incorporar ese estado) no requiere
-un nuevo endpoint — solo un nuevo case en el switch del service.
+un nuevo endpoint — solo un nuevo case en el switch de `GestorDeCamiones`.
 
 ### Validación
 
 El controller no tiene ningún `if` de validación de estado. El
-switch en `CamionesService.cambiarEstado()` mapea cada estado
+switch en `GestorDeCamiones.cambiarEstado()` (invocado por `CamionesService.cambiarEstado()`) mapea cada estado
 destino al método de dominio correspondiente y rechaza `EN_RUTA`
 explícitamente (esa transición es responsabilidad de `RutasService`
 en #615).

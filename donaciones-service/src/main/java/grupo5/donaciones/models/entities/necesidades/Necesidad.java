@@ -6,6 +6,7 @@ import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
@@ -37,12 +38,25 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
     this.entidadId = entidadId;
   }
 
+  public void actualizar(String descripcion, Integer cantidadNecesitada) {
+    if (cantidadNecesitada != null) {
+      actualizarCantidadNecesitada(cantidadNecesitada);
+    }
+    if (descripcion != null && !descripcion.trim().isEmpty()) {
+      this.descripcion = descripcion.trim();
+    }
+  }
+
   public void actualizarCantidadNecesitada(Integer cantidadNecesitada) {
     if (cantidadNecesitada == null || cantidadNecesitada <= 0) {
       throw new ValidationException(ErrorCatalog.CANTIDAD_NECESITADA_INVALIDA);
     }
     this.cantidadNecesitada = cantidadNecesitada;
   }
+
+  public abstract void desactivar();
+
+  public abstract int contarDonacionesAsignadasDesde(LocalDateTime desde);
 
   public abstract TipoNecesidad getTipoNecesidad();
 

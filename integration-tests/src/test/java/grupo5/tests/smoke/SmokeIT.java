@@ -1,40 +1,31 @@
 package grupo5.tests.smoke;
 
-import grupo5.tests.BaseIT;
-import org.junit.jupiter.api.Test;
-
-import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 
+import grupo5.tests.BaseIT;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+@Tag("smoke")
 class SmokeIT extends BaseIT {
 
   @Test
   void testDonacionesServiceUp() {
-    given()
-        .when()
-        .get(DONACIONES_URL + "/v3/api-docs")
-        .then()
-        .statusCode(200)
-        .body(containsString("openapi"));
+    donacionesClient.obtenerOpenApi().then().statusCode(200).body(containsString("openapi"));
   }
 
   @Test
   void testNotificacionesServiceUp() {
-    given()
-        .when()
-        .get(NOTIFICACIONES_URL + "/v3/api-docs")
-        .then()
-        .statusCode(200)
-        .body(containsString("openapi"));
+    notificacionesClient.obtenerOpenApi().then().statusCode(200).body(containsString("openapi"));
   }
 
   @Test
   void testIncentivosServiceUp() {
-    given()
-        .when()
-        .get(INCENTIVOS_URL + "/v3/api-docs")
-        .then()
-        .statusCode(200)
-        .body(containsString("openapi"));
+    incentivosClient.obtenerOpenApi().then().statusCode(200).body(containsString("openapi"));
+  }
+
+  @Test
+  void testLogisticaServiceUp() {
+    logisticaClient.obtenerOpenApi().then().statusCode(200).body(containsString("openapi"));
   }
 }

@@ -1,8 +1,11 @@
 package grupo5.common.logging;
 
+import feign.RequestInterceptor;
 import io.micrometer.tracing.Tracer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -16,10 +19,30 @@ public class LoggingAutoConfiguration {
     return new ServiceLoggingAspect();
   }
 
+  @Configuration(proxyBeanMethods = false)
+  @ConditionalOnClass(Tracer.class)
+  public static class TracingLoggingConfiguration {
+    @Bean
+    @ConditionalOnBean(Tracer.class)
+    public ScheduledJobLoggingAspect scheduledJobLoggingAspect(Tracer tracer) {
+      return new ScheduledJobLoggingAspect(tracer);
+    }
+  }
+
   @Bean
-  @ConditionalOnBean(Tracer.class)
-  public ScheduledJobLoggingAspect scheduledJobLoggingAspect(Tracer tracer) {
-    return new ScheduledJobLoggingAspect(tracer);
+  @ConditionalOnMissingBean(TraceResponseHeaderFilter.class)
+  public TraceResponseHeaderFilter traceResponseHeaderFilter() {
+    return new TraceResponseHeaderFilter();
+  }
+
+  @Configuration(proxyBeanMethods = false)
+  @ConditionalOnClass(RequestInterceptor.class)
+  public static class FeignLoggingConfiguration {
+    @Bean
+    @ConditionalOnMissingBean(FeignTraceRequestInterceptor.class)
+    public FeignTraceRequestInterceptor feignTraceRequestInterceptor() {
+      return new FeignTraceRequestInterceptor();
+    }
   }
 
   @Configuration

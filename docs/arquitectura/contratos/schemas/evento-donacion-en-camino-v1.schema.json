@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-en-camino-v1.schema.json",
+  "title": "EventoDonacionEnCaminoV1",
+  "description": "Evento de dominio emitido cuando una donación se encuentra en traslado logístico hacia la entidad beneficiaria",
+  "type": "object",
+  "properties": {
+    "donanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador del donante"
+    },
+    "personaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona asociada a ese donante"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del inicio del traslado"
+    },
+    "personaBeneficiariaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la entidad beneficiaria destinataria"
+    },
+    "descripcion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Descripción de la donación transportada"
+    },
+    "urlMapa": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL de seguimiento o mapa en vivo del recorrido del camión"
+    }
+  },
+  "required": ["donanteId", "personaId", "fecha", "personaBeneficiariaId", "descripcion", "urlMapa"],
+  "additionalProperties": false
+}

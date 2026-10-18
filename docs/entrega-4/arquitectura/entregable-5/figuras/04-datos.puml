@@ -1,0 +1,37 @@
+@startuml 04-datos
+' Figura 4 del cuerpo: datos, un schema por servicio (variante simplificada de
+' docs/entrega-4/arquitectura/diagramas/07-datos.puml, sin tablas, roles ni notas).
+' Donaciones persiste en memoria; su schema está diseñado y no implementado.
+' Las referencias entre servicios van por identificador, sin claves foráneas.
+!pragma layout smetana
+!include ../../diagramas/estilo-e4.iuml
+
+component "Logística" as sLog <<servicio>>
+component "Incentivos" as sInc <<servicio>>
+component "Notificaciones" as sNot <<servicio>>
+component "Donaciones\n(en memoria)" as sDon <<servicio>>
+
+node "PostgreSQL" as pg <<infraestructura>> {
+  rectangle "Schema Logística" as schLog
+  rectangle "Schema Incentivos" as schInc
+  rectangle "Schema Notificaciones" as schNot
+  rectangle "Schema Donaciones\ndiseñado, no implementado" as schDon <<planificado>>
+}
+node "MinIO" as minio #F2F2F2
+
+sLog --> schLog : JDBC
+sInc --> schInc : JDBC
+sNot --> schNot : JDBC
+sDon -[#9A9A9A,dotted]-> schDon
+sInc -up-> minio : S3
+
+schLog -[#9A9A9A,dashed]-> sDon : id, sin FK
+schInc -[#9A9A9A,dashed]-> sDon : id, sin FK
+schNot -[#9A9A9A,dashed]-> sDon : id, sin FK
+
+legend left
+  ── acceso a datos propios
+  <color:#6E6E6E>- - referencia por identificador</color>
+  <color:#6E6E6E>· · · planificado</color>
+endlegend
+@enduml

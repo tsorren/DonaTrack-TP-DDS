@@ -1,5 +1,6 @@
 package grupo5.donaciones.services.mappers;
 
+import grupo5.donaciones.dto.comunicaciones.DestinoEventoDTO;
 import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.direcciones.DireccionOutputDTO;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
@@ -40,6 +41,33 @@ public class DireccionMapper {
             : null;
 
     return new DireccionOutputDTO(
+        entity.calle(),
+        entity.altura(),
+        entity.piso(),
+        entity.departamento(),
+        entity.codigoPostal(),
+        localidadNombre,
+        provinciaNombre,
+        paisNombre);
+  }
+
+  public DestinoEventoDTO toDestinoEventoDTO(Direccion entity) {
+    if (entity == null) {
+      return null;
+    }
+    String localidadNombre = entity.localidad() != null ? entity.localidad().nombre() : null;
+    String provinciaNombre =
+        (entity.localidad() != null && entity.localidad().provincia() != null)
+            ? entity.localidad().provincia().nombre()
+            : null;
+    String paisNombre =
+        (entity.localidad() != null
+                && entity.localidad().provincia() != null
+                && entity.localidad().provincia().pais() != null)
+            ? entity.localidad().provincia().pais().nombre()
+            : null;
+
+    return new DestinoEventoDTO(
         entity.calle(),
         entity.altura(),
         entity.piso(),

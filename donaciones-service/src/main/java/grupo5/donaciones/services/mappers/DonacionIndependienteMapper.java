@@ -1,6 +1,13 @@
 package grupo5.donaciones.services.mappers;
 
-import grupo5.donaciones.dto.donacionesIndependientes.*;
+import grupo5.donaciones.dto.donacionesIndependientes.BienNormalizadoDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.BienResumenDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.CambioEstadoDIResponseDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.CategoriaResumenDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
+import grupo5.donaciones.dto.donacionesIndependientes.SubcategoriaResumenDTO;
+import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donacionesIndependientes.CambioEstado;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
@@ -74,7 +81,7 @@ public class DonacionIndependienteMapper {
     if (bienNormalizado.subcategoriaId() != null) {
       var subOpt = subcategoriasRepository.findById(bienNormalizado.subcategoriaId());
       if (subOpt.isPresent()) {
-        var sub = subOpt.get();
+        Subcategoria sub = subOpt.get();
         subcategoriaResumen = mapSubcategoriaResumen(sub);
         categoriaResumen = mapCategoriaResumen(sub);
       }
@@ -112,16 +119,14 @@ public class DonacionIndependienteMapper {
         bienOriginal.estado());
   }
 
-  private static SubcategoriaResumenDTO mapSubcategoriaResumen(
-      grupo5.donaciones.models.entities.categorias.Subcategoria sub) {
+  private static SubcategoriaResumenDTO mapSubcategoriaResumen(Subcategoria sub) {
     if (sub == null) {
       return null;
     }
     return new SubcategoriaResumenDTO(sub.getId(), sub.getNombre());
   }
 
-  private CategoriaResumenDTO mapCategoriaResumen(
-      grupo5.donaciones.models.entities.categorias.Subcategoria sub) {
+  private CategoriaResumenDTO mapCategoriaResumen(Subcategoria sub) {
     if (sub == null || sub.getCategoriaId() == null) {
       return null;
     }

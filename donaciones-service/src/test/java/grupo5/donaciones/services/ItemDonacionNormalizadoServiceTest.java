@@ -2,17 +2,18 @@ package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.itemsNormalizados.inputs.ItemDonacionNormalizadoPatchDTO;
 import grupo5.donaciones.dto.itemsNormalizados.outputs.ItemDonacionNormalizadoOutputDTO;
-import grupo5.donaciones.infrastructure.events.DonacionNormalizadaEvent;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
+import grupo5.donaciones.models.entities.donaciones.events.DonacionNormalizada;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
@@ -23,14 +24,15 @@ import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.ItemDonacionNormalizadoService;
+import grupo5.donaciones.services.mappers.CategoriaMapper;
 import grupo5.donaciones.services.mappers.ItemDonacionNormalizadoMapper;
+import grupo5.donaciones.services.mappers.SubcategoriaMapper;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,10 +44,10 @@ class ItemDonacionNormalizadoServiceTest {
   @Mock private IDonacionesRepository donacionRepository;
   @Mock private ISubcategoriasRepository subcategoriasRepository;
   @Mock private ICategoriasRepository categoriasRepository;
-  @Mock private ItemDonacionNormalizadoMapper mapper;
   @Mock private ApplicationEventPublisher eventPublisher;
 
-  @InjectMocks private ItemDonacionNormalizadoService service;
+  private ItemDonacionNormalizadoMapper mapper;
+  private ItemDonacionNormalizadoService service;
 
   private Donacion donacion;
   private Subcategoria subcategoria;
@@ -53,10 +55,23 @@ class ItemDonacionNormalizadoServiceTest {
 
   @BeforeEach
   void setUp() {
+    SubcategoriaMapper subcategoriaMapper =
+        new SubcategoriaMapper(new CategoriaMapper(), categoriasRepository);
+    mapper = new ItemDonacionNormalizadoMapper(subcategoriaMapper, subcategoriasRepository);
+    service =
+        new ItemDonacionNormalizadoService(
+            itemNormalizadoRepository,
+            donacionRepository,
+            subcategoriasRepository,
+            categoriasRepository,
+            mapper,
+            eventPublisher);
+
     Humana humana =
         new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, java.time.Month.MAY, 15));
     Donante donante = new Donante(humana.getId());
     donacion = new Donacion(donante.getId());
+    donacion.clearDomainEvents();
 
     Categoria categoria =
         new Categoria(
@@ -76,22 +91,14 @@ class ItemDonacionNormalizadoServiceTest {
   @Test
   void obtenerPendientes_deberiaRetornarSoloItemsPendientes() {
     when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
-    ItemDonacionNormalizadoOutputDTO outputDTO =
-        new ItemDonacionNormalizadoOutputDTO(
-            itemNormalizado.getId(),
-            donacion.getId(),
-            "Paquete de arroz",
-            10,
-            null,
-            0.4,
-            EstadoNormalizacion.PENDIENTE_REVISION,
-            false);
-    when(mapper.toOutputDTO(itemNormalizado)).thenReturn(outputDTO);
+    when(subcategoriasRepository.findById(subcategoria.getId()))
+        .thenReturn(Optional.of(subcategoria));
 
     List<ItemDonacionNormalizadoOutputDTO> result = service.obtenerPendientes();
 
     assertEquals(1, result.size());
     assertEquals(EstadoNormalizacion.PENDIENTE_REVISION, result.getFirst().estadoNormalizacion());
+    assertEquals("Paquete de arroz", result.getFirst().descripcionBienOriginal());
   }
 
   @Test
@@ -115,6 +122,15 @@ class ItemDonacionNormalizadoServiceTest {
         .thenReturn(Optional.of(subcategoria));
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
     when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
+    doAnswer(
+            invocation -> {
+              assertTrue(
+                  donacion.getDomainEvents().isEmpty(),
+                  "El evento debe retirarse del agregado antes de publicarse");
+              return null;
+            })
+        .when(eventPublisher)
+        .publishEvent(any(DonacionNormalizada.class));
 
     ItemDonacionNormalizadoPatchDTO patchDTO =
         new ItemDonacionNormalizadoPatchDTO(EstadoNormalizacion.ACEPTADO, null);
@@ -125,7 +141,7 @@ class ItemDonacionNormalizadoServiceTest {
     assertEquals(EstadoDonacion.NORMALIZADA, donacion.getEstadoActual());
     verify(itemNormalizadoRepository, times(1)).save(itemNormalizado);
     verify(donacionRepository, times(1)).save(donacion);
-    verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizadaEvent.class));
+    verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizada.class));
   }
 
   @Test
@@ -153,6 +169,6 @@ class ItemDonacionNormalizadoServiceTest {
     assertEquals(newSubId, itemNormalizado.getBien().subcategoriaId());
     assertEquals(1.0, itemNormalizado.getBien().confianza());
     assertEquals(EstadoDonacion.NORMALIZADA, donacion.getEstadoActual());
-    verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizadaEvent.class));
+    verify(eventPublisher, times(1)).publishEvent(any(DonacionNormalizada.class));
   }
 }

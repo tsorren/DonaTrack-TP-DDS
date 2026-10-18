@@ -21,6 +21,9 @@ public interface INecesidadesRepository extends CrudRepository<Necesidad> {
   // Activas, no satisfechas y recurrentes
   List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue();
 
+  // Activas y recurrentes (para renovación de períodos)
+  List<Necesidad> findByActivaTrueAndRecurrenteTrue();
+
   // Activas, no satisfechas y extraordinarias
   List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse();
 }

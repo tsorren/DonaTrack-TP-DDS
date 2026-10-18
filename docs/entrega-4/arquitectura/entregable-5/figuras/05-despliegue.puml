@@ -1,0 +1,35 @@
+@startuml 05-despliegue
+' Figura 5 del cuerpo: despliegue local y en la nube (variante simplificada de
+' docs/entrega-4/arquitectura/diagramas/08-despliegue.puml, sin tags, puertos ni imágenes).
+' La CI construye y publica la imagen de cada servicio en el registro; el preprod de CI la usa.
+' Nube: solo Logística (Render, Neon, CloudAMQP). URL pública publicada.
+!pragma layout smetana
+!include ../../diagramas/estilo-e4.iuml
+
+node "GitHub Actions · GHCR" as ci <<infraestructura>>
+
+frame "Local y preproducción" as fLocal {
+  node host [
+    **Docker Compose**
+    ----
+    4 servicios DonaTrack
+    Logística externa (simulada)
+    RabbitMQ · PostgreSQL
+    MinIO · n8n
+  ]
+}
+
+frame "Nube" as fCloud {
+  actor "Cliente" as web
+  node "Render" as render <<infraestructura>> {
+    node "Logística" as rLog <<servicio>>
+  }
+  node "Neon" as neon <<infraestructura>>
+  node "CloudAMQP" as cloudamqp <<infraestructura>>
+}
+
+ci --> host : publica imagen
+web --> rLog : HTTPS\n(URL pública)
+rLog --> neon : JDBC
+rLog --> cloudamqp : AMQP
+@enduml

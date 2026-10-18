@@ -1,7 +1,7 @@
 # DonaTrack
 
 [![Java 21](https://img.shields.io/badge/Java-21-orange?style=flat-square&logo=openjdk)](https://openjdk.org/)
-[![Spring Boot 3](https://img.shields.io/badge/Spring_Boot-3-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
+[![Spring Boot 4.0.7](https://img.shields.io/badge/Spring_Boot-4.0.7-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
 [![Maven](https://img.shields.io/badge/Maven-build-blue?style=flat-square&logo=apachemaven)](https://maven.apache.org/)
 [![Docker](https://img.shields.io/badge/Docker-compose-blue?style=flat-square&logo=docker)](https://www.docker.com/)
 [![SonarCloud](https://img.shields.io/badge/SonarCloud-quality_gate-green?style=flat-square&logo=sonarcloud)](https://sonarcloud.io/)
@@ -10,10 +10,13 @@
 
 Optimizacion logistica, trazabilidad transparente y fidelizacion de donantes para potenciar el impacto de las organizaciones sociales mediante una plataforma de software robusta, moderna y escalable.
 
+> 📖 **Documentación y Gobernanza:** [Portal de Documentación](docs/README.md) · [Panel de Estado y Vigencia](docs/ESTADO_DOCUMENTACION.md) · [Router de Contexto para Agentes](docs/context-index.md) · [Reglas de Ingeniería AGENTS.md](AGENTS.md)
+
 ---
 
 ## Indice
 
+* [Documentación y Gobernanza](docs/README.md)
 * [Propuesta de Valor y Desafios Resolutivos](#propuesta-de-valor-y-desafios-resolutivos)
 * [Soluciones Operativas de la Plataforma](#soluciones-operativas-de-la-plataforma)
 * [Arquitectura Distribuida y Resiliencia](#arquitectura-distribuida-y-resiliencia)
@@ -50,10 +53,12 @@ DonaTrack resuelve las necesidades logisticas complejas mediante modulos tecnico
 
 La plataforma se organiza bajo una arquitectura modular de servicios independientes desacoplados para asegurar una alta disponibilidad operativa:
 
-* **Modulo de Donaciones:** Gestiona de forma transaccional el catalogo de bienes, inventarios y necesidades operativas.
-* **Modulo de Incentivos:** Registra las metricas historicas de ayuda, procesa el cumplimiento de misiones y administra los rankings.
-* **Modulo de Notificaciones:** Sistema no bloqueante para el despacho de alertas que mantiene réplicas locales ligeras de los perfiles. Esto garantiza que las comunicaciones sigan funcionando de forma autonoma incluso ante eventuales caidas o demoras en la red de los otros modulos.
-* **Kernel Compartido (common-lib):** Biblioteca que centraliza excepciones tecnicas y logging estructurado de manera transversal sin compartir logica ni entidades de negocio, resguardando la autonomia de desarrollo y despliegue de cada modulo.
+* **Modulo de Donaciones:** Gestiona de forma transaccional el catalogo de bienes, inventarios y necesidades operativas, procesando normalizacion semantica y algoritmos de asignacion.
+* **Modulo de Logistica:** Gestiona de forma reactiva y transaccional la flota de camiones, choferes, planificacion de rutas y ciclo de vida de entregas, publicando eventos asincronos.
+* **Modulo de Incentivos:** Registra las metricas historicas de ayuda, procesa el cumplimiento de misiones y administra los rankings y fidelizacion.
+* **Modulo de Notificaciones:** Sistema no bloqueante para el despacho multicanal de alertas (Email, SMS, WhatsApp) que mantiene replicas locales ligeras de los perfiles para garantizar autonomia.
+* **Broker de Mensajeria (RabbitMQ):** Desacopla la comunicacion de transporte y eventos de entrega entre logistica y donaciones (`logistica.exchange` hacia colas `donaciones.ruta.*` y `donaciones.entrega.*`).
+* **Kernel Compartido (common-lib):** Biblioteca que centraliza persistencia generica en memoria (`CrudRepository`), jerarquia de excepciones, observabilidad (MDC/TraceId) y configuraciones transversales.
 
 ---
 
@@ -63,17 +68,25 @@ Organizacion del reactor multi-modulo y de los directorios principales del proye
 
 ```text
 DonaTrack-TP-DDS/
-├── .github/                      # Flujos de integracion continua y calidad automatizada
-├── docs/                         # Documentacion del portal y registros de decisiones
+├── AGENTS.md                     # Núcleo de políticas operativas, Quality Gates y reglas de agentes
+├── .agents/                      # Suite de skills modulares y tooling para desarrollo asistido
+├── .github/                      # Flujos de integracion continua, reviews y calidad automatizada
+├── docs/                         # Documentacion tecnica, arquitectura, testing y decisiones (ADRs)
 ├── n8n/                          # Workflows serializados para la integracion externa
-├── integration-tests/            # Suite de pruebas funcionales y de extremo a extremo
-├── common-lib/                   # shared kernel de utilidades de infraestructura y logging
-├── cliente-liviano/              # Interfaz y portal web de administracion
-├── auth-service/                 # Modulo de seguridad, usuarios y accesos
-├── donaciones-service/           # Modulo central de inventario y matchmaking
-├── incentivos-service/           # Modulo de gamificacion, rankings e incentivos
-├── logistica-service/            # Modulo experimental de transporte y rutas
-└── notificaciones-service/       # Modulo de despacho de comunicaciones y alertas
+├── postman/                      # Colecciones Postman y flujos E2E (fuente vigente)
+├── persistencia/                 # Esquemas, init-db y arquitectura de persistencia PostgreSQL
+├── scripts/                      # Utilidades de validacion (agent-check, enlaces de docs, contratos)
+├── tests/                        # Tests de soporte del repositorio
+├── docker-compose*.yml           # Stacks local, demo y preproduccion
+├── run-preprod-tests*.sh         # Orquestadores de la suite de integracion
+├── integration-tests/            # Suite de pruebas funcionales y de extremo a extremo (E2E)
+├── common-lib/                   # Shared kernel: CrudRepository, logging estructurado y excepciones
+├── donaciones-service/           # Modulo central de inventario, normalizacion y matchmaking (:8080)
+├── notificaciones-service/       # Modulo de despacho de comunicaciones y alertas (:8081)
+├── incentivos-service/           # Modulo de gamificacion, rankings e incentivos (:8082)
+├── logistica-service/            # Modulo troncal de transporte, camiones, rutas y entregas (:8083)
+├── cliente-liviano/              # [PLACEHOLDER] Directorio reservado para interfaz web
+└── auth-service/                 # [PLACEHOLDER] Directorio reservado para modulo de seguridad
 ```
 
 ---
@@ -82,9 +95,12 @@ DonaTrack-TP-DDS/
 
 La seleccion de tecnologias responde a la necesidad de construir un producto confiable, mantenible a largo plazo y facilmente adaptable:
 
-* **Java 21 y Spring Boot 3:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
-* **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema, logrando que funcione de forma identica en cualquier computadora personal o servidor en la nube.
-* **n8n Workflow Engine:** Agilidad logica para automatizar integraciones mediante flujos de trabajo independientes, liberando a los microservicios principales de las dependencias de APIs de terceros.
+* **Java 21 y Spring Boot 4.0.7:** Plataforma robusta y tipada que ofrece un rendimiento estable y una infraestructura segura para el desarrollo de servicios web transaccionales.
+* **RabbitMQ (AMQP 3.13):** Broker de mensajeria asincrono para desacoplar eventos logisticos de alto volumen.
+* **Spring Cloud OpenFeign:** Cliente HTTP declarativo; hoy lo usa solo `incentivos-service` para invocar a `notificaciones-service` (el resto de la comunicacion inter-servicios es por RabbitMQ).
+* **Docker y Docker Compose:** Virtualizacion de entornos que garantiza la portabilidad absoluta del sistema en preproduccion y desarrollo local.
+* **n8n Workflow Engine:** Agilidad logica para automatizar integraciones mediante flujos de trabajo independientes, liberando a los microservicios de dependencias de APIs de terceros.
+* **Spotless & SonarCloud:** Estandarizacion de formato y analisis estatico continuo de calidad de codigo.
 * **Maven Reactor:** Reactor de compilacion unificado que simplifica la compilacion incremental y la administracion de dependencias.
 
 ---
@@ -117,8 +133,10 @@ mvn clean package -DskipTests
 ### 2. Despliegue del Entorno Local con Docker Compose
 Para levantar manualmente el ecosistema virtualizado completo de microservicios y la plataforma n8n en segundo plano:
 ```bash
+cp .env.example .env   # credenciales de Postgres, RabbitMQ y MinIO; o scripts/generar-env-db.sh para valores aleatorios
 docker compose -f docker-compose.preprod.yml up --build -d
 ```
+*Las contraseñas de Postgres, RabbitMQ y MinIO no están versionadas: compose las toma de `.env` (ver [`persistencia/README.md`](persistencia/README.md)). Un `.env` anterior que no tenga `RABBITMQ_PASS` o `MINIO_ROOT_*` hace fallar a compose: completarlo desde `.env.example`, o borrarlo y regenerarlo. Fuera de compose (`mvn spring-boot:run` contra un broker propio), exportar `RABBITMQ_PASS`: `application.properties` no trae contraseña por defecto.*
 *Los contenedores utilizan healthchecks basados en Actuator (/actuator/health) para asegurar una secuencia de arranque ordenada y segura.*
 
 ### 3. Suite de Validacion y Pruebas de Integracion Automatizadas
@@ -142,7 +160,7 @@ El repositorio cuenta con dos scripts orquestadores en Bash diseñados para auto
 # Ejecutar una unica clase de test de integracion en particular:
 ./run-preprod-tests.sh --test NombreDeClaseIT
 ```
-*Nota en Windows: Ambos scripts se pueden ejecutar en PowerShell mediante `powershell -File ./run-preprod-tests.sh`.*
+*Nota en Windows: son scripts Bash; ejecutarlos desde Git Bash o WSL (`bash ./run-preprod-tests.sh`), no con `powershell -File`.*
 
 ---
 
@@ -161,4 +179,3 @@ El repositorio cuenta con dos scripts orquestadores en Bash diseñados para auto
 | **Nicolás Delorte** | 172.817-9 | ndelorte@frba.utn.edu.ar |
 | **Sofia Maria Deane** | 210.350-3 | sdeane@frba.utn.edu.ar |
 | **Tadeo Sorrentino** | 214.153-0 | tsorrentino@frba.utn.edu.ar |
-| **Valentina Thiwissen** | 209.210-4 | vthiwissen@frba.utn.edu.ar |

@@ -1,0 +1,159 @@
+' ============================================================
+' Estilo común de los diagramas de arquitectura de la Entrega 4.
+' Lo incluyen el diagrama de componentes (docs/arquitectura/diseno/) y los
+' diagramas 02 a 08 de esta carpeta. Misma paleta y mismos estereotipos en todos.
+'
+' Estereotipos y colores:
+'   <<servicio>>                azul      microservicio DonaTrack
+'   <<broker de integración>>   ámbar     broker que elige proveedor de logística (no es RabbitMQ)
+'   <<adapter>>                 verde     adaptador de salida o entrada hacia afuera
+'   <<simulado>>                gris, borde discontinuo   existe en código, simula un externo
+'   <<planificado>>             blanco, borde punteado    no existe en código (entrega futura)
+'   <<exchange>> / queue        violeta   topología de RabbitMQ (message broker)
+'   infraestructura             gris      RabbitMQ, PostgreSQL, MinIO, n8n
+'   Los mismos colores valen para component, node, participant y artifact (imagen en la Figura 8).
+' Líneas:
+'   continua gris oscuro        llamada sincrónica (HTTP, REST, JDBC, S3)
+'   discontinua violeta         conector AMQP en diagramas de componentes (Figuras 1 y 3)
+'   continua violeta, punta abierta   mensaje asíncrono AMQP en secuencias (Figuras 4 a 6)
+'   discontinua                 respuesta, en secuencias
+'   punteada gris               planificado o interino
+' ============================================================
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam componentStyle uml2
+skinparam roundCorner 6
+skinparam ArrowColor #333333
+skinparam ArrowFontSize 11
+skinparam ArrowFontColor #222222
+skinparam titleFontSize 17
+skinparam titleFontStyle bold
+skinparam legendBackgroundColor #FAFAFA
+skinparam legendBorderColor #999999
+skinparam legendFontSize 11
+skinparam noteBackgroundColor #FFFBE6
+skinparam noteBorderColor #B7A25A
+skinparam noteFontSize 11
+skinparam stereotypeFontSize 10
+
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #555555
+  BackgroundColor<<servicio>> #E6EEF8
+  BorderColor<<servicio>> #2F5D8A
+  BackgroundColor<<broker de integración>> #FFF1CC
+  BorderColor<<broker de integración>> #B7791F
+  BackgroundColor<<adapter>> #E1F2EC
+  BorderColor<<adapter>> #2E7D6B
+  BackgroundColor<<simulado>> #F3F3F3
+  BorderColor<<simulado>> #777777
+  BorderStyle<<simulado>> dashed
+  BackgroundColor<<planificado>> #FFFFFF
+  BorderColor<<planificado>> #9A9A9A
+  BorderStyle<<planificado>> dotted
+  FontColor<<planificado>> #6E6E6E
+  StereotypeFontColor<<planificado>> #6E6E6E
+  BackgroundColor<<exchange>> #EEE8F7
+  BorderColor<<exchange>> #5E4B8B
+  BackgroundColor<<infraestructura>> #F2F2F2
+  BorderColor<<infraestructura>> #666666
+  BackgroundColor<<externo>> #F2F2F2
+  BorderColor<<externo>> #666666
+}
+
+skinparam interface {
+  BackgroundColor #FFFFFF
+  BorderColor #333333
+}
+
+skinparam queue {
+  BackgroundColor #F7F5FB
+  BorderColor #5E4B8B
+}
+
+skinparam database {
+  BackgroundColor #F2F2F2
+  BorderColor #666666
+}
+
+skinparam node {
+  BackgroundColor #FAFAFA
+  BorderColor #666666
+}
+
+skinparam frame {
+  BackgroundColor #FFFFFF
+  BorderColor #888888
+}
+
+skinparam package {
+  BackgroundColor #FFFFFF
+  BorderColor #888888
+  FontStyle bold
+}
+
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #555555
+  BackgroundColor<<servicio>> #E6EEF8
+  BorderColor<<servicio>> #2F5D8A
+  BackgroundColor<<planificado>> #FFFFFF
+  BorderColor<<planificado>> #9A9A9A
+  BorderStyle<<planificado>> dotted
+  FontColor<<planificado>> #6E6E6E
+}
+
+skinparam cloud {
+  BackgroundColor #FAFAFA
+  BorderColor #666666
+}
+
+skinparam participant {
+  BackgroundColor #FFFFFF
+  BorderColor #555555
+  BackgroundColor<<servicio>> #E6EEF8
+  BorderColor<<servicio>> #2F5D8A
+  BackgroundColor<<broker de integración>> #FFF1CC
+  BorderColor<<broker de integración>> #B7791F
+  BackgroundColor<<adapter>> #E1F2EC
+  BorderColor<<adapter>> #2E7D6B
+  BackgroundColor<<simulado>> #F3F3F3
+  BorderColor<<simulado>> #777777
+}
+
+skinparam sequence {
+  LifeLineBorderColor #999999
+  GroupBorderColor #888888
+  GroupBackgroundColor #F4F4F4
+  DividerBackgroundColor #EEEEEE
+  ReferenceBackgroundColor #F4F4F4
+}
+
+' --- Agregado para diagramas de despliegue y datos (nodos con estereotipo) ---
+skinparam node {
+  BackgroundColor<<servicio>> #E6EEF8
+  BorderColor<<servicio>> #2F5D8A
+  BackgroundColor<<simulado>> #F3F3F3
+  BorderColor<<simulado>> #777777
+  BorderStyle<<simulado>> dashed
+  BackgroundColor<<infraestructura>> #F2F2F2
+  BorderColor<<infraestructura>> #666666
+  BackgroundColor<<planificado>> #FFFFFF
+  BorderColor<<planificado>> #9A9A9A
+  BorderStyle<<planificado>> dotted
+  FontColor<<planificado>> #6E6E6E
+}
+
+skinparam artifact {
+  BackgroundColor #FFFFFF
+  BorderColor #666666
+  BackgroundColor<<servicio>> #E6EEF8
+  BorderColor<<servicio>> #2F5D8A
+  BackgroundColor<<simulado>> #F3F3F3
+  BorderColor<<simulado>> #777777
+  BackgroundColor<<infraestructura>> #F2F2F2
+  BorderColor<<infraestructura>> #666666
+}

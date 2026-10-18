@@ -2,6 +2,7 @@
 - Status: accepted
 - Date: 2026-06-29
 - Deciders: Decisión Grupal
+- Tags: incentivos, rachas, scheduler, batch
 
 ## Contexto y Problema
 La misión de racha solo resetea su progreso cuando llega una nueva donación. Si un donante deja de donar, su progreso queda congelado indefinidamente aunque la racha esté rota, mostrando un porcentaje de avance incorrecto.
@@ -12,10 +13,10 @@ La misión de racha solo resetea su progreso cuando llega una nueva donación. S
 
 ## Resultado de la Decisión
 
-Alternativa elegida: "Resetear la racha al recibir la siguiente donación"
+Alternativa elegida: "RachaJob con @Scheduled mensual + verificarVigencia en MisionRacha"
 
 Justificación:
-Se eligió el RachaJob porque resuelve el caso donde el donante nunca vuelve a donar, algo que la alternativa no cubre.Se eligió el RachaJob porque resuelve el caso donde el donante nunca vuelve a donar, algo que la alternativa no cubre. Además sigue el mismo patrón que InactividadJob y RankingMensualJob, manteniendo consistencia en el diseño.
+Se eligió el RachaJob porque resuelve el caso donde el donante nunca vuelve a donar, algo que la alternativa no cubre. Además sigue el mismo patrón que InactividadJob y RankingMensualJob, manteniendo consistencia en el diseño.
 
 ### Consecuencias Positivas
 * El porcentaje de progreso de la misión de racha siempre refleja el estado real del donante

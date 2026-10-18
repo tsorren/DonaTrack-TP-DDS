@@ -12,6 +12,7 @@ import grupo5.donaciones.services.IDonacionesService;
 import grupo5.donaciones.services.mappers.DonacionMapper;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,16 +22,19 @@ public class DonacionesService implements IDonacionesService {
   private final IDonantesRepository donantesRepository;
   private final DonacionMapper mapper;
   private final ProcesadorDeDonaciones procesadorDonaciones;
+  private final ApplicationEventPublisher eventPublisher;
 
   public DonacionesService(
       IDonacionesRepository donacionesRepository,
       IDonantesRepository donantesRepository,
       DonacionMapper mapper,
-      ProcesadorDeDonaciones procesadorDonaciones) {
+      ProcesadorDeDonaciones procesadorDonaciones,
+      ApplicationEventPublisher eventPublisher) {
     this.donacionesRepository = donacionesRepository;
     this.donantesRepository = donantesRepository;
     this.mapper = mapper;
     this.procesadorDonaciones = procesadorDonaciones;
+    this.eventPublisher = eventPublisher;
   }
 
   @Override
@@ -43,6 +47,8 @@ public class DonacionesService implements IDonacionesService {
     Donacion donacion = mapper.toEntity(dto, donante);
 
     donacionesRepository.save(donacion);
+    donacion.getDomainEvents().forEach(eventPublisher::publishEvent);
+    donacion.clearDomainEvents();
 
     procesadorDonaciones.procesar(donacion);
 

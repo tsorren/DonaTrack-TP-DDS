@@ -4,6 +4,8 @@
 - Deciders: Decisión Grupal
 - Tags: servicio-notificaciones
 
+> **Nota de auditoría (2026-10-14):** reemplazo pendiente de aprobación por [DTI-13: migración de clientes de la API REST deprecada de notificaciones a AMQP](../20260910-dti-13-migracion-clientes-api-rest-deprecada-notificaciones-a-amqp.md) y por la [topología pub/sub AMQP](../20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md). El cambio de Status queda a aprobación del equipo.
+
 ## Contexto y Problema
 Debemos decidir cómo se van a comunicar los distintos servicios con el Servicio de Notificaciones, ya que este generará
 mensajes a los usuarios en base a los distintos eventos del sistema.
@@ -52,4 +54,4 @@ Cada servicio escuchará y enviará los eventos que le sean relevantes en base a
 * La implementación es más compleja.
 
 ## Links
-* [Eventos Notificables](../20260519-eventos-como-disparadores-de-notificaciones)
+* [Eventos Notificables](./20260519-eventos-como-disparadores-de-notificaciones.md)

@@ -43,6 +43,45 @@ La IA puede ayudar, pero la responsabilidad técnica sigue siendo humana.
 - [`06-contexto-base-donatrack.md`](./06-contexto-base-donatrack.md)  
   Contexto base para copiar y pegar al iniciar una conversación con ChatGPT, Claude, Gemini, Cursor o cualquier asistente similar.
 
+- [`07-errores-frecuentes-sonarcloud-ia.md`](./07-errores-frecuentes-sonarcloud-ia.md)  
+  Guía viva de errores frecuentes y checklist pre-flight de SonarCloud para agentes de IA antes de finalizar tareas o abrir PRs.
+
+### Política de revisión
+
+- [`review/evaluator.md`](./review/evaluator.md)  
+  Fuente canónica de la política Generator/Evaluator. Roles, modos de independencia (INDEPENDENT_REVIEW / SELF_REVIEW / LIGHTWEIGHT_CLOSING_CHECK), Review Contract, vectores V1–V9, capability detection, ciclo de re-check y responsabilidad humana.
+
+### Evaluación del harness (Wave 9)
+
+- [`evals/README.md`](./evals/README.md)  
+  Suite de evaluación del harness de agentes. Output Contract v1, Critical Failure Taxonomy, metodología A/B (v3.5.0 vs v6.4.0), execution policy y result format.
+
+- [`evals/scenarios/`](./evals/scenarios/)  
+  11 scenarios (E01–E11): common-lib contamination, routine REST endpoint, sync→async, implement accepted ADR, baseline failure, false VERIFIED, review capability, context router, temporal drift, design-review rejection, define-spec alternatives.
+
+- [`evals/scorecards/scorecard-template.md`](./evals/scorecards/scorecard-template.md)  
+  Plantilla reutilizable para registrar cada run de eval (output contract, scorecard, critical failures, tool calls, A/B comparison).
+
+### Skills del agente
+
+Las skills viven en `.agents/skills/` (detalle en [`../context-index.md`](../context-index.md)):
+
+| Skill | Propósito |
+|---|---|
+| [`engineering-loop`](../../.agents/skills/engineering-loop/SKILL.md) | Ciclo completo con enrutamiento por criticidad. |
+| [`define-spec`](../../.agents/skills/define-spec/SKILL.md) | Definición de especificaciones SDD. |
+| [`design-spec`](../../.agents/skills/design-spec/SKILL.md) | Diseño técnico desde una spec aprobada. |
+| [`design-review`](../../.agents/skills/design-review/SKILL.md) | Revisión adversarial de diseño (D1–D6). |
+| [`implement-task`](../../.agents/skills/implement-task/SKILL.md) | Implementación con TDD y Quality Gates. |
+| [`implementation-review`](../../.agents/skills/implementation-review/SKILL.md) | Revisión adversarial de código (V1–V9). |
+| [`review-pr`](../../.agents/skills/review-pr/SKILL.md) | Review de PRs con GrepAI. |
+| [`explain-concept`](../../.agents/skills/explain-concept/SKILL.md) | Mentoría conceptual. |
+
+### Histórico
+
+- [`history/AGENTS-v3.5.md`](./history/AGENTS-v3.5.md)  
+  Versión 3.5 de `AGENTS.md`, conservada como referencia histórica (base de la comparación A/B de los evals). No describe las reglas vigentes.
+
 ---
 
 ## Prompts listos para usar
@@ -80,6 +119,9 @@ Los prompts se encuentran en [`prompts/`](./prompts/).
   Para generar o completar tests sobre escenarios ya definidos.
 
 ### Prompts transversales
+
+- [`prompts/transversal-mentoria-conceptos.md`](./prompts/transversal-mentoria-conceptos.md)  
+  Para solicitar explicaciones didácticas y mentoría de conceptos de arquitectura/diseño estructuradas en 4 pasos.
 
 - [`prompts/reviewer-pr-implementacion.md`](./prompts/reviewer-pr-implementacion.md)  
   Para revisar una PR antes de pedir review humana.

@@ -5,26 +5,23 @@ import grupo5.notificaciones.models.entities.personas.Persona;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
 public class DonanteRegistrado extends EventoNotificable {
-  private String credencialesDeAcceso;
+  private final String credencialesDeAcceso;
 
   public DonanteRegistrado(Persona persona, String credencialesDeAcceso, LocalDateTime fecha) {
-    this.setPersona(persona);
-    this.setFecha(fecha);
+    super(persona, fecha);
     this.credencialesDeAcceso = credencialesDeAcceso;
   }
-
-  public DonanteRegistrado() {}
 
   @Override
   public List<Notificacion> generarNotificaciones() {
     Notificacion notificacion =
         new Notificacion(
-            this.getPersona().getId(), "Bienvenido a DonaTrack " + credencialesDeAcceso);
+            this.getPersona().getId(),
+            "Bienvenido a DonaTrack " + credencialesDeAcceso,
+            this.getFecha());
 
     return List.of(notificacion);
   }

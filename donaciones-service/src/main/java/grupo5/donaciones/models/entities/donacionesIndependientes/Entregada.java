@@ -1,8 +1,8 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
-public class Entregada implements EstadoDonacion {
+public class Entregada implements EstadoDonacionIndependiente {
   // Estado terminal: no permite ninguna transición.
-  // Todos los métodos heredan el default que lanza IllegalStateException.
+  // Todos los métodos heredan el default que lanza BusinessStateException.
 
   @Override
   public TipoEstadoDonacion getTipo() {

@@ -1,8 +1,11 @@
 package grupo5.logistica.models.entities.entregas;
 
+import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
-import grupo5.common.repositories.AggregateRoot;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
+import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
+import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -14,7 +17,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
-public class Entrega implements AggregateRoot {
+public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   private final UUID id;
   private UUID idRuta;
@@ -31,6 +34,9 @@ public class Entrega implements AggregateRoot {
   private String fotoRecepcionUrl;
   private final float pesoTotalKG;
   private final float volumenTotalM3;
+
+  /** Para Optimistic Locking futuro — gestionado por el adaptador JPA, no por el dominio. */
+  private Long version;
 
   public Entrega(
       UUID idDonacion,
@@ -64,6 +70,41 @@ public class Entrega implements AggregateRoot {
       float volumenTotalM3) {
     this(idDonacion, idBeneficiaria, destino, pesoTotalKG, volumenTotalM3);
     asignarRuta(idRuta);
+  }
+
+  /**
+   * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
+   * ejecutar validaciones de negocio ni generar un nuevo UUID.
+   */
+  @SuppressWarnings("java:S107")
+  public Entrega(
+      UUID id,
+      UUID idRuta,
+      UUID idDonacion,
+      UUID idBeneficiaria,
+      Direccion destino,
+      EstadoEntrega estadoActual,
+      List<CambioEstadoEntrega> historialEstado,
+      LocalDateTime horaArribo,
+      LocalDateTime horaSalida,
+      String fotoRecepcionUrl,
+      float pesoTotalKG,
+      float volumenTotalM3,
+      Long version) {
+    this.id = id;
+    this.idRuta = idRuta;
+    this.idDonacion = idDonacion;
+    this.idBeneficiaria = idBeneficiaria;
+    this.destino = destino;
+    this.estadoActual = estadoActual;
+    this.historialEstado =
+        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
+    this.horaArribo = horaArribo;
+    this.horaSalida = horaSalida;
+    this.fotoRecepcionUrl = fotoRecepcionUrl;
+    this.pesoTotalKG = pesoTotalKG;
+    this.volumenTotalM3 = volumenTotalM3;
+    this.version = version;
   }
 
   public void asignarRuta(UUID idRuta) {
@@ -100,6 +141,7 @@ public class Entrega implements AggregateRoot {
 
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
+    registrarEvento(new EntregaConfirmada(this.id, this.idDonacion, this.idRuta));
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {
@@ -114,32 +156,33 @@ public class Entrega implements AggregateRoot {
     this.fotoRecepcionUrl = fotoURL.trim();
   }
 
-  public void negarEntrega(String entidad) {
+  public void negarEntrega(String entidad, String justificacion, boolean replanificable) {
     validarActor(entidad);
+    validarJustificacion(justificacion);
 
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
     actualizarEstado(EstadoEntrega.NO_RECIBIDA, entidad);
-    mandarARevision("SISTEMA_LOGISTICA");
+    registrarEvento(
+        new EntregaFallida(this.id, this.idDonacion, justificacion.trim(), replanificable));
   }
 
-  private void mandarARevision(String actor) {
-    validarActor(actor);
+  public void mandarARevision(String administrador) {
+    validarActor(administrador);
 
     if (this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
-    actualizarEstado(EstadoEntrega.REVISION, actor);
+    actualizarEstado(EstadoEntrega.REVISION, administrador);
   }
 
   public void regresarAlDeposito(String administrador) {
     validarActor(administrador);
 
-    if (this.estadoActual != EstadoEntrega.REVISION
-        && this.estadoActual != EstadoEntrega.NO_RECIBIDA) {
+    if (this.estadoActual != EstadoEntrega.REVISION) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
@@ -185,6 +228,12 @@ public class Entrega implements AggregateRoot {
 
   private static void validarActor(String actor) {
     if (Objects.isNull(actor) || actor.isBlank()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+  }
+
+  private static void validarJustificacion(String justificacion) {
+    if (Objects.isNull(justificacion) || justificacion.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
   }

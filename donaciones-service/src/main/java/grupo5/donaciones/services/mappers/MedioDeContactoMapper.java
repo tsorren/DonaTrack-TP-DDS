@@ -1,6 +1,13 @@
 package grupo5.donaciones.services.mappers;
 
-import grupo5.donaciones.dto.mediosDeContacto.*;
+import grupo5.donaciones.dto.mediosDeContacto.CorreoInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.CorreoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.TelefonoInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.TelefonoOutputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.WhatsAppInputDTO;
+import grupo5.donaciones.dto.mediosDeContacto.WhatsAppOutputDTO;
 import grupo5.donaciones.models.entities.personas.Correo;
 import grupo5.donaciones.models.entities.personas.MedioDeContacto;
 import grupo5.donaciones.models.entities.personas.Telefono;
@@ -21,18 +28,20 @@ public class MedioDeContactoMapper {
             correo.setDireccionCorreo(c.direccionCorreo());
             yield correo;
           }
-          case TelefonoInputDTO t -> populateTelefono(
-              new Telefono(),
-              t.caracteristica(),
-              t.codigoArea(),
-              t.numero(),
-              TipoTelefono.ESTANDAR);
-          case WhatsAppInputDTO w -> populateTelefono(
-              new Telefono(),
-              w.caracteristica(),
-              w.codigoArea(),
-              w.numero(),
-              TipoTelefono.WHATSAPP);
+          case TelefonoInputDTO t ->
+              populateTelefono(
+                  new Telefono(),
+                  t.caracteristica(),
+                  t.codigoArea(),
+                  t.numero(),
+                  TipoTelefono.ESTANDAR);
+          case WhatsAppInputDTO w ->
+              populateTelefono(
+                  new Telefono(),
+                  w.caracteristica(),
+                  w.codigoArea(),
+                  w.numero(),
+                  TipoTelefono.WHATSAPP);
         };
     medio.setEsPredeterminado(dto.esPredeterminado());
     return medio;
@@ -53,8 +62,30 @@ public class MedioDeContactoMapper {
               t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
         }
       }
-      default -> throw new IllegalArgumentException(
-          "Tipo de medio de contacto no soportado: " + entity.getClass().getSimpleName());
+      default ->
+          throw new IllegalArgumentException(
+              "Tipo de medio de contacto no soportado: " + entity.getClass().getSimpleName());
+    };
+  }
+
+  public MedioDeContactoInputDTO toInputDTO(MedioDeContacto entity) {
+    if (entity == null) {
+      return null;
+    }
+    return switch (entity) {
+      case Correo c -> new CorreoInputDTO(c.getEsPredeterminado(), c.getDireccionCorreo());
+      case Telefono t -> {
+        if (t.getTipo() == TipoTelefono.WHATSAPP) {
+          yield new WhatsAppInputDTO(
+              t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
+        } else {
+          yield new TelefonoInputDTO(
+              t.getEsPredeterminado(), t.getCaracteristica(), t.getCodigoArea(), t.getNumero());
+        }
+      }
+      default ->
+          throw new IllegalArgumentException(
+              "Tipo de medio de contacto no soportado: " + entity.getClass().getSimpleName());
     };
   }
 

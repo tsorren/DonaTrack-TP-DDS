@@ -1,5 +1,7 @@
 package grupo5.donaciones.models.entities.donantes;
 
+import grupo5.common.exceptions.ErrorCatalog;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.privacidad.Anonimizable;
@@ -13,7 +15,7 @@ public class Donante implements Anonimizable, AggregateRoot {
 
   public Donante(UUID personaId) {
     if (personaId == null) {
-      throw new IllegalArgumentException("El donante debe estar asociado a una persona.");
+      throw new ValidationException(ErrorCatalog.DONANTE_SIN_PERSONA);
     }
     this.id = UUID.randomUUID();
     this.personaId = personaId;

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-recibida-v1.schema.json",
+  "title": "EventoDonacionRecibidaV1",
+  "description": "Evento de dominio emitido cuando una donación es entregada y recibida conforme por la entidad beneficiaria, consumido por notificaciones-service e incentivos-service (para otorgar puntos)",
+  "type": "object",
+  "properties": {
+    "donanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador del donante"
+    },
+    "personaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona asociada a ese donante"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal de la recepción efectiva"
+    },
+    "personaBeneficiariaId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la entidad beneficiaria receptora"
+    },
+    "descripcion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Descripción de la donación recibida"
+    },
+    "patenteCamion": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Patente del camión que completó la entrega"
+    }
+  },
+  "required": ["donanteId", "personaId", "fecha", "personaBeneficiariaId", "descripcion", "patenteCamion"],
+  "additionalProperties": false
+}

@@ -13,10 +13,14 @@ public class EntidadBeneficiaria implements Anonimizable, AggregateRoot {
   private final UUID juridicaId;
 
   public EntidadBeneficiaria(UUID juridicaId) {
+    this(UUID.randomUUID(), juridicaId);
+  }
+
+  public EntidadBeneficiaria(UUID id, UUID juridicaId) {
     if (juridicaId == null) {
       throw new ValidationException(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_PERSONA_JURIDICA);
     }
-    this.id = UUID.randomUUID();
+    this.id = id != null ? id : UUID.randomUUID();
     this.juridicaId = juridicaId;
   }
 

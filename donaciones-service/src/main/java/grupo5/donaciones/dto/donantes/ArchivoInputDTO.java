@@ -1,3 +1,6 @@
 package grupo5.donaciones.dto.donantes;
 
-public record ArchivoInputDTO(String path) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record ArchivoInputDTO(
+    @NotBlank(message = "La ruta del archivo es obligatoria") String path) {}

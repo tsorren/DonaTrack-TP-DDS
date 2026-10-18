@@ -1,7 +1,8 @@
 # Uso de Strategy pattern para el criterio de inactividad de donantes
-- Status: proposed
+- Status: accepted
 - Date: 2026-06-18
 - Deciders: Decisión Grupal
+- Tags: incentivos, inactividad, strategy, patrones-de-diseño
 
 ## Contexto y Problema
 El sistema necesita detectar donantes inactivos de forma periódica. El criterio de inactividad puede variar, por lo que hardcodearlo en el job o el servicio lo haría difícil de cambiar o extender.
@@ -20,7 +21,7 @@ El uso de Strategy permite que el job sea independiente del criterio concreto, f
 
 ### Strategy con CriterioInactividad abstracta
 
-CriterioInactividad es una clase abstracta con el método detectarInactivos(). InactividadDonaciones lo implementa filtrando por días sin donar, configurable vía InactividadConfig. El InactividadJob recibe una lista de criterios por inyección y los itera.
+CriterioInactividad es una clase abstracta con el método detectarInactivos(). InactividadDonaciones lo implementa filtrando por días sin donar, configurable vía InactividadConfig. El InactividadService (invocado por InactividadJob) recibe una lista de criterios por inyección y los itera mediante GestorDeInactivos.
 
 #### Pros
 * Agregar un nuevo criterio solo requiere crear una subclase y registrarla como Bean

@@ -39,6 +39,7 @@ COMPOSE_FILE="docker-compose.preprod.yml"
 DONACIONES_URL="http://localhost:8080"
 NOTIFICACIONES_URL="http://localhost:8081"
 INCENTIVOS_URL="http://localhost:8082"
+LOGISTICA_URL="http://localhost:8083"
 
 # Generar EXECUTION_ID si no está definido
 if [[ -z "${EXECUTION_ID:-}" ]]; then
@@ -49,8 +50,13 @@ fi
 # ── Cleanup manual (ya no se ejecuta automáticamente) ────────────────────────
 cleanup() {
   step "Desmontando entorno"
-  docker compose -f "$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null || true
-  ok "Entorno desmontado correctamente."
+  if docker compose -f "$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null; then
+    ok "Entorno desmontado correctamente."
+  else
+    local down_code=$?
+    warn "docker compose down terminó con exit $down_code."
+    return "$down_code"
+  fi
 }
 
 # ── Paso 1: Compilar JARs ────────────────────────────────────────────────────
@@ -65,16 +71,16 @@ fi
 # ── Paso 2: Levantar stack y esperar healthchecks ────────────────────────────
 step "Levantando stack pre-producción (esperando healthchecks)"
 # --wait bloquea hasta que todos los servicios con healthcheck reportan 'healthy'
+scripts/generar-env-db.sh
 docker compose -f "$COMPOSE_FILE" up --build --wait -d
 ok "Todos los servicios están healthy."
 
 step "Importando y activando workflows en n8n"
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Insignias.JSON || warn "No se pudo importar el workflow de insignias"
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --input=//etc/n8n/workflows/WorkFlow-Ranking-Mensual.JSON || warn "No se pudo importar el workflow de ranking"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n import:workflow --separate --input=//etc/n8n/workflows
 
 echo "Publicando (activando) workflows en n8n..."
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=1 || warn "No se pudo activar el workflow de insignias"
-MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=2 || warn "No se pudo activar el workflow de ranking"
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=1
+MSYS_NO_PATHCONV=1 docker compose -f "$COMPOSE_FILE" exec -T n8n n8n publish:workflow --id=2
 
 echo "Reiniciando contenedor de n8n para registrar webhooks..."
 docker compose -f "$COMPOSE_FILE" restart n8n
@@ -101,7 +107,7 @@ for url in "$DONACIONES_URL/v3/api-docs" "$NOTIFICACIONES_URL/v3/api-docs" "$INC
     if [ $attempts -ge 60 ]; then
       fail "$url no respondió con 200 después de 60 intentos. Recolectando logs..."
       mkdir -p docker-logs
-      docker compose -f "$COMPOSE_FILE" logs --no-color > docker-logs/preprod-services.log || true
+      docker compose -f "$COMPOSE_FILE" logs --no-color > docker-logs/preprod-services.log || warn "No se pudieron recolectar los logs de contenedores."
       exit 1
     fi
     sleep 2
@@ -119,6 +125,7 @@ MVN_ARGS=(
   -Ddonaciones.url="$DONACIONES_URL"
   -Dnotificaciones.url="$NOTIFICACIONES_URL"
   -Dincentivos.url="$INCENTIVOS_URL"
+  -Dlogistica.url="$LOGISTICA_URL"
 )
 
 if [[ -n "$TEST_FILTER" ]]; then
@@ -126,16 +133,35 @@ if [[ -n "$TEST_FILTER" ]]; then
   warn "Filtro de test activo: $TEST_FILTER"
 fi
 
+TEST_STATUS=0
 if mvn "${MVN_ARGS[@]}"; then
   echo ""
   ok "Suite de validación pre-producción APROBADA."
 else
   echo ""
   fail "Suite de validación pre-producción FALLIDA — revisá los logs de arriba."
-  # El trap cleanup se ejecuta igual al salir con exit_code != 0
-  exit 1
+  TEST_STATUS=1
 fi
+
+step "Recopilando logs de infraestructura y contenedores (${EXECUTION_ID})"
+mkdir -p "logs/registro/${EXECUTION_ID}"
+# Diagnóstico y desmontaje siempre corren; un fallo propio no oculta el código original
+# pero, si la suite pasó, se propaga (ADR 20260903 protocolo de salida semántico).
+DIAG_CODE=0
+docker compose -f "$COMPOSE_FILE" logs --no-color --timestamps > "logs/registro/${EXECUTION_ID}/docker-compose-full.log" 2>/dev/null || { DIAG_CODE=$?; warn "No se pudieron recolectar los logs de contenedores (exit $DIAG_CODE)."; }
+
+step "Ejecutando diagnóstico y análisis de logs (${EXECUTION_ID})"
+python scripts/analyze_preprod_logs.py --file "logs/registro/${EXECUTION_ID}/docker-compose-full.log" --export-report || { DIAG_CODE=$?; warn "analyze_preprod_logs.py terminó con exit $DIAG_CODE."; }
+python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports || { DIAG_CODE=$?; warn "report_test_failures.py terminó con exit $DIAG_CODE."; }
+
 echo ""
 echo "Los contenedores siguen ejecutándose."
-echo "Presioná cualquier tecla para finalizar el script..."
-read -n 1 -s
+echo "Presioná cualquier tecla para finalizar el script y desmontar el stack (o Ctrl+C para mantenerlo)..."
+if ! read -n 1 -s; then
+  warn "Sin terminal interactiva: se desmonta el stack sin esperar una tecla."
+fi
+cleanup || DIAG_CODE=$?
+if [[ $TEST_STATUS -eq 0 && $DIAG_CODE -ne 0 ]]; then
+  exit "$DIAG_CODE"
+fi
+exit $TEST_STATUS

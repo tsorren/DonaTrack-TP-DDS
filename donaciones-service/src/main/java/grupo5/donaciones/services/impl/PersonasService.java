@@ -41,7 +41,7 @@ public class PersonasService implements IPersonasService {
     Persona guardada = repository.save(persona);
 
     // Sincronizar asincrónicamente con el servicio de notificaciones
-    notificacionesAsyncService.sincronizarPersona(mapper.toReplicaDTO(guardada));
+    notificacionesAsyncService.sincronizarPersona(mapper.toEventoPersonaSincronizadaV1(guardada));
 
     return mapper.toOutputDTO(guardada);
   }
@@ -69,7 +69,7 @@ public class PersonasService implements IPersonasService {
     Persona guardada = repository.save(persona);
 
     // Sincronizar asincrónicamente con el servicio de notificaciones
-    notificacionesAsyncService.sincronizarPersona(mapper.toReplicaDTO(guardada));
+    notificacionesAsyncService.sincronizarPersona(mapper.toEventoPersonaSincronizadaV1(guardada));
 
     return mapper.toOutputDTO(guardada);
   }
@@ -83,7 +83,7 @@ public class PersonasService implements IPersonasService {
     repository.save(persona);
 
     // Sincronizar asincrónicamente con el servicio de notificaciones
-    notificacionesAsyncService.anonimizarPersona(id);
+    notificacionesAsyncService.sincronizarPersona(mapper.toEventoPersonaSincronizadaV1(persona));
   }
 
   @Override

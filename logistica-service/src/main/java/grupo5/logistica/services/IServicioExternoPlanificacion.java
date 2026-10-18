@@ -1,9 +1,7 @@
 package grupo5.logistica.services;
 
-import grupo5.logistica.models.entities.camiones.Camion;
-import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.rutas.PlanificacionSolicitada;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
-import java.util.List;
 
 /**
  * Abstrae al componente encargado de calcular la planificación de rutas para un lote de entregas.
@@ -12,6 +10,6 @@ import java.util.List;
  * callbackUrl} registrada en la {@link SolicitudPlanificacion}.
  */
 public interface IServicioExternoPlanificacion {
-  void generarRutas(
-      SolicitudPlanificacion solicitud, List<Entrega> entregas, List<Camion> camiones);
+  void solicitarPlanificacion(
+      SolicitudPlanificacion seguimiento, PlanificacionSolicitada solicitud);
 }

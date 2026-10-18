@@ -1,16 +1,19 @@
 package grupo5.notificaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
+import grupo5.notificaciones.models.ports.Anonimizable;
 import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.models.repositories.IPersonaRepository;
 import grupo5.notificaciones.services.IPersonasService;
 import grupo5.notificaciones.services.mappers.PersonaMapper;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PersonasService implements IPersonasService {
@@ -30,11 +33,22 @@ public class PersonasService implements IPersonasService {
 
   @Override
   public void sincronizar(PersonaReplicaDTO dto) {
+    if (dto != null && dto.id() != null) {
+      repository
+          .findById(dto.id())
+          .ifPresent(
+              existente -> {
+                if (Anonimizable.VALOR_STRING.equals(existente.getDenominacion())) {
+                  throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA);
+                }
+              });
+    }
     Persona persona = mapper.toEntity(dto);
     repository.save(persona);
   }
 
   @Override
+  @Transactional
   public void anonimizar(UUID id) {
     Persona persona =
         repository

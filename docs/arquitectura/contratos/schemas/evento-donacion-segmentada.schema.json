@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-segmentada.schema.json",
+  "title": "EventoDonacionSegmentada",
+  "description": "Evento de dominio canónico emitido por donaciones-service cuando una donación independiente es segmentada, consumido por incentivos-service",
+  "type": "object",
+  "properties": {
+    "personaDonanteId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identificador de la persona donante"
+    },
+    "categorias": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Lista de categorías de los ítems donados para procesamiento en incentivos"
+    },
+    "cantidad": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Cantidad total de ítems donados para procesamiento en incentivos"
+    },
+    "fecha": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Marca temporal del momento de la llegada de la donación"
+    }
+  },
+  "required": [
+    "personaDonanteId",
+    "categorias",
+    "cantidad",
+    "fecha"
+  ],
+  "additionalProperties": false
+}

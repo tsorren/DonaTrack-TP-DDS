@@ -4,9 +4,11 @@ import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.incentivos.models.entities.ranking.RankingMensual;
 import java.time.YearMonth;
 import java.util.Optional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class RankingRepository extends CrudRepositoryEnMemoria<RankingMensual>
     implements IRankingRepository {
   public Optional<RankingMensual> findByPeriodo(YearMonth periodo) {

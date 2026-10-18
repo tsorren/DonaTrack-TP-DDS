@@ -1,0 +1,80 @@
+# Modelo de Agregados — Servicio de Incentivos (DDD)
+
+Este documento detalla el diseño táctico de **Domain-Driven Design (DDD)** para el **Servicio de Incentivos** en DonaTrack, basado en el diagrama de clases del motor de gamificación y rankings.
+
+---
+
+## 1. Principios de Diseño del Servicio
+
+El *Servicio de Incentivos* tiene como objetivo gamificar la participación de los colaboradores mediante misiones, insignias y categorías, además de generar tableros de clasificación mensuales. Sus principios de diseño son:
+1.  **Independencia de Negocio**: Aunque los incentivos dependen de las donaciones realizadas, este servicio no interfiere en las transacciones de entrega. Escucha eventos de integración (`DonacionEntregadaEvent`) de forma asincrónica para actualizar el progreso del donante en segundo plano.
+2.  **Encapsulación de Misiones**: El progreso de cada misión (`Mision`) es de incumbencia exclusiva de cada donante. Nadie fuera del agregado de gamificación del donante puede consultar o modificar misiones activas de manera directa.
+3.  **Consistencia Eventual del Perfil**: Al ascender de categoría o completar misiones, se publican eventos para sincronizar los logros del donante de forma asíncrona con otros servicios.
+
+---
+
+## 2. Catálogo Detallado de Agregados
+
+### 2.1. Agregado: DonanteIncentivos (Gamificación del Donante)
+*   **Aggregate Root**: `DonanteIncentivos`.
+*   **Componentes Internos (Entidades y Objetos de Valor)**:
+    *   `Mision` (Clase abstracta polimórfica en `grupo5.incentivos.models.entities.misiones` y sus subclases `MisionHabilDonador`, `MisionRacha`, `MisionCompletitud`, `MisionDonacionesExitosas` basadas en **Template Method**). Representan misiones con un objetivo, progreso actual y estado de completitud.
+    *   `Insignia` e `InsigniaGanada` (Objetos de Valor inmutables - Java records en `grupo5.incentivos.models.entities.insignias` asignadas al donante con control de visibilidad).
+    *   `Metricas` (Entidad/Objeto interno en `grupo5.incentivos.models.entities.metricas` que acumula donaciones totales, exitosas y métricas de impacto).
+    *   `CategoriaDonante` (Enum: *COLABORADOR*, *SOSTENEDOR*, *TRANSFORMADOR*).
+    *   `CambioCategoria` (Auditoría inmutable de ascensos/descensos).
+*   **Referencias Externas (por ID)**: 
+    *   `id` / `idDonante` (`UUID` que actúa como la clave primaria del agregado, apuntando al Donante originado en el *Servicio de Donaciones*).
+    *   `idPersona` (`UUID` de la persona asociada).
+*   **Responsabilidad**: Centralizar y validar las reglas de gamificación del donante. Procesa el impacto de nuevas donaciones en el progreso de las misiones y determina si el donante califica para un ascenso de categoría o para recibir insignias adicionales.
+*   **Paquete**: `grupo5.incentivos.models.entities.donante`, `entities.misiones`, `entities.insignias` y `entities.metricas`
+
+### 2.2. Objeto de Valor: Insignia e InsigniaGanada (Logros de Gamificación)
+*   **Tipo**: Objetos de Valor (Java `record`, inmutables, sin repositorio independiente).
+*   **Componentes**:
+    *   `Insignia`: `nombre`, `descripcion`, `imagenUrl`.
+    *   `InsigniaGanada`: `nombre`, `descripcion`, `imagenUrl`, `visible` (boolean), `fechaObtenida` (`LocalDate`). Provee el método inmutable `conVisibilidad(boolean)` para alternar su exposición en el perfil del donante sin mutar la instancia existente.
+*   **Responsabilidad**: Representar los reconocimientos obtenidos por el donante dentro del agregado `DonanteIncentivos`, permitiendo alternar su visibilidad pública.
+*   **Paquete**: `grupo5.incentivos.models.entities.insignias`
+
+### 2.3. Agregado: RankingMensual (Tablero de Líderes)
+*   **Aggregate Root**: `RankingMensual`.
+*   **Componentes Internos (Entidades y Objetos de Valor)**:
+    *   `EntradaRanking` (Entidad interna que describe la fila del podio: posición, nombre de donante y cantidad de misiones completadas).
+*   **Referencias Externas (por ID)**: 
+    *   `donanteId` (`UUID` de la entrada que referencia a `DonanteIncentivos`).
+*   **Responsabilidad**: Registrar el podio de posiciones de los donantes más activos para un período mensual (`YearMonth`) determinado de manera inmutable e histórica.
+*   **Paquete**: `grupo5.incentivos.models.entities.ranking`
+
+---
+
+## 3. Clases de Lógica y Transitorias (No son Agregados)
+
+*   **`EventoDonacion`**: Objeto de dominio transitorio (`donacionId`, `organizacionId`, `subcategoria`, `cantidadBienes`, `exitosa`, `fecha`) utilizado para alimentar el procesamiento de misiones en `DonanteIncentivos`.
+*   **`InactividadJob` / `RachaJob` / `RankingMensualJob`**: Cron jobs programados (`@Scheduled`) en `grupo5.incentivos.infrastructure.schedulers` para el cálculo automático de rachas, inactividad y ranking.
+*   **`MisionFactory`**: Implementación del patrón *Factory* encargado de la creación inicial de misiones del catálogo estándar para los nuevos donantes.
+
+---
+
+## 4. Capa de Aplicación, Mappers y Adaptadores REST
+
+### 4.1. Mappers Dedicados
+*   **`MisionMapper` (`grupo5.incentivos.services.mappers.MisionMapper`)**: Componente `@Component` que aísla la transformación de la entidad `Mision` hacia `MisionDTO`. Resuelve de forma idiomática qué insignia exponer: si la misión está completada, recupera la `InsigniaGanada` real del donante (preservando su `fechaObtenida` y `visible`); en caso contrario, expone la plantilla estática como preview. Homologa la arquitectura con los mappers de `donaciones-service` y `logistica-service` (DTI-11).
+
+### 4.2. Adaptadores de Entrada REST y Endpoints Especializados
+*   **`DonanteIncentivosController` (`/api/incentivos/donantes`)**:
+    *   `POST /{donanteId}`: Registro de nuevo donante (`RegistrarDonanteRequest`).
+    *   `PATCH /{donanteId}`: Modificación de perfil del donante.
+    *   `DELETE /{donanteId}`: Baja lógica del donante.
+    *   `GET /{donanteId}`: Consulta del perfil consolidado (`DonantePerfilDTO`), incluyendo misiones completadas e insignias ganadas.
+    *   `GET /{donanteId}/ascensos`: Consulta del historial completo de transiciones de categoría (`CambioCategoriaDTO`).
+*   **`RankingController` (`/api/incentivos/ranking`)**:
+    *   `GET /ultimo`: Último ranking mensual calculado.
+    *   `GET /historial`: Listado histórico de rankings persistidos.
+    *   `GET /{periodo}`: Consulta de ranking para un período mensual específico (`YYYY-MM`), retornando `404 Not Found` (`ERR-EST-716`) si no ha sido calculado.
+    *   `GET /posicion/{donanteId}`: Posición del donante en el ranking actual o histórico.
+    *   `POST /calcular`: Disparo del cálculo de ranking para un período.
+*   **`ProcesosIncentivosController` (`/api/incentivos`)**:
+    *   `POST /evaluaciones-inactividad`: Disparo on-demand de evaluación de inactividad de donantes (testing/admin).
+    *   `POST /verificaciones-racha`: Disparo on-demand de verificación de rachas vencidas para el mes en curso (testing/admin). Amparados en deuda técnica [DTI-09](../adr/DEUDA_TECNICA.md#dti-09-seguridad-control-de-acceso-y-asincronia-en-procesos-batch-de-incentivos).
+

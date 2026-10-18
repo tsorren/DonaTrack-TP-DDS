@@ -1,8 +1,6 @@
 package grupo5.logistica.services.impl;
 
-import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
-import grupo5.common.exceptions.ValidationException;
 import grupo5.logistica.dto.choferes.CambioEstadoChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferRequestDTO;
 import grupo5.logistica.dto.choferes.ChoferResponseDTO;
@@ -14,6 +12,7 @@ import grupo5.logistica.services.mappers.ChoferMapper;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ChoferService implements IChoferesService {
@@ -27,6 +26,7 @@ public class ChoferService implements IChoferesService {
   }
 
   @Override
+  @Transactional
   public ChoferResponseDTO crear(ChoferRequestDTO request) {
     Chofer chofer = choferMapper.toDomain(request);
     choferesRepository.save(chofer);
@@ -34,39 +34,33 @@ public class ChoferService implements IChoferesService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<ChoferResponseDTO> consultarTodos() {
-    return choferesRepository.findAll().stream()
-        .filter(c -> c.getEstado() != EstadoChofer.DESHABILITADO)
-        .map(choferMapper::toResponseDTO)
-        .toList();
+    return choferesRepository.findActivos().stream().map(choferMapper::toResponseDTO).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public ChoferResponseDTO consultarPorId(UUID id) {
     return choferMapper.toResponseDTO(buscarChoferActivo(id));
   }
 
   @Override
+  @Transactional
   public ChoferResponseDTO cambiarEstado(UUID id, CambioEstadoChoferRequestDTO request) {
-    // Sin filtro de activo: el dominio valida si la transición es válida, incluyendo
-    // DESHABILITADO -> DISPONIBLE (habilitar).
     Chofer chofer =
         choferesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
 
-    switch (request.estado()) {
-      case DISPONIBLE -> chofer.habilitar();
-      case DESHABILITADO -> chofer.deshabilitar();
-      case EN_RUTA -> throw new ValidationException(ErrorCatalog.ESTADO_CHOFER_TRANSICION_INVALIDA);
-    }
-
+    chofer.cambiarEstado(request.estado());
     choferesRepository.save(chofer);
     return choferMapper.toResponseDTO(chofer);
   }
 
   @Override
+  @Transactional
   public void darDeBaja(UUID id) {
     Chofer chofer = buscarChoferActivo(id);
-    chofer.deshabilitar();
+    chofer.cambiarEstado(EstadoChofer.DESHABILITADO);
     choferesRepository.save(chofer);
   }
 

@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class NotificacionRouter implements NotificacionSender {
 
-  private CorreoAdapter correoApi;
-  private TelefonoAdapter telefonoApi;
-  private WhatsAppAdapter whatsappApi;
+  private final CorreoAdapter correoApi;
+  private final TelefonoAdapter telefonoApi;
+  private final WhatsAppAdapter whatsappApi;
 
   public NotificacionRouter(
       CorreoAdapter correoApi, TelefonoAdapter telefonoApi, WhatsAppAdapter whatsappApi) {

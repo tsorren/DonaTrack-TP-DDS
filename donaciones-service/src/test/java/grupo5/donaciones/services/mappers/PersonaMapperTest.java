@@ -2,10 +2,16 @@ package grupo5.donaciones.services.mappers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import grupo5.donaciones.dto.comunicaciones.PersonaReplicaDTO;
+import grupo5.donaciones.dto.comunicaciones.EventoPersonaSincronizadaV1;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
-import grupo5.donaciones.models.entities.personas.*;
+import grupo5.donaciones.models.entities.personas.Genero;
+import grupo5.donaciones.models.entities.personas.Humana;
+import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.TipoDocumento;
+import grupo5.donaciones.models.entities.personas.TipoJuridico;
+import grupo5.donaciones.models.entities.personas.TipoPersona;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collections;
@@ -113,15 +119,58 @@ class PersonaMapperTest {
   }
 
   @Test
-  void toReplicaDTO_deberiaMapearCorrectamente() {
+  void toEventoPersonaSincronizadaV1_deberiaMapearCorrectamente() {
     Humana humana = new Humana("Juan", "Perez", LocalDate.of(1990, Month.JANUARY, 1));
     humana.actualizarDocumento(null, "12345678");
 
-    PersonaReplicaDTO replica = mapper.toReplicaDTO(humana);
+    EventoPersonaSincronizadaV1 evento = mapper.toEventoPersonaSincronizadaV1(humana);
 
-    assertNotNull(replica);
-    assertEquals(humana.getId(), replica.id());
-    assertEquals("Juan Perez", replica.denominacion());
-    assertEquals(TipoPersona.HUMANA, replica.tipoPersona());
+    assertNotNull(evento);
+    assertEquals(humana.getId(), evento.personaId());
+    assertEquals("Juan Perez", evento.denominacion());
+    assertEquals(TipoPersona.HUMANA.name(), evento.tipoPersona());
+  }
+
+  @Test
+  void mapToPersona_conFilaCSVHumanaReal_deberiaMapearNombreApellidoYContactos() {
+    java.util.Map<String, String> fila =
+        java.util.Map.of(
+            "TipoPersona", "HUMANA",
+            "TipoDoc", "DNI",
+            "Documento", "40123456",
+            "Nombre/Razón Social", "Ana Navarro",
+            "Email", "ana.navarro@example.com",
+            "Teléfono", "+54 11 5181-9600");
+
+    Persona entity = mapper.mapToPersona(fila);
+
+    assertTrue(entity instanceof Humana);
+    Humana humana = (Humana) entity;
+    assertEquals("Ana", humana.getNombre());
+    assertEquals("Navarro", humana.getApellido());
+    assertEquals("40123456", humana.getDocumento());
+    assertEquals(TipoDocumento.DNI, humana.getTipoDocumento());
+    assertEquals(2, humana.getMediosDeContacto().size());
+  }
+
+  @Test
+  void mapToPersona_conFilaCSVJuridicaReal_deberiaMapearRazonSocialYContactos() {
+    java.util.Map<String, String> fila =
+        java.util.Map.of(
+            "TipoPersona", "JURIDICA",
+            "TipoDoc", "CUIT",
+            "Documento", "30-71234567-8",
+            "Nombre/Razón Social", "Santa Fe Industrial Fundación",
+            "Email", "contacto@santafefundacion.org",
+            "Teléfono", "+54 342 455-1234");
+
+    Persona entity = mapper.mapToPersona(fila);
+
+    assertTrue(entity instanceof Juridica);
+    Juridica juridica = (Juridica) entity;
+    assertEquals("Santa Fe Industrial Fundación", juridica.getRazonSocial());
+    assertEquals("30-71234567-8", juridica.getDocumento());
+    assertEquals(TipoDocumento.CUIT, juridica.getTipoDocumento());
+    assertEquals(2, juridica.getMediosDeContacto().size());
   }
 }
