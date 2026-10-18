@@ -41,4 +41,28 @@ class PersistenciaConfigTest {
         new String[] {"grupo5.logistica.infrastructure.persistencia.mongo.repositories"},
         mongoRepos.basePackages());
   }
+
+  @Test
+  void repositoriosEnMemoria_debenTenerPerfilNoPostgresNiMongo() {
+    java.util.List<Class<?>> inMemoryRepos =
+        java.util.List.of(
+            grupo5.logistica.models.repositories.impl.CamionRepository.class,
+            grupo5.logistica.models.repositories.impl.ChoferesRepository.class,
+            grupo5.logistica.models.repositories.impl.EntregasRepository.class,
+            grupo5.logistica.models.repositories.impl.EventosEntregaRepository.class,
+            grupo5.logistica.models.repositories.impl.RutasRepository.class,
+            grupo5.logistica.models.repositories.impl.SolicitudPlanificacionRepository.class,
+            grupo5.logistica.models.repositories.impl.SolicitudesTransicionEntregaRepository.class);
+
+    for (Class<?> repo : inMemoryRepos) {
+      Profile profile = repo.getAnnotation(Profile.class);
+      assertNotNull(profile, "El repositorio " + repo.getSimpleName() + " debe tener @Profile");
+      assertArrayEquals(
+          new String[] {"!postgres & !mongo"},
+          profile.value(),
+          "El repositorio "
+              + repo.getSimpleName()
+              + " debe tener @Profile(\"!postgres & !mongo\")");
+    }
+  }
 }

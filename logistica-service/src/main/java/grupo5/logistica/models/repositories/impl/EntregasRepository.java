@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("!postgres")
+@Profile("!postgres & !mongo")
 public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
     implements IEntregasRepository {
 
