@@ -176,7 +176,6 @@ class IncentivosEventosListenerTest {
   @DisplayName("onPersonaSincronizada no modifica el donante si el nombre ya es idéntico")
   void onPersonaSincronizada_cuandoExisteYNombreEsIdentico_noActualiza() {
     UUID personaId = UUID.randomUUID();
-    UUID donanteId = UUID.randomUUID();
     EventoPersonaSincronizadaV1 evento = new EventoPersonaSincronizadaV1(personaId, "Mismo Nombre");
 
     DonanteIncentivos mockDonante = mock(DonanteIncentivos.class);

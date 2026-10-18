@@ -5,12 +5,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.donaciones.models.entities.logistica.SolicitudEntrega;
 import grupo5.donaciones.models.repositories.impl.SolicitudesEntregaRepositoryEnMemoria;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class SolicitudesEntregaRepositoryTest {
 
-  private static final LocalDateTime AHORA = LocalDateTime.of(2026, 10, 7, 12, 0);
+  private static final LocalDateTime AHORA = LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0);
 
   private final SolicitudesEntregaRepositoryEnMemoria repositorio =
       new SolicitudesEntregaRepositoryEnMemoria();

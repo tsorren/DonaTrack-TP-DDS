@@ -30,18 +30,9 @@ public class PersonaPersistenciaMapper {
       List<MedioDeContactoEntity> mediosEntities = new ArrayList<>();
       for (MedioDeContacto medio : domain.getMediosDeContacto()) {
         if (medio instanceof Correo correo) {
-          CorreoEntity ce = new CorreoEntity();
-          ce.setDireccionCorreo(correo.getDireccionCorreo());
-          ce.setEsPredeterminado(correo.getEsPredeterminado());
-          mediosEntities.add(ce);
+          mediosEntities.add(nuevoCorreo(correo));
         } else if (medio instanceof Telefono tel) {
-          TelefonoEntity te = new TelefonoEntity();
-          te.setCaracteristica(tel.getCaracteristica());
-          te.setCodigoArea(tel.getCodigoArea());
-          te.setNumero(tel.getNumero());
-          te.setTipo(tel.getTipo());
-          te.setEsPredeterminado(tel.getEsPredeterminado());
-          mediosEntities.add(te);
+          mediosEntities.add(nuevoTelefono(tel));
         }
       }
       entity.setMediosDeContacto(mediosEntities);
@@ -54,40 +45,58 @@ public class PersonaPersistenciaMapper {
       currentMedios = new ArrayList<>();
       entity.setMediosDeContacto(currentMedios);
     }
+    sincronizarMedios(currentMedios, domain.getMediosDeContacto());
+    return entity;
+  }
 
+  private static void sincronizarMedios(
+      List<MedioDeContactoEntity> currentMedios, List<MedioDeContacto> domainMedios) {
     // 1. Eliminar medios que ya no están en el dominio
-    currentMedios.removeIf(
-        existingMedio -> !isMedioPresentInDomain(existingMedio, domain.getMediosDeContacto()));
+    currentMedios.removeIf(existingMedio -> !isMedioPresentInDomain(existingMedio, domainMedios));
 
     // 2. Actualizar existentes o agregar nuevos
-    for (MedioDeContacto medio : domain.getMediosDeContacto()) {
+    for (MedioDeContacto medio : domainMedios) {
       if (medio instanceof Correo correo) {
-        CorreoEntity ce = findExistingCorreo(currentMedios, correo.getDireccionCorreo());
-        if (ce != null) {
-          ce.setEsPredeterminado(correo.getEsPredeterminado());
-        } else {
-          CorreoEntity nuevo = new CorreoEntity();
-          nuevo.setDireccionCorreo(correo.getDireccionCorreo());
-          nuevo.setEsPredeterminado(correo.getEsPredeterminado());
-          currentMedios.add(nuevo);
-        }
+        sincronizarCorreo(currentMedios, correo);
       } else if (medio instanceof Telefono tel) {
-        TelefonoEntity te = findExistingTelefono(currentMedios, tel);
-        if (te != null) {
-          te.setEsPredeterminado(tel.getEsPredeterminado());
-        } else {
-          TelefonoEntity nuevo = new TelefonoEntity();
-          nuevo.setCaracteristica(tel.getCaracteristica());
-          nuevo.setCodigoArea(tel.getCodigoArea());
-          nuevo.setNumero(tel.getNumero());
-          nuevo.setTipo(tel.getTipo());
-          nuevo.setEsPredeterminado(tel.getEsPredeterminado());
-          currentMedios.add(nuevo);
-        }
+        sincronizarTelefono(currentMedios, tel);
       }
     }
+  }
 
-    return entity;
+  private static void sincronizarCorreo(List<MedioDeContactoEntity> currentMedios, Correo correo) {
+    CorreoEntity ce = findExistingCorreo(currentMedios, correo.getDireccionCorreo());
+    if (ce != null) {
+      ce.setEsPredeterminado(correo.getEsPredeterminado());
+    } else {
+      currentMedios.add(nuevoCorreo(correo));
+    }
+  }
+
+  private static void sincronizarTelefono(List<MedioDeContactoEntity> currentMedios, Telefono tel) {
+    TelefonoEntity te = findExistingTelefono(currentMedios, tel);
+    if (te != null) {
+      te.setEsPredeterminado(tel.getEsPredeterminado());
+    } else {
+      currentMedios.add(nuevoTelefono(tel));
+    }
+  }
+
+  private static CorreoEntity nuevoCorreo(Correo correo) {
+    CorreoEntity ce = new CorreoEntity();
+    ce.setDireccionCorreo(correo.getDireccionCorreo());
+    ce.setEsPredeterminado(correo.getEsPredeterminado());
+    return ce;
+  }
+
+  private static TelefonoEntity nuevoTelefono(Telefono tel) {
+    TelefonoEntity te = new TelefonoEntity();
+    te.setCaracteristica(tel.getCaracteristica());
+    te.setCodigoArea(tel.getCodigoArea());
+    te.setNumero(tel.getNumero());
+    te.setTipo(tel.getTipo());
+    te.setEsPredeterminado(tel.getEsPredeterminado());
+    return te;
   }
 
   public Persona toDomain(PersonaEntity entity) {

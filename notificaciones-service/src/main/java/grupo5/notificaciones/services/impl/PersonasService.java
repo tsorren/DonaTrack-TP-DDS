@@ -1,9 +1,9 @@
 package grupo5.notificaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
-import grupo5.notificaciones.exceptions.PersonaYaAnonimizadaException;
 import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.personas.Persona;
 import grupo5.notificaciones.models.ports.Anonimizable;
@@ -39,7 +39,7 @@ public class PersonasService implements IPersonasService {
           .ifPresent(
               existente -> {
                 if (Anonimizable.VALOR_STRING.equals(existente.getDenominacion())) {
-                  throw new PersonaYaAnonimizadaException(dto.id());
+                  throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA);
                 }
               });
     }

@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ValidationException;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class SolicitudEntregaTest {
 
-  private static final LocalDateTime AHORA = LocalDateTime.of(2026, 10, 7, 12, 0);
+  private static final LocalDateTime AHORA = LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0);
 
   private static SolicitudEntrega nueva() {
     return new SolicitudEntrega(UUID.randomUUID(), AHORA);

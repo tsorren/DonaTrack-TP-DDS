@@ -18,6 +18,7 @@ import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.services.mappers.EventoMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class NotificacionService {
   private static final Logger log = LoggerFactory.getLogger(NotificacionService.class);
+  private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
   private final INotificacionRepository repository;
   private final EventoMapper mapper;
@@ -184,7 +186,7 @@ public class NotificacionService {
             "INSERT INTO evento_procesado (event_id, fecha_procesamiento) VALUES (?, ?)"
                 + " ON CONFLICT (event_id) DO NOTHING",
             eventId,
-            LocalDateTime.now());
+            LocalDateTime.now(ZONA_HORARIA));
     if (rows == 0) {
       log.info("Evento duplicado ignorado (Inbox): {}", eventId);
       return true;
@@ -229,7 +231,7 @@ public class NotificacionService {
   }
 
   public Optional<NotificacionDTO> obtenerPorId(UUID id) {
-    return repository.findById(id).map(this::toDTO);
+    return repository.findById(id).map(NotificacionService::toDTO);
   }
 
   public List<NotificacionDTO> obtenerPorPersona(UUID personaId) {
@@ -250,10 +252,10 @@ public class NotificacionService {
     } else {
       notificaciones = repository.findAll();
     }
-    return notificaciones.stream().map(this::toDTO).toList();
+    return notificaciones.stream().map(NotificacionService::toDTO).toList();
   }
 
-  private NotificacionDTO toDTO(Notificacion n) {
+  private static NotificacionDTO toDTO(Notificacion n) {
     return new NotificacionDTO(
         n.getId(), n.getMensaje(), n.getEstadoNotificacion().name(), n.getFechaCreacion());
   }

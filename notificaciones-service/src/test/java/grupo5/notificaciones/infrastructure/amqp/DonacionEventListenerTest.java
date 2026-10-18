@@ -5,11 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import grupo5.notificaciones.dto.input.DestinoEventoDTO;
 import grupo5.notificaciones.dto.input.EventoDonacionAsignadaV1;
 import grupo5.notificaciones.services.impl.NotificacionService;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +40,7 @@ class DonacionEventListenerTest {
         UUID.randomUUID(),
         UUID.randomUUID(),
         UUID.randomUUID(),
-        LocalDateTime.of(2026, 9, 17, 12, 0),
+        LocalDateTime.of(2026, Month.SEPTEMBER, 17, 12, 0),
         UUID.randomUUID(),
         "Ropa de invierno",
         destino,
@@ -94,7 +96,7 @@ class DonacionEventListenerTest {
             java.util.List.of());
     String messageId = UUID.randomUUID().toString();
 
-    org.mockito.Mockito.when(personaMapper.toReplicaDTO(evento)).thenReturn(replicaDto);
+    when(personaMapper.toReplicaDTO(evento)).thenReturn(replicaDto);
 
     listener.onPersonaSincronizada(evento, messageId);
 

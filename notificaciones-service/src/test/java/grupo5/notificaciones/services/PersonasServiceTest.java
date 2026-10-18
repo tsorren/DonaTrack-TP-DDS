@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -54,16 +56,16 @@ class PersonasServiceTest {
   }
 
   @Test
-  void sincronizar_cuandoPersonaYaEstaAnonimizada_deberiaLanzarPersonaYaAnonimizadaException() {
+  void sincronizar_cuandoPersonaYaEstaAnonimizada_deberiaLanzarPersonaAnonimizada() {
     UUID id = persona.getId();
     Persona personaAnonimizada =
         new Persona(id, new ArrayList<>(), "ANONIMIZADO", TipoPersona.HUMANA);
     when(replicaDTO.id()).thenReturn(id);
     when(repository.findById(id)).thenReturn(Optional.of(personaAnonimizada));
 
-    assertThrows(
-        grupo5.notificaciones.exceptions.PersonaYaAnonimizadaException.class,
-        () -> service.sincronizar(replicaDTO));
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.sincronizar(replicaDTO));
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
     verify(repository, never()).save(any());
   }
 

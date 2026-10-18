@@ -11,6 +11,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaSolicitadaV1;
 import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.services.logistica.EnvioRechazadoException;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -88,7 +89,7 @@ class ProveedorLogisticaAmqpRabbitTest {
             "Av. Medrano", 951, null, null, "C1179AAQ", "CABA", "Buenos Aires", "Argentina"),
         10.5,
         0.25,
-        LocalDateTime.of(2026, 10, 7, 12, 0));
+        LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0));
   }
 
   @Test

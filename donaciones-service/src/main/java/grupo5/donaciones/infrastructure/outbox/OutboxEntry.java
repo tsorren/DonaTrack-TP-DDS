@@ -1,9 +1,12 @@
 package grupo5.donaciones.infrastructure.outbox;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 public class OutboxEntry {
+
+  static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
   private final UUID id;
   private final String descripcion;
@@ -18,7 +21,7 @@ public class OutboxEntry {
     this.accion = accion;
     this.intentos = 0;
     this.maxIntentos = maxIntentos;
-    this.proximoIntento = LocalDateTime.now();
+    this.proximoIntento = LocalDateTime.now(ZONA_HORARIA);
   }
 
   public static OutboxEntry nuevo(String descripcion, Runnable accion) {
@@ -52,7 +55,7 @@ public class OutboxEntry {
   public void registrarFallo() {
     intentos++;
     long delaySegundos = 30L * (1L << intentos);
-    proximoIntento = LocalDateTime.now().plusSeconds(delaySegundos);
+    proximoIntento = LocalDateTime.now(ZONA_HORARIA).plusSeconds(delaySegundos);
   }
 
   public boolean agotoIntentos() {

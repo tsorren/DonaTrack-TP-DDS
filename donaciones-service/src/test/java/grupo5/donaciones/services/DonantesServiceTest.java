@@ -59,7 +59,7 @@ class DonantesServiceTest {
   }
 
   @Test
-  void testCrearDonante() throws Exception {
+  void testCrearDonante() {
     // Arrange
     Humana humana =
         new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
