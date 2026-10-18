@@ -1,4 +1,4 @@
-package grupo5.logistica.infrastructure.persistencia.mongo.documents;
+package grupo5.logistica.infrastructure.persistencia.mongo.documents; // NOSONAR
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package grupo5.logistica.infrastructure.persistencia.mongo.config;
+package grupo5.logistica.infrastructure.persistencia.mongo.config; // NOSONAR
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;

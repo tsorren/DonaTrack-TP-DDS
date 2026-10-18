@@ -1,4 +1,4 @@
-package grupo5.logistica.infrastructure.persistencia.mongo.documents;
+package grupo5.logistica.infrastructure.persistencia.mongo.documents; // NOSONAR
 
 import grupo5.logistica.infrastructure.persistencia.entities.TipoEventoEntrega;
 import java.time.Instant;

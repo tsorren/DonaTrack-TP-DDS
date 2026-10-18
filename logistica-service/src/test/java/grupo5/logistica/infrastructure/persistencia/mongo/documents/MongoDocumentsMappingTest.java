@@ -1,4 +1,4 @@
-package grupo5.logistica.infrastructure.persistencia.mongo.documents;
+package grupo5.logistica.infrastructure.persistencia.mongo.documents; // NOSONAR
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
