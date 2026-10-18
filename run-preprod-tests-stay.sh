@@ -50,8 +50,13 @@ fi
 # ── Cleanup manual (ya no se ejecuta automáticamente) ────────────────────────
 cleanup() {
   step "Desmontando entorno"
-  docker compose -f "$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null || true
-  ok "Entorno desmontado correctamente."
+  if docker compose -f "$COMPOSE_FILE" down -v --remove-orphans 2>/dev/null; then
+    ok "Entorno desmontado correctamente."
+  else
+    local down_code=$?
+    warn "docker compose down terminó con exit $down_code."
+    return "$down_code"
+  fi
 }
 
 # ── Paso 1: Compilar JARs ────────────────────────────────────────────────────
@@ -102,7 +107,7 @@ for url in "$DONACIONES_URL/v3/api-docs" "$NOTIFICACIONES_URL/v3/api-docs" "$INC
     if [ $attempts -ge 60 ]; then
       fail "$url no respondió con 200 después de 60 intentos. Recolectando logs..."
       mkdir -p docker-logs
-      docker compose -f "$COMPOSE_FILE" logs --no-color > docker-logs/preprod-services.log || true
+      docker compose -f "$COMPOSE_FILE" logs --no-color > docker-logs/preprod-services.log || warn "No se pudieron recolectar los logs de contenedores."
       exit 1
     fi
     sleep 2
@@ -140,15 +145,23 @@ fi
 
 step "Recopilando logs de infraestructura y contenedores (${EXECUTION_ID})"
 mkdir -p "logs/registro/${EXECUTION_ID}"
-docker compose -f "$COMPOSE_FILE" logs --no-color --timestamps > "logs/registro/${EXECUTION_ID}/docker-compose-full.log" 2>/dev/null || true
+# Diagnóstico y desmontaje siempre corren; un fallo propio no oculta el código original
+# pero, si la suite pasó, se propaga (ADR 20260903 protocolo de salida semántico).
+DIAG_CODE=0
+docker compose -f "$COMPOSE_FILE" logs --no-color --timestamps > "logs/registro/${EXECUTION_ID}/docker-compose-full.log" 2>/dev/null || { DIAG_CODE=$?; warn "No se pudieron recolectar los logs de contenedores (exit $DIAG_CODE)."; }
 
 step "Ejecutando diagnóstico y análisis de logs (${EXECUTION_ID})"
-python scripts/analyze_preprod_logs.py --file "logs/registro/${EXECUTION_ID}/docker-compose-full.log" --export-report || true
-python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports || true
+python scripts/analyze_preprod_logs.py --file "logs/registro/${EXECUTION_ID}/docker-compose-full.log" --export-report || { DIAG_CODE=$?; warn "analyze_preprod_logs.py terminó con exit $DIAG_CODE."; }
+python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports || { DIAG_CODE=$?; warn "report_test_failures.py terminó con exit $DIAG_CODE."; }
 
 echo ""
 echo "Los contenedores siguen ejecutándose."
 echo "Presioná cualquier tecla para finalizar el script y desmontar el stack (o Ctrl+C para mantenerlo)..."
-read -n 1 -s
-cleanup
+if ! read -n 1 -s; then
+  warn "Sin terminal interactiva: se desmonta el stack sin esperar una tecla."
+fi
+cleanup || DIAG_CODE=$?
+if [[ $TEST_STATUS -eq 0 && $DIAG_CODE -ne 0 ]]; then
+  exit "$DIAG_CODE"
+fi
 exit $TEST_STATUS

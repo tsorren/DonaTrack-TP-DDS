@@ -15,6 +15,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${NOTIFICACIONES_DB_PASSWORD:?ver .env.example}
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PASS=${RABBITMQ_PASS:?ver .env.example}
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
@@ -53,6 +54,7 @@ services:
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
       - N8N_RANKING_WEBHOOK_URL=http://n8n:5678/webhook/ranking-calculado
       - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PASS=${RABBITMQ_PASS:?ver .env.example}
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
@@ -60,8 +62,8 @@ services:
       - INCENTIVOS_MINIO_ENABLED=true
       - INCENTIVOS_MINIO_ENDPOINT=http://minio:9000
       - INCENTIVOS_MINIO_PUBLIC_BASE_URL=http://localhost:9000
-      - INCENTIVOS_MINIO_ACCESS_KEY=minioadmin
-      - INCENTIVOS_MINIO_SECRET_KEY=minioadminpassword
+      - INCENTIVOS_MINIO_ACCESS_KEY=${MINIO_ROOT_USER:?ver .env.example}
+      - INCENTIVOS_MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:?ver .env.example}
       - INCENTIVOS_MINIO_BUCKET=insignias
     depends_on:
       postgres:
@@ -95,6 +97,7 @@ services:
       - LOGISTICA_SERVICE_URL=http://logistica-service:8083
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PASS=${RABBITMQ_PASS:?ver .env.example}
       # Token de los eventos de vuelta de logística: valor sintético solo para desarrollo y pruebas
       - LOGISTICA_TOKEN_DONATRACK=${LOGISTICA_TOKEN_DONATRACK:-token-sintetico-solo-desarrollo}
       - SEED_CATALOGO_ENABLED=false
@@ -132,6 +135,7 @@ services:
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PASS=${RABBITMQ_PASS:?ver .env.example}
       # Mismo token que Donaciones espera para el proveedor donatrack (solo desarrollo y pruebas)
       - LOGISTICA_TOKEN_VUELTA=${LOGISTICA_TOKEN_DONATRACK:-token-sintetico-solo-desarrollo}
       - SPRING_MAIN_LAZY_INITIALIZATION=false
@@ -160,7 +164,7 @@ services:
       - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=donatrack
-      - RABBITMQ_DEFAULT_PASS=donatrack
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:?ver .env.example}
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
@@ -240,8 +244,8 @@ services:
       - "9001:9001"
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadminpassword
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?ver .env.example}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?ver .env.example}
     healthcheck:
       test: [ "CMD", "mc", "ready", "local" ]
       interval: 5s

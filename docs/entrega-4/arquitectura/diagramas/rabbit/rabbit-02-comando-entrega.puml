@@ -51,9 +51,9 @@ note bottom of logD
   · binding con clave exacta,
     nunca con comodines
   · el destinatario va en la clave
-  · ningún comodín de los hechos
-    (donacion.#, donante.#,
-    persona.#) captura entrega.*
+  · los bindings de los hechos
+    también son claves exactas:
+    ninguno captura entrega.*
 end note
 
 note bottom of logE
