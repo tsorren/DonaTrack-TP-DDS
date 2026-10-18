@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: persistencia, transacciones, transactional, asincrono, events, hikaricp, resiliencia, notificaciones
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`notificaciones-service/src/main/java/grupo5/notificaciones/services/impl/NotificacionService.java:72`, `@Transactional` en los métodos de recepción de eventos, y `notificaciones-service/src/main/java/grupo5/notificaciones/services/gestores/NotificacionGestor.java:35`, `@TransactionalEventListener(AFTER_COMMIT)`). Excepción: `PersonasService.anonimizar` sigue sin `@Transactional` (`notificaciones-service/src/main/java/grupo5/notificaciones/services/impl/PersonasService.java:50-63`), y es el caso que el ADR señala como crítico. La afirmación de contexto de que no existe ninguna anotación `@Transactional` ya no es cierta. El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 En `notificaciones-service`, actualmente no existe ninguna anotación `@Transactional` en las clases de servicio de aplicación (`PersonasService`, `NotificacionService`, `NotificacionGestor`). Al mismo tiempo, el ciclo de vida de una notificación vincula dos tipos de operaciones con requerimientos operativos antagónicos:

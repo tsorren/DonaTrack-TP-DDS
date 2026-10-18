@@ -13,16 +13,16 @@ No reemplaza el contexto específico de cada issue. Es solo una base inicial.
 # Contexto base para copiar
 
 ```txt
-Estoy trabajando en DonaTrack, un proyecto académico de logística y trazabilidad de donaciones desarrollado en equipo (Java 21, Spring Boot 3, Maven reactor multi-módulo, Docker Compose, RabbitMQ y n8n).
+Estoy trabajando en DonaTrack, un proyecto académico de logística y trazabilidad de donaciones desarrollado en equipo (Java 21, Spring Boot 4.0.7, Maven reactor multi-módulo, Docker Compose, RabbitMQ y n8n).
 
 Arquitectura del proyecto (4 microservicios + shared kernel):
 - `donaciones-service` (:8080): Núcleo de catálogo, personas, necesidades, normalización y asignación (State Pattern de DonacionIndependiente con 7 estados).
-- `notificaciones-service` (:8081): Despacho multicanal sincrónico vía HTTP Feign REST y réplica local de personas.
+- `notificaciones-service` (:8081): Despacho multicanal con ingesta primaria por RabbitMQ (colas `notificaciones.donaciones` y `notificaciones.incentivos`) y réplica local de personas; conserva endpoints REST (hoy solo `incentivos-service` lo invoca por Feign).
 - `incentivos-service` (:8082): Gamificación, misiones (Template Method), insignias, rankings y cron jobs.
 - `logistica-service` (:8083): Camiones, choferes, rutas, ciclo de vida de entregas y eventos RabbitMQ.
 - `common-lib`: Shared kernel con CrudRepositoryEnMemoria, jerarquía de excepciones y observabilidad (MDC/TraceId).
 - `integration-tests`: Suite desacoplada de pruebas de integración y E2E distribuido.
-- Persistencia actual: En memoria (ConcurrentHashMap / CrudRepositoryEnMemoria). BD relacional diferida a Entrega 2.
+- Persistencia actual: en memoria por defecto (ConcurrentHashMap / CrudRepositoryEnMemoria) y JPA + Flyway con el perfil `postgres` en incentivos, logística y notificaciones; donaciones sigue solo en memoria.
 
 El proyecto utiliza un flujo de trabajo organizado por issues, sub-issues, Pull Requests de diseño, Pull Requests de implementación, documentación técnica, tests y reviews.
 

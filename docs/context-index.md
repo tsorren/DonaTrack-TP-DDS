@@ -54,6 +54,19 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Mentoría conceptual / didáctica | [`IA/prompts/transversal-mentoria-conceptos.md`](IA/prompts/transversal-mentoria-conceptos.md) + skill `.agents/skills/explain-concept/` |
 | Compliance académico | `docs/entregas/<N>/Enunciado-<N>.pdf` — solo el enunciado de la entrega vigente |
 
+### Skills de `.agents/skills/`
+
+| Skill | Cuándo usarla |
+| --- | --- |
+| [`engineering-loop`](../.agents/skills/engineering-loop/SKILL.md) | Ciclo completo guiado por agentes con enrutamiento por criticidad (QUICK / STANDARD / ARCHITECTURAL). |
+| [`define-spec`](../.agents/skills/define-spec/SKILL.md) | Elicitar requerimientos y definir una especificación SDD con alternativas comparadas. |
+| [`design-spec`](../.agents/skills/design-spec/SKILL.md) | Diseño técnico detallado desde una spec aprobada (clases, contratos, Two-Gate Rule, plan TDD). |
+| [`design-review`](../.agents/skills/design-review/SKILL.md) | Revisión adversarial de specs y diseño pre-código (vectores D1–D6). |
+| [`implement-task`](../.agents/skills/implement-task/SKILL.md) | Implementación con TDD, baseline previo y Quality Gates locales. |
+| [`implementation-review`](../.agents/skills/implementation-review/SKILL.md) | Revisión adversarial de código implementado (vectores V1–V9). |
+| [`review-pr`](../.agents/skills/review-pr/SKILL.md) | Review de Pull Requests con GrepAI. |
+| [`explain-concept`](../.agents/skills/explain-concept/SKILL.md) | Mentoría conceptual y explicaciones didácticas. |
+
 ---
 
 ## Temporal Constraints (Phase 1 — activas por servicio)

@@ -45,7 +45,7 @@ Esta decisión calibra exactamente la complejidad operativa contra las necesidad
 ### Consecuencias Negativas
 
 * Asimetría conceptual: los desarrolladores deben recordar qué canales son síncronos y cuáles asíncronos.
-* Riesgo de fallo transitorio en llamadas Feign (mitigado mediante `FeignRetryConfig` y captura controlada de excepciones en listeners).
+* Riesgo de fallo transitorio en llamadas Feign (mitigado mediante la captura controlada de excepciones en listeners).
 
 ### Validación
 

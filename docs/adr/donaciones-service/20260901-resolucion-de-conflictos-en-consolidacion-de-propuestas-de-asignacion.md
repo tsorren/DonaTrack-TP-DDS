@@ -79,3 +79,9 @@ Se valida mediante tests unitarios dedicados en `GestorPropuestasDeAsignacionTes
 
 #### Contras
 * Puede perpetuar la inequidad, favoreciendo a entidades grandes y marginando a comedores periféricos subatendidos.
+
+## Desvío de implementación (auditoría 2026-10-14)
+
+- **Decide el ADR:** ante colisión sobre la misma necesidad, `consolidar()` retiene la propuesta de `AlgoritmoPrioridadSubAtendidos` y descarta la semántica.
+- **Hace hoy el código:** `consolidar` no compara por prioridad. Si hay necesidades cubiertas por ambos algoritmos, devuelve solo las propuestas del segundo algoritmo (índice 1) para esas necesidades y descarta el resto, incluidas las propuestas del primero que no coinciden; si no hay coincidencias, devuelve la unión de ambas listas (`donaciones-service/src/main/java/grupo5/donaciones/models/entities/propuestas/GestorPropuestasDeAsignacion.java:62-82`). El orden de los algoritmos lo fija el constructor (`:25-30`).
+- Registrado como [DTI-20](../DEUDA_TECNICA.md#dti-20).

@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: maven, testing, surefire, failsafe, integration-tests, ciclo-de-vida
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`pom.xml:124, integration-tests/pom.xml:70`). El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 El ecosistema de pruebas automatizadas de DonaTrack combina pruebas unitarias de lógica pura y pruebas de integración de caja negra distribuidas (`integration-tests`). Sin embargo, existía una divergencia con las convenciones estándar del ciclo de vida de Apache Maven:

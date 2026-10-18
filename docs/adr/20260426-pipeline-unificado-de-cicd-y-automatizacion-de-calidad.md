@@ -44,7 +44,7 @@ Pull Requests sin sobrecargar las tareas manuales del equipo.
   PowerShell, obligando al desarrollador a revisar y supervisar los cambios en el área de stage antes de firmar
   commits (usar `mvn spotless:apply`).
 * Despliega de forma continua y automatizada la base de conocimientos interactiva en GitHub Pages a través de
-  subcarpetas dedicadas (`/adr-generator` y `/adr-preview`).
+  subcarpetas dedicadas (`/documentador` y `/adr-preview`, según `.github/workflows/deploy-pages.yml:31-32`).
 * Estandariza el ciclo de vida de desarrollo mediante plantillas declarativas de Issues (`Issue Templates`), forzando la
   asignación previa de atributos de calidad, componentes afectados y una lista de tareas técnica para cada
   requerimiento.
@@ -57,7 +57,7 @@ Pull Requests sin sobrecargar las tareas manuales del equipo.
 ### Consecuencias Negativas
 
 * Aumenta la complejidad en la administración del repositorio por la necesidad de configurar y almacenar múltiples
-  secretos críticos (`SONAR_TOKEN`, `SONAR_PROJECT_KEY`, `SONAR_ORG`, `SONAR_URL`, `GEMINI_API_KEY`).
+  secretos críticos (`SONAR_TOKEN`, `SONAR_PROJECT_KEY`, `SONAR_ORG`, `SONAR_URL`).
 * Introduce una dependencia externa respecto a la disponibilidad y latencia de las APIs de SonarCloud durante la
   ejecución de los Pull Requests.
 
@@ -66,7 +66,7 @@ Pull Requests sin sobrecargar las tareas manuales del equipo.
 ### Pipeline Unificado Basado en Fallo Temprano con GitHub Actions, Git Hooks y Log4brains
 
 Consiste en la orquestación unificada de GitHub Actions mediante un flujo remoto estructurado en etapas secuenciales
-condicionales (`validate-git-flow`, `static-analysis-and-design`, `build-test-and-sonar`), sincronizado con hooks
+condicionales (`validate-git-flow`, `detect-changes`, `lint-and-format`, `build-and-test`, `sonar-analysis`, `docker-build`, `generate-diagrams`, `semantic-uml-diff`, `preprod-validation`, `quality-gate`; `.github/workflows/main.yml`), sincronizado con hooks
 locales automáticos, gobernanza de plantillas basadas en YAML para Issues y un pipeline independiente de publicación en
 GitHub Pages para la documentación de decisiones.
 

@@ -63,7 +63,7 @@ La configuración de exclusión condicional en `application.properties` preserva
 Se valida mediante:
 1. Esquema DDL en `V1__init_notificaciones.sql` sin columna `id` en `notificacion_historial_estado`.
 2. Tests unitarios en `CrudRepositoryJpaAdapterTest` en `common-lib`.
-3. Suite de integración `RepositoriosJpaTest` en `notificaciones-service` con Testcontainers PostgreSQL 16, verificando la persistencia y recuperación de `Persona` polimórfica y `Notificacion` con historial.
+3. Suite de integración `RepositoriosJpaTest` en `notificaciones-service` con Testcontainers PostgreSQL 16, verificando la persistencia y recuperación de `Persona` polimórfica y `Notificacion` con historial. La clase existe pero el `pom.xml` raíz la excluye de Surefire (`pom.xml:138`), por lo que no corre en el build estándar.
 4. Pruebas de arranque en perfil `default` en `NotificacionesServiceApplicationTests` validando ejecución en memoria.
 
 ## Análisis de Alternativas

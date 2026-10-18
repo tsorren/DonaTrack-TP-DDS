@@ -12,6 +12,8 @@ En `donaciones-service`, la clase `AlgoritmosService` sufre de baja cohesión al
 2. **Gestión de Ciclo de Vida de Propuestas:** Actuar como servicio CRUD para consultar propuestas, aprobar propuestas confirmadas, rechazar sugerencias y notificar a los actores involucrados.
 Mezclar ambas tareas en una sola clase dificulta el testing, acopla los endpoints de ejecución automática con los de administración manual y diluye el principio de responsabilidad única.
 
+> **Estado verificado en el código (2026-10-14):** `AlgoritmosService` y `AlgoritmosController` no existen. La ejecución de los algoritmos está en el dominio (`GestorPropuestasDeAsignacion`, `donaciones-service/src/main/java/grupo5/donaciones/models/entities/propuestas/GestorPropuestasDeAsignacion.java`) y la orquestación y la gestión de propuestas están juntas en `PropuestaDeAsignacionService` (`ejecutarAsignacion`, `listarPropuestas`, `actualizarEstado`, `historialEjecuciones`, `onPropuestaAprobada`), expuesto por `PropuestaDeAsignacionController` (`/api/asignaciones`).
+
 ## Atributos de Calidad y Drivers de Decisión
 
 * **Alta Cohesión:** Agrupar métodos que colaboran estrechamente sobre el mismo aggregate root.

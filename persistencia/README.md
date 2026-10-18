@@ -104,9 +104,11 @@ Cada servicio administra su propio historial en `flyway_schema_history` dentro d
 | Servicio                 | Versión | Archivo                                                                                                               | Tablas creadas                                                                  |
 |--------------------------|---------|-----------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
 | `notificaciones-service` | V1      | [`V1__init_notificaciones.sql`](../notificaciones-service/src/main/resources/db/migration/V1__init_notificaciones.sql) | `persona`, `medio_de_contacto`, `notificacion`, `notificacion_historial_estado` |
-| `donaciones-service`     | —       | pendiente                                                                                                             | —                                                                               |
-| `logistica-service`      | —       | pendiente                                                                                                             | —                                                                               |
-| `incentivos-service`     | —       | pendiente                                                                                                             | —                                                                               |
+| `notificaciones-service` | V2      | [`V2__inbox_notificaciones.sql`](../notificaciones-service/src/main/resources/db/migration/V2__inbox_notificaciones.sql) | `evento_procesado` (Transactional Inbox) |
+| `incentivos-service`     | V1      | [`V1__init_incentivos.sql`](../incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql) | `donante_incentivos`, `mision`, `ranking_mensual` y sus tablas hijas |
+| `logistica-service`      | V1      | [`V1__init_logistica.sql`](../logistica-service/src/main/resources/db/migration/V1__init_logistica.sql) | `chofer`, `camion`, `ruta`, `entrega`, direcciones, cambios de estado, solicitudes y `evento_entrega` |
+| `logistica-service`      | V2      | [`V2__orden_visita_rutas.sql`](../logistica-service/src/main/resources/db/migration/V2__orden_visita_rutas.sql) | `parada_ruta` |
+| `donaciones-service`     | —       | sin migraciones (no tiene entidades JPA) | —                                                                               |
 
 #### Esquema del schema `notificaciones` (V1) [OBSERVED]
 
@@ -194,7 +196,11 @@ notificaciones-service/src/main/resources/
 ├── application.properties                 ← perfil default (en memoria, sin BD)
 ├── application-postgres.properties        ← perfil postgres: datasource + Flyway
 └── db/migration/
-    └── V1__init_notificaciones.sql        ← migración inicial del schema notificaciones
+    ├── V1__init_notificaciones.sql        ← migración inicial del schema notificaciones
+    └── V2__inbox_notificaciones.sql       ← tabla evento_procesado (inbox)
+
+incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql
+logistica-service/src/main/resources/db/migration/V1__init_logistica.sql, V2__orden_visita_rutas.sql
 ```
 
 ---

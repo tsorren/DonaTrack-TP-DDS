@@ -14,7 +14,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — requiere integración de capa de persistencia |
 | Target | donaciones-service · Entrega de persistencia (prioridad alta) |
-| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** para surrogate keys en JPA; **Entrega 6 (Semana del 23 de Noviembre 2026)** para crypto-shredding definitivo con `auth-service` |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) para surrogate keys en JPA; **Entrega 6 (Semana del 23 de Noviembre 2026)** para crypto-shredding definitivo con `auth-service` |
 
 ---
 
@@ -26,7 +26,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] deferred` — `ProcesadorDeDonaciones` permanece en paquete `infrastructure/` |
 | Target | donaciones-service (prioridad media) |
-| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — estabilización de servicios de aplicación durante persistencia |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) — estabilización de servicios de aplicación durante persistencia |
 
 ---
 
@@ -38,7 +38,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] deferred` — `SegmentacionEventListener` permanece en paquete `infrastructure/events/` |
 | Target | donaciones-service (prioridad media) |
-| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — desacoplamiento de listeners locales previo a la integración |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) — desacoplamiento de listeners locales previo a la integración |
 
 ---
 
@@ -50,7 +50,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] deferred` — método monolítico `cambiarEstado()` activo en `DonacionesIndependientesService` |
 | Target | donaciones-service (prioridad media) |
-| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — alineación de transacciones cortas con State Pattern |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) — alineación de transacciones cortas con State Pattern |
 
 ---
 
@@ -75,7 +75,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — crítico para mapeo relacional |
 | Target | donaciones-service · Entrega de persistencia (prioridad alta) |
-| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** — obligatorio para mapeo independiente de entidades JPA |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) — obligatorio para mapeo independiente de entidades JPA |
 
 ---
 
@@ -93,6 +93,7 @@
 ---
 
 ## DTI-08 — Campos de observabilidad diferidos (spanId, executionTimeMs, errorCode estructurado, AMQP_DISPATCH/EXCEPTION, filtro BOOTSTRAP)
+<a id="dti-08-campos-de-observabilidad-diferidos-spanid-executiontimems-errorcode-estructurado-amqp_dispatchexception-filtro-bootstrap"></a>
 
 | Campo | Valor |
 |---|---|
@@ -135,7 +136,7 @@
 |---|---|
 | ADR | [20260905-dti-11](./incentivos-service/20260905-dti-11-extraccion-de-mision-mapper-y-purificacion-de-mision-dto.md) |
 | Decision status | `proposed` |
-| Implementation status | `[VERIFIED] implemented (PR #856)` — `MisionMapper` creado en `services.mappers` y `MisionDTO` purificado como record anémico |
+| Implementation status | **Resuelta.** `[VERIFIED] implemented (PR #856)` — `MisionMapper` creado en `services.mappers` (`incentivos-service/src/main/java/grupo5/incentivos/services/mappers/MisionMapper.java`) y `MisionDTO` purificado como record anémico |
 | Target | `incentivos-service` (`MisionDTO`, `MisionMapper`, `MisionesDonacionService`) |
 | Cuándo se saldará | **Saldada en PR #856 (Septiembre 2026)** — se implementó el componente `grupo5.incentivos.services.mappers.MisionMapper` resolviendo la insignia del donante y desacoplando `MisionDTO` |
 
@@ -163,7 +164,7 @@
 | ADR complementario | [20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones](./notificaciones-service/20260902-implementacion-del-inbox-pattern-para-idempotencia-en-notificaciones.md) |
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] in-progress` — Resolución técnica formalizada en ADR 20260911 y SPEC-03 en Entrega 4: adopción de Pub/Sub canónico AMQP, TopicExchanges de emisores, colas segregadas, clúster DLQ y erradicación total de OpenFeign (Hard Cutover); persistencia relacional física de outbox SQL diferida a Oleada 10 para servicios en memoria. El alias `POST /notificaciones` quedó en un método propio marcado `@Deprecated` (2026-10-14); sigue activo mientras `incentivos-service` lo consuma vía `NotificacionesFeignClient` |
-| Target | `donaciones-service` (`NotificacionesFeignClient`) · `incentivos-service` (`NotificacionesFeignClient`, `NotificacionesClientAdapter`) |
+| Target | `incentivos-service` (`NotificacionesFeignClient`, `NotificacionesClientAdapter`); `donaciones-service` ya publica por AMQP (`NotificacionesAsyncService`) y no tiene cliente Feign |
 | Cuándo se saldará | **En ejecución en Entrega 4 (Septiembre 2026)** — desacoplamiento AMQP completo y eliminación de clientes Feign mediante ADR transversal [20260911](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) y [SPEC-03](../specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) (al verificar la implementación en código de la Etapa 2) |
 
 ---
@@ -223,3 +224,84 @@
 10. **Notificaciones recibe hechos que no procesa** (`RabbitMQConfig` de Notificaciones liga `notificaciones.donaciones` con `donacion.#` y `donante.#`; su mapeo de tipos y `DonacionEventListener` no cubren `donacion.segmentada.v1` ni `donante.dado-de-baja.v1`, que Donaciones publica para Incentivos). `[INFERRED]` La conversión falla, el mensaje se rechaza sin requeue y termina en `notificaciones.donaciones.dlq`; no verificado con ejecución. Llena la DLQ de mensajes legítimos y confunde la revisión manual. Se cierra con bindings explícitos por clave o con un descarte controlado de los tipos ajenos. **Resuelto (2026-10-14):** bindings explícitos, una clave por handler (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`); `RabbitMQConfigTest` verifica que coincidan con el mapeo de tipos. En un broker ya provisionado, los bindings `donacion.#` y `donante.#` previos persisten hasta borrarlos a mano o recrear la cola.
 11. **Callback de planificación con URL por defecto** (`logistica.self.base-url=${LOGISTICA_SELF_BASE_URL:http://localhost:8083}`; `PlanificacionService` arma el callback con ese valor). La instancia `logistica-externo` de `docker-compose.demo.yml` escucha en `PORT=8084` y no define `LOGISTICA_SELF_BASE_URL`. `[INFERRED]` Su planificador simulado llama a un puerto donde no escucha nadie: el callback falla, la solicitud queda pendiente y esa instancia no emite `ruta.asignada`; no verificado con ejecución. El mismo riesgo aplica en la nube si la plataforma asigna otro `PORT`. Se cierra fijando `LOGISTICA_SELF_BASE_URL` en la demo y en el despliegue.
 12. **Comando del broker descartado sin aviso** (`EntregaSolicitadaEventListener` de Logística). Ante un error de validación al crear la entrega, el listener registra el error y confirma el mensaje. El broker de integración ya marcó la solicitud `ENVIADA` por el acuse de RabbitMQ: Donaciones no se entera y la donación queda en "Asignación realizada", sin reenvío. Se cierra publicando `entrega.fallida` (u otro hecho de rechazo) al descartar.
+
+---
+
+## DTI-17 — Baja lógica de camiones: el ADR dice irreversible, el código permite rehabilitar
+<a id="dti-17"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260703-baja-logica-camion](./logistica-service/20260703-baja-logica-camion.md) |
+| Qué decide el ADR | La baja es lógica por estado `DESHABILITADO` y es irreversible desde la API: un camión deshabilitado no transiciona a ningún otro estado vía el controller. |
+| Qué hace el código | `Camion.habilitar()` acepta `DESHABILITADO` y vuelve a `DISPONIBLE` (`logistica-service/src/main/java/grupo5/logistica/models/entities/camiones/Camion.java:97-103`); `GestorDeCamiones.cambiarEstado` lo invoca con `DISPONIBLE` (`.../camiones/GestorDeCamiones.java:34`) y `CamionesController.cambiarEstado` lo expone (`.../controllers/impl/CamionesController.java:52-54`). |
+| Impacto | La trazabilidad que justifica el ADR depende de que la baja sea definitiva; hoy cualquier cliente de la API puede reactivar un camión dado de baja. |
+| Decision status | `accepted` (ADR) |
+| Implementation status | `[OBSERVED] divergence` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
+| Acción sugerida | Decidir si se ajusta el código o se reemplaza el ADR |
+| Cuándo se saldará | Sin fecha asignada — pendiente de decisión del equipo |
+
+---
+
+## DTI-18 — Criterio de prioridad de subatendidos: el código implementa la alternativa rechazada
+<a id="dti-18"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260615-criterio-prioridad-subatendidos](./donaciones-service/20260615-criterio-prioridad-subatendidos.md) |
+| Qué decide el ADR | Ordenar por el porcentaje de necesidades satisfechas en el último trimestre por entidad (normaliza entre entidades de distinto tamaño). |
+| Qué hace el código | `AlgoritmoPrioridadSubAtendidos.ordenarNecesidades` cuenta donaciones asignadas en los últimos 3 meses por entidad y ordena de menor a mayor (`donaciones-service/src/main/java/grupo5/donaciones/models/algoritmos/AlgoritmoPrioridadSubAtendidos.java:20-37`), que es la alternativa «contar las donaciones recibidas» descartada por el ADR. |
+| Impacto | Una entidad con muchas necesidades puede recibir prioridad menor o mayor que la prevista por la equidad que el ADR busca; el test `ordenarNecesidades_cuandoUnaEntidadTieneMayorPorcentajeSatisfecho_debeQuedarAlFinal` (`AlgoritmoPrioridadSubAtendidosTest.java:82`) debe revisarse contra el criterio vigente. |
+| Decision status | `accepted` (ADR) |
+| Implementation status | `[OBSERVED] divergence` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
+| Acción sugerida | Decidir si se ajusta el código o se reemplaza el ADR |
+| Cuándo se saldará | Sin fecha asignada — pendiente de decisión del equipo |
+
+---
+
+## DTI-19 — Strategy en el gestor de algoritmos: acceso por índice en lugar de métodos con nombre
+<a id="dti-19"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260615-strategy-gestor-algoritmos](./donaciones-service/20260615-strategy-gestor-algoritmos.md) |
+| Qué decide el ADR | `GestorAlgoritmos` mantiene una `List<AlgoritmoAsignacion>` y la accede con métodos privados con nombre (`algoritmoPorCompatibilidad()`, `algoritmoPorPrioridad()`), descartando el acceso crudo por índice. |
+| Qué hace el código | La clase `GestorAlgoritmos` no existe; la real es `GestorPropuestasDeAsignacion`, que accede por índice con `algoritmos.getFirst()` y `algoritmos.get(1)` (`donaciones-service/src/main/java/grupo5/donaciones/models/entities/propuestas/GestorPropuestasDeAsignacion.java:51-53`), la alternativa rechazada. |
+| Impacto | El orden de la lista define implícitamente qué algoritmo es cuál; reordenar el constructor (`:25-30`) cambia el comportamiento sin que el nombre lo revele. |
+| Decision status | `accepted` (ADR) |
+| Implementation status | `[OBSERVED] divergence` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
+| Acción sugerida | Decidir si se ajusta el código o se reemplaza el ADR |
+| Cuándo se saldará | Sin fecha asignada — pendiente de decisión del equipo |
+
+---
+
+## DTI-20 — Resolución de conflictos en la consolidación de propuestas: regla de descarte distinta
+<a id="dti-20"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260901-resolucion-de-conflictos-en-consolidacion-de-propuestas-de-asignacion](./donaciones-service/20260901-resolucion-de-conflictos-en-consolidacion-de-propuestas-de-asignacion.md) |
+| Qué decide el ADR | Ante colisión sobre la misma necesidad, `consolidar()` conserva solo la propuesta de `AlgoritmoPrioridadSubAtendidos` y descarta la semántica. |
+| Qué hace el código | `consolidar` devuelve las propuestas del segundo algoritmo cuyas necesidades también cubre el primero (la intersección) y, si no hay ninguna, la unión de ambas listas (`donaciones-service/src/main/java/grupo5/donaciones/models/entities/propuestas/GestorPropuestasDeAsignacion.java:62-82`); no aplica una prevalencia explícita de la prioridad social ni evita proponer dos donaciones para una necesidad en el caso de unión. |
+| Impacto | El criterio ético que justifica el ADR no se aplica de forma determinista, y la regla vigente no está documentada. |
+| Decision status | `proposed` (ADR) |
+| Implementation status | `[OBSERVED] divergence` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
+| Acción sugerida | Decidir si se ajusta el código o se reemplaza el ADR |
+| Cuándo se saldará | Sin fecha asignada — pendiente de decisión del equipo |
+
+---
+
+## DTI-21 — Alcance REST de EntidadBeneficiaria: decisión vigente (PUT y DELETE) sin ADR
+<a id="dti-21"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260702-alcance-operaciones-rest-entidad-beneficiaria](./donaciones-service/20260702-alcance-operaciones-rest-entidad-beneficiaria.md) (Status `rejected`) |
+| Qué proponía el ADR (rechazado) | No exponer `PUT` ni `DELETE` sobre `EntidadBeneficiaria`; la baja se lograría anonimizando su Persona Jurídica. |
+| Qué hace el código | `EntidadBeneficiariaController` expone `@PutMapping("/{id}")` y `@DeleteMapping("/{id}")` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:52-63`); el servicio hace `repository.delete(entidad)` (`.../services/impl/EntidadBeneficiariaService.java:83-87`). |
+| Impacto | La decisión vigente (mutación y borrado físico) no tiene ADR que registre su justificación ni su efecto sobre las `Necesidad` que referencian la entidad. |
+| Decision status | `rejected` (ADR) |
+| Implementation status | `[OBSERVED] undocumented` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
+| Acción sugerida | Registrar la decisión vigente en un ADR nuevo |
+| Cuándo se saldará | Sin fecha asignada — pendiente de decisión del equipo |
+

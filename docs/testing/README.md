@@ -8,7 +8,7 @@
 
 ## 1. Propósito y Filosofía de Calidad
 
-Este directorio centraliza la infraestructura, arquitectura y lineamientos de pruebas automatizadas del proyecto DonaTrack. El sistema cuenta con más de 1.190 pruebas automáticas estructuradas bajo el modelo del **Testing Honeycomb** (Panal de Pruebas), priorizando pruebas unitarias rápidas de dominio y pruebas de slicing sobre costosos tests de integración distribuida.
+Este directorio centraliza la infraestructura, arquitectura y lineamientos de pruebas automatizadas del proyecto DonaTrack. El sistema cuenta con más de 1.500 pruebas automáticas (recuento por `grep` al 2026-10-14; la clasificación detallada está pendiente de recuento) estructuradas bajo el modelo del **Testing Honeycomb** (Panal de Pruebas), priorizando pruebas unitarias rápidas de dominio y pruebas de slicing sobre costosos tests de integración distribuida.
 
 ```text
 docs/testing/
@@ -28,14 +28,14 @@ docs/testing/
 │   ├── 05-roadmap-migracion.md            # Roadmap en 4 fases y compatibilidad docente
 │   └── 06-cobertura-critica-qa-backlog.md # Backlog de cobertura crítica para futura iteración
 │
-└── postman/                               # 📮 Colecciones API y flujos distribuídos
+└── postman/                               # 📮 LEGADO: copia anterior de colecciones; la fuente vigente es ../../postman/
 ```
 
 ---
 
 ## 2. Documentos Maestros y Guías Operativas
 
-* [**Auditoría y Blueprint de Arquitectura de Testing y QA**](auditoria-arquitectura-testing.md): **Documento canónico maestro.** Informe integral de auditoría factual de 1.191 tests en 191 clases de test, matriz de patologías F-01 a F-12, evaluación adversarial y blueprint target.
+* [**Auditoría y Blueprint de Arquitectura de Testing y QA**](auditoria-arquitectura-testing.md): **Documento canónico maestro.** Informe integral de auditoría factual de 1.191 tests en 191 clases de test (cifras de la auditoría original; pendiente de recuento), matriz de patologías F-01 a F-12, evaluación adversarial y blueprint target.
 * [**Guía de Pruebas de Integración (`integration-tests.md`)**](integration-tests.md): Arquitectura de pruebas de integración de extremo a extremo (E2E), clientes HTTP tipados, configuración de Docker, PostgreSQL y RabbitMQ.
 * [**Testing Performance y Optimización Local (`testing-performance.md`)**](testing-performance.md): Optimización de tiempos de compilación, ejecución de Test Impact Analysis (TIA con `scripts/test-changed.ps1`), slices `@WebMvcTest` y paralelismo.
 * [**Plan de Auditoría y Blueprint QA**](plan-auditoria-y-blueprint-qa.md): Metodología y especificación operativa de 5 fases para ejecución de auditorías automatizadas.

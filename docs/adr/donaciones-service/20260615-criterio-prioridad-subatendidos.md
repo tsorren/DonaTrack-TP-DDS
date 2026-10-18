@@ -78,3 +78,9 @@ Se itera sobre `NecesidadRepository.findAll()` filtrando por los últimos 3 mese
 ## Links
 
 <!-- Refined by [20260615-strategy-gestor-algoritmos.md](20260615-strategy-gestor-algoritmos.md) -->
+
+## Desvío de implementación (auditoría 2026-10-14)
+
+- **Decide el ADR:** ordenar por el porcentaje de necesidades satisfechas en el último trimestre por entidad.
+- **Hace hoy el código:** `AlgoritmoPrioridadSubAtendidos.ordenarNecesidades` acumula la cantidad de donaciones asignadas en los últimos 3 meses por entidad (`contarDonacionesRecientes`) y ordena de menor a mayor con `Integer.compare` (`donaciones-service/src/main/java/grupo5/donaciones/models/algoritmos/AlgoritmoPrioridadSubAtendidos.java:20-37`). Es la alternativa "contar donaciones" que el ADR descarta; no calcula el porcentaje ni usa `NecesidadRepository`.
+- Registrado como [DTI-18](../DEUDA_TECNICA.md#dti-18).
