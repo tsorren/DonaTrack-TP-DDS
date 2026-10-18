@@ -35,6 +35,13 @@ Esto resuelve definitivamente:
   * `incentivos-service`: Incorporación de `spring-boot-starter-amqp`; declaración de `incentivos.exchange` en `RabbitMQConfig`; adaptación de `NotificacionesClientAdapter` a `RabbitTemplate`; eliminación de `NotificacionesFeignClient`; refactor de tests (`IncentivosServiceApplicationTest`, `NotificacionesClientAdapterTest`).
   * `integration-tests` y QA: Actualización de colecciones Postman (`flujo-7-notificaciones-eventos.json`, `postman-notificaciones.json`) a la ruta canónica `/api/notificaciones/eventos`; verificación de `ContractIT` y consultas GET de histórico.
 
+> **Nota de avance de Etapa 2 (auditoría 2026-10-14, verificado contra el código; el estado de la spec no cambia):**
+>
+> * `notificaciones-service`: colas `notificaciones.donaciones` / `notificaciones.incentivos`, bindings, clúster `notificaciones.dlx` y `DefaultClassMapper` (`setTrustedPackages("*")`) implementados (`RabbitMQConfig`); los listeners se llaman `DonacionEventListener` e `IncentivoEventListener` (con sus tests). **Pendiente:** `maven-failsafe-plugin` no figura en `notificaciones-service/pom.xml` y no existe `NotificacionesAmqpInboxIT`.
+> * `donaciones-service`: implementado. `DonacionesEventPublisher` publica en `donaciones.exchange` y ya no hay `@FeignClient` de notificaciones; `NotificacionesAsyncService` sigue existiendo pero publica por AMQP.
+> * `incentivos-service`: **parcial.** Tiene `spring-boot-starter-amqp`, pero `NotificacionesClientAdapter` sigue usando `NotificacionesFeignClient`; la migración a `RabbitTemplate` sobre `incentivos.exchange` y la eliminación del cliente Feign están pendientes (DTI-13).
+> * `integration-tests` y QA: **pendiente.** `postman/flujo-7-notificaciones-eventos.json` sigue invocando el alias `POST /notificaciones` en lugar de la ruta canónica `/api/notificaciones/eventos`.
+
 ### Out-of-Scope (Lo que NO incluye - Anti-Scope Creep):
 
 * Modificación de lógica de negocio o esquemas relacionales en `logistica-service` (módulo completamente ajeno a esta interacción).

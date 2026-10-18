@@ -2,6 +2,7 @@
 - Status: accepted
 - Date: 2026-06-29
 - Deciders: Decisión Grupal
+- Tags: incentivos, rachas, scheduler, batch
 
 ## Contexto y Problema
 La misión de racha solo resetea su progreso cuando llega una nueva donación. Si un donante deja de donar, su progreso queda congelado indefinidamente aunque la racha esté rota, mostrando un porcentaje de avance incorrecto.

@@ -39,7 +39,7 @@ Ante cualquier consulta conceptual o antes de implementar un componente tecnoló
 │    Definición formal, atributos de calidad, trade-offs │
 ├────────────────────────────────────────────────────────┤
 │ 3. 🛠️ Aterrizaje Quirúrgico en DonaTrack ("Cómo Aplica")│
-│    Mapeo a clases Java 21, Spring Boot 3, contratos   │
+│    Mapeo a clases Java 21, Spring Boot 4.0.7, contratos   │
 ├────────────────────────────────────────────────────────┤
 │ 4. ⚠️ Trampas Comunes & Pregunta Socrática de Cierre   │
 │    Code smells típicos + verificación de comprensión   │
@@ -59,7 +59,7 @@ Ante cualquier consulta conceptual o antes de implementar un componente tecnoló
 ### Paso 3: 🛠️ Aterrizaje Quirúrgico en DonaTrack (El "Cómo Aplica Acá")
 * Mapear el concepto a los bounded contexts del proyecto (`donaciones-service`, `logistica-service`, `incentivos-service`, `notificaciones-service`, `common-lib`).
 * Indicar las clases, interfaces, contratos OpenAPI o configuraciones involucradas.
-* Proveer un snippet de código limpio y autocontenido en **Java 21 / Spring Boot 3 / AMQP** demostrando dónde reside la responsabilidad.
+* Proveer un snippet de código limpio y autocontenido en **Java 21 / Spring Boot 4.0.7 / AMQP** demostrando dónde reside la responsabilidad.
 
 ### Paso 4: ⚠️ Trampas Comunes y Pregunta Socrática de Cierre
 * Advertir sobre los antipatrones y errores frecuentes que suelen cometer los desarrolladores junior o estudiantes en este tema.

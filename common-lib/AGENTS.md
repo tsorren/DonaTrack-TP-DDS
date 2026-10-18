@@ -26,7 +26,7 @@ Los siguientes contratos tienen dependientes en todos los servicios. Modificarlo
 
 - `AggregateRoot.getId(): UUID` y `CrudRepository<T>` — base de todos los repositorios
 - `ErrorCatalog` enum — prefijos `ERR-INF / ERR-VAL / ERR-EST / ERR-CSR` (respetar al extender)
-- `ErrorResponse { code, type, details, timestamp }` — formato de error HTTP unificado
+- `ErrorResponse { code, type, details, traceId, timestamp, errors }` — formato de error HTTP unificado
 - Jerarquía `DonaTrackException` — `GlobalExceptionHandler` la mapea por tipo
 - `X-Trace-Id` — propagación via `TraceResponseHeaderFilter` + `FeignTraceRequestInterceptor`
 

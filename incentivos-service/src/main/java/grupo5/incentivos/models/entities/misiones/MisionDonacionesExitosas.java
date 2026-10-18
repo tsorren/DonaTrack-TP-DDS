@@ -20,6 +20,16 @@ public class MisionDonacionesExitosas extends Mision {
         donacionesObjetivo);
   }
 
+  private MisionDonacionesExitosas(MisionEstado estado, LocalDate fechaUltimoDonacion) {
+    super(estado);
+    this.fechaUltimoDonacion = fechaUltimoDonacion;
+  }
+
+  public static MisionDonacionesExitosas reconstituir(
+      MisionEstado estado, LocalDate fechaUltimoDonacion) {
+    return new MisionDonacionesExitosas(estado, fechaUltimoDonacion);
+  }
+
   @Override
   public void evaluarProgresoExitoso(DonanteIncentivos donante) {
     if (this.isCompletada()) return;

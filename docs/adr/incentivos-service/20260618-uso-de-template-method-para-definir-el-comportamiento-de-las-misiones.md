@@ -2,6 +2,7 @@
 - Status: accepted
 - Date: 2026-06-18
 - Deciders: Decisión Grupal
+- Tags: incentivos, misiones, template-method, patrones-de-diseño
 
 ## Contexto y Problema
 Las misiones comparten una estructura común pero cada tipo tiene su propia lógica de ejecución.

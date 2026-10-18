@@ -122,6 +122,21 @@ class RankingServiceTest {
   }
 
   @Test
+  void calcularYPersistir_alRecalcularElPeriodoDeberiaReutilizarElIdYNoDuplicar() {
+    YearMonth mayo = YearMonth.of(2026, Month.MAY);
+    donanteRepository.save(
+        DonanteIncentivosMother.conMisionesCompletadasEnMes(
+            UUID.randomUUID(), "Donante 1", mayo, 2));
+
+    service.calcularYPersistir(mayo);
+    UUID idPrimero = rankingRepository.findByPeriodo(mayo).orElseThrow().getId();
+    service.calcularYPersistir(mayo);
+
+    assertEquals(1, rankingRepository.count());
+    assertEquals(idPrimero, rankingRepository.findByPeriodo(mayo).orElseThrow().getId());
+  }
+
+  @Test
   void calcularYNotificar_deberiaNotificarAn8n() {
     YearMonth mayo = YearMonth.of(2026, Month.MAY);
     DonanteIncentivos d1 =

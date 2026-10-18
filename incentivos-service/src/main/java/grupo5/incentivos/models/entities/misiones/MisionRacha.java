@@ -19,6 +19,15 @@ public class MisionRacha extends Mision {
         mesesConsecutivosObjetivo);
   }
 
+  private MisionRacha(MisionEstado estado, YearMonth ultimoMesDonado) {
+    super(estado);
+    this.ultimoMesDonado = ultimoMesDonado;
+  }
+
+  public static MisionRacha reconstituir(MisionEstado estado, YearMonth ultimoMesDonado) {
+    return new MisionRacha(estado, ultimoMesDonado);
+  }
+
   @Override
   public void verificarVigencia(YearMonth mesActual) {
     if (this.isCompletada() || this.ultimoMesDonado == null) {

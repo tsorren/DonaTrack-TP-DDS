@@ -21,7 +21,7 @@ Durante el procesamiento de eventos de dominio y de integración que impactan so
 ## Origen y Lecciones de las Oleadas de Refactor
 
 * **Oleadas de Origen:** Oleada 9.5 (Hardening de Bordes) del Plan Genérico v2 y auditoría de `incentivos-service`.
-* **Hallazgo:** En `incentivos-service`, `MisionRacha` calculaba los meses consecutivos basados en `now()` en lugar de la fecha real de la donación recibida en `EventoDonacion`, lo que provocaba que una racha válida se perdiera si la sincronización asíncrona ocurría días después. Asimismo, en `MisionCompletitud`, la falta de canonicalización léxica en categorías causaba discrepancias en los tests de integración.
+* **Hallazgo:** En `incentivos-service`, `MisionRacha` calculaba los meses consecutivos basados en `now()` en lugar de la fecha real de la donación recibida en `EventoDonacion`, lo que provocaba que una racha válida se perdiera si la sincronización asíncrona ocurría días después. Asimismo, en `MisionCompletitud`, la falta de canonicalización léxica en categorías causaba discrepancias en los tests de integración. `[OBSERVED]` Corregido: `MisionRacha.calcularNuevoProgreso` usa hoy `evento.getFecha()` (`MisionRacha.java:44`).
 
 ## Alternativas Consideradas
 
@@ -51,8 +51,8 @@ En sistemas distribuidos y asíncronos (RabbitMQ, cron jobs), el tiempo de proce
 ### Validación
 
 Se valida mediante:
-1. Tests unitarios en `incentivos-service` (ej. `MisionRachaTest`) verificando el cómputo correcto con eventos desfasados en el tiempo.
-2. Comprobación de que `MisionCompletitud` valida categorías normalizadas con variantes léxicas (`"  LactEOS  "` homologado a `"lacteos"`).
+1. Tests unitarios en `incentivos-service` (ej. `MisionRachaTest`; `[OBSERVED]` no existe en el repositorio, pendiente) verificando el cómputo correcto con eventos desfasados en el tiempo.
+2. Comprobación (`[OBSERVED]` sin test dedicado, pendiente; la normalización está en `MisionCompletitud.java:40`) de que `MisionCompletitud` valida categorías normalizadas con variantes léxicas (`"  LactEOS  "` homologado a `"lacteos"`).
 3. Verificación de desempates deterministas en la ordenación de medios de contacto y rankings.
 
 ## Análisis de Alternativas

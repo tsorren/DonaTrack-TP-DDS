@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: persistencia, orm, jpa, mapper, key-churn, medio-de-contacto, persona, notificaciones
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/persistencia/mappers/PersonaPersistenciaMapper.java:51`). El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 En `notificaciones-service`, el agregado `Persona` mantiene una colección de canales de comunicación (`List<MedioDeContacto>`). En el modelo de dominio ([`Persona.java`](../../../notificaciones-service/src/main/java/grupo5/notificaciones/models/entities/personas/Persona.java)), `MedioDeContacto` fue modelado como una Entidad Interna / Objeto de Valor puro sin identificador técnico (`id UUID`): en la lógica de negocio, un canal de contacto se define unívocamente por su tipo y su valor (la dirección de correo en `Correo`, o la combinación de característica, código de área y número en `Telefono`), junto con su marca de preferencia (`esPredeterminado`).

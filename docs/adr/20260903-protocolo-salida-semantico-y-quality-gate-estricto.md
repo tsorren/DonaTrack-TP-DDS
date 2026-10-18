@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: ci-cd, testing, quality-gate, fail-fast, github-actions, python
 
+> **Nota de auditoría (2026-10-14):** `[OBSERVED]` la erradicación de `|| true` está pendiente: persiste en `.github/workflows/main.yml:510`, `:744` y `:772`, y en `run-preprod-tests.sh:65-72` (incluye la invocación de `analyze_preprod_logs.py`). El resto del protocolo no se verificó en esta auditoría.
+
 ## Contexto y Problema
 
 En la tubería de integración continua de DonaTrack (`.github/workflows/main.yml`), el análisis de resultados y diagnóstico de preproducción presentaba un antipatrón crítico denominado el **"Síndrome del Verde Silencioso" (Silent Failure Masking)**:

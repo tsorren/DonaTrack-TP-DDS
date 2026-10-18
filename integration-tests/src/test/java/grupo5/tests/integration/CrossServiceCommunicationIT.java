@@ -125,9 +125,9 @@ class CrossServiceCommunicationIT extends BaseIT {
     UUID personaId = donacionesClient.crearPersonaOk(persona);
     PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
     UUID donanteId = donacionesClient.crearDonanteOk(personaId);
-    PollingUtils.esperarDonanteEnIncentivos(incentivosClient, donanteId);
 
-    // Verificar perfil en incentivos
+    // Verificar perfil en incentivos (el alta llega por RabbitMQ: se espera)
+    PollingUtils.esperarDonanteEnIncentivos(incentivosClient, donanteId);
     incentivosClient.obtenerMetricas(donanteId).then().statusCode(200);
 
     // 2. Dar de baja donante en donaciones-service

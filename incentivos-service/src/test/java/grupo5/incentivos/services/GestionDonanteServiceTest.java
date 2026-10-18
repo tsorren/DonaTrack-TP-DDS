@@ -1,18 +1,29 @@
 package grupo5.incentivos.services;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.dto.DonanteRegistradoDTO;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.RegistrarDonanteRequest;
+import grupo5.incentivos.fixtures.DonanteIncentivosMother;
 import grupo5.incentivos.fixtures.IncentivosFixtures;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.models.repositories.DonanteIncentivosRepository;
+import grupo5.incentivos.models.repositories.IDonanteIncentivosRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 class GestionDonanteServiceTest {
 
@@ -142,5 +153,144 @@ class GestionDonanteServiceTest {
     List<DonanteIncentivos> list = service.listarTodos();
 
     assertEquals(2, list.size());
+  }
+
+  @Test
+  void modificarDonante_cuandoNoExiste_deberiaLanzarDonanteNoEncontrado() {
+    UUID id = UUID.randomUUID();
+    ModificarDonanteRequest request = IncentivosFixtures.modificarDonante("Nuevo");
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.modificarDonante(id, request));
+
+    assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
+  }
+
+  @Test
+  void modificarDonante_cuandoRepositorioNoEncuentraDonante_noDeberiaGuardarNada() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID id = UUID.randomUUID();
+    when(repo.findById(id)).thenReturn(java.util.Optional.empty());
+    GestionDonanteService servicio = new GestionDonanteService(repo);
+    ModificarDonanteRequest request = IncentivosFixtures.modificarDonante("Nuevo");
+
+    assertThrows(BusinessStateException.class, () -> servicio.modificarDonante(id, request));
+
+    verify(repo, never()).save(any());
+  }
+
+  @Test
+  void modificarDonante_cuandoExiste_deberiaCambiarElNombreEnElAgregadoYGuardarlo() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos donante = new DonanteIncentivos(id, id, "Inicial", java.util.List.of());
+    when(repo.findById(id)).thenReturn(java.util.Optional.of(donante));
+    GestionDonanteService servicio = new GestionDonanteService(repo);
+
+    servicio.modificarDonante(id, IncentivosFixtures.modificarDonante("Nuevo"));
+
+    assertEquals("Nuevo", donante.getNombre());
+    verify(repo).save(donante);
+  }
+
+  @Test
+  void darDeBaja_cuandoNoExiste_deberiaLanzarDonanteNoEncontrado() {
+    UUID id = UUID.randomUUID();
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.darDeBaja(id));
+
+    assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
+  }
+
+  @Test
+  void darDeBaja_cuandoYaSeDioDeBaja_deberiaLanzarDonanteNoEncontrado() {
+    UUID id = UUID.randomUUID();
+    service.registrarDonante(IncentivosFixtures.registrarDonante(id));
+    service.darDeBaja(id);
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.darDeBaja(id));
+
+    assertEquals(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO, ex.getError());
+  }
+
+  @Test
+  void darDeBaja_cuandoExiste_deberiaDelegarEnEliminarPorIdSinCargarElAgregado() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID id = UUID.randomUUID();
+    when(repo.eliminarPorId(id)).thenReturn(true);
+    GestionDonanteService servicio = new GestionDonanteService(repo);
+
+    servicio.darDeBaja(id);
+
+    verify(repo).eliminarPorId(id);
+    verify(repo, never()).findById(any());
+    verify(repo, never()).delete(any());
+  }
+
+  @Test
+  void registrarDonante_cuandoYaExiste_noDeberiaVolverAGuardar() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID id = UUID.randomUUID();
+    when(repo.findById(id))
+        .thenReturn(Optional.of(DonanteIncentivosMother.colaboradorSinMisiones(id)));
+    GestionDonanteService servicio = new GestionDonanteService(repo);
+
+    DonanteRegistradoDTO response =
+        servicio.registrarDonante(IncentivosFixtures.registrarDonante(id));
+
+    assertEquals(id, response.donanteId());
+    verify(repo, never()).save(any());
+  }
+
+  @Test
+  void registrarDonante_cuandoElSaveViolaIntegridadYElDonanteYaExiste_deberiaDevolverloSinFallar() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos ganador = DonanteIncentivosMother.colaboradorSinMisiones(id);
+    when(repo.findById(id)).thenReturn(Optional.empty(), Optional.of(ganador));
+    when(repo.save(any())).thenThrow(new DataIntegrityViolationException("pk duplicada"));
+    GestionDonanteService servicio = new GestionDonanteService(repo);
+
+    DonanteRegistradoDTO response =
+        servicio.registrarDonante(IncentivosFixtures.registrarDonante(id));
+
+    assertEquals(id, response.donanteId());
+    assertEquals(ganador.getCategoria().name(), response.categoria());
+  }
+
+  @Test
+  void
+      registrarDonante_cuandoElSaveFallaPorConcurrenciaYElDonanteYaExiste_deberiaDevolverloSinFallar() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID id = UUID.randomUUID();
+    DonanteIncentivos ganador = DonanteIncentivosMother.colaboradorSinMisiones(id);
+    when(repo.findById(id)).thenReturn(Optional.empty(), Optional.of(ganador));
+    when(repo.save(any())).thenThrow(new OptimisticLockingFailureException("fila ya reemplazada"));
+    GestionDonanteService servicio = new GestionDonanteService(repo);
+
+    DonanteRegistradoDTO response =
+        servicio.registrarDonante(IncentivosFixtures.registrarDonante(id));
+
+    assertEquals(id, response.donanteId());
+  }
+
+  @Test
+  void registrarDonante_cuandoElSaveViolaIntegridadYElDonanteNoExiste_deberiaRelanzarLaExcepcion() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    UUID id = UUID.randomUUID();
+    DataIntegrityViolationException violacion =
+        new DataIntegrityViolationException("persona_id duplicada");
+    when(repo.findById(id)).thenReturn(Optional.empty());
+    when(repo.save(any())).thenThrow(violacion);
+    GestionDonanteService servicio = new GestionDonanteService(repo);
+    RegistrarDonanteRequest request = IncentivosFixtures.registrarDonante(id);
+
+    DataIntegrityViolationException lanzada =
+        assertThrows(
+            DataIntegrityViolationException.class, () -> servicio.registrarDonante(request));
+
+    assertSame(violacion, lanzada);
   }
 }

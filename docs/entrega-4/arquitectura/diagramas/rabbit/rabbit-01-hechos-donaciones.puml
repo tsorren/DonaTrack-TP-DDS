@@ -1,0 +1,67 @@
+@startuml rabbit-01-hechos-donaciones
+' Hechos de Donaciones en donaciones.exchange hacia Notificaciones e Incentivos.
+' Fuente (rama baseline/e4-prs):
+'   donaciones-service/src/main/java/grupo5/donaciones/config/RabbitMQConfig.java:37,46-54,76-78
+'   donaciones-service/src/main/java/grupo5/donaciones/infrastructure/events/DonacionesEventPublisher.java:82-89
+'   notificaciones-service/src/main/java/grupo5/notificaciones/config/RabbitMQConfig.java:36-51,95-101,113-115,129-151,162-168
+'   incentivos-service/src/main/java/grupo5/incentivos/config/RabbitMQConfig.java:36-50,69-137,179
+' Exchanges topic durables (durable=true, autoDelete=false); colas durables.
+!pragma layout smetana
+!include ../estilo-e4.iuml
+skinparam nodesep 16
+skinparam ranksep 22
+skinparam collections {
+  BackgroundColor<<topic exchange>> #EEE8F7
+  BorderColor<<topic exchange>> #5E4B8B
+}
+skinparam queue {
+  BackgroundColor<<durable>> #F7F5FB
+  BorderColor<<durable>> #5E4B8B
+}
+
+component "Donaciones" as don <<servicio>>
+collections "donaciones.exchange" as ex <<topic exchange>>
+
+queue "notificaciones.donaciones" as qN <<durable>>
+component "Notificaciones" as notif <<servicio>>
+collections "notificaciones.dlx" as dlx <<topic exchange>>
+queue "notificaciones.donaciones.dlq" as dlq <<durable>>
+
+package "Incentivos: una cola por clave exacta" as pInc {
+  queue "incentivos.donacion-segmentada\n<size:11>binding: donacion.segmentada.v1" as q1 <<durable>>
+  queue "incentivos.donacion-recibida\n<size:11>binding: donacion.recibida.v1" as q2 <<durable>>
+  queue "incentivos.persona-sincronizada\n<size:11>binding: persona.sincronizada.v1" as q3 <<durable>>
+  queue "incentivos.donante-registrado\n<size:11>binding: donante.registrado.v1" as q4 <<durable>>
+  queue "incentivos.donante-dado-de-baja\n<size:11>binding: donante.dado-de-baja.v1" as q5 <<durable>>
+}
+component "Incentivos" as inc <<servicio>>
+
+q1 -[hidden]down- q2
+q2 -[hidden]down- q3
+q3 -[hidden]down- q4
+q4 -[hidden]down- q5
+
+don -[#5E4B8B,dashed]-> ex : publica 9 hechos:\ndonacion.segmentada.v1\ndonacion.asignada.v1\ndonacion.en-camino.v1\ndonacion.recibida.v1\ndonacion.entrega-fallida.v1\ndonacion.vencida.v1\ndonante.registrado.v1\ndonante.dado-de-baja.v1\npersona.sincronizada.v1
+ex -[#5E4B8B]-> qN : donacion.#\ndonante.#\npersona.#
+ex -[#5E4B8B]-> pInc : 5 bindings
+qN -[#5E4B8B,dashed]-> notif : consume
+qN -[#C0392B,dotted]-> dlx : rechazo
+dlx -[#C0392B]-> dlq : notificaciones.\ndonaciones.dlq
+pInc -[#5E4B8B,dashed]-> inc : consume
+
+note bottom of dlq
+  Por comodín también llegan
+  donacion.segmentada.v1 y
+  donante.dado-de-baja.v1, sin
+  handler en Notificaciones:
+  terminan acá (inferido).
+end note
+
+legend right
+  |= Símbolo |= Significado |
+  | «topic exchange» · «durable» | exchange topic y cola durables |
+  | ──> rotulada | binding con su routing key |
+  | - - -> | publica o consume |
+  | <color:#C0392B>· · ·></color> rechazo | dead letter vía x-dead-letter-exchange |
+endlegend
+@enduml

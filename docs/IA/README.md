@@ -54,13 +54,33 @@ La IA puede ayudar, pero la responsabilidad técnica sigue siendo humana.
 ### Evaluación del harness (Wave 9)
 
 - [`evals/README.md`](./evals/README.md)  
-  Suite de evaluación del harness de agentes. Output Contract v1, Critical Failure Taxonomy, metodología A/B (v3.5.0 vs v6.2.0), execution policy y result format.
+  Suite de evaluación del harness de agentes. Output Contract v1, Critical Failure Taxonomy, metodología A/B (v3.5.0 vs v6.4.0), execution policy y result format.
 
 - [`evals/scenarios/`](./evals/scenarios/)  
   11 scenarios (E01–E11): common-lib contamination, routine REST endpoint, sync→async, implement accepted ADR, baseline failure, false VERIFIED, review capability, context router, temporal drift, design-review rejection, define-spec alternatives.
 
 - [`evals/scorecards/scorecard-template.md`](./evals/scorecards/scorecard-template.md)  
   Plantilla reutilizable para registrar cada run de eval (output contract, scorecard, critical failures, tool calls, A/B comparison).
+
+### Skills del agente
+
+Las skills viven en `.agents/skills/` (detalle en [`../context-index.md`](../context-index.md)):
+
+| Skill | Propósito |
+|---|---|
+| [`engineering-loop`](../../.agents/skills/engineering-loop/SKILL.md) | Ciclo completo con enrutamiento por criticidad. |
+| [`define-spec`](../../.agents/skills/define-spec/SKILL.md) | Definición de especificaciones SDD. |
+| [`design-spec`](../../.agents/skills/design-spec/SKILL.md) | Diseño técnico desde una spec aprobada. |
+| [`design-review`](../../.agents/skills/design-review/SKILL.md) | Revisión adversarial de diseño (D1–D6). |
+| [`implement-task`](../../.agents/skills/implement-task/SKILL.md) | Implementación con TDD y Quality Gates. |
+| [`implementation-review`](../../.agents/skills/implementation-review/SKILL.md) | Revisión adversarial de código (V1–V9). |
+| [`review-pr`](../../.agents/skills/review-pr/SKILL.md) | Review de PRs con GrepAI. |
+| [`explain-concept`](../../.agents/skills/explain-concept/SKILL.md) | Mentoría conceptual. |
+
+### Histórico
+
+- [`history/AGENTS-v3.5.md`](./history/AGENTS-v3.5.md)  
+  Versión 3.5 de `AGENTS.md`, conservada como referencia histórica (base de la comparación A/B de los evals). No describe las reglas vigentes.
 
 ---
 

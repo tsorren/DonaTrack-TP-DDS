@@ -1,0 +1,71 @@
+@startuml rabbit-03-vuelta-logistica
+' Vuelta de logística: los 4 hechos de cualquier proveedor en logistica.exchange hacia las colas de Donaciones.
+' Fuente (rama baseline/e4-prs):
+'   logistica-service/src/main/java/grupo5/logistica/config/RabbitMQConfig.java:27,38-45,63-66
+'   logistica-service/src/main/java/grupo5/logistica/infrastructure/LogisticaEventPublisher.java:44-62,100-125
+'   donaciones-service/src/main/java/grupo5/donaciones/config/RabbitMQConfig.java:36,40-43,62-63,70-73,81-120
+'   donaciones-service/src/main/java/grupo5/donaciones/infrastructure/logistica/LogisticaEventListener.java:32-70
+'   donaciones-service/src/main/java/grupo5/donaciones/services/impl/VerificadorOrigenEventos.java:64
+'   donaciones-service/src/main/java/grupo5/donaciones/services/impl/DonacionesIndependientesNotificacionesService.java:89,122,191
+'   donaciones-service/src/main/resources/application.properties:38-39
+!pragma layout smetana
+!include ../estilo-e4.iuml
+skinparam nodesep 18
+skinparam ranksep 28
+skinparam collections {
+  BackgroundColor<<topic exchange>> #EEE8F7
+  BorderColor<<topic exchange>> #5E4B8B
+}
+skinparam queue {
+  BackgroundColor<<durable>> #F7F5FB
+  BorderColor<<durable>> #5E4B8B
+}
+
+component "Logística DonaTrack :8083\nX-Proveedor-Id = donatrack" as logD <<servicio>>
+component "Logística externa :8084\nX-Proveedor-Id = externo\n(solo demo)" as logE <<simulado>>
+collections "logistica.exchange" as ex <<topic exchange>>
+
+package "Donaciones: una cola por clave exacta" as pDon {
+  queue "donaciones.ruta.asignada\n<size:11>binding: ruta.asignada" as q1 <<durable>>
+  queue "donaciones.ruta.iniciada\n<size:11>binding: ruta.iniciada" as q2 <<durable>>
+  queue "donaciones.entrega.exitosa\n<size:11>binding: entrega.exitosa" as q3 <<durable>>
+  queue "donaciones.entrega.fallida\n<size:11>binding: entrega.fallida" as q4 <<durable>>
+}
+q1 -[hidden]down- q2
+q2 -[hidden]down- q3
+q3 -[hidden]down- q4
+
+component "Donaciones\nLogisticaEventListener\n+ VerificadorOrigenEventos" as don <<servicio>>
+collections "donaciones.exchange" as exDon <<topic exchange>>
+
+logD -[#5E4B8B,dashed]-> ex : publica 4 hechos\n+ headers X-Proveedor-Id\ny X-Proveedor-Token
+logE -[#5E4B8B,dashed]-> ex : mismas claves,\nfirmadas como externo
+ex -[#5E4B8B]-> pDon : 4 bindings
+pDon -[#5E4B8B,dashed]-> don : consume
+don -[#5E4B8B,dashed]-> exDon : reemite\n(ver rabbit-01)
+
+note right of don
+  <b>Verificación de origen</b>
+  X-Proveedor-Token debe coincidir con
+  donatrack.logistica.proveedor.
+  <id>.token-vuelta y cada donación
+  debe ser de ese proveedor.
+  Si no: descartado con aviso.
+end note
+
+note right of exDon
+  <b>Reemisión</b> (al cambiar el estado)
+  ruta.iniciada → donacion.en-camino.v1
+  entrega.exitosa → donacion.recibida.v1
+  entrega.fallida →
+      donacion.entrega-fallida.v1
+  ruta.asignada no se reemite
+end note
+
+legend right
+  |= Símbolo |= Significado |
+  | «topic exchange» · «durable» | exchange topic y cola durables |
+  | ──> rotulada | binding con su routing key |
+  | - - -> | publica o consume |
+endlegend
+@enduml

@@ -1,5 +1,6 @@
 package grupo5.notificaciones.infrastructure.adapters;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -19,7 +20,13 @@ class CorreoAdapterSimuladoTest {
   @BeforeEach
   void setUp() {
     criterioFallo = mock(CriterioFalloSimulado.class);
-    adapter = new CorreoAdapterSimulado(criterioFallo);
+    adapter =
+        new CorreoAdapterSimulado(criterioFallo) {
+          @Override
+          protected void simularLatenciaDeRed() {
+            // no-op para tests rápidos
+          }
+        };
   }
 
   @Test
@@ -46,5 +53,21 @@ class CorreoAdapterSimuladoTest {
 
     assertFalse(resultado);
     verify(criterioFallo).debeFallar(destinatario, mensaje);
+  }
+
+  @Test
+  @DisplayName("simularLatenciaDeRed ejecuta sin error y restaura interrupción")
+  void metodosDeSimulacion_ejecutanCorrectamente() {
+    CorreoAdapterSimulado realAdapter = new CorreoAdapterSimulado(criterioFallo);
+
+    assertDoesNotThrow(realAdapter::simularLatenciaDeRed);
+
+    Thread.currentThread().interrupt();
+    try {
+      realAdapter.simularLatenciaDeRed();
+      assertTrue(Thread.interrupted());
+    } finally {
+      Thread.interrupted();
+    }
   }
 }

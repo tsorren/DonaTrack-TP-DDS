@@ -44,6 +44,10 @@ services:
       - "8082:8082"
     environment:
       - PORT=8082
+      - SPRING_PROFILES_ACTIVE=postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=incentivos
+      - SPRING_DATASOURCE_USERNAME=incentivos_user
+      - SPRING_DATASOURCE_PASSWORD=inc_pass_2026
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - N8N_INSIGNIA_WEBHOOK_URL=http://n8n:5678/webhook/insignia-ganada
@@ -53,8 +57,18 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+      - INCENTIVOS_MINIO_ENABLED=true
+      - INCENTIVOS_MINIO_ENDPOINT=http://minio:9000
+      - INCENTIVOS_MINIO_PUBLIC_BASE_URL=http://localhost:9000
+      - INCENTIVOS_MINIO_ACCESS_KEY=minioadmin
+      - INCENTIVOS_MINIO_SECRET_KEY=minioadminpassword
+      - INCENTIVOS_MINIO_BUCKET=insignias
     depends_on:
+      postgres:
+        condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      minio:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
@@ -231,6 +245,8 @@ services:
       retries: 10
     networks:
       - donatrack-network
+    volumes:
+      - minio_data:/data
 
 networks:
   donatrack-network:
@@ -238,4 +254,5 @@ networks:
 
 volumes:
   postgres_data:
+  minio_data:
 

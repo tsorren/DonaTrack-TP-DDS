@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: docker, devops, seguridad, 12-factor, logs, preproduccion, non-root
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`*-service/Dockerfile:31 y :55 (USER 1001:1001); sin bind-mounts ./logs en docker-compose`). El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 Durante la ejecución de las pruebas de integración en preproducción (`docker-compose.preprod.yml`), tanto en runners de GitHub Actions como en estaciones locales de desarrollo (Windows con Docker Desktop, macOS y Linux), se identificaron severos problemas de permisos y seguridad derivados de la arquitectura de contenedores y el manejo de logs:

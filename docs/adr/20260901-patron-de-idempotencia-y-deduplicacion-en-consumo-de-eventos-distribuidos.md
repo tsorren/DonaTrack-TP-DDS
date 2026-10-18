@@ -7,7 +7,7 @@
 
 ## Contexto y Problema
 
-En un ecosistema distribuido con redes no confiables, brokers de mensajería (RabbitMQ) y clientes HTTP con políticas de reintento (`FeignRetryConfig`), la semántica de entrega estándar es **al menos una vez (*At-Least-Once Delivery*)**. Esto implica que ante un timeout de red donde el servidor procesó la petición pero la respuesta no llegó a tiempo al cliente, el emisor reintentará el envío, despachando el mismo evento de negocio dos o más veces. Si el consumidor no es estrictamente **idempotente**, se generarán anomalías críticas de negocio: duplicación de donaciones en stock, cómputo doble de rachas/medallas en gamificación, o envíos reiterados de notificaciones por WhatsApp/Email al usuario.
+En un ecosistema distribuido con redes no confiables, brokers de mensajería (RabbitMQ) y clientes HTTP con políticas de reintento, la semántica de entrega estándar es **al menos una vez (*At-Least-Once Delivery*)**. Esto implica que ante un timeout de red donde el servidor procesó la petición pero la respuesta no llegó a tiempo al cliente, el emisor reintentará el envío, despachando el mismo evento de negocio dos o más veces. Si el consumidor no es estrictamente **idempotente**, se generarán anomalías críticas de negocio: duplicación de donaciones en stock, cómputo doble de rachas/medallas en gamificación, o envíos reiterados de notificaciones por WhatsApp/Email al usuario.
 
 ## Atributos de Calidad y Drivers de Decisión
 

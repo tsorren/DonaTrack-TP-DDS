@@ -38,7 +38,7 @@ El problema 1 es un riesgo de producción; el 2 es la razón por la que no se de
 1. **Extiende a Incentivos:** el clúster DLQ de [20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md), hoy aplicado solo a Notificaciones (`notificaciones.dlx`).
 2. **Se apoya en:** [20260901-patron-de-idempotencia-y-deduplicacion-en-consumo-de-eventos-distribuidos](./20260901-patron-de-idempotencia-y-deduplicacion-en-consumo-de-eventos-distribuidos.md): reintentar un evento exige que su procesamiento sea idempotente.
 3. **Aplica en la suite:** [20260906-fitness-functions-arquitectonicas-con-archunit-y-pitest](./20260906-fitness-functions-arquitectonicas-con-archunit-y-pitest.md) y [20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes](./20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes.md).
-4. **Deuda relacionada:** [`DEUDA_TECNICA.md`](./DEUDA_TECNICA.md), DTI-15.
+4. **Deuda relacionada:** [`DEUDA_TECNICA.md`](./DEUDA_TECNICA.md#dti-22), DTI-22.
 
 ## Alternativas Consideradas
 
