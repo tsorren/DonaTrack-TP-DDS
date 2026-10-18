@@ -90,7 +90,7 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # 🟢 Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-21)
+│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-22)
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
@@ -213,7 +213,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/auditoria/README.md`](auditoria/README.md) | Portal Auditoría | Portal y catálogo de auditorías arquitectónicas, directivas y planes revisores. | 🟢 Sincronizado |
 | [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
 | [`docs/auditoria/revision-critica-devops-ci.md`](auditoria/revision-critica-devops-ci.md) | Auditoría DevOps | Revisión crítica experta de pipelines CI/CD, Dockerfiles, observabilidad y scripts auxiliares. | 🟢 Sincronizado |
-| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-21; DTI-15 reservada) con ADRs enlazados. | 🟢 Sincronizado |
+| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-22; DTI-15 reservada) con ADRs enlazados. | 🟢 Sincronizado |
 | [`docs/adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md`](adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) | ADR Deuda Técnica | DTI-07: Adaptador interino local para Crypto-Shredding mientras auth-service no exista. | 🟢 Sincronizado |
 | [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Deuda Técnica | DTI-08: Campos de observabilidad diferidos (spanId, executionTimeMs, errorCode estructurado). | 🟢 Sincronizado |
 | [`docs/adr/incentivos-service/20260905-dti-09-seguridad-y-asincronia-en-procesos-batch-de-incentivos.md`](adr/incentivos-service/20260905-dti-09-seguridad-y-asincronia-en-procesos-batch-de-incentivos.md) | ADR Deuda Técnica | DTI-09: Seguridad, control de acceso y asincronía en endpoints de procesos batch de incentivos. | 🟢 Sincronizado |
@@ -227,6 +227,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/20261007-broker-de-integracion-con-logistica.md`](adr/20261007-broker-de-integracion-con-logistica.md) | ADR Integración | Broker in-process (Broker + Adapter + Strategy) entre Donaciones y Logística; regla de ruteo eventos por hecho / comandos por destinatario. | 🟢 Sincronizado |
 | [`docs/adr/20261009-estilo-de-microservicios-con-capas-y-puertos-y-adaptadores.md`](adr/20261009-estilo-de-microservicios-con-capas-y-puertos-y-adaptadores.md) | ADR Estilo | Microservicios con capas e inversión de dependencias (puertos y adaptadores) por servicio. `proposed`. | 🟢 Sincronizado |
 | [`docs/adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md`](adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md) | ADR Integración | Los proveedores de logística informan solo por mensajería (HTTP solo de ida), con id y token en headers verificados por Donaciones; refina la decisión 7 del ADR del broker. `proposed`. | 🟢 Sincronizado |
+| [`docs/adr/20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests.md`](adr/20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests.md) | ADR Arquitectura AMQP | Incentivos tolera eventos fuera de orden (reintento con espera creciente y DLQ por cola) y la suite de integración espera la propagación de eventos (PollingUtils + ArchUnit, Toxiproxy en preprod). `proposed`. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
 

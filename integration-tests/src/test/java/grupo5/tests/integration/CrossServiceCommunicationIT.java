@@ -92,6 +92,7 @@ class CrossServiceCommunicationIT extends BaseIT {
     // 2. Registrar persona como donante
     PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
     UUID donanteId = donacionesClient.crearDonanteOk(personaId);
+    PollingUtils.esperarDonanteEnIncentivos(incentivosClient, donanteId);
     assertNotNull(donanteId);
 
     // 3. Verificar métricas del donante en incentivos-service

@@ -305,3 +305,19 @@
 | Acción sugerida | Registrar la decisión vigente en un ADR nuevo |
 | Cuándo se saldará | Sin fecha asignada — pendiente de decisión del equipo |
 
+---
+
+## DTI-22 — Incentivos descarta en silencio los eventos que llegan antes que el alta del donante
+<a id="dti-22"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests](./20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests.md) |
+| ADR complementario | [20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones](./20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) (clúster DLQ, hoy solo en Notificaciones) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] not-started` — solo se ajustaron los 4 tests de `CrossServiceCommunicationIT` que fallaron (`PollingUtils.esperarDonanteEnIncentivos`) |
+| Target | `incentivos-service` (`RabbitMQConfig`, `IncentivosEventosListener`) · `integration-tests` |
+| Cuándo se saldará | A definir por el equipo |
+
+1. **Pérdida de eventos por desorden entre colas:** cada evento de Incentivos tiene su propia cola y RabbitMQ no ordena entre colas. Si `donacion.segmentada` o `donacion.recibida` llega antes que `donante.registrado`, `MisionesDonacionService.obtenerDonante` lanza `DONANTE_INCENTIVOS_NO_ENCONTRADO` y, con `defaultRequeueRejected=false` y sin DLQ, el mensaje se descarta.
+2. **Tests que suponen propagación inmediata:** las lecturas cruzadas entre servicios no siempre esperan al evento; con el RabbitMQ local la carrera no se manifiesta.
