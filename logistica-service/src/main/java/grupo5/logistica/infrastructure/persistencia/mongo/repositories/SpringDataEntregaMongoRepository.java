@@ -1,0 +1,18 @@
+package grupo5.logistica.infrastructure.persistencia.mongo.repositories; // NOSONAR
+
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+@SuppressWarnings("java:S120")
+public interface SpringDataEntregaMongoRepository extends MongoRepository<EntregaDocument, UUID> {
+  List<EntregaDocument> findByEstado(EstadoEntrega estado);
+
+  List<EntregaDocument> findByIdRutaOrderByIdAsc(UUID idRuta);
+
+  List<EntregaDocument> findByIdRutaIsNull();
+
+  boolean existsByIdDonacion(UUID idDonacion);
+}
