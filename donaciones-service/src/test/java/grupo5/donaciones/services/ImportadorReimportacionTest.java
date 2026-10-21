@@ -30,6 +30,7 @@ import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -183,7 +184,7 @@ class ImportadorReimportacionTest {
 
     Humana despues = (Humana) personasRepository.findById(juan.getId()).orElseThrow();
     assertEquals("Juan Carlos", despues.getNombre());
-    assertEquals(LocalDate.of(1985, 3, 20), despues.getFechaNacimiento());
+    assertEquals(LocalDate.of(1985, Month.MARCH, 20), despues.getFechaNacimiento());
     assertEquals("Pérez", despues.getApellido());
     assertEquals(direccionOriginal, despues.getDireccion());
   }

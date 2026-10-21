@@ -152,12 +152,10 @@ class DonantesServiceTest {
   @Test
   void crearDonante_conPersonaInexistente_lanzaRecursoNoEncontrado() {
     UUID personaId = UUID.randomUUID();
-    when(donantesRepository.findById(personaId)).thenReturn(Optional.empty());
-    when(personasRepository.existsById(personaId)).thenReturn(false);
+    when(personasRepository.findById(personaId)).thenReturn(Optional.empty());
+    DonanteInputDTO input = new DonanteInputDTO(personaId);
 
-    assertThrows(
-        RecursoNoEncontradoException.class,
-        () -> donantesService.crearDonante(new DonanteInputDTO(personaId)));
+    assertThrows(RecursoNoEncontradoException.class, () -> donantesService.crearDonante(input));
     verify(eventPublisher, never()).publicarDonanteRegistrado(any());
   }
 

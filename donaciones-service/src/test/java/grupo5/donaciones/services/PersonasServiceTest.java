@@ -161,11 +161,11 @@ class PersonasServiceTest {
     when(repository.findById(ong.getId())).thenReturn(Optional.of(ong));
     when(entidadBeneficiariaService.esEntidadActiva(ong.getId())).thenReturn(true);
 
+    UUID id = ong.getId();
+    JuridicaInputDTO aEmpresa = juridicaInput(TipoJuridico.EMPRESA, true);
+
     ValidationException ex =
-        assertThrows(
-            ValidationException.class,
-            () ->
-                service.actualizarPersona(ong.getId(), juridicaInput(TipoJuridico.EMPRESA, true)));
+        assertThrows(ValidationException.class, () -> service.actualizarPersona(id, aEmpresa));
 
     assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_TIPO_INVALIDO, ex.getError());
     assertEquals(TipoJuridico.ONG, ong.getTipo());
@@ -178,10 +178,11 @@ class PersonasServiceTest {
     when(repository.findById(ong.getId())).thenReturn(Optional.of(ong));
     when(entidadBeneficiariaService.esEntidadActiva(ong.getId())).thenReturn(true);
 
+    UUID id = ong.getId();
+    JuridicaInputDTO sinDireccion = juridicaInput(TipoJuridico.ONG, false);
+
     ValidationException ex =
-        assertThrows(
-            ValidationException.class,
-            () -> service.actualizarPersona(ong.getId(), juridicaInput(TipoJuridico.ONG, false)));
+        assertThrows(ValidationException.class, () -> service.actualizarPersona(id, sinDireccion));
 
     assertEquals(ErrorCatalog.ENTIDAD_BENEFICIARIA_SIN_DIRECCION, ex.getError());
     assertNotNull(ong.getDireccion());
