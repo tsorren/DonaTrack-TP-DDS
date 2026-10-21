@@ -18,6 +18,13 @@ public class Archivo implements AggregateRoot {
     this.estado = EstadoArchivo.PENDIENTE;
   }
 
+  /** Constructor de reconstitución para el adaptador JPA */
+  public Archivo(UUID id, String path, EstadoArchivo estado) {
+    this.id = id;
+    this.path = path;
+    this.estado = estado;
+  }
+
   public void marcarComoProcesando() {
     this.estado = EstadoArchivo.PROCESANDO;
   }

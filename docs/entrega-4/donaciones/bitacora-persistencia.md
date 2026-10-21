@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-21** — Paso 1 hecho (base de tests con Postgres real).
+> Última actualización: **2026-10-21** — Paso 2 hecho (catálogo y archivo en Postgres).
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
-- **Dónde estamos:** Paso 0 (decisiones) y Paso 1 (infraestructura de tests) cerrados. De la #897 solo está persistida `Necesidad`.
+- **Dónde estamos:** Pasos 0 a 2 cerrados. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`) y `archivo`.
 - **Bloqueante para seguir:** ninguno para el Paso 2. El Paso 4 (Donante/Entidad) depende de que se mergee la PR #892.
-- **Próximo paso:** Paso 2, catálogo (`categoria`, `subcategoria`, `alias`) y `archivo`.
+- **Próximo paso:** Paso 3, `direccion`, `persona` (`JOINED`) y `medio_de_contacto`.
 
 ---
 
@@ -26,7 +26,7 @@
 |---|---|---|
 | 0 | Decisiones de diseño sobre el DER | ✅ Cerrado |
 | 1 | Endurecer infraestructura sobre la #897 y base de tests con Postgres | ✅ Hecho |
-| 2 | Catálogo (`categoria`, `subcategoria`, `alias`) y `archivo` | ⏳ Pendiente |
+| 2 | Catálogo (`categoria`, `subcategoria`, `alias`) y `archivo` | ✅ Hecho |
 | 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | ⏳ Pendiente |
 | 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ⏳ Pendiente |
 | 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | ⏳ Pendiente |
@@ -51,12 +51,19 @@
 - **P-6 — Patrón de tests de persistencia.** Copia el de `incentivos-service` (`@DataJpaTest` + `@Testcontainers` + `@ServiceConnection` + `@DisabledIfDockerUnavailable`), con una diferencia deliberada: el contenedor usa el usuario por defecto y Flyway crea el esquema `donaciones`, en vez de copiar `init-db` a los recursos de test. Así el test valida entidades contra migraciones (`ddl-auto=validate`) sin duplicar el script ni depender de contraseñas de roles.
 - **P-7 — Dependencias de test.** Se agregaron tres (`test`): `spring-boot-starter-data-jpa-test`, `spring-boot-testcontainers` y `org.testcontainers:postgresql`. La primera es la que contiene `@DataJpaTest` en Spring Boot 4.
 
+- **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
+- **P-8 — Convenciones del Paso 2.** `[DOCUMENTED]` Decisión del usuario: enums como `VARCHAR` + `CHECK` (no `ENUM` nativo del DER); `categoria.tipo_unidad` agregada como columna nueva (el dominio la exige, el DER no la tiene, discrepancia #8); seeder idempotente en vez de migración con datos; `archivo` usa `id` como PK igual que el resto de las tablas (el DER lo dejó como `id_archivo`) y conserva `estado_archivo`.
+
 ## Hallazgos abiertos (no corregidos en esta tarea)
 
 - **Credencial fija** `dona_pass_2026` como valor por defecto en `application-postgres.properties` y en `docker-compose.yml` (AGENTS §4.3). `ENTREGA_5` ya usa variables de entorno: al mergear, conservar esa versión.
 - **D-7 — `peso_unitario` / `volumen_unitario` son `BIGINT` en `Item_donacion`** y el dominio usa `Double`: persistir literal truncaría decimales. Recomendado `NUMERIC`.
 - **D-8 — `Posible_fragmentacion.cantidad` es `SMALLINT`** (máx. 32 767) y el dominio usa `Integer`. Riesgo bajo.
 - **`NecesidadesPersistenciaMapper`:** un `Period` con años se ignora al guardar (solo cuenta días y meses); los filtros de `NecesidadRepositoryJpaAdapter` cargan todas las filas y filtran en memoria; `save` no es transaccional.
+- **Alias repetido (resuelto).** `[DOCUMENTED]` Decisión del usuario: ignorar el duplicado (idempotente). `Subcategoria.agregarAlias` no agrega un alias que ya existe; la restricción `uq_alias_subcategoria` queda como red de seguridad en la base.
+- **Alias con nombre de subcategoría derivado.** `[OBSERVED]` `AliasSubcategoria` guarda copiado el nombre de la subcategoría; en memoria queda desactualizado al renombrar. Al persistir se deriva al leer (corrige el dato, cambia el comportamiento).
+- **Borrar categorías/subcategorías en uso.** `[INFERRED]` Cuando `necesidad` y los items tengan FK hacia `subcategoria` (pasos 5 a 8), borrar una en uso fallará por integridad; hoy `eliminar` no valida. Decidir si devuelve 409.
+- **Seeder del catálogo.** `[OBSERVED]` Viene apagado por defecto (`SEED_CATALOGO_ENABLED=false`). Si se activa con base persistente generaría ids nuevos en cada arranque; ahora es idempotente (no inserta si ya hay categorías). Con el compose actual el catálogo queda vacío en Postgres: hay que cargarlo por API o activar el seeder.
 - **Comentario de `application.properties`:** explica por qué se excluyen las autoconfiguraciones de BD en el perfil en memoria. Es una `[INFERRED]`: el TODO original decía que no se sabía.
 
 ---
@@ -81,3 +88,13 @@
 - `application-postgres.properties`: pool de Hikari (5 por defecto, sobrescribible), `open-in-view=false`, `jdbc.time_zone=UTC`, `default_batch_fetch_size=50`, `show-sql=false`; se quita el `dialect` redundante.
 - `NecesidadRepositoryJpaAdapterTest` (5 tests contra Postgres real): guardar y leer extraordinaria, recurrente con períodos, renovar período sin duplicar, buscar por entidad, persistir desactivación.
 - `[VERIFIED]` Suite del módulo: 576 tests, 0 fallas, 0 salteados (los 2 que antes se salteaban eran tests con RabbitMQ en contenedor, que ahora corren por haber Docker). `spotless:check` y `agent-check` en verde. Las entidades de la #897 coinciden con `V1`.
+
+## Paso 2 — detalle
+
+- Migración `V2__catalogo_y_archivo.sql`: `categoria`, `subcategoria` (FK a `categoria`), `alias` (FK con `ON DELETE CASCADE`, único por `(id_subcategoria, alias)`), `archivo`.
+- Dominio: constructores de reconstitución en `Categoria`, `Subcategoria` y `Archivo`.
+- Infraestructura: 4 entidades, 3 repositorios Spring Data, 3 mappers y 3 adapters `@Profile("postgres")`; los repositorios en memoria pasan a `@Profile("!postgres")`. `SubcategoriasPersistenciaMapper` reutiliza las filas de alias vigentes para no chocar con la restricción única al guardar.
+- `CatalogDataInitializer`: no inserta si ya hay categorías.
+- `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
+- Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
+- `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
