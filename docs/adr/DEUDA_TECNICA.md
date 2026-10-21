@@ -345,3 +345,40 @@
 | Implementation status | `[OBSERVED] not-started` — `incentivos-service` mantiene dos colas (`incentivos.donante-registrado`, `incentivos.donante-dado-de-baja`) con un listener cada una. Con el id de rol igual al de la persona, un `DELETE` seguido de un `POST /api/donantes` rápido puede llegar al revés: el alta se ignora (el perfil existe), la baja borra el perfil y las siguientes `donacion.segmentada` y `donacion.recibida` se descartan (`defaultRequeueRejected=false`). Misiones y ranking dejan de contar en silencio |
 | Target | `incentivos-service` (`RabbitMQConfig`, `IncentivosEventosListener`): cola única `incentivos.donante-ciclo-de-vida`, concurrencia 1, retiro de las dos colas actuales. Instrucciones de entrega en el plan de roles, Etapa 6 |
 | Cuándo se saldará | **A definir** — a cargo del equipo de `incentivos-service`; antes de mergear a `main`, o con el riesgo declarado en el PR |
+
+---
+
+## DTI-24 — Lo publicado no es lo validado y el despliegue no se reproduce desde el repo
+<a id="dti-24"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica](./20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) |
+| ADR complementario | [logistica-service/20261009-despliegue-de-logistica-en-paas-con-contenedores](./logistica-service/20261009-despliegue-de-logistica-en-paas-con-contenedores.md) (puntos 1 y 5) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] not-started` — relevado en `origin/main` `a808942c` por el análisis [preprod fiel](../testing/preprod-fiel.md) (B2, B3) |
+| Target | `.github/workflows/merge.yml` · `.github/workflows/main.yml` · `deploy.yml` nuevo |
+| Cuándo se saldará | E6, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-06 y RM-07); sujeto a la aprobación del ADR y a las precondiciones de Render |
+
+1. **Imagen publicada sin preprod:** `merge.yml` reconstruye desde el commit integrado y publica `:<rama>`, `:sha-<7>` y `:latest` sin correr el preprod (`merge.yml:259-269`). La imagen que valida el PR (`pr-<N>`) no es la que se publica.
+2. **Estado post-merge sin validar:** `main.yml` solo corre en `pull_request` (`main.yml:44-46`). `[INFERRED]` Dos PR en verde pueden romper la base al combinarse.
+3. **Despliegue manual sin rastro:** no hay job de despliegue, smoke ni rollback ensayado; Render, Neon y CloudAMQP se configuran a mano. No se sabe si Render construye desde el repo o baja la imagen de GHCR.
+
+---
+
+## DTI-25 — El gate de preprod todavía puede dar verdes falsos
+<a id="dti-25"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260903-protocolo-salida-semantico-y-quality-gate-estricto](./20260903-protocolo-salida-semantico-y-quality-gate-estricto.md) ("Ningún pull request debe obtener estado verde si contiene tests fallidos [...] o ausencia total de ejecución de pruebas") |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] in-progress` — parte del protocolo ya está implementada: los códigos de salida y el umbral de 0 tests, que ya falla (`report_test_failures.py --fail-on-zero-tests`, `main.yml:801`); las tres vías de abajo siguen abiertas en `origin/main` `a808942c` |
+| Target | `integration-tests` (`BaseIT.java`) · `scripts/report_test_failures.py` · `.github/workflows/main.yml` |
+| Cuándo se saldará | E5, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-02) |
+
+1. **Tests salteados cuentan como verdes:** `ContractIT` (`ContractIT.java:41,88,140`) y `LogisticaIntegrationIT` (`LogisticaIntegrationIT.java:24`) se saltean por `assumeTrue` si `BaseIT.isServiceAvailable` no recibe 200 de `/v3/api-docs` en 500 ms (`BaseIT.java:35-53`), y el reporte no los cuenta como falla.
+2. **Imagen base en lugar de la del PR:** si no encuentra la imagen `pr-<N>` de un servicio, el preprod usa la de la rama base con solo un aviso (`main.yml:699-704`).
+3. **Sonar opcional:** el quality gate final no exige `sonar-analysis` (`main.yml:912`, `"never"`).
+
+La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema, ya está registrada en el ítem 8 de DTI-16.
