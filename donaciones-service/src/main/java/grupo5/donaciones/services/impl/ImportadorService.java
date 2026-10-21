@@ -13,7 +13,6 @@ import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.ports.CargadorDonantes;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
-import grupo5.donaciones.services.EstadoRegistroDonante;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
@@ -98,7 +97,7 @@ public class ImportadorService implements IImportadorService {
 
       if (personaExistenteOpt.isPresent()) {
         UUID personaId = personaExistenteOpt.get().getId();
-        if (donantesService.registrarSiNoExiste(personaId) == EstadoRegistroDonante.DADO_DE_BAJA) {
+        if (donantesService.estaDadoDeBaja(personaId)) {
           log.warn(
               "La persona {} fue dada de baja como donante: no se la reactiva ni se actualiza",
               personaId);
@@ -106,6 +105,8 @@ public class ImportadorService implements IImportadorService {
         }
         log.info("Actualizando persona existente con ID: {}", personaId);
         personaService.actualizarParcial(personaId, personaMapper.mapToActualizacionParcial(fila));
+        // Recién con la fila válida y aplicada se registra el rol (y se publica donante.registrado)
+        donantesService.registrarSiNoExiste(personaId);
       } else {
         log.info("Creando nueva persona y donante...");
         PersonaOutputDTO personaCreada =

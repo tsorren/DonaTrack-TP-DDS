@@ -137,6 +137,11 @@ public class DonantesService implements IDonantesService {
   }
 
   @Override
+  public boolean estaDadoDeBaja(UUID personaId) {
+    return donantesRepository.findById(personaId).map(d -> !d.estaActivo()).orElse(false);
+  }
+
+  @Override
   public void eliminarDonante(UUID id) {
     Donante donante =
         donantesRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));

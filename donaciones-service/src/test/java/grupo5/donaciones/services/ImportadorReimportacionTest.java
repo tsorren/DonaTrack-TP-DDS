@@ -213,8 +213,7 @@ class ImportadorReimportacionTest {
   void reimportarPersonaConDonanteDeBaja_noLaReactivaNiActualizaYCuentaError() {
     Humana juan = PersonaMother.juanPerez();
     guardar(juan);
-    when(donantesService.registrarSiNoExiste(juan.getId()))
-        .thenReturn(EstadoRegistroDonante.DADO_DE_BAJA);
+    when(donantesService.estaDadoDeBaja(juan.getId())).thenReturn(true);
 
     Archivo archivo =
         importar(
@@ -232,6 +231,7 @@ class ImportadorReimportacionTest {
     assertEquals(EstadoArchivo.PROCESADO_CON_ERRORES, archivo.getEstado());
     assertEquals("Juan", despues.getNombre());
     verify(donantesService, never()).crearDonante(any(DonanteInputDTO.class));
+    verify(donantesService, never()).registrarSiNoExiste(any());
   }
 
   @Test
@@ -252,6 +252,7 @@ class ImportadorReimportacionTest {
     Humana despues = (Humana) personasRepository.findById(juan.getId()).orElseThrow();
     assertEquals(EstadoArchivo.PROCESADO_CON_ERRORES, archivo.getEstado());
     assertEquals("Juan", despues.getNombre());
+    verify(donantesService, never()).registrarSiNoExiste(any());
   }
 
   private void guardar(Juridica juridica) {

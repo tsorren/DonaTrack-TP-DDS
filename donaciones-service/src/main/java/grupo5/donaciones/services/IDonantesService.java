@@ -19,6 +19,9 @@ public interface IDonantesService {
    */
   EstadoRegistroDonante registrarSiNoExiste(UUID personaId);
 
+  /** Consulta sin efectos: {@code true} solo si la persona es donante y está dada de baja. */
+  boolean estaDadoDeBaja(UUID personaId);
+
   /** Baja lógica. Idempotente: si ya estaba de baja no hace nada. */
   void eliminarDonante(UUID id);
 

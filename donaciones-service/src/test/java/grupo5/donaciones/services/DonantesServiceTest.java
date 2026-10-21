@@ -199,6 +199,34 @@ class DonantesServiceTest {
     verify(eventPublisher, never()).publicarDonanteRegistrado(any());
   }
 
+  @Test
+  void estaDadoDeBaja_conDonanteDeBaja_devuelveTrueSinEfectos() {
+    UUID personaId = UUID.randomUUID();
+    Donante deBaja = new Donante(personaId);
+    deBaja.darDeBaja();
+    when(donantesRepository.findById(personaId)).thenReturn(Optional.of(deBaja));
+
+    assertTrue(donantesService.estaDadoDeBaja(personaId));
+    verify(donantesRepository, never()).save(any(Donante.class));
+    verifyNoInteractions(eventPublisher);
+  }
+
+  @Test
+  void estaDadoDeBaja_conDonanteActivo_devuelveFalse() {
+    UUID personaId = UUID.randomUUID();
+    when(donantesRepository.findById(personaId)).thenReturn(Optional.of(new Donante(personaId)));
+
+    assertFalse(donantesService.estaDadoDeBaja(personaId));
+  }
+
+  @Test
+  void estaDadoDeBaja_sinDonante_devuelveFalse() {
+    UUID personaId = UUID.randomUUID();
+    when(donantesRepository.findById(personaId)).thenReturn(Optional.empty());
+
+    assertFalse(donantesService.estaDadoDeBaja(personaId));
+  }
+
   private Humana personaConDonanteExistente() {
     Humana humana =
         new Humana("Ana", "Lopez", java.time.LocalDate.of(1992, java.time.Month.MARCH, 3));
