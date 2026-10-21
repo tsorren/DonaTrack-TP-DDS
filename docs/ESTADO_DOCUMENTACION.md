@@ -265,6 +265,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/entrega-4/arquitectura/diagramas/`](entrega-4/arquitectura/diagramas/) | Diagramas Entrega 4 | Diagramas complementarios PlantUML + PNG: capas, integración AMQP, despliegue, secuencias del broker, planificación y eventos de logística, datos. Subcarpeta `rabbit/`: topología RabbitMQ por flujo. | 🟢 Sincronizado |
 | [`docs/entrega-4/donaciones/plan-broker-logistica.md`](entrega-4/donaciones/plan-broker-logistica.md) | Plan Entrega 4 | Plan de implementación unificado del Broker de Integración con Logística. | 🟢 Sincronizado |
 | [`docs/entrega-4/donaciones/bitacora-broker-logistica.md`](entrega-4/donaciones/bitacora-broker-logistica.md) | Bitácora Entrega 4 | Registro vivo de decisiones, preguntas y avances del broker (TLDR + Q&A). | 🟢 Sincronizado |
+| [`docs/entrega-4/donaciones/bitacora-persistencia.md`](entrega-4/donaciones/bitacora-persistencia.md) | Bitácora Entrega 4 | Registro vivo de la persistencia JPA/PostgreSQL de Donaciones: pasos, decisiones sobre el DER, hallazgos y Q&A. | 🟢 Sincronizado |
 | [`docs/entrega-4/donaciones/guion-demo-broker.md`](entrega-4/donaciones/guion-demo-broker.md) | Guion Entrega 4 | Guion de la demo del broker de logística (escenarios, comandos y qué explicar). | 🟢 Sincronizado |
 | [`docs/entregas/README.md`](entregas/README.md) | Currícula Cátedra | Matriz curricular e índice de enunciados oficiales y artefactos de Entregas 1 a 4. | 🟢 Sincronizado |
 
