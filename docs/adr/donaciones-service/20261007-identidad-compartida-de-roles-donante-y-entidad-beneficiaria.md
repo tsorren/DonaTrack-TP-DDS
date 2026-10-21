@@ -74,13 +74,13 @@ Justificación: es la de menor costo de migración, conserva la integridad refer
 | Baja de entidad → `Necesidad.desactivar()` en cascada; al reactivarla las necesidades **no** se reactivan (se vuelven a registrar) | `EntidadBeneficiariaService` |
 | Una propuesta cuya necesidad ya está inactiva no se puede aprobar (`409 NECESIDAD_INACTIVA`); la guarda corre en `actualizarEstado(APROBADA)`, único productor del evento que dispara la confirmación | `PropuestaDeAsignacionService` |
 | Anonimizar una persona → baja de sus roles activos + eventos + cascada | `PersonasService.eliminarPersona` |
-| Una persona anonimizada no puede volver a operar: registrar o reactivar un rol sobre ella responde `409 PERSONA_ANONIMIZADA` (se detecta por `Persona.estaAnonimizada()`, que compara el valor `ANONIMIZADO` de nombre o razón social, porque no hay un flag) | `DonantesService.crearDonante`, `EntidadBeneficiariaService.crearEntidad` |
+| Una persona anonimizada no puede volver a operar: registrar o reactivar un rol sobre ella, o editarla (`PUT /api/personas/{id}`, `actualizarParcial`), responde `409 PERSONA_ANONIMIZADA` (se detecta por `Persona.estaAnonimizada()`, que compara el valor `ANONIMIZADO` de nombre o razón social, porque no hay un flag; editarla la "des-anonimizaría" y dejaría saltear la regla) | `DonantesService.crearDonante`, `EntidadBeneficiariaService.crearEntidad`, `PersonasService.actualizarPersona` y `actualizarParcial` |
 | Una jurídica no puede recibir su propia donación (`donacion.donanteId == necesidad.entidadId`) | Solo al aprobar la propuesta (`PropuestaDeAsignacionService`, `409 DONACION_A_SI_MISMO`). El matching puede seguir generando esas propuestas: se estimó que ocurre muy pocas veces, y filtrarlo ahí exigiría que `DonacionIndependiente` conozca a su donante |
 | `PUT /api/entidades/{id}` exige `id == juridicaId`, **solo revalida** y responde `409 ENTIDAD_BENEFICIARIA_INACTIVA` si la entidad está de baja; reactivar es solo por `POST` | `EntidadBeneficiariaService` |
 | `DELETE /api/donantes/{id}` y `DELETE /api/entidades/{id}` pasan a ser baja lógica; un segundo `DELETE` no repite eventos ni cascada | Servicios |
 | `DonanteOutputDTO` y `EntidadBeneficiariaOutputDTO` exponen `activo` (cambio aditivo) | DTOs y mappers |
 
-El importador CSV, prerrequisito de esta decisión, ya no pisa los datos de una persona existente (`actualizarParcial`; el tipo jurídico nunca cambia). Además registra el rol de donante de una persona existente que no lo tenía, pero **no reactiva** a un donante dado de baja: esa fila se cuenta como error y no se actualiza, para que un CSV desactualizado no pueda revertir una baja deliberada.
+El importador CSV, prerrequisito de esta decisión, ya no pisa los datos de una persona existente (`actualizarParcial`; el tipo jurídico nunca cambia). Además registra el rol de donante de una persona existente que no lo tenía, pero **no reactiva** a un donante dado de baja: esa fila se cuenta como error y no se actualiza, para que un CSV desactualizado no pueda revertir una baja deliberada. El rol se registra **después** de aplicar la fila: una fila rechazada (por ejemplo, de tipo de persona distinto) no crea al donante ni publica `donante.registrado`. La baja se consulta antes, con `IDonantesService.estaDadoDeBaja`, que no tiene efectos.
 
 ### Orden de eventos del ciclo de vida del donante
 
@@ -95,7 +95,7 @@ Alternativas evaluadas:
 | Debilidad | Se rompe si se escalan consumidores o hay reencolado (hoy no hay ninguno); hay que retirar las colas viejas, que si quedan acumulan mensajes | Falla con una baja ya ejecutada: un alta atrasada recrearía el perfil de alguien dado de baja, porque la baja borró el perfil y no queda dónde comparar; haría falta una lápida (baja lógica en incentivos). `LocalDateTime` sin zona, con empates posibles |
 | Complejidad | Baja | Media-alta |
 
-**Elegida: cola única con un solo consumidor** (`incentivos.donante-ciclo-de-vida`, concurrencia 1, retirando las dos colas actuales). La implementación corresponde al equipo de `incentivos-service` y no forma parte de los cambios de Donaciones; hasta que se haga, el riesgo descrito arriba sigue abierto. La comparación por `fecha` queda como defensa adicional solo si más adelante se escalara a varios consumidores.
+**Elegida: cola única con un solo consumidor** (`incentivos.donante-ciclo-de-vida`, concurrencia 1, retirando las dos colas actuales). La implementación corresponde al equipo de `incentivos-service` y no forma parte de los cambios de Donaciones; hasta que se haga, el riesgo descrito arriba sigue abierto (registrado como [DTI-15](../DEUDA_TECNICA.md)). La comparación por `fecha` queda como defensa adicional solo si más adelante se escalara a varios consumidores.
 
 ### Consecuencias Positivas
 
@@ -108,7 +108,7 @@ Alternativas evaluadas:
 ### Consecuencias Negativas
 
 * **El `{id}` de `/api/donantes/{id}` y `/api/entidades/{id}` cambia de significado** (pasa a ser `personaId` / `juridicaId`). No hay datos persistidos que migrar (repositorios en memoria), pero cualquier cliente o colección que guarde ids de rol queda obsoleto.
-* `donanteId` queda *deprecated* en 8 schemas AMQP, a retirar en un ciclo posterior.
+* `donanteId` queda *deprecated* en 7 schemas AMQP (los que ya llevan `personaId`; en `donacion.segmentada`, que no lo lleva, solo se documenta la igualdad), a retirar en un ciclo posterior.
 * Las clases rol conservan un solo campo propio (`activo`): la custodia de reglas entre agregados (tipo, dirección, unicidad) vive en servicios, con una condición de carrera check-then-act que en memoria es aceptable y con JPA se resuelve con la transacción.
 * **Re-alta del donante:** incentivos crea un perfil nuevo y se pierde el historial, igual que hoy. Conservarlo requeriría un evento `donante.reactivado.v1`, fuera de alcance.
 * **Falla parcial de la baja:** si la cascada de una baja (necesidades de una entidad, o la publicación del evento de un donante) falla a la mitad, un segundo `DELETE` no la reintenta, porque la transición activo→inactivo ya ocurrió. En memoria es improbable; con JPA se resuelve con una transacción (`@Transactional`) que cubra el cambio de estado y la cascada.

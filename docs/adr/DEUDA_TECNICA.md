@@ -178,3 +178,15 @@
 | Implementation status | `[OBSERVED] not-started` — `Direccion` guarda `localidad`/`provincia`/`pais` como texto libre sin validar en `donaciones-service` y en `logistica-service`; `AlgoritmoOrdenadorSimple` ordena entregas por UUID por falta de coordenadas |
 | Target | `donaciones-service` (validación contra API Georef al cargar direcciones) · `logistica-service` (geocodificación y ordenamiento geográfico de entregas) |
 | Cuándo se saldará | **A definir** — posterior a la migración de `donaciones-service` a PostgreSQL |
+
+---
+
+## DTI-15 — Orden de eventos del ciclo de vida del donante en incentivos (cola única)
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261007-identidad-compartida](./donaciones-service/20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria.md) (sección «Orden de eventos del ciclo de vida del donante») |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] not-started` — `incentivos-service` mantiene dos colas (`incentivos.donante-registrado`, `incentivos.donante-dado-de-baja`) con un listener cada una. Con el id de rol igual al de la persona, un `DELETE` seguido de un `POST /api/donantes` rápido puede llegar al revés: el alta se ignora (el perfil existe), la baja borra el perfil y las siguientes `donacion.segmentada` y `donacion.recibida` se descartan (`defaultRequeueRejected=false`). Misiones y ranking dejan de contar en silencio |
+| Target | `incentivos-service` (`RabbitMQConfig`, `IncentivosEventosListener`): cola única `incentivos.donante-ciclo-de-vida`, concurrencia 1, retiro de las dos colas actuales. Instrucciones de entrega en el plan, Etapa 6 |
+| Cuándo se saldará | **A definir** — a cargo del equipo de `incentivos-service`; antes de mergear a `main`, o con el riesgo declarado en el PR |

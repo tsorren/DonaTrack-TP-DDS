@@ -10,11 +10,11 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-08** — Etapa 8 hecha (Gates 3 y 4 diferidos por falta de Docker): revisión independiente aplicada; Etapa 6 delegada a incentivos.
+> Última actualización: **2026-10-21** — Etapa 9 hecha: correcciones de la revisión de la PR #892 (importador, anonimización, Sonar, deuda DTI-15). Gates 3 y 4 siguen diferidos por falta de Docker; Etapa 6 delegada a incentivos.
 
 - **Qué estamos haciendo:** que el id de `Donante` y de `EntidadBeneficiaria` sea el de su persona (`donanteId = personaId`, `entidadId = juridicaId`). Así una persona no puede quedar registrada dos veces, dar de baja un rol no deja referencias colgadas y nadie puede volver EMPRESA a una entidad beneficiaria.
 - **Cómo:** opción A3 de la issue (se mantienen las clases con id compartido), baja lógica con un bool `activo`, y una sola cola en incentivos para el ciclo de vida del donante.
-- **Dónde estamos:** plan cerrado; Etapas 0 a 5 y 7 hechas, Etapa 6 delegada al equipo de incentivos, Etapa 8 (cierre) hecha. Baseline 437 tests; tras la Etapa 1, 442; tras la Etapa 3, 474; tras la Etapa 4, 492; tras la Etapa 5, 506; tras la revisión (Etapa 8), 511 en `donaciones-service` y reactor completo en verde. El ADR espera aprobación humana (`proposed`).
+- **Dónde estamos:** plan cerrado; Etapas 0 a 5 y 7 hechas, Etapa 6 delegada al equipo de incentivos, Etapa 8 (cierre) hecha. Baseline 437 tests; tras la Etapa 1, 442; tras la Etapa 3, 474; tras la Etapa 4, 492; tras la Etapa 5, 506; tras la revisión (Etapa 8), 511; tras las correcciones de la PR (Etapa 9), 516 en `donaciones-service`. El ADR espera aprobación humana (`proposed`).
 - **Bloqueante para seguir:** ninguno.
 - **Pendiente ajeno:** Etapa 6 (cola única en incentivos), a cargo del equipo de incentivos; hasta entonces el riesgo de orden de eventos sigue abierto. **Próximo paso nuestro:** PR (lo abre el equipo) y correr los Gates 3 y 4 con Docker.
 
@@ -33,6 +33,7 @@
 | 6 — Incentivos | Cola única con un solo consumidor | 🔀 Delegada al equipo de incentivos |
 | 7 — Contratos y docs | Schemas (`donanteId` deprecated), OpenAPI, catálogos, DDL, diagramas | ✅ Hecha |
 | 8 — Validación y cierre | Reactor completo, `integration-tests`, Sonar, revisión | ✅ Hecha (Gates 3 y 4 diferidos) |
+| 9 — Correcciones de la PR #892 | Importador valida antes de registrar, persona anonimizada no se edita, Sonar, DTI-15 | ✅ Hecha (Gates 3 y 4 diferidos) |
 
 ---
 
@@ -57,12 +58,18 @@
 | D15 | La Etapa 6 (cola única en incentivos) la implementa el equipo de incentivos; Donaciones solo deja la decisión y las instrucciones de entrega en el plan. | 2026-10-08 | Equipo |
 | D16 | `donanteId` se marca `deprecated` en los 7 schemas que ya llevan `personaId`; en `donacion.segmentada` (sin `personaId`) solo se documenta que vale lo mismo. | 2026-10-08 | Equipo |
 | D17 | Una persona anonimizada no puede volver a operar: registrar o reactivar un rol sobre ella da `409 PERSONA_ANONIMIZADA` (opción A del hallazgo A1 de la revisión). | 2026-10-08 | Equipo |
+| D18 | El importador consulta la baja (`estaDadoDeBaja`, sin efectos), aplica la fila y recién después registra el rol: una fila rechazada no deja efectos. | 2026-10-21 | Revisión de la PR #892 |
+| D19 | Una persona anonimizada tampoco se edita: `PUT /api/personas/{id}` y `actualizarParcial` dan `409 PERSONA_ANONIMIZADA`. | 2026-10-21 | Revisión de la PR #892 |
 
 ---
 
 ## Preguntas abiertas
 
-Ninguna.
+Decisiones humanas que dejó la revisión de la PR #892:
+
+1. **¿Quién acepta el ADR `20261007-…` y cuándo, antes o después del merge?** Está `proposed`; mergear equivale a asumir sus cambios REST (el `{id}` cambia de significado, `PUT /api/entidades/{id}` da 409 si la entidad está de baja, y un `GET` después de un `DELETE` da 200 con `activo=false`).
+2. **¿Quién implementa la Etapa 6 (DTI-15) y con qué fecha?** ¿#888 queda abierto hasta entonces?
+3. **¿`GET /api/donantes?canal=` debe devolver donantes dados de baja o anonimizados?** Hoy los incluye (`DonantesService.listarDonantesPorContacto`).
 
 ---
 
@@ -156,6 +163,18 @@ Ninguna.
   - **A4, declarado:** el orden de eventos baja/alta con incentivos sigue abierto hasta la Etapa 6 (a cargo del equipo de incentivos). El revisor recomienda no mergear a `main` sin ella o sin una nota de riesgo explícita en el PR.
   - **A7:** se agregaron tests para A1 (donante y entidad, incluida la no reactivación de un rol de baja) y para A8. No se agregó test de la falla parcial (A2): requeriría inyectar fallos que el modelo en memoria no tiene.
 - **Verificación `[VERIFIED]` final:** donaciones 511 tests, 0 fallos; reactor completo en verde.
+
+### 2026-10-21 — Etapa 9: correcciones de la revisión de la PR #892
+
+- **Origen:** revisión de la PR (`CHANGES_REQUESTED`, 1 BLOCKING y 7 ADVISORY). Se verificó cada hallazgo contra el head `6dafe46a` antes de corregirlo.
+- **B1 y A5 (D18):** `ImportadorService` corría `registrarSiNoExiste` antes de `actualizarParcial`; si la fila fallaba en el merge, el donante quedaba creado y `donante.registrado` (con credenciales) ya había salido. Nuevo `IDonantesService.estaDadoDeBaja(personaId)`, consulta sin efectos. El fix sugerido en la revisión usaba ese método, que no existía. El importador ahora: baja → error de fila; si no, `actualizarParcial`; y recién después `registrarSiNoExiste`. Tests: rojo confirmado primero (fallaban los 2 del importador), después el fix. Los tests del importador mockean `donantesService`, por eso antes no veían el efecto: ahora verifican `never().registrarSiNoExiste(any())`.
+- **A1 (D19):** `PersonasService` tenía la regla solo en el alta de roles. Un `PUT` con nombre nuevo hacía que `estaAnonimizada()` diera `false` y un `POST /api/donantes` reactivaba al donante. Helper privado `validarNoAnonimizada` en `actualizarPersona` y `actualizarParcial`. Efecto en el importador: una fila sobre una persona anonimizada ahora cuenta como error.
+- **A3:** el ADR y el plan decían 8 schemas con `donanteId` deprecated; son 7 (`donacion.segmentada` solo se documenta). Corregido.
+- **A4:** la Etapa 6 se registró como DTI-15 en `DEUDA_TECNICA.md` (con `README.md` y `ESTADO_DOCUMENTACION.md` sincronizados). El disparador concreto: `DELETE` + `POST /api/donantes` de la misma persona dentro de la ventana de consumo; incentivos procesa el alta como no-op y la baja borra el perfil; las siguientes `donacion.segmentada` y `donacion.recibida` se descartan (`defaultRequeueRejected=false`), y misiones y ranking dejan de contar en silencio. `[INFERRED]` probabilidad baja. «Cierra #888» no es una keyword de GitHub: #888 no se cierra solo.
+- **A6 y A7:** el stub de `existsById` en `crearDonante_conPersonaInexistente` era código muerto; ahora se stubea `personasRepository.findById`. Sonar: S5778 x3 (una sola invocación que puede lanzar por lambda de `assertThrows`) y S8694 (`Month.MARCH`). No se renumeró `ERR-EST-108`: repite el número de `ERR-VAL-108` y cambiar un código público queda fuera de alcance.
+- **Verificación `[VERIFIED]`:** `mvn clean test -pl donaciones-service -am` en verde (516 tests, 0 fallos) tras cada paso, con `spotless:apply`. Gates 3 y 4 `[DEFERRED_NO_DOCKER]`.
+- **Hallazgos fuera de alcance (no corregidos):** `ImportadorService` loguea la fila CSV entera (PII) en ERROR, ya estaba en la base; `NecesidadesService.listarConFiltros` no filtra las activas aunque `contratos-rest.md` dice «necesidades activas»; la guía `docs/IA/07-errores-frecuentes-sonarcloud-ia.md` no documenta S5778 ni S8694.
+- **Preguntas abiertas:** ver la sección de preguntas.
 
 ---
 
