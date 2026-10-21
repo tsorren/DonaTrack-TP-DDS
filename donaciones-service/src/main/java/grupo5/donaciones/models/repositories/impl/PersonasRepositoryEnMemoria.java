@@ -4,9 +4,11 @@ import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.util.Optional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class PersonasRepositoryEnMemoria extends CrudRepositoryEnMemoria<Persona>
     implements IPersonasRepository {
 

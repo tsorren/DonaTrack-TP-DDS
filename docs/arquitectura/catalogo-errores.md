@@ -211,6 +211,7 @@
 | Código | Constante enum | Descripción | HTTP Status | Nota |
 |---|---|---|---|---|
 | `ERR-EST-107` | `JURIDICA_SIN_REPRESENTANTES_RESTANTES` | Operación dejaría a la jurídica sin representantes | `409` | |
+| `ERR-EST-112` | `JURIDICA_REPRESENTANTE_EN_OTRA_JURIDICA` | La humana ya es representante de otra jurídica (una humana representa a una sola) | `409` | |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
 | `ERR-EST-409` | `ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA` | Fragmentación de ítem independiente inválida | `409` | |
 | `ERR-EST-413` | `SOLICITUD_ENTREGA_TRANSICION_INVALIDA` | Transición de estado de solicitud de entrega a logística inválida (broker) | `409` | |

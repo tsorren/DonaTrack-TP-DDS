@@ -34,6 +34,23 @@ public abstract sealed class Persona implements Anonimizable, AggregateRoot
     this.mediosDeContacto.add(new Telefono());
   }
 
+  /**
+   * Reconstituye una persona ya persistida: conserva id y medios tal cual, sin agregar el teléfono
+   * vacío que trae una persona nueva.
+   */
+  protected Persona(
+      UUID id,
+      TipoDocumento tipoDocumento,
+      String documento,
+      Direccion direccion,
+      List<MedioDeContacto> mediosDeContacto) {
+    this.id = id;
+    this.tipoDocumento = tipoDocumento;
+    this.documento = documento;
+    this.direccion = direccion;
+    this.mediosDeContacto = new ArrayList<>(mediosDeContacto);
+  }
+
   public List<MedioDeContacto> getMediosDeContacto() {
     return Collections.unmodifiableList(mediosDeContacto);
   }

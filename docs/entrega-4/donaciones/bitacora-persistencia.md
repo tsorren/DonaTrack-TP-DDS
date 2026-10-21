@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-21** — Paso 3 en curso (`direccion` hecha).
+> Última actualización: **2026-10-21** — Paso 3 hecho (dirección, personas y medios de contacto).
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
-- **Dónde estamos:** Pasos 0 a 2 cerrados y Paso 3 en curso. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo` y `direccion`.
+- **Dónde estamos:** Pasos 0 a 3 cerrados. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
 - **Bloqueante para seguir:** ninguno para el Paso 2. El Paso 4 (Donante/Entidad) depende de que se mergee la PR #892.
-- **Próximo paso:** Paso 3, segunda parte: `persona` (`JOINED`), `humana`, `juridica` y medios de contacto.
+- **Próximo paso:** Paso 3c (búsqueda de duplicados indexada, D-12) o Paso 4 (`donante` y `entidad_beneficiaria`, necesita la #892 mergeada).
 
 ---
 
@@ -27,7 +27,8 @@
 | 0 | Decisiones de diseño sobre el DER | ✅ Cerrado |
 | 1 | Endurecer infraestructura sobre la #897 y base de tests con Postgres | ✅ Hecho |
 | 2 | Catálogo (`categoria`, `subcategoria`, `alias`) y `archivo` | ✅ Hecho |
-| 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | 🔄 En curso (`direccion` hecha) |
+| 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | ✅ Hecho |
+| 3c | Búsqueda de duplicados indexada (D-12), hoy `findAll()` en memoria | ⏳ Pendiente |
 | 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ⏳ Pendiente |
 | 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | ⏳ Pendiente |
 | 6 | Refactor DTI-06 del dominio + reconstitución | ⏳ Pendiente |
@@ -101,8 +102,18 @@
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
 
-## Paso 3 — detalle (en curso)
+## Paso 3 — detalle
 
-- **3a — `direccion` (hecho).** Migración `V3__direccion.sql` con restricción `uq_direccion` (`UNIQUE NULLS NOT DISTINCT`, así `piso` y `departamento` nulos cuentan como iguales). `DireccionesPersistenciaMapper.resolver` busca la fila idéntica o la crea. 5 tests contra Postgres real: fila compartida, otro piso crea otra fila, nulos compartidos, ida y vuelta, y la restricción única como red de seguridad. `[VERIFIED]` Suite del módulo: 596 tests, 0 fallas.
-- **Límite conocido.** `[INFERRED]` Dos guardados concurrentes de una dirección nueva idéntica pueden chocar con la restricción única (uno falla); se tratará al agregar `@Transactional` en el Paso 10.
-- **3b — `persona`, `humana`, `juridica`, medios de contacto (pendiente).** Incluye reconstitución sin el teléfono vacío que `Persona()` agrega, representantes por `representante_de` (D-14) y reutilización de filas de medios de contacto al guardar.
+- **3a — `direccion`.** Migración `V3__direccion.sql` con restricción `uq_direccion` (`UNIQUE NULLS NOT DISTINCT`, así `piso` y `departamento` nulos cuentan como iguales). `DireccionesPersistenciaMapper.resolver` busca la fila idéntica o la crea. 5 tests contra Postgres real.
+- **3b — personas y medios de contacto.** Migración `V4__personas.sql`: `persona` (con `id_direccion`, documento y un índice único parcial `(tipo_documento, nro_documento)`), `humana`, `juridica`, `medio_de_contacto`, `telefono`, `correo`. Entidades `PersonaEntity` (`JOINED`, discriminador `tipo_persona`), `HumanaEntity`, `JuridicaEntity`, `MedioDeContactoEntity`, `TelefonoEntity`, `CorreoEntity`. `PersonaRepositoryJpaAdapter` es `@Transactional` en `save` porque una persona toca varias tablas.
+- **Reconstitución.** Constructores nuevos en `Persona`, `Humana` y `Juridica` que no agregan el teléfono vacío ni revalidan. Test dedicado: una persona nueva y la misma leída tienen la misma cantidad de medios.
+- **Representantes (D-14).** `humana.representante_de` es una sola columna, así que la base ya impide que una humana represente a dos jurídicas. Para que falle con un error claro, el adapter consulta antes de guardar y lanza `BusinessStateException(JURIDICA_REPRESENTANTE_EN_OTRA_JURIDICA)`, código nuevo `ERR-EST-112` (409) agregado a `ErrorCatalog` y a `docs/arquitectura/catalogo-errores.md`. Quitar un representante lo desliga (`representante_de = NULL`) y no borra a la humana; guardar una humana sola no le quita su representación.
+- **Medios de contacto.** Se reemplazan todos en cada guardado (no tienen identidad ni restricciones únicas); `orphanRemoval` borra las filas viejas.
+- **Tests contra Postgres real (16).** Ida y vuelta de humana y jurídica, medios sin teléfono extra, dirección compartida, reemplazo de medios, documento duplicado, varias personas sin documento, `findByDocumento`, representante guardado antes que la jurídica (orden de `PersonasService`), desligar sin borrar, humana sola, conflicto D-14, anonimización persistida y borrado en cascada. `[VERIFIED]` por mutación: sin la validación D-14 y sin conservar `representante_de` los tests correspondientes fallan.
+- **Hallazgos nuevos.**
+  - `[OBSERVED]` El DER no declara los valores de `tipo_juridico`; se usaron los 4 del dominio (`GUBERNAMENTAL`, `ONG`, `EMPRESA`, `INSTITUCION`). `[PROPOSED]` Actualizar el DER.
+  - `[OBSERVED]` `fecha_nacimiento` es `DATE` (D-10) y el DER dice `TIMESTAMPTZ`. `[PROPOSED]` Actualizar el DER.
+  - `[OBSERVED]` Los medios de contacto no tienen orden garantizado al leerlos (no hay columna de orden). El dominio no depende del orden.
+  - `[INFERRED]` `PersonasService` guarda los representantes y luego la jurídica; con este adapter la jurídica vuelve a guardar a sus representantes (inocuo, pero es un doble guardado).
+  - `[INFERRED]` `PersonaMapper` crea una `Humana` nueva por cada representante del DTO, por eso la regla D-14 no se dispara por la API hoy; sí al reutilizar una humana existente.
+  - `[OBSERVED]` `findAll()` y la búsqueda de duplicados (`ValidadorPersonaDuplicada`) cargan todas las personas en memoria: con Postgres y una importación masiva es lento. Pendiente en el Paso 3c.
