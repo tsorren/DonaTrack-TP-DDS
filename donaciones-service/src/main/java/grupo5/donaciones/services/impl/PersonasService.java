@@ -1,5 +1,7 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.config.AdminConstantes;
 import grupo5.donaciones.dto.personas.JuridicaInputDTO;
@@ -70,6 +72,7 @@ public class PersonasService implements IPersonasService {
   public PersonaOutputDTO actualizarPersona(UUID id, PersonaInputDTO input) {
     Persona persona =
         repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    validarNoAnonimizada(persona);
 
     validarCustodiaDeEntidad(persona, input);
 
@@ -85,6 +88,13 @@ public class PersonasService implements IPersonasService {
     notificacionesAsyncService.sincronizarPersona(mapper.toEventoPersonaSincronizadaV1(guardada));
 
     return mapper.toOutputDTO(guardada);
+  }
+
+  /** Una persona anonimizada no se edita: editarla la "des-anonimizaría" y le devolvería roles. */
+  private void validarNoAnonimizada(Persona persona) {
+    if (persona.estaAnonimizada()) {
+      throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA);
+    }
   }
 
   /**
@@ -105,6 +115,7 @@ public class PersonasService implements IPersonasService {
   public PersonaOutputDTO actualizarParcial(UUID id, PersonaInputDTO input) {
     Persona persona =
         repository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+    validarNoAnonimizada(persona);
 
     mapper.mergeEntity(persona, input);
 

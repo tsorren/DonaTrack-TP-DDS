@@ -628,6 +628,7 @@ paths:
       responses:
         '200': { description: Persona actualizada }
         '404': { description: Persona no encontrada }
+        '409': { description: La persona fue anonimizada y no se puede editar (PERSONA_ANONIMIZADA) }
     delete:
       summary: Eliminar persona
       operationId: eliminarPersonaDonaciones

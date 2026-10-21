@@ -3,6 +3,7 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
@@ -222,6 +223,36 @@ class PersonasServiceTest {
     service.actualizarPersona(ong.getId(), juridicaInput(null, true));
 
     assertEquals(TipoJuridico.ONG, ong.getTipo());
+  }
+
+  @Test
+  void actualizarPersona_conPersonaAnonimizada_lanzaPersonaAnonimizadaYNoMuta() {
+    humana.anonimizar();
+    UUID id = humana.getId();
+    when(repository.findById(id)).thenReturn(Optional.of(humana));
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.actualizarPersona(id, inputDTO));
+
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
+    assertTrue(humana.estaAnonimizada());
+    verify(repository, never()).save(any());
+    verify(notificacionesAsyncService, never()).sincronizarPersona(any());
+  }
+
+  @Test
+  void actualizarParcial_conPersonaAnonimizada_lanzaPersonaAnonimizadaYNoMuta() {
+    humana.anonimizar();
+    UUID id = humana.getId();
+    when(repository.findById(id)).thenReturn(Optional.of(humana));
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.actualizarParcial(id, inputDTO));
+
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
+    assertTrue(humana.estaAnonimizada());
+    verify(repository, never()).save(any());
+    verify(notificacionesAsyncService, never()).sincronizarPersona(any());
   }
 
   private static JuridicaInputDTO juridicaInput(TipoJuridico tipo, boolean conDireccion) {

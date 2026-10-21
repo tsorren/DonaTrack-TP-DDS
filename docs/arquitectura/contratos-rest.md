@@ -69,7 +69,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `PATCH` | `/api/items-normalizados/{id}` | Revisión y reclasificación manual de normalización | `ItemDonacionNormalizadoPatchDTO` | `200`, `400`, `404` |
 | `POST` | `/api/personas` | Alta de persona y contactos en donaciones | `PersonaInputDTO` | `201`, `400` |
 | `GET` | `/api/personas` | Listado de personas (filtro opcional por `?tipo=HUMANA|JURIDICA`) | — | `200` |
-| `PUT` | `/api/personas/{id}` | Actualización de datos de persona (`400` si una jurídica con entidad activa pasaría a EMPRESA o sin dirección) | `PersonaInputDTO` | `200`, `400`, `404` |
+| `PUT` | `/api/personas/{id}` | Actualización de datos de persona (`400` si una jurídica con entidad activa pasaría a EMPRESA o sin dirección; `409` si la persona fue anonimizada) | `PersonaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/personas/{id}` | Baja y supresión de persona (da de baja sus roles de donante y entidad) | — | `204`, `404` |
 
 > **Notas de reconciliación con el código fuente Java (`donaciones-service`):**
