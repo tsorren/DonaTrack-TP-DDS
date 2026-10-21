@@ -137,7 +137,7 @@ class EntidadBeneficiariaServiceTest {
     BusinessStateException ex =
         assertThrows(BusinessStateException.class, () -> service.crearEntidad(input));
 
-    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA_NO_OPERABLE, ex.getError());
     assertFalse(deBaja.estaActivo());
     verify(repository, never()).save(any(EntidadBeneficiaria.class));
   }

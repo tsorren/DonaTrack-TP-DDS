@@ -11,9 +11,11 @@ import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
+import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.Period;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,10 +84,10 @@ class NecesidadRecurrenteTest {
 
   @Test
   void asignarDonacion_cuandoNoHayPeriodoActivo_deberiaLanzarExcepcion() {
-    necesidad.getPeriodos().clear();
+    NecesidadRecurrente sinPeriodo = necesidadSinPeriodoActual();
 
     BusinessStateException excepcion =
-        assertThrows(BusinessStateException.class, () -> necesidad.asignarDonacion(d100));
+        assertThrows(BusinessStateException.class, () -> sinPeriodo.asignarDonacion(d100));
 
     assertEquals(ErrorCatalog.SIN_PERIODO_ACTIVO, excepcion.getError());
   }
@@ -110,10 +112,27 @@ class NecesidadRecurrenteTest {
 
   @Test
   void renovarPeriodoSiCorresponde_cuandoNoTienePeriodos_deberiaRetornarTrueYCrearPeriodo() {
-    necesidad.getPeriodos().clear();
+    NecesidadRecurrente sinPeriodo = necesidadSinPeriodoActual();
 
-    assertTrue(necesidad.renovarPeriodoSiCorresponde(TEST_DATE));
+    LocalDate antes = LocalDate.now(ZoneId.systemDefault());
+    assertTrue(sinPeriodo.renovarPeriodoSiCorresponde(TEST_DATE));
+    LocalDate despues = LocalDate.now(ZoneId.systemDefault());
 
-    assertEquals(1, necesidad.getPeriodos().size());
+    // El período inicial sigue en la lista (solo está oculto); el nuevo parte de hoy.
+    assertEquals(2, sinPeriodo.getPeriodos().size());
+    LocalDate fechaFin = sinPeriodo.getPeriodos().getLast().fechaFin();
+    assertFalse(fechaFin.isBefore(antes.plus(Period.ofWeeks(1))));
+    assertFalse(fechaFin.isAfter(despues.plus(Period.ofWeeks(1))));
+  }
+
+  /** Los períodos no se pueden vaciar desde afuera: se simula que no hay período actual. */
+  private NecesidadRecurrente necesidadSinPeriodoActual() {
+    return new NecesidadRecurrente(
+        subcategoriaId, 100, "Sin período actual", Period.ofWeeks(1), TEST_DATE.minusDays(5)) {
+      @Override
+      public PeriodoNecesidad obtenerPeriodoActual() {
+        return null;
+      }
+    };
   }
 }

@@ -10,7 +10,7 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-21** — Etapa 9 hecha: correcciones de la revisión de la PR #892 (importador, anonimización, Sonar, deuda DTI-15). Gates 3 y 4 siguen diferidos por falta de Docker; Etapa 6 delegada a incentivos.
+> Última actualización: **2026-10-21** — Etapa 9 hecha: correcciones de la revisión de la PR #892 (importador, anonimización, Sonar, deuda DTI-23). Gates 3 y 4 siguen diferidos por falta de Docker; Etapa 6 delegada a incentivos.
 
 - **Qué estamos haciendo:** que el id de `Donante` y de `EntidadBeneficiaria` sea el de su persona (`donanteId = personaId`, `entidadId = juridicaId`). Así una persona no puede quedar registrada dos veces, dar de baja un rol no deja referencias colgadas y nadie puede volver EMPRESA a una entidad beneficiaria.
 - **Cómo:** opción A3 de la issue (se mantienen las clases con id compartido), baja lógica con un bool `activo`, y una sola cola en incentivos para el ciclo de vida del donante.
@@ -33,7 +33,7 @@
 | 6 — Incentivos | Cola única con un solo consumidor | 🔀 Delegada al equipo de incentivos |
 | 7 — Contratos y docs | Schemas (`donanteId` deprecated), OpenAPI, catálogos, DDL, diagramas | ✅ Hecha |
 | 8 — Validación y cierre | Reactor completo, `integration-tests`, Sonar, revisión | ✅ Hecha (Gates 3 y 4 diferidos) |
-| 9 — Correcciones de la PR #892 | Importador valida antes de registrar, persona anonimizada no se edita, Sonar, DTI-15 | ✅ Hecha (Gates 3 y 4 diferidos) |
+| 9 — Correcciones de la PR #892 | Importador valida antes de registrar, persona anonimizada no se edita, Sonar, DTI-23 | ✅ Hecha (Gates 3 y 4 diferidos) |
 
 ---
 
@@ -57,9 +57,9 @@
 | D14 | El importador registra el rol de donante de una persona existente, pero **no reactiva** a un donante dado de baja (opción B): la fila cuenta como error y no se actualiza. | 2026-10-08 | Equipo |
 | D15 | La Etapa 6 (cola única en incentivos) la implementa el equipo de incentivos; Donaciones solo deja la decisión y las instrucciones de entrega en el plan. | 2026-10-08 | Equipo |
 | D16 | `donanteId` se marca `deprecated` en los 7 schemas que ya llevan `personaId`; en `donacion.segmentada` (sin `personaId`) solo se documenta que vale lo mismo. | 2026-10-08 | Equipo |
-| D17 | Una persona anonimizada no puede volver a operar: registrar o reactivar un rol sobre ella da `409 PERSONA_ANONIMIZADA` (opción A del hallazgo A1 de la revisión). | 2026-10-08 | Equipo |
+| D17 | Una persona anonimizada no puede volver a operar: registrar o reactivar un rol sobre ella da `409 PERSONA_ANONIMIZADA_NO_OPERABLE` (opción A del hallazgo A1 de la revisión). | 2026-10-08 | Equipo |
 | D18 | El importador consulta la baja (`estaDadoDeBaja`, sin efectos), aplica la fila y recién después registra el rol: una fila rechazada no deja efectos. | 2026-10-21 | Revisión de la PR #892 |
-| D19 | Una persona anonimizada tampoco se edita: `PUT /api/personas/{id}` y `actualizarParcial` dan `409 PERSONA_ANONIMIZADA`. | 2026-10-21 | Revisión de la PR #892 |
+| D19 | Una persona anonimizada tampoco se edita: `PUT /api/personas/{id}` y `actualizarParcial` dan `409 PERSONA_ANONIMIZADA_NO_OPERABLE`. | 2026-10-21 | Revisión de la PR #892 |
 
 ---
 
@@ -68,7 +68,7 @@
 Decisiones humanas que dejó la revisión de la PR #892:
 
 1. **¿Quién acepta el ADR `20261007-…` y cuándo, antes o después del merge?** Está `proposed`; mergear equivale a asumir sus cambios REST (el `{id}` cambia de significado, `PUT /api/entidades/{id}` da 409 si la entidad está de baja, y un `GET` después de un `DELETE` da 200 con `activo=false`).
-2. **¿Quién implementa la Etapa 6 (DTI-15) y con qué fecha?** ¿#888 queda abierto hasta entonces?
+2. **¿Quién implementa la Etapa 6 (DTI-23) y con qué fecha?** ¿#888 queda abierto hasta entonces?
 3. **¿`GET /api/donantes?canal=` debe devolver donantes dados de baja o anonimizados?** Hoy los incluye (`DonantesService.listarDonantesPorContacto`).
 
 ---
@@ -156,7 +156,7 @@ Decisiones humanas que dejó la revisión de la PR #892:
 - **Mergeabilidad con `E4_donaciones_broker` (simulada con `git merge-tree`):** el código Java (`PropuestaDeAsignacionService`, su test y `ErrorCatalog`) se fusiona sin conflictos; hay 3 conflictos de documentación (`ESTADO_DOCUMENTACION.md`, `contratos-rest.md`, `matriz-productor-consumidor.md`) a resolver a mano.
 - **Revisión `INDEPENDENT_REVIEW`:** un subagente recibió solo los artefactos (rango `ENTREGA_4..HEAD`, plan, ADR, política de revisión) y no mi razonamiento. Veredicto `CHANGES_REQUIRED`: 1 BLOCKING y 8 ADVISORY; puntaje del ADR 4.1/5.0 (estimado por el revisor). Contrastó ejecutando el reactor (506 tests en ese momento) y `spotless:check`.
   - **B1 (BLOCKING), corregido:** tres 409 nuevos (`POST /api/donaciones`, `POST /api/necesidades`, `PUT /api/asignaciones/propuestas/{id}/estado`) no estaban en `contratos-rest.md` ni en el OpenAPI. Mi Etapa 7 los había omitido.
-  - **A1, corregido (D17):** reactivar un rol sobre una persona anonimizada la «resucitaba» y publicaba `donante.registrado` con `ANONIMIZADO`. Nueva `Persona.estaAnonimizada()` y `409 PERSONA_ANONIMIZADA` (`ERR-EST-108`) en `crearDonante` y `crearEntidad`. Limitación: se detecta por el valor `ANONIMIZADO` (no hay flag).
+  - **A1, corregido (D17):** reactivar un rol sobre una persona anonimizada la «resucitaba» y publicaba `donante.registrado` con `ANONIMIZADO`. Nueva `Persona.estaAnonimizada()` y `409 PERSONA_ANONIMIZADA_NO_OPERABLE` (`ERR-EST-108`) en `crearDonante` y `crearEntidad`. Limitación: se detecta por el valor `ANONIMIZADO` (no hay flag).
   - **A8, corregido:** `validarAprobable` corría antes que el chequeo de estado; ahora solo si la propuesta está `PENDIENTE` (una ya aprobada vuelve a dar el error de transición).
   - **A5/A6, corregidos:** encabezado del plan, resumen de la bitácora y tres frases del ADR desactualizados (`registrar`, «ni confirmar», «registrado como deuda» siendo falso).
   - **A2/A3, declarados:** falla parcial de la baja (cascada o evento) no reintentable, y carrera check-then-act en el alta; ambos se resuelven con una transacción al pasar a JPA. Agregados a las consecuencias del ADR.
@@ -170,9 +170,11 @@ Decisiones humanas que dejó la revisión de la PR #892:
 - **B1 y A5 (D18):** `ImportadorService` corría `registrarSiNoExiste` antes de `actualizarParcial`; si la fila fallaba en el merge, el donante quedaba creado y `donante.registrado` (con credenciales) ya había salido. Nuevo `IDonantesService.estaDadoDeBaja(personaId)`, consulta sin efectos. El fix sugerido en la revisión usaba ese método, que no existía. El importador ahora: baja → error de fila; si no, `actualizarParcial`; y recién después `registrarSiNoExiste`. Tests: rojo confirmado primero (fallaban los 2 del importador), después el fix. Los tests del importador mockean `donantesService`, por eso antes no veían el efecto: ahora verifican `never().registrarSiNoExiste(any())`.
 - **A1 (D19):** `PersonasService` tenía la regla solo en el alta de roles. Un `PUT` con nombre nuevo hacía que `estaAnonimizada()` diera `false` y un `POST /api/donantes` reactivaba al donante. Helper privado `validarNoAnonimizada` en `actualizarPersona` y `actualizarParcial`. Efecto en el importador: una fila sobre una persona anonimizada ahora cuenta como error.
 - **A3:** el ADR y el plan decían 8 schemas con `donanteId` deprecated; son 7 (`donacion.segmentada` solo se documenta). Corregido.
-- **A4:** la Etapa 6 se registró como DTI-15 en `DEUDA_TECNICA.md` (con `README.md` y `ESTADO_DOCUMENTACION.md` sincronizados). El disparador concreto: `DELETE` + `POST /api/donantes` de la misma persona dentro de la ventana de consumo; incentivos procesa el alta como no-op y la baja borra el perfil; las siguientes `donacion.segmentada` y `donacion.recibida` se descartan (`defaultRequeueRejected=false`), y misiones y ranking dejan de contar en silencio. `[INFERRED]` probabilidad baja. «Cierra #888» no es una keyword de GitHub: #888 no se cierra solo.
+- **A4:** la Etapa 6 se registró como DTI-23 en `DEUDA_TECNICA.md` (con `README.md` y `ESTADO_DOCUMENTACION.md` sincronizados). El disparador concreto: `DELETE` + `POST /api/donantes` de la misma persona dentro de la ventana de consumo; incentivos procesa el alta como no-op y la baja borra el perfil; las siguientes `donacion.segmentada` y `donacion.recibida` se descartan (`defaultRequeueRejected=false`), y misiones y ranking dejan de contar en silencio. `[INFERRED]` probabilidad baja. «Cierra #888» no es una keyword de GitHub: #888 no se cierra solo.
 - **A6 y A7:** el stub de `existsById` en `crearDonante_conPersonaInexistente` era código muerto; ahora se stubea `personasRepository.findById`. Sonar: S5778 x3 (una sola invocación que puede lanzar por lambda de `assertThrows`) y S8694 (`Month.MARCH`). No se renumeró `ERR-EST-108`: repite el número de `ERR-VAL-108` y cambiar un código público queda fuera de alcance.
 - **Verificación `[VERIFIED]`:** `mvn clean test -pl donaciones-service -am` en verde (516 tests, 0 fallos) tras cada paso, con `spotless:apply`. Gates 3 y 4 `[DEFERRED_NO_DOCKER]`.
+- **Integración con `ENTREGA_4` (110 commits), `[VERIFIED]` con el reactor completo:** (1) los 6 conflictos eran de documentación (`ESTADO_DOCUMENTACION.md`, `README.md`, `DEUDA_TECNICA.md`, `contratos-rest.md`, `catalogo-mensajes.md`, `matriz-productor-consumidor.md`) y se resolvieron conservando ambos lados; en la matriz, la fila de `DonacionAsignada` es la de `ENTREGA_4` (Logística dejó de consumirla). (2) **Colisión que git no marcó:** `ENTREGA_4` agregó `ErrorCatalog.PERSONA_ANONIMIZADA` (`ERR-EST-902`, Notificaciones rechaza sincronizar réplicas anonimizadas; ADR `20261018`) y la de Donaciones tenía el mismo nombre con `ERR-EST-108`: dos constantes iguales en el enum, no compilaba. Se renombró la de Donaciones a `PERSONA_ANONIMIZADA_NO_OPERABLE` y no se tocó la de Notificaciones. Alternativa descartada por ahora: reutilizar la de `ERR-EST-902`, que cambia el significado de un código ya documentado por otro equipo. (3) **DTI:** `ENTREGA_4` había reservado DTI-15 para el DTI-14 de direcciones de esta rama (ya existía un DTI-14 del broker): se renumeró, incluido el ADR (`20261009-dti-15-…`). La Etapa 6 pasó a **DTI-23**, relacionada con DTI-22 (mismo origen en `incentivos-service`).
+- **Hallazgo nuevo (no corregido):** DTI-21 (alcance REST de `EntidadBeneficiaria`) dice que el servicio hace `repository.delete(entidad)`; con esta PR el `DELETE` es baja lógica y el ADR `20261007-…` registra la decisión que DTI-21 pedía. Falta actualizar esa entrada.
 - **Hallazgos fuera de alcance (no corregidos):** `ImportadorService` loguea la fila CSV entera (PII) en ERROR, ya estaba en la base; `NecesidadesService.listarConFiltros` no filtra las activas aunque `contratos-rest.md` dice «necesidades activas»; la guía `docs/IA/07-errores-frecuentes-sonarcloud-ia.md` no documenta S5778 ni S8694.
 - **Preguntas abiertas:** ver la sección de preguntas.
 

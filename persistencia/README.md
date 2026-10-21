@@ -14,8 +14,8 @@ Un único servidor **PostgreSQL 16** ([OBSERVED]) aloja cuatro schemas lógicos,
 donatrack (base de datos)
 ├── schema: notificaciones  ← notificaciones-service
 ├── schema: donaciones       ← donaciones-service (placeholder)
-├── schema: logistica        ← logistica-service  (placeholder)
-└── schema: incentivos       ← incentivos-service (placeholder)
+├── schema: logistica        ← logistica-service
+└── schema: incentivos       ← incentivos-service
 ```
 
 > **Por qué un único servidor:** Reduce el consumo de ~800 MB (4 × 200 MB por contenedor separado) a un único demonio PostgreSQL. En producción, cada schema puede migrarse a instancias RDS/Aurora independientes sin cambios en el código JPA.
@@ -24,15 +24,17 @@ donatrack (base de datos)
 
 ## Roles PostgreSQL y permisos
 
-Todos los roles se crean idempotentemente en [`01-init-schemas-roles.sql`](init-db/01-init-schemas-roles.sql) ([OBSERVED]).
+Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas-roles.sql`](init-db/01-init-schemas-roles.sql); [`02-set-role-passwords.sh`](init-db/02-set-role-passwords.sh) les fija la contraseña desde variables de entorno ([OBSERVED]). Ninguna contraseña está versionada.
 
-| Role                  | Password                | Schema propio    | Estado                     |
-|-----------------------|-------------------------|------------------|----------------------------|
-| `admin`               | `admin_secure_password` | —                | Superusuario Docker        |
-| `notificaciones_user` | `notif_pass_2026`       | `notificaciones` | **Activo** — JPA conectado |
-| `donaciones_user`     | `dona_pass_2026`        | `donaciones`     | Placeholder                |
-| `logistica_user`      | `logi_pass_2026`        | `logistica`      | Placeholder                |
-| `incentivos_user`     | `inc_pass_2026`         | `incentivos`     | Placeholder                |
+| Role                  | Variable de contraseña (`.env`) | Schema propio    | Estado                     |
+|-----------------------|---------------------------------|------------------|----------------------------|
+| `admin`               | `POSTGRES_PASSWORD`             | —                | Superusuario Docker        |
+| `notificaciones_user` | `NOTIFICACIONES_DB_PASSWORD`    | `notificaciones` | **Activo** — JPA conectado |
+| `donaciones_user`     | `DONACIONES_DB_PASSWORD`        | `donaciones`     | Placeholder                |
+| `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | **Activo** — JPA conectado |
+| `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
+
+Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) y `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (MinIO y la access/secret key de incentivos); `application.properties` no les da valor por defecto.
 
 ### Política de permisos (aislamiento cruzado)
 
@@ -61,7 +63,7 @@ volumes:
   - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
 ```
 
-PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-initdb.d` al crear la base de datos por primera vez. Los bloques `DO $$` garantizan **idempotencia**: el script puede re-ejecutarse sin error si los roles ya existen. [OBSERVED]
+PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-initdb.d` únicamente al inicializar el volumen `pg_data` por primera vez. Los bloques `DO $$` garantizan **idempotencia** si el script se ejecuta manualmente; sin embargo, si ya tenías un volumen local creado antes de un cambio en `01-init-schemas-roles.sql`, recrealo con `docker compose down -v` (o ejecutá el script manualmente contra el contenedor). [OBSERVED]
 
 ---
 
@@ -69,12 +71,12 @@ PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-i
 
 [OBSERVED] desde `docker-compose.yml` y `application-postgres.properties`:
 
-| Servicio                 | Puerto | JDBC URL                                                                   | Usuario               |
-|--------------------------|--------|----------------------------------------------------------------------------|-----------------------|
-| `notificaciones-service` | 8081   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones`   | `notificaciones_user` |
-| `donaciones-service`     | 8080   | pendiente (sin datasource configurado aún)                                 | `donaciones_user`     |
-| `logistica-service`      | 8083   | pendiente (sin datasource configurado aún)                                 | `logistica_user`      |
-| `incentivos-service`     | 8082   | pendiente (sin datasource configurado aún)                                 | `incentivos_user`     |
+| Servicio                 | Puerto | JDBC URL                                                                 | Usuario               |
+|--------------------------|--------|--------------------------------------------------------------------------|-----------------------|
+| `notificaciones-service` | 8081   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones` | `notificaciones_user` |
+| `donaciones-service`     | 8080   | pendiente (sin datasource configurado aún)                               | `donaciones_user`     |
+| `logistica-service`      | 8083   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=logistica`      | `logistica_user`      |
+| `incentivos-service`     | 8082   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=incentivos`     | `incentivos_user`     |
 
 ### Acceso local (fuera de Docker)
 
@@ -102,9 +104,11 @@ Cada servicio administra su propio historial en `flyway_schema_history` dentro d
 | Servicio                 | Versión | Archivo                                                                                                               | Tablas creadas                                                                  |
 |--------------------------|---------|-----------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
 | `notificaciones-service` | V1      | [`V1__init_notificaciones.sql`](../notificaciones-service/src/main/resources/db/migration/V1__init_notificaciones.sql) | `persona`, `medio_de_contacto`, `notificacion`, `notificacion_historial_estado` |
-| `donaciones-service`     | —       | pendiente                                                                                                             | —                                                                               |
-| `logistica-service`      | —       | pendiente                                                                                                             | —                                                                               |
-| `incentivos-service`     | —       | pendiente                                                                                                             | —                                                                               |
+| `notificaciones-service` | V2      | [`V2__inbox_notificaciones.sql`](../notificaciones-service/src/main/resources/db/migration/V2__inbox_notificaciones.sql) | `evento_procesado` (Transactional Inbox) |
+| `incentivos-service`     | V1      | [`V1__init_incentivos.sql`](../incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql) | `donante_incentivos`, `mision`, `ranking_mensual` y sus tablas hijas |
+| `logistica-service`      | V1      | [`V1__init_logistica.sql`](../logistica-service/src/main/resources/db/migration/V1__init_logistica.sql) | `chofer`, `camion`, `ruta`, `entrega`, direcciones, cambios de estado, solicitudes y `evento_entrega` |
+| `logistica-service`      | V2      | [`V2__orden_visita_rutas.sql`](../logistica-service/src/main/resources/db/migration/V2__orden_visita_rutas.sql) | `parada_ruta` |
+| `donaciones-service`     | —       | sin migraciones (no tiene entidades JPA) | —                                                                               |
 
 #### Esquema del schema `notificaciones` (V1) [OBSERVED]
 
@@ -130,7 +134,7 @@ postgres:
   environment:
     POSTGRES_DB: donatrack
     POSTGRES_USER: admin
-    POSTGRES_PASSWORD: admin_secure_password
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?ver .env.example}  # más NOTIFICACIONES_DB_PASSWORD, etc.
   volumes:
     - postgres_data:/var/lib/postgresql/data
     - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
@@ -159,22 +163,24 @@ Parámetros de conexión:
 | Motor          | PostgreSQL               |
 | Servidor       | `postgres`              |
 | Usuario        | `notificaciones_user`   |
-| Contraseña     | `notif_pass_2026`       |
+| Contraseña     | `NOTIFICACIONES_DB_PASSWORD` de `.env` |
 | Base de datos  | `donatrack`             |
 
-> Para explorar como superusuario usar `admin` / `admin_secure_password`.
+> Para explorar como superusuario usar `admin` / `POSTGRES_PASSWORD` de `.env`.
 
 ### MinIO (almacenamiento de objetos) [OBSERVED]
 
 | Acceso       | URL                     | Credenciales                        |
 |--------------|-------------------------|-------------------------------------|
 | API S3       | `http://localhost:9000` | —                                   |
-| Console (UI) | `http://localhost:9001` | `minioadmin` / `minioadminpassword` |
+| Console (UI) | `http://localhost:9001` | `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` de `.env` |
 
 ```yaml
 minio:
-  image: quay.io/minio/minio:RELEASE.2024-10-02T17-50-41Z
+  image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
   command: server /data --console-address ":9001"
+  healthcheck:
+    test: [ "CMD", "mc", "ready", "local" ]   # la imagen no trae curl
 ```
 
 ---
@@ -190,7 +196,11 @@ notificaciones-service/src/main/resources/
 ├── application.properties                 ← perfil default (en memoria, sin BD)
 ├── application-postgres.properties        ← perfil postgres: datasource + Flyway
 └── db/migration/
-    └── V1__init_notificaciones.sql        ← migración inicial del schema notificaciones
+    ├── V1__init_notificaciones.sql        ← migración inicial del schema notificaciones
+    └── V2__inbox_notificaciones.sql       ← tabla evento_procesado (inbox)
+
+incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql
+logistica-service/src/main/resources/db/migration/V1__init_logistica.sql, V2__orden_visita_rutas.sql
 ```
 
 ---

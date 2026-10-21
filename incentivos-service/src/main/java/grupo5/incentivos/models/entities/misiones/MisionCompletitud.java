@@ -21,6 +21,17 @@ public class MisionCompletitud extends Mision {
         subcategoriasObjetivo);
   }
 
+  private MisionCompletitud(MisionEstado estado, Set<String> categoriasDonadas) {
+    super(estado);
+    if (categoriasDonadas != null) {
+      this.categoriasDonadas.addAll(categoriasDonadas);
+    }
+  }
+
+  public static MisionCompletitud reconstituir(MisionEstado estado, Set<String> categoriasDonadas) {
+    return new MisionCompletitud(estado, categoriasDonadas);
+  }
+
   @Override
   protected Integer calcularNuevoProgreso(DonanteIncentivos donante, EventoDonacion evento) {
     if (evento.getCategorias() != null) {

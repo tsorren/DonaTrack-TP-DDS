@@ -7,7 +7,6 @@ import grupo5.incentivos.models.entities.donante.EventoDonacion;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +27,7 @@ class MetricasTest {
     assertEquals(0, metricas.getTotalDonacionesExitosas());
     assertEquals(0, metricas.getTotalOrganizacionesAyudadas());
     assertNull(metricas.getUltimaDonacion());
-    assertTrue(metricas.getHistorialDonaciones().isEmpty());
+    assertTrue(metricas.donacionesPorPeriodo().isEmpty());
     assertTrue(metricas.getOrganizacionesAyudadas().isEmpty());
   }
 
@@ -41,7 +40,18 @@ class MetricasTest {
 
     assertEquals(1, metricas.getTotalDonacionesHistoricas());
     assertEquals(fecha, metricas.getUltimaDonacion());
-    assertEquals(1, metricas.getHistorialDonaciones().size());
+    assertEquals(1L, metricas.donacionesEnMes(YearMonth.of(2026, Month.MAY)));
+  }
+
+  @Test
+  void registrarDonacion_variasEnElMismoMes_deberiaAcumularEnUnSoloPeriodo() {
+    metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 1));
+    metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 15));
+    metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 31));
+
+    assertEquals(3, metricas.getTotalDonacionesHistoricas());
+    assertEquals(1, metricas.donacionesPorPeriodo().size());
+    assertEquals(3L, metricas.donacionesEnMes(YearMonth.of(2026, Month.MAY)));
   }
 
   @Test
@@ -74,12 +84,12 @@ class MetricasTest {
   }
 
   @Test
-  void getHistorialDonaciones_debeRetornarCopiaInmutable() {
+  void donacionesPorPeriodo_debeRetornarCopiaInmutable() {
     metricas.registrarDonacion(EventoDonacionMother.enFecha(2026, 5, 1));
-    List<EventoDonacion> historial = metricas.getHistorialDonaciones();
-    EventoDonacion eventoExtra = EventoDonacionMother.enFecha(2026, 5, 2);
+    Map<YearMonth, Long> porPeriodo = metricas.donacionesPorPeriodo();
+    YearMonth otroMes = YearMonth.of(2026, Month.JUNE);
 
-    assertThrows(UnsupportedOperationException.class, () -> historial.add(eventoExtra));
+    assertThrows(UnsupportedOperationException.class, () -> porPeriodo.put(otroMes, 1L));
   }
 
   @Test

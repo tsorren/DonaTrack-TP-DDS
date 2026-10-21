@@ -9,12 +9,12 @@ Este directorio contiene los scripts y herramientas de soporte utilizados por la
 ### A. Framework de Notificaciones (`shared_notifier.js`)
 Módulo centralizado y desacoplado bajo principios **SOLID** para despacho de mensajes a canales externos (Discord):
 * **Single Responsibility (SRP):** El transporte de red (`DiscordNotifierChannel`), la resolución de identidades de usuario (`UserResolver`) y las reglas de negocio de formato de cada mensaje (`NotificationFormatter`) residen en clases independientes y cohesivas.
-* **Open/Closed (OCP):** Nuevos formatos de notificación heredan de `NotificationFormatter` (ej. `PRInactivityNotificationFormatter`).
+* **Open/Closed (OCP):** Nuevos formatos de notificación heredan de `NotificationFormatter` (ej. `PRInactivityNotificationFormatter`). Los formatters de issues (`IssueAutoAssigned…`, `IssueCreated…`, `IssueInactive…`, `IssueDueSoon…`) siguen definidos en `shared_notifier.js` pero ya no los usa ningún script (sus flujos fueron desmantelados, ver §2).
 * **Dependency Inversion (DIP):** Los scripts dependen de abstracciones, permitiendo testing desacoplado y sustitución de canales.
 
 ### B. Recordatorios Diarios de Inactividad (`send_reminders.js`)
 * **Workflow asociado:** [`.github/workflows/pr-reminders.yml`](../workflows/pr-reminders.yml)
-* **Función:** Se ejecuta de lunes a viernes (cron 15:00 UTC / 12:00 PM Argentina) e inspecciona PRs abiertas con más de 48 horas sin actualización ni aprobaciones formales, despachando recordatorios a Discord mediante `shared_notifier.js`.
+* **Función:** Se ejecuta de lunes a viernes (cron 15:00 UTC / 12:00 PM Argentina) e inspecciona PRs abiertas (excluye los drafts) con más de 48 horas sin actualización ni aprobaciones formales, despachando recordatorios a Discord mediante `shared_notifier.js`.
 
 ### C. Generación del Catálogo de Entregas (`generate-pdf-tree.js`)
 * **Workflow asociado:** [`.github/workflows/deploy-pages.yml`](../workflows/deploy-pages.yml)

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://donatrack.utn.edu.ar/schemas/evento-donacion-asignada-v1.schema.json",
   "title": "EventoDonacionAsignadaV1",
-  "description": "Evento de dominio emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service y logistica-service",
+  "description": "Evento de dominio emitido por donaciones-service cuando una donación independiente es asignada a una entidad beneficiaria, consumido por notificaciones-service. Logística ya no lo consume: recibe el comando entrega.solicitada.<proveedorId>.v1 del broker (ADR 20261007-broker-de-integracion-con-logistica)",
   "type": "object",
   "properties": {
     "donacionIndependienteId": {

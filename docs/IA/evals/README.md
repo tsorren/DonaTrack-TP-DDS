@@ -1,7 +1,7 @@
 # Harness Evals — DonaTrack (Wave 9 v1)
 
 > Infraestructura de evaluación del harness de agentes.
-> Versión de harness evaluada: **v6.2.0**
+> Versión de harness vigente: **v6.4.0**. Los escenarios E01–E09 declaran `harness_version: 6.2.0` en su frontmatter (se corrieron con esa versión); E10 y E11 declaran 6.4.0.
 > Fuente canónica del harness: [`/AGENTS.md`](../../../AGENTS.md)
 
 ---
@@ -184,24 +184,24 @@ No modificar la rama durante la ejecución de E08. Usar un worktree o stash si h
 
 ### Objetivo 1 — Validación del harness actual
 
-Ejecutar la suite completa contra el harness v6.2.0.
+Ejecutar la suite completa contra el harness v6.4.0.
 
 Condición CURRENT: harness completo tal como está en este commit.
 
 ### Objetivo 2 — Comparación histórica
 
-Comparar comportamiento del agente con el harness anterior (v3.5.0) vs el actual (v6.2.0).
+Comparar comportamiento del agente con el harness anterior (v3.5.0) vs el actual (v6.4.0).
 
 | Condición | Harness disponible |
 |---|---|
 | OLD | `docs/IA/history/AGENTS-v3.5.md` como harness; sin `common-lib/AGENTS.md`, sin `context-index.md`, sin `evaluator.md` |
-| CURRENT | `/AGENTS.md` v6.2.0 + todos los docs actuales |
+| CURRENT | `/AGENTS.md` v6.4.0 + todos los docs actuales |
 
 Subset recomendado para A/B: E01, E02, E03, E07, E08, E09.
 
 **Advertencia:** la comparación no es un experimento causal perfecto. El harness OLD no fue diseñado para el ecosistema de docs actual. Los resultados son indicativos, no concluyentes.
 
-**Condición opcional:** sin harness (tarea sin AGENTS.md disponible). Útil como baseline exploratório, no obligatorio en primera versión.
+**Condición opcional:** sin harness (tarea sin AGENTS.md disponible). Útil como baseline exploratorio, no obligatorio en primera versión.
 
 ### Qué comparar (comportamientos, no texto)
 
@@ -265,7 +265,7 @@ Resultado compacto por ejecución. No almacenar output completo del agente en el
 === HARNESS EVAL RESULT ===
 
 Suite:          Wave 9 v1
-Harness:        v6.2.0
+Harness:        v6.4.0
 Model/Tool:     [claude-sonnet-4-6 / claude-code / otro]
 Commit:         [sha del repo al momento del run]
 Date:           YYYY-MM-DD
@@ -289,7 +289,7 @@ Almacenar resultados en `results/YYYYMMDD-<phase>-<scenario>.md`. No versionarlo
 
 Para declarar "el nuevo harness es mejor que el anterior" se requiere evidencia de todos los siguientes:
 
-1. Cero Critical Failures sistémicos en golden scenarios (E01–E09) con harness v6.2.0.
+1. Cero Critical Failures sistémicos en golden scenarios (E01–E09) con harness v6.4.0.
 2. E02 demuestra reducción de ADR false positives (vs OLD harness que usaba triggers mecánicos).
 3. E01 protege Shared Kernel boundary (vs OLD sin nested AGENTS rule).
 4. E07 distingue SELF_REVIEW de INDEPENDENT_REVIEW correctamente.

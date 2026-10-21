@@ -6,7 +6,7 @@
 >
 > **Etiquetas epistémicas (AGENTS.md §3):** `[OBSERVED]` leído en el código · `[DOCUMENTED]` en un ADR/doc · `[INFERRED]` deducido · `[PROPOSED]` no existe aún · `[A VERIFICAR]` supuesto a confirmar en la etapa indicada.
 >
-> **Estado:** Etapas 0 a 5, 7, 8 y 9 hechas y verificadas (Gates 3 y 4 diferidos por falta de Docker); Etapa 6 delegada al equipo de incentivos (registrada como DTI-15). Cada etapa se implementó después de que el equipo la aprobó. El estado de cada una está en su sección y en la bitácora.
+> **Estado:** Etapas 0 a 5, 7, 8 y 9 hechas y verificadas (Gates 3 y 4 diferidos por falta de Docker); Etapa 6 delegada al equipo de incentivos (registrada como DTI-23). Cada etapa se implementó después de que el equipo la aprobó. El estado de cada una está en su sección y en la bitácora.
 
 ### Decisiones tomadas
 
@@ -152,7 +152,7 @@ Ver §3. Cambios: una cola `incentivos.donante-ciclo-de-vida` con los dos bindin
 
 ### Etapa 8 — Validación y cierre
 
-> **Estado: hecha, con Gates 3 y 4 `[DEFERRED_NO_DOCKER]`.** Reactor completo `mvn clean test` en verde (donaciones 511 tests), `spotless:check` OK, `agent-check` 67 PASS, pre-flight de Sonar por lectura. Revisión `INDEPENDENT_REVIEW` (subagente que recibió solo los artefactos y la política): veredicto `CHANGES_REQUIRED` con 1 hallazgo BLOCKING (409 sin documentar en el contrato REST) y 8 ADVISORY. Se corrigieron el BLOCKING, el orden de validación al aprobar (A8), la documentación desactualizada (D1 a D4), la deuda mal declarada (A6) y la reactivación sobre persona anonimizada (A1, nuevo `ERR-EST-108 PERSONA_ANONIMIZADA`). **Quedan declarados:** falla parcial de la baja (A2) y carrera check-then-act (A3), ambos para JPA con `@Transactional`; orden de eventos con incentivos (A4), a cargo de incentivos; Gates 3 y 4.
+> **Estado: hecha, con Gates 3 y 4 `[DEFERRED_NO_DOCKER]`.** Reactor completo `mvn clean test` en verde (donaciones 511 tests), `spotless:check` OK, `agent-check` 67 PASS, pre-flight de Sonar por lectura. Revisión `INDEPENDENT_REVIEW` (subagente que recibió solo los artefactos y la política): veredicto `CHANGES_REQUIRED` con 1 hallazgo BLOCKING (409 sin documentar en el contrato REST) y 8 ADVISORY. Se corrigieron el BLOCKING, el orden de validación al aprobar (A8), la documentación desactualizada (D1 a D4), la deuda mal declarada (A6) y la reactivación sobre persona anonimizada (A1, nuevo `ERR-EST-108 PERSONA_ANONIMIZADA_NO_OPERABLE`). **Quedan declarados:** falla parcial de la baja (A2) y carrera check-then-act (A3), ambos para JPA con `@Transactional`; orden de eventos con incentivos (A4), a cargo de incentivos; Gates 3 y 4.
 
 - `mvn spotless:check`, `mvn clean test` (reactor completo, por tocar `common-lib`), `mvn verify -pl integration-tests -DskipTests=false` (incluye `CrossServiceCommunicationIT`; sin Docker se declara `[DEFERRED_NO_DOCKER]`), pre-flight SonarCloud (`docs/IA/07-…`), Review Contract (`ENHANCED_REVIEW_REQUIRED`) y reporte (`docs/IA/04-…`).
 
@@ -161,10 +161,11 @@ Ver §3. Cambios: una cola `incentivos.donante-ciclo-de-vida` con los dos bindin
 > **Estado: hecha** (`[VERIFIED]`: `mvn clean test -pl donaciones-service -am` en verde, 516 tests en `donaciones-service`). Revisión de la PR: `CHANGES_REQUESTED` con 1 hallazgo BLOCKING y 7 ADVISORY. Gates 3 y 4 siguen `[DEFERRED_NO_DOCKER]`.
 
 - **B1 y A5, corregidos:** el importador consulta la baja con `IDonantesService.estaDadoDeBaja` (sin efectos), aplica la fila con `actualizarParcial` y recién después llama a `registrarSiNoExiste`. Una fila rechazada ya no crea al donante ni publica `donante.registrado`, y el evento sale con el nombre actualizado. Los tests del importador verifican que `registrarSiNoExiste` no se llama cuando la fila falla.
-- **A1, corregido (D19):** `PersonasService.actualizarPersona` y `actualizarParcial` responden `409 PERSONA_ANONIMIZADA`. Documentado en OpenAPI, `contratos-rest.md` y `catalogo-errores.md`.
+- **A1, corregido (D19):** `PersonasService.actualizarPersona` y `actualizarParcial` responden `409 PERSONA_ANONIMIZADA_NO_OPERABLE`. Documentado en OpenAPI, `contratos-rest.md` y `catalogo-errores.md`.
 - **A3, corregido:** el ADR y esta etapa 7 decían 8 schemas; son 7.
-- **A4, registrado:** la Etapa 6 queda como DTI-15 en `DEUDA_TECNICA.md`.
+- **A4, registrado:** la Etapa 6 queda como DTI-23 en `DEUDA_TECNICA.md`.
 - **A6 y A7, corregidos:** stub muerto de `existsById` y 4 smells de Sonar en tests (S5778 x3, S8694). No se renumeró `ERR-EST-108` (repite el número de `ERR-VAL-108`): cambiar un código público queda fuera de esta etapa.
+- **Integración con `ENTREGA_4` (110 commits):** 6 conflictos de documentación resueltos conservando ambos lados. Dos colisiones que git no marca como conflicto: (1) `ENTREGA_4` ya tenía su propio `ErrorCatalog.PERSONA_ANONIMIZADA` (`ERR-EST-902`, Notificaciones) y el enum quedaba con dos constantes iguales, así que la de Donaciones pasa a **`PERSONA_ANONIMIZADA_NO_OPERABLE`** (`ERR-EST-108`); (2) el DTI-14 de direcciones de esta rama choca con el DTI-14 del broker y pasa a **DTI-15**, como dejó reservado `ENTREGA_4`; por eso la Etapa 6 es DTI-23 (y se relaciona con DTI-22).
 - **A2 (aceptar el ADR) y las preguntas 4 y 5 de la revisión** son decisiones humanas, abiertas en la bitácora.
 
 ---

@@ -23,7 +23,7 @@ Esta skill transforma requerimientos vagos, incompletos o ambiguos en una **espe
    * Si la información no está explícitamente respaldada en la documentación canónica o en la solicitud del usuario, **se debe consultar al usuario**.
    * Inferencias operativas internas (nombres de métodos auxiliares o detalles locales que sigan convenciones ya existentes) están permitidas únicamente si se documentan de forma transparente con la etiqueta `[INFERRED]` de `AGENTS.md` §3.
 2. **Generación de Alternativas Intrínsecamente Viables:**
-   * Ante cualquier decisión de diseño o alcance, formular de 2 a 3 alternativas donde **todas sean técnicamente viables** dentro del stack de DonaTrack (Java 21, Spring Boot 3, persistencia ConcurrentHashMap/JPA, RabbitMQ).
+   * Ante cualquier decisión de diseño o alcance, formular de 2 a 3 alternativas donde **todas sean técnicamente viables** dentro del stack de DonaTrack (Java 21, Spring Boot 4.0.7, persistencia ConcurrentHashMap/JPA, RabbitMQ).
    * Prohibido presentar opciones inviables o "muñecos de paja" para forzar una elección.
 3. **Análisis de Trade-offs en 5 Dimensiones:**
    * Contrastar rigurosamente cada alternativa en la matriz 5D antes de solicitar la decisión del usuario.

@@ -546,6 +546,36 @@ assert('evento_donacion_asignada_v1_invalido_extra_properties_rejected', !valida
   cantidades: 5
 }).valid, 'No debe aceptar campos adicionales tras desacoplamiento');
 
+const eventoEntregaSolicitadaV1Schema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-entrega-solicitada-v1.schema.json'), 'utf8'));
+const entregaSolicitadaValida = {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  destino: {
+    calle: 'Av. Medrano',
+    altura: 951,
+    codigoPostal: 'C1179AAQ',
+    localidad: 'CABA',
+    provincia: 'Buenos Aires',
+    pais: 'Argentina'
+  },
+  pesoTotalKG: 15.5,
+  volumenTotalM3: 0.35,
+  fecha: '2026-10-07T12:00:00Z'
+};
+assert('evento_entrega_solicitada_v1_valido', validateSchemaObject(eventoEntregaSolicitadaV1Schema, entregaSolicitadaValida).valid);
+assert('evento_entrega_solicitada_v1_invalido_missing_destino', !validateSchemaObject(eventoEntregaSolicitadaV1Schema, {
+  donacionIndependienteId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+  personaBeneficiariaId: 'c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33',
+  pesoTotalKG: 15.5,
+  volumenTotalM3: 0.35,
+  fecha: '2026-10-07T12:00:00Z'
+}).valid);
+assert('evento_entrega_solicitada_v1_invalido_datos_de_notificacion', !validateSchemaObject(eventoEntregaSolicitadaV1Schema, {
+  ...entregaSolicitadaValida,
+  donanteId: 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+  descripcion: 'Caja de ropa'
+}).valid, 'El comando no debe llevar datos propios del hecho donacion.asignada.v1');
+
 // 13. evento-donacion-segmentada (Consumido por Incentivos)
 const eventoDonacionSegmentadaSchema = JSON.parse(fs.readFileSync(path.join(schemasDir, 'evento-donacion-segmentada.schema.json'), 'utf8'));
 assert('evento_donacion_segmentada_valido', validateSchemaObject(eventoDonacionSegmentadaSchema, {

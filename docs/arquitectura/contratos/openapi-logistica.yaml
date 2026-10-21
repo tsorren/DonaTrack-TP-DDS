@@ -26,6 +26,8 @@ paths:
                 $ref: '#/components/schemas/EntregaResponseDTO'
         '400':
           description: Datos inválidos
+        '409':
+          description: Ya existe una entrega registrada para la donación indicada
     get:
       summary: Listar entregas registradas
       operationId: listarEntregas

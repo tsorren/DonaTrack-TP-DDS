@@ -59,7 +59,15 @@ public class IncentivosEventosPublisher implements INotificacionesClient {
 
   private void publicar(String routingKey, Object evento, UUID personaId) {
     try {
-      rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_INCENTIVOS, routingKey, evento);
+      // messageId único por publicación: es la clave del inbox de Notificaciones (ADR 20260911).
+      rabbitTemplate.convertAndSend(
+          RabbitMQConfig.EXCHANGE_INCENTIVOS,
+          routingKey,
+          evento,
+          mensaje -> {
+            mensaje.getMessageProperties().setMessageId(UUID.randomUUID().toString());
+            return mensaje;
+          });
       log.info("Evento {} publicado para la persona {}", routingKey, personaId);
     } catch (RuntimeException e) {
       log.warn(

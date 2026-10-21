@@ -4,9 +4,11 @@ import grupo5.common.repositories.CrudRepositoryEnMemoria;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class DonanteIncentivosRepository extends CrudRepositoryEnMemoria<DonanteIncentivos>
     implements IDonanteIncentivosRepository {
   @Override
@@ -17,5 +19,12 @@ public class DonanteIncentivosRepository extends CrudRepositoryEnMemoria<Donante
     return storage.values().stream()
         .filter(donante -> idPersona.equals(donante.getIdPersona()))
         .findFirst();
+  }
+
+  @Override
+  public boolean eliminarPorId(UUID donanteId) {
+    Optional<DonanteIncentivos> donante = findById(donanteId);
+    donante.ifPresent(this::delete);
+    return donante.isPresent();
   }
 }

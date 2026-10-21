@@ -1,0 +1,74 @@
+@startuml rabbit-04-incentivos-dlx-legado
+' incentivos.exchange hacia Notificaciones, notificaciones.dlx con sus DLQ y notificaciones.exchange legado.
+' Fuente (rama baseline/e4-prs):
+'   incentivos-service/src/main/java/grupo5/incentivos/config/RabbitMQConfig.java:28,32,53-55,59-61
+'   incentivos-service/src/main/java/grupo5/incentivos/infrastructure/IncentivosEventosPublisher.java:33-62
+'   incentivos-service/src/main/resources/application.properties:31
+'   notificaciones-service/src/main/java/grupo5/notificaciones/config/RabbitMQConfig.java:33-44,51,69-71,79-126,153-185
+'   notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/amqp/IncentivoEventListener.java:18
+'   notificaciones-service/src/main/java/grupo5/notificaciones/infrastructure/amqp/NotificacionRabbitListener.java:23
+'   notificaciones-service/src/main/resources/application.properties:25
+' Ninguna clase de main publica en notificaciones.exchange ni consume las DLQ.
+!pragma layout smetana
+!include ../estilo-e4.iuml
+skinparam nodesep 18
+skinparam ranksep 28
+skinparam collections {
+  BackgroundColor<<topic exchange>> #EEE8F7
+  BorderColor<<topic exchange>> #5E4B8B
+  BackgroundColor<<legado>> #FFFFFF
+  BorderColor<<legado>> #9A9A9A
+  BorderStyle<<legado>> dotted
+  FontColor<<legado>> #6E6E6E
+}
+skinparam queue {
+  BackgroundColor<<durable>> #F7F5FB
+  BorderColor<<durable>> #5E4B8B
+  BackgroundColor<<legado>> #FFFFFF
+  BorderColor<<legado>> #9A9A9A
+  BorderStyle<<legado>> dotted
+  FontColor<<legado>> #6E6E6E
+}
+
+component "Incentivos" as inc <<servicio>>
+collections "incentivos.exchange" as exInc <<topic exchange>>
+queue "notificaciones.incentivos" as qNI <<durable>>
+queue "notificaciones.donaciones\n<size:11>(ver rabbit-01)" as qND <<durable>>
+
+collections "notificaciones.exchange\n<size:11>topic, durable" as exLeg <<legado>>
+queue "cola.eventos.notificaciones\n<size:11>durable" as qLeg <<legado>>
+
+component "Notificaciones" as notif <<servicio>>
+collections "notificaciones.dlx" as dlx <<topic exchange>>
+queue "notificaciones.incentivos.dlq" as dlqI <<durable>>
+queue "notificaciones.donaciones.dlq" as dlqD <<durable>>
+
+inc -[#5E4B8B,dashed]-> exInc : publica\nincentivo.mision-cumplida.v1\nincentivo.subio-categoria.v1\nincentivo.donante-inactivo.v1
+exInc -[#5E4B8B]-> qNI : incentivo.#
+qNI -[#5E4B8B,dashed]-> notif : consume
+exLeg -[#9A9A9A,dotted]-> qLeg : notificaciones.#
+qLeg -[#9A9A9A,dotted]-> notif : consume
+qNI -[#C0392B,dotted]-> dlx : rechazo
+qND -[#C0392B,dotted]-> dlx : rechazo
+dlx -[#C0392B]-> dlqI : notificaciones.\nincentivos.dlq
+dlx -[#C0392B]-> dlqD : notificaciones.\ndonaciones.dlq
+
+note top of exLeg
+  Legado: declarado
+  por Notificaciones,
+  sin publicadores.
+end note
+
+note bottom of dlqD
+  Las DLQ no tienen consumidor:
+  quedan para inspección manual.
+end note
+
+legend right
+  |= Símbolo |= Significado |
+  | «topic exchange» · «durable» | exchange topic y cola durables |
+  | ──> rotulada | binding con su routing key |
+  | - - -> | publica o consume |
+  | <color:#C0392B>· · ·></color> rechazo | dead letter vía x-dead-letter-exchange |
+endlegend
+@enduml

@@ -61,7 +61,7 @@ class DonantesServiceTest {
   }
 
   @Test
-  void testCrearDonante() throws Exception {
+  void testCrearDonante() {
     // Arrange
     Humana humana =
         new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
@@ -128,7 +128,7 @@ class DonantesServiceTest {
     BusinessStateException ex =
         assertThrows(BusinessStateException.class, () -> donantesService.crearDonante(input));
 
-    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA_NO_OPERABLE, ex.getError());
     verify(donantesRepository, never()).save(any(Donante.class));
     verify(eventPublisher, never()).publicarDonanteRegistrado(any());
   }

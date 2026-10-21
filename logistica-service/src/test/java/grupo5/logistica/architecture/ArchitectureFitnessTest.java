@@ -38,6 +38,17 @@ class ArchitectureFitnessTest {
   }
 
   @Test
+  void entidadesDeDominio_noDebenDependerDeJakartaPersistence() {
+    noClasses()
+        .that()
+        .resideInAPackage("grupo5.logistica.models.entities..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("jakarta.persistence..")
+        .check(importedClasses);
+  }
+
+  @Test
   void controladores_debenResidirEnPaqueteControllers() {
     classes()
         .that()

@@ -25,7 +25,7 @@ docs/cicd/
   Detalle técnico de los flujos automatizados en `.github/workflows/`:
   - `main.yml`: Compilación modular, Spotless, tests unitarios, SonarCloud y empaquetado de artefactos.
   - `agent-governance.yml`: Ejecución obligatoria de `agent-check.js`, `run-tests.js` y `validate-contracts.js`.
-  - `merge.yml`: Flujo de validación post-merge y despliegue a ramas de entrega.
+  - `merge.yml`: Flujo post-merge que construye y publica en GHCR las imágenes Docker con tags estables; no despliega a ramas de entrega.
   - `deploy-pages.yml`: Publicación automatizada del Hub de documentación y Log4brains en GitHub Pages.
   - `pr-reminders.yml`: Monitor de inactividad de revisiones pendientes.
 * [**Plan de Recordatorios de Asignación (`assignment_reminders_plan.md`)**](assignment_reminders_plan.md):  
@@ -36,5 +36,6 @@ docs/cicd/
 ## 3. Navegación Rápida
 
 * [Volver al Índice General (`docs/README.md`)](../README.md)
+* [Scripts de automatización (`.github/scripts/README.md`)](../../.github/scripts/README.md)
 * [Consultar el Router de Contexto (`docs/context-index.md`)](../context-index.md)
 * [Ver Estado de Vigencia Documental (`docs/ESTADO_DOCUMENTACION.md`)](../ESTADO_DOCUMENTACION.md)

@@ -4,7 +4,7 @@
 > **Proyecto:** DonaTrack — Plataforma de Logística, Trazabilidad y Fidelización de Donaciones  
 > **Cátedra:** UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
 > **Fecha de Emisión Canónica:** 2026-08-29  
-> **Estado:** 🟢 Vigente y Sincronizado (100% Factual con Java 21 / Spring Boot 3)
+> **Estado:** 🟢 Vigente y Sincronizado (100% Factual con Java 21 / Spring Boot 4.0.7)
 
 ---
 
@@ -18,7 +18,7 @@ El Aseguramiento de Calidad Arquitectónica y la Auditoría Técnica en DonaTrac
 │                                                                                                  │
 │  [FASE 1: Relevamiento] ──> [FASE 2: Extracción Factual] ──> [FASE 3: Fact-Checking en Código]  │
 │  Inspección de docs/ y      Afirmaciones, endpoints,         Contraste con clases Java 21,       │
-│  estructura de navegación    modelos y contratos DTO          Spring Boot 3, Feign y RabbitMQ    │
+│  estructura de navegación    modelos y contratos DTO          Spring Boot 4.0.7, Feign y RabbitMQ│
 │                                                                             │                    │
 │  [FASE 6: Consistencia] <── [FASE 5: Plan de Acción]    <─── [FASE 4: Scoring y Hallazgos]       │
 │  Validación de 0 links      Backlog de mitigación y          Matriz 1-5 (5 ejes + 8 atributos),  │
@@ -28,7 +28,7 @@ El Aseguramiento de Calidad Arquitectónica y la Auditoría Técnica en DonaTrac
 
 ### 1.1. Principios Epistemológicos de Auditoría
 
-1. **Primacía del Código Ejecutable (*Code is Truth*):** Ningún documento, diagrama o minuta tiene validez per se si contradice la implementación en Java 21, Spring Boot 3, OpenFeign, RabbitMQ o los flujos n8n.
+1. **Primacía del Código Ejecutable (*Code is Truth*):** Ningún documento, diagrama o minuta tiene validez per se si contradice la implementación en Java 21, Spring Boot 4.0.7, OpenFeign, RabbitMQ o los flujos n8n.
 2. **Falsabilidad Popperiana y Verificación Adversarial:** Cada afirmación arquitectónica debe ser sometida a un intento deliberado de refutación mediante inspección de bytecode, firmas de métodos, anotaciones de frameworks, tests automatizados y trazas de logs.
 3. **Determinismo y Reproducibilidad:** Todo hallazgo o calificación debe ser reproducible de forma determinística mediante scripts automatizados, comandos Maven o tests de integración.
 4. **Transparencia en Deuda y Limitaciones:** Las limitaciones temporales (ej. persistencia en memoria, módulos cascarón de entregas futuras) deben estar formalmente catalogadas y no disfrazarse de funcionalidad productiva.
@@ -43,7 +43,7 @@ Cada documento, subsistema o especificación técnica es evaluado bajo una escal
 |---|---|---|
 | 1.0 - 2.4 | 🔴 Crítico | Deficiente, con enlaces rotos, desactualización severa o contradicciones graves con el código. |
 | 2.5 - 3.9 | 🟡 Aceptable | Comprensible y mayormente exacto, pero con omisiones técnicas, inconsistencias menores o falta de formalidad. |
-| 4.0 - 5.0 | 🟢 Excelente | 100% factual, riguroso, sincronizado con Java 21 / Spring Boot 3, navegable y pedagógicamente ejemplar. |
+| 4.0 - 5.0 | 🟢 Excelente | 100% factual, riguroso, sincronizado con Java 21 / Spring Boot 4.0.7, navegable y pedagógicamente ejemplar. |
 
 ### Rúbricas de Calificación por Criterio:
 

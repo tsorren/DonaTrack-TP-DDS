@@ -22,6 +22,7 @@ import grupo5.logistica.services.mappers.RutaMapper;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class RutasService implements IRutasService {
@@ -49,22 +50,26 @@ public class RutasService implements IRutasService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<RutaResponseDTO> listar() {
     return rutasRepository.findAll().stream().map(rutaMapper::toResponseDTO).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public RutaResponseDTO obtenerPorId(UUID id) {
     return rutaMapper.toResponseDTO(buscarRuta(id));
   }
 
   @Override
+  @Transactional(readOnly = true)
   public RutaConEntregasResponseDTO obtenerConEntregas(UUID id) {
     Ruta ruta = buscarRuta(id);
     return rutaMapper.toResponseDTOConEntregas(ruta, buscarEntregasDeRuta(ruta));
   }
 
   @Override
+  @Transactional
   public RutaResponseDTO agregarEntrega(UUID id, AgregarEntregaRutaRequestDTO dto) {
     if (dto == null || dto.entregaId() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -84,6 +89,7 @@ public class RutasService implements IRutasService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<RutaResponseDTO> listarPorCamion(UUID camionId) {
     return rutasRepository.findByCamionId(camionId).stream()
         .map(rutaMapper::toResponseDTO)
@@ -91,6 +97,7 @@ public class RutasService implements IRutasService {
   }
 
   @Override
+  @Transactional
   public RutaResponseDTO cambiarEstado(UUID id, CambioEstadoRutaRequestDTO request) {
     if (request == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);

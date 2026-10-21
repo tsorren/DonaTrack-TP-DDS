@@ -86,3 +86,9 @@ La lista se construye en el constructor. Se agregan métodos privados `algoritmo
 #### Contras
 
 * Requiere mantener sincronizados los métodos de acceso con el orden de la lista
+
+## Desvío de implementación (auditoría 2026-10-14)
+
+- **Decide el ADR:** `GestorAlgoritmos` guarda los algoritmos en una `List<AlgoritmoAsignacion>` y los accede mediante métodos privados con nombre (`algoritmoPorCompatibilidad()`, `algoritmoPorPrioridad()`), descartando el acceso por índice.
+- **Hace hoy el código:** la clase se llama `GestorPropuestasDeAsignacion`; no existen `GestorAlgoritmos` ni los métodos privados con nombre. Accede por índice con `algoritmos.getFirst()` y `algoritmos.get(1)` (`donaciones-service/src/main/java/grupo5/donaciones/models/entities/propuestas/GestorPropuestasDeAsignacion.java:51-53`), la alternativa "acceso por índice" que el ADR descarta.
+- Registrado como [DTI-19](../DEUDA_TECNICA.md#dti-19).

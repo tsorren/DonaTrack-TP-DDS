@@ -1,5 +1,6 @@
 package grupo5.logistica.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
@@ -13,12 +14,16 @@ import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
+import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
 import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IEntregasService;
 import grupo5.logistica.services.mappers.EntregaMapper;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EntregasService implements IEntregasService {
@@ -27,6 +32,7 @@ public class EntregasService implements IEntregasService {
   private final ICamionRepository camionRepository;
   private final EntregaMapper entregaMapper;
   private final ComunicadorEventosLogistica comunicadorEventos;
+  private final ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository;
 
   public EntregasService(
       IEntregasRepository entregasRepository,
@@ -34,34 +40,59 @@ public class EntregasService implements IEntregasService {
       ICamionRepository camionRepository,
       EntregaMapper entregaMapper,
       ComunicadorEventosLogistica comunicadorEventos) {
+    this(
+        entregasRepository,
+        rutasRepository,
+        camionRepository,
+        entregaMapper,
+        comunicadorEventos,
+        null);
+  }
+
+  @Autowired
+  public EntregasService(
+      IEntregasRepository entregasRepository,
+      IRutasRepository rutasRepository,
+      ICamionRepository camionRepository,
+      EntregaMapper entregaMapper,
+      ComunicadorEventosLogistica comunicadorEventos,
+      @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository) {
     this.entregasRepository = entregasRepository;
     this.rutasRepository = rutasRepository;
     this.camionRepository = camionRepository;
     this.entregaMapper = entregaMapper;
     this.comunicadorEventos = comunicadorEventos;
+    this.solicitudesTransicionRepository = solicitudesTransicionRepository;
   }
 
   @Override
+  @Transactional
   public EntregaResponseDTO crear(CrearEntregaRequestDTO dto) {
     Entrega entrega = entregaMapper.toEntity(dto);
     if (entrega == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    if (entregasRepository.existsByIdDonacion(entrega.getIdDonacion())) {
+      throw new BusinessStateException(ErrorCatalog.ENTREGA_DONACION_DUPLICADA);
     }
 
     return entregaMapper.toResponseDTO(entregasRepository.save(entrega));
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<EntregaResponseDTO> listar() {
     return entregasRepository.findAll().stream().map(entregaMapper::toResponseDTO).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public EntregaResponseDTO obtenerPorId(UUID id) {
     return entregaMapper.toResponseDTO(buscarEntrega(id));
   }
 
   @Override
+  @Transactional
   public EntregaResponseDTO adjuntarFotoRecepcion(UUID id, AdjuntarFotoRecepcionRequestDTO dto) {
     if (dto == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -73,6 +104,7 @@ public class EntregasService implements IEntregasService {
   }
 
   @Override
+  @Transactional
   public EntregaResponseDTO cambiarEstado(UUID id, CambioEstadoEntregaRequestDTO request) {
     if (request == null || request.estado() == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
@@ -80,54 +112,67 @@ public class EntregasService implements IEntregasService {
 
     Entrega entrega = buscarEntrega(id);
 
-    switch (request.estado()) {
-      case ENTREGADA -> procesarEntregaEntregada(request.actor(), entrega);
-      case NO_RECIBIDA ->
-          procesarEntregaNoRecibida(
-              request.actor(), entrega, request.justificacion(), request.replanificable());
-      case REVISION -> procesarEntregaEnRevision(request.actor(), entrega);
-      case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
-      case EN_TRASLADO ->
-          throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
-      default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
-    }
+    SolicitudTransicionEntrega solicitud =
+        switch (request.estado()) {
+          case ENTREGADA -> procesarEntregaEntregada(request.actor(), entrega);
+          case NO_RECIBIDA ->
+              procesarEntregaNoRecibida(
+                  request.actor(), entrega, request.justificacion(), request.replanificable());
+          case REVISION -> procesarEntregaEnRevision(request.actor(), entrega);
+          case PENDIENTE -> procesarEntregaPendiente(request.actor(), entrega);
+          case EN_TRASLADO ->
+              throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
+          default -> throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+        };
 
     entregasRepository.save(entrega);
+    if (solicitudesTransicionRepository != null) {
+      solicitudesTransicionRepository.registrar(solicitud);
+    }
     publicarEventos(entrega);
     entrega.clearDomainEvents();
     return entregaMapper.toResponseDTO(entrega);
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<CambioEstadoEntregaResponseDTO> obtenerHistorial(UUID id) {
     return buscarEntrega(id).getHistorialEstado().stream()
         .map(entregaMapper::toCambioEstadoResponseDTO)
         .toList();
   }
 
-  private static void procesarEntregaEntregada(String actor, Entrega entrega) {
-    SolicitudTransicionEntrega solicitud = new ConfirmacionRecepcion(entrega, actor, null);
+  private static SolicitudTransicionEntrega procesarEntregaEntregada(
+      String actor, Entrega entrega) {
+    SolicitudTransicionEntrega solicitud =
+        new ConfirmacionRecepcion(entrega, actor, entrega.getFotoRecepcionUrl());
 
     GestorDeEntregas.cambiarEstado(solicitud);
+    return solicitud;
   }
 
-  private static void procesarEntregaNoRecibida(
+  private static SolicitudTransicionEntrega procesarEntregaNoRecibida(
       String actor, Entrega entrega, String justificacion, Boolean replanificable) {
 
     boolean esReplanificable = replanificable == null || replanificable;
     NoRecepcion solicitud = new NoRecepcion(entrega, actor, justificacion, esReplanificable);
 
     GestorDeEntregas.cambiarEstado(solicitud);
+    return solicitud;
   }
 
-  private static void procesarEntregaPendiente(String actor, Entrega entrega) {
+  private static SolicitudTransicionEntrega procesarEntregaPendiente(
+      String actor, Entrega entrega) {
     RegresoDeposito solicitud = new RegresoDeposito(entrega, actor);
     GestorDeEntregas.cambiarEstado(solicitud);
+    return solicitud;
   }
 
-  private static void procesarEntregaEnRevision(String actor, Entrega entrega) {
+  private static SolicitudTransicionEntrega procesarEntregaEnRevision(
+      String actor, Entrega entrega) {
     RevisionEntrega solicitud = new RevisionEntrega(entrega, actor);
     GestorDeEntregas.cambiarEstado(solicitud);
+    return solicitud;
   }
 
   private void publicarEventos(Entrega entrega) {

@@ -67,6 +67,7 @@ Al completar la implementación y pasar todos los Quality Gates, el archivo se t
 | ID | Título y Enlace | Nivel | Estado | Alcance / Propósito Principal |
 |:---:|---|:---:|:---:|---|
 | **SPEC-03** | [`SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md`](active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) | ARCHITECTURAL | `ACTIVE` | Topología AMQP Pub/Sub canónica DDD, colas segregadas, clúster Dead Letter (`notificaciones.dlx`), envelope nativo y Hard Cutover inter-servicios. |
+| **SPEC-04** | [`SPEC-04-broker-integracion-logistica.md`](active/SPEC-04-broker-integracion-logistica.md) | ARCHITECTURAL | `APPROVED_BY_USER` | Broker de Integración con Logística (Entrega 4): selección entre ≥ 2 proveedores (AMQP/HTTP), comando `entrega.solicitada.<id>.v1`, `mandatory` + acuse, outbox basado en datos. |
 
 ---
 

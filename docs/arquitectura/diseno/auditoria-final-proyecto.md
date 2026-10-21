@@ -1,4 +1,6 @@
 # Auditoría Final DonaTrack — Post-Refactor
+
+> **Documento histórico.** Diagnóstico al 2026-08-28; no describe el estado vigente (por ejemplo, Donaciones ya no usa Feign). Estado actual: [arquitectura-sistema.md](../../entrega-4/arquitectura/arquitectura-sistema.md).
 **Fecha:** 2026-08-28
 **Branch:** E4_refactor_correccion_test
 **Auditor:** Claude Code (análisis estático)

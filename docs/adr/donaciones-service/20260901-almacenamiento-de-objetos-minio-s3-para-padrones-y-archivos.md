@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: infraestructura, minio, s3, almacenamiento, donaciones, persistencia
 
+> **Nota de auditoría (2026-10-14):** el contenedor `minio` de `docker-compose.yml` y `docker-compose.preprod.yml` pertenece a `incentivos-service` (bucket `insignias`, variables `INCENTIVOS_MINIO_*`, `incentivos-service/src/main/java/grupo5/incentivos/infrastructure/imagenes/MinioInsigniasSeeder.java`). En `donaciones-service` no existen `StoragePort`, `MinioStorageAdapter` ni la dependencia `io.minio`: la decisión para padrones y fotos de bienes no está implementada.
+
 ## Contexto y Problema
 
 En `donaciones-service`, el sistema requiere gestionar archivos no estructurados de gran tamaño:

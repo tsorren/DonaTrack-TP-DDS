@@ -17,6 +17,7 @@ import grupo5.logistica.services.mappers.CamionMapper;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CamionesService implements ICamionesService {
@@ -35,6 +36,7 @@ public class CamionesService implements ICamionesService {
   }
 
   @Override
+  @Transactional
   public CamionResponseDTO crear(CamionRequestDTO request) {
     validadorPatentes.validar(request.patente());
     SolicitudNuevoCamion solicitud = camionMapper.toSolicitud(request, List.of());
@@ -46,16 +48,19 @@ public class CamionesService implements ICamionesService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<CamionResponseDTO> consultarTodos() {
     return camionRepository.findActivos().stream().map(camionMapper::toResponseDTO).toList();
   }
 
   @Override
+  @Transactional(readOnly = true)
   public CamionResponseDTO consultarPorId(UUID id) {
     return camionMapper.toResponseDTO(buscarCamionActivo(id));
   }
 
   @Override
+  @Transactional
   public CamionResponseDTO cambiarEstado(UUID id, CambioEstadoCamionRequestDTO request) {
     Camion camion =
         camionRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
@@ -67,6 +72,7 @@ public class CamionesService implements ICamionesService {
   }
 
   @Override
+  @Transactional
   public void darDeBaja(UUID id) {
     Camion camion = buscarCamionActivo(id);
     GestorDeCamiones.cambiarEstado(camion, EstadoCamion.DESHABILITADO);

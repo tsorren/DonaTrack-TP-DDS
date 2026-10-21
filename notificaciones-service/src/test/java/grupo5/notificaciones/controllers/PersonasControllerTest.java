@@ -2,16 +2,20 @@ package grupo5.notificaciones.controllers;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import grupo5.common.CommonLibAutoConfiguration;
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.logging.LoggingAutoConfiguration;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.personas.TipoPersona;
@@ -57,8 +61,7 @@ class PersonasControllerTest {
     UUID id = UUID.randomUUID();
     PersonaReplicaDTO dto =
         new PersonaReplicaDTO(id, "Test Replica", TipoPersona.HUMANA, Collections.emptyList());
-    org.mockito.Mockito.doThrow(
-            new grupo5.notificaciones.exceptions.PersonaYaAnonimizadaException(id))
+    doThrow(new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA))
         .when(service)
         .sincronizar(any());
 
@@ -68,6 +71,7 @@ class PersonasControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
         .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.code").value("ERR-EST-902"))
         .andExpect(header().exists("X-Trace-Id"));
   }
 

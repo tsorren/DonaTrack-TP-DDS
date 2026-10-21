@@ -48,7 +48,7 @@ public class DonantesService implements IDonantesService {
             .findById(input.idPersona())
             .orElseThrow(() -> new RecursoNoEncontradoException(input.idPersona()));
     if (persona.estaAnonimizada()) {
-      throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA);
+      throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA_NO_OPERABLE);
     }
 
     Optional<Donante> existente = donantesRepository.findById(input.idPersona());

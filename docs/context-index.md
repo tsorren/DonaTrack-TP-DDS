@@ -27,8 +27,8 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 
 | Servicio | Doc primario | También cargar si... |
 | --- | --- | --- |
-| `donaciones-service` | [`arquitectura/aggregates-donaciones.md`](arquitectura/aggregates-donaciones.md) | State Pattern o algoritmos → ADRs en `docs/adr/donaciones-service/`; AMQP / Pub-Sub → [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md), ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md); historial de refactor → `docs/arquitectura/diseno/donaciones/` |
-| `logistica-service` | [`arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Eventos RabbitMQ → ADR `20260703-uso-de-rabbitmq-*` en `docs/adr/logistica-service/`; trazabilidad → [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md) |
+| `donaciones-service` | [`arquitectura/aggregates-donaciones.md`](arquitectura/aggregates-donaciones.md) | State Pattern o algoritmos → ADRs en `docs/adr/donaciones-service/`; AMQP / Pub-Sub → [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md), ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md); historial de refactor → `docs/arquitectura/diseno/donaciones/`; broker de integración con logística → ADR transversal [`adr/20261007-broker-de-integracion-con-logistica.md`](adr/20261007-broker-de-integracion-con-logistica.md) y [bitácora](entrega-4/donaciones/bitacora-broker-logistica.md) |
+| `logistica-service` | [`arquitectura/aggregates-logistica.md`](arquitectura/aggregates-logistica.md) | Eventos RabbitMQ → ADR `20260703-uso-de-rabbitmq-*` en `docs/adr/logistica-service/`; trazabilidad → [`arquitectura/logging-trazabilidad.md`](arquitectura/logging-trazabilidad.md); broker de integración con logística → ADR transversal [`adr/20261007-broker-de-integracion-con-logistica.md`](adr/20261007-broker-de-integracion-con-logistica.md) y [bitácora](entrega-4/donaciones/bitacora-broker-logistica.md) |
 | `incentivos-service` | [`arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Scheduler / cron → ADRs en `docs/adr/incentivos-service/`; AMQP / Pub-Sub → [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md), ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) |
 | `notificaciones-service` | [`arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | REST / Persistencia JPA / AMQP RabbitMQ Pub-Sub → ADRs en `docs/adr/notificaciones-service/`, ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md), [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) y [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-13) |
 | `common-lib` | [`arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Impacto cross-service → aggregates docs de los servicios afectados |
@@ -54,6 +54,19 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | Mentoría conceptual / didáctica | [`IA/prompts/transversal-mentoria-conceptos.md`](IA/prompts/transversal-mentoria-conceptos.md) + skill `.agents/skills/explain-concept/` |
 | Compliance académico | `docs/entregas/<N>/Enunciado-<N>.pdf` — solo el enunciado de la entrega vigente |
 
+### Skills de `.agents/skills/`
+
+| Skill | Cuándo usarla |
+| --- | --- |
+| [`engineering-loop`](../.agents/skills/engineering-loop/SKILL.md) | Ciclo completo guiado por agentes con enrutamiento por criticidad (QUICK / STANDARD / ARCHITECTURAL). |
+| [`define-spec`](../.agents/skills/define-spec/SKILL.md) | Elicitar requerimientos y definir una especificación SDD con alternativas comparadas. |
+| [`design-spec`](../.agents/skills/design-spec/SKILL.md) | Diseño técnico detallado desde una spec aprobada (clases, contratos, Two-Gate Rule, plan TDD). |
+| [`design-review`](../.agents/skills/design-review/SKILL.md) | Revisión adversarial de specs y diseño pre-código (vectores D1–D6). |
+| [`implement-task`](../.agents/skills/implement-task/SKILL.md) | Implementación con TDD, baseline previo y Quality Gates locales. |
+| [`implementation-review`](../.agents/skills/implementation-review/SKILL.md) | Revisión adversarial de código implementado (vectores V1–V9). |
+| [`review-pr`](../.agents/skills/review-pr/SKILL.md) | Review de Pull Requests con GrepAI. |
+| [`explain-concept`](../.agents/skills/explain-concept/SKILL.md) | Mentoría conceptual y explicaciones didácticas. |
+
 ---
 
 ## Temporal Constraints (Phase 1 — activas por servicio)
@@ -66,7 +79,7 @@ Revisar esta sección si la tarea involucra: persistencia, repositorios, diseño
 
 | Constraint | Scope | Regla vigente | Fuente de autoridad | Drift signal |
 | --- | --- | --- | --- | --- |
-| Persistencia en memoria | `donaciones`, `logistica`, `incentivos` (Fase 1) | No introducir JPA, Hibernate ni SQL salvo ADR aprobado para ese servicio. En `notificaciones-service`: JPA activo con Flyway V1+V2 (Transactional Inbox); persistencia en memoria retenida bajo `@Profile("!postgres")` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` activo en `pom.xml` del servicio — autorizado en `notificaciones-service`; para los demás servicios, revisar si la constraint fue reemplazada |
+| Persistencia en memoria | `donaciones` (Fase 1) | No introducir JPA, Hibernate ni SQL salvo ADR aprobado para ese servicio. En `notificaciones-service` y `logistica-service`: JPA activo con Flyway V1+V2; en `incentivos-service`: JPA activo con Flyway V1 bajo `@Profile("postgres")` y `@Version` en `DonanteIncentivosEntity` (el ADR de mapeo ORM sigue `proposed`: pendiente de actualizar); persistencia en memoria retenida bajo `@Profile("!postgres")` | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 a DTI-06 | `spring-boot-starter-data-jpa` activo en `pom.xml` del servicio — autorizado en `notificaciones-service`, `logistica-service` e `incentivos-service` (JPA bajo `@Profile("postgres")`, ver Regla vigente); para `donaciones-service` (sin JPA), revisar si la constraint fue reemplazada |
 | Pureza de dominio | Todos los servicios (Fase 1) | Entidades de dominio sin anotaciones JPA ni acoplamiento a infraestructura de persistencia | [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) DTI-01 + DTI-06 | `@Entity` / `@Column` en `models/entities/` — revisar si existe ADR que autorice la excepción para ese servicio |
 
 

@@ -11,9 +11,11 @@ import grupo5.notificaciones.dto.input.EventoIncentivoMisionCumplidaV1;
 import grupo5.notificaciones.dto.input.EventoIncentivoSubioCategoriaV1;
 import grupo5.notificaciones.dto.input.EventoPersonaSincronizadaV1;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Declarables;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
@@ -45,9 +47,6 @@ public class RabbitMQConfig {
 
   // Routing Keys Canónicas
   public static final String ROUTING_KEY_DONACION_ASIGNADA = "donacion.asignada.v1";
-  public static final String ROUTING_KEY_DONACIONES_WILDCARD = "donacion.#";
-  public static final String ROUTING_KEY_DONANTES_WILDCARD = "donante.#";
-  public static final String ROUTING_KEY_PERSONAS_WILDCARD = "persona.#";
   public static final String ROUTING_KEY_INCENTIVOS_WILDCARD = "incentivo.#";
 
   // Routing Keys para Incentivos
@@ -61,9 +60,24 @@ public class RabbitMQConfig {
   public static final String ROUTING_KEY_DONACION_ENTREGA_FALLIDA = "donacion.entrega-fallida.v1";
   public static final String ROUTING_KEY_DONACION_VENCIDA = "donacion.vencida.v1";
 
-  // Routing Keys de Donantes (viajan por la misma cola por los comodines)
+  // Routing Keys de Donantes (viajan por la misma cola)
   public static final String ROUTING_KEY_DONANTE_REGISTRADO = "donante.registrado.v1";
   public static final String ROUTING_KEY_PERSONA_SINCRONIZADA = "persona.sincronizada.v1";
+
+  /**
+   * Claves de donaciones.exchange que tienen handler en DonacionEventListener. Se bindean una por
+   * una: un comodín traería hechos ajenos (donacion.segmentada.v1, donante.dado-de-baja.v1) que no
+   * tienen mapeo de tipo y terminarían en la DLQ.
+   */
+  public static final List<String> ROUTING_KEYS_DONACIONES_CONSUMIDAS =
+      List.of(
+          ROUTING_KEY_DONACION_ASIGNADA,
+          ROUTING_KEY_DONACION_EN_CAMINO,
+          ROUTING_KEY_DONACION_RECIBIDA,
+          ROUTING_KEY_DONACION_ENTREGA_FALLIDA,
+          ROUTING_KEY_DONACION_VENCIDA,
+          ROUTING_KEY_DONANTE_REGISTRADO,
+          ROUTING_KEY_PERSONA_SINCRONIZADA);
 
   // Legacy (Preservado hasta migración definitiva en Paso 3)
   public static final String EXCHANGE_NOTIFICACIONES = "notificaciones.exchange";
@@ -127,27 +141,16 @@ public class RabbitMQConfig {
 
   // --- Bindings Principales ---
   @Bean
-  public Binding bindingNotificacionesDonacionesDonacion(
+  public Declarables bindingsNotificacionesDonaciones(
       Queue queueNotificacionesDonaciones, TopicExchange donacionesExchange) {
-    return BindingBuilder.bind(queueNotificacionesDonaciones)
-        .to(donacionesExchange)
-        .with(ROUTING_KEY_DONACIONES_WILDCARD);
-  }
-
-  @Bean
-  public Binding bindingNotificacionesDonacionesDonante(
-      Queue queueNotificacionesDonaciones, TopicExchange donacionesExchange) {
-    return BindingBuilder.bind(queueNotificacionesDonaciones)
-        .to(donacionesExchange)
-        .with(ROUTING_KEY_DONANTES_WILDCARD);
-  }
-
-  @Bean
-  public Binding bindingNotificacionesDonacionesPersona(
-      Queue queueNotificacionesDonaciones, TopicExchange donacionesExchange) {
-    return BindingBuilder.bind(queueNotificacionesDonaciones)
-        .to(donacionesExchange)
-        .with(ROUTING_KEY_PERSONAS_WILDCARD);
+    return new Declarables(
+        ROUTING_KEYS_DONACIONES_CONSUMIDAS.stream()
+            .map(
+                key ->
+                    BindingBuilder.bind(queueNotificacionesDonaciones)
+                        .to(donacionesExchange)
+                        .with(key))
+            .toList());
   }
 
   @Bean

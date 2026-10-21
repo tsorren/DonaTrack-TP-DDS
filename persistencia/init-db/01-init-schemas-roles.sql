@@ -2,6 +2,9 @@
 -- DONATRACK: INICIALIZACIÓN DE BASE DE DATOS, ESQUEMAS Y ROLES (POSTGRESQL)
 -- ============================================================================
 
+-- Los roles se crean sin contraseña. Las contraseñas no viven en el repo:
+-- 02-set-role-passwords.sh las fija desde variables de entorno (ver .env.example).
+
 -- 1. Creación de schemas lógicos por cada microservicio (Bounded Contexts)
 CREATE SCHEMA IF NOT EXISTS notificaciones;
 CREATE SCHEMA IF NOT EXISTS donaciones;
@@ -12,7 +15,7 @@ CREATE SCHEMA IF NOT EXISTS incentivos;
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'notificaciones_user') THEN
-    CREATE ROLE notificaciones_user WITH LOGIN PASSWORD 'notif_pass_2026';
+    CREATE ROLE notificaciones_user WITH LOGIN;
   END IF;
 END
 $$;
@@ -25,17 +28,43 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA notificaciones GRANT ALL ON SEQUENCES TO noti
 REVOKE ALL ON SCHEMA donaciones, logistica, incentivos FROM notificaciones_user;
 ALTER ROLE notificaciones_user SET search_path = notificaciones;
 
--- 3. Roles placeholder para los demás microservicios (para cuando migren a BD)
+-- 3. Rol y permisos para incentivos-service
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'incentivos_user') THEN
+    CREATE ROLE incentivos_user WITH LOGIN;
+  END IF;
+END
+$$;
+
+GRANT USAGE, CREATE ON SCHEMA incentivos TO incentivos_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA incentivos GRANT ALL ON TABLES TO incentivos_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA incentivos GRANT ALL ON SEQUENCES TO incentivos_user;
+REVOKE ALL ON SCHEMA notificaciones, donaciones, logistica FROM incentivos_user;
+ALTER ROLE incentivos_user SET search_path = incentivos;
+
+-- 4. Roles placeholder para los demás microservicios (para cuando migren a BD)
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'logistica_user') THEN
+    CREATE ROLE logistica_user WITH LOGIN;
+  END IF;
+END
+$$;
+
+GRANT USAGE, CREATE ON SCHEMA logistica TO logistica_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA logistica GRANT ALL ON TABLES TO logistica_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA logistica GRANT ALL ON SEQUENCES TO logistica_user;
+
+-- REGLA CLAVE DE EVALUACIÓN: Restricción de permisos cruzados (Aislamiento)
+REVOKE ALL ON SCHEMA notificaciones, donaciones, incentivos FROM logistica_user;
+ALTER ROLE logistica_user SET search_path = logistica;
+
+-- 4. Roles placeholder para los demás microservicios (para cuando migren a BD)
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'donaciones_user') THEN
-    CREATE ROLE donaciones_user WITH LOGIN PASSWORD 'dona_pass_2026';
-  END IF;
-  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'logistica_user') THEN
-    CREATE ROLE logistica_user WITH LOGIN PASSWORD 'logi_pass_2026';
-  END IF;
-  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'incentivos_user') THEN
-    CREATE ROLE incentivos_user WITH LOGIN PASSWORD 'inc_pass_2026';
+    CREATE ROLE donaciones_user WITH LOGIN;
   END IF;
 END
 $$;

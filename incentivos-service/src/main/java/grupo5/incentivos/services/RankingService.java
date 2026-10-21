@@ -37,10 +37,19 @@ public class RankingService implements IRankingService {
 
   @Override
   public RankingMensualDTO calcularYPersistir(YearMonth periodo) {
-    rankingRepository.findByPeriodo(periodo).ifPresent(rankingRepository::delete);
     List<DonanteIncentivos> todos = donanteRepository.findAll();
+    RankingMensual calculado = gestorDeRankings.calcular(todos, periodo);
 
-    RankingMensual ranking = gestorDeRankings.calcular(todos, periodo);
+    // Recalcular el período reutiliza el id existente: un único save (merge) en una transacción,
+    // sin DELETE previo. Si falla, el ranking anterior queda intacto.
+    RankingMensual ranking =
+        rankingRepository
+            .findByPeriodo(periodo)
+            .map(
+                existente ->
+                    RankingMensual.reconstituir(
+                        existente.getId(), periodo, calculado.getEntradas()))
+            .orElse(calculado);
 
     rankingRepository.save(ranking);
     return RankingMensualDTO.desde(ranking);

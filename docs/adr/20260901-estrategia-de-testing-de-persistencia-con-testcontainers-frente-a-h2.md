@@ -5,6 +5,8 @@
 - Deciders: Decisión Grupal
 - Tags: testing, persistencia, testcontainers, postgresql, h2, calidad
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`incentivos-service/src/test/java/grupo5/incentivos/infrastructure/persistencia/RepositoriosIncentivosJpaTest.java`). El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 Al planificar las pruebas automatizadas de la capa de persistencia relacional (JPA/Hibernate 6 con PostgreSQL 15+ para Fase 2), existe una disyuntiva clásica: utilizar una base de datos embebida en memoria como H2, o utilizar contenedores efímeros mediante la biblioteca **Testcontainers**. El motor H2 emula el dialecto SQL pero carece de soporte nativo o presenta divergencias críticas frente a PostgreSQL en características avanzadas que el proyecto planea utilizar: columnas `JSONB`, sintaxis de funciones de ventana complejas (`ROW_NUMBER() OVER` en rankings), índices parciales, y la cláusula de concurrencia `SELECT ... FOR UPDATE SKIP LOCKED` utilizada por el Transactional Outbox. Probar con H2 genera una falsa sensación de seguridad (*falsos verdes*), ocultando incompatibilidades de esquema que solo estallarían en producción.

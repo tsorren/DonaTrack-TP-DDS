@@ -7,9 +7,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class RutasRepository extends CrudRepositoryEnMemoria<Ruta> implements IRutasRepository {
 
   @Override

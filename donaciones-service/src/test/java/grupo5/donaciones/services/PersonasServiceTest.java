@@ -235,7 +235,7 @@ class PersonasServiceTest {
     BusinessStateException ex =
         assertThrows(BusinessStateException.class, () -> service.actualizarPersona(id, inputDTO));
 
-    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA_NO_OPERABLE, ex.getError());
     assertTrue(humana.estaAnonimizada());
     verify(repository, never()).save(any());
     verify(notificacionesAsyncService, never()).sincronizarPersona(any());
@@ -250,7 +250,7 @@ class PersonasServiceTest {
     BusinessStateException ex =
         assertThrows(BusinessStateException.class, () -> service.actualizarParcial(id, inputDTO));
 
-    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA_NO_OPERABLE, ex.getError());
     assertTrue(humana.estaAnonimizada());
     verify(repository, never()).save(any());
     verify(notificacionesAsyncService, never()).sincronizarPersona(any());

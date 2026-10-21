@@ -93,7 +93,7 @@ public class PersonasService implements IPersonasService {
   /** Una persona anonimizada no se edita: editarla la "des-anonimizaría" y le devolvería roles. */
   private void validarNoAnonimizada(Persona persona) {
     if (persona.estaAnonimizada()) {
-      throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA);
+      throw new BusinessStateException(ErrorCatalog.PERSONA_ANONIMIZADA_NO_OPERABLE);
     }
   }
 

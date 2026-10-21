@@ -487,7 +487,7 @@ Deberías obtener:
 
 - intuición y analogía cotidiana del problema real;
 - fundamento teórico formal (atributos de calidad y trade-offs);
-- aterrizaje quirúrgico en clases y contratos de DonaTrack (Java 21 / Spring Boot 3);
+- aterrizaje quirúrgico en clases y contratos de DonaTrack (Java 21 / Spring Boot 4.0.7);
 - trampas comunes y pregunta socrática de validación.
 
 ---

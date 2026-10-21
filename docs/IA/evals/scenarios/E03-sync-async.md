@@ -50,7 +50,7 @@ Archivos presentes para el agente (reduced fixture):
 
 Descripción del contexto:
 
-> ADR `20260703-uso-de-rabbitmq-logistica.md` (Status: accepted) ya existe para uso de RabbitMQ en `logistica-service` para eventos internos. La nueva ruta propuesta es `logistica-service → donaciones-service`, que actualmente usa Feign REST.
+> ADR `docs/adr/logistica-service/20260703-uso-de-rabbitmq-para-la-comunicacion-entre-logistica-y-los-demas-servicios.md` (Status: accepted) ya existe para uso de RabbitMQ en `logistica-service` para eventos internos. La nueva ruta propuesta es `logistica-service → donaciones-service`, que actualmente usa Feign REST.
 
 ---
 

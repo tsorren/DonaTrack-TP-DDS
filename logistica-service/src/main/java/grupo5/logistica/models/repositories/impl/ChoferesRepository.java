@@ -5,9 +5,11 @@ import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.repositories.IChoferesRepository;
 import java.util.List;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class ChoferesRepository extends CrudRepositoryEnMemoria<Chofer>
     implements IChoferesRepository {
 

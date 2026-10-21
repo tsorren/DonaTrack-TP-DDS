@@ -7,9 +7,11 @@ import grupo5.logistica.models.entities.camiones.ValidadorPatentes;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class CamionRepository extends CrudRepositoryEnMemoria<Camion> implements ICamionRepository {
 
   @Override

@@ -1,4 +1,4 @@
-# Gestion de Necesidades y Periodos
+# Gestión de Necesidades y Períodos
 - Status: accepted
 - Date: 2026-06-09
 - Deciders: Decisión Grupal

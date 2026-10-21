@@ -8,9 +8,12 @@ import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaIniciada;
+import grupo5.logistica.models.repositories.IEventosEntregaRepository;
 import grupo5.logistica.services.ComunicadorEventosLogistica;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,11 +21,21 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
 
   private final LogisticaEventPublisher eventPublisher;
   private final GeneradorDeURLSeguimiento generadorDeUrlSeguimiento;
+  private final IEventosEntregaRepository eventosEntregaRepository;
 
   public ComunicadorEventosLogisticaRabbit(
       LogisticaEventPublisher eventPublisher, GeneradorDeURLSeguimiento generadorDeUrlSeguimiento) {
+    this(eventPublisher, generadorDeUrlSeguimiento, null);
+  }
+
+  @Autowired
+  public ComunicadorEventosLogisticaRabbit(
+      LogisticaEventPublisher eventPublisher,
+      GeneradorDeURLSeguimiento generadorDeUrlSeguimiento,
+      @Nullable IEventosEntregaRepository eventosEntregaRepository) {
     this.eventPublisher = eventPublisher;
     this.generadorDeUrlSeguimiento = generadorDeUrlSeguimiento;
+    this.eventosEntregaRepository = eventosEntregaRepository;
   }
 
   @Override
@@ -30,6 +43,9 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
     eventPublisher.publicarRutaAsignada(
         new grupo5.logistica.dto.eventos.EventoRutaAsignada(
             evento.getRutaId(), entrega.getIdDonacion(), evento.getTimestamp()));
+    if (eventosEntregaRepository != null) {
+      eventosEntregaRepository.registrarRutaAsignada(evento, entrega);
+    }
   }
 
   @Override
@@ -55,6 +71,9 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
             camion.getId(),
             camion.getPatente(),
             evento.getTimestamp()));
+    if (eventosEntregaRepository != null) {
+      eventosEntregaRepository.registrarEntregaExitosa(evento);
+    }
   }
 
   @Override
@@ -66,5 +85,8 @@ public class ComunicadorEventosLogisticaRabbit implements ComunicadorEventosLogi
             evento.getJustificacion(),
             evento.getTimestamp(),
             evento.isReplanificable()));
+    if (eventosEntregaRepository != null) {
+      eventosEntregaRepository.registrarEntregaFallida(evento);
+    }
   }
 }

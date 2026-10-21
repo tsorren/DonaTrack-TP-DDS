@@ -32,6 +32,7 @@ import grupo5.logistica.models.repositories.IEntregasRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.services.impl.PlanificacionService;
+import grupo5.logistica.services.impl.PlanificacionService.SolicitudPlanificacionRegistrada;
 import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
 import grupo5.logistica.testutils.EntregaMother;
 import java.time.Clock;
@@ -81,6 +82,7 @@ class PlanificacionServiceTest {
             solicitudMapper,
             comunicadorEventos,
             planificadorExterno,
+            evento -> service.despacharAlProveedor((SolicitudPlanificacionRegistrada) evento),
             new GeneradorDeRutas(new GeneradorLotesSimple()),
             FIXED_CLOCK,
             50,

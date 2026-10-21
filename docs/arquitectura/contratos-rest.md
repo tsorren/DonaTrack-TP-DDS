@@ -71,12 +71,15 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/personas` | Listado de personas (filtro opcional por `?tipo=HUMANA|JURIDICA`) | — | `200` |
 | `PUT` | `/api/personas/{id}` | Actualización de datos de persona (`400` si una jurídica con entidad activa pasaría a EMPRESA o sin dirección; `409` si la persona fue anonimizada) | `PersonaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/personas/{id}` | Baja y supresión de persona (da de baja sus roles de donante y entidad) | — | `204`, `404` |
+| `GET` | `/api/logistica/proveedores` | Broker de logística: proveedores configurados, transporte, disponibilidad y preferido (header `X-API-Key` de administración) | — | `200`, `401` |
+| `PUT` | `/api/logistica/proveedor-preferido` | Broker de logística: cambia en caliente el proveedor preferido (header `X-API-Key` de administración) | `PreferenciaProveedorRequestDTO` | `200`, `400`, `401` |
 
 > **Notas de reconciliación con el código fuente Java (`donaciones-service`):**
 > - **D1:** `/api/items-normalizados` no implementa un CRUD estándar; expone `GET /pendientes`, `GET /{id}` y `PATCH /{id}` conforme a `ItemDonacionNormalizadoController.java`.
 > - **D2:** Se incorporan los endpoints de gestión de alias semánticos de subcategorías: `POST /api/subcategorias/{id}/aliases` y `DELETE /api/subcategorias/{id}/aliases/{alias}` (`SubcategoriasController.java`).
 > - **D3:** `GET /api/personas/{id}` no existe en `donaciones-service` (la consulta por ID reside en `notificaciones-service` vía `GET /api/notificaciones/personas/{id}`). En `donaciones-service`, el listado general con filtro `?tipo=` cubre la consulta.
 > - **D4:** `DELETE /api/categorias/{id}` y `DELETE /api/subcategorias/{id}` devuelven código `200 OK` retornando el DTO del recurso eliminado (`CategoriaOutputDTO` y `SubcategoriaOutputDTO`), en lugar de `204 No Content`.
+> - **D7:** Los dos endpoints `/api/logistica/...` de administración pertenecen al broker de integración con logística ([ADR 20261007](../adr/20261007-broker-de-integracion-con-logistica.md)); el callback de proveedores se quitó ([ADR 20261008](../adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md)). Los protege `ApiKeyFilter` con la clave de administración; sin clave configurada rechazan todo (`401`). El `401` usa el código provisional `ERR-AUT-401`, que no está en `ErrorCatalog`.
 
 ---
 
@@ -86,7 +89,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
-| `POST` | `/api/entregas` | Registrar entrega de donación para planificar | [`crear-entrega-request.schema.json`](./contratos/schemas/crear-entrega-request.schema.json) | `201`, `400` |
+| `POST` | `/api/entregas` | Registrar entrega de donación para planificar | [`crear-entrega-request.schema.json`](./contratos/schemas/crear-entrega-request.schema.json) | `201`, `400`, `409` |
 | `GET` | `/api/entregas` | Listar entregas registradas | — | `200` |
 | `GET` | `/api/entregas/{id}` | Consulta de entrega por ID | — | `200`, `404` |
 | `PATCH` | `/api/entregas/{id}/estado` | Transición de estado de entrega (`PENDIENTE`, `EN_TRASLADO`, etc.) | [`cambio-estado-entrega-request.schema.json`](./contratos/schemas/cambio-estado-entrega-request.schema.json) | `200`, `400`, `404` |
@@ -154,6 +157,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | Método | Endpoint | Descripción | Request DTO / Schema | Códigos HTTP |
 |---|---|---|---|:---:|
 | `POST` | `/api/notificaciones/eventos` | **[Secundario QA]** Adaptador secundario para testing, QA y disparos manuales vía REST con deduplicación por Transactional Inbox (`eventId`) | [`evento-notificable.schema.json`](./contratos/schemas/evento-notificable.schema.json) | `202`, `400` |
+| `POST` | `/notificaciones` | **[Legado, DTI-13]** Alias de `POST /api/notificaciones/eventos`; hoy solo lo invoca `incentivos-service` por Feign (`NotificacionesFeignClient`) y se dará de baja al completar la migración a AMQP | [`evento-notificable.schema.json`](./contratos/schemas/evento-notificable.schema.json) | `202`, `400` |
 | `GET` | `/api/notificaciones` | **[Canónico]** Consulta y filtrado de notificaciones por `personaId` (UUID) y/o `estado` (Enum `EstadoNotificacion`) | — | `200`, `400` |
 | `GET` | `/api/notificaciones/{id}` | **[Canónico]** Consulta de notificación por su identificador unívoco | — | `200`, `404` |
 | `GET` | `/api/notificaciones/persona/{personaId}` | **[Canónico]** Consulta de historial de notificaciones despachadas a una persona | — | `200` |
@@ -163,7 +167,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `DELETE` | `/api/notificaciones/personas/{id}` | Baja y desasociación de datos de contacto (Crypto-Shredding) | — | `204`, `404` |
 
 > **Notas de migración y compatibilidad (`notificaciones-service`):**
-> - **D7 (Hard Cutover Inter-Servicios y Erradicación de Feign — Arquitectura Objetivo Etapa 2):** La comunicación inter-servicios hacia `notificaciones-service` desde `donaciones-service` e `incentivos-service` se especifica como 100% asíncrona mediante eventos AMQP en RabbitMQ (ver SPEC-03). En la arquitectura objetivo de la Etapa 2 se erradicará el cliente síncrono `NotificacionesFeignClient` y se dará de baja el alias legacy `POST /notificaciones`. En el estado runtime actual de la rama (`[OBSERVED] Etapa 1 Documental`), dichos componentes síncronos se mantienen temporalmente operativos para retrocompatibilidad hasta la implementación efectiva en código (deuda técnica [DTI-13](../adr/DEUDA_TECNICA.md#dti-13-migracion-de-clientes-consumidores-de-la-api-rest-deprecada-de-notificaciones-a-ruta-canonica-y-amqp) en estado `in-progress`). El endpoint `POST /api/notificaciones/eventos` se conserva como adaptador secundario de testing, QA y herramientas externas (Postman).
+> - **D7 (Hard Cutover Inter-Servicios y Erradicación de Feign — Arquitectura Objetivo Etapa 2):** La comunicación inter-servicios hacia `notificaciones-service` desde `donaciones-service` e `incentivos-service` se especifica como 100% asíncrona mediante eventos AMQP en RabbitMQ (ver SPEC-03). En la arquitectura objetivo de la Etapa 2 se erradicará el cliente síncrono `NotificacionesFeignClient` y se dará de baja el alias legacy `POST /notificaciones`. Estado runtime verificado (auditoría 2026-10-14): `donaciones-service` ya publica hacia notificaciones por AMQP y no tiene cliente Feign; el único `NotificacionesFeignClient` vigente es el de `incentivos-service`, y el alias `POST /notificaciones` sigue expuesto para retrocompatibilidad (deuda técnica [DTI-13](../adr/DEUDA_TECNICA.md#dti-13-migracion-de-clientes-consumidores-de-la-api-rest-deprecada-de-notificaciones-a-ruta-canonica-y-amqp) en estado `in-progress`). El endpoint `POST /api/notificaciones/eventos` se conserva como adaptador secundario de testing, QA y herramientas externas (Postman).
 > - **D8 (Ingesta Primaria AMQP y Pub/Sub Canónico):** El canal primario de ingesta para eventos de dominio opera sobre RabbitMQ mediante TopicExchanges de emisores (`donaciones.exchange` e `incentivos.exchange`) enlazados a colas dedicadas segregadas (`notificaciones.donaciones` y `notificaciones.incentivos`) con clúster Dead Letter (`notificaciones.dlx` $\to$ `*.dlq`) y deduplicación atómica $O(1)$ en Transactional Inbox (ver [`eventos-amqp.md`](./eventos-amqp.md) y ADR [`20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](../adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md)).
 
 ---

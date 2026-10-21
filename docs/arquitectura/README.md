@@ -16,7 +16,7 @@ docs/arquitectura/
 ├── principios-diseno-arquitectura.md      # 🏛️ Documento Maestro: Atributos de calidad, SOLID, GRASP, DDD
 ├── shared-kernel.md                       # 🏗️ Núcleo compartido (common-lib): CrudRepository, DTOs neutros
 ├── logging-trazabilidad.md                # 📊 Observabilidad distribuida: traceId, MDC, NDJSON
-├── catalogo-errores.md                    # ⚠️ Catálogo unificado de 109 códigos de error
+├── catalogo-errores.md                    # ⚠️ Catálogo unificado de 112 códigos de error
 ├── guia-patrones-diseno.md                # 🧩 Catálogo de patrones de diseño aplicados
 ├── analisis-arquitectonico.md             # 🔍 Diagnóstico estructural del monorepo
 │
@@ -29,7 +29,7 @@ docs/arquitectura/
 ├── eventos-amqp.md                        # 🐇 Topología RabbitMQ y contratos de eventos
 │
 ├── contratos/                             # 📜 Archivos OpenAPI YAML y JSON Schemas
-│   └── schemas/                           # 11 Schemas JSON validados mecánicamente
+│   └── schemas/                           # 25 Schemas JSON validados mecánicamente
 │
 └── diseno/                                # 📐 Bitácoras de refactor, diagramas PUML y anexos
 ```
@@ -41,8 +41,9 @@ docs/arquitectura/
 * [**Principios de Diseño y Arquitectura**](principios-diseno-arquitectura.md): Fundamentación teórica de los 8 atributos de calidad (Disponibilidad, Mantenibilidad, Modificabilidad, Seguridad, Rendimiento, Testeabilidad, Escalabilidad, Auditabilidad), principios SOLID, GRASP, patrones GoF y fitness checks operacionales.
 * [**Shared Kernel (`common-lib`)**](shared-kernel.md): Reglas de gobierno para componentes transversales, contratos de repositorio (`CrudRepository`), excepciones unificadas y trazabilidad.
 * [**Logging y Trazabilidad**](logging-trazabilidad.md): Propagación de `traceId`, MDC en Spring Boot, interceptores Feign y observabilidad estructurada.
-* [**Catálogo Unificado de Errores**](catalogo-errores.md): Normalización exhaustiva de los 109 códigos de error estructurados del sistema (`ERR-INF`, `ERR-CSR`, `ERR-VAL`, `ERR-EST`).
+* [**Catálogo Unificado de Errores**](catalogo-errores.md): Normalización exhaustiva de los 112 códigos de error estructurados del sistema (`ERR-INF`, `ERR-CSR`, `ERR-VAL`, `ERR-EST`).
 * [**Guía de Patrones de Diseño**](guia-patrones-diseno.md): Catálogo de patrones GoF aplicados (State Machine, Strategy, Template Method, Observer, Factory, Adapter).
+* [**Documento de Arquitectura del Sistema (Entrega 4)**](../entrega-4/arquitectura/arquitectura-sistema.md): Estilo, capas, patrones, integración, datos, despliegue, escenarios de calidad y deuda, con diagramas complementarios y anexo por servicio.
 * [**Análisis Arquitectónico**](analisis-arquitectonico.md): Diagnóstico estructural de acoplamiento, cohesión y modularidad del monorepo.
 
 ---
@@ -52,7 +53,7 @@ docs/arquitectura/
 | Microservicio | Puerto | Documento de Aggregates | Patrones de Dominio Clave |
 |---|:---:|---|---|
 | `donaciones-service` | `:8080` | [aggregates-donaciones.md](aggregates-donaciones.md) | State Pattern (7 estados DI), Template Method (Algoritmo Asignación) |
-| `notificaciones-service` | `:8081` | [aggregates-notificaciones.md](aggregates-notificaciones.md) | Strategy (Medios de contacto), Adapter (Twilio/SendGrid), Person Replica |
+| `notificaciones-service` | `:8081` | [aggregates-notificaciones.md](aggregates-notificaciones.md) | Strategy (Medios de contacto), Adapter (canales simulados: `CorreoAdapterSimulado`, `TelefonoAdapterSimulado`, `WhatsAppAdapterSimulado`), Person Replica |
 | `incentivos-service` | `:8082` | [aggregates-incentivos.md](aggregates-incentivos.md) | Template Method (Misiones), Strategy (Inactividad), Observer (Logros) |
 | `logistica-service` | `:8083` | [aggregates-logistica.md](aggregates-logistica.md) | State Pattern (Ciclo de vida entrega), Routing Optimization, AMQP Publisher |
 
@@ -60,11 +61,12 @@ docs/arquitectura/
 
 ## 4. Contratos de Comunicación e Integración
 
-* [**Contratos REST Consolidados**](contratos-rest.md): Mapeo completo de 94 endpoints REST, especificaciones OpenAPI 3.0 y Swagger UI interactivo por microservicio.
+* [**Contratos REST Consolidados**](contratos-rest.md): Mapeo completo de 100 endpoints REST, especificaciones OpenAPI 3.0 y Swagger UI interactivo por microservicio.
+* [**Documentación de Entrega 4**](../entrega-4/README.md): índice de arquitectura, catálogo de mensajes y bitácoras de la entrega.
 * [**Eventos AMQP y Topología RabbitMQ**](eventos-amqp.md): Arquitectura de intercambio asíncrono, TopicExchanges, colas, routing keys, políticas de DLQ e idempotencia en consumidores.
 * [**Especificaciones y Schemas (`contratos/`)**](contratos/):
   - OpenAPI 3.0 YAMLs por microservicio (`openapi-donaciones.yaml`, `openapi-logistica.yaml`, etc.).
-  - 11 Schemas JSON validados en CI por `scripts/validate-contracts.js`.
+  - 25 Schemas JSON validados en CI por `scripts/validate-contracts.js`.
 
 ---
 
