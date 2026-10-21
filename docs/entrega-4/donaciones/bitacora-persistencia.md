@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-21** — Paso 2 hecho (catálogo y archivo en Postgres).
+> Última actualización: **2026-10-21** — Paso 3 en curso (`direccion` hecha).
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
-- **Dónde estamos:** Pasos 0 a 2 cerrados. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`) y `archivo`.
+- **Dónde estamos:** Pasos 0 a 2 cerrados y Paso 3 en curso. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo` y `direccion`.
 - **Bloqueante para seguir:** ninguno para el Paso 2. El Paso 4 (Donante/Entidad) depende de que se mergee la PR #892.
-- **Próximo paso:** Paso 3, `direccion`, `persona` (`JOINED`) y `medio_de_contacto`.
+- **Próximo paso:** Paso 3, segunda parte: `persona` (`JOINED`), `humana`, `juridica` y medios de contacto.
 
 ---
 
@@ -27,7 +27,7 @@
 | 0 | Decisiones de diseño sobre el DER | ✅ Cerrado |
 | 1 | Endurecer infraestructura sobre la #897 y base de tests con Postgres | ✅ Hecho |
 | 2 | Catálogo (`categoria`, `subcategoria`, `alias`) y `archivo` | ✅ Hecho |
-| 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | ⏳ Pendiente |
+| 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | 🔄 En curso (`direccion` hecha) |
 | 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ⏳ Pendiente |
 | 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | ⏳ Pendiente |
 | 6 | Refactor DTI-06 del dominio + reconstitución | ⏳ Pendiente |
@@ -51,6 +51,8 @@
 - **P-6 — Patrón de tests de persistencia.** Copia el de `incentivos-service` (`@DataJpaTest` + `@Testcontainers` + `@ServiceConnection` + `@DisabledIfDockerUnavailable`), con una diferencia deliberada: el contenedor usa el usuario por defecto y Flyway crea el esquema `donaciones`, en vez de copiar `init-db` a los recursos de test. Así el test valida entidades contra migraciones (`ddl-auto=validate`) sin duplicar el script ni depender de contraseñas de roles.
 - **P-7 — Dependencias de test.** Se agregaron tres (`test`): `spring-boot-starter-data-jpa-test`, `spring-boot-testcontainers` y `org.testcontainers:postgresql`. La primera es la que contiene `@DataJpaTest` en Spring Boot 4.
 
+- **P-10 — Decisiones del Paso 3.** `[DOCUMENTED]` Decididas por el usuario: **D-9** la dirección se deduplica (una fila compartida, inmutable); **D-10** `Humana.fecha_nacimiento` es `DATE` (el DER dice `TIMESTAMPTZ`, pero el dominio es `LocalDate` y la zona horaria podría correr el día); **D-11** la anonimización se detecta por el valor `ANONIMIZADO`, sin columna nueva (igual que la #892); **D-12** la búsqueda de duplicados indexada queda en un paso aparte (3b); **D-13** unicidad parcial sobre `(tipo_documento, nro_documento)`; **D-14** una humana solo puede ser representante de una jurídica (coincide con la FK única `Humana.representante_de` del DER).
+- **P-11 — `altura` y `piso` como `INTEGER`.** `[OBSERVED]` El DER dice `SMALLINT` (máximo 32 767), pero el dominio acepta cualquier `Integer` y hay alturas de ruta mayores. Ensanchar el tipo es aditivo. `[PROPOSED]` Avisar al equipo para actualizar el DER.
 - **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
 - **P-8 — Convenciones del Paso 2.** `[DOCUMENTED]` Decisión del usuario: enums como `VARCHAR` + `CHECK` (no `ENUM` nativo del DER); `categoria.tipo_unidad` agregada como columna nueva (el dominio la exige, el DER no la tiene, discrepancia #8); seeder idempotente en vez de migración con datos; `archivo` usa `id` como PK igual que el resto de las tablas (el DER lo dejó como `id_archivo`) y conserva `estado_archivo`.
 
@@ -98,3 +100,9 @@
 - `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
+
+## Paso 3 — detalle (en curso)
+
+- **3a — `direccion` (hecho).** Migración `V3__direccion.sql` con restricción `uq_direccion` (`UNIQUE NULLS NOT DISTINCT`, así `piso` y `departamento` nulos cuentan como iguales). `DireccionesPersistenciaMapper.resolver` busca la fila idéntica o la crea. 5 tests contra Postgres real: fila compartida, otro piso crea otra fila, nulos compartidos, ida y vuelta, y la restricción única como red de seguridad. `[VERIFIED]` Suite del módulo: 596 tests, 0 fallas.
+- **Límite conocido.** `[INFERRED]` Dos guardados concurrentes de una dirección nueva idéntica pueden chocar con la restricción única (uno falla); se tratará al agregar `@Transactional` en el Paso 10.
+- **3b — `persona`, `humana`, `juridica`, medios de contacto (pendiente).** Incluye reconstitución sin el teléfono vacío que `Persona()` agrega, representantes por `representante_de` (D-14) y reutilización de filas de medios de contacto al guardar.
