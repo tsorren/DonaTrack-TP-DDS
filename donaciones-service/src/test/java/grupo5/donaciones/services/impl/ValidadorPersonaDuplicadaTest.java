@@ -109,4 +109,30 @@ class ValidadorPersonaDuplicadaTest {
 
     assertTrue(validador.buscarDuplicado(humana("30111222", "juan@mail.com")).isEmpty());
   }
+
+  @Test
+  void buscarDuplicado_filaSinTipoDeDocumento_laEncuentraPorNumeroSiEsUnico() {
+    Persona existente = personasRepository.save(humana("30111222", null));
+    Humana sinTipo = humana(null, null);
+    sinTipo.actualizarDocumento(null, "30111222");
+
+    Optional<Persona> resultado = validador.buscarDuplicado(sinTipo);
+
+    assertEquals(Optional.of(existente.getId()), resultado.map(Persona::getId));
+  }
+
+  @Test
+  void buscarDuplicado_filaSinTipoYElNumeroLoTienenDosPersonas_rechazaPorConflicto() {
+    personasRepository.save(humana("30111222", null));
+    Humana conPasaporte = humana(null, null);
+    conPasaporte.actualizarDocumento(TipoDocumento.PASAPORTE, "30111222");
+    personasRepository.save(conPasaporte);
+    Humana sinTipo = humana(null, null);
+    sinTipo.actualizarDocumento(null, "30111222");
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> validador.buscarDuplicado(sinTipo));
+
+    assertEquals(ErrorCatalog.PERSONA_DUPLICADA_EN_CONFLICTO, ex.getError());
+  }
 }

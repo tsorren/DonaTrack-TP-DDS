@@ -15,6 +15,8 @@ public interface SpringDataPersonaRepository extends JpaRepository<PersonaEntity
 
   Optional<PersonaEntity> findFirstByNroDocumento(String nroDocumento);
 
+  List<PersonaEntity> findByNroDocumento(String nroDocumento);
+
   Optional<PersonaEntity> findByTipoDocumentoAndNroDocumento(
       TipoDocumento tipoDocumento, String nroDocumento);
 

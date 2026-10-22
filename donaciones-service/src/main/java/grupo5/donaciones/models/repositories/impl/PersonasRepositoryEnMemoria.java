@@ -33,6 +33,15 @@ public class PersonasRepositoryEnMemoria extends CrudRepositoryEnMemoria<Persona
   }
 
   @Override
+  public List<Persona> findAllByNumeroDocumento(String numero) {
+    if (numero == null || numero.isBlank()) {
+      return List.of();
+    }
+    String buscado = numero.trim();
+    return storage.values().stream().filter(p -> buscado.equals(p.getDocumento())).toList();
+  }
+
+  @Override
   public List<Persona> findByCorreo(String direccionCorreo) {
     if (direccionCorreo == null || direccionCorreo.isBlank()) {
       return List.of();

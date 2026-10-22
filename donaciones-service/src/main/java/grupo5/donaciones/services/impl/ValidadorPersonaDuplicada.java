@@ -27,11 +27,18 @@ public class ValidadorPersonaDuplicada {
    *     otra persona con un documento distinto
    */
   public Optional<Persona> buscarDuplicado(Persona personaAImportar) {
-    Optional<Persona> porDocumento =
-        personasRepository.findByDocumento(
-            personaAImportar.getTipoDocumento(), personaAImportar.getDocumento());
-    if (porDocumento.isPresent()) {
-      return porDocumento;
+    // Por número y no por tipo y número: la fila puede no traer el tipo. El dominio decide si el
+    // tipo es compatible; si dos personas distintas calzan (DNI y pasaporte con el mismo número),
+    // no se adivina cuál es.
+    List<Persona> porDocumento =
+        personasRepository.findAllByNumeroDocumento(personaAImportar.getDocumento()).stream()
+            .filter(personaAImportar::esDuplicadaDe)
+            .toList();
+    if (porDocumento.size() > 1) {
+      throw new BusinessStateException(ErrorCatalog.PERSONA_DUPLICADA_EN_CONFLICTO);
+    }
+    if (porDocumento.size() == 1) {
+      return Optional.of(porDocumento.getFirst());
     }
 
     List<Persona> porCorreo =

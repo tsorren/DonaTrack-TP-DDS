@@ -129,9 +129,14 @@ public abstract sealed class Persona implements Anonimizable, AggregateRoot
     return correos().map(Correo::getDireccionCorreo).filter(Objects::nonNull).toList();
   }
 
+  // Si a alguna le falta el tipo (por ejemplo, una fila del CSV sin TipoDoc), alcanza el número
   private boolean coincideEnDocumento(Persona otra) {
+    boolean tiposCompatibles =
+        this.tipoDocumento == null
+            || otra.tipoDocumento == null
+            || this.tipoDocumento == otra.tipoDocumento;
     return tieneDocumento()
-        && this.tipoDocumento == otra.tipoDocumento
+        && tiposCompatibles
         && this.documento.trim().equals(otra.documento == null ? null : otra.documento.trim());
   }
 

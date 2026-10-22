@@ -216,4 +216,14 @@ class PersonaTest {
 
     assertTrue(juridica.esDuplicadaDe(otra));
   }
+
+  @Test
+  void esDuplicadaDe_siUnaNoTieneTipoDeDocumento_comparaSoloElNumero() {
+    Persona sinTipo = humana();
+    sinTipo.actualizarDocumento(null, "30111222");
+    Persona conTipo = humana();
+    conTipo.actualizarDocumento(TipoDocumento.DNI, "30111222");
+
+    assertTrue(sinTipo.esDuplicadaDe(conTipo));
+  }
 }

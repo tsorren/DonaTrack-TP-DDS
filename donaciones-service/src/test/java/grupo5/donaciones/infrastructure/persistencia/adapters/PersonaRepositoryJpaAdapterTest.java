@@ -223,6 +223,24 @@ class PersonaRepositoryJpaAdapterTest {
   }
 
   @Test
+  void findAllByNumeroDocumento_devuelveTodasLasQueTienenEseNumeroConCualquierTipo() {
+    Humana conDni = humana("Ana", "11111111");
+    Humana conPasaporte = humana("Beto", "11111111");
+    conPasaporte.actualizarDocumento(TipoDocumento.PASAPORTE, "11111111");
+    personas.save(conDni);
+    personas.save(conPasaporte);
+    personas.save(humana("Caro", "22222222"));
+
+    Set<UUID> encontradas =
+        personas.findAllByNumeroDocumento(" 11111111 ").stream()
+            .map(Persona::getId)
+            .collect(Collectors.toSet());
+
+    assertEquals(Set.of(conDni.getId(), conPasaporte.getId()), encontradas);
+    assertTrue(personas.findAllByNumeroDocumento(null).isEmpty());
+  }
+
+  @Test
   void findByCorreo_ignoraMayusculasYEspaciosYDevuelveATodasLasQueLoComparten() {
     Humana ana = humana("Ana", "11111111");
     ana.limpiarMediosDeContacto();

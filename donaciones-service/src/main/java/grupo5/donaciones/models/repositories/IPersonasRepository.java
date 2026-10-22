@@ -12,6 +12,9 @@ public interface IPersonasRepository extends CrudRepository<Persona> {
   /** Busca por tipo y número de documento (único por la restricción D-13). */
   Optional<Persona> findByDocumento(TipoDocumento tipo, String numero);
 
+  /** Personas con ese número de documento, con cualquier tipo (o sin tipo). */
+  List<Persona> findAllByNumeroDocumento(String numero);
+
   /** Personas que tienen ese correo, sin distinguir mayúsculas ni espacios en los extremos. */
   List<Persona> findByCorreo(String direccionCorreo);
 }

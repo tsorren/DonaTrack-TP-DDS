@@ -75,6 +75,14 @@ public class PersonaRepositoryJpaAdapter
   }
 
   @Override
+  public List<Persona> findAllByNumeroDocumento(String numero) {
+    if (numero == null || numero.isBlank()) {
+      return List.of();
+    }
+    return springDataRepo.findByNroDocumento(numero.trim()).stream().map(mapper::toDomain).toList();
+  }
+
+  @Override
   public List<Persona> findByCorreo(String direccionCorreo) {
     if (direccionCorreo == null || direccionCorreo.isBlank()) {
       return List.of();
