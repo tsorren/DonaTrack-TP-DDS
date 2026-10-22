@@ -139,9 +139,10 @@ public class EntregaPersistenciaMapper {
       persistidas = new ArrayList<>();
       entity.setFotosRecepcion(persistidas);
     }
+    persistidas.clear();
     List<String> delDominio = domain.getFotosRecepcion();
-    for (int i = persistidas.size(); i < delDominio.size(); i++) {
-      persistidas.add(delDominio.get(i));
+    if (delDominio != null && !delDominio.isEmpty()) {
+      persistidas.addAll(delDominio);
     }
   }
 

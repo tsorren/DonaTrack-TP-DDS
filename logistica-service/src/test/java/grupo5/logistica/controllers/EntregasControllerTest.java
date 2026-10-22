@@ -20,8 +20,8 @@ import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -184,7 +184,7 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
             "CABA",
             "Buenos Aires",
             "Argentina",
-            LocalDateTime.of(2026, 10, 22, 14, 30),
+            Instant.parse("2026-10-22T14:30:00Z"),
             12.5f,
             1.2f);
     when(entregasService.listarMapaPublico()).thenReturn(List.of(punto));
@@ -231,12 +231,12 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
             3,
             1,
             1,
-            LocalDateTime.of(2026, 10, 22, 9, 0),
+            Instant.parse("2026-10-22T09:00:00Z"),
             null,
-            LocalDateTime.of(2026, 10, 22, 10, 15),
+            Instant.parse("2026-10-22T10:15:00Z"),
             List.of(
                 new ParadaSeguimientoDTO(
-                    1, EstadoEntrega.ENTREGADA, false, LocalDateTime.of(2026, 10, 22, 10, 15)),
+                    1, EstadoEntrega.ENTREGADA, false, Instant.parse("2026-10-22T10:15:00Z")),
                 new ParadaSeguimientoDTO(2, EstadoEntrega.EN_TRASLADO, true, null),
                 new ParadaSeguimientoDTO(3, EstadoEntrega.EN_TRASLADO, false, null)));
 
@@ -460,7 +460,7 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
 
     CambioEstadoEntregaResponseDTO cambio =
         new CambioEstadoEntregaResponseDTO(
-            EstadoEntrega.PENDIENTE, EstadoEntrega.ENTREGADA, LocalDateTime.now(), "chofer");
+            EstadoEntrega.PENDIENTE, EstadoEntrega.ENTREGADA, Instant.now(), "chofer");
 
     when(entregasService.obtenerHistorial(ID)).thenReturn(List.of(cambio));
 

@@ -136,7 +136,7 @@ class RepositoriosLogisticaJpaTest {
     jdbcTemplate.execute(
         "TRUNCATE TABLE evento_entrega, solicitud_transicion_entrega, parada_ruta, "
             + "solicitud_planificacion_ruta, solicitud_planificacion, cambio_estado_entrega, "
-            + "entrega, cambio_estado_ruta, ruta, cambio_estado_camion, camion, "
+            + "entrega_foto_recepcion, entrega, cambio_estado_ruta, ruta, cambio_estado_camion, camion, "
             + "cambio_estado_chofer, chofer, direccion, localidad, provincia, pais CASCADE");
   }
 
@@ -223,12 +223,14 @@ class RepositoriosLogisticaJpaTest {
     UUID idDireccionOriginal = entityInicial.getDireccion().getIdDireccion();
 
     guardada1.iniciarRuta("Chofer Juan");
-    guardada1.confirmarEntrega("Beneficiario");
-    guardada1.adjuntarFotoRecepcion("https://donatrack.org/foto.jpg");
+    guardada1.confirmarEntrega("Beneficiario", "https://donatrack.org/foto.jpg");
+    guardada1.adjuntarFotoRecepcion("https://donatrack.org/foto2.jpg");
     Entrega actualizada1 = entregasRepository.save(guardada1);
 
     assertEquals(EstadoEntrega.ENTREGADA, actualizada1.getEstadoActual());
     assertEquals(2, actualizada1.getHistorialEstado().size());
+    assertEquals(2, actualizada1.getFotosRecepcion().size());
+    assertEquals("https://donatrack.org/foto.jpg", actualizada1.getFotoRecepcionUrl());
     assertEquals(2, springDataDireccionRepo.count());
 
     EntregaEntity entityActualizada =
@@ -259,7 +261,7 @@ class RepositoriosLogisticaJpaTest {
                 List.of(),
                 null,
                 null,
-                null,
+                (List<String>) null,
                 10.0f,
                 1.0f,
                 null));
@@ -275,7 +277,7 @@ class RepositoriosLogisticaJpaTest {
                 List.of(),
                 null,
                 null,
-                null,
+                (List<String>) null,
                 12.0f,
                 1.2f,
                 null));
@@ -307,8 +309,8 @@ class RepositoriosLogisticaJpaTest {
 
     Entrega e1 = entregasRepository.findById(idMenor).orElseThrow();
     Entrega e2 = entregasRepository.findById(idMayor).orElseThrow();
-    e1.confirmarEntrega("Receptor 1");
-    e2.confirmarEntrega("Receptor 2");
+    e1.confirmarEntrega("Receptor 1", "https://donatrack.org/foto1.jpg");
+    e2.confirmarEntrega("Receptor 2", "https://donatrack.org/foto2.jpg");
     e1 = entregasRepository.save(e1);
     e2 = entregasRepository.save(e2);
 
@@ -396,5 +398,87 @@ class RepositoriosLogisticaJpaTest {
         new EntregaFallida(entrega.getId(), entrega.getIdDonacion(), "No atendieron", true));
 
     assertEquals(3, springDataEventoRepo.count());
+  }
+
+  @Test
+  void sincronizarFotos_deberiaReemplazarFotosPreviasYConservarOrdenYSincroniaConUrlLegada() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Direccion dir = new Direccion("Av. Santa Fe", 1000, null, null, "1059", caba);
+    Entrega entrega =
+        entregasRepository.save(new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 5.0f, 0.5f));
+
+    // 1. Iniciar ruta y confirmar entrega con dos fotos iniciales
+    entrega.iniciarRuta("Chofer Juan");
+    entrega.confirmarEntrega(
+        "Receptor Inicial", List.of("https://minio/foto_a.jpg", "https://minio/foto_b.jpg"));
+    entrega = entregasRepository.save(entrega);
+
+    Entrega recuperada1 = entregasRepository.findById(entrega.getId()).orElseThrow();
+    assertEquals(2, recuperada1.getFotosRecepcion().size());
+    assertEquals("https://minio/foto_a.jpg", recuperada1.getFotosRecepcion().get(0));
+    assertEquals("https://minio/foto_b.jpg", recuperada1.getFotosRecepcion().get(1));
+    assertEquals("https://minio/foto_a.jpg", recuperada1.getFotoRecepcionUrl());
+
+    Integer countFotos1 =
+        jdbcTemplate.queryForObject(
+            "SELECT count(*) FROM logistica.entrega_foto_recepcion WHERE id_entrega = ?",
+            Integer.class,
+            entrega.getId());
+    assertEquals(2, countFotos1);
+
+    // 2. Reemplazar fotos persistidas: el dominio actualiza/reemplaza la lista por una nueva única
+    // más corta
+    Entrega entregaConFotoReemplazada =
+        new Entrega(
+            recuperada1.getId(),
+            recuperada1.getIdRuta(),
+            recuperada1.getIdDonacion(),
+            recuperada1.getIdBeneficiaria(),
+            recuperada1.getDestino(),
+            recuperada1.getEstadoActual(),
+            recuperada1.getHistorialEstado(),
+            recuperada1.getHoraSalida(),
+            recuperada1.getHoraArribo(),
+            List.of("https://minio/foto_reemplazo.jpg"),
+            recuperada1.getPesoTotalKG(),
+            recuperada1.getVolumenTotalM3(),
+            recuperada1.getVersion());
+    entregasRepository.save(entregaConFotoReemplazada);
+
+    Entrega recuperada2 = entregasRepository.findById(entrega.getId()).orElseThrow();
+    assertEquals(1, recuperada2.getFotosRecepcion().size());
+    assertEquals("https://minio/foto_reemplazo.jpg", recuperada2.getFotosRecepcion().get(0));
+    assertEquals("https://minio/foto_reemplazo.jpg", recuperada2.getFotoRecepcionUrl());
+
+    List<String> fotosEnDb =
+        jdbcTemplate.queryForList(
+            "SELECT foto_url FROM logistica.entrega_foto_recepcion WHERE id_entrega = ? ORDER BY orden_foto ASC",
+            String.class,
+            entrega.getId());
+    assertEquals(List.of("https://minio/foto_reemplazo.jpg"), fotosEnDb);
+
+    // 3. Agregar fotos adicionales después de la confirmación
+    recuperada2.adjuntarFotoRecepcion("https://minio/foto_adicional_1.jpg");
+    recuperada2.adjuntarFotosRecepcion(List.of("https://minio/foto_adicional_2.jpg"));
+    entregasRepository.save(recuperada2);
+
+    Entrega recuperada3 = entregasRepository.findById(entrega.getId()).orElseThrow();
+    assertEquals(3, recuperada3.getFotosRecepcion().size());
+    assertEquals("https://minio/foto_reemplazo.jpg", recuperada3.getFotosRecepcion().get(0));
+    assertEquals("https://minio/foto_adicional_1.jpg", recuperada3.getFotosRecepcion().get(1));
+    assertEquals("https://minio/foto_adicional_2.jpg", recuperada3.getFotosRecepcion().get(2));
+    assertEquals("https://minio/foto_reemplazo.jpg", recuperada3.getFotoRecepcionUrl());
+
+    List<String> fotosFinalesEnDb =
+        jdbcTemplate.queryForList(
+            "SELECT foto_url FROM logistica.entrega_foto_recepcion WHERE id_entrega = ? ORDER BY orden_foto ASC",
+            String.class,
+            entrega.getId());
+    assertEquals(
+        List.of(
+            "https://minio/foto_reemplazo.jpg",
+            "https://minio/foto_adicional_1.jpg",
+            "https://minio/foto_adicional_2.jpg"),
+        fotosFinalesEnDb);
   }
 }

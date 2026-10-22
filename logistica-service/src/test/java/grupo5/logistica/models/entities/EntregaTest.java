@@ -107,7 +107,8 @@ class EntregaTest {
     assertEquals("Chofer Jose", cambio1.actor());
 
     // 2. Confirmar entrega con evidencia fotográfica obligatoria (RF-12)
-    entrega.confirmarEntrega("Comedor Infantil", List.of("  " + FOTO_VALIDA_1 + "  ", FOTO_VALIDA_1));
+    entrega.confirmarEntrega(
+        "Comedor Infantil", List.of("  " + FOTO_VALIDA_1 + "  ", FOTO_VALIDA_1));
     assertEquals(EstadoEntrega.ENTREGADA, entrega.getEstadoActual());
     assertNotNull(entrega.getHoraArribo());
     assertEquals(List.of(FOTO_VALIDA_1), entrega.getFotosRecepcion());
@@ -154,8 +155,7 @@ class EntregaTest {
     entrega.iniciarRuta("Chofer Jose");
 
     ValidationException ex =
-        assertThrows(
-            ValidationException.class, () -> entrega.adjuntarFotoRecepcion(FOTO_VALIDA_1));
+        assertThrows(ValidationException.class, () -> entrega.adjuntarFotoRecepcion(FOTO_VALIDA_1));
     assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
   }
 

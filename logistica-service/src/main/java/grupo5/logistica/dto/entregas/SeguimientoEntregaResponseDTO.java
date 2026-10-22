@@ -1,9 +1,10 @@
 package grupo5.logistica.dto.entregas;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
+import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +30,7 @@ public record SeguimientoEntregaResponseDTO(
     int totalParadas,
     int paradasEntregadas,
     int paradasProcesadas,
-    LocalDateTime horaSalida,
-    LocalDateTime horaArribo,
-    LocalDateTime ultimaActualizacion,
+    @JsonFormat(shape = JsonFormat.Shape.STRING) Instant horaSalida,
+    @JsonFormat(shape = JsonFormat.Shape.STRING) Instant horaArribo,
+    @JsonFormat(shape = JsonFormat.Shape.STRING) Instant ultimaActualizacion,
     List<ParadaSeguimientoDTO> paradas) {}

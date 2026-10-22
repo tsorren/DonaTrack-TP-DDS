@@ -64,9 +64,7 @@ class EntregaMapperTest {
     Entrega sinCoords = EntregaMother.pendiente();
     assertNull(mapper.toMapaPublicoResponseDTO(sinCoords));
 
-    sinCoords
-        .getDestino()
-        .actualizarCoordenadas(new CoordenadasGeograficas(-34.5986, -58.4201));
+    sinCoords.getDestino().actualizarCoordenadas(new CoordenadasGeograficas(-34.5986, -58.4201));
     sinCoords.iniciarRuta("Chofer");
     sinCoords.confirmarEntrega("Beneficiaria", "https://foto.jpg");
 

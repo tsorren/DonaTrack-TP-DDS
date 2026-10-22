@@ -2,8 +2,7 @@ package grupo5.logistica.models.entities.entregas;
 
 import java.util.List;
 
-public record ConfirmacionRecepcion(
-    Entrega entrega, String actor, List<String> fotosRecepcion)
+public record ConfirmacionRecepcion(Entrega entrega, String actor, List<String> fotosRecepcion)
     implements SolicitudTransicionEntrega {
 
   public ConfirmacionRecepcion {

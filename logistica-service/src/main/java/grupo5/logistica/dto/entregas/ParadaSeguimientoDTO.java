@@ -1,7 +1,8 @@
 package grupo5.logistica.dto.entregas;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Vista sanitizada de una parada dentro de una ruta para seguimiento de donantes (RF-09) y
@@ -12,4 +13,4 @@ public record ParadaSeguimientoDTO(
     int ordenVisita,
     EstadoEntrega estado,
     boolean esEntregaConsultada,
-    LocalDateTime horaArribo) {}
+    @JsonFormat(shape = JsonFormat.Shape.STRING) Instant horaArribo) {}

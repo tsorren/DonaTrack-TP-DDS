@@ -17,7 +17,9 @@ import grupo5.logistica.models.entities.entregas.NoRecepcion;
 import grupo5.logistica.models.entities.entregas.RegresoDeposito;
 import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -55,8 +57,8 @@ public class EntregaMapper {
         entrega.getIdBeneficiaria(),
         direccionMapper.toResponseDTO(entrega.getDestino()),
         entrega.getEstadoActual(),
-        entrega.getHoraSalida(),
-        entrega.getHoraArribo(),
+        aInstantUtc(entrega.getHoraSalida()),
+        aInstantUtc(entrega.getHoraArribo()),
         entrega.getFotoRecepcionUrl(),
         entrega.getFotosRecepcion(),
         entrega.getPesoTotalKG(),
@@ -73,7 +75,7 @@ public class EntregaMapper {
 
     Direccion destino = entrega.getDestino();
     CoordenadasGeograficas coords = destino.coordenadas();
-    LocalDateTime fechaEntrega = resolverFechaEntrega(entrega);
+    Instant fechaEntrega = aInstantUtc(resolverFechaEntrega(entrega));
 
     return new EntregaMapaPublicoResponseDTO(
         entrega.getId(),
@@ -106,7 +108,14 @@ public class EntregaMapper {
     }
 
     return new CambioEstadoEntregaResponseDTO(
-        cambio.estadoAnterior(), cambio.estadoNuevo(), cambio.timeStamp(), cambio.actor());
+        cambio.estadoAnterior(),
+        cambio.estadoNuevo(),
+        aInstantUtc(cambio.timeStamp()),
+        cambio.actor());
+  }
+
+  private static Instant aInstantUtc(LocalDateTime ldt) {
+    return ldt != null ? ldt.toInstant(ZoneOffset.UTC) : null;
   }
 
   private static LocalDateTime resolverFechaEntrega(Entrega entrega) {

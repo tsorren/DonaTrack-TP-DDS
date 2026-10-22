@@ -20,7 +20,9 @@ import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IEntregasService;
 import grupo5.logistica.services.IGeocodificadorDestino;
 import grupo5.logistica.services.mappers.EntregaMapper;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -226,8 +228,8 @@ public class EntregasService implements IEntregasService {
           0,
           0,
           0,
-          entrega.getHoraSalida(),
-          entrega.getHoraArribo(),
+          aInstantUtc(entrega.getHoraSalida()),
+          aInstantUtc(entrega.getHoraArribo()),
           calcularUltimaActualizacion(entrega, null, List.of()),
           List.of());
     }
@@ -265,14 +267,16 @@ public class EntregasService implements IEntregasService {
         }
         paradas.add(
             new ParadaSeguimientoDTO(
-                ordenVisita, estadoParada, esConsultada, paradaEntrega.getHoraArribo()));
+                ordenVisita,
+                estadoParada,
+                esConsultada,
+                aInstantUtc(paradaEntrega.getHoraArribo())));
       } else {
         paradas.add(new ParadaSeguimientoDTO(ordenVisita, null, esConsultada, null));
       }
     }
 
-    LocalDateTime ultimaActualizacion =
-        calcularUltimaActualizacion(entrega, ruta, entregasDeRuta);
+    Instant ultimaActualizacion = calcularUltimaActualizacion(entrega, ruta, entregasDeRuta);
 
     return new SeguimientoEntregaResponseDTO(
         entrega.getId(),
@@ -287,13 +291,13 @@ public class EntregasService implements IEntregasService {
         idsParadas.size(),
         paradasEntregadas,
         paradasProcesadas,
-        entrega.getHoraSalida(),
-        entrega.getHoraArribo(),
+        aInstantUtc(entrega.getHoraSalida()),
+        aInstantUtc(entrega.getHoraArribo()),
         ultimaActualizacion,
         List.copyOf(paradas));
   }
 
-  private static LocalDateTime calcularUltimaActualizacion(
+  private static Instant calcularUltimaActualizacion(
       Entrega entrega, @Nullable Ruta ruta, List<Entrega> entregasDeRuta) {
     List<LocalDateTime> marcas = new ArrayList<>();
     agregarMarcasEntrega(entrega, marcas);
@@ -313,7 +317,14 @@ public class EntregasService implements IEntregasService {
     for (Entrega parada : entregasDeRuta) {
       agregarMarcasEntrega(parada, marcas);
     }
-    return marcas.stream().max(Comparator.naturalOrder()).orElse(null);
+    return marcas.stream()
+        .max(Comparator.naturalOrder())
+        .map(EntregasService::aInstantUtc)
+        .orElse(null);
+  }
+
+  private static Instant aInstantUtc(LocalDateTime ldt) {
+    return ldt != null ? ldt.toInstant(ZoneOffset.UTC) : null;
   }
 
   private static void agregarMarcasEntrega(Entrega entrega, List<LocalDateTime> marcas) {

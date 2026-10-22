@@ -43,7 +43,16 @@ class DireccionMapperTest {
   void rechazaCoordenadasIncompletas() {
     DireccionDTO soloLatitud =
         new DireccionDTO(
-            "Medrano", 951, null, null, "C1179", "CABA", "Buenos Aires", "Argentina", -34.5986, null);
+            "Medrano",
+            951,
+            null,
+            null,
+            "C1179",
+            "CABA",
+            "Buenos Aires",
+            "Argentina",
+            -34.5986,
+            null);
     assertThrows(ValidationException.class, () -> mapper.toEntity(soloLatitud));
   }
 

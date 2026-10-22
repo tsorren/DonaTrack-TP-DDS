@@ -104,7 +104,8 @@ class EntregaServiceTest {
             geocodificador);
 
     DireccionDTO destino =
-        new DireccionDTO("Calle Falsa", 123, null, null, "C1000", "CABA", "Buenos Aires", "Argentina");
+        new DireccionDTO(
+            "Calle Falsa", 123, null, null, "C1000", "CABA", "Buenos Aires", "Argentina");
     CrearEntregaRequestDTO request =
         new CrearEntregaRequestDTO(UUID.randomUUID(), UUID.randomUUID(), destino, 10f, 2f);
 

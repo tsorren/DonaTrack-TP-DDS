@@ -1,8 +1,9 @@
 package grupo5.logistica.dto.entregas;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,8 +14,8 @@ public record EntregaResponseDTO(
     UUID idBeneficiaria,
     DireccionDTO destino,
     EstadoEntrega estadoActual,
-    LocalDateTime horaSalida,
-    LocalDateTime horaArribo,
+    @JsonFormat(shape = JsonFormat.Shape.STRING) Instant horaSalida,
+    @JsonFormat(shape = JsonFormat.Shape.STRING) Instant horaArribo,
     String fotoRecepcionUrl,
     List<String> fotosRecepcion,
     float pesoTotalKG,
@@ -29,8 +30,8 @@ public record EntregaResponseDTO(
       UUID idBeneficiaria,
       DireccionDTO destino,
       EstadoEntrega estadoActual,
-      LocalDateTime horaSalida,
-      LocalDateTime horaArribo,
+      Instant horaSalida,
+      Instant horaArribo,
       String fotoRecepcionUrl,
       float pesoTotalKG,
       float volumenTotalM3,

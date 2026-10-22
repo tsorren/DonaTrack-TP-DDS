@@ -113,9 +113,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.version = version;
   }
 
-  /**
-   * Sobrecarga de reconstitución compatible con una única referencia fotográfica.
-   */
+  /** Sobrecarga de reconstitución compatible con una única referencia fotográfica. */
   @SuppressWarnings("java:S107")
   public Entrega(
       UUID id,
@@ -175,8 +173,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
   }
 
   public void confirmarEntrega(String entidad, String fotoRecepcionUrl) {
-    confirmarEntrega(
-        entidad, fotoRecepcionUrl != null ? List.of(fotoRecepcionUrl) : null);
+    confirmarEntrega(entidad, fotoRecepcionUrl != null ? List.of(fotoRecepcionUrl) : null);
   }
 
   public void confirmarEntrega(String entidad, List<String> fotosRecepcion) {

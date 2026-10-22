@@ -1,6 +1,7 @@
 package grupo5.logistica.dto.entregas;
 
-import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
@@ -16,6 +17,6 @@ public record EntregaMapaPublicoResponseDTO(
     String localidad,
     String provincia,
     String pais,
-    LocalDateTime fechaEntrega,
+    @JsonFormat(shape = JsonFormat.Shape.STRING) Instant fechaEntrega,
     float pesoTotalKG,
     float volumenTotalM3) {}
