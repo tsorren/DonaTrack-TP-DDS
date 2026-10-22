@@ -10,6 +10,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoDonanteDadoDeBajaV1;
 import grupo5.donaciones.dto.comunicaciones.EventoDonanteRegistradoV1;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
+import grupo5.donaciones.fixtures.PersonaMother;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
@@ -19,6 +20,7 @@ import grupo5.donaciones.services.mappers.DonanteMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -223,6 +225,41 @@ class DonantesServiceTest {
     when(donantesRepository.findById(personaId)).thenReturn(Optional.empty());
 
     assertFalse(donantesService.estaDadoDeBaja(personaId));
+  }
+
+  @Test
+  void listarPorCanal_excluyeDonantesDeBajaYPersonasAnonimizadas() {
+    Humana activa = personaConDonanteExistente();
+    activa.agregarMedioDeContacto(PersonaMother.correoValido());
+    Humana deBaja = personaConDonanteExistente();
+    deBaja.agregarMedioDeContacto(PersonaMother.correoValido());
+    Humana anonimizada = personaConDonanteExistente();
+    anonimizada.agregarMedioDeContacto(PersonaMother.correoValido());
+    anonimizada.anonimizar();
+
+    Donante donanteDeBaja = new Donante(deBaja.getId());
+    donanteDeBaja.darDeBaja();
+    when(donantesRepository.findAll())
+        .thenReturn(
+            List.of(new Donante(activa.getId()), donanteDeBaja, new Donante(anonimizada.getId())));
+
+    List<DonanteOutputDTO> resultado = donantesService.listarDonantesPorContacto("CORREO");
+
+    assertEquals(
+        List.of(activa.getId()), resultado.stream().map(DonanteOutputDTO::idDonante).toList());
+  }
+
+  @Test
+  void listarSinCanal_devuelveTodosConSuEstado() {
+    Humana deBaja = personaConDonanteExistente();
+    Donante donanteDeBaja = new Donante(deBaja.getId());
+    donanteDeBaja.darDeBaja();
+    when(donantesRepository.findAll()).thenReturn(List.of(donanteDeBaja));
+
+    List<DonanteOutputDTO> resultado = donantesService.listarDonantesPorContacto(null);
+
+    assertEquals(1, resultado.size());
+    assertFalse(resultado.get(0).activo());
   }
 
   private Humana personaConDonanteExistente() {

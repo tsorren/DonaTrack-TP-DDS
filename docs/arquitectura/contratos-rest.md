@@ -47,7 +47,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `PUT` | `/api/entidades/{id}` | Revalidación de entidad beneficiaria (no cambia estado; `409` si está de baja) | `EntidadBeneficiariaInputDTO` | `200`, `400`, `404`, `409` |
 | `DELETE` | `/api/entidades/{id}` | Baja lógica e idempotente de entidad beneficiaria (desactiva sus necesidades) | — | `204`, `404` |
 | `POST` | `/api/donantes` | Registro idempotente de donante (id = `personaId`; `200` si ya existía o se reactivó; `409` si la persona fue anonimizada) | `DonanteInputDTO` | `201`, `200`, `400`, `404`, `409` |
-| `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`) | — | `200` |
+| `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`: con él, solo activos y no anonimizados) | — | `200` |
 | `GET` | `/api/donantes/{id}` | Consulta de donante por ID | — | `200`, `404` |
 | `DELETE` | `/api/donantes/{id}` | Baja lógica e idempotente de donante | — | `204`, `404` |
 | `POST` | `/api/donantes/archivos` | Carga asíncrona de archivo/padrón de donantes (MinIO) | `ArchivoInputDTO` | `202`, `400` |

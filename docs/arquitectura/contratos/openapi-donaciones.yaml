@@ -345,12 +345,16 @@ paths:
           description: La persona fue anonimizada (PERSONA_ANONIMIZADA_NO_OPERABLE)
     get:
       summary: Listar donantes
-      description: Incluye los donantes dados de baja; cada uno expone `activo`.
+      description: >
+        Sin `canal` incluye los donantes dados de baja; cada uno expone `activo`. Con `canal`
+        devuelve solo los donantes activos cuya persona no está anonimizada, porque el filtro
+        sirve para contactarlos.
       operationId: listarDonantes
       parameters:
         - name: canal
           in: query
           required: false
+          description: Tipo de medio de contacto (por ejemplo `CORREO` o `TELEFONO`).
           schema: { type: string }
       responses:
         '200':

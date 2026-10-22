@@ -96,7 +96,10 @@ public class DonantesService implements IDonantesService {
       return donantes.stream().map(donanteMapper::toOutputDTO).toList();
     }
 
+    // Filtrar por canal es para contactar: un donante de baja o una persona anonimizada no aplican
     return donantes.stream()
+        .filter(Donante::estaActivo)
+        .filter(this::personaNoAnonimizada)
         .map(donanteMapper::toOutputDTO)
         .filter(
             d ->
@@ -115,6 +118,13 @@ public class DonantesService implements IDonantesService {
                               return canal.equalsIgnoreCase(tipoMedio);
                             }))
         .toList();
+  }
+
+  private boolean personaNoAnonimizada(Donante donante) {
+    return personasRepository
+        .findById(donante.personaId())
+        .map(persona -> !persona.estaAnonimizada())
+        .orElse(false);
   }
 
   @Override
