@@ -193,7 +193,17 @@
 
 ---
 
-> **DTI-15 — reservada.** El PR #892 trae una segunda DTI-14 (normalización y geocodificación de direcciones) que se renumerará como DTI-15 al integrarlo.
+## DTI-15 — Normalización y geocodificación de direcciones
+<a id="dti-15"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261009-dti-14](./20261009-dti-15-normalizacion-y-geocodificacion-de-direcciones.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] not-started` — `Direccion` guarda `localidad`/`provincia`/`pais` como texto libre sin validar en `donaciones-service` y en `logistica-service`; `AlgoritmoOrdenadorSimple` ordena entregas por UUID por falta de coordenadas |
+| Target | `donaciones-service` (validación contra API Georef al cargar direcciones) · `logistica-service` (geocodificación y ordenamiento geográfico de entregas) |
+| Cuándo se saldará | **A definir** — posterior a la migración de `donaciones-service` a PostgreSQL |
+
 
 ---
 
@@ -298,7 +308,7 @@
 |---|---|
 | ADR | [20260702-alcance-operaciones-rest-entidad-beneficiaria](./donaciones-service/20260702-alcance-operaciones-rest-entidad-beneficiaria.md) (Status `rejected`) |
 | Qué proponía el ADR (rechazado) | No exponer `PUT` ni `DELETE` sobre `EntidadBeneficiaria`; la baja se lograría anonimizando su Persona Jurídica. |
-| Qué hace el código | `EntidadBeneficiariaController` expone `@PutMapping("/{id}")` y `@DeleteMapping("/{id}")` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:52-63`); el servicio hace `repository.delete(entidad)` (`.../services/impl/EntidadBeneficiariaService.java:83-87`). |
+| Qué hace el código | `EntidadBeneficiariaController` expone `@PutMapping("/{id}")` y `@DeleteMapping("/{id}")` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:52-63`); desde la #892 el `DELETE` es una baja lógica: `entidad.darDeBaja()` y `save`, sin borrar la fila, y desactiva sus necesidades (`.../services/impl/EntidadBeneficiariaService.java`). Antes hacía `repository.delete(entidad)`. |
 | Impacto | La decisión vigente (mutación y borrado físico) no tiene ADR que registre su justificación ni su efecto sobre las `Necesidad` que referencian la entidad. |
 | Decision status | `rejected` (ADR) |
 | Implementation status | `[OBSERVED] undocumented` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
@@ -321,3 +331,17 @@
 
 1. **Pérdida de eventos por desorden entre colas:** cada evento de Incentivos tiene su propia cola y RabbitMQ no ordena entre colas. Si `donacion.segmentada` o `donacion.recibida` llega antes que `donante.registrado`, `MisionesDonacionService.obtenerDonante` lanza `DONANTE_INCENTIVOS_NO_ENCONTRADO` y, con `defaultRequeueRejected=false` y sin DLQ, el mensaje se descarta.
 2. **Tests que suponen propagación inmediata:** las lecturas cruzadas entre servicios no siempre esperan al evento; con el RabbitMQ local la carrera no se manifiesta.
+
+---
+
+## DTI-23 — Orden de eventos baja/alta del donante en incentivos (cola única)
+<a id="dti-23"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261007-identidad-compartida](./donaciones-service/20261007-identidad-compartida-de-roles-donante-y-entidad-beneficiaria.md) (sección «Orden de eventos del ciclo de vida del donante») |
+| Relacionada | [DTI-22](#dti-22): mismo origen (colas separadas sin orden entre sí) en los mismos archivos de `incentivos-service`; esta es la variante baja/alta del mismo donante |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] not-started` — `incentivos-service` mantiene dos colas (`incentivos.donante-registrado`, `incentivos.donante-dado-de-baja`) con un listener cada una. Con el id de rol igual al de la persona, un `DELETE` seguido de un `POST /api/donantes` rápido puede llegar al revés: el alta se ignora (el perfil existe), la baja borra el perfil y las siguientes `donacion.segmentada` y `donacion.recibida` se descartan (`defaultRequeueRejected=false`). Misiones y ranking dejan de contar en silencio |
+| Target | `incentivos-service` (`RabbitMQConfig`, `IncentivosEventosListener`): cola única `incentivos.donante-ciclo-de-vida`, concurrencia 1, retiro de las dos colas actuales. Instrucciones de entrega en el plan de roles, Etapa 6 |
+| Cuándo se saldará | **A definir** — a cargo del equipo de `incentivos-service`; antes de mergear a `main`, o con el riesgo declarado en el PR |

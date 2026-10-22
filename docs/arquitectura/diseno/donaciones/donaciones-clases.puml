@@ -141,12 +141,14 @@ package PERSONAS {
   }
 
   class Donante <<entity>> {
-    - id: UUID {final}
-    - persona: Persona
+    - id: UUID {final} // = personaId (identidad compartida)
+    - activo: boolean
     --
+    + personaId(): UUID
+    + estaActivo(): boolean
+    + darDeBaja(): boolean
+    + reactivar(): boolean
     + anonimizar(): void
-    + agregarDonacion(Donacion): void
-    + quitarDonacion(Donacion): void
   }
 
   Persona <|-- Humana
@@ -512,9 +514,15 @@ package NECESIDADES {
 ' ==================== BENEFICIARIOS ====================
 package BENEFICIARIOS {
   class EntidadBeneficiaria <<entity>> {
-    - id: UUID
-    - juridica: UUID
+    - id: UUID {final} // = juridicaId (identidad compartida)
+    - activo: boolean
     --
+    + juridicaId(): UUID
+    + estaActivo(): boolean
+    + darDeBaja(): boolean
+    + reactivar(): boolean
+    + {static} validarApta(Persona): Juridica
+    + {static} validarRequisitos(TipoJuridico, boolean): void
     + anonimizar(): void
   }
 

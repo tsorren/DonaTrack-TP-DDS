@@ -6,19 +6,18 @@ import grupo5.common.repositories.AggregateRoot;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.UUID;
-import lombok.Getter;
 
-@Getter
+/** Rol de donante. Su identidad es la de la {@link Persona}: {@code id == personaId}. */
 public class Donante implements Anonimizable, AggregateRoot {
   private final UUID id;
-  private final UUID personaId;
+  private boolean activo;
 
   public Donante(UUID personaId) {
     if (personaId == null) {
       throw new ValidationException(ErrorCatalog.DONANTE_SIN_PERSONA);
     }
-    this.id = UUID.randomUUID();
-    this.personaId = personaId;
+    this.id = personaId;
+    this.activo = true;
   }
 
   public Donante(Persona persona) {
@@ -26,12 +25,30 @@ public class Donante implements Anonimizable, AggregateRoot {
   }
 
   public UUID personaId() {
-    return this.personaId;
+    return this.id;
   }
 
   @Override
   public UUID getId() {
     return this.id;
+  }
+
+  public boolean estaActivo() {
+    return this.activo;
+  }
+
+  /** Devuelve {@code true} solo si hubo transición de activo a inactivo. */
+  public boolean darDeBaja() {
+    boolean estabaActivo = this.activo;
+    this.activo = false;
+    return estabaActivo;
+  }
+
+  /** Devuelve {@code true} solo si hubo transición de inactivo a activo. */
+  public boolean reactivar() {
+    boolean estabaInactivo = !this.activo;
+    this.activo = true;
+    return estabaInactivo;
   }
 
   @Override

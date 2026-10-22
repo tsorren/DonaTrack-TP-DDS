@@ -1,9 +1,11 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
+import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
@@ -79,9 +81,13 @@ public class NecesidadesService implements INecesidadesService {
     subcategoriaRepository
         .findById(dto.idSubcategoria())
         .orElseThrow(() -> new RecursoNoEncontradoException(dto.idSubcategoria()));
-    entidadesBeneficiariasRepository
-        .findById(dto.idEntidad())
-        .orElseThrow(() -> new RecursoNoEncontradoException(dto.idEntidad()));
+    EntidadBeneficiaria entidad =
+        entidadesBeneficiariasRepository
+            .findById(dto.idEntidad())
+            .orElseThrow(() -> new RecursoNoEncontradoException(dto.idEntidad()));
+    if (!entidad.estaActivo()) {
+      throw new BusinessStateException(ErrorCatalog.ENTIDAD_BENEFICIARIA_INACTIVA);
+    }
     Necesidad necesidad =
         switch (dto.tipo()) {
           case "RECURRENTE" -> {

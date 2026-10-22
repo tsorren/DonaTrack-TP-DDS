@@ -8,7 +8,8 @@
     "donanteId": {
       "type": "string",
       "format": "uuid",
-      "description": "Identificador del donante registrado"
+      "description": "DEPRECATED: vale lo mismo que personaId (el id del donante es el de su persona). Usar personaId. Se mantiene por compatibilidad hasta completar el ciclo de migración.",
+      "deprecated": true
     },
     "personaId": {
       "type": "string",

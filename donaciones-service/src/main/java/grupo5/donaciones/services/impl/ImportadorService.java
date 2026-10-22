@@ -72,8 +72,9 @@ public class ImportadorService implements IImportadorService {
 
       int erroresDeNegocio = 0;
 
-      for (Map<String, String> fila : filasValidas) {
-        boolean exito = procesarFilaIndividual(fila);
+      for (int i = 0; i < filasValidas.size(); i++) {
+        // El número de fila es 1-based y no cuenta el encabezado
+        boolean exito = procesarFilaIndividual(filasValidas.get(i), i + 1);
         if (!exito) {
           erroresDeNegocio++;
         }
@@ -89,25 +90,34 @@ public class ImportadorService implements IImportadorService {
     }
   }
 
-  private boolean procesarFilaIndividual(Map<String, String> fila) {
+  private boolean procesarFilaIndividual(Map<String, String> fila, int numeroFila) {
     try {
       Persona personaClon = personaMapper.mapToPersona(fila);
 
       Optional<Persona> personaExistenteOpt = validadorDuplicados.buscarDuplicado(personaClon);
 
-      PersonaInputDTO dto = transformarAPersonaInputDTO(personaClon, fila);
-
       if (personaExistenteOpt.isPresent()) {
-        log.info("Actualizando persona existente con ID: {}", personaExistenteOpt.get().getId());
-        personaService.actualizarPersona(personaExistenteOpt.get().getId(), dto);
+        UUID personaId = personaExistenteOpt.get().getId();
+        if (donantesService.estaDadoDeBaja(personaId)) {
+          log.warn(
+              "La persona {} fue dada de baja como donante: no se la reactiva ni se actualiza",
+              personaId);
+          return false;
+        }
+        log.info("Actualizando persona existente con ID: {}", personaId);
+        personaService.actualizarParcial(personaId, personaMapper.mapToActualizacionParcial(fila));
+        // Recién con la fila válida y aplicada se registra el rol (y se publica donante.registrado)
+        donantesService.registrarSiNoExiste(personaId);
       } else {
         log.info("Creando nueva persona y donante...");
-        PersonaOutputDTO personaCreada = personaService.crearPersona(dto);
+        PersonaOutputDTO personaCreada =
+            personaService.crearPersona(transformarAPersonaInputDTO(personaClon, fila));
         donantesService.crearDonante(new DonanteInputDTO(personaCreada.id()));
       }
       return true;
     } catch (Exception e) {
-      log.error("Error de negocio al procesar la fila {}: {}", fila, e.getMessage());
+      // Solo el número de fila: la fila trae datos personales (nombre, documento, email)
+      log.error("Error de negocio al procesar la fila {}: {}", numeroFila, e.getMessage());
       return false;
     }
   }
