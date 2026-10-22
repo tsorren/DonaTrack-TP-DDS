@@ -308,7 +308,7 @@
 |---|---|
 | ADR | [20260702-alcance-operaciones-rest-entidad-beneficiaria](./donaciones-service/20260702-alcance-operaciones-rest-entidad-beneficiaria.md) (Status `rejected`) |
 | Qué proponía el ADR (rechazado) | No exponer `PUT` ni `DELETE` sobre `EntidadBeneficiaria`; la baja se lograría anonimizando su Persona Jurídica. |
-| Qué hace el código | `EntidadBeneficiariaController` expone `@PutMapping("/{id}")` y `@DeleteMapping("/{id}")` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:52-63`); el servicio hace `repository.delete(entidad)` (`.../services/impl/EntidadBeneficiariaService.java:83-87`). |
+| Qué hace el código | `EntidadBeneficiariaController` expone `@PutMapping("/{id}")` y `@DeleteMapping("/{id}")` (`donaciones-service/src/main/java/grupo5/donaciones/controllers/impl/EntidadBeneficiariaController.java:52-63`); desde la #892 el `DELETE` es una baja lógica: `entidad.darDeBaja()` y `save`, sin borrar la fila, y desactiva sus necesidades (`.../services/impl/EntidadBeneficiariaService.java`). Antes hacía `repository.delete(entidad)`. |
 | Impacto | La decisión vigente (mutación y borrado físico) no tiene ADR que registre su justificación ni su efecto sobre las `Necesidad` que referencian la entidad. |
 | Decision status | `rejected` (ADR) |
 | Implementation status | `[OBSERVED] undocumented` — hallazgo de la auditoría de documentación del 2026-10-14; sin resolver |
