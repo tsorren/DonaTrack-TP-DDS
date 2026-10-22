@@ -10,6 +10,7 @@ import grupo5.logistica.models.entities.entregas.*;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.entregas.eventos.EventoEntrega;
+import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.ICamionRepository;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -17,8 +18,13 @@ import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
 import grupo5.logistica.services.ComunicadorEventosLogistica;
 import grupo5.logistica.services.IEntregasService;
+import grupo5.logistica.services.IGeocodificadorDestino;
 import grupo5.logistica.services.mappers.EntregaMapper;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.Nullable;
@@ -33,6 +39,7 @@ public class EntregasService implements IEntregasService {
   private final EntregaMapper entregaMapper;
   private final ComunicadorEventosLogistica comunicadorEventos;
   private final ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository;
+  private final IGeocodificadorDestino geocodificadorDestino;
 
   public EntregasService(
       IEntregasRepository entregasRepository,
@@ -46,6 +53,24 @@ public class EntregasService implements IEntregasService {
         camionRepository,
         entregaMapper,
         comunicadorEventos,
+        null,
+        null);
+  }
+
+  public EntregasService(
+      IEntregasRepository entregasRepository,
+      IRutasRepository rutasRepository,
+      ICamionRepository camionRepository,
+      EntregaMapper entregaMapper,
+      ComunicadorEventosLogistica comunicadorEventos,
+      @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository) {
+    this(
+        entregasRepository,
+        rutasRepository,
+        camionRepository,
+        entregaMapper,
+        comunicadorEventos,
+        solicitudesTransicionRepository,
         null);
   }
 
@@ -56,13 +81,15 @@ public class EntregasService implements IEntregasService {
       ICamionRepository camionRepository,
       EntregaMapper entregaMapper,
       ComunicadorEventosLogistica comunicadorEventos,
-      @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository) {
+      @Nullable ISolicitudesTransicionEntregaRepository solicitudesTransicionRepository,
+      @Nullable IGeocodificadorDestino geocodificadorDestino) {
     this.entregasRepository = entregasRepository;
     this.rutasRepository = rutasRepository;
     this.camionRepository = camionRepository;
     this.entregaMapper = entregaMapper;
     this.comunicadorEventos = comunicadorEventos;
     this.solicitudesTransicionRepository = solicitudesTransicionRepository;
+    this.geocodificadorDestino = geocodificadorDestino;
   }
 
   @Override
@@ -74,6 +101,11 @@ public class EntregasService implements IEntregasService {
     }
     if (entregasRepository.existsByIdDonacion(entrega.getIdDonacion())) {
       throw new BusinessStateException(ErrorCatalog.ENTREGA_DONACION_DUPLICADA);
+    }
+    if (!entrega.getDestino().tieneCoordenadas() && geocodificadorDestino != null) {
+      geocodificadorDestino
+          .geocodificar(entrega.getDestino())
+          .ifPresent(entrega.getDestino()::actualizarCoordenadas);
     }
 
     return entregaMapper.toResponseDTO(entregasRepository.save(entrega));
@@ -87,8 +119,42 @@ public class EntregasService implements IEntregasService {
 
   @Override
   @Transactional(readOnly = true)
+  public List<EntregaMapaPublicoResponseDTO> listarMapaPublico() {
+    return entregasRepository.findByEstado(EstadoEntrega.ENTREGADA).stream()
+        .filter(e -> e.getDestino() != null && e.getDestino().tieneCoordenadas())
+        .map(entregaMapper::toMapaPublicoResponseDTO)
+        .filter(Objects::nonNull)
+        .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public EntregaResponseDTO obtenerPorId(UUID id) {
     return entregaMapper.toResponseDTO(buscarEntrega(id));
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public SeguimientoEntregaResponseDTO obtenerSeguimientoPorDonacion(UUID idDonacion) {
+    if (idDonacion == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    Entrega entrega =
+        entregasRepository
+            .findByIdDonacion(idDonacion)
+            .orElseThrow(() -> new RecursoNoEncontradoException(idDonacion));
+    return construirSeguimiento(entrega);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<SeguimientoEntregaResponseDTO> listarSeguimientoPorBeneficiaria(UUID idBeneficiaria) {
+    if (idBeneficiaria == null) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
+    }
+    return entregasRepository.findByIdBeneficiaria(idBeneficiaria).stream()
+        .map(this::construirSeguimiento)
+        .toList();
   }
 
   @Override
@@ -99,7 +165,7 @@ public class EntregasService implements IEntregasService {
     }
 
     Entrega entrega = buscarEntrega(id);
-    entrega.adjuntarFotoRecepcion(dto.fotoRecepcionUrl());
+    entrega.adjuntarFotosRecepcion(dto.obtenerFotos());
     return entregaMapper.toResponseDTO(entregasRepository.save(entrega));
   }
 
@@ -114,7 +180,8 @@ public class EntregasService implements IEntregasService {
 
     SolicitudTransicionEntrega solicitud =
         switch (request.estado()) {
-          case ENTREGADA -> procesarEntregaEntregada(request.actor(), entrega);
+          case ENTREGADA ->
+              procesarEntregaEntregada(request.actor(), entrega, request.obtenerFotosRecepcion());
           case NO_RECIBIDA ->
               procesarEntregaNoRecibida(
                   request.actor(), entrega, request.justificacion(), request.replanificable());
@@ -142,10 +209,134 @@ public class EntregasService implements IEntregasService {
         .toList();
   }
 
+  private SeguimientoEntregaResponseDTO construirSeguimiento(Entrega entrega) {
+    UUID idRuta = entrega.getIdRuta();
+    Ruta ruta = idRuta != null ? rutasRepository.findById(idRuta).orElse(null) : null;
+    if (ruta == null) {
+      return new SeguimientoEntregaResponseDTO(
+          entrega.getId(),
+          entrega.getIdDonacion(),
+          entrega.getEstadoActual(),
+          false,
+          null,
+          null,
+          null,
+          null,
+          null,
+          0,
+          0,
+          0,
+          entrega.getHoraSalida(),
+          entrega.getHoraArribo(),
+          calcularUltimaActualizacion(entrega, null, List.of()),
+          List.of());
+    }
+
+    String patenteCamion =
+        ruta.getCamionId() != null
+            ? camionRepository.findById(ruta.getCamionId()).map(Camion::getPatente).orElse(null)
+            : null;
+
+    List<UUID> idsParadas = ruta.getEntregaIds();
+    List<ParadaSeguimientoDTO> paradas = new ArrayList<>(idsParadas.size());
+    List<Entrega> entregasDeRuta = new ArrayList<>(idsParadas.size());
+    Integer ordenVisitaConsultada = null;
+    int paradasEntregadas = 0;
+    int paradasProcesadas = 0;
+
+    for (int i = 0; i < idsParadas.size(); i++) {
+      UUID idParada = idsParadas.get(i);
+      int ordenVisita = i + 1;
+      boolean esConsultada = entrega.getId().equals(idParada);
+      Entrega paradaEntrega =
+          esConsultada ? entrega : entregasRepository.findById(idParada).orElse(null);
+
+      if (esConsultada) {
+        ordenVisitaConsultada = ordenVisita;
+      }
+      if (paradaEntrega != null) {
+        entregasDeRuta.add(paradaEntrega);
+        EstadoEntrega estadoParada = paradaEntrega.getEstadoActual();
+        if (estadoParada == EstadoEntrega.ENTREGADA) {
+          paradasEntregadas++;
+          paradasProcesadas++;
+        } else if (estadoParada == EstadoEntrega.NO_RECIBIDA) {
+          paradasProcesadas++;
+        }
+        paradas.add(
+            new ParadaSeguimientoDTO(
+                ordenVisita, estadoParada, esConsultada, paradaEntrega.getHoraArribo()));
+      } else {
+        paradas.add(new ParadaSeguimientoDTO(ordenVisita, null, esConsultada, null));
+      }
+    }
+
+    LocalDateTime ultimaActualizacion =
+        calcularUltimaActualizacion(entrega, ruta, entregasDeRuta);
+
+    return new SeguimientoEntregaResponseDTO(
+        entrega.getId(),
+        entrega.getIdDonacion(),
+        entrega.getEstadoActual(),
+        true,
+        ruta.getId(),
+        ruta.getFecha(),
+        ruta.getEstado(),
+        patenteCamion,
+        ordenVisitaConsultada,
+        idsParadas.size(),
+        paradasEntregadas,
+        paradasProcesadas,
+        entrega.getHoraSalida(),
+        entrega.getHoraArribo(),
+        ultimaActualizacion,
+        List.copyOf(paradas));
+  }
+
+  private static LocalDateTime calcularUltimaActualizacion(
+      Entrega entrega, @Nullable Ruta ruta, List<Entrega> entregasDeRuta) {
+    List<LocalDateTime> marcas = new ArrayList<>();
+    agregarMarcasEntrega(entrega, marcas);
+    if (ruta != null) {
+      if (ruta.getHoraInicioReal() != null) {
+        marcas.add(ruta.getHoraInicioReal());
+      }
+      if (ruta.getHoraFinReal() != null) {
+        marcas.add(ruta.getHoraFinReal());
+      }
+      for (CambioEstadoRuta cambio : ruta.getHistorialEstado()) {
+        if (cambio != null && cambio.timestamp() != null) {
+          marcas.add(cambio.timestamp());
+        }
+      }
+    }
+    for (Entrega parada : entregasDeRuta) {
+      agregarMarcasEntrega(parada, marcas);
+    }
+    return marcas.stream().max(Comparator.naturalOrder()).orElse(null);
+  }
+
+  private static void agregarMarcasEntrega(Entrega entrega, List<LocalDateTime> marcas) {
+    if (entrega == null) {
+      return;
+    }
+    if (entrega.getHoraSalida() != null) {
+      marcas.add(entrega.getHoraSalida());
+    }
+    if (entrega.getHoraArribo() != null) {
+      marcas.add(entrega.getHoraArribo());
+    }
+    for (CambioEstadoEntrega cambio : entrega.getHistorialEstado()) {
+      if (cambio != null && cambio.timeStamp() != null) {
+        marcas.add(cambio.timeStamp());
+      }
+    }
+  }
+
   private static SolicitudTransicionEntrega procesarEntregaEntregada(
-      String actor, Entrega entrega) {
+      String actor, Entrega entrega, List<String> fotosRecepcion) {
     SolicitudTransicionEntrega solicitud =
-        new ConfirmacionRecepcion(entrega, actor, entrega.getFotoRecepcionUrl());
+        new ConfirmacionRecepcion(entrega, actor, fotosRecepcion);
 
     GestorDeEntregas.cambiarEstado(solicitud);
     return solicitud;

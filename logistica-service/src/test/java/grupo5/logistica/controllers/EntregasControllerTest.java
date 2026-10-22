@@ -19,6 +19,8 @@ import grupo5.common.testutils.OpenApiTestUtils;
 import grupo5.logistica.dto.entregas.*;
 import grupo5.logistica.dto.rutas.DireccionDTO;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.rutas.EstadoRuta;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -169,6 +171,148 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
         .andExpect(jsonPath("$").isEmpty());
   }
 
+  // ===================== GET /api/entregas/mapa (RF-02) =====================
+
+  @Test
+  void listarMapaPublico_deberiaRetornar200YCumplirContratoOpenApiSinDatosSensibles()
+      throws Exception {
+    EntregaMapaPublicoResponseDTO punto =
+        new EntregaMapaPublicoResponseDTO(
+            ID,
+            -34.5986,
+            -58.4201,
+            "CABA",
+            "Buenos Aires",
+            "Argentina",
+            LocalDateTime.of(2026, 10, 22, 14, 30),
+            12.5f,
+            1.2f);
+    when(entregasService.listarMapaPublico()).thenReturn(List.of(punto));
+
+    MvcResult result =
+        mockMvc
+            .perform(get("/api/entregas/mapa"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].idEntrega").value(ID.toString()))
+            .andExpect(jsonPath("$[0].latitud").value(-34.5986))
+            .andExpect(jsonPath("$[0].longitud").value(-58.4201))
+            .andExpect(jsonPath("$[0].calle").doesNotExist())
+            .andExpect(jsonPath("$[0].altura").doesNotExist())
+            .andExpect(jsonPath("$[0].idBeneficiaria").doesNotExist())
+            .andExpect(jsonPath("$[0].idDonacion").doesNotExist())
+            .andExpect(jsonPath("$[0].fotoRecepcionUrl").doesNotExist())
+            .andExpect(jsonPath("$[0].fotosRecepcion").doesNotExist())
+            .andReturn();
+
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiTestUtils.assertResponseConformsToOpenApi(
+        specPath,
+        "/api/entregas/mapa",
+        Request.Method.GET,
+        200,
+        result.getResponse().getContentAsString());
+  }
+
+  // ===================== GET /api/entregas/seguimiento/* (RF-09 y RF-14) =====================
+
+  @Test
+  void obtenerSeguimientoPorDonacion_deberiaRetornar200YCumplirContratoOpenApi() throws Exception {
+    SeguimientoEntregaResponseDTO seguimiento =
+        new SeguimientoEntregaResponseDTO(
+            ID,
+            DONACION_ID,
+            EstadoEntrega.EN_TRASLADO,
+            true,
+            RUTA_ID,
+            LocalDate.of(2026, 10, 22),
+            EstadoRuta.EN_TRASLADO,
+            "AB123CD",
+            2,
+            3,
+            1,
+            1,
+            LocalDateTime.of(2026, 10, 22, 9, 0),
+            null,
+            LocalDateTime.of(2026, 10, 22, 10, 15),
+            List.of(
+                new ParadaSeguimientoDTO(
+                    1, EstadoEntrega.ENTREGADA, false, LocalDateTime.of(2026, 10, 22, 10, 15)),
+                new ParadaSeguimientoDTO(2, EstadoEntrega.EN_TRASLADO, true, null),
+                new ParadaSeguimientoDTO(3, EstadoEntrega.EN_TRASLADO, false, null)));
+
+    when(entregasService.obtenerSeguimientoPorDonacion(DONACION_ID)).thenReturn(seguimiento);
+
+    MvcResult result =
+        mockMvc
+            .perform(get("/api/entregas/seguimiento/donaciones/" + DONACION_ID))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.idDonacion").value(DONACION_ID.toString()))
+            .andExpect(jsonPath("$.ordenVisita").value(2))
+            .andExpect(jsonPath("$.paradasEntregadas").value(1))
+            .andExpect(jsonPath("$.paradasProcesadas").value(1))
+            .andReturn();
+
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiTestUtils.assertResponseConformsToOpenApi(
+        specPath,
+        "/api/entregas/seguimiento/donaciones/" + DONACION_ID,
+        Request.Method.GET,
+        200,
+        result.getResponse().getContentAsString());
+  }
+
+  @Test
+  void obtenerSeguimientoPorDonacion_deberiaRetornar404_cuandoNoExiste() throws Exception {
+    when(entregasService.obtenerSeguimientoPorDonacion(DONACION_ID))
+        .thenThrow(new RecursoNoEncontradoException(DONACION_ID));
+
+    mockMvc
+        .perform(get("/api/entregas/seguimiento/donaciones/" + DONACION_ID))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void listarSeguimientoPorBeneficiaria_deberiaRetornar200YCumplirContratoOpenApi()
+      throws Exception {
+    SeguimientoEntregaResponseDTO seguimiento =
+        new SeguimientoEntregaResponseDTO(
+            ID,
+            DONACION_ID,
+            EstadoEntrega.PENDIENTE,
+            false,
+            null,
+            null,
+            null,
+            null,
+            null,
+            0,
+            0,
+            0,
+            null,
+            null,
+            null,
+            List.of());
+
+    when(entregasService.listarSeguimientoPorBeneficiaria(BENEFICIARIA_ID))
+        .thenReturn(List.of(seguimiento));
+
+    MvcResult result =
+        mockMvc
+            .perform(get("/api/entregas/seguimiento/beneficiarios/" + BENEFICIARIA_ID))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].idEntrega").value(ID.toString()))
+            .andExpect(jsonPath("$[0].rutaAsignada").value(false))
+            .andReturn();
+
+    String specPath = OpenApiTestUtils.resolveContractPath("openapi-logistica.yaml");
+    OpenApiTestUtils.assertResponseConformsToOpenApi(
+        specPath,
+        "/api/entregas/seguimiento/beneficiarios/" + BENEFICIARIA_ID,
+        Request.Method.GET,
+        200,
+        result.getResponse().getContentAsString());
+  }
+
   // ===================== GET /api/entregas/{id} =====================
 
   @Test
@@ -208,7 +352,12 @@ class EntregasControllerTest extends AbstractLogisticaWebMvcTest {
   @Test
   void cambiarEstado_deberiaRetornar200_cuandoEntregada() throws Exception {
     CambioEstadoEntregaRequestDTO request =
-        new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, "chofer", null, null);
+        new CambioEstadoEntregaRequestDTO(
+            EstadoEntrega.ENTREGADA,
+            "chofer",
+            null,
+            null,
+            List.of("https://foto.com/evidencia.jpg"));
     EntregaResponseDTO responseDto = mock(EntregaResponseDTO.class);
     when(entregasService.cambiarEstado(eq(ID), any())).thenReturn(responseDto);
     mockMvc
