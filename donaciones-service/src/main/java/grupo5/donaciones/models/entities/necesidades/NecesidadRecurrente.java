@@ -17,7 +17,7 @@ import lombok.Getter;
 
 @Getter
 public class NecesidadRecurrente extends Necesidad {
-  private Period periodo;
+  private final Period periodo;
 
   @Getter(AccessLevel.NONE)
   private List<PeriodoNecesidad> periodos;
@@ -46,18 +46,10 @@ public class NecesidadRecurrente extends Necesidad {
 
   /** Constructor de reconstitución para el adaptador JPA */
   public NecesidadRecurrente(
-      UUID id,
-      UUID subcategoriaId,
-      Integer cantidadNecesitada,
-      String descripcion,
-      LocalDate fechaInicio,
-      UUID entidadId,
-      Period periodo,
-      Boolean activa,
-      List<PeriodoNecesidad> periodos) {
-    super(id, subcategoriaId, cantidadNecesitada, descripcion, fechaInicio, entidadId);
+      DatosNecesidad datos, Period periodo, Boolean activa, List<PeriodoNecesidad> periodos) {
+    super(datos);
     this.periodo = periodo;
-    this.activa = activa != null ? activa : true;
+    this.activa = activa == null || activa;
     this.periodos = periodos != null ? new ArrayList<>(periodos) : new ArrayList<>();
   }
 

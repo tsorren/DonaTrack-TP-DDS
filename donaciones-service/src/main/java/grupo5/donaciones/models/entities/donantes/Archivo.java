@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class Archivo implements AggregateRoot {
   private final UUID id;
-  private String path;
+  private final String path;
   private EstadoArchivo estado;
 
   public Archivo(String path) {

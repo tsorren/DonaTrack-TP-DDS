@@ -102,6 +102,13 @@
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
 
+## Limpieza de SonarCloud de la #897 — detalle
+
+- `[DOCUMENTED]` Decisión del usuario: los constructores de reconstitución de `NecesidadExtraordinaria` (8 parámetros) y `NecesidadRecurrente` (9) reciben el record nuevo **`DatosNecesidad`** (id, subcategoría, cantidad, descripción, fecha de inicio, entidad), en vez de suprimir `java:S107`. Solo los usa `NecesidadesPersistenciaMapper`.
+- Resto (mecánico): métodos `static` en los mappers (S2325), `switch` con patrones para los medios de contacto (S6880), campos `final` (S9438), `now(ZoneId.systemDefault())` como en el dominio (S8688), `toDomain` de necesidades partido en métodos chicos (S3776, de 20 a menos de 15), sin ternario anidado (S3358), `activa == null || activa` (S1125), `NecesidadRepositoryJpaAdapter` usa el `springDataRepo` heredado de `CrudRepositoryJpaAdapter` (S2387), `Month.JANUARY` en tests (S8694) y argumentos fuera de los lambdas de `assertThrows` (S5778).
+- `[OBSERVED]` El S1135 ("TODO") era un falso positivo: el comentario decía "reinsertaría todo" en castellano. Se reformuló.
+- `[VERIFIED]` `mvn clean test -pl donaciones-service -am`: 616 tests, 0 fallas, 0 salteados (con Docker). `spotless:check` OK. `agent-check`: 75 PASS, 1 WARN preexistente (`TEMPORAL_DRIFT`: `context-index.md` todavía dice "sin JPA"; queda para el cierre, como ya estaba anotado).
+
 ## Paso 3 — detalle
 
 - **3a — `direccion`.** Migración `V3__direccion.sql` con restricción `uq_direccion` (`UNIQUE NULLS NOT DISTINCT`, así `piso` y `departamento` nulos cuentan como iguales). `DireccionesPersistenciaMapper.resolver` busca la fila idéntica o la crea. 5 tests contra Postgres real.

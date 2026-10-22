@@ -18,13 +18,11 @@ public class NecesidadRepositoryJpaAdapter
     extends CrudRepositoryJpaAdapter<Necesidad, NecesidadEntity, SpringDataNecesidadRepository>
     implements INecesidadesRepository {
 
-  private final SpringDataNecesidadRepository springDataRepo;
   private final NecesidadesPersistenciaMapper mapper;
 
   public NecesidadRepositoryJpaAdapter(
       SpringDataNecesidadRepository springDataRepo, NecesidadesPersistenciaMapper mapper) {
     super(springDataRepo, mapper::toEntity, mapper::toDomain);
-    this.springDataRepo = springDataRepo;
     this.mapper = mapper;
   }
 

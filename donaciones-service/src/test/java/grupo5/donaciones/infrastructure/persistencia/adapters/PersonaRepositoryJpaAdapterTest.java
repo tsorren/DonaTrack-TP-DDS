@@ -23,6 +23,7 @@ import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.time.LocalDate;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,7 +72,8 @@ class PersonaRepositoryJpaAdapterTest {
   }
 
   private static Humana humana(String nombre, String documento) {
-    Humana h = new Humana(nombre, "Prueba", LocalDate.of(1990, 1, 1), Genero.NO_BINARIO);
+    Humana h =
+        new Humana(nombre, "Prueba", LocalDate.of(1990, Month.JANUARY, 1), Genero.NO_BINARIO);
     h.actualizarDocumento(TipoDocumento.DNI, documento);
     return h;
   }
@@ -135,7 +137,7 @@ class PersonaRepositoryJpaAdapterTest {
 
   @Test
   void guardar_personaSinDocumentoNiDireccion_seLeeConEsosCamposNulos() {
-    Humana original = new Humana("Ana", "Prueba", LocalDate.of(1990, 1, 1));
+    Humana original = new Humana("Ana", "Prueba", LocalDate.of(1990, Month.JANUARY, 1));
 
     personas.save(original);
     Persona leida = personas.findById(original.getId()).orElseThrow();
@@ -176,15 +178,15 @@ class PersonaRepositoryJpaAdapterTest {
   @Test
   void guardar_dosPersonasConElMismoDocumento_fallaPorRestriccionUnica() {
     personas.save(humana("Ana", "11111111"));
+    Humana mismoDocumento = humana("Beto", "11111111");
 
-    assertThrows(
-        DataIntegrityViolationException.class, () -> personas.save(humana("Beto", "11111111")));
+    assertThrows(DataIntegrityViolationException.class, () -> personas.save(mismoDocumento));
   }
 
   @Test
   void guardar_variasPersonasSinDocumento_noChocanEntreSi() {
-    personas.save(new Humana("Ana", "Prueba", LocalDate.of(1990, 1, 1)));
-    personas.save(new Humana("Beto", "Prueba", LocalDate.of(1990, 1, 1)));
+    personas.save(new Humana("Ana", "Prueba", LocalDate.of(1990, Month.JANUARY, 1)));
+    personas.save(new Humana("Beto", "Prueba", LocalDate.of(1990, Month.JANUARY, 1)));
 
     assertEquals(2, personas.count());
   }
@@ -263,7 +265,8 @@ class PersonaRepositoryJpaAdapterTest {
     Juridica juridica = juridica(representante, "Fundación Prueba", "30-11111111-1");
     personas.save(juridica);
 
-    representante.actualizar("Ana María", "Prueba", LocalDate.of(1990, 1, 1), Genero.MUJER);
+    representante.actualizar(
+        "Ana María", "Prueba", LocalDate.of(1990, Month.JANUARY, 1), Genero.MUJER);
     personas.save(representante);
 
     Juridica leida =

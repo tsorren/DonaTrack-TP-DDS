@@ -15,10 +15,10 @@ import lombok.Getter;
 @Getter
 public abstract class Necesidad implements Asignable, AggregateRoot {
   private final UUID id;
-  private UUID subcategoriaId;
+  private final UUID subcategoriaId;
   private Integer cantidadNecesitada;
   private String descripcion;
-  private LocalDate fechaInicio;
+  private final LocalDate fechaInicio;
   private UUID entidadId;
 
   protected Necesidad(UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
@@ -32,19 +32,13 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
   }
 
   /** Constructor de reconstitución para el adaptador JPA */
-  protected Necesidad(
-      UUID id,
-      UUID subcategoriaId,
-      Integer cantidadNecesitada,
-      String descripcion,
-      LocalDate fechaInicio,
-      UUID entidadId) {
-    this.id = id;
-    this.subcategoriaId = subcategoriaId;
-    this.cantidadNecesitada = cantidadNecesitada;
-    this.descripcion = descripcion;
-    this.fechaInicio = fechaInicio;
-    this.entidadId = entidadId;
+  protected Necesidad(DatosNecesidad datos) {
+    this.id = datos.id();
+    this.subcategoriaId = datos.subcategoriaId();
+    this.cantidadNecesitada = datos.cantidadNecesitada();
+    this.descripcion = datos.descripcion();
+    this.fechaInicio = datos.fechaInicio();
+    this.entidadId = datos.entidadId();
   }
 
   public void asociarAEntidad(UUID entidadId) {

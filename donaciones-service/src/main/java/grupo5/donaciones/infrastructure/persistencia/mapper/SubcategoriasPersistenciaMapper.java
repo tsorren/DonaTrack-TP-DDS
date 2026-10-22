@@ -37,7 +37,7 @@ public class SubcategoriasPersistenciaMapper {
    * Reutiliza las filas de alias que siguen vigentes, así solo se borran y se insertan las que
    * cambiaron.
    */
-  private void sincronizarAliases(Subcategoria domain, SubcategoriaEntity entity) {
+  private static void sincronizarAliases(Subcategoria domain, SubcategoriaEntity entity) {
     List<AliasSubcategoriaEntity> actuales = entity.getAliases();
     List<AliasSubcategoriaEntity> disponibles = new ArrayList<>(actuales);
     List<AliasSubcategoriaEntity> vigentes = new ArrayList<>();
@@ -59,7 +59,7 @@ public class SubcategoriasPersistenciaMapper {
       }
     }
 
-    // Sin clear(): con orphanRemoval borraría y reinsertaría todo
+    // Sin clear(): con orphanRemoval borraría y volvería a insertar cada fila
     actuales.retainAll(vigentes);
     vigentes.stream().filter(e -> !actuales.contains(e)).forEach(actuales::add);
   }

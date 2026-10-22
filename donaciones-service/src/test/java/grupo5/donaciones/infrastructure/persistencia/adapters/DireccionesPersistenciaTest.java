@@ -97,6 +97,7 @@ class DireccionesPersistenciaTest {
   @Test
   void insertar_direccionRepetidaPorFueraDelMapper_fallaPorRestriccionUnica() {
     mapper.resolver(direccion("Medrano", null, null));
+    UUID idNuevo = UUID.randomUUID();
 
     assertThrows(
         DataIntegrityViolationException.class,
@@ -105,6 +106,6 @@ class DireccionesPersistenciaTest {
                 "INSERT INTO donaciones.direccion"
                     + " (id, calle, altura, codigo_postal, localidad, provincia, pais)"
                     + " VALUES (?, 'Medrano', 1234, 'C1000', 'CABA', 'Buenos Aires', 'Argentina')",
-                UUID.randomUUID()));
+                idNuevo));
   }
 }

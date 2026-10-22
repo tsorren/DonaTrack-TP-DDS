@@ -89,25 +89,31 @@ public class PersonasPersistenciaMapper {
   }
 
   private List<MedioDeContacto> mediosToDomain(PersonaEntity entity) {
-    return entity.getMediosDeContacto().stream().map(this::medioToDomain).toList();
+    return entity.getMediosDeContacto().stream()
+        .map(PersonasPersistenciaMapper::medioToDomain)
+        .toList();
   }
 
-  private MedioDeContacto medioToDomain(MedioDeContactoEntity entity) {
-    MedioDeContacto medio;
-    if (entity instanceof CorreoEntity correoEntity) {
-      Correo correo = new Correo();
-      correo.setDireccionCorreo(correoEntity.getDireccionCorreo());
-      medio = correo;
-    } else if (entity instanceof TelefonoEntity telefonoEntity) {
-      Telefono telefono = new Telefono();
-      telefono.setCaracteristica(telefonoEntity.getCaracteristica());
-      telefono.setCodigoArea(telefonoEntity.getCodigoArea());
-      telefono.setNumero(telefonoEntity.getNumero());
-      telefono.setTipo(telefonoEntity.getTipo());
-      medio = telefono;
-    } else {
-      throw new IllegalStateException("Medio de contacto desconocido: " + entity.getClass());
-    }
+  private static MedioDeContacto medioToDomain(MedioDeContactoEntity entity) {
+    MedioDeContacto medio =
+        switch (entity) {
+          case CorreoEntity correoEntity -> {
+            Correo correo = new Correo();
+            correo.setDireccionCorreo(correoEntity.getDireccionCorreo());
+            yield correo;
+          }
+          case TelefonoEntity telefonoEntity -> {
+            Telefono telefono = new Telefono();
+            telefono.setCaracteristica(telefonoEntity.getCaracteristica());
+            telefono.setCodigoArea(telefonoEntity.getCodigoArea());
+            telefono.setNumero(telefonoEntity.getNumero());
+            telefono.setTipo(telefonoEntity.getTipo());
+            yield telefono;
+          }
+          default ->
+              throw new IllegalStateException(
+                  "Medio de contacto desconocido: " + entity.getClass());
+        };
     medio.setEsPredeterminado(entity.isEsPredeterminado());
     return medio;
   }
@@ -132,23 +138,26 @@ public class PersonasPersistenciaMapper {
     }
   }
 
-  private MedioDeContactoEntity medioToEntity(MedioDeContacto medio) {
-    MedioDeContactoEntity entity;
-    if (medio instanceof Correo correo) {
-      CorreoEntity correoEntity = new CorreoEntity();
-      correoEntity.setDireccionCorreo(correo.getDireccionCorreo());
-      entity = correoEntity;
-    } else if (medio instanceof Telefono telefono) {
-      TelefonoEntity telefonoEntity = new TelefonoEntity();
-      telefonoEntity.setCaracteristica(telefono.getCaracteristica());
-      telefonoEntity.setCodigoArea(telefono.getCodigoArea());
-      telefonoEntity.setNumero(telefono.getNumero());
-      telefonoEntity.setTipo(
-          telefono.getTipo() != null ? telefono.getTipo() : TipoTelefono.ESTANDAR);
-      entity = telefonoEntity;
-    } else {
-      throw new IllegalStateException("Medio de contacto desconocido: " + medio.getClass());
-    }
+  private static MedioDeContactoEntity medioToEntity(MedioDeContacto medio) {
+    MedioDeContactoEntity entity =
+        switch (medio) {
+          case Correo correo -> {
+            CorreoEntity correoEntity = new CorreoEntity();
+            correoEntity.setDireccionCorreo(correo.getDireccionCorreo());
+            yield correoEntity;
+          }
+          case Telefono telefono -> {
+            TelefonoEntity telefonoEntity = new TelefonoEntity();
+            telefonoEntity.setCaracteristica(telefono.getCaracteristica());
+            telefonoEntity.setCodigoArea(telefono.getCodigoArea());
+            telefonoEntity.setNumero(telefono.getNumero());
+            telefonoEntity.setTipo(
+                telefono.getTipo() != null ? telefono.getTipo() : TipoTelefono.ESTANDAR);
+            yield telefonoEntity;
+          }
+          default ->
+              throw new IllegalStateException("Medio de contacto desconocido: " + medio.getClass());
+        };
     entity.setEsPredeterminado(Boolean.TRUE.equals(medio.getEsPredeterminado()));
     return entity;
   }

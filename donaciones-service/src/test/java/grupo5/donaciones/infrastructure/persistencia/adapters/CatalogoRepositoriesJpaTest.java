@@ -191,14 +191,16 @@ class CatalogoRepositoriesJpaTest {
     Subcategoria subcategoria = new Subcategoria(categoria.getId(), "Fideos");
     subcategoria.agregarAlias("tallarin");
     subcategorias.save(subcategoria);
+    UUID idAlias = UUID.randomUUID();
+    UUID idSubcategoria = subcategoria.getId();
 
     assertThrows(
         DataIntegrityViolationException.class,
         () ->
             jdbc.update(
                 "INSERT INTO donaciones.alias (id, id_subcategoria, alias) VALUES (?, ?, ?)",
-                UUID.randomUUID(),
-                subcategoria.getId(),
+                idAlias,
+                idSubcategoria,
                 "tallarin"));
   }
 

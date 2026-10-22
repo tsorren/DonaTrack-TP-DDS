@@ -4,6 +4,7 @@ import grupo5.donaciones.infrastructure.persistencia.entities.necesidades.Necesi
 import grupo5.donaciones.infrastructure.persistencia.entities.necesidades.NecesidadExtraordinariaEntity;
 import grupo5.donaciones.infrastructure.persistencia.entities.necesidades.NecesidadRecurrenteEntity;
 import grupo5.donaciones.infrastructure.persistencia.entities.necesidades.PeriodoNecesidadEntity;
+import grupo5.donaciones.models.entities.necesidades.DatosNecesidad;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
@@ -11,6 +12,7 @@ import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -60,65 +62,61 @@ public class NecesidadesPersistenciaMapper {
     if (entity == null) {
       return null;
     }
-
-    LocalDate fechaInicio =
-        entity.getFechaInicio() != null ? entity.getFechaInicio().toLocalDate() : LocalDate.now();
-    Integer cantidad =
-        entity.getCantidadNecesitada() != null ? entity.getCantidadNecesitada().intValue() : 0;
-
     if (entity instanceof NecesidadExtraordinariaEntity extraEntity) {
       return new NecesidadExtraordinaria(
-          extraEntity.getId(),
-          extraEntity.getSubcategoriaId(),
-          cantidad,
-          extraEntity.getDescripcion(),
-          fechaInicio,
-          extraEntity.getEntidadBeneficiariaId(),
-          extraEntity.isActiva(),
-          List.of());
+          datosComunes(extraEntity), extraEntity.isActiva(), List.of());
     }
-
     if (entity instanceof NecesidadRecurrenteEntity recEntity) {
-      Period periodo =
-          recEntity.getPeriodo() != null
-              ? Period.ofDays(recEntity.getPeriodo())
-              : Period.ofMonths(1);
-
-      List<PeriodoNecesidad> periodosDominio = new ArrayList<>();
-      if (recEntity.getPeriodos() != null) {
-        for (PeriodoNecesidadEntity pe : recEntity.getPeriodos()) {
-          LocalDate fechaFin = pe.getFechaFin() != null ? pe.getFechaFin().toLocalDate() : null;
-          Integer cantidadObjetivo =
-              pe.getCantidadObjetivo() != null ? pe.getCantidadObjetivo().intValue() : 0;
-          periodosDominio.add(new PeriodoNecesidad(fechaFin, List.of(), cantidadObjetivo, null));
-        }
-      }
-
-      NecesidadRecurrente recurrente =
-          new NecesidadRecurrente(
-              recEntity.getId(),
-              recEntity.getSubcategoriaId(),
-              cantidad,
-              recEntity.getDescripcion(),
-              fechaInicio,
-              recEntity.getEntidadBeneficiariaId(),
-              periodo,
-              recEntity.isActiva(),
-              periodosDominio);
-
-      // Vincular el Aggregate Root padre en cada período
-      List<PeriodoNecesidad> periodosVinculados =
-          periodosDominio.stream().map(p -> p.conNecesidadRecurrente(recurrente)).toList();
-      recurrente.actualizarPeriodos(periodosVinculados);
-
-      return recurrente;
+      return recurrenteToDomain(recEntity);
     }
-
     throw new IllegalArgumentException(
         "Tipo de entidad no soportado: " + entity.getClass().getName());
   }
 
-  private void mapearCamposComunes(Necesidad domain, NecesidadEntity entity) {
+  private static DatosNecesidad datosComunes(NecesidadEntity entity) {
+    LocalDate fechaInicio =
+        entity.getFechaInicio() != null
+            ? entity.getFechaInicio().toLocalDate()
+            : LocalDate.now(ZoneId.systemDefault());
+    Integer cantidad =
+        entity.getCantidadNecesitada() != null ? entity.getCantidadNecesitada().intValue() : 0;
+    return new DatosNecesidad(
+        entity.getId(),
+        entity.getSubcategoriaId(),
+        cantidad,
+        entity.getDescripcion(),
+        fechaInicio,
+        entity.getEntidadBeneficiariaId());
+  }
+
+  private static NecesidadRecurrente recurrenteToDomain(NecesidadRecurrenteEntity recEntity) {
+    Period periodo =
+        recEntity.getPeriodo() != null ? Period.ofDays(recEntity.getPeriodo()) : Period.ofMonths(1);
+
+    List<PeriodoNecesidad> periodosDominio = new ArrayList<>();
+    if (recEntity.getPeriodos() != null) {
+      recEntity.getPeriodos().forEach(pe -> periodosDominio.add(periodoToDomain(pe)));
+    }
+
+    NecesidadRecurrente recurrente =
+        new NecesidadRecurrente(
+            datosComunes(recEntity), periodo, recEntity.isActiva(), periodosDominio);
+
+    // Vincular el Aggregate Root padre en cada período
+    List<PeriodoNecesidad> periodosVinculados =
+        periodosDominio.stream().map(p -> p.conNecesidadRecurrente(recurrente)).toList();
+    recurrente.actualizarPeriodos(periodosVinculados);
+    return recurrente;
+  }
+
+  private static PeriodoNecesidad periodoToDomain(PeriodoNecesidadEntity pe) {
+    LocalDate fechaFin = pe.getFechaFin() != null ? pe.getFechaFin().toLocalDate() : null;
+    Integer cantidadObjetivo =
+        pe.getCantidadObjetivo() != null ? pe.getCantidadObjetivo().intValue() : 0;
+    return new PeriodoNecesidad(fechaFin, List.of(), cantidadObjetivo, null);
+  }
+
+  private static void mapearCamposComunes(Necesidad domain, NecesidadEntity entity) {
     entity.setId(domain.getId());
     entity.setSubcategoriaId(domain.getSubcategoriaId());
     entity.setEntidadBeneficiariaId(domain.getEntidadId());
@@ -128,23 +126,19 @@ public class NecesidadesPersistenciaMapper {
     entity.setFechaInicio(
         domain.getFechaInicio() != null
             ? domain.getFechaInicio().atStartOfDay()
-            : LocalDateTime.now());
+            : LocalDateTime.now(ZoneId.systemDefault()));
     entity.setActiva(domain.isActiva());
   }
 
-  private void sincronizarPeriodos(NecesidadRecurrente domain, NecesidadRecurrenteEntity entity) {
+  private static void sincronizarPeriodos(
+      NecesidadRecurrente domain, NecesidadRecurrenteEntity entity) {
     List<PeriodoNecesidadEntity> actuales = entity.getPeriodos();
     if (actuales == null) {
       actuales = new ArrayList<>();
       entity.setPeriodos(actuales);
     }
 
-    LocalDate cursorInicio =
-        actuales.isEmpty()
-            ? domain.getFechaInicio()
-            : (actuales.get(actuales.size() - 1).getFechaFin() != null
-                ? actuales.get(actuales.size() - 1).getFechaFin().toLocalDate()
-                : domain.getFechaInicio());
+    LocalDate cursorInicio = inicioDelProximoPeriodo(domain, actuales);
 
     // Sincronización incremental sin invocar clear()
     for (int i = actuales.size(); i < domain.getPeriodos().size(); i++) {
@@ -154,12 +148,25 @@ public class NecesidadesPersistenciaMapper {
       pe.setCantidadObjetivo(
           p.cantidadObjetivo() != null ? p.cantidadObjetivo().longValue() : null);
       pe.setFechaFin(p.fechaFin() != null ? p.fechaFin().atStartOfDay() : null);
-      pe.setFechaInicio(cursorInicio != null ? cursorInicio.atStartOfDay() : LocalDateTime.now());
+      pe.setFechaInicio(
+          cursorInicio != null
+              ? cursorInicio.atStartOfDay()
+              : LocalDateTime.now(ZoneId.systemDefault()));
 
       if (p.fechaFin() != null) {
         cursorInicio = p.fechaFin();
       }
       actuales.add(pe);
     }
+  }
+
+  /** El próximo período arranca donde terminó el último guardado, o al inicio de la necesidad. */
+  private static LocalDate inicioDelProximoPeriodo(
+      NecesidadRecurrente domain, List<PeriodoNecesidadEntity> actuales) {
+    if (actuales.isEmpty()) {
+      return domain.getFechaInicio();
+    }
+    LocalDateTime finDelUltimo = actuales.get(actuales.size() - 1).getFechaFin();
+    return finDelUltimo != null ? finDelUltimo.toLocalDate() : domain.getFechaInicio();
   }
 }

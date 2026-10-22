@@ -4,7 +4,6 @@ import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +27,8 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
 
   /** Constructor de reconstitución para el adaptador JPA */
   public NecesidadExtraordinaria(
-      UUID id,
-      UUID subcategoriaId,
-      Integer cantidadNecesitada,
-      String descripcion,
-      LocalDate fechaInicio,
-      UUID entidadId,
-      boolean activa,
-      List<DonacionIndependiente> donacionesAsignadas) {
-    super(id, subcategoriaId, cantidadNecesitada, descripcion, fechaInicio, entidadId);
+      DatosNecesidad datos, boolean activa, List<DonacionIndependiente> donacionesAsignadas) {
+    super(datos);
     this.activa = activa;
     this.donacionesAsignadas =
         donacionesAsignadas != null ? new ArrayList<>(donacionesAsignadas) : new ArrayList<>();
