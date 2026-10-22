@@ -2,8 +2,11 @@ package grupo5.notificaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.notificaciones.dto.PersonaReplicaDTO;
 import grupo5.notificaciones.models.entities.personas.Persona;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.transaction.annotation.Transactional;
 
 @ExtendWith(MockitoExtension.class)
 class PersonasServiceTest {
@@ -52,16 +56,16 @@ class PersonasServiceTest {
   }
 
   @Test
-  void sincronizar_cuandoPersonaYaEstaAnonimizada_deberiaLanzarPersonaYaAnonimizadaException() {
+  void sincronizar_cuandoPersonaYaEstaAnonimizada_deberiaLanzarPersonaAnonimizada() {
     UUID id = persona.getId();
     Persona personaAnonimizada =
         new Persona(id, new ArrayList<>(), "ANONIMIZADO", TipoPersona.HUMANA);
     when(replicaDTO.id()).thenReturn(id);
     when(repository.findById(id)).thenReturn(Optional.of(personaAnonimizada));
 
-    assertThrows(
-        grupo5.notificaciones.exceptions.PersonaYaAnonimizadaException.class,
-        () -> service.sincronizar(replicaDTO));
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.sincronizar(replicaDTO));
+    assertEquals(ErrorCatalog.PERSONA_ANONIMIZADA, ex.getError());
     verify(repository, never()).save(any());
   }
 
@@ -96,5 +100,13 @@ class PersonasServiceTest {
 
     assertThrows(ValidationException.class, () -> service.anonimizar(id));
     verify(repository, never()).save(any());
+  }
+
+  @Test
+  void anonimizar_esTransaccional_paraNoDejarPersonaYNotificacionesAMedias() throws Exception {
+    assertTrue(
+        PersonasService.class
+            .getMethod("anonimizar", UUID.class)
+            .isAnnotationPresent(Transactional.class));
   }
 }

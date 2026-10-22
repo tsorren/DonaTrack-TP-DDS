@@ -28,7 +28,7 @@ fixture_type: reduced
 
 - Harness disponible: `/AGENTS.md` v6.4.0 + `.agents/skills/design-review/SKILL.md` + `common-lib/AGENTS.md`
 - Modo Evaluador: `SOURCE_READ_ONLY`
-- Artefacto evaluado: Propuesta de diseño técnico simulada en `docs/specs/active/SPEC-TEST-donacion-common.md`
+- Artefacto evaluado: Propuesta de diseño técnico simulada en `docs/specs/active/SPEC-TEST-donacion-common.md` (fixture ficticio: el archivo no existe en el repositorio)
 
 ---
 

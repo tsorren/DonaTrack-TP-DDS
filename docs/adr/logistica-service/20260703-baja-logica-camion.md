@@ -101,3 +101,9 @@ incluye deshabilitados.
 
 - Issue #617: ABM de Camiones
 - Issue #615: Planificación de rutas (consume camiones DISPONIBLES)
+
+## Desvío de implementación (auditoría 2026-10-14)
+
+- **Decide el ADR:** la baja lógica a `DESHABILITADO` es irreversible desde el ABM; un camión deshabilitado no transiciona a ningún otro estado.
+- **Hace hoy el código:** `Camion.habilitar()` permite `DESHABILITADO` → `DISPONIBLE` (`logistica-service/src/main/java/grupo5/logistica/models/entities/camiones/Camion.java:97-103`) y `GestorDeCamiones.cambiarEstado` lo invoca con `case DISPONIBLE -> camion.habilitar()` (`logistica-service/src/main/java/grupo5/logistica/models/entities/camiones/GestorDeCamiones.java:34`).
+- Registrado como [DTI-17](../DEUDA_TECNICA.md#dti-17).

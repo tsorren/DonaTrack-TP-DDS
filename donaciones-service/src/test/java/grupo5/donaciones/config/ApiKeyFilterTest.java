@@ -9,6 +9,8 @@ import jakarta.servlet.ServletException;
 import java.io.IOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -91,23 +93,20 @@ class ApiKeyFilterTest {
     assertFalse(pasoAlControlador(cadena));
   }
 
-  @Test
-  void rutaDeAdministracionDesconocida_seRechazaAunqueLaClaveSeaCorrecta() throws Exception {
+  @ParameterizedTest(name = "{0}")
+  @ValueSource(
+      strings = {
+        // ruta de administración desconocida
+        "/api/logistica/proveedor-preferido/extra",
+        // el callback HTTP de proveedores ya no existe
+        "/api/logistica/proveedores/externo/avisos",
+        // URI no interpretable: falla cerrado
+        "/api/logistica/proveedores con espacio"
+      })
+  void rutasNoAdmitidas_seRechazanAunqueLaClaveSeaCorrecta(String ruta) throws Exception {
     MockFilterChain cadena = new MockFilterChain();
 
-    MockHttpServletResponse response =
-        ejecutar("/api/logistica/proveedor-preferido/extra", CLAVE_ADMIN, cadena);
-
-    assertEquals(401, response.getStatus());
-    assertFalse(pasoAlControlador(cadena));
-  }
-
-  @Test
-  void elCallbackHttpDeProveedoresYaNoExiste_seRechazaAunqueLaClaveSeaCorrecta() throws Exception {
-    MockFilterChain cadena = new MockFilterChain();
-
-    MockHttpServletResponse response =
-        ejecutar("/api/logistica/proveedores/externo/avisos", CLAVE_ADMIN, cadena);
+    MockHttpServletResponse response = ejecutar(ruta, CLAVE_ADMIN, cadena);
 
     assertEquals(401, response.getStatus());
     assertFalse(pasoAlControlador(cadena));
@@ -162,17 +161,6 @@ class ApiKeyFilterTest {
       assertEquals(200, response.getStatus(), ruta);
       assertTrue(pasoAlControlador(cadena), ruta);
     }
-  }
-
-  @Test
-  void uriNoInterpretable_fallaCerrado() throws Exception {
-    MockFilterChain cadena = new MockFilterChain();
-
-    MockHttpServletResponse response =
-        ejecutar("/api/logistica/proveedores con espacio", CLAVE_ADMIN, cadena);
-
-    assertEquals(401, response.getStatus());
-    assertFalse(pasoAlControlador(cadena));
   }
 
   @Test

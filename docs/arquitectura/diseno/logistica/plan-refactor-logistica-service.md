@@ -1,5 +1,7 @@
 # Plan de Refactor por Oleadas — `logistica-service`
 
+> **Documento histórico.** Diagnóstico al 2026-08-30; no describe el estado vigente. Estado actual: [Auditoría final de logística](auditoria-final.md).
+
 > Instancia específica del [Plan Genérico de Refactor por Oleadas v2] aplicada a `logistica-service`, a partir de:
 > 1. El DC actualizado (`DC_COMPLETO.PNG` + `dc_zoom1..5.PNG`, bloques ENTREGA / RUTAS / CAMIONES / CHOFER / DIRECCION / PLANIFICADOR_EXTERNO).
 > 2. El código actual del módulo (`logistica-service.zip`, paquete `grupo5.logistica.*`).

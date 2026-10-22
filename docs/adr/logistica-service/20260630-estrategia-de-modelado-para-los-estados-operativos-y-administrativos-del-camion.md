@@ -38,7 +38,7 @@ Esta solución preserva la trazabilidad histórica, mantiene encapsuladas las tr
 
 ### Enum de estados
 
-Representar el estado del camión mediante un único enum.  Ejemplo:  DISPONIBLE EN_RUTA EN_MANTENIMIENTO DESHABILITADO  Las transiciones válidas se controlan desde el dominio o desde los services.
+Representar el estado del camión mediante un único enum.  Ejemplo:  DISPONIBLE EN_RUTA DESHABILITADO  Las transiciones válidas se controlan desde el dominio o desde los services.
 
 #### Pros
 * Los estados son mutuamente excluyentes.
@@ -53,7 +53,7 @@ Representar el estado del camión mediante un único enum.  Ejemplo:  DISPONIBLE
 
 ### Separar en Atributos Distintos (Enum Operativo + Booleano Administrativo)
 
-Tener un enum para el flujo del día a día (DISPONIBLE, EN_RUTA, EN_MANTENIMIENTO) y un booleano estaActivo (o estaHabilitado) para la baja lógica del administrador.
+Tener un enum para el flujo del día a día (DISPONIBLE, EN_RUTA) y un booleano estaActivo (o estaHabilitado) para la baja lógica del administrador.
 
 #### Pros
 * Separa claramente el estado operativo del ciclo de vida administrativo.
@@ -67,7 +67,7 @@ Tener un enum para el flujo del día a día (DISPONIBLE, EN_RUTA, EN_MANTENIMIEN
 
 ### Enum + referencia a Ruta activa
 
-Representar el estado del camión mediante un único enum (DISPONIBLE, EN_RUTA, EN_MANTENIMIENTO, DESHABILITADO) y mantener una referencia opcional al identificador (UUID) de la ruta que está realizando.  El estado continúa siendo la única fuente de verdad para las transiciones, mientras que la referencia a la ruta permite conocer el recorrido activo y realizar validaciones sin establecer una dependencia directa entre los agregados Camion y Ruta.
+Representar el estado del camión mediante un único enum (DISPONIBLE, EN_RUTA, DESHABILITADO) y mantener una referencia opcional al identificador (UUID) de la ruta que está realizando.  El estado continúa siendo la única fuente de verdad para las transiciones, mientras que la referencia a la ruta permite conocer el recorrido activo y realizar validaciones sin establecer una dependencia directa entre los agregados Camion y Ruta.
 
 #### Pros
 * Mantiene una única fuente de verdad para el estado del camión.

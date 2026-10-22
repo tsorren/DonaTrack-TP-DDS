@@ -35,6 +35,13 @@ Esto resuelve definitivamente:
   * `incentivos-service`: Incorporación de `spring-boot-starter-amqp`; declaración de `incentivos.exchange` en `RabbitMQConfig`; adaptación de `NotificacionesClientAdapter` a `RabbitTemplate`; eliminación de `NotificacionesFeignClient`; refactor de tests (`IncentivosServiceApplicationTest`, `NotificacionesClientAdapterTest`).
   * `integration-tests` y QA: Actualización de colecciones Postman (`flujo-7-notificaciones-eventos.json`, `postman-notificaciones.json`) a la ruta canónica `/api/notificaciones/eventos`; verificación de `ContractIT` y consultas GET de histórico.
 
+> **Nota de avance de Etapa 2 (auditoría 2026-10-14, verificado contra el código; el estado de la spec no cambia):**
+>
+> * `notificaciones-service`: colas `notificaciones.donaciones` / `notificaciones.incentivos`, bindings, clúster `notificaciones.dlx` y `DefaultClassMapper` (`setTrustedPackages("*")`) implementados (`RabbitMQConfig`); los listeners se llaman `DonacionEventListener` e `IncentivoEventListener` (con sus tests). **Pendiente:** `maven-failsafe-plugin` no figura en `notificaciones-service/pom.xml` y no existe `NotificacionesAmqpInboxIT`.
+> * `donaciones-service`: implementado. `DonacionesEventPublisher` publica en `donaciones.exchange` y ya no hay `@FeignClient` de notificaciones; `NotificacionesAsyncService` sigue existiendo pero publica por AMQP.
+> * `incentivos-service`: **parcial.** Tiene `spring-boot-starter-amqp`, pero `NotificacionesClientAdapter` sigue usando `NotificacionesFeignClient`; la migración a `RabbitTemplate` sobre `incentivos.exchange` y la eliminación del cliente Feign están pendientes (DTI-13).
+> * `integration-tests` y QA: **pendiente.** `postman/flujo-7-notificaciones-eventos.json` sigue invocando el alias `POST /notificaciones` en lugar de la ruta canónica `/api/notificaciones/eventos`.
+
 ### Out-of-Scope (Lo que NO incluye - Anti-Scope Creep):
 
 * Modificación de lógica de negocio o esquemas relacionales en `logistica-service` (módulo completamente ajeno a esta interacción).
@@ -84,7 +91,7 @@ Escenario: Publicación asíncrona de evento de donación asignada
 
 Escenario: Ruteo y consumo en cola segregada notificaciones.donaciones
   Dado un mensaje publicado en "donaciones.exchange" con routing key "donacion.en-camino.v1"
-  Cuando RabbitMQ procesa el mensaje a través del binding "donacion.*.v1" (o "donacion.#")
+  Cuando RabbitMQ procesa el mensaje a través del binding exacto "donacion.en-camino.v1" (una clave por handler, RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS)
   Entonces el mensaje es entregado en la cola "notificaciones.donaciones"
   Y DonacionesEventListener deserializa el mensaje directamente en un record EventoDonacionEnCaminoV1
   Y el listener delega a NotificacionService para su registro e inserción atómica en Inbox.
@@ -173,7 +180,7 @@ flowchart TD
         DLQ_DON["notificaciones.donaciones.dlq\n(Queue)"]
         DLQ_INC["notificaciones.incentivos.dlq\n(Queue)"]
 
-        D_EX -->|Binding: donacion.#\ndonante.#\npersona.#| Q_DON
+        D_EX -->|Bindings exactos:\ndonacion.asignada.v1\ndonacion.en-camino.v1\ndonacion.recibida.v1\ndonacion.entrega-fallida.v1\ndonacion.vencida.v1\ndonante.registrado.v1\npersona.sincronizada.v1| Q_DON
         I_EX -->|Binding: incentivo.#| Q_INC
         Q_DON -.->|Fallo terminal| DLX
         Q_INC -.->|Fallo terminal| DLX
@@ -203,7 +210,7 @@ flowchart TD
 * **`RabbitMQConfig.java`:**
   * Define las colas `notificaciones.donaciones` y `notificaciones.incentivos` configurando el argumento `x-dead-letter-exchange = notificaciones.dlx`.
   * Declara `TopicExchange notificaciones.dlx` y las colas `notificaciones.donaciones.dlq` y `notificaciones.incentivos.dlq`.
-  * Declara externamente `donaciones.exchange` e `incentivos.exchange` junto con sus respectivos `Binding` (rutas `*.v1`).
+  * Declara externamente `donaciones.exchange` e `incentivos.exchange` junto con sus respectivos `Binding`: hacia `notificaciones.donaciones`, una clave exacta por handler (`ROUTING_KEYS_DONACIONES_CONSUMIDAS`, 7 claves `.v1`).
   * Configura el bean `MessageConverter`:
     ```java
     @Bean

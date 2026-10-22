@@ -54,14 +54,14 @@ graph TD
 
 ### 1.3. Detalle de las Etapas
 
-1. **validate-git-flow**: Valida mediante bash regex que la rama origen de la PR respete los prefijos y nomenclatura correspondientes según la rama base destino (`main` o `ENTREGA_N`). Lógica genérica basada en el número de entrega sin hardcoding de ramas específicas.
+1. **validate-git-flow**: Valida mediante bash regex que la rama origen de la PR respete los prefijos y nomenclatura correspondientes según la rama base destino (`main` o `ENTREGA_N`): hacia `main` solo entran ramas `ENTREGA_N`; hacia `ENTREGA_N`, ramas `E<N>_*` o `ENTREGA_<N>_*`, y también `E<N-1>_*` para reapuntar sin renombrar el trabajo que quedó abierto al cerrar la entrega anterior (deja un `::notice::`). Lógica genérica basada en el número de entrega sin hardcoding de ramas específicas.
 2. **detect-changes**: Usa `dorny/paths-filter` para detectar cambios globales y `git diff --name-only origin/base...HEAD` (triple punto, comparación desde ancestro común) para detectar cambios por servicio. Genera dos matrices: `services-matrix` (módulos a compilar) y `docker-matrix` (módulos con Dockerfile). Exporta dos outputs booleanos: `any-service` y `any-docker-service`.
 3. **lint-and-format**: Ejecuta `mvn spotless:check` validando el formato de código.
 4. **build-and-test**: Compila y testea los microservicios afectados con matriz paralela. Sube JARs, reportes JaCoCo, Surefire y archivos PUML como artefactos de Actions.
 5. **sonar-analysis**: Sincroniza cobertura y métricas a SonarCloud. Job opcional: si falla, el Quality Gate no bloquea el PR.
 6. **docker-build**: Construye y publica en GHCR la imagen de cada servicio modificado con tag `pr-{N}` (efímero, para uso en preprod-validation). Utiliza caché GHA por scope de servicio.
-7. **generate-diagrams**: Genera diagramas PlantUML (rama base y PR) y los renderiza a SVG. Usa PlantUML `v1.2024.7` con clave de caché fija para 100% hit rate.
-8. **semantic-uml-diff**: Compara estructuralmente los diagramas UML usando `tsorren/SemanticUMLDiff` y comenta las diferencias en el PR y Discord.
+7. **generate-diagrams** *(deshabilitado: `enable-diagrams: 'false'`, `main.yml:116`)*: Genera diagramas PlantUML (rama base y PR) y los renderiza a SVG. Usa PlantUML `v1.2024.7` con clave de caché fija para 100% hit rate.
+8. **semantic-uml-diff** *(deshabilitado: `if: false`, `main.yml:551`)*: Compara estructuralmente los diagramas UML usando `tsorren/SemanticUMLDiff` y comenta las diferencias en el PR y Discord.
 9. **preprod-validation**: Levanta el stack completo de pre-producción (`docker-compose.preprod.yml`) resolviendo imágenes en tres niveles: (1) imagen `pr-{N}` del servicio modificado, (2) imagen `:entrega_N` del pipeline de merge para servicios no modificados, (3) error explícito si ninguna está disponible. Ejecuta smoke tests y suite completa de integración.
 10. **quality-gate**: Job centinela con lógica de **doble eje de contexto**: evalúa cada job según `any-service` o `any-docker-service`, evitando falsos positivos cuando jobs son correctamente omitidos por contexto (ej: `docker-build=skipped` cuando no hay Dockerfiles modificados es **válido**).
 
@@ -147,7 +147,7 @@ El correcto funcionamiento de todos los flujos de integración y notificaciones 
 
 | Secreto / Variable | Propósito | Formato / Ejemplo |
 |---|---|---|
-| `GEMINI_API_KEY` | Token de API para integraciones secundarias | Llave de Google AI Studio |
+| `GEMINI_API_KEY` | Sin uso: ningún workflow de `.github/workflows/` lo referencia | Llave de Google AI Studio |
 | `SONAR_TOKEN` | Token de autenticación para sincronizar con SonarCloud | Generado en SonarCloud |
 | `SONAR_PROJECT_KEY` | Identificador del proyecto en SonarCloud | String único del proyecto |
 | `SONAR_ORG` | Organización de SonarCloud vinculada | String de la organización |

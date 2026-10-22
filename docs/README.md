@@ -2,7 +2,8 @@
 
 > **Portal de Documentación y Arquitectura del Sistema**  
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> Última actualización: **2026-09-19**
+> Última actualización: **2026-10-14**  
+> Punto de entrada del repositorio: [`Readme.md`](../Readme.md)
 
 ---
 
@@ -54,7 +55,7 @@ docs/
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de testing y QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño y justificación de alternativas descartadas
 │   ├── auditoria/                         # 🧪 Compendio de auditoría de testing y arquitectura target (6 docs + README)
-│   └── postman/                           # 12 colecciones y flujos E2E distribuidos
+│   └── postman/                           # LEGADO: copia anterior; la fuente vigente es ../postman/ (raíz del repo)
 │
 ├── cicd/                                  # Automatización, CI/CD y políticas de PR
 │   ├── README.md                          # 🟢 Portal de CI/CD y automatización
@@ -83,7 +84,7 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-14) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-22) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
@@ -93,7 +94,7 @@ docs/
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
 │   ├── README.md                          # Visión general y reglas de regeneración
-│   ├── endpoints-catalog.md               # Catálogo unificado de 94 endpoints REST
+│   ├── endpoints-catalog.md               # Catálogo unificado de 100 endpoints REST
 │   ├── events-catalog.md                  # Catálogo unificado de eventos AMQP y schemas
 │   ├── architecture-graph.md              # Topología y grafo de dependencias entre microservicios
 │   └── contracts-summary.json             # Sumario estructurado de contratos en formato JSON
@@ -106,7 +107,10 @@ docs/
 │   ├── informe-orquestadores-control-planes-coding-agents.md
 │   └── evals-agentes-resumen.md
 │
-├── entrega-4/                             # 🟢 Principios y documento de arquitectura de Entrega 4
+├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
+│   ├── README.md                          # Índice de los .md de la entrega
+│   ├── integracion/                       # Catálogo de mensajes y matriz productor-consumidor
+│   ├── donaciones/                        # Bitácoras, plan y guion del broker de logística
 │   ├── arquitectura/principios.md         # Reglas comunes de persistencia, outbox, aislamiento e idempotencia
 │   ├── arquitectura/entregable-5/         # Entregable 5: informe .docx/.pdf, fuente y constructor
 │   ├── arquitectura/arquitectura-sistema.md # Respaldo técnico verificado del entregable 5
@@ -117,7 +121,7 @@ docs/
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
     ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 4
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
-    └── interfaz/                          # Bocetos Figma y mapa de navegación
+    └── 1/interfaz/                        # Bocetos Figma y mapa de navegación (dentro de la entrega 1)
 ```
 
 ---
@@ -154,6 +158,7 @@ docs/
 * 🔄 **Guía de Migración de Contratos E4 (Notificaciones):** [arquitectura/contratos/guia-migracion-notificaciones-e4.md](arquitectura/contratos/guia-migracion-notificaciones-e4.md)
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
+* 📚 **Índice de documentación de Entrega 4:** [entrega-4/README.md](entrega-4/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
 * 🏗️ **Documento de Arquitectura del Sistema (Entrega 4, entregable 5):** [entrega-4/arquitectura/entregable-5/](entrega-4/arquitectura/entregable-5/README.md) · respaldo técnico: [arquitectura-sistema.md](entrega-4/arquitectura/arquitectura-sistema.md) · topología RabbitMQ: [diagramas/rabbit/](entrega-4/arquitectura/diagramas/rabbit/README.md)
 * 🏛️ **Auditoría Integral y Blueprint de Testing y QA (Documento Maestro):** [testing/auditoria-arquitectura-testing.md](testing/auditoria-arquitectura-testing.md)
@@ -173,5 +178,5 @@ docs/
 * 📮 **Colecciones Postman y Newman CLI:** [../postman/README.md](../postman/README.md)
 * 🔒 **Auth Service (Bounded Context Reservado):** [../auth-service/README.md](../auth-service/README.md)
 * 💻 **Cliente Liviano (Bounded Context Reservado):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
-* 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql)
+* 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql) y [../persistencia/init-db/02-set-role-passwords.sh](../persistencia/init-db/02-set-role-passwords.sh) (contraseñas desde `.env`, ver [../.env.example](../.env.example))
 

@@ -9,7 +9,7 @@ public class EventosConsumidosRepositoryEnMemoria implements IEventosConsumidosR
 
   private final ConcurrentHashMap<String, EventoConsumido> storage = new ConcurrentHashMap<>();
 
-  private String clave(String eventType, UUID businessId, UUID donacionId) {
+  private static String clave(String eventType, UUID businessId, UUID donacionId) {
     return eventType + ":" + businessId + ":" + donacionId;
   }
 

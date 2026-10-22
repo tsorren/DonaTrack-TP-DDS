@@ -14,7 +14,10 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,12 +35,14 @@ class ProveedorLogisticaHttpRedRealTest {
               "Av. Siempreviva", 742, null, null, "1000", "CABA", "Buenos Aires", "Argentina"),
           12.5,
           0.3,
-          LocalDateTime.of(2026, 10, 7, 12, 0));
+          LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0));
 
+  private final CountDownLatch liberarRespuesta = new CountDownLatch(1);
   private HttpServer servidor;
 
   @AfterEach
   void detenerServidor() {
+    liberarRespuesta.countDown();
     if (servidor != null) {
       servidor.stop(0);
     }
@@ -49,7 +54,10 @@ class ProveedorLogisticaHttpRedRealTest {
         "/api/entregas",
         exchange -> {
           try {
-            Thread.sleep(demoraMs);
+            // simula un proveedor lento: retiene la respuesta hasta la demora o el fin del test
+            if (liberarRespuesta.await(demoraMs, TimeUnit.MILLISECONDS)) {
+              return; // el test terminó: el cliente ya no espera respuesta
+            }
             exchange.sendResponseHeaders(estado, -1);
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -80,11 +88,10 @@ class ProveedorLogisticaHttpRedRealTest {
 
   @Test
   void timeoutDeLecturaRealEsIncierto() throws IOException {
-    String url = levantarServidor(1500, 201);
+    ProveedorLogisticaHttp proveedor = proveedor(levantarServidor(1500, 201), 200);
+    UUID envioId = UUID.randomUUID();
 
-    assertThrows(
-        EnvioInciertoException.class,
-        () -> proveedor(url, 200).enviar(UUID.randomUUID(), DATOS, "trace"));
+    assertThrows(EnvioInciertoException.class, () -> proveedor.enviar(envioId, DATOS, "trace"));
   }
 
   @Test
@@ -94,9 +101,9 @@ class ProveedorLogisticaHttpRedRealTest {
       puertoLibre = socket.getLocalPort();
     }
     String url = "http://" + InetAddress.getLoopbackAddress().getHostAddress() + ":" + puertoLibre;
+    ProveedorLogisticaHttp proveedor = proveedor(url, 200);
+    UUID envioId = UUID.randomUUID();
 
-    assertThrows(
-        EnvioRechazadoException.class,
-        () -> proveedor(url, 200).enviar(UUID.randomUUID(), DATOS, "trace"));
+    assertThrows(EnvioRechazadoException.class, () -> proveedor.enviar(envioId, DATOS, "trace"));
   }
 }

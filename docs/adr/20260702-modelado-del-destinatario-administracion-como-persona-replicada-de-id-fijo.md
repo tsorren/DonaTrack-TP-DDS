@@ -2,6 +2,7 @@
 - Status: accepted
 - Date: 2026-07-02
 - Deciders: Decisión Grupal
+- Tags: notificaciones, administracion, persona, dominio
 
 ## Contexto y Problema
 El evento EntregaFallida (Entrega 3) requiere notificar, además del donante y la entidad beneficiaria, a "personas administradoras del sistema" cuando una entrega falla. A diferencia de un donante o una entidad beneficiaria, la administración no es un actor con el que el Servicio de Donaciones interactúe de forma dinámica: en nuestro dominio se asume un único usuario administrador fijo, configurado de antemano en el Servicio de Donaciones. Debemos decidir cómo representar a este destinatario dentro de notificaciones-service: ¿como una Persona más (reutilizando el mecanismo de réplica ya existente), o como un concepto de dominio separado (por ejemplo, una lista de administradores gestionada internamente por notificaciones-service, o un medio de contacto fijo hardcodeado)?

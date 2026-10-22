@@ -5,11 +5,13 @@
 - Deciders: Decisión Grupal
 - Tags: arquitectura, integracion, broker, strategy, adapter, amqp, rabbitmq, http, outbox, idempotencia, entrega-4
 
+> **Nota de auditoría (2026-10-14):** la decisión ya está implementada (`donaciones-service/src/main/java/grupo5/donaciones/services/logistica/ILogisticaBroker.java`, `infrastructure/logistica/ProveedorLogisticaAmqp.java`). El cambio de Status queda a aprobación del equipo (AGENTS.md §9.3).
+
 ## Contexto y Problema
 
 La Entrega 4 (`docs/entregas/4/Enunciado-4.pdf`, pág. 24) exige que la integración entre `donaciones-service` y `logistica-service` se haga a través de un **broker** que permita *seleccionar entre más de un servicio de logística disponible*: el propio y otro servicio potencial que cumpla el mismo objetivo.
 
-En el estado actual (`[OBSERVED]` rama `ENTREGA_4`, después de la migración a AMQP #883), `donaciones-service` publica el **hecho** `donacion.asignada.v1` en `donaciones.exchange`, y lo consumen Notificaciones y Logística. Logística crea la entrega a partir de ese hecho (`DonacionAsignadaEventListener`). Con esta topología no se puede elegir proveedor:
+En el estado actual (`[OBSERVED]` rama `ENTREGA_4`, después de la migración a AMQP #883), `donaciones-service` publica el **hecho** `donacion.asignada.v1` en `donaciones.exchange`, y lo consumen Notificaciones y Logística. Logística crea la entrega a partir de ese hecho (`DonacionAsignadaEventListener`, antes del broker; hoy no existe: el listener vigente es `EntregaSolicitadaEventListener`). Con esta topología no se puede elegir proveedor:
 
 1. Un TopicExchange **copia** el mensaje a cada cola cuyo binding coincida; no elige. Si un segundo proveedor se suscribiera al mismo hecho, ambos crearían la entrega.
 2. Aunque el broker eligiera otro proveedor, nuestra Logística seguiría creando la entrega, porque escucha el hecho público.
@@ -55,9 +57,9 @@ Además, en la reunión del 15/9 (`docs/entrega-4/donaciones/bitacora-comunicaci
 
 Se adopta un **broker in-process en `donaciones-service`**:
 
-1. **Piezas:** `ILogisticaBroker` (puerto de aplicación), `IProveedorLogistica` (puerto que implementa cada adapter), `IEstrategiaSeleccionProveedor` (Strategy), `SolicitudEntregaLogistica` (Canonical Data Model) y un outbox propio basado en datos (`ILogisticaOutbox` + relay `@Scheduled`).
+1. **Piezas:** `ILogisticaBroker` (puerto de aplicación), `IProveedorLogistica` (puerto que implementa cada adapter), `IEstrategiaSeleccionProveedor` (Strategy), `SolicitudEntrega` (`models/entities/logistica/SolicitudEntrega.java`, registro de la solicitud) y un outbox propio basado en datos (`ILogisticaOutbox` + relay `@Scheduled`).
 2. **Un adapter por transporte:**
-   * `ProveedorLogisticaAmqp`: publica el **comando** `EntregaSolicitadaV1` en `donaciones.exchange` con routing key `entrega.solicitada.<proveedorId>.v1`.
+   * `ProveedorLogisticaAmqp`: publica el **comando** `EventoEntregaSolicitadaV1` en `donaciones.exchange` con routing key `entrega.solicitada.<proveedorId>.v1`.
    * `ProveedorLogisticaHttp`: traduce el modelo canónico al contrato REST del proveedor (Message Translator).
 3. **Regla de ruteo (nueva convención):** **los eventos se rutean por hecho; los comandos, por destinatario.** Un evento (`donacion.asignada.v1`) puede tener N interesados, y su routing key nunca indica quién escucha. Un comando (`entrega.solicitada.<proveedorId>.v1`) es una orden a un destinatario elegido, y su routing key lo identifica. Los consumidores de comandos se bindean con la clave **exacta**, nunca con comodines.
 4. **Logística deja de consumir `donacion.asignada.v1`** y consume `entrega.solicitada.<LOGISTICA_INSTANCIA_ID>.v1`, con una cola propia por instancia. `donacion.asignada.v1` queda con un solo consumidor: Notificaciones.

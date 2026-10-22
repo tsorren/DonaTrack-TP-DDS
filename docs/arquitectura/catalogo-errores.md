@@ -222,6 +222,7 @@
 | `ERR-EST-804` | `ENTREGA_YA_ASIGNADA_A_RUTA` | La entrega ya está asignada a otra ruta | `409` | |
 | `ERR-EST-810` | `SOLICITUD_PLANIFICACION_TRANSICION_INVALIDA` | Transición de estado de solicitud de planificación inválida | `409` | |
 | `ERR-EST-816` | `ENTREGA_DONACION_DUPLICADA` | Ya existe una entrega registrada para la donación indicada | `409` | |
+| `ERR-EST-902` | `PERSONA_ANONIMIZADA` | La persona réplica ya está anonimizada y no admite nuevas sincronizaciones (notificaciones) | `409` | ADR [20261018](../adr/notificaciones-service/20261018-rechazo-de-sincronizacion-de-personas-anonimizadas-con-codigo-de-catalogo.md) (`proposed`) |
 
 ---
 
@@ -252,5 +253,5 @@ Estos errores no se originan en `ErrorCatalog` directamente, pero el handler los
 | `ERR-INF` | Infraestructura | 3 | `500` |
 | `ERR-CSR` | Comunes / Transversales | 4 | `400` / `404` / `500` |
 | `ERR-VAL` | Validación de dominio | 93 | `400` |
-| `ERR-EST` | Estado de negocio | 11 | `409` (excepto 702, 708 y 716 → `404`) |
-| **Total** | | **111** | |
+| `ERR-EST` | Estado de negocio | 12 | `409` (excepto 702, 708 y 716 → `404`) |
+| **Total** | | **112** | |

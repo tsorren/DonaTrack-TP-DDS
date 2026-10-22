@@ -1,7 +1,6 @@
 package grupo5.donaciones.infrastructure.logistica;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -114,6 +113,6 @@ class LogisticaEventListenerTest {
     listener.onRutaAsignada(
         new EventoRutaAsignada(UUID.randomUUID(), donacionId, null), PROVEEDOR, TOKEN);
 
-    verify(verificador).esOrigenValido(eq(PROVEEDOR), eq(TOKEN), eq(List.of(donacionId)));
+    verify(verificador).esOrigenValido(PROVEEDOR, TOKEN, List.of(donacionId));
   }
 }
