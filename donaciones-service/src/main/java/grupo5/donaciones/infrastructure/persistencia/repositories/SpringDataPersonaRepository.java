@@ -1,6 +1,8 @@
 package grupo5.donaciones.infrastructure.persistencia.repositories;
 
 import grupo5.donaciones.infrastructure.persistencia.entities.personas.PersonaEntity;
+import grupo5.donaciones.models.entities.personas.TipoDocumento;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,6 +14,15 @@ import org.springframework.stereotype.Repository;
 public interface SpringDataPersonaRepository extends JpaRepository<PersonaEntity, UUID> {
 
   Optional<PersonaEntity> findFirstByNroDocumento(String nroDocumento);
+
+  Optional<PersonaEntity> findByTipoDocumentoAndNroDocumento(
+      TipoDocumento tipoDocumento, String nroDocumento);
+
+  /** Usa el índice funcional {@code ix_correo_direccion_normalizada} (V5). */
+  @Query(
+      "select distinct c.persona from CorreoEntity c"
+          + " where lower(trim(c.direccionCorreo)) = lower(trim(:direccionCorreo))")
+  List<PersonaEntity> findByCorreo(@Param("direccionCorreo") String direccionCorreo);
 
   /** Cuenta si la humana ya representa a una jurídica distinta de {@code juridicaId}. */
   @Query(

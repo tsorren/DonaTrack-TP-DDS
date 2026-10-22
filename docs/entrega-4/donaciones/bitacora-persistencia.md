@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-21** — Paso 3 hecho (dirección, personas y medios de contacto).
+> Última actualización: **2026-10-22** — Limpieza de Sonar de la #897 y Paso 3c (duplicados por consulta indexada) hechos.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
-- **Dónde estamos:** Pasos 0 a 3 cerrados. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
-- **Bloqueante para seguir:** ninguno para el Paso 2. El Paso 4 (Donante/Entidad) depende de que se mergee la PR #892.
-- **Próximo paso:** Paso 3c (búsqueda de duplicados indexada, D-12) o Paso 4 (`donante` y `entidad_beneficiaria`, necesita la #892 mergeada).
+- **Dónde estamos:** Pasos 0 a 3c cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
+- **Bloqueante para seguir:** el Paso 4 (Donante/Entidad) depende de que se mergee la PR #892.
+- **Próximo paso:** Paso 5 (parte de persistencia de `Necesidad`) y diseño de la desnormalización; Paso 4 cuando entre la #892.
 
 ---
 
@@ -28,7 +28,7 @@
 | 1 | Endurecer infraestructura sobre la #897 y base de tests con Postgres | ✅ Hecho |
 | 2 | Catálogo (`categoria`, `subcategoria`, `alias`) y `archivo` | ✅ Hecho |
 | 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | ✅ Hecho |
-| 3c | Búsqueda de duplicados indexada (D-12), hoy `findAll()` en memoria | ⏳ Pendiente |
+| 3c | Búsqueda de duplicados indexada (D-12) | ✅ Hecho |
 | 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ⏳ Pendiente |
 | 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | ⏳ Pendiente |
 | 6 | Refactor DTI-06 del dominio + reconstitución | ⏳ Pendiente |
@@ -55,6 +55,7 @@
 - **P-10 — Decisiones del Paso 3.** `[DOCUMENTED]` Decididas por el usuario: **D-9** la dirección se deduplica (una fila compartida, inmutable); **D-10** `Humana.fecha_nacimiento` es `DATE` (el DER dice `TIMESTAMPTZ`, pero el dominio es `LocalDate` y la zona horaria podría correr el día); **D-11** la anonimización se detecta por el valor `ANONIMIZADO`, sin columna nueva (igual que la #892); **D-12** la búsqueda de duplicados indexada queda en un paso aparte (3b); **D-13** unicidad parcial sobre `(tipo_documento, nro_documento)`; **D-14** una humana solo puede ser representante de una jurídica (coincide con la FK única `Humana.representante_de` del DER).
 - **P-11 — `altura` y `piso` como `INTEGER`.** `[OBSERVED]` El DER dice `SMALLINT` (máximo 32 767), pero el dominio acepta cualquier `Integer` y hay alturas de ruta mayores. Ensanchar el tipo es aditivo. `[PROPOSED]` Avisar al equipo para actualizar el DER.
 - **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
+- **P-12 — Criterio de duplicados del importador (Paso 3c).** `[DOCUMENTED]` Decisión del usuario: **D-15** manda el documento (tipo **y** número); si no coincide, compartir un correo alcanza solo si a alguna de las dos personas le falta documento; si las dos tienen documentos distintos y comparten correo, la fila se rechaza con `PERSONA_DUPLICADA_EN_CONFLICTO` (`ERR-EST-113`, 409), sin fusionar ni crear. **D-16** el teléfono deja de contar para detectar duplicados (el enunciado identifica por email y los teléfonos se comparten). Motivo: con la regla anterior (documento **o** cualquier medio de contacto) dos jurídicas con distinto CUIT que usan el mail de su representante se fusionaban en una sola.
 - **P-8 — Convenciones del Paso 2.** `[DOCUMENTED]` Decisión del usuario: enums como `VARCHAR` + `CHECK` (no `ENUM` nativo del DER); `categoria.tipo_unidad` agregada como columna nueva (el dominio la exige, el DER no la tiene, discrepancia #8); seeder idempotente en vez de migración con datos; `archivo` usa `id` como PK igual que el resto de las tablas (el DER lo dejó como `id_archivo`) y conserva `estado_archivo`.
 
 ## Hallazgos abiertos (no corregidos en esta tarea)
@@ -83,6 +84,10 @@
 
 **¿Cuál es el DER vigente?** Ver P-1.
 
+**¿El problema de los duplicados por mail era de las humanas o de los dos tipos de persona?** De los dos: la regla vive en `Persona`. El caso grave era entre jurídicas (dos CUIT distintos con el mail de la misma representante se fusionaban); entre una humana y una jurídica la fila fallaba por tipo distinto; entre dos humanas (un familiar con el mismo mail) también se fusionaban. Ver P-12.
+
+**¿Por qué no se usa un índice único sobre el correo?** Porque compartir un correo es legítimo (una jurídica y su representante). El índice es funcional y no único; la unicidad que sí existe es la del documento (D-13).
+
 ---
 
 ## Paso 1 — detalle
@@ -101,6 +106,15 @@
 - `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
+
+## Paso 3c — detalle
+
+- **Regla en el dominio.** `Persona.esDuplicadaDe` aplica D-15 y D-16; `Persona.entraEnConflictoCon` detecta el conflicto; `Persona.direccionesDeCorreo` expone los correos. `coincidenMedios` no se modificó (sigue comparando teléfonos) porque la #892 lo usa en `tieneMedioDeContacto`.
+- **Consultas.** `IPersonasRepository` suma `findByDocumento(TipoDocumento, String)` y `findByCorreo(String)`, en memoria y en JPA. `ValidadorPersonaDuplicada` ya no hace `findAll()`: busca por documento y, si no hay, por cada correo, y deja decidir al dominio.
+- **Migración `V5__indices_busqueda_personas.sql`.** Índice funcional no único `ix_correo_direccion_normalizada` sobre `lower(btrim(direccion_correo))`, la misma normalización que el dominio. El documento ya tenía `uq_persona_documento` (V4).
+- **Código de error.** `PERSONA_DUPLICADA_EN_CONFLICTO` (`ERR-EST-113`, 409) en `ErrorCatalog` y en `docs/arquitectura/catalogo-errores.md`. El importador lo atrapa y cuenta la fila como error.
+- **Tests.** Dominio: 4 nuevos y 2 adaptados (los de teléfono ahora esperan que no sea duplicada). Validador: reescrito contra el repositorio en memoria real, verifica que no llama a `findAll()`; los de conflicto y de "sin cargar todo" se vieron fallar antes de implementar. Postgres: búsqueda por tipo de documento, por correo sin mayúsculas ni espacios y un `EXPLAIN` que confirma que se usa el índice.
+- `[VERIFIED]` `mvn clean test -pl donaciones-service -am`: 624 tests, 0 fallas, 0 salteados (con Docker). Como se tocó `common-lib`, también el reactor completo: verde, después de reintentar Incentivos y Logística, cuyos tests con contenedores (RabbitMQ y MinIO) fallaron al arrancar en la primera corrida por falta de recursos de la VM. `spotless:check` OK; `agent-check` 75 PASS, 1 WARN preexistente.
 
 ## Limpieza de SonarCloud de la #897 — detalle
 
@@ -123,4 +137,4 @@
   - `[OBSERVED]` Los medios de contacto no tienen orden garantizado al leerlos (no hay columna de orden). El dominio no depende del orden.
   - `[INFERRED]` `PersonasService` guarda los representantes y luego la jurídica; con este adapter la jurídica vuelve a guardar a sus representantes (inocuo, pero es un doble guardado).
   - `[INFERRED]` `PersonaMapper` crea una `Humana` nueva por cada representante del DTO, por eso la regla D-14 no se dispara por la API hoy; sí al reutilizar una humana existente.
-  - `[OBSERVED]` `findAll()` y la búsqueda de duplicados (`ValidadorPersonaDuplicada`) cargan todas las personas en memoria: con Postgres y una importación masiva es lento. Pendiente en el Paso 3c.
+  - `[OBSERVED]` `findAll()` y la búsqueda de duplicados (`ValidadorPersonaDuplicada`) cargaban todas las personas en memoria. Resuelto en el Paso 3c para la búsqueda de duplicados; `PersonasService.listar` sigue con `findAll()`.

@@ -11,6 +11,7 @@ import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataPers
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
+import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +62,24 @@ public class PersonaRepositoryJpaAdapter
       return Optional.empty();
     }
     return springDataRepo.findFirstByNroDocumento(documento).map(mapper::toDomain);
+  }
+
+  @Override
+  public Optional<Persona> findByDocumento(TipoDocumento tipo, String numero) {
+    if (tipo == null || numero == null || numero.isBlank()) {
+      return Optional.empty();
+    }
+    return springDataRepo
+        .findByTipoDocumentoAndNroDocumento(tipo, numero.trim())
+        .map(mapper::toDomain);
+  }
+
+  @Override
+  public List<Persona> findByCorreo(String direccionCorreo) {
+    if (direccionCorreo == null || direccionCorreo.isBlank()) {
+      return List.of();
+    }
+    return springDataRepo.findByCorreo(direccionCorreo).stream().map(mapper::toDomain).toList();
   }
 
   private HumanaEntity guardarHumana(Humana humana) {

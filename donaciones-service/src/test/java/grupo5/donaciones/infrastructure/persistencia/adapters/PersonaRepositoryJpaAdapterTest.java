@@ -25,7 +25,9 @@ import grupo5.donaciones.models.repositories.IPersonasRepository;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +78,12 @@ class PersonaRepositoryJpaAdapterTest {
         new Humana(nombre, "Prueba", LocalDate.of(1990, Month.JANUARY, 1), Genero.NO_BINARIO);
     h.actualizarDocumento(TipoDocumento.DNI, documento);
     return h;
+  }
+
+  private static Correo correo(String direccion) {
+    Correo correo = new Correo();
+    correo.setDireccionCorreo(direccion);
+    return correo;
   }
 
   private static Juridica juridica(Humana representante, String razonSocial, String cuit) {
@@ -200,6 +208,61 @@ class PersonaRepositoryJpaAdapterTest {
     assertEquals(ana.getId(), personas.findByDocumento("11111111").orElseThrow().getId());
     assertTrue(personas.findByDocumento("99999999").isEmpty());
     assertTrue(personas.findByDocumento(null).isEmpty());
+  }
+
+  @Test
+  void findByDocumentoConTipo_distingueElTipoDeDocumento() {
+    Humana ana = humana("Ana", "11111111");
+    personas.save(ana);
+
+    assertEquals(
+        ana.getId(),
+        personas.findByDocumento(TipoDocumento.DNI, " 11111111 ").orElseThrow().getId());
+    assertTrue(personas.findByDocumento(TipoDocumento.PASAPORTE, "11111111").isEmpty());
+    assertTrue(personas.findByDocumento(TipoDocumento.DNI, null).isEmpty());
+  }
+
+  @Test
+  void findByCorreo_ignoraMayusculasYEspaciosYDevuelveATodasLasQueLoComparten() {
+    Humana ana = humana("Ana", "11111111");
+    ana.limpiarMediosDeContacto();
+    ana.agregarMedioDeContacto(correo("Ana@Estudio.com "));
+    Juridica juridica = juridica(ana, "Arcos", "30-11122233-4");
+    juridica.agregarMedioDeContacto(correo("ana@estudio.com"));
+    personas.save(ana);
+    personas.save(juridica);
+
+    Set<UUID> encontradas =
+        personas.findByCorreo("  ANA@estudio.COM").stream()
+            .map(Persona::getId)
+            .collect(Collectors.toSet());
+
+    assertEquals(Set.of(ana.getId(), juridica.getId()), encontradas);
+    assertTrue(personas.findByCorreo("nadie@estudio.com").isEmpty());
+  }
+
+  @Test
+  void findByCorreo_usaElIndiceFuncionalSobreElCorreoNormalizado() {
+    // Misma expresión que genera Hibernate para lower(trim(c.direccionCorreo))
+    String plan =
+        jdbc.execute(
+            (java.sql.Connection con) -> {
+              try (var st = con.createStatement()) {
+                st.execute("SET enable_seqscan = off");
+                try (var rs =
+                    st.executeQuery(
+                        "EXPLAIN SELECT id FROM donaciones.correo"
+                            + " WHERE lower(trim(both from direccion_correo)) = 'ana@estudio.com'")) {
+                  StringBuilder sb = new StringBuilder();
+                  while (rs.next()) {
+                    sb.append(rs.getString(1)).append('\n');
+                  }
+                  return sb.toString();
+                }
+              }
+            });
+
+    assertTrue(plan.contains("ix_correo_direccion_normalizada"), plan);
   }
 
   @Test

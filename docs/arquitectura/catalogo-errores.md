@@ -212,6 +212,7 @@
 |---|---|---|---|---|
 | `ERR-EST-107` | `JURIDICA_SIN_REPRESENTANTES_RESTANTES` | Operación dejaría a la jurídica sin representantes | `409` | |
 | `ERR-EST-112` | `JURIDICA_REPRESENTANTE_EN_OTRA_JURIDICA` | La humana ya es representante de otra jurídica (una humana representa a una sola) | `409` | |
+| `ERR-EST-113` | `PERSONA_DUPLICADA_EN_CONFLICTO` | El correo ya pertenece a otra persona con un documento distinto: no se puede decidir si es la misma | `409` | Lo usa el importador CSV: la fila cuenta como error |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
 | `ERR-EST-409` | `ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA` | Fragmentación de ítem independiente inválida | `409` | |
 | `ERR-EST-413` | `SOLICITUD_ENTREGA_TRANSICION_INVALIDA` | Transición de estado de solicitud de entrega a logística inválida (broker) | `409` | |

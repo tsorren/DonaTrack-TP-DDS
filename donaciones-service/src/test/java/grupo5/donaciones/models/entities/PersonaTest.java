@@ -110,24 +110,24 @@ class PersonaTest {
   }
 
   @Test
-  void esDuplicadaDe_conTelefonoConMismosDigitosFinales_deberiaRetornarTrue() {
+  void esDuplicadaDe_conTelefonoConMismosDigitosFinales_yaNoLaConsideraDuplicada() {
     Persona persona = humana();
     persona.agregarMedioDeContacto(telefono("54", "011", "12345678", TipoTelefono.ESTANDAR));
     Persona otra = humana();
-    // Mismos dígitos pero sin el código de país: debe matchear por sufijo.
     otra.agregarMedioDeContacto(telefono("", "011", "12345678", TipoTelefono.ESTANDAR));
 
-    assertTrue(persona.esDuplicadaDe(otra));
+    // El teléfono se comparte seguido (oficina, casa): solo documento y correo identifican
+    assertFalse(persona.esDuplicadaDe(otra));
   }
 
   @Test
-  void esDuplicadaDe_conTelefonoWhatsappYEstandarConMismoNumero_deberiaRetornarTrue() {
+  void esDuplicadaDe_conTelefonoWhatsappYEstandarConMismoNumero_yaNoLaConsideraDuplicada() {
     Persona persona = humana();
     persona.agregarMedioDeContacto(telefono("54", "011", "12345678", TipoTelefono.ESTANDAR));
     Persona otra = humana();
     otra.agregarMedioDeContacto(telefono("54", "011", "12345678", TipoTelefono.WHATSAPP));
 
-    assertTrue(persona.esDuplicadaDe(otra));
+    assertFalse(persona.esDuplicadaDe(otra));
   }
 
   @Test
@@ -156,6 +156,54 @@ class PersonaTest {
     Persona otra = humana();
 
     assertFalse(persona.esDuplicadaDe(otra));
+  }
+
+  @Test
+  void esDuplicadaDe_conMismoNumeroPeroDistintoTipoDeDocumento_deberiaRetornarFalso() {
+    Persona persona = humana();
+    persona.actualizarDocumento(TipoDocumento.DNI, "30111222");
+    Persona otra = humana();
+    otra.actualizarDocumento(TipoDocumento.PASAPORTE, "30111222");
+
+    assertFalse(persona.esDuplicadaDe(otra));
+  }
+
+  @Test
+  void esDuplicadaDe_conCorreoIgualYUnaSinDocumento_deberiaRetornarTrue() {
+    Persona persona = humana();
+    persona.actualizarDocumento(TipoDocumento.DNI, "30111222");
+    persona.agregarMedioDeContacto(correo("juan.perez@mail.com"));
+    Persona otra = humana();
+    otra.agregarMedioDeContacto(correo("juan.perez@mail.com"));
+
+    assertTrue(persona.esDuplicadaDe(otra));
+    assertFalse(persona.entraEnConflictoCon(otra));
+  }
+
+  @Test
+  void esDuplicadaDe_conCorreoIgualYDocumentosDistintos_noEsDuplicadaSinoConflicto() {
+    // Dos jurídicas con distinto CUIT que usan el mail de la misma representante
+    Humana representante = new Humana("Ana", "Gomez", LocalDate.of(1985, Month.MAY, 15));
+    Juridica arcos = new Juridica(representante, "Arcos SA", TipoJuridico.EMPRESA, "Rubro");
+    arcos.actualizarDocumento(TipoDocumento.CUIT, "30-11122233-4");
+    arcos.agregarMedioDeContacto(correo("ana@estudio.com"));
+    Juridica otra = new Juridica(representante, "Otra SA", TipoJuridico.EMPRESA, "Rubro");
+    otra.actualizarDocumento(TipoDocumento.CUIT, "30-99988877-6");
+    otra.agregarMedioDeContacto(correo("ana@estudio.com"));
+
+    assertFalse(arcos.esDuplicadaDe(otra));
+    assertTrue(arcos.entraEnConflictoCon(otra));
+  }
+
+  @Test
+  void entraEnConflictoCon_sinCorreoEnComun_deberiaRetornarFalso() {
+    Persona persona = humana();
+    persona.actualizarDocumento(TipoDocumento.DNI, "30111222");
+    Persona otra = humana();
+    otra.actualizarDocumento(TipoDocumento.DNI, "40222333");
+
+    assertFalse(persona.entraEnConflictoCon(otra));
+    assertFalse(persona.entraEnConflictoCon(null));
   }
 
   @Test
