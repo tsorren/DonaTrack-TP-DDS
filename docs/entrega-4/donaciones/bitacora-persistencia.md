@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-22** — Limpieza de Sonar de la #897, Paso 3c y Paso 5 (persistencia de `Necesidad`) hechos.
+> Última actualización: **2026-10-22** — Limpieza de Sonar de la #897, Paso 3c, Paso 5 (persistencia de `Necesidad`) y ADR de desnormalización hechos.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
 - **Dónde estamos:** Pasos 0 a 3c y la parte de persistencia del Paso 5 cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
 - **Bloqueante para seguir:** el Paso 4 (Donante/Entidad) depende de que se mergee la PR #892.
-- **Próximo paso:** diseño de la desnormalización; Paso 4 cuando entre la #892 (y con él la FK de `necesidad` a `entidad_beneficiaria`).
+- **Próximo paso:** Paso 4 cuando entre la #892 (y con él la FK de `necesidad` a `entidad_beneficiaria`); después Pasos 6 a 8 aplicando el ADR de desnormalización y las correcciones al DER de P-15.
 
 ---
 
@@ -55,9 +55,19 @@
 - **P-10 — Decisiones del Paso 3.** `[DOCUMENTED]` Decididas por el usuario: **D-9** la dirección se deduplica (una fila compartida, inmutable); **D-10** `Humana.fecha_nacimiento` es `DATE` (el DER dice `TIMESTAMPTZ`, pero el dominio es `LocalDate` y la zona horaria podría correr el día); **D-11** la anonimización se detecta por el valor `ANONIMIZADO`, sin columna nueva (igual que la #892); **D-12** la búsqueda de duplicados indexada queda en un paso aparte (3b); **D-13** unicidad parcial sobre `(tipo_documento, nro_documento)`; **D-14** una humana solo puede ser representante de una jurídica (coincide con la FK única `Humana.representante_de` del DER).
 - **P-11 — `altura` y `piso` como `INTEGER`.** `[OBSERVED]` El DER dice `SMALLINT` (máximo 32 767), pero el dominio acepta cualquier `Integer` y hay alturas de ruta mayores. Ensanchar el tipo es aditivo. `[PROPOSED]` Avisar al equipo para actualizar el DER.
 - **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
+- **P-14 — Desnormalización.** `[DOCUMENTED]` Decisión del usuario: se respetan las desnormalizaciones que ya tiene el DER; no se agregan otras. Quedan registradas en el ADR [`20261022-desnormalizaciones-del-modelo-relacional-de-donaciones`](../../adr/donaciones-service/20261022-desnormalizaciones-del-modelo-relacional-de-donaciones.md) (`proposed`): D1 dirección plana, D2 estado actual además del historial, D3 necesidad, período y beneficiario repetidos en la donación independiente, D4 foto del bien en los ítems, D5 `SINGLE_TABLE` de `Necesidad`, D6 payload del outbox. Donante copiado en la donación, acumulado en la necesidad y vista materializada de sub-atendidos quedan como alternativas no adoptadas.
+- **P-15 — Cuatro puntos del DER que rompen la persistencia, con corrección aditiva.** `[DOCUMENTED]` Decididos por el usuario; hay que comunicarlos al dueño del DER:
+  - **D-21** `Estado_donacion_independiente` suma `tipo ESTADO_DONA_IND *`: sin esa columna, el historial (`id_estado_anterior` / `id_estado_nuevo`) no dice qué estados eran.
+  - **D-22** `Cambio_estado_donacion_independiente` suma `justificacion TEXT` (opcional): la justificación de una entrega fallida la exige el enunciado (Entrega 2) y en el dominio es del cambio (`CambioEstado.justificacion`).
+  - **D-23** `Posible_fragmentacion` suma `id_donacion_independiente (FK) *` e `id` vuelve a ser un UUID propio: el DER la conectaba por su propia PK, así que una donación en dos propuestas chocaba por clave duplicada.
+  - **D-24** `Item_donacion_independiente` suma `id_item_normalizado (FK) *`: sin eso no se puede reconstituir el `BienNormalizado` (subcategoría, confianza), y la subcategoría de la donación independiente es la base del matching.
 - **P-13 — Decisiones del Paso 5.** `[DOCUMENTED]` Decididas por el usuario: **D-17** bloqueo optimista con la versión **en el dominio** (`Necesidad.version`, transportada en `DatosNecesidad` y actualizada por el adapter con `asignarVersion`); un conflicto responde `NECESIDAD_MODIFICADA_CONCURRENTEMENTE` (`ERR-EST-522`, 409). **D-18** el período se guarda como texto ISO-8601 (`P1M`, `P1W`, `P1Y2M`). **D-19** `PeriodoNecesidad.id` se posterga al Paso 8, cuando la FK `id_periodo` lo necesite. **D-20** FK `necesidad.subcategoria_id` con `ON DELETE RESTRICT`; los servicios responden `SUBCATEGORIA_EN_USO` (`ERR-EST-317`, 409) antes de intentar borrar.
 - **P-12 — Criterio de duplicados del importador (Paso 3c).** `[DOCUMENTED]` Decisión del usuario: **D-15** manda el documento (tipo **y** número); si no coincide, compartir un correo alcanza solo si a alguna de las dos personas le falta documento; si las dos tienen documentos distintos y comparten correo, la fila se rechaza con `PERSONA_DUPLICADA_EN_CONFLICTO` (`ERR-EST-113`, 409), sin fusionar ni crear. **D-16** el teléfono deja de contar para detectar duplicados (el enunciado identifica por email y los teléfonos se comparten). Motivo: con la regla anterior (documento **o** cualquier medio de contacto) dos jurídicas con distinto CUIT que usan el mail de su representante se fusionaban en una sola.
 - **P-8 — Convenciones del Paso 2.** `[DOCUMENTED]` Decisión del usuario: enums como `VARCHAR` + `CHECK` (no `ENUM` nativo del DER); `categoria.tipo_unidad` agregada como columna nueva (el dominio la exige, el DER no la tiene, discrepancia #8); seeder idempotente en vez de migración con datos; `archivo` usa `id` como PK igual que el resto de las tablas (el DER lo dejó como `id_archivo`) y conserva `estado_archivo`.
+
+## Cambios a comunicar al dueño del DER
+
+Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8); peso y volumen en los ítems y los 3 valores de `ESTADO_NORMALIZACION` (P-3); `altura` y `piso` `INTEGER` (P-11); `fecha_nacimiento` `DATE` (D-10); valores de `tipo_juridico` (Paso 3); `archivo.id` en vez de `id_archivo` (P-8); `necesidad.version` y `necesidad.periodo` como `VARCHAR` ISO-8601 en vez de `BIGINT` (D-17, D-18); `necesidad.descripcion` (ya estaba en V1, falta en el DER); D-21 a D-24 (P-15). Pendientes de decidir: D-7 (`NUMERIC` para peso y volumen) y D-8 (`cantidad` de `posible_fragmentacion`).
 
 ## Hallazgos abiertos (no corregidos en esta tarea)
 
@@ -86,6 +96,10 @@
 **¿Cuál es el DER vigente?** Ver P-1.
 
 **¿El problema de los duplicados por mail era de las humanas o de los dos tipos de persona?** De los dos: la regla vive en `Persona`. El caso grave era entre jurídicas (dos CUIT distintos con el mail de la misma representante se fusionaban); entre una humana y una jurídica la fila fallaba por tipo distinto; entre dos humanas (un familiar con el mismo mail) también se fusionaban. Ver P-12.
+
+**¿Por qué se desnormaliza si el dato se puede calcular?** Para que las lecturas más frecuentes (el algoritmo diario sobre las donaciones en depósito, las pantallas de donante y entidad) salgan de una tabla con un índice, sin cruzar tablas ni buscar el último cambio del historial. Cada dato repetido tiene un único punto de escritura, en la misma transacción que el original. Ver P-14 y el ADR.
+
+**¿Por qué no se agregaron más desnormalizaciones (donante en la donación, acumulado en la necesidad)?** Porque el equipo ya las había decidido en el DER y ninguna lectura medida lo justifica todavía. El acumulado como contador puede desviarse sin aviso; con `id_necesidad` e `id_periodo` en la donación (D3), un `SUM` indexado alcanza.
 
 **¿Por qué la versión vive en el dominio y no solo en la entidad JPA?** Porque el adapter guarda partiendo de la fila que acaba de leer: con `@Version` solo en la entidad, la versión comparada sería siempre la actual y nunca habría conflicto. Se verificó por mutación: sin la comparación explícita del adapter, el test de dos copias concurrentes deja pasar el segundo guardado.
 
