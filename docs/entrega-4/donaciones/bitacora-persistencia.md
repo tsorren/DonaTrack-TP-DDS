@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-22** — Limpieza de Sonar de la #897, Paso 3c, Paso 5 (persistencia de `Necesidad`) y ADR de desnormalización hechos.
+> Última actualización: **2026-10-22** — #892 integrada (merge de `ENTREGA_5`) y Paso 4 (`donante` y `entidad_beneficiaria`) hecho.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
 - **Dónde estamos:** Pasos 0 a 3c y la parte de persistencia del Paso 5 cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
-- **Bloqueante para seguir:** el Paso 4 (Donante/Entidad) depende de que se mergee la PR #892.
-- **Próximo paso:** Paso 4 cuando entre la #892 (y con él la FK de `necesidad` a `entidad_beneficiaria`); después Pasos 6 a 8 aplicando el ADR de desnormalización y las correcciones al DER de P-15.
+- **Bloqueante para seguir:** ninguno. La #892 ya está en `ENTREGA_5` y en esta rama.
+- **Próximo paso:** Paso 6 (DTI-06) y después Pasos 7 y 8, aplicando el ADR de desnormalización y las correcciones al DER de P-15.
 
 ---
 
@@ -29,8 +29,8 @@
 | 2 | Catálogo (`categoria`, `subcategoria`, `alias`) y `archivo` | ✅ Hecho |
 | 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | ✅ Hecho |
 | 3c | Búsqueda de duplicados indexada (D-12) | ✅ Hecho |
-| 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ⏳ Pendiente |
-| 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | 🟡 Parcial: hecho todo menos la FK a `entidad_beneficiaria` (Paso 4) y `PeriodoNecesidad.id` (Paso 8, D-19) |
+| 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ✅ Hecho |
+| 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | 🟡 Parcial: falta `PeriodoNecesidad.id` (Paso 8, D-19); la FK a `entidad_beneficiaria` se hizo en el Paso 4 |
 | 6 | Refactor DTI-06 del dominio + reconstitución | ⏳ Pendiente |
 | 7 | `deposito`, `donacion`, items, historial, `item_donacion_normalizado` | ⏳ Pendiente |
 | 8 | `donacion_independiente`, items, `estado_donacion_independiente`, historial | ⏳ Pendiente |
@@ -56,6 +56,7 @@
 - **P-11 — `altura` y `piso` como `INTEGER`.** `[OBSERVED]` El DER dice `SMALLINT` (máximo 32 767), pero el dominio acepta cualquier `Integer` y hay alturas de ruta mayores. Ensanchar el tipo es aditivo. `[PROPOSED]` Avisar al equipo para actualizar el DER.
 - **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
 - **P-14 — Desnormalización.** `[DOCUMENTED]` Decisión del usuario: se respetan las desnormalizaciones que ya tiene el DER; no se agregan otras. Quedan registradas en el ADR [`20261022-desnormalizaciones-del-modelo-relacional-de-donaciones`](../../adr/donaciones-service/20261022-desnormalizaciones-del-modelo-relacional-de-donaciones.md) (`proposed`): D1 dirección plana, D2 estado actual además del historial, D3 necesidad, período y beneficiario repetidos en la donación independiente, D4 foto del bien en los ítems, D5 `SINGLE_TABLE` de `Necesidad`, D6 payload del outbox. Donante copiado en la donación, acumulado en la necesidad y vista materializada de sub-atendidos quedan como alternativas no adoptadas.
+- **P-16 — Decisiones del Paso 4.** `[DOCUMENTED]` Decididas por el usuario: **D-26** las FK de los roles hacia su persona (`donante.id` → `persona.id`, `entidad_beneficiaria.id` → `juridica.id`) son `ON DELETE RESTRICT`: una persona con roles no se borra (la app la anonimiza y da de baja sus roles). **D-27** `necesidad.entidad_beneficiaria_id` pasa a `NOT NULL` con FK `RESTRICT`, como marca el DER. Sin alternativa: la columna `activo` en ambos roles (baja lógica de la #892, no está en el DER) y la FK a `juridica` (DER), que hace que la base impida que una humana sea entidad.
 - **P-15 — Cuatro puntos del DER que rompen la persistencia, con corrección aditiva.** `[DOCUMENTED]` Decididos por el usuario; hay que comunicarlos al dueño del DER:
   - **D-21** `Estado_donacion_independiente` suma `tipo ESTADO_DONA_IND *`: sin esa columna, el historial (`id_estado_anterior` / `id_estado_nuevo`) no dice qué estados eran.
   - **D-22** `Cambio_estado_donacion_independiente` suma `justificacion TEXT` (opcional): la justificación de una entrega fallida la exige el enunciado (Entrega 2) y en el dominio es del cambio (`CambioEstado.justificacion`).
@@ -67,7 +68,7 @@
 
 ## Cambios a comunicar al dueño del DER
 
-Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8); peso y volumen en los ítems y los 3 valores de `ESTADO_NORMALIZACION` (P-3); `altura` y `piso` `INTEGER` (P-11); `fecha_nacimiento` `DATE` (D-10); valores de `tipo_juridico` (Paso 3); `archivo.id` en vez de `id_archivo` (P-8); `necesidad.version` y `necesidad.periodo` como `VARCHAR` ISO-8601 en vez de `BIGINT` (D-17, D-18); `necesidad.descripcion` (ya estaba en V1, falta en el DER); D-21 a D-24 (P-15). Pendientes de decidir: D-7 (`NUMERIC` para peso y volumen) y D-8 (`cantidad` de `posible_fragmentacion`).
+Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8); peso y volumen en los ítems y los 3 valores de `ESTADO_NORMALIZACION` (P-3); `altura` y `piso` `INTEGER` (P-11); `fecha_nacimiento` `DATE` (D-10); valores de `tipo_juridico` (Paso 3); `archivo.id` en vez de `id_archivo` (P-8); `necesidad.version` y `necesidad.periodo` como `VARCHAR` ISO-8601 en vez de `BIGINT` (D-17, D-18); `necesidad.descripcion` (ya estaba en V1, falta en el DER); `activo` en `donante` y `entidad_beneficiaria` (P-16); D-21 a D-24 (P-15). Pendientes de decidir: D-7 (`NUMERIC` para peso y volumen) y D-8 (`cantidad` de `posible_fragmentacion`).
 
 ## Hallazgos abiertos (no corregidos en esta tarea)
 
@@ -125,6 +126,16 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
+
+## Paso 4 — detalle
+
+- **Integración de la #892.** Merge de `ENTREGA_5` con conflictos solo en `ErrorCatalog` y `catalogo-errores.md` (códigos vecinos, se conservan ambos lados). Necesitó la corrección D-25 del Paso 3c.
+- **Migración `V8__donante_y_entidad_beneficiaria.sql`.** Tablas `donante` (PK y FK a `persona`) y `entidad_beneficiaria` (PK y FK a `juridica`), las dos con `activo BOOLEAN NOT NULL DEFAULT TRUE` y `RESTRICT` (D-26). `necesidad.entidad_beneficiaria_id` `NOT NULL` con FK `fk_necesidad_entidad_beneficiaria` (D-27); falla si una base ya tiene necesidades sin entidad.
+- **Dominio.** Constructores de reconstitución `Donante(UUID, boolean)` y `EntidadBeneficiaria(UUID, boolean)`.
+- **Infraestructura.** `DonanteEntity`, `EntidadBeneficiariaEntity`, dos repositorios Spring Data, dos mappers y dos adapters `@Profile("postgres")`; los repositorios en memoria pasan a `@Profile("!postgres")`.
+- **Tests contra Postgres real.** `RolesRepositoriesJpaTest` (7): ida y vuelta de los dos roles, baja y reactivación, donante sin persona, entidad sobre una humana, y borrar una persona o jurídica con rol (rechazado por la base). `NecesidadRepositoryJpaAdapterTest` ahora crea una entidad real y suma dos tests (entidad inexistente, necesidad sin entidad).
+- `[VERIFIED]` `mvn clean test -pl donaciones-service -am`: 728 tests, 0 fallas, 0 salteados (con Docker). `spotless:check` OK; `agent-check` 75 PASS, 1 WARN preexistente.
+- **Hallazgo.** `[OBSERVED]` Borrar por JPA (`personas.delete`) una jurídica que tiene representantes falla en Hibernate con `TransientPropertyValueException` (`humana.representante_de`), antes de llegar a la base. No es una operación de la app (las personas se anonimizan), así que el test de la restricción usa SQL. Queda anotado.
 
 ## Paso 5 — detalle (parte de persistencia de `Necesidad`)
 

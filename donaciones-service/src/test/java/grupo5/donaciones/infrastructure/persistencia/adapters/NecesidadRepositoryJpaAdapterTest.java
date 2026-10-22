@@ -53,15 +53,30 @@ class NecesidadRepositoryJpaAdapterTest {
   @Autowired private INecesidadesRepository repository;
   @Autowired private JdbcTemplate jdbc;
 
-  // Con la FK de V6 la necesidad tiene que apuntar a una subcategoría que exista
+  // Con las FK de V6 y V8 la necesidad apunta a una subcategoría y a una entidad que existan
   private UUID subcategoriaId;
+  private UUID entidadId;
 
   @BeforeEach
   void limpiar() {
     repository.deleteAll();
     jdbc.update("DELETE FROM donaciones.subcategoria");
     jdbc.update("DELETE FROM donaciones.categoria");
+    jdbc.update("DELETE FROM donaciones.entidad_beneficiaria");
+    jdbc.update("DELETE FROM donaciones.persona");
     subcategoriaId = crearSubcategoria();
+    entidadId = crearEntidad();
+  }
+
+  private UUID crearEntidad() {
+    UUID id = UUID.randomUUID();
+    jdbc.update("INSERT INTO donaciones.persona (id, tipo_persona) VALUES (?, 'JURIDICA')", id);
+    jdbc.update(
+        "INSERT INTO donaciones.juridica (id, razon_social, tipo_juridico, rubro)"
+            + " VALUES (?, 'Comedor', 'ONG', 'Social')",
+        id);
+    jdbc.update("INSERT INTO donaciones.entidad_beneficiaria (id, activo) VALUES (?, true)", id);
+    return id;
   }
 
   private UUID crearSubcategoria() {
@@ -80,7 +95,6 @@ class NecesidadRepositoryJpaAdapterTest {
 
   @Test
   void guardarYLeer_necesidadExtraordinaria_conservaSusCampos() {
-    UUID entidadId = UUID.randomUUID();
     NecesidadExtraordinaria original =
         NecesidadMother.extraordinaria(entidadId, subcategoriaId, 80);
 
@@ -99,8 +113,7 @@ class NecesidadRepositoryJpaAdapterTest {
 
   @Test
   void guardarYLeer_necesidadRecurrente_conservaPeriodicidadYPeriodos() {
-    NecesidadRecurrente original =
-        NecesidadMother.recurrenteSemanal(UUID.randomUUID(), subcategoriaId, 50);
+    NecesidadRecurrente original = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 50);
 
     repository.save(original);
     NecesidadRecurrente leida =
@@ -115,8 +128,7 @@ class NecesidadRepositoryJpaAdapterTest {
 
   @Test
   void guardar_alRenovarElPeriodo_agregaElNuevoPeriodoSinDuplicarLosAnteriores() {
-    NecesidadRecurrente original =
-        NecesidadMother.recurrenteSemanal(UUID.randomUUID(), subcategoriaId, 50);
+    NecesidadRecurrente original = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 50);
     repository.save(original);
 
     original.generarNuevoPeriodo();
@@ -129,8 +141,8 @@ class NecesidadRepositoryJpaAdapterTest {
 
   @Test
   void buscarNecesidadesPorEntidad_devuelveSoloLasDeEsaEntidad() {
-    UUID entidadA = UUID.randomUUID();
-    UUID entidadB = UUID.randomUUID();
+    UUID entidadA = entidadId;
+    UUID entidadB = crearEntidad();
     repository.save(NecesidadMother.extraordinaria(entidadA, subcategoriaId, 10));
     repository.save(NecesidadMother.recurrenteSemanal(entidadA, subcategoriaId, 20));
     repository.save(NecesidadMother.extraordinaria(entidadB, subcategoriaId, 30));
@@ -144,7 +156,7 @@ class NecesidadRepositoryJpaAdapterTest {
   @Test
   void guardar_necesidadDesactivada_persisteElEstadoInactivo() {
     NecesidadExtraordinaria original =
-        NecesidadMother.extraordinaria(UUID.randomUUID(), subcategoriaId, 10);
+        NecesidadMother.extraordinaria(entidadId, subcategoriaId, 10);
     repository.save(original);
 
     original.desactivar();
@@ -156,6 +168,7 @@ class NecesidadRepositoryJpaAdapterTest {
   @Test
   void guardarYLeer_necesidadMensual_conservaElMesSinConvertirloEnTreintaDias() {
     NecesidadRecurrente original = NecesidadMother.recurrenteMensual(subcategoriaId, 50);
+    original.asociarAEntidad(entidadId);
 
     repository.save(original);
     NecesidadRecurrente leida =
@@ -169,6 +182,7 @@ class NecesidadRepositoryJpaAdapterTest {
     NecesidadRecurrente original =
         NecesidadMother.recurrenteConFecha(
             subcategoriaId, 50, NecesidadMother.FECHA_INICIO, Period.of(1, 2, 0));
+    original.asociarAEntidad(entidadId);
 
     repository.save(original);
     NecesidadRecurrente leida =
@@ -186,7 +200,7 @@ class NecesidadRepositoryJpaAdapterTest {
   @Test
   void guardar_conUnaCopiaLeidaAntesDeOtroGuardado_fallaPorModificacionConcurrente() {
     NecesidadExtraordinaria original =
-        NecesidadMother.extraordinaria(UUID.randomUUID(), subcategoriaId, 10);
+        NecesidadMother.extraordinaria(entidadId, subcategoriaId, 10);
     repository.save(original);
     Necesidad copiaA = repository.findById(original.getId()).orElseThrow();
     Necesidad copiaB = repository.findById(original.getId()).orElseThrow();
@@ -204,7 +218,7 @@ class NecesidadRepositoryJpaAdapterTest {
   @Test
   void guardar_elMismoObjetoDosVeces_noEsConflicto() {
     NecesidadExtraordinaria original =
-        NecesidadMother.extraordinaria(UUID.randomUUID(), subcategoriaId, 10);
+        NecesidadMother.extraordinaria(entidadId, subcategoriaId, 10);
     repository.save(original);
 
     original.actualizar("Primera edición", 20);
@@ -219,14 +233,14 @@ class NecesidadRepositoryJpaAdapterTest {
   @Test
   void guardar_conSubcategoriaInexistente_fallaPorClaveForanea() {
     NecesidadExtraordinaria huerfana =
-        NecesidadMother.extraordinaria(UUID.randomUUID(), UUID.randomUUID(), 10);
+        NecesidadMother.extraordinaria(entidadId, UUID.randomUUID(), 10);
 
     assertThrows(DataIntegrityViolationException.class, () -> repository.save(huerfana));
   }
 
   @Test
   void existsBySubcategoriaId_indicaSiHayNecesidadesQueLaUsan() {
-    repository.save(NecesidadMother.extraordinaria(UUID.randomUUID(), subcategoriaId, 10));
+    repository.save(NecesidadMother.extraordinaria(entidadId, subcategoriaId, 10));
 
     assertTrue(repository.existsBySubcategoriaId(subcategoriaId));
     assertFalse(repository.existsBySubcategoriaId(crearSubcategoria()));
@@ -234,17 +248,30 @@ class NecesidadRepositoryJpaAdapterTest {
 
   @Test
   void findByActivaTrueAndRecurrenteTrue_filtraEnLaBase() {
-    NecesidadRecurrente activa =
-        NecesidadMother.recurrenteSemanal(UUID.randomUUID(), subcategoriaId, 10);
-    NecesidadRecurrente inactiva =
-        NecesidadMother.recurrenteSemanal(UUID.randomUUID(), subcategoriaId, 10);
+    NecesidadRecurrente activa = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 10);
+    NecesidadRecurrente inactiva = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 10);
     inactiva.desactivar();
     repository.save(activa);
     repository.save(inactiva);
-    repository.save(NecesidadMother.extraordinaria(UUID.randomUUID(), subcategoriaId, 10));
+    repository.save(NecesidadMother.extraordinaria(entidadId, subcategoriaId, 10));
 
     List<Necesidad> resultado = repository.findByActivaTrueAndRecurrenteTrue();
 
     assertEquals(List.of(activa.getId()), resultado.stream().map(Necesidad::getId).toList());
+  }
+
+  @Test
+  void guardar_conEntidadInexistente_fallaPorClaveForanea() {
+    NecesidadExtraordinaria huerfana =
+        NecesidadMother.extraordinaria(UUID.randomUUID(), subcategoriaId, 10);
+
+    assertThrows(DataIntegrityViolationException.class, () -> repository.save(huerfana));
+  }
+
+  @Test
+  void guardar_sinEntidad_fallaPorqueEsObligatoria() {
+    NecesidadExtraordinaria sinEntidad = NecesidadMother.extraordinaria(subcategoriaId, 10);
+
+    assertThrows(DataIntegrityViolationException.class, () -> repository.save(sinEntidad));
   }
 }
