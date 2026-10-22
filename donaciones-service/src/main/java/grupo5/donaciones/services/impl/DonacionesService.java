@@ -1,5 +1,7 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
@@ -43,6 +45,9 @@ public class DonacionesService implements IDonacionesService {
         donantesRepository
             .findById(dto.idDonante())
             .orElseThrow(() -> new RecursoNoEncontradoException(dto.idDonante()));
+    if (!donante.estaActivo()) {
+      throw new BusinessStateException(ErrorCatalog.DONANTE_INACTIVO);
+    }
 
     Donacion donacion = mapper.toEntity(dto, donante);
 
