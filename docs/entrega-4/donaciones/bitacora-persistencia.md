@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-22** — Limpieza de Sonar de la #897 y Paso 3c (duplicados por consulta indexada) hechos.
+> Última actualización: **2026-10-22** — Limpieza de Sonar de la #897, Paso 3c y Paso 5 (persistencia de `Necesidad`) hechos.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
-- **Dónde estamos:** Pasos 0 a 3c cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
+- **Dónde estamos:** Pasos 0 a 3c y la parte de persistencia del Paso 5 cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
 - **Bloqueante para seguir:** el Paso 4 (Donante/Entidad) depende de que se mergee la PR #892.
-- **Próximo paso:** Paso 5 (parte de persistencia de `Necesidad`) y diseño de la desnormalización; Paso 4 cuando entre la #892.
+- **Próximo paso:** diseño de la desnormalización; Paso 4 cuando entre la #892 (y con él la FK de `necesidad` a `entidad_beneficiaria`).
 
 ---
 
@@ -30,7 +30,7 @@
 | 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | ✅ Hecho |
 | 3c | Búsqueda de duplicados indexada (D-12) | ✅ Hecho |
 | 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ⏳ Pendiente |
-| 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | ⏳ Pendiente |
+| 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | 🟡 Parcial: hecho todo menos la FK a `entidad_beneficiaria` (Paso 4) y `PeriodoNecesidad.id` (Paso 8, D-19) |
 | 6 | Refactor DTI-06 del dominio + reconstitución | ⏳ Pendiente |
 | 7 | `deposito`, `donacion`, items, historial, `item_donacion_normalizado` | ⏳ Pendiente |
 | 8 | `donacion_independiente`, items, `estado_donacion_independiente`, historial | ⏳ Pendiente |
@@ -55,6 +55,7 @@
 - **P-10 — Decisiones del Paso 3.** `[DOCUMENTED]` Decididas por el usuario: **D-9** la dirección se deduplica (una fila compartida, inmutable); **D-10** `Humana.fecha_nacimiento` es `DATE` (el DER dice `TIMESTAMPTZ`, pero el dominio es `LocalDate` y la zona horaria podría correr el día); **D-11** la anonimización se detecta por el valor `ANONIMIZADO`, sin columna nueva (igual que la #892); **D-12** la búsqueda de duplicados indexada queda en un paso aparte (3b); **D-13** unicidad parcial sobre `(tipo_documento, nro_documento)`; **D-14** una humana solo puede ser representante de una jurídica (coincide con la FK única `Humana.representante_de` del DER).
 - **P-11 — `altura` y `piso` como `INTEGER`.** `[OBSERVED]` El DER dice `SMALLINT` (máximo 32 767), pero el dominio acepta cualquier `Integer` y hay alturas de ruta mayores. Ensanchar el tipo es aditivo. `[PROPOSED]` Avisar al equipo para actualizar el DER.
 - **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
+- **P-13 — Decisiones del Paso 5.** `[DOCUMENTED]` Decididas por el usuario: **D-17** bloqueo optimista con la versión **en el dominio** (`Necesidad.version`, transportada en `DatosNecesidad` y actualizada por el adapter con `asignarVersion`); un conflicto responde `NECESIDAD_MODIFICADA_CONCURRENTEMENTE` (`ERR-EST-522`, 409). **D-18** el período se guarda como texto ISO-8601 (`P1M`, `P1W`, `P1Y2M`). **D-19** `PeriodoNecesidad.id` se posterga al Paso 8, cuando la FK `id_periodo` lo necesite. **D-20** FK `necesidad.subcategoria_id` con `ON DELETE RESTRICT`; los servicios responden `SUBCATEGORIA_EN_USO` (`ERR-EST-317`, 409) antes de intentar borrar.
 - **P-12 — Criterio de duplicados del importador (Paso 3c).** `[DOCUMENTED]` Decisión del usuario: **D-15** manda el documento (tipo **y** número); si no coincide, compartir un correo alcanza solo si a alguna de las dos personas le falta documento; si las dos tienen documentos distintos y comparten correo, la fila se rechaza con `PERSONA_DUPLICADA_EN_CONFLICTO` (`ERR-EST-113`, 409), sin fusionar ni crear. **D-16** el teléfono deja de contar para detectar duplicados (el enunciado identifica por email y los teléfonos se comparten). Motivo: con la regla anterior (documento **o** cualquier medio de contacto) dos jurídicas con distinto CUIT que usan el mail de su representante se fusionaban en una sola.
 - **P-8 — Convenciones del Paso 2.** `[DOCUMENTED]` Decisión del usuario: enums como `VARCHAR` + `CHECK` (no `ENUM` nativo del DER); `categoria.tipo_unidad` agregada como columna nueva (el dominio la exige, el DER no la tiene, discrepancia #8); seeder idempotente en vez de migración con datos; `archivo` usa `id` como PK igual que el resto de las tablas (el DER lo dejó como `id_archivo`) y conserva `estado_archivo`.
 
@@ -63,10 +64,10 @@
 - **Credencial fija** `dona_pass_2026` como valor por defecto en `application-postgres.properties` y en `docker-compose.yml` (AGENTS §4.3). `ENTREGA_5` ya usa variables de entorno: al mergear, conservar esa versión.
 - **D-7 — `peso_unitario` / `volumen_unitario` son `BIGINT` en `Item_donacion`** y el dominio usa `Double`: persistir literal truncaría decimales. Recomendado `NUMERIC`.
 - **D-8 — `Posible_fragmentacion.cantidad` es `SMALLINT`** (máx. 32 767) y el dominio usa `Integer`. Riesgo bajo.
-- **`NecesidadesPersistenciaMapper`:** un `Period` con años se ignora al guardar (solo cuenta días y meses); los filtros de `NecesidadRepositoryJpaAdapter` cargan todas las filas y filtran en memoria; `save` no es transaccional.
+- **`NecesidadesPersistenciaMapper`:** el `Period` con años y la conversión de meses a 30 días quedaron resueltos en el Paso 5 (D-18), y los filtros de activa y tipo pasaron a la base. Sigue abierto: `save` no es transaccional (Paso 10), y "satisfecha" se filtra en memoria porque depende de lo asignado (Paso 6 / desnormalización).
 - **Alias repetido (resuelto).** `[DOCUMENTED]` Decisión del usuario: ignorar el duplicado (idempotente). `Subcategoria.agregarAlias` no agrega un alias que ya existe; la restricción `uq_alias_subcategoria` queda como red de seguridad en la base.
 - **Alias con nombre de subcategoría derivado.** `[OBSERVED]` `AliasSubcategoria` guarda copiado el nombre de la subcategoría; en memoria queda desactualizado al renombrar. Al persistir se deriva al leer (corrige el dato, cambia el comportamiento).
-- **Borrar categorías/subcategorías en uso.** `[INFERRED]` Cuando `necesidad` y los items tengan FK hacia `subcategoria` (pasos 5 a 8), borrar una en uso fallará por integridad; hoy `eliminar` no valida. Decidir si devuelve 409.
+- **Borrar categorías/subcategorías en uso (resuelto para necesidades).** `[DOCUMENTED]` D-20: 409 `SUBCATEGORIA_EN_USO`. Cuando los items de donación tengan FK a `subcategoria` (Pasos 7 y 8), hay que sumar esa verificación al mismo chequeo.
 - **Seeder del catálogo.** `[OBSERVED]` Viene apagado por defecto (`SEED_CATALOGO_ENABLED=false`). Si se activa con base persistente generaría ids nuevos en cada arranque; ahora es idempotente (no inserta si ya hay categorías). Con el compose actual el catálogo queda vacío en Postgres: hay que cargarlo por API o activar el seeder.
 - **Comentario de `application.properties`:** explica por qué se excluyen las autoconfiguraciones de BD en el perfil en memoria. Es una `[INFERRED]`: el TODO original decía que no se sabía.
 
@@ -85,6 +86,10 @@
 **¿Cuál es el DER vigente?** Ver P-1.
 
 **¿El problema de los duplicados por mail era de las humanas o de los dos tipos de persona?** De los dos: la regla vive en `Persona`. El caso grave era entre jurídicas (dos CUIT distintos con el mail de la misma representante se fusionaban); entre una humana y una jurídica la fila fallaba por tipo distinto; entre dos humanas (un familiar con el mismo mail) también se fusionaban. Ver P-12.
+
+**¿Por qué la versión vive en el dominio y no solo en la entidad JPA?** Porque el adapter guarda partiendo de la fila que acaba de leer: con `@Version` solo en la entidad, la versión comparada sería siempre la actual y nunca habría conflicto. Se verificó por mutación: sin la comparación explícita del adapter, el test de dos copias concurrentes deja pasar el segundo guardado.
+
+**¿Qué pasa con las necesidades recurrentes que ya estaban guardadas en días?** La migración V6 las convierte a `P<n>D` (30 días queda `P30D`, no `P1M`), porque no se puede saber si eran meses. Solo afecta bases que ya tengan datos; los tests y el compose arrancan de cero.
 
 **¿Por qué no se usa un índice único sobre el correo?** Porque compartir un correo es legítimo (una jurídica y su representante). El índice es funcional y no único; la unicidad que sí existe es la del documento (D-13).
 
@@ -106,6 +111,18 @@
 - `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
+
+## Paso 5 — detalle (parte de persistencia de `Necesidad`)
+
+- **Migración `V6__ajustes_necesidad.sql`.** `necesidad.version BIGINT NOT NULL DEFAULT 0`; `periodo` pasa de `INT` (días) a `VARCHAR(20)` ISO-8601 convirtiendo los valores viejos a `P<n>D`; FK `fk_necesidad_subcategoria` con `ON DELETE RESTRICT` e índice `idx_necesidad_subcategoria`.
+- **Bloqueo optimista (D-17).** `NecesidadEntity` con `@Version`. `NecesidadRepositoryJpaAdapter.save` compara la versión de la fila con la del dominio antes de guardar y traduce también la `OptimisticLockingFailureException` de Hibernate; después le asigna la versión nueva al objeto del que llamó, así guardar dos veces el mismo objeto no es conflicto.
+- **Período (D-18).** El mapper guarda `Period.toString()` y lee con `Period.parse`.
+- **Consultas.** `findActivasDelTipo` (JPQL con `type(n)`) y `existsBySubcategoriaId` en `SpringDataNecesidadRepository`; los métodos de activas y por tipo del adapter ya no hacen `findAll()`.
+- **Borrado de catálogo (D-20).** `SubcategoriasService.eliminar` y `CategoriasService.eliminar` consultan `INecesidadesRepository.existsBySubcategoriaId` antes de borrar; la categoría valida todas sus subcategorías antes de borrar ninguna.
+- **Códigos nuevos.** `SUBCATEGORIA_EN_USO` (`ERR-EST-317`) y `NECESIDAD_MODIFICADA_CONCURRENTEMENTE` (`ERR-EST-522`) en `ErrorCatalog` y `catalogo-errores.md`. Se evitaron los números 517 a 521, que usa la #892.
+- **Tests.** Postgres: mes sin convertir a días, `P1Y2M` sin perder años (incluido el valor de la columna), dos copias concurrentes (falla la segunda y gana la primera), mismo objeto guardado dos veces, FK con subcategoría inexistente, `existsBySubcategoriaId` y filtro por activa y tipo en la base. Los 5 tests existentes ahora crean una subcategoría real. Servicios: borrar subcategoría o categoría en uso responde 409 sin borrar nada.
+- `[VERIFIED]` `mvn clean test -pl donaciones-service -am`: 634 tests, 0 fallas, 0 salteados (con Docker). Mutación: sin la comparación de versión, el test de concurrencia falla. `spotless:check` OK; `agent-check` 75 PASS, 1 WARN preexistente.
+- **Pendiente de este paso.** FK `necesidad.entidad_beneficiaria_id` (cuando exista la tabla, Paso 4) y `PeriodoNecesidad.id` (Paso 8). `NecesidadesService.listarConFiltros` no filtra activas (lo anotó la #892), sin tocar acá porque la #892 modifica ese servicio.
 
 ## Paso 3c — detalle
 

@@ -43,12 +43,8 @@ public class NecesidadesPersistenciaMapper {
           (existing instanceof NecesidadRecurrenteEntity re) ? re : new NecesidadRecurrenteEntity();
       mapearCamposComunes(rec, entity);
 
-      if (rec.getPeriodo() != null) {
-        int totalDias = rec.getPeriodo().getDays() + (rec.getPeriodo().getMonths() * 30);
-        entity.setPeriodo(totalDias > 0 ? totalDias : 30);
-      } else {
-        entity.setPeriodo(null);
-      }
+      // ISO-8601: un mes sigue siendo un mes (en días se corría) y los años no se pierden
+      entity.setPeriodo(rec.getPeriodo() != null ? rec.getPeriodo().toString() : null);
 
       sincronizarPeriodos(rec, entity);
       return entity;
@@ -86,12 +82,13 @@ public class NecesidadesPersistenciaMapper {
         cantidad,
         entity.getDescripcion(),
         fechaInicio,
-        entity.getEntidadBeneficiariaId());
+        entity.getEntidadBeneficiariaId(),
+        entity.getVersion());
   }
 
   private static NecesidadRecurrente recurrenteToDomain(NecesidadRecurrenteEntity recEntity) {
     Period periodo =
-        recEntity.getPeriodo() != null ? Period.ofDays(recEntity.getPeriodo()) : Period.ofMonths(1);
+        recEntity.getPeriodo() != null ? Period.parse(recEntity.getPeriodo()) : Period.ofMonths(1);
 
     List<PeriodoNecesidad> periodosDominio = new ArrayList<>();
     if (recEntity.getPeriodos() != null) {

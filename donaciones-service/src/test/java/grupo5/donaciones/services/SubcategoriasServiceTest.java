@@ -3,6 +3,8 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
@@ -10,6 +12,7 @@ import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.SubcategoriasService;
 import grupo5.donaciones.services.mappers.CategoriaMapper;
@@ -24,6 +27,7 @@ class SubcategoriasServiceTest {
 
   private ISubcategoriasRepository subcategoriasRepositoryMock;
   private ICategoriasRepository categoriasRepositoryMock;
+  private INecesidadesRepository necesidadesRepositoryMock;
   private SubcategoriaMapper subcategoriaMapper;
   private SubcategoriasService subcategoriasService;
 
@@ -31,11 +35,40 @@ class SubcategoriasServiceTest {
   void setUp() {
     subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
     categoriasRepositoryMock = mock(ICategoriasRepository.class);
+    necesidadesRepositoryMock = mock(INecesidadesRepository.class);
     subcategoriaMapper = new SubcategoriaMapper(new CategoriaMapper(), categoriasRepositoryMock);
 
     subcategoriasService =
         new SubcategoriasService(
-            subcategoriasRepositoryMock, categoriasRepositoryMock, subcategoriaMapper);
+            subcategoriasRepositoryMock,
+            categoriasRepositoryMock,
+            necesidadesRepositoryMock,
+            subcategoriaMapper);
+  }
+
+  @Test
+  void eliminar_conNecesidadesQueLaUsan_responde409YNoBorra() {
+    Subcategoria subcategoria = new Subcategoria(UUID.randomUUID(), "Fideos");
+    UUID id = subcategoria.getId();
+    when(subcategoriasRepositoryMock.findById(id)).thenReturn(Optional.of(subcategoria));
+    when(necesidadesRepositoryMock.existsBySubcategoriaId(id)).thenReturn(true);
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> subcategoriasService.eliminar(id));
+
+    assertEquals(ErrorCatalog.SUBCATEGORIA_EN_USO, ex.getError());
+    verify(subcategoriasRepositoryMock, never()).delete(any());
+  }
+
+  @Test
+  void eliminar_sinNecesidades_laBorra() {
+    Subcategoria subcategoria = new Subcategoria(UUID.randomUUID(), "Fideos");
+    UUID id = subcategoria.getId();
+    when(subcategoriasRepositoryMock.findById(id)).thenReturn(Optional.of(subcategoria));
+
+    subcategoriasService.eliminar(id);
+
+    verify(subcategoriasRepositoryMock).delete(subcategoria);
   }
 
   @Test

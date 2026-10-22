@@ -30,6 +30,10 @@ public abstract class NecesidadEntity {
   @Column(name = "fecha_inicio", nullable = false)
   private LocalDateTime fechaInicio;
 
+  @Version
+  @Column(name = "version", nullable = false)
+  private Long version;
+
   @Column(name = "activa", nullable = false)
   private boolean activa;
 }

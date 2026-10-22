@@ -1,5 +1,7 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
@@ -7,6 +9,7 @@ import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.ISubcategoriasService;
 import grupo5.donaciones.services.mappers.SubcategoriaMapper;
@@ -19,14 +22,17 @@ public class SubcategoriasService implements ISubcategoriasService {
 
   private final ISubcategoriasRepository subcategoriasRepository;
   private final ICategoriasRepository categoriasRepository;
+  private final INecesidadesRepository necesidadesRepository;
   private final SubcategoriaMapper subcategoriaMapper;
 
   public SubcategoriasService(
       ISubcategoriasRepository subcategoriasRepository,
       ICategoriasRepository categoriasRepository,
+      INecesidadesRepository necesidadesRepository,
       SubcategoriaMapper subcategoriaMapper) {
     this.subcategoriasRepository = subcategoriasRepository;
     this.categoriasRepository = categoriasRepository;
+    this.necesidadesRepository = necesidadesRepository;
     this.subcategoriaMapper = subcategoriaMapper;
   }
 
@@ -47,6 +53,10 @@ public class SubcategoriasService implements ISubcategoriasService {
         subcategoriasRepository
             .findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException(id));
+    // Una necesidad sin subcategoría no tiene sentido: la FK de V6 también lo impide
+    if (necesidadesRepository.existsBySubcategoriaId(id)) {
+      throw new BusinessStateException(ErrorCatalog.SUBCATEGORIA_EN_USO);
+    }
     subcategoriasRepository.delete(entity);
     return subcategoriaMapper.toOutputDTO(entity);
   }

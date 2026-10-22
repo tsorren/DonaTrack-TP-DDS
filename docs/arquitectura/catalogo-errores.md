@@ -213,10 +213,12 @@
 | `ERR-EST-107` | `JURIDICA_SIN_REPRESENTANTES_RESTANTES` | Operación dejaría a la jurídica sin representantes | `409` | |
 | `ERR-EST-112` | `JURIDICA_REPRESENTANTE_EN_OTRA_JURIDICA` | La humana ya es representante de otra jurídica (una humana representa a una sola) | `409` | |
 | `ERR-EST-113` | `PERSONA_DUPLICADA_EN_CONFLICTO` | El correo ya pertenece a otra persona con un documento distinto: no se puede decidir si es la misma | `409` | Lo usa el importador CSV: la fila cuenta como error |
+| `ERR-EST-317` | `SUBCATEGORIA_EN_USO` | La subcategoría (o una de las subcategorías de la categoría) tiene necesidades que la usan | `409` | La FK `fk_necesidad_subcategoria` es la red de seguridad |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
 | `ERR-EST-409` | `ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA` | Fragmentación de ítem independiente inválida | `409` | |
 | `ERR-EST-413` | `SOLICITUD_ENTREGA_TRANSICION_INVALIDA` | Transición de estado de solicitud de entrega a logística inválida (broker) | `409` | |
 | `ERR-EST-515` | `SIN_PERIODO_ACTIVO` | No existe período activo para la operación | `409` | |
+| `ERR-EST-522` | `NECESIDAD_MODIFICADA_CONCURRENTEMENTE` | Otra operación guardó la necesidad después de que se leyó (bloqueo optimista) | `409` | Releer y reintentar |
 | `ERR-EST-702` | `DONANTE_INCENTIVOS_NO_ENCONTRADO` | Donante no encontrado en servicio de incentivos | **`404`** | Excepción especial en handler |
 | `ERR-EST-708` | `INSIGNIA_NO_ENCONTRADA` | Insignia no encontrada | **`404`** | Excepción especial en handler |
 | `ERR-EST-716` | `RANKING_NO_ENCONTRADO` | Ranking mensual no encontrado para el período solicitado | **`404`** | Excepción especial en handler |

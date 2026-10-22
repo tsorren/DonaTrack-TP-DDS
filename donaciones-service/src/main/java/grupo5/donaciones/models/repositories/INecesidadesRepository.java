@@ -26,4 +26,7 @@ public interface INecesidadesRepository extends CrudRepository<Necesidad> {
 
   // Activas, no satisfechas y extraordinarias
   List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse();
+
+  /** Si alguna necesidad (activa o no) usa la subcategoría: impide borrarla. */
+  boolean existsBySubcategoriaId(UUID subcategoriaId);
 }

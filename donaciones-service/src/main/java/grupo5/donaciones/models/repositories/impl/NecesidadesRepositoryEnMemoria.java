@@ -5,6 +5,7 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -63,5 +64,11 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
         .filter(n -> n.getTipoNecesidad() == TipoNecesidad.EXTRAORDINARIA)
         .filter(n -> !n.estaSatisfecha())
         .toList();
+  }
+
+  @Override
+  public boolean existsBySubcategoriaId(UUID subcategoriaId) {
+    return storage.values().stream()
+        .anyMatch(n -> Objects.equals(subcategoriaId, n.getSubcategoriaId()));
   }
 }

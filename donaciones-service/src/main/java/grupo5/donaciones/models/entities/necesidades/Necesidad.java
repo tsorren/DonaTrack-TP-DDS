@@ -21,6 +21,9 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
   private final LocalDate fechaInicio;
   private UUID entidadId;
 
+  /** Versión de la fila al leerla (bloqueo optimista). Nula mientras no se guardó. */
+  private Long version;
+
   protected Necesidad(UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
     this.id = UUID.randomUUID();
     this.subcategoriaId = subcategoriaId;
@@ -39,6 +42,12 @@ public abstract class Necesidad implements Asignable, AggregateRoot {
     this.descripcion = datos.descripcion();
     this.fechaInicio = datos.fechaInicio();
     this.entidadId = datos.entidadId();
+    this.version = datos.version();
+  }
+
+  /** Lo asigna el adaptador de persistencia después de guardar, con la versión nueva de la fila. */
+  public void asignarVersion(Long version) {
+    this.version = version;
   }
 
   public void asociarAEntidad(UUID entidadId) {
