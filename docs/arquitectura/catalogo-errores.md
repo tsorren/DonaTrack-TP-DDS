@@ -125,6 +125,7 @@
 | `ERR-VAL-410` | `ESTADO_DONACION_TRANSICION_INVALIDA` | Transición de estado de donación no permitida | `400` |
 | `ERR-VAL-411` | `DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD` | Asignación de donación independiente sin necesidad | `400` |
 | `ERR-VAL-412` | `DONACION_INDEPENDIENTE_FALLA_SIN_JUSTIFICACION` | Fallo de donación independiente sin justificación | `400` |
+| `ERR-VAL-414` | `ITEM_DONACION_INDEPENDIENTE_SIN_ITEM_NORMALIZADO` | Ítem de donación independiente sin el ítem normalizado del que sale | `400` |
 
 ### Beneficiarios y Necesidades (5xx)
 

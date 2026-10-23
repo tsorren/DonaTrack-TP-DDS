@@ -50,7 +50,8 @@ class DonacionIndependienteMapperTest {
     UUID subcategoriaId = UUID.randomUUID();
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoriaId, 0.9, EstadoNormalizacion.ACEPTADO);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 5);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 5);
 
     List<ItemDonacionIndependiente> items = List.of(item);
     DonacionIndependiente donacion = new DonacionIndependiente(originalId, items);
@@ -96,7 +97,8 @@ class DonacionIndependienteMapperTest {
     Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, null, 0.9, EstadoNormalizacion.ACEPTADO);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 3);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 3);
 
     DonacionIndependiente donacion = new DonacionIndependiente(originalId, List.of(item));
 
@@ -115,7 +117,8 @@ class DonacionIndependienteMapperTest {
     UUID subcategoriaId = UUID.randomUUID();
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoriaId, 0.9, EstadoNormalizacion.ACEPTADO);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 3);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 3);
 
     DonacionIndependiente donacion = new DonacionIndependiente(originalId, List.of(item));
 
@@ -136,7 +139,8 @@ class DonacionIndependienteMapperTest {
     UUID subcategoriaId = UUID.randomUUID();
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoriaId, 0.9, EstadoNormalizacion.ACEPTADO);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 3);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 3);
 
     DonacionIndependiente donacion = new DonacionIndependiente(originalId, List.of(item));
 
@@ -163,7 +167,8 @@ class DonacionIndependienteMapperTest {
     UUID subcategoriaId = UUID.randomUUID();
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, subcategoriaId, 0.9, EstadoNormalizacion.ACEPTADO);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 3);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 3);
 
     DonacionIndependiente donacion = new DonacionIndependiente(originalId, List.of(item));
 
@@ -203,7 +208,8 @@ class DonacionIndependienteMapperTest {
     Bien bienOriginal = new Bien("Arroz", "url_foto", LocalDate.now(), Estado.NUEVO, 1.0, 1.0);
     BienNormalizado bienNormalizado =
         new BienNormalizado(bienOriginal, UUID.randomUUID(), 0.9, EstadoNormalizacion.ACEPTADO);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, 1);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 1);
 
     DonacionIndependiente donacion = new DonacionIndependiente(originalId, List.of(item));
 

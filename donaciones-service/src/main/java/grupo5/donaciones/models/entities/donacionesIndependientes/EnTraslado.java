@@ -19,7 +19,7 @@ public class EnTraslado implements EstadoDonacionIndependiente {
   }
 
   public void confirmarEntrega(DonacionIndependiente d, String patenteCamion, String actor) {
-    d.cambiarEstado(new Entregada(), null, actor);
+    d.cambiarEstado(new Entregada(patenteCamion), null, actor);
     UUID necesidadId = d.getNecesidadId();
     d.registrarEvento(
         new EventoDonacionRecibida(

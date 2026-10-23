@@ -51,6 +51,20 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
   }
 
+  /** Constructor de reconstitución para el adaptador JPA: no valida ni registra eventos. */
+  public DonacionIndependiente(
+      DatosDonacionIndependiente datos,
+      List<ItemDonacionIndependiente> items,
+      List<CambioEstado> historial) {
+    this.id = datos.id();
+    this.donacionOriginalId = datos.donacionOriginalId();
+    this.items = new ArrayList<>(items);
+    this.estadoActual = datos.estadoActual();
+    this.historial = new ArrayList<>(historial);
+    this.fechaRegistro = datos.fechaRegistro();
+    asignarDestino(datos.destino());
+  }
+
   public List<ItemDonacionIndependiente> getItems() {
     return List.copyOf(items);
   }
@@ -95,7 +109,9 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
       if (itemActual.cantidad() > cantidadPorExtraer) {
         ItemDonacionIndependiente remanente =
             new ItemDonacionIndependiente(
-                itemActual.bien(), itemActual.cantidad() - cantidadPorExtraer);
+                itemActual.itemNormalizadoId(),
+                itemActual.bien(),
+                itemActual.cantidad() - cantidadPorExtraer);
         fragmento = itemActual.fragmentarse(cantidadPorExtraer);
         this.items.set(0, remanente);
       } else {

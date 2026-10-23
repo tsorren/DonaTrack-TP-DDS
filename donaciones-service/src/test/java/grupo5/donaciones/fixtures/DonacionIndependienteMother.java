@@ -21,7 +21,8 @@ public final class DonacionIndependienteMother {
     Subcategoria subcategoria = CategoriaMother.camperas(categoria);
     Bien bien = BienMother.prendaRopa("Campera de abrigo");
     BienNormalizado bienNormalizado = BienMother.aceptado(bien, subcategoria.getId());
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, cantidad);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, cantidad);
 
     return new DonacionIndependiente(UUID.randomUUID(), List.of(item));
   }
@@ -29,7 +30,8 @@ public final class DonacionIndependienteMother {
   public static DonacionIndependiente crearParaSubcategoria(UUID subcategoriaId, int cantidad) {
     Bien bien = BienMother.simple("Item de prueba");
     BienNormalizado bienNormalizado = BienMother.aceptado(bien, subcategoriaId);
-    ItemDonacionIndependiente item = new ItemDonacionIndependiente(bienNormalizado, cantidad);
+    ItemDonacionIndependiente item =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, cantidad);
 
     return new DonacionIndependiente(UUID.randomUUID(), List.of(item));
   }

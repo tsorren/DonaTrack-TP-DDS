@@ -86,7 +86,7 @@ class SegmentacionServiceTest {
 
     grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente itemIndep =
         new grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente(
-            itemAceptado.getBien(), 5);
+            itemAceptado.getId(), itemAceptado.getBien(), 5);
     DonacionIndependiente donacionIndependiente =
         new DonacionIndependiente(donacion.getId(), List.of(itemIndep));
 

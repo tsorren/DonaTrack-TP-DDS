@@ -15,6 +15,7 @@ import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.EstadoNormalizacion;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +36,7 @@ class ItemDonacionIndependienteFragmentacionTest {
         new BienNormalizado(
             bienOriginal, subcategoria.getId(), 1.0, EstadoNormalizacion.ACEPTADO, true, false);
 
-    itemDonacion = new ItemDonacionIndependiente(bienNormalizado, 20);
+    itemDonacion = new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 20);
   }
 
   @Test
@@ -110,11 +111,30 @@ class ItemDonacionIndependienteFragmentacionTest {
   }
 
   @Test
+  void validarItemDonacion_sinItemNormalizado_debeLanzarExcepcion() {
+    ValidationException exception =
+        assertThrows(
+            ValidationException.class,
+            () -> new ItemDonacionIndependiente(null, bienNormalizado, 10),
+            "Debería lanzar excepción cuando no se sabe de qué ítem normalizado sale");
+    assertEquals(
+        ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_SIN_ITEM_NORMALIZADO,
+        exception.getError(),
+        "Debe tener el error correcto");
+  }
+
+  @Test
+  void fragmentarse_conservaElItemNormalizadoDelOriginal() {
+    assertEquals(
+        itemDonacion.itemNormalizadoId(), itemDonacion.fragmentarse(5).itemNormalizadoId());
+  }
+
+  @Test
   void validarItemDonacion_conBienNulo_debeLanzarExcepcion() {
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new ItemDonacionIndependiente(null, 10),
+            () -> new ItemDonacionIndependiente(UUID.randomUUID(), null, 10),
             "Debería lanzar excepción cuando el bien es nulo");
     assertEquals(
         ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_SIN_BIEN,
@@ -127,7 +147,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new ItemDonacionIndependiente(bienNormalizado, null),
+            () -> new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, null),
             "Debería lanzar excepción cuando la cantidad es nula");
     assertEquals(
         ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,
@@ -140,7 +160,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new ItemDonacionIndependiente(bienNormalizado, 0),
+            () -> new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 0),
             "Debería lanzar excepción cuando la cantidad es cero");
     assertEquals(
         ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,
@@ -153,7 +173,7 @@ class ItemDonacionIndependienteFragmentacionTest {
     ValidationException exception =
         assertThrows(
             ValidationException.class,
-            () -> new ItemDonacionIndependiente(bienNormalizado, -5),
+            () -> new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, -5),
             "Debería lanzar excepción cuando la cantidad es negativa");
     assertEquals(
         ErrorCatalog.ITEM_DONACION_INDEPENDIENTE_CANTIDAD_INVALIDA,
