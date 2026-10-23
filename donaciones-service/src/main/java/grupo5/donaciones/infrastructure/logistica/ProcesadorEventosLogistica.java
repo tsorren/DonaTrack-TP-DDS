@@ -16,7 +16,10 @@ import java.time.ZoneId;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Aplica sobre la donación independiente lo que informa un proveedor de logística (ruta asignada,
@@ -34,14 +37,19 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
   private final IDonacionesIndependientesService donacionesIndependientesService;
   private final IEventosConsumidosRepository eventosConsumidosRepository;
   private final IDonacionesIndependientesRepository donacionesIndependientesRepository;
+  // Nulo en el perfil en memoria, que no tiene base ni transacciones
+  private final TransactionTemplate transacciones;
 
   public ProcesadorEventosLogistica(
       IDonacionesIndependientesService donacionesIndependientesService,
       IEventosConsumidosRepository eventosConsumidosRepository,
-      IDonacionesIndependientesRepository donacionesIndependientesRepository) {
+      IDonacionesIndependientesRepository donacionesIndependientesRepository,
+      ObjectProvider<PlatformTransactionManager> transactionManager) {
     this.donacionesIndependientesService = donacionesIndependientesService;
     this.eventosConsumidosRepository = eventosConsumidosRepository;
     this.donacionesIndependientesRepository = donacionesIndependientesRepository;
+    PlatformTransactionManager manager = transactionManager.getIfAvailable();
+    this.transacciones = manager != null ? new TransactionTemplate(manager) : null;
   }
 
   @Override
@@ -117,13 +125,45 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
         evento.entregaId());
   }
 
+  /**
+   * Una transacción por donación: el cambio de estado y el registro del evento como consumido se
+   * guardan juntos. Si dos entregas del mismo mensaje llegan a la vez, la restricción única de
+   * {@code evento_consumido} hace fallar la segunda y se deshace su cambio.
+   */
   private void aplicarCambioEstado(
       UUID donacionId,
       CambioEstadoDonacionIndependienteRequestDTO request,
       String eventType,
       String origen,
       UUID businessId) {
+    try {
+      enTransaccion(
+          () -> aplicarSiNoFueConsumido(donacionId, request, eventType, origen, businessId));
+    } catch (Exception e) {
+      log.error(
+          "Error al procesar donación {} en evento {} (estado destino={}): {}",
+          donacionId,
+          eventType,
+          request.estado(),
+          e.getMessage(),
+          e);
+    }
+  }
 
+  private void enTransaccion(Runnable operacion) {
+    if (transacciones == null) {
+      operacion.run();
+    } else {
+      transacciones.executeWithoutResult(estado -> operacion.run());
+    }
+  }
+
+  private void aplicarSiNoFueConsumido(
+      UUID donacionId,
+      CambioEstadoDonacionIndependienteRequestDTO request,
+      String eventType,
+      String origen,
+      UUID businessId) {
     if (eventosConsumidosRepository.yaFueConsumido(eventType, businessId, donacionId)) {
       log.info(
           "Evento duplicado ignorado: tipo={}, businessId={}, donacionId={}",
@@ -139,35 +179,16 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
           "Donación {} ya se encuentra en estado {}, registrando como consumido y descartando",
           donacionId,
           request.estado());
-      eventosConsumidosRepository.registrar(
-          new EventoConsumido(
-              UUID.randomUUID(),
-              eventType,
-              origen,
-              businessId,
-              donacionId,
-              LocalDateTime.now(ZONA_HORARIA)));
-      return;
-    }
-
-    try {
+    } else {
       donacionesIndependientesService.cambiarEstado(donacionId, request, ACTOR);
-      eventosConsumidosRepository.registrar(
-          new EventoConsumido(
-              UUID.randomUUID(),
-              eventType,
-              origen,
-              businessId,
-              donacionId,
-              LocalDateTime.now(ZONA_HORARIA)));
-    } catch (Exception e) {
-      log.error(
-          "Error al procesar donación {} en evento {} (estado destino={}): {}",
-          donacionId,
-          eventType,
-          request.estado(),
-          e.getMessage(),
-          e);
     }
+    eventosConsumidosRepository.registrar(
+        new EventoConsumido(
+            UUID.randomUUID(),
+            eventType,
+            origen,
+            businessId,
+            donacionId,
+            LocalDateTime.now(ZONA_HORARIA)));
   }
 }

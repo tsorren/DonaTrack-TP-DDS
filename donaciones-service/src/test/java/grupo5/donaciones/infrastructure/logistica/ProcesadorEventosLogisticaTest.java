@@ -25,6 +25,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @ExtendWith(MockitoExtension.class)
 class ProcesadorEventosLogisticaTest {
@@ -32,6 +34,8 @@ class ProcesadorEventosLogisticaTest {
   @Mock private IDonacionesIndependientesService donacionesIndependientesService;
   @Mock private IEventosConsumidosRepository eventosConsumidosRepository;
   @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
+  // Sin transaction manager, como el perfil en memoria: getIfAvailable devuelve null
+  @Mock private ObjectProvider<PlatformTransactionManager> transactionManager;
 
   private static final String ORIGEN = "cola-de-prueba";
 

@@ -15,9 +15,11 @@ import grupo5.donaciones.models.entities.personas.Telefono;
 import grupo5.donaciones.models.entities.personas.TipoTelefono;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import java.util.List;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("postgres")
 public class PersonasPersistenciaMapper {
 
   private final DireccionesPersistenciaMapper direcciones;

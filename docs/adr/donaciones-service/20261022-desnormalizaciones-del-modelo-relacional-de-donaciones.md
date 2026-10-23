@@ -37,7 +37,7 @@ Alternativa elegida: **las desnormalizaciones del DER**.
 | **D3** | En `donacion_independiente`: `id_necesidad`, `id_periodo` y `id_beneficiario_asignado`, aunque la entidad se pueda deducir de la necesidad y la necesidad del período | «Donaciones asignadas a mi entidad» (UI 11), el conteo por entidad del algoritmo de sub-atendidos y el acumulado de un período, cada uno con una sola columna indexada | La asignación (`PosibleFragmentacion.confirmar` / aprobación de la propuesta), que escribe las tres a la vez | Una donación podría quedar con una entidad distinta de la de su necesidad. Se mitiga con un único punto de escritura y un test que lo verifique. Las tres son opcionales: una donación se puede asignar directo a una entidad, sin necesidad. Se limpian juntas al volver al depósito | `[OBSERVED]` `V10` |
 | **D4** | Texto del bien copiado en los ítems: `item_donacion_normalizado.bien_nombre` / `bien_descripcion` e `item_donacion_independiente.bien_descripcion`, sin tabla `Bien` (P-2) | Mostrar qué se donó sin reconstruir el bien original, y armar la descripción de una donación independiente | La segmentación, que copia el texto una sola vez | No se desincroniza en un sentido que importe: es una foto de lo donado; si se corrige el ítem original, la donación ya segmentada conserva lo que se segmentó | `[OBSERVED]` `V9` y `V10` |
 | **D5** | Las dos subclases de `Necesidad` en una sola tabla (`SINGLE_TABLE`, con `periodo` nulo en las extraordinarias) | El matching lee todas las necesidades activas de una vez, sin joins por subtipo | Hibernate, con el discriminador `tipo_necesidad` | No aplica: es una decisión de herencia, ver el ADR de mapeo ORM | `[OBSERVED]` `V1` y `V6` |
-| **D6** | El mensaje hacia Logística completo en `outbox_logistica.payload` (`JSONB`), además de las tablas de las que sale | El relay reenvía el mensaje sin volver a armarlo desde varias tablas, y reintenta exactamente lo mismo | La transacción que crea la solicitud de entrega (Transactional Outbox) | Es una foto a propósito: el reintento tiene que mandar lo que se decidió en su momento | `[PROPOSED]` Paso 10 |
+| **D6** | El mensaje hacia Logística completo en `outbox_logistica.payload` (`JSONB`), además de las tablas de las que sale | El relay reenvía el mensaje sin volver a armarlo desde varias tablas, y reintenta exactamente lo mismo | La transacción que crea la solicitud de entrega (Transactional Outbox) | Es una foto a propósito: el reintento tiene que mandar lo que se decidió en su momento | `[OBSERVED]` `V12` |
 
 **Alternativas adicionales que no se adoptan** (no están en el DER):
 
@@ -63,7 +63,7 @@ Alternativa elegida: **las desnormalizaciones del DER**.
 
 Se valida mediante:
 
-1. Tests de persistencia con Postgres real (Testcontainers) por cada desnormalización implementada: D1 ya los tiene (`DireccionesPersistenciaTest`); D2, D3 y D4, `DonacionesRepositoriesJpaTest` y `DonacionesIndependientesRepositoryJpaTest`; D6 en el Paso 10.
+1. Tests de persistencia con Postgres real (Testcontainers) por cada desnormalización implementada: D1 ya los tiene (`DireccionesPersistenciaTest`); D2, D3 y D4, `DonacionesRepositoriesJpaTest` y `DonacionesIndependientesRepositoryJpaTest`; D6, `LogisticaRepositoriesJpaTest`.
 2. Para D2, un test que verifique que el estado actual coincide con el último cambio del historial después de cada transición.
 3. Para D3, un test que verifique que, después de una asignación a una necesidad, `id_beneficiario_asignado` es la entidad de esa necesidad e `id_periodo` pertenece a ella.
 

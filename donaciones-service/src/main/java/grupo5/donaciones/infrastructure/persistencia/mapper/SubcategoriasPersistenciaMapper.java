@@ -6,9 +6,11 @@ import grupo5.donaciones.models.entities.categorias.AliasSubcategoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("postgres")
 public class SubcategoriasPersistenciaMapper {
 
   public SubcategoriaEntity toEntity(Subcategoria domain) {

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
  * broker.
  */
 @Component
+@Profile("!postgres")
 public class LogisticaOutboxEnMemoria implements ILogisticaOutbox {
 
   private final Map<UUID, EntradaOutboxLogistica> entradas = new ConcurrentHashMap<>();

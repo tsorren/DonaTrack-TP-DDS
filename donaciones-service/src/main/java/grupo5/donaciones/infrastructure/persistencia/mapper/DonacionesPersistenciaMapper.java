@@ -14,9 +14,11 @@ import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("postgres")
 public class DonacionesPersistenciaMapper {
 
   private final DireccionesPersistenciaMapper direcciones;

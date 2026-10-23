@@ -4,9 +4,11 @@ import grupo5.donaciones.infrastructure.persistencia.entities.itemsNormalizados.
 import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
 import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormalizado;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("postgres")
 public class ItemsNormalizadosPersistenciaMapper {
 
   public ItemDonacionNormalizadoEntity toEntity(ItemDonacionNormalizado domain) {

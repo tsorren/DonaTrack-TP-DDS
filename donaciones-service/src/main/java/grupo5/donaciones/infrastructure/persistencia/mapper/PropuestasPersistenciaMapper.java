@@ -5,9 +5,11 @@ import grupo5.donaciones.infrastructure.persistencia.entities.propuestas.Propues
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import java.util.List;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("postgres")
 public class PropuestasPersistenciaMapper {
 
   /** {@code existente}: la fila ya guardada, para que orphanRemoval borre las fragmentaciones. */

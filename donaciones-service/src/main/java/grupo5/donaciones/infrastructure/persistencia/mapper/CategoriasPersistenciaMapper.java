@@ -2,9 +2,11 @@ package grupo5.donaciones.infrastructure.persistencia.mapper;
 
 import grupo5.donaciones.infrastructure.persistencia.entities.categorias.CategoriaEntity;
 import grupo5.donaciones.models.entities.categorias.Categoria;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("postgres")
 public class CategoriasPersistenciaMapper {
 
   public CategoriaEntity toEntity(Categoria domain) {

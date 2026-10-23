@@ -7,10 +7,12 @@ import grupo5.donaciones.models.entities.ubicaciones.Localidad;
 import grupo5.donaciones.models.entities.ubicaciones.Pais;
 import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 /** La dirección es inmutable y compartida: "guardar" es buscar la fila igual o crearla. */
 @Component
+@Profile("postgres")
 public class DireccionesPersistenciaMapper {
 
   private final SpringDataDireccionRepository repository;
