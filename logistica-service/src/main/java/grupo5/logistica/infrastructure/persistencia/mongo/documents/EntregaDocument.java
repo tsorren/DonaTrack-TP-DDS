@@ -39,7 +39,7 @@ public class EntregaDocument {
 
   private Instant horaArribo;
   private Instant horaSalida;
-  private String fotoRecepcionUrl;
+  @Builder.Default private List<String> fotosRecepcion = new ArrayList<>();
   private Double volumenTotalM3;
   private Double pesoTotalKg;
 

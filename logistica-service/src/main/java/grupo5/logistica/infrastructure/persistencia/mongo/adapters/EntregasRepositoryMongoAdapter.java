@@ -7,6 +7,7 @@ import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.repositories.IEntregasRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -72,5 +73,23 @@ public class EntregasRepositoryMongoAdapter
       return false;
     }
     return springDataRepo.existsByIdDonacion(idDonacion);
+  }
+
+  @Override
+  public Optional<Entrega> findByIdDonacion(UUID idDonacion) {
+    if (idDonacion == null) {
+      return Optional.empty();
+    }
+    return springDataRepo.findByIdDonacion(idDonacion).map(mapper::toDomain);
+  }
+
+  @Override
+  public List<Entrega> findByIdBeneficiaria(UUID idBeneficiaria) {
+    if (idBeneficiaria == null) {
+      return List.of();
+    }
+    return springDataRepo.findByIdBeneficiarioOrderByIdAsc(idBeneficiaria).stream()
+        .map(mapper::toDomain)
+        .toList();
   }
 }

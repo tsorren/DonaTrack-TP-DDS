@@ -14,12 +14,8 @@ public final class GestorDeEntregas {
 
     // spotless:off
     switch (solicitud) {
-      case ConfirmacionRecepcion(var entrega, var actor, var fotoRecepcionUrl) -> {
-        entrega.confirmarEntrega(actor);
-        if (fotoRecepcionUrl != null && !fotoRecepcionUrl.isBlank()) {
-          entrega.adjuntarFotoRecepcion(fotoRecepcionUrl);
-        }
-      }
+      case ConfirmacionRecepcion(var entrega, var actor, var fotosRecepcion) ->
+          entrega.confirmarEntrega(actor, fotosRecepcion);
       case NoRecepcion(var entrega, var actor, var justificacion, var replanificable) ->
           entrega.negarEntrega(actor, justificacion, replanificable);
       case RevisionEntrega(var entrega, var actor) -> entrega.mandarARevision(actor);

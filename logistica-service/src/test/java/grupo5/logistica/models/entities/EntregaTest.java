@@ -16,11 +16,15 @@ import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class EntregaTest {
+
+  private static final String FOTO_VALIDA_1 = "https://storage.donatrack.org/entregas/foto-1.jpg";
+  private static final String FOTO_VALIDA_2 = "https://storage.donatrack.org/entregas/foto-2.jpg";
 
   private Direccion createTestDireccion() {
     Pais pais = new Pais("Argentina");
@@ -52,6 +56,8 @@ class EntregaTest {
     assertEquals(10.5f, entrega.getPesoTotalKG());
     assertEquals(0.5f, entrega.getVolumenTotalM3());
     assertTrue(entrega.getHistorialEstado().isEmpty());
+    assertTrue(entrega.getFotosRecepcion().isEmpty());
+    assertNull(entrega.getFotoRecepcionUrl());
   }
 
   @Test
@@ -80,7 +86,7 @@ class EntregaTest {
   }
 
   @Test
-  void testFlujoFelizDeTrazabilidad() {
+  void testFlujoFelizDeTrazabilidadConMultiplesFotos() {
     Entrega entrega =
         new Entrega(
             UUID.randomUUID(),
@@ -100,19 +106,57 @@ class EntregaTest {
     assertEquals(EstadoEntrega.EN_TRASLADO, cambio1.estadoNuevo());
     assertEquals("Chofer Jose", cambio1.actor());
 
-    // 2. Confirmar entrega
-    entrega.confirmarEntrega("Comedor Infantil");
+    // 2. Confirmar entrega con evidencia fotográfica obligatoria (RF-12)
+    entrega.confirmarEntrega(
+        "Comedor Infantil", List.of("  " + FOTO_VALIDA_1 + "  ", FOTO_VALIDA_1));
     assertEquals(EstadoEntrega.ENTREGADA, entrega.getEstadoActual());
     assertNotNull(entrega.getHoraArribo());
+    assertEquals(List.of(FOTO_VALIDA_1), entrega.getFotosRecepcion());
+    assertEquals(FOTO_VALIDA_1, entrega.getFotoRecepcionUrl());
     assertEquals(2, entrega.getHistorialEstado().size());
     CambioEstadoEntrega cambio2 = entrega.getHistorialEstado().get(1);
     assertEquals(EstadoEntrega.EN_TRASLADO, cambio2.estadoAnterior());
     assertEquals(EstadoEntrega.ENTREGADA, cambio2.estadoNuevo());
     assertEquals("Comedor Infantil", cambio2.actor());
 
-    // 3. Adjuntar foto
-    entrega.adjuntarFotoRecepcion("http://images.com/recepcion.jpg");
-    assertEquals("http://images.com/recepcion.jpg", entrega.getFotoRecepcionUrl());
+    // 3. Adjuntar fotos adicionales sin duplicar las existentes
+    entrega.adjuntarFotosRecepcion(List.of(FOTO_VALIDA_1, FOTO_VALIDA_2));
+    assertEquals(List.of(FOTO_VALIDA_1, FOTO_VALIDA_2), entrega.getFotosRecepcion());
+    assertEquals(FOTO_VALIDA_1, entrega.getFotoRecepcionUrl());
+  }
+
+  @Test
+  void testConfirmarEntregaSinFotosRechazaTransicionYNoMutaEstadoNiEmiteEventos() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+
+    assertThrows(
+        ValidationException.class,
+        () -> entrega.confirmarEntrega("Comedor Infantil", (List<String>) null));
+    assertThrows(
+        ValidationException.class, () -> entrega.confirmarEntrega("Comedor Infantil", List.of()));
+    assertThrows(
+        ValidationException.class,
+        () -> entrega.confirmarEntrega("Comedor Infantil", List.of("   ")));
+    assertThrows(
+        ValidationException.class,
+        () -> entrega.confirmarEntrega("Comedor Infantil", Arrays.asList(FOTO_VALIDA_1, null)));
+
+    assertEquals(EstadoEntrega.EN_TRASLADO, entrega.getEstadoActual());
+    assertNull(entrega.getHoraArribo());
+    assertEquals(1, entrega.getHistorialEstado().size());
+    assertTrue(entrega.getFotosRecepcion().isEmpty());
+    assertTrue(entrega.getDomainEvents().isEmpty());
+  }
+
+  @Test
+  void testAdjuntarFotosFueraDeEstadoEntregadaLanzaExcepcion() {
+    Entrega entrega = crearEntregaValida();
+    entrega.iniciarRuta("Chofer Jose");
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> entrega.adjuntarFotoRecepcion(FOTO_VALIDA_1));
+    assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, ex.getError());
   }
 
   @Test
@@ -187,7 +231,8 @@ class EntregaTest {
 
     // Confirmar entrega directamente sin iniciar ruta
     ValidationException exception =
-        assertThrows(ValidationException.class, () -> entrega.confirmarEntrega("Comedor"));
+        assertThrows(
+            ValidationException.class, () -> entrega.confirmarEntrega("Comedor", FOTO_VALIDA_1));
     assertEquals(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA, exception.getError());
   }
 
@@ -217,7 +262,7 @@ class EntregaTest {
         new Entrega(rutaId, donacionId, UUID.randomUUID(), createTestDireccion(), 10f, 1f);
     entrega.iniciarRuta("Chofer Jose");
 
-    entrega.confirmarEntrega("Comedor Infantil");
+    entrega.confirmarEntrega("Comedor Infantil", List.of(FOTO_VALIDA_1, FOTO_VALIDA_2));
 
     EntregaConfirmada evento =
         assertInstanceOf(EntregaConfirmada.class, entrega.getDomainEvents().getFirst());
@@ -226,6 +271,7 @@ class EntregaTest {
     assertEquals(rutaId, evento.getIdRuta());
     assertNotNull(evento.getId());
     assertNotNull(evento.getTimestamp());
+    assertEquals(List.of(FOTO_VALIDA_1, FOTO_VALIDA_2), entrega.getFotosRecepcion());
   }
 
   @Test
@@ -259,7 +305,7 @@ class EntregaTest {
             10f,
             1f);
     entrega.iniciarRuta("Chofer Jose");
-    entrega.confirmarEntrega("Comedor Infantil");
+    entrega.confirmarEntrega("Comedor Infantil", FOTO_VALIDA_1);
     List<EventoEntrega> snapshot = entrega.getDomainEvents();
 
     entrega.clearDomainEvents();
@@ -323,7 +369,7 @@ class EntregaTest {
             historial,
             horaArribo,
             horaSalida,
-            "http://foto.jpg",
+            List.of("http://foto1.jpg", "http://foto2.jpg"),
             12.5f,
             1.8f,
             4L);
@@ -338,7 +384,8 @@ class EntregaTest {
     assertEquals(cambio, entrega.getHistorialEstado().get(0));
     assertEquals(horaArribo, entrega.getHoraArribo());
     assertEquals(horaSalida, entrega.getHoraSalida());
-    assertEquals("http://foto.jpg", entrega.getFotoRecepcionUrl());
+    assertEquals("http://foto1.jpg", entrega.getFotoRecepcionUrl());
+    assertEquals(List.of("http://foto1.jpg", "http://foto2.jpg"), entrega.getFotosRecepcion());
     assertEquals(12.5f, entrega.getPesoTotalKG());
     assertEquals(1.8f, entrega.getVolumenTotalM3());
     assertEquals(4L, entrega.getVersion());
@@ -357,13 +404,14 @@ class EntregaTest {
             null,
             null,
             null,
-            null,
+            (String) null,
             10f,
             1f,
             1L);
 
     assertNotNull(entrega.getHistorialEstado());
     assertTrue(entrega.getHistorialEstado().isEmpty());
+    assertTrue(entrega.getFotosRecepcion().isEmpty());
     assertEquals(1L, entrega.getVersion());
   }
 
@@ -393,7 +441,7 @@ class EntregaTest {
             historialOriginal,
             null,
             null,
-            null,
+            (String) null,
             10f,
             1f,
             1L);

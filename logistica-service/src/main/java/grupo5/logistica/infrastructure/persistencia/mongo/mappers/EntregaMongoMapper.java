@@ -6,6 +6,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocum
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
@@ -16,6 +17,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
@@ -45,12 +47,14 @@ public class EntregaMongoMapper {
     doc.setEstado(domain.getEstadoActual());
     doc.setHoraArribo(aInstantUtc(domain.getHoraArribo()));
     doc.setHoraSalida(aInstantUtc(domain.getHoraSalida()));
-    doc.setFotoRecepcionUrl(domain.getFotoRecepcionUrl());
+    doc.setFotosRecepcion(new ArrayList<>(domain.getFotosRecepcion()));
     doc.setVolumenTotalM3((double) domain.getVolumenTotalM3());
     doc.setPesoTotalKg((double) domain.getPesoTotalKG());
 
     if (existing == null || existing.getDestino() == null) {
       doc.setDestino(mapearDireccionADocument(domain.getDestino()));
+    } else if (domain.getDestino() != null) {
+      doc.getDestino().setUbicacion(aGeoJson(domain.getDestino().coordenadas()));
     }
 
     if (existing == null) {
@@ -90,6 +94,7 @@ public class EntregaMongoMapper {
         .localidad(localidadNombre)
         .provincia(provinciaNombre)
         .pais(paisNombre)
+        .ubicacion(aGeoJson(destino.coordenadas()))
         .build();
   }
 
@@ -108,7 +113,8 @@ public class EntregaMongoMapper {
         doc.getPiso() != null ? doc.getPiso().intValue() : null,
         doc.getDepartamento(),
         doc.getCodigoPostal(),
-        localidad);
+        localidad,
+        aCoordenadas(doc.getUbicacion()));
   }
 
   public Entrega toDomain(EntregaDocument doc) {
@@ -126,7 +132,7 @@ public class EntregaMongoMapper {
         mapearHistorialDominio(doc),
         aLocalDateTimeUtc(doc.getHoraArribo()),
         aLocalDateTimeUtc(doc.getHoraSalida()),
-        doc.getFotoRecepcionUrl(),
+        doc.getFotosRecepcion(),
         doc.getPesoTotalKg() != null ? doc.getPesoTotalKg().floatValue() : 0f,
         doc.getVolumenTotalM3() != null ? doc.getVolumenTotalM3().floatValue() : 0f,
         doc.getVersion());
@@ -173,6 +179,17 @@ public class EntregaMongoMapper {
         historialDoc.add(nuevo);
       }
     }
+  }
+
+  /** GeoJSON usa el orden [longitud, latitud], al revés que el dominio. */
+  private static GeoJsonPoint aGeoJson(CoordenadasGeograficas coordenadas) {
+    return coordenadas != null
+        ? new GeoJsonPoint(coordenadas.longitud(), coordenadas.latitud())
+        : null;
+  }
+
+  private static CoordenadasGeograficas aCoordenadas(GeoJsonPoint punto) {
+    return punto != null ? new CoordenadasGeograficas(punto.getY(), punto.getX()) : null;
   }
 
   private static Instant aInstantUtc(LocalDateTime fechaHora) {

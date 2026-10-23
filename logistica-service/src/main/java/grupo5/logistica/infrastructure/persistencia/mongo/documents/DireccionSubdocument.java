@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 
 @SuppressWarnings("java:S120")
 @Getter
@@ -22,4 +23,7 @@ public class DireccionSubdocument {
   private String localidad;
   private String provincia;
   private String pais;
+
+  /** GeoJSON Point: {@code coordinates = [longitud, latitud]}. */
+  private GeoJsonPoint ubicacion;
 }

@@ -19,6 +19,7 @@ import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
@@ -174,6 +175,33 @@ class PersistenciaMongoMappersTest {
     assertThrows(
         ObjectOptimisticLockingFailureException.class,
         () -> entregaMapper.toDocument(reconstituida, doc));
+  }
+
+  @Test
+  void entregaMapper_deberiaMapearCoordenadasComoGeoJsonYVariasFotos() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    CoordenadasGeograficas coordenadas = new CoordenadasGeograficas(-34.6, -58.4);
+    Direccion dir = new Direccion("Callao", 500, null, null, "1022", caba, coordenadas);
+    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 10.0f, 1.0f);
+    entrega.iniciarRuta("Chofer");
+    entrega.confirmarEntrega("Entidad", List.of("f1", "f2", "f3"));
+
+    EntregaDocument doc = entregaMapper.toDocument(entrega);
+
+    // GeoJSON: [longitud, latitud]
+    assertEquals(-58.4, doc.getDestino().getUbicacion().getX());
+    assertEquals(-34.6, doc.getDestino().getUbicacion().getY());
+    assertEquals(List.of("f1", "f2", "f3"), doc.getFotosRecepcion());
+
+    Entrega reconstituida = entregaMapper.toDomain(doc);
+    assertEquals(coordenadas, reconstituida.getDestino().coordenadas());
+    assertEquals(List.of("f1", "f2", "f3"), reconstituida.getFotosRecepcion());
+
+    // La dirección es inmutable, pero las coordenadas se actualizan sobre un documento existente
+    reconstituida.getDestino().actualizarCoordenadas(new CoordenadasGeograficas(-31.4, -64.2));
+    EntregaDocument actualizado = entregaMapper.toDocument(reconstituida, doc);
+    assertEquals(-64.2, actualizado.getDestino().getUbicacion().getX());
+    assertEquals("Callao", actualizado.getDestino().getCalle());
   }
 
   @Test

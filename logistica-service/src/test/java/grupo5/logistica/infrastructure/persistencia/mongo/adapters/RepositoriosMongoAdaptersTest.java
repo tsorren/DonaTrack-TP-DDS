@@ -274,6 +274,14 @@ class RepositoriosMongoAdaptersTest {
     assertEquals(1, adapter.findSinRuta().size());
     assertTrue(adapter.existsByIdDonacion(entrega.getIdDonacion()));
 
+    assertTrue(adapter.findByIdDonacion(null).isEmpty());
+    assertTrue(adapter.findByIdBeneficiaria(null).isEmpty());
+    when(springDataRepo.findByIdDonacion(entrega.getIdDonacion())).thenReturn(Optional.of(doc));
+    when(springDataRepo.findByIdBeneficiarioOrderByIdAsc(entrega.getIdBeneficiaria()))
+        .thenReturn(List.of(doc));
+    assertEquals(entrega.getId(), adapter.findByIdDonacion(entrega.getIdDonacion()).get().getId());
+    assertEquals(1, adapter.findByIdBeneficiaria(entrega.getIdBeneficiaria()).size());
+
     // CRUD base methods
     when(springDataRepo.findAll()).thenReturn(List.of(doc));
     when(springDataRepo.findById(entrega.getId())).thenReturn(Optional.of(doc));
@@ -358,7 +366,7 @@ class RepositoriosMongoAdaptersTest {
     adapter.registrar(new ConfirmacionRecepcion(entrega, "Actor1", "http://foto"));
     verify(springDataRepo).save(captor.capture());
     assertEquals(TipoTransicionEntrega.CONFIRMAR_ENTREGA, captor.getValue().getTipoTransicion());
-    assertEquals("http://foto", captor.getValue().getFotoRecepcionUrl());
+    assertEquals(List.of("http://foto"), captor.getValue().getFotosRecepcion());
     assertEquals(entrega.getId(), captor.getValue().getIdEntrega());
 
     // NoRecepcion

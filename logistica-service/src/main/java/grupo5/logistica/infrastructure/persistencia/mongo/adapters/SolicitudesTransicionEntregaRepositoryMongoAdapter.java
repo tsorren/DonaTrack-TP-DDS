@@ -42,7 +42,7 @@ public class SolicitudesTransicionEntregaRepositoryMongoAdapter
     switch (solicitud) {
       case ConfirmacionRecepcion confirmacion -> {
         doc.setTipoTransicion(TipoTransicionEntrega.CONFIRMAR_ENTREGA);
-        doc.setFotoRecepcionUrl(confirmacion.fotoRecepcionUrl());
+        doc.setFotosRecepcion(confirmacion.fotosRecepcion());
       }
       case NoRecepcion noRecepcion -> {
         doc.setTipoTransicion(TipoTransicionEntrega.NO_RECEPCION);

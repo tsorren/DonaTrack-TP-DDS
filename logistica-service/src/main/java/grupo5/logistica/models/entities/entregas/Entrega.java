@@ -10,8 +10,10 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -31,7 +33,10 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
 
   private LocalDateTime horaArribo;
   private LocalDateTime horaSalida;
-  private String fotoRecepcionUrl;
+
+  @Getter(AccessLevel.NONE)
+  private final List<String> fotosRecepcion;
+
   private final float pesoTotalKG;
   private final float volumenTotalM3;
 
@@ -57,6 +62,7 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.destino = destino;
     this.estadoActual = EstadoEntrega.PENDIENTE;
     this.historialEstado = new ArrayList<>();
+    this.fotosRecepcion = new ArrayList<>();
     this.pesoTotalKG = pesoTotalKG;
     this.volumenTotalM3 = volumenTotalM3;
   }
@@ -73,9 +79,41 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
   }
 
   /**
-   * Constructor de reconstitución para el adaptador JPA — hidrata el objeto desde la DB sin
-   * ejecutar validaciones de negocio ni generar un nuevo UUID.
+   * Constructor de reconstitución para el adaptador de persistencia — hidrata el objeto desde la DB
+   * sin ejecutar validaciones de negocio ni generar un nuevo UUID.
    */
+  @SuppressWarnings("java:S107")
+  public Entrega(
+      UUID id,
+      UUID idRuta,
+      UUID idDonacion,
+      UUID idBeneficiaria,
+      Direccion destino,
+      EstadoEntrega estadoActual,
+      List<CambioEstadoEntrega> historialEstado,
+      LocalDateTime horaArribo,
+      LocalDateTime horaSalida,
+      List<String> fotosRecepcion,
+      float pesoTotalKG,
+      float volumenTotalM3,
+      Long version) {
+    this.id = id;
+    this.idRuta = idRuta;
+    this.idDonacion = idDonacion;
+    this.idBeneficiaria = idBeneficiaria;
+    this.destino = destino;
+    this.estadoActual = estadoActual;
+    this.historialEstado =
+        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
+    this.horaArribo = horaArribo;
+    this.horaSalida = horaSalida;
+    this.fotosRecepcion = normalizarFotosReconstituidas(fotosRecepcion);
+    this.pesoTotalKG = pesoTotalKG;
+    this.volumenTotalM3 = volumenTotalM3;
+    this.version = version;
+  }
+
+  /** Sobrecarga de reconstitución compatible con una única referencia fotográfica. */
   @SuppressWarnings("java:S107")
   public Entrega(
       UUID id,
@@ -91,20 +129,22 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
       float pesoTotalKG,
       float volumenTotalM3,
       Long version) {
-    this.id = id;
-    this.idRuta = idRuta;
-    this.idDonacion = idDonacion;
-    this.idBeneficiaria = idBeneficiaria;
-    this.destino = destino;
-    this.estadoActual = estadoActual;
-    this.historialEstado =
-        historialEstado != null ? new ArrayList<>(historialEstado) : new ArrayList<>();
-    this.horaArribo = horaArribo;
-    this.horaSalida = horaSalida;
-    this.fotoRecepcionUrl = fotoRecepcionUrl;
-    this.pesoTotalKG = pesoTotalKG;
-    this.volumenTotalM3 = volumenTotalM3;
-    this.version = version;
+    this(
+        id,
+        idRuta,
+        idDonacion,
+        idBeneficiaria,
+        destino,
+        estadoActual,
+        historialEstado,
+        horaArribo,
+        horaSalida,
+        fotoRecepcionUrl != null && !fotoRecepcionUrl.isBlank()
+            ? List.of(fotoRecepcionUrl)
+            : List.of(),
+        pesoTotalKG,
+        volumenTotalM3,
+        version);
   }
 
   public void asignarRuta(UUID idRuta) {
@@ -132,28 +172,41 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     this.horaSalida = LocalDateTime.now(ZoneId.of("UTC"));
   }
 
-  public void confirmarEntrega(String entidad) {
+  public void confirmarEntrega(String entidad, String fotoRecepcionUrl) {
+    confirmarEntrega(entidad, fotoRecepcionUrl != null ? List.of(fotoRecepcionUrl) : null);
+  }
+
+  public void confirmarEntrega(String entidad, List<String> fotosRecepcion) {
     validarActor(entidad);
+    List<String> fotosNormalizadas = normalizarFotosObligatorias(fotosRecepcion);
 
     if (this.estadoActual != EstadoEntrega.EN_TRASLADO) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
+    this.fotosRecepcion.clear();
+    this.fotosRecepcion.addAll(fotosNormalizadas);
     actualizarEstado(EstadoEntrega.ENTREGADA, entidad);
     this.horaArribo = LocalDateTime.now(ZoneId.of("UTC"));
     registrarEvento(new EntregaConfirmada(this.id, this.idDonacion, this.idRuta));
   }
 
   public void adjuntarFotoRecepcion(String fotoURL) {
-    if (Objects.isNull(fotoURL) || fotoURL.isBlank()) {
-      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
-    }
+    adjuntarFotosRecepcion(fotoURL != null ? List.of(fotoURL) : null);
+  }
+
+  public void adjuntarFotosRecepcion(List<String> nuevasFotos) {
+    List<String> fotosNormalizadas = normalizarFotosObligatorias(nuevasFotos);
 
     if (this.estadoActual != EstadoEntrega.ENTREGADA) {
       throw new ValidationException(ErrorCatalog.ESTADO_ENTREGA_TRANSICION_INVALIDA);
     }
 
-    this.fotoRecepcionUrl = fotoURL.trim();
+    for (String foto : fotosNormalizadas) {
+      if (!this.fotosRecepcion.contains(foto)) {
+        this.fotosRecepcion.add(foto);
+      }
+    }
   }
 
   public void negarEntrega(String entidad, String justificacion, boolean replanificable) {
@@ -196,6 +249,14 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     return List.copyOf(this.historialEstado);
   }
 
+  public List<String> getFotosRecepcion() {
+    return List.copyOf(this.fotosRecepcion);
+  }
+
+  public String getFotoRecepcionUrl() {
+    return this.fotosRecepcion.isEmpty() ? null : this.fotosRecepcion.getFirst();
+  }
+
   private void actualizarEstado(EstadoEntrega nuevoEstado, String actor) {
     EstadoEntrega estadoAnterior = this.estadoActual;
     this.estadoActual = nuevoEstado;
@@ -236,5 +297,33 @@ public class Entrega extends AgregadoConEventos<EventoEntrega> {
     if (Objects.isNull(justificacion) || justificacion.isBlank()) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
     }
+  }
+
+  private static List<String> normalizarFotosObligatorias(List<String> fotos) {
+    if (fotos == null || fotos.isEmpty()) {
+      throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+    }
+
+    Set<String> unicas = new LinkedHashSet<>();
+    for (String foto : fotos) {
+      if (foto == null || foto.isBlank()) {
+        throw new ValidationException(ErrorCatalog.ARGUMENTO_INVALIDO);
+      }
+      unicas.add(foto.trim());
+    }
+    return List.copyOf(unicas);
+  }
+
+  private static List<String> normalizarFotosReconstituidas(List<String> fotos) {
+    if (fotos == null || fotos.isEmpty()) {
+      return new ArrayList<>();
+    }
+    Set<String> unicas = new LinkedHashSet<>();
+    for (String foto : fotos) {
+      if (foto != null && !foto.isBlank()) {
+        unicas.add(foto.trim());
+      }
+    }
+    return new ArrayList<>(unicas);
   }
 }
