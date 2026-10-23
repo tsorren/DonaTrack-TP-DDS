@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-22** — Paso 8 hecho: donación independiente, sus ítems, sus estados y su historial.
+> Última actualización: **2026-10-22** — Paso 9 hecho: propuestas de asignación y sus posibles fragmentaciones.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
 - **Dónde estamos:** Pasos 0 a 3c y la parte de persistencia del Paso 5 cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
 - **Bloqueante para seguir:** ninguno. La #892 ya está en `ENTREGA_5` y en esta rama.
-- **Próximo paso:** Paso 9 (`propuesta` y `posible_fragmentacion`), con la corrección D-23 y la decisión pendiente D-8 (tipo de `cantidad`).
+- **Próximo paso:** Paso 10 (transacciones de los servicios, `solicitud_entrega`, `outbox_logistica` con D6 y `evento_consumido`), con Gate 4 por la integración con Logística.
 
 ---
 
@@ -34,7 +34,7 @@
 | 6 | Refactor DTI-06 del dominio + reconstitución | ✅ Hecho |
 | 7 | `deposito`, `donacion`, items, historial, `item_donacion_normalizado` | ✅ Hecho |
 | 8 | `donacion_independiente`, items, `estado_donacion_independiente`, historial | ✅ Hecho |
-| 9 | `propuesta` y `posible_fragmentacion` | ⏳ Pendiente |
+| 9 | `propuesta` y `posible_fragmentacion` | ✅ Hecho |
 | 10 | `@Transactional`, `solicitud_entrega`, `outbox_logistica`, `evento_consumido` | ⏳ Pendiente |
 | 11 | Cierre: deuda del historial de ejecuciones, Gate 3/4, documentación | ⏳ Pendiente |
 
@@ -56,6 +56,7 @@
 - **P-11 — `altura` y `piso` como `INTEGER`.** `[OBSERVED]` El DER dice `SMALLINT` (máximo 32 767), pero el dominio acepta cualquier `Integer` y hay alturas de ruta mayores. Ensanchar el tipo es aditivo. `[PROPOSED]` Avisar al equipo para actualizar el DER.
 - **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
 - **P-14 — Desnormalización.** `[DOCUMENTED]` Decisión del usuario: se respetan las desnormalizaciones que ya tiene el DER; no se agregan otras. Quedan registradas en el ADR [`20261022-desnormalizaciones-del-modelo-relacional-de-donaciones`](../../adr/donaciones-service/20261022-desnormalizaciones-del-modelo-relacional-de-donaciones.md) (`proposed`): D1 dirección plana, D2 estado actual además del historial, D3 necesidad, período y beneficiario repetidos en la donación independiente, D4 foto del bien en los ítems, D5 `SINGLE_TABLE` de `Necesidad`, D6 payload del outbox. Donante copiado en la donación, acumulado en la necesidad y vista materializada de sub-atendidos quedan como alternativas no adoptadas.
+- **P-20 — Decisiones del Paso 9.** `[DOCUMENTED]` Decididas por el usuario: **D-35** (cierra D-8) `posible_fragmentacion.cantidad` es `INTEGER` con `CHECK > 0`, como el `Integer` del dominio (el DER dice `SMALLINT`, máximo 32 767). **D-36** el historial de corridas del algoritmo (`EjecucionAsignacion`) sigue en memoria: no está en el DER y se pierde al reiniciar; queda como límite documentado. Sin alternativa: `id` propio y FK `RESTRICT` a la donación independiente en la fragmentación (D-23); `estado` y `fecha_creacion` en `propuesta` (el dominio los usa para aprobar, descartar y listar; las descartadas se conservan); FK `RESTRICT` a `necesidad`; fragmentaciones que se reemplazan en cada guardado y se borran en cascada con la propuesta.
 - **P-19 — Decisiones del Paso 8.** `[DOCUMENTED]` Decididas por el usuario: **D-33** al volver al depósito (`retornar`, desde `ENTREGA_FALLIDA`) la donación independiente pierde su destino: `id_necesidad`, `id_periodo` e `id_beneficiario_asignado` quedan en `null`, deja de contar en lo asignado y el algoritmo la puede asignar a otra necesidad. El reintento hacia el mismo destino no pasa por el depósito: es la falla replanificable (`ENTREGA_FALLIDA` → `ASIGNACION_REALIZADA`), que conserva el destino. **D-34** el estado `Entregada` guarda la patente del camión que confirmó la entrega y se persiste en `estado_donacion_independiente.patente_camion`; `replanificable_hasta` queda sin uso (el dominio no tiene plazo). Sin alternativa: una fila de estado por cada vez que la donación entra a un estado, incluido el inicial (D-21, el DER le da `id_donacion_independiente`); `justificacion` en el cambio (D-22); el ítem guarda el id del ítem normalizado del que sale y de ahí se reconstituye el bien (D-24), con `bien_descripcion` como foto del texto (D4); estado actual además del historial (D2); destino con FK `RESTRICT` a `necesidad`, `periodo_necesidad` y `entidad_beneficiaria` (D3).
 - **P-18 — Decisiones del Paso 7.** `[DOCUMENTED]` Decididas por el usuario: **D-30** `item_donacion_normalizado` copia el bien original completo (foto, vencimiento, estado, peso, volumen) y el estado de normalización, además de lo que tiene el DER: es la «foto de lo donado» de D4 y no toca el dominio; `bien_nombre` queda sin uso. **D-31** (cierra D-7) peso y volumen como `NUMERIC(12,3)`, con `CHECK > 0`. **D-32** la descripción general de la donación es obligatoria en todas las capas: `NOT NULL` (DER), `@NotBlank` en `DonacionInputDTO` (400) y validación en el dominio (`DONACION_SIN_DESCRIPCION`, `ERR-VAL-212`). Es un cambio de contrato REST, documentado en OpenAPI. Sin alternativa: depósito como tabla compartida que se reutiliza por nombre y dirección (P-2, D-9), estado de la donación además del historial (D2), historial que solo agrega filas, ítems que se reemplazan en cada guardado, FK a `donante` y `subcategoria` con `RESTRICT` (D-26, D-20) y `CASCADE` solo para ítems e historial.
 - **P-17 — Decisiones del Paso 6 (DTI-06).** `[DOCUMENTED]` Decididas por el usuario: **D-28** lo asignado a una necesidad lo calcula quien llama (suma de las donaciones con ese destino) y se lo pasa a la necesidad (`estaSatisfechaCon`, `cantidadRestante`) o a los algoritmos (`DatosDeAsignacion`), como dice el ADR DTI-06. **D-29** `PeriodoNecesidad.id` se adelanta al Paso 6 (revisa D-19): la donación guarda `periodoId`, como el `id_periodo` del DER. Sin alternativa: `Asignable` se reemplaza por ids (`DestinoAsignacion`), como eligió su ADR (`proposed`).
@@ -71,13 +72,14 @@
 
 ## Cambios a comunicar al dueño del DER
 
-Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8); peso y volumen en los ítems y los 3 valores de `ESTADO_NORMALIZACION` (P-3); `altura` y `piso` `INTEGER` (P-11); `fecha_nacimiento` `DATE` (D-10); valores de `tipo_juridico` (Paso 3); `archivo.id` en vez de `id_archivo` (P-8); `necesidad.version` y `necesidad.periodo` como `VARCHAR` ISO-8601 en vez de `BIGINT` (D-17, D-18); `necesidad.descripcion` (ya estaba en V1, falta en el DER); `activo` en `donante` y `entidad_beneficiaria` (P-16); D-21 a D-24 (P-15). `NUMERIC(12,3)` para peso y volumen (D-31); columnas del bien completo y `estado_normalizacion` en `item_donacion_normalizado` (D-30); `deposito.nombre` `NOT NULL` y único con la dirección; fechas de donación e historial como `TIMESTAMP` (el DER dice `TIMESTAMPTZ`; mismo criterio que V1) y vencimientos como `DATE`; valores de `ESTADO_BIEN` (`NUEVO`, `USADO`, `DESGASTADO`). Paso 8: `estado_actual` y `tipo` como `VARCHAR` con `CHECK` de los 7 estados; `fecha_registro`, `bien_descripcion` e `id_estado_nuevo` `NOT NULL`; `CHECK` de que no haya período sin necesidad; la relación `Subcategoria` → `Item_donacion_independiente` del DER no es una columna: la subcategoría sale del ítem normalizado (D-24). Pendiente de decidir: D-8 (`cantidad` de `posible_fragmentacion`).
+Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8); peso y volumen en los ítems y los 3 valores de `ESTADO_NORMALIZACION` (P-3); `altura` y `piso` `INTEGER` (P-11); `fecha_nacimiento` `DATE` (D-10); valores de `tipo_juridico` (Paso 3); `archivo.id` en vez de `id_archivo` (P-8); `necesidad.version` y `necesidad.periodo` como `VARCHAR` ISO-8601 en vez de `BIGINT` (D-17, D-18); `necesidad.descripcion` (ya estaba en V1, falta en el DER); `activo` en `donante` y `entidad_beneficiaria` (P-16); D-21 a D-24 (P-15). `NUMERIC(12,3)` para peso y volumen (D-31); columnas del bien completo y `estado_normalizacion` en `item_donacion_normalizado` (D-30); `deposito.nombre` `NOT NULL` y único con la dirección; fechas de donación e historial como `TIMESTAMP` (el DER dice `TIMESTAMPTZ`; mismo criterio que V1) y vencimientos como `DATE`; valores de `ESTADO_BIEN` (`NUEVO`, `USADO`, `DESGASTADO`). Paso 8: `estado_actual` y `tipo` como `VARCHAR` con `CHECK` de los 7 estados; `fecha_registro`, `bien_descripcion` e `id_estado_nuevo` `NOT NULL`; `CHECK` de que no haya período sin necesidad; la relación `Subcategoria` → `Item_donacion_independiente` del DER no es una columna: la subcategoría sale del ítem normalizado (D-24). Paso 9: `propuesta.estado` (`PENDIENTE`, `APROBADA`, `DESCARTADA`) y `propuesta.fecha_creacion`; `posible_fragmentacion.cantidad` `INTEGER` en vez de `SMALLINT` (D-35).
 
 ## Hallazgos abiertos (no corregidos en esta tarea)
 
 - **Credencial fija** `dona_pass_2026` como valor por defecto en `application-postgres.properties` y en `docker-compose.yml` (AGENTS §4.3). `ENTREGA_5` ya usa variables de entorno: al mergear, conservar esa versión.
 - **D-7 — resuelto en el Paso 7 (D-31):** peso y volumen como `NUMERIC(12,3)`.
-- **D-8 — `Posible_fragmentacion.cantidad` es `SMALLINT`** (máx. 32 767) y el dominio usa `Integer`. Riesgo bajo.
+- **D-8 — resuelto en el Paso 9 (D-35):** `cantidad` como `INTEGER`.
+- **Historial de corridas del algoritmo en memoria (D-36).** `[DOCUMENTED]` `IAsignacionesRepository` no tiene adapter JPA: el endpoint de historial de ejecuciones muestra solo las corridas desde el último arranque, y con dos instancias cada una ve las suyas.
 - **`NecesidadesPersistenciaMapper`:** el `Period` con años y la conversión de meses a 30 días quedaron resueltos en el Paso 5 (D-18), y los filtros de activa y tipo pasaron a la base. Sigue abierto: `save` no es transaccional (Paso 10), y "satisfecha" se filtra en memoria porque depende de lo asignado (Paso 6 / desnormalización).
 - **Alias repetido (resuelto).** `[DOCUMENTED]` Decisión del usuario: ignorar el duplicado (idempotente). `Subcategoria.agregarAlias` no agrega un alias que ya existe; la restricción `uq_alias_subcategoria` queda como red de seguridad en la base.
 - **Alias con nombre de subcategoría derivado.** `[OBSERVED]` `AliasSubcategoria` guarda copiado el nombre de la subcategoría; en memoria queda desactualizado al renombrar. Al persistir se deriva al leer (corrige el dato, cambia el comportamiento).
@@ -123,6 +125,10 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 
 **¿Cómo se sabe el orden del historial si dos cambios tienen el mismo instante?** Cada cambio apunta al estado anterior y al nuevo, y el nuevo de uno es el anterior del siguiente: el mapper ordena siguiendo esa cadena. Una falla replanificable registra dos cambios en la misma operación, que pueden compartir el `timestamp`.
 
+**¿Por qué la propuesta guarda `estado` si el DER no lo tiene?** Porque sin él no se puede saber al leerla si está pendiente, aprobada o descartada, y `aceptar` y `rechazar` solo valen desde pendiente. Las descartadas se conservan como registro de lo que el algoritmo propuso.
+
+**¿Por qué la fragmentación no guarda el objeto donación?** Porque es otro agregado (DTI-06): guarda su id, y al aprobar la propuesta el servicio busca la donación y la fragmenta. Por eso la fragmentación no tiene identidad en el dominio y se reemplaza en cada guardado.
+
 **¿Por qué no se usa un índice único sobre el correo?** Porque compartir un correo es legítimo (una jurídica y su representante). El índice es funcional y no único; la unicidad que sí existe es la del documento (D-13).
 
 ---
@@ -143,6 +149,15 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
+
+## Paso 9 — detalle
+
+- **Migración `V11__propuestas.sql`.** `propuesta` (FK `RESTRICT` a `necesidad`, `estado` con `CHECK`, `fecha_creacion`) y `posible_fragmentacion` (`id` UUID propio, FK `CASCADE` a la propuesta y `RESTRICT` a la donación independiente, `cantidad INTEGER > 0`).
+- **Dominio.** `Propuesta` suma un constructor de reconstitución (id, necesidad, estado, fecha, fragmentaciones); `PosibleFragmentacion` pierde el `id Long` que nadie usaba y suma un constructor con la donación por id.
+- **Infraestructura.** Dos entidades, `SpringDataPropuestaRepository`, `PropuestasPersistenciaMapper` y `PropuestaRepositoryJpaAdapter` (transaccional al guardar y al leer, como los anteriores). El repositorio de propuestas en memoria pasa a `@Profile("!postgres")`; el de ejecuciones queda como único bean (D-36).
+- **Tests contra Postgres real.** `PropuestasRepositoryJpaTest` (7): ida y vuelta de una propuesta pendiente (necesidad, estado, fecha, fragmentaciones, sin eventos), aprobar sin duplicar fragmentaciones, la misma donación en dos propuestas (D-23), fragmentación de una donación inexistente, `RESTRICT` al borrar una donación propuesta, cascada al borrar la propuesta y `CHECK` de cantidad por SQL.
+- `[VERIFIED]` `mvn clean test -pl donaciones-service -am`: 770 tests, 0 fallas. `spotless:check` OK; `agent-check` 75 PASS, 1 WARN preexistente.
+- **Hallazgo.** `[OBSERVED]` Dos propuestas pendientes pueden incluir la misma donación (ya pasaba en memoria). Si se aprueban las dos, la segunda puede fallar: la donación ya no está en depósito o ya no le alcanza la cantidad para fragmentarse. Es comportamiento de dominio, no de persistencia; se revisa con las transacciones del Paso 10.
 
 ## Paso 8 — detalle
 

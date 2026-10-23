@@ -12,12 +12,17 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PosibleFragmentacion {
-  private Long id;
   @JsonIgnore private DonacionIndependiente donacionOriginal;
   private UUID donacionOriginalId;
   private Integer cantidadNecesaria;
 
   public PosibleFragmentacion() {}
+
+  /** Constructor de reconstitución para el adaptador JPA: la donación se busca al confirmar. */
+  public PosibleFragmentacion(UUID donacionOriginalId, Integer cantidadNecesaria) {
+    this.donacionOriginalId = donacionOriginalId;
+    this.cantidadNecesaria = cantidadNecesaria;
+  }
 
   public PosibleFragmentacion(DonacionIndependiente donacionOriginal, Integer cantidadNecesaria) {
     this.donacionOriginal = donacionOriginal;
