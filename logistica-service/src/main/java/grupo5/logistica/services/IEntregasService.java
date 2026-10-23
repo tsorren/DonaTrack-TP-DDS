@@ -9,7 +9,13 @@ public interface IEntregasService {
 
   List<EntregaResponseDTO> listar();
 
+  List<EntregaMapaPublicoResponseDTO> listarMapaPublico();
+
   EntregaResponseDTO obtenerPorId(UUID id);
+
+  SeguimientoEntregaResponseDTO obtenerSeguimientoPorDonacion(UUID idDonacion);
+
+  List<SeguimientoEntregaResponseDTO> listarSeguimientoPorBeneficiaria(UUID idBeneficiaria);
 
   EntregaResponseDTO cambiarEstado(UUID id, CambioEstadoEntregaRequestDTO dto);
 

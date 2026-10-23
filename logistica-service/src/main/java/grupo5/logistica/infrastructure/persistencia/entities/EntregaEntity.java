@@ -2,7 +2,9 @@ package grupo5.logistica.infrastructure.persistencia.entities;
 
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
@@ -63,6 +66,16 @@ public class EntregaEntity {
 
   @Column(name = "foto_recepcion_url", columnDefinition = "TEXT")
   private String fotoRecepcionUrl;
+
+  @SuppressWarnings("squid:S1319")
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(
+      name = "entrega_foto_recepcion",
+      joinColumns = @JoinColumn(name = "id_entrega", nullable = false))
+  @OrderColumn(name = "orden_foto")
+  @Column(name = "foto_url", nullable = false, columnDefinition = "TEXT")
+  @Fetch(FetchMode.SUBSELECT)
+  private List<String> fotosRecepcion = new ArrayList<>();
 
   @Column(name = "volumen_total_m3", nullable = false)
   private Double volumenTotalM3;

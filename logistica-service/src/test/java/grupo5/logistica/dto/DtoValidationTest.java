@@ -258,7 +258,10 @@ class DtoValidationTest {
 
   @Test
   void adjuntarFoto_urlNula_violacion() {
-    assertFalse(validator.validate(new AdjuntarFotoRecepcionRequestDTO(null)).isEmpty());
+    assertFalse(validator.validate(new AdjuntarFotoRecepcionRequestDTO((String) null)).isEmpty());
+    assertFalse(
+        validator.validate(new AdjuntarFotoRecepcionRequestDTO((List<String>) null)).isEmpty());
+    assertFalse(validator.validate(new AdjuntarFotoRecepcionRequestDTO(List.of())).isEmpty());
   }
 
   // ======================== AgregarEntregaRutaRequestDTO ========================
