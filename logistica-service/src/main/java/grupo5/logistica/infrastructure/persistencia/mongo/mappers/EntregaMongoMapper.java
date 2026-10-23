@@ -4,6 +4,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.AsignacionSu
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.DireccionSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.FotoRecepcionSubdocument;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
@@ -17,8 +18,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
@@ -48,7 +52,7 @@ public class EntregaMongoMapper {
     doc.setEstado(domain.getEstadoActual());
     doc.setHoraArribo(aInstantUtc(domain.getHoraArribo()));
     doc.setHoraSalida(aInstantUtc(domain.getHoraSalida()));
-    doc.setFotosRecepcion(new ArrayList<>(domain.getFotosRecepcion()));
+    sincronizarFotos(domain, doc);
     doc.setVolumenTotalM3((double) domain.getVolumenTotalM3());
     doc.setPesoTotalKg((double) domain.getPesoTotalKG());
 
@@ -134,7 +138,7 @@ public class EntregaMongoMapper {
         mapearHistorialDominio(doc),
         aLocalDateTimeUtc(doc.getHoraArribo()),
         aLocalDateTimeUtc(doc.getHoraSalida()),
-        doc.getFotosRecepcion(),
+        doc.getFotosRecepcion().stream().map(FotoRecepcionSubdocument::getClave).toList(),
         doc.getPesoTotalKg() != null ? doc.getPesoTotalKg().floatValue() : 0f,
         doc.getVolumenTotalM3() != null ? doc.getVolumenTotalM3().floatValue() : 0f,
         doc.getVersion());
@@ -181,6 +185,22 @@ public class EntregaMongoMapper {
         historialDoc.add(nuevo);
       }
     }
+  }
+
+  /** Las fotos ya guardadas conservan su {@code subidaEn}; las nuevas toman la hora actual. */
+  private static void sincronizarFotos(Entrega domain, EntregaDocument doc) {
+    Map<String, FotoRecepcionSubdocument> guardadas =
+        doc.getFotosRecepcion().stream()
+            .collect(Collectors.toMap(FotoRecepcionSubdocument::getClave, Function.identity()));
+    Instant ahora = Instant.now();
+    doc.setFotosRecepcion(
+        domain.getFotosRecepcion().stream()
+            .map(
+                clave ->
+                    guardadas.getOrDefault(
+                        clave,
+                        FotoRecepcionSubdocument.builder().clave(clave).subidaEn(ahora).build()))
+            .collect(Collectors.toCollection(ArrayList::new)));
   }
 
   /** Conserva la asignación mientras siga siendo a la misma ruta; el adaptador la completa. */

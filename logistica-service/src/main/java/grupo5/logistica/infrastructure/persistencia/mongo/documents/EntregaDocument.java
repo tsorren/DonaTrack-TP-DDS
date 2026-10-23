@@ -12,11 +12,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @SuppressWarnings("java:S120")
 @Document(collection = "entregas")
+@CompoundIndex(name = "idx_entrega_destino_ubicacion", def = "{'destino.ubicacion': '2dsphere'}")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -33,13 +35,13 @@ public class EntregaDocument {
   @Indexed(unique = true)
   private UUID idDonacion;
 
-  private UUID idBeneficiaria;
+  @Indexed private UUID idBeneficiaria;
 
   @Indexed private EstadoEntrega estado;
 
   private Instant horaArribo;
   private Instant horaSalida;
-  @Builder.Default private List<String> fotosRecepcion = new ArrayList<>();
+  @Builder.Default private List<FotoRecepcionSubdocument> fotosRecepcion = new ArrayList<>();
   private Double volumenTotalM3;
   private Double pesoTotalKg;
 
