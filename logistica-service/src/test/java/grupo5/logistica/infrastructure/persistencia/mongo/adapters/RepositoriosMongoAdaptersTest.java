@@ -11,8 +11,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import grupo5.logistica.infrastructure.persistencia.entities.TipoEventoEntrega;
-import grupo5.logistica.infrastructure.persistencia.entities.TipoTransicionEntrega;
+import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoEventoEntrega;
+import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoTransicionEntrega;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.ChoferDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;

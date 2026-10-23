@@ -3,8 +3,8 @@ package grupo5.logistica.infrastructure.persistencia.mongo.documents; // NOSONAR
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import grupo5.logistica.infrastructure.persistencia.entities.TipoEventoEntrega;
-import grupo5.logistica.infrastructure.persistencia.entities.TipoTransicionEntrega;
+import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoEventoEntrega;
+import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoTransicionEntrega;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
