@@ -26,7 +26,7 @@ public class EntregaDocument {
 
   @Id private UUID id;
 
-  @Indexed private UUID idRuta;
+  private AsignacionSubdocument asignacion;
 
   private DireccionSubdocument destino;
 

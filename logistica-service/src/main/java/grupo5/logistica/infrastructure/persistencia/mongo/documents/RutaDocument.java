@@ -44,7 +44,7 @@ public class RutaDocument {
 
   @Version private Long version;
 
-  @Builder.Default private List<UUID> entregaIds = new ArrayList<>();
+  @Builder.Default private List<ParadaSubdocument> paradas = new ArrayList<>();
 
   @Builder.Default private List<CambioEstadoSubdocument> historialEstado = new ArrayList<>();
 }

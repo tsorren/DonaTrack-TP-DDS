@@ -186,13 +186,17 @@ class RepositoriosMongoAdaptersTest {
   @Test
   void rutasMongoAdapter_deberiaGuardarYConsultarRutas() {
     SpringDataRutaMongoRepository springDataRepo = mock(SpringDataRutaMongoRepository.class);
+    SpringDataEntregaMongoRepository entregaRepo = mock(SpringDataEntregaMongoRepository.class);
     RutaMongoMapper mapper = new RutaMongoMapper();
-    RutasRepositoryMongoAdapter adapter = new RutasRepositoryMongoAdapter(springDataRepo, mapper);
+    RutasRepositoryMongoAdapter adapter =
+        new RutasRepositoryMongoAdapter(springDataRepo, entregaRepo, mapper);
 
     assertNull(adapter.save(null));
     UUID entregaId = UUID.randomUUID();
     Ruta ruta = new Ruta(LocalDate.of(2026, 10, 12), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(entregaId);
+    when(entregaRepo.findById(entregaId))
+        .thenReturn(Optional.of(EntregaDocument.builder().id(entregaId).build()));
 
     when(springDataRepo.findById(ruta.getId())).thenReturn(Optional.empty());
     when(springDataRepo.save(any(RutaDocument.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -243,7 +247,11 @@ class RepositoriosMongoAdaptersTest {
     SpringDataEntregaMongoRepository springDataRepo = mock(SpringDataEntregaMongoRepository.class);
     EntregaMongoMapper mapper = new EntregaMongoMapper();
     EntregasRepositoryMongoAdapter adapter =
-        new EntregasRepositoryMongoAdapter(springDataRepo, mapper);
+        new EntregasRepositoryMongoAdapter(
+            springDataRepo,
+            mock(SpringDataRutaMongoRepository.class),
+            mock(SpringDataCamionMongoRepository.class),
+            mapper);
 
     assertNull(adapter.save(null));
     Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
@@ -264,8 +272,8 @@ class RepositoriosMongoAdaptersTest {
 
     EntregaDocument doc = mapper.toDocument(entrega);
     when(springDataRepo.findByEstado(EstadoEntrega.PENDIENTE)).thenReturn(List.of(doc));
-    when(springDataRepo.findByIdRutaOrderByIdAsc(any())).thenReturn(List.of(doc));
-    when(springDataRepo.findByIdRutaIsNull()).thenReturn(List.of(doc));
+    when(springDataRepo.findByAsignacionIdRutaOrderByIdAsc(any())).thenReturn(List.of(doc));
+    when(springDataRepo.findByAsignacionIsNull()).thenReturn(List.of(doc));
     when(springDataRepo.existsByIdDonacion(entrega.getIdDonacion())).thenReturn(true);
 
     assertEquals(1, adapter.findByEstado(EstadoEntrega.PENDIENTE).size());

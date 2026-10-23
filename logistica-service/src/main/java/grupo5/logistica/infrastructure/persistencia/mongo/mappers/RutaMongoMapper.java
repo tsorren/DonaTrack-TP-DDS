@@ -1,6 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.mappers; // NOSONAR
 
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.ParadaSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
@@ -9,9 +10,13 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +56,7 @@ public class RutaMongoMapper {
     }
 
     sincronizarHistorial(domain, doc);
-    sincronizarEntregas(domain, doc);
+    sincronizarParadas(domain, doc);
     return doc;
   }
 
@@ -63,7 +68,7 @@ public class RutaMongoMapper {
     return new Ruta(
         doc.getId(),
         doc.getFecha(),
-        doc.getEntregaIds() != null ? new ArrayList<>(doc.getEntregaIds()) : List.of(),
+        idsEntregasEnOrden(doc),
         doc.getIdChofer(),
         doc.getIdCamion(),
         doc.getEstado(),
@@ -114,16 +119,31 @@ public class RutaMongoMapper {
     }
   }
 
-  private static void sincronizarEntregas(Ruta domain, RutaDocument doc) {
-    List<UUID> persistidas = doc.getEntregaIds();
-    if (persistidas == null) {
-      persistidas = new ArrayList<>();
-      doc.setEntregaIds(persistidas);
+  private static List<UUID> idsEntregasEnOrden(RutaDocument doc) {
+    return doc.getParadas().stream()
+        .sorted(Comparator.comparing(ParadaSubdocument::getOrden))
+        .map(ParadaSubdocument::getIdEntrega)
+        .toList();
+  }
+
+  /**
+   * Conserva las paradas ya completadas; las nuevas llevan solo el id y las completa el adaptador.
+   */
+  private static void sincronizarParadas(Ruta domain, RutaDocument doc) {
+    Map<UUID, ParadaSubdocument> existentes =
+        doc.getParadas().stream()
+            .collect(Collectors.toMap(ParadaSubdocument::getIdEntrega, Function.identity()));
+    List<UUID> idsEntregas = domain.getEntregaIds();
+    List<ParadaSubdocument> paradas = new ArrayList<>();
+    for (int i = 0; i < idsEntregas.size(); i++) {
+      UUID idEntrega = idsEntregas.get(i);
+      ParadaSubdocument parada =
+          existentes.getOrDefault(
+              idEntrega, ParadaSubdocument.builder().idEntrega(idEntrega).build());
+      parada.setOrden(i + 1);
+      paradas.add(parada);
     }
-    List<UUID> delDominio = domain.getEntregaIds();
-    if (delDominio != null) {
-      persistidas.addAll(delDominio.subList(persistidas.size(), delDominio.size()));
-    }
+    doc.setParadas(paradas);
   }
 
   private static Instant aInstantUtc(LocalDateTime fechaHora) {

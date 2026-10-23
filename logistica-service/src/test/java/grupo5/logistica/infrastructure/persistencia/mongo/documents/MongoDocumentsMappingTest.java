@@ -81,7 +81,7 @@ class MongoDocumentsMappingTest {
 
     assertNotNull(doc.getId());
     assertEquals(EstadoRuta.PENDIENTE, doc.getEstado());
-    assertNotNull(doc.getEntregaIds());
+    assertNotNull(doc.getParadas());
     assertNotNull(doc.getHistorialEstado());
   }
 

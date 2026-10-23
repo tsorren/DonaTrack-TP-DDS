@@ -11,9 +11,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 public interface SpringDataEntregaMongoRepository extends MongoRepository<EntregaDocument, UUID> {
   List<EntregaDocument> findByEstado(EstadoEntrega estado);
 
-  List<EntregaDocument> findByIdRutaOrderByIdAsc(UUID idRuta);
+  List<EntregaDocument> findByAsignacionIdRutaOrderByIdAsc(UUID idRuta);
 
-  List<EntregaDocument> findByIdRutaIsNull();
+  List<EntregaDocument> findByAsignacionIsNull();
 
   boolean existsByIdDonacion(UUID idDonacion);
 

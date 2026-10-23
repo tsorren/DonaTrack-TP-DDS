@@ -178,7 +178,7 @@ class PlanificacionTransaccionesMongoTest {
     assertEquals(0, mongoTemplate.getCollection(COLECCION_RUTAS).countDocuments());
     assertEquals(0, mongoTemplate.getCollection(COLECCION_EVENTOS).countDocuments());
     EntregaDocument enBase = mongoTemplate.findById(entrega.getId(), EntregaDocument.class);
-    assertNull(enBase.getIdRuta());
+    assertNull(enBase.getAsignacion());
     assertEquals(versionEntrega, enBase.getVersion());
   }
 

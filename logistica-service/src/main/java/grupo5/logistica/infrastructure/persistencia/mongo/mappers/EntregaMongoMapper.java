@@ -1,5 +1,6 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.mappers; // NOSONAR
 
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.AsignacionSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.DireccionSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
@@ -17,6 +18,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
@@ -41,7 +43,6 @@ public class EntregaMongoMapper {
 
     EntregaDocument doc = existing != null ? existing : new EntregaDocument();
     doc.setId(domain.getId());
-    doc.setIdRuta(domain.getIdRuta());
     doc.setIdDonacion(domain.getIdDonacion());
     doc.setIdBeneficiaria(domain.getIdBeneficiaria());
     doc.setEstado(domain.getEstadoActual());
@@ -65,6 +66,7 @@ public class EntregaMongoMapper {
       }
     }
 
+    sincronizarAsignacion(domain, doc);
     sincronizarHistorial(domain, doc);
     return doc;
   }
@@ -124,7 +126,7 @@ public class EntregaMongoMapper {
 
     return new Entrega(
         doc.getId(),
-        doc.getIdRuta(),
+        doc.getAsignacion() != null ? doc.getAsignacion().getIdRuta() : null,
         doc.getIdDonacion(),
         doc.getIdBeneficiaria(),
         mapearDireccionADominio(doc.getDestino()),
@@ -178,6 +180,16 @@ public class EntregaMongoMapper {
                 .build();
         historialDoc.add(nuevo);
       }
+    }
+  }
+
+  /** Conserva la asignación mientras siga siendo a la misma ruta; el adaptador la completa. */
+  private static void sincronizarAsignacion(Entrega domain, EntregaDocument doc) {
+    UUID idRuta = domain.getIdRuta();
+    if (idRuta == null) {
+      doc.setAsignacion(null);
+    } else if (doc.getAsignacion() == null || !idRuta.equals(doc.getAsignacion().getIdRuta())) {
+      doc.setAsignacion(AsignacionSubdocument.builder().idRuta(idRuta).build());
     }
   }
 

@@ -1,7 +1,11 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
 
+import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.ParadaSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.RutaMongoMapper;
+import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataEntregaMongoRepository;
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataRutaMongoRepository;
 import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
@@ -19,11 +23,15 @@ public class RutasRepositoryMongoAdapter
     implements IRutasRepository {
 
   private final RutaMongoMapper mapper;
+  private final SpringDataEntregaMongoRepository entregaRepo;
 
   public RutasRepositoryMongoAdapter(
-      SpringDataRutaMongoRepository springDataRepo, RutaMongoMapper mapper) {
+      SpringDataRutaMongoRepository springDataRepo,
+      SpringDataEntregaMongoRepository entregaRepo,
+      RutaMongoMapper mapper) {
     super(springDataRepo, mapper::toDocument, mapper::toDomain);
     this.mapper = mapper;
+    this.entregaRepo = entregaRepo;
   }
 
   @Override
@@ -33,8 +41,18 @@ public class RutasRepositoryMongoAdapter
     }
     RutaDocument existing =
         aggregate.getId() != null ? springDataRepo.findById(aggregate.getId()).orElse(null) : null;
-    RutaDocument saved = springDataRepo.save(mapper.toDocument(aggregate, existing));
-    return mapper.toDomain(saved);
+    RutaDocument doc = mapper.toDocument(aggregate, existing);
+    doc.getParadas().stream().filter(p -> p.getIdDonacion() == null).forEach(this::completarParada);
+    return mapper.toDomain(springDataRepo.save(doc));
+  }
+
+  private void completarParada(ParadaSubdocument parada) {
+    EntregaDocument entrega =
+        entregaRepo
+            .findById(parada.getIdEntrega())
+            .orElseThrow(() -> new RecursoNoEncontradoException(parada.getIdEntrega()));
+    parada.setIdDonacion(entrega.getIdDonacion());
+    parada.setDestino(entrega.getDestino());
   }
 
   @Override

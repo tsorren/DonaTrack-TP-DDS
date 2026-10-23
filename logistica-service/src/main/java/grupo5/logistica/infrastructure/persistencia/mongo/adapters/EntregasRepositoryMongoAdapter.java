@@ -1,8 +1,14 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
 
+import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.AsignacionSubdocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.EntregaMongoMapper;
+import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataCamionMongoRepository;
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataEntregaMongoRepository;
+import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataRutaMongoRepository;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.repositories.IEntregasRepository;
@@ -20,11 +26,18 @@ public class EntregasRepositoryMongoAdapter
     implements IEntregasRepository {
 
   private final EntregaMongoMapper mapper;
+  private final SpringDataRutaMongoRepository rutaRepo;
+  private final SpringDataCamionMongoRepository camionRepo;
 
   public EntregasRepositoryMongoAdapter(
-      SpringDataEntregaMongoRepository springDataRepo, EntregaMongoMapper mapper) {
+      SpringDataEntregaMongoRepository springDataRepo,
+      SpringDataRutaMongoRepository rutaRepo,
+      SpringDataCamionMongoRepository camionRepo,
+      EntregaMongoMapper mapper) {
     super(springDataRepo, mapper::toDocument, mapper::toDomain);
     this.mapper = mapper;
+    this.rutaRepo = rutaRepo;
+    this.camionRepo = camionRepo;
   }
 
   @Override
@@ -34,8 +47,27 @@ public class EntregasRepositoryMongoAdapter
     }
     EntregaDocument existing =
         aggregate.getId() != null ? springDataRepo.findById(aggregate.getId()).orElse(null) : null;
-    EntregaDocument saved = springDataRepo.save(mapper.toDocument(aggregate, existing));
-    return mapper.toDomain(saved);
+    EntregaDocument doc = mapper.toDocument(aggregate, existing);
+    completarAsignacion(doc.getAsignacion());
+    return mapper.toDomain(springDataRepo.save(doc));
+  }
+
+  /** Copia fecha, camión y patente del día en que se asignó; una vez completa no se pisa. */
+  private void completarAsignacion(AsignacionSubdocument asignacion) {
+    if (asignacion == null || asignacion.getIdCamion() != null) {
+      return;
+    }
+    RutaDocument ruta =
+        rutaRepo
+            .findById(asignacion.getIdRuta())
+            .orElseThrow(() -> new RecursoNoEncontradoException(asignacion.getIdRuta()));
+    CamionDocument camion =
+        camionRepo
+            .findById(ruta.getIdCamion())
+            .orElseThrow(() -> new RecursoNoEncontradoException(ruta.getIdCamion()));
+    asignacion.setFecha(ruta.getFecha());
+    asignacion.setIdCamion(camion.getId());
+    asignacion.setPatente(camion.getPatente());
   }
 
   @Override
@@ -59,12 +91,14 @@ public class EntregasRepositoryMongoAdapter
     if (rutaId == null) {
       return List.of();
     }
-    return springDataRepo.findByIdRutaOrderByIdAsc(rutaId).stream().map(mapper::toDomain).toList();
+    return springDataRepo.findByAsignacionIdRutaOrderByIdAsc(rutaId).stream()
+        .map(mapper::toDomain)
+        .toList();
   }
 
   @Override
   public List<Entrega> findSinRuta() {
-    return springDataRepo.findByIdRutaIsNull().stream().map(mapper::toDomain).toList();
+    return springDataRepo.findByAsignacionIsNull().stream().map(mapper::toDomain).toList();
   }
 
   @Override
