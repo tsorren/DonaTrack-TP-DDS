@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -52,6 +51,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -90,11 +90,16 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @TestPropertySource(properties = "logistica.tracking.base-url=http://localhost/seguimiento")
 class PlanificacionTransaccionesMongoTest {
 
+  private static final String BASE = "logistica";
+  private static final String COLECCION_RUTAS = "rutas";
+  private static final String COLECCION_EVENTOS = "eventos_entrega";
+  private static final LocalDate FECHA_PLANIFICADA = LocalDate.of(2030, 1, 1);
+
   @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0");
 
   @DynamicPropertySource
   static void propiedades(DynamicPropertyRegistry registry) {
-    registry.add("spring.mongodb.uri", () -> MONGO.getReplicaSetUrl("logistica"));
+    registry.add("spring.mongodb.uri", () -> MONGO.getReplicaSetUrl(BASE));
   }
 
   @Import({
@@ -133,6 +138,7 @@ class PlanificacionTransaccionesMongoTest {
   @Autowired EntregasRepositoryMongoAdapter entregas;
   @Autowired SolicitudPlanificacionRepositoryMongoAdapter solicitudes;
 
+  private MongoClient lectorIndependiente;
   private Camion camion;
   private Chofer chofer;
   private Entrega entrega;
@@ -144,6 +150,7 @@ class PlanificacionTransaccionesMongoTest {
         .getCollectionNames()
         .forEach(coleccion -> mongoTemplate.remove(new Query(), coleccion));
     reset(rabbitTemplate, eventosEntregaRepository);
+    lectorIndependiente = MongoClients.create(MONGO.getReplicaSetUrl(BASE));
 
     camion = camiones.save(new Camion("AB123CD", 20f, 5000f, 3f));
     chofer = choferes.save(new Chofer("Ada", "Lovelace", "LIC-1", "1111"));
@@ -151,26 +158,37 @@ class PlanificacionTransaccionesMongoTest {
     solicitud =
         solicitudes.save(
             new SolicitudPlanificacion(
-                UUID.randomUUID(), LocalDate.now().plusDays(1), 1, "http://localhost/callback"));
+                UUID.randomUUID(), FECHA_PLANIFICADA, 1, "http://localhost/callback"));
+  }
+
+  @AfterEach
+  void cerrarLector() {
+    lectorIndependiente.close();
   }
 
   @Test
-  void unFalloAMitadDePersistirPlanificacion_noDejaRutasNiEntregasModificadas() {
+  void unFalloAlRegistrarLaRutaAsignada_noDejaRutasEventosNiEntregaModificada() {
     Long versionEntrega =
         mongoTemplate.findById(entrega.getId(), EntregaDocument.class).getVersion();
-    // Falla después de guardar la ruta y la entrega, durante la publicación de asignaciones
-    doThrow(new IllegalStateException("fallo simulado"))
-        .when(eventosEntregaRepository)
-        .registrarRutaAsignada(any(), any());
+    fallarAlRegistrarRutaAsignada();
 
     assertThrows(
         IllegalStateException.class, () -> planificacionService.procesarCallback(callback()));
 
-    assertEquals(0, mongoTemplate.getCollection("rutas").countDocuments());
-    assertEquals(0, mongoTemplate.getCollection("eventos_entrega").countDocuments());
+    assertEquals(0, mongoTemplate.getCollection(COLECCION_RUTAS).countDocuments());
+    assertEquals(0, mongoTemplate.getCollection(COLECCION_EVENTOS).countDocuments());
     EntregaDocument enBase = mongoTemplate.findById(entrega.getId(), EntregaDocument.class);
     assertNull(enBase.getIdRuta());
     assertEquals(versionEntrega, enBase.getVersion());
+  }
+
+  @Test
+  void unFalloAlRegistrarLaRutaAsignada_dejaLaSolicitudPendienteYNoPublicaEnRabbit() {
+    fallarAlRegistrarRutaAsignada();
+
+    assertThrows(
+        IllegalStateException.class, () -> planificacionService.procesarCallback(callback()));
+
     assertEquals(
         EstadoSolicitud.PENDIENTE,
         mongoTemplate
@@ -190,7 +208,7 @@ class PlanificacionTransaccionesMongoTest {
         IllegalStateException.class, () -> planificacionService.procesarCallback(callback()));
     planificacionService.procesarCallback(callback());
 
-    assertEquals(1, mongoTemplate.getCollection("rutas").countDocuments());
+    assertEquals(1, mongoTemplate.getCollection(COLECCION_RUTAS).countDocuments());
     assertEquals(
         EstadoSolicitud.PROCESADA,
         mongoTemplate
@@ -203,9 +221,9 @@ class PlanificacionTransaccionesMongoTest {
     planificacionService.procesarCallback(callback());
     planificacionService.procesarCallback(callback());
 
-    assertEquals(1, mongoTemplate.getCollection("rutas").countDocuments());
-    assertEquals(1, mongoTemplate.getCollection("eventos_entrega").countDocuments());
-    verify(rabbitTemplate, times(1))
+    assertEquals(1, mongoTemplate.getCollection(COLECCION_RUTAS).countDocuments());
+    assertEquals(1, mongoTemplate.getCollection(COLECCION_EVENTOS).countDocuments());
+    verify(rabbitTemplate)
         .convertAndSend(
             eq(RabbitMQConfig.EXCHANGE),
             eq(RabbitMQConfig.ROUTING_KEY_RUTA_ASIGNADA),
@@ -216,25 +234,32 @@ class PlanificacionTransaccionesMongoTest {
   @Test
   void elEventoAMensajeriaSePublicaSoloDespuesDelCommit() {
     AtomicLong rutasVisiblesAlPublicar = new AtomicLong(-1);
-    // Cliente aparte: no comparte sesion ni transaccion con el servicio, solo ve lo commiteado
-    try (MongoClient lector = MongoClients.create(MONGO.getReplicaSetUrl("logistica"))) {
-      doAnswer(
-              invocacion -> {
-                rutasVisiblesAlPublicar.set(
-                    lector.getDatabase("logistica").getCollection("rutas").countDocuments());
-                return null;
-              })
-          .when(rabbitTemplate)
-          .convertAndSend(
-              any(String.class),
-              any(String.class),
-              any(Object.class),
-              any(MessagePostProcessor.class));
+    doAnswer(
+            invocacion -> {
+              rutasVisiblesAlPublicar.set(contarRutasDesdeOtroCliente());
+              return null;
+            })
+        .when(rabbitTemplate)
+        .convertAndSend(
+            any(String.class),
+            any(String.class),
+            any(Object.class),
+            any(MessagePostProcessor.class));
 
-      planificacionService.procesarCallback(callback());
-    }
+    planificacionService.procesarCallback(callback());
 
     assertEquals(1, rutasVisiblesAlPublicar.get());
+  }
+
+  private void fallarAlRegistrarRutaAsignada() {
+    doThrow(new IllegalStateException("fallo simulado"))
+        .when(eventosEntregaRepository)
+        .registrarRutaAsignada(any(), any());
+  }
+
+  /** Cliente aparte: no comparte sesión ni transacción con el servicio, solo ve lo commiteado. */
+  private long contarRutasDesdeOtroCliente() {
+    return lectorIndependiente.getDatabase(BASE).getCollection(COLECCION_RUTAS).countDocuments();
   }
 
   private CallbackPlanificacionRequestDTO callback() {
@@ -242,10 +267,7 @@ class PlanificacionTransaccionesMongoTest {
         solicitud.getId(),
         List.of(
             new RutaPlanificadaDTO(
-                camion.getId(),
-                chofer.getId(),
-                LocalDate.now().plusDays(1),
-                List.of(entrega.getId()))),
+                camion.getId(), chofer.getId(), FECHA_PLANIFICADA, List.of(entrega.getId()))),
         "OK",
         null);
   }

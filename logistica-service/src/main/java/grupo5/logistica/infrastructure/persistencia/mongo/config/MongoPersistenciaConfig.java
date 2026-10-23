@@ -14,10 +14,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
     basePackages = "grupo5.logistica.infrastructure.persistencia.mongo.repositories")
 public class MongoPersistenciaConfig {
 
-  /**
-   * Habilita {@code @Transactional} sobre MongoDB. Requiere replica set (Atlas y Testcontainers ya
-   * lo son; en docker compose se configura junto con el servicio mongodb).
-   */
+  /** Habilita {@code @Transactional} sobre MongoDB. Requiere replica set. */
   @Bean
   MongoTransactionManager transactionManager(MongoDatabaseFactory databaseFactory) {
     return new MongoTransactionManager(databaseFactory);

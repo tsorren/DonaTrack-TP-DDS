@@ -276,8 +276,7 @@ class RepositoriosMongoAdaptersTest {
     assertTrue(adapter.findByIdDonacion(null).isEmpty());
     assertTrue(adapter.findByIdBeneficiaria(null).isEmpty());
     when(springDataRepo.findByIdDonacion(entrega.getIdDonacion())).thenReturn(Optional.of(doc));
-    when(springDataRepo.findByIdBeneficiariaOrderByIdAsc(entrega.getIdBeneficiaria()))
-        .thenReturn(List.of(doc));
+    when(springDataRepo.findByIdBeneficiaria(entrega.getIdBeneficiaria())).thenReturn(List.of(doc));
     assertEquals(entrega.getId(), adapter.findByIdDonacion(entrega.getIdDonacion()).get().getId());
     assertEquals(1, adapter.findByIdBeneficiaria(entrega.getIdBeneficiaria()).size());
 

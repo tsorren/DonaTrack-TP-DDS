@@ -19,5 +19,5 @@ public interface SpringDataEntregaMongoRepository extends MongoRepository<Entreg
 
   Optional<EntregaDocument> findByIdDonacion(UUID idDonacion);
 
-  List<EntregaDocument> findByIdBeneficiariaOrderByIdAsc(UUID idBeneficiaria);
+  List<EntregaDocument> findByIdBeneficiaria(UUID idBeneficiaria);
 }

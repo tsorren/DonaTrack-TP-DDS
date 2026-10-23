@@ -2,6 +2,7 @@ package grupo5.logistica.infrastructure.persistencia.mongo.documents; // NOSONAR
 
 import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoTransicionEntrega;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -30,6 +31,6 @@ public class SolicitudTransicionEntregaDocument {
   private String actor;
   private Instant ocurrioEn;
   private Boolean replanificable;
-  private List<String> fotosRecepcion;
+  @Builder.Default private List<String> fotosRecepcion = new ArrayList<>();
   private String justificacion;
 }

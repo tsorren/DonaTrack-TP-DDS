@@ -88,7 +88,7 @@ public class EntregasRepositoryMongoAdapter
     if (idBeneficiaria == null) {
       return List.of();
     }
-    return springDataRepo.findByIdBeneficiariaOrderByIdAsc(idBeneficiaria).stream()
+    return springDataRepo.findByIdBeneficiaria(idBeneficiaria).stream()
         .map(mapper::toDomain)
         .toList();
   }
