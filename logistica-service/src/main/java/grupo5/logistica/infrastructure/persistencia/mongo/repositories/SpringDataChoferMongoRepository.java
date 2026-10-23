@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 @SuppressWarnings("java:S120")
 public interface SpringDataChoferMongoRepository extends MongoRepository<ChoferDocument, UUID> {
-  List<ChoferDocument> findByEstadoChofer(EstadoChofer estadoChofer);
+  List<ChoferDocument> findByEstado(EstadoChofer estado);
 
-  List<ChoferDocument> findByEstadoChoferNot(EstadoChofer estadoChofer);
+  List<ChoferDocument> findByEstadoNot(EstadoChofer estado);
 }

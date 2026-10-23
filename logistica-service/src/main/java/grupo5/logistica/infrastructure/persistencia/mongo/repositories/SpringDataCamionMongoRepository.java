@@ -9,9 +9,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 @SuppressWarnings("java:S120")
 public interface SpringDataCamionMongoRepository extends MongoRepository<CamionDocument, UUID> {
-  List<CamionDocument> findByEstadoCamion(EstadoCamion estadoCamion);
+  List<CamionDocument> findByEstado(EstadoCamion estado);
 
-  List<CamionDocument> findByEstadoCamionNot(EstadoCamion estadoCamion);
+  List<CamionDocument> findByEstadoNot(EstadoCamion estado);
 
   Optional<CamionDocument> findByPatenteIgnoreCase(String patente);
 }

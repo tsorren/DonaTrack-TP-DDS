@@ -43,7 +43,7 @@ public class EntregaMongoMapper {
     doc.setId(domain.getId());
     doc.setIdRuta(domain.getIdRuta());
     doc.setIdDonacion(domain.getIdDonacion());
-    doc.setIdBeneficiario(domain.getIdBeneficiaria());
+    doc.setIdBeneficiaria(domain.getIdBeneficiaria());
     doc.setEstado(domain.getEstadoActual());
     doc.setHoraArribo(aInstantUtc(domain.getHoraArribo()));
     doc.setHoraSalida(aInstantUtc(domain.getHoraSalida()));
@@ -126,7 +126,7 @@ public class EntregaMongoMapper {
         doc.getId(),
         doc.getIdRuta(),
         doc.getIdDonacion(),
-        doc.getIdBeneficiario(),
+        doc.getIdBeneficiaria(),
         mapearDireccionADominio(doc.getDestino()),
         doc.getEstado(),
         mapearHistorialDominio(doc),

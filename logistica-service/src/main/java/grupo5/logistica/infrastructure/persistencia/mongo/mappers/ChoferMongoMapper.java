@@ -39,7 +39,7 @@ public class ChoferMongoMapper {
     doc.setApellido(domain.getApellido());
     doc.setLicencia(domain.getLicencia());
     doc.setTelefono(domain.getTelefonoContacto());
-    doc.setEstadoChofer(domain.getEstado());
+    doc.setEstado(domain.getEstado());
 
     if (existing == null) {
       if (domain.getVersion() != null && domain.getVersion() > 0L) {
@@ -68,17 +68,17 @@ public class ChoferMongoMapper {
         doc.getApellido(),
         doc.getLicencia(),
         doc.getTelefono(),
-        doc.getEstadoChofer(),
+        doc.getEstado(),
         rutaActivaId,
         mapearHistorialDominio(doc),
         doc.getVersion());
   }
 
   private static List<CambioEstadoChofer> mapearHistorialDominio(ChoferDocument doc) {
-    if (doc.getHistorialEstados() == null) {
+    if (doc.getHistorialEstado() == null) {
       return List.of();
     }
-    return doc.getHistorialEstados().stream()
+    return doc.getHistorialEstado().stream()
         .map(
             c ->
                 new CambioEstadoChofer(
@@ -93,10 +93,10 @@ public class ChoferMongoMapper {
   }
 
   private static void sincronizarHistorial(Chofer domain, ChoferDocument doc) {
-    List<CambioEstadoSubdocument> historialDoc = doc.getHistorialEstados();
+    List<CambioEstadoSubdocument> historialDoc = doc.getHistorialEstado();
     if (historialDoc == null) {
       historialDoc = new ArrayList<>();
-      doc.setHistorialEstados(historialDoc);
+      doc.setHistorialEstado(historialDoc);
     }
 
     List<CambioEstadoChofer> historialDominio = domain.getHistorialEstados();

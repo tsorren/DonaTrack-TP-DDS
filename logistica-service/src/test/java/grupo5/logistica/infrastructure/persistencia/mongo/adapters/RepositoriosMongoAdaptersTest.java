@@ -85,8 +85,8 @@ class RepositoriosMongoAdaptersTest {
     assertTrue(adapter.findByPatente("   ").isEmpty());
 
     CamionDocument doc = mapper.toDocument(camion);
-    when(springDataRepo.findByEstadoCamion(EstadoCamion.DISPONIBLE)).thenReturn(List.of(doc));
-    when(springDataRepo.findByEstadoCamionNot(EstadoCamion.DESHABILITADO)).thenReturn(List.of(doc));
+    when(springDataRepo.findByEstado(EstadoCamion.DISPONIBLE)).thenReturn(List.of(doc));
+    when(springDataRepo.findByEstadoNot(EstadoCamion.DESHABILITADO)).thenReturn(List.of(doc));
     when(springDataRepo.findByPatenteIgnoreCase("AB123CD")).thenReturn(Optional.of(doc));
     when(rutaRepo.findFirstByIdCamionAndEstado(camion.getId(), EstadoRuta.EN_TRASLADO))
         .thenReturn(Optional.empty());
@@ -100,7 +100,7 @@ class RepositoriosMongoAdaptersTest {
     camion.asignarARuta(rutaActivaId);
     RutaDocument rutaDoc = RutaDocument.builder().id(rutaActivaId).build();
     CamionDocument docEnRuta = mapper.toDocument(camion);
-    when(springDataRepo.findByEstadoCamion(EstadoCamion.EN_RUTA)).thenReturn(List.of(docEnRuta));
+    when(springDataRepo.findByEstado(EstadoCamion.EN_RUTA)).thenReturn(List.of(docEnRuta));
     when(rutaRepo.findFirstByIdCamionAndEstado(camion.getId(), EstadoRuta.EN_TRASLADO))
         .thenReturn(Optional.of(rutaDoc));
     assertEquals(rutaActivaId, adapter.findByEstado(EstadoCamion.EN_RUTA).getFirst().getRutaId());
@@ -146,8 +146,8 @@ class RepositoriosMongoAdaptersTest {
     assertTrue(adapter.saveAll(null).isEmpty());
 
     ChoferDocument doc = mapper.toDocument(chofer);
-    when(springDataRepo.findByEstadoChoferNot(EstadoChofer.DESHABILITADO)).thenReturn(List.of(doc));
-    when(springDataRepo.findByEstadoChofer(EstadoChofer.DISPONIBLE)).thenReturn(List.of(doc));
+    when(springDataRepo.findByEstadoNot(EstadoChofer.DESHABILITADO)).thenReturn(List.of(doc));
+    when(springDataRepo.findByEstado(EstadoChofer.DISPONIBLE)).thenReturn(List.of(doc));
     when(rutaRepo.findFirstByIdChoferAndEstado(chofer.getId(), EstadoRuta.EN_TRASLADO))
         .thenReturn(Optional.empty());
 
@@ -158,8 +158,7 @@ class RepositoriosMongoAdaptersTest {
     chofer.asignarARuta(rutaActivaId);
     RutaDocument rutaDoc = RutaDocument.builder().id(rutaActivaId).build();
     ChoferDocument docEnRuta = mapper.toDocument(chofer);
-    when(springDataRepo.findByEstadoChoferNot(EstadoChofer.DESHABILITADO))
-        .thenReturn(List.of(docEnRuta));
+    when(springDataRepo.findByEstadoNot(EstadoChofer.DESHABILITADO)).thenReturn(List.of(docEnRuta));
     when(rutaRepo.findFirstByIdChoferAndEstado(chofer.getId(), EstadoRuta.EN_TRASLADO))
         .thenReturn(Optional.of(rutaDoc));
     assertEquals(rutaActivaId, adapter.findActivos().getFirst().getRutaId());
@@ -277,7 +276,7 @@ class RepositoriosMongoAdaptersTest {
     assertTrue(adapter.findByIdDonacion(null).isEmpty());
     assertTrue(adapter.findByIdBeneficiaria(null).isEmpty());
     when(springDataRepo.findByIdDonacion(entrega.getIdDonacion())).thenReturn(Optional.of(doc));
-    when(springDataRepo.findByIdBeneficiarioOrderByIdAsc(entrega.getIdBeneficiaria()))
+    when(springDataRepo.findByIdBeneficiariaOrderByIdAsc(entrega.getIdBeneficiaria()))
         .thenReturn(List.of(doc));
     assertEquals(entrega.getId(), adapter.findByIdDonacion(entrega.getIdDonacion()).get().getId());
     assertEquals(1, adapter.findByIdBeneficiaria(entrega.getIdBeneficiaria()).size());

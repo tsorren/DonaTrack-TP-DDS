@@ -39,7 +39,7 @@ public class CamionMongoMapper {
     doc.setCapacidadVolumen(aDouble(domain.getCapacidadVolumen()));
     doc.setCapacidadPeso(aDouble(domain.getCapacidadKG()));
     doc.setAltura(aDouble(domain.getAltura()));
-    doc.setEstadoCamion(domain.getEstado());
+    doc.setEstado(domain.getEstado());
 
     if (existing == null) {
       if (domain.getVersion() != null && domain.getVersion() > 0L) {
@@ -69,7 +69,7 @@ public class CamionMongoMapper {
         aFloat(doc.getCapacidadVolumen()),
         aFloat(doc.getCapacidadPeso()),
         aFloat(doc.getAltura()),
-        doc.getEstadoCamion(),
+        doc.getEstado(),
         mapearHistorialDominio(doc),
         doc.getVersion());
   }

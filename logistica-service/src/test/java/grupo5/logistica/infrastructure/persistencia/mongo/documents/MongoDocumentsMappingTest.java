@@ -31,7 +31,7 @@ class MongoDocumentsMappingTest {
             .capacidadVolumen(30.0)
             .capacidadPeso(5000.0)
             .altura(3.5)
-            .estadoCamion(EstadoCamion.DISPONIBLE)
+            .estado(EstadoCamion.DISPONIBLE)
             .version(0L)
             .build();
 
@@ -54,13 +54,13 @@ class MongoDocumentsMappingTest {
             .apellido("Pérez")
             .licencia("LIC-12345")
             .telefono("1122334455")
-            .estadoChofer(EstadoChofer.DISPONIBLE)
+            .estado(EstadoChofer.DISPONIBLE)
             .version(0L)
             .build();
 
     assertNotNull(doc.getId());
     assertEquals("Carlos", doc.getNombre());
-    assertNotNull(doc.getHistorialEstados());
+    assertNotNull(doc.getHistorialEstado());
   }
 
   @Test
@@ -105,7 +105,7 @@ class MongoDocumentsMappingTest {
         EntregaDocument.builder()
             .id(UUID.randomUUID())
             .idDonacion(UUID.randomUUID())
-            .idBeneficiario(UUID.randomUUID())
+            .idBeneficiaria(UUID.randomUUID())
             .estado(EstadoEntrega.PENDIENTE)
             .volumenTotalM3(2.5)
             .pesoTotalKg(150.0)

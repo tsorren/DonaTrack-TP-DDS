@@ -33,7 +33,7 @@ public class EntregaDocument {
   @Indexed(unique = true)
   private UUID idDonacion;
 
-  private UUID idBeneficiario;
+  private UUID idBeneficiaria;
 
   @Indexed private EstadoEntrega estado;
 

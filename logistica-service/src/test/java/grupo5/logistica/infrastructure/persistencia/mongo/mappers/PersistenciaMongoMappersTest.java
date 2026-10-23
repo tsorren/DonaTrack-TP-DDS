@@ -63,7 +63,7 @@ class PersistenciaMongoMappersTest {
 
     reconstituido.habilitar();
     CamionDocument actualizado = camionMapper.toDocument(reconstituido, doc);
-    assertEquals(EstadoCamion.DISPONIBLE, actualizado.getEstadoCamion());
+    assertEquals(EstadoCamion.DISPONIBLE, actualizado.getEstado());
     assertEquals(2, actualizado.getHistorialEstado().size());
     assertEquals(cambioInicial, actualizado.getHistorialEstado().getFirst());
 
@@ -84,7 +84,7 @@ class PersistenciaMongoMappersTest {
     assertNull(doc.getVersion());
 
     doc.setVersion(0L);
-    CambioEstadoSubdocument cambioInicial = doc.getHistorialEstados().getFirst();
+    CambioEstadoSubdocument cambioInicial = doc.getHistorialEstado().getFirst();
     UUID rutaId = UUID.randomUUID();
 
     Chofer reconstituido = choferMapper.toDomain(doc, rutaId);
@@ -94,8 +94,8 @@ class PersistenciaMongoMappersTest {
 
     reconstituido.cambiarEstado(EstadoChofer.DISPONIBLE);
     ChoferDocument actualizado = choferMapper.toDocument(reconstituido, doc);
-    assertEquals(2, actualizado.getHistorialEstados().size());
-    assertEquals(cambioInicial, actualizado.getHistorialEstados().getFirst());
+    assertEquals(2, actualizado.getHistorialEstado().size());
+    assertEquals(cambioInicial, actualizado.getHistorialEstado().getFirst());
 
     doc.setVersion(3L);
     assertThrows(

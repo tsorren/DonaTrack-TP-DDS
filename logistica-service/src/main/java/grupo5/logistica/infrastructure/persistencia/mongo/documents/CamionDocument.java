@@ -32,7 +32,7 @@ public class CamionDocument {
   private Double capacidadPeso;
   private Double altura;
 
-  @Indexed private EstadoCamion estadoCamion;
+  @Indexed private EstadoCamion estado;
 
   @Version private Long version;
 

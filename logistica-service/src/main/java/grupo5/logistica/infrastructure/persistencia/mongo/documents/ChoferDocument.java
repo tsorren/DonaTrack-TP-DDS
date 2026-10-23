@@ -30,9 +30,9 @@ public class ChoferDocument {
   private String licencia;
   private String telefono;
 
-  @Indexed private EstadoChofer estadoChofer;
+  @Indexed private EstadoChofer estado;
 
   @Version private Long version;
 
-  @Builder.Default private List<CambioEstadoSubdocument> historialEstados = new ArrayList<>();
+  @Builder.Default private List<CambioEstadoSubdocument> historialEstado = new ArrayList<>();
 }
