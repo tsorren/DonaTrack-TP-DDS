@@ -70,7 +70,7 @@ class ItemDonacionNormalizadoServiceTest {
     Humana humana =
         new Humana("Pedro", "Gomez", java.time.LocalDate.of(1985, java.time.Month.MAY, 15));
     Donante donante = new Donante(humana.getId());
-    donacion = new Donacion(donante.getId());
+    donacion = new Donacion(donante.getId(), null, "Donación de prueba", null);
     donacion.clearDomainEvents();
 
     Categoria categoria =

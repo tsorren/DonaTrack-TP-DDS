@@ -12,6 +12,7 @@ import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.CategoriasService;
@@ -28,6 +29,7 @@ class CategoriasServiceTest {
   private ICategoriasRepository categoriasRepositoryMock;
   private ISubcategoriasRepository subcategoriasRepositoryMock;
   private INecesidadesRepository necesidadesRepositoryMock;
+  private IItemDonacionNormalizadoRepository itemsNormalizadosRepositoryMock;
   private CategoriaMapper categoriaMapper;
   private SubcategoriaMapper subcategoriaMapper;
   private CategoriasService categoriasService;
@@ -37,6 +39,7 @@ class CategoriasServiceTest {
     categoriasRepositoryMock = mock(ICategoriasRepository.class);
     subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
     necesidadesRepositoryMock = mock(INecesidadesRepository.class);
+    itemsNormalizadosRepositoryMock = mock(IItemDonacionNormalizadoRepository.class);
     categoriaMapper = new CategoriaMapper();
     subcategoriaMapper = new SubcategoriaMapper(categoriaMapper, categoriasRepositoryMock);
 
@@ -45,6 +48,7 @@ class CategoriasServiceTest {
             categoriasRepositoryMock,
             subcategoriasRepositoryMock,
             necesidadesRepositoryMock,
+            itemsNormalizadosRepositoryMock,
             categoriaMapper,
             subcategoriaMapper);
   }

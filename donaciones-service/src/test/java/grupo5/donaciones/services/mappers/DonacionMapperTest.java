@@ -158,7 +158,7 @@ class DonacionMapperTest {
     Humana persona = PersonaMother.humanaValida();
     Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Norte", crearDireccion());
-    Donacion donacion = new Donacion(donante.getId(), deposito);
+    Donacion donacion = new Donacion(donante.getId(), deposito, "Donación de prueba", null);
     donacion.marcarNormalizada();
     donacion.marcarSegmentada();
 

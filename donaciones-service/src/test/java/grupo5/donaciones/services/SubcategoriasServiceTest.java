@@ -12,6 +12,7 @@ import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.impl.SubcategoriasService;
@@ -28,6 +29,7 @@ class SubcategoriasServiceTest {
   private ISubcategoriasRepository subcategoriasRepositoryMock;
   private ICategoriasRepository categoriasRepositoryMock;
   private INecesidadesRepository necesidadesRepositoryMock;
+  private IItemDonacionNormalizadoRepository itemsNormalizadosRepositoryMock;
   private SubcategoriaMapper subcategoriaMapper;
   private SubcategoriasService subcategoriasService;
 
@@ -36,6 +38,7 @@ class SubcategoriasServiceTest {
     subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
     categoriasRepositoryMock = mock(ICategoriasRepository.class);
     necesidadesRepositoryMock = mock(INecesidadesRepository.class);
+    itemsNormalizadosRepositoryMock = mock(IItemDonacionNormalizadoRepository.class);
     subcategoriaMapper = new SubcategoriaMapper(new CategoriaMapper(), categoriasRepositoryMock);
 
     subcategoriasService =
@@ -43,6 +46,7 @@ class SubcategoriasServiceTest {
             subcategoriasRepositoryMock,
             categoriasRepositoryMock,
             necesidadesRepositoryMock,
+            itemsNormalizadosRepositoryMock,
             subcategoriaMapper);
   }
 
@@ -52,6 +56,20 @@ class SubcategoriasServiceTest {
     UUID id = subcategoria.getId();
     when(subcategoriasRepositoryMock.findById(id)).thenReturn(Optional.of(subcategoria));
     when(necesidadesRepositoryMock.existsBySubcategoriaId(id)).thenReturn(true);
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> subcategoriasService.eliminar(id));
+
+    assertEquals(ErrorCatalog.SUBCATEGORIA_EN_USO, ex.getError());
+    verify(subcategoriasRepositoryMock, never()).delete(any());
+  }
+
+  @Test
+  void eliminar_conItemsNormalizadosQueLaUsan_responde409YNoBorra() {
+    Subcategoria subcategoria = new Subcategoria(UUID.randomUUID(), "Fideos");
+    UUID id = subcategoria.getId();
+    when(subcategoriasRepositoryMock.findById(id)).thenReturn(Optional.of(subcategoria));
+    when(itemsNormalizadosRepositoryMock.existsBySubcategoriaId(id)).thenReturn(true);
 
     BusinessStateException ex =
         assertThrows(BusinessStateException.class, () -> subcategoriasService.eliminar(id));

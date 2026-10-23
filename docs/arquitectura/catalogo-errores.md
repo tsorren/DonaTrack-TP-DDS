@@ -90,6 +90,7 @@
 | `ERR-VAL-208` | `ESTADO_ARCHIVO_INVALIDO` | Estado de archivo CSV inválido | `400` |
 | `ERR-VAL-209` | `DEPOSITO_NOMBRE_NULO` | Nombre de depósito nulo o vacío | `400` |
 | `ERR-VAL-210` | `DEPOSITO_DIRECCION_NULA` | Dirección de depósito nula | `400` |
+| `ERR-VAL-212` | `DONACION_SIN_DESCRIPCION` | La donación no tiene descripción general (obligatoria en el enunciado y en el DER) | `400` |
 
 ### Bienes y Categorías (3xx)
 

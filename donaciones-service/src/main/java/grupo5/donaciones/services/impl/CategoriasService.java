@@ -9,6 +9,7 @@ import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.ICategoriasService;
@@ -24,6 +25,7 @@ public class CategoriasService implements ICategoriasService {
   private final ICategoriasRepository categoriasRepository;
   private final ISubcategoriasRepository subcategoriasRepository;
   private final INecesidadesRepository necesidadesRepository;
+  private final IItemDonacionNormalizadoRepository itemsNormalizadosRepository;
   private final CategoriaMapper categoriaMapper;
   private final SubcategoriaMapper subcategoriaMapper;
 
@@ -31,11 +33,13 @@ public class CategoriasService implements ICategoriasService {
       ICategoriasRepository categoriasRepository,
       ISubcategoriasRepository subcategoriasRepository,
       INecesidadesRepository necesidadesRepository,
+      IItemDonacionNormalizadoRepository itemsNormalizadosRepository,
       CategoriaMapper categoriaMapper,
       SubcategoriaMapper subcategoriaMapper) {
     this.categoriasRepository = categoriasRepository;
     this.subcategoriasRepository = subcategoriasRepository;
     this.necesidadesRepository = necesidadesRepository;
+    this.itemsNormalizadosRepository = itemsNormalizadosRepository;
     this.categoriaMapper = categoriaMapper;
     this.subcategoriaMapper = subcategoriaMapper;
   }
@@ -54,8 +58,7 @@ public class CategoriasService implements ICategoriasService {
 
     List<Subcategoria> subcategories = getSubcategoriesFor(id);
     // Se valida todo antes de borrar nada, para no dejar la categoría a medio borrar
-    if (subcategories.stream()
-        .anyMatch(s -> necesidadesRepository.existsBySubcategoriaId(s.getId()))) {
+    if (subcategories.stream().anyMatch(s -> estaEnUso(s.getId()))) {
       throw new BusinessStateException(ErrorCatalog.SUBCATEGORIA_EN_USO);
     }
     subcategories.forEach(subcategoriasRepository::delete);
@@ -89,6 +92,11 @@ public class CategoriasService implements ICategoriasService {
     List<SubcategoriaOutputDTO> subcatDtos =
         getSubcategoriesFor(entity.getId()).stream().map(subcategoriaMapper::toOutputDTO).toList();
     return categoriaMapper.toOutputDTO(entity, subcatDtos);
+  }
+
+  private boolean estaEnUso(UUID subcategoriaId) {
+    return necesidadesRepository.existsBySubcategoriaId(subcategoriaId)
+        || itemsNormalizadosRepository.existsBySubcategoriaId(subcategoriaId);
   }
 
   private List<Subcategoria> getSubcategoriesFor(UUID categoryId) {

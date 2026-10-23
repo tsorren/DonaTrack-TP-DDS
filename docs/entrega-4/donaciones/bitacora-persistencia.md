@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-22** — Paso 6 (DTI-06) hecho: la necesidad ya no conoce sus donaciones.
+> Última actualización: **2026-10-22** — Paso 7 hecho: depósito, donación, ítems, historial e ítems normalizados.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
 - **Dónde estamos:** Pasos 0 a 3c y la parte de persistencia del Paso 5 cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
 - **Bloqueante para seguir:** ninguno. La #892 ya está en `ENTREGA_5` y en esta rama.
-- **Próximo paso:** Pasos 7 y 8 (donaciones y donaciones independientes), aplicando el ADR de desnormalización y las correcciones al DER de P-15. Con el Paso 8, las sumas de `AcumuladosDeAsignacion` pasan a la base.
+- **Próximo paso:** Paso 8 (`donacion_independiente`, ítems, estados e historial), con las correcciones D-21 a D-24 y las desnormalizaciones D2 a D4; ahí las sumas de `AcumuladosDeAsignacion` pasan a la base.
 
 ---
 
@@ -32,7 +32,7 @@
 | 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ✅ Hecho |
 | 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | ✅ Hecho (la FK a `entidad_beneficiaria` en el Paso 4, `PeriodoNecesidad.id` en el Paso 6) |
 | 6 | Refactor DTI-06 del dominio + reconstitución | ✅ Hecho |
-| 7 | `deposito`, `donacion`, items, historial, `item_donacion_normalizado` | ⏳ Pendiente |
+| 7 | `deposito`, `donacion`, items, historial, `item_donacion_normalizado` | ✅ Hecho |
 | 8 | `donacion_independiente`, items, `estado_donacion_independiente`, historial | ⏳ Pendiente |
 | 9 | `propuesta` y `posible_fragmentacion` | ⏳ Pendiente |
 | 10 | `@Transactional`, `solicitud_entrega`, `outbox_logistica`, `evento_consumido` | ⏳ Pendiente |
@@ -56,6 +56,7 @@
 - **P-11 — `altura` y `piso` como `INTEGER`.** `[OBSERVED]` El DER dice `SMALLINT` (máximo 32 767), pero el dominio acepta cualquier `Integer` y hay alturas de ruta mayores. Ensanchar el tipo es aditivo. `[PROPOSED]` Avisar al equipo para actualizar el DER.
 - **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
 - **P-14 — Desnormalización.** `[DOCUMENTED]` Decisión del usuario: se respetan las desnormalizaciones que ya tiene el DER; no se agregan otras. Quedan registradas en el ADR [`20261022-desnormalizaciones-del-modelo-relacional-de-donaciones`](../../adr/donaciones-service/20261022-desnormalizaciones-del-modelo-relacional-de-donaciones.md) (`proposed`): D1 dirección plana, D2 estado actual además del historial, D3 necesidad, período y beneficiario repetidos en la donación independiente, D4 foto del bien en los ítems, D5 `SINGLE_TABLE` de `Necesidad`, D6 payload del outbox. Donante copiado en la donación, acumulado en la necesidad y vista materializada de sub-atendidos quedan como alternativas no adoptadas.
+- **P-18 — Decisiones del Paso 7.** `[DOCUMENTED]` Decididas por el usuario: **D-30** `item_donacion_normalizado` copia el bien original completo (foto, vencimiento, estado, peso, volumen) y el estado de normalización, además de lo que tiene el DER: es la «foto de lo donado» de D4 y no toca el dominio; `bien_nombre` queda sin uso. **D-31** (cierra D-7) peso y volumen como `NUMERIC(12,3)`, con `CHECK > 0`. **D-32** la descripción general de la donación es obligatoria en todas las capas: `NOT NULL` (DER), `@NotBlank` en `DonacionInputDTO` (400) y validación en el dominio (`DONACION_SIN_DESCRIPCION`, `ERR-VAL-212`). Es un cambio de contrato REST, documentado en OpenAPI. Sin alternativa: depósito como tabla compartida que se reutiliza por nombre y dirección (P-2, D-9), estado de la donación además del historial (D2), historial que solo agrega filas, ítems que se reemplazan en cada guardado, FK a `donante` y `subcategoria` con `RESTRICT` (D-26, D-20) y `CASCADE` solo para ítems e historial.
 - **P-17 — Decisiones del Paso 6 (DTI-06).** `[DOCUMENTED]` Decididas por el usuario: **D-28** lo asignado a una necesidad lo calcula quien llama (suma de las donaciones con ese destino) y se lo pasa a la necesidad (`estaSatisfechaCon`, `cantidadRestante`) o a los algoritmos (`DatosDeAsignacion`), como dice el ADR DTI-06. **D-29** `PeriodoNecesidad.id` se adelanta al Paso 6 (revisa D-19): la donación guarda `periodoId`, como el `id_periodo` del DER. Sin alternativa: `Asignable` se reemplaza por ids (`DestinoAsignacion`), como eligió su ADR (`proposed`).
 - **P-16 — Decisiones del Paso 4.** `[DOCUMENTED]` Decididas por el usuario: **D-26** las FK de los roles hacia su persona (`donante.id` → `persona.id`, `entidad_beneficiaria.id` → `juridica.id`) son `ON DELETE RESTRICT`: una persona con roles no se borra (la app la anonimiza y da de baja sus roles). **D-27** `necesidad.entidad_beneficiaria_id` pasa a `NOT NULL` con FK `RESTRICT`, como marca el DER. Sin alternativa: la columna `activo` en ambos roles (baja lógica de la #892, no está en el DER) y la FK a `juridica` (DER), que hace que la base impida que una humana sea entidad.
 - **P-15 — Cuatro puntos del DER que rompen la persistencia, con corrección aditiva.** `[DOCUMENTED]` Decididos por el usuario; hay que comunicarlos al dueño del DER:
@@ -69,12 +70,12 @@
 
 ## Cambios a comunicar al dueño del DER
 
-Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8); peso y volumen en los ítems y los 3 valores de `ESTADO_NORMALIZACION` (P-3); `altura` y `piso` `INTEGER` (P-11); `fecha_nacimiento` `DATE` (D-10); valores de `tipo_juridico` (Paso 3); `archivo.id` en vez de `id_archivo` (P-8); `necesidad.version` y `necesidad.periodo` como `VARCHAR` ISO-8601 en vez de `BIGINT` (D-17, D-18); `necesidad.descripcion` (ya estaba en V1, falta en el DER); `activo` en `donante` y `entidad_beneficiaria` (P-16); D-21 a D-24 (P-15). Pendientes de decidir: D-7 (`NUMERIC` para peso y volumen) y D-8 (`cantidad` de `posible_fragmentacion`).
+Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8); peso y volumen en los ítems y los 3 valores de `ESTADO_NORMALIZACION` (P-3); `altura` y `piso` `INTEGER` (P-11); `fecha_nacimiento` `DATE` (D-10); valores de `tipo_juridico` (Paso 3); `archivo.id` en vez de `id_archivo` (P-8); `necesidad.version` y `necesidad.periodo` como `VARCHAR` ISO-8601 en vez de `BIGINT` (D-17, D-18); `necesidad.descripcion` (ya estaba en V1, falta en el DER); `activo` en `donante` y `entidad_beneficiaria` (P-16); D-21 a D-24 (P-15). `NUMERIC(12,3)` para peso y volumen (D-31); columnas del bien completo y `estado_normalizacion` en `item_donacion_normalizado` (D-30); `deposito.nombre` `NOT NULL` y único con la dirección; fechas de donación e historial como `TIMESTAMP` (el DER dice `TIMESTAMPTZ`; mismo criterio que V1) y vencimientos como `DATE`; valores de `ESTADO_BIEN` (`NUEVO`, `USADO`, `DESGASTADO`). Pendiente de decidir: D-8 (`cantidad` de `posible_fragmentacion`).
 
 ## Hallazgos abiertos (no corregidos en esta tarea)
 
 - **Credencial fija** `dona_pass_2026` como valor por defecto en `application-postgres.properties` y en `docker-compose.yml` (AGENTS §4.3). `ENTREGA_5` ya usa variables de entorno: al mergear, conservar esa versión.
-- **D-7 — `peso_unitario` / `volumen_unitario` son `BIGINT` en `Item_donacion`** y el dominio usa `Double`: persistir literal truncaría decimales. Recomendado `NUMERIC`.
+- **D-7 — resuelto en el Paso 7 (D-31):** peso y volumen como `NUMERIC(12,3)`.
 - **D-8 — `Posible_fragmentacion.cantidad` es `SMALLINT`** (máx. 32 767) y el dominio usa `Integer`. Riesgo bajo.
 - **`NecesidadesPersistenciaMapper`:** el `Period` con años y la conversión de meses a 30 días quedaron resueltos en el Paso 5 (D-18), y los filtros de activa y tipo pasaron a la base. Sigue abierto: `save` no es transaccional (Paso 10), y "satisfecha" se filtra en memoria porque depende de lo asignado (Paso 6 / desnormalización).
 - **Alias repetido (resuelto).** `[DOCUMENTED]` Decisión del usuario: ignorar el duplicado (idempotente). `Subcategoria.agregarAlias` no agrega un alias que ya existe; la restricción `uq_alias_subcategoria` queda como red de seguridad en la base.
@@ -100,6 +101,10 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 **¿El problema de los duplicados por mail era de las humanas o de los dos tipos de persona?** De los dos: la regla vive en `Persona`. El caso grave era entre jurídicas (dos CUIT distintos con el mail de la misma representante se fusionaban); entre una humana y una jurídica la fila fallaba por tipo distinto; entre dos humanas (un familiar con el mismo mail) también se fusionaban. Ver P-12.
 
 **¿Por qué se desnormaliza si el dato se puede calcular?** Para que las lecturas más frecuentes (el algoritmo diario sobre las donaciones en depósito, las pantallas de donante y entidad) salgan de una tabla con un índice, sin cruzar tablas ni buscar el último cambio del historial. Cada dato repetido tiene un único punto de escritura, en la misma transacción que el original. Ver P-14 y el ADR.
+
+**¿Por qué el ítem normalizado repite el bien en vez de apuntar al ítem original?** Porque es una foto de lo que se normalizó (D4 del ADR): si después se corrige el ítem original, la donación ya segmentada no cambia. Además, en el dominio el ítem original no tiene identidad propia. Ver D-30.
+
+**¿Por qué peso y volumen no son `DOUBLE PRECISION`?** Porque se suman para armar la carga de un camión, y un tipo binario arrastra errores de redondeo (0,1 + 0,2 ≠ 0,3). Con 3 decimales alcanza (gramos, litros). Un valor que se redondea a 0 no se guarda: lo rechaza el dominio y, por fuera de la app, el `CHECK` de la base. Ver D-31.
 
 **¿Qué cambió con DTI-06, en una frase?** Antes la necesidad tenía la lista de sus donaciones y la donación tenía el objeto necesidad; ahora la donación guarda los ids de su destino (necesidad, período, entidad) y lo asignado se suma sobre las donaciones. Por eso una necesidad leída de la base ya sabe cuánto se le asignó.
 
@@ -131,6 +136,16 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
+
+## Paso 7 — detalle
+
+- **Migración `V9__donaciones.sql`.** `deposito` (único por nombre y dirección), `donacion` (FK a `donante` y a `deposito`, `estado_donacion` con `CHECK`), `item_donacion` y `cambio_estado_donacion` (las dos con `ON DELETE CASCADE` desde la donación) e `item_donacion_normalizado` (FK `RESTRICT` a `donacion` y a `subcategoria`). Peso y volumen `NUMERIC(12,3)` con `CHECK > 0`.
+- **Dominio.** `Donacion` exige descripción y pierde los constructores de 1 y 2 argumentos (solo los usaban 12 tests, que pasan a dar una descripción). Constructores de reconstitución: `Donacion(DatosDonacion, items, historial)` (record nuevo, mismo criterio que `DatosNecesidad` para S107), `CambioEstadoDonacion(anterior, nuevo, timestamp)` e `ItemDonacionNormalizado(id, donación, bien, cantidad, segmentado)`. `BienNormalizado` se reconstituye con su constructor canónico, que no revalida.
+- **Infraestructura.** Cinco entidades, tres repositorios Spring Data, `DonacionesPersistenciaMapper` (resuelve el depósito reutilizando la dirección, reemplaza los ítems y agrega al historial solo los cambios nuevos), `ItemsNormalizadosPersistenciaMapper` y `MedidasPersistencia` (conversión `Double` ↔ `NUMERIC`). `DonacionRepositoryJpaAdapter` es transaccional al guardar (varias tablas) y al leer (ítems e historial son lazy y se mapean con la sesión abierta). Los repositorios en memoria pasan a `@Profile("!postgres")`.
+- **D-20 extendido.** Borrar una subcategoría (o una categoría) también se rechaza con `SUBCATEGORIA_EN_USO` si la usa un ítem normalizado (`IItemDonacionNormalizadoRepository.existsBySubcategoriaId`).
+- **Tests contra Postgres real.** `DonacionesRepositoriesJpaTest` (10): ida y vuelta de una donación segmentada (ítems, depósito, estado, historial, sin eventos), avanzar de estado sin duplicar ni tocar el historial, depósito compartido, quitar un ítem, redondeo a 3 decimales, peso que se redondea a 0 (no se guarda) y `CHECK` por SQL, donante inexistente, ítem normalizado completo y con subcategoría inexistente. Servicios: borrar una subcategoría usada por un ítem normalizado. Dominio: donación sin descripción.
+- `[VERIFIED]` `mvn clean test -pl donaciones-service -am`: 746 tests, 0 fallas, 0 salteados (con Docker). Las colecciones de Postman y los tests de integración ya mandan descripción. `spotless:check` OK; `agent-check` 75 PASS, 1 WARN preexistente.
+- **Hallazgos.** `[OBSERVED]` `SegmentacionService` e `ItemDonacionNormalizadoService` siguen filtrando con `findAll()` en memoria (hallazgo general de los filtros); con datos reales conviene pasarlos a consultas. `[OBSERVED]` Los ítems de la donación no guardan orden (como los medios de contacto); el dominio no depende de él.
 
 ## Paso 6 — detalle (DTI-06)
 

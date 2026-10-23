@@ -59,7 +59,7 @@ class SegmentacionServiceTest {
   void setUp() {
     humana = new Humana("Juan", "Perez", java.time.LocalDate.of(1990, java.time.Month.JANUARY, 1));
     donante = new Donante(humana.getId());
-    donacion = new Donacion(donante.getId());
+    donacion = new Donacion(donante.getId(), null, "Donación de prueba", null);
     donacion.marcarNormalizada();
 
     categoria =
