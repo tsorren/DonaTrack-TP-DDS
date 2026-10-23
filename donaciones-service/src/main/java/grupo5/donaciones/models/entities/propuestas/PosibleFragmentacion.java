@@ -42,8 +42,8 @@ public class PosibleFragmentacion {
       donacionAsignar = this.donacionOriginal;
     }
 
-    donacionAsignar.asignar(actorFinal, necesidad);
-    necesidad.asignarDonacion(donacionAsignar);
+    // La necesidad no guarda sus donaciones (DTI-06): la donación registra a dónde se asignó
+    donacionAsignar.asignar(actorFinal, necesidad.destinoDeAsignacion());
     return donacionAsignar;
   }
 }

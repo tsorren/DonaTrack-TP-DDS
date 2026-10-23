@@ -20,10 +20,7 @@ public class EnTraslado implements EstadoDonacionIndependiente {
 
   public void confirmarEntrega(DonacionIndependiente d, String patenteCamion, String actor) {
     d.cambiarEstado(new Entregada(), null, actor);
-    UUID necesidadId =
-        d.getAsignadaA() != null && d.getAsignadaA().obtenerNecesidad() != null
-            ? d.getAsignadaA().obtenerNecesidad().getId()
-            : null;
+    UUID necesidadId = d.getNecesidadId();
     d.registrarEvento(
         new EventoDonacionRecibida(
             d.getId(), d.getDonacionOriginalId(), necesidadId, patenteCamion));
@@ -63,10 +60,7 @@ public class EnTraslado implements EstadoDonacionIndependiente {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_FALLA_SIN_JUSTIFICACION);
     }
     d.cambiarEstado(new EntregaFallida(), justificacion, actor);
-    UUID necesidadId =
-        d.getAsignadaA() != null && d.getAsignadaA().obtenerNecesidad() != null
-            ? d.getAsignadaA().obtenerNecesidad().getId()
-            : null;
+    UUID necesidadId = d.getNecesidadId();
     d.registrarEvento(
         new EventoDonacionFallida(
             d.getId(), d.getDonacionOriginalId(), necesidadId, justificacion, replanificable));

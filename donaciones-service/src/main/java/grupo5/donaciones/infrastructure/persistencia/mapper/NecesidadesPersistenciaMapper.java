@@ -15,6 +15,9 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -59,8 +62,7 @@ public class NecesidadesPersistenciaMapper {
       return null;
     }
     if (entity instanceof NecesidadExtraordinariaEntity extraEntity) {
-      return new NecesidadExtraordinaria(
-          datosComunes(extraEntity), extraEntity.isActiva(), List.of());
+      return new NecesidadExtraordinaria(datosComunes(extraEntity), extraEntity.isActiva());
     }
     if (entity instanceof NecesidadRecurrenteEntity recEntity) {
       return recurrenteToDomain(recEntity);
@@ -95,22 +97,15 @@ public class NecesidadesPersistenciaMapper {
       recEntity.getPeriodos().forEach(pe -> periodosDominio.add(periodoToDomain(pe)));
     }
 
-    NecesidadRecurrente recurrente =
-        new NecesidadRecurrente(
-            datosComunes(recEntity), periodo, recEntity.isActiva(), periodosDominio);
-
-    // Vincular el Aggregate Root padre en cada período
-    List<PeriodoNecesidad> periodosVinculados =
-        periodosDominio.stream().map(p -> p.conNecesidadRecurrente(recurrente)).toList();
-    recurrente.actualizarPeriodos(periodosVinculados);
-    return recurrente;
+    return new NecesidadRecurrente(
+        datosComunes(recEntity), periodo, recEntity.isActiva(), periodosDominio);
   }
 
   private static PeriodoNecesidad periodoToDomain(PeriodoNecesidadEntity pe) {
     LocalDate fechaFin = pe.getFechaFin() != null ? pe.getFechaFin().toLocalDate() : null;
     Integer cantidadObjetivo =
         pe.getCantidadObjetivo() != null ? pe.getCantidadObjetivo().intValue() : 0;
-    return new PeriodoNecesidad(fechaFin, List.of(), cantidadObjetivo, null);
+    return new PeriodoNecesidad(pe.getId(), fechaFin, cantidadObjetivo);
   }
 
   private static void mapearCamposComunes(Necesidad domain, NecesidadEntity entity) {
@@ -136,11 +131,16 @@ public class NecesidadesPersistenciaMapper {
     }
 
     LocalDate cursorInicio = inicioDelProximoPeriodo(domain, actuales);
+    Set<UUID> guardados =
+        actuales.stream().map(PeriodoNecesidadEntity::getId).collect(Collectors.toSet());
 
-    // Sincronización incremental sin invocar clear()
-    for (int i = actuales.size(); i < domain.getPeriodos().size(); i++) {
-      PeriodoNecesidad p = domain.getPeriodos().get(i);
+    // Solo se agregan los períodos nuevos, reconocidos por id: un período guardado no cambia
+    for (PeriodoNecesidad p : domain.getPeriodos()) {
+      if (guardados.contains(p.id())) {
+        continue;
+      }
       PeriodoNecesidadEntity pe = new PeriodoNecesidadEntity();
+      pe.setId(p.id());
       pe.setNecesidad(entity);
       pe.setCantidadObjetivo(
           p.cantidadObjetivo() != null ? p.cantidadObjetivo().longValue() : null);

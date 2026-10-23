@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.argThat;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -41,6 +42,7 @@ import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
 import grupo5.donaciones.models.repositories.IPropuestasRepository;
+import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import grupo5.donaciones.services.impl.PropuestaDeAsignacionService;
 import grupo5.donaciones.services.logistica.ILogisticaBroker;
 import grupo5.donaciones.services.mappers.DireccionMapper;
@@ -70,6 +72,7 @@ class PropuestaDeAsignacionServiceTest {
   private IDonantesRepository donantesRepository;
   private IDonacionesEventPublisher donacionesEventPublisher;
   private ILogisticaBroker logisticaBroker;
+  private AcumuladosDeAsignacion acumulados;
   private PropuestaDeAsignacionService service;
 
   @BeforeEach
@@ -89,6 +92,7 @@ class PropuestaDeAsignacionServiceTest {
     donantesRepository = mock(IDonantesRepository.class);
     donacionesEventPublisher = mock(IDonacionesEventPublisher.class);
     logisticaBroker = mock(ILogisticaBroker.class);
+    acumulados = mock(AcumuladosDeAsignacion.class);
 
     service =
         new PropuestaDeAsignacionService(
@@ -106,7 +110,8 @@ class PropuestaDeAsignacionServiceTest {
             donacionesRepository,
             donantesRepository,
             donacionesEventPublisher,
-            logisticaBroker);
+            logisticaBroker,
+            acumulados);
   }
 
   @Test
@@ -117,8 +122,10 @@ class PropuestaDeAsignacionServiceTest {
     PropuestaDTO dto = mock(PropuestaDTO.class);
 
     when(donacionRepository.findEnDeposito()).thenReturn(List.of(donacion));
-    when(necesidadRepository.findByEstaSatisfechaFalseActivaTrue()).thenReturn(List.of(necesidad));
-    when(gestorPropuestas.generarPropuestas(List.of(necesidad), List.of(donacion)))
+    Necesidad satisfecha = mock(Necesidad.class);
+    when(necesidadRepository.findActivas()).thenReturn(List.of(necesidad, satisfecha));
+    when(acumulados.estaSatisfecha(satisfecha)).thenReturn(true);
+    when(gestorPropuestas.generarPropuestas(eq(List.of(necesidad)), eq(List.of(donacion)), any()))
         .thenReturn(List.of(propuesta));
     when(propuestaMapper.toDTO(propuesta)).thenReturn(dto);
 
@@ -358,7 +365,8 @@ class PropuestaDeAsignacionServiceTest {
     verify(fragmentacion).confirmar(necesidad, "actor");
     verify(donacionRepository).save(donacionOriginal);
     verify(donacionRepository).save(donacionAsignada);
-    verify(necesidadRepository).save(necesidad);
+    // DTI-06: la asignación queda en las donaciones; la necesidad no cambia y no se guarda
+    verify(necesidadRepository, never()).save(any());
   }
 
   @Test
@@ -557,7 +565,7 @@ class PropuestaDeAsignacionServiceTest {
             UUID.randomUUID(), necesidadId, List.of(fragmentacion1, fragmentacion2), "actor"));
 
     verify(logisticaBroker, times(2)).solicitarEntrega(any());
-    verify(necesidadRepository).save(necesidad);
+    verify(necesidadRepository, never()).save(any());
   }
 
   /** Deja resolvible la entidad beneficiaria de la necesidad y su dirección de destino. */

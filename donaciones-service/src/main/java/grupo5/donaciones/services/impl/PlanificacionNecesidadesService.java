@@ -12,9 +12,12 @@ import org.springframework.stereotype.Service;
 public class PlanificacionNecesidadesService implements IPlanificacionNecesidadesService {
 
   private final INecesidadesRepository necesidadRepository;
+  private final AcumuladosDeAsignacion acumulados;
 
-  public PlanificacionNecesidadesService(INecesidadesRepository necesidadRepository) {
+  public PlanificacionNecesidadesService(
+      INecesidadesRepository necesidadRepository, AcumuladosDeAsignacion acumulados) {
     this.necesidadRepository = necesidadRepository;
+    this.acumulados = acumulados;
   }
 
   @Override
@@ -23,7 +26,7 @@ public class PlanificacionNecesidadesService implements IPlanificacionNecesidade
     List<NecesidadRecurrente> modificadas =
         necesidadRepository.findByActivaTrueAndRecurrenteTrue().stream()
             .map(n -> (NecesidadRecurrente) n)
-            .filter(n -> n.renovarPeriodoSiCorresponde(hoy))
+            .filter(n -> n.renovarPeriodoSiCorresponde(hoy, acumulados.asignadoA(n)))
             .toList();
 
     modificadas.forEach(necesidadRepository::save);

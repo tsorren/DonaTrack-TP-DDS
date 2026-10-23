@@ -127,7 +127,7 @@ class DonacionesIndependientesServiceTest {
 
     assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
     assertEquals(id, response.id());
-    assertEquals(necesidad, donacion.getAsignadaA());
+    assertEquals(necesidad.getId(), donacion.getNecesidadId());
     assertTrue(
         response.historial().stream().anyMatch(h -> "AsignacionRealizada".equals(h.estadoNuevo())));
     verify(repositoryMock, times(1)).save(donacion);

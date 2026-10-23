@@ -3,6 +3,7 @@ package grupo5.donaciones.services.mappers;
 import grupo5.donaciones.dto.propuestas.GrupoFragmentacionDTO;
 import grupo5.donaciones.dto.propuestas.NecesidadResumenDTO;
 import grupo5.donaciones.dto.propuestas.PropuestaDTO;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
@@ -29,6 +30,12 @@ public class PropuestaMapper {
     this.diMapper = diMapper;
   }
 
+  // La necesidad no conoce sus donaciones (DTI-06): lo asignado se suma acá
+  private boolean estaSatisfecha(Necesidad necesidad) {
+    return necesidad.estaSatisfechaCon(
+        donacionRepository.sumarCantidadAsignada(necesidad.getId(), necesidad.periodoActualId()));
+  }
+
   public PropuestaDTO toDTO(Propuesta propuesta) {
     if (propuesta == null) {
       return null;
@@ -46,7 +53,7 @@ public class PropuestaMapper {
                           n.getDescripcion(),
                           n.getCantidadNecesitada(),
                           n.getClass().getSimpleName().replace("Necesidad", "").toUpperCase(),
-                          Boolean.TRUE.equals(n.estaSatisfecha()) ? "SATISFECHA" : "PENDIENTE"))
+                          estaSatisfecha(n) ? "SATISFECHA" : "PENDIENTE"))
               .orElse(null);
     }
 

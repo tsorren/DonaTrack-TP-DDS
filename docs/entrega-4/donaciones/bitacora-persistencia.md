@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-22** — #892 integrada (merge de `ENTREGA_5`) y Paso 4 (`donante` y `entidad_beneficiaria`) hecho.
+> Última actualización: **2026-10-22** — Paso 6 (DTI-06) hecho: la necesidad ya no conoce sus donaciones.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
 - **Dónde estamos:** Pasos 0 a 3c y la parte de persistencia del Paso 5 cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
 - **Bloqueante para seguir:** ninguno. La #892 ya está en `ENTREGA_5` y en esta rama.
-- **Próximo paso:** Paso 6 (DTI-06) y después Pasos 7 y 8, aplicando el ADR de desnormalización y las correcciones al DER de P-15.
+- **Próximo paso:** Pasos 7 y 8 (donaciones y donaciones independientes), aplicando el ADR de desnormalización y las correcciones al DER de P-15. Con el Paso 8, las sumas de `AcumuladosDeAsignacion` pasan a la base.
 
 ---
 
@@ -30,8 +30,8 @@
 | 3 | `direccion`, `persona` (`JOINED`), `medio_de_contacto` | ✅ Hecho |
 | 3c | Búsqueda de duplicados indexada (D-12) | ✅ Hecho |
 | 4 | `donante` y `entidad_beneficiaria` (necesita #892) | ✅ Hecho |
-| 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | 🟡 Parcial: falta `PeriodoNecesidad.id` (Paso 8, D-19); la FK a `entidad_beneficiaria` se hizo en el Paso 4 |
-| 6 | Refactor DTI-06 del dominio + reconstitución | ⏳ Pendiente |
+| 5 | Ajustes de `Necesidad` y `Periodo`: FK, `@Version`, `PeriodoNecesidad.id` | ✅ Hecho (la FK a `entidad_beneficiaria` en el Paso 4, `PeriodoNecesidad.id` en el Paso 6) |
+| 6 | Refactor DTI-06 del dominio + reconstitución | ✅ Hecho |
 | 7 | `deposito`, `donacion`, items, historial, `item_donacion_normalizado` | ⏳ Pendiente |
 | 8 | `donacion_independiente`, items, `estado_donacion_independiente`, historial | ⏳ Pendiente |
 | 9 | `propuesta` y `posible_fragmentacion` | ⏳ Pendiente |
@@ -56,6 +56,7 @@
 - **P-11 — `altura` y `piso` como `INTEGER`.** `[OBSERVED]` El DER dice `SMALLINT` (máximo 32 767), pero el dominio acepta cualquier `Integer` y hay alturas de ruta mayores. Ensanchar el tipo es aditivo. `[PROPOSED]` Avisar al equipo para actualizar el DER.
 - **P-9 — `agregarAlias` idempotente.** Ver hallazgo "Alias repetido (resuelto)": el dominio ignora el duplicado, en memoria y en Postgres.
 - **P-14 — Desnormalización.** `[DOCUMENTED]` Decisión del usuario: se respetan las desnormalizaciones que ya tiene el DER; no se agregan otras. Quedan registradas en el ADR [`20261022-desnormalizaciones-del-modelo-relacional-de-donaciones`](../../adr/donaciones-service/20261022-desnormalizaciones-del-modelo-relacional-de-donaciones.md) (`proposed`): D1 dirección plana, D2 estado actual además del historial, D3 necesidad, período y beneficiario repetidos en la donación independiente, D4 foto del bien en los ítems, D5 `SINGLE_TABLE` de `Necesidad`, D6 payload del outbox. Donante copiado en la donación, acumulado en la necesidad y vista materializada de sub-atendidos quedan como alternativas no adoptadas.
+- **P-17 — Decisiones del Paso 6 (DTI-06).** `[DOCUMENTED]` Decididas por el usuario: **D-28** lo asignado a una necesidad lo calcula quien llama (suma de las donaciones con ese destino) y se lo pasa a la necesidad (`estaSatisfechaCon`, `cantidadRestante`) o a los algoritmos (`DatosDeAsignacion`), como dice el ADR DTI-06. **D-29** `PeriodoNecesidad.id` se adelanta al Paso 6 (revisa D-19): la donación guarda `periodoId`, como el `id_periodo` del DER. Sin alternativa: `Asignable` se reemplaza por ids (`DestinoAsignacion`), como eligió su ADR (`proposed`).
 - **P-16 — Decisiones del Paso 4.** `[DOCUMENTED]` Decididas por el usuario: **D-26** las FK de los roles hacia su persona (`donante.id` → `persona.id`, `entidad_beneficiaria.id` → `juridica.id`) son `ON DELETE RESTRICT`: una persona con roles no se borra (la app la anonimiza y da de baja sus roles). **D-27** `necesidad.entidad_beneficiaria_id` pasa a `NOT NULL` con FK `RESTRICT`, como marca el DER. Sin alternativa: la columna `activo` en ambos roles (baja lógica de la #892, no está en el DER) y la FK a `juridica` (DER), que hace que la base impida que una humana sea entidad.
 - **P-15 — Cuatro puntos del DER que rompen la persistencia, con corrección aditiva.** `[DOCUMENTED]` Decididos por el usuario; hay que comunicarlos al dueño del DER:
   - **D-21** `Estado_donacion_independiente` suma `tipo ESTADO_DONA_IND *`: sin esa columna, el historial (`id_estado_anterior` / `id_estado_nuevo`) no dice qué estados eran.
@@ -100,6 +101,10 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 
 **¿Por qué se desnormaliza si el dato se puede calcular?** Para que las lecturas más frecuentes (el algoritmo diario sobre las donaciones en depósito, las pantallas de donante y entidad) salgan de una tabla con un índice, sin cruzar tablas ni buscar el último cambio del historial. Cada dato repetido tiene un único punto de escritura, en la misma transacción que el original. Ver P-14 y el ADR.
 
+**¿Qué cambió con DTI-06, en una frase?** Antes la necesidad tenía la lista de sus donaciones y la donación tenía el objeto necesidad; ahora la donación guarda los ids de su destino (necesidad, período, entidad) y lo asignado se suma sobre las donaciones. Por eso una necesidad leída de la base ya sabe cuánto se le asignó.
+
+**¿Por qué el acumulado se pasa como parámetro y no lo carga el repositorio de necesidades?** Porque así el dominio no depende de otro agregado y funciona igual en memoria y en Postgres; con el repositorio, el adapter JPA de necesidades tendría que leer las donaciones (que hasta el Paso 8 siguen en memoria). Ver D-28.
+
 **¿Por qué no se agregaron más desnormalizaciones (donante en la donación, acumulado en la necesidad)?** Porque el equipo ya las había decidido en el DER y ninguna lectura medida lo justifica todavía. El acumulado como contador puede desviarse sin aviso; con `id_necesidad` e `id_periodo` en la donación (D3), un `SUM` indexado alcanza.
 
 **¿Por qué la versión vive en el dominio y no solo en la entidad JPA?** Porque el adapter guarda partiendo de la fila que acaba de leer: con `@Version` solo en la entidad, la versión comparada sería siempre la actual y nunca habría conflicto. Se verificó por mutación: sin la comparación explícita del adapter, el test de dos copias concurrentes deja pasar el segundo guardado.
@@ -126,6 +131,18 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
+
+## Paso 6 — detalle (DTI-06)
+
+- **Dominio.** `Necesidad`, `NecesidadExtraordinaria`, `NecesidadRecurrente` y `PeriodoNecesidad` dejan de guardar donaciones: se quitaron `asignarDonacion`, `quitarDonacion`, `getDonacionesAsignadas`, `cantidadAcumulada`, `estaSatisfecha` y `contarDonacionesAsignadasDesde`. Nuevos: `estaSatisfechaCon(int)`, `cantidadRestante(int)`, `periodoActualId()` y `destinoDeAsignacion()` (en una recurrente sin período lanza `SIN_PERIODO_ACTIVO`, como antes `asignarDonacion`). `PeriodoNecesidad` es `(id, fechaFin, cantidadObjetivo)`. `toDTO` y `renovarPeriodoSiCorresponde` reciben lo acumulado.
+- **`DonacionIndependiente`.** `asignadaA` (objeto `Asignable`) pasa a `necesidadId`, `periodoId` y `entidadBeneficiariaId`; `asignar(actor, DestinoAsignacion)`. Los estados toman `necesidadId` directo para sus eventos. `Asignable` se eliminó.
+- **Algoritmos.** `ejecutar`, `ordenarNecesidades` y `GestorPropuestasDeAsignacion.generarPropuestas` reciben `DatosDeAsignacion` (lo asignado por necesidad y las recibidas por entidad en el trimestre). Sub-atendidos ordena con ese conteo.
+- **Aplicación.** `AcumuladosDeAsignacion` (componente nuevo) suma con `IDonacionesIndependientesRepository.sumarCantidadAsignada(necesidadId, periodoId)` y cuenta con `contarPorEntidadRegistradasDesde`. Lo usan `PropuestaDeAsignacionService` (las no satisfechas se filtran ahí), `NecesidadesService`, `PlanificacionNecesidadesService` y `PropuestaMapper`. Al aprobar una propuesta, la necesidad ya no se guarda: no cambia.
+- **Repositorio de necesidades.** Los filtros por "satisfecha" (`findByEstaSatisfechaFalse*`, `findByActivaTrueAndSatisfechaFalse*`) se reemplazan por `findActivas()`: "satisfecha" no se puede resolver sin las donaciones.
+- **Persistencia.** El mapper reconstituye `PeriodoNecesidad` con el id de la fila y agrega períodos nuevos por id, no por posición. No hizo falta migración: `periodo_necesidad.id` ya existía.
+- **Tests.** Adaptados 13 archivos sin debilitar lo que verifican: lo acumulado sale de sumar las donaciones asignadas (repositorio en memoria real), no de una lista en la necesidad. `AsignableTest` se reemplazó por `DestinoAsignacionTest`. En `ColeccionesInmodificablesTest` se quitaron las aserciones sobre las dos listas que ya no existen. En `PropuestaDeAsignacionServiceTest`, aprobar una propuesta ahora verifica que la necesidad **no** se guarda. Nuevos: `AcumuladosDeAsignacionTest` (3) y en Postgres el id de los períodos al renovar y una necesidad leída de la base que sabe cuánto se le asignó.
+- `[VERIFIED]` `mvn clean test -pl donaciones-service -am`: 734 tests, 0 fallas, 0 salteados (con Docker). Criterio del ADR DTI-06: ninguna clase de `models/entities/necesidades` referencia `DonacionIndependiente`. `spotless:check` OK; `agent-check` 75 PASS, 1 WARN preexistente.
+- **Hallazgos.** `[OBSERVED]` Una donación que vuelve al depósito (`retornar`) sigue con su destino y cuenta en lo asignado, como antes (nadie llamaba a `quitarDonacion`). Decidir en el Paso 8 si al volver al depósito se limpia el destino. `[OBSERVED]` Quedan sin uso los códigos `ASIGNAR_DONACION_NULA`, `DONACION_YA_ASIGNADA`, `DONACION_NO_PERTENECE_A_NECESIDAD` y `PERIODO_DONACION_NULA`; no se borran del catálogo. Pendiente del entregable: actualizar el diagrama de clases de Donaciones (sin listas cruzadas ni `Asignable`).
 
 ## Paso 4 — detalle
 

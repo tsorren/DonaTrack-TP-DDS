@@ -4,7 +4,6 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.repositories.CrudRepositoryJpaAdapter;
 import grupo5.donaciones.infrastructure.persistencia.entities.necesidades.NecesidadEntity;
-import grupo5.donaciones.infrastructure.persistencia.entities.necesidades.NecesidadExtraordinariaEntity;
 import grupo5.donaciones.infrastructure.persistencia.entities.necesidades.NecesidadRecurrenteEntity;
 import grupo5.donaciones.infrastructure.persistencia.mapper.NecesidadesPersistenciaMapper;
 import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataNecesidadRepository;
@@ -63,13 +62,8 @@ public class NecesidadRepositoryJpaAdapter
   }
 
   @Override
-  public List<Necesidad> findByEstaSatisfechaFalse() {
-    return findAll().stream().filter(n -> !n.estaSatisfecha()).toList();
-  }
-
-  @Override
-  public List<Necesidad> findByEstaSatisfechaFalseActivaTrue() {
-    return noSatisfechas(springDataRepo.findByActiva(true));
+  public List<Necesidad> findActivas() {
+    return springDataRepo.findByActiva(true).stream().map(mapper::toDomain).toList();
   }
 
   @Override
@@ -83,16 +77,6 @@ public class NecesidadRepositoryJpaAdapter
   }
 
   @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalse() {
-    return noSatisfechas(springDataRepo.findByActiva(true));
-  }
-
-  @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue() {
-    return noSatisfechas(springDataRepo.findActivasDelTipo(NecesidadRecurrenteEntity.class));
-  }
-
-  @Override
   public List<Necesidad> findByActivaTrueAndRecurrenteTrue() {
     return springDataRepo.findActivasDelTipo(NecesidadRecurrenteEntity.class).stream()
         .map(mapper::toDomain)
@@ -100,18 +84,7 @@ public class NecesidadRepositoryJpaAdapter
   }
 
   @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse() {
-    return noSatisfechas(springDataRepo.findActivasDelTipo(NecesidadExtraordinariaEntity.class));
-  }
-
-  @Override
   public boolean existsBySubcategoriaId(UUID subcategoriaId) {
     return subcategoriaId != null && springDataRepo.existsBySubcategoriaId(subcategoriaId);
-  }
-
-  // "Satisfecha" depende de lo asignado, que no es una columna: se filtra después de mapear.
-  // Activa y tipo ya vienen filtrados por la consulta.
-  private List<Necesidad> noSatisfechas(List<NecesidadEntity> entidades) {
-    return entidades.stream().map(mapper::toDomain).filter(n -> !n.estaSatisfecha()).toList();
   }
 }

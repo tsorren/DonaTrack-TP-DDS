@@ -11,9 +11,11 @@ import grupo5.donaciones.dto.NecesidadDTO;
 import grupo5.donaciones.models.entities.beneficiarios.EntidadBeneficiaria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
+import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
 import grupo5.donaciones.models.repositories.IEntidadesBeneficiariasRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
+import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import grupo5.donaciones.services.impl.NecesidadesService;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -38,7 +40,8 @@ class NecesidadesServiceTest {
         new NecesidadesService(
             necesidadRepositoryMock,
             entidadesBeneficiariasRepositoryMock,
-            subcategoriaRepositoryMock);
+            subcategoriaRepositoryMock,
+            new AcumuladosDeAsignacion(mock(IDonacionesIndependientesRepository.class)));
   }
 
   @Test
@@ -151,7 +154,7 @@ class NecesidadesServiceTest {
             LocalDate.of(2026, java.time.Month.JUNE, 18),
             null);
 
-    when(necesidadMock.toDTO()).thenReturn(dtoEsperado);
+    when(necesidadMock.toDTO(anyInt())).thenReturn(dtoEsperado);
     when(necesidadRepositoryMock.findById(idExistente)).thenReturn(Optional.of(necesidadMock));
 
     NecesidadDTO resultado = necesidadesService.obtenerPorId(idExistente);

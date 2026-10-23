@@ -9,12 +9,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.testing.DisabledIfDockerUnavailable;
+import grupo5.donaciones.fixtures.DonacionIndependienteMother;
 import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.infrastructure.persistencia.mapper.NecesidadesPersistenciaMapper;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
+import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
+import grupo5.donaciones.models.repositories.impl.DonacionesIndependientesRepositoryEnMemoria;
+import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
 import java.time.Period;
 import java.util.List;
 import java.util.UUID;
@@ -273,5 +277,38 @@ class NecesidadRepositoryJpaAdapterTest {
     NecesidadExtraordinaria sinEntidad = NecesidadMother.extraordinaria(subcategoriaId, 10);
 
     assertThrows(DataIntegrityViolationException.class, () -> repository.save(sinEntidad));
+  }
+
+  @Test
+  void guardarYLeer_recurrente_conservaElIdDeCadaPeriodoAlRenovar() {
+    NecesidadRecurrente original = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 50);
+    repository.save(original);
+    original.generarNuevoPeriodo();
+    repository.save(original);
+
+    NecesidadRecurrente leida =
+        (NecesidadRecurrente) repository.findById(original.getId()).orElseThrow();
+
+    assertEquals(
+        original.getPeriodos().stream().map(PeriodoNecesidad::id).toList(),
+        leida.getPeriodos().stream().map(PeriodoNecesidad::id).toList());
+    assertEquals(original.periodoActualId(), leida.periodoActualId());
+  }
+
+  @Test
+  void necesidadLeidaDeLaBase_sabeCuantoSeLeAsigno() {
+    // El problema que resuelve DTI-06: antes, leída de Postgres volvía con lista vacía (acumulado
+    // 0)
+    NecesidadRecurrente original = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 50);
+    repository.save(original);
+    DonacionesIndependientesRepositoryEnMemoria donaciones =
+        new DonacionesIndependientesRepositoryEnMemoria();
+    AcumuladosDeAsignacion acumulados = new AcumuladosDeAsignacion(donaciones);
+    donaciones.save(DonacionIndependienteMother.asignada(30, original));
+
+    Necesidad leida = repository.findById(original.getId()).orElseThrow();
+
+    assertEquals(30, acumulados.asignadoA(leida));
+    assertFalse(acumulados.estaSatisfecha(leida));
   }
 }

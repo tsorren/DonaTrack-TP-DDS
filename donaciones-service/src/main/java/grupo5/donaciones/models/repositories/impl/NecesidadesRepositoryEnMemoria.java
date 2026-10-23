@@ -16,16 +16,8 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
     implements INecesidadesRepository {
 
   @Override
-  public List<Necesidad> findByEstaSatisfechaFalse() {
-    return storage.values().stream().filter(n -> !n.estaSatisfecha()).toList();
-  }
-
-  @Override
-  public List<Necesidad> findByEstaSatisfechaFalseActivaTrue() {
-    return storage.values().stream()
-        .filter(n -> !n.estaSatisfecha())
-        .filter(Necesidad::isActiva)
-        .toList();
+  public List<Necesidad> findActivas() {
+    return storage.values().stream().filter(Necesidad::isActiva).toList();
   }
 
   @Override
@@ -34,35 +26,10 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
   }
 
   @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalse() {
-    return storage.values().stream()
-        .filter(Necesidad::isActiva)
-        .filter(n -> !n.estaSatisfecha())
-        .toList();
-  }
-
-  @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue() {
-    return storage.values().stream()
-        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.RECURRENTE)
-        .filter(Necesidad::isActiva)
-        .filter(n -> !n.estaSatisfecha())
-        .toList();
-  }
-
-  @Override
   public List<Necesidad> findByActivaTrueAndRecurrenteTrue() {
     return storage.values().stream()
         .filter(n -> n.getTipoNecesidad() == TipoNecesidad.RECURRENTE)
         .filter(Necesidad::isActiva)
-        .toList();
-  }
-
-  @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse() {
-    return storage.values().stream()
-        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.EXTRAORDINARIA)
-        .filter(n -> !n.estaSatisfecha())
         .toList();
   }
 

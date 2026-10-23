@@ -1,42 +1,24 @@
 package grupo5.donaciones.models.entities.necesidades;
 
-import grupo5.common.exceptions.ErrorCatalog;
-import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
-import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
-public class NecesidadExtraordinaria extends Necesidad implements Asignable {
-  @Getter(AccessLevel.NONE)
-  private List<DonacionIndependiente> donacionesAsignadas;
+public class NecesidadExtraordinaria extends Necesidad {
 
   private boolean activa;
 
   public NecesidadExtraordinaria(
       UUID subcategoriaId, Integer cantidadNecesitada, String descripcion) {
     super(subcategoriaId, cantidadNecesitada, descripcion);
-    this.donacionesAsignadas = new ArrayList<>();
     this.activa = true;
   }
 
   /** Constructor de reconstitución para el adaptador JPA */
-  public NecesidadExtraordinaria(
-      DatosNecesidad datos, boolean activa, List<DonacionIndependiente> donacionesAsignadas) {
+  public NecesidadExtraordinaria(DatosNecesidad datos, boolean activa) {
     super(datos);
     this.activa = activa;
-    this.donacionesAsignadas =
-        donacionesAsignadas != null ? new ArrayList<>(donacionesAsignadas) : new ArrayList<>();
-  }
-
-  @Override
-  public List<DonacionIndependiente> getDonacionesAsignadas() {
-    return List.copyOf(donacionesAsignadas);
   }
 
   @Override
@@ -45,35 +27,24 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   }
 
   @Override
-  public NecesidadDTO toDTO() {
-    return super.toDTO(null);
+  public NecesidadDTO toDTO(int cantidadAcumulada) {
+    return super.toDTO(null, estaSatisfechaCon(cantidadAcumulada));
   }
 
   @Override
-  public void asignarDonacion(DonacionIndependiente donacion) {
-    if (donacion == null) throw new ValidationException(ErrorCatalog.ASIGNAR_DONACION_NULA);
-    if (this.donacionesAsignadas.contains(donacion))
-      throw new ValidationException(ErrorCatalog.DONACION_YA_ASIGNADA);
-
-    this.donacionesAsignadas.add(donacion);
+  public DestinoAsignacion destinoDeAsignacion() {
+    return new DestinoAsignacion(getId(), null, getEntidadId());
   }
 
   @Override
-  public void quitarDonacion(DonacionIndependiente donacion) {
-    if (!this.donacionesAsignadas.contains(donacion))
-      throw new ValidationException(ErrorCatalog.DONACION_NO_PERTENECE_A_NECESIDAD);
-
-    this.donacionesAsignadas.remove(donacion);
+  public UUID periodoActualId() {
+    return null;
   }
 
+  /** Se satisface con las donaciones parciales que igualan o superan lo pedido. */
   @Override
-  public Integer cantidadAcumulada() {
-    return this.donacionesAsignadas.stream().mapToInt(DonacionIndependiente::getCantidad).sum();
-  }
-
-  @Override
-  public boolean estaSatisfecha() {
-    return this.cantidadAcumulada() >= this.getCantidadNecesitada();
+  public boolean estaSatisfechaCon(int cantidadAcumulada) {
+    return cantidadAcumulada >= this.getCantidadNecesitada();
   }
 
   @Override
@@ -84,19 +55,5 @@ public class NecesidadExtraordinaria extends Necesidad implements Asignable {
   @Override
   public void desactivar() {
     this.activa = false;
-  }
-
-  @Override
-  public int contarDonacionesAsignadasDesde(LocalDateTime desde) {
-    if (this.donacionesAsignadas == null || desde == null) return 0;
-    return (int)
-        this.donacionesAsignadas.stream()
-            .filter(d -> d.getFechaRegistro() != null && d.getFechaRegistro().isAfter(desde))
-            .count();
-  }
-
-  @Override
-  public Necesidad obtenerNecesidad() {
-    return this;
   }
 }

@@ -6,7 +6,7 @@ import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente;
 import grupo5.donaciones.models.entities.itemsNormalizados.BienNormalizado;
-import grupo5.donaciones.models.entities.necesidades.Asignable;
+import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,32 +38,32 @@ public final class DonacionIndependienteMother {
     return crearConCantidad(cantidad);
   }
 
-  public static DonacionIndependiente asignada(int cantidad, Asignable receptor) {
+  public static DonacionIndependiente asignada(int cantidad, Necesidad receptor) {
     DonacionIndependiente d = enDeposito(cantidad);
-    d.asignar(ACTOR_DEFECTO, receptor);
+    d.asignar(ACTOR_DEFECTO, receptor.destinoDeAsignacion());
     return d;
   }
 
-  public static DonacionIndependiente listaParaEntregar(int cantidad, Asignable receptor) {
+  public static DonacionIndependiente listaParaEntregar(int cantidad, Necesidad receptor) {
     DonacionIndependiente d = asignada(cantidad, receptor);
     d.planificarRuta(ACTOR_DEFECTO);
     return d;
   }
 
-  public static DonacionIndependiente enTraslado(int cantidad, Asignable receptor) {
+  public static DonacionIndependiente enTraslado(int cantidad, Necesidad receptor) {
     DonacionIndependiente d = listaParaEntregar(cantidad, receptor);
     d.iniciarRecorrido(ACTOR_DEFECTO);
     return d;
   }
 
-  public static DonacionIndependiente entregada(int cantidad, Asignable receptor) {
+  public static DonacionIndependiente entregada(int cantidad, Necesidad receptor) {
     DonacionIndependiente d = enTraslado(cantidad, receptor);
     d.confirmarEntrega(ACTOR_DEFECTO);
     return d;
   }
 
   public static DonacionIndependiente entregaFallida(
-      int cantidad, Asignable receptor, String motivo) {
+      int cantidad, Necesidad receptor, String motivo) {
     DonacionIndependiente d = enTraslado(cantidad, receptor);
     d.registrarFalla(motivo, ACTOR_DEFECTO);
     return d;
