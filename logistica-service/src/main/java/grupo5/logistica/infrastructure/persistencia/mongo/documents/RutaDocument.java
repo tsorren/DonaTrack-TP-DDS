@@ -14,16 +14,13 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @SuppressWarnings("java:S120")
 @Document(collection = "rutas")
-@CompoundIndexes({
-  @CompoundIndex(name = "idx_ruta_camion_estado", def = "{'idCamion': 1, 'estado': 1}"),
-  @CompoundIndex(name = "idx_ruta_chofer_estado", def = "{'idChofer': 1, 'estado': 1}")
-})
+@CompoundIndex(name = "idx_ruta_camion_estado", def = "{'idCamion': 1, 'estado': 1}")
+@CompoundIndex(name = "idx_ruta_chofer_estado", def = "{'idChofer': 1, 'estado': 1}")
 @Getter
 @Setter
 @NoArgsConstructor

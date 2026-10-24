@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,12 +47,9 @@ import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
-import grupo5.logistica.models.entities.rutas.direccion.Direccion;
-import grupo5.logistica.models.entities.rutas.direccion.Localidad;
-import grupo5.logistica.models.entities.rutas.direccion.Pais;
-import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -64,23 +62,14 @@ import org.mockito.ArgumentCaptor;
 class RepositoriosMongoAdaptersTest {
 
   @Test
-  void camionMongoAdapter_deberiaEjecutarOperacionesCrudYConsultasConRutaDerivada() {
+  void camionMongoAdapter_deberiaConsultarPorEstadoYPatenteConRutaDerivada() {
     SpringDataCamionMongoRepository springDataRepo = mock(SpringDataCamionMongoRepository.class);
     SpringDataRutaMongoRepository rutaRepo = mock(SpringDataRutaMongoRepository.class);
     CamionMongoMapper mapper = new CamionMongoMapper();
     CamionRepositoryMongoAdapter adapter =
         new CamionRepositoryMongoAdapter(springDataRepo, rutaRepo, mapper);
-
-    assertNull(adapter.save(null));
     Camion camion = new Camion("AB123CD", 50.0f, 2000.0f, 3.0f);
-    when(springDataRepo.findById(camion.getId())).thenReturn(Optional.empty());
-    when(springDataRepo.save(any(CamionDocument.class))).thenAnswer(inv -> inv.getArgument(0));
 
-    Camion saved = adapter.save(camion);
-    assertNotNull(saved);
-    assertEquals(camion.getId(), saved.getId());
-    assertEquals(1, adapter.saveAll(List.of(camion)).size());
-    assertTrue(adapter.saveAll(null).isEmpty());
     assertTrue(adapter.findByEstado(null).isEmpty());
     assertTrue(adapter.findByPatente(null).isEmpty());
     assertTrue(adapter.findByPatente("   ").isEmpty());
@@ -105,46 +94,16 @@ class RepositoriosMongoAdaptersTest {
     when(rutaRepo.findFirstByIdCamionAndEstado(camion.getId(), EstadoRuta.EN_TRASLADO))
         .thenReturn(Optional.of(rutaDoc));
     assertEquals(rutaActivaId, adapter.findByEstado(EstadoCamion.EN_RUTA).getFirst().getRutaId());
-
-    // CRUD base methods
-    when(springDataRepo.findAll()).thenReturn(List.of(doc));
-    when(springDataRepo.findById(camion.getId())).thenReturn(Optional.of(doc));
-    when(springDataRepo.existsById(camion.getId())).thenReturn(true);
-    when(springDataRepo.count()).thenReturn(1L);
-
-    assertEquals(1, adapter.findAll().size());
-    assertTrue(adapter.findById(camion.getId()).isPresent());
-    assertTrue(adapter.findById(null).isEmpty());
-    assertTrue(adapter.existsById(camion.getId()));
-    assertFalse(adapter.existsById(null));
-    assertEquals(1L, adapter.count());
-
-    adapter.delete(camion);
-    verify(springDataRepo).deleteById(camion.getId());
-    adapter.delete(null);
-
-    adapter.deleteAll();
-    verify(springDataRepo).deleteAll();
   }
 
   @Test
-  void choferMongoAdapter_deberiaEjecutarOperacionesCrudYConsultasConRutaDerivada() {
+  void choferMongoAdapter_deberiaConsultarActivosYDisponiblesConRutaDerivada() {
     SpringDataChoferMongoRepository springDataRepo = mock(SpringDataChoferMongoRepository.class);
     SpringDataRutaMongoRepository rutaRepo = mock(SpringDataRutaMongoRepository.class);
     ChoferMongoMapper mapper = new ChoferMongoMapper();
     ChoferesRepositoryMongoAdapter adapter =
         new ChoferesRepositoryMongoAdapter(springDataRepo, rutaRepo, mapper);
-
-    assertNull(adapter.save(null));
     Chofer chofer = new Chofer("Luis", "Paz", "LIC-50", "1122334455");
-    when(springDataRepo.findById(chofer.getId())).thenReturn(Optional.empty());
-    when(springDataRepo.save(any(ChoferDocument.class))).thenAnswer(inv -> inv.getArgument(0));
-
-    Chofer saved = adapter.save(chofer);
-    assertNotNull(saved);
-    assertEquals(chofer.getId(), saved.getId());
-    assertEquals(1, adapter.saveAll(List.of(chofer)).size());
-    assertTrue(adapter.saveAll(null).isEmpty());
 
     ChoferDocument doc = mapper.toDocument(chofer);
     when(springDataRepo.findByEstadoNot(EstadoChofer.DESHABILITADO)).thenReturn(List.of(doc));
@@ -163,25 +122,6 @@ class RepositoriosMongoAdaptersTest {
     when(rutaRepo.findFirstByIdChoferAndEstado(chofer.getId(), EstadoRuta.EN_TRASLADO))
         .thenReturn(Optional.of(rutaDoc));
     assertEquals(rutaActivaId, adapter.findActivos().getFirst().getRutaId());
-
-    // CRUD base methods
-    when(springDataRepo.findAll()).thenReturn(List.of(doc));
-    when(springDataRepo.findById(chofer.getId())).thenReturn(Optional.of(doc));
-    when(springDataRepo.existsById(chofer.getId())).thenReturn(true);
-    when(springDataRepo.count()).thenReturn(1L);
-
-    assertEquals(1, adapter.findAll().size());
-    assertTrue(adapter.findById(chofer.getId()).isPresent());
-    assertTrue(adapter.findById(null).isEmpty());
-    assertTrue(adapter.existsById(chofer.getId()));
-    assertFalse(adapter.existsById(null));
-    assertEquals(1L, adapter.count());
-
-    adapter.delete(chofer);
-    verify(springDataRepo).deleteById(chofer.getId());
-
-    adapter.deleteAll();
-    verify(springDataRepo).deleteAll();
   }
 
   @Test
@@ -222,29 +162,10 @@ class RepositoriosMongoAdaptersTest {
     assertEquals(1, adapter.findByFecha(ruta.getFecha()).size());
     assertEquals(1, adapter.findByCamionId(ruta.getCamionId()).size());
     assertEquals(1, adapter.findByCamionIdAndFecha(ruta.getCamionId(), ruta.getFecha()).size());
-
-    // CRUD base methods
-    when(springDataRepo.findAll()).thenReturn(List.of(doc));
-    when(springDataRepo.findById(ruta.getId())).thenReturn(Optional.of(doc));
-    when(springDataRepo.existsById(ruta.getId())).thenReturn(true);
-    when(springDataRepo.count()).thenReturn(1L);
-
-    assertEquals(1, adapter.findAll().size());
-    assertTrue(adapter.findById(ruta.getId()).isPresent());
-    assertTrue(adapter.findById(null).isEmpty());
-    assertTrue(adapter.existsById(ruta.getId()));
-    assertFalse(adapter.existsById(null));
-    assertEquals(1L, adapter.count());
-
-    adapter.delete(ruta);
-    verify(springDataRepo).deleteById(ruta.getId());
-
-    adapter.deleteAll();
-    verify(springDataRepo).deleteAll();
   }
 
   @Test
-  void entregasMongoAdapter_deberiaPersistirDireccionEmbebidaYConsultarEntregas() {
+  void entregasMongoAdapter_deberiaConsultarPorEstadoRutaDonacionYBeneficiaria() {
     SpringDataEntregaMongoRepository springDataRepo = mock(SpringDataEntregaMongoRepository.class);
     EntregaMongoMapper mapper = new EntregaMongoMapper(Clock.systemUTC());
     EntregasRepositoryMongoAdapter adapter =
@@ -253,20 +174,8 @@ class RepositoriosMongoAdaptersTest {
             mock(SpringDataRutaMongoRepository.class),
             mock(SpringDataCamionMongoRepository.class),
             mapper);
+    Entrega entrega = EntregaMother.pendiente();
 
-    assertNull(adapter.save(null));
-    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
-    Direccion dir = new Direccion("Callao", 500, null, null, "1022", caba);
-    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 10.0f, 1.0f);
-
-    when(springDataRepo.findById(entrega.getId())).thenReturn(Optional.empty());
-    when(springDataRepo.save(any(EntregaDocument.class))).thenAnswer(inv -> inv.getArgument(0));
-
-    Entrega saved = adapter.save(entrega);
-    assertNotNull(saved);
-    assertEquals(entrega.getId(), saved.getId());
-    assertEquals(1, adapter.saveAll(List.of(entrega)).size());
-    assertTrue(adapter.saveAll(null).isEmpty());
     assertTrue(adapter.findByEstado(null).isEmpty());
     assertTrue(adapter.findByRutaId(null).isEmpty());
     assertFalse(adapter.existsByIdDonacion(null));
@@ -288,29 +197,10 @@ class RepositoriosMongoAdaptersTest {
     when(springDataRepo.findByIdBeneficiaria(entrega.getIdBeneficiaria())).thenReturn(List.of(doc));
     assertEquals(entrega.getId(), adapter.findByIdDonacion(entrega.getIdDonacion()).get().getId());
     assertEquals(1, adapter.findByIdBeneficiaria(entrega.getIdBeneficiaria()).size());
-
-    // CRUD base methods
-    when(springDataRepo.findAll()).thenReturn(List.of(doc));
-    when(springDataRepo.findById(entrega.getId())).thenReturn(Optional.of(doc));
-    when(springDataRepo.existsById(entrega.getId())).thenReturn(true);
-    when(springDataRepo.count()).thenReturn(1L);
-
-    assertEquals(1, adapter.findAll().size());
-    assertTrue(adapter.findById(entrega.getId()).isPresent());
-    assertTrue(adapter.findById(null).isEmpty());
-    assertTrue(adapter.existsById(entrega.getId()));
-    assertFalse(adapter.existsById(null));
-    assertEquals(1L, adapter.count());
-
-    adapter.delete(entrega);
-    verify(springDataRepo).deleteById(entrega.getId());
-
-    adapter.deleteAll();
-    verify(springDataRepo).deleteAll();
   }
 
   @Test
-  void solicitudPlanificacionMongoAdapter_deberiaGuardarYSincronizar() {
+  void solicitudPlanificacionMongoAdapter_deberiaResolverElCrudConElAdaptadorBase() {
     SpringDataSolicitudPlanificacionMongoRepository springDataRepo =
         mock(SpringDataSolicitudPlanificacionMongoRepository.class);
     SolicitudPlanificacionMongoMapper mapper = new SolicitudPlanificacionMongoMapper();
@@ -359,9 +249,7 @@ class RepositoriosMongoAdaptersTest {
     SolicitudesTransicionEntregaRepositoryMongoAdapter adapter =
         new SolicitudesTransicionEntregaRepositoryMongoAdapter(springDataRepo);
 
-    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
-    Direccion dir = new Direccion("Salta", 100, null, null, "1074", caba);
-    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 5.0f, 0.5f);
+    Entrega entrega = EntregaMother.pendiente();
 
     adapter.registrar(null);
     verify(springDataRepo, never()).save(any());
@@ -378,19 +266,19 @@ class RepositoriosMongoAdaptersTest {
 
     // NoRecepcion
     adapter.registrar(new NoRecepcion(entrega, "Actor2", "Cerrado", true));
-    verify(springDataRepo, org.mockito.Mockito.times(2)).save(captor.capture());
+    verify(springDataRepo, times(2)).save(captor.capture());
     assertEquals(TipoTransicionEntrega.NO_RECEPCION, captor.getValue().getTipoTransicion());
     assertEquals("Cerrado", captor.getValue().getJustificacion());
     assertTrue(captor.getValue().getReplanificable());
 
     // RevisionEntrega
     adapter.registrar(new RevisionEntrega(entrega, "Actor3"));
-    verify(springDataRepo, org.mockito.Mockito.times(3)).save(captor.capture());
+    verify(springDataRepo, times(3)).save(captor.capture());
     assertEquals(TipoTransicionEntrega.REVISION, captor.getValue().getTipoTransicion());
 
     // RegresoDeposito
     adapter.registrar(new RegresoDeposito(entrega, "Actor4"));
-    verify(springDataRepo, org.mockito.Mockito.times(4)).save(captor.capture());
+    verify(springDataRepo, times(4)).save(captor.capture());
     assertEquals(TipoTransicionEntrega.REGRESO_DEPOSITO, captor.getValue().getTipoTransicion());
   }
 
@@ -401,9 +289,7 @@ class RepositoriosMongoAdaptersTest {
     EventosEntregaRepositoryMongoAdapter adapter =
         new EventosEntregaRepositoryMongoAdapter(springDataRepo);
 
-    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
-    Direccion dir = new Direccion("Salta", 100, null, null, "1074", caba);
-    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 5.0f, 0.5f);
+    Entrega entrega = EntregaMother.pendiente();
 
     adapter.registrarRutaAsignada(null, entrega);
     adapter.registrarRutaAsignada(new EventoRutaAsignada(UUID.randomUUID(), entrega.getId()), null);
@@ -428,7 +314,7 @@ class RepositoriosMongoAdaptersTest {
     EntregaConfirmada evExito =
         new EntregaConfirmada(entrega.getId(), entrega.getIdDonacion(), rutaId);
     adapter.registrarEntregaExitosa(evExito);
-    verify(springDataRepo, org.mockito.Mockito.times(2)).save(captor.capture());
+    verify(springDataRepo, times(2)).save(captor.capture());
     assertEquals(TipoEventoEntrega.ENTREGA_EXITOSA, captor.getValue().getTipo());
     assertEquals(entrega.getId(), captor.getValue().getIdEntrega());
     assertEquals(rutaId, captor.getValue().getIdRuta());
@@ -437,7 +323,7 @@ class RepositoriosMongoAdaptersTest {
     EntregaFallida evFallo =
         new EntregaFallida(entrega.getId(), entrega.getIdDonacion(), "No estaba", true);
     adapter.registrarEntregaFallida(evFallo);
-    verify(springDataRepo, org.mockito.Mockito.times(3)).save(captor.capture());
+    verify(springDataRepo, times(3)).save(captor.capture());
     assertEquals(TipoEventoEntrega.ENTREGA_FALLIDA, captor.getValue().getTipo());
     assertEquals("No estaba", captor.getValue().getJustificacion());
     assertTrue(captor.getValue().getReplanificable());

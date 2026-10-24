@@ -2,6 +2,7 @@ package grupo5.logistica.infrastructure.persistencia.mongo; // NOSONAR
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.CamionRepositoryMongoAdapter;
@@ -12,6 +13,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.adapters.RutasReposito
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.SolicitudPlanificacionRepositoryMongoAdapter;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.SolicitudesTransicionEntregaRepositoryMongoAdapter;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EventoEntregaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.SolicitudTransicionEntregaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.CamionMongoMapper;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.ChoferMongoMapper;
@@ -48,6 +50,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.IndexInfo;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -226,6 +229,18 @@ class RepositoriosLogisticaMongoTest {
     Camion repetido = new Camion("AA111AA", 20f, 5000f, 3f);
 
     assertThrows(DuplicateKeyException.class, () -> camiones.save(repetido));
+  }
+
+  @Test
+  void laColeccionRutasTieneLosIndicesCompuestosPorCamionYPorChofer() {
+    rutas.save(rutaCon(UUID.randomUUID(), UUID.randomUUID()));
+
+    List<String> indices =
+        mongoTemplate.indexOps(RutaDocument.class).getIndexInfo().stream()
+            .map(IndexInfo::getName)
+            .toList();
+
+    assertTrue(indices.containsAll(List.of("idx_ruta_camion_estado", "idx_ruta_chofer_estado")));
   }
 
   @Test
