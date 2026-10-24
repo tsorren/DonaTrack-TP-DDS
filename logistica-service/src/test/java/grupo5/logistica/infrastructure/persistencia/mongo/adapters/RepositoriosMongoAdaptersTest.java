@@ -52,6 +52,7 @@ import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -195,8 +196,8 @@ class RepositoriosMongoAdaptersTest {
     UUID entregaId = UUID.randomUUID();
     Ruta ruta = new Ruta(LocalDate.of(2026, 10, 12), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(entregaId);
-    when(entregaRepo.findById(entregaId))
-        .thenReturn(Optional.of(EntregaDocument.builder().id(entregaId).build()));
+    when(entregaRepo.findAllById(List.of(entregaId)))
+        .thenReturn(List.of(EntregaDocument.builder().id(entregaId).build()));
 
     when(springDataRepo.findById(ruta.getId())).thenReturn(Optional.empty());
     when(springDataRepo.save(any(RutaDocument.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -245,7 +246,7 @@ class RepositoriosMongoAdaptersTest {
   @Test
   void entregasMongoAdapter_deberiaPersistirDireccionEmbebidaYConsultarEntregas() {
     SpringDataEntregaMongoRepository springDataRepo = mock(SpringDataEntregaMongoRepository.class);
-    EntregaMongoMapper mapper = new EntregaMongoMapper();
+    EntregaMongoMapper mapper = new EntregaMongoMapper(Clock.systemUTC());
     EntregasRepositoryMongoAdapter adapter =
         new EntregasRepositoryMongoAdapter(
             springDataRepo,

@@ -10,6 +10,8 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocume
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.ChoferDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.DireccionSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.FotoRecepcionSubdocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.ParadaSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.SolicitudPlanificacionDocument;
 import grupo5.logistica.models.entities.camiones.Camion;
@@ -26,6 +28,8 @@ import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -37,7 +41,7 @@ class PersistenciaMongoMappersTest {
   private final CamionMongoMapper camionMapper = new CamionMongoMapper();
   private final ChoferMongoMapper choferMapper = new ChoferMongoMapper();
   private final RutaMongoMapper rutaMapper = new RutaMongoMapper();
-  private final EntregaMongoMapper entregaMapper = new EntregaMongoMapper();
+  private final EntregaMongoMapper entregaMapper = new EntregaMongoMapper(Clock.systemUTC());
   private final SolicitudPlanificacionMongoMapper solicitudMapper =
       new SolicitudPlanificacionMongoMapper();
 
@@ -210,6 +214,52 @@ class PersistenciaMongoMappersTest {
 
     assertEquals(-64.2, actualizado.getDestino().getUbicacion().getX());
     assertEquals("Callao", actualizado.getDestino().getCalle());
+  }
+
+  @Test
+  void entregaMapper_conFotosRepetidasEnElDocumento_conservaLaHoraDeLaPrimera() {
+    Instant primeraSubida = Instant.parse("2026-10-23T10:00:00Z");
+    EntregaDocument doc =
+        entregaMapper.toDocument(
+            entregaConfirmadaConCoordenadas(new CoordenadasGeograficas(-34.6, -58.4)));
+    doc.setFotosRecepcion(
+        List.of(
+            fotoSubidaEn("f1", primeraSubida), fotoSubidaEn("f1", primeraSubida.plusSeconds(60))));
+    Entrega reconstituida = entregaMapper.toDomain(doc);
+
+    EntregaDocument actualizado = entregaMapper.toDocument(reconstituida, doc);
+
+    assertEquals(primeraSubida, actualizado.getFotosRecepcion().getFirst().getSubidaEn());
+  }
+
+  @Test
+  void rutaMapper_conParadasRepetidasEnElDocumento_conservaLaPrimera() {
+    UUID entregaId = UUID.randomUUID();
+    UUID donacionDeLaPrimera = UUID.randomUUID();
+    Ruta ruta = new Ruta(LocalDate.of(2026, 10, 10), UUID.randomUUID(), UUID.randomUUID());
+    ruta.agregarEntrega(entregaId);
+    RutaDocument doc = rutaMapper.toDocument(ruta);
+    doc.setParadas(
+        List.of(
+            paradaDe(1, entregaId, donacionDeLaPrimera),
+            paradaDe(2, entregaId, UUID.randomUUID())));
+    Ruta reconstituida = rutaMapper.toDomain(doc);
+
+    RutaDocument actualizado = rutaMapper.toDocument(reconstituida, doc);
+
+    assertEquals(donacionDeLaPrimera, actualizado.getParadas().getFirst().getIdDonacion());
+  }
+
+  private static FotoRecepcionSubdocument fotoSubidaEn(String clave, Instant subidaEn) {
+    return FotoRecepcionSubdocument.builder().clave(clave).subidaEn(subidaEn).build();
+  }
+
+  private static ParadaSubdocument paradaDe(int orden, UUID idEntrega, UUID idDonacion) {
+    return ParadaSubdocument.builder()
+        .orden(orden)
+        .idEntrega(idEntrega)
+        .idDonacion(idDonacion)
+        .build();
   }
 
   private static Entrega entregaConfirmadaConCoordenadas(CoordenadasGeograficas coordenadas) {

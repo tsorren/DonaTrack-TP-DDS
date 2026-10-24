@@ -14,7 +14,11 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
 import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
@@ -50,6 +55,7 @@ class EntregaUbicacionYFotosMongoTest {
       new CoordenadasGeograficas(-34.6037, -58.3816);
   private static final CoordenadasGeograficas CORDOBA =
       new CoordenadasGeograficas(-31.4201, -64.1888);
+  private static final Duration UNA_HORA = Duration.ofHours(1);
 
   @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0");
 
@@ -65,10 +71,17 @@ class EntregaUbicacionYFotosMongoTest {
     EntregasRepositoryMongoAdapter.class,
     EntregaMongoMapper.class
   })
-  static class Contexto {}
+  static class Contexto {
+
+    @Bean
+    RelojManual reloj() {
+      return new RelojManual();
+    }
+  }
 
   @Autowired MongoTemplate mongoTemplate;
   @Autowired EntregasRepositoryMongoAdapter entregas;
+  @Autowired RelojManual reloj;
 
   @BeforeEach
   void limpiar() {
@@ -116,24 +129,64 @@ class EntregaUbicacionYFotosMongoTest {
   }
 
   @Test
-  void adjuntarOtraFotoConservaLaHoraDeSubidaDeLasAnteriores() {
-    Entrega entrega = entregaEn(OBELISCO);
-    entrega.iniciarRuta("Chofer");
-    entrega.confirmarEntrega("Entidad", List.of("fotos/1.jpg"));
-    entregas.save(entrega);
-    Instant subidaOriginal = fotosEnBase(entrega).getFirst().getSubidaEn();
+  void adjuntarOtraFotoMasTarde_conservaLaHoraDeSubidaDeLaAnterior() {
+    Entrega entrega = guardarConfirmadaConUnaFoto();
+    Instant primerGuardado = reloj.instant();
+    reloj.avanzar(UNA_HORA);
     Entrega guardada = entregas.findById(entrega.getId()).orElseThrow();
     guardada.adjuntarFotosRecepcion(List.of("fotos/2.jpg"));
 
     entregas.save(guardada);
 
-    List<FotoRecepcionSubdocument> fotos = fotosEnBase(entrega);
-    assertEquals(2, fotos.size());
-    assertEquals(subidaOriginal, fotos.getFirst().getSubidaEn());
+    assertEquals(primerGuardado, fotosEnBase(entrega).getFirst().getSubidaEn());
+  }
+
+  @Test
+  void adjuntarOtraFotoMasTarde_registraLaHoraDelNuevoGuardado() {
+    Entrega entrega = guardarConfirmadaConUnaFoto();
+    reloj.avanzar(UNA_HORA);
+    Entrega guardada = entregas.findById(entrega.getId()).orElseThrow();
+    guardada.adjuntarFotosRecepcion(List.of("fotos/2.jpg"));
+
+    entregas.save(guardada);
+
+    assertEquals(reloj.instant(), fotosEnBase(entrega).getLast().getSubidaEn());
+  }
+
+  private Entrega guardarConfirmadaConUnaFoto() {
+    Entrega entrega = entregaEn(OBELISCO);
+    entrega.iniciarRuta("Chofer");
+    entrega.confirmarEntrega("Entidad", List.of("fotos/1.jpg"));
+    return entregas.save(entrega);
   }
 
   private List<FotoRecepcionSubdocument> fotosEnBase(Entrega entrega) {
     return mongoTemplate.findById(entrega.getId(), EntregaDocument.class).getFotosRecepcion();
+  }
+
+  /** Reloj que solo avanza cuando el test lo pide. */
+  static class RelojManual extends Clock {
+
+    private Instant ahora = Instant.parse("2026-10-23T10:00:00Z");
+
+    void avanzar(Duration duracion) {
+      ahora = ahora.plus(duracion);
+    }
+
+    @Override
+    public Instant instant() {
+      return ahora;
+    }
+
+    @Override
+    public ZoneId getZone() {
+      return ZoneOffset.UTC;
+    }
+
+    @Override
+    public Clock withZone(ZoneId zona) {
+      return this;
+    }
   }
 
   private static boolean tieneIndice(List<IndexInfo> indices, String campo) {

@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
@@ -132,18 +133,25 @@ public class RutaMongoMapper {
   private static void sincronizarParadas(Ruta domain, RutaDocument doc) {
     Map<UUID, ParadaSubdocument> existentes =
         doc.getParadas().stream()
-            .collect(Collectors.toMap(ParadaSubdocument::getIdEntrega, Function.identity()));
+            .collect(
+                Collectors.toMap(
+                    ParadaSubdocument::getIdEntrega,
+                    Function.identity(),
+                    (primera, repetida) -> primera));
     List<UUID> idsEntregas = domain.getEntregaIds();
-    List<ParadaSubdocument> paradas = new ArrayList<>();
-    for (int i = 0; i < idsEntregas.size(); i++) {
-      UUID idEntrega = idsEntregas.get(i);
-      ParadaSubdocument parada =
-          existentes.getOrDefault(
-              idEntrega, ParadaSubdocument.builder().idEntrega(idEntrega).build());
-      parada.setOrden(i + 1);
-      paradas.add(parada);
-    }
-    doc.setParadas(paradas);
+    doc.setParadas(
+        IntStream.range(0, idsEntregas.size())
+            .mapToObj(i -> paradaEnOrden(i + 1, idsEntregas.get(i), existentes))
+            .collect(Collectors.toCollection(ArrayList::new)));
+  }
+
+  private static ParadaSubdocument paradaEnOrden(
+      int orden, UUID idEntrega, Map<UUID, ParadaSubdocument> existentes) {
+    ParadaSubdocument parada =
+        existentes.getOrDefault(
+            idEntrega, ParadaSubdocument.builder().idEntrega(idEntrega).build());
+    parada.setOrden(orden);
+    return parada;
   }
 
   private static Instant aInstantUtc(LocalDateTime fechaHora) {

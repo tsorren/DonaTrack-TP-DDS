@@ -2,7 +2,9 @@ package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.testing.DisabledIfDockerUnavailable;
 import grupo5.logistica.infrastructure.persistencia.mongo.config.MongoPersistenciaConfig;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.AsignacionSubdocument;
@@ -20,6 +22,7 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
 import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -72,7 +76,13 @@ class DesnormalizacionesMongoTest {
     EntregaMongoMapper.class,
     RutaMongoMapper.class
   })
-  static class Contexto {}
+  static class Contexto {
+
+    @Bean
+    Clock reloj() {
+      return Clock.systemUTC();
+    }
+  }
 
   @Autowired MongoTemplate mongoTemplate;
   @Autowired CamionRepositoryMongoAdapter camiones;
@@ -92,7 +102,7 @@ class DesnormalizacionesMongoTest {
   @Test
   void alAsignarUnaEntrega_quedaLaAsignacionCompletaEnElMismoDocumento() {
     Entrega entrega = entregas.save(nuevaEntrega());
-    Ruta ruta = rutaCon(entrega);
+    Ruta ruta = rutaCon(camion, entrega);
 
     asignarYGuardar(ruta, entrega);
 
@@ -106,7 +116,7 @@ class DesnormalizacionesMongoTest {
   @Test
   void laAsignacionConservaLaPatenteDelDiaAunqueDespuesCambie() {
     Entrega entrega = entregas.save(nuevaEntrega());
-    asignarYGuardar(rutaCon(entrega), entrega);
+    asignarYGuardar(rutaCon(camion, entrega), entrega);
     cambiarPatenteEnBase("ZZ999ZZ");
     Entrega asignada = entregas.findById(entrega.getId()).orElseThrow();
     asignada.iniciarRuta("Chofer");
@@ -117,41 +127,140 @@ class DesnormalizacionesMongoTest {
   }
 
   @Test
-  void lasParadasConservanElOrdenYCopianDonacionYDestino() {
-    Entrega primera = entregas.save(nuevaEntrega());
-    Entrega segunda = entregas.save(nuevaEntrega());
-    Entrega tercera = entregas.save(nuevaEntrega());
-    Ruta ruta = rutaCon(primera, segunda, tercera);
+  void unaEntregaQueCambiaDeRuta_tomaLaAsignacionDeLaRutaNueva() {
+    Entrega entrega = entregas.save(nuevaEntrega());
+    asignarYGuardar(rutaCon(camion, entrega), entrega);
+    Camion otroCamion = camiones.save(new Camion("XY987ZW", 20f, 5000f, 3f));
+    Ruta rutaNueva = rutaCon(otroCamion, entrega);
+    rutas.save(rutaNueva);
+    Entrega reasignada = regresadaAlDeposito(entrega);
+    reasignada.asignarRuta(rutaNueva.getId());
 
-    rutas.save(ruta);
+    entregas.save(reasignada);
 
-    List<ParadaSubdocument> paradas =
-        mongoTemplate.findById(ruta.getId(), RutaDocument.class).getParadas();
-    assertEquals(List.of(1, 2, 3), paradas.stream().map(ParadaSubdocument::getOrden).toList());
-    assertEquals(segunda.getIdDonacion(), paradas.get(1).getIdDonacion());
-    assertEquals("Callao", paradas.get(1).getDestino().getCalle());
-    assertEquals(
-        List.of(primera.getId(), segunda.getId(), tercera.getId()),
-        rutas.findById(ruta.getId()).orElseThrow().getEntregaIds());
+    AsignacionSubdocument asignacion = documentoDe(entrega).getAsignacion();
+    assertEquals(rutaNueva.getId(), asignacion.getIdRuta());
+    assertEquals("XY987ZW", asignacion.getPatente());
   }
 
   @Test
-  void unaEntregaQueRegresaAlDeposito_quedaSinAsignacionYLaRutaConservaLaParada() {
+  void guardarUnaEntregaAsignadaAUnaRutaInexistente_lanzaRecursoNoEncontrado() {
     Entrega entrega = entregas.save(nuevaEntrega());
-    Ruta ruta = rutaCon(entrega);
-    asignarYGuardar(ruta, entrega);
-    Entrega enRuta = entregas.findById(entrega.getId()).orElseThrow();
-    enRuta.iniciarRuta("Chofer");
-    enRuta.negarEntrega("Entidad", "No había nadie", true);
-    enRuta.mandarARevision("Admin");
-    enRuta.regresarAlDeposito("Admin");
+    UUID rutaInexistente = UUID.randomUUID();
+    entrega.asignarRuta(rutaInexistente);
 
-    entregas.save(enRuta);
+    RecursoNoEncontradoException error =
+        assertThrows(RecursoNoEncontradoException.class, () -> entregas.save(entrega));
+
+    assertEquals(rutaInexistente, error.getId());
+  }
+
+  @Test
+  void guardarUnaEntregaDeUnaRutaConCamionInexistente_lanzaRecursoNoEncontrado() {
+    Entrega entrega = entregas.save(nuevaEntrega());
+    UUID camionInexistente = UUID.randomUUID();
+    Ruta ruta = new Ruta(FECHA_RUTA, UUID.randomUUID(), camionInexistente);
+    ruta.agregarEntrega(entrega.getId());
+    rutas.save(ruta);
+    entrega.asignarRuta(ruta.getId());
+
+    RecursoNoEncontradoException error =
+        assertThrows(RecursoNoEncontradoException.class, () -> entregas.save(entrega));
+
+    assertEquals(camionInexistente, error.getId());
+  }
+
+  @Test
+  void guardarUnaRutaConUnaEntregaInexistente_lanzaRecursoNoEncontrado() {
+    UUID entregaInexistente = UUID.randomUUID();
+    Ruta ruta = new Ruta(FECHA_RUTA, UUID.randomUUID(), camion.getId());
+    ruta.agregarEntrega(entregaInexistente);
+
+    RecursoNoEncontradoException error =
+        assertThrows(RecursoNoEncontradoException.class, () -> rutas.save(ruta));
+
+    assertEquals(entregaInexistente, error.getId());
+  }
+
+  @Test
+  void lasParadasSeNumeranEnElOrdenDeLaRuta() {
+    Ruta ruta =
+        rutaCon(
+            camion,
+            entregas.save(nuevaEntrega()),
+            entregas.save(nuevaEntrega()),
+            entregas.save(nuevaEntrega()));
+
+    rutas.save(ruta);
+
+    assertEquals(
+        List.of(1, 2, 3), paradasDe(ruta).stream().map(ParadaSubdocument::getOrden).toList());
+  }
+
+  @Test
+  void cadaParadaCopiaLaDonacionYElDestinoDeSuEntrega() {
+    Entrega entrega = entregas.save(nuevaEntrega());
+    Ruta ruta = rutaCon(camion, entrega);
+
+    rutas.save(ruta);
+
+    ParadaSubdocument parada = paradasDe(ruta).getFirst();
+    assertEquals(entrega.getIdDonacion(), parada.getIdDonacion());
+    assertEquals("Callao", parada.getDestino().getCalle());
+  }
+
+  @Test
+  void laRutaLeidaDevuelveLasEntregasEnElOrdenDeSusParadas() {
+    Entrega primera = entregas.save(nuevaEntrega());
+    Entrega segunda = entregas.save(nuevaEntrega());
+    Entrega tercera = entregas.save(nuevaEntrega());
+    Ruta ruta = rutaCon(camion, primera, segunda, tercera);
+    rutas.save(ruta);
+
+    Ruta leida = rutas.findById(ruta.getId()).orElseThrow();
+
+    assertEquals(List.of(primera.getId(), segunda.getId(), tercera.getId()), leida.getEntregaIds());
+  }
+
+  @Test
+  void unaEntregaQueRegresaAlDeposito_quedaSinAsignacion() {
+    Entrega entrega = entregas.save(nuevaEntrega());
+    asignarYGuardar(rutaCon(camion, entrega), entrega);
+
+    entregas.save(regresadaAlDeposito(entrega));
 
     assertNull(documentoDe(entrega).getAsignacion());
-    assertEquals(
-        List.of(entrega.getId()), entregas.findSinRuta().stream().map(Entrega::getId).toList());
+  }
+
+  @Test
+  void unaEntregaQueRegresaAlDeposito_vuelveAEstarEntreLasSinRuta() {
+    Entrega entrega = entregas.save(nuevaEntrega());
+    asignarYGuardar(rutaCon(camion, entrega), entrega);
+
+    entregas.save(regresadaAlDeposito(entrega));
+
+    assertEquals(List.of(entrega.getId()), idsDe(entregas.findSinRuta()));
+  }
+
+  @Test
+  void unaEntregaQueRegresaAlDeposito_dejaDeEncontrarsePorSuRuta() {
+    Entrega entrega = entregas.save(nuevaEntrega());
+    Ruta ruta = rutaCon(camion, entrega);
+    asignarYGuardar(ruta, entrega);
+
+    entregas.save(regresadaAlDeposito(entrega));
+
     assertEquals(List.of(), entregas.findByRutaId(ruta.getId()));
+  }
+
+  @Test
+  void unaEntregaQueRegresaAlDeposito_noSacaLaParadaDeLaRuta() {
+    Entrega entrega = entregas.save(nuevaEntrega());
+    Ruta ruta = rutaCon(camion, entrega);
+    asignarYGuardar(ruta, entrega);
+
+    entregas.save(regresadaAlDeposito(entrega));
+
     assertEquals(
         List.of(entrega.getId()), rutas.findById(ruta.getId()).orElseThrow().getEntregaIds());
   }
@@ -159,18 +268,24 @@ class DesnormalizacionesMongoTest {
   @Test
   void findByRutaId_buscaPorLaAsignacionEmbebida() {
     Entrega entrega = entregas.save(nuevaEntrega());
-    Ruta ruta = rutaCon(entrega);
+    Ruta ruta = rutaCon(camion, entrega);
 
     asignarYGuardar(ruta, entrega);
 
-    assertEquals(
-        List.of(entrega.getId()),
-        entregas.findByRutaId(ruta.getId()).stream().map(Entrega::getId).toList());
+    assertEquals(List.of(entrega.getId()), idsDe(entregas.findByRutaId(ruta.getId())));
+  }
+
+  @Test
+  void unaEntregaAsignada_noEstaEntreLasSinRuta() {
+    Entrega entrega = entregas.save(nuevaEntrega());
+
+    asignarYGuardar(rutaCon(camion, entrega), entrega);
+
     assertEquals(List.of(), entregas.findSinRuta());
   }
 
-  private Ruta rutaCon(Entrega... entregasDeLaRuta) {
-    Ruta ruta = new Ruta(FECHA_RUTA, UUID.randomUUID(), camion.getId());
+  private Ruta rutaCon(Camion camionDeLaRuta, Entrega... entregasDeLaRuta) {
+    Ruta ruta = new Ruta(FECHA_RUTA, UUID.randomUUID(), camionDeLaRuta.getId());
     for (Entrega entrega : entregasDeLaRuta) {
       ruta.agregarEntrega(entrega.getId());
     }
@@ -185,8 +300,21 @@ class DesnormalizacionesMongoTest {
     entregas.save(guardada);
   }
 
+  private Entrega regresadaAlDeposito(Entrega entrega) {
+    Entrega enRuta = entregas.findById(entrega.getId()).orElseThrow();
+    enRuta.iniciarRuta("Chofer");
+    enRuta.negarEntrega("Entidad", "No había nadie", true);
+    enRuta.mandarARevision("Admin");
+    enRuta.regresarAlDeposito("Admin");
+    return enRuta;
+  }
+
   private EntregaDocument documentoDe(Entrega entrega) {
     return mongoTemplate.findById(entrega.getId(), EntregaDocument.class);
+  }
+
+  private List<ParadaSubdocument> paradasDe(Ruta ruta) {
+    return mongoTemplate.findById(ruta.getId(), RutaDocument.class).getParadas();
   }
 
   private void cambiarPatenteEnBase(String patente) {
@@ -194,6 +322,10 @@ class DesnormalizacionesMongoTest {
         Query.query(Criteria.where("_id").is(camion.getId())),
         Update.update("patente", patente),
         CamionDocument.class);
+  }
+
+  private static List<UUID> idsDe(List<Entrega> lista) {
+    return lista.stream().map(Entrega::getId).toList();
   }
 
   private static Entrega nuevaEntrega() {

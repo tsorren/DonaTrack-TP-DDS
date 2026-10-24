@@ -13,6 +13,7 @@ import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -30,6 +31,12 @@ import org.springframework.stereotype.Component;
 @SuppressWarnings("java:S120")
 @Component
 public class EntregaMongoMapper {
+
+  private final Clock reloj;
+
+  public EntregaMongoMapper(Clock reloj) {
+    this.reloj = reloj;
+  }
 
   public EntregaDocument toDocument(Entrega domain) {
     return toDocument(domain, null);
@@ -130,7 +137,7 @@ public class EntregaMongoMapper {
 
     return new Entrega(
         doc.getId(),
-        doc.getAsignacion() != null ? doc.getAsignacion().getIdRuta() : null,
+        idRutaAsignada(doc),
         doc.getIdDonacion(),
         doc.getIdBeneficiaria(),
         mapearDireccionADominio(doc.getDestino()),
@@ -188,11 +195,15 @@ public class EntregaMongoMapper {
   }
 
   /** Las fotos ya guardadas conservan su {@code subidaEn}; las nuevas toman la hora actual. */
-  private static void sincronizarFotos(Entrega domain, EntregaDocument doc) {
+  private void sincronizarFotos(Entrega domain, EntregaDocument doc) {
     Map<String, FotoRecepcionSubdocument> guardadas =
         doc.getFotosRecepcion().stream()
-            .collect(Collectors.toMap(FotoRecepcionSubdocument::getClave, Function.identity()));
-    Instant ahora = Instant.now();
+            .collect(
+                Collectors.toMap(
+                    FotoRecepcionSubdocument::getClave,
+                    Function.identity(),
+                    (primera, repetida) -> primera));
+    Instant ahora = reloj.instant();
     doc.setFotosRecepcion(
         domain.getFotosRecepcion().stream()
             .map(
@@ -206,11 +217,14 @@ public class EntregaMongoMapper {
   /** Conserva la asignación mientras siga siendo a la misma ruta; el adaptador la completa. */
   private static void sincronizarAsignacion(Entrega domain, EntregaDocument doc) {
     UUID idRuta = domain.getIdRuta();
-    if (idRuta == null) {
-      doc.setAsignacion(null);
-    } else if (doc.getAsignacion() == null || !idRuta.equals(doc.getAsignacion().getIdRuta())) {
-      doc.setAsignacion(AsignacionSubdocument.builder().idRuta(idRuta).build());
+    if (!Objects.equals(idRuta, idRutaAsignada(doc))) {
+      doc.setAsignacion(
+          idRuta != null ? AsignacionSubdocument.builder().idRuta(idRuta).build() : null);
     }
+  }
+
+  private static UUID idRutaAsignada(EntregaDocument doc) {
+    return doc.getAsignacion() != null ? doc.getAsignacion().getIdRuta() : null;
   }
 
   /** GeoJSON usa el orden [longitud, latitud], al revés que el dominio. */

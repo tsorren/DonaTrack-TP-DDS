@@ -11,7 +11,12 @@ import grupo5.logistica.models.entities.rutas.Ruta;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -42,17 +47,29 @@ public class RutasRepositoryMongoAdapter
     RutaDocument existing =
         aggregate.getId() != null ? springDataRepo.findById(aggregate.getId()).orElse(null) : null;
     RutaDocument doc = mapper.toDocument(aggregate, existing);
-    doc.getParadas().stream().filter(p -> p.getIdDonacion() == null).forEach(this::completarParada);
+    completarParadasNuevas(doc);
     return mapper.toDomain(springDataRepo.save(doc));
   }
 
-  private void completarParada(ParadaSubdocument parada) {
-    EntregaDocument entrega =
+  /** Copia donación y destino de las entregas que se agregaron, leyéndolas en una sola consulta. */
+  private void completarParadasNuevas(RutaDocument doc) {
+    List<ParadaSubdocument> nuevas =
+        doc.getParadas().stream().filter(Predicate.not(ParadaSubdocument::estaCompleta)).toList();
+    if (nuevas.isEmpty()) {
+      return;
+    }
+    Map<UUID, EntregaDocument> entregasPorId =
         entregaRepo
-            .findById(parada.getIdEntrega())
-            .orElseThrow(() -> new RecursoNoEncontradoException(parada.getIdEntrega()));
-    parada.setIdDonacion(entrega.getIdDonacion());
-    parada.setDestino(entrega.getDestino());
+            .findAllById(nuevas.stream().map(ParadaSubdocument::getIdEntrega).toList())
+            .stream()
+            .collect(Collectors.toMap(EntregaDocument::getId, Function.identity()));
+    nuevas.forEach(parada -> parada.completarCon(entregaDe(parada, entregasPorId)));
+  }
+
+  private static EntregaDocument entregaDe(
+      ParadaSubdocument parada, Map<UUID, EntregaDocument> entregasPorId) {
+    return Optional.ofNullable(entregasPorId.get(parada.getIdEntrega()))
+        .orElseThrow(() -> new RecursoNoEncontradoException(parada.getIdEntrega()));
   }
 
   @Override

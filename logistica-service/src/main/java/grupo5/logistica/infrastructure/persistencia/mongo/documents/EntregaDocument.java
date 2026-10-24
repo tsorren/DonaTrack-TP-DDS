@@ -18,6 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @SuppressWarnings("java:S120")
 @Document(collection = "entregas")
+// Va acá y no en DireccionSubdocument: ese subdocumento también se embebe en rutas.paradas.
 @CompoundIndex(name = "idx_entrega_destino_ubicacion", def = "{'destino.ubicacion': '2dsphere'}")
 @Getter
 @Setter

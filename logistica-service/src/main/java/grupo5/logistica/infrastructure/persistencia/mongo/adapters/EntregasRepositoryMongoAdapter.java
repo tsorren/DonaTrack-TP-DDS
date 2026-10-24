@@ -48,13 +48,14 @@ public class EntregasRepositoryMongoAdapter
     EntregaDocument existing =
         aggregate.getId() != null ? springDataRepo.findById(aggregate.getId()).orElse(null) : null;
     EntregaDocument doc = mapper.toDocument(aggregate, existing);
-    completarAsignacion(doc.getAsignacion());
+    completarAsignacionNueva(doc);
     return mapper.toDomain(springDataRepo.save(doc));
   }
 
   /** Copia fecha, camión y patente del día en que se asignó; una vez completa no se pisa. */
-  private void completarAsignacion(AsignacionSubdocument asignacion) {
-    if (asignacion == null || asignacion.getIdCamion() != null) {
+  private void completarAsignacionNueva(EntregaDocument doc) {
+    AsignacionSubdocument asignacion = doc.getAsignacion();
+    if (asignacion == null || asignacion.estaCompleta()) {
       return;
     }
     RutaDocument ruta =
@@ -65,9 +66,7 @@ public class EntregasRepositoryMongoAdapter
         camionRepo
             .findById(ruta.getIdCamion())
             .orElseThrow(() -> new RecursoNoEncontradoException(ruta.getIdCamion()));
-    asignacion.setFecha(ruta.getFecha());
-    asignacion.setIdCamion(camion.getId());
-    asignacion.setPatente(camion.getPatente());
+    asignacion.completarCon(ruta, camion);
   }
 
   @Override

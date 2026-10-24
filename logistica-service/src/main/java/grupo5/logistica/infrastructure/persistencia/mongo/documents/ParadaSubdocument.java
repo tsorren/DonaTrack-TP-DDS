@@ -19,4 +19,13 @@ public class ParadaSubdocument {
   private UUID idEntrega;
   private UUID idDonacion;
   private DireccionSubdocument destino;
+
+  public boolean estaCompleta() {
+    return idDonacion != null && destino != null;
+  }
+
+  public void completarCon(EntregaDocument entrega) {
+    this.idDonacion = entrega.getIdDonacion();
+    this.destino = entrega.getDestino();
+  }
 }

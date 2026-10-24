@@ -22,4 +22,14 @@ public class AsignacionSubdocument {
   private LocalDate fecha;
   private UUID idCamion;
   private String patente;
+
+  public boolean estaCompleta() {
+    return fecha != null && idCamion != null && patente != null;
+  }
+
+  public void completarCon(RutaDocument ruta, CamionDocument camion) {
+    this.fecha = ruta.getFecha();
+    this.idCamion = camion.getId();
+    this.patente = camion.getPatente();
+  }
 }
