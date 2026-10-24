@@ -1,14 +1,10 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.mappers; // NOSONAR
 
-import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.ParadaSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.entities.rutas.Ruta;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -45,8 +41,8 @@ public class RutaMongoMapper {
     doc.setIdCamion(domain.getCamionId());
     doc.setFecha(domain.getFecha());
     doc.setEstado(domain.getEstado());
-    doc.setHoraInicioReal(aInstantUtc(domain.getHoraInicioReal()));
-    doc.setHoraFinReal(aInstantUtc(domain.getHoraFinReal()));
+    doc.setHoraInicioReal(FechasUtc.aInstant(domain.getHoraInicioReal()));
+    doc.setHoraFinReal(FechasUtc.aInstant(domain.getHoraFinReal()));
 
     if (existing == null) {
       if (domain.getVersion() != null && domain.getVersion() > 0L) {
@@ -74,50 +70,27 @@ public class RutaMongoMapper {
         doc.getIdCamion(),
         doc.getEstado(),
         mapearHistorialDominio(doc),
-        aLocalDateTimeUtc(doc.getHoraInicioReal()),
-        aLocalDateTimeUtc(doc.getHoraFinReal()),
+        FechasUtc.aLocalDateTime(doc.getHoraInicioReal()),
+        FechasUtc.aLocalDateTime(doc.getHoraFinReal()),
         doc.getVersion());
   }
 
   private static List<CambioEstadoRuta> mapearHistorialDominio(RutaDocument doc) {
-    if (doc.getHistorialEstado() == null) {
-      return List.of();
-    }
-    return doc.getHistorialEstado().stream()
-        .map(
-            c ->
-                new CambioEstadoRuta(
-                    aEstadoRuta(c.getEstadoAnterior()),
-                    aEstadoRuta(c.getEstadoNuevo()),
-                    aLocalDateTimeUtc(c.getTimestamp())))
-        .toList();
-  }
-
-  private static EstadoRuta aEstadoRuta(String estado) {
-    return estado != null ? EstadoRuta.valueOf(estado) : null;
+    return HistorialEstadoMongo.aDominio(
+        doc.getHistorialEstado(),
+        c ->
+            new CambioEstadoRuta(
+                HistorialEstadoMongo.estado(EstadoRuta.class, c.getEstadoAnterior()),
+                HistorialEstadoMongo.estado(EstadoRuta.class, c.getEstadoNuevo()),
+                FechasUtc.aLocalDateTime(c.getTimestamp())));
   }
 
   private static void sincronizarHistorial(Ruta domain, RutaDocument doc) {
-    List<CambioEstadoSubdocument> historialDoc = doc.getHistorialEstado();
-    if (historialDoc == null) {
-      historialDoc = new ArrayList<>();
-      doc.setHistorialEstado(historialDoc);
-    }
-
-    List<CambioEstadoRuta> historialDominio = domain.getHistorialEstado();
-    if (historialDominio != null) {
-      for (int i = historialDoc.size(); i < historialDominio.size(); i++) {
-        CambioEstadoRuta cambio = historialDominio.get(i);
-        CambioEstadoSubdocument nuevo =
-            CambioEstadoSubdocument.builder()
-                .estadoAnterior(
-                    cambio.estadoAnterior() != null ? cambio.estadoAnterior().name() : null)
-                .estadoNuevo(cambio.estadoNuevo() != null ? cambio.estadoNuevo().name() : null)
-                .timestamp(aInstantUtc(cambio.timestamp()))
-                .build();
-        historialDoc.add(nuevo);
-      }
-    }
+    doc.setHistorialEstado(
+        HistorialEstadoMongo.conCambiosNuevos(
+            doc.getHistorialEstado(),
+            domain.getHistorialEstado(),
+            c -> HistorialEstadoMongo.cambio(c.estadoAnterior(), c.estadoNuevo(), c.timestamp())));
   }
 
   private static List<UUID> idsEntregasEnOrden(RutaDocument doc) {
@@ -152,13 +125,5 @@ public class RutaMongoMapper {
             idEntrega, ParadaSubdocument.builder().idEntrega(idEntrega).build());
     parada.setOrden(orden);
     return parada;
-  }
-
-  private static Instant aInstantUtc(LocalDateTime fechaHora) {
-    return fechaHora != null ? fechaHora.toInstant(ZoneOffset.UTC) : null;
-  }
-
-  private static LocalDateTime aLocalDateTimeUtc(Instant instante) {
-    return instante != null ? LocalDateTime.ofInstant(instante, ZoneOffset.UTC) : null;
   }
 }

@@ -1,14 +1,9 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.mappers; // NOSONAR
 
-import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.ChoferDocument;
 import grupo5.logistica.models.entities.choferes.CambioEstadoChofer;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -75,51 +70,20 @@ public class ChoferMongoMapper {
   }
 
   private static List<CambioEstadoChofer> mapearHistorialDominio(ChoferDocument doc) {
-    if (doc.getHistorialEstado() == null) {
-      return List.of();
-    }
-    return doc.getHistorialEstado().stream()
-        .map(
-            c ->
-                new CambioEstadoChofer(
-                    aEstadoChofer(c.getEstadoAnterior()),
-                    aEstadoChofer(c.getEstadoNuevo()),
-                    aLocalDateTimeUtc(c.getTimestamp())))
-        .toList();
-  }
-
-  private static EstadoChofer aEstadoChofer(String estado) {
-    return estado != null ? EstadoChofer.valueOf(estado) : null;
+    return HistorialEstadoMongo.aDominio(
+        doc.getHistorialEstado(),
+        c ->
+            new CambioEstadoChofer(
+                HistorialEstadoMongo.estado(EstadoChofer.class, c.getEstadoAnterior()),
+                HistorialEstadoMongo.estado(EstadoChofer.class, c.getEstadoNuevo()),
+                FechasUtc.aLocalDateTime(c.getTimestamp())));
   }
 
   private static void sincronizarHistorial(Chofer domain, ChoferDocument doc) {
-    List<CambioEstadoSubdocument> historialDoc = doc.getHistorialEstado();
-    if (historialDoc == null) {
-      historialDoc = new ArrayList<>();
-      doc.setHistorialEstado(historialDoc);
-    }
-
-    List<CambioEstadoChofer> historialDominio = domain.getHistorialEstados();
-    if (historialDominio != null) {
-      for (int i = historialDoc.size(); i < historialDominio.size(); i++) {
-        CambioEstadoChofer cambio = historialDominio.get(i);
-        CambioEstadoSubdocument nuevo =
-            CambioEstadoSubdocument.builder()
-                .estadoAnterior(
-                    cambio.estadoAnterior() != null ? cambio.estadoAnterior().name() : null)
-                .estadoNuevo(cambio.estadoNuevo() != null ? cambio.estadoNuevo().name() : null)
-                .timestamp(aInstantUtc(cambio.timestamp()))
-                .build();
-        historialDoc.add(nuevo);
-      }
-    }
-  }
-
-  private static Instant aInstantUtc(LocalDateTime fechaHora) {
-    return fechaHora != null ? fechaHora.toInstant(ZoneOffset.UTC) : null;
-  }
-
-  private static LocalDateTime aLocalDateTimeUtc(Instant instante) {
-    return instante != null ? LocalDateTime.ofInstant(instante, ZoneOffset.UTC) : null;
+    doc.setHistorialEstado(
+        HistorialEstadoMongo.conCambiosNuevos(
+            doc.getHistorialEstado(),
+            domain.getHistorialEstados(),
+            c -> HistorialEstadoMongo.cambio(c.estadoAnterior(), c.estadoNuevo(), c.timestamp())));
   }
 }

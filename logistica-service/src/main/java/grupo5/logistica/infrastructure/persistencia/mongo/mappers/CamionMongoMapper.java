@@ -1,14 +1,9 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.mappers; // NOSONAR
 
-import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocument;
 import grupo5.logistica.models.entities.camiones.CambioEstadoCamion;
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.camiones.EstadoCamion;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -75,44 +70,21 @@ public class CamionMongoMapper {
   }
 
   private static List<CambioEstadoCamion> mapearHistorialDominio(CamionDocument doc) {
-    if (doc.getHistorialEstado() == null) {
-      return List.of();
-    }
-    return doc.getHistorialEstado().stream()
-        .map(
-            c ->
-                new CambioEstadoCamion(
-                    aEstadoCamion(c.getEstadoAnterior()),
-                    aEstadoCamion(c.getEstadoNuevo()),
-                    aLocalDateTimeUtc(c.getTimestamp())))
-        .toList();
-  }
-
-  private static EstadoCamion aEstadoCamion(String estado) {
-    return estado != null ? EstadoCamion.valueOf(estado) : null;
+    return HistorialEstadoMongo.aDominio(
+        doc.getHistorialEstado(),
+        c ->
+            new CambioEstadoCamion(
+                HistorialEstadoMongo.estado(EstadoCamion.class, c.getEstadoAnterior()),
+                HistorialEstadoMongo.estado(EstadoCamion.class, c.getEstadoNuevo()),
+                FechasUtc.aLocalDateTime(c.getTimestamp())));
   }
 
   private static void sincronizarHistorial(Camion domain, CamionDocument doc) {
-    List<CambioEstadoSubdocument> historialDoc = doc.getHistorialEstado();
-    if (historialDoc == null) {
-      historialDoc = new ArrayList<>();
-      doc.setHistorialEstado(historialDoc);
-    }
-
-    List<CambioEstadoCamion> historialDominio = domain.getHistorialEstado();
-    if (historialDominio != null) {
-      for (int i = historialDoc.size(); i < historialDominio.size(); i++) {
-        CambioEstadoCamion cambio = historialDominio.get(i);
-        CambioEstadoSubdocument nuevo =
-            CambioEstadoSubdocument.builder()
-                .estadoAnterior(
-                    cambio.estadoAnterior() != null ? cambio.estadoAnterior().name() : null)
-                .estadoNuevo(cambio.estadoNuevo() != null ? cambio.estadoNuevo().name() : null)
-                .timestamp(aInstantUtc(cambio.timestamp()))
-                .build();
-        historialDoc.add(nuevo);
-      }
-    }
+    doc.setHistorialEstado(
+        HistorialEstadoMongo.conCambiosNuevos(
+            doc.getHistorialEstado(),
+            domain.getHistorialEstado(),
+            c -> HistorialEstadoMongo.cambio(c.estadoAnterior(), c.estadoNuevo(), c.timestamp())));
   }
 
   private static Double aDouble(Float valor) {
@@ -121,13 +93,5 @@ public class CamionMongoMapper {
 
   private static Float aFloat(Double valor) {
     return valor != null ? valor.floatValue() : null;
-  }
-
-  private static Instant aInstantUtc(LocalDateTime fechaHora) {
-    return fechaHora != null ? fechaHora.toInstant(ZoneOffset.UTC) : null;
-  }
-
-  private static LocalDateTime aLocalDateTimeUtc(Instant instante) {
-    return instante != null ? LocalDateTime.ofInstant(instante, ZoneOffset.UTC) : null;
   }
 }

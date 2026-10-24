@@ -1,7 +1,6 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.mappers; // NOSONAR
 
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.AsignacionSubdocument;
-import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.DireccionSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.FotoRecepcionSubdocument;
@@ -15,8 +14,6 @@ import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import java.time.Clock;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +54,8 @@ public class EntregaMongoMapper {
     doc.setIdDonacion(domain.getIdDonacion());
     doc.setIdBeneficiaria(domain.getIdBeneficiaria());
     doc.setEstado(domain.getEstadoActual());
-    doc.setHoraArribo(aInstantUtc(domain.getHoraArribo()));
-    doc.setHoraSalida(aInstantUtc(domain.getHoraSalida()));
+    doc.setHoraArribo(FechasUtc.aInstant(domain.getHoraArribo()));
+    doc.setHoraSalida(FechasUtc.aInstant(domain.getHoraSalida()));
     sincronizarFotos(domain, doc);
     doc.setVolumenTotalM3((double) domain.getVolumenTotalM3());
     doc.setPesoTotalKg((double) domain.getPesoTotalKG());
@@ -143,8 +140,8 @@ public class EntregaMongoMapper {
         mapearDireccionADominio(doc.getDestino()),
         doc.getEstado(),
         mapearHistorialDominio(doc),
-        aLocalDateTimeUtc(doc.getHoraArribo()),
-        aLocalDateTimeUtc(doc.getHoraSalida()),
+        FechasUtc.aLocalDateTime(doc.getHoraArribo()),
+        FechasUtc.aLocalDateTime(doc.getHoraSalida()),
         doc.getFotosRecepcion().stream().map(FotoRecepcionSubdocument::getClave).toList(),
         doc.getPesoTotalKg() != null ? doc.getPesoTotalKg().floatValue() : 0f,
         doc.getVolumenTotalM3() != null ? doc.getVolumenTotalM3().floatValue() : 0f,
@@ -152,46 +149,24 @@ public class EntregaMongoMapper {
   }
 
   private static List<CambioEstadoEntrega> mapearHistorialDominio(EntregaDocument doc) {
-    if (doc.getHistorialEstado() == null) {
-      return List.of();
-    }
-    return doc.getHistorialEstado().stream()
-        .map(
-            c ->
-                new CambioEstadoEntrega(
-                    aEstadoEntrega(c.getEstadoAnterior()),
-                    aEstadoEntrega(c.getEstadoNuevo()),
-                    aLocalDateTimeUtc(c.getTimestamp()),
-                    c.getActor()))
-        .toList();
-  }
-
-  private static EstadoEntrega aEstadoEntrega(String estado) {
-    return estado != null ? EstadoEntrega.valueOf(estado) : null;
+    return HistorialEstadoMongo.aDominio(
+        doc.getHistorialEstado(),
+        c ->
+            new CambioEstadoEntrega(
+                HistorialEstadoMongo.estado(EstadoEntrega.class, c.getEstadoAnterior()),
+                HistorialEstadoMongo.estado(EstadoEntrega.class, c.getEstadoNuevo()),
+                FechasUtc.aLocalDateTime(c.getTimestamp()),
+                c.getActor()));
   }
 
   private static void sincronizarHistorial(Entrega domain, EntregaDocument doc) {
-    List<CambioEstadoSubdocument> historialDoc = doc.getHistorialEstado();
-    if (historialDoc == null) {
-      historialDoc = new ArrayList<>();
-      doc.setHistorialEstado(historialDoc);
-    }
-
-    List<CambioEstadoEntrega> historialDominio = domain.getHistorialEstado();
-    if (historialDominio != null) {
-      for (int i = historialDoc.size(); i < historialDominio.size(); i++) {
-        CambioEstadoEntrega cambio = historialDominio.get(i);
-        CambioEstadoSubdocument nuevo =
-            CambioEstadoSubdocument.builder()
-                .estadoAnterior(
-                    cambio.estadoAnterior() != null ? cambio.estadoAnterior().name() : null)
-                .estadoNuevo(cambio.estadoNuevo() != null ? cambio.estadoNuevo().name() : null)
-                .timestamp(aInstantUtc(cambio.timeStamp()))
-                .actor(cambio.actor())
-                .build();
-        historialDoc.add(nuevo);
-      }
-    }
+    doc.setHistorialEstado(
+        HistorialEstadoMongo.conCambiosNuevos(
+            doc.getHistorialEstado(),
+            domain.getHistorialEstado(),
+            c ->
+                HistorialEstadoMongo.cambio(
+                    c.estadoAnterior(), c.estadoNuevo(), c.timeStamp(), c.actor())));
   }
 
   /** Las fotos ya guardadas conservan su {@code subidaEn}; las nuevas toman la hora actual. */
@@ -236,13 +211,5 @@ public class EntregaMongoMapper {
 
   private static CoordenadasGeograficas aCoordenadas(GeoJsonPoint punto) {
     return punto != null ? new CoordenadasGeograficas(punto.getY(), punto.getX()) : null;
-  }
-
-  private static Instant aInstantUtc(LocalDateTime fechaHora) {
-    return fechaHora != null ? fechaHora.toInstant(ZoneOffset.UTC) : null;
-  }
-
-  private static LocalDateTime aLocalDateTimeUtc(Instant instante) {
-    return instante != null ? LocalDateTime.ofInstant(instante, ZoneOffset.UTC) : null;
   }
 }
