@@ -12,8 +12,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoEventoEntrega;
-import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoTransicionEntrega;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.ChoferDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
@@ -21,6 +19,8 @@ import grupo5.logistica.infrastructure.persistencia.mongo.documents.EventoEntreg
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.SolicitudPlanificacionDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.SolicitudTransicionEntregaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.TipoEventoEntrega;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.TipoTransicionEntrega;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.CamionMongoMapper;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.ChoferMongoMapper;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.EntregaMongoMapper;

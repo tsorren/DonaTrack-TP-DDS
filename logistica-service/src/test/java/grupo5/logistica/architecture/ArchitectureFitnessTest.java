@@ -71,6 +71,17 @@ class ArchitectureFitnessTest {
   }
 
   @Test
+  void persistenciaMongo_noDebeDependerDePersistenciaJpa() {
+    noClasses()
+        .that()
+        .resideInAPackage("grupo5.logistica.infrastructure.persistencia.mongo..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("grupo5.logistica.infrastructure.persistencia.jpa..")
+        .check(importedClasses);
+  }
+
+  @Test
   void controladores_debenResidirEnPaqueteControllers() {
     classes()
         .that()

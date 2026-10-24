@@ -1,7 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
 
-import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoEventoEntrega;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EventoEntregaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.TipoEventoEntrega;
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataEventoEntregaMongoRepository;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;

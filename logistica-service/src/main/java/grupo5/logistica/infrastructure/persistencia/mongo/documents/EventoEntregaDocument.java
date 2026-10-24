@@ -1,6 +1,5 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.documents; // NOSONAR
 
-import grupo5.logistica.infrastructure.persistencia.jpa.entities.TipoEventoEntrega;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
