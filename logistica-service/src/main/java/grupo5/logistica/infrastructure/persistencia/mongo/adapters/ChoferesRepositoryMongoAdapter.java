@@ -45,25 +45,6 @@ public class ChoferesRepositoryMongoAdapter
   }
 
   @Override
-  public Chofer save(Chofer aggregate) {
-    if (aggregate == null) {
-      return null;
-    }
-    ChoferDocument existing =
-        aggregate.getId() != null ? springDataRepo.findById(aggregate.getId()).orElse(null) : null;
-    ChoferDocument saved = springDataRepo.save(mapper.toDocument(aggregate, existing));
-    return toDomain.apply(saved);
-  }
-
-  @Override
-  public List<Chofer> saveAll(List<Chofer> aggregates) {
-    if (aggregates == null) {
-      return List.of();
-    }
-    return aggregates.stream().map(this::save).toList();
-  }
-
-  @Override
   public List<Chofer> findActivos() {
     return springDataRepo.findByEstadoNot(EstadoChofer.DESHABILITADO).stream()
         .map(toDomain)

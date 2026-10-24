@@ -27,7 +27,6 @@ public class RutasRepositoryMongoAdapter
     extends CrudRepositoryMongoAdapter<Ruta, RutaDocument, SpringDataRutaMongoRepository>
     implements IRutasRepository {
 
-  private final RutaMongoMapper mapper;
   private final SpringDataEntregaMongoRepository entregaRepo;
 
   public RutasRepositoryMongoAdapter(
@@ -35,24 +34,12 @@ public class RutasRepositoryMongoAdapter
       SpringDataEntregaMongoRepository entregaRepo,
       RutaMongoMapper mapper) {
     super(springDataRepo, mapper::toDocument, mapper::toDomain);
-    this.mapper = mapper;
     this.entregaRepo = entregaRepo;
   }
 
-  @Override
-  public Ruta save(Ruta aggregate) {
-    if (aggregate == null) {
-      return null;
-    }
-    RutaDocument existing =
-        aggregate.getId() != null ? springDataRepo.findById(aggregate.getId()).orElse(null) : null;
-    RutaDocument doc = mapper.toDocument(aggregate, existing);
-    completarParadasNuevas(doc);
-    return mapper.toDomain(springDataRepo.save(doc));
-  }
-
   /** Copia donación y destino de las entregas que se agregaron, leyéndolas en una sola consulta. */
-  private void completarParadasNuevas(RutaDocument doc) {
+  @Override
+  protected void completarAntesDeGuardar(RutaDocument doc) {
     List<ParadaSubdocument> nuevas =
         doc.getParadas().stream().filter(Predicate.not(ParadaSubdocument::estaCompleta)).toList();
     if (nuevas.isEmpty()) {
@@ -70,14 +57,6 @@ public class RutasRepositoryMongoAdapter
       ParadaSubdocument parada, Map<UUID, EntregaDocument> entregasPorId) {
     return Optional.ofNullable(entregasPorId.get(parada.getIdEntrega()))
         .orElseThrow(() -> new RecursoNoEncontradoException(parada.getIdEntrega()));
-  }
-
-  @Override
-  public List<Ruta> saveAll(List<Ruta> aggregates) {
-    if (aggregates == null) {
-      return List.of();
-    }
-    return aggregates.stream().map(this::save).toList();
   }
 
   @Override

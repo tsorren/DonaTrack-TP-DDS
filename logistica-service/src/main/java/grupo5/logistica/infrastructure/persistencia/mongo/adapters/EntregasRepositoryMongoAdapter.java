@@ -25,7 +25,6 @@ public class EntregasRepositoryMongoAdapter
     extends CrudRepositoryMongoAdapter<Entrega, EntregaDocument, SpringDataEntregaMongoRepository>
     implements IEntregasRepository {
 
-  private final EntregaMongoMapper mapper;
   private final SpringDataRutaMongoRepository rutaRepo;
   private final SpringDataCamionMongoRepository camionRepo;
 
@@ -35,25 +34,13 @@ public class EntregasRepositoryMongoAdapter
       SpringDataCamionMongoRepository camionRepo,
       EntregaMongoMapper mapper) {
     super(springDataRepo, mapper::toDocument, mapper::toDomain);
-    this.mapper = mapper;
     this.rutaRepo = rutaRepo;
     this.camionRepo = camionRepo;
   }
 
-  @Override
-  public Entrega save(Entrega aggregate) {
-    if (aggregate == null) {
-      return null;
-    }
-    EntregaDocument existing =
-        aggregate.getId() != null ? springDataRepo.findById(aggregate.getId()).orElse(null) : null;
-    EntregaDocument doc = mapper.toDocument(aggregate, existing);
-    completarAsignacionNueva(doc);
-    return mapper.toDomain(springDataRepo.save(doc));
-  }
-
   /** Copia fecha, camión y patente del día en que se asignó; una vez completa no se pisa. */
-  private void completarAsignacionNueva(EntregaDocument doc) {
+  @Override
+  protected void completarAntesDeGuardar(EntregaDocument doc) {
     AsignacionSubdocument asignacion = doc.getAsignacion();
     if (asignacion == null || asignacion.estaCompleta()) {
       return;
@@ -70,19 +57,11 @@ public class EntregasRepositoryMongoAdapter
   }
 
   @Override
-  public List<Entrega> saveAll(List<Entrega> aggregates) {
-    if (aggregates == null) {
-      return List.of();
-    }
-    return aggregates.stream().map(this::save).toList();
-  }
-
-  @Override
   public List<Entrega> findByEstado(EstadoEntrega estado) {
     if (estado == null) {
       return List.of();
     }
-    return springDataRepo.findByEstado(estado).stream().map(mapper::toDomain).toList();
+    return springDataRepo.findByEstado(estado).stream().map(toDomain).toList();
   }
 
   @Override
@@ -91,13 +70,13 @@ public class EntregasRepositoryMongoAdapter
       return List.of();
     }
     return springDataRepo.findByAsignacionIdRutaOrderByIdAsc(rutaId).stream()
-        .map(mapper::toDomain)
+        .map(toDomain)
         .toList();
   }
 
   @Override
   public List<Entrega> findSinRuta() {
-    return springDataRepo.findByAsignacionIsNull().stream().map(mapper::toDomain).toList();
+    return springDataRepo.findByAsignacionIsNull().stream().map(toDomain).toList();
   }
 
   @Override
@@ -113,7 +92,7 @@ public class EntregasRepositoryMongoAdapter
     if (idDonacion == null) {
       return Optional.empty();
     }
-    return springDataRepo.findByIdDonacion(idDonacion).map(mapper::toDomain);
+    return springDataRepo.findByIdDonacion(idDonacion).map(toDomain);
   }
 
   @Override
@@ -121,8 +100,6 @@ public class EntregasRepositoryMongoAdapter
     if (idBeneficiaria == null) {
       return List.of();
     }
-    return springDataRepo.findByIdBeneficiaria(idBeneficiaria).stream()
-        .map(mapper::toDomain)
-        .toList();
+    return springDataRepo.findByIdBeneficiaria(idBeneficiaria).stream().map(toDomain).toList();
   }
 }

@@ -47,25 +47,6 @@ public class CamionRepositoryMongoAdapter
   }
 
   @Override
-  public Camion save(Camion aggregate) {
-    if (aggregate == null) {
-      return null;
-    }
-    CamionDocument existing =
-        aggregate.getId() != null ? springDataRepo.findById(aggregate.getId()).orElse(null) : null;
-    CamionDocument saved = springDataRepo.save(mapper.toDocument(aggregate, existing));
-    return toDomain.apply(saved);
-  }
-
-  @Override
-  public List<Camion> saveAll(List<Camion> aggregates) {
-    if (aggregates == null) {
-      return List.of();
-    }
-    return aggregates.stream().map(this::save).toList();
-  }
-
-  @Override
   public List<Camion> findByEstado(EstadoCamion estado) {
     if (estado == null) {
       return List.of();
@@ -79,7 +60,7 @@ public class CamionRepositoryMongoAdapter
       return Optional.empty();
     }
     String patenteNormalizada = ValidadorPatentes.normalizar(patente);
-    return springDataRepo.findByPatenteIgnoreCase(patenteNormalizada).map(toDomain);
+    return springDataRepo.findByPatente(patenteNormalizada).map(toDomain);
   }
 
   @Override

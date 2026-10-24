@@ -5,6 +5,7 @@ import grupo5.common.repositories.CrudRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
@@ -21,11 +22,15 @@ public abstract class CrudRepositoryMongoAdapter<
     implements CrudRepository<T> {
 
   protected final R springDataRepo;
-  protected final Function<T, D> toDocument;
   protected final Function<D, T> toDomain;
+  private final BiFunction<T, D, D> toDocument;
 
+  /**
+   * @param toDocument recibe el agregado y el documento ya guardado ({@code null} si es nuevo),
+   *     para conservar lo que el dominio no trae y verificar la versión
+   */
   protected CrudRepositoryMongoAdapter(
-      R springDataRepo, Function<T, D> toDocument, Function<D, T> toDomain) {
+      R springDataRepo, BiFunction<T, D, D> toDocument, Function<D, T> toDomain) {
     this.springDataRepo = springDataRepo;
     this.toDocument = toDocument;
     this.toDomain = toDomain;
@@ -33,18 +38,23 @@ public abstract class CrudRepositoryMongoAdapter<
 
   @Override
   public T save(T aggregate) {
-    D document = toDocument.apply(aggregate);
-    D saved = springDataRepo.save(document);
-    return toDomain.apply(saved);
+    if (aggregate == null) {
+      return null;
+    }
+    D documento = toDocument.apply(aggregate, documentoGuardado(aggregate.getId()));
+    completarAntesDeGuardar(documento);
+    return toDomain.apply(springDataRepo.save(documento));
   }
+
+  /** Para completar en el documento los datos desnormalizados que el agregado no trae. */
+  protected void completarAntesDeGuardar(D documento) {}
 
   @Override
   public List<T> saveAll(List<T> aggregates) {
     if (aggregates == null) {
       return List.of();
     }
-    List<D> documents = aggregates.stream().map(toDocument).toList();
-    return springDataRepo.saveAll(documents).stream().map(toDomain).toList();
+    return aggregates.stream().map(this::save).toList();
   }
 
   @Override
@@ -83,5 +93,9 @@ public abstract class CrudRepositoryMongoAdapter<
   @Override
   public void deleteAll() {
     springDataRepo.deleteAll();
+  }
+
+  private D documentoGuardado(UUID id) {
+    return id != null ? springDataRepo.findById(id).orElse(null) : null;
   }
 }

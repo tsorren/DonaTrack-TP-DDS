@@ -13,5 +13,5 @@ public interface SpringDataCamionMongoRepository extends MongoRepository<CamionD
 
   List<CamionDocument> findByEstadoNot(EstadoCamion estado);
 
-  Optional<CamionDocument> findByPatenteIgnoreCase(String patente);
+  Optional<CamionDocument> findByPatente(String patente);
 }

@@ -88,7 +88,7 @@ class RepositoriosMongoAdaptersTest {
     CamionDocument doc = mapper.toDocument(camion);
     when(springDataRepo.findByEstado(EstadoCamion.DISPONIBLE)).thenReturn(List.of(doc));
     when(springDataRepo.findByEstadoNot(EstadoCamion.DESHABILITADO)).thenReturn(List.of(doc));
-    when(springDataRepo.findByPatenteIgnoreCase("AB123CD")).thenReturn(Optional.of(doc));
+    when(springDataRepo.findByPatente("AB123CD")).thenReturn(Optional.of(doc));
     when(rutaRepo.findFirstByIdCamionAndEstado(camion.getId(), EstadoRuta.EN_TRASLADO))
         .thenReturn(Optional.empty());
 
