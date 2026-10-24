@@ -5,7 +5,9 @@ import grupo5.logistica.dto.entregas.AdjuntarFotoRecepcionRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaRequestDTO;
 import grupo5.logistica.dto.entregas.CambioEstadoEntregaResponseDTO;
 import grupo5.logistica.dto.entregas.CrearEntregaRequestDTO;
+import grupo5.logistica.dto.entregas.EntregaMapaPublicoResponseDTO;
 import grupo5.logistica.dto.entregas.EntregaResponseDTO;
+import grupo5.logistica.dto.entregas.SeguimientoEntregaResponseDTO;
 import grupo5.logistica.services.IEntregasService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -42,9 +44,29 @@ public class EntregasController implements IEntregasController {
   }
 
   @Override
+  @GetMapping("/mapa")
+  public ResponseEntity<List<EntregaMapaPublicoResponseDTO>> listarMapaPublico() {
+    return ResponseEntity.ok(entregasService.listarMapaPublico());
+  }
+
+  @Override
   @GetMapping("/{id}")
   public ResponseEntity<EntregaResponseDTO> obtenerPorId(@PathVariable("id") UUID id) {
     return ResponseEntity.ok(entregasService.obtenerPorId(id));
+  }
+
+  @Override
+  @GetMapping("/seguimiento/donaciones/{idDonacion}")
+  public ResponseEntity<SeguimientoEntregaResponseDTO> obtenerSeguimientoPorDonacion(
+      @PathVariable("idDonacion") UUID idDonacion) {
+    return ResponseEntity.ok(entregasService.obtenerSeguimientoPorDonacion(idDonacion));
+  }
+
+  @Override
+  @GetMapping("/seguimiento/beneficiarios/{idBeneficiaria}")
+  public ResponseEntity<List<SeguimientoEntregaResponseDTO>> listarSeguimientoPorBeneficiaria(
+      @PathVariable("idBeneficiaria") UUID idBeneficiaria) {
+    return ResponseEntity.ok(entregasService.listarSeguimientoPorBeneficiaria(idBeneficiaria));
   }
 
   @Override

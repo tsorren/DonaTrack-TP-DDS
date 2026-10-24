@@ -128,10 +128,8 @@ services:
       - "8083:8083"
     environment:
       - PORT=8083
-      - SPRING_PROFILES_ACTIVE=postgres
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=logistica
-      - SPRING_DATASOURCE_USERNAME=logistica_user
-      - SPRING_DATASOURCE_PASSWORD=${LOGISTICA_DB_PASSWORD:?ver .env.example}
+      - SPRING_PROFILES_ACTIVE=mongo
+      - SPRING_DATA_MONGODB_URI=mongodb://${LOGISTICA_MONGO_USER:?ver .env.example}:${LOGISTICA_MONGO_PASSWORD:?ver .env.example}@mongodb:27017/logistica?replicaSet=rs0&authSource=logistica
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
       - LOGISTICA_MAX_DONACIONES_POR_LOTE=${LOGISTICA_MAX_DONACIONES_POR_LOTE:-100}
       - RABBITMQ_HOST=rabbitmq
@@ -143,7 +141,7 @@ services:
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
     depends_on:
-      postgres:
+      mongodb:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
@@ -225,6 +223,40 @@ services:
     networks:
       - donatrack-network
 
+  mongodb:
+    image: mongo:7.0
+    container_name: donatrack-mongodb-local
+    ports:
+      - "27017:27017"
+    # Replica set de un nodo (lo necesitan las transacciones de logística). Con usuarios y
+    # replica set mongod exige un keyfile; como hay un solo nodo, se genera en cada arranque.
+    entrypoint:
+      - bash
+      - -c
+      - |
+        head -c 756 /dev/urandom | base64 > /etc/mongo-keyfile
+        chmod 400 /etc/mongo-keyfile
+        chown mongodb:mongodb /etc/mongo-keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?ver .env.example}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?ver .env.example}
+      LOGISTICA_MONGO_USER: ${LOGISTICA_MONGO_USER:?ver .env.example}
+      LOGISTICA_MONGO_PASSWORD: ${LOGISTICA_MONGO_PASSWORD:?ver .env.example}
+    volumes:
+      - mongodb_data:/data/db
+      - ./persistencia/mongo/init:/docker-entrypoint-initdb.d:ro
+      - ./persistencia/mongo/replica-set.js:/opt/donatrack/replica-set.js:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet -u \"$$MONGO_INITDB_ROOT_USERNAME\" -p \"$$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --file /opt/donatrack/replica-set.js"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 20s
+      start_interval: 1s
+    networks:
+      - donatrack-network
+
   adminer:
     image: adminer
     ports:
@@ -262,5 +294,6 @@ networks:
 
 volumes:
   postgres_data:
+  mongodb_data:
   minio_data:
 

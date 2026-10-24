@@ -220,6 +220,70 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 }
 ```
 
+#### Entrega Solicitada (`entrega.solicitada.<proveedorId>.v1`)
+```json
+{
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "personaBeneficiariaId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+  "destino": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "codigoPostal": "C1179AAQ",
+    "localidad": "CABA",
+    "provincia": "Buenos Aires",
+    "pais": "Argentina"
+  },
+  "pesoTotalKG": 10.5,
+  "volumenTotalM3": 0.25,
+  "fecha": "2026-09-15T14:30:00Z"
+}
+```
+
+#### Ruta Asignada (`ruta.asignada`)
+```json
+{
+  "rutaId": "7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "fechaAsignacion": "2026-09-16T08:00:00"
+}
+```
+
+#### Ruta Iniciada (`ruta.iniciada`)
+```json
+{
+  "rutaId": "7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d",
+  "camionId": "11223344-5566-7788-99aa-bbccddeeff00",
+  "patenteCamion": "AB123CD",
+  "donacionesIndependientesIds": [
+    "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+  ],
+  "fechaInicio": "2026-09-16T09:15:00",
+  "urlMapa": "http://localhost:8080/seguimiento/7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d"
+}
+```
+
+#### Entrega Exitosa (`entrega.exitosa`)
+```json
+{
+  "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "camionId": "11223344-5566-7788-99aa-bbccddeeff00",
+  "patenteCamion": "AB123CD",
+  "fechaEntrega": "2026-09-16T11:40:00"
+}
+```
+
+#### Entrega Fallida (`entrega.fallida`)
+```json
+{
+  "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "justificacion": "Domicilio sin atención al momento de la visita",
+  "fechaFalla": "2026-09-16T11:40:00",
+  "replanificable": true
+}
+```
+
 ---
 
 ## 4. Idempotencia, Trazabilidad y Clúster Dead Letter
