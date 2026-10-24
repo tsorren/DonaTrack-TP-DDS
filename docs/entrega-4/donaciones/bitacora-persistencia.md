@@ -10,13 +10,13 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-22** — Paso 10 hecho: solicitud de entrega, outbox del broker, idempotencia y transacciones del broker y de los eventos.
+> Última actualización: **2026-10-22** — Paso 11 hecho: cierre de la persistencia de Donaciones (diagramas, DER, hallazgos).
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
-- **Dónde estamos:** Pasos 0 a 3c y la parte de persistencia del Paso 5 cerrados; la rama está al día con `ENTREGA_5` y la #897 apunta a esa base. Persistidos: `Necesidad` (#897), catálogo (`categoria`, `subcategoria`, `alias`), `archivo`, `direccion`, `persona` (`humana`/`juridica`) y medios de contacto.
-- **Bloqueante para seguir:** ninguno. La #892 ya está en `ENTREGA_5` y en esta rama.
-- **Próximo paso:** Paso 11 (cierre: diagramas de clases y de componentes, DER con los cambios a comunicar, `context-index.md` y repaso de hallazgos). Pendientes de discusión con el equipo: D-37 (dónde guardar los proveedores descartados) y D-38 (transacciones por caso de uso).
+- **Dónde estamos:** Pasos 0 a 11 cerrados. Todo el modelo de Donaciones persiste en PostgreSQL (Flyway V1 a V12) con el perfil `postgres`; el perfil por defecto sigue en memoria. Quedan en memoria en los dos perfiles el historial de corridas del algoritmo (D-36) y los reintentos hacia Notificaciones.
+- **Pendiente:** discutir con el equipo D-37 (dónde guardar los proveedores descartados) y D-38 (transacciones por caso de uso); actualizar el DER de Lucid con [`cambios-der-donaciones.md`](../../arquitectura/diseno/donaciones/cambios-der-donaciones.md); una corrida de Gate 4 en verde (ver Paso 10).
+- **Próximo paso:** revisión del PR y merge a `ENTREGA_5`.
 
 ---
 
@@ -36,7 +36,7 @@
 | 8 | `donacion_independiente`, items, `estado_donacion_independiente`, historial | ✅ Hecho |
 | 9 | `propuesta` y `posible_fragmentacion` | ✅ Hecho |
 | 10 | `@Transactional`, `solicitud_entrega`, `outbox_logistica`, `evento_consumido` | ✅ Hecho (transacciones solo en broker y eventos, D-38) |
-| 11 | Cierre: deuda del historial de ejecuciones, Gate 3/4, documentación | ⏳ Pendiente |
+| 11 | Cierre: deuda del historial de ejecuciones, Gate 3/4, documentación | ✅ Hecho |
 
 ---
 
@@ -77,6 +77,8 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 
 ## Hallazgos abiertos (no corregidos en esta tarea)
 
+- **Filtros con `findAll` de ítems normalizados (resuelto en el Paso 11).** `SegmentacionService` e `ItemDonacionNormalizadoService` usan `findByDonacion` y `findPendientesDeRevision`, que en Postgres son consultas.
+- **Códigos de error sin uso (resuelto en el Paso 11).** Se borraron `ERR-VAL-509`, `510`, `511` y `516`; el catálogo los lista como retirados.
 - **Outbox de reintentos de Notificaciones en memoria.** `[OBSERVED]` `OutboxStore` / `OutboxEntry` (los reintentos de las llamadas a Notificaciones de `DonacionesIndependientesNotificacionesService`) guardan un `Runnable`, que no se puede persistir, y no están en el DER. Siguen en memoria: un reintento pendiente se pierde al reiniciar. Es otro outbox que el del broker de Logística.
 - **Relay del outbox con varias instancias.** `[INFERRED]` `pendientesListas` no bloquea filas: con dos instancias del servicio, las dos podrían enviar la misma entrada. Con una instancia no pasa; si se escala, la consulta tiene que tomar las filas con `FOR UPDATE SKIP LOCKED`.
 
@@ -88,7 +90,7 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - **Alias repetido (resuelto).** `[DOCUMENTED]` Decisión del usuario: ignorar el duplicado (idempotente). `Subcategoria.agregarAlias` no agrega un alias que ya existe; la restricción `uq_alias_subcategoria` queda como red de seguridad en la base.
 - **Alias con nombre de subcategoría derivado.** `[OBSERVED]` `AliasSubcategoria` guarda copiado el nombre de la subcategoría; en memoria queda desactualizado al renombrar. Al persistir se deriva al leer (corrige el dato, cambia el comportamiento).
 - **Borrar categorías/subcategorías en uso (resuelto para necesidades).** `[DOCUMENTED]` D-20: 409 `SUBCATEGORIA_EN_USO`. Cuando los items de donación tengan FK a `subcategoria` (Pasos 7 y 8), hay que sumar esa verificación al mismo chequeo.
-- **Seeder del catálogo.** `[OBSERVED]` Viene apagado por defecto (`SEED_CATALOGO_ENABLED=false`). Si se activa con base persistente generaría ids nuevos en cada arranque; ahora es idempotente (no inserta si ya hay categorías). Con el compose actual el catálogo queda vacío en Postgres: hay que cargarlo por API o activar el seeder.
+- **Seeder del catálogo (resuelto en el Paso 11).** `[OBSERVED]` Con el perfil `postgres` el seeder corre por defecto (`SEED_CATALOGO_ENABLED`, `true` si no se define); es idempotente. El perfil en memoria lo sigue teniendo apagado.
 - **Comentario de `application.properties`:** explica por qué se excluyen las autoconfiguraciones de BD en el perfil en memoria. Es una `[INFERRED]`: el TODO original decía que no se sabía.
 
 ---
@@ -160,6 +162,14 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
 
+## Paso 11 — detalle (cierre)
+
+- **Diagrama de clases** ([`diagrama-de-clases-donaciones.puml`](../../arquitectura/diseno/donaciones/diagrama-de-clases-donaciones.puml) y sus dos copias para Lucid): donación independiente con su destino por id y sus fechas, `DestinoAsignacion`, necesidades sin listas de donaciones (DTI-06) con `version` y reconstitución, `PeriodoNecesidad` con id, patente en `Entregada`, `retornar` y `replanificar` en `EntregaFallida`, ítem con su ítem normalizado y propuesta que referencia la necesidad por id. `[OBSERVED]` Otras partes del diagrama (dirección con `Pais` / `Provincia` / `Localidad`, personas) no se revisaron.
+- **DER** ([`donaciones-DER.puml`](../../arquitectura/diseno/donaciones/donaciones-DER.puml)), hecho a partir de las migraciones V1 a V12, con lo que difiere del DER de Lucid en rojo, y **lista de cambios** ([`cambios-der-donaciones.md`](../../arquitectura/diseno/donaciones/cambios-der-donaciones.md)), tabla por tabla con su motivo, para el dueño del DER.
+- **Componentes de persistencia** ([`donaciones-componentes-persistencia.puml`](../../arquitectura/diseno/donaciones/donaciones-componentes-persistencia.puml)): puertos, adapters JPA y en memoria, outbox y publicación después del commit. Los diagramas del informe de la Entrega 4 (`entrega-4/arquitectura/`) no se tocan: describen el estado al cierre de esa entrega.
+- **Hallazgos resueltos.** Filtros con `findAll` de ítems normalizados (consultas nuevas en el puerto, con test contra Postgres), cuatro códigos de error sin uso retirados, seeder del catálogo activo por defecto con `postgres`.
+- **`context-index.md` y `agent-check`.** La constraint «Persistencia en memoria» queda reemplazada en los cuatro servicios y `donaciones-service` pasa a la lista de JPA autorizado de `scripts/agent-check/config.js`, como Incentivos (los dos con su ADR de mapeo ORM en `proposed`). El WARN `TEMPORAL_DRIFT` desaparece.
+
 ## Paso 10 — detalle
 
 - **Migración `V12__logistica_outbox_idempotencia.sql`.** `solicitud_entrega` (FK `RESTRICT` a la donación independiente, `estado` y `ronda` con `CHECK`, `proveedores_descartados TEXT[]` provisoria y un índice único parcial: una sola solicitud no `FALLIDA` por donación), `outbox_logistica` (FK `CASCADE` a la solicitud, `payload JSONB`, índice parcial de pendientes por `proximo_intento`) y `evento_consumido` (FK `RESTRICT` a la donación independiente, restricción única de idempotencia).
@@ -169,7 +179,7 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - **Publicar después del commit (D-39).** `DonacionesEventPublisher.publicar` registra el envío para después del commit si hay una transacción abierta; los headers (`traceId`) se arman en el momento del evento.
 - **Tests.** `LogisticaRepositoriesJpaTest` (10, contra Postgres real): solicitud con descartados, activa contra más reciente, dos solicitudes activas rechazadas por la base, payload JSONB idéntico al reintentar, pendientes vencidas en orden, intento incierto, idempotencia con `business_id` nulo y duplicado rechazado, el broker guarda solicitud y entrada juntas, **si falla el outbox no queda la solicitud** y dos rechazos seguidos pasan a la ronda 2 (no se olvidan los descartados entre lecturas). `DonacionesEventPublisherTest` (+2): con transacción publica recién en el commit y no publica si se deshace.
 - `[VERIFIED]` `mvn clean test` (todo el reactor): donaciones 782 tests, 0 fallas. `logistica-service` falló una vez al arrancar el contenedor de RabbitMQ (`ContainerLaunchException`, ambiental) y pasó al correrlo solo (385 tests, 1 salteado). `spotless:check` OK; `agent-check` 75 PASS, 1 WARN preexistente.
-- **Gate 4 y arreglo de arranque.** `[VERIFIED]` La primera corrida de Gate 4 encontró que **`donaciones-service` no arrancaba en preprod**, que usa el perfil en memoria (`SPRING_PROFILES_ACTIVE=preprod`, sin `postgres`). Tres mappers de persistencia piden repositorios de Spring Data, que ahí no existen: `DireccionesPersistenciaMapper` (desde el Paso 2), `DonacionesPersistenciaMapper` (Paso 7) y `DonacionesIndependientesPersistenciaMapper` (Paso 8). Se corrigió marcando todos los mappers de persistencia con `@Profile("postgres")`, como los adapters (solo los usan ellos). `DonacionesServiceApplicationTest`, corrido solo, reproducía el error y ahora pasa. `[OBSERVED]` Las dos corridas siguientes de Gate 4 no llegaron a levantar los servicios: RabbitMQ sale al arrancar con `Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces`, sin volumen y con `down -v` entre corridas (problema del entorno Docker local, no del código). **Gate 4 queda pendiente** de una corrida con el entorno sano.
+- **Gate 4 y arreglo de arranque.** `[VERIFIED]` La primera corrida de Gate 4 encontró que **`donaciones-service` no arrancaba en preprod**, que usa el perfil en memoria (`SPRING_PROFILES_ACTIVE=preprod`, sin `postgres`). Tres mappers de persistencia piden repositorios de Spring Data, que ahí no existen: `DireccionesPersistenciaMapper` (desde el Paso 2), `DonacionesPersistenciaMapper` (Paso 7) y `DonacionesIndependientesPersistenciaMapper` (Paso 8). Se corrigió marcando todos los mappers de persistencia con `@Profile("postgres")`, como los adapters (solo los usan ellos). `DonacionesServiceApplicationTest`, corrido solo, reproducía el error y ahora pasa. `[OBSERVED]` Las dos corridas siguientes de Gate 4 no llegaron a levantar los servicios: RabbitMQ sale al arrancar con `Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces`, sin volumen y con `down -v` entre corridas (problema del entorno Docker local, no del código). Tras reiniciar colima, la tercera corrida levantó todo: **29 tests, 2 fallas** en `CrossServiceCommunicationIT` (`testDonanteBaja`, `testE2EDonationFlowAndSideEffects`), las dos por vencimiento de esperas asincrónicas (5 s para la réplica de una persona en Notificaciones, 10 s para las métricas de Incentivos). `[OBSERVED]` En los logs, Donaciones guardó la persona y publicó `persona.sincronizada` a tiempo; Notificaciones la consumió 3 s después e Incentivos 27 s después. `[INFERRED]` Es demora de los consumidores con el entorno cargado, no un cambio de esta rama: preprod corre Donaciones en memoria, sin transacciones, y el publicador manda en el momento, igual que antes. **Gate 4 no queda `[VERIFIED]`**.
 
 ### Transacciones por caso de uso (opción documentada, D-38)
 

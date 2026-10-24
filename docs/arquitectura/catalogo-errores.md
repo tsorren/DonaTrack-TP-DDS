@@ -139,15 +139,13 @@
 | `ERR-VAL-506` | `NECESIDAD_SIN_SUBCATEGORIA` | Necesidad sin subcategoría definida | `400` |
 | `ERR-VAL-507` | `CANTIDAD_NECESITADA_INVALIDA` | Cantidad necesitada inválida (≤ 0) | `400` |
 | `ERR-VAL-508` | `DESCRIPCION_NECESIDAD_VACIA` | Descripción de necesidad vacía | `400` |
-| `ERR-VAL-509` | `ASIGNAR_DONACION_NULA` | Donación a asignar es nula | `400` |
-| `ERR-VAL-510` | `DONACION_YA_ASIGNADA` | La donación ya fue asignada a esta necesidad | `400` |
-| `ERR-VAL-511` | `DONACION_NO_PERTENECE_A_NECESIDAD` | La donación no pertenece a esta necesidad | `400` |
 | `ERR-VAL-512` | `NECESIDAD_RECURRENTE_SIN_PERIODO` | Necesidad recurrente sin periodo definido | `400` |
 | `ERR-VAL-513` | `FECHA_INICIO_NULA` | Fecha de inicio nula | `400` |
 | `ERR-VAL-514` | `FECHA_INICIO_FUTURA` | Fecha de inicio está en el futuro | `400` |
-| `ERR-VAL-516` | `PERIODO_DONACION_NULA` | Donación de periodo es nula | `400` |
 | `ERR-VAL-517` | `ENTIDAD_BENEFICIARIA_TIPO_INVALIDO` | Una entidad beneficiaria no puede ser una empresa (organización sin fines de lucro) | `400` |
 | `ERR-VAL-518` | `ENTIDAD_BENEFICIARIA_SIN_DIRECCION` | Una entidad beneficiaria requiere dirección (la entrega se hace allí) | `400` |
+
+> Códigos retirados (no reutilizar): `ERR-VAL-509` `ASIGNAR_DONACION_NULA`, `ERR-VAL-510` `DONACION_YA_ASIGNADA`, `ERR-VAL-511` `DONACION_NO_PERTENECE_A_NECESIDAD` y `ERR-VAL-516` `PERIODO_DONACION_NULA`. Quedaron sin uso cuando la necesidad dejó de guardar sus donaciones (DTI-06).
 
 ### Matchmaking (6xx)
 

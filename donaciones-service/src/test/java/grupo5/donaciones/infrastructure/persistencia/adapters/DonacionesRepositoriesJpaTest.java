@@ -24,7 +24,10 @@ import grupo5.donaciones.models.entities.itemsNormalizados.ItemDonacionNormaliza
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -246,6 +249,37 @@ class DonacionesRepositoriesJpaTest {
     assertTrue(leido.isSegmentado());
     assertTrue(itemsNormalizados.existsBySubcategoriaId(subcategoriaId));
     assertFalse(itemsNormalizados.existsBySubcategoriaId(UUID.randomUUID()));
+  }
+
+  @Test
+  void buscarItemsNormalizados_porDonacionYPendientes_filtraEnLaBase() {
+    Bien arroz = BienMother.simple("Arroz");
+    Donacion una = DonacionMother.normalizada(donanteId, arroz, 5);
+    Donacion otra = DonacionMother.normalizada(donanteId, arroz, 3);
+    donaciones.saveAll(List.of(una, otra));
+    ItemDonacionNormalizado aceptado =
+        itemsNormalizados.save(
+            new ItemDonacionNormalizado(
+                una.getId(), BienMother.aceptado(arroz, subcategoriaId), 5));
+    ItemDonacionNormalizado pendiente =
+        itemsNormalizados.save(
+            new ItemDonacionNormalizado(
+                una.getId(), BienMother.pendienteRevision(arroz, subcategoriaId, 0.4), 2));
+    ItemDonacionNormalizado deOtra =
+        itemsNormalizados.save(
+            new ItemDonacionNormalizado(
+                otra.getId(), BienMother.pendienteRevision(arroz, subcategoriaId, 0.3), 3));
+
+    assertEquals(
+        Set.of(aceptado.getId(), pendiente.getId()),
+        itemsNormalizados.findByDonacion(una.getId()).stream()
+            .map(ItemDonacionNormalizado::getId)
+            .collect(Collectors.toSet()));
+    assertEquals(
+        Set.of(pendiente.getId(), deOtra.getId()),
+        itemsNormalizados.findPendientesDeRevision().stream()
+            .map(ItemDonacionNormalizado::getId)
+            .collect(Collectors.toSet()));
   }
 
   @Test

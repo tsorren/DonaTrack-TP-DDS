@@ -134,11 +134,7 @@ public class SegmentacionService implements ISegmentacionService {
   }
 
   private List<ItemDonacionNormalizado> obtenerItemsAceptadosNoSegmentados(UUID donacionId) {
-    return itemNormalizadoRepository.findAll().stream()
-        .filter(
-            item ->
-                item.getDonacionOriginalId() != null
-                    && item.getDonacionOriginalId().equals(donacionId))
+    return itemNormalizadoRepository.findByDonacion(donacionId).stream()
         .filter(
             item ->
                 item.getBien().estadoNormalizacion() == EstadoNormalizacion.ACEPTADO

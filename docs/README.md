@@ -40,7 +40,7 @@ docs/
 │   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de diseño y anexos técnicos
-│       ├── donaciones/
+│       ├── donaciones/                # Diagrama de clases, DER implementado (V1-V12), cambios al DER y componentes de persistencia
 │       ├── incentivos/
 │       ├── logistica/
 │       ├── notificaciones/

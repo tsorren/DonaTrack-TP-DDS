@@ -104,7 +104,7 @@ services:
       - RABBITMQ_PASS=${RABBITMQ_PASS:?ver .env.example}
       # Token de los eventos de vuelta de logística: valor sintético solo para desarrollo y pruebas
       - LOGISTICA_TOKEN_DONATRACK=${LOGISTICA_TOKEN_DONATRACK:-token-sintetico-solo-desarrollo}
-      - SEED_CATALOGO_ENABLED=false
+      - SEED_CATALOGO_ENABLED=${SEED_CATALOGO_ENABLED:-true}
       - SPRING_MAIN_LAZY_INITIALIZATION=false
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off

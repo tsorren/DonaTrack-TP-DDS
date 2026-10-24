@@ -82,7 +82,8 @@ class SegmentacionServiceTest {
   @Test
   void procesarDonacionNormalizada_deberiaSegmentarSoloItemsAceptadosYProgresarDonacion() {
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
-    when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemAceptado, itemRechazado));
+    when(itemNormalizadoRepository.findByDonacion(donacion.getId()))
+        .thenReturn(List.of(itemAceptado, itemRechazado));
 
     grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente itemIndep =
         new grupo5.donaciones.models.entities.donacionesIndependientes.ItemDonacionIndependiente(
@@ -114,7 +115,8 @@ class SegmentacionServiceTest {
   @Test
   void procesarDonacionNormalizada_cuandoNoHayAceptados_deberiaMarcarComoSegmentadaSinSegmentar() {
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
-    when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemRechazado));
+    when(itemNormalizadoRepository.findByDonacion(donacion.getId()))
+        .thenReturn(List.of(itemRechazado));
 
     segmentacionService.procesarDonacionNormalizada(
         new DonacionNormalizada(donacion.getId(), donante.getId()));

@@ -3,6 +3,7 @@ package grupo5.donaciones.services;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
@@ -90,7 +91,7 @@ class ItemDonacionNormalizadoServiceTest {
 
   @Test
   void obtenerPendientes_deberiaRetornarSoloItemsPendientes() {
-    when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
+    when(itemNormalizadoRepository.findPendientesDeRevision()).thenReturn(List.of(itemNormalizado));
     when(subcategoriasRepository.findById(subcategoria.getId()))
         .thenReturn(Optional.of(subcategoria));
 
@@ -121,7 +122,7 @@ class ItemDonacionNormalizadoServiceTest {
     when(subcategoriasRepository.findById(subcategoria.getId()))
         .thenReturn(Optional.of(subcategoria));
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
-    when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
+    when(itemNormalizadoRepository.findByDonacion(any())).thenReturn(List.of(itemNormalizado));
     doAnswer(
             invocation -> {
               assertTrue(
@@ -156,7 +157,7 @@ class ItemDonacionNormalizadoServiceTest {
         .thenReturn(Optional.of(itemNormalizado));
     when(subcategoriasRepository.findById(newSubId)).thenReturn(Optional.of(newSub));
     when(donacionRepository.findById(donacion.getId())).thenReturn(Optional.of(donacion));
-    when(itemNormalizadoRepository.findAll()).thenReturn(List.of(itemNormalizado));
+    when(itemNormalizadoRepository.findByDonacion(any())).thenReturn(List.of(itemNormalizado));
 
     ItemDonacionNormalizadoPatchDTO patchDTO =
         new ItemDonacionNormalizadoPatchDTO(EstadoNormalizacion.RECHAZADO, newSubId);
