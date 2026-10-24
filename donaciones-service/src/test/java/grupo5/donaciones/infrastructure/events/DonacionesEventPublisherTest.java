@@ -1,12 +1,14 @@
 package grupo5.donaciones.infrastructure.events;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import grupo5.common.logging.FeignTraceRequestInterceptor;
 import grupo5.donaciones.config.RabbitMQConfig;
@@ -20,6 +22,8 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /** SPEC-03 §7.3: routing keys versionadas `.v1` y headers de trazabilidad en cada publicación. */
 class DonacionesEventPublisherTest {
@@ -30,6 +34,38 @@ class DonacionesEventPublisherTest {
   @AfterEach
   void limpiarMdc() {
     MDC.clear();
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      TransactionSynchronizationManager.clearSynchronization();
+    }
+  }
+
+  @Test
+  void conTransaccionAbierta_publicaRecienDespuesDelCommit() {
+    TransactionSynchronizationManager.initSynchronization();
+    MDC.put(FeignTraceRequestInterceptor.MDC_TRACE_KEY, "trace-de-la-operacion");
+
+    publisher.publicarDonacionAsignada(null);
+    verifyNoInteractions(rabbitTemplate);
+
+    MDC.clear();
+    TransactionSynchronizationManager.getSynchronizations()
+        .forEach(TransactionSynchronization::afterCommit);
+    Message mensaje = publicarYCapturar(p -> {}, "donacion.asignada.v1");
+    // El traceId es el de la operación que originó el evento, no el del momento del envío
+    assertEquals(
+        "trace-de-la-operacion",
+        mensaje.getMessageProperties().getHeader(FeignTraceRequestInterceptor.TRACE_HEADER));
+  }
+
+  @Test
+  void conTransaccionDeshecha_noPublica() {
+    TransactionSynchronizationManager.initSynchronization();
+
+    publisher.publicarDonacionAsignada(null);
+    TransactionSynchronizationManager.getSynchronizations()
+        .forEach(sync -> sync.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+
+    verifyNoInteractions(rabbitTemplate);
   }
 
   private Message publicarYCapturar(

@@ -67,13 +67,20 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
   private final IDonantesRepository donantesRepository;
   private final IDonacionesEventPublisher donacionesEventPublisher;
   private final ILogisticaBroker logisticaBroker;
+  private final AcumuladosDeAsignacion acumulados;
 
   @Override
   public List<PropuestaDTO> ejecutarAsignacion() {
     List<DonacionIndependiente> donaciones = donacionRepository.findEnDeposito();
-    List<Necesidad> necesidades = necesidadRepository.findByEstaSatisfechaFalseActivaTrue();
+    // "Satisfecha" depende de lo asignado, que no guarda la necesidad (DTI-06)
+    List<Necesidad> necesidades =
+        necesidadRepository.findActivas().stream()
+            .filter(n -> !acumulados.estaSatisfecha(n))
+            .toList();
 
-    List<Propuesta> propuestas = gestorPropuestas.generarPropuestas(necesidades, donaciones);
+    List<Propuesta> propuestas =
+        gestorPropuestas.generarPropuestas(
+            necesidades, donaciones, acumulados.datosPara(necesidades));
     propuestas.forEach(propuestaRepository::save);
 
     EjecucionAsignacion ejecucion = new EjecucionAsignacion(propuestas.size());
@@ -182,8 +189,7 @@ public class PropuestaDeAsignacionService implements IPropuestaDeAsignacionServi
       publicarDonacionAsignada(donacionAsignar, datosBeneficiario);
       solicitarEntregaALogistica(donacionAsignar, datosBeneficiario);
     }
-
-    necesidadRepository.save(necesidad);
+    // La necesidad no cambia: la asignación queda registrada en cada donación (DTI-06)
   }
 
   private record DatosBeneficiario(UUID personaBeneficiariaId, DestinoEventoDTO destino) {}

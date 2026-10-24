@@ -17,10 +17,7 @@ public class ListaParaEntregar implements EstadoDonacionIndependiente {
 
   public void iniciarRecorrido(DonacionIndependiente d, String urlMapa, String actor) {
     d.cambiarEstado(new EnTraslado(), null, actor);
-    UUID necesidadId =
-        d.getAsignadaA() != null && d.getAsignadaA().obtenerNecesidad() != null
-            ? d.getAsignadaA().obtenerNecesidad().getId()
-            : null;
+    UUID necesidadId = d.getNecesidadId();
     d.registrarEvento(
         new EventoRutaIniciada(d.getId(), d.getDonacionOriginalId(), necesidadId, urlMapa));
   }

@@ -1,0 +1,376 @@
+@startuml donaciones-DER
+' ============================================================
+' DER del schema donaciones, tal como lo crean las migraciones Flyway V1 a V12
+' (donaciones-service/src/main/resources/db/migration). Fuente de verdad: las migraciones.
+' * = NOT NULL. En rojo: lo que no está o cambia respecto del DER de Lucid (versión del
+' 19/10/2026); el detalle y el motivo de cada cambio están en cambios-der-donaciones.md.
+' ============================================================
+!pragma layout smetana
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #4A4A4A
+  ArrowColor #4A4A4A
+}
+!define CAMBIO(x) <color:#C0392B>x</color>
+
+title Schema donaciones — DER implementado (V1 a V12)
+
+package "Personas" {
+  entity direccion {
+    * id : UUID <<PK>>
+    --
+    * calle : TEXT
+    * altura : CAMBIO(INTEGER)
+    piso : CAMBIO(INTEGER)
+    departamento : TEXT
+    * codigo_postal : TEXT
+    * localidad : TEXT
+    * CAMBIO(provincia : TEXT)
+    * CAMBIO(pais : TEXT)
+    --
+    CAMBIO(UNIQUE NULLS NOT DISTINCT (todas las columnas))
+  }
+
+  entity persona {
+    * id : UUID <<PK>>
+    --
+    * tipo_persona : VARCHAR(10)
+    id_direccion : UUID <<FK>>
+    tipo_documento : VARCHAR(15)
+    CAMBIO(nro_documento : TEXT)
+    --
+    CAMBIO(UNIQUE (tipo_documento, nro_documento))
+  }
+
+  entity humana {
+    * id : UUID <<PK, FK>>
+    --
+    * nombre : TEXT
+    * apellido : TEXT
+    genero : VARCHAR(20)
+    representante_de : UUID <<FK>>
+    fecha_nacimiento : CAMBIO(DATE)
+  }
+
+  entity juridica {
+    * id : UUID <<PK, FK>>
+    --
+    * razon_social : TEXT
+    * tipo_juridico : VARCHAR(20)
+    * rubro : TEXT
+  }
+
+  entity medio_de_contacto {
+    * id : UUID <<PK>>
+    --
+    * id_persona : UUID <<FK>>
+    * es_predeterminado : BOOLEAN
+  }
+
+  entity correo {
+    * id : UUID <<PK, FK>>
+    --
+    CAMBIO(direccion_correo : TEXT)
+  }
+
+  entity telefono {
+    * id : UUID <<PK, FK>>
+    --
+    caracteristica : TEXT
+    CAMBIO(codigo_area : TEXT)
+    CAMBIO(numero : TEXT)
+    * CAMBIO(tipo_telefono : VARCHAR(10))
+  }
+
+  entity donante {
+    * id : UUID <<PK, FK>>
+    --
+    * CAMBIO(activo : BOOLEAN)
+  }
+
+  entity entidad_beneficiaria {
+    * id : UUID <<PK, FK>>
+    --
+    * CAMBIO(activo : BOOLEAN)
+  }
+
+  entity archivo {
+    * CAMBIO(id) : UUID <<PK>>
+    --
+    * path : TEXT
+    * CAMBIO(estado_archivo : VARCHAR(30))
+  }
+}
+
+package "Catálogo" {
+  entity categoria {
+    * id : UUID <<PK>>
+    --
+    * nombre : TEXT
+    * con_uso : BOOLEAN
+    * con_vencimiento : BOOLEAN
+    * CAMBIO(tipo_unidad : VARCHAR(20))
+  }
+
+  entity subcategoria {
+    * id : UUID <<PK>>
+    --
+    * id_categoria : UUID <<FK>>
+    * nombre : TEXT
+  }
+
+  entity alias {
+    * CAMBIO(id : UUID) <<PK>>
+    --
+    * id_subcategoria : UUID <<FK>>
+    * alias : TEXT
+    --
+    CAMBIO(UNIQUE (id_subcategoria, alias))
+  }
+}
+
+package "Necesidades" {
+  entity necesidad {
+    * id : UUID <<PK>>
+    --
+    * tipo_necesidad : VARCHAR(20)
+    * subcategoria_id : UUID <<FK>>
+    * entidad_beneficiaria_id : UUID <<FK>>
+    * cantidad_necesitada : BIGINT
+    * CAMBIO(descripcion : VARCHAR(500))
+    * fecha_inicio : CAMBIO(TIMESTAMP)
+    * activa : BOOLEAN
+    periodo : CAMBIO(VARCHAR(20) ISO-8601)
+    * CAMBIO(version : BIGINT)
+  }
+
+  entity periodo_necesidad {
+    * id : UUID <<PK>>
+    --
+    * CAMBIO(necesidad_id) : UUID <<FK>>
+    * fecha_inicio : CAMBIO(TIMESTAMP)
+    * fecha_fin : CAMBIO(TIMESTAMP)
+    * cantidad_objetivo : BIGINT
+  }
+}
+
+package "Donaciones" {
+  entity deposito {
+    * id : UUID <<PK>>
+    --
+    * id_direccion : UUID <<FK>>
+    * nombre : TEXT
+    --
+    CAMBIO(UNIQUE (nombre, id_direccion))
+  }
+
+  entity donacion {
+    * id : UUID <<PK>>
+    --
+    * id_donante : UUID <<FK>>
+    * descripcion : TEXT
+    * fecha : CAMBIO(TIMESTAMP)
+    * estado_donacion : VARCHAR(20)
+    id_deposito_donde_esta : UUID <<FK>>
+  }
+
+  entity item_donacion {
+    * id : UUID <<PK>>
+    --
+    * id_donacion : UUID <<FK>>
+    * descripcion : TEXT
+    foto_url : TEXT
+    fecha_vencimiento : CAMBIO(DATE)
+    estado : VARCHAR(20)
+    * peso_unitario : CAMBIO(NUMERIC(12,3))
+    * volumen_unitario : CAMBIO(NUMERIC(12,3))
+    * cantidad : BIGINT
+  }
+
+  entity cambio_estado_donacion {
+    * id : UUID <<PK>>
+    --
+    * id_donacion : UUID <<FK>>
+    estado_anterior : VARCHAR(20)
+    * estado_nuevo : VARCHAR(20)
+    * timestamp : CAMBIO(TIMESTAMP)
+  }
+
+  entity item_donacion_normalizado {
+    * id : UUID <<PK>>
+    --
+    * id_donacion : UUID <<FK>>
+    * cantidad : BIGINT
+    * segmentado : BOOLEAN
+    bien_nombre : TEXT
+    * bien_descripcion : TEXT
+    CAMBIO(foto_url : TEXT)
+    CAMBIO(fecha_vencimiento : DATE)
+    CAMBIO(estado : VARCHAR(20))
+    * CAMBIO(peso_unitario : NUMERIC(12,3))
+    * CAMBIO(volumen_unitario : NUMERIC(12,3))
+    * id_subcategoria : UUID <<FK>>
+    * confianza_normalizacion : FLOAT8
+    * CAMBIO(estado_normalizacion : VARCHAR(20))
+  }
+}
+
+package "Donaciones independientes" {
+  entity donacion_independiente {
+    * id : UUID <<PK>>
+    --
+    * id_donacion : UUID <<FK>>
+    * estado_actual : VARCHAR(25)
+    id_necesidad : UUID <<FK>>
+    * fecha_registro : CAMBIO(TIMESTAMP)
+    id_beneficiario_asignado : UUID <<FK>>
+    id_periodo : UUID <<FK>>
+  }
+
+  entity item_donacion_independiente {
+    * id : UUID <<PK>>
+    --
+    * id_donacion_independiente : UUID <<FK>>
+    * CAMBIO(id_item_normalizado : UUID) <<FK>>
+    * cantidad : BIGINT
+    * bien_descripcion : TEXT
+  }
+
+  entity estado_donacion_independiente {
+    * id : UUID <<PK>>
+    --
+    * id_donacion_independiente : UUID <<FK>>
+    * CAMBIO(tipo : VARCHAR(25))
+    patente_camion : TEXT
+    replanificable_hasta : CAMBIO(TIMESTAMP)
+  }
+
+  entity cambio_estado_donacion_independiente {
+    * id : UUID <<PK>>
+    --
+    * id_donacion_independiente : UUID <<FK>>
+    id_estado_anterior : UUID <<FK>>
+    * id_estado_nuevo : UUID <<FK>>
+    * timestamp : CAMBIO(TIMESTAMP)
+    actor : TEXT
+    CAMBIO(justificacion : TEXT)
+  }
+}
+
+package "Propuestas" {
+  entity propuesta {
+    * id : UUID <<PK>>
+    --
+    * id_necesidad_que_satisface : UUID <<FK>>
+    * CAMBIO(estado : VARCHAR(20))
+    * CAMBIO(fecha_creacion : TIMESTAMP)
+  }
+
+  entity posible_fragmentacion {
+    * id : UUID <<PK>>
+    --
+    * id_propuesta : UUID <<FK>>
+    * CAMBIO(id_donacion_independiente : UUID) <<FK>>
+    * cantidad : CAMBIO(INTEGER)
+  }
+}
+
+package "Logística e integración" {
+  entity solicitud_entrega {
+    * id : UUID <<PK>>
+    --
+    * id_donacion_independiente : UUID <<FK>>
+    proveedor_actual : TEXT
+    * estado : CAMBIO(VARCHAR(20))
+    * ronda : INTEGER
+    * CAMBIO(fecha_creacion : TIMESTAMP)
+    * CAMBIO(proveedores_descartados : TEXT[]) (provisoria)
+    --
+    CAMBIO(UNIQUE (id_donacion_independiente) WHERE estado <> 'FALLIDA')
+  }
+
+  entity outbox_logistica {
+    * id : UUID <<PK>>
+    --
+    * id_solicitud_entrega : UUID <<FK>>
+    * proveedor_id : TEXT
+    * payload : JSONB
+    trace_id : TEXT
+    * proximo_intento : CAMBIO(TIMESTAMP)
+    * estado : VARCHAR(20)
+    * intentos : INTEGER
+    * CAMBIO(max_intentos : INTEGER)
+  }
+
+  entity evento_consumido {
+    * id : UUID <<PK>>
+    --
+    * event_type : TEXT
+    queue_name : TEXT
+    business_id : UUID
+    id_donacion_independiente : UUID <<FK>>
+    * CAMBIO(fecha_procesamiento : TIMESTAMP)
+    --
+    CAMBIO(UNIQUE NULLS NOT DISTINCT (event_type, business_id, id_donacion_independiente))
+  }
+}
+
+' ---------- Personas ----------
+direccion ||..o{ persona
+persona ||--o| humana
+persona ||--o| juridica
+juridica |o..o{ humana : representante_de
+persona ||--o{ medio_de_contacto
+medio_de_contacto ||--o| correo
+medio_de_contacto ||--o| telefono
+persona ||--o| donante
+juridica ||--o| entidad_beneficiaria
+
+' ---------- Catálogo y necesidades ----------
+categoria ||--o{ subcategoria
+subcategoria ||--o{ alias
+subcategoria ||--o{ necesidad
+entidad_beneficiaria ||--o{ necesidad
+necesidad ||--o{ periodo_necesidad
+
+' ---------- Donaciones ----------
+donante ||--o{ donacion
+direccion ||--o{ deposito
+deposito |o..o{ donacion
+donacion ||--o{ item_donacion
+donacion ||--o{ cambio_estado_donacion
+donacion ||--o{ item_donacion_normalizado
+subcategoria ||--o{ item_donacion_normalizado
+
+' ---------- Donaciones independientes ----------
+donacion ||--o{ donacion_independiente
+necesidad |o..o{ donacion_independiente
+periodo_necesidad |o..o{ donacion_independiente
+entidad_beneficiaria |o..o{ donacion_independiente
+donacion_independiente ||--o{ item_donacion_independiente
+item_donacion_normalizado ||--o{ item_donacion_independiente
+donacion_independiente ||--o{ estado_donacion_independiente
+donacion_independiente ||--o{ cambio_estado_donacion_independiente
+estado_donacion_independiente ||..o{ cambio_estado_donacion_independiente : anterior / nuevo
+
+' ---------- Propuestas ----------
+necesidad ||--o{ propuesta
+propuesta ||--o{ posible_fragmentacion
+donacion_independiente ||--o{ posible_fragmentacion
+
+' ---------- Logística ----------
+donacion_independiente ||--o{ solicitud_entrega
+solicitud_entrega ||--o{ outbox_logistica
+donacion_independiente |o..o{ evento_consumido
+
+legend right
+  * = NOT NULL · <<PK>> clave primaria · <<FK>> clave foránea
+  <color:#C0392B>rojo</color> = no está o cambia respecto del DER de Lucid
+  (ver cambios-der-donaciones.md)
+  ── FK obligatoria · ·· FK opcional
+endlegend
+@enduml

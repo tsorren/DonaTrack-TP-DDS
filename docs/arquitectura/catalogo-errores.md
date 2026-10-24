@@ -90,6 +90,7 @@
 | `ERR-VAL-208` | `ESTADO_ARCHIVO_INVALIDO` | Estado de archivo CSV inválido | `400` |
 | `ERR-VAL-209` | `DEPOSITO_NOMBRE_NULO` | Nombre de depósito nulo o vacío | `400` |
 | `ERR-VAL-210` | `DEPOSITO_DIRECCION_NULA` | Dirección de depósito nula | `400` |
+| `ERR-VAL-212` | `DONACION_SIN_DESCRIPCION` | La donación no tiene descripción general (obligatoria en el enunciado y en el DER) | `400` |
 
 ### Bienes y Categorías (3xx)
 
@@ -124,6 +125,7 @@
 | `ERR-VAL-410` | `ESTADO_DONACION_TRANSICION_INVALIDA` | Transición de estado de donación no permitida | `400` |
 | `ERR-VAL-411` | `DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD` | Asignación de donación independiente sin necesidad | `400` |
 | `ERR-VAL-412` | `DONACION_INDEPENDIENTE_FALLA_SIN_JUSTIFICACION` | Fallo de donación independiente sin justificación | `400` |
+| `ERR-VAL-414` | `ITEM_DONACION_INDEPENDIENTE_SIN_ITEM_NORMALIZADO` | Ítem de donación independiente sin el ítem normalizado del que sale | `400` |
 
 ### Beneficiarios y Necesidades (5xx)
 
@@ -137,15 +139,13 @@
 | `ERR-VAL-506` | `NECESIDAD_SIN_SUBCATEGORIA` | Necesidad sin subcategoría definida | `400` |
 | `ERR-VAL-507` | `CANTIDAD_NECESITADA_INVALIDA` | Cantidad necesitada inválida (≤ 0) | `400` |
 | `ERR-VAL-508` | `DESCRIPCION_NECESIDAD_VACIA` | Descripción de necesidad vacía | `400` |
-| `ERR-VAL-509` | `ASIGNAR_DONACION_NULA` | Donación a asignar es nula | `400` |
-| `ERR-VAL-510` | `DONACION_YA_ASIGNADA` | La donación ya fue asignada a esta necesidad | `400` |
-| `ERR-VAL-511` | `DONACION_NO_PERTENECE_A_NECESIDAD` | La donación no pertenece a esta necesidad | `400` |
 | `ERR-VAL-512` | `NECESIDAD_RECURRENTE_SIN_PERIODO` | Necesidad recurrente sin periodo definido | `400` |
 | `ERR-VAL-513` | `FECHA_INICIO_NULA` | Fecha de inicio nula | `400` |
 | `ERR-VAL-514` | `FECHA_INICIO_FUTURA` | Fecha de inicio está en el futuro | `400` |
-| `ERR-VAL-516` | `PERIODO_DONACION_NULA` | Donación de periodo es nula | `400` |
 | `ERR-VAL-517` | `ENTIDAD_BENEFICIARIA_TIPO_INVALIDO` | Una entidad beneficiaria no puede ser una empresa (organización sin fines de lucro) | `400` |
 | `ERR-VAL-518` | `ENTIDAD_BENEFICIARIA_SIN_DIRECCION` | Una entidad beneficiaria requiere dirección (la entrega se hace allí) | `400` |
+
+> Códigos retirados (no reutilizar): `ERR-VAL-509` `ASIGNAR_DONACION_NULA`, `ERR-VAL-510` `DONACION_YA_ASIGNADA`, `ERR-VAL-511` `DONACION_NO_PERTENECE_A_NECESIDAD` y `ERR-VAL-516` `PERIODO_DONACION_NULA`. Quedaron sin uso cuando la necesidad dejó de guardar sus donaciones (DTI-06).
 
 ### Matchmaking (6xx)
 
@@ -214,7 +214,10 @@
 |---|---|---|---|---|
 | `ERR-EST-107` | `JURIDICA_SIN_REPRESENTANTES_RESTANTES` | Operación dejaría a la jurídica sin representantes | `409` | |
 | `ERR-EST-108` | `PERSONA_ANONIMIZADA_NO_OPERABLE` | La persona fue anonimizada: no se la puede editar ni registrarle o reactivarle un rol de donante o de entidad | `409` | |
+| `ERR-EST-112` | `JURIDICA_REPRESENTANTE_EN_OTRA_JURIDICA` | La humana ya es representante de otra jurídica (una humana representa a una sola) | `409` | |
+| `ERR-EST-113` | `PERSONA_DUPLICADA_EN_CONFLICTO` | El correo ya pertenece a otra persona con un documento distinto: no se puede decidir si es la misma | `409` | Lo usa el importador CSV: la fila cuenta como error |
 | `ERR-EST-211` | `DONANTE_INACTIVO` | El donante está dado de baja y no puede cargar donaciones | `409` | |
+| `ERR-EST-317` | `SUBCATEGORIA_EN_USO` | La subcategoría (o una de las subcategorías de la categoría) tiene necesidades que la usan | `409` | La FK `fk_necesidad_subcategoria` es la red de seguridad |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
 | `ERR-EST-409` | `ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA` | Fragmentación de ítem independiente inválida | `409` | |
 | `ERR-EST-413` | `SOLICITUD_ENTREGA_TRANSICION_INVALIDA` | Transición de estado de solicitud de entrega a logística inválida (broker) | `409` | |
@@ -222,6 +225,7 @@
 | `ERR-EST-519` | `ENTIDAD_BENEFICIARIA_INACTIVA` | La entidad beneficiaria está dada de baja | `409` | |
 | `ERR-EST-520` | `DONACION_A_SI_MISMO` | Una jurídica no puede recibir su propia donación | `409` | Se controla al aprobar la propuesta |
 | `ERR-EST-521` | `NECESIDAD_INACTIVA` | La necesidad ya no está activa y no se puede aprobar la propuesta | `409` | |
+| `ERR-EST-522` | `NECESIDAD_MODIFICADA_CONCURRENTEMENTE` | Otra operación guardó la necesidad después de que se leyó (bloqueo optimista) | `409` | Releer y reintentar |
 | `ERR-EST-702` | `DONANTE_INCENTIVOS_NO_ENCONTRADO` | Donante no encontrado en servicio de incentivos | **`404`** | Excepción especial en handler |
 | `ERR-EST-708` | `INSIGNIA_NO_ENCONTRADA` | Insignia no encontrada | **`404`** | Excepción especial en handler |
 | `ERR-EST-716` | `RANKING_NO_ENCONTRADO` | Ranking mensual no encontrado para el período solicitado | **`404`** | Excepción especial en handler |

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -51,7 +52,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void asignar_desdeEnDeposito_transicionaCorrectamenteYEmiteEvento() {
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     assertEquals(1, donacion.getHistorial().size());
     assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
     assertEquals(1, donacion.getDomainEvents().size());
@@ -60,7 +61,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void planificarRuta_luegoDe_asignar_transicionaAEnTraslado() {
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     assertInstanceOf(EnTraslado.class, donacion.getEstadoActual());
@@ -68,14 +69,14 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void iniciarRecorrido_luegoDePlanificarRuta_transicionaAListaParaEntregar() {
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     donacion.planificarRuta(ACTOR);
     assertInstanceOf(ListaParaEntregar.class, donacion.getEstadoActual());
   }
 
   @Test
   void registrarFalla_desdeListaParaEntregar_transicionaAEntregaFallida() {
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     donacion.registrarFalla("No había nadie", ACTOR);
@@ -84,7 +85,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void retornar_desdeEntregaFallida_vuelveAEnDeposito() {
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     donacion.registrarFalla("No había nadie", ACTOR);
@@ -93,8 +94,44 @@ class DonacionIndependienteEstadosTest {
   }
 
   @Test
+  void retornar_desdeEntregaFallida_limpiaElDestino() {
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
+    donacion.registrarFalla("No había nadie", ACTOR);
+    donacion.retornar(ACTOR);
+    assertNull(donacion.getNecesidadId());
+    assertNull(donacion.getPeriodoId());
+    assertNull(donacion.getEntidadBeneficiariaId());
+  }
+
+  @Test
+  void registrarFalla_replanificable_conservaElDestinoParaReintentar() {
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
+    donacion.cambiarEstado(
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGA_FALLIDA, null, "No atendieron", null, null, true, ACTOR));
+    assertInstanceOf(AsignacionRealizada.class, donacion.getEstadoActual());
+    assertEquals(receptor.getId(), donacion.getNecesidadId());
+  }
+
+  @Test
+  void confirmarEntrega_conPatente_laGuardaEnElEstadoEntregada() {
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
+    donacion.cambiarEstado(
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null, ACTOR));
+    Entregada entregada = assertInstanceOf(Entregada.class, donacion.getEstadoActual());
+    assertEquals("AB123CD", entregada.getPatenteCamion());
+  }
+
+  @Test
   void historial_registraCadaTransicion() {
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     assertEquals(3, donacion.getHistorial().size());
@@ -102,7 +139,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void historial_registraElActorEnCadaCambio() {
-    donacion.asignar("admin1", receptor);
+    donacion.asignar("admin1", receptor.destinoDeAsignacion());
     assertEquals("admin1", donacion.getHistorial().getFirst().getActor());
   }
 
@@ -120,7 +157,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void registrarFalla_sinJustificacion_lanzaExcepcion() {
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     donacion.planificarRuta(ACTOR);
     donacion.iniciarRecorrido(ACTOR);
     assertThrows(Exception.class, () -> donacion.registrarFalla(null, ACTOR));
@@ -169,7 +206,7 @@ class DonacionIndependienteEstadosTest {
 
   @Test
   void getDomainEvents_retornaListaInmodificable() {
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     var events = donacion.getDomainEvents();
     var nuevoEvento =
         new EventoDonacionAsignada(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
@@ -197,7 +234,7 @@ class DonacionIndependienteEstadosTest {
     // Regresión de #761: si getDomainEvents() devolviera una vista en vivo, mutar domainEvents
     // después de tomar el snapshot (p. ej. desde un listener reentrante) rompería la iteración
     // en curso con ConcurrentModificationException.
-    donacion.asignar(ACTOR, receptor);
+    donacion.asignar(ACTOR, receptor.destinoDeAsignacion());
     var snapshot = donacion.getDomainEvents();
     int cantidadEnElSnapshot = snapshot.size();
 

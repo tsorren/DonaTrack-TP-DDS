@@ -1,12 +1,11 @@
 package grupo5.donaciones.models.entities.donacionesIndependientes;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import grupo5.common.events.AgregadoConEventos;
 import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.events.EventoDonacionIndependiente;
-import grupo5.donaciones.models.entities.necesidades.Asignable;
+import grupo5.donaciones.models.entities.necesidades.DestinoAsignacion;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -32,7 +31,11 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
 
   private final List<CambioEstado> historial;
   private final LocalDateTime fechaRegistro;
-  @JsonIgnore private Asignable asignadaA;
+
+  // A dónde se asignó, por identificador (DTI-06): nulos mientras está en depósito
+  private UUID necesidadId;
+  private UUID periodoId;
+  private UUID entidadBeneficiariaId;
 
   public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
     if (donacionOriginalId == null) {
@@ -46,6 +49,20 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.estadoActual = new EnDeposito();
     this.historial = new ArrayList<>();
     this.fechaRegistro = LocalDateTime.now(ZoneId.systemDefault());
+  }
+
+  /** Constructor de reconstitución para el adaptador JPA: no valida ni registra eventos. */
+  public DonacionIndependiente(
+      DatosDonacionIndependiente datos,
+      List<ItemDonacionIndependiente> items,
+      List<CambioEstado> historial) {
+    this.id = datos.id();
+    this.donacionOriginalId = datos.donacionOriginalId();
+    this.items = new ArrayList<>(items);
+    this.estadoActual = datos.estadoActual();
+    this.historial = new ArrayList<>(historial);
+    this.fechaRegistro = datos.fechaRegistro();
+    asignarDestino(datos.destino());
   }
 
   public List<ItemDonacionIndependiente> getItems() {
@@ -92,7 +109,9 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
       if (itemActual.cantidad() > cantidadPorExtraer) {
         ItemDonacionIndependiente remanente =
             new ItemDonacionIndependiente(
-                itemActual.bien(), itemActual.cantidad() - cantidadPorExtraer);
+                itemActual.itemNormalizadoId(),
+                itemActual.bien(),
+                itemActual.cantidad() - cantidadPorExtraer);
         fragmento = itemActual.fragmentarse(cantidadPorExtraer);
         this.items.set(0, remanente);
       } else {
@@ -139,8 +158,8 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.estadoActual.registrar(this, actor);
   }
 
-  public void asignar(String actor, Asignable receptor) {
-    this.asignadaA = receptor;
+  public void asignar(String actor, DestinoAsignacion destino) {
+    asignarDestino(destino);
     this.estadoActual.asignar(this, actor);
   }
 
@@ -172,8 +191,10 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.estadoActual.vencer(this, actor);
   }
 
-  public void asignarReceptor(Asignable receptor) {
-    this.asignadaA = receptor;
+  public void asignarDestino(DestinoAsignacion destino) {
+    this.necesidadId = destino != null ? destino.necesidadId() : null;
+    this.periodoId = destino != null ? destino.periodoId() : null;
+    this.entidadBeneficiariaId = destino != null ? destino.entidadBeneficiariaId() : null;
   }
 
   // Llamado únicamente por los estados concretos
@@ -185,9 +206,5 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
 
   public List<CambioEstado> getHistorial() {
     return Collections.unmodifiableList(historial);
-  }
-
-  public Asignable asignadaA() {
-    return this.asignadaA;
   }
 }

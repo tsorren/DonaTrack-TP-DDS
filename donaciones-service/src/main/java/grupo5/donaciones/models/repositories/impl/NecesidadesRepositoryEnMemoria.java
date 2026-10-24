@@ -5,46 +5,24 @@ import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.TipoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@Profile("!postgres")
 public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Necesidad>
     implements INecesidadesRepository {
 
   @Override
-  public List<Necesidad> findByEstaSatisfechaFalse() {
-    return storage.values().stream().filter(n -> !n.estaSatisfecha()).toList();
-  }
-
-  @Override
-  public List<Necesidad> findByEstaSatisfechaFalseActivaTrue() {
-    return storage.values().stream()
-        .filter(n -> !n.estaSatisfecha())
-        .filter(Necesidad::isActiva)
-        .toList();
+  public List<Necesidad> findActivas() {
+    return storage.values().stream().filter(Necesidad::isActiva).toList();
   }
 
   @Override
   public List<Necesidad> buscarNecesidadesPorEntidad(UUID entidadId) {
     return storage.values().stream().filter(n -> entidadId.equals(n.getEntidadId())).toList();
-  }
-
-  @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalse() {
-    return storage.values().stream()
-        .filter(Necesidad::isActiva)
-        .filter(n -> !n.estaSatisfecha())
-        .toList();
-  }
-
-  @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteTrue() {
-    return storage.values().stream()
-        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.RECURRENTE)
-        .filter(Necesidad::isActiva)
-        .filter(n -> !n.estaSatisfecha())
-        .toList();
   }
 
   @Override
@@ -56,10 +34,8 @@ public class NecesidadesRepositoryEnMemoria extends CrudRepositoryEnMemoria<Nece
   }
 
   @Override
-  public List<Necesidad> findByActivaTrueAndSatisfechaFalseAndRecurrenteFalse() {
+  public boolean existsBySubcategoriaId(UUID subcategoriaId) {
     return storage.values().stream()
-        .filter(n -> n.getTipoNecesidad() == TipoNecesidad.EXTRAORDINARIA)
-        .filter(n -> !n.estaSatisfecha())
-        .toList();
+        .anyMatch(n -> Objects.equals(subcategoriaId, n.getSubcategoriaId()));
   }
 }

@@ -750,6 +750,7 @@ components:
       type: object
       required:
         - donanteId
+        - descripcion
         - items
       properties:
         donanteId:
@@ -757,6 +758,7 @@ components:
           format: uuid
         descripcion:
           type: string
+          description: Descripción general de lo que se dona. Obligatoria (400 si falta o está vacía).
         items:
           type: array
           items:
