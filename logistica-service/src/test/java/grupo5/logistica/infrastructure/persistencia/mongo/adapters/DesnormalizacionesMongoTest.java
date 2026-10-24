@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.testing.DisabledIfDockerUnavailable;
-import grupo5.logistica.infrastructure.persistencia.mongo.config.MongoPersistenciaConfig;
+import grupo5.logistica.infrastructure.persistencia.mongo.MongoDePrueba;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.AsignacionSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
@@ -18,10 +18,7 @@ import grupo5.logistica.infrastructure.persistencia.mongo.mappers.RutaMongoMappe
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.Ruta;
-import grupo5.logistica.models.entities.rutas.direccion.Direccion;
-import grupo5.logistica.models.entities.rutas.direccion.Localidad;
-import grupo5.logistica.models.entities.rutas.direccion.Pais;
-import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -29,8 +26,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
-import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -42,12 +37,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /** Asignación embebida en la entrega y paradas embebidas en la ruta, contra un MongoDB real. */
-@Testcontainers
 @DisabledIfDockerUnavailable
 @ActiveProfiles("mongo")
 @SpringJUnitConfig(
@@ -58,17 +49,13 @@ class DesnormalizacionesMongoTest {
   private static final LocalDate FECHA_RUTA = LocalDate.of(2030, 1, 1);
   private static final String PATENTE = "AB123CD";
 
-  @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0");
-
   @DynamicPropertySource
   static void propiedades(DynamicPropertyRegistry registry) {
-    registry.add("spring.mongodb.uri", () -> MONGO.getReplicaSetUrl("logistica"));
+    MongoDePrueba.conectar(registry, "desnormalizaciones");
   }
 
   @Import({
-    MongoAutoConfiguration.class,
-    DataMongoAutoConfiguration.class,
-    MongoPersistenciaConfig.class,
+    MongoDePrueba.Infraestructura.class,
     CamionRepositoryMongoAdapter.class,
     EntregasRepositoryMongoAdapter.class,
     RutasRepositoryMongoAdapter.class,
@@ -93,15 +80,13 @@ class DesnormalizacionesMongoTest {
 
   @BeforeEach
   void limpiarYCrearCamion() {
-    mongoTemplate
-        .getCollectionNames()
-        .forEach(coleccion -> mongoTemplate.remove(new Query(), coleccion));
+    MongoDePrueba.vaciar(mongoTemplate);
     camion = camiones.save(new Camion(PATENTE, 20f, 5000f, 3f));
   }
 
   @Test
   void alAsignarUnaEntrega_quedaLaAsignacionCompletaEnElMismoDocumento() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     Ruta ruta = rutaCon(camion, entrega);
 
     asignarYGuardar(ruta, entrega);
@@ -115,7 +100,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void laAsignacionConservaLaPatenteDelDiaAunqueDespuesCambie() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     asignarYGuardar(rutaCon(camion, entrega), entrega);
     cambiarPatenteEnBase("ZZ999ZZ");
     Entrega asignada = entregas.findById(entrega.getId()).orElseThrow();
@@ -128,7 +113,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void unaEntregaQueCambiaDeRuta_tomaLaAsignacionDeLaRutaNueva() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     asignarYGuardar(rutaCon(camion, entrega), entrega);
     Camion otroCamion = camiones.save(new Camion("XY987ZW", 20f, 5000f, 3f));
     Ruta rutaNueva = rutaCon(otroCamion, entrega);
@@ -145,7 +130,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void guardarUnaEntregaAsignadaAUnaRutaInexistente_lanzaRecursoNoEncontrado() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     UUID rutaInexistente = UUID.randomUUID();
     entrega.asignarRuta(rutaInexistente);
 
@@ -157,7 +142,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void guardarUnaEntregaDeUnaRutaConCamionInexistente_lanzaRecursoNoEncontrado() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     UUID camionInexistente = UUID.randomUUID();
     Ruta ruta = new Ruta(FECHA_RUTA, UUID.randomUUID(), camionInexistente);
     ruta.agregarEntrega(entrega.getId());
@@ -187,9 +172,9 @@ class DesnormalizacionesMongoTest {
     Ruta ruta =
         rutaCon(
             camion,
-            entregas.save(nuevaEntrega()),
-            entregas.save(nuevaEntrega()),
-            entregas.save(nuevaEntrega()));
+            entregas.save(EntregaMother.pendiente()),
+            entregas.save(EntregaMother.pendiente()),
+            entregas.save(EntregaMother.pendiente()));
 
     rutas.save(ruta);
 
@@ -199,21 +184,21 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void cadaParadaCopiaLaDonacionYElDestinoDeSuEntrega() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     Ruta ruta = rutaCon(camion, entrega);
 
     rutas.save(ruta);
 
     ParadaSubdocument parada = paradasDe(ruta).getFirst();
     assertEquals(entrega.getIdDonacion(), parada.getIdDonacion());
-    assertEquals("Callao", parada.getDestino().getCalle());
+    assertEquals(entrega.getDestino().calle(), parada.getDestino().getCalle());
   }
 
   @Test
   void laRutaLeidaDevuelveLasEntregasEnElOrdenDeSusParadas() {
-    Entrega primera = entregas.save(nuevaEntrega());
-    Entrega segunda = entregas.save(nuevaEntrega());
-    Entrega tercera = entregas.save(nuevaEntrega());
+    Entrega primera = entregas.save(EntregaMother.pendiente());
+    Entrega segunda = entregas.save(EntregaMother.pendiente());
+    Entrega tercera = entregas.save(EntregaMother.pendiente());
     Ruta ruta = rutaCon(camion, primera, segunda, tercera);
     rutas.save(ruta);
 
@@ -224,7 +209,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void unaEntregaQueRegresaAlDeposito_quedaSinAsignacion() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     asignarYGuardar(rutaCon(camion, entrega), entrega);
 
     entregas.save(regresadaAlDeposito(entrega));
@@ -234,7 +219,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void unaEntregaQueRegresaAlDeposito_vuelveAEstarEntreLasSinRuta() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     asignarYGuardar(rutaCon(camion, entrega), entrega);
 
     entregas.save(regresadaAlDeposito(entrega));
@@ -244,7 +229,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void unaEntregaQueRegresaAlDeposito_dejaDeEncontrarsePorSuRuta() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     Ruta ruta = rutaCon(camion, entrega);
     asignarYGuardar(ruta, entrega);
 
@@ -255,7 +240,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void unaEntregaQueRegresaAlDeposito_noSacaLaParadaDeLaRuta() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     Ruta ruta = rutaCon(camion, entrega);
     asignarYGuardar(ruta, entrega);
 
@@ -267,7 +252,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void findByRutaId_buscaPorLaAsignacionEmbebida() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
     Ruta ruta = rutaCon(camion, entrega);
 
     asignarYGuardar(ruta, entrega);
@@ -277,7 +262,7 @@ class DesnormalizacionesMongoTest {
 
   @Test
   void unaEntregaAsignada_noEstaEntreLasSinRuta() {
-    Entrega entrega = entregas.save(nuevaEntrega());
+    Entrega entrega = entregas.save(EntregaMother.pendiente());
 
     asignarYGuardar(rutaCon(camion, entrega), entrega);
 
@@ -326,11 +311,5 @@ class DesnormalizacionesMongoTest {
 
   private static List<UUID> idsDe(List<Entrega> lista) {
     return lista.stream().map(Entrega::getId).toList();
-  }
-
-  private static Entrega nuevaEntrega() {
-    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
-    Direccion destino = new Direccion("Callao", 500, null, null, "1022", caba);
-    return new Entrega(UUID.randomUUID(), UUID.randomUUID(), destino, 10f, 2f);
   }
 }

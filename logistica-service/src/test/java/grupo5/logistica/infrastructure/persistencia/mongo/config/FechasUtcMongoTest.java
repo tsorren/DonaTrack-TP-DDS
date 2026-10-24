@@ -3,6 +3,7 @@ package grupo5.logistica.infrastructure.persistencia.mongo.config; // NOSONAR
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
+import grupo5.logistica.infrastructure.persistencia.mongo.MongoDePrueba;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataRutaMongoRepository;
 import java.time.Instant;
@@ -14,27 +15,22 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
-import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /** Las fechas se guardan en UTC sin importar la zona horaria de la JVM, contra Mongo real. */
-@Testcontainers
+@Isolated("Cambia la zona horaria por defecto de la JVM")
 @DisabledIfDockerUnavailable
 @ActiveProfiles("mongo")
 @SpringJUnitConfig(
-    classes = FechasUtcMongoTest.Contexto.class,
+    classes = MongoDePrueba.Infraestructura.class,
     initializers = ConfigDataApplicationContextInitializer.class)
 class FechasUtcMongoTest {
 
@@ -43,19 +39,10 @@ class FechasUtcMongoTest {
   private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
   private static final LocalDate FECHA = LocalDate.of(2026, 10, 23);
 
-  @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0");
-
   @DynamicPropertySource
   static void propiedades(DynamicPropertyRegistry registry) {
-    registry.add("spring.mongodb.uri", () -> MONGO.getReplicaSetUrl("logistica"));
+    MongoDePrueba.conectar(registry, "fechas_utc");
   }
-
-  @Import({
-    MongoAutoConfiguration.class,
-    DataMongoAutoConfiguration.class,
-    MongoPersistenciaConfig.class
-  })
-  static class Contexto {}
 
   @Autowired MongoTemplate mongoTemplate;
   @Autowired SpringDataRutaMongoRepository rutas;

@@ -4,28 +4,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
-import grupo5.logistica.infrastructure.persistencia.mongo.config.MongoPersistenciaConfig;
+import grupo5.logistica.infrastructure.persistencia.mongo.MongoDePrueba;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.FotoRecepcionSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.EntregaMongoMapper;
 import grupo5.logistica.models.entities.entregas.Entrega;
 import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
-import grupo5.logistica.models.entities.rutas.direccion.Direccion;
-import grupo5.logistica.models.entities.rutas.direccion.Localidad;
-import grupo5.logistica.models.entities.rutas.direccion.Pais;
-import grupo5.logistica.models.entities.rutas.direccion.Provincia;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
-import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
@@ -38,12 +32,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /** Ubicación GeoJSON, fotos de recepción e índices de la colección entregas, contra Mongo real. */
-@Testcontainers
 @DisabledIfDockerUnavailable
 @ActiveProfiles("mongo")
 @SpringJUnitConfig(
@@ -57,17 +47,13 @@ class EntregaUbicacionYFotosMongoTest {
       new CoordenadasGeograficas(-31.4201, -64.1888);
   private static final Duration UNA_HORA = Duration.ofHours(1);
 
-  @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0");
-
   @DynamicPropertySource
   static void propiedades(DynamicPropertyRegistry registry) {
-    registry.add("spring.mongodb.uri", () -> MONGO.getReplicaSetUrl("logistica"));
+    MongoDePrueba.conectar(registry, "ubicacion_y_fotos");
   }
 
   @Import({
-    MongoAutoConfiguration.class,
-    DataMongoAutoConfiguration.class,
-    MongoPersistenciaConfig.class,
+    MongoDePrueba.Infraestructura.class,
     EntregasRepositoryMongoAdapter.class,
     EntregaMongoMapper.class
   })
@@ -90,7 +76,7 @@ class EntregaUbicacionYFotosMongoTest {
 
   @Test
   void laColeccionEntregasTieneLosIndicesDeUbicacionBeneficiariaYRuta() {
-    entregas.save(entregaEn(OBELISCO));
+    entregas.save(EntregaMother.pendienteEn(OBELISCO));
 
     List<IndexInfo> indices = mongoTemplate.indexOps(EntregaDocument.class).getIndexInfo();
 
@@ -101,8 +87,8 @@ class EntregaUbicacionYFotosMongoTest {
 
   @Test
   void unaConsultaNearSobreLaUbicacionDevuelveSoloLaEntregaCercana() {
-    Entrega cercana = entregas.save(entregaEn(OBELISCO));
-    entregas.save(entregaEn(CORDOBA));
+    Entrega cercana = entregas.save(EntregaMother.pendienteEn(OBELISCO));
+    entregas.save(EntregaMother.pendienteEn(CORDOBA));
     GeoJsonPoint plazaDeMayo = new GeoJsonPoint(-58.3702, -34.6083);
 
     List<EntregaDocument> encontradas =
@@ -117,7 +103,7 @@ class EntregaUbicacionYFotosMongoTest {
 
   @Test
   void unaEntregaConTresFotosSeGuardaYSeLeeCompleta() {
-    Entrega entrega = entregaEn(OBELISCO);
+    Entrega entrega = EntregaMother.pendienteEn(OBELISCO);
     entrega.iniciarRuta("Chofer");
     entrega.confirmarEntrega("Entidad", List.of("fotos/1.jpg", "fotos/2.jpg", "fotos/3.jpg"));
 
@@ -154,7 +140,7 @@ class EntregaUbicacionYFotosMongoTest {
   }
 
   private Entrega guardarConfirmadaConUnaFoto() {
-    Entrega entrega = entregaEn(OBELISCO);
+    Entrega entrega = EntregaMother.pendienteEn(OBELISCO);
     entrega.iniciarRuta("Chofer");
     entrega.confirmarEntrega("Entidad", List.of("fotos/1.jpg"));
     return entregas.save(entrega);
@@ -162,6 +148,10 @@ class EntregaUbicacionYFotosMongoTest {
 
   private List<FotoRecepcionSubdocument> fotosEnBase(Entrega entrega) {
     return mongoTemplate.findById(entrega.getId(), EntregaDocument.class).getFotosRecepcion();
+  }
+
+  private static boolean tieneIndice(List<IndexInfo> indices, String campo) {
+    return indices.stream().anyMatch(indice -> indice.isIndexForFields(List.of(campo)));
   }
 
   /** Reloj que solo avanza cuando el test lo pide. */
@@ -187,15 +177,5 @@ class EntregaUbicacionYFotosMongoTest {
     public Clock withZone(ZoneId zona) {
       return this;
     }
-  }
-
-  private static boolean tieneIndice(List<IndexInfo> indices, String campo) {
-    return indices.stream().anyMatch(indice -> indice.isIndexForFields(List.of(campo)));
-  }
-
-  private static Entrega entregaEn(CoordenadasGeograficas coordenadas) {
-    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
-    Direccion destino = new Direccion("Callao", 500, null, null, "1022", caba, coordenadas);
-    return new Entrega(UUID.randomUUID(), UUID.randomUUID(), destino, 10f, 2f);
   }
 }

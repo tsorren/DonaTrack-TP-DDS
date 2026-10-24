@@ -21,6 +21,7 @@ import grupo5.logistica.dto.callback.RutaPlanificadaDTO;
 import grupo5.logistica.infrastructure.ComunicadorEventosLogisticaRabbit;
 import grupo5.logistica.infrastructure.GeneradorDeURLSeguimiento;
 import grupo5.logistica.infrastructure.LogisticaEventPublisher;
+import grupo5.logistica.infrastructure.persistencia.mongo.MongoDePrueba;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.CamionRepositoryMongoAdapter;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.ChoferesRepositoryMongoAdapter;
 import grupo5.logistica.infrastructure.persistencia.mongo.adapters.EntregasRepositoryMongoAdapter;
@@ -37,16 +38,15 @@ import grupo5.logistica.infrastructure.persistencia.mongo.mappers.SolicitudPlani
 import grupo5.logistica.models.entities.camiones.Camion;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.entregas.Entrega;
-import grupo5.logistica.models.entities.rutas.direccion.Direccion;
-import grupo5.logistica.models.entities.rutas.direccion.Localidad;
-import grupo5.logistica.models.entities.rutas.direccion.Pais;
-import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.models.repositories.IEventosEntregaRepository;
 import grupo5.logistica.services.IServicioExternoPlanificacion;
 import grupo5.logistica.services.impl.PlanificacionService;
 import grupo5.logistica.services.mappers.SolicitudPlanificacionMapper;
+import grupo5.logistica.testutils.CamionMother;
+import grupo5.logistica.testutils.ChoferMother;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -57,12 +57,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
-import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -71,9 +68,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.testcontainers.containers.MongoDBContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * Verifica contra un MongoDB real (replica set) que {@code @Transactional} funciona con el {@code
@@ -81,7 +75,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * escrito, un callback repetido no duplica rutas y los eventos a Rabbit salen solo después del
  * commit.
  */
-@Testcontainers
 @DisabledIfDockerUnavailable
 @ActiveProfiles("mongo")
 @SpringJUnitConfig(
@@ -90,22 +83,18 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @TestPropertySource(properties = "logistica.tracking.base-url=http://localhost/seguimiento")
 class PlanificacionTransaccionesMongoTest {
 
-  private static final String BASE = "logistica";
+  private static final String BASE = "transacciones";
   private static final String COLECCION_RUTAS = "rutas";
   private static final String COLECCION_EVENTOS = "eventos_entrega";
   private static final LocalDate FECHA_PLANIFICADA = LocalDate.of(2030, 1, 1);
 
-  @Container static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7.0");
-
   @DynamicPropertySource
   static void propiedades(DynamicPropertyRegistry registry) {
-    registry.add("spring.mongodb.uri", () -> MONGO.getReplicaSetUrl(BASE));
+    MongoDePrueba.conectar(registry, BASE);
   }
 
   @Import({
-    MongoAutoConfiguration.class,
-    DataMongoAutoConfiguration.class,
-    MongoPersistenciaConfig.class,
+    MongoDePrueba.Infraestructura.class,
     PlanificacionConfig.class,
     PlanificacionService.class,
     SolicitudPlanificacionMapper.class,
@@ -146,15 +135,13 @@ class PlanificacionTransaccionesMongoTest {
 
   @BeforeEach
   void prepararDatos() {
-    mongoTemplate
-        .getCollectionNames()
-        .forEach(coleccion -> mongoTemplate.remove(new Query(), coleccion));
+    MongoDePrueba.vaciar(mongoTemplate);
     reset(rabbitTemplate, eventosEntregaRepository);
-    lectorIndependiente = MongoClients.create(MONGO.getReplicaSetUrl(BASE));
+    lectorIndependiente = MongoClients.create(MongoDePrueba.uri(BASE));
 
-    camion = camiones.save(new Camion("AB123CD", 20f, 5000f, 3f));
-    chofer = choferes.save(new Chofer("Ada", "Lovelace", "LIC-1", "1111"));
-    entrega = entregas.save(crearEntrega());
+    camion = camiones.save(CamionMother.disponible());
+    chofer = choferes.save(ChoferMother.disponible());
+    entrega = entregas.save(EntregaMother.pendiente());
     solicitud =
         solicitudes.save(
             new SolicitudPlanificacion(
@@ -270,12 +257,5 @@ class PlanificacionTransaccionesMongoTest {
                 camion.getId(), chofer.getId(), FECHA_PLANIFICADA, List.of(entrega.getId()))),
         "OK",
         null);
-  }
-
-  private static Entrega crearEntrega() {
-    Localidad localidad =
-        new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
-    Direccion direccion = new Direccion("Calle", 123, null, null, "1000", localidad);
-    return new Entrega(UUID.randomUUID(), UUID.randomUUID(), direccion, 10f, 2f);
   }
 }

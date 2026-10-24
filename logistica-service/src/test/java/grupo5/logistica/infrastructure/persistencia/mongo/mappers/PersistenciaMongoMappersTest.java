@@ -28,6 +28,7 @@ import grupo5.logistica.models.entities.rutas.direccion.Pais;
 import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
+import grupo5.logistica.testutils.EntregaMother;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -213,7 +214,7 @@ class PersistenciaMongoMappersTest {
     EntregaDocument actualizado = entregaMapper.toDocument(reconstituida, doc);
 
     assertEquals(-64.2, actualizado.getDestino().getUbicacion().getX());
-    assertEquals("Callao", actualizado.getDestino().getCalle());
+    assertEquals(reconstituida.getDestino().calle(), actualizado.getDestino().getCalle());
   }
 
   @Test
@@ -263,9 +264,7 @@ class PersistenciaMongoMappersTest {
   }
 
   private static Entrega entregaConfirmadaConCoordenadas(CoordenadasGeograficas coordenadas) {
-    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
-    Direccion dir = new Direccion("Callao", 500, null, null, "1022", caba, coordenadas);
-    Entrega entrega = new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 10.0f, 1.0f);
+    Entrega entrega = EntregaMother.pendienteEn(coordenadas);
     entrega.iniciarRuta("Chofer");
     entrega.confirmarEntrega("Entidad", List.of("f1", "f2", "f3"));
     return entrega;
