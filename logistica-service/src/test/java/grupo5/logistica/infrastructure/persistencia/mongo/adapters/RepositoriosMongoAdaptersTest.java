@@ -1,5 +1,6 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
 
+import static java.time.ZoneOffset.UTC;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -51,6 +52,7 @@ import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.testutils.EntregaMother;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +63,8 @@ import org.mockito.ArgumentCaptor;
 
 @SuppressWarnings("java:S120")
 class RepositoriosMongoAdaptersTest {
+
+  private static final Clock RELOJ = Clock.fixed(Instant.parse("2026-10-24T13:00:00Z"), UTC);
 
   @Test
   void camionMongoAdapter_deberiaConsultarPorEstadoYPatenteConRutaDerivada() {
@@ -292,7 +296,7 @@ class RepositoriosMongoAdaptersTest {
     SpringDataEventoEntregaMongoRepository springDataRepo =
         mock(SpringDataEventoEntregaMongoRepository.class);
     EventosEntregaRepositoryMongoAdapter adapter =
-        new EventosEntregaRepositoryMongoAdapter(springDataRepo);
+        new EventosEntregaRepositoryMongoAdapter(springDataRepo, RELOJ);
     Entrega entrega = EntregaMother.pendiente();
 
     adapter.registrarRutaAsignada(null, entrega);
@@ -353,6 +357,35 @@ class RepositoriosMongoAdaptersTest {
     assertNull(doc.getIdRuta());
   }
 
+  @Test
+  void eventosEntregaMongoAdapter_guardaElInstanteEnQueOcurrioElEvento() {
+    Instant antes = Instant.now();
+    EntregaConfirmada evento = new EntregaConfirmada(UUID.randomUUID(), UUID.randomUUID(), null);
+    Instant despues = Instant.now();
+
+    Instant ocurrioEn = exitosaRegistrada(evento).getOcurrioEn();
+
+    assertFalse(ocurrioEn.isBefore(antes));
+    assertFalse(ocurrioEn.isAfter(despues));
+  }
+
+  @Test
+  void eventosEntregaMongoAdapter_sinTimestamp_usaLaHoraDelReloj() {
+    EntregaFallida eventoSinTimestamp = mock(EntregaFallida.class);
+
+    Instant ocurrioEn = fallidaRegistrada(eventoSinTimestamp).getOcurrioEn();
+
+    assertEquals(RELOJ.instant(), ocurrioEn);
+  }
+
+  private static EventoEntregaDocument exitosaRegistrada(EntregaConfirmada evento) {
+    return eventoRegistrado(adapter -> adapter.registrarEntregaExitosa(evento));
+  }
+
+  private static EventoEntregaDocument fallidaRegistrada(EntregaFallida evento) {
+    return eventoRegistrado(adapter -> adapter.registrarEntregaFallida(evento));
+  }
+
   private static SolicitudTransicionEntregaDocument transicionRegistrada(
       SolicitudTransicionEntrega solicitud) {
     SpringDataSolicitudTransicionEntregaMongoRepository springDataRepo =
@@ -368,7 +401,7 @@ class RepositoriosMongoAdaptersTest {
       Consumer<EventosEntregaRepositoryMongoAdapter> registrar) {
     SpringDataEventoEntregaMongoRepository springDataRepo =
         mock(SpringDataEventoEntregaMongoRepository.class);
-    registrar.accept(new EventosEntregaRepositoryMongoAdapter(springDataRepo));
+    registrar.accept(new EventosEntregaRepositoryMongoAdapter(springDataRepo, RELOJ));
     ArgumentCaptor<EventoEntregaDocument> captor =
         ArgumentCaptor.forClass(EventoEntregaDocument.class);
     verify(springDataRepo).save(captor.capture());

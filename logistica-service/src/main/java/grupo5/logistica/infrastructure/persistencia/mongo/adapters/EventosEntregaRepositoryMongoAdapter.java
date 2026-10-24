@@ -8,6 +8,7 @@ import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.repositories.IEventosEntregaRepository;
+import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -20,10 +21,12 @@ import org.springframework.stereotype.Repository;
 public class EventosEntregaRepositoryMongoAdapter implements IEventosEntregaRepository {
 
   private final SpringDataEventoEntregaMongoRepository springDataRepo;
+  private final Clock reloj;
 
   public EventosEntregaRepositoryMongoAdapter(
-      SpringDataEventoEntregaMongoRepository springDataRepo) {
+      SpringDataEventoEntregaMongoRepository springDataRepo, Clock reloj) {
     this.springDataRepo = springDataRepo;
+    this.reloj = reloj;
   }
 
   @Override
@@ -75,7 +78,14 @@ public class EventosEntregaRepositoryMongoAdapter implements IEventosEntregaRepo
             .build());
   }
 
-  private static Instant aInstantDeEvento(LocalDateTime timestamp) {
-    return timestamp != null ? timestamp.atZone(ZoneId.systemDefault()).toInstant() : Instant.now();
+  /**
+   * {@code EventoDeDominio} arma el timestamp con la zona del sistema, así que se convierte con esa
+   * misma zona y no con {@code FechasUtc}: leerlo como UTC correría el instante.
+   */
+  private Instant aInstantDeEvento(LocalDateTime timestamp) {
+    if (timestamp == null) {
+      return Instant.now(reloj);
+    }
+    return timestamp.atZone(ZoneId.systemDefault()).toInstant();
   }
 }
