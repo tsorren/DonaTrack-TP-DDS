@@ -9,12 +9,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 @SuppressWarnings("java:S120")
@@ -29,10 +27,9 @@ public class RutaMongoMapper {
     if (domain == null) {
       return null;
     }
-    if (existing != null
-        && domain.getVersion() != null
-        && !Objects.equals(domain.getVersion(), existing.getVersion())) {
-      throw new ObjectOptimisticLockingFailureException(RutaDocument.class, domain.getId());
+    if (existing != null) {
+      ControlDeVersion.verificar(
+          domain.getVersion(), existing.getVersion(), RutaDocument.class, domain.getId());
     }
 
     RutaDocument doc = existing != null ? existing : new RutaDocument();
@@ -45,11 +42,7 @@ public class RutaMongoMapper {
     doc.setHoraFinReal(FechasUtc.aInstant(domain.getHoraFinReal()));
 
     if (existing == null) {
-      if (domain.getVersion() != null && domain.getVersion() > 0L) {
-        doc.setVersion(domain.getVersion());
-      } else {
-        doc.setVersion(null);
-      }
+      doc.setVersion(ControlDeVersion.versionInicial(domain.getVersion()));
     }
 
     sincronizarHistorial(domain, doc);

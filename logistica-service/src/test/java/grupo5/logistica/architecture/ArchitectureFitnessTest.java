@@ -60,6 +60,17 @@ class ArchitectureFitnessTest {
   }
 
   @Test
+  void persistenciaMongo_noDebeDependerDeSpringOrm() {
+    noClasses()
+        .that()
+        .resideInAPackage("grupo5.logistica.infrastructure.persistencia.mongo..")
+        .should()
+        .dependOnClassesThat()
+        .resideInAnyPackage("org.springframework.orm..")
+        .check(importedClasses);
+  }
+
+  @Test
   void controladores_debenResidirEnPaqueteControllers() {
     classes()
         .that()

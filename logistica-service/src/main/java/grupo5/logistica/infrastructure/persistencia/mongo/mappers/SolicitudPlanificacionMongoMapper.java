@@ -5,9 +5,7 @@ import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 @SuppressWarnings("java:S120")
@@ -23,7 +21,13 @@ public class SolicitudPlanificacionMongoMapper {
     if (domain == null) {
       return null;
     }
-    validarVersion(domain, existing);
+    if (existing != null) {
+      ControlDeVersion.verificar(
+          domain.getVersion(),
+          existing.getVersion(),
+          SolicitudPlanificacionDocument.class,
+          domain.getId());
+    }
 
     SolicitudPlanificacionDocument doc =
         existing != null ? existing : new SolicitudPlanificacionDocument();
@@ -36,7 +40,9 @@ public class SolicitudPlanificacionMongoMapper {
     doc.setMotivoError(domain.getMotivoError());
 
     sincronizarRutasGeneradas(domain, doc);
-    configurarVersionInicial(domain, doc, existing);
+    if (existing == null) {
+      doc.setVersion(ControlDeVersion.versionInicial(domain.getVersion()));
+    }
 
     return doc;
   }
@@ -58,16 +64,6 @@ public class SolicitudPlanificacionMongoMapper {
         doc.getVersion());
   }
 
-  private static void validarVersion(
-      SolicitudPlanificacion domain, SolicitudPlanificacionDocument existing) {
-    if (existing != null
-        && domain.getVersion() != null
-        && !Objects.equals(domain.getVersion(), existing.getVersion())) {
-      throw new ObjectOptimisticLockingFailureException(
-          SolicitudPlanificacionDocument.class, domain.getId());
-    }
-  }
-
   private static void sincronizarRutasGeneradas(
       SolicitudPlanificacion domain, SolicitudPlanificacionDocument doc) {
     List<UUID> nuevasRutas = domain.getRutasGeneradas();
@@ -81,20 +77,6 @@ public class SolicitudPlanificacionMongoMapper {
       doc.getRutasGeneradas().addAll(nuevasRutas);
     } else {
       doc.getRutasGeneradas().clear();
-    }
-  }
-
-  private static void configurarVersionInicial(
-      SolicitudPlanificacion domain,
-      SolicitudPlanificacionDocument doc,
-      SolicitudPlanificacionDocument existing) {
-    if (existing != null) {
-      return;
-    }
-    if (domain.getVersion() != null && domain.getVersion() > 0L) {
-      doc.setVersion(domain.getVersion());
-    } else {
-      doc.setVersion(null);
     }
   }
 }

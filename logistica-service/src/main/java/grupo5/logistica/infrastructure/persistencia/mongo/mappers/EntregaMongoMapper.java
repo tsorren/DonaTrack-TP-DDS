@@ -22,7 +22,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 @SuppressWarnings("java:S120")
@@ -43,10 +42,9 @@ public class EntregaMongoMapper {
     if (domain == null) {
       return null;
     }
-    if (existing != null
-        && domain.getVersion() != null
-        && !Objects.equals(domain.getVersion(), existing.getVersion())) {
-      throw new ObjectOptimisticLockingFailureException(EntregaDocument.class, domain.getId());
+    if (existing != null) {
+      ControlDeVersion.verificar(
+          domain.getVersion(), existing.getVersion(), EntregaDocument.class, domain.getId());
     }
 
     EntregaDocument doc = existing != null ? existing : new EntregaDocument();
@@ -67,11 +65,7 @@ public class EntregaMongoMapper {
     }
 
     if (existing == null) {
-      if (domain.getVersion() != null && domain.getVersion() > 0L) {
-        doc.setVersion(domain.getVersion());
-      } else {
-        doc.setVersion(null);
-      }
+      doc.setVersion(ControlDeVersion.versionInicial(domain.getVersion()));
     }
 
     sincronizarAsignacion(domain, doc);

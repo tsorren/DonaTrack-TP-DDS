@@ -35,7 +35,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 class PersistenciaMongoMappersTest {
 
@@ -74,8 +74,7 @@ class PersistenciaMongoMappersTest {
 
     doc.setVersion(2L);
     assertThrows(
-        ObjectOptimisticLockingFailureException.class,
-        () -> camionMapper.toDocument(reconstituido, doc));
+        OptimisticLockingFailureException.class, () -> camionMapper.toDocument(reconstituido, doc));
   }
 
   @Test
@@ -104,8 +103,7 @@ class PersistenciaMongoMappersTest {
 
     doc.setVersion(3L);
     assertThrows(
-        ObjectOptimisticLockingFailureException.class,
-        () -> choferMapper.toDocument(reconstituido, doc));
+        OptimisticLockingFailureException.class, () -> choferMapper.toDocument(reconstituido, doc));
   }
 
   @Test
@@ -136,8 +134,7 @@ class PersistenciaMongoMappersTest {
 
     doc.setVersion(5L);
     assertThrows(
-        ObjectOptimisticLockingFailureException.class,
-        () -> rutaMapper.toDocument(reconstituida, doc));
+        OptimisticLockingFailureException.class, () -> rutaMapper.toDocument(reconstituida, doc));
   }
 
   @Test
@@ -178,7 +175,7 @@ class PersistenciaMongoMappersTest {
 
     doc.setVersion(9L);
     assertThrows(
-        ObjectOptimisticLockingFailureException.class,
+        OptimisticLockingFailureException.class,
         () -> entregaMapper.toDocument(reconstituida, doc));
   }
 
@@ -294,7 +291,7 @@ class PersistenciaMongoMappersTest {
 
     doc.setVersion(4L);
     assertThrows(
-        ObjectOptimisticLockingFailureException.class,
+        OptimisticLockingFailureException.class,
         () -> solicitudMapper.toDocument(reconstituida, doc));
   }
 }

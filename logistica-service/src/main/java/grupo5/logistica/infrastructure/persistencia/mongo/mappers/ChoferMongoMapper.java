@@ -5,9 +5,7 @@ import grupo5.logistica.models.entities.choferes.CambioEstadoChofer;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 
 @SuppressWarnings("java:S120")
@@ -22,10 +20,9 @@ public class ChoferMongoMapper {
     if (domain == null) {
       return null;
     }
-    if (existing != null
-        && domain.getVersion() != null
-        && !Objects.equals(domain.getVersion(), existing.getVersion())) {
-      throw new ObjectOptimisticLockingFailureException(ChoferDocument.class, domain.getId());
+    if (existing != null) {
+      ControlDeVersion.verificar(
+          domain.getVersion(), existing.getVersion(), ChoferDocument.class, domain.getId());
     }
 
     ChoferDocument doc = existing != null ? existing : new ChoferDocument();
@@ -37,11 +34,7 @@ public class ChoferMongoMapper {
     doc.setEstado(domain.getEstado());
 
     if (existing == null) {
-      if (domain.getVersion() != null && domain.getVersion() > 0L) {
-        doc.setVersion(domain.getVersion());
-      } else {
-        doc.setVersion(null);
-      }
+      doc.setVersion(ControlDeVersion.versionInicial(domain.getVersion()));
     }
 
     sincronizarHistorial(domain, doc);
