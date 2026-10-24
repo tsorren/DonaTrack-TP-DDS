@@ -1,5 +1,12 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.mappers; // NOSONAR
 
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.FechasUtc.aLocalDateTime;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.HistorialEstadoMongo.aDominio;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.HistorialEstadoMongo.cambio;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.HistorialEstadoMongo.conCambiosNuevos;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.HistorialEstadoMongo.estado;
+
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocument;
 import grupo5.logistica.models.entities.camiones.CambioEstadoCamion;
 import grupo5.logistica.models.entities.camiones.Camion;
@@ -63,21 +70,23 @@ public class CamionMongoMapper {
   }
 
   private static List<CambioEstadoCamion> mapearHistorialDominio(CamionDocument doc) {
-    return HistorialEstadoMongo.aDominio(
-        doc.getHistorialEstado(),
-        c ->
-            new CambioEstadoCamion(
-                HistorialEstadoMongo.estado(EstadoCamion.class, c.getEstadoAnterior()),
-                HistorialEstadoMongo.estado(EstadoCamion.class, c.getEstadoNuevo()),
-                FechasUtc.aLocalDateTime(c.getTimestamp())));
+    return aDominio(doc.getHistorialEstado(), CamionMongoMapper::aCambio);
+  }
+
+  private static CambioEstadoCamion aCambio(CambioEstadoSubdocument c) {
+    EstadoCamion anterior = estado(EstadoCamion.class, c.getEstadoAnterior());
+    EstadoCamion nuevo = estado(EstadoCamion.class, c.getEstadoNuevo());
+    return new CambioEstadoCamion(anterior, nuevo, aLocalDateTime(c.getTimestamp()));
   }
 
   private static void sincronizarHistorial(Camion domain, CamionDocument doc) {
-    doc.setHistorialEstado(
-        HistorialEstadoMongo.conCambiosNuevos(
-            doc.getHistorialEstado(),
-            domain.getHistorialEstado(),
-            c -> HistorialEstadoMongo.cambio(c.estadoAnterior(), c.estadoNuevo(), c.timestamp())));
+    List<CambioEstadoSubdocument> guardado = doc.getHistorialEstado();
+    List<CambioEstadoCamion> cambios = domain.getHistorialEstado();
+    doc.setHistorialEstado(conCambiosNuevos(guardado, cambios, CamionMongoMapper::aSubdocumento));
+  }
+
+  private static CambioEstadoSubdocument aSubdocumento(CambioEstadoCamion c) {
+    return cambio(c.estadoAnterior(), c.estadoNuevo(), c.timestamp());
   }
 
   private static Double aDouble(Float valor) {

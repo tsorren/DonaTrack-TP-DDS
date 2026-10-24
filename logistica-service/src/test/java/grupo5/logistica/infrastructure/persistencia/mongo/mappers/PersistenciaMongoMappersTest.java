@@ -29,15 +29,19 @@ import grupo5.logistica.models.entities.rutas.direccion.Provincia;
 import grupo5.logistica.models.entities.solicitudes.EstadoSolicitud;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.testutils.EntregaMother;
+import grupo5.logistica.testutils.SolicitudPlanificacionMother;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.dao.OptimisticLockingFailureException;
 
 class PersistenciaMongoMappersTest {
+
+  private static final LocalDate FECHA_SOLICITUD = LocalDate.of(2026, 10, 11);
 
   private final CamionMongoMapper camionMapper = new CamionMongoMapper();
   private final ChoferMongoMapper choferMapper = new ChoferMongoMapper();
@@ -73,8 +77,7 @@ class PersistenciaMongoMappersTest {
     assertEquals(cambioInicial, actualizado.getHistorialEstado().getFirst());
 
     doc.setVersion(2L);
-    assertThrows(
-        OptimisticLockingFailureException.class, () -> camionMapper.toDocument(reconstituido, doc));
+    assertFallaPorVersion(() -> camionMapper.toDocument(reconstituido, doc));
   }
 
   @Test
@@ -102,8 +105,7 @@ class PersistenciaMongoMappersTest {
     assertEquals(cambioInicial, actualizado.getHistorialEstado().getFirst());
 
     doc.setVersion(3L);
-    assertThrows(
-        OptimisticLockingFailureException.class, () -> choferMapper.toDocument(reconstituido, doc));
+    assertFallaPorVersion(() -> choferMapper.toDocument(reconstituido, doc));
   }
 
   @Test
@@ -133,8 +135,7 @@ class PersistenciaMongoMappersTest {
     assertEquals(cambioInicial, actualizado.getHistorialEstado().getFirst());
 
     doc.setVersion(5L);
-    assertThrows(
-        OptimisticLockingFailureException.class, () -> rutaMapper.toDocument(reconstituida, doc));
+    assertFallaPorVersion(() -> rutaMapper.toDocument(reconstituida, doc));
   }
 
   @Test
@@ -174,9 +175,7 @@ class PersistenciaMongoMappersTest {
     assertEquals(destinoInicial, actualizado.getDestino()); // Preserva destino inmutable
 
     doc.setVersion(9L);
-    assertThrows(
-        OptimisticLockingFailureException.class,
-        () -> entregaMapper.toDocument(reconstituida, doc));
+    assertFallaPorVersion(() -> entregaMapper.toDocument(reconstituida, doc));
   }
 
   @Test
@@ -202,9 +201,8 @@ class PersistenciaMongoMappersTest {
 
   @Test
   void entregaMapper_deberiaActualizarLasCoordenadasSobreUnDocumentoExistente() {
-    EntregaDocument doc =
-        entregaMapper.toDocument(
-            entregaConfirmadaConCoordenadas(new CoordenadasGeograficas(-34.6, -58.4)));
+    Entrega entrega = entregaConfirmadaConCoordenadas(new CoordenadasGeograficas(-34.6, -58.4));
+    EntregaDocument doc = entregaMapper.toDocument(entrega);
     Entrega reconstituida = entregaMapper.toDomain(doc);
     reconstituida.getDestino().actualizarCoordenadas(new CoordenadasGeograficas(-31.4, -64.2));
 
@@ -217,12 +215,11 @@ class PersistenciaMongoMappersTest {
   @Test
   void entregaMapper_conFotosRepetidasEnElDocumento_conservaLaHoraDeLaPrimera() {
     Instant primeraSubida = Instant.parse("2026-10-23T10:00:00Z");
-    EntregaDocument doc =
-        entregaMapper.toDocument(
-            entregaConfirmadaConCoordenadas(new CoordenadasGeograficas(-34.6, -58.4)));
-    doc.setFotosRecepcion(
-        List.of(
-            fotoSubidaEn("f1", primeraSubida), fotoSubidaEn("f1", primeraSubida.plusSeconds(60))));
+    Entrega entrega = entregaConfirmadaConCoordenadas(new CoordenadasGeograficas(-34.6, -58.4));
+    EntregaDocument doc = entregaMapper.toDocument(entrega);
+    FotoRecepcionSubdocument primera = fotoSubidaEn("f1", primeraSubida);
+    FotoRecepcionSubdocument repetida = fotoSubidaEn("f1", primeraSubida.plusSeconds(60));
+    doc.setFotosRecepcion(List.of(primera, repetida));
     Entrega reconstituida = entregaMapper.toDomain(doc);
 
     EntregaDocument actualizado = entregaMapper.toDocument(reconstituida, doc);
@@ -237,10 +234,9 @@ class PersistenciaMongoMappersTest {
     Ruta ruta = new Ruta(LocalDate.of(2026, 10, 10), UUID.randomUUID(), UUID.randomUUID());
     ruta.agregarEntrega(entregaId);
     RutaDocument doc = rutaMapper.toDocument(ruta);
-    doc.setParadas(
-        List.of(
-            paradaDe(1, entregaId, donacionDeLaPrimera),
-            paradaDe(2, entregaId, UUID.randomUUID())));
+    ParadaSubdocument primera = paradaDe(1, entregaId, donacionDeLaPrimera);
+    ParadaSubdocument repetida = paradaDe(2, entregaId, UUID.randomUUID());
+    doc.setParadas(List.of(primera, repetida));
     Ruta reconstituida = rutaMapper.toDomain(doc);
 
     RutaDocument actualizado = rutaMapper.toDocument(reconstituida, doc);
@@ -253,9 +249,7 @@ class PersistenciaMongoMappersTest {
     assertNull(solicitudMapper.toDocument(null));
     assertNull(solicitudMapper.toDomain(null));
 
-    SolicitudPlanificacion solicitud =
-        new SolicitudPlanificacion(
-            UUID.randomUUID(), LocalDate.of(2026, 10, 11), 4, "http://localhost:8083/callback");
+    SolicitudPlanificacion solicitud = SolicitudPlanificacionMother.pendiente();
 
     SolicitudPlanificacionDocument doc = solicitudMapper.toDocument(solicitud);
     assertNull(doc.getVersion());
@@ -271,9 +265,7 @@ class PersistenciaMongoMappersTest {
     assertEquals("Timeout", actualizado.getMotivoError());
 
     doc.setVersion(4L);
-    assertThrows(
-        OptimisticLockingFailureException.class,
-        () -> solicitudMapper.toDocument(reconstituida, doc));
+    assertFallaPorVersion(() -> solicitudMapper.toDocument(reconstituida, doc));
   }
 
   @Test
@@ -282,26 +274,22 @@ class PersistenciaMongoMappersTest {
     UUID descartada = UUID.randomUUID();
     UUID conservada = UUID.randomUUID();
     UUID nueva = UUID.randomUUID();
-    SolicitudPlanificacionDocument doc =
-        solicitudMapper.toDocument(solicitudConRutas(id, List.of(descartada, conservada)));
+    SolicitudPlanificacion guardada = solicitudConRutas(id, List.of(descartada, conservada));
+    SolicitudPlanificacion actual = solicitudConRutas(id, List.of(nueva, conservada));
+    SolicitudPlanificacionDocument doc = solicitudMapper.toDocument(guardada);
 
-    SolicitudPlanificacionDocument actualizado =
-        solicitudMapper.toDocument(solicitudConRutas(id, List.of(nueva, conservada)), doc);
+    SolicitudPlanificacionDocument actualizado = solicitudMapper.toDocument(actual, doc);
 
     assertEquals(List.of(conservada, nueva), List.copyOf(actualizado.getRutasGeneradas()));
   }
 
   private static SolicitudPlanificacion solicitudConRutas(UUID id, List<UUID> rutas) {
     return new SolicitudPlanificacion(
-        id,
-        LocalDate.of(2026, 10, 11),
-        EstadoSolicitud.PROCESADA,
-        4,
-        "http://cb",
-        rutas,
-        0,
-        null,
-        null);
+        id, FECHA_SOLICITUD, EstadoSolicitud.PROCESADA, 4, "http://cb", rutas, 0, null, null);
+  }
+
+  private static void assertFallaPorVersion(Executable guardarConVersionVieja) {
+    assertThrows(OptimisticLockingFailureException.class, guardarConVersionVieja);
   }
 
   private static FotoRecepcionSubdocument fotoSubidaEn(String clave, Instant subidaEn) {

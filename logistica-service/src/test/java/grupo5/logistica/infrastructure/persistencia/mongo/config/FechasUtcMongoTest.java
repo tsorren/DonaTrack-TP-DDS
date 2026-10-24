@@ -1,5 +1,6 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.config; // NOSONAR
 
+import static java.util.TimeZone.getTimeZone;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
@@ -34,9 +35,8 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
     initializers = ConfigDataApplicationContextInitializer.class)
 class FechasUtcMongoTest {
 
-  private static final TimeZone BUENOS_AIRES =
-      TimeZone.getTimeZone("America/Argentina/Buenos_Aires");
-  private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+  private static final TimeZone BUENOS_AIRES = getTimeZone("America/Argentina/Buenos_Aires");
+  private static final TimeZone UTC = getTimeZone("UTC");
   private static final LocalDate FECHA = LocalDate.of(2026, 10, 23);
 
   @DynamicPropertySource

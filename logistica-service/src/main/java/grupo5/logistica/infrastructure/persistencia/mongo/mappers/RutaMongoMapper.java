@@ -1,5 +1,15 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.mappers; // NOSONAR
 
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.FechasUtc.aInstant;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.FechasUtc.aLocalDateTime;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.HistorialEstadoMongo.aDominio;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.HistorialEstadoMongo.cambio;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.HistorialEstadoMongo.conCambiosNuevos;
+import static grupo5.logistica.infrastructure.persistencia.mongo.mappers.HistorialEstadoMongo.estado;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.CambioEstadoSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.ParadaSubdocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.models.entities.rutas.CambioEstadoRuta;
@@ -11,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.springframework.stereotype.Component;
 
 @SuppressWarnings("java:S120")
@@ -38,8 +46,8 @@ public class RutaMongoMapper {
     doc.setIdCamion(domain.getCamionId());
     doc.setFecha(domain.getFecha());
     doc.setEstado(domain.getEstado());
-    doc.setHoraInicioReal(FechasUtc.aInstant(domain.getHoraInicioReal()));
-    doc.setHoraFinReal(FechasUtc.aInstant(domain.getHoraFinReal()));
+    doc.setHoraInicioReal(aInstant(domain.getHoraInicioReal()));
+    doc.setHoraFinReal(aInstant(domain.getHoraFinReal()));
 
     if (existing == null) {
       doc.setVersion(ControlDeVersion.versionInicial(domain.getVersion()));
@@ -63,59 +71,60 @@ public class RutaMongoMapper {
         doc.getIdCamion(),
         doc.getEstado(),
         mapearHistorialDominio(doc),
-        FechasUtc.aLocalDateTime(doc.getHoraInicioReal()),
-        FechasUtc.aLocalDateTime(doc.getHoraFinReal()),
+        aLocalDateTime(doc.getHoraInicioReal()),
+        aLocalDateTime(doc.getHoraFinReal()),
         doc.getVersion());
   }
 
   private static List<CambioEstadoRuta> mapearHistorialDominio(RutaDocument doc) {
-    return HistorialEstadoMongo.aDominio(
-        doc.getHistorialEstado(),
-        c ->
-            new CambioEstadoRuta(
-                HistorialEstadoMongo.estado(EstadoRuta.class, c.getEstadoAnterior()),
-                HistorialEstadoMongo.estado(EstadoRuta.class, c.getEstadoNuevo()),
-                FechasUtc.aLocalDateTime(c.getTimestamp())));
+    return aDominio(doc.getHistorialEstado(), RutaMongoMapper::aCambio);
+  }
+
+  private static CambioEstadoRuta aCambio(CambioEstadoSubdocument c) {
+    EstadoRuta anterior = estado(EstadoRuta.class, c.getEstadoAnterior());
+    EstadoRuta nuevo = estado(EstadoRuta.class, c.getEstadoNuevo());
+    return new CambioEstadoRuta(anterior, nuevo, aLocalDateTime(c.getTimestamp()));
   }
 
   private static void sincronizarHistorial(Ruta domain, RutaDocument doc) {
-    doc.setHistorialEstado(
-        HistorialEstadoMongo.conCambiosNuevos(
-            doc.getHistorialEstado(),
-            domain.getHistorialEstado(),
-            c -> HistorialEstadoMongo.cambio(c.estadoAnterior(), c.estadoNuevo(), c.timestamp())));
+    List<CambioEstadoSubdocument> guardado = doc.getHistorialEstado();
+    List<CambioEstadoRuta> cambios = domain.getHistorialEstado();
+    doc.setHistorialEstado(conCambiosNuevos(guardado, cambios, RutaMongoMapper::aSubdocumento));
+  }
+
+  private static CambioEstadoSubdocument aSubdocumento(CambioEstadoRuta c) {
+    return cambio(c.estadoAnterior(), c.estadoNuevo(), c.timestamp());
   }
 
   private static List<UUID> idsEntregasEnOrden(RutaDocument doc) {
-    return doc.getParadas().stream()
-        .sorted(Comparator.comparing(ParadaSubdocument::getOrden))
-        .map(ParadaSubdocument::getIdEntrega)
-        .toList();
+    Comparator<ParadaSubdocument> porOrden = Comparator.comparing(ParadaSubdocument::getOrden);
+    List<ParadaSubdocument> paradas = doc.getParadas();
+    return paradas.stream().sorted(porOrden).map(ParadaSubdocument::getIdEntrega).toList();
   }
 
   /**
    * Conserva las paradas ya completadas; las nuevas llevan solo el id y las completa el adaptador.
    */
   private static void sincronizarParadas(Ruta domain, RutaDocument doc) {
-    Map<UUID, ParadaSubdocument> existentes =
-        doc.getParadas().stream()
-            .collect(
-                Collectors.toMap(
-                    ParadaSubdocument::getIdEntrega,
-                    Function.identity(),
-                    (primera, repetida) -> primera));
+    Map<UUID, ParadaSubdocument> existentes = porIdEntrega(doc.getParadas());
     List<UUID> idsEntregas = domain.getEntregaIds();
-    doc.setParadas(
-        IntStream.range(0, idsEntregas.size())
-            .mapToObj(i -> paradaEnOrden(i + 1, idsEntregas.get(i), existentes))
-            .collect(Collectors.toCollection(ArrayList::new)));
+    List<ParadaSubdocument> paradas = new ArrayList<>();
+    for (int i = 0; i < idsEntregas.size(); i++) {
+      paradas.add(paradaEnOrden(i + 1, idsEntregas.get(i), existentes));
+    }
+    doc.setParadas(paradas);
+  }
+
+  /** Si el documento trae una entrega repetida, se queda con la primera parada en vez de fallar. */
+  private static Map<UUID, ParadaSubdocument> porIdEntrega(List<ParadaSubdocument> paradas) {
+    Function<ParadaSubdocument, UUID> idEntrega = ParadaSubdocument::getIdEntrega;
+    return paradas.stream().collect(toMap(idEntrega, identity(), (primera, repetida) -> primera));
   }
 
   private static ParadaSubdocument paradaEnOrden(
       int orden, UUID idEntrega, Map<UUID, ParadaSubdocument> existentes) {
-    ParadaSubdocument parada =
-        existentes.getOrDefault(
-            idEntrega, ParadaSubdocument.builder().idEntrega(idEntrega).build());
+    ParadaSubdocument nueva = ParadaSubdocument.builder().idEntrega(idEntrega).build();
+    ParadaSubdocument parada = existentes.getOrDefault(idEntrega, nueva);
     parada.setOrden(orden);
     return parada;
   }

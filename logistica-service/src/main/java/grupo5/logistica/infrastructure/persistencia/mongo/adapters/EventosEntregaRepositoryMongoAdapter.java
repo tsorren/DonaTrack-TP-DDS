@@ -34,15 +34,7 @@ public class EventosEntregaRepositoryMongoAdapter implements IEventosEntregaRepo
     if (evento == null || entrega == null) {
       return;
     }
-    springDataRepo.save(
-        EventoEntregaDocument.builder()
-            .id(evento.getId())
-            .idEntrega(evento.getEntregaId())
-            .idDonacion(entrega.getIdDonacion())
-            .idRuta(evento.getRutaId())
-            .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
-            .tipo(TipoEventoEntrega.RUTA_ASIGNADA)
-            .build());
+    springDataRepo.save(documentoDe(evento, entrega));
   }
 
   @Override
@@ -50,15 +42,7 @@ public class EventosEntregaRepositoryMongoAdapter implements IEventosEntregaRepo
     if (evento == null) {
       return;
     }
-    springDataRepo.save(
-        EventoEntregaDocument.builder()
-            .id(evento.getId())
-            .idEntrega(evento.getEntregaId())
-            .idDonacion(evento.getDonacionId())
-            .idRuta(evento.getIdRuta())
-            .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
-            .tipo(TipoEventoEntrega.ENTREGA_EXITOSA)
-            .build());
+    springDataRepo.save(documentoDe(evento));
   }
 
   @Override
@@ -66,16 +50,41 @@ public class EventosEntregaRepositoryMongoAdapter implements IEventosEntregaRepo
     if (evento == null) {
       return;
     }
-    springDataRepo.save(
-        EventoEntregaDocument.builder()
-            .id(evento.getId())
-            .idEntrega(evento.getEntregaId())
-            .idDonacion(evento.getDonacionId())
-            .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
-            .tipo(TipoEventoEntrega.ENTREGA_FALLIDA)
-            .justificacion(evento.getJustificacion())
-            .replanificable(evento.isReplanificable())
-            .build());
+    springDataRepo.save(documentoDe(evento));
+  }
+
+  private EventoEntregaDocument documentoDe(EventoRutaAsignada evento, Entrega entrega) {
+    return EventoEntregaDocument.builder()
+        .id(evento.getId())
+        .idEntrega(evento.getEntregaId())
+        .idDonacion(entrega.getIdDonacion())
+        .idRuta(evento.getRutaId())
+        .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
+        .tipo(TipoEventoEntrega.RUTA_ASIGNADA)
+        .build();
+  }
+
+  private EventoEntregaDocument documentoDe(EntregaConfirmada evento) {
+    return EventoEntregaDocument.builder()
+        .id(evento.getId())
+        .idEntrega(evento.getEntregaId())
+        .idDonacion(evento.getDonacionId())
+        .idRuta(evento.getIdRuta())
+        .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
+        .tipo(TipoEventoEntrega.ENTREGA_EXITOSA)
+        .build();
+  }
+
+  private EventoEntregaDocument documentoDe(EntregaFallida evento) {
+    return EventoEntregaDocument.builder()
+        .id(evento.getId())
+        .idEntrega(evento.getEntregaId())
+        .idDonacion(evento.getDonacionId())
+        .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
+        .tipo(TipoEventoEntrega.ENTREGA_FALLIDA)
+        .justificacion(evento.getJustificacion())
+        .replanificable(evento.isReplanificable())
+        .build();
   }
 
   /**

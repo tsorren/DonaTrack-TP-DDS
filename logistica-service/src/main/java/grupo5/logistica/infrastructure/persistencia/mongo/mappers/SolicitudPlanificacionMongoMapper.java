@@ -70,8 +70,8 @@ public class SolicitudPlanificacionMongoMapper {
   private static void sincronizarRutasGeneradas(
       SolicitudPlanificacion domain, SolicitudPlanificacionDocument doc) {
     List<UUID> delDominio = Objects.requireNonNullElse(domain.getRutasGeneradas(), List.of());
-    Set<UUID> rutas =
-        new LinkedHashSet<>(Objects.requireNonNullElse(doc.getRutasGeneradas(), Set.of()));
+    Set<UUID> guardadas = Objects.requireNonNullElse(doc.getRutasGeneradas(), Set.of());
+    Set<UUID> rutas = new LinkedHashSet<>(guardadas);
     rutas.retainAll(delDominio);
     rutas.addAll(delDominio);
     doc.setRutasGeneradas(rutas);

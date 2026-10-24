@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 @SuppressWarnings("java:S120")
@@ -45,15 +46,13 @@ public class EntregasRepositoryMongoAdapter
     if (asignacion == null || asignacion.estaCompleta()) {
       return;
     }
-    RutaDocument ruta =
-        rutaRepo
-            .findById(asignacion.getIdRuta())
-            .orElseThrow(() -> new RecursoNoEncontradoException(asignacion.getIdRuta()));
-    CamionDocument camion =
-        camionRepo
-            .findById(ruta.getIdCamion())
-            .orElseThrow(() -> new RecursoNoEncontradoException(ruta.getIdCamion()));
+    RutaDocument ruta = buscarExistente(rutaRepo, asignacion.getIdRuta());
+    CamionDocument camion = buscarExistente(camionRepo, ruta.getIdCamion());
     asignacion.completarCon(ruta, camion);
+  }
+
+  private static <D> D buscarExistente(MongoRepository<D, UUID> repo, UUID id) {
+    return repo.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
   }
 
   @Override

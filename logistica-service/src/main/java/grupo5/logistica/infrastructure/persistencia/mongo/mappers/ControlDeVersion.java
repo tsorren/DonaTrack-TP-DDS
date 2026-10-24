@@ -6,6 +6,8 @@ import org.springframework.dao.OptimisticLockingFailureException;
 /** Bloqueo optimista al sincronizar un agregado sobre el documento que ya está guardado. */
 final class ControlDeVersion {
 
+  private static final String MENSAJE = "%s %s cambió desde que se leyó (versión %d, guardada %s)";
+
   private ControlDeVersion() {}
 
   /**
@@ -14,9 +16,9 @@ final class ControlDeVersion {
   static void verificar(
       Long versionDelAgregado, Long versionGuardada, Class<?> documento, UUID id) {
     if (versionDelAgregado != null && !versionDelAgregado.equals(versionGuardada)) {
-      throw new OptimisticLockingFailureException(
-          "%s %s cambió desde que se leyó (versión %d, guardada %s)"
-              .formatted(documento.getSimpleName(), id, versionDelAgregado, versionGuardada));
+      String tipo = documento.getSimpleName();
+      String mensaje = MENSAJE.formatted(tipo, id, versionDelAgregado, versionGuardada);
+      throw new OptimisticLockingFailureException(mensaje);
     }
   }
 

@@ -3,6 +3,9 @@ package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
+import static org.springframework.data.mongodb.core.query.Update.update;
 
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.common.testing.DisabledIfDockerUnavailable;
@@ -25,14 +28,13 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -134,10 +136,9 @@ class DesnormalizacionesMongoTest {
     UUID rutaInexistente = UUID.randomUUID();
     entrega.asignarRuta(rutaInexistente);
 
-    RecursoNoEncontradoException error =
-        assertThrows(RecursoNoEncontradoException.class, () -> entregas.save(entrega));
+    UUID noEncontrado = idNoEncontradoAl(() -> entregas.save(entrega));
 
-    assertEquals(rutaInexistente, error.getId());
+    assertEquals(rutaInexistente, noEncontrado);
   }
 
   @Test
@@ -149,10 +150,9 @@ class DesnormalizacionesMongoTest {
     rutas.save(ruta);
     entrega.asignarRuta(ruta.getId());
 
-    RecursoNoEncontradoException error =
-        assertThrows(RecursoNoEncontradoException.class, () -> entregas.save(entrega));
+    UUID noEncontrado = idNoEncontradoAl(() -> entregas.save(entrega));
 
-    assertEquals(camionInexistente, error.getId());
+    assertEquals(camionInexistente, noEncontrado);
   }
 
   @Test
@@ -161,25 +161,21 @@ class DesnormalizacionesMongoTest {
     Ruta ruta = new Ruta(FECHA_RUTA, UUID.randomUUID(), camion.getId());
     ruta.agregarEntrega(entregaInexistente);
 
-    RecursoNoEncontradoException error =
-        assertThrows(RecursoNoEncontradoException.class, () -> rutas.save(ruta));
+    UUID noEncontrado = idNoEncontradoAl(() -> rutas.save(ruta));
 
-    assertEquals(entregaInexistente, error.getId());
+    assertEquals(entregaInexistente, noEncontrado);
   }
 
   @Test
   void lasParadasSeNumeranEnElOrdenDeLaRuta() {
-    Ruta ruta =
-        rutaCon(
-            camion,
-            entregas.save(EntregaMother.pendiente()),
-            entregas.save(EntregaMother.pendiente()),
-            entregas.save(EntregaMother.pendiente()));
+    Entrega primera = entregas.save(EntregaMother.pendiente());
+    Entrega segunda = entregas.save(EntregaMother.pendiente());
+    Entrega tercera = entregas.save(EntregaMother.pendiente());
+    Ruta ruta = rutaCon(camion, primera, segunda, tercera);
 
     rutas.save(ruta);
 
-    assertEquals(
-        List.of(1, 2, 3), paradasDe(ruta).stream().map(ParadaSubdocument::getOrden).toList());
+    assertEquals(List.of(1, 2, 3), ordenesDe(ruta));
   }
 
   @Test
@@ -246,8 +242,8 @@ class DesnormalizacionesMongoTest {
 
     entregas.save(regresadaAlDeposito(entrega));
 
-    assertEquals(
-        List.of(entrega.getId()), rutas.findById(ruta.getId()).orElseThrow().getEntregaIds());
+    Ruta leida = rutas.findById(ruta.getId()).orElseThrow();
+    assertEquals(List.of(entrega.getId()), leida.getEntregaIds());
   }
 
   @Test
@@ -302,11 +298,17 @@ class DesnormalizacionesMongoTest {
     return mongoTemplate.findById(ruta.getId(), RutaDocument.class).getParadas();
   }
 
+  private List<Integer> ordenesDe(Ruta ruta) {
+    return paradasDe(ruta).stream().map(ParadaSubdocument::getOrden).toList();
+  }
+
   private void cambiarPatenteEnBase(String patente) {
-    mongoTemplate.updateFirst(
-        Query.query(Criteria.where("_id").is(camion.getId())),
-        Update.update("patente", patente),
-        CamionDocument.class);
+    Query delCamion = query(where("_id").is(camion.getId()));
+    mongoTemplate.updateFirst(delCamion, update("patente", patente), CamionDocument.class);
+  }
+
+  private static UUID idNoEncontradoAl(Executable guardar) {
+    return assertThrows(RecursoNoEncontradoException.class, guardar).getId();
   }
 
   private static List<UUID> idsDe(List<Entrega> lista) {

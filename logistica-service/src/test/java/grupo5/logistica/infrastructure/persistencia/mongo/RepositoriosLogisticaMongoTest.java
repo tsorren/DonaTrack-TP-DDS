@@ -170,12 +170,10 @@ class RepositoriosLogisticaMongoTest {
     deshabilitado.habilitar();
     camiones.save(deshabilitado);
 
-    List<CambioEstadoCamion> historial =
-        camiones.findById(camion.getId()).orElseThrow().getHistorialEstado();
+    Camion leido = camiones.findById(camion.getId()).orElseThrow();
 
-    assertEquals(
-        List.of(EstadoCamion.DESHABILITADO, EstadoCamion.DISPONIBLE),
-        historial.stream().map(CambioEstadoCamion::estadoNuevo).toList());
+    List<EstadoCamion> esperados = List.of(EstadoCamion.DESHABILITADO, EstadoCamion.DISPONIBLE);
+    assertEquals(esperados, estadosNuevosDe(leido));
   }
 
   @Test
@@ -186,12 +184,10 @@ class RepositoriosLogisticaMongoTest {
     enTraslado.negarEntrega("Entidad", "No había nadie", true);
     entregas.save(enTraslado);
 
-    List<CambioEstadoEntrega> historial =
-        entregas.findById(entrega.getId()).orElseThrow().getHistorialEstado();
+    Entrega leida = entregas.findById(entrega.getId()).orElseThrow();
 
-    assertEquals(
-        List.of(EstadoEntrega.EN_TRASLADO, EstadoEntrega.NO_RECIBIDA),
-        historial.stream().map(CambioEstadoEntrega::estadoNuevo).toList());
+    List<EstadoEntrega> esperados = List.of(EstadoEntrega.EN_TRASLADO, EstadoEntrega.NO_RECIBIDA);
+    assertEquals(esperados, estadosNuevosDe(leida));
   }
 
   @Test
@@ -235,12 +231,10 @@ class RepositoriosLogisticaMongoTest {
   void laColeccionRutasTieneLosIndicesCompuestosPorCamionYPorChofer() {
     rutas.save(rutaCon(UUID.randomUUID(), UUID.randomUUID()));
 
-    List<String> indices =
-        mongoTemplate.indexOps(RutaDocument.class).getIndexInfo().stream()
-            .map(IndexInfo::getName)
-            .toList();
+    List<IndexInfo> indices = mongoTemplate.indexOps(RutaDocument.class).getIndexInfo();
 
-    assertTrue(indices.containsAll(List.of("idx_ruta_camion_estado", "idx_ruta_chofer_estado")));
+    List<String> nombres = indices.stream().map(IndexInfo::getName).toList();
+    assertTrue(nombres.containsAll(List.of("idx_ruta_camion_estado", "idx_ruta_chofer_estado")));
   }
 
   @Test
@@ -268,12 +262,12 @@ class RepositoriosLogisticaMongoTest {
   @Test
   void cadaEventoRegistradoAgregaUnDocumentoDeAuditoria() {
     Entrega entrega = entregas.save(EntregaMother.pendiente());
+    UUID idEntrega = entrega.getId();
+    UUID idDonacion = entrega.getIdDonacion();
     UUID idRuta = UUID.randomUUID();
 
-    eventos.registrarEntregaExitosa(
-        new EntregaConfirmada(entrega.getId(), entrega.getIdDonacion(), idRuta));
-    eventos.registrarEntregaFallida(
-        new EntregaFallida(entrega.getId(), entrega.getIdDonacion(), "No atendieron", true));
+    eventos.registrarEntregaExitosa(new EntregaConfirmada(idEntrega, idDonacion, idRuta));
+    eventos.registrarEntregaFallida(new EntregaFallida(idEntrega, idDonacion, "Ausente", true));
 
     assertEquals(2, mongoTemplate.count(new Query(), EventoEntregaDocument.class));
   }
@@ -290,6 +284,14 @@ class RepositoriosLogisticaMongoTest {
     Ruta ruta = rutaCon(idCamion, idChofer, entregas.save(EntregaMother.pendiente()));
     ruta.iniciarRuta();
     return rutas.save(ruta);
+  }
+
+  private static List<EstadoCamion> estadosNuevosDe(Camion camion) {
+    return camion.getHistorialEstado().stream().map(CambioEstadoCamion::estadoNuevo).toList();
+  }
+
+  private static List<EstadoEntrega> estadosNuevosDe(Entrega entrega) {
+    return entrega.getHistorialEstado().stream().map(CambioEstadoEntrega::estadoNuevo).toList();
   }
 
   private static Entrega entregaDeLaDonacion(UUID idDonacion) {

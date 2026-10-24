@@ -2,6 +2,8 @@ package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 import grupo5.common.testing.DisabledIfDockerUnavailable;
 import grupo5.logistica.infrastructure.persistencia.mongo.MongoDePrueba;
@@ -17,6 +19,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +44,8 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
     initializers = ConfigDataApplicationContextInitializer.class)
 class EntregaUbicacionYFotosMongoTest {
 
-  private static final CoordenadasGeograficas OBELISCO =
-      new CoordenadasGeograficas(-34.6037, -58.3816);
-  private static final CoordenadasGeograficas CORDOBA =
-      new CoordenadasGeograficas(-31.4201, -64.1888);
+  private static final CoordenadasGeograficas OBELISCO = latitudLongitud(-34.6037, -58.3816);
+  private static final CoordenadasGeograficas CORDOBA = latitudLongitud(-31.4201, -64.1888);
   private static final Duration UNA_HORA = Duration.ofHours(1);
 
   @DynamicPropertySource
@@ -91,27 +92,25 @@ class EntregaUbicacionYFotosMongoTest {
     entregas.save(EntregaMother.pendienteEn(CORDOBA));
     GeoJsonPoint plazaDeMayo = new GeoJsonPoint(-58.3702, -34.6083);
 
-    List<EntregaDocument> encontradas =
-        mongoTemplate.find(
-            Query.query(
-                Criteria.where("destino.ubicacion").nearSphere(plazaDeMayo).maxDistance(5_000)),
-            EntregaDocument.class);
+    Criteria aMenosDe5Km = where("destino.ubicacion").nearSphere(plazaDeMayo).maxDistance(5_000);
+    Query cercanas = query(aMenosDe5Km);
 
-    assertEquals(
-        List.of(cercana.getId()), encontradas.stream().map(EntregaDocument::getId).toList());
+    List<EntregaDocument> encontradas = mongoTemplate.find(cercanas, EntregaDocument.class);
+
+    assertEquals(List.of(cercana.getId()), idsDe(encontradas));
   }
 
   @Test
   void unaEntregaConTresFotosSeGuardaYSeLeeCompleta() {
+    List<String> tresFotos = List.of("fotos/1.jpg", "fotos/2.jpg", "fotos/3.jpg");
     Entrega entrega = EntregaMother.pendienteEn(OBELISCO);
     entrega.iniciarRuta("Chofer");
-    entrega.confirmarEntrega("Entidad", List.of("fotos/1.jpg", "fotos/2.jpg", "fotos/3.jpg"));
+    entrega.confirmarEntrega("Entidad", tresFotos);
 
     entregas.save(entrega);
 
-    assertEquals(
-        List.of("fotos/1.jpg", "fotos/2.jpg", "fotos/3.jpg"),
-        entregas.findById(entrega.getId()).orElseThrow().getFotosRecepcion());
+    Entrega leida = entregas.findById(entrega.getId()).orElseThrow();
+    assertEquals(tresFotos, leida.getFotosRecepcion());
   }
 
   @Test
@@ -152,6 +151,14 @@ class EntregaUbicacionYFotosMongoTest {
 
   private static boolean tieneIndice(List<IndexInfo> indices, String campo) {
     return indices.stream().anyMatch(indice -> indice.isIndexForFields(List.of(campo)));
+  }
+
+  private static List<UUID> idsDe(List<EntregaDocument> documentos) {
+    return documentos.stream().map(EntregaDocument::getId).toList();
+  }
+
+  private static CoordenadasGeograficas latitudLongitud(double latitud, double longitud) {
+    return new CoordenadasGeograficas(latitud, longitud);
   }
 
   /** Reloj que solo avanza cuando el test lo pide. */

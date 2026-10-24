@@ -1,5 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
 
+import static grupo5.logistica.models.entities.rutas.EstadoRuta.EN_TRASLADO;
+
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.ChoferDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
 import grupo5.logistica.infrastructure.persistencia.mongo.mappers.ChoferMongoMapper;
@@ -7,10 +9,11 @@ import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDat
 import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataRutaMongoRepository;
 import grupo5.logistica.models.entities.choferes.Chofer;
 import grupo5.logistica.models.entities.choferes.EstadoChofer;
-import grupo5.logistica.models.entities.rutas.EstadoRuta;
 import grupo5.logistica.models.repositories.IChoferesRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -28,15 +31,7 @@ public class ChoferesRepositoryMongoAdapter
       SpringDataChoferMongoRepository springDataRepo,
       SpringDataRutaMongoRepository rutaRepo,
       ChoferMongoMapper mapper) {
-    super(
-        springDataRepo,
-        mapper::toDocument,
-        doc ->
-            mapper.toDomain(
-                doc,
-                doc != null && doc.getEstado() == EstadoChofer.EN_RUTA
-                    ? rutaEnTraslado(rutaRepo, doc.getId())
-                    : null));
+    super(springDataRepo, mapper::toDocument, conRutaSiEstaEnRuta(rutaRepo, mapper));
     this.rutaRepo = rutaRepo;
     this.mapper = mapper;
   }
@@ -48,16 +43,27 @@ public class ChoferesRepositoryMongoAdapter
 
   @Override
   public List<Chofer> findDisponibles() {
-    return springDataRepo.findByEstado(EstadoChofer.DISPONIBLE).stream()
-        .map(doc -> mapper.toDomain(doc, rutaEnTraslado(rutaRepo, doc.getId())))
-        .filter(Chofer::estaDisponibleParaAsignar)
-        .toList();
+    List<ChoferDocument> disponibles = springDataRepo.findByEstado(EstadoChofer.DISPONIBLE);
+    List<Chofer> choferes = disponibles.stream().map(this::conRutaEnTraslado).toList();
+    return choferes.stream().filter(Chofer::estaDisponibleParaAsignar).toList();
   }
 
-  private static UUID rutaEnTraslado(SpringDataRutaMongoRepository rutaRepo, UUID idChofer) {
-    return rutaRepo
-        .findFirstByIdChoferAndEstado(idChofer, EstadoRuta.EN_TRASLADO)
-        .map(RutaDocument::getId)
-        .orElse(null);
+  private Chofer conRutaEnTraslado(ChoferDocument doc) {
+    return mapper.toDomain(doc, rutaEnTraslado(rutaRepo, doc));
+  }
+
+  /** El documento no guarda la ruta del chofer: se deriva de su ruta en traslado. */
+  private static Function<ChoferDocument, Chofer> conRutaSiEstaEnRuta(
+      SpringDataRutaMongoRepository rutaRepo, ChoferMongoMapper mapper) {
+    return doc -> mapper.toDomain(doc, estaEnRuta(doc) ? rutaEnTraslado(rutaRepo, doc) : null);
+  }
+
+  private static boolean estaEnRuta(ChoferDocument doc) {
+    return doc != null && doc.getEstado() == EstadoChofer.EN_RUTA;
+  }
+
+  private static UUID rutaEnTraslado(SpringDataRutaMongoRepository rutaRepo, ChoferDocument doc) {
+    Optional<RutaDocument> ruta = rutaRepo.findFirstByIdChoferAndEstado(doc.getId(), EN_TRASLADO);
+    return ruta.map(RutaDocument::getId).orElse(null);
   }
 }

@@ -1,6 +1,7 @@
 package grupo5.logistica.infrastructure.persistencia.mongo; // NOSONAR
 
 import grupo5.logistica.infrastructure.persistencia.mongo.config.MongoPersistenciaConfig;
+import java.util.Set;
 import org.springframework.boot.data.mongodb.autoconfigure.DataMongoAutoConfiguration;
 import org.springframework.boot.mongodb.autoconfigure.MongoAutoConfiguration;
 import org.springframework.context.annotation.Import;
@@ -37,9 +38,8 @@ public final class MongoDePrueba {
 
   /** Borra los documentos sin borrar las colecciones, para no perder los índices. */
   public static void vaciar(MongoTemplate mongoTemplate) {
-    mongoTemplate
-        .getCollectionNames()
-        .forEach(coleccion -> mongoTemplate.remove(new Query(), coleccion));
+    Set<String> colecciones = mongoTemplate.getCollectionNames();
+    colecciones.forEach(coleccion -> mongoTemplate.remove(new Query(), coleccion));
   }
 
   private static MongoDBContainer iniciar() {
