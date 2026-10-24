@@ -37,10 +37,7 @@ public class CamionRepositoryMongoAdapter
             mapper.toDomain(
                 doc,
                 doc != null && doc.getEstado() == EstadoCamion.EN_RUTA
-                    ? rutaRepo
-                        .findFirstByIdCamionAndEstado(doc.getId(), EstadoRuta.EN_TRASLADO)
-                        .map(RutaDocument::getId)
-                        .orElse(null)
+                    ? rutaEnTraslado(rutaRepo, doc.getId())
                     : null));
     this.rutaRepo = rutaRepo;
     this.mapper = mapper;
@@ -51,7 +48,7 @@ public class CamionRepositoryMongoAdapter
     if (estado == null) {
       return List.of();
     }
-    return springDataRepo.findByEstado(estado).stream().map(toDomain).toList();
+    return aDominio(springDataRepo.findByEstado(estado));
   }
 
   @Override
@@ -65,20 +62,18 @@ public class CamionRepositoryMongoAdapter
 
   @Override
   public List<Camion> findActivos() {
-    return springDataRepo.findByEstadoNot(EstadoCamion.DESHABILITADO).stream()
-        .map(toDomain)
-        .toList();
+    return aDominio(springDataRepo.findByEstadoNot(EstadoCamion.DESHABILITADO));
   }
 
   @Override
   public List<Camion> findDisponibles() {
     return springDataRepo.findByEstado(EstadoCamion.DISPONIBLE).stream()
-        .map(doc -> mapper.toDomain(doc, resolverRutaActiva(doc.getId())))
+        .map(doc -> mapper.toDomain(doc, rutaEnTraslado(rutaRepo, doc.getId())))
         .filter(Camion::estaDisponibleParaAsignar)
         .toList();
   }
 
-  private UUID resolverRutaActiva(UUID idCamion) {
+  private static UUID rutaEnTraslado(SpringDataRutaMongoRepository rutaRepo, UUID idCamion) {
     return rutaRepo
         .findFirstByIdCamionAndEstado(idCamion, EstadoRuta.EN_TRASLADO)
         .map(RutaDocument::getId)

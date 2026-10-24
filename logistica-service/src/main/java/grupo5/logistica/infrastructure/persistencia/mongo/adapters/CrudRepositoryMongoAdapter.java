@@ -59,7 +59,7 @@ public abstract class CrudRepositoryMongoAdapter<
 
   @Override
   public List<T> findAll() {
-    return springDataRepo.findAll().stream().map(toDomain).toList();
+    return aDominio(springDataRepo.findAll());
   }
 
   @Override
@@ -93,6 +93,10 @@ public abstract class CrudRepositoryMongoAdapter<
   @Override
   public void deleteAll() {
     springDataRepo.deleteAll();
+  }
+
+  protected List<T> aDominio(List<D> documentos) {
+    return documentos.stream().map(toDomain).toList();
   }
 
   private D documentoGuardado(UUID id) {

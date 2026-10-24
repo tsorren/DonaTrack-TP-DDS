@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +42,7 @@ import grupo5.logistica.models.entities.entregas.EstadoEntrega;
 import grupo5.logistica.models.entities.entregas.NoRecepcion;
 import grupo5.logistica.models.entities.entregas.RegresoDeposito;
 import grupo5.logistica.models.entities.entregas.RevisionEntrega;
+import grupo5.logistica.models.entities.entregas.SolicitudTransicionEntrega;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaConfirmada;
 import grupo5.logistica.models.entities.entregas.eventos.EntregaFallida;
 import grupo5.logistica.models.entities.rutas.EstadoRuta;
@@ -55,6 +55,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -243,90 +244,134 @@ class RepositoriosMongoAdaptersTest {
   }
 
   @Test
-  void solicitudesTransicionEntregaMongoAdapter_deberiaRegistrarTransiciones() {
+  void solicitudesTransicionEntregaMongoAdapter_sinSolicitud_noGuardaNada() {
     SpringDataSolicitudTransicionEntregaMongoRepository springDataRepo =
         mock(SpringDataSolicitudTransicionEntregaMongoRepository.class);
-    SolicitudesTransicionEntregaRepositoryMongoAdapter adapter =
-        new SolicitudesTransicionEntregaRepositoryMongoAdapter(springDataRepo);
 
-    Entrega entrega = EntregaMother.pendiente();
+    new SolicitudesTransicionEntregaRepositoryMongoAdapter(springDataRepo).registrar(null);
 
-    adapter.registrar(null);
     verify(springDataRepo, never()).save(any());
-
-    ArgumentCaptor<SolicitudTransicionEntregaDocument> captor =
-        ArgumentCaptor.forClass(SolicitudTransicionEntregaDocument.class);
-
-    // ConfirmacionRecepcion
-    adapter.registrar(new ConfirmacionRecepcion(entrega, "Actor1", "http://foto"));
-    verify(springDataRepo).save(captor.capture());
-    assertEquals(TipoTransicionEntrega.CONFIRMAR_ENTREGA, captor.getValue().getTipoTransicion());
-    assertEquals(List.of("http://foto"), captor.getValue().getFotosRecepcion());
-    assertEquals(entrega.getId(), captor.getValue().getIdEntrega());
-
-    // NoRecepcion
-    adapter.registrar(new NoRecepcion(entrega, "Actor2", "Cerrado", true));
-    verify(springDataRepo, times(2)).save(captor.capture());
-    assertEquals(TipoTransicionEntrega.NO_RECEPCION, captor.getValue().getTipoTransicion());
-    assertEquals("Cerrado", captor.getValue().getJustificacion());
-    assertTrue(captor.getValue().getReplanificable());
-
-    // RevisionEntrega
-    adapter.registrar(new RevisionEntrega(entrega, "Actor3"));
-    verify(springDataRepo, times(3)).save(captor.capture());
-    assertEquals(TipoTransicionEntrega.REVISION, captor.getValue().getTipoTransicion());
-
-    // RegresoDeposito
-    adapter.registrar(new RegresoDeposito(entrega, "Actor4"));
-    verify(springDataRepo, times(4)).save(captor.capture());
-    assertEquals(TipoTransicionEntrega.REGRESO_DEPOSITO, captor.getValue().getTipoTransicion());
   }
 
   @Test
-  void eventosEntregaMongoAdapter_deberiaRegistrarEventos() {
+  void solicitudesTransicionEntregaMongoAdapter_registraLaConfirmacionConSusFotos() {
+    Entrega entrega = EntregaMother.pendiente();
+
+    SolicitudTransicionEntregaDocument doc =
+        transicionRegistrada(new ConfirmacionRecepcion(entrega, "Actor1", "http://foto"));
+
+    assertEquals(TipoTransicionEntrega.CONFIRMAR_ENTREGA, doc.getTipoTransicion());
+    assertEquals(List.of("http://foto"), doc.getFotosRecepcion());
+    assertEquals(entrega.getId(), doc.getIdEntrega());
+  }
+
+  @Test
+  void solicitudesTransicionEntregaMongoAdapter_registraLaNoRecepcionConSuJustificacion() {
+    SolicitudTransicionEntregaDocument doc =
+        transicionRegistrada(new NoRecepcion(EntregaMother.pendiente(), "Actor2", "Cerrado", true));
+
+    assertEquals(TipoTransicionEntrega.NO_RECEPCION, doc.getTipoTransicion());
+    assertEquals("Cerrado", doc.getJustificacion());
+    assertTrue(doc.getReplanificable());
+  }
+
+  @Test
+  void solicitudesTransicionEntregaMongoAdapter_registraLaRevisionYElRegresoAlDeposito() {
+    Entrega entrega = EntregaMother.pendiente();
+
+    assertEquals(
+        TipoTransicionEntrega.REVISION,
+        transicionRegistrada(new RevisionEntrega(entrega, "Actor3")).getTipoTransicion());
+    assertEquals(
+        TipoTransicionEntrega.REGRESO_DEPOSITO,
+        transicionRegistrada(new RegresoDeposito(entrega, "Actor4")).getTipoTransicion());
+  }
+
+  @Test
+  void eventosEntregaMongoAdapter_sinEventoOEntrega_noGuardaNada() {
     SpringDataEventoEntregaMongoRepository springDataRepo =
         mock(SpringDataEventoEntregaMongoRepository.class);
     EventosEntregaRepositoryMongoAdapter adapter =
         new EventosEntregaRepositoryMongoAdapter(springDataRepo);
-
     Entrega entrega = EntregaMother.pendiente();
 
     adapter.registrarRutaAsignada(null, entrega);
     adapter.registrarRutaAsignada(new EventoRutaAsignada(UUID.randomUUID(), entrega.getId()), null);
     adapter.registrarEntregaExitosa(null);
     adapter.registrarEntregaFallida(null);
-    verify(springDataRepo, never()).save(any());
 
+    verify(springDataRepo, never()).save(any());
+  }
+
+  @Test
+  void eventosEntregaMongoAdapter_registraLaRutaAsignadaConLaDonacionDeLaEntrega() {
+    Entrega entrega = EntregaMother.pendiente();
+    UUID rutaId = UUID.randomUUID();
+
+    EventoEntregaDocument doc =
+        eventoRegistrado(
+            adapter ->
+                adapter.registrarRutaAsignada(
+                    new EventoRutaAsignada(rutaId, entrega.getId()), entrega));
+
+    assertEquals(TipoEventoEntrega.RUTA_ASIGNADA, doc.getTipo());
+    assertEquals(rutaId, doc.getIdRuta());
+    assertEquals(entrega.getId(), doc.getIdEntrega());
+    assertEquals(entrega.getIdDonacion(), doc.getIdDonacion());
+  }
+
+  @Test
+  void eventosEntregaMongoAdapter_registraLaEntregaExitosaConSuRuta() {
+    Entrega entrega = EntregaMother.pendiente();
+    UUID rutaId = UUID.randomUUID();
+
+    EventoEntregaDocument doc =
+        eventoRegistrado(
+            adapter ->
+                adapter.registrarEntregaExitosa(
+                    new EntregaConfirmada(entrega.getId(), entrega.getIdDonacion(), rutaId)));
+
+    assertEquals(TipoEventoEntrega.ENTREGA_EXITOSA, doc.getTipo());
+    assertEquals(entrega.getId(), doc.getIdEntrega());
+    assertEquals(rutaId, doc.getIdRuta());
+  }
+
+  @Test
+  void eventosEntregaMongoAdapter_registraLaEntregaFallidaSinRuta() {
+    Entrega entrega = EntregaMother.pendiente();
+
+    EventoEntregaDocument doc =
+        eventoRegistrado(
+            adapter ->
+                adapter.registrarEntregaFallida(
+                    new EntregaFallida(
+                        entrega.getId(), entrega.getIdDonacion(), "No estaba", true)));
+
+    assertEquals(TipoEventoEntrega.ENTREGA_FALLIDA, doc.getTipo());
+    assertEquals("No estaba", doc.getJustificacion());
+    assertTrue(doc.getReplanificable());
+    assertNull(doc.getIdRuta());
+  }
+
+  private static SolicitudTransicionEntregaDocument transicionRegistrada(
+      SolicitudTransicionEntrega solicitud) {
+    SpringDataSolicitudTransicionEntregaMongoRepository springDataRepo =
+        mock(SpringDataSolicitudTransicionEntregaMongoRepository.class);
+    new SolicitudesTransicionEntregaRepositoryMongoAdapter(springDataRepo).registrar(solicitud);
+    ArgumentCaptor<SolicitudTransicionEntregaDocument> captor =
+        ArgumentCaptor.forClass(SolicitudTransicionEntregaDocument.class);
+    verify(springDataRepo).save(captor.capture());
+    return captor.getValue();
+  }
+
+  private static EventoEntregaDocument eventoRegistrado(
+      Consumer<EventosEntregaRepositoryMongoAdapter> registrar) {
+    SpringDataEventoEntregaMongoRepository springDataRepo =
+        mock(SpringDataEventoEntregaMongoRepository.class);
+    registrar.accept(new EventosEntregaRepositoryMongoAdapter(springDataRepo));
     ArgumentCaptor<EventoEntregaDocument> captor =
         ArgumentCaptor.forClass(EventoEntregaDocument.class);
-
-    // RutaAsignada
-    UUID rutaId = UUID.randomUUID();
-    EventoRutaAsignada evRuta = new EventoRutaAsignada(rutaId, entrega.getId());
-    adapter.registrarRutaAsignada(evRuta, entrega);
     verify(springDataRepo).save(captor.capture());
-    assertEquals(TipoEventoEntrega.RUTA_ASIGNADA, captor.getValue().getTipo());
-    assertEquals(rutaId, captor.getValue().getIdRuta());
-    assertEquals(entrega.getId(), captor.getValue().getIdEntrega());
-    assertEquals(entrega.getIdDonacion(), captor.getValue().getIdDonacion());
-
-    // EntregaConfirmada
-    EntregaConfirmada evExito =
-        new EntregaConfirmada(entrega.getId(), entrega.getIdDonacion(), rutaId);
-    adapter.registrarEntregaExitosa(evExito);
-    verify(springDataRepo, times(2)).save(captor.capture());
-    assertEquals(TipoEventoEntrega.ENTREGA_EXITOSA, captor.getValue().getTipo());
-    assertEquals(entrega.getId(), captor.getValue().getIdEntrega());
-    assertEquals(rutaId, captor.getValue().getIdRuta());
-
-    // EntregaFallida
-    EntregaFallida evFallo =
-        new EntregaFallida(entrega.getId(), entrega.getIdDonacion(), "No estaba", true);
-    adapter.registrarEntregaFallida(evFallo);
-    verify(springDataRepo, times(3)).save(captor.capture());
-    assertEquals(TipoEventoEntrega.ENTREGA_FALLIDA, captor.getValue().getTipo());
-    assertEquals("No estaba", captor.getValue().getJustificacion());
-    assertTrue(captor.getValue().getReplanificable());
-    assertNull(captor.getValue().getIdRuta());
+    return captor.getValue();
   }
 }

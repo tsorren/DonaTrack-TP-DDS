@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -58,11 +59,7 @@ public class EntregaMongoMapper {
     doc.setVolumenTotalM3((double) domain.getVolumenTotalM3());
     doc.setPesoTotalKg((double) domain.getPesoTotalKG());
 
-    if (existing == null || existing.getDestino() == null) {
-      doc.setDestino(mapearDireccionADocument(domain.getDestino()));
-    } else if (domain.getDestino() != null) {
-      doc.getDestino().setUbicacion(aGeoJson(domain.getDestino().coordenadas()));
-    }
+    sincronizarDestino(domain, doc);
 
     if (existing == null) {
       doc.setVersion(ControlDeVersion.versionInicial(domain.getVersion()));
@@ -73,21 +70,12 @@ public class EntregaMongoMapper {
     return doc;
   }
 
-  public DireccionSubdocument mapearDireccionADocument(Direccion destino) {
+  private static DireccionSubdocument mapearDireccionADocument(Direccion destino) {
     if (destino == null) {
       return null;
     }
-    String localidadNombre = destino.localidad() != null ? destino.localidad().nombre() : null;
-    String provinciaNombre = null;
-    if (destino.localidad() != null && destino.localidad().provincia() != null) {
-      provinciaNombre = destino.localidad().provincia().nombre();
-    }
-    String paisNombre = null;
-    if (destino.localidad() != null
-        && destino.localidad().provincia() != null
-        && destino.localidad().provincia().pais() != null) {
-      paisNombre = destino.localidad().provincia().pais().nombre();
-    }
+    Optional<Localidad> localidad = Optional.ofNullable(destino.localidad());
+    Optional<Provincia> provincia = localidad.map(Localidad::provincia);
 
     return DireccionSubdocument.builder()
         .calle(destino.calle())
@@ -95,21 +83,21 @@ public class EntregaMongoMapper {
         .piso(destino.piso() != null ? destino.piso().shortValue() : null)
         .departamento(destino.departamento())
         .codigoPostal(destino.codigoPostal())
-        .localidad(localidadNombre)
-        .provincia(provinciaNombre)
-        .pais(paisNombre)
+        .localidad(localidad.map(Localidad::nombre).orElse(null))
+        .provincia(provincia.map(Provincia::nombre).orElse(null))
+        .pais(provincia.map(Provincia::pais).map(Pais::nombre).orElse(null))
         .ubicacion(aGeoJson(destino.coordenadas()))
         .build();
   }
 
-  public Direccion mapearDireccionADominio(DireccionSubdocument doc) {
+  private static Direccion mapearDireccionADominio(DireccionSubdocument doc) {
     if (doc == null) {
       return null;
     }
-    Pais pais = new Pais(doc.getPais() != null ? doc.getPais() : "");
-    Provincia provincia = new Provincia(doc.getProvincia() != null ? doc.getProvincia() : "", pais);
+    Pais pais = new Pais(Objects.requireNonNullElse(doc.getPais(), ""));
+    Provincia provincia = new Provincia(Objects.requireNonNullElse(doc.getProvincia(), ""), pais);
     Localidad localidad =
-        new Localidad(doc.getLocalidad() != null ? doc.getLocalidad() : "", provincia);
+        new Localidad(Objects.requireNonNullElse(doc.getLocalidad(), ""), provincia);
 
     return new Direccion(
         doc.getCalle(),
@@ -181,6 +169,15 @@ public class EntregaMongoMapper {
                         clave,
                         FotoRecepcionSubdocument.builder().clave(clave).subidaEn(ahora).build()))
             .collect(Collectors.toCollection(ArrayList::new)));
+  }
+
+  /** El destino guardado no se reemplaza; solo se actualiza su ubicación. */
+  private static void sincronizarDestino(Entrega domain, EntregaDocument doc) {
+    if (doc.getDestino() == null) {
+      doc.setDestino(mapearDireccionADocument(domain.getDestino()));
+    } else if (domain.getDestino() != null) {
+      doc.getDestino().setUbicacion(aGeoJson(domain.getDestino().coordenadas()));
+    }
   }
 
   /** Conserva la asignación mientras siga siendo a la misma ruta; el adaptador la completa. */

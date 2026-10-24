@@ -35,10 +35,7 @@ public class ChoferesRepositoryMongoAdapter
             mapper.toDomain(
                 doc,
                 doc != null && doc.getEstado() == EstadoChofer.EN_RUTA
-                    ? rutaRepo
-                        .findFirstByIdChoferAndEstado(doc.getId(), EstadoRuta.EN_TRASLADO)
-                        .map(RutaDocument::getId)
-                        .orElse(null)
+                    ? rutaEnTraslado(rutaRepo, doc.getId())
                     : null));
     this.rutaRepo = rutaRepo;
     this.mapper = mapper;
@@ -46,20 +43,18 @@ public class ChoferesRepositoryMongoAdapter
 
   @Override
   public List<Chofer> findActivos() {
-    return springDataRepo.findByEstadoNot(EstadoChofer.DESHABILITADO).stream()
-        .map(toDomain)
-        .toList();
+    return aDominio(springDataRepo.findByEstadoNot(EstadoChofer.DESHABILITADO));
   }
 
   @Override
   public List<Chofer> findDisponibles() {
     return springDataRepo.findByEstado(EstadoChofer.DISPONIBLE).stream()
-        .map(doc -> mapper.toDomain(doc, resolverRutaActiva(doc.getId())))
+        .map(doc -> mapper.toDomain(doc, rutaEnTraslado(rutaRepo, doc.getId())))
         .filter(Chofer::estaDisponibleParaAsignar)
         .toList();
   }
 
-  private UUID resolverRutaActiva(UUID idChofer) {
+  private static UUID rutaEnTraslado(SpringDataRutaMongoRepository rutaRepo, UUID idChofer) {
     return rutaRepo
         .findFirstByIdChoferAndEstado(idChofer, EstadoRuta.EN_TRASLADO)
         .map(RutaDocument::getId)

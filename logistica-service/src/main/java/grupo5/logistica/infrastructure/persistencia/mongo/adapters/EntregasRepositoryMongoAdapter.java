@@ -61,7 +61,7 @@ public class EntregasRepositoryMongoAdapter
     if (estado == null) {
       return List.of();
     }
-    return springDataRepo.findByEstado(estado).stream().map(toDomain).toList();
+    return aDominio(springDataRepo.findByEstado(estado));
   }
 
   @Override
@@ -69,14 +69,12 @@ public class EntregasRepositoryMongoAdapter
     if (rutaId == null) {
       return List.of();
     }
-    return springDataRepo.findByAsignacionIdRutaOrderByIdAsc(rutaId).stream()
-        .map(toDomain)
-        .toList();
+    return aDominio(springDataRepo.findByAsignacionIdRutaOrderByIdAsc(rutaId));
   }
 
   @Override
   public List<Entrega> findSinRuta() {
-    return springDataRepo.findByAsignacionIsNull().stream().map(toDomain).toList();
+    return aDominio(springDataRepo.findByAsignacionIsNull());
   }
 
   @Override
@@ -100,6 +98,6 @@ public class EntregasRepositoryMongoAdapter
     if (idBeneficiaria == null) {
       return List.of();
     }
-    return springDataRepo.findByIdBeneficiaria(idBeneficiaria).stream().map(toDomain).toList();
+    return aDominio(springDataRepo.findByIdBeneficiaria(idBeneficiaria));
   }
 }

@@ -31,14 +31,15 @@ public class EventosEntregaRepositoryMongoAdapter implements IEventosEntregaRepo
     if (evento == null || entrega == null) {
       return;
     }
-    EventoEntregaDocument doc = new EventoEntregaDocument();
-    doc.setId(evento.getId());
-    doc.setIdEntrega(evento.getEntregaId());
-    doc.setIdDonacion(entrega.getIdDonacion());
-    doc.setIdRuta(evento.getRutaId());
-    doc.setOcurrioEn(aInstantDeEvento(evento.getTimestamp()));
-    doc.setTipo(TipoEventoEntrega.RUTA_ASIGNADA);
-    springDataRepo.save(doc);
+    springDataRepo.save(
+        EventoEntregaDocument.builder()
+            .id(evento.getId())
+            .idEntrega(evento.getEntregaId())
+            .idDonacion(entrega.getIdDonacion())
+            .idRuta(evento.getRutaId())
+            .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
+            .tipo(TipoEventoEntrega.RUTA_ASIGNADA)
+            .build());
   }
 
   @Override
@@ -46,14 +47,15 @@ public class EventosEntregaRepositoryMongoAdapter implements IEventosEntregaRepo
     if (evento == null) {
       return;
     }
-    EventoEntregaDocument doc = new EventoEntregaDocument();
-    doc.setId(evento.getId());
-    doc.setIdEntrega(evento.getEntregaId());
-    doc.setIdDonacion(evento.getDonacionId());
-    doc.setIdRuta(evento.getIdRuta());
-    doc.setOcurrioEn(aInstantDeEvento(evento.getTimestamp()));
-    doc.setTipo(TipoEventoEntrega.ENTREGA_EXITOSA);
-    springDataRepo.save(doc);
+    springDataRepo.save(
+        EventoEntregaDocument.builder()
+            .id(evento.getId())
+            .idEntrega(evento.getEntregaId())
+            .idDonacion(evento.getDonacionId())
+            .idRuta(evento.getIdRuta())
+            .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
+            .tipo(TipoEventoEntrega.ENTREGA_EXITOSA)
+            .build());
   }
 
   @Override
@@ -61,16 +63,16 @@ public class EventosEntregaRepositoryMongoAdapter implements IEventosEntregaRepo
     if (evento == null) {
       return;
     }
-    EventoEntregaDocument doc = new EventoEntregaDocument();
-    doc.setId(evento.getId());
-    doc.setIdEntrega(evento.getEntregaId());
-    doc.setIdDonacion(evento.getDonacionId());
-    doc.setIdRuta(null);
-    doc.setOcurrioEn(aInstantDeEvento(evento.getTimestamp()));
-    doc.setTipo(TipoEventoEntrega.ENTREGA_FALLIDA);
-    doc.setJustificacion(evento.getJustificacion());
-    doc.setReplanificable(evento.isReplanificable());
-    springDataRepo.save(doc);
+    springDataRepo.save(
+        EventoEntregaDocument.builder()
+            .id(evento.getId())
+            .idEntrega(evento.getEntregaId())
+            .idDonacion(evento.getDonacionId())
+            .ocurrioEn(aInstantDeEvento(evento.getTimestamp()))
+            .tipo(TipoEventoEntrega.ENTREGA_FALLIDA)
+            .justificacion(evento.getJustificacion())
+            .replanificable(evento.isReplanificable())
+            .build());
   }
 
   private static Instant aInstantDeEvento(LocalDateTime timestamp) {

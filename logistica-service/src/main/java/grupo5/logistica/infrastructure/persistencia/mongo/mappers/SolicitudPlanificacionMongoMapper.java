@@ -5,6 +5,8 @@ import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -64,19 +66,14 @@ public class SolicitudPlanificacionMongoMapper {
         doc.getVersion());
   }
 
+  /** Quita las rutas que el dominio ya no tiene, conserva el orden del resto y suma las nuevas. */
   private static void sincronizarRutasGeneradas(
       SolicitudPlanificacion domain, SolicitudPlanificacionDocument doc) {
-    List<UUID> nuevasRutas = domain.getRutasGeneradas();
-    if (doc.getRutasGeneradas() == null) {
-      doc.setRutasGeneradas(
-          nuevasRutas != null ? new LinkedHashSet<>(nuevasRutas) : new LinkedHashSet<>());
-      return;
-    }
-    if (nuevasRutas != null) {
-      doc.getRutasGeneradas().retainAll(nuevasRutas);
-      doc.getRutasGeneradas().addAll(nuevasRutas);
-    } else {
-      doc.getRutasGeneradas().clear();
-    }
+    List<UUID> delDominio = Objects.requireNonNullElse(domain.getRutasGeneradas(), List.of());
+    Set<UUID> rutas =
+        new LinkedHashSet<>(Objects.requireNonNullElse(doc.getRutasGeneradas(), Set.of()));
+    rutas.retainAll(delDominio);
+    rutas.addAll(delDominio);
+    doc.setRutasGeneradas(rutas);
   }
 }

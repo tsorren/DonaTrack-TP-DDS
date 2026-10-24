@@ -64,7 +64,7 @@ public class RutasRepositoryMongoAdapter
     if (fecha == null) {
       return List.of();
     }
-    return springDataRepo.findByFecha(fecha).stream().map(toDomain).toList();
+    return aDominio(springDataRepo.findByFecha(fecha));
   }
 
   @Override
@@ -72,7 +72,7 @@ public class RutasRepositoryMongoAdapter
     if (camionId == null) {
       return List.of();
     }
-    return springDataRepo.findByIdCamion(camionId).stream().map(toDomain).toList();
+    return aDominio(springDataRepo.findByIdCamion(camionId));
   }
 
   @Override
@@ -80,6 +80,6 @@ public class RutasRepositoryMongoAdapter
     if (camionId == null || fecha == null) {
       return List.of();
     }
-    return springDataRepo.findByIdCamionAndFecha(camionId, fecha).stream().map(toDomain).toList();
+    return aDominio(springDataRepo.findByIdCamionAndFecha(camionId, fecha));
   }
 }

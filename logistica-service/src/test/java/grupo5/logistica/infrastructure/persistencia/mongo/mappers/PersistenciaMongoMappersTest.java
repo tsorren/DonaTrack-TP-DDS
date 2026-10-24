@@ -248,25 +248,6 @@ class PersistenciaMongoMappersTest {
     assertEquals(donacionDeLaPrimera, actualizado.getParadas().getFirst().getIdDonacion());
   }
 
-  private static FotoRecepcionSubdocument fotoSubidaEn(String clave, Instant subidaEn) {
-    return FotoRecepcionSubdocument.builder().clave(clave).subidaEn(subidaEn).build();
-  }
-
-  private static ParadaSubdocument paradaDe(int orden, UUID idEntrega, UUID idDonacion) {
-    return ParadaSubdocument.builder()
-        .orden(orden)
-        .idEntrega(idEntrega)
-        .idDonacion(idDonacion)
-        .build();
-  }
-
-  private static Entrega entregaConfirmadaConCoordenadas(CoordenadasGeograficas coordenadas) {
-    Entrega entrega = EntregaMother.pendienteEn(coordenadas);
-    entrega.iniciarRuta("Chofer");
-    entrega.confirmarEntrega("Entidad", List.of("f1", "f2", "f3"));
-    return entrega;
-  }
-
   @Test
   void solicitudPlanificacionMapper_deberiaMapearIdaYVueltaYValidarVersion() {
     assertNull(solicitudMapper.toDocument(null));
@@ -293,5 +274,52 @@ class PersistenciaMongoMappersTest {
     assertThrows(
         OptimisticLockingFailureException.class,
         () -> solicitudMapper.toDocument(reconstituida, doc));
+  }
+
+  @Test
+  void solicitudPlanificacionMapper_conservaElOrdenDeLasRutasGuardadasYAgregaLasNuevasAlFinal() {
+    UUID id = UUID.randomUUID();
+    UUID descartada = UUID.randomUUID();
+    UUID conservada = UUID.randomUUID();
+    UUID nueva = UUID.randomUUID();
+    SolicitudPlanificacionDocument doc =
+        solicitudMapper.toDocument(solicitudConRutas(id, List.of(descartada, conservada)));
+
+    SolicitudPlanificacionDocument actualizado =
+        solicitudMapper.toDocument(solicitudConRutas(id, List.of(nueva, conservada)), doc);
+
+    assertEquals(List.of(conservada, nueva), List.copyOf(actualizado.getRutasGeneradas()));
+  }
+
+  private static SolicitudPlanificacion solicitudConRutas(UUID id, List<UUID> rutas) {
+    return new SolicitudPlanificacion(
+        id,
+        LocalDate.of(2026, 10, 11),
+        EstadoSolicitud.PROCESADA,
+        4,
+        "http://cb",
+        rutas,
+        0,
+        null,
+        null);
+  }
+
+  private static FotoRecepcionSubdocument fotoSubidaEn(String clave, Instant subidaEn) {
+    return FotoRecepcionSubdocument.builder().clave(clave).subidaEn(subidaEn).build();
+  }
+
+  private static ParadaSubdocument paradaDe(int orden, UUID idEntrega, UUID idDonacion) {
+    return ParadaSubdocument.builder()
+        .orden(orden)
+        .idEntrega(idEntrega)
+        .idDonacion(idDonacion)
+        .build();
+  }
+
+  private static Entrega entregaConfirmadaConCoordenadas(CoordenadasGeograficas coordenadas) {
+    Entrega entrega = EntregaMother.pendienteEn(coordenadas);
+    entrega.iniciarRuta("Chofer");
+    entrega.confirmarEntrega("Entidad", List.of("f1", "f2", "f3"));
+    return entrega;
   }
 }
