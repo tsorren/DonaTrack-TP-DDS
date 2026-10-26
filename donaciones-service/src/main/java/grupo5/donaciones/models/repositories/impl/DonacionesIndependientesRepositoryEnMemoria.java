@@ -27,6 +27,15 @@ public class DonacionesIndependientesRepositoryEnMemoria
   }
 
   @Override
+  public Map<UUID, Integer> sumarCantidadAsignada(Map<UUID, UUID> periodoPorNecesidad) {
+    Map<UUID, Integer> sumas = new HashMap<>();
+    periodoPorNecesidad.forEach(
+        (necesidadId, periodoId) ->
+            sumas.put(necesidadId, sumarCantidadAsignada(necesidadId, periodoId)));
+    return sumas;
+  }
+
+  @Override
   public int sumarCantidadAsignada(UUID necesidadId, UUID periodoId) {
     if (necesidadId == null) {
       return 0;

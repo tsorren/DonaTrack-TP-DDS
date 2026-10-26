@@ -5,6 +5,7 @@ import grupo5.donaciones.infrastructure.persistencia.entities.donacionesIndepend
 import grupo5.donaciones.infrastructure.persistencia.mapper.DonacionesIndependientesPersistenciaMapper;
 import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataDonacionIndependienteRepository;
 import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataDonacionIndependienteRepository.ConteoPorEntidad;
+import grupo5.donaciones.infrastructure.persistencia.repositories.SpringDataDonacionIndependienteRepository.SumaPorDestino;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import grupo5.donaciones.models.repositories.IDonacionesIndependientesRepository;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
@@ -81,6 +83,23 @@ public class DonacionIndependienteRepositoryJpaAdapter
             ? springDataRepo.sumarCantidadAsignadaEnPeriodo(necesidadId, periodoId)
             : springDataRepo.sumarCantidadAsignadaSinPeriodo(necesidadId);
     return Math.toIntExact(suma);
+  }
+
+  @Override
+  public Map<UUID, Integer> sumarCantidadAsignada(Map<UUID, UUID> periodoPorNecesidad) {
+    Map<UUID, Integer> sumas = new HashMap<>();
+    periodoPorNecesidad.keySet().forEach(id -> sumas.put(id, 0));
+    if (periodoPorNecesidad.isEmpty()) {
+      return sumas;
+    }
+    for (SumaPorDestino fila :
+        springDataRepo.sumarCantidadAsignadaPorDestino(periodoPorNecesidad.keySet())) {
+      // Solo cuenta el período actual de la necesidad: los anteriores ya se cerraron
+      if (Objects.equals(fila.getPeriodoId(), periodoPorNecesidad.get(fila.getNecesidadId()))) {
+        sumas.put(fila.getNecesidadId(), Math.toIntExact(fila.getCantidad()));
+      }
+    }
+    return sumas;
   }
 
   @Override

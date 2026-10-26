@@ -34,13 +34,19 @@ public class AcumuladosDeAsignacion {
         necesidad.getId(), necesidad.periodoActualId());
   }
 
+  /** Lo asignado a cada necesidad, en una sola consulta. */
+  public Map<UUID, Integer> asignadoA(List<Necesidad> necesidades) {
+    Map<UUID, UUID> periodoPorNecesidad = new HashMap<>();
+    necesidades.forEach(n -> periodoPorNecesidad.put(n.getId(), n.periodoActualId()));
+    return donacionesIndependientes.sumarCantidadAsignada(periodoPorNecesidad);
+  }
+
   public boolean estaSatisfecha(Necesidad necesidad) {
     return necesidad.estaSatisfechaCon(asignadoA(necesidad));
   }
 
   public DatosDeAsignacion datosPara(List<Necesidad> necesidades) {
-    Map<UUID, Integer> asignado = new HashMap<>();
-    necesidades.forEach(n -> asignado.put(n.getId(), asignadoA(n)));
+    Map<UUID, Integer> asignado = asignadoA(necesidades);
     LocalDateTime desde =
         LocalDateTime.now(ZoneId.systemDefault()).minusMonths(MESES_SUB_ATENDIDOS);
     return new DatosDeAsignacion(

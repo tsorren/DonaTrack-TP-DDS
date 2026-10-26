@@ -15,6 +15,7 @@ import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.INecesidadesService;
 import java.time.Period;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -56,8 +57,10 @@ public class NecesidadesService implements INecesidadesService {
   }
 
   public List<NecesidadDTO> listarConFiltros(UUID entidadId, String tipo) {
-    return necesidadRepository.findAll().stream()
-        .map(this::toDTO)
+    List<Necesidad> necesidades = necesidadRepository.findAll();
+    Map<UUID, Integer> asignado = acumulados.asignadoA(necesidades);
+    return necesidades.stream()
+        .map(n -> n.toDTO(asignado.getOrDefault(n.getId(), 0)))
         .filter(dto -> entidadId == null || entidadId.equals(dto.idEntidad()))
         .filter(dto -> tipo == null || tipo.equalsIgnoreCase(dto.tipo()))
         .toList();

@@ -3,6 +3,7 @@ package grupo5.donaciones.infrastructure.persistencia.repositories;
 import grupo5.donaciones.infrastructure.persistencia.entities.donacionesIndependientes.DonacionIndependienteEntity;
 import grupo5.donaciones.models.entities.donacionesIndependientes.TipoEstadoDonacion;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,6 +43,24 @@ public interface SpringDataDonacionIndependienteRepository
           + " where d.entidadBeneficiariaId is not null"
           + " group by d.entidadBeneficiariaId")
   List<ConteoPorEntidad> contarPorEntidad();
+
+  // Una consulta para todas las necesidades (en vez de una por necesidad): trae una suma por cada
+  // período de cada una y el adapter se queda con la del período actual
+  @Query(
+      "select d.necesidadId as necesidadId, d.periodoId as periodoId, sum(i.cantidad) as cantidad"
+          + " from DonacionIndependienteEntity d join d.items i"
+          + " where d.necesidadId in :necesidadIds"
+          + " group by d.necesidadId, d.periodoId")
+  List<SumaPorDestino> sumarCantidadAsignadaPorDestino(
+      @Param("necesidadIds") Collection<UUID> necesidadIds);
+
+  interface SumaPorDestino {
+    UUID getNecesidadId();
+
+    UUID getPeriodoId();
+
+    long getCantidad();
+  }
 
   interface ConteoPorEntidad {
     UUID getEntidadId();

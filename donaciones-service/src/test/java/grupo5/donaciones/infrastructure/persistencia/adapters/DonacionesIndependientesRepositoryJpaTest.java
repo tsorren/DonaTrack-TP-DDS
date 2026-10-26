@@ -32,6 +32,7 @@ import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -321,6 +322,44 @@ class DonacionesIndependientesRepositoryJpaTest {
     assertEquals(0, independientes.sumarCantidadAsignada(recurrente.getId(), UUID.randomUUID()));
     assertEquals(4, independientes.sumarCantidadAsignada(extraordinaria.getId(), null));
     assertEquals(1, independientes.findEnDeposito().size());
+  }
+
+  @Test
+  void sumarCantidadAsignada_porVariasNecesidades_coincideConLaSumaDeCadaUna() {
+    NecesidadRecurrente recurrente = recurrente();
+    NecesidadExtraordinaria extraordinaria =
+        NecesidadMother.extraordinaria(entidadId, subcategoriaId, 80);
+    necesidades.save(extraordinaria);
+    NecesidadExtraordinaria sinNada = NecesidadMother.extraordinaria(entidadId, subcategoriaId, 5);
+    necesidades.save(sinNada);
+    DonacionIndependiente delPeriodoCerrado = nueva(6);
+    delPeriodoCerrado.asignar(ACTOR, recurrente.destinoDeAsignacion());
+    independientes.save(delPeriodoCerrado);
+    // La donación anterior queda en el período que se cierra: no cuenta en el actual
+    recurrente.generarNuevoPeriodo();
+    necesidades.save(recurrente);
+    DonacionIndependiente delPeriodoActual = nueva(7);
+    delPeriodoActual.asignar(ACTOR, recurrente.destinoDeAsignacion());
+    DonacionIndependiente aExtraordinaria = nueva(4);
+    aExtraordinaria.asignar(ACTOR, extraordinaria.destinoDeAsignacion());
+    DonacionIndependiente otraAExtraordinaria = nueva(3);
+    otraAExtraordinaria.asignar(ACTOR, extraordinaria.destinoDeAsignacion());
+    independientes.saveAll(List.of(delPeriodoActual, aExtraordinaria, otraAExtraordinaria));
+    Map<UUID, UUID> periodos = new HashMap<>();
+    periodos.put(recurrente.getId(), recurrente.periodoActualId());
+    periodos.put(extraordinaria.getId(), null);
+    periodos.put(sinNada.getId(), null);
+
+    Map<UUID, Integer> sumas = independientes.sumarCantidadAsignada(periodos);
+
+    assertEquals(
+        Map.of(recurrente.getId(), 7, extraordinaria.getId(), 7, sinNada.getId(), 0), sumas);
+    periodos.forEach(
+        (necesidadId, periodoId) ->
+            assertEquals(
+                independientes.sumarCantidadAsignada(necesidadId, periodoId),
+                sumas.get(necesidadId)));
+    assertTrue(independientes.sumarCantidadAsignada(new HashMap<>()).isEmpty());
   }
 
   @Test
