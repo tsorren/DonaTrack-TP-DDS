@@ -95,7 +95,7 @@ services:
       - SPRING_PROFILES_ACTIVE=postgres
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=donaciones
       - SPRING_DATASOURCE_USERNAME=donaciones_user
-      - SPRING_DATASOURCE_PASSWORD=dona_pass_2026
+      - SPRING_DATASOURCE_PASSWORD=${DONACIONES_DB_PASSWORD:?ver .env.example}
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
       - INCENTIVOS_SERVICE_URL=http://incentivos-service:8082
       - LOGISTICA_SERVICE_URL=http://logistica-service:8083
