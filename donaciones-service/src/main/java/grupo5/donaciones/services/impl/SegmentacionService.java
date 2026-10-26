@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SegmentacionService implements ISegmentacionService {
@@ -60,7 +61,14 @@ public class SegmentacionService implements ISegmentacionService {
     this.donacionesEventPublisher = donacionesEventPublisher;
   }
 
+  /**
+   * Una sola transacción: las donaciones independientes, los ítems marcados como segmentados y el
+   * nuevo estado de la donación se confirman juntos. Si algo falla a mitad de camino y el mensaje
+   * se reentrega, no quedan donaciones independientes duplicadas. Los eventos AMQP salen después
+   * del commit.
+   */
   @Override
+  @Transactional
   public void procesarDonacionNormalizada(DonacionNormalizada event) {
     log.info("Procesando DonacionNormalizada para donación ID: {}", event.donacionId());
 

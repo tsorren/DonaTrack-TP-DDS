@@ -546,7 +546,7 @@ class PropuestaDeAsignacionServiceTest {
   }
 
   @Test
-  void onPropuestaAprobada_siElBrokerFalla_igualProcesaLasDemasFragmentaciones() {
+  void onPropuestaAprobada_siElBrokerFalla_propagaLaExcepcionYNoProcesaLasDemasFragmentaciones() {
     Necesidad necesidad = mock(Necesidad.class);
     UUID necesidadId = UUID.randomUUID();
     prepararBeneficiario(necesidad, necesidadId, UUID.randomUUID(), mock(DestinoEventoDTO.class));
@@ -556,15 +556,16 @@ class PropuestaDeAsignacionServiceTest {
     prepararFragmentacion(fragmentacion1, necesidad, UUID.randomUUID(), 1.0, 0.1);
     prepararFragmentacion(fragmentacion2, necesidad, UUID.randomUUID(), 2.0, 0.2);
     doThrow(new IllegalStateException("broker caído"))
-        .doNothing()
         .when(logisticaBroker)
         .solicitarEntrega(any());
-
-    service.onPropuestaAprobada(
+    PropuestaAprobada evento =
         new PropuestaAprobada(
-            UUID.randomUUID(), necesidadId, List.of(fragmentacion1, fragmentacion2), "actor"));
+            UUID.randomUUID(), necesidadId, List.of(fragmentacion1, fragmentacion2), "actor");
 
-    verify(logisticaBroker, times(2)).solicitarEntrega(any());
+    // La aprobación es una transacción: la excepción tiene que llegar hasta ella para revertirla
+    assertThrows(IllegalStateException.class, () -> service.onPropuestaAprobada(evento));
+
+    verify(logisticaBroker, times(1)).solicitarEntrega(any());
     verify(necesidadRepository, never()).save(any());
   }
 
