@@ -211,18 +211,6 @@ class PersonaRepositoryJpaAdapterTest {
   }
 
   @Test
-  void findByDocumentoConTipo_distingueElTipoDeDocumento() {
-    Humana ana = humana("Ana", "11111111");
-    personas.save(ana);
-
-    assertEquals(
-        ana.getId(),
-        personas.findByDocumento(TipoDocumento.DNI, " 11111111 ").orElseThrow().getId());
-    assertTrue(personas.findByDocumento(TipoDocumento.PASAPORTE, "11111111").isEmpty());
-    assertTrue(personas.findByDocumento(TipoDocumento.DNI, null).isEmpty());
-  }
-
-  @Test
   void findAllByNumeroDocumento_devuelveTodasLasQueTienenEseNumeroConCualquierTipo() {
     Humana conDni = humana("Ana", "11111111");
     Humana conPasaporte = humana("Beto", "11111111");

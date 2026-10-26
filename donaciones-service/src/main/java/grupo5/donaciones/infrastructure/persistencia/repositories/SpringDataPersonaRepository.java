@@ -1,7 +1,6 @@
 package grupo5.donaciones.infrastructure.persistencia.repositories;
 
 import grupo5.donaciones.infrastructure.persistencia.entities.personas.PersonaEntity;
-import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,9 +15,6 @@ public interface SpringDataPersonaRepository extends JpaRepository<PersonaEntity
   Optional<PersonaEntity> findFirstByNroDocumento(String nroDocumento);
 
   List<PersonaEntity> findByNroDocumento(String nroDocumento);
-
-  Optional<PersonaEntity> findByTipoDocumentoAndNroDocumento(
-      TipoDocumento tipoDocumento, String nroDocumento);
 
   /** Usa el índice funcional {@code ix_correo_direccion_normalizada} (V5). */
   @Query(
