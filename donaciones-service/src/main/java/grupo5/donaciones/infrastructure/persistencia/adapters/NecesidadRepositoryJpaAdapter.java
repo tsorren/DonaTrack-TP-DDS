@@ -15,6 +15,8 @@ import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Repository
 @Profile("postgres")
@@ -23,11 +25,15 @@ public class NecesidadRepositoryJpaAdapter
     implements INecesidadesRepository {
 
   private final NecesidadesPersistenciaMapper mapper;
+  private final TransactionTemplate transacciones;
 
   public NecesidadRepositoryJpaAdapter(
-      SpringDataNecesidadRepository springDataRepo, NecesidadesPersistenciaMapper mapper) {
+      SpringDataNecesidadRepository springDataRepo,
+      NecesidadesPersistenciaMapper mapper,
+      PlatformTransactionManager transactionManager) {
     super(springDataRepo, mapper::toEntity, mapper::toDomain);
     this.mapper = mapper;
+    this.transacciones = new TransactionTemplate(transactionManager);
   }
 
   /**
@@ -35,22 +41,32 @@ public class NecesidadRepositoryJpaAdapter
    * {@code NECESIDAD_MODIFICADA_CONCURRENTEMENTE} en vez de pisar el otro guardado. La comparación
    * explícita cubre el caso en que el dominio se leyó en otra operación; {@code @Version} cubre la
    * carrera entre esta lectura y el guardado.
+   *
+   * <p>Lee y guarda en una sola transacción, forzando el incremento de la versión: sin eso, renovar
+   * el período de una recurrente (que solo agrega una fila hija) no cambiaría la versión y dos
+   * renovaciones concurrentes duplicarían el período. Hibernate aplica ese incremento al confirmar,
+   * por eso la versión nueva se lee recién después del commit.
    */
   @Override
   public Necesidad save(Necesidad domainEntity) {
-    NecesidadEntity existing = this.springDataRepo.findById(domainEntity.getId()).orElse(null);
-    if (existing != null && !Objects.equals(existing.getVersion(), domainEntity.getVersion())) {
-      throw new BusinessStateException(ErrorCatalog.NECESIDAD_MODIFICADA_CONCURRENTEMENTE);
-    }
     NecesidadEntity savedEntity;
     try {
-      savedEntity = this.springDataRepo.save(this.mapper.toEntity(domainEntity, existing));
+      savedEntity = transacciones.execute(estado -> guardarForzandoVersion(domainEntity));
     } catch (OptimisticLockingFailureException e) {
       throw new BusinessStateException(ErrorCatalog.NECESIDAD_MODIFICADA_CONCURRENTEMENTE);
     }
     // El que llamó sigue usando su objeto: queda con la versión nueva para el próximo guardado
     domainEntity.asignarVersion(savedEntity.getVersion());
     return this.mapper.toDomain(savedEntity);
+  }
+
+  private NecesidadEntity guardarForzandoVersion(Necesidad domainEntity) {
+    NecesidadEntity existing =
+        this.springDataRepo.findByIdForzandoVersion(domainEntity.getId()).orElse(null);
+    if (existing != null && !Objects.equals(existing.getVersion(), domainEntity.getVersion())) {
+      throw new BusinessStateException(ErrorCatalog.NECESIDAD_MODIFICADA_CONCURRENTEMENTE);
+    }
+    return this.springDataRepo.saveAndFlush(this.mapper.toEntity(domainEntity, existing));
   }
 
   @Override

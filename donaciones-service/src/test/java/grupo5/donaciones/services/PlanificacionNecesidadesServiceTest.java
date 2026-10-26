@@ -1,8 +1,11 @@
 package grupo5.donaciones.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
@@ -69,6 +72,38 @@ class PlanificacionNecesidadesServiceTest {
     verify(necesidadRepository, times(1)).save(necesidadA);
     verify(necesidadRepository, never()).save(necesidadB);
     verify(necesidadRepository, times(1)).save(necesidadC);
+  }
+
+  @Test
+  void generarNuevos_siUnaNecesidadFueModificadaAlMismoTiempo_igualRenuevaLasDemas() {
+    NecesidadRecurrente necesidadA = mock(NecesidadRecurrente.class);
+    NecesidadRecurrente necesidadB = mock(NecesidadRecurrente.class);
+    when(necesidadRepository.findByActivaTrueAndRecurrenteTrue())
+        .thenReturn(List.of((Necesidad) necesidadA, (Necesidad) necesidadB));
+    when(necesidadA.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(true);
+    when(necesidadB.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(true);
+    doThrow(new BusinessStateException(ErrorCatalog.NECESIDAD_MODIFICADA_CONCURRENTEMENTE))
+        .when(necesidadRepository)
+        .save(necesidadA);
+
+    planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes();
+
+    verify(necesidadRepository).save(necesidadB);
+  }
+
+  @Test
+  void generarNuevos_siElGuardadoFallaPorOtroMotivo_propagaLaExcepcion() {
+    NecesidadRecurrente necesidad = mock(NecesidadRecurrente.class);
+    when(necesidadRepository.findByActivaTrueAndRecurrenteTrue())
+        .thenReturn(Collections.singletonList(necesidad));
+    when(necesidad.renovarPeriodoSiCorresponde(any(LocalDate.class), anyInt())).thenReturn(true);
+    doThrow(new BusinessStateException(ErrorCatalog.NECESIDAD_INACTIVA))
+        .when(necesidadRepository)
+        .save(necesidad);
+
+    assertThrows(
+        BusinessStateException.class,
+        () -> planificacionNecesidadesService.generarNuevosPeriodosParaNecesidadesRecurrentes());
   }
 
   @Test

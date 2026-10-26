@@ -321,6 +321,28 @@ class NecesidadRepositoryJpaAdapterTest {
   }
 
   @Test
+  void guardar_dosRenovacionesDelMismoPeriodo_laSegundaSeRechazaYNoSeDuplicaElPeriodo() {
+    NecesidadRecurrente original = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 50);
+    repository.save(original);
+    NecesidadRecurrente delPlanificadorA =
+        (NecesidadRecurrente) repository.findById(original.getId()).orElseThrow();
+    NecesidadRecurrente delPlanificadorB =
+        (NecesidadRecurrente) repository.findById(original.getId()).orElseThrow();
+    delPlanificadorA.generarNuevoPeriodo();
+    delPlanificadorB.generarNuevoPeriodo();
+
+    repository.save(delPlanificadorA);
+    BusinessStateException error =
+        assertThrows(BusinessStateException.class, () -> repository.save(delPlanificadorB));
+
+    assertEquals(ErrorCatalog.NECESIDAD_MODIFICADA_CONCURRENTEMENTE, error.getError());
+    NecesidadRecurrente leida =
+        (NecesidadRecurrente) repository.findById(original.getId()).orElseThrow();
+    // El período original más uno solo: el de la segunda renovación no se guardó
+    assertEquals(2, leida.getPeriodos().size());
+  }
+
+  @Test
   void necesidadLeidaDeLaBase_sabeCuantoSeLeAsigno() {
     // El problema que resuelve DTI-06: antes, leída de Postgres volvía con lista vacía (acumulado
     // 0)
