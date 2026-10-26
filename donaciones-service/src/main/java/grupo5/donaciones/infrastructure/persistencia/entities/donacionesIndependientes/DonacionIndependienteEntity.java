@@ -8,7 +8,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +46,14 @@ public class DonacionIndependienteEntity {
   @Column(name = "id_beneficiario_asignado")
   private UUID entidadBeneficiariaId;
 
+  // A2: sube en cada guardado (lo fuerza el adapter, porque agregar o quitar ítems no la cambia)
+  @Version
+  @Column(name = "version", nullable = false)
+  private Long version;
+
+  // A9: el dominio consume los ítems en orden, la base tiene que devolverlos igual
   @OneToMany(mappedBy = "donacion", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("orden ASC")
   private List<ItemDonacionIndependienteEntity> items = new ArrayList<>();
 
   @OneToMany(mappedBy = "donacion", cascade = CascadeType.ALL)

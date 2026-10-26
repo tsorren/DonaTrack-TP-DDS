@@ -1,5 +1,7 @@
 package grupo5.donaciones.infrastructure.logistica;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
@@ -32,6 +34,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
 
   private static final Logger log = LoggerFactory.getLogger(ProcesadorEventosLogistica.class);
   private static final String ACTOR = "logistica-service";
+  private static final int MAX_INTENTOS_POR_CONFLICTO = 3;
   private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
   private final IDonacionesIndependientesService donacionesIndependientesService;
@@ -137,7 +140,7 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
       String origen,
       UUID businessId) {
     try {
-      enTransaccion(
+      conReintentoPorConflicto(
           () -> aplicarSiNoFueConsumido(donacionId, request, eventType, origen, businessId));
     } catch (Exception e) {
       log.error(
@@ -147,6 +150,26 @@ public class ProcesadorEventosLogistica implements IProcesadorEventosLogistica {
           request.estado(),
           e.getMessage(),
           e);
+    }
+  }
+
+  /**
+   * Si otra operación guardó la misma donación a la vez, el guardado falla por el bloqueo optimista
+   * y la transacción se deshace. Como el mensaje se consume igual, se vuelve a intentar con la
+   * donación recién leída en vez de perder el evento.
+   */
+  private void conReintentoPorConflicto(Runnable operacion) {
+    for (int intento = 1; ; intento++) {
+      try {
+        enTransaccion(operacion);
+        return;
+      } catch (BusinessStateException e) {
+        if (e.getError() != ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE
+            || intento == MAX_INTENTOS_POR_CONFLICTO) {
+          throw e;
+        }
+        log.warn("Conflicto de versión al aplicar el evento, reintento {}", intento);
+      }
     }
   }
 

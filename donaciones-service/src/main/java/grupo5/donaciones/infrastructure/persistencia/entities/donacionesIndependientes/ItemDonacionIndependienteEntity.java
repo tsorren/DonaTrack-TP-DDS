@@ -28,6 +28,10 @@ public class ItemDonacionIndependienteEntity {
   @JoinColumn(name = "id_item_normalizado", nullable = false)
   private ItemDonacionNormalizadoEntity itemNormalizado;
 
+  // Posición del ítem en la donación (0, 1, 2...)
+  @Column(name = "orden", nullable = false)
+  private Integer orden;
+
   @Column(name = "cantidad", nullable = false)
   private Long cantidad;
 

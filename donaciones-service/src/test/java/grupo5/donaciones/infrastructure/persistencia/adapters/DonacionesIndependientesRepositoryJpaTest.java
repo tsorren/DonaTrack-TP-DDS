@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.testing.DisabledIfDockerUnavailable;
 import grupo5.donaciones.fixtures.BienMother;
 import grupo5.donaciones.fixtures.DonacionMother;
@@ -389,6 +391,86 @@ class DonacionesIndependientesRepositoryJpaTest {
     assertEquals(12, leido.getCantidad());
     assertEquals(normalizado.getId(), leido.getItems().getFirst().itemNormalizadoId());
     assertEquals(2, contar("item_donacion_independiente"));
+  }
+
+  @Test
+  void guardar_dosCopiasDeLaMismaDonacion_laSegundaSeRechazaAunqueSoloCambienLosItems() {
+    DonacionIndependiente original = nueva(10);
+    independientes.save(original);
+    DonacionIndependiente copiaA = independientes.findById(original.getId()).orElseThrow();
+    DonacionIndependiente copiaB = independientes.findById(original.getId()).orElseThrow();
+    copiaA.asignar(ACTOR, recurrente().destinoDeAsignacion());
+    independientes.save(copiaA);
+    // Fragmentar solo cambia los ítems: ninguna columna de la donación cambia, pero la versión sí
+    copiaB.fragmentarse(4);
+
+    BusinessStateException error =
+        assertThrows(BusinessStateException.class, () -> independientes.save(copiaB));
+
+    assertEquals(ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE, error.getError());
+    DonacionIndependiente leida = independientes.findById(original.getId()).orElseThrow();
+    assertEquals(10, leida.getCantidad());
+    assertEquals(TipoEstadoDonacion.ASIGNACION_REALIZADA, leida.getEstadoActual().getTipo());
+  }
+
+  @Test
+  void guardar_elMismoObjetoVariasVeces_noEsConflictoYLaVersionSubeEnCadaGuardado() {
+    DonacionIndependiente donacion = nueva(10);
+    independientes.save(donacion);
+    Long inicial = donacion.getVersion();
+
+    donacion.asignar(ACTOR, recurrente().destinoDeAsignacion());
+    independientes.save(donacion);
+    donacion.fragmentarse(3);
+    independientes.save(donacion);
+
+    assertTrue(donacion.getVersion() > inicial + 1);
+    assertEquals(7, independientes.findById(donacion.getId()).orElseThrow().getCantidad());
+  }
+
+  @Test
+  void guardarYLeer_conVariosItems_losDevuelveEnElMismoOrdenYFragmentarseConsumeElPrimero() {
+    DonacionIndependiente original =
+        new DonacionIndependiente(
+            normalizado.getDonacionOriginalId(),
+            List.of(
+                new ItemDonacionIndependiente(normalizado.getId(), normalizado.getBien(), 3),
+                new ItemDonacionIndependiente(normalizado.getId(), normalizado.getBien(), 1),
+                new ItemDonacionIndependiente(normalizado.getId(), normalizado.getBien(), 2)));
+    independientes.save(original);
+    // Se invierte la columna orden: el resultado tiene que seguirla, no el orden físico de las
+    // filas
+    jdbc.update(
+        "UPDATE donaciones.item_donacion_independiente SET orden = 2 - orden"
+            + " WHERE id_donacion_independiente = ?",
+        original.getId());
+
+    List<Integer> cantidades =
+        independientes.findById(original.getId()).orElseThrow().getItems().stream()
+            .map(ItemDonacionIndependiente::cantidad)
+            .toList();
+
+    assertEquals(List.of(2, 1, 3), cantidades);
+  }
+
+  @Test
+  void guardar_alVolverAGuardar_conservaLasFilasDeLosItemsEnVezDeReinsertarlas() {
+    DonacionIndependiente donacion = nueva(10);
+    independientes.save(donacion);
+    List<UUID> antes = idsDeItems(donacion.getId());
+    donacion.asignar(ACTOR, recurrente().destinoDeAsignacion());
+
+    independientes.save(donacion);
+
+    assertEquals(antes, idsDeItems(donacion.getId()));
+  }
+
+  private List<UUID> idsDeItems(UUID donacionId) {
+    return jdbc.queryForList(
+        "SELECT id FROM donaciones.item_donacion_independiente"
+            + " WHERE id_donacion_independiente = ? ORDER BY orden",
+        UUID.class,
+        donacionId);
   }
 
   @Test

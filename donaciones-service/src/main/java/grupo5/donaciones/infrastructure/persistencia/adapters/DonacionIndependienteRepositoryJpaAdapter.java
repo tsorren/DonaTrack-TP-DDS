@@ -1,5 +1,7 @@
 package grupo5.donaciones.infrastructure.persistencia.adapters;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.repositories.CrudRepositoryJpaAdapter;
 import grupo5.donaciones.infrastructure.persistencia.entities.donacionesIndependientes.DonacionIndependienteEntity;
 import grupo5.donaciones.infrastructure.persistencia.mapper.DonacionesIndependientesPersistenciaMapper;
@@ -38,12 +40,30 @@ public class DonacionIndependienteRepositoryJpaAdapter
     this.mapper = mapper;
   }
 
-  /** Parte de la fila guardada para agregar al historial solo los cambios nuevos. */
+  /**
+   * Parte de la fila guardada para agregar al historial solo los cambios nuevos. Bloqueo optimista:
+   * si la fila cambió desde que se leyó la donación, falla con {@code
+   * DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE} en vez de pisar el otro guardado. La
+   * versión sube en cada guardado, también cuando solo cambian los ítems (A2).
+   */
   @Override
   @Transactional
   public DonacionIndependiente save(DonacionIndependiente donacion) {
     DonacionIndependienteEntity existente = springDataRepo.findById(donacion.getId()).orElse(null);
-    return mapper.toDomain(springDataRepo.save(mapper.toEntity(donacion, existente)));
+    if (existente != null) {
+      // Si no matchea ninguna fila, otra operación la guardó después de que se leyó la donación
+      if (springDataRepo.subirVersion(donacion.getId(), donacion.getVersion()) == 0) {
+        throw new BusinessStateException(
+            ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE);
+      }
+      // La consulta limpió el contexto: se vuelve a leer la fila con la versión nueva
+      existente = springDataRepo.findById(donacion.getId()).orElseThrow();
+    }
+    DonacionIndependienteEntity guardada =
+        springDataRepo.saveAndFlush(mapper.toEntity(donacion, existente));
+    // El que llamó sigue usando su objeto: queda con la versión nueva para el próximo guardado
+    donacion.asignarVersion(guardada.getVersion());
+    return mapper.toDomain(guardada);
   }
 
   @Override

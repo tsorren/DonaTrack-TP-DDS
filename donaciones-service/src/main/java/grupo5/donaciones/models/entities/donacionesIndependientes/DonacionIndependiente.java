@@ -37,6 +37,9 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
   private UUID periodoId;
   private UUID entidadBeneficiariaId;
 
+  // Versión de la fila guardada (bloqueo optimista): nula hasta que se guarda por primera vez
+  private Long version;
+
   public DonacionIndependiente(UUID donacionOriginalId, List<ItemDonacionIndependiente> items) {
     if (donacionOriginalId == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ORIGINAL_NULA);
@@ -63,6 +66,12 @@ public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionInde
     this.historial = new ArrayList<>(historial);
     this.fechaRegistro = datos.fechaRegistro();
     asignarDestino(datos.destino());
+    this.version = datos.version();
+  }
+
+  /** Lo asigna el adaptador de persistencia después de guardar, con la versión nueva de la fila. */
+  public void asignarVersion(Long version) {
+    this.version = version;
   }
 
   public List<ItemDonacionIndependiente> getItems() {

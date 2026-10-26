@@ -88,22 +88,36 @@ public class DonacionesIndependientesPersistenciaMapper {
             entity.getDonacionId(),
             actual,
             entity.getFechaRegistro(),
-            destino(entity));
+            destino(entity),
+            entity.getVersion());
     List<ItemDonacionIndependiente> items =
         entity.getItems().stream().map(this::itemToDomain).toList();
     return new DonacionIndependiente(datos, items, historial);
   }
 
-  // Los ítems no tienen identidad en el dominio: se reemplazan y orphanRemoval borra los viejos
+  // Los ítems no tienen identidad en el dominio: la fila de cada uno se identifica por su posición
+  // (columna orden). Se reutiliza la fila de esa posición en vez de borrar todas y reinsertarlas,
+  // y orphanRemoval borra las que sobran.
   private void reemplazarItems(DonacionIndependiente domain, DonacionIndependienteEntity entity) {
-    entity.getItems().clear();
-    for (ItemDonacionIndependiente item : domain.getItems()) {
-      ItemDonacionIndependienteEntity fila = new ItemDonacionIndependienteEntity();
-      fila.setDonacion(entity);
+    List<ItemDonacionIndependienteEntity> filas = entity.getItems();
+    List<ItemDonacionIndependiente> items = domain.getItems();
+    for (int posicion = 0; posicion < items.size(); posicion++) {
+      ItemDonacionIndependiente item = items.get(posicion);
+      ItemDonacionIndependienteEntity fila;
+      if (posicion < filas.size()) {
+        fila = filas.get(posicion);
+      } else {
+        fila = new ItemDonacionIndependienteEntity();
+        fila.setDonacion(entity);
+        filas.add(fila);
+      }
+      fila.setOrden(posicion);
       fila.setItemNormalizado(itemsNormalizadosRepo.getReferenceById(item.itemNormalizadoId()));
       fila.setCantidad(item.cantidad().longValue());
       fila.setBienDescripcion(item.bien().bienOriginal().descripcion());
-      entity.getItems().add(fila);
+    }
+    while (filas.size() > items.size()) {
+      filas.removeLast();
     }
   }
 

@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -43,6 +44,16 @@ public interface SpringDataDonacionIndependienteRepository
           + " where d.entidadBeneficiariaId is not null"
           + " group by d.entidadBeneficiariaId")
   List<ConteoPorEntidad> contarPorEntidad();
+
+  // Compare-and-swap de la versión: la fila queda tomada por quien la sube. Si otra operación
+  // guardó antes, no matchea ninguna fila y devuelve 0. Hibernate no sube solo la versión cuando
+  // solo cambian los ítems (colección inversa), así que se hace explícito; clearAutomatically
+  // evita leer después una copia vieja del contexto de persistencia.
+  @Modifying(flushAutomatically = true, clearAutomatically = true)
+  @Query(
+      "update DonacionIndependienteEntity d set d.version = d.version + 1"
+          + " where d.id = :id and d.version = :version")
+  int subirVersion(@Param("id") UUID id, @Param("version") Long version);
 
   // Una consulta para todas las necesidades (en vez de una por necesidad): trae una suma por cada
   // período de cada una y el adapter se queda con la del período actual

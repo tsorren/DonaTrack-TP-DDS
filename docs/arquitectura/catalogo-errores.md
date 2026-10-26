@@ -226,6 +226,7 @@
 | `ERR-EST-520` | `DONACION_A_SI_MISMO` | Una jurídica no puede recibir su propia donación | `409` | Se controla al aprobar la propuesta |
 | `ERR-EST-521` | `NECESIDAD_INACTIVA` | La necesidad ya no está activa y no se puede aprobar la propuesta | `409` | |
 | `ERR-EST-522` | `NECESIDAD_MODIFICADA_CONCURRENTEMENTE` | Otra operación guardó la necesidad después de que se leyó (bloqueo optimista) | `409` | Releer y reintentar |
+| `ERR-EST-523` | `DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE` | Otra operación guardó la donación independiente después de que se leyó (bloqueo optimista) | `409` | Releer y reintentar |
 | `ERR-EST-702` | `DONANTE_INCENTIVOS_NO_ENCONTRADO` | Donante no encontrado en servicio de incentivos | **`404`** | Excepción especial en handler |
 | `ERR-EST-708` | `INSIGNIA_NO_ENCONTRADA` | Insignia no encontrada | **`404`** | Excepción especial en handler |
 | `ERR-EST-716` | `RANKING_NO_ENCONTRADO` | Ranking mensual no encontrado para el período solicitado | **`404`** | Excepción especial en handler |
