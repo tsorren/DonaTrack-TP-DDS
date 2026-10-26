@@ -1,6 +1,6 @@
 # Cambios al DER de Donaciones
 
-> Qué hay que cambiar en el DER de Lucid (versión del 19/10/2026) para que coincida con el schema `donaciones` que crean las migraciones Flyway V1 a V12. El diagrama completo está en [`donaciones-DER.puml`](donaciones-DER.puml), con estos cambios en rojo.
+> Qué hay que cambiar en el DER de Lucid (versión del 19/10/2026) para que coincida con el schema `donaciones` que crean las migraciones Flyway V1 a V13. El diagrama completo está en [`donaciones-DER.puml`](donaciones-DER.puml), con estos cambios en rojo.
 >
 > Los códigos (P-n, D-n) remiten a las decisiones de la [bitácora de persistencia](../../../entrega-4/donaciones/bitacora-persistencia.md). Las desnormalizaciones (D1 a D6) están en el [ADR de desnormalización](../../../adr/donaciones-service/20261022-desnormalizaciones-del-modelo-relacional-de-donaciones.md) y no cambian: ya estaban en el DER.
 
@@ -55,6 +55,8 @@ Salvo que se indique, son **aditivos** (columnas que el dominio usa y el DER no 
 | Tabla | Cambio | Motivo |
 |---|---|---|
 | `donacion_independiente` | `fecha_registro NOT NULL`, `TIMESTAMP`; `CHECK`: no puede haber período sin necesidad | El dominio siempre la registra |
+| `donacion_independiente` | Suma `version BIGINT NOT NULL` (bloqueo optimista) | **A2** (V13): dos guardados concurrentes de la misma donación ya no se pisan; el segundo falla con 409. La versión sube en cada guardado, también cuando solo cambian los ítems |
+| `item_donacion_independiente` | Suma `orden INTEGER NOT NULL`, única por donación (`DEFERRABLE`) | **A9** (V13): el dominio consume los ítems en orden (`fragmentarse` toma el primero) y la base no garantizaba ninguno |
 | `item_donacion_independiente` | Suma `id_item_normalizado (FK) NOT NULL` | **D-24**: sin eso no se reconstituye el bien (subcategoría, confianza). La relación `Subcategoria` → `Item_donacion_independiente` del DER no es una columna: la subcategoría sale del ítem normalizado |
 | `estado_donacion_independiente` | Suma `tipo NOT NULL` (los 7 estados) | **D-21**: sin el tipo, el historial no dice qué estados eran |
 | `estado_donacion_independiente` | `patente_camion` se completa en `ENTREGADA`; `replanificable_hasta` queda sin uso | D-34 |

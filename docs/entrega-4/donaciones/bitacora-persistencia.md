@@ -10,11 +10,11 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-26** — Revisión de la PR: corregidos B1 a B4 (credencial, orden de períodos, tests de idempotencia, transacciones de aprobación y segmentación). Antes: Paso 11, cierre de la persistencia de Donaciones.
+> Última actualización: **2026-10-26** — Revisión de la PR: corregidos B1 a B4 y A1 a A5, A8 y A9 (credencial, orden de períodos, idempotencia, transacciones, Gate 4 con Postgres, concurrencia de donaciones, N+1, OpenAPI, código muerto y orden de ítems). Antes: Paso 11, cierre de la persistencia de Donaciones.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
-- **Dónde estamos:** Pasos 0 a 11 cerrados. Todo el modelo de Donaciones persiste en PostgreSQL (Flyway V1 a V12) con el perfil `postgres`; el perfil por defecto sigue en memoria. Quedan en memoria en los dos perfiles el historial de corridas del algoritmo (D-36) y los reintentos hacia Notificaciones.
+- **Dónde estamos:** Pasos 0 a 11 cerrados. Todo el modelo de Donaciones persiste en PostgreSQL (Flyway V1 a V13) con el perfil `postgres`; el perfil por defecto sigue en memoria. Quedan en memoria en los dos perfiles el historial de corridas del algoritmo (D-36) y los reintentos hacia Notificaciones.
 - **Pendiente:** discutir con el equipo D-37 (dónde guardar los proveedores descartados) y D-38 (transacciones por caso de uso); actualizar el DER de Lucid con [`cambios-der-donaciones.md`](../../arquitectura/diseno/donaciones/cambios-der-donaciones.md); una corrida de Gate 4 en verde (ver Paso 10).
 - **Próximo paso:** revisión del PR y merge a `ENTREGA_5`.
 
@@ -37,7 +37,7 @@
 | 9 | `propuesta` y `posible_fragmentacion` | ✅ Hecho |
 | 10 | `@Transactional`, `solicitud_entrega`, `outbox_logistica`, `evento_consumido` | ✅ Hecho (transacciones solo en broker y eventos, D-38) |
 | 11 | Cierre: deuda del historial de ejecuciones, Gate 3/4, documentación | ✅ Hecho |
-| — | Revisión de la PR: B1 a B4 (credencial, orden de períodos, idempotencia, transacciones de aprobación y segmentación) | ✅ Hecho |
+| — | Revisión de la PR: B1 a B4 (credencial, orden de períodos, idempotencia, transacciones de aprobación y segmentación) y A1 a A5, A8, A9 | ✅ Hecho |
 
 ---
 
@@ -174,6 +174,18 @@ Hallazgos de la revisión de evaluador de la PR (informe `review_pr897_evaluador
   - Tests nuevos con Postgres real: `AprobacionPropuestaTransaccionalJpaTest` (el broker falla en la segunda fragmentación: ninguna donación queda asignada y la propuesta sigue `PENDIENTE`; si todo sale, todo se confirma) y `SegmentacionTransaccionalJpaTest` (falla al marcar un ítem: no quedan donaciones independientes ni cambia el estado de la donación). `[VERIFIED]` Sin `@Transactional` ambos casos de falla fallan: quedaban 2 donaciones asignadas con la propuesta abierta, y 1 donación independiente sin ítem marcado (la duplicación del stock al reentregar el mensaje).
   - **Corrección al informe de revisión.** El informe decía que `registrarEnIncentivos` era un efecto externo anterior al `saveAll`. No lo es: solo arma la lista de ítems; el evento a Incentivos sale al final, después del commit. Por eso la segmentación no necesitó reordenar nada.
   - **Sigue abierto de D-38:** `ejecutarAsignacion`, `DonacionesIndependientesService.cambiarEstado`/`vencer` y `NecesidadesService.guardar`/`actualizar`/`eliminar` (puntos 2, 4 y 5) siguen sin transacción de caso de uso.
+
+## Revisión de la PR (A1 a A5, A8, A9) — detalle
+
+Segunda tanda de la revisión de evaluador (los advisory que se decidió implementar).
+
+- **A1 — Gate 4 con Donaciones sobre Postgres.** `docker-compose.preprod.yml` arranca Donaciones con `postgres,preprod`, con su datasource, la contraseña de `.env` y `depends_on` de Postgres, como los otros tres servicios. `docker-compose.hybrid.yml` **no** se tocó: es en memoria a propósito (Postgres en Neon, sin base local), y `docker-compose.demo.yml` se superpone al compose base, que ya usa `postgres`. Test nuevo `DonacionesPostgresContextTests`: arranca la aplicación completa con el perfil `postgres` contra un Postgres real (Flyway, `ddl-auto=validate`, cableado de todos los beans y seeders); sacando `@Repository` de un adapter el contexto no arranca. `[VERIFIED]` `./run-preprod-tests.sh`: 29 tests de integración en verde con Donaciones sobre Postgres. Al final el script informa exit 127 porque en este macOS no existe `python` (scripts de análisis de logs); no es una falla de los tests.
+- **A2 — concurrencia de la donación independiente (V13).** Columna `donacion_independiente.version`. El guardado sube la versión con un compare-and-swap (`UPDATE ... WHERE id = ? AND version = ?`) y falla con `DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE` (`ERR-EST-523`, 409) si otra operación guardó antes. Se hace explícito porque Hibernate no sube `@Version` cuando solo cambian los ítems (colección inversa), y fragmentar una donación es justamente eso. La versión viaja en el dominio como la de `Necesidad` (D-17). Para no perder eventos, `ProcesadorEventosLogistica` reintenta hasta 3 veces ante el conflicto (la transacción se deshace y vuelve a leer la donación), y `vencer()` saltea solo la donación en conflicto. `[VERIFIED]` Sin el compare-and-swap fallan los dos tests nuevos de `DonacionesIndependientesRepositoryJpaTest`.
+- **A3 — N+1 en lo asignado.** El puerto suma para un mapa necesidad → período con una consulta `GROUP BY` (`sumarCantidadAsignada(Map)`); `AcumuladosDeAsignacion.datosPara`, `NecesidadesService.listarConFiltros` y el planificador la usan. El método de una sola necesidad queda para `obtenerPorId`. `[VERIFIED]` Test con Postgres real contra la suma de cada una; un mutante que suma todos los períodos da 13 en vez de 7.
+- **A4 — doble renovación de período.** `[VERIFIED]` La inferencia del informe se confirmó: con un test de dos copias de la misma recurrente renovando a la vez, la segunda **se guardaba** y duplicaba el período. `NecesidadRepositoryJpaAdapter.save` lee con `OPTIMISTIC_FORCE_INCREMENT` y guarda en una transacción propia (`TransactionTemplate`); Hibernate aplica ese incremento al confirmar, así que la versión nueva se lee después del commit. El planificador captura el conflicto por necesidad y no aborta el lote.
+- **A5 — OpenAPI.** Se documentan los 409 de `DELETE /api/categorias/{id}` y `/api/subcategorias/{id}` (`SUBCATEGORIA_EN_USO`), `PUT /api/necesidades/{id}` (`NECESIDAD_MODIFICADA_CONCURRENTEMENTE`), `PATCH /donaciones-independientes/{id}/estado` y la aprobación de propuestas (`DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE`). **Corrección al informe de revisión:** `PERSONA_DUPLICADA_EN_CONFLICTO` no es un 409 de un endpoint: lo usa el importador de padrón, que es asíncrono, y la fila cuenta como error del archivo; se documentó así. D-32 (`descripcion` obligatoria) ya figuraba como requerida en el esquema; se agregó que es un cambio no aditivo del contrato. Decisión de aceptarlo o tramitarlo como breaking: sigue siendo del equipo.
+- **A8 — código muerto.** Se quitó `IPersonasRepository.findByDocumento(TipoDocumento, String)` con sus implementaciones, la consulta de Spring Data y el test que solo la ejercitaba.
+- **A9 — orden de los ítems (V13).** Columna `item_donacion_independiente.orden`, única por donación (`DEFERRABLE`), con `@OrderBy`. El mapper reutiliza la fila de cada posición en vez de borrar todas y reinsertarlas con ids nuevos en cada guardado. `[VERIFIED]` Sin el `@OrderBy` o reinsertando, fallan los tests nuevos. Queda abierto el `EAGER` de períodos sin cota (no se tocó).
 
 ## Paso 11 — detalle (cierre)
 

@@ -93,6 +93,8 @@ paths:
                 $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
         '400':
           description: Transición inválida para el estado actual
+        '409':
+          description: Otra operación guardó la donación después de que se leyó (DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE, bloqueo optimista); releer y reintentar
   /api/donaciones:
     post:
       summary: Registrar donación (donación general con ítems)
@@ -113,7 +115,7 @@ paths:
         '409':
           description: El donante está dado de baja (DONANTE_INACTIVO)
         '400':
-          description: Datos de donación inválidos
+          description: Datos de donación inválidos, incluida la falta de descripción (obligatoria desde la persistencia en PostgreSQL, D-32)
     get:
       summary: Listar donaciones
       operationId: listarDonaciones
@@ -197,6 +199,8 @@ paths:
           description: Datos inválidos
         '404':
           description: Necesidad no encontrada
+        '409':
+          description: Otra operación guardó la necesidad después de que se leyó (NECESIDAD_MODIFICADA_CONCURRENTEMENTE, bloqueo optimista); releer y reintentar
     delete:
       summary: Baja de necesidad
       operationId: eliminarNecesidad
@@ -246,7 +250,12 @@ paths:
         '200':
           description: Estado actualizado
         '409':
-          description: La necesidad ya no está activa (NECESIDAD_INACTIVA), una donación es de la propia entidad (DONACION_A_SI_MISMO) o la transición de estado no es válida
+          description: >
+            La necesidad ya no está activa (NECESIDAD_INACTIVA), una donación es de la propia
+            entidad (DONACION_A_SI_MISMO), la transición de estado no es válida o otra operación
+            guardó una de las donaciones a la vez
+            (DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE). La aprobación es atómica: si
+            falla, no queda nada asignado y la propuesta sigue pendiente.
   /api/entidades:
     post:
       summary: Registrar entidad beneficiaria
@@ -393,6 +402,10 @@ paths:
   /api/donantes/archivos:
     post:
       summary: Cargar archivo/padrón de donantes para procesamiento asíncrono
+      description: >
+        Una fila cuyo correo ya pertenece a otra persona con un documento distinto no se
+        importa y cuenta como error del archivo (PERSONA_DUPLICADA_EN_CONFLICTO): el conflicto
+        no devuelve 409, porque el procesamiento es asíncrono.
       operationId: cargarArchivoDonantes
       responses:
         '202':
@@ -460,6 +473,7 @@ paths:
       responses:
         '200': { description: Categoría eliminada exitosamente (retorna CategoriaOutputDTO) }
         '404': { description: Categoría no encontrada }
+        '409': { description: Alguna de sus subcategorías tiene necesidades que la usan (SUBCATEGORIA_EN_USO) }
   /api/subcategorias:
     get:
       summary: Listar subcategorías
@@ -505,6 +519,7 @@ paths:
       responses:
         '200': { description: Subcategoría eliminada exitosamente (retorna SubcategoriaOutputDTO) }
         '404': { description: Subcategoría no encontrada }
+        '409': { description: Tiene necesidades que la usan (SUBCATEGORIA_EN_USO) }
   /api/subcategorias/{id}/aliases:
     post:
       summary: Agregar alias semántico a una subcategoría
@@ -758,7 +773,9 @@ components:
           format: uuid
         descripcion:
           type: string
-          description: Descripción general de lo que se dona. Obligatoria (400 si falta o está vacía).
+          description: >
+            Descripción general de lo que se dona. Obligatoria (400 si falta o está vacía). Cambio
+            no aditivo del contrato (D-32): antes era opcional y la base la exige NOT NULL.
         items:
           type: array
           items:

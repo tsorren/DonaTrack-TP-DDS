@@ -1,6 +1,6 @@
 @startuml donaciones-DER
 ' ============================================================
-' DER del schema donaciones, tal como lo crean las migraciones Flyway V1 a V12
+' DER del schema donaciones, tal como lo crean las migraciones Flyway V1 a V13
 ' (donaciones-service/src/main/resources/db/migration). Fuente de verdad: las migraciones.
 ' * = NOT NULL. En rojo: lo que no está o cambia respecto del DER de Lucid (versión del
 ' 19/10/2026); el detalle y el motivo de cada cambio están en cambios-der-donaciones.md.
@@ -17,7 +17,7 @@ skinparam class {
 }
 !define CAMBIO(x) <color:#C0392B>x</color>
 
-title Schema donaciones — DER implementado (V1 a V12)
+title Schema donaciones — DER implementado (V1 a V13)
 
 package "Personas" {
   entity direccion {
@@ -229,6 +229,7 @@ package "Donaciones independientes" {
     * fecha_registro : CAMBIO(TIMESTAMP)
     id_beneficiario_asignado : UUID <<FK>>
     id_periodo : UUID <<FK>>
+    * CAMBIO(version : BIGINT)
   }
 
   entity item_donacion_independiente {
@@ -236,6 +237,7 @@ package "Donaciones independientes" {
     --
     * id_donacion_independiente : UUID <<FK>>
     * CAMBIO(id_item_normalizado : UUID) <<FK>>
+    * CAMBIO(orden : INTEGER)
     * cantidad : BIGINT
     * bien_descripcion : TEXT
   }

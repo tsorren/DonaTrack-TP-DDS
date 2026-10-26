@@ -39,7 +39,7 @@ package "Infraestructura — perfil por defecto" {
 
 component "DonacionesEventPublisher\npublica después del commit" as pub
 
-database "PostgreSQL 16\nschema donaciones\nFlyway V1 a V12 · ddl validate" as pg
+database "PostgreSQL 16\nschema donaciones\nFlyway V1 a V13 · ddl validate" as pg
 queue "RabbitMQ" as rabbit
 component "Proveedores de logística\n(AMQP · HTTP)" as prov
 
