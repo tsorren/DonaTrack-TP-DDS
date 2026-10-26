@@ -20,5 +20,8 @@ public class NecesidadRecurrenteEntity extends NecesidadEntity {
       cascade = CascadeType.ALL,
       orphanRemoval = true,
       fetch = FetchType.EAGER)
+  // El dominio toma el último como período actual: sin ORDER BY el orden de lectura no está
+  // definido
+  @OrderBy("fechaFin ASC")
   private List<PeriodoNecesidadEntity> periodos = new ArrayList<>();
 }

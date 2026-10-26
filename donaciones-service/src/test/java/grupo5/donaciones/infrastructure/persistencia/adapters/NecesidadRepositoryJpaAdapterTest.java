@@ -19,6 +19,7 @@ import grupo5.donaciones.models.entities.necesidades.PeriodoNecesidad;
 import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.impl.DonacionesIndependientesRepositoryEnMemoria;
 import grupo5.donaciones.services.impl.AcumuladosDeAsignacion;
+import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
 import java.util.UUID;
@@ -293,6 +294,30 @@ class NecesidadRepositoryJpaAdapterTest {
         original.getPeriodos().stream().map(PeriodoNecesidad::id).toList(),
         leida.getPeriodos().stream().map(PeriodoNecesidad::id).toList());
     assertEquals(original.periodoActualId(), leida.periodoActualId());
+  }
+
+  @Test
+  void leer_recurrente_ordenaLosPeriodosPorFechaFinAunqueSeHayanInsertadoDesordenados() {
+    NecesidadRecurrente original = NecesidadMother.recurrenteSemanal(entidadId, subcategoriaId, 50);
+    repository.save(original);
+    LocalDate finDelGuardado = original.obtenerPeriodoActual().fechaFin();
+    // Se inserta después (queda último en la tabla) un período que termina antes
+    UUID anterior = UUID.randomUUID();
+    jdbc.update(
+        "INSERT INTO donaciones.periodo_necesidad"
+            + " (id, necesidad_id, fecha_inicio, fecha_fin, cantidad_objetivo)"
+            + " VALUES (?, ?, ?, ?, 50)",
+        anterior,
+        original.getId(),
+        finDelGuardado.minusDays(30).atStartOfDay(),
+        finDelGuardado.minusDays(14).atStartOfDay());
+
+    NecesidadRecurrente leida =
+        (NecesidadRecurrente) repository.findById(original.getId()).orElseThrow();
+
+    // El período actual es el de mayor fechaFin, no el último que devolvió la tabla
+    assertEquals(original.periodoActualId(), leida.periodoActualId());
+    assertEquals(anterior, leida.getPeriodos().getFirst().id());
   }
 
   @Test
