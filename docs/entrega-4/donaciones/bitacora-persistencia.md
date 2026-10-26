@@ -10,7 +10,7 @@
 
 ## TLDR
 
-> Última actualización: **2026-10-22** — Paso 11 hecho: cierre de la persistencia de Donaciones (diagramas, DER, hallazgos).
+> Última actualización: **2026-10-26** — Revisión de la PR: corregidos B1 a B4 (credencial, orden de períodos, tests de idempotencia, transacciones de aprobación y segmentación). Antes: Paso 11, cierre de la persistencia de Donaciones.
 
 - **Qué estamos haciendo:** persistir **todo** el servicio de Donaciones en PostgreSQL, siguiendo el DER vigente y las decisiones de persistencia ya tomadas para él.
 - **Cómo:** un adapter JPA por repositorio de dominio (`@Profile("postgres")`), con entidades JPA separadas del dominio y un mapper entre ambos, migraciones Flyway versionadas y un test de ida y vuelta contra un Postgres real en contenedor por cada adapter.
@@ -37,6 +37,7 @@
 | 9 | `propuesta` y `posible_fragmentacion` | ✅ Hecho |
 | 10 | `@Transactional`, `solicitud_entrega`, `outbox_logistica`, `evento_consumido` | ✅ Hecho (transacciones solo en broker y eventos, D-38) |
 | 11 | Cierre: deuda del historial de ejecuciones, Gate 3/4, documentación | ✅ Hecho |
+| — | Revisión de la PR: B1 a B4 (credencial, orden de períodos, idempotencia, transacciones de aprobación y segmentación) | ✅ Hecho |
 
 ---
 
@@ -82,7 +83,7 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - **Outbox de reintentos de Notificaciones en memoria.** `[OBSERVED]` `OutboxStore` / `OutboxEntry` (los reintentos de las llamadas a Notificaciones de `DonacionesIndependientesNotificacionesService`) guardan un `Runnable`, que no se puede persistir, y no están en el DER. Siguen en memoria: un reintento pendiente se pierde al reiniciar. Es otro outbox que el del broker de Logística.
 - **Relay del outbox con varias instancias.** `[INFERRED]` `pendientesListas` no bloquea filas: con dos instancias del servicio, las dos podrían enviar la misma entrada. Con una instancia no pasa; si se escala, la consulta tiene que tomar las filas con `FOR UPDATE SKIP LOCKED`.
 
-- **Credencial fija** `dona_pass_2026` como valor por defecto en `application-postgres.properties` y en `docker-compose.yml` (AGENTS §4.3). `ENTREGA_5` ya usa variables de entorno: al mergear, conservar esa versión.
+- **Credencial fija (resuelto el 2026-10-26, B1).** `dona_pass_2026` estaba como valor por defecto en `application-postgres.properties` y en `docker-compose.yml` (AGENTS §4.3), y no coincidía con la contraseña que fija `persistencia/init-db/02-set-role-passwords.sh` desde `.env`. Ahora el compose usa `${DONACIONES_DB_PASSWORD:?ver .env.example}` y el `.properties` no tiene default, igual que los otros tres servicios. Quedan referencias a esa contraseña solo en los `init-db` de los tests de Incentivos, Logística y Notificaciones (datos sintéticos de prueba, fuera de esta tarea).
 - **D-7 — resuelto en el Paso 7 (D-31):** peso y volumen como `NUMERIC(12,3)`.
 - **D-8 — resuelto en el Paso 9 (D-35):** `cantidad` como `INTEGER`.
 - **Historial de corridas del algoritmo en memoria (D-36).** `[DOCUMENTED]` `IAsignacionesRepository` no tiene adapter JPA: el endpoint de historial de ejecuciones muestra solo las corridas desde el último arranque, y con dos instancias cada una ve las suyas.
@@ -161,6 +162,18 @@ Todos aditivos o de tipo, decididos en esta rama: `categoria.tipo_unidad` (P-8);
 - `Subcategoria.agregarAlias` ignora los alias repetidos (P-9).
 - Tests contra Postgres real (13): categoría (guardar, leer, actualizar), subcategoría con alias (leer, quitar y agregar en el mismo guardado, renombrar, borrar), FK y restricción única, seeder ejecutado dos veces (verificado por mutación: sin el guard pasa de 3 a 6 categorías) y los estados de `Archivo`.
 - `[VERIFIED]` Suite del módulo: 591 tests, 0 fallas, 0 salteados; `spotless:check` y `agent-check` en verde.
+
+## Revisión de la PR (B1 a B4) — detalle
+
+Hallazgos de la revisión de evaluador de la PR (informe `review_pr897_evaluador.md`, fuera del repo) corregidos en esta rama.
+
+- **B1 — contraseña fija.** Ver «Credencial fija» en los hallazgos. `[VERIFIED]` `docker compose config` falla sin `.env` con «required variable DONACIONES_DB_PASSWORD is missing» y con `.env.example` resuelve la contraseña de Donaciones como las de los otros servicios.
+- **B3 — orden de los períodos.** `NecesidadRecurrenteEntity.periodos` tiene `@OrderBy("fechaFin ASC")`: el dominio toma el último como período actual y Postgres no garantiza orden sin `ORDER BY`. Test nuevo en `NecesidadRepositoryJpaAdapterTest`: inserta por SQL un período que termina antes (queda último en la tabla) y verifica que el período actual sigue siendo el de mayor `fechaFin`. `[VERIFIED]` Sin el `@OrderBy` el test falla (probado por mutación).
+- **B4 — idempotencia de `ProcesadorEventosLogistica`.** Clase nueva `ProcesadorEventosLogisticaTransaccionalJpaTest`, con Postgres real y un `TransactionTemplate` de verdad (la clase unitaria solo recorría la rama sin transacción). Tres casos: el mismo evento dos veces aplica un solo cambio; si falla `registrar`, se deshace el cambio de estado; y si otra entrega ya registró el evento después del chequeo, la restricción única deshace el cambio. La carrera se simula de forma determinística (se inserta el evento consumido y se fuerza `yaFueConsumido` en `false`), sin hilos. `[VERIFIED]` Con la transacción anulada, los dos casos de rollback fallan (probado por mutación).
+- **B2 — transacciones de aprobación y segmentación (D-40).** Son los puntos 1 y 3 de «Transacciones por caso de uso»: `PropuestaDeAsignacionService.actualizarEstado` y `SegmentacionService.procesarDonacionNormalizada` pasan a `@Transactional`. Con el perfil en memoria no hay gestor de transacciones y la anotación no hace nada (igual que en `LogisticaBroker`). **Decisión del usuario:** si el broker falla durante una aprobación, se revierte la aprobación completa; por eso `solicitarEntregaALogistica` ya no captura la excepción (capturarla dejaría la transacción marcada para deshacer y el commit fallaría con `UnexpectedRollbackException`). El test unitario `onPropuestaAprobada_siElBrokerFalla_igualProcesaLasDemasFragmentaciones`, que fijaba el comportamiento anterior, se reemplazó por uno que verifica que la excepción se propaga y no se procesan las demás fragmentaciones. Los eventos AMQP siguen saliendo después del commit (D-39); `publicarDonacionAsignada` mantiene su captura porque corre fuera de la transacción.
+  - Tests nuevos con Postgres real: `AprobacionPropuestaTransaccionalJpaTest` (el broker falla en la segunda fragmentación: ninguna donación queda asignada y la propuesta sigue `PENDIENTE`; si todo sale, todo se confirma) y `SegmentacionTransaccionalJpaTest` (falla al marcar un ítem: no quedan donaciones independientes ni cambia el estado de la donación). `[VERIFIED]` Sin `@Transactional` ambos casos de falla fallan: quedaban 2 donaciones asignadas con la propuesta abierta, y 1 donación independiente sin ítem marcado (la duplicación del stock al reentregar el mensaje).
+  - **Corrección al informe de revisión.** El informe decía que `registrarEnIncentivos` era un efecto externo anterior al `saveAll`. No lo es: solo arma la lista de ítems; el evento a Incentivos sale al final, después del commit. Por eso la segmentación no necesitó reordenar nada.
+  - **Sigue abierto de D-38:** `ejecutarAsignacion`, `DonacionesIndependientesService.cambiarEstado`/`vencer` y `NecesidadesService.guardar`/`actualizar`/`eliminar` (puntos 2, 4 y 5) siguen sin transacción de caso de uso.
 
 ## Paso 11 — detalle (cierre)
 
