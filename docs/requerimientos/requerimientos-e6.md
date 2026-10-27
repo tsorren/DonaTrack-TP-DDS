@@ -48,7 +48,7 @@
 | Rate limiting | E7 | Requerimiento 3 de E7 `[DOCUMENTED]` |
 | gRPC o GraphQL | E7 | Requerimiento 4 de E7 `[DOCUMENTED]` |
 | Observabilidad y monitoreo nuevos (métricas, trazas, autorestart) | E7 | Requerimientos 1 y 2 de E7 `[DOCUMENTED]` |
-| Retiro definitivo de los headers `X-Actor` y `X-API-Key` | E7 | D25: E6 los acepta como transición |
+| Retiro definitivo del header `X-Actor` | E7 | D25: E6 lo acepta y lo ignora (`X-API-Key` se retira ya en E6) |
 | Redacción de los ADRs | Tarea siguiente | Este documento es el insumo (§11) |
 
 ---
@@ -173,7 +173,7 @@ Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: a
 | RI-SVC-03 | Autorización por pertenencia | El Application Service verifica que el recurso pertenezca al usuario (por ejemplo, "la donación es de este donante"); los ids de "mis datos" salen del token, nunca de un parámetro | D13 (OWASP API1 BOLA) |
 | RI-SVC-04 | Actor de auditoría desde el token | Las transiciones auditadas registran el actor a partir del `sub`, no de `X-Actor` | D25 |
 | RI-SVC-05 | Migración de `X-Actor` | En E6 el header se acepta y se ignora (con un warning en el log); se retira en E7 | D25 |
-| RI-SVC-06 | Migración de `X-API-Key` | La administración del broker de logística exige rol `ADMIN` en el token; en E6 la API key se sigue aceptando como alternativa (con un warning en el log) y se retira en E7; el proveedor externo usa client credentials | D25 |
+| RI-SVC-06 | Retiro de `X-API-Key` en E6 | La administración del broker de logística exige rol `ADMIN` en el token desde E6; el `ApiKeyFilter` se elimina; el proveedor externo usa client credentials | D25 |
 | RI-SVC-07 | Llamadas originadas por un usuario | Se reenvía el token del usuario (*token relay*) | D15 |
 | RI-SVC-08 | Llamadas sin usuario (n8n, jobs, callbacks) | Token propio por client credentials, con un rol técnico (por ejemplo, `SERVICIO`) | D15 |
 | RI-SVC-09 | Mensajes AMQP sin JWT | Los eventos llevan `traceId` y el id del actor en el payload; el consumidor no revalida un token que pudo vencer | D15 |
@@ -468,23 +468,23 @@ Obligatorio con cualquier opción: atribución de los datos y alternativa accesi
 - Cada posición lleva su timestamp de origen: se descarta la que llega más vieja que la guardada (idempotencia).
 - **Evolución prevista:** el callback del proveedor externo es otro adaptador del mismo puerto; se suma sin rediseño.
 
-### D24 — Ubicación aproximada en lo público, exacta por pertenencia ✅ · ADR-E6-07
+### D24 — Ubicación aproximada en lo público, exacta por pertenencia ✅ (alcance en revisión) · ADR-E6-07
 - Con el tiempo, la posición exacta de un camión en ruta revela dónde reciben **otras** entidades.
 - Mantiene el criterio que ya aplica `ParadaSeguimientoDTO` `[OBSERVED]` y extiende la minimización de PII al mapa público, que hoy muestra coordenadas exactas.
-- **Alcance afinado** `[INFERRED]`: la posición del camión es aproximada para todos menos el admin, porque su recorrido expone las paradas de otras entidades; lo exacto por pertenencia es la dirección de la propia entrega (RNF-PRIV-01/02). Se valida con el equipo al redactar ADR-E6-07.
+- **Alcance afinado** `[INFERRED]`: la posición del camión es aproximada para todos menos el admin, porque su recorrido expone las paradas de otras entidades; lo exacto por pertenencia es la dirección de la propia entrega (RNF-PRIV-01/02). **Revisión pendiente:** el equipo confirmó este alcance para avanzar, pero lo revisa de nuevo antes de redactar ADR-E6-07.
 
-### D25 — `X-Actor` y `X-API-Key` reemplazados por el token, con migración ✅ · ADR-E6-05
+### D25 — `X-Actor` y `X-API-Key` reemplazados por el token ✅ · ADR-E6-05
 - Hoy `X-Actor` lo manda quien llama y nadie lo verifica: se puede falsificar.
-- Quitar un header es un *breaking change* (AGENTS.md §8.2). Por eso hay un ciclo para los dos:
+- Quitar un header es un *breaking change* (AGENTS.md §8.2). Se trata distinto en cada caso:
   - `X-Actor`: en E6 se acepta y se ignora (el actor sale del token); en E7 se retira.
-  - `X-API-Key`: en E6 se acepta como alternativa al rol `ADMIN`; en E7 se retira.
+  - `X-API-Key`: **corte directo en E6**. Solo la usan la administración del broker de logística y sus tests; mantenerla dejaría una segunda vía de acceso de admin sin identidad.
 - El proveedor externo pasa a client credentials.
 
-| Criterio | **Migración E6 → E7** | Corte directo en E6 | Mantener los headers y validarlos contra el token |
+| Criterio | Migración E6 → E7 (**elegida para `X-Actor`**) | Corte directo en E6 (**elegida para `X-API-Key`**) | Mantener los headers y validarlos contra el token |
 |---|---|---|---|
-| Rompe clientes actuales (tests de integración, Postman, n8n) | **No, durante E6** | Sí | No |
-| Seguridad durante E6 | Media: `X-API-Key` sigue siendo una vía (solo para la administración del broker) | Alta | Media: dato duplicado |
-| Costo | **Dos pasos** | Un paso con ADR y migración de todos los clientes de una vez | Mantener dos fuentes para siempre |
+| Rompe clientes actuales (tests de integración, Postman, n8n) | No, durante E6 | Sí: para `X-API-Key` solo afecta la administración del broker y sus tests | No |
+| Seguridad durante E6 | Media: el header queda como dato no confiable, ignorado | Alta: una sola vía, la del token | Media: dato duplicado |
+| Costo | Dos pasos | Un paso, con los clientes migrados de una vez | Mantener dos fuentes para siempre |
 
 ### D26 — Pantallas públicas: mínimo del enunciado + entidades y necesidades ✅ · ADR-E6-02
 - La landing del boceto ya muestra "emergencias" con un botón "AYUDAR" `[OBSERVED]`.
