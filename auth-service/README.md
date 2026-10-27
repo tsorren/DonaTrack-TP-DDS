@@ -10,7 +10,7 @@
 `auth-service` **no está implementado**. Existe únicamente como directorio placeholder con `.gitkeep`.  
 El microservicio está formalmente registrado en [`.log4brains.yml`](../.log4brains.yml) y su carpeta de ADRs (`docs/adr/auth-service/`) está reservada.
 
-**Hito canónico de construcción:** Entrega 6 — Despliegue, Observabilidad y Seguridad (Semana del 23 de Noviembre 2026).
+**Hito canónico de construcción:** Entrega 6 — Interfaz de Usuario y Arquitectura MVC (autenticación y SSO). El Key Broker pasa a la Entrega 7 — Observabilidad y Seguridad (decisión D29 de [requerimientos-e6](../docs/requerimientos/requerimientos-e6.md)).
 
 ---
 
