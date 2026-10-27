@@ -14,7 +14,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — requiere integración de capa de persistencia |
 | Target | donaciones-service · Entrega de persistencia (prioridad alta) |
-| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) para surrogate keys en JPA; **Entrega 7: Observabilidad y Seguridad (27/11/2026)** para crypto-shredding definitivo con el Key Broker (diferido desde E6 por la decisión D29 de [requerimientos-e6](../requerimientos/requerimientos-e6.md)) |
+| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) para surrogate keys en JPA; **Entrega 7: Observabilidad y Seguridad** para crypto-shredding definitivo con el Key Broker (diferido desde E6 por la decisión D29 de [requerimientos-e6](../requerimientos/requerimientos-e6.md)) |
 
 ---
 
@@ -88,7 +88,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — requiere implementación del microservicio auth-service |
 | Target | notificaciones-service · auth-service (prioridad alta) |
-| Cuándo se saldará | **Entrega 7: Observabilidad y Seguridad (27/11/2026)** — diferido desde E6 por la decisión D29 de [requerimientos-e6](../requerimientos/requerimientos-e6.md): E6 construye el IdP y el gateway, y el Key Broker queda para el hito de Seguridad; se cancelará en simultáneo con la construcción de `auth-service`, la emisión de `ClaveUsuarioDestruidaEvent` en RabbitMQ y la adopción de `RemoteAuthKeyBrokerClient` |
+| Cuándo se saldará | **Entrega 7: Observabilidad y Seguridad** — diferido desde E6 por la decisión D29 de [requerimientos-e6](../requerimientos/requerimientos-e6.md): E6 construye el IdP y el gateway, y el Key Broker queda para el hito de Seguridad; se cancelará en simultáneo con la construcción de `auth-service`, la emisión de `ClaveUsuarioDestruidaEvent` en RabbitMQ y la adopción de `RemoteAuthKeyBrokerClient` |
 
 ---
 

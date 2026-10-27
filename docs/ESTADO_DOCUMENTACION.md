@@ -275,7 +275,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
-| [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación y Key Broker (Entrega 6). | 🟢 Sincronizado |
+| [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación (Entrega 6) y Key Broker (Entrega 7, decisión D29 de [requerimientos-e6](requerimientos/requerimientos-e6.md)). | 🟢 Sincronizado |
 | [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para interfaz Web MVC (Entrega 5). | 🟢 Sincronizado |
 | [`docs/requerimientos/requerimientos-e6.md`](requerimientos/requerimientos-e6.md) | Requerimientos Entrega 6 | RF y RNF del servicio de autenticación, el API gateway y el cliente liviano; huecos de backend; decisiones D1–D30 con alternativas (5 pendientes) y ADRs candidatos. | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |

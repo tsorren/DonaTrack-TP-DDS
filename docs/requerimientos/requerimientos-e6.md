@@ -64,7 +64,8 @@
 | Seguimiento de entregas | `GET /api/entregas/seguimiento/donaciones/{id}` y `.../beneficiarios/{id}`: avance por paradas **sin GPS**; `ParadaSeguimientoDTO` no expone direcciones de otras entregas a propósito |
 | Mapa público | `GET /api/entregas/mapa` devuelve latitud y longitud **exactas** (`EntregaMapaPublicoResponseDTO`) |
 | Camión | `Camion` no tiene posición |
-| Almacenamiento de objetos | MinIO en compose, hoy usado por Incentivos y por la carga del CSV de donantes |
+| Almacenamiento de objetos | MinIO en compose, hoy usado solo por Incentivos |
+| Importación CSV | `POST /api/donantes/archivos` recibe una **ruta del filesystem del servidor** (`ArchivoInputDTO.path`) y la lee con `Files.newBufferedReader`; no acepta la subida del archivo; `ArchivoOutputDTO` informa solo id, ruta y estado |
 | Infra de datos | Un PostgreSQL (un schema por servicio) y un MongoDB con replica set (Logística) |
 
 ---
@@ -106,6 +107,8 @@ En lenguaje llano:
 ## 4. Servicio de autenticación (IdP)
 
 Los requerimientos están escritos sin depender del producto, porque la D1 sigue pendiente. Donde un producto cambia la implementación, se aclara.
+
+Salvo que la fila diga otra cosa, los criterios de §4 a §8 son `[PROPOSED]`: así los propone este documento, la cátedra no los fija.
 
 ### 4.1 Funcionales
 
@@ -164,7 +167,7 @@ Los requerimientos están escritos sin depender del producto, porque la D1 sigue
 | RI-GW-01 | Gateway único de entrada para el cliente liviano | Spring Cloud Gateway con rutas a los 4 servicios; el cliente no conoce sus puertos | D16 |
 | RI-GW-02 | El gateway valida el JWT | Firma (JWKS), `exp`, `iss`, `aud`; token inválido → `401` con el formato de error unificado | D2 |
 | RI-GW-03 | Denegar por defecto | Allowlist explícita de rutas públicas (§6.2); todo lo demás exige token | D16, D26 |
-| RI-GW-04 | Propagación del `traceId` | El gateway genera o propaga el `traceId` y escribe logs NDJSON con el formato de `common-lib` | AGENTS.md §4.2, ADR de observabilidad |
+| RI-GW-04 | Propagación del `traceId` | El gateway genera o propaga el `traceId` y escribe logs NDJSON con el formato de `common-lib` | AGENTS.md §4.2, [ADR de observabilidad](../adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) |
 | RI-SVC-01 | Cada servicio valida el JWT por su cuenta | `spring-boot-starter-oauth2-resource-server` en los 4 servicios; una llamada directa al puerto sin token → `401` | D2 |
 | RI-SVC-02 | Autorización por rol | `@PreAuthorize` por endpoint, con la matriz de §6 | D13, D14 |
 | RI-SVC-03 | Autorización por pertenencia | El Application Service verifica que el recurso pertenezca al usuario (por ejemplo, "la donación es de este donante"); los ids de "mis datos" salen del token, nunca de un parámetro | D13 (OWASP API1 BOLA) |
@@ -191,25 +194,25 @@ Los RF se numeran como los requerimientos mínimos de UI/UX del enunciado (págs
 | RF-03 | Público | Registro de donantes y entidades | Un donante queda operativo al completar el perfil; una entidad queda pendiente de aprobación | IdP + `POST /api/personas`, `/api/donantes`, `/api/entidades` | 🟡 | RI-AUTH-02 |
 | RF-04 | Todos | Login de donantes, entidades y admins | Los 3 roles inician sesión y llegan a su inicio; credenciales inválidas dan error genérico | IdP | ❌ | §4 |
 | RF-05 | Donante | Filtrar sus donaciones por estado y categoría/subcategoría | Combinar estado y categoría o subcategoría devuelve solo donaciones propias que cumplen ambos | `GET /donaciones-independientes?estado&subcategoriaId&donanteId` | 🟡 | HB-03 |
-| RF-06 | Donante | Navegar entidades beneficiarias | Listado paginado con búsqueda por nombre; solo entidades activas | `GET /api/entidades` | ✅ | DTO público (HB-08) |
+| RF-06 | Donante | Navegar entidades beneficiarias | Listado paginado con búsqueda por nombre; solo entidades activas | `GET /api/entidades` | 🟡 | HB-08, HB-15 |
 | RF-07 | Donante humano | Misiones e insignias | Visible solo para donante humano; muestra misiones con progreso e insignias obtenidas | `GET /api/incentivos/donantes/{id}/misiones`, `.../insignias` | ✅ | Ocultar si es jurídica |
 | RF-08 | Donante | Notificaciones: asignación, misión cumplida, ascenso, recepción | Cada uno de los 4 eventos genera una notificación visible en la bandeja | `GET /api/notificaciones/persona/{personaId}` | 🟡 | HB-09 |
-| RF-09 | Donante | Mapa de sus entregas activas con camión, ubicación y última actualización | Solo sus entregas activas; cada camión con posición y "última actualización" | `GET /api/entregas/seguimiento/donaciones/{id}` | 🟡 | HB-05, HB-06, D22 |
+| RF-09 | Donante | Mapa de sus entregas activas con camión, ubicación y última actualización | Solo sus entregas activas; cada camión con posición y "última actualización" | `GET /api/entregas/seguimiento/donaciones/{id}` | 🟡 | HB-05, HB-06, HB-16, D22 |
 | RF-10 | Entidad | Registrar necesidades | Alta, edición y baja de necesidades propias; no ve ni edita las de otras entidades | `/api/necesidades` (CRUD) | ✅ | |
 | RF-11 | Entidad | Estado de las donaciones asignadas | Listado de donaciones asignadas a la entidad, filtrable por estado | `GET /donaciones-independientes` | 🟡 | HB-04 |
 | RF-12 | Entidad | Confirmar recepción cargando fotos | Confirmar recepción exige al menos una foto válida (D27); la entrega pasa a `ENTREGADA` | `PATCH /api/entregas/{id}/estado`, `PATCH .../fotos` (solo URL) | 🟡 | HB-10 |
 | RF-13 | Entidad | Notificaciones de asignación y recepción | Asignación y recepción generan notificación visible en la bandeja | `GET /api/notificaciones/persona/{personaId}` | 🟡 | HB-09 |
-| RF-14 | Entidad | Mapa de entregas activas a recibir | Solo entregas que la entidad debe recibir; dirección exacta de su propia entrega y camión con posición aproximada | `GET /api/entregas/seguimiento/beneficiarios/{id}` | 🟡 | HB-05, HB-06, D22 |
+| RF-14 | Entidad | Mapa de entregas activas a recibir | Solo entregas que la entidad debe recibir; dirección exacta de su propia entrega y camión con posición aproximada | `GET /api/entregas/seguimiento/beneficiarios/{id}` | 🟡 | HB-05, HB-06, HB-16, D22 |
 | RF-15 | Admin | Registrar donantes y donaciones recibidas en el depósito | El admin registra un donante y su donación en un mismo flujo; el donante recibe acceso (D12) | `POST /api/personas`, `/api/donantes`, `/api/donaciones` | 🟡 | RF-AUTH-14 (alta de usuario) |
 | RF-16 | Admin | Marcar donaciones vencidas | Solo el admin; la transición queda auditada con el actor del token | `PATCH /donaciones-independientes/{id}/estado` | ✅ | Actor desde el token (RI-SVC-04) |
 | RF-17 | Admin | Elegir la entidad final según los algoritmos | El admin ve el resultado de los algoritmos y aprueba una propuesta | `/api/asignaciones/ejecuciones`, `/propuestas`, `/propuestas/{id}/estado` | ✅ | |
 | RF-18 | Admin | Administrar camiones | Alta, cambio de estado y baja de camiones | `/api/camiones` | ✅ | |
 | RF-19 | Admin | Ranking mensual e historial | Ranking del último mes y selector de meses anteriores | `GET /api/incentivos/ranking/ultimo`, `.../historial` | ✅ | |
-| RF-20 | Admin | Importar donantes por CSV (más de 10.000 filas) y darles usuario | Archivo de 20.000 filas procesado sin bloquear la UI, con progreso y resultado por fila | `POST /api/donantes/archivos` | 🟡 | RF-AUTH-14/15, D12 🎓 |
+| RF-20 | Admin | Importar donantes por CSV (más de 10.000 filas) y darles usuario | Archivo de 20.000 filas procesado sin bloquear la UI, con progreso y resultado por fila | `POST /api/donantes/archivos` | 🟡 | RF-AUTH-14/15, HB-14, D12 🎓 |
 | RF-21 | Admin | Aprobar entidades pendientes `[PROPOSED]` | Listado de entidades pendientes; aprobar asigna el rol `ENTIDAD` y activa la entidad en el negocio | — | ❌ | RI-AUTH-05 |
 | RF-22 | Público | Catálogo público de entidades y sus necesidades ("emergencias" de la landing) `[PROPOSED]` | Sin login; entidades activas con necesidades vigentes, sin datos de contacto | `GET /api/entidades`, `GET /api/necesidades` | 🟡 | HB-08 |
 
-Resumen: 7 ✅ · 13 🟡 · 2 ❌.
+Resumen: 6 ✅ · 14 🟡 · 2 ❌.
 
 ### 6.2 Pantallas públicas y privadas
 
@@ -285,7 +288,7 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 
 | ID | Servicio | Cambio `[PROPOSED]` | Para | Origen |
 |---|---|---|---|---|
-| HB-01 | Donaciones | `GET /donaciones/destacadas`: entregadas en los últimos 30 días con foto, con DTO público. El boceto ofrece además "última semana / último año": parámetro `periodo` | RF-01 | D28 |
+| HB-01 | Logística + Donaciones | `GET /donaciones/destacadas`: entregadas en los últimos 30 días con foto, con DTO público. El boceto ofrece además "última semana / último año": parámetro `periodo` | RF-01 | D28 |
 | HB-02 | Donaciones / Incentivos | Contadores públicos de la landing (donantes activos, donaciones realizadas, beneficiarios activos) en un endpoint agregado | RF-01 (boceto) | Boceto E1 |
 | HB-03 | Donaciones | Filtro por `categoriaId` en `GET /donaciones-independientes` | RF-05 | D28 |
 | HB-04 | Donaciones | Filtro por entidad asignada y rango de fechas | RF-11, RF-01 | D28 |
@@ -298,6 +301,11 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-11 | Donaciones | `usuarioId` en `Persona` y `GET /api/personas/me` | RI-AUTH-01/03 | D9 |
 | HB-12 | Donaciones | Estado "pendiente de aprobación" para entidades autorregistradas y endpoint de aprobación | RF-21 | D10 |
 | HB-13 | Los 4 servicios | Resource server JWT, `@PreAuthorize` y chequeos de pertenencia | RI-SVC-01..03 | D2, D13 |
+| HB-14 | Donaciones | Subida del CSV desde el navegador (multipart → MinIO, como D27) en lugar de una ruta del servidor, y progreso con resultado por fila (procesadas, creadas, actualizadas, con error) | RF-20 | Auditoría `[OBSERVED]` |
+| HB-15 | Donaciones | Paginado y búsqueda por nombre en `GET /api/entidades` (hoy devuelve todo, sin parámetros) | RF-06, RF-22 | Auditoría `[OBSERVED]` |
+| HB-16 | Logística | Listado de las entregas activas de un donante o una entidad en una sola llamada (hoy el seguimiento es por donación) | RF-09, RF-14 | Auditoría `[OBSERVED]` |
+
+**Nota sobre HB-01** `[INFERRED]`: la foto de recepción vive en Logística (`PATCH /api/entregas/{id}/fotos`) y la categoría de la donación en Donaciones. "Destacada" cruza dos servicios. Opciones: que el cliente componga ambas respuestas, o que Donaciones replique "entregada con foto" escuchando el evento de recepción. Se define al implementar.
 
 ---
 
@@ -326,6 +334,12 @@ Cumple RQ-E6-05 con un solo registro de aplicación. GitHub y Facebook descartad
 - Es lo más seguro frente a un email mal verificado. Cuesta un paso más.
 - Excepción: cuentas sin contraseña (RF-AUTH-04).
 
+| Criterio | Vincular si Google verificó el email | **Pedir la contraseña para vincular** | Social solo para cuentas nuevas |
+|---|---|---|---|
+| Seguridad ante un email mal verificado por el proveedor | Media: confía en `email_verified` | **Alta**: prueba de posesión de la cuenta | Alta |
+| Fricción para el usuario | Ninguna | **Un paso más** | Alta: rechaza a quien ya tiene cuenta |
+| Cuentas sin contraseña (CSV, depósito) | Funciona | **Necesita excepción** (RF-AUTH-04) | Las deja sin login social |
+
 ### D5 — Sesión mixta con Spring Session JDBC ✅ · ADR-E6-03
 
 | Criterio | Stateless (JWT en cookie) | **Mixta (sesión en el cliente, JWT hacia el backend)** | Stateless con cookie cifrada |
@@ -345,6 +359,12 @@ Equilibrio estándar. Con 5 min habría más refrescos y más carga sobre el IdP
 ### D7 — Refresh con rotación y detección de reuso ✅ · ADR-E6-03
 Cada uso da uno nuevo. Reusar uno viejo es señal de robo y corta la sesión. Inactividad máxima: 8 h.
 
+| Criterio | **Rotación con detección de reuso** | Sin rotación, vida fija | Sin refresh (re-login al vencer) |
+|---|---|---|---|
+| Si roban el refresh | **Se detecta al primer reuso y se corta la sesión** | Sirve hasta que vence | No hay refresh que robar |
+| Experiencia | **Transparente** | Transparente | Login cada 15 min |
+| Riesgo de carreras con varias pestañas | Existe, y lo resuelve la sesión del servidor (D5) | No | No |
+
 ### D9 — Vínculo IdP ↔ negocio por `sub` ✅ · ADR-E6-04
 
 | Criterio | **`sub` guardado en el negocio** | Claim `donanteId` en el token | Mismo id en ambos |
@@ -360,6 +380,12 @@ Cada uso da uno nuevo. Reusar uno viejo es señal de robo y corta la sesión. In
 - Buena práctica (OWASP ASVS): los roles con privilegio no se autoasignan.
 - Un rol que **recibe valor** (bienes donados) pasa por verificación.
 - Coincide con el mapa del sitio de E1, donde el admin "Registra Entidades".
+
+| Criterio | **Donante libre, entidad con aprobación** | Donante y entidad libres | Solo el admin da de alta |
+|---|---|---|---|
+| Cumple el registro público (UI/UX 3) | **Sí** | Sí | No |
+| Riesgo de entidades falsas que reciben donaciones | **Bajo** | Alto | Nulo |
+| Trabajo del admin | **Una cola de pendientes** | Ninguno | Todas las altas |
 
 ### D11 — Alta: login en el IdP + "completar perfil" ✅ · ADR-E6-04
 
@@ -381,6 +407,15 @@ Zero trust: ningún llamado interno pasa sin credencial.
 - Si la acción la inició una persona, viaja su token (auditoría de quién hizo qué).
 - Si es un proceso (n8n, jobs, callbacks), usa un token propio.
 - AMQP lleva actor y `traceId`, no JWT: el token vence y el mensaje se puede procesar después.
+
+| Criterio | Reenviar siempre el token del usuario | Solo client credentials | **Híbrido** | Confiar en la red interna | mTLS entre servicios |
+|---|---|---|---|---|---|
+| Auditoría de quién originó la acción | Sí | No: solo qué servicio | **Sí cuando hay usuario** | No | No |
+| Jobs, n8n, callbacks | No sirve: no hay usuario | Sí | **Sí** | Sí | Sí |
+| Puertas laterales | Cerradas | Cerradas | **Cerradas** | Abiertas | Cerradas |
+| Infraestructura nueva | Ninguna | Clientes OAuth2 | **Clientes OAuth2** | Ninguna | PKI y certificados por servicio |
+
+*Token exchange* (RFC 8693) queda como evolución si hace falta reducir el alcance del token reenviado.
 
 ### D16 — Gateway con Spring Cloud Gateway ✅ · ADR-E6-02
 Mismo stack, validación JWT nativa y reuso del `traceId` y los logs NDJSON de `common-lib`. Traefik, Nginx y Kong descartados: validan JWT por plugin o módulo y escriben logs en otro formato.
@@ -431,6 +466,7 @@ Obligatorio con cualquier opción: atribución de los datos y alternativa accesi
 
 - Sigue el patrón de puertos y adaptadores que ya usa `ProveedorExternoPlanificacionSimulado` `[OBSERVED]`.
 - Cada posición lleva su timestamp de origen: se descarta la que llega más vieja que la guardada (idempotencia).
+- **Evolución prevista:** el callback del proveedor externo es otro adaptador del mismo puerto; se suma sin rediseño.
 
 ### D24 — Ubicación aproximada en lo público, exacta por pertenencia ✅ · ADR-E6-07
 - Con el tiempo, la posición exacta de un camión en ruta revela dónde reciben **otras** entidades.
@@ -444,10 +480,22 @@ Obligatorio con cualquier opción: atribución de los datos y alternativa accesi
   - `X-API-Key`: en E6 se acepta como alternativa al rol `ADMIN`; en E7 se retira.
 - El proveedor externo pasa a client credentials.
 
+| Criterio | **Migración E6 → E7** | Corte directo en E6 | Mantener los headers y validarlos contra el token |
+|---|---|---|---|
+| Rompe clientes actuales (tests de integración, Postman, n8n) | **No, durante E6** | Sí | No |
+| Seguridad durante E6 | Media: `X-API-Key` sigue siendo una vía (solo para la administración del broker) | Alta | Media: dato duplicado |
+| Costo | **Dos pasos** | Un paso con ADR y migración de todos los clientes de una vez | Mantener dos fuentes para siempre |
+
 ### D26 — Pantallas públicas: mínimo del enunciado + entidades y necesidades ✅ · ADR-E6-02
 - La landing del boceto ya muestra "emergencias" con un botón "AYUDAR" `[OBSERVED]`.
 - Exponer entidades y necesidades atrae donantes antes de que se registren.
 - Cuesta sanitizar esos datos (HB-08).
+
+| Criterio | Mínimo del enunciado | **Mínimo + entidades y necesidades** | Todo detrás de login |
+|---|---|---|---|
+| Cumple UI/UX 1 y 2 (landing y mapa públicos) | Sí | **Sí** | No |
+| Fiel al boceto ("emergencias" en la landing) | No | **Sí** | No |
+| Datos a sanitizar | Pocos | **Entidades y necesidades** | Mínimos |
 
 ### D27 — Fotos: multipart a Logística → MinIO ✅ · ADR-E6-08
 
@@ -469,6 +517,13 @@ Endpoints dentro de un contrato y un patrón ya decididos (AGENTS.md §9.2). "De
 ### D29 — Key Broker (DTI-07) pasa entero a E7 ✅ · sin ADR nuevo
 E6 ya suma IdP, gateway y cliente. El objetivo de DTI-07 y el del crypto-shredding definitivo de DTI-01 se actualizan a E7 en [`DEUDA_TECNICA.md`](../adr/DEUDA_TECNICA.md). Consecuencia: el servicio aparte que acompaña a Keycloak (D1) recién se construye en E7.
 
+| Criterio | Implementar el Key Broker en E6 | Contrato en E6, implementación en E7 | **Todo a E7** |
+|---|---|---|---|
+| Tamaño de E6 | Crece: un servicio más, con base de claves | Acotado | **Mínimo** |
+| DTI-07 | Se salda | Queda lista para saldar | **Sigue diferida** |
+| Riesgo | Alto: E6 ya suma IdP, gateway y cliente | Bajo | **E7 arranca sin el contrato diseñado** |
+| Encaje con la consigna | E7 es la entrega de Seguridad | Ídem | **Ídem** |
+
 ---
 
 ## 10. Decisiones pendientes
@@ -489,7 +544,7 @@ E6 ya suma IdP, gateway y cliente. El objetivo de DTI-07 y el del crypto-shreddi
 - **En lenguaje llano:** Keycloak es comprar la cerradura (anda el primer día); SAS es fabricarla con piezas estándar (más trabajo, diseño propio).
 - **Para cerrarla hace falta:**
   1. Consultar a la cátedra si un Keycloak configurado cuenta como *"implementación de un SSO"* y como *"servicio de Autenticación"* (RQ-E6-04/05).
-  2. Ver con cuánto tiempo cuenta el equipo hasta el 13/11.
+  2. Ver con cuánto tiempo cuenta el equipo hasta la fecha de entrega de E6.
 - **Lo que no cambia con ninguna de las dos:** D9 (`sub` en el negocio) y RNF-AUTH-08 (claim `roles` plano) hacen que cambiar de IdP cueste poco.
 
 ### D8 — Envío del email de recuperación (y de verificación) ⏸️ · ADR-E6-01
@@ -601,7 +656,7 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 
 Sin ADR (AGENTS.md §9.2):
 - D28: endpoints aditivos sobre un patrón decidido.
-- D29: diferimiento ya cubierto por el ADR de DTI-07; se actualiza el objetivo en `DEUDA_TECNICA.md`.
+- D29: decisión de calendario, no arquitectónica (el diseño del Key Broker ya está en el ADR de DTI-07). El ADR fija la cancelación en "Entrega 6"; la divergencia queda en §13 y en `DEUDA_TECNICA.md`, sin editar el ADR.
 
 ---
 
@@ -609,7 +664,7 @@ Sin ADR (AGENTS.md §9.2):
 
 | # | Riesgo o pregunta | Impacto | Mitigación o próximo paso |
 |---|---|---|---|
-| R1 | E6 suma tres componentes nuevos (IdP, gateway, cliente) para el 13/11 | Alto | Construir primero el camino crítico: IdP + gateway + login + una pantalla por rol |
+| R1 | E6 suma tres componentes nuevos (IdP, gateway, cliente) para la fecha de entrega de E6 | Alto | Construir primero el camino crítico: IdP + gateway + login + una pantalla por rol |
 | R2 | D1 sigue abierta y condiciona D8 | Medio | D9 y RNF-AUTH-08 reducen el costo de cambiar de IdP |
 | R3 | D12 puede incumplir la consigna | Alto | Consulta a la cátedra (§10, D12) |
 | R4 | Los 4 servicios pasan a exigir token: se rompen los tests de integración, Postman y el preprod | Alto | Token de prueba por client credentials en los tests; colección de Postman con autenticación |
@@ -627,4 +682,8 @@ Sin ADR (AGENTS.md §9.2):
 | [`docs/arquitectura/contratos-rest.md`](../arquitectura/contratos-rest.md) | No lista `GET /api/entregas/mapa` ni los dos `GET /api/entregas/seguimiento/...` que existen en `EntregasController` `[OBSERVED]` |
 | [`docs/ESTADO_DOCUMENTACION.md`](../ESTADO_DOCUMENTACION.md) §3.6 | Describe `cliente-liviano` como reservado para la "Entrega 5"; la consigna lo ubica en E6 |
 | [`docs/adr/DEUDA_TECNICA.md`](../adr/DEUDA_TECNICA.md) DTI-09 | Llama "Entrega 6: Despliegue, Observabilidad y Seguridad" a la entrega de la integración con `auth-service`; según el enunciado, E6 es "Interfaz de Usuario y Arquitectura MVC" y E7 es "Observabilidad y Seguridad" |
+| [ADR DTI-07](../adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) (`proposed`) | Fija el "Hito Canónico de Cancelación" en "Entrega 6"; la D29 lo pasa a E7. No se edita el ADR: corresponde un ADR sucesor o una actualización por el revisor humano |
+| [`docs/entregas/README.md`](../entregas/README.md) | Llama "Despliegue, Observabilidad y Seguridad" a E6; el enunciado completo lo corrige |
+| `logistica-service/.../dto/entregas/EntregaMapaPublicoResponseDTO.java` | El Javadoc dice que no incluye la dirección exacta, pero expone `latitud` y `longitud` exactas (HB-07) |
+| `docs/adr/DEUDA_TECNICA.md` DTI-09 y DTI-14 | Fechan E6 en la "semana del 23 de noviembre"; ni el enunciado ni el repo tienen el calendario que lo respalde |
 | `docs/entregas/` | El enunciado completo (`Enunciado-TP-Anual-2026.pdf`) sigue en la rama `E5_enunciado_tp_anual`, sin integrar |
