@@ -107,6 +107,9 @@ docs/
 │   ├── informe-orquestadores-control-planes-coding-agents.md
 │   └── evals-agentes-resumen.md
 │
+├── requerimientos/                        # 📋 Requerimientos por entrega
+│   └── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega
 │   ├── integracion/                       # Catálogo de mensajes y matriz productor-consumidor
@@ -158,6 +161,7 @@ docs/
 * 🔄 **Guía de Migración de Contratos E4 (Notificaciones):** [arquitectura/contratos/guia-migracion-notificaciones-e4.md](arquitectura/contratos/guia-migracion-notificaciones-e4.md)
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
+* 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
 * 📚 **Índice de documentación de Entrega 4:** [entrega-4/README.md](entrega-4/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
 * 🏗️ **Documento de Arquitectura del Sistema (Entrega 4, entregable 5):** [entrega-4/arquitectura/entregable-5/](entrega-4/arquitectura/entregable-5/README.md) · respaldo técnico: [arquitectura-sistema.md](entrega-4/arquitectura/arquitectura-sistema.md) · topología RabbitMQ: [diagramas/rabbit/](entrega-4/arquitectura/diagramas/rabbit/README.md)
