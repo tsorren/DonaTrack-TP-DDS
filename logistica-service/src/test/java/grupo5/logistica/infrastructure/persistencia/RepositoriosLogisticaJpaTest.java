@@ -18,6 +18,7 @@ import grupo5.logistica.infrastructure.persistencia.adapters.SolicitudesTransici
 import grupo5.logistica.infrastructure.persistencia.entities.CamionEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.ChoferEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.EntregaEntity;
+import grupo5.logistica.infrastructure.persistencia.entities.TipoTransicionEntrega;
 import grupo5.logistica.infrastructure.persistencia.mappers.CamionPersistenciaMapper;
 import grupo5.logistica.infrastructure.persistencia.mappers.ChoferPersistenciaMapper;
 import grupo5.logistica.infrastructure.persistencia.mappers.EntregaPersistenciaMapper;
@@ -398,6 +399,28 @@ class RepositoriosLogisticaJpaTest {
         new EntregaFallida(entrega.getId(), entrega.getIdDonacion(), "No atendieron", true));
 
     assertEquals(3, springDataEventoRepo.count());
+  }
+
+  @Test
+  void registrarConfirmacion_deberiaAuditarTodasLasFotosEnOrden() {
+    Localidad caba = new Localidad("CABA", new Provincia("Buenos Aires", new Pais("Argentina")));
+    Direccion dir = new Direccion("Mozart", 2300, null, null, "1407", caba);
+    Entrega entrega =
+        entregasRepository.save(new Entrega(UUID.randomUUID(), UUID.randomUUID(), dir, 8.0f, 0.8f));
+    List<String> fotos =
+        List.of("https://donatrack.org/evidencia-1.png", "https://donatrack.org/evidencia-2.png");
+
+    solicitudesTransicionRepository.registrar(
+        new ConfirmacionRecepcion(entrega, "Chofer Ana", fotos));
+
+    var auditoria =
+        springDataTransicionRepo.findAll().stream()
+            .filter(s -> s.getIdEntrega().equals(entrega.getId()))
+            .filter(s -> s.getTipoTransicion() == TipoTransicionEntrega.CONFIRMAR_ENTREGA)
+            .findFirst()
+            .orElseThrow();
+    assertEquals(fotos, auditoria.getFotosRecepcion());
+    assertEquals(fotos.getFirst(), auditoria.getFotoRecepcionUrl());
   }
 
   @Test

@@ -23,6 +23,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -212,6 +213,19 @@ class DtoValidationTest {
     assertFalse(
         validator
             .validate(new CambioEstadoEntregaRequestDTO(EstadoEntrega.ENTREGADA, null, null, null))
+            .isEmpty());
+  }
+
+  @Test
+  void cambioEstadoEntrega_fotoNulaEnLaLista_violacion() {
+    List<String> fotos = new ArrayList<>();
+    fotos.add("https://donatrack.org/evidencia-1.png");
+    fotos.add(null);
+    assertFalse(
+        validator
+            .validate(
+                new CambioEstadoEntregaRequestDTO(
+                    EstadoEntrega.ENTREGADA, "Comedor Infantil", null, null, fotos))
             .isEmpty());
   }
 

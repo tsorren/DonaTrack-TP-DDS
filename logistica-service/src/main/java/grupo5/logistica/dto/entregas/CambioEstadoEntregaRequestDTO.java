@@ -11,7 +11,7 @@ public record CambioEstadoEntregaRequestDTO(
     @NotBlank String actor,
     String justificacion, // Utilizado cuando el estado es NO_RECIBIDA
     Boolean replanificable, // Utilizado cuando el estado es NO_RECIBIDA
-    List<String> fotosRecepcion, // Obligatorio cuando el estado es ENTREGADA
+    List<@NotNull String> fotosRecepcion, // Obligatorio cuando el estado es ENTREGADA
     String fotoRecepcionUrl // Compatibilidad con envío de una única URL
     ) {
 
