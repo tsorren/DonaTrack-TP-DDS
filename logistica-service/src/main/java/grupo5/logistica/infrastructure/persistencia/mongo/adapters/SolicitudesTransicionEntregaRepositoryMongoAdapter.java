@@ -9,7 +9,7 @@ import grupo5.logistica.models.entities.entregas.RegresoDeposito;
 import grupo5.logistica.models.entities.entregas.RevisionEntrega;
 import grupo5.logistica.models.entities.entregas.SolicitudTransicionEntrega;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
-import java.time.Instant;
+import java.time.Clock;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -21,10 +21,12 @@ public class SolicitudesTransicionEntregaRepositoryMongoAdapter
     implements ISolicitudesTransicionEntregaRepository {
 
   private final SpringDataSolicitudTransicionEntregaMongoRepository springDataRepo;
+  private final Clock reloj;
 
   public SolicitudesTransicionEntregaRepositoryMongoAdapter(
-      SpringDataSolicitudTransicionEntregaMongoRepository springDataRepo) {
+      SpringDataSolicitudTransicionEntregaMongoRepository springDataRepo, Clock reloj) {
     this.springDataRepo = springDataRepo;
+    this.reloj = reloj;
   }
 
   @Override
@@ -37,7 +39,7 @@ public class SolicitudesTransicionEntregaRepositoryMongoAdapter
     doc.setId(UUID.randomUUID());
     doc.setIdEntrega(solicitud.entrega().getId());
     doc.setActor(solicitud.actor());
-    doc.setOcurrioEn(Instant.now());
+    doc.setOcurrioEn(reloj.instant());
 
     switch (solicitud) {
       case ConfirmacionRecepcion confirmacion -> {

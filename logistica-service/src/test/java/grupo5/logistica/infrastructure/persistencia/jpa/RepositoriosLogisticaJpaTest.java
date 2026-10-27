@@ -61,6 +61,7 @@ import grupo5.logistica.models.repositories.IEventosEntregaRepository;
 import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -69,7 +70,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -97,11 +100,21 @@ import org.testcontainers.utility.MountableFile;
   EntregasRepositoryJpaAdapter.class,
   SolicitudPlanificacionRepositoryJpaAdapter.class,
   SolicitudesTransicionEntregaRepositoryJpaAdapter.class,
-  EventosEntregaRepositoryJpaAdapter.class
+  EventosEntregaRepositoryJpaAdapter.class,
+  RepositoriosLogisticaJpaTest.Reloj.class
 })
 @Testcontainers
 @DisabledIfDockerUnavailable
 class RepositoriosLogisticaJpaTest {
+
+  @TestConfiguration
+  static class Reloj {
+
+    @Bean
+    Clock reloj() {
+      return Clock.systemUTC();
+    }
+  }
 
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgres =

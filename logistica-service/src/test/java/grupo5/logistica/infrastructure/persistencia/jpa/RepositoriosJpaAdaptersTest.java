@@ -63,6 +63,7 @@ import grupo5.logistica.models.entities.rutas.eventos.EventoRutaAsignada;
 import grupo5.logistica.models.entities.solicitudes.SolicitudPlanificacion;
 import grupo5.logistica.models.repositories.impl.EventosEntregaRepository;
 import grupo5.logistica.models.repositories.impl.SolicitudesTransicionEntregaRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -279,7 +280,8 @@ class RepositoriosJpaAdaptersTest {
     SpringDataSolicitudTransicionEntregaRepository transicionSpringRepo =
         mock(SpringDataSolicitudTransicionEntregaRepository.class);
     SolicitudesTransicionEntregaRepositoryJpaAdapter transicionJpaAdapter =
-        new SolicitudesTransicionEntregaRepositoryJpaAdapter(transicionSpringRepo);
+        new SolicitudesTransicionEntregaRepositoryJpaAdapter(
+            transicionSpringRepo, Clock.systemUTC());
 
     SpringDataEventoEntregaRepository eventoSpringRepo =
         mock(SpringDataEventoEntregaRepository.class);

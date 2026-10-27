@@ -108,7 +108,7 @@ class RepositoriosMongoAdaptersTest {
     rutas = new RutasRepositoryMongoAdapter(rutaRepo, entregaRepo, rutaMapper);
     entregas = new EntregasRepositoryMongoAdapter(entregaRepo, rutaRepo, camionRepo, entregaMapper);
     solicitudes = new SolicitudPlanificacionRepositoryMongoAdapter(solicitudRepo, solicitudMapper);
-    transiciones = new SolicitudesTransicionEntregaRepositoryMongoAdapter(transicionRepo);
+    transiciones = new SolicitudesTransicionEntregaRepositoryMongoAdapter(transicionRepo, RELOJ);
     eventos = new EventosEntregaRepositoryMongoAdapter(eventoRepo, RELOJ);
   }
 
@@ -408,6 +408,7 @@ class RepositoriosMongoAdaptersTest {
     assertEquals(TipoTransicionEntrega.CONFIRMAR_ENTREGA, doc.getTipoTransicion());
     assertEquals(List.of("http://foto"), doc.getFotosRecepcion());
     assertEquals(entrega.getId(), doc.getIdEntrega());
+    assertEquals(RELOJ.instant(), doc.getOcurrioEn());
   }
 
   @Test
