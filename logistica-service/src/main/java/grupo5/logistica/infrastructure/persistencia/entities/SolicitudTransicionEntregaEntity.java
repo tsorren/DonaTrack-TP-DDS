@@ -1,12 +1,19 @@
 package grupo5.logistica.infrastructure.persistencia.entities;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,4 +54,13 @@ public class SolicitudTransicionEntregaEntity {
 
   @Column(name = "justificacion", columnDefinition = "TEXT")
   private String justificacion;
+
+  @SuppressWarnings("squid:S1319")
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(
+      name = "solicitud_transicion_foto_recepcion",
+      joinColumns = @JoinColumn(name = "id_solicitud", nullable = false))
+  @OrderColumn(name = "orden_foto")
+  @Column(name = "foto_url", nullable = false, columnDefinition = "TEXT")
+  private List<String> fotosRecepcion = new ArrayList<>();
 }

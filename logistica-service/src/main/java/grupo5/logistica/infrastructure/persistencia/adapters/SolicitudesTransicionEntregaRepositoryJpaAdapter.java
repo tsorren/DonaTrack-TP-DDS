@@ -10,6 +10,7 @@ import grupo5.logistica.models.entities.entregas.RevisionEntrega;
 import grupo5.logistica.models.entities.entregas.SolicitudTransicionEntrega;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
@@ -44,6 +45,7 @@ public class SolicitudesTransicionEntregaRepositoryJpaAdapter
       case ConfirmacionRecepcion confirmacion -> {
         entity.setTipoTransicion(TipoTransicionEntrega.CONFIRMAR_ENTREGA);
         entity.setFotoRecepcionUrl(confirmacion.fotoRecepcionUrl());
+        entity.setFotosRecepcion(new ArrayList<>(confirmacion.fotosRecepcion()));
       }
       case NoRecepcion noRecepcion -> {
         entity.setTipoTransicion(TipoTransicionEntrega.NO_RECEPCION);

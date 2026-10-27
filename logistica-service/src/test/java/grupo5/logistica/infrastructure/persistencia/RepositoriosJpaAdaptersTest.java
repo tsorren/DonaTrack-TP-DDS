@@ -238,11 +238,18 @@ class RepositoriosJpaAdaptersTest {
     when(springDataRepo.findByIdRutaOrderByIdEntregaAsc(any())).thenReturn(List.of(entity));
     when(springDataRepo.findByIdRutaIsNull()).thenReturn(List.of(entity));
     when(springDataRepo.existsByIdDonacion(entrega.getIdDonacion())).thenReturn(true);
+    when(springDataRepo.findByIdDonacion(entrega.getIdDonacion())).thenReturn(Optional.of(entity));
+    when(springDataRepo.findByIdBeneficiarioOrderByIdEntregaAsc(entrega.getIdBeneficiaria()))
+        .thenReturn(List.of(entity));
 
     assertEquals(1, adapter.findByEstado(EstadoEntrega.PENDIENTE).size());
     assertEquals(1, adapter.findByRutaId(UUID.randomUUID()).size());
     assertEquals(1, adapter.findSinRuta().size());
     assertTrue(adapter.existsByIdDonacion(entrega.getIdDonacion()));
+    assertTrue(adapter.findByIdDonacion(entrega.getIdDonacion()).isPresent());
+    assertEquals(1, adapter.findByIdBeneficiaria(entrega.getIdBeneficiaria()).size());
+    assertTrue(adapter.findByIdDonacion(null).isEmpty());
+    assertTrue(adapter.findByIdBeneficiaria(null).isEmpty());
   }
 
   @Test
@@ -306,7 +313,7 @@ class RepositoriosJpaAdaptersTest {
     SolicitudesTransicionEntregaRepository memTransicionRepo =
         new SolicitudesTransicionEntregaRepository();
     memTransicionRepo.registrar(null);
-    memTransicionRepo.registrar(new ConfirmacionRecepcion(entrega, "Actor", null));
+    memTransicionRepo.registrar(new ConfirmacionRecepcion(entrega, "Actor", (List<String>) null));
     assertEquals(1, memTransicionRepo.findAll().size());
     memTransicionRepo.deleteAll();
     assertTrue(memTransicionRepo.findAll().isEmpty());

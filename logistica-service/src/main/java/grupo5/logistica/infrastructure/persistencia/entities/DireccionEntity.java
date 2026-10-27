@@ -41,4 +41,10 @@ public class DireccionEntity {
 
   @Column(name = "codigo_postal", nullable = false, columnDefinition = "TEXT")
   private String codigoPostal;
+
+  @Column(name = "latitud")
+  private Double latitud;
+
+  @Column(name = "longitud")
+  private Double longitud;
 }

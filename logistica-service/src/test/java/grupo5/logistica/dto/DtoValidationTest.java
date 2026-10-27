@@ -23,6 +23,7 @@ import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -215,6 +216,19 @@ class DtoValidationTest {
             .isEmpty());
   }
 
+  @Test
+  void cambioEstadoEntrega_fotoNulaEnLaLista_violacion() {
+    List<String> fotos = new ArrayList<>();
+    fotos.add("https://donatrack.org/evidencia-1.png");
+    fotos.add(null);
+    assertFalse(
+        validator
+            .validate(
+                new CambioEstadoEntregaRequestDTO(
+                    EstadoEntrega.ENTREGADA, "Comedor Infantil", null, null, fotos))
+            .isEmpty());
+  }
+
   // ======================== DireccionDTO ========================
 
   @Test
@@ -258,7 +272,10 @@ class DtoValidationTest {
 
   @Test
   void adjuntarFoto_urlNula_violacion() {
-    assertFalse(validator.validate(new AdjuntarFotoRecepcionRequestDTO(null)).isEmpty());
+    assertFalse(validator.validate(new AdjuntarFotoRecepcionRequestDTO((String) null)).isEmpty());
+    assertFalse(
+        validator.validate(new AdjuntarFotoRecepcionRequestDTO((List<String>) null)).isEmpty());
+    assertFalse(validator.validate(new AdjuntarFotoRecepcionRequestDTO(List.of())).isEmpty());
   }
 
   // ======================== AgregarEntregaRutaRequestDTO ========================

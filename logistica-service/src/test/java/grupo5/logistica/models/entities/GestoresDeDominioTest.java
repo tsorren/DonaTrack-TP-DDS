@@ -88,10 +88,27 @@ class GestoresDeDominioTest {
     entrega.iniciarRuta("chofer");
 
     GestorDeEntregas.cambiarEstado(
-        new ConfirmacionRecepcion(entrega, "beneficiaria", "https://foto.test/recepcion.jpg"));
+        new ConfirmacionRecepcion(
+            entrega,
+            "beneficiaria",
+            List.of("https://foto.test/recepcion-1.jpg", "https://foto.test/recepcion-2.jpg")));
 
     assertEquals(EstadoEntrega.ENTREGADA, entrega.getEstadoActual());
-    assertEquals("https://foto.test/recepcion.jpg", entrega.getFotoRecepcionUrl());
+    assertEquals("https://foto.test/recepcion-1.jpg", entrega.getFotoRecepcionUrl());
+    assertEquals(
+        List.of("https://foto.test/recepcion-1.jpg", "https://foto.test/recepcion-2.jpg"),
+        entrega.getFotosRecepcion());
+  }
+
+  @Test
+  void gestorDeEntregasRechazaConfirmacionSinFotosYNoCambiaEstado() {
+    Entrega entrega = crearEntrega();
+    entrega.iniciarRuta("chofer");
+
+    ConfirmacionRecepcion sinFotos = new ConfirmacionRecepcion(entrega, "beneficiaria", List.of());
+    assertThrows(ValidationException.class, () -> GestorDeEntregas.cambiarEstado(sinFotos));
+    assertEquals(EstadoEntrega.EN_TRASLADO, entrega.getEstadoActual());
+    assertTrue(entrega.getDomainEvents().isEmpty());
   }
 
   @Test
@@ -202,7 +219,7 @@ class GestoresDeDominioTest {
     GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega), "Ada Lovelace");
 
     // Resolvemos la entrega pasándola a ENTREGADA
-    entrega.confirmarEntrega("Comedor");
+    entrega.confirmarEntrega("Comedor", "https://foto.test/comedor.jpg");
 
     GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega));
 
@@ -225,8 +242,8 @@ class GestoresDeDominioTest {
     GestorDeRutas.agregarEntrega(ruta, entrega2);
     GestorDeRutas.iniciarRuta(ruta, camion, chofer, List.of(entrega1, entrega2), "Ada Lovelace");
 
-    entrega1.confirmarEntrega("Comedor 1");
-    entrega2.confirmarEntrega("Comedor 2");
+    entrega1.confirmarEntrega("Comedor 1", "https://foto.test/comedor1.jpg");
+    entrega2.confirmarEntrega("Comedor 2", "https://foto.test/comedor2.jpg");
 
     GestorDeRutas.completarRuta(ruta, camion, chofer, List.of(entrega2, entrega1));
 

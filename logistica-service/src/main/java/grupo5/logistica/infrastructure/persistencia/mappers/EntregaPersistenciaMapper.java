@@ -8,6 +8,7 @@ import grupo5.logistica.infrastructure.persistencia.entities.PaisEntity;
 import grupo5.logistica.infrastructure.persistencia.entities.ProvinciaEntity;
 import grupo5.logistica.models.entities.entregas.CambioEstadoEntrega;
 import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.rutas.direccion.CoordenadasGeograficas;
 import grupo5.logistica.models.entities.rutas.direccion.Direccion;
 import grupo5.logistica.models.entities.rutas.direccion.Localidad;
 import grupo5.logistica.models.entities.rutas.direccion.Pais;
@@ -52,11 +53,14 @@ public class EntregaPersistenciaMapper {
     entity.setHoraArribo(aInstantUtc(domain.getHoraArribo()));
     entity.setHoraSalida(aInstantUtc(domain.getHoraSalida()));
     entity.setFotoRecepcionUrl(domain.getFotoRecepcionUrl());
+    sincronizarFotos(domain, entity);
     entity.setVolumenTotalM3((double) domain.getVolumenTotalM3());
     entity.setPesoTotalKg((double) domain.getPesoTotalKG());
 
     if (existing == null || existing.getDireccion() == null) {
       entity.setDireccion(direccionParaCreacion);
+    } else if (domain.getDestino() != null) {
+      aplicarCoordenadas(domain.getDestino(), existing.getDireccion());
     }
     if (existing == null && domain.getVersion() != null) {
       entity.setVersion(domain.getVersion());
@@ -79,6 +83,7 @@ public class EntregaPersistenciaMapper {
     dir.setDepartamento(destino.departamento());
     dir.setCodigoPostal(destino.codigoPostal());
     dir.setLocalidad(localidadEntity);
+    aplicarCoordenadas(destino, dir);
     return dir;
   }
 
@@ -100,6 +105,8 @@ public class EntregaPersistenciaMapper {
                             c.getActor()))
                 .toList();
 
+    List<String> fotos = resolverFotosDesdeEntidad(entity);
+
     return new Entrega(
         entity.getIdEntrega(),
         entity.getIdRuta(),
@@ -110,10 +117,44 @@ public class EntregaPersistenciaMapper {
         historial,
         aLocalDateTimeUtc(entity.getHoraArribo()),
         aLocalDateTimeUtc(entity.getHoraSalida()),
-        entity.getFotoRecepcionUrl(),
+        fotos,
         entity.getPesoTotalKg() != null ? entity.getPesoTotalKg().floatValue() : 0f,
         entity.getVolumenTotalM3() != null ? entity.getVolumenTotalM3().floatValue() : 0f,
         entity.getVersion());
+  }
+
+  private static List<String> resolverFotosDesdeEntidad(EntregaEntity entity) {
+    if (entity.getFotosRecepcion() != null && !entity.getFotosRecepcion().isEmpty()) {
+      return entity.getFotosRecepcion();
+    }
+    if (entity.getFotoRecepcionUrl() != null && !entity.getFotoRecepcionUrl().isBlank()) {
+      return List.of(entity.getFotoRecepcionUrl());
+    }
+    return List.of();
+  }
+
+  private static void sincronizarFotos(Entrega domain, EntregaEntity entity) {
+    List<String> persistidas = entity.getFotosRecepcion();
+    if (persistidas == null) {
+      persistidas = new ArrayList<>();
+      entity.setFotosRecepcion(persistidas);
+    }
+    persistidas.clear();
+    List<String> delDominio = domain.getFotosRecepcion();
+    if (delDominio != null && !delDominio.isEmpty()) {
+      persistidas.addAll(delDominio);
+    }
+  }
+
+  private static void aplicarCoordenadas(Direccion destino, DireccionEntity dirEntity) {
+    CoordenadasGeograficas coords = destino.coordenadas();
+    if (coords != null) {
+      dirEntity.setLatitud(coords.latitud());
+      dirEntity.setLongitud(coords.longitud());
+    } else {
+      dirEntity.setLatitud(null);
+      dirEntity.setLongitud(null);
+    }
   }
 
   private static Direccion mapearDireccion(DireccionEntity dirEntity) {
@@ -127,6 +168,10 @@ public class EntregaPersistenciaMapper {
     Pais pais = new Pais(paisEntity != null ? paisEntity.getNombre() : "");
     Provincia provincia = new Provincia(provEntity != null ? provEntity.getNombre() : "", pais);
     Localidad localidad = new Localidad(locEntity != null ? locEntity.getNombre() : "", provincia);
+    CoordenadasGeograficas coordenadas =
+        dirEntity.getLatitud() != null && dirEntity.getLongitud() != null
+            ? new CoordenadasGeograficas(dirEntity.getLatitud(), dirEntity.getLongitud())
+            : null;
 
     return new Direccion(
         dirEntity.getCalle(),
@@ -134,7 +179,8 @@ public class EntregaPersistenciaMapper {
         dirEntity.getPiso() != null ? dirEntity.getPiso().intValue() : null,
         dirEntity.getDepartamento(),
         dirEntity.getCodigoPostal(),
-        localidad);
+        localidad,
+        coordenadas);
   }
 
   private static void sincronizarHistorial(Entrega domain, EntregaEntity entity) {

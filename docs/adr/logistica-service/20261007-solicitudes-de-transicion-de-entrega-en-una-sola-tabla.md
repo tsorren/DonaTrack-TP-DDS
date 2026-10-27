@@ -28,3 +28,7 @@ Para que los nulos no sean arbitrarios, un `CHECK` exige qué columnas van compl
 
 * **Positivas:** una tabla en lugar de cuatro, y el historial de una entrega se lee sin joins.
 * **Negativas:** la tabla queda desnormalizada y con columnas nulas. Agregar una subclase con datos nuevos implica sumar columnas y actualizar el `CHECK` con una migración.
+
+## Nota de implementación (2026-10-26)
+
+Desde RF-12 (E5), `ConfirmacionRecepcion` trae una o más fotos. La migración `V4__auditoria_fotos_confirmacion.sql` agrega la tabla hija `solicitud_transicion_foto_recepcion` con todas las fotos en orden, igual que `entrega_foto_recepcion` (V3). `foto_recepcion_url` se conserva con la primera foto. La decisión de una sola tabla con `CHECK` por tipo no cambia.
