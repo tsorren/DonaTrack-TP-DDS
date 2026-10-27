@@ -2,7 +2,7 @@
 -- La auditoría de solicitudes de transición guardaba una sola foto por confirmación de
 -- recepción (columna foto_recepcion_url). Desde RF-12 una confirmación lleva varias fotos:
 -- se guardan todas en una tabla hija, con el mismo criterio que entrega_foto_recepcion (V3).
--- foto_recepcion_url se conserva con la primera foto por compatibilidad y por el CHECK de V1.
+-- foto_recepcion_url se conserva con la primera foto por compatibilidad con lecturas existentes.
 
 CREATE TABLE solicitud_transicion_foto_recepcion (
     id_solicitud UUID NOT NULL REFERENCES solicitud_transicion_entrega (id_solicitud) ON DELETE CASCADE,
