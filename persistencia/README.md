@@ -185,12 +185,34 @@ minio:
 
 ---
 
+## MongoDB (logistica-service)
+
+Desde la Entrega 5, `logistica-service` corre con el perfil `mongo` en `docker-compose.yml` y `docker-compose.preprod.yml`. El schema `logistica` de PostgreSQL y sus migraciones quedan congelados para el perfil `postgres`.
+
+- Imagen `mongo:7.0` con un replica set de un nodo (`rs0`), que `MongoTransactionManager` necesita para las transacciones multi-documento. El healthcheck ([`mongo/replica-set.js`](mongo/replica-set.js)) lo inicia en el primer arranque y da sano recién cuando el nodo es primario.
+- Con usuarios y replica set, `mongod` exige un keyfile. Como hay un solo nodo, el contenedor lo genera en cada arranque y no se versiona.
+- Usuarios: root (`MONGO_ROOT_USER` / `MONGO_ROOT_PASSWORD`) y el de la aplicación (`LOGISTICA_MONGO_USER` / `LOGISTICA_MONGO_PASSWORD`, con `readWrite` solo sobre la base `logistica`), que crea [`mongo/init/01-usuario-logistica.js`](mongo/init/01-usuario-logistica.js) cuando el volumen está vacío. Para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`).
+- `logistica-service` recibe `SPRING_DATA_MONGODB_URI` armada con esas variables (`authSource=logistica`, `replicaSet=rs0`). Las contraseñas van dentro de la URI: solo letras, números y guiones.
+
+Acceso desde la máquina (Compass o `mongosh`), con el compose local, que publica el puerto 27017:
+
+```
+mongodb://<LOGISTICA_MONGO_USER>:<LOGISTICA_MONGO_PASSWORD>@localhost:27017/logistica?authSource=logistica&directConnection=true
+```
+
+`directConnection=true` hace falta porque el replica set anuncia el host `mongodb`, que solo resuelve dentro de la red de Docker. Otro contenedor que ocupe el 27017 (por ejemplo un Mongo local viejo) tiene que estar apagado.
+
+---
+
 ## Archivos relevantes
 
 ```
 persistencia/
-└── init-db/
-    └── 01-init-schemas-roles.sql         ← schemas + roles + permisos (idempotente)
+├── init-db/
+│   └── 01-init-schemas-roles.sql         ← schemas + roles + permisos (idempotente)
+└── mongo/
+    ├── init/01-usuario-logistica.js      ← usuario readWrite de logistica (primer arranque)
+    └── replica-set.js                    ← healthcheck: inicia rs0 y espera al primario
 
 notificaciones-service/src/main/resources/
 ├── application.properties                 ← perfil default (en memoria, sin BD)

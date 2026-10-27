@@ -1,0 +1,102 @@
+package grupo5.logistica.infrastructure.persistencia.mongo.adapters; // NOSONAR
+
+import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.AsignacionSubdocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.CamionDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.EntregaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.documents.RutaDocument;
+import grupo5.logistica.infrastructure.persistencia.mongo.mappers.EntregaMongoMapper;
+import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataCamionMongoRepository;
+import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataEntregaMongoRepository;
+import grupo5.logistica.infrastructure.persistencia.mongo.repositories.SpringDataRutaMongoRepository;
+import grupo5.logistica.models.entities.entregas.Entrega;
+import grupo5.logistica.models.entities.entregas.EstadoEntrega;
+import grupo5.logistica.models.repositories.IEntregasRepository;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.stereotype.Repository;
+
+@SuppressWarnings("java:S120")
+@Repository
+@Profile("mongo")
+public class EntregasRepositoryMongoAdapter
+    extends CrudRepositoryMongoAdapter<Entrega, EntregaDocument, SpringDataEntregaMongoRepository>
+    implements IEntregasRepository {
+
+  private final SpringDataRutaMongoRepository rutaRepo;
+  private final SpringDataCamionMongoRepository camionRepo;
+
+  public EntregasRepositoryMongoAdapter(
+      SpringDataEntregaMongoRepository springDataRepo,
+      SpringDataRutaMongoRepository rutaRepo,
+      SpringDataCamionMongoRepository camionRepo,
+      EntregaMongoMapper mapper) {
+    super(springDataRepo, mapper::toDocument, mapper::toDomain);
+    this.rutaRepo = rutaRepo;
+    this.camionRepo = camionRepo;
+  }
+
+  /** Copia fecha, camión y patente del día en que se asignó; una vez completa no se pisa. */
+  @Override
+  protected void completarAntesDeGuardar(EntregaDocument doc) {
+    AsignacionSubdocument asignacion = doc.getAsignacion();
+    if (asignacion == null || asignacion.estaCompleta()) {
+      return;
+    }
+    RutaDocument ruta = buscarExistente(rutaRepo, asignacion.getIdRuta());
+    CamionDocument camion = buscarExistente(camionRepo, ruta.getIdCamion());
+    asignacion.completarCon(ruta, camion);
+  }
+
+  private static <D> D buscarExistente(MongoRepository<D, UUID> repo, UUID id) {
+    return repo.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
+  }
+
+  @Override
+  public List<Entrega> findByEstado(EstadoEntrega estado) {
+    if (estado == null) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findByEstado(estado));
+  }
+
+  @Override
+  public List<Entrega> findByRutaId(UUID rutaId) {
+    if (rutaId == null) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findByAsignacionIdRutaOrderByIdAsc(rutaId));
+  }
+
+  @Override
+  public List<Entrega> findSinRuta() {
+    return aDominio(springDataRepo.findByAsignacionIsNull());
+  }
+
+  @Override
+  public boolean existsByIdDonacion(UUID idDonacion) {
+    if (idDonacion == null) {
+      return false;
+    }
+    return springDataRepo.existsByIdDonacion(idDonacion);
+  }
+
+  @Override
+  public Optional<Entrega> findByIdDonacion(UUID idDonacion) {
+    if (idDonacion == null) {
+      return Optional.empty();
+    }
+    return springDataRepo.findByIdDonacion(idDonacion).map(toDomain);
+  }
+
+  @Override
+  public List<Entrega> findByIdBeneficiaria(UUID idBeneficiaria) {
+    if (idBeneficiaria == null) {
+      return List.of();
+    }
+    return aDominio(springDataRepo.findByIdBeneficiaria(idBeneficiaria));
+  }
+}

@@ -14,6 +14,7 @@ public final class Direccion {
   private String departamento;
   private String codigoPostal;
   private final Localidad localidad;
+  private CoordenadasGeograficas coordenadas;
 
   public Direccion(
       String calle,
@@ -22,6 +23,17 @@ public final class Direccion {
       String departamento,
       String codigoPostal,
       Localidad localidad) {
+    this(calle, altura, piso, departamento, codigoPostal, localidad, null);
+  }
+
+  public Direccion(
+      String calle,
+      Integer altura,
+      Integer piso,
+      String departamento,
+      String codigoPostal,
+      Localidad localidad,
+      CoordenadasGeograficas coordenadas) {
     validarDireccion(calle, altura, codigoPostal, localidad);
     this.calle = calle;
     this.altura = altura;
@@ -29,6 +41,7 @@ public final class Direccion {
     this.departamento = departamento;
     this.codigoPostal = codigoPostal;
     this.localidad = localidad;
+    this.coordenadas = coordenadas;
   }
 
   public String calle() {
@@ -55,6 +68,18 @@ public final class Direccion {
     return localidad;
   }
 
+  public CoordenadasGeograficas coordenadas() {
+    return coordenadas;
+  }
+
+  public boolean tieneCoordenadas() {
+    return coordenadas != null;
+  }
+
+  public void actualizarCoordenadas(CoordenadasGeograficas nuevasCoordenadas) {
+    this.coordenadas = nuevasCoordenadas;
+  }
+
   private static final String VALOR_ANONIMIZADO = "ANONIMIZADO";
 
   public void anonimizar() {
@@ -63,6 +88,7 @@ public final class Direccion {
     this.piso = 0;
     this.departamento = VALOR_ANONIMIZADO;
     this.codigoPostal = VALOR_ANONIMIZADO;
+    this.coordenadas = null;
     this.localidad.anonimizar();
   }
 
