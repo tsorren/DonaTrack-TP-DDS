@@ -18,7 +18,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@Profile("!postgres")
+@Profile("!postgres & !mongo")
 public class EntregasRepository extends CrudRepositoryEnMemoria<Entrega>
     implements IEntregasRepository {
 

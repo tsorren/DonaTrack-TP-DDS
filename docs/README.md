@@ -173,7 +173,7 @@ docs/
 * 🧪 **Harness Evals — Output Contract, Critical Failures, A/B:** [IA/evals/README.md](IA/evals/README.md)
 * ⚖️ **ADR Governance — Two-Gate Rule, lifecycle, MADR:** [adr/README.md](adr/README.md)
 * 📝 **Índice de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
-* 🗄️ **Arquitectura de Persistencia PostgreSQL:** [../persistencia/README.md](../persistencia/README.md)
+* 🗄️ **Arquitectura de Persistencia (PostgreSQL y MongoDB de logística):** [../persistencia/README.md](../persistencia/README.md)
 * ⚙️ **Workflows y Webhooks de n8n:** [../n8n/README.md](../n8n/README.md)
 * 📮 **Colecciones Postman y Newman CLI:** [../postman/README.md](../postman/README.md)
 * 🔒 **Auth Service (Bounded Context Reservado):** [../auth-service/README.md](../auth-service/README.md)

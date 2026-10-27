@@ -95,3 +95,7 @@ Se adopta la alternativa **A**:
 2. `GET <URL>/actuator/health` responde `UP` con la instancia activa. **Pendiente: la URL todavía no está publicada.**
 3. Con la instancia activa, los endpoints de `docs/arquitectura/contratos/openapi-logistica.yaml` responden en la URL pública.
 4. Al publicar la URL, registrarla en `docs/entrega-4/arquitectura/arquitectura-sistema.md` (§7) y en este ADR.
+
+## Nota de actualización (2026-10-26)
+
+Desde E5, Logística persiste en MongoDB ([ADR de persistencia documental](20261025-persistencia-documental-de-logistica-en-mongodb.md)). Eso cambia los puntos 1 y 2 de la decisión: en Render corre con el perfil `mongo`, la base es MongoDB Atlas M0 en lugar de Neon y la conexión se inyecta por `SPRING_DATA_MONGODB_URI`. Flyway no corre con ese perfil. RabbitMQ, la identidad ante el broker, las credenciales fuera del repo y la pausa entre defensas no cambian.
