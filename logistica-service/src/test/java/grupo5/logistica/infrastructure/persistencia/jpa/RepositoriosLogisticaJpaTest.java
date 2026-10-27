@@ -62,7 +62,9 @@ import grupo5.logistica.models.repositories.IRutasRepository;
 import grupo5.logistica.models.repositories.ISolicitudPlanificacionRepository;
 import grupo5.logistica.models.repositories.ISolicitudesTransicionEntregaRepository;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -110,9 +112,11 @@ class RepositoriosLogisticaJpaTest {
   @TestConfiguration
   static class Reloj {
 
+    static final Clock RELOJ = Clock.fixed(Instant.parse("2026-10-24T13:00:00Z"), ZoneOffset.UTC);
+
     @Bean
     Clock reloj() {
-      return Clock.systemUTC();
+      return RELOJ;
     }
   }
 
@@ -434,6 +438,7 @@ class RepositoriosLogisticaJpaTest {
             .orElseThrow();
     assertEquals(fotos, auditoria.getFotosRecepcion());
     assertEquals(fotos.getFirst(), auditoria.getFotoRecepcionUrl());
+    assertEquals(Reloj.RELOJ.instant(), auditoria.getOcurrioEn());
   }
 
   @Test
