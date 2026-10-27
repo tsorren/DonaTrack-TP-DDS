@@ -16,6 +16,7 @@ import grupo5.incentivos.fixtures.IncentivosFixtures;
 import grupo5.incentivos.fixtures.MisionMother;
 import grupo5.incentivos.infrastructure.clients.NotificacionesFeignClient;
 import grupo5.incentivos.infrastructure.persistencia.adapters.DonanteIncentivosRepositoryJpaAdapter;
+import grupo5.incentivos.infrastructure.persistencia.adapters.EventosProcesadosJpaAdapter;
 import grupo5.incentivos.infrastructure.persistencia.mappers.DonanteIncentivosPersistenciaMapper;
 import grupo5.incentivos.infrastructure.persistencia.mappers.MisionPersistenciaMapper;
 import grupo5.incentivos.models.entities.donante.CategoriaDonante;
@@ -74,6 +75,7 @@ import org.testcontainers.utility.MountableFile;
   MisionPersistenciaMapper.class,
   DonanteIncentivosPersistenciaMapper.class,
   DonanteIncentivosRepositoryJpaAdapter.class,
+  EventosProcesadosJpaAdapter.class,
   GestionDonanteService.class,
   InsigniasService.class,
   MisionesDonacionService.class,

@@ -17,6 +17,7 @@ import grupo5.incentivos.services.IGestionDonanteService;
 import grupo5.incentivos.services.IMisionesDonacionService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -25,7 +26,10 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.lang.Nullable;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 /**
@@ -38,7 +42,12 @@ import org.springframework.stereotype.Service;
  * <p>No hay try/catch por evento: si el payload no cumple el contrato o el procesamiento falla, la
  * excepción sale del método y el container de Rabbit rechaza el mensaje sin reencolarlo, porque la
  * {@code rabbitListenerContainerFactory} tiene {@code defaultRequeueRejected=false} (ver {@link
- * RabbitMQConfig}).
+ * RabbitMQConfig}). Cada cola declara una cola de mensajes muertos (DLQ), donde termina el mensaje
+ * rechazado.
+ *
+ * <p>Las donaciones segmentadas y recibidas suman en los totales del donante, así que no son
+ * idempotentes: se deduplican por messageId con el inbox ({@code IEventosProcesados}). Las demás
+ * (alta, baja, nombre) lo son por construcción y no lo necesitan.
  */
 @Service
 @ConditionalOnProperty(name = "incentivos.rabbitmq.enabled", havingValue = "true")
@@ -77,7 +86,9 @@ public class IncentivosEventosListener {
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONACION_SEGMENTADA)
-  public void onDonacionSegmentada(EventoDonacionSegmentadaV1 evento) {
+  public void onDonacionSegmentada(
+      EventoDonacionSegmentadaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
     validar(evento);
     log.info("Evento donacion.segmentada recibido (donante {})", evento.donanteId());
 
@@ -88,16 +99,20 @@ public class IncentivosEventosListener {
     LocalDate fecha = evento.fecha().atZone(ZoneId.systemDefault()).toLocalDate();
 
     misionesDonacionService.procesarDonacion(
-        new NuevaDonacionRequest(evento.donanteId(), categorias, cantidadBienes, fecha));
+        new NuevaDonacionRequest(evento.donanteId(), categorias, cantidadBienes, fecha),
+        resolverEventId(messageId));
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONACION_RECIBIDA)
-  public void onDonacionRecibida(EventoDonacionRecibidaV1 evento) {
+  public void onDonacionRecibida(
+      EventoDonacionRecibidaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
     validar(evento);
     log.info("Evento donacion.recibida recibido (donante {})", evento.donanteId());
 
     misionesDonacionService.procesarDonacionExitosa(
-        new DonacionExitosaRequest(evento.donanteId(), evento.personaBeneficiariaId()));
+        new DonacionExitosaRequest(evento.donanteId(), evento.personaBeneficiariaId()),
+        resolverEventId(messageId));
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA)
@@ -129,6 +144,24 @@ public class IncentivosEventosListener {
         throw e;
       }
       log.info("El donante {} ya no existe en incentivos: la baja ya estaba aplicada", donanteId);
+    }
+  }
+
+  /**
+   * La clave de deduplicación es el messageId AMQP que fija el emisor (donaciones-service lo genera
+   * en cada publicación). Sin messageId no hay clave estable: se devuelve null y el evento se
+   * procesa sin deduplicar, igual que en notificaciones-service.
+   */
+  @Nullable
+  private static UUID resolverEventId(@Nullable String messageId) {
+    if (messageId == null || messageId.isBlank()) {
+      log.warn("[INBOX_SIN_CLAVE] Evento sin messageId: se procesa sin deduplicar");
+      return null;
+    }
+    try {
+      return UUID.fromString(messageId);
+    } catch (IllegalArgumentException e) {
+      return UUID.nameUUIDFromBytes(messageId.getBytes(StandardCharsets.UTF_8));
     }
   }
 

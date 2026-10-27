@@ -119,11 +119,13 @@ class IncentivosEventosListenerTest {
             new EventoDonacionSegmentadaV1.Item("ALIMENTOS", 5));
     EventoDonacionSegmentadaV1 evento = new EventoDonacionSegmentadaV1(donanteId, items, fecha);
 
-    listener.onDonacionSegmentada(evento);
+    UUID messageId = UUID.randomUUID();
+
+    listener.onDonacionSegmentada(evento, messageId.toString());
 
     ArgumentCaptor<NuevaDonacionRequest> captor =
         ArgumentCaptor.forClass(NuevaDonacionRequest.class);
-    verify(misionesDonacionService).procesarDonacion(captor.capture());
+    verify(misionesDonacionService).procesarDonacion(captor.capture(), eq(messageId));
 
     NuevaDonacionRequest req = captor.getValue();
     assertEquals(donanteId, req.donanteId());
@@ -133,17 +135,46 @@ class IncentivosEventosListenerTest {
   }
 
   @Test
+  @DisplayName("onDonacionRecibida sin messageId delega sin clave de deduplicación")
+  void onDonacionRecibida_sinMessageId_delegaConEventoIdNulo() {
+    EventoDonacionRecibidaV1 evento =
+        new EventoDonacionRecibidaV1(UUID.randomUUID(), UUID.randomUUID());
+
+    listener.onDonacionRecibida(evento, null);
+    listener.onDonacionRecibida(evento, "  ");
+
+    verify(misionesDonacionService, times(2)).procesarDonacionExitosa(any(), isNull());
+  }
+
+  @Test
+  @DisplayName("onDonacionRecibida con messageId que no es UUID deriva una clave estable")
+  void onDonacionRecibida_messageIdNoUuid_derivaLaMismaClaveSiempre() {
+    EventoDonacionRecibidaV1 evento =
+        new EventoDonacionRecibidaV1(UUID.randomUUID(), UUID.randomUUID());
+
+    listener.onDonacionRecibida(evento, "mensaje-123");
+    listener.onDonacionRecibida(evento, "mensaje-123");
+
+    ArgumentCaptor<UUID> captor = ArgumentCaptor.forClass(UUID.class);
+    verify(misionesDonacionService, times(2)).procesarDonacionExitosa(any(), captor.capture());
+    assertNotNull(captor.getAllValues().get(0));
+    assertEquals(captor.getAllValues().get(0), captor.getAllValues().get(1));
+  }
+
+  @Test
   @DisplayName("onDonacionRecibida delega en procesarDonacionExitosa")
   void onDonacionRecibida_exitoso() {
     UUID donanteId = UUID.randomUUID();
     UUID beneficiarioId = UUID.randomUUID();
     EventoDonacionRecibidaV1 evento = new EventoDonacionRecibidaV1(donanteId, beneficiarioId);
 
-    listener.onDonacionRecibida(evento);
+    UUID messageId = UUID.randomUUID();
+
+    listener.onDonacionRecibida(evento, messageId.toString());
 
     ArgumentCaptor<DonacionExitosaRequest> captor =
         ArgumentCaptor.forClass(DonacionExitosaRequest.class);
-    verify(misionesDonacionService).procesarDonacionExitosa(captor.capture());
+    verify(misionesDonacionService).procesarDonacionExitosa(captor.capture(), eq(messageId));
 
     DonacionExitosaRequest req = captor.getValue();
     assertEquals(donanteId, req.donanteId());

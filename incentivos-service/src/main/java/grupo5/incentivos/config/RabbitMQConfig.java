@@ -8,11 +8,16 @@ import grupo5.incentivos.dto.events.EventoIncentivoDonanteInactivoV1;
 import grupo5.incentivos.dto.events.EventoIncentivoMisionCumplidaV1;
 import grupo5.incentivos.dto.events.EventoIncentivoSubioCategoriaV1;
 import grupo5.incentivos.dto.events.EventoPersonaSincronizadaV1;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Declarable;
+import org.springframework.amqp.core.Declarables;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
@@ -32,6 +37,12 @@ public class RabbitMQConfig {
   public static final String EXCHANGE_INCENTIVOS = "incentivos.exchange";
   public static final String EXCHANGE_DONACIONES = "donaciones.exchange";
 
+  // Dead Letter Exchange: recibe los mensajes que el listener rechazó sin reencolar.
+  public static final String DLX_INCENTIVOS = "incentivos.dlx";
+
+  // Cada cola suscriptora tiene su DLQ, que se llama igual más este sufijo.
+  public static final String SUFIJO_DLQ = ".dlq";
+
   // Colas suscriptoras
   public static final String QUEUE_INCENTIVOS_DONACION_SEGMENTADA =
       "incentivos.donacion-segmentada";
@@ -41,6 +52,14 @@ public class RabbitMQConfig {
   public static final String QUEUE_INCENTIVOS_DONANTE_REGISTRADO = "incentivos.donante-registrado";
   public static final String QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA =
       "incentivos.donante-dado-de-baja";
+
+  public static final List<String> COLAS_SUSCRIPTORAS =
+      List.of(
+          QUEUE_INCENTIVOS_DONACION_SEGMENTADA,
+          QUEUE_INCENTIVOS_DONACION_RECIBIDA,
+          QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA,
+          QUEUE_INCENTIVOS_DONANTE_REGISTRADO,
+          QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA);
 
   // Routing Keys consumidas
   public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
@@ -65,30 +84,58 @@ public class RabbitMQConfig {
     return new TopicExchange(EXCHANGE_DONACIONES, true, false);
   }
 
-  // --- Colas ---
+  @Bean
+  public TopicExchange incentivosDlx() {
+    return new TopicExchange(DLX_INCENTIVOS, true, false);
+  }
+
+  // --- Colas con Dead Letter ---
   @Bean
   public Queue queueIncentivosDonacionSegmentada() {
-    return new Queue(QUEUE_INCENTIVOS_DONACION_SEGMENTADA, true);
+    return colaConDlq(QUEUE_INCENTIVOS_DONACION_SEGMENTADA);
   }
 
   @Bean
   public Queue queueIncentivosDonacionRecibida() {
-    return new Queue(QUEUE_INCENTIVOS_DONACION_RECIBIDA, true);
+    return colaConDlq(QUEUE_INCENTIVOS_DONACION_RECIBIDA);
   }
 
   @Bean
   public Queue queueIncentivosPersonaSincronizada() {
-    return new Queue(QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA, true);
+    return colaConDlq(QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA);
   }
 
   @Bean
   public Queue queueIncentivosDonanteRegistrado() {
-    return new Queue(QUEUE_INCENTIVOS_DONANTE_REGISTRADO, true);
+    return colaConDlq(QUEUE_INCENTIVOS_DONANTE_REGISTRADO);
   }
 
   @Bean
   public Queue queueIncentivosDonanteDadoDeBaja() {
-    return new Queue(QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA, true);
+    return colaConDlq(QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA);
+  }
+
+  // --- Colas Dead Letter y sus bindings al DLX ---
+  @Bean
+  public Declarables deadLetterIncentivos(TopicExchange incentivosDlx) {
+    List<Declarable> declarables = new ArrayList<>();
+    for (String cola : COLAS_SUSCRIPTORAS) {
+      Queue dlq = new Queue(nombreDlq(cola), true);
+      declarables.add(dlq);
+      declarables.add(BindingBuilder.bind(dlq).to(incentivosDlx).with(nombreDlq(cola)));
+    }
+    return new Declarables(declarables);
+  }
+
+  private static String nombreDlq(String cola) {
+    return cola + SUFIJO_DLQ;
+  }
+
+  private static Queue colaConDlq(String nombre) {
+    return QueueBuilder.durable(nombre)
+        .withArgument("x-dead-letter-exchange", DLX_INCENTIVOS)
+        .withArgument("x-dead-letter-routing-key", nombreDlq(nombre))
+        .build();
   }
 
   // --- Bindings ---
