@@ -5,16 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import grupo5.common.exceptions.BusinessStateException;
-import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
-import grupo5.incentivos.dto.RegistrarDonanteRequest;
 import grupo5.incentivos.dto.events.EventoDonacionRecibidaV1;
 import grupo5.incentivos.dto.events.EventoDonacionSegmentadaV1;
-import grupo5.incentivos.dto.events.EventoDonanteDadoDeBajaV1;
-import grupo5.incentivos.dto.events.EventoDonanteRegistradoV1;
 import grupo5.incentivos.dto.events.EventoPersonaSincronizadaV1;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.services.IGestionDonanteService;
@@ -48,63 +43,6 @@ class IncentivosEventosListenerTest {
     validator = Validation.buildDefaultValidatorFactory().getValidator();
     listener =
         new IncentivosEventosListener(gestionDonanteService, misionesDonacionService, validator);
-  }
-
-  @Test
-  @DisplayName("onDonanteRegistrado mapea a RegistrarDonanteRequest y registra el donante")
-  void onDonanteRegistrado_exitoso() {
-    UUID donanteId = UUID.randomUUID();
-    UUID personaId = UUID.randomUUID();
-    String nombre = "Carlos Gardel";
-    EventoDonanteRegistradoV1 evento = new EventoDonanteRegistradoV1(donanteId, personaId, nombre);
-
-    listener.onDonanteRegistrado(evento);
-
-    ArgumentCaptor<RegistrarDonanteRequest> captor =
-        ArgumentCaptor.forClass(RegistrarDonanteRequest.class);
-    verify(gestionDonanteService).registrarDonante(captor.capture());
-
-    RegistrarDonanteRequest req = captor.getValue();
-    assertEquals(donanteId, req.idDonante());
-    assertEquals(personaId, req.idPersona());
-    assertEquals(nombre, req.nombre());
-  }
-
-  @Test
-  @DisplayName("onDonanteDadoDeBaja ejecuta darDeBaja con el donanteId correcto")
-  void onDonanteDadoDeBaja_exitoso() {
-    UUID donanteId = UUID.randomUUID();
-    EventoDonanteDadoDeBajaV1 evento = new EventoDonanteDadoDeBajaV1(donanteId);
-
-    listener.onDonanteDadoDeBaja(evento);
-
-    verify(gestionDonanteService).darDeBaja(donanteId);
-  }
-
-  @Test
-  @DisplayName("onDonanteDadoDeBaja absorbe idempotentemente DONANTE_INCENTIVOS_NO_ENCONTRADO")
-  void onDonanteDadoDeBaja_cuandoDonanteNoExiste_noLanzaExcepcion() {
-    UUID donanteId = UUID.randomUUID();
-    EventoDonanteDadoDeBajaV1 evento = new EventoDonanteDadoDeBajaV1(donanteId);
-
-    doThrow(new BusinessStateException(ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO))
-        .when(gestionDonanteService)
-        .darDeBaja(donanteId);
-
-    assertDoesNotThrow(() -> listener.onDonanteDadoDeBaja(evento));
-  }
-
-  @Test
-  @DisplayName("onDonanteDadoDeBaja propaga excepciones de negocio no esperadas para rechazo/DLQ")
-  void onDonanteDadoDeBaja_cuandoOcurreOtraExcepcionDeNegocio_propagaExcepcion() {
-    UUID donanteId = UUID.randomUUID();
-    EventoDonanteDadoDeBajaV1 evento = new EventoDonanteDadoDeBajaV1(donanteId);
-
-    doThrow(new BusinessStateException(ErrorCatalog.INSIGNIA_NO_ENCONTRADA))
-        .when(gestionDonanteService)
-        .darDeBaja(donanteId);
-
-    assertThrows(BusinessStateException.class, () -> listener.onDonanteDadoDeBaja(evento));
   }
 
   @Test
@@ -236,8 +174,9 @@ class IncentivosEventosListenerTest {
   @DisplayName(
       "validar lanza ConstraintViolationException cuando los campos obligatorios son nulos")
   void onCualquierEvento_conCamposInvalidos_lanzaConstraintViolationException() {
-    EventoDonanteRegistradoV1 invalido = new EventoDonanteRegistradoV1(null, null, " ");
+    EventoPersonaSincronizadaV1 invalido = new EventoPersonaSincronizadaV1(null, " ");
 
-    assertThrows(ConstraintViolationException.class, () -> listener.onDonanteRegistrado(invalido));
+    assertThrows(
+        ConstraintViolationException.class, () -> listener.onPersonaSincronizada(invalido));
   }
 }

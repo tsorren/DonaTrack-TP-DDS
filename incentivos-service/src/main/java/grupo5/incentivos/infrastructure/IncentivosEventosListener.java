@@ -1,16 +1,11 @@
 package grupo5.incentivos.infrastructure;
 
-import grupo5.common.exceptions.BusinessStateException;
-import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.config.RabbitMQConfig;
 import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
-import grupo5.incentivos.dto.RegistrarDonanteRequest;
 import grupo5.incentivos.dto.events.EventoDonacionRecibidaV1;
 import grupo5.incentivos.dto.events.EventoDonacionSegmentadaV1;
-import grupo5.incentivos.dto.events.EventoDonanteDadoDeBajaV1;
-import grupo5.incentivos.dto.events.EventoDonanteRegistradoV1;
 import grupo5.incentivos.dto.events.EventoPersonaSincronizadaV1;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.services.IGestionDonanteService;
@@ -46,8 +41,11 @@ import org.springframework.stereotype.Service;
  * rechazado.
  *
  * <p>Las donaciones segmentadas y recibidas suman en los totales del donante, así que no son
- * idempotentes: se deduplican por messageId con el inbox ({@code IEventosProcesados}). Las demás
- * (alta, baja, nombre) lo son por construcción y no lo necesitan.
+ * idempotentes: se deduplican por messageId con el inbox ({@code IEventosProcesados}). El cambio de
+ * nombre lo es por construcción y no lo necesita.
+ *
+ * <p>El alta y la baja del donante no están acá sino en {@link DonanteCicloDeVidaListener}: tienen
+ * que consumirse en orden, desde una sola cola y con un solo consumidor.
  */
 @Service
 @ConditionalOnProperty(name = "incentivos.rabbitmq.enabled", havingValue = "true")
@@ -66,23 +64,6 @@ public class IncentivosEventosListener {
     this.gestionDonanteService = gestionDonanteService;
     this.misionesDonacionService = misionesDonacionService;
     this.validator = validator;
-  }
-
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONANTE_REGISTRADO)
-  public void onDonanteRegistrado(EventoDonanteRegistradoV1 evento) {
-    validar(evento);
-    log.info("Evento donante.registrado recibido (donante {})", evento.donanteId());
-
-    gestionDonanteService.registrarDonante(
-        new RegistrarDonanteRequest(evento.donanteId(), evento.personaId(), evento.nombre()));
-  }
-
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA)
-  public void onDonanteDadoDeBaja(EventoDonanteDadoDeBajaV1 evento) {
-    validar(evento);
-    log.info("Evento donante.dado-de-baja recibido (donante {})", evento.donanteId());
-
-    darDeBaja(evento.donanteId());
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONACION_SEGMENTADA)
@@ -133,17 +114,6 @@ public class IncentivosEventosListener {
     if (!evento.denominacion().equals(donante.get().getNombre())) {
       gestionDonanteService.modificarDonante(
           donante.get().getId(), new ModificarDonanteRequest(evento.denominacion()));
-    }
-  }
-
-  private void darDeBaja(UUID donanteId) {
-    try {
-      gestionDonanteService.darDeBaja(donanteId);
-    } catch (BusinessStateException e) {
-      if (e.getError() != ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO) {
-        throw e;
-      }
-      log.info("El donante {} ya no existe en incentivos: la baja ya estaba aplicada", donanteId);
     }
   }
 

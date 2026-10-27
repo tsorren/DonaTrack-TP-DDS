@@ -49,17 +49,17 @@ public class RabbitMQConfig {
   public static final String QUEUE_INCENTIVOS_DONACION_RECIBIDA = "incentivos.donacion-recibida";
   public static final String QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA =
       "incentivos.persona-sincronizada";
-  public static final String QUEUE_INCENTIVOS_DONANTE_REGISTRADO = "incentivos.donante-registrado";
-  public static final String QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA =
-      "incentivos.donante-dado-de-baja";
+  // Alta y baja del donante comparten cola: RabbitMQ solo garantiza el orden dentro de una cola, y
+  // una baja seguida de un alta con el mismo id tiene que procesarse en el orden en que ocurrió.
+  public static final String QUEUE_INCENTIVOS_DONANTE_CICLO_DE_VIDA =
+      "incentivos.donante-ciclo-de-vida";
 
   public static final List<String> COLAS_SUSCRIPTORAS =
       List.of(
           QUEUE_INCENTIVOS_DONACION_SEGMENTADA,
           QUEUE_INCENTIVOS_DONACION_RECIBIDA,
           QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA,
-          QUEUE_INCENTIVOS_DONANTE_REGISTRADO,
-          QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA);
+          QUEUE_INCENTIVOS_DONANTE_CICLO_DE_VIDA);
 
   // Routing Keys consumidas
   public static final String ROUTING_KEY_DONACION_SEGMENTADA = "donacion.segmentada.v1";
@@ -106,13 +106,8 @@ public class RabbitMQConfig {
   }
 
   @Bean
-  public Queue queueIncentivosDonanteRegistrado() {
-    return colaConDlq(QUEUE_INCENTIVOS_DONANTE_REGISTRADO);
-  }
-
-  @Bean
-  public Queue queueIncentivosDonanteDadoDeBaja() {
-    return colaConDlq(QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA);
+  public Queue queueIncentivosDonanteCicloDeVida() {
+    return colaConDlq(QUEUE_INCENTIVOS_DONANTE_CICLO_DE_VIDA);
   }
 
   // --- Colas Dead Letter y sus bindings al DLX ---
@@ -167,18 +162,20 @@ public class RabbitMQConfig {
         .with(ROUTING_KEY_PERSONA_SINCRONIZADA);
   }
 
+  // Una sola cola con dos bindings: alta y baja del donante llegan en el orden en que se
+  // publicaron.
   @Bean
-  public Binding bindingIncentivosDonanteRegistrado(
-      Queue queueIncentivosDonanteRegistrado, TopicExchange donacionesExchange) {
-    return BindingBuilder.bind(queueIncentivosDonanteRegistrado)
+  public Binding bindingIncentivosDonanteCicloDeVidaRegistrado(
+      Queue queueIncentivosDonanteCicloDeVida, TopicExchange donacionesExchange) {
+    return BindingBuilder.bind(queueIncentivosDonanteCicloDeVida)
         .to(donacionesExchange)
         .with(ROUTING_KEY_DONANTE_REGISTRADO);
   }
 
   @Bean
-  public Binding bindingIncentivosDonanteDadoDeBaja(
-      Queue queueIncentivosDonanteDadoDeBaja, TopicExchange donacionesExchange) {
-    return BindingBuilder.bind(queueIncentivosDonanteDadoDeBaja)
+  public Binding bindingIncentivosDonanteCicloDeVidaDadoDeBaja(
+      Queue queueIncentivosDonanteCicloDeVida, TopicExchange donacionesExchange) {
+    return BindingBuilder.bind(queueIncentivosDonanteCicloDeVida)
         .to(donacionesExchange)
         .with(ROUTING_KEY_DONANTE_DADO_DE_BAJA);
   }
