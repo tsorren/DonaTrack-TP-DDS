@@ -301,7 +301,7 @@ Son cambios aditivos en servicios existentes (AGENTS.md §8.2: *Feature*). No ha
 | HB-11 | Donaciones | `usuarioId` en `Persona` y `GET /api/personas/me` | RI-AUTH-01/03 | D9 |
 | HB-12 | Donaciones | Estado "pendiente de aprobación" para entidades autorregistradas y endpoint de aprobación | RF-21 | D10 |
 | HB-13 | Los 4 servicios | Resource server JWT, `@PreAuthorize` y chequeos de pertenencia | RI-SVC-01..03 | D2, D13 |
-| HB-14 | Donaciones | Subida del CSV desde el navegador (multipart → MinIO, como D27) en lugar de una ruta del servidor, y progreso con resultado por fila (procesadas, creadas, actualizadas, con error) | RF-20 | Auditoría `[OBSERVED]` |
+| HB-14 | Donaciones | Subida del CSV desde el navegador (multipart → MinIO, como D27) en lugar de una ruta del servidor, y progreso con resultado por fila (procesadas, creadas, actualizadas, con error). **Avance:** la subida multipart → MinIO está implementada en la rama `E4_donaciones_minio`; falta el progreso con resultado por fila | RF-20 | Auditoría `[OBSERVED]` |
 | HB-15 | Donaciones | Paginado y búsqueda por nombre en `GET /api/entidades` (hoy devuelve todo, sin parámetros) | RF-06, RF-22 | Auditoría `[OBSERVED]` |
 | HB-16 | Logística | Listado de las entregas activas de un donante o una entidad en una sola llamada (hoy el seguimiento es por donación) | RF-09, RF-14 | Auditoría `[OBSERVED]` |
 

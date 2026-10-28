@@ -5,7 +5,9 @@
 - Deciders: Decisión Grupal
 - Tags: infraestructura, minio, s3, almacenamiento, donaciones, persistencia
 
-> **Nota de auditoría (2026-10-14):** el contenedor `minio` de `docker-compose.yml` y `docker-compose.preprod.yml` pertenece a `incentivos-service` (bucket `insignias`, variables `INCENTIVOS_MINIO_*`, `incentivos-service/src/main/java/grupo5/incentivos/infrastructure/imagenes/MinioInsigniasSeeder.java`). En `donaciones-service` no existen `StoragePort`, `MinioStorageAdapter` ni la dependencia `io.minio`: la decisión para padrones y fotos de bienes no está implementada.
+> **Nota de auditoría (2026-10-14):** el contenedor `minio` de `docker-compose.yml` y `docker-compose.preprod.yml` pertenecía solo a `incentivos-service` (bucket `insignias`). En `donaciones-service` no existían `StoragePort`, `MinioStorageAdapter` ni la dependencia `io.minio`.
+>
+> **Nota de implementación (2026-10-28, rama `E4_donaciones_minio`):** la decisión se implementó en `donaciones-service`. El estado del ADR sigue en `proposed` hasta que el equipo lo apruebe. Lo que difiere de la propuesta original está detallado en [Implementación](#implementación).
 
 ## Contexto y Problema
 
@@ -28,8 +30,8 @@ Almacenar estos archivos directamente en el sistema de archivos local (`/tmp` o 
 ## Alternativas Consideradas
 
 * **Almacenamiento de Objetos Compatible con S3 (MinIO):** Desplegar un contenedor MinIO en Docker Compose con buckets segregados:
-  - `donatrack-donantes-csv`: Bucket privado para CSVs de donantes, accesible solo por el backend.
-  - `donatrack-bienes-fotos`: Bucket con acceso mediante URLs prefirmadas temporales (`GET` con TTL de 2 horas).
+  - `donaciones-padrones` (propuesto como `donatrack-donantes-csv`): Bucket privado para CSVs de donantes, accesible solo por el backend.
+  - `donaciones-fotos-bienes` (propuesto como `donatrack-bienes-fotos`): Bucket privado con acceso mediante URLs prefirmadas temporales (`GET` con TTL de 2 horas).
   La base de datos relacional solo almacena la clave de objeto (`object_key VARCHAR(500)`).
 * **Almacenamiento en Base de Datos Relacional (`BYTEA` en PostgreSQL):** Guardar los binarios directamente en tablas SQL.
 * **Volumen Compartido en File System Local (NFS / Bind Mounts):** Guardar archivos en un directorio montado de disco.
@@ -55,7 +57,7 @@ MinIO es el estándar de la industria para almacenamiento de objetos compatible 
 
 Se valida mediante:
 1. Contenedor MinIO en `docker-compose.preprod.yml` con healthcheck activo.
-2. Tests unitarios del `MinioStorageAdapter` simulando operaciones con `MinioClient`.
+2. Tests de integración del `MinioStorageAdapter` contra un MinIO real (Testcontainers), en lugar de simular `MinioClient`.
 
 ## Análisis de Alternativas
 
@@ -85,3 +87,16 @@ Se valida mediante:
 
 #### Contras
 * Frágil en clústeres multi-pod; requiere configurar almacenamiento de red compartido complejo (NFS).
+
+## Implementación
+
+`[OBSERVED]` Implementado en la rama `E4_donaciones_minio`. Plan y decisiones: [`plan-minio-csv-y-fotos.md`](../../entrega-4/donaciones/plan-minio-csv-y-fotos.md) y [`bitacora-minio.md`](../../entrega-4/donaciones/bitacora-minio.md).
+
+* **Puerto y adapters:** `StoragePort` (`models/ports`) expresado en bucket y clave, sin tipos de MinIO: `guardar`, `abrir` (stream), `metadatos` y `urlTemporal` (`SUBIR`/`DESCARGAR`). `MinioStorageAdapter` con `donaciones.minio.enabled=true` (perfil `postgres`) y `StorageEnMemoria` en el modo por defecto. `StoragePort.validarClave` rechaza claves que podrían escapar del bucket (`..`, absolutas, barras invertidas).
+* **Buckets:** `donaciones-padrones` y `donaciones-fotos-bienes`, los dos privados. `InicializadorBuckets` los crea al arrancar, de forma idempotente.
+* **Credenciales:** un usuario de MinIO por servicio, creado por el contenedor `minio-init` (`persistencia/minio/init-usuarios.sh`). `donaciones-service` solo tiene acceso a `donaciones-*`. Ningún servicio usa las credenciales raíz.
+* **Padrones CSV:** `POST /api/donantes/archivos` recibe `multipart/form-data` (cambio de contrato no aditivo, aprobado). El servicio guarda el archivo con una clave UUID propia y `Archivo.path` pasa a ser esa clave (sin migración). El importador lee el objeto como stream.
+* **Fotos de bienes:** URL prefirmada. `POST /api/donaciones/fotos` devuelve una URL `PUT` (15 min) y una referencia `/fotos-bienes/<uuid>.<ext>` que va en `fotoUrl`. Al cargar la donación se valida con los metadatos del objeto (existe, JPEG/PNG/WebP, hasta 10 MB), porque un `PUT` prefirmado no limita el tamaño. Al leer, la referencia se firma como URL `GET` de 2 h. `foto_url TEXT` no cambia. Las URLs externas pasan sin cambios.
+* **Diferencias con la propuesta:** nombres de buckets con prefijo del servicio (para que la política del usuario sea `donaciones-*`); la base guarda la clave en las columnas existentes (`archivo.path`, `foto_url`) en lugar de una columna nueva `object_key VARCHAR(500)`; las fotos se suben con `PUT` prefirmado, además del `GET`.
+* **Consecuencia aceptada:** si la base falla después de subir el padrón queda un objeto huérfano en el bucket. Lo mismo pasa con una foto subida que nunca se usa en una donación.
+
