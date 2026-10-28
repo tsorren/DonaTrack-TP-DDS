@@ -18,12 +18,14 @@ public interface IEventosProcesados {
 
   /**
    * Guarda el donante y marca el evento como procesado en una única operación atómica: o quedan las
-   * dos cosas, o ninguna.
+   * dos cosas, o ninguna. Si hay outbox, también registra ahí los avisos de los eventos de dominio
+   * del donante, en esa misma operación.
    *
-   * @param eventoId identificador del evento (el messageId AMQP del emisor)
+   * @param eventoId identificador del evento (el messageId AMQP del emisor); si es {@code null} no
+   *     se deduplica, pero el guardado y los avisos siguen siendo atómicos
    * @param donante agregado ya modificado por el evento
-   * @return {@code true} si el evento era nuevo y el donante se guardó; {@code false} si el evento
-   *     ya estaba procesado, en cuyo caso no se guarda nada
+   * @return {@code true} si el donante se guardó; {@code false} si el evento ya estaba procesado,
+   *     en cuyo caso no se guarda nada
    */
   boolean guardarSiNoProcesado(UUID eventoId, DonanteIncentivos donante);
 }

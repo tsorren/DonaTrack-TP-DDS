@@ -30,6 +30,10 @@ public class EventosProcesadosEnMemoria implements IEventosProcesados {
 
   @Override
   public boolean guardarSiNoProcesado(UUID eventoId, DonanteIncentivos donante) {
+    if (eventoId == null) {
+      donanteRepository.save(donante);
+      return true;
+    }
     if (!procesados.add(eventoId)) {
       log.info("Evento duplicado ignorado (Inbox): {}", eventoId);
       return false;

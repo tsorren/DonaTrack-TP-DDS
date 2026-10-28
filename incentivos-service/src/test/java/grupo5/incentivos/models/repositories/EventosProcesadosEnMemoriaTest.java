@@ -70,4 +70,16 @@ class EventosProcesadosEnMemoriaTest {
 
     assertTrue(inbox.guardarSiNoProcesado(eventoId, donante));
   }
+
+  @Test
+  void guardarSiNoProcesado_sinEventoId_guardaSiempreSinDeduplicar() {
+    IDonanteIncentivosRepository repo = mock(IDonanteIncentivosRepository.class);
+    EventosProcesadosEnMemoria inbox = new EventosProcesadosEnMemoria(repo);
+    DonanteIncentivos donante = DonanteIncentivosMother.colaboradorSinMisiones(UUID.randomUUID());
+
+    assertTrue(inbox.guardarSiNoProcesado(null, donante));
+    assertTrue(inbox.guardarSiNoProcesado(null, donante));
+
+    verify(repo, times(2)).save(donante);
+  }
 }

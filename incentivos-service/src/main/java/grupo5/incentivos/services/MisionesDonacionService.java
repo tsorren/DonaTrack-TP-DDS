@@ -154,10 +154,11 @@ public class MisionesDonacionService implements IMisionesDonacionService {
     return eventoId != null && eventosProcesados != null && eventosProcesados.yaProcesado(eventoId);
   }
 
-  // Con eventoId el guardado y la marca del inbox son atómicos (ver IEventosProcesados). Sin
-  // eventoId (llamada REST, o evento sin messageId) se guarda sin deduplicar.
+  // El guardado, la marca del inbox y los avisos del outbox son atómicos (ver IEventosProcesados).
+  // Sin eventoId (llamada REST, o evento sin messageId) no se deduplica, pero el guardado sigue
+  // pasando por ahí para que los avisos queden en la misma transacción que el donante.
   private boolean guardar(DonanteIncentivos donante, UUID eventoId) {
-    if (eventoId == null || eventosProcesados == null) {
+    if (eventosProcesados == null) {
       repository.save(donante);
       return true;
     }
