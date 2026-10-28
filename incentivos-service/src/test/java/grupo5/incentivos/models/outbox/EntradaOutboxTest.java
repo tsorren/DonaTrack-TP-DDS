@@ -4,11 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.Month;
 import org.junit.jupiter.api.Test;
 
 class EntradaOutboxTest {
 
-  private static final LocalDateTime AHORA = LocalDateTime.of(2026, 10, 27, 12, 0, 0);
+  private static final LocalDateTime AHORA = LocalDateTime.of(2026, Month.OCTOBER, 27, 12, 0, 0);
 
   @Test
   void nueva_empiezaPendienteYSinIntentos() {

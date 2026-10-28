@@ -17,13 +17,14 @@ import grupo5.incentivos.models.entities.insignias.Insignia;
 import grupo5.incentivos.models.outbox.EntradaOutbox;
 import grupo5.incentivos.models.outbox.EstadoOutbox;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class EventosSalientesTest {
 
-  private static final LocalDateTime AHORA = LocalDateTime.of(2026, 10, 27, 12, 0, 0);
+  private static final LocalDateTime AHORA = LocalDateTime.of(2026, Month.OCTOBER, 27, 12, 0, 0);
 
   @Test
   void aEntrada_conMisionCompletadaConInsignia_usaElNombreDeLaInsigniaComoRecompensa() {

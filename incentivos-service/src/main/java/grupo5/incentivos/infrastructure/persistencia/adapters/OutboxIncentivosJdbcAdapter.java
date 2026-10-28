@@ -76,7 +76,7 @@ public class OutboxIncentivosJdbcAdapter implements IOutboxIncentivos {
             + "   ORDER BY proximo_intento LIMIT ? FOR UPDATE SKIP LOCKED)"
             + " RETURNING "
             + COLUMNAS_DEVUELTAS,
-        this::mapear,
+        OutboxIncentivosJdbcAdapter::mapear,
         ahora.plus(arrendamiento),
         ahora,
         limite);
@@ -107,7 +107,7 @@ public class OutboxIncentivosJdbcAdapter implements IOutboxIncentivos {
         entrada.maxIntentos());
   }
 
-  private EntradaOutbox mapear(ResultSet rs, int fila) throws SQLException {
+  private static EntradaOutbox mapear(ResultSet rs, int fila) throws SQLException {
     return new EntradaOutbox(
         rs.getObject("id", UUID.class),
         rs.getString("routing_key"),
