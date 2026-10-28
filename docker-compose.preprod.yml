@@ -121,6 +121,7 @@ services:
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
       - DONACIONES_MINIO_ENABLED=true
       - DONACIONES_MINIO_ENDPOINT=http://minio:9000
+      - DONACIONES_MINIO_PUBLIC_ENDPOINT=http://minio:9000
       - DONACIONES_MINIO_ACCESS_KEY=donaciones-service
       - DONACIONES_MINIO_SECRET_KEY=${DONACIONES_MINIO_PASSWORD:?ver .env.example}
     depends_on:
