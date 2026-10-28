@@ -11,6 +11,7 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.repositories.IDonacionesRepository;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.services.IDonacionesService;
+import grupo5.donaciones.services.IFotosBienesService;
 import grupo5.donaciones.services.mappers.DonacionMapper;
 import java.util.List;
 import java.util.UUID;
@@ -25,18 +26,21 @@ public class DonacionesService implements IDonacionesService {
   private final DonacionMapper mapper;
   private final ProcesadorDeDonaciones procesadorDonaciones;
   private final ApplicationEventPublisher eventPublisher;
+  private final IFotosBienesService fotosBienes;
 
   public DonacionesService(
       IDonacionesRepository donacionesRepository,
       IDonantesRepository donantesRepository,
       DonacionMapper mapper,
       ProcesadorDeDonaciones procesadorDonaciones,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      IFotosBienesService fotosBienes) {
     this.donacionesRepository = donacionesRepository;
     this.donantesRepository = donantesRepository;
     this.mapper = mapper;
     this.procesadorDonaciones = procesadorDonaciones;
     this.eventPublisher = eventPublisher;
+    this.fotosBienes = fotosBienes;
   }
 
   @Override
@@ -47,6 +51,10 @@ public class DonacionesService implements IDonacionesService {
             .orElseThrow(() -> new RecursoNoEncontradoException(dto.idDonante()));
     if (!donante.estaActivo()) {
       throw new BusinessStateException(ErrorCatalog.DONANTE_INACTIVO);
+    }
+
+    if (dto.items() != null) {
+      dto.items().forEach(item -> fotosBienes.validarFoto(item.fotoUrl()));
     }
 
     Donacion donacion = mapper.toEntity(dto, donante);

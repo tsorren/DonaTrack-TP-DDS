@@ -29,6 +29,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems (`409` si el donante está dado de baja) | `DonacionInputDTO` | `201`, `400`, `409` |
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
+| `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
 | `GET` | `/donaciones-independientes` | Listado con filtros (`estado`, `subcategoriaId`, `donanteId`) | — | `200` |
 | `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |

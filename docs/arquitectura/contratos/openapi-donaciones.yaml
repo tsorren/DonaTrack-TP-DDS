@@ -128,6 +128,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DonacionOutputDTO'
+  /api/donaciones/fotos:
+    post:
+      summary: Pedir una URL prefirmada para subir la foto de un bien
+      description: >
+        El servicio no recibe los bytes de la foto: devuelve una URL temporal (15 min) para subirla
+        directo al almacenamiento de objetos (MinIO) con PUT y el header Content-Type indicado,
+        y una referencia para mandar en fotoUrl al cargar la donación. Tipos aceptados: JPEG, PNG
+        y WebP, hasta 10 MB (se verifica al cargar la donación).
+      operationId: solicitarSubidaFoto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudSubidaFotoInputDTO'
+      responses:
+        '200':
+          description: URL de subida y referencia de la foto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubidaFotoOutputDTO'
+        '400':
+          description: Falta el tipo de contenido (ERR-CSR-003) o no está permitido (ERR-VAL-318)
   /api/donaciones/{id}:
     get:
       summary: Consultar donación por ID
@@ -733,6 +757,32 @@ paths:
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
+    SolicitudSubidaFotoInputDTO:
+      type: object
+      required: [tipoContenido]
+      properties:
+        tipoContenido:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+    SubidaFotoOutputDTO:
+      type: object
+      required: [uploadUrl, metodo, tipoContenido, referencia, expiraEn]
+      properties:
+        uploadUrl:
+          type: string
+          description: URL prefirmada de MinIO; no requiere credenciales
+        metodo:
+          type: string
+          enum: [PUT]
+        tipoContenido:
+          type: string
+          description: Valor del header Content-Type a enviar en la subida
+        referencia:
+          type: string
+          example: /fotos-bienes/3f2b9c1e-7a4d-4e8f-9b0a-1c2d3e4f5a6b.jpg
+        expiraEn:
+          type: string
+          format: date-time
     ArchivoDonantesResponse:
       type: object
       required: [id, path, estado]
@@ -822,6 +872,16 @@ components:
           type: array
           items:
             type: object
+            properties:
+              fotoUrl:
+                type: string
+                nullable: true
+                description: >
+                  Referencia devuelta por POST /api/donaciones/fotos (/fotos-bienes/<uuid>.<ext>),
+                  después de subir la foto con la uploadUrl. Al cargar la donación se verifica que
+                  la foto exista y respete tipo y tamaño (400 ERR-VAL-319, 320, 318 o 321). Una URL
+                  externa se acepta sin cambios. Al leer, la referencia se devuelve como URL
+                  temporal de descarga (2 h).
     DonacionOutputDTO:
       type: object
       required:
