@@ -6,9 +6,9 @@ import grupo5.donaciones.models.entities.donantes.DonanteParser;
 import grupo5.donaciones.models.ports.CargadorDonantes;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,11 +31,12 @@ public class LectorDonantesCSV implements CargadorDonantes {
   }
 
   @Override
-  public List<Map<String, String>> cargarDonantes(String rutaArchivo) {
+  public List<Map<String, String>> cargarDonantes(InputStream contenido) {
     List<Map<String, String>> filasMapeadas = new ArrayList<>();
 
+    // Cerrar el reader cierra también el stream; quien lo abrió puede volver a cerrarlo sin efecto.
     try (BufferedReader reader =
-        Files.newBufferedReader(Paths.get(rutaArchivo), StandardCharsets.UTF_8)) {
+        new BufferedReader(new InputStreamReader(contenido, StandardCharsets.UTF_8))) {
 
       String cabeceraStr = reader.readLine();
       if (cabeceraStr == null) {

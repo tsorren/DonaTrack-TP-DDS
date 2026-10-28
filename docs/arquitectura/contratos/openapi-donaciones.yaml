@@ -407,11 +407,38 @@ paths:
         importa y cuenta como error del archivo (PERSONA_DUPLICADA_EN_CONFLICTO): el conflicto
         no devuelve 409, porque el procesamiento es asíncrono.
       operationId: cargarArchivoDonantes
+      requestBody:
+        required: true
+        description: >
+          El padrón como multipart/form-data. El servicio lo guarda en el almacenamiento de
+          objetos (MinIO) con una clave propia; el nombre del archivo solo se usa para validar la
+          extensión .csv. Reemplaza al cuerpo JSON {path} con una ruta del servidor (cambio no
+          aditivo aprobado en la Entrega 6).
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [archivo]
+              properties:
+                archivo:
+                  type: string
+                  format: binary
+                  description: Padrón CSV en UTF-8 (con o sin BOM), hasta 50 MB
       responses:
         '202':
           description: Archivo aceptado para procesamiento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchivoDonantesResponse'
         '400':
-          description: Archivo inválido
+          description: >
+            Falta la parte 'archivo' (ERR-CSR-003), o el archivo está vacío o no es .csv
+            (ERR-VAL-213)
+        '413':
+          description: El archivo supera el tamaño máximo (ERR-CSR-003 o ERR-VAL-214)
+        '415':
+          description: El cuerpo no es multipart/form-data
   /api/donantes/archivos/{id}:
     get:
       summary: Consultar estado de procesamiento de archivo de donantes
@@ -424,6 +451,10 @@ paths:
       responses:
         '200':
           description: Detalle del archivo de donantes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchivoDonantesResponse'
         '404':
           description: Archivo no encontrado
   /api/categorias:
@@ -702,6 +733,17 @@ paths:
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
+    ArchivoDonantesResponse:
+      type: object
+      required: [id, path, estado]
+      properties:
+        id: { type: string, format: uuid }
+        path:
+          type: string
+          description: Clave del padrón en el bucket donaciones-padrones (UUID.csv), no una ruta de disco
+        estado:
+          type: string
+          enum: [PENDIENTE, PROCESANDO, PROCESADO, PROCESADO_CON_ERRORES, ERROR]
     CambioEstadoDonacionIndependienteRequestDTO:
       type: object
       required:

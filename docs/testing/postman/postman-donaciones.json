@@ -309,10 +309,9 @@
           "name": "4. Cargar Archivo CSV de Donantes",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"path\": \"donantes_sample.csv\"\n}"
+              "mode": "formdata",
+              "formdata": [{ "key": "archivo", "type": "file", "src": "donantes_sample.csv" }]
             },
             "url": { "raw": "{{baseUrl}}/api/donantes/archivos", "host": ["{{baseUrl}}"], "path": ["api", "donantes", "archivos"] }
           }
