@@ -15,8 +15,9 @@
 - **Qué estamos haciendo:** los padrones CSV de donantes y las fotos de los bienes dejan de depender del disco del contenedor (o de una URL cualquiera) y se guardan en MinIO.
 - **Cómo:** un puerto `StoragePort` (bucket y clave, sin tipos de MinIO) con dos adapters: MinIO (perfil `postgres`) y memoria (perfil por defecto). El CSV se sube por `multipart` y el servicio lo guarda. Las fotos se suben directo a MinIO con una URL prefirmada, y en la base queda solo una referencia.
 - **Dónde estamos:** pasos 1 a 8 hechos, con un commit por paso. Contrato del CSV cambiado (aprobado). Un usuario de MinIO por servicio.
-- **Pendiente:** aprobación del ADR por el equipo (sigue `proposed`); progreso por fila del padrón (resto de HB-14 de E6); limpieza de objetos huérfanos.
-- **Próximo paso:** revisión del PR.
+- **Validación:** suites de `common-lib` y Donaciones en verde (877 tests en Donaciones, con Postgres y MinIO reales). Gate 4 parcial: en la corrida completa el stack levantó *healthy* (incluidos `minio-init` y los usuarios de MinIO por servicio) y pasaron 28 de 29 tests; `FullDistributedDonationE2EIT` excedió su espera de 5 s mientras la VM de Docker local estaba saturada, y los reintentos no llegaron a levantar el stack por la misma causa. Falta un Gate 4 completo en un entorno sin esa carga (por ejemplo, CI).
+- **Pendiente:** Gate 4 completo; aprobación del ADR por el equipo (sigue `proposed`); progreso por fila del padrón (resto de HB-14 de E6); limpieza de objetos huérfanos.
+- **Próximo paso:** Gate 4 en CI y revisión del PR.
 
 ---
 
