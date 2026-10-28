@@ -34,7 +34,7 @@ Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas
 | `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | **Activo** — JPA conectado |
 | `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
 
-Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) y `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (MinIO y la access/secret key de incentivos); `application.properties` no les da valor por defecto.
+Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (raíz de MinIO, solo para `minio-init`) e `INCENTIVOS_MINIO_PASSWORD`/`DONACIONES_MINIO_PASSWORD` (secret key de cada servicio); `application.properties` no les da valor por defecto.
 
 ### Política de permisos (aislamiento cruzado)
 
@@ -182,6 +182,13 @@ minio:
   healthcheck:
     test: [ "CMD", "mc", "ready", "local" ]   # la imagen no trae curl
 ```
+
+Un usuario de MinIO por servicio, con acceso solo a sus buckets. Los crea el contenedor `minio-init` con [`minio/init-usuarios.sh`](minio/init-usuarios.sh) en cada `docker compose up` (idempotente: vuelve a fijar la contraseña desde `.env`). A diferencia de Postgres, cambiar una contraseña no exige `down -v`.
+
+| Usuario (access key) | Contraseña (`.env`)         | Buckets        |
+|----------------------|-----------------------------|----------------|
+| `incentivos-service` | `INCENTIVOS_MINIO_PASSWORD` | `insignias`    |
+| `donaciones-service` | `DONACIONES_MINIO_PASSWORD` | `donaciones-*` |
 
 ---
 

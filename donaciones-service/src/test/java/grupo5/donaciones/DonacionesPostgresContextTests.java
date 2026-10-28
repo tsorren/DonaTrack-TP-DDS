@@ -26,7 +26,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * seeders. Los tests de cada adapter prueban cada pieza por separado; este detecta un error de
  * cableado entre ellas antes de que aparezca en un entorno levantado.
  */
-@SpringBootTest
+// El perfil postgres enciende MinIO; acá no hay contenedor de MinIO, así que se apaga
+@SpringBootTest(properties = "donaciones.minio.enabled=false")
 @ActiveProfiles("postgres")
 @Testcontainers
 @DisabledIfDockerUnavailable
