@@ -16,7 +16,7 @@
 - **Cómo:** un puerto `StoragePort` (bucket y clave, sin tipos de MinIO) con dos adapters: MinIO (perfil `postgres`) y memoria (perfil por defecto). El CSV se sube por `multipart` y el servicio lo guarda. Las fotos se suben directo a MinIO con una URL prefirmada, y en la base queda solo una referencia.
 - **Dónde estamos:** pasos 1 a 8 hechos, con un commit por paso. Contrato del CSV cambiado (aprobado). Un usuario de MinIO por servicio.
 - **Validación:** suites de `common-lib` y Donaciones en verde (877 tests en Donaciones, con Postgres y MinIO reales). Gate 4 parcial: en la corrida completa el stack levantó *healthy* (incluidos `minio-init` y los usuarios de MinIO por servicio) y pasaron 28 de 29 tests; `FullDistributedDonationE2EIT` excedió su espera de 5 s mientras la VM de Docker local estaba saturada, y los reintentos no llegaron a levantar el stack por la misma causa. Falta un Gate 4 completo en un entorno sin esa carga (por ejemplo, CI).
-- **Pendiente:** Gate 4 completo; ADR aceptado el 2026-10-29; progreso por fila del padrón (resto de HB-14 de E6); limpieza de objetos huérfanos.
+- **Pendiente:** Gate 4 completo; progreso por fila del padrón (resto de HB-14 de E6); limpieza de objetos huérfanos.
 - **Próximo paso:** Gate 4 en CI y revisión del PR.
 
 ---

@@ -61,7 +61,7 @@
 
 ## Paso 8 · Documentación
 
-- Actualizar el ADR de MinIO (sigue `proposed`; nunca promoverlo a `accepted`), el OpenAPI, la bitácora, `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md`.
+- Actualizar el ADR de MinIO (sigue `proposed`; nunca promoverlo a `accepted`. Nota: lo aceptó tsorren el 2026-10-29), el OpenAPI, la bitácora, `docs/README.md` y `docs/ESTADO_DOCUMENTACION.md`.
 
 ## Riesgos a tener presentes
 
