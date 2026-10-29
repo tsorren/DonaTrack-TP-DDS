@@ -3,7 +3,7 @@
 # ============================================================================
 # Disparador: push a main o ENTREGA_* (resultado de un PR mergeado)
 #
-# Responsabilidad única: compilar TODOS los servicios del monorepo, validar el
+# Responsabilidad única: compilar todos los servicios del monorepo, validar el
 # estado integrado en preprod y promover a los tags estables solo lo validado
 # (RM-06, ADR 20261020 promoción por digest).
 #
