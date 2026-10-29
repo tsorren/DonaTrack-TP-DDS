@@ -61,6 +61,7 @@ jobs:
   validate-git-flow:
     if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:
@@ -121,6 +122,7 @@ jobs:
   detect-changes:
     needs: validate-git-flow
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read
@@ -220,6 +222,7 @@ jobs:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
@@ -244,6 +247,7 @@ jobs:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.any-service == 'true' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     strategy:
@@ -313,6 +317,7 @@ jobs:
     needs: [lint-and-format, build-and-test]
     if: ${{ always() && needs.build-and-test.result == 'success' && needs.lint-and-format.result == 'success' && (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_')) }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       checks: write
@@ -386,6 +391,7 @@ jobs:
     needs: [detect-changes, build-and-test]
     if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: write
@@ -459,6 +465,7 @@ jobs:
     needs: [detect-changes, build-and-test]
     if: ${{ needs.detect-changes.outputs.enable-diagrams == 'true' && needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
@@ -568,6 +575,7 @@ jobs:
     needs: [detect-changes, generate-diagrams]
     if: false # Deshabilitado
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: write
@@ -623,6 +631,7 @@ jobs:
     #   - docker-build puede ser success O skipped (ambos son estados válidos)
     if: ${{ always() && needs.build-and-test.result == 'success' && (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       EXECUTION_ID: "run_${{ github.run_id }}_${{ github.run_attempt }}"
     permissions:
@@ -830,6 +839,7 @@ jobs:
     needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, preprod-validation]
     if: always() && (github.event.action != 'edited' || github.event.changes.base != null)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       checks: write

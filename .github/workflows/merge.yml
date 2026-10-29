@@ -66,6 +66,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   detect-services:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     outputs:
@@ -151,6 +152,7 @@ jobs:
     needs: detect-services
     if: ${{ needs.detect-services.outputs.any-service == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     strategy:
@@ -201,6 +203,7 @@ jobs:
     needs: [detect-services, build-and-verify]
     if: ${{ needs.build-and-verify.result == 'success' && needs.detect-services.outputs.any-docker-service == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
@@ -324,6 +327,7 @@ jobs:
     needs: [ detect-services, docker-publish ]
     if: ${{ always() && needs.detect-services.outputs.any-docker-service == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       packages: write
@@ -409,6 +413,7 @@ jobs:
     needs: [ detect-services, build-and-verify, docker-publish, cleanup-pr-tags ]
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:
