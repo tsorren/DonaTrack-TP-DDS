@@ -125,8 +125,9 @@ docs/
 │       └── rabbit/                        # Topología RabbitMQ por flujo (exchanges, colas, DLQ)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
-    ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 4
+    ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 7
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
+    ├── Enunciado-TP-Anual-2026.pdf        # Enunciado completo y final (entregas 1 a 7)
     └── 1/interfaz/                        # Bocetos Figma y mapa de navegación (dentro de la entrega 1)
 ```
 
