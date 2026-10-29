@@ -13,7 +13,7 @@ services:
     environment:
       - PORT=8081
       - SPRING_PROFILES_ACTIVE=postgres,preprod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/notificaciones?currentSchema=notificaciones
       - SPRING_DATASOURCE_USERNAME=notificaciones_user
       - SPRING_DATASOURCE_PASSWORD=${NOTIFICACIONES_DB_PASSWORD:?ver .env.example}
       - EXECUTION_ID=${EXECUTION_ID:-local_run}
@@ -51,7 +51,7 @@ services:
     environment:
       - PORT=8082
       - SPRING_PROFILES_ACTIVE=postgres,preprod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=incentivos
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/incentivos?currentSchema=incentivos
       - SPRING_DATASOURCE_USERNAME=incentivos_user
       - SPRING_DATASOURCE_PASSWORD=${INCENTIVOS_DB_PASSWORD:?ver .env.example}
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081
@@ -100,7 +100,7 @@ services:
     environment:
       - PORT=8080
       - SPRING_PROFILES_ACTIVE=postgres,preprod
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donatrack?currentSchema=donaciones
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/donaciones?currentSchema=donaciones
       - SPRING_DATASOURCE_USERNAME=donaciones_user
       - SPRING_DATASOURCE_PASSWORD=${DONACIONES_DB_PASSWORD:?ver .env.example}
       - NOTIFICACIONES_SERVICE_URL=http://notificaciones-service:8081

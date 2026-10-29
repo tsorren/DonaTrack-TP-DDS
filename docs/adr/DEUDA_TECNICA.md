@@ -385,16 +385,16 @@ La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema
 
 ---
 
-## DTI-26 — Base de datos por servicio: decisión aceptada, sin implementar
+## DTI-26 — Base de datos por servicio: implementada en el repo (falta la nube, RM-01)
 <a id="dti-26"></a>
 
 | Campo | Valor |
 |---|---|
 | ADR | [20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql](./20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (reemplaza a [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md)) |
 | Decision status | `accepted` (2026-10-29); el ADR de multi-schema queda `superseded` |
-| Implementation status | `[OBSERVED] not-started` — por decisión del usuario (2026-10-28, SPEC-05) solo se documentó: `persistencia/init-db`, los composes y las properties chocan con `origin/E4_donaciones_minio` y `origin/E4_persistencia_donaciones` |
-| Target | `persistencia/init-db/*` · 3 composes · 3 `application-postgres.properties` · 4 tests de Testcontainers · `persistencia/README.md` |
-| Cuándo se saldará | Después de que mergeen las dos ramas de E4, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-19). Precondiciones: Neon admite una base por servicio (RM-01) y el enunciado de E5 no exige un schema por servicio |
+| Implementation status | **Resuelta en el repo (2026-10-29, rama `E5_dti26_base_por_servicio`).** `[VERIFIED] implemented` — `01-init-schemas-roles.sql` crea las 4 bases con dueño su rol y les revoca `CONNECT` a PUBLIC (también en `POSTGRES_DB` y `postgres`). En `postgres:16-alpine`, cada rol entra solo a su base. Los tests de Testcontainers de incentivos, logística y notificaciones pasan con `withDatabaseName(<servicio>)`; los de Donaciones usan la base por defecto del contenedor y no cambiaron. Fuera del repo queda RM-01: confirmar que Neon admite una base por servicio antes de desplegar. **Para validar por un humano:** el script también revoca `CONNECT` a PUBLIC en `POSTGRES_DB` (`donatrack`) y en `postgres`, un endurecimiento que el ADR no menciona (sin él, cualquier rol entraba a la base administrativa); el superusuario y `pg_isready` no se ven afectados. **Desvío del ADR:** las copias del script en `*/src/test/resources/init-db/` no se actualizaron. Siguen creando los 4 schemas en una sola base y los tests corren como superusuario del contenedor, así que ningún test automatizado vigila el aislamiento entre bases (Validación 1 del ADR); se verificó a mano con `postgres:16-alpine` |
+| Target | `persistencia/init-db/01-init-schemas-roles.sql` · 2 composes (`docker-compose.yml`, `docker-compose.preprod.yml`) · 4 `application-postgres.properties` · 5 tests de Testcontainers (incentivos, logística, notificaciones; los de Donaciones usan la base por defecto del contenedor) · `persistencia/README.md` |
+| Cuándo se saldará | Saldada en el repo el 2026-10-29, después del merge de #897 (RM-19 del [roadmap](../testing/preprod-fiel-roadmap.md)). Pendiente fuera del repo: RM-01 (Neon) y que el equipo confirme que el enunciado de E5 no exige un schema por servicio. Para un volumen local anterior: `docker compose down -v` |
 
 ---
 

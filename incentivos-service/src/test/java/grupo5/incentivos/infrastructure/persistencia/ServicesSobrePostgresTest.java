@@ -100,7 +100,7 @@ class ServicesSobrePostgresTest {
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgres =
       new PostgreSQLContainer<>("postgres:16-alpine")
-          .withDatabaseName("donatrack")
+          .withDatabaseName("incentivos")
           .withUsername("incentivos_user")
           .withPassword("inc_pass_2026")
           .withCopyFileToContainer(

@@ -10,7 +10,7 @@ La [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) (`APP
 
 | Decisión | Qué cambia |
 |---|---|
-| D1 | Base de datos por servicio en el mismo motor PostgreSQL: ítem nuevo **RM-19**, por ahora solo documentado ([ADR](../adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md), `accepted` el 2026-10-29) |
+| D1 | Base de datos por servicio en el mismo motor PostgreSQL: ítem nuevo **RM-19**, implementado el 2026-10-29 ([ADR](../adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md), `accepted` el 2026-10-29) |
 | D2 | MinIO por servicio a futuro: ítem nuevo **RM-20**, después de E7, sin código |
 | D3 | RM-07 sin Render: ensayo del manifiesto en el runner, con smoke y rollback; Render como adaptador opcional ([ADR de promoción](../adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md), revisado) |
 | D4 | RM-08 con `amqp-client` + `networknt/json-schema-validator` y el puerto AMQP en `127.0.0.1` |
@@ -25,7 +25,7 @@ Estado en la rama `E5_preprod_fiel_rm08` (2026-10-28). `[VERIFIED]` = ejecutado 
 | RM-03 | Implementado | `[VERIFIED]` 18 de 18 jobs con `timeout-minutes`; medición en el commit del ítem |
 | RM-04 | Implementado | `[VERIFIED]` `./run-preprod-tests.sh --images local`; `--images ghcr` en CI |
 | RM-05 | Implementado | `[VERIFIED]` preprod en verde con `mongo:7.0` fijado por digest |
-| RM-19 | Solo documentación | ADR `accepted` (2026-10-29); el código espera a `E4_donaciones_minio` y `E4_persistencia_donaciones` |
+| RM-19 | Implementado en el repo (2026-10-29, DTI-26) | `[VERIFIED]` aislamiento entre bases en `postgres:16-alpine` y tests de Testcontainers de los 4 servicios en verde; falta RM-01 (Neon) para desplegarlo |
 | RM-06 | Implementado | `[VERIFIED]` script de manifiesto (4 tests) y resolvedor por digest con los digests reales de `:entrega_5`; `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `preprod-post-merge` y `promote` |
 | RM-07 | Implementado | `[VERIFIED]` la mecánica de `scripts/ensayo-despliegue.sh` en local (smoke 4/4 en los dos despliegues, con M y M-1 iguales: el rollback entre versiones distintas, con migraciones de por medio, no se ensayó en local); `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `deploy.yml`, que además corre recién cuando llegue a `main` (rama por defecto) |
 | RM-08 | Implementado; encontró 3 defectos reales ([DTI-27](../adr/DEUDA_TECNICA.md#dti-27)), los 3 ítems resueltos en código (el 1 y el 2 con el productor que siempre envía el dato) | `[VERIFIED]` validador del espía, diff de OpenAPI (aviso y error) y `validate-contracts.js`; Donaciones validado en vivo (`ContractIT` 7/7, después de completar la spec de `/api/personas`); con `CONTRATOS_ESTRICTO=true` el E2E pasa 30/30 desde la corrección de los ítems 1 y 2 de DTI-27 (2026-10-29) |
