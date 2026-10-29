@@ -57,6 +57,7 @@ docs/
 │   ├── preprod-fiel.md                    # Criterio de preprod fiel, estado de CI/CD e integración y brechas
 │   ├── preprod-fiel-arquitectura-objetivo.md # Alternativas por brecha, entorno, pipeline y estratos objetivo
 │   ├── preprod-fiel-roadmap.md            # Roadmap por entrega (E5–E7), rediseño de la SPEC-05 y estado de implementación
+│   ├── diagnostico-integration-tests-e5.md # Diagnóstico de integration-tests en E5: línea base, hallazgos y propuestas
 │   ├── auditoria/                         # 🧪 Compendio de auditoría de testing y arquitectura target (6 docs + README)
 │   └── postman/                           # LEGADO: copia anterior; la fuente vigente es ../postman/ (raíz del repo)
 │
@@ -176,6 +177,7 @@ docs/
 * 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
 * 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
 * 🗺️ **Preprod fiel — roadmap por entrega y decisiones:** [testing/preprod-fiel-roadmap.md](testing/preprod-fiel-roadmap.md)
+* 🩺 **Diagnóstico de integration-tests (E5):** [testing/diagnostico-integration-tests-e5.md](testing/diagnostico-integration-tests-e5.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
