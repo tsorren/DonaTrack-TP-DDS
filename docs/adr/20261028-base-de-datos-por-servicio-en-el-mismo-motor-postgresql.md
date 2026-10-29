@@ -5,13 +5,13 @@
 - Deciders: tsorren (responsable de integración), por instrucción explícita del 2026-10-29; propuesta del usuario en la SPEC-05
 - Tags: persistencia, postgresql, database-per-service, aislamiento, neon, preprod, entrega-5
 
-> **Origen:** [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md), decisión D1 (`APPROVED_BY_USER`, 2026-10-28) y roadmap de [preprod fiel](../testing/preprod-fiel-roadmap.md), ítem RM-19. **Nota de implementación (2026-10-29, rama `E5_dti26_base_por_servicio`):** implementada en el repo después del merge de #897 (DTI-26). Además de lo previsto, también se revoca `CONNECT` en `POSTGRES_DB` (`donatrack`) y en `postgres`: sin eso, un rol de servicio podía conectarse a la base administrativa. Los archivos reales fueron 2 composes (`docker-compose.hybrid.yml` no tiene URL JDBC), 4 `application-postgres.properties` y 5 tests de Testcontainers. Los de Donaciones no cambiaron porque usan la base por defecto del contenedor. Las copias del script en `src/test/resources/init-db` no se tocaron: crean los schemas dentro de la base del contenedor y no dependen del nombre `donatrack`. Fuera del repo queda la precondición de RM-01 (Neon).
+> **Origen:** [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md), decisión D1 (`APPROVED_BY_USER`, 2026-10-28) y roadmap de [preprod fiel](../testing/preprod-fiel-roadmap.md), ítem RM-19. **Ninguna parte de esta decisión está implementada:** el código espera a que mergeen `E4_donaciones_minio` y `E4_persistencia_donaciones`, que tocan los mismos archivos.
 
 ## Contexto y Problema
 
 `[DOCUMENTED]` El ADR [arquitectura de persistencia multi-schema](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) (`proposed` al escribir este ADR; `superseded` desde el 2026-10-29) decidió **un motor PostgreSQL con una base `donatrack` y un schema por servicio**, cada uno con su rol y `REVOKE` cruzados.
 
-`[OBSERVED]` Así estaba antes de RM-19 (implementado el 2026-10-29): `persistencia/init-db/01-init-schemas-roles.sql` crea los schemas y los roles, y los servicios se conectan a `jdbc:postgresql://postgres:5432/donatrack?currentSchema=<servicio>` (`docker-compose.preprod.yml`).
+`[OBSERVED]` Así está hoy: `persistencia/init-db/01-init-schemas-roles.sql` crea los schemas y los roles, y los servicios se conectan a `jdbc:postgresql://postgres:5432/donatrack?currentSchema=<servicio>` (`docker-compose.preprod.yml`).
 
 El aislamiento depende de que ningún `GRANT` quede mal puesto: todos los dominios comparten una base, y un permiso de más habilita un `JOIN` entre contextos. El usuario pidió (2026-10-28) pasar a **una base de datos por servicio**, sin perder la huella chica en CI y en el plan gratuito de la nube.
 
@@ -27,7 +27,7 @@ Problema: ¿cómo se aísla la persistencia relacional de cada servicio al nivel
 
 ## Relaciones Arquitectónicas
 
-1. **Reemplaza:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md), que queda `superseded` desde la aceptación de este ADR (2026-10-29). El código lo implementa desde el 2026-10-29 (RM-19, DTI-26).
+1. **Reemplaza:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md), que queda `superseded` desde la aceptación de este ADR (2026-10-29). Hasta implementar RM-19 (DTI-26), el código sigue al de 2026-09-02.
 2. **Conserva** de ese ADR: un rol por servicio con mínimo privilegio, el script de init idempotente y el schema `<servicio>` dentro de cada base.
 3. **Se aplica igual a objetos:** el equivalente en MinIO (una instancia por servicio) queda como RM-20 del roadmap, después de E7. No pide ADR propio si este se aprueba: aplica el mismo criterio a otro almacén.
 
@@ -81,7 +81,7 @@ Justificación: es el pedido del usuario con el menor costo, y deja C a un cambi
 ## Consecuencias Negativas
 
 * Cambian las URLs JDBC y el script de init: hay que migrar los volúmenes locales (`docker compose down -v`).
-* Los volúmenes locales creados antes del 2026-10-29 tienen el esquema viejo: hay que recrearlos (`docker compose down -v`).
+* Durante la transición, el código sigue al ADR reemplazado hasta que se implemente RM-19 (DTI-26).
 * Choca con dos ramas abiertas de E4; implementarlo antes obligaría a rehacer sus cambios.
 
 ## Validación
@@ -94,4 +94,4 @@ Justificación: es el pedido del usuario con el menor costo, y deja C a un cambi
 
 * Roadmap: [RM-19 y RM-20](../testing/preprod-fiel-roadmap.md).
 * Precondición en la nube: RM-01 (Neon).
-* Deuda: [DTI-26](./DEUDA_TECNICA.md#dti-26) (implementada en el repo el 2026-10-29; queda RM-01).
+* Deuda: [DTI-26](./DEUDA_TECNICA.md#dti-26) (decisión documentada, implementación pendiente).
