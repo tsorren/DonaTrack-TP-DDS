@@ -7,7 +7,7 @@
 - `[OBSERVED]` **CSV:** hoy no se sube ningún archivo. `POST /donantes/archivos` recibe un `path` (ruta del disco del servidor) y `LectorDonantesCSV` lo abre con `Files.newBufferedReader(Paths.get(path))`. El archivo tiene que estar ya en el sistema de archivos del contenedor, que no sobrevive a un reinicio.
 - `[OBSERVED]` **Fotos:** el cliente manda `fotoUrl` como texto (`Bien.fotoUrl`) y el servicio lo guarda en `foto_url TEXT` (`V9`) sin subir ni descargar nada.
 - `[OBSERVED]` Donaciones no tiene dependencia de MinIO, ni `StoragePort`, ni `MinioStorageAdapter`. El contenedor `minio` de los compose y el bucket `insignias` pertenecen a Incentivos.
-- `[DOCUMENTED]` El ADR `20260901-almacenamiento-de-objetos-minio-s3-para-padrones-y-archivos` (`proposed`) propone MinIO para los padrones y las fotos.
+- `[DOCUMENTED]` El ADR `20260901-almacenamiento-de-objetos-minio-s3-para-padrones-y-archivos` (`proposed` al escribir este plan; `accepted` desde el 2026-10-29) propone MinIO para los padrones y las fotos.
 - `[OBSERVED]` Modelo a seguir: Incentivos (`ImagenesInsigniasConfig`, `MinioImagenesInsigniasAdapter`, `MinioInsigniasSeeder`, `MinioInsigniasIntegracionTest`, dependencia `io.minio:minio:8.5.17`).
 
 ## Paso 0 · Decisiones previas (del equipo)

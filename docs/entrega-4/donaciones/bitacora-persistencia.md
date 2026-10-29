@@ -2,7 +2,7 @@
 
 > Registro vivo de la persistencia del servicio de Donaciones: decisiones, preguntas y avances, en orden. Para retomar el trabajo, leer primero el **TLDR**.
 >
-> **Documentos relacionados:** [`persistencia.md`](persistencia.md) · [`persistencia/README.md`](../../../persistencia/README.md) · [ADR de mapeo ORM](../../adr/donaciones-service/20260901-estrategia-de-mapeo-orm-y-herencia-relacional-en-donaciones.md) · [ADR DTI-06](../../adr/donaciones-service/20260901-dti-06-desacoplamiento-de-referencias-directas-entre-agregados-por-uuid.md)
+> **Documentos relacionados:** [`persistencia/README.md`](../../../persistencia/README.md) · [ADR de mapeo ORM](../../adr/donaciones-service/20260901-estrategia-de-mapeo-orm-y-herencia-relacional-en-donaciones.md) · [ADR DTI-06](../../adr/donaciones-service/20260901-dti-06-desacoplamiento-de-referencias-directas-entre-agregados-por-uuid.md)
 >
 > **Rama:** `E4_persistencia_donaciones` (PR #897, base de `Necesidad`). Cualquiera del equipo puede commitear en ella.
 

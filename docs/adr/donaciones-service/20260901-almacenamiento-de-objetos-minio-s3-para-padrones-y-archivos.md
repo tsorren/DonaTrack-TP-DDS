@@ -1,13 +1,13 @@
 ﻿# Almacenamiento de Objetos MinIO (S3) para Padrones y Archivos
 
-- Status: proposed
-- Date: 2026-09-01
-- Deciders: Decisión Grupal
+- Status: accepted
+- Date: 2026-09-01 (aceptado el 2026-10-29)
+- Deciders: Decisión Grupal; aceptado por tsorren (responsable de integración) por instrucción explícita del 2026-10-29
 - Tags: infraestructura, minio, s3, almacenamiento, donaciones, persistencia
 
 > **Nota de auditoría (2026-10-14):** el contenedor `minio` de `docker-compose.yml` y `docker-compose.preprod.yml` pertenecía solo a `incentivos-service` (bucket `insignias`). En `donaciones-service` no existían `StoragePort`, `MinioStorageAdapter` ni la dependencia `io.minio`.
 >
-> **Nota de implementación (2026-10-28, rama `E4_donaciones_minio`):** la decisión se implementó en `donaciones-service`. El estado del ADR sigue en `proposed` hasta que el equipo lo apruebe. Lo que difiere de la propuesta original está detallado en [Implementación](#implementación).
+> **Nota de implementación (2026-10-28, rama `E4_donaciones_minio`):** la decisión se implementó en `donaciones-service`. El ADR se aceptó el 2026-10-29. Lo que difiere de la propuesta original está detallado en [Implementación](#implementación).
 
 ## Contexto y Problema
 

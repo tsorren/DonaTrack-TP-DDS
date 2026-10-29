@@ -6,3 +6,10 @@
 # DTI-27 ítem 3 (2026-10-29): la spec omitía el body que el servicio siempre exigió y devolvió.
 POST /api/personas added required request body
 PUT /api/personas/{id} added required request body
+
+# D-32 (#897, 2026-10-29): la base exige descripcion NOT NULL; antes la API la aceptaba vacía.
+POST /api/donaciones the request property `descripcion` became required
+
+# #908 (2026-10-29): el padrón llega como multipart/form-data; el body {"path"} permitía leer
+# cualquier archivo del contenedor y el front ya mandaba multipart.
+POST /api/donantes/archivos added required request body
