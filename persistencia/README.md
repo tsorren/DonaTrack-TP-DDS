@@ -58,9 +58,10 @@ Un rol que intenta conectarse a otra base falla con `permission denied for datab
 
 **Ubicación:** [`persistencia/init-db/01-init-schemas-roles.sql`](init-db/01-init-schemas-roles.sql)
 
-Se monta automáticamente en el contenedor como volumen read-only:
+Llega al contenedor de dos formas: en `docker-compose.preprod.yml` se monta como volumen read-only; en `docker-compose.yml`, la imagen se construye con [`persistencia/Dockerfile`](Dockerfile), que copia la carpeta.
 
 ```yaml
+# docker-compose.preprod.yml
 volumes:
   - ./persistencia/init-db:/docker-entrypoint-initdb.d:ro
 ```

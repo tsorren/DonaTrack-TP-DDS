@@ -385,14 +385,14 @@ La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema
 
 ---
 
-## DTI-26 — Base de datos por servicio: implementada en local y en el preprod
+## DTI-26 — Base de datos por servicio: implementada en el repo (falta la nube, RM-01)
 <a id="dti-26"></a>
 
 | Campo | Valor |
 |---|---|
 | ADR | [20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql](./20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (reemplaza a [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md)) |
 | Decision status | `accepted` (2026-10-29); el ADR de multi-schema queda `superseded` |
-| Implementation status | **Resuelta en el repo (2026-10-29, rama `E5_dti26_base_por_servicio`).** `[VERIFIED] implemented` — `01-init-schemas-roles.sql` crea las 4 bases con dueño su rol y les revoca `CONNECT` a PUBLIC (también en `POSTGRES_DB` y `postgres`). En `postgres:16-alpine`, cada rol entra solo a su base. Los tests de Testcontainers de los 4 servicios pasan con `withDatabaseName(<servicio>)`. Fuera del repo queda RM-01: confirmar que Neon admite una base por servicio antes de desplegar |
+| Implementation status | **Resuelta en el repo (2026-10-29, rama `E5_dti26_base_por_servicio`).** `[VERIFIED] implemented` — `01-init-schemas-roles.sql` crea las 4 bases con dueño su rol y les revoca `CONNECT` a PUBLIC (también en `POSTGRES_DB` y `postgres`). En `postgres:16-alpine`, cada rol entra solo a su base. Los tests de Testcontainers de incentivos, logística y notificaciones pasan con `withDatabaseName(<servicio>)`; los de Donaciones usan la base por defecto del contenedor y no cambiaron. Fuera del repo queda RM-01: confirmar que Neon admite una base por servicio antes de desplegar |
 | Target | `persistencia/init-db/01-init-schemas-roles.sql` · 2 composes (`docker-compose.yml`, `docker-compose.preprod.yml`) · 4 `application-postgres.properties` · 5 tests de Testcontainers (incentivos, logística, notificaciones; los de Donaciones usan la base por defecto del contenedor) · `persistencia/README.md` |
 | Cuándo se saldará | Saldada en el repo el 2026-10-29, después del merge de #897 (RM-19 del [roadmap](../testing/preprod-fiel-roadmap.md)). Pendiente fuera del repo: RM-01 (Neon) y que el equipo confirme que el enunciado de E5 no exige un schema por servicio. Para un volumen local anterior: `docker compose down -v` |
 
