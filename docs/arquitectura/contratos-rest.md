@@ -29,6 +29,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/api/donaciones` | Alta de donación general y desglose en ítems (`409` si el donante está dado de baja) | `DonacionInputDTO` | `201`, `400`, `409` |
 | `GET` | `/api/donaciones` | Listado de donaciones registradas | — | `200` |
 | `GET` | `/api/donaciones/{id}` | Consulta de donación por ID | — | `200`, `404` |
+| `POST` | `/api/donaciones/fotos` | URL prefirmada (PUT, 15 min) para subir la foto de un bien a MinIO y referencia para `fotoUrl` | `SolicitudSubidaFotoInputDTO` | `200`, `400` |
 | `GET` | `/donaciones-independientes` | Listado con filtros (`estado`, `subcategoriaId`, `donanteId`) | — | `200` |
 | `GET` | `/donaciones-independientes/{id}` | Consulta de donación independiente por UUID | — | `200`, `404` |
 | `PATCH` | `/donaciones-independientes/{id}/estado` | Transición en máquina de 7 estados (header `X-Actor` obligatorio) | [`cambio-estado-donacion-request.schema.json`](./contratos/schemas/cambio-estado-donacion-request.schema.json) | `200`, `400`, `404` |
@@ -50,7 +51,7 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `GET` | `/api/donantes` | Listado de donantes (filtro opcional `canal`: con él, solo activos y no anonimizados) | — | `200` |
 | `GET` | `/api/donantes/{id}` | Consulta de donante por ID | — | `200`, `404` |
 | `DELETE` | `/api/donantes/{id}` | Baja lógica e idempotente de donante | — | `204`, `404` |
-| `POST` | `/api/donantes/archivos` | Carga asíncrona de archivo/padrón de donantes (MinIO) | `ArchivoInputDTO` | `202`, `400` |
+| `POST` | `/api/donantes/archivos` | Carga asíncrona del padrón CSV de donantes: `multipart/form-data` con la parte `archivo`, guardado en MinIO | `multipart: archivo` | `202`, `400`, `413`, `415` |
 | `GET` | `/api/donantes/archivos/{id}` | Consulta de estado de procesamiento de archivo | — | `200`, `404` |
 | `POST` | `/api/categorias` | Alta de categoría de donación | `CategoriaInputDTO` | `201`, `400` |
 | `GET` | `/api/categorias` | Listado de categorías de donación | — | `200` |

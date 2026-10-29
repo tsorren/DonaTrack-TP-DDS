@@ -309,10 +309,9 @@
           "name": "4. Cargar Archivo CSV de Donantes",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"path\": \"donantes_sample.csv\"\n}"
+              "mode": "formdata",
+              "formdata": [{ "key": "archivo", "type": "file", "src": "donantes_sample.csv" }]
             },
             "url": { "raw": "{{baseUrl}}/api/donantes/archivos", "host": ["{{baseUrl}}"], "path": ["api", "donantes", "archivos"] }
           }
@@ -460,6 +459,30 @@
           "request": {
             "method": "GET",
             "url": { "raw": "{{baseUrl}}/api/donaciones/{{donacionId}}", "host": ["{{baseUrl}}"], "path": ["api", "donaciones", "{{donacionId}}"] }
+          }
+        },
+        {
+          "name": "4. Pedir URL para subir foto de bien",
+          "event": [{
+            "listen": "test",
+            "script": {
+              "exec": [
+                "var json = pm.response.json();",
+                "pm.collectionVariables.set('fotoReferencia', json.referencia);",
+                "pm.test('Status 200 OK', function() { pm.response.to.have.status(200); });",
+                "pm.test('Subida por PUT', function() { pm.expect(json.metodo).to.eql('PUT'); });"
+              ],
+              "type": "text/javascript"
+            }
+          }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipoContenido\": \"image/jpeg\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/api/donaciones/fotos", "host": ["{{baseUrl}}"], "path": ["api", "donaciones", "fotos"] }
           }
         }
       ]

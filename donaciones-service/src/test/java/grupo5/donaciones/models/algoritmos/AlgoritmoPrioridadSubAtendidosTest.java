@@ -17,8 +17,12 @@ import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndepe
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
 import grupo5.donaciones.models.entities.personas.Juridica;
+import grupo5.donaciones.models.repositories.impl.DonacionesIndependientesRepositoryEnMemoria;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +47,20 @@ class AlgoritmoPrioridadSubAtendidosTest {
         DonacionIndependienteMother.crearParaSubcategoria(subcategoriaOtra.getId(), 5);
 
     algoritmo = new AlgoritmoPrioridadSubAtendidos();
+  }
+
+  // DTI-06: las donaciones guardan a qué entidad se asignaron; el conteo del trimestre sale de esa
+  // consulta y le llega al algoritmo en DatosDeAsignacion
+  private static DatosDeAsignacion recibidasDe(DonacionIndependiente... asignadas) {
+    DonacionesIndependientesRepositoryEnMemoria repo =
+        new DonacionesIndependientesRepositoryEnMemoria();
+    for (DonacionIndependiente d : asignadas) {
+      repo.save(d);
+    }
+    return new DatosDeAsignacion(
+        Map.of(),
+        repo.contarPorEntidadRegistradasDesde(
+            LocalDateTime.now(ZoneId.systemDefault()).minusMonths(3)));
   }
 
   @Test
@@ -87,7 +105,7 @@ class AlgoritmoPrioridadSubAtendidosTest {
 
     NecesidadExtraordinaria necesidadActualMuyAtendida =
         NecesidadMother.extraordinaria(entidadMuyAtendida.getId(), subcategoria.getId(), 10);
-    necesidadActualMuyAtendida.asignarDonacion(donacionEnSubcategoria);
+    donacionEnSubcategoria.asignar("SISTEMA", necesidadActualMuyAtendida.destinoDeAsignacion());
 
     NecesidadExtraordinaria necesidadActualPocoAtendida =
         NecesidadMother.extraordinaria(entidadPocoAtendida.getId(), subcategoria.getId(), 5);
@@ -95,7 +113,8 @@ class AlgoritmoPrioridadSubAtendidosTest {
     List<Necesidad> necesidades =
         new ArrayList<>(List.of(necesidadActualMuyAtendida, necesidadActualPocoAtendida));
 
-    List<Necesidad> resultado = algoritmo.ordenarNecesidades(necesidades);
+    List<Necesidad> resultado =
+        algoritmo.ordenarNecesidades(necesidades, recibidasDe(donacionEnSubcategoria));
 
     assertEquals(necesidadActualPocoAtendida, resultado.get(0));
     assertEquals(necesidadActualMuyAtendida, resultado.get(1));
@@ -108,7 +127,7 @@ class AlgoritmoPrioridadSubAtendidosTest {
 
     grupo5.donaciones.models.entities.necesidades.NecesidadRecurrente necesidadRecurrente =
         NecesidadMother.recurrenteSemanal(entidadConRecurrente, subcategoria.getId(), 10);
-    necesidadRecurrente.asignarDonacion(donacionEnSubcategoria);
+    donacionEnSubcategoria.asignar("SISTEMA", necesidadRecurrente.destinoDeAsignacion());
 
     NecesidadExtraordinaria necesidadSinDonaciones =
         NecesidadMother.extraordinaria(entidadSinDonaciones, subcategoria.getId(), 5);
@@ -116,7 +135,8 @@ class AlgoritmoPrioridadSubAtendidosTest {
     List<Necesidad> necesidades =
         new ArrayList<>(List.of(necesidadRecurrente, necesidadSinDonaciones));
 
-    List<Necesidad> resultado = algoritmo.ordenarNecesidades(necesidades);
+    List<Necesidad> resultado =
+        algoritmo.ordenarNecesidades(necesidades, recibidasDe(donacionEnSubcategoria));
 
     assertEquals(necesidadSinDonaciones, resultado.get(0));
     assertEquals(necesidadRecurrente, resultado.get(1));
@@ -131,7 +151,8 @@ class AlgoritmoPrioridadSubAtendidosTest {
 
     List<Necesidad> necesidades = new ArrayList<>(List.of(necesidad1, necesidad2));
 
-    List<Necesidad> resultado = algoritmo.ordenarNecesidades(necesidades);
+    List<Necesidad> resultado =
+        algoritmo.ordenarNecesidades(necesidades, DatosDeAsignacion.sinAsignaciones());
 
     assertEquals(2, resultado.size());
   }
@@ -158,7 +179,9 @@ class AlgoritmoPrioridadSubAtendidosTest {
   @Test
   void ordenarNecesidades_conListaNula_debeLanzarExcepcion() {
     ValidationException exception =
-        assertThrows(ValidationException.class, () -> algoritmo.ordenarNecesidades(null));
+        assertThrows(
+            ValidationException.class,
+            () -> algoritmo.ordenarNecesidades(null, DatosDeAsignacion.sinAsignaciones()));
     assertEquals(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS, exception.getError());
   }
 }

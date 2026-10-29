@@ -9,13 +9,20 @@ import lombok.Getter;
 @Getter
 public class Archivo implements AggregateRoot {
   private final UUID id;
-  private String path;
+  private final String path;
   private EstadoArchivo estado;
 
   public Archivo(String path) {
     this.id = UUID.randomUUID();
     this.path = path;
     this.estado = EstadoArchivo.PENDIENTE;
+  }
+
+  /** Constructor de reconstitución para el adaptador JPA */
+  public Archivo(UUID id, String path, EstadoArchivo estado) {
+    this.id = id;
+    this.path = path;
+    this.estado = estado;
   }
 
   public void marcarComoProcesando() {

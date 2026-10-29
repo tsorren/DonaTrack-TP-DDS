@@ -9,6 +9,7 @@ import grupo5.donaciones.models.entities.ubicaciones.Provincia;
 import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 
@@ -44,6 +45,25 @@ public final class Humana extends Persona {
     this.apellido = apellido;
     this.fechaNacimiento = fechaNacimiento;
     this.genero = genero;
+  }
+
+  /** Reconstituye una humana ya persistida (no vuelve a validar ni agrega medios de contacto). */
+  @SuppressWarnings("java:S107")
+  public Humana(
+      UUID id,
+      TipoDocumento tipoDocumento,
+      String documento,
+      Direccion direccion,
+      List<MedioDeContacto> mediosDeContacto,
+      String nombre,
+      String apellido,
+      Genero genero,
+      LocalDate fechaNacimiento) {
+    super(id, tipoDocumento, documento, direccion, mediosDeContacto);
+    this.nombre = nombre;
+    this.apellido = apellido;
+    this.genero = genero;
+    this.fechaNacimiento = fechaNacimiento;
   }
 
   public void actualizar(String nombre, String apellido, LocalDate fechaNacimiento, Genero genero) {

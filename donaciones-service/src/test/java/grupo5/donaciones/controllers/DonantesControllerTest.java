@@ -1,16 +1,18 @@
 package grupo5.donaciones.controllers;
 
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import grupo5.donaciones.dto.donantes.ArchivoInputDTO;
+import grupo5.donaciones.dto.donantes.ArchivoDonantesSubido;
 import grupo5.donaciones.dto.donantes.ArchivoOutputDTO;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.donantes.DonanteOutputDTO;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 
 class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
 
@@ -128,35 +131,43 @@ class DonantesControllerTest extends AbstractDonacionesWebMvcTest {
   }
 
   @Test
-  void cargarArchivoDonantes_conPathValido_DeberiaRetornarAccepted() throws Exception {
-    ArchivoInputDTO input = new ArchivoInputDTO("/ruta/donantes.csv");
+  void cargarArchivoDonantes_conArchivoMultipart_DeberiaRetornarAccepted() throws Exception {
+    MockMultipartFile archivo =
+        new MockMultipartFile(
+            "archivo", "padron.csv", "text/csv", "TipoPersona,Nombre\nHumana,Ana\n".getBytes());
     ArchivoOutputDTO output =
-        new ArchivoOutputDTO(UUID.randomUUID(), "/ruta/donantes.csv", "PENDIENTE");
+        new ArchivoOutputDTO(UUID.randomUUID(), UUID.randomUUID() + ".csv", "PENDIENTE");
 
-    when(archivoDonantesService.cargarArchivoDonantes(any(ArchivoInputDTO.class)))
+    when(archivoDonantesService.cargarArchivoDonantes(any(ArchivoDonantesSubido.class)))
         .thenReturn(output);
 
     mockMvc
-        .perform(
-            post("/api/donantes/archivos")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(input)))
+        .perform(multipart("/api/donantes/archivos").file(archivo))
         .andExpect(status().isAccepted())
         .andExpect(jsonPath("$.estado").value("PENDIENTE"));
   }
 
   @Test
-  void cargarArchivoDonantes_conPathVacio_DeberiaRetornarBadRequest() throws Exception {
-    ArchivoInputDTO input = new ArchivoInputDTO("");
+  void cargarArchivoDonantes_sinLaParteArchivo_DeberiaRetornarBadRequest() throws Exception {
+    MockMultipartFile otraParte =
+        new MockMultipartFile("otro", "padron.csv", "text/csv", "x".getBytes());
 
+    mockMvc
+        .perform(multipart("/api/donantes/archivos").file(otraParte))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("ERR-CSR-003"));
+    verifyNoInteractions(archivoDonantesService);
+  }
+
+  @Test
+  void cargarArchivoDonantes_conJsonConPath_DeberiaRetornarUnsupportedMediaType() throws Exception {
     mockMvc
         .perform(
             post("/api/donantes/archivos")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(input)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("ERR-CSR-003"))
-        .andExpect(jsonPath("$.errors[0].field").value("path"));
+                .content("{\"path\":\"/etc/passwd\"}"))
+        .andExpect(status().isUnsupportedMediaType());
+    verifyNoInteractions(archivoDonantesService);
   }
 
   @Test

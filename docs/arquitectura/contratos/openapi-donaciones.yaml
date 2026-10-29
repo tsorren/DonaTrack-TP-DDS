@@ -93,6 +93,8 @@ paths:
                 $ref: '#/components/schemas/DonacionIndependienteResponseDTO'
         '400':
           description: Transición inválida para el estado actual
+        '409':
+          description: Otra operación guardó la donación después de que se leyó (DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE, bloqueo optimista); releer y reintentar
   /api/donaciones:
     post:
       summary: Registrar donación (donación general con ítems)
@@ -113,7 +115,7 @@ paths:
         '409':
           description: El donante está dado de baja (DONANTE_INACTIVO)
         '400':
-          description: Datos de donación inválidos
+          description: Datos de donación inválidos, incluida la falta de descripción (obligatoria desde la persistencia en PostgreSQL, D-32)
     get:
       summary: Listar donaciones
       operationId: listarDonaciones
@@ -126,6 +128,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/DonacionOutputDTO'
+  /api/donaciones/fotos:
+    post:
+      summary: Pedir una URL prefirmada para subir la foto de un bien
+      description: >
+        El servicio no recibe los bytes de la foto: devuelve una URL temporal (15 min) para subirla
+        directo al almacenamiento de objetos (MinIO) con PUT y el header Content-Type indicado,
+        y una referencia para mandar en fotoUrl al cargar la donación. Tipos aceptados: JPEG, PNG
+        y WebP, hasta 10 MB (se verifica al cargar la donación).
+      operationId: solicitarSubidaFoto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SolicitudSubidaFotoInputDTO'
+      responses:
+        '200':
+          description: URL de subida y referencia de la foto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubidaFotoOutputDTO'
+        '400':
+          description: Falta el tipo de contenido (ERR-CSR-003) o no está permitido (ERR-VAL-318)
   /api/donaciones/{id}:
     get:
       summary: Consultar donación por ID
@@ -197,6 +223,8 @@ paths:
           description: Datos inválidos
         '404':
           description: Necesidad no encontrada
+        '409':
+          description: Otra operación guardó la necesidad después de que se leyó (NECESIDAD_MODIFICADA_CONCURRENTEMENTE, bloqueo optimista); releer y reintentar
     delete:
       summary: Baja de necesidad
       operationId: eliminarNecesidad
@@ -246,7 +274,12 @@ paths:
         '200':
           description: Estado actualizado
         '409':
-          description: La necesidad ya no está activa (NECESIDAD_INACTIVA), una donación es de la propia entidad (DONACION_A_SI_MISMO) o la transición de estado no es válida
+          description: >
+            La necesidad ya no está activa (NECESIDAD_INACTIVA), una donación es de la propia
+            entidad (DONACION_A_SI_MISMO), la transición de estado no es válida o otra operación
+            guardó una de las donaciones a la vez
+            (DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE). La aprobación es atómica: si
+            falla, no queda nada asignado y la propuesta sigue pendiente.
   /api/entidades:
     post:
       summary: Registrar entidad beneficiaria
@@ -393,12 +426,43 @@ paths:
   /api/donantes/archivos:
     post:
       summary: Cargar archivo/padrón de donantes para procesamiento asíncrono
+      description: >
+        Una fila cuyo correo ya pertenece a otra persona con un documento distinto no se
+        importa y cuenta como error del archivo (PERSONA_DUPLICADA_EN_CONFLICTO): el conflicto
+        no devuelve 409, porque el procesamiento es asíncrono.
       operationId: cargarArchivoDonantes
+      requestBody:
+        required: true
+        description: >
+          El padrón como multipart/form-data. El servicio lo guarda en el almacenamiento de
+          objetos (MinIO) con una clave propia; el nombre del archivo solo se usa para validar la
+          extensión .csv. Reemplaza al cuerpo JSON {path} con una ruta del servidor (cambio no
+          aditivo aprobado en la Entrega 6).
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [archivo]
+              properties:
+                archivo:
+                  type: string
+                  format: binary
+                  description: Padrón CSV en UTF-8 (con o sin BOM), hasta 50 MB
       responses:
         '202':
           description: Archivo aceptado para procesamiento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchivoDonantesResponse'
         '400':
-          description: Archivo inválido
+          description: >
+            Falta la parte 'archivo' (ERR-CSR-003), o el archivo está vacío o no es .csv
+            (ERR-VAL-213)
+        '413':
+          description: El archivo supera el tamaño máximo (ERR-CSR-003 o ERR-VAL-214)
+        '415':
+          description: El cuerpo no es multipart/form-data
   /api/donantes/archivos/{id}:
     get:
       summary: Consultar estado de procesamiento de archivo de donantes
@@ -411,6 +475,10 @@ paths:
       responses:
         '200':
           description: Detalle del archivo de donantes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchivoDonantesResponse'
         '404':
           description: Archivo no encontrado
   /api/categorias:
@@ -460,6 +528,7 @@ paths:
       responses:
         '200': { description: Categoría eliminada exitosamente (retorna CategoriaOutputDTO) }
         '404': { description: Categoría no encontrada }
+        '409': { description: Alguna de sus subcategorías tiene necesidades que la usan (SUBCATEGORIA_EN_USO) }
   /api/subcategorias:
     get:
       summary: Listar subcategorías
@@ -505,6 +574,7 @@ paths:
       responses:
         '200': { description: Subcategoría eliminada exitosamente (retorna SubcategoriaOutputDTO) }
         '404': { description: Subcategoría no encontrada }
+        '409': { description: Tiene necesidades que la usan (SUBCATEGORIA_EN_USO) }
   /api/subcategorias/{id}/aliases:
     post:
       summary: Agregar alias semántico a una subcategoría
@@ -718,6 +788,43 @@ paths:
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
+    SolicitudSubidaFotoInputDTO:
+      type: object
+      required: [tipoContenido]
+      properties:
+        tipoContenido:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+    SubidaFotoOutputDTO:
+      type: object
+      required: [uploadUrl, metodo, tipoContenido, referencia, expiraEn]
+      properties:
+        uploadUrl:
+          type: string
+          description: URL prefirmada de MinIO; no requiere credenciales
+        metodo:
+          type: string
+          enum: [PUT]
+        tipoContenido:
+          type: string
+          description: Valor del header Content-Type a enviar en la subida
+        referencia:
+          type: string
+          example: /fotos-bienes/3f2b9c1e-7a4d-4e8f-9b0a-1c2d3e4f5a6b.jpg
+        expiraEn:
+          type: string
+          format: date-time
+    ArchivoDonantesResponse:
+      type: object
+      required: [id, path, estado]
+      properties:
+        id: { type: string, format: uuid }
+        path:
+          type: string
+          description: Clave del padrón en el bucket donaciones-padrones (UUID.csv), no una ruta de disco
+        estado:
+          type: string
+          enum: [PENDIENTE, PROCESANDO, PROCESADO, PROCESADO_CON_ERRORES, ERROR]
     # Personas (DTI-27, ítem 3): PersonaInputDTO y PersonaOutputDTO son polimórficos por "tipo"
     # (HumanaInputDTO/JuridicaInputDTO y sus Output). Los campos opcionales de salida admiten null.
     PersonaInputDTO:
@@ -910,6 +1017,7 @@ components:
       type: object
       required:
         - donanteId
+        - descripcion
         - items
       properties:
         donanteId:
@@ -917,10 +1025,23 @@ components:
           format: uuid
         descripcion:
           type: string
+          description: >
+            Descripción general de lo que se dona. Obligatoria (400 si falta o está vacía). Cambio
+            no aditivo del contrato (D-32): antes era opcional y la base la exige NOT NULL.
         items:
           type: array
           items:
             type: object
+            properties:
+              fotoUrl:
+                type: string
+                nullable: true
+                description: >
+                  Referencia devuelta por POST /api/donaciones/fotos (/fotos-bienes/<uuid>.<ext>),
+                  después de subir la foto con la uploadUrl. Al cargar la donación se verifica que
+                  la foto exista y respete tipo y tamaño (400 ERR-VAL-319, 320, 318 o 321). Una URL
+                  externa se acepta sin cambios. Al leer, la referencia se devuelve como URL
+                  temporal de descarga (2 h).
     DonacionOutputDTO:
       type: object
       required:

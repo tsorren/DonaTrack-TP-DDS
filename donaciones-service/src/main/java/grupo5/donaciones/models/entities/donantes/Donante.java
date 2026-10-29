@@ -24,6 +24,12 @@ public class Donante implements Anonimizable, AggregateRoot {
     this(persona.getId());
   }
 
+  /** Constructor de reconstitución para el adaptador JPA */
+  public Donante(UUID personaId, boolean activo) {
+    this(personaId);
+    this.activo = activo;
+  }
+
   public UUID personaId() {
     return this.id;
   }

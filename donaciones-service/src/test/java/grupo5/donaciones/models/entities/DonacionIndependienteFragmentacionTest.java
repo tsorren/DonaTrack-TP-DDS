@@ -29,8 +29,10 @@ class DonacionIndependienteFragmentacionTest {
     Bien bienOriginal = BienMother.prendaRopa("Campera de invierno");
     bienNormalizado = BienMother.aceptado(bienOriginal, subcategoriaId);
 
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 10);
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 15);
+    ItemDonacionIndependiente item1 =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 10);
+    ItemDonacionIndependiente item2 =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 15);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>();
     items.add(item1);
@@ -79,9 +81,12 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void fragmentarse_conMultiplesItems_extraePorCompleto() {
-    ItemDonacionIndependiente item1 = new ItemDonacionIndependiente(bienNormalizado, 5);
-    ItemDonacionIndependiente item2 = new ItemDonacionIndependiente(bienNormalizado, 8);
-    ItemDonacionIndependiente item3 = new ItemDonacionIndependiente(bienNormalizado, 12);
+    ItemDonacionIndependiente item1 =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 5);
+    ItemDonacionIndependiente item2 =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 8);
+    ItemDonacionIndependiente item3 =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 12);
 
     List<ItemDonacionIndependiente> items = new ArrayList<>(List.of(item1, item2, item3));
 
@@ -101,7 +106,8 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void agregarItem_conItemValido_debeAgregarse() {
-    ItemDonacionIndependiente nuevoItem = new ItemDonacionIndependiente(bienNormalizado, 5);
+    ItemDonacionIndependiente nuevoItem =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 5);
     int cantidadActual = donacionIndependiente.getCantidad();
 
     donacionIndependiente.agregarItem(nuevoItem);
@@ -138,7 +144,8 @@ class DonacionIndependienteFragmentacionTest {
 
   @Test
   void quitarItem_conItemNoPerteneciente_debeLanzarExcepcion() {
-    ItemDonacionIndependiente itemExterno = new ItemDonacionIndependiente(bienNormalizado, 5);
+    ItemDonacionIndependiente itemExterno =
+        new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizado, 5);
 
     ValidationException exception =
         assertThrows(

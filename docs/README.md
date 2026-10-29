@@ -40,7 +40,7 @@ docs/
 │   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de diseño y anexos técnicos
-│       ├── donaciones/
+│       ├── donaciones/                # Diagrama de clases, DER implementado (V1-V12), cambios al DER y componentes de persistencia
 │       ├── incentivos/
 │       ├── logistica/
 │       ├── notificaciones/
@@ -189,4 +189,5 @@ docs/
 * 🔒 **Auth Service (Bounded Context Reservado):** [../auth-service/README.md](../auth-service/README.md)
 * 💻 **Cliente Liviano (Bounded Context Reservado):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
 * 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql) y [../persistencia/init-db/02-set-role-passwords.sh](../persistencia/init-db/02-set-role-passwords.sh) (contraseñas desde `.env`, ver [../.env.example](../.env.example))
+* 🪣 **MinIO de Donaciones (padrones CSV y fotos de bienes):** [entrega-4/donaciones/bitacora-minio.md](entrega-4/donaciones/bitacora-minio.md) · plan: [entrega-4/donaciones/plan-minio-csv-y-fotos.md](entrega-4/donaciones/plan-minio-csv-y-fotos.md) · usuarios por servicio: [../persistencia/minio/init-usuarios.sh](../persistencia/minio/init-usuarios.sh)
 

@@ -16,10 +16,7 @@ public class EnDeposito implements EstadoDonacionIndependiente {
   @Override
   public void asignar(DonacionIndependiente d, String actor) {
     d.cambiarEstado(new AsignacionRealizada(), null, actor);
-    UUID necesidadId =
-        d.getAsignadaA() != null && d.getAsignadaA().obtenerNecesidad() != null
-            ? d.getAsignadaA().obtenerNecesidad().getId()
-            : null;
+    UUID necesidadId = d.getNecesidadId();
     d.registrarEvento(
         new EventoDonacionAsignada(d.getId(), d.getDonacionOriginalId(), necesidadId));
   }
@@ -33,7 +30,7 @@ public class EnDeposito implements EstadoDonacionIndependiente {
     if (solicitud == null || solicitud.getNecesidad() == null) {
       throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD);
     }
-    d.asignarReceptor(solicitud.getNecesidad());
+    d.asignarDestino(solicitud.getNecesidad().destinoDeAsignacion());
     asignar(d, solicitud.getActor());
   }
 

@@ -24,6 +24,12 @@ public class EntidadBeneficiaria implements Anonimizable, AggregateRoot {
     this.activo = true;
   }
 
+  /** Constructor de reconstitución para el adaptador JPA */
+  public EntidadBeneficiaria(UUID juridicaId, boolean activo) {
+    this(juridicaId);
+    this.activo = activo;
+  }
+
   /**
    * Una entidad beneficiaria es una organización sin fines de lucro: tiene que ser jurídica, no
    * puede ser una empresa y necesita dirección (la entrega se hace allí).
