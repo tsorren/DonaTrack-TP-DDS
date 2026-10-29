@@ -18,6 +18,11 @@ MODO="${2:?Uso: $0 <ref-base> aviso|error}"
 OASDIFF="tufin/oasdiff:v1.34.1@sha256:67a23cfea7d251e2ae34ee703ac8733c5d96bc2e7b90fd0f4d475ec99367b85f"
 
 cd "$(dirname "$0")/.."
+# Una base que no resuelve no puede leerse como "todas las specs son nuevas": sería un verde falso
+if ! git rev-parse --verify --quiet "${BASE}^{commit}" >/dev/null; then
+  echo "::error::La base ${BASE} no resuelve a un commit: no se pueden comparar las specs."
+  exit 2
+fi
 TMP="target/diff-contratos"
 rm -rf "$TMP" && mkdir -p "$TMP"
 ROTOS=0

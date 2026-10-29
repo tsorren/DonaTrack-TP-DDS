@@ -245,8 +245,10 @@ class ContractIT extends BaseIT {
         badResponseReport.hasErrors(),
         "Debe detectar error cuando el status code de respuesta no está documentado en la spec");
 
-    // 5. Verificación de intercepción en vivo cuando el servicio está activo
-    if (isServiceAvailable(NOTIFICACIONES_URL)) {
+    // 5. Verificación de intercepción en vivo cuando el servicio está activo; en modo estricto
+    // (RM-02) un servicio caído hace fallar el test en lugar de omitir el paso
+    if (PREPROD_STRICT || isServiceAvailable(NOTIFICACIONES_URL)) {
+      requireServiceAvailable(NOTIFICACIONES_URL, "notificaciones-service");
       OpenApiValidationFilter filter = new OpenApiValidationFilter(specPath);
       assertThrows(
           OpenApiValidationFilter.OpenApiValidationException.class,

@@ -379,7 +379,8 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           BEFORE: ${{ github.event.before }}
         run: |
-          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then BASE=origin/main; else BASE="$BEFORE"; fi
+          # Corte, o push que crea la rama (before = 000…): se compara con main
+          if [[ "$EVENT_NAME" == "workflow_dispatch" || "$BEFORE" =~ ^0+$ ]]; then BASE=origin/main; else BASE="$BEFORE"; fi
           scripts/diff-contratos.sh "$BASE" error
 
       - name: Subir el manifiesto candidato validado
