@@ -131,8 +131,9 @@ docs/
 │       └── rabbit/                        # Topología RabbitMQ por flujo (exchanges, colas, DLQ)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
-    ├── README.md                          # 🟢 Matriz curricular e índice de entregas 1 a 4
+    ├── README.md                          # 🟢 Matriz curricular e índice de entregas 1 a 7
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
+    ├── Enunciado-TP-Anual-2026.pdf        # Enunciado completo y final (entregas 1 a 7)
     └── 1/interfaz/                        # Bocetos Figma y mapa de navegación (dentro de la entrega 1)
 ```
 
@@ -292,7 +293,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
 | [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación (Entrega 6) y Key Broker (Entrega 7, decisión D29 de [requerimientos-e6](requerimientos/requerimientos-e6.md)). | 🟢 Sincronizado |
-| [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para interfaz Web MVC (Entrega 5). | 🟢 Sincronizado |
+| [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para la interfaz de usuario y arquitectura MVC (Entrega 6). | 🟢 Sincronizado |
 | [`docs/requerimientos/requerimientos-e6.md`](requerimientos/requerimientos-e6.md) | Requerimientos Entrega 6 | RF y RNF del servicio de autenticación, el API gateway y el cliente liviano; huecos de backend; decisiones D1–D30 con alternativas (5 pendientes) y ADRs candidatos. | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
 | [`docs/entrega-4/README.md`](entrega-4/README.md) | Índice Entrega 4 | Índice de todos los `.md` de `docs/entrega-4/` y de la guía de migración de Notificaciones. | 🟢 Sincronizado |
@@ -308,7 +309,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/entrega-4/donaciones/guion-demo-broker.md`](entrega-4/donaciones/guion-demo-broker.md) | Guion Entrega 4 | Guion de la demo del broker de logística (escenarios, comandos y qué explicar). | 🟢 Sincronizado |
 | [`docs/entrega-4/donaciones/plan-implementacion-roles-donante-entidad.md`](entrega-4/donaciones/plan-implementacion-roles-donante-entidad.md) | Plan Entrega 4 | Plan por etapas del rediseño de los roles Donante y EntidadBeneficiaria (issue #888): identidad compartida, baja lógica y orden de eventos. | 🟢 Sincronizado |
 | [`docs/entrega-4/donaciones/bitacora-roles-donante-entidad.md`](entrega-4/donaciones/bitacora-roles-donante-entidad.md) | Bitácora Entrega 4 | Registro vivo de decisiones, preguntas y avances del rediseño de los roles Donante y EntidadBeneficiaria (issue #888). | 🟢 Sincronizado |
-| [`docs/entregas/README.md`](entregas/README.md) | Currícula Cátedra | Matriz curricular e índice de enunciados oficiales y artefactos de Entregas 1 a 4. | 🟢 Sincronizado |
+| [`docs/entregas/README.md`](entregas/README.md) | Currícula Cátedra | Matriz curricular e índice de enunciados oficiales y artefactos de Entregas 1 a 4; Entregas 5 a 7 con el enunciado completo del TP Anual 2026. | 🟢 Sincronizado |
 
 
 ---
