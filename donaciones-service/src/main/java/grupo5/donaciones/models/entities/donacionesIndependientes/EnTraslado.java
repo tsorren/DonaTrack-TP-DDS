@@ -29,10 +29,12 @@ public class EnTraslado implements EstadoDonacionIndependiente {
   @Override
   public void confirmarEntrega(
       DonacionIndependiente d, SolicitudCambioEstadoDonacionIndependiente solicitud) {
-    confirmarEntrega(
-        d,
-        solicitud != null ? solicitud.getPatenteCamion() : null,
-        solicitud != null ? solicitud.getActor() : "SISTEMA");
+    String patenteCamion = solicitud != null ? solicitud.getPatenteCamion() : null;
+    if (patenteCamion == null || patenteCamion.isBlank()) {
+      // donacion.recibida.v1 exige patenteCamion: sin ella el evento saldría inválido.
+      throw new ValidationException(ErrorCatalog.DONACION_INDEPENDIENTE_ENTREGA_SIN_PATENTE);
+    }
+    confirmarEntrega(d, patenteCamion, solicitud.getActor());
   }
 
   @Override

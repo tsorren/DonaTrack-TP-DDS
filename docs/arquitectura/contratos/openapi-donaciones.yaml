@@ -971,8 +971,12 @@ components:
             - VENCIDA
         justificacion: { type: string }
         necesidadId: { type: string, format: uuid }
-        urlMapa: { type: string }
-        patenteCamion: { type: string }
+        urlMapa:
+          type: string
+          description: Obligatoria si el estado es EN_TRASLADO (400 ERR-VAL-415); la exige el evento donacion.en-camino.v1
+        patenteCamion:
+          type: string
+          description: Obligatoria si el estado es ENTREGADA (400 ERR-VAL-416); la exige el evento donacion.recibida.v1
         replanificable: { type: boolean }
     DonacionIndependienteResponseDTO:
       type: object

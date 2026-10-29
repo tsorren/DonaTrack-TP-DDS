@@ -59,3 +59,6 @@ __pycache__/
 
 # Credenciales locales de docker compose (ver .env.example)
 .env
+
+# Reportes de analyze_preprod_logs.py --export-report
+docker-logs/

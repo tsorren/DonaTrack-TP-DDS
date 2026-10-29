@@ -2,9 +2,9 @@
 
 Documentación técnica de la base de datos PostgreSQL centralizada con arquitectura multi-schema y aislamiento de roles por Bounded Context.
 
-> Decisión de arquitectura de referencia: [`ADR — Persistencia Multi-Schema`](../docs/adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md)
+> Decisión de arquitectura de referencia (`superseded` el 2026-10-29 por el [ADR de base por servicio](../docs/adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md); el código lo sigue hasta implementar RM-19): [`ADR — Persistencia Multi-Schema`](../docs/adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md)
 
-> **Cambio propuesto, sin implementar (RM-19):** el [ADR de base de datos por servicio en el mismo motor](../docs/adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (`proposed`, 2026-10-28) propone una base por servicio (`notificaciones`, `incentivos`, `donaciones`, `logistica`) con el mismo schema `<servicio>` adentro, en el mismo PostgreSQL. Las URLs pasarían a `/<servicio>?currentSchema=<servicio>`. Este documento describe lo que hay hoy: el código cambia después de que mergeen `E4_donaciones_minio` y `E4_persistencia_donaciones`, y si un humano aprueba el reemplazo del ADR multi-schema.
+> **Cambio aceptado, sin implementar (RM-19):** el [ADR de base de datos por servicio en el mismo motor](../docs/adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (`accepted`, 2026-10-29) decide una base por servicio (`notificaciones`, `incentivos`, `donaciones`, `logistica`) con el mismo schema `<servicio>` adentro, en el mismo PostgreSQL. Las URLs pasarían a `/<servicio>?currentSchema=<servicio>`. Este documento describe lo que hay hoy: el código cambia después de que mergeen `E4_donaciones_minio` y `E4_persistencia_donaciones` (DTI-26).
 
 ---
 
