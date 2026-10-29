@@ -658,175 +658,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # [FIX-5] Estrategia de resolución de imágenes en 3 niveles:
-      #   1. Imagen del PR (tag pr-N) — servicio modificado en este PR
-      #   2. Imagen de la rama base real en GHCR (tag = github.base_ref sanitizado)
-      #   3. Error explícito — sin recompilación silenciosa que destruye tiempos
-      #
-      # CORRECCIÓN respecto a la iteración anterior: BASE_TAG usaba "latest"
-      # estático, lo que mezcla imágenes de entregas distintas. Por ejemplo,
-      # un PR a ENTREGA_2 descargaba imágenes de ENTREGA_1 (el latest de main),
-      # generando fallos contractuales si los endpoints cambiaron entre entregas.
-      # Se usa github.base_ref directamente (ej. "ENTREGA_2") como tag base.
-      #
-      # PREREQUISITO: el pipeline de merge (push a main/ENTREGA_*) debe publicar
-      # el tag correspondiente al nombre de la rama en GHCR al integrar cambios.
-      - name: Obtener imágenes de GHCR y preparar servicios
+      # RM-04: el job invoca el mismo punto de entrada que se usa en local. El script
+      # resuelve las imágenes (scripts/resolver-imagenes-ghcr.sh), levanta el stack, corre
+      # smoke y después contract,integration,e2e, reporta (report_test_failures.py) y desmonta.
+      #   - Servicio modificado: imagen pr-<N> obligatoria (RM-02).
+      #   - Servicio no modificado: tag de la rama base real ([FIX-5]), normalizado a
+      #     minúsculas y sin "/" (requisito OCI).
+      - name: Validación pre-producción (run-preprod-tests.sh --images ghcr)
         env:
           DOCKER_MATRIX: ${{ needs.detect-changes.outputs.docker-matrix }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_REPOSITORY: ${{ github.repository }}
+          RAW_BASE_REF: ${{ github.base_ref }}
         run: |
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          GHCR_BASE="ghcr.io/${REPO_LOWER}"
-          PR_TAG="pr-${{ github.event.pull_request.number }}"
-          # [FIX-5] Tag de rama base real: evita mezcla entre entregas distintas.
-          # El nombre de rama puede contener mayúsculas y "/" no válidos en tags OCI;
-          # se normaliza a minúsculas y se reemplaza "/" por "-".
-          BASE_TAG=$(echo "${{ github.base_ref }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
-
-          # Descubrimiento dinámico de servicios (idéntico a Job 2)
-          ALL_SERVICES=()
-          for pom in */pom.xml; do
-            [ -f "$pom" ] || continue
-            dir=$(dirname "$pom")
-            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" ]]; then
-              ALL_SERVICES+=("$dir")
-            fi
-          done
-
-          # RM-02: un servicio modificado por el PR solo corre con su imagen pr-<N>.
-          CHANGED_SERVICES=" $(echo "$DOCKER_MATRIX" | jq -r '.include[].service' | tr '\n' ' ') "
-
-          FAILED_SERVICES=()
-          for svc in "${ALL_SERVICES[@]}"; do
-            # [FIX-PREPROD-DOCKERFILE] Solo intentar resolver imagen para módulos
-            # que tienen Dockerfile. Sin este guard, el bucle intenta docker pull
-            # para librerías internas, clientes API o módulos batch sin contenedor,
-            # los dos pulls fallan y el servicio entra en FAILED_SERVICES → exit 1.
-            if [ ! -f "$svc/Dockerfile" ]; then
-              echo "⏭️  Omitiendo $svc (no posee Dockerfile — no es un servicio contenerizable)"
-              continue
-            fi
-
-            PR_IMAGE="${GHCR_BASE}/${svc}:${PR_TAG}"
-            BASE_IMAGE="${GHCR_BASE}/${svc}:${BASE_TAG}"
-            LOCAL_IMAGE="donatrack/${svc}:preprod"
-
-            echo "📦 Resolviendo imagen para: $svc"
-
-            if [[ "$CHANGED_SERVICES" == *" $svc "* ]]; then
-              if docker pull "$PR_IMAGE" 2>/dev/null; then
-                echo "  ✅ Imagen PR descargada de GHCR: $PR_IMAGE"
-                docker tag "$PR_IMAGE" "$LOCAL_IMAGE"
-              else
-                echo "::error::$svc fue modificado por el PR y no tiene imagen $PR_IMAGE: no se valida con la imagen de la base."
-                FAILED_SERVICES+=("$svc")
-              fi
-            elif docker pull "$BASE_IMAGE" 2>/dev/null; then
-              echo "  ℹ️  Servicio no modificado: usando imagen base estable: $BASE_IMAGE"
-              docker tag "$BASE_IMAGE" "$LOCAL_IMAGE"
-            else
-              echo "  ❌ No se encontró imagen ni en PR ni en rama base para: $svc"
-              FAILED_SERVICES+=("$svc")
-            fi
-          done
-
-          if [ ${#FAILED_SERVICES[@]} -gt 0 ]; then
-            echo "::error::Las siguientes imágenes no pudieron resolverse: ${FAILED_SERVICES[*]}"
-            echo "::error::Asegúrese de que el pipeline de merge publica el tag '$BASE_TAG' en GHCR."
-            exit 1
-          fi
-
-      - name: Provisionar Entorno de Pre-Producción (Sin recompilar)
-        run: |
-          scripts/generar-env-db.sh
-          docker compose -f docker-compose.preprod.yml up --no-build --wait -d
-          echo "✅ Stack de Pre-Producción levantado y healthy."
-
-      - name: Importar y Activar Workflows en n8n
-        run: |
-          echo "📥 Importando workflows en n8n..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --separate --input=/etc/n8n/workflows
-
-          echo "🚀 Activando workflows en n8n..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2
-
-          echo "🔄 Reiniciando n8n para aplicar webhooks..."
-          docker compose -f docker-compose.preprod.yml restart n8n
-
-          echo "⏳ Esperando disponibilidad de n8n..."
-          attempts=0
-          until curl -s -f http://localhost:5678/healthz >/dev/null; do
-            attempts=$((attempts+1))
-            if [ $attempts -ge 30 ]; then
-              echo "❌ Error: n8n no respondió en el tiempo límite."
-              exit 1
-            fi
-            sleep 1
-          done
-          echo "✅ n8n listo con workflows activos."
-
-      - name: Verificar disponibilidad de /v3/api-docs
-        run: |
-          set -e
-          URLs=(
-            "http://localhost:8080/v3/api-docs"
-            "http://localhost:8081/v3/api-docs"
-            "http://localhost:8082/v3/api-docs"
-            "http://localhost:8083/v3/api-docs"
-          )
-          for url in "${URLs[@]}"; do
-            echo "Esperando endpoint $url..."
-            attempt=0
-            until curl -s -f "$url" >/dev/null; do
-              attempt=$((attempt+1))
-              if [ $attempt -ge 60 ]; then
-                echo "::error:: $url no respondió con HTTP 200 tras 60 intentos."
-                docker compose -f docker-compose.preprod.yml logs --no-color
-                exit 1
-              fi
-              sleep 2
-            done
-            echo "✅ $url disponible"
-          done
-
-      - name: 1. Smoke Tests (Fail-Fast)
-        run: |
-          mvn verify -pl integration-tests -DskipTests=false -Dgroups=smoke \
-            -Ddonaciones.url=http://localhost:8080 \
-            -Dnotificaciones.url=http://localhost:8081 \
-            -Dincentivos.url=http://localhost:8082 \
-            -Dlogistica.url=http://localhost:8083
-
-      - name: 2. Pruebas de Contrato, Integración y E2E
-        run: |
-          mvn verify -pl integration-tests -DskipTests=false -Dgroups="contract,integration,e2e" \
-            -Ddonaciones.url=http://localhost:8080 \
-            -Dnotificaciones.url=http://localhost:8081 \
-            -Dincentivos.url=http://localhost:8082 \
-            -Dlogistica.url=http://localhost:8083
-
-      - name: Recolectar Logs de Contenedores
-        if: always()
-        run: |
-          mkdir -p docker-logs
-          docker compose -f docker-compose.preprod.yml logs --no-color --timestamps > docker-logs/docker-preprod-full.log
-
-      - name: Analizar Logs de Contenedores y Diagnóstico
-        if: always()
-        run: |
-          python scripts/analyze_preprod_logs.py --file docker-logs/docker-preprod-full.log --export-report
-
-      - name: Reportar Fallos de Pruebas Automatizadas
-        if: always()
-        env:
-          DOCKER_MATRIX: ${{ needs.detect-changes.outputs.docker-matrix }}
-        run: |
-          # RM-02: un salteado en un grupo requerido falla. D5: las fallas de servicios
-          # que el PR no modificó se marcan como heredadas de la base.
-          CHANGED=$(echo "$DOCKER_MATRIX" | jq -r '[.include[].service] | join(",")')
-          python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports --fail-on-zero-tests \
-            --required-groups smoke,contract,integration,e2e --changed-services "$CHANGED"
+          export GHCR_BASE="ghcr.io/$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
+          export PR_TAG="pr-${PR_NUMBER}"
+          export BASE_TAG=$(echo "$RAW_BASE_REF" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
+          # D5: las fallas de servicios que el PR no modificó se marcan como heredadas.
+          export CHANGED_SERVICES=$(echo "$DOCKER_MATRIX" | jq -r '[.include[].service] | join(",")')
+          ./run-preprod-tests.sh --images ghcr
 
       - name: Subir Reportes de Pruebas (Failsafe & Surefire)
         if: always()
@@ -843,13 +693,8 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: docker-preprod-logs
-          path: docker-logs/
+          path: logs/registro/
           retention-days: 3
-
-      - name: Desmantelar Entorno
-        if: always()
-        run: |
-          docker compose -f docker-compose.preprod.yml down -v
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 10: Quality Gate (Consolidador Final)
