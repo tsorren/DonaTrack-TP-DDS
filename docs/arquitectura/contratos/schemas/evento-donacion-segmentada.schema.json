@@ -32,5 +32,5 @@
     "cantidad",
     "fecha"
   ],
-  "additionalProperties": false
+  "additionalProperties": true
 }

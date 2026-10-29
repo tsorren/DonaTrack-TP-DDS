@@ -63,6 +63,9 @@ docs/
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño de testing y alternativas
+│   ├── preprod-fiel.md                    # Preprod fiel: criterio, estado y brechas (fase 1)
+│   ├── preprod-fiel-arquitectura-objetivo.md # Preprod fiel: arquitectura objetivo (fase 2)
+│   ├── preprod-fiel-roadmap.md            # Preprod fiel: roadmap por entrega y ADR (fase 3)
 │   ├── auditoria/                         # 🟢 Compendio especializado de auditoría QA (01 a 06 + README)
 │   └── postman/                           # LEGADO: copia anterior; la fuente vigente es ../postman/ (raíz del repo)
 │
@@ -90,12 +93,12 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # 🟢 Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-23)
+│   ├── DEUDA_TECNICA.md                   # 🟢 Catálogo de deuda técnica diferida (DTI-01 a DTI-27)
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 🟢 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04, SPEC-05)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🟢 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -152,6 +155,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/specs/`](specs/README.md) | Especificaciones SDD | Catálogo centralizado de especificaciones funcionales y técnicas (active/completed). | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md`](specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) | Especificación SDD | Topología AMQP Pub/Sub canónica, colas segregadas, envelope nativo, 10 schemas y Hard Cutover. | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-04-broker-integracion-logistica.md`](specs/active/SPEC-04-broker-integracion-logistica.md) | Especificación SDD | Broker de Integración con Logística: selección de proveedor (AMQP/HTTP), comando dirigido, `mandatory` + acuse, outbox basado en datos. | 🟢 Sincronizado |
+| [`docs/specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md`](specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) | Especificación SDD | Rediseño del roadmap de preprod fiel (D1–D5) e implementación de RM-01 a RM-08. `APPROVED_BY_USER`. | 🟢 Sincronizado |
 | [`docs/auditoria/auditoria-directivas-agentes.md`](auditoria/auditoria-directivas-agentes.md) | Auditoría de Repositorio | Diagnóstico de madurez Agent-Friendly (Score 5.0/5.0 — Nivel 4 Pleno) y directivas anti-sesgo. | 🟢 Sincronizado |
 | [`docs/IA/evals/README.md`](IA/evals/README.md) | Evaluación de IA | Infraestructura de evaluación documental v1, suite ampliada de escenarios E01–E11 y scorecards. | 🟢 Sincronizado |
 | [`scripts/run-evals.js`](../scripts/run-evals.js) | Harness Evals Runner | Runner determinista de escenarios E01–E11 y taxonomía de fallas críticas CF-01 a CF-12 con emisión de scorecard. | 🟢 Sincronizado |
@@ -229,7 +233,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/auditoria/README.md`](auditoria/README.md) | Portal Auditoría | Portal y catálogo de auditorías arquitectónicas, directivas y planes revisores. | 🟢 Sincronizado |
 | [`docs/auditoria/plan-revisor-critico.md`](auditoria/plan-revisor-critico.md) | Auditoría | Marco metodológico, rúbricas de evaluación adversarial y matrices de control. | 🟢 Sincronizado |
 | [`docs/auditoria/revision-critica-devops-ci.md`](auditoria/revision-critica-devops-ci.md) | Auditoría DevOps | Revisión crítica experta de pipelines CI/CD, Dockerfiles, observabilidad y scripts auxiliares. | 🟢 Sincronizado |
-| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-23) con ADRs enlazados. | 🟢 Sincronizado |
+| [`docs/adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) | Deuda Técnica | Registro e índice de deudas técnicas diferidas (DTI-01 a DTI-27; DTI-15 reservada) con ADRs enlazados. | 🟢 Sincronizado |
 | [`docs/adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md`](adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) | ADR Deuda Técnica | DTI-07: Adaptador interino local para Crypto-Shredding mientras auth-service no exista. | 🟢 Sincronizado |
 | [`docs/adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md`](adr/20260903-observabilidad-estructurada-ndjson-y-trazabilidad-mdc.md) | ADR Deuda Técnica | DTI-08: Campos de observabilidad diferidos (spanId, executionTimeMs, errorCode estructurado). | 🟢 Sincronizado |
 | [`docs/adr/incentivos-service/20260905-dti-09-seguridad-y-asincronia-en-procesos-batch-de-incentivos.md`](adr/incentivos-service/20260905-dti-09-seguridad-y-asincronia-en-procesos-batch-de-incentivos.md) | ADR Deuda Técnica | DTI-09: Seguridad, control de acceso y asincronía en endpoints de procesos batch de incentivos. | 🟢 Sincronizado |
@@ -245,6 +249,9 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/adr/20261009-estilo-de-microservicios-con-capas-y-puertos-y-adaptadores.md`](adr/20261009-estilo-de-microservicios-con-capas-y-puertos-y-adaptadores.md) | ADR Estilo | Microservicios con capas e inversión de dependencias (puertos y adaptadores) por servicio. `proposed`. | 🟢 Sincronizado |
 | [`docs/adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md`](adr/20261008-vuelta-de-proveedores-de-logistica-por-mensajeria-con-identidad.md) | ADR Integración | Los proveedores de logística informan solo por mensajería (HTTP solo de ida), con id y token en headers verificados por Donaciones; refina la decisión 7 del ADR del broker. `proposed`. | 🟢 Sincronizado |
 | [`docs/adr/20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests.md`](adr/20261009-tolerancia-al-desorden-de-eventos-en-incentivos-y-consistencia-eventual-en-tests.md) | ADR Arquitectura AMQP | Incentivos tolera eventos fuera de orden (reintento con espera creciente y DLQ por cola) y la suite de integración espera la propagación de eventos (PollingUtils + ArchUnit, Toxiproxy en preprod). `proposed`. | 🟢 Sincronizado |
+| [`docs/adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md`](adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) | ADR CI/CD y Despliegue | Preprod post-merge sobre el digest candidato, promoción por re-etiquetado y manifiesto de versión; despliegue reproducible del manifiesto en el runner con smoke y rollback, y Render como adaptador opcional (revisión 2026-10-28). `proposed`. | 🟢 Sincronizado |
+| [`docs/adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md`](adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) | ADR Persistencia | Una base por servicio en el mismo PostgreSQL, con el schema `<servicio>` adentro; propone reemplazar al ADR multi-schema. Sin implementar (RM-19, DTI-26). `proposed`. | 🟢 Sincronizado |
+| [`docs/adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md`](adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md) | ADR Contratos | Contrato primero, schemas de eventos abiertos y chequeos nuevos en aviso en el PR y en error en el post-merge y en el corte de entrega (D5). `proposed`. | 🟢 Sincronizado |
 
 ### 3.5 Infraestructura, CI/CD y Testing
 
@@ -260,6 +267,9 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/testing/testing-performance.md`](testing/testing-performance.md) | Rendimiento QA | Optimización de compilación, surefire, consolidación WebMvc, scripts TIA y evaluación mvnd. | 🟢 Sincronizado |
 | [`docs/testing/plan-auditoria-y-blueprint-qa.md`](testing/plan-auditoria-y-blueprint-qa.md) | Auditoría QA | Especificación y plan maestro de auditoría y arquitectura target de testing para ejecución con /goal. | 🟢 Sincronizado |
 | [`docs/testing/decisiones-diseno-auditoria-qa.md`](testing/decisiones-diseno-auditoria-qa.md) | Decisiones QA | Registro y fundamentación de decisiones de diseño y análisis de alternativas descartadas. | 🟢 Sincronizado |
+| [`docs/testing/preprod-fiel.md`](testing/preprod-fiel.md) | Preprod fiel | Criterio de 12 propiedades para un preprod fiel, medición de CI/CD e `integration-tests` sobre `origin/main` y brechas B1–B12. Fase 1 de 3. | 🟢 Sincronizado |
+| [`docs/testing/preprod-fiel-arquitectura-objetivo.md`](testing/preprod-fiel-arquitectura-objetivo.md) | Preprod fiel | Alternativas ponderadas por brecha B1–B12, arquitectura objetivo de entorno, pipeline y estratos de la suite, y evaluación Gate A + Gate B de ADR. Fase 2 de 3. | 🟢 Sincronizado |
+| [`docs/testing/preprod-fiel-roadmap.md`](testing/preprod-fiel-roadmap.md) | Preprod fiel | Roadmap RM-01 a RM-20 por entrega (E5–E7), rediseño de la SPEC-05, estado de implementación, proyección del puntaje, aprobaciones y confirmación Gate A + Gate B. Fase 3 de 3. | 🟢 Sincronizado |
 | [`docs/testing/auditoria/README.md`](testing/auditoria/README.md) | Portal Auditoría QA | Índice maestro, síntesis ejecutiva, mapa de navegación y glosario canónico de QA. | 🟢 Sincronizado |
 | [`docs/testing/auditoria/01-diagnostico-ejecutivo.md`](testing/auditoria/01-diagnostico-ejecutivo.md) | Diagnóstico QA | Radiografía factual, evaluación teórica (Khorikov, Google SWE, Fowler) e INC-01. | 🟢 Sincronizado |
 | [`docs/testing/auditoria/02-matriz-antipatrones.md`](testing/auditoria/02-matriz-antipatrones.md) | Smells QA | Matriz de hallazgos empíricos: AP-01 a AP-10 y fortalezas FT-01 a FT-05. | 🟢 Sincronizado |

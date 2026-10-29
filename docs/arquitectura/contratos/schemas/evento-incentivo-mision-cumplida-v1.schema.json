@@ -27,5 +27,5 @@
     }
   },
   "required": ["personaDonanteId", "fecha", "nombreMision", "recompensa"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

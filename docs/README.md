@@ -54,6 +54,9 @@ docs/
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de testing y QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño y justificación de alternativas descartadas
+│   ├── preprod-fiel.md                    # Criterio de preprod fiel, estado de CI/CD e integración y brechas
+│   ├── preprod-fiel-arquitectura-objetivo.md # Alternativas por brecha, entorno, pipeline y estratos objetivo
+│   ├── preprod-fiel-roadmap.md            # Roadmap por entrega (E5–E7), rediseño de la SPEC-05 y estado de implementación
 │   ├── auditoria/                         # 🧪 Compendio de auditoría de testing y arquitectura target (6 docs + README)
 │   └── postman/                           # LEGADO: copia anterior; la fuente vigente es ../postman/ (raíz del repo)
 │
@@ -84,12 +87,12 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-23) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-27) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04, SPEC-05)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
@@ -169,6 +172,9 @@ docs/
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
+* 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
+* 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
+* 🗺️ **Preprod fiel — roadmap por entrega y decisiones:** [testing/preprod-fiel-roadmap.md](testing/preprod-fiel-roadmap.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)

@@ -46,7 +46,7 @@
         }
       },
       "required": ["tipo", "personaId", "fecha", "credencialesDeAcceso"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "EventoDonanteInactivoDTO": {
       "type": "object",
@@ -76,7 +76,7 @@
         }
       },
       "required": ["tipo", "personaId", "fecha", "diasInactivo"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "EventoMisionCumplidaDTO": {
       "type": "object",
@@ -111,7 +111,7 @@
         }
       },
       "required": ["tipo", "personaId", "fecha", "nombreMision", "recompensa"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "EventoSubioCategoriaDTO": {
       "type": "object",
@@ -146,7 +146,7 @@
         }
       },
       "required": ["tipo", "personaId", "fecha", "categoriaNueva", "categoriaVieja"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "EventoDonacionAsignadaDTO": {
       "type": "object",
@@ -182,7 +182,7 @@
         }
       },
       "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "EventoDonacionRecibidaDTO": {
       "type": "object",
@@ -219,7 +219,7 @@
         }
       },
       "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "EventoDonacionEnCaminoDTO": {
       "type": "object",
@@ -256,7 +256,7 @@
         }
       },
       "required": ["tipo", "personaId", "fecha", "personaBeneficiariaId", "descripcion"],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "EventoEntregaFallidaDTO": {
       "type": "object",
@@ -312,7 +312,7 @@
         "justificacion",
         "replanificable"
       ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "EventoDonacionVencidaDTO": {
       "type": "object",
@@ -349,7 +349,7 @@
         }
       },
       "required": ["tipo", "personaId", "fecha", "personaAdminId", "descripcion", "motivo"],
-      "additionalProperties": false
+      "additionalProperties": true
     }
   }
 }

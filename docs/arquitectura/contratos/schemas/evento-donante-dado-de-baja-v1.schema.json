@@ -23,5 +23,5 @@
     }
   },
   "required": ["donanteId", "personaId", "fecha"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

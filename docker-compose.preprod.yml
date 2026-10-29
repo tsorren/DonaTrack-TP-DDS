@@ -183,6 +183,9 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.13-alpine
+    # RM-08: el consumidor espía de integration-tests captura los mensajes; solo en loopback
+    ports:
+      - "127.0.0.1:5672:5672"
     environment:
       - RABBITMQ_DEFAULT_USER=donatrack
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:?ver .env.example}
@@ -247,7 +250,9 @@ services:
       - preprod-network
 
   mongodb:
-    image: mongo:7.0
+    # RM-05: fijada por digest (índice multi-arquitectura de mongo 7.0.45).
+    # Para actualizarla: docker buildx imagetools inspect mongo:7.0 y reemplazar el digest.
+    image: mongo:7.0@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7
     container_name: donatrack-mongodb
     # Replica set de un nodo (lo necesitan las transacciones de logística). Con usuarios y
     # replica set mongod exige un keyfile; como hay un solo nodo, se genera en cada arranque.
