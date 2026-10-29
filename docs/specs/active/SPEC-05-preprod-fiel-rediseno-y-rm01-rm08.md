@@ -1,6 +1,6 @@
 # Spec: SPEC-05 — Rediseño del roadmap de preprod fiel e implementación hasta RM-08
 
-> **Estado:** DRAFT — decisiones elegidas por el usuario el 2026-10-28 (§3, «Decisiones del usuario»); falta su lectura y aprobación de la spec completa
+> **Estado:** APPROVED_BY_USER (2026-10-28) — decisiones en §3, «Decisiones del usuario»
 > **Nivel:** ARCHITECTURAL (AGENTS.md §7.0: cambia la estrategia de persistencia, el pipeline de promoción y suma contratos vivos)
 > **Fecha:** 2026-10-28
 > **Base:** `E5_requerimientos_e6` (`aec0f0eb`) + cherry-pick del análisis de preprod fiel (`1bb339dd`). Rama de PR: `E5_preprod_fiel_rm08`, hacia `ENTREGA_5`.
