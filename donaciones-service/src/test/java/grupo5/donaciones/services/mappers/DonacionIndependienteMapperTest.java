@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.dto.donacionesIndependientes.DonacionIndependienteResponseDTO;
 import grupo5.donaciones.dto.donacionesIndependientes.ItemDonacionIndependienteResponseDTO;
+import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.entities.categorias.Unidad;
@@ -34,7 +35,11 @@ class DonacionIndependienteMapperTest {
   void setUp() {
     subcategoriasRepositoryMock = mock(ISubcategoriasRepository.class);
     categoriasRepositoryMock = mock(ICategoriasRepository.class);
-    mapper = new DonacionIndependienteMapper(subcategoriasRepositoryMock, categoriasRepositoryMock);
+    mapper =
+        new DonacionIndependienteMapper(
+            subcategoriasRepositoryMock,
+            categoriasRepositoryMock,
+            AlmacenamientoFixtures.fotosBienes());
   }
 
   @Test

@@ -1,5 +1,6 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.donaciones.config.AlmacenamientoProperties;
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
 import grupo5.donaciones.dto.mediosDeContacto.MedioDeContactoInputDTO;
 import grupo5.donaciones.dto.personas.HumanaInputDTO;
@@ -12,12 +13,15 @@ import grupo5.donaciones.models.entities.personas.Juridica;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.entities.personas.TipoPersona;
 import grupo5.donaciones.models.ports.CargadorDonantes;
+import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.services.IDonantesService;
 import grupo5.donaciones.services.IImportadorService;
 import grupo5.donaciones.services.IPersonasService;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +41,8 @@ public class ImportadorService implements IImportadorService {
   private final ValidadorPersonaDuplicada validadorDuplicados;
   private final IPersonasService personaService;
   private final IDonantesService donantesService;
+  private final StoragePort storage;
+  private final AlmacenamientoProperties almacenamiento;
   private static final Logger log = LoggerFactory.getLogger(ImportadorService.class);
 
   public ImportadorService(
@@ -46,7 +52,9 @@ public class ImportadorService implements IImportadorService {
       MedioDeContactoMapper medioDeContactoMapper,
       ValidadorPersonaDuplicada validadorDuplicados,
       IPersonasService personaService,
-      IDonantesService donantesService) {
+      IDonantesService donantesService,
+      StoragePort storage,
+      AlmacenamientoProperties almacenamiento) {
     this.archivoRepository = archivoRepository;
     this.lectorCSV = lectorCSV;
     this.personaMapper = personaMapper;
@@ -54,6 +62,8 @@ public class ImportadorService implements IImportadorService {
     this.validadorDuplicados = validadorDuplicados;
     this.personaService = personaService;
     this.donantesService = donantesService;
+    this.storage = storage;
+    this.almacenamiento = almacenamiento;
   }
 
   @Async
@@ -68,7 +78,7 @@ public class ImportadorService implements IImportadorService {
       archivo.marcarComoProcesando();
       archivoRepository.save(archivo);
 
-      List<Map<String, String>> filasValidas = lectorCSV.cargarDonantes(archivo.getPath());
+      List<Map<String, String>> filasValidas = leerPadron(archivo);
 
       int erroresDeNegocio = 0;
 
@@ -87,6 +97,14 @@ public class ImportadorService implements IImportadorService {
       log.error("Error fatal durante la importación del archivo {}: {}", archivoId, e.getMessage());
       archivo.marcarComoError();
       archivoRepository.save(archivo);
+    }
+  }
+
+  /** El path del archivo es la clave del objeto en el bucket de padrones. */
+  private List<Map<String, String>> leerPadron(Archivo archivo) throws IOException {
+    try (InputStream contenido =
+        storage.abrir(almacenamiento.bucketPadrones(), archivo.getPath())) {
+      return lectorCSV.cargarDonantes(contenido);
     }
   }
 

@@ -44,6 +44,7 @@
 |---|---|---|---|---|
 | `ERR-INF-001` | `CSV_READ_ERROR` | Error al leer un archivo CSV | `500` | `InfrastructureException` |
 | `ERR-INF-002` | `CSV_PROCESS_ERROR` | Error al procesar el contenido de un CSV | `500` | `InfrastructureException` |
+| `ERR-INF-003` | `ALMACENAMIENTO_ERROR` | Falla del almacenamiento de objetos (MinIO): objeto inexistente al abrirlo o proveedor caído | `500` | `InfrastructureException` (`StoragePort.AlmacenamientoException`) |
 | `ERR-INF-710` | `NOTIFICACION_INCENTIVOS_ERROR` | Fallo al enviar notificación de incentivos | `500` | `InfrastructureException` |
 
 ---
@@ -91,6 +92,8 @@
 | `ERR-VAL-209` | `DEPOSITO_NOMBRE_NULO` | Nombre de depósito nulo o vacío | `400` |
 | `ERR-VAL-210` | `DEPOSITO_DIRECCION_NULA` | Dirección de depósito nula | `400` |
 | `ERR-VAL-212` | `DONACION_SIN_DESCRIPCION` | La donación no tiene descripción general (obligatoria en el enunciado y en el DER) | `400` |
+| `ERR-VAL-213` | `ARCHIVO_DONANTES_INVALIDO` | El padrón subido está vacío o no tiene extensión `.csv` | `400` |
+| `ERR-VAL-214` | `ARCHIVO_DONANTES_TAMANIO_EXCEDIDO` | El padrón supera el tamaño máximo (50 MB) | `400` |
 
 ### Bienes y Categorías (3xx)
 
@@ -111,6 +114,10 @@
 | `ERR-VAL-314` | `BIEN_NORMALIZADO_RANGO_CONFIANZA` | Rango de confianza del bien normalizado inválido | `400` |
 | `ERR-VAL-315` | `BIEN_NORMALIZADO_SIN_ESTADO` | Bien normalizado sin estado definido | `400` |
 | `ERR-VAL-316` | `DIMENSIONES_BIEN_INVALIDAS` | Dimensiones del bien inválidas | `400` |
+| `ERR-VAL-318` | `FOTO_BIEN_TIPO_NO_PERMITIDO` | La foto del bien no es JPEG, PNG ni WebP (al pedir la URL de subida o al validar la foto subida) | `400` |
+| `ERR-VAL-319` | `FOTO_BIEN_REFERENCIA_INVALIDA` | `fotoUrl` empieza con `/fotos-bienes/` pero no tiene una clave generada por el servicio | `400` |
+| `ERR-VAL-320` | `FOTO_BIEN_NO_ENCONTRADA` | La referencia de la foto no corresponde a un objeto subido | `400` |
+| `ERR-VAL-321` | `FOTO_BIEN_TAMANIO_EXCEDIDO` | La foto subida supera el tamaño máximo (10 MB) | `400` |
 
 ### Segmentaciones (4xx)
 
@@ -248,6 +255,9 @@ Estos errores no se originan en `ErrorCatalog` directamente, pero el handler los
 | `ConstraintViolationException` | `400` | `ERR-CSR-003` |
 | `MissingRequestHeaderException` | `400` | `ERR-CSR-003` |
 | `MissingServletRequestParameterException` | `400` | `ERR-CSR-003` |
+| `MissingServletRequestPartException` (falta una parte multipart) | `400` | `ERR-CSR-003` |
+| `MaxUploadSizeExceededException` (archivo mayor a `spring.servlet.multipart.max-file-size`) | `413` | `ERR-CSR-003` |
+| `HttpMediaTypeNotSupportedException` | `415` | `ERR-CSR-003` |
 | `HttpMessageNotReadableException` | `400` | `ERR-CSR-003` |
 | `MethodArgumentTypeMismatchException` | `400` | `ERR-CSR-003` |
 | `DateTimeParseException` | `400` | `ERR-CSR-003` |
@@ -261,8 +271,8 @@ Estos errores no se originan en `ErrorCatalog` directamente, pero el handler los
 
 | Prefijo | Dominio | Cantidad | HTTP Status típico |
 |---|---|---|---|
-| `ERR-INF` | Infraestructura | 3 | `500` |
+| `ERR-INF` | Infraestructura | 4 | `500` |
 | `ERR-CSR` | Comunes / Transversales | 4 | `400` / `404` / `500` |
-| `ERR-VAL` | Validación de dominio | 93 | `400` |
-| `ERR-EST` | Estado de negocio | 12 | `409` (excepto 702, 708 y 716 → `404`) |
-| **Total** | | **112** | |
+| `ERR-VAL` | Validación de dominio | 99 | `400` |
+| `ERR-EST` | Estado de negocio | 22 | `409` (excepto 702, 708 y 716 → `404`) |
+| **Total** | | **129** | |

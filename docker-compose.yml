@@ -62,16 +62,16 @@ services:
       - INCENTIVOS_MINIO_ENABLED=true
       - INCENTIVOS_MINIO_ENDPOINT=http://minio:9000
       - INCENTIVOS_MINIO_PUBLIC_BASE_URL=http://localhost:9000
-      - INCENTIVOS_MINIO_ACCESS_KEY=${MINIO_ROOT_USER:?ver .env.example}
-      - INCENTIVOS_MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:?ver .env.example}
+      - INCENTIVOS_MINIO_ACCESS_KEY=incentivos-service
+      - INCENTIVOS_MINIO_SECRET_KEY=${INCENTIVOS_MINIO_PASSWORD:?ver .env.example}
       - INCENTIVOS_MINIO_BUCKET=insignias
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-      minio:
-        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 5s
@@ -109,11 +109,18 @@ services:
       - SPRING_JMX_ENABLED=false
       - SPRING_MAIN_BANNER_MODE=off
       - JAVA_TOOL_OPTIONS=-XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xms128m -Xmx384m
+      - DONACIONES_MINIO_ENABLED=true
+      - DONACIONES_MINIO_ENDPOINT=http://minio:9000
+      - DONACIONES_MINIO_PUBLIC_ENDPOINT=http://localhost:9000
+      - DONACIONES_MINIO_ACCESS_KEY=donaciones-service
+      - DONACIONES_MINIO_SECRET_KEY=${DONACIONES_MINIO_PASSWORD:?ver .env.example}
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
       interval: 5s
@@ -295,6 +302,24 @@ services:
       - donatrack-network
     volumes:
       - minio_data:/data
+
+  minio-init:
+    # Crea un usuario de MinIO por servicio (incentivos-service, donaciones-service) con acceso solo
+    # a sus buckets. Misma imagen que minio: trae sh y mc. Corre en cada `up` y termina.
+    image: cgr.dev/chainguard/minio@sha256:f74600a1a46330cdbda1ef760d17a96bd6e0f4a6f0a2c49792ca3ee7e4c6fa18
+    entrypoint: ["sh", "/opt/donatrack/minio/init-usuarios.sh"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?ver .env.example}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?ver .env.example}
+      INCENTIVOS_MINIO_PASSWORD: ${INCENTIVOS_MINIO_PASSWORD:?ver .env.example}
+      DONACIONES_MINIO_PASSWORD: ${DONACIONES_MINIO_PASSWORD:?ver .env.example}
+    volumes:
+      - ./persistencia/minio:/opt/donatrack/minio:ro
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - donatrack-network
 
 networks:
   donatrack-network:
