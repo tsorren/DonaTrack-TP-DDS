@@ -149,9 +149,9 @@
 | ADR | [20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes](./20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes.md) |
 | ADR complementario | [20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp](./20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] in-progress` — Fases 1, 2, 3A y 4 implementadas: ArchUnit universal y fitness functions activas, Pitest acotado a matching, persistencia efímera con `@ServiceConnection` y controllers en `@WebMvcTest`, validación viva de contratos OpenAPI en `ContractIT` erradicando AP-01, pruebas de rendimiento migradas a k6 erradicando AP-02 (`PerformanceStressIT` eliminado); Subfase 3B (AMQP) catalogada como `[DEFERRED_PENDING_RABBITMQ_CONTRACTS]` |
+| Implementation status | `[OBSERVED] in-progress` — Fases 1, 2, 3A y 4 implementadas: ArchUnit universal y fitness functions activas, Pitest acotado a matching, persistencia efímera con `@ServiceConnection` y controllers en `@WebMvcTest`, validación viva de contratos OpenAPI en `ContractIT` erradicando AP-01, pruebas de rendimiento migradas a k6 erradicando AP-02 (`PerformanceStressIT` eliminado); Subfase 3B (AMQP) catalogada como `[DEFERRED_PENDING_RABBITMQ_CONTRACTS]`; **implementada por RM-08 (2026-10-28, rama `E5_preprod_fiel_rm08`)**: consumidor espía en el E2E y validación contra los schemas `evento-*`, aviso en el PR y error en el post-merge ([ADR de política de contratos](./20261028-politica-de-evolucion-de-contratos-entre-servicios.md)) |
 | Target | Monorepo · `integration-tests` · microservicios (`donaciones`, `logistica`, `incentivos`, `notificaciones`) |
-| Cuándo se saldará | **Saldada en Entrega 4 (Fases 1, 2, 3A y 4)**; Subfase 3B (AMQP) diferida formalmente hasta la congelación de contratos RabbitMQ |
+| Cuándo se saldará | **Saldada en Entrega 4 (Fases 1, 2, 3A y 4)**; Subfase 3B (AMQP) implementada por RM-08 (E5, 2026-10-28) |
 
 ---
 
@@ -229,7 +229,7 @@
 5. **Schedulers de Incentivos sin lock distribuido** (`InactividadJob`, `RachaJob`, `RankingMensualJob`; 0 referencias a ShedLock en código y poms). Con más de una réplica, cada job corre una vez por réplica. El ADR de ShedLock (`proposed`) ponía como condición tener PostgreSQL, que #889 ya incorpora.
 6. **`CallerRunsPolicy` en el pool asíncrono de Incentivos** (`AsyncConfig`, pool 2/10/500; el mismo default está en `CommonAsyncAutoConfiguration`). `[INFERRED]` Con la cola llena, la publicación AMQP corre en el hilo que la pidió y sus errores solo dejan un `warn` (`IncentivosEventosPublisher`). Contradice el objetivo de no bloquear al llamador.
 7. **Traza AMQP solo de ida.** Donaciones envía `X-Trace-Id` en sus publicaciones (`DonacionesEventPublisher`, `ProveedorLogisticaAmqp`) y en el pedido HTTP (`ProveedorLogisticaHttp`). Ningún listener lo restaura en el MDC, y Logística e Incentivos no lo envían. Contradice `docs/arquitectura/eventos-amqp.md` (restauración en el consumidor) y deja a medias el ADR de trazabilidad distribuida.
-8. **Tests JPA de Notificaciones excluidos de CI.** Surefire excluye `**/RepositoriosJpaTest.java` (`pom.xml`, sección `excludes`): el test de repositorios JPA de Notificaciones no corre en `mvn verify` ni en CI. Sí corren `RepositoriosLogisticaJpaTest`, `RepositoriosIncentivosJpaTest` y `ServicesSobrePostgresTest`. El ADR multi-schema cita `RepositoriosJpaTest` como evidencia de validación.
+8. **Tests JPA de Notificaciones excluidos de CI.** Surefire excluye `**/RepositoriosJpaTest.java` (`pom.xml`, sección `excludes`): el test de repositorios JPA de Notificaciones no corre en `mvn verify` ni en CI. Sí corren `RepositoriosLogisticaJpaTest`, `RepositoriosIncentivosJpaTest` y `ServicesSobrePostgresTest`. El ADR multi-schema cita `RepositoriosJpaTest` como evidencia de validación. **Resuelto (2026-10-28, RM-02):** se quitó la exclusión del `pom.xml` raíz; `mvn verify -pl notificaciones-service -am` corre `RepositoriosJpaTest` con 6 tests, 0 fallas y 0 salteados.
 9. **Reglas ArchUnit faltantes.** El ADR 20260906 declara dos reglas que no están codificadas: dependencias permitidas de los controllers (`onlyDependOnClassesThat`) y dominio sin `jakarta.persistence` en todos los servicios (hoy solo en Logística). Ninguna regla impide que `services` dependa de `infrastructure`. Fugas observadas: Donaciones (`OutboxStore`; `ProcesadorDeDonaciones`, DTI-02), Incentivos (`IN8nClient` e `INotificacionesClient`, puertos ubicados en `infrastructure/`) y Logística (`RutaMapper` → `GeneradorDeURLSeguimiento`). El dominio de Donaciones importa `NecesidadDTO`, por eso su regla omite `dto..`. Además, las reglas de dominio solo inspeccionan `models.entities..`: no cubren `models.algoritmos`, `normalizacion`, `segmentacion`, `ports` ni `storage` (hoy sin imports de `dto`, `controllers` ni `infrastructure` en esos paquetes).
 10. **Notificaciones recibe hechos que no procesa** (`RabbitMQConfig` de Notificaciones liga `notificaciones.donaciones` con `donacion.#` y `donante.#`; su mapeo de tipos y `DonacionEventListener` no cubren `donacion.segmentada.v1` ni `donante.dado-de-baja.v1`, que Donaciones publica para Incentivos). `[INFERRED]` La conversión falla, el mensaje se rechaza sin requeue y termina en `notificaciones.donaciones.dlq`; no verificado con ejecución. Llena la DLQ de mensajes legítimos y confunde la revisión manual. Se cierra con bindings explícitos por clave o con un descarte controlado de los tipos ajenos. **Resuelto (2026-10-14):** bindings explícitos, una clave por handler (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`); `RabbitMQConfigTest` verifica que coincidan con el mapeo de tipos. En un broker ya provisionado, los bindings `donacion.#` y `donante.#` previos persisten hasta borrarlos a mano o recrear la cola.
 11. **Callback de planificación con URL por defecto** (`logistica.self.base-url=${LOGISTICA_SELF_BASE_URL:http://localhost:8083}`; `PlanificacionService` arma el callback con ese valor). La instancia `logistica-externo` de `docker-compose.demo.yml` escucha en `PORT=8084` y no define `LOGISTICA_SELF_BASE_URL`. `[INFERRED]` Su planificador simulado llama a un puerto donde no escucha nadie: el callback falla, la solicitud queda pendiente y esa instancia no emite `ruta.asignada`; no verificado con ejecución. El mismo riesgo aplica en la nube si la plataforma asigna otro `PORT`. Se cierra fijando `LOGISTICA_SELF_BASE_URL` en la demo y en el despliegue.
@@ -345,3 +345,72 @@
 | Implementation status | `[OBSERVED] not-started` — `incentivos-service` mantiene dos colas (`incentivos.donante-registrado`, `incentivos.donante-dado-de-baja`) con un listener cada una. Con el id de rol igual al de la persona, un `DELETE` seguido de un `POST /api/donantes` rápido puede llegar al revés: el alta se ignora (el perfil existe), la baja borra el perfil y las siguientes `donacion.segmentada` y `donacion.recibida` se descartan (`defaultRequeueRejected=false`). Misiones y ranking dejan de contar en silencio |
 | Target | `incentivos-service` (`RabbitMQConfig`, `IncentivosEventosListener`): cola única `incentivos.donante-ciclo-de-vida`, concurrencia 1, retiro de las dos colas actuales. Instrucciones de entrega en el plan de roles, Etapa 6 |
 | Cuándo se saldará | **A definir** — a cargo del equipo de `incentivos-service`; antes de mergear a `main`, o con el riesgo declarado en el PR |
+
+---
+
+## DTI-24 — Lo publicado no es lo validado y el despliegue no se reproduce desde el repo
+<a id="dti-24"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica](./20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) |
+| ADR complementario | [logistica-service/20261009-despliegue-de-logistica-en-paas-con-contenedores](./logistica-service/20261009-despliegue-de-logistica-en-paas-con-contenedores.md) (puntos 1 y 5) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] in-progress` — relevado en `origin/main` `a808942c` por el análisis [preprod fiel](../testing/preprod-fiel.md) (B2, B3). La rama `E5_preprod_fiel_rm08` (2026-10-28) implementa RM-06 (`merge.yml`: candidato `:sha-<7>`, `preprod-post-merge`, `promote` y manifiesto; `main.yml`: servicios no modificados por digest) y RM-07 sin Render (`deploy.yml`, ensayo con smoke y rollback). Se cierra cuando la primera corrida post-merge y de `deploy.yml` lo confirme |
+| Target | `.github/workflows/merge.yml` · `.github/workflows/main.yml` · `.github/workflows/deploy.yml` |
+| Cuándo se saldará | Con la primera corrida en CI, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-06 y RM-07); sujeto a la aprobación del ADR. Render ya no es precondición (D3). `deploy.yml` corre recién cuando llegue a `main`: GitHub solo dispara `workflow_run` y `workflow_dispatch` de workflows presentes en la rama por defecto |
+
+1. **Imagen publicada sin preprod:** `merge.yml` reconstruye desde el commit integrado y publica `:<rama>`, `:sha-<7>` y `:latest` sin correr el preprod (`merge.yml:259-269`). La imagen que valida el PR (`pr-<N>`) no es la que se publica.
+2. **Estado post-merge sin validar:** `main.yml` solo corre en `pull_request` (`main.yml:44-46`). `[INFERRED]` Dos PR en verde pueden romper la base al combinarse.
+3. **Despliegue manual sin rastro:** no hay job de despliegue, smoke ni rollback ensayado; Render, Neon y CloudAMQP se configuran a mano. No se sabe si Render construye desde el repo o baja la imagen de GHCR.
+
+---
+
+## DTI-25 — El gate de preprod todavía puede dar verdes falsos
+<a id="dti-25"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20260903-protocolo-salida-semantico-y-quality-gate-estricto](./20260903-protocolo-salida-semantico-y-quality-gate-estricto.md) ("Ningún pull request debe obtener estado verde si contiene tests fallidos [...] o ausencia total de ejecución de pruebas") |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] in-progress` — parte del protocolo ya está implementada: los códigos de salida y el umbral de 0 tests, que ya falla (`report_test_failures.py --fail-on-zero-tests`, `main.yml:801`); las tres vías de abajo estaban abiertas en `origin/main` `a808942c`. **RM-02 (2026-10-28, rama `E5_preprod_fiel_rm08`)** cierra las tres en el código: `PREPROD_STRICT` en `BaseIT`, `--required-groups` en `report_test_failures.py`, `::error` sin imagen `pr-<N>` y Sonar requerido con `SONAR_TOKEN`. Se cierra cuando la primera corrida de CI lo confirme |
+| Target | `integration-tests` (`BaseIT.java`) · `scripts/report_test_failures.py` · `.github/workflows/main.yml` |
+| Cuándo se saldará | E5, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-02) |
+
+1. **Tests salteados cuentan como verdes:** `ContractIT` (`ContractIT.java:41,88,140`) y `LogisticaIntegrationIT` (`LogisticaIntegrationIT.java:24`) se saltean por `assumeTrue` si `BaseIT.isServiceAvailable` no recibe 200 de `/v3/api-docs` en 500 ms (`BaseIT.java:35-53`), y el reporte no los cuenta como falla.
+2. **Imagen base en lugar de la del PR:** si no encuentra la imagen `pr-<N>` de un servicio, el preprod usa la de la rama base con solo un aviso (`main.yml:699-704`).
+3. **Sonar opcional:** el quality gate final no exige `sonar-analysis` (`main.yml:912`, `"never"`).
+
+La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema, estaba registrada en el ítem 8 de DTI-16 y quedó resuelta con RM-02.
+
+---
+
+## DTI-26 — Base de datos por servicio: decisión propuesta, sin implementar
+<a id="dti-26"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql](./20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (propone reemplazar a [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md)) |
+| Decision status | `proposed` (los dos ADRs; la relación `superseded` la aprueba un humano) |
+| Implementation status | `[OBSERVED] not-started` — por decisión del usuario (2026-10-28, SPEC-05) solo se documentó: `persistencia/init-db`, los composes y las properties chocan con `origin/E4_donaciones_minio` y `origin/E4_persistencia_donaciones` |
+| Target | `persistencia/init-db/*` · 3 composes · 3 `application-postgres.properties` · 4 tests de Testcontainers · `persistencia/README.md` |
+| Cuándo se saldará | Después de que mergeen las dos ramas de E4, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-19). Precondiciones: Neon admite una base por servicio (RM-01) y el enunciado de E5 no exige un schema por servicio |
+
+---
+
+## DTI-27 — Contratos de Donaciones incumplidos, detectados por los contratos vivos (RM-08)
+<a id="dti-27"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261028-politica-de-evolucion-de-contratos-entre-servicios](./20261028-politica-de-evolucion-de-contratos-entre-servicios.md) |
+| Decision status | `proposed` |
+| Implementation status | `[VERIFIED] divergence` — `run-preprod-tests.sh` con `CONTRATOS_ESTRICTO=true` (2026-10-28, rama `E5_preprod_fiel_rm08`): el E2E falla por los ítems 1 y 2, y `ContractIT.testDonacionesPersonasContract` por el ítem 3 |
+| Target | `donaciones-service` (publicación de eventos) · `docs/arquitectura/contratos/openapi-donaciones.yaml` |
+| Cuándo se saldará | Antes del corte de E5 (D5: el post-merge de `ENTREGA_5` falla y no promueve hasta que se corrijan). El ítem 3 ya está resuelto; quedan el 1 y el 2 |
+
+1. **`donacion.en-camino.v1` sin `urlMapa`.** El schema y el DTO (`EventoDonacionEnCaminoV1`, `@NotBlank`) lo exigen, pero en el E2E Donaciones publica el evento con `urlMapa` en `null` y `@JsonInclude(NON_NULL)` lo omite.
+2. **`donacion.recibida.v1` sin `patenteCamion`.** Mismo caso (`EventoDonacionRecibidaV1`, `@NotBlank`).
+3. **`POST /api/personas` sin body en la spec.** `openapi-donaciones.yaml` no declara el body del request ni el de la respuesta 201; el servicio recibe y devuelve una persona. La validación en vivo de Donaciones (RM-08, criterio 2) lo rechaza. **Resuelto (2026-10-29, decisión del responsable de integración: completar la spec):** `PersonaInputDTO` y `PersonaOutputDTO` (polimórficos HUMANA/JURIDICA, con dirección y medios de contacto) en `components`, y el body de `POST`, `GET` y `PUT` de `/api/personas`. `ContractIT` pasa 7/7 contra el preprod, incluida una persona eliminada: la anonimización (DTI-01) devuelve `ANONIMIZADO`, por eso la salida de los medios de contacto no exige formato de correo. oasdiff marca el body requerido nuevo como incompatible: está registrado en `cambios-incompatibles-aceptados.txt`, porque el servicio siempre lo exigió.
+
+Para los ítems 1 y 2 se decide qué cambia: el productor (siempre envía el dato) o el contrato (el campo deja de ser requerido; cambio compatible para los consumidores).

@@ -38,5 +38,5 @@
     }
   },
   "required": ["donanteId", "personaId", "fecha", "personaBeneficiariaId", "descripcion", "patenteCamion"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

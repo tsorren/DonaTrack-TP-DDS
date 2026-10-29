@@ -104,7 +104,26 @@ Se eliminaron por completo las esperas ciegas (`esperarAsync` / `Thread.sleep`).
 ## 4. Ejecución de Pruebas
 
 ### A. Validación Local con `run-preprod-tests.sh` (Recomendado)
-El script automatiza la compilación, puesta en marcha de Docker Compose, espera de healthchecks y ejecución de Maven:
+El script es el **punto de entrada único** (RM-04 del [roadmap de preprod fiel](./preprod-fiel-roadmap.md)): CI lo invoca tal cual (`main.yml`, job `preprod-validation`) y en local corre los mismos grupos con los mismos criterios de falla. Automatiza la compilación, la puesta en marcha de Docker Compose, la espera de healthchecks, la ejecución de Maven y el reporte.
+
+| Opción | Valores | Efecto |
+|---|---|---|
+| `--images` | `local` (default) · `ghcr` | `local` compila los JARs y construye las imágenes; `ghcr` las baja de GHCR con `scripts/resolver-imagenes-ghcr.sh`, que lee `PR_TAG`, `CHANGED_SERVICES`, `MANIFIESTO` (RM-06: servicios no modificados por digest) y `BASE_TAG` del entorno |
+| `--target` | `compose` (default) · `hybrid` | `hybrid` corre el stack híbrido con la nube (`scripts/preprod-hybrid.sh`); acepta los argumentos de `run-hybrid-tests.sh` |
+| `--skip-build` | — | Reusa los JARs de `*/target/` (`--images local`) |
+| `--test <Clase>` | — | Corre una clase puntual (`-Dit.test`) |
+| `--groups <Grupo>` | `smoke`, `contract`, `integration`, `e2e`, `performance` | Corre un grupo; `performance` corre k6 |
+| `--stay` | — | Deja el stack arriba hasta presionar una tecla |
+
+**Criterios de falla, iguales en local y en CI:** sin filtros, corre `smoke` primero (fail-fast) y después `contract,integration,e2e`. `PREPROD_STRICT=true` por defecto: un servicio caído hace fallar el test en lugar de saltearlo (RM-02). `report_test_failures.py` falla con 0 tests o con un test salteado de un grupo requerido, y marca como *heredadas de la base* las fallas de servicios que el PR no modificó (`CHANGED_SERVICES`).
+
+Los envoltorios conservan su nombre y sus argumentos: `run-preprod-tests-stay.sh` equivale a `--stay` y `run-hybrid-tests.sh` a `--target hybrid`.
+
+**Contratos vivos (RM-08, [política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md)):**
+
+* `FullDistributedDonationE2EIT` arranca un consumidor espía (`EspiaAmqp`), que copia los mensajes de `donaciones.exchange`, `incentivos.exchange` y `logistica.exchange` desde el puerto AMQP publicado en `127.0.0.1:5672`. En `donaciones.exchange` se liga solo a `donacion.#`, `donante.#`, `persona.#` y al comando de la instancia del preprod, para no ocultar los rechazos `mandatory` del broker: un evento con otro prefijo requiere sumar su clave en `EspiaAmqp`. Al terminar, `ContratosAmqp` valida cada mensaje contra su schema `evento-*` (JSON Schema draft 2020-12, elegido por el header `__TypeId__`); un tipo sin schema es una violación.
+* Con `CONTRATOS_ESTRICTO=true` (post-merge y corte de entrega) una violación hace fallar el E2E; sin él (PR y local), queda como `::warning::` en `integration-tests/target/contratos-amqp-avisos.txt` y el script la muestra al final.
+* `scripts/diff-contratos.sh <ref-base> aviso|error` compara las specs OpenAPI con `oasdiff` (imagen `tufin/oasdiff`, fijada por digest). Para probar en local un cambio de spec antes del PR: `scripts/diff-contratos.sh origin/ENTREGA_5 aviso`. Un cambio incompatible aceptado se registra en `docs/arquitectura/contratos/cambios-incompatibles-aceptados.txt` (lo revisa el responsable de integración).
 
 ```bash
 # Fail-Fast inmediato (Smoke Tests)
@@ -157,8 +176,14 @@ Para ciclos de desarrollo rápido (Gate 1 y Gate 2) sin levantar infraestructura
 # Ejecución integral E2E con ciclo de vida automático
 ./run-preprod-tests.sh
 
+# Mismas imágenes que CI (GHCR), por ejemplo las de la rama ENTREGA_5
+BASE_TAG=entrega_5 ./run-preprod-tests.sh --images ghcr
+
 # Ejecución manteniendo la infraestructura activa para depuración
-./run-preprod-tests-stay.sh
+./run-preprod-tests-stay.sh        # equivale a ./run-preprod-tests.sh --stay
+
+# Stack híbrido (Logística en Render, RabbitMQ en CloudAMQP)
+./run-hybrid-tests.sh --env <ruta>  # equivale a ./run-preprod-tests.sh --target hybrid --env <ruta>
 ```
 
 ### Windows (PowerShell)

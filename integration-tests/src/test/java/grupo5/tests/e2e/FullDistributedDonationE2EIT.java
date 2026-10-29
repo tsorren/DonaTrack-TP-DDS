@@ -7,21 +7,53 @@ import grupo5.tests.BaseIT;
 import grupo5.tests.builders.DonacionTestDataBuilder;
 import grupo5.tests.builders.NecesidadTestDataBuilder;
 import grupo5.tests.builders.PersonaTestDataBuilder;
+import grupo5.tests.contract.ContratosAmqp;
 import grupo5.tests.dto.DonacionTestDTO;
 import grupo5.tests.dto.NecesidadTestDTO;
 import grupo5.tests.dto.PersonaTestDTO;
+import grupo5.tests.utils.EspiaAmqp;
 import grupo5.tests.utils.PollingUtils;
 import grupo5.tests.utils.TestIdGenerator;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("e2e")
 class FullDistributedDonationE2EIT extends BaseIT {
+
+  // RM-08: el espía copia los mensajes AMQP del flujo; al final se validan contra sus schemas
+  private static EspiaAmqp espia;
+  private static String errorEspia;
+
+  @BeforeAll
+  static void iniciarEspiaAmqp() {
+    try {
+      espia = EspiaAmqp.conectar();
+    } catch (IOException | TimeoutException e) {
+      errorEspia = "no se pudo conectar el espía AMQP: " + e;
+    }
+  }
+
+  @AfterAll
+  static void validarMensajesAmqpCapturados() throws IOException {
+    List<String> violaciones;
+    if (espia == null) {
+      violaciones = List.of(errorEspia);
+    } else {
+      violaciones = ContratosAmqp.validar(espia.mensajes());
+      espia.close();
+    }
+    // Política H de D5: falla con CONTRATOS_ESTRICTO=true (post-merge y corte); si no, avisa
+    ContratosAmqp.reportar(violaciones);
+  }
 
   @Test
   @SuppressWarnings("unchecked")

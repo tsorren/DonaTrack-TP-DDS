@@ -613,13 +613,34 @@ paths:
     get:
       summary: Listar personas registradas
       operationId: listarPersonasDonaciones
+      parameters:
+        - name: tipo
+          in: query
+          required: false
+          schema: { type: string, enum: [HUMANA, JURIDICA] }
       responses:
-        '200': { description: Listado de personas }
+        '200':
+          description: Listado de personas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PersonaOutputDTO' }
     post:
       summary: Crear persona
       operationId: crearPersonaDonaciones
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PersonaInputDTO' }
       responses:
-        '201': { description: Persona creada }
+        '201':
+          description: Persona creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PersonaOutputDTO' }
+        '400': { description: Datos de la persona inválidos }
   /api/personas/{id}:
     put:
       summary: Actualizar persona
@@ -629,8 +650,18 @@ paths:
           in: path
           required: true
           schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PersonaInputDTO' }
       responses:
-        '200': { description: Persona actualizada }
+        '200':
+          description: Persona actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PersonaOutputDTO' }
+        '400': { description: Datos de la persona inválidos }
         '404': { description: Persona no encontrada }
         '409': { description: La persona fue anonimizada y no se puede editar (PERSONA_ANONIMIZADA_NO_OPERABLE) }
     delete:
@@ -687,6 +718,135 @@ paths:
         '401': { description: Falta la clave de administración o es incorrecta }
 components:
   schemas:
+    # Personas (DTI-27, ítem 3): PersonaInputDTO y PersonaOutputDTO son polimórficos por "tipo"
+    # (HumanaInputDTO/JuridicaInputDTO y sus Output). Los campos opcionales de salida admiten null.
+    PersonaInputDTO:
+      oneOf:
+        - $ref: '#/components/schemas/HumanaInputDTO'
+        - $ref: '#/components/schemas/JuridicaInputDTO'
+    HumanaInputDTO:
+      type: object
+      required: [tipo, nombre, apellido]
+      properties:
+        tipo: { type: string, enum: [HUMANA] }
+        tipoDocumento: { type: string, enum: [DNI, PASAPORTE, LIBRETA, CUIT], nullable: true }
+        documento: { type: string, nullable: true }
+        direccion: { $ref: '#/components/schemas/DireccionInputDTO' }
+        mediosDeContacto:
+          type: array
+          nullable: true
+          items: { $ref: '#/components/schemas/MedioDeContactoInputDTO' }
+        nombre: { type: string, minLength: 1 }
+        apellido: { type: string, minLength: 1 }
+        genero: { type: string, enum: [PREFIERO_NO_DECIR, HOMBRE, MUJER, NO_BINARIO], nullable: true }
+        fechaNacimiento: { type: string, format: date, nullable: true }
+    JuridicaInputDTO:
+      type: object
+      required: [tipo, razonSocial, tipoJuridico]
+      properties:
+        tipo: { type: string, enum: [JURIDICA] }
+        tipoDocumento: { type: string, enum: [DNI, PASAPORTE, LIBRETA, CUIT], nullable: true }
+        documento: { type: string, nullable: true }
+        direccion: { $ref: '#/components/schemas/DireccionInputDTO' }
+        mediosDeContacto:
+          type: array
+          nullable: true
+          items: { $ref: '#/components/schemas/MedioDeContactoInputDTO' }
+        razonSocial: { type: string, minLength: 1 }
+        tipoJuridico: { type: string, enum: [GUBERNAMENTAL, ONG, EMPRESA, INSTITUCION] }
+        rubro: { type: string, nullable: true }
+        representantes:
+          type: array
+          nullable: true
+          items: { $ref: '#/components/schemas/HumanaInputDTO' }
+    PersonaOutputDTO:
+      oneOf:
+        - $ref: '#/components/schemas/HumanaOutputDTO'
+        - $ref: '#/components/schemas/JuridicaOutputDTO'
+    HumanaOutputDTO:
+      type: object
+      required: [tipo, id]
+      properties:
+        tipo: { type: string, enum: [HUMANA] }
+        id: { type: string, format: uuid }
+        tipoDocumento: { type: string, enum: [DNI, PASAPORTE, LIBRETA, CUIT], nullable: true }
+        documento: { type: string, nullable: true }
+        direccion: { $ref: '#/components/schemas/DireccionOutputDTO' }
+        mediosDeContacto:
+          type: array
+          nullable: true
+          items: { $ref: '#/components/schemas/MedioDeContactoOutputDTO' }
+        nombre: { type: string, nullable: true }
+        apellido: { type: string, nullable: true }
+        genero: { type: string, enum: [PREFIERO_NO_DECIR, HOMBRE, MUJER, NO_BINARIO], nullable: true }
+        fechaNacimiento: { type: string, format: date, nullable: true }
+    JuridicaOutputDTO:
+      type: object
+      required: [tipo, id]
+      properties:
+        tipo: { type: string, enum: [JURIDICA] }
+        id: { type: string, format: uuid }
+        tipoDocumento: { type: string, enum: [DNI, PASAPORTE, LIBRETA, CUIT], nullable: true }
+        documento: { type: string, nullable: true }
+        direccion: { $ref: '#/components/schemas/DireccionOutputDTO' }
+        mediosDeContacto:
+          type: array
+          nullable: true
+          items: { $ref: '#/components/schemas/MedioDeContactoOutputDTO' }
+        razonSocial: { type: string, nullable: true }
+        tipoJuridico: { type: string, enum: [GUBERNAMENTAL, ONG, EMPRESA, INSTITUCION], nullable: true }
+        rubro: { type: string, nullable: true }
+        representantes:
+          type: array
+          nullable: true
+          items: { $ref: '#/components/schemas/HumanaOutputDTO' }
+    DireccionInputDTO:
+      type: object
+      nullable: true
+      required: [calle, localidad, provincia, pais]
+      properties:
+        calle: { type: string, minLength: 1 }
+        altura: { type: integer, minimum: 1, nullable: true }
+        piso: { type: integer, nullable: true }
+        departamento: { type: string, nullable: true }
+        codigoPostal: { type: string, nullable: true }
+        localidad: { type: string, minLength: 1 }
+        provincia: { type: string, minLength: 1 }
+        pais: { type: string, minLength: 1 }
+    DireccionOutputDTO:
+      type: object
+      nullable: true
+      properties:
+        calle: { type: string, nullable: true }
+        altura: { type: integer, nullable: true }
+        piso: { type: integer, nullable: true }
+        departamento: { type: string, nullable: true }
+        codigoPostal: { type: string, nullable: true }
+        localidad: { type: string, nullable: true }
+        provincia: { type: string, nullable: true }
+        pais: { type: string, nullable: true }
+    MedioDeContactoInputDTO:
+      type: object
+      description: CORREO exige direccionCorreo; TELEFONO y WHATSAPP exigen numero.
+      required: [tipo]
+      properties:
+        tipo: { type: string, enum: [CORREO, TELEFONO, WHATSAPP] }
+        esPredeterminado: { type: boolean, nullable: true }
+        direccionCorreo: { type: string, format: email, nullable: true }
+        caracteristica: { type: string, nullable: true }
+        codigoArea: { type: string, nullable: true }
+        numero: { type: string, nullable: true }
+    MedioDeContactoOutputDTO:
+      type: object
+      description: Sin formato de correo en la salida; una persona anonimizada (DTI-01) devuelve "ANONIMIZADO" en sus datos personales.
+      required: [tipo]
+      properties:
+        tipo: { type: string, enum: [CORREO, TELEFONO, WHATSAPP] }
+        esPredeterminado: { type: boolean, nullable: true }
+        direccionCorreo: { type: string, nullable: true }
+        caracteristica: { type: string, nullable: true }
+        codigoArea: { type: string, nullable: true }
+        numero: { type: string, nullable: true }
     CambioEstadoDonacionIndependienteRequestDTO:
       type: object
       required:

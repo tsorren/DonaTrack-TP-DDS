@@ -33,11 +33,11 @@
           }
         },
         "required": ["categoria", "cantidad"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "description": "Categorías y cantidades resultantes de segmentar la donación completa"
     }
   },
   "required": ["donanteId", "fecha", "items"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

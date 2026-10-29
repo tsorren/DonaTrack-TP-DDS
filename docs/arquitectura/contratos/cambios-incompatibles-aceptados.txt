@@ -1,0 +1,8 @@
+# Cambios incompatibles de OpenAPI aceptados (D5, ADR 20261028 de política de contratos).
+# scripts/diff-contratos.sh se lo pasa a oasdiff (--err-ignore): una línea "MÉTODO /ruta texto"
+# con el texto que reporta oasdiff deja de contar como error. Lo revisa el responsable de
+# integración (CODEOWNERS); cada línea nombra su motivo en el comentario anterior.
+
+# DTI-27 ítem 3 (2026-10-29): la spec omitía el body que el servicio siempre exigió y devolvió.
+POST /api/personas added required request body
+PUT /api/personas/{id} added required request body
