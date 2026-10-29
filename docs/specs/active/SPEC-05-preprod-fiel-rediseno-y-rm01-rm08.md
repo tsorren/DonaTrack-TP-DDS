@@ -5,11 +5,12 @@
 > **Fecha:** 2026-10-28
 > **Base:** `E5_requerimientos_e6` (`aec0f0eb`) + cherry-pick del análisis de preprod fiel (`1bb339dd`). Rama de PR: `E5_preprod_fiel_rm08`, hacia `ENTREGA_5`.
 > **Documentos que rediseña:** [preprod-fiel-roadmap.md](../../testing/preprod-fiel-roadmap.md) (fase 3), [preprod-fiel-arquitectura-objetivo.md](../../testing/preprod-fiel-arquitectura-objetivo.md) (fase 2).
+> **Formato:** encabezados ajustados al chequeo de `scripts/agent-check.js` y secciones de invariantes, criterios en Gherkin y diseño técnico sumadas el 2026-10-28, durante la implementación. Derivan de lo aprobado; ninguna decisión cambió.
 > **ADR:** [promoción por digest](../../adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) (`proposed`, se revisa el punto de despliegue) y dos ADRs nuevos `proposed`: base por servicio (D1) y política de evolución de contratos (D5).
 
 ---
 
-## 1. Objetivo (Goal)
+## 1. Objetivo Funcional (Goal)
 
 1. Rediseñar cuatro partes del roadmap a pedido del usuario (2026-10-28):
    - **Persistencia:** pasar de un schema por servicio a **una base de datos por servicio**, y dejar previsto **un MinIO por servicio** a futuro.
@@ -17,7 +18,7 @@
    - **Contratos:** que un cambio de contrato no frene a otro equipo, pero que el día de entrega esté resuelto (D5).
 2. Implementar RM-01 a RM-08 según el roadmap rediseñado, o dejar cada ítem bloqueado con su razón.
 
-## 2. Alcance (Scope)
+## 2. Alcance Delimitado (Scope Boundaries)
 
 ### In-Scope
 
@@ -34,7 +35,7 @@
 - Trabajo funcional de E5 y E6 (persistencia de Donaciones, auth, cliente liviano).
 - RM-09 en adelante.
 
-## 3. Decisiones de rediseño
+## 3. Decisiones Acordadas y Trade-offs del rediseño
 
 Criterios ponderados (1 a 5; ponderación en %). El puntaje es la suma de nota × peso / 100.
 
@@ -179,6 +180,13 @@ RM-07 dependía de Render en dos precondiciones sin confirmar (plan gratuito con
 
 Orden de implementación: RM-03 → RM-02 → RM-05 → RM-04 → docs de RM-19 → RM-06 → RM-07 → RM-08.
 
+## Invariantes
+
+- Un gate existente nunca se debilita para dar verde: la validación REST de `ContractIT` sigue fallando en el PR, y un test que falla por un defecto real queda en rojo con su causa (AGENTS.md §4.3).
+- Lo que se promueve a `:<rama>` y `:latest` es el mismo digest que pasó el preprod post-merge.
+- Un servicio modificado por un PR solo se valida con su propia imagen `pr-<N>`.
+- El mismo comando (`run-preprod-tests.sh`) corre en local y en CI, con los mismos grupos y criterios de falla.
+
 ## 5. Restricciones (Constraints)
 
 - AGENTS.md §4.3: ningún test se deshabilita ni se debilita; un test que falla por un defecto real queda en rojo con su causa.
@@ -186,6 +194,36 @@ Orden de implementación: RM-03 → RM-02 → RM-05 → RM-04 → docs de RM-19 
 - ADRs nuevos o revisados quedan en `proposed`.
 - Sin push ni PR sin pedido; la rama de PR lleva prefijo `E5_`.
 - RM-06 y RM-07 no se pueden ejecutar en local (dependen de GitHub Actions y GHCR): se validan con sintaxis y con un ensayo local del script de manifiesto; el resto queda `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` hasta la primera corrida en CI.
+
+## Criterios de Aceptación
+
+```gherkin
+Escenario: servicio caído en modo estricto (RM-02)
+  Dado PREPROD_STRICT=true y /v3/api-docs de un servicio caído
+  Cuando corre ContractIT
+  Entonces el test falla en lugar de saltearse
+
+Escenario: test salteado en un grupo requerido (RM-02)
+  Dado un reporte de Failsafe con un test salteado del grupo contract
+  Cuando corre report_test_failures.py con --required-groups
+  Entonces sale con un código distinto de 0
+
+Escenario: promoción solo de lo validado (RM-06)
+  Dado un merge a ENTREGA_x cuyo preprod post-merge falla
+  Cuando termina merge.yml
+  Entonces :entrega_x sigue apuntando al digest validado anterior
+
+Escenario: rollback ensayado (RM-07)
+  Dado un manifiesto M y su anterior M-1
+  Cuando corre deploy.yml
+  Entonces el smoke da verde con M y después con M-1 desplegado encima
+
+Escenario: contrato AMQP en el PR y en el post-merge (RM-08, D5)
+  Dado un mensaje AMQP que no cumple su schema
+  Cuando corre el E2E en un PR
+  Entonces queda un aviso y el job sigue
+  Y cuando corre en el post-merge con CONTRATOS_ESTRICTO=true, el E2E falla
+```
 
 ## 6. Validación
 
@@ -198,3 +236,22 @@ Orden de implementación: RM-03 → RM-02 → RM-05 → RM-04 → docs de RM-19 
 | RM-19 (docs) | `python scripts/validate_docs_links.py` sin enlaces rotos | — |
 | RM-06, RM-07 | Script de manifiesto probado en local; YAML válido | Primera corrida post-merge |
 | RM-08 | Con el modo estricto, `ContractIT` valida los mensajes capturados y un mensaje sin schema hace fallar el test; sin él, se reporta como aviso. `node scripts/validate-contracts.js` sigue en verde con los schemas abiertos | Aviso en `preprod-validation`; error en el post-merge |
+
+## 7. Especificación Técnica de Diseño
+
+**Two-Gate ADR (AGENTS.md §9.1):**
+
+| Decisión | Gate A | Gate B | Resultado |
+|---|---|---|---|
+| D1, base por servicio | Sí | Sí: estrategia de persistencia | ADR nuevo `proposed` |
+| D3, despliegue sin Render | No: revisa un ADR `proposed` sin publicar | — | Revisión del ADR de promoción |
+| D4, cliente AMQP y validador | No: implementa RM-08 | — | Sin ADR |
+| D5, política de contratos | Sí | Sí: integración entre servicios | ADR nuevo `proposed` |
+
+**Plan de tests:**
+
+- `scripts/tests/test_report_test_failures.py`: salteado en grupo requerido, falla heredada, falla del servicio modificado y falla sin servicio reconocible.
+- `scripts/tests/test_manifiesto_version.py`: generar y leer, digest inválido, sin digests y servicio ausente.
+- `ContractIT.testValidadorDeEventosAmqpAplicaLosSchemas` (validador del espía) y `ContractIT.testDonacionesPersonasContract` (Donaciones en vivo).
+- `FullDistributedDonationE2EIT`: el espía valida los mensajes capturados al terminar la clase.
+- `node scripts/validate-contracts.js`: los schemas abiertos aceptan campos extra y siguen exigiendo los `required`.
