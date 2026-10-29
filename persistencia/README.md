@@ -32,7 +32,7 @@ Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas
 | `admin`               | `POSTGRES_PASSWORD`             | —                | Superusuario Docker        |
 | `notificaciones_user` | `NOTIFICACIONES_DB_PASSWORD`    | `notificaciones` | **Activo** — JPA conectado |
 | `donaciones_user`     | `DONACIONES_DB_PASSWORD`        | `donaciones`     | **Activo** — JPA conectado |
-| `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | **Activo** — JPA conectado |
+| `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | Congelado — solo el perfil `postgres`; en los composes corre MongoDB (ver [MongoDB](#mongodb-logistica-service)) |
 | `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
 
 Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarrollo) o `scripts/generar-env-db.sh` (valores aleatorios; es lo que usan `run-preprod-tests*.sh` y CI). Sin `.env`, compose falla con `ver .env.example`. El init-db corre solo en el primer arranque: para cambiar una contraseña hay que recrear el volumen (`docker compose down -v`). Los services reciben la misma variable como `SPRING_DATASOURCE_PASSWORD`, sin valor por defecto en `application-postgres.properties`. Con el mismo patrón, `.env` define `RABBITMQ_PASS` (broker y los 4 services; el usuario `donatrack` es fijo) `MINIO_ROOT_USER`/`MINIO_ROOT_PASSWORD` (raíz de MinIO, solo para `minio-init`) e `INCENTIVOS_MINIO_PASSWORD`/`DONACIONES_MINIO_PASSWORD` (secret key de cada servicio); `application.properties` no les da valor por defecto.
@@ -109,9 +109,11 @@ Cada servicio administra su propio historial en `flyway_schema_history` dentro d
 | `notificaciones-service` | V1      | [`V1__init_notificaciones.sql`](../notificaciones-service/src/main/resources/db/migration/V1__init_notificaciones.sql) | `persona`, `medio_de_contacto`, `notificacion`, `notificacion_historial_estado` |
 | `notificaciones-service` | V2      | [`V2__inbox_notificaciones.sql`](../notificaciones-service/src/main/resources/db/migration/V2__inbox_notificaciones.sql) | `evento_procesado` (Transactional Inbox) |
 | `incentivos-service`     | V1      | [`V1__init_incentivos.sql`](../incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql) | `donante_incentivos`, `mision`, `ranking_mensual` y sus tablas hijas |
+| `incentivos-service`     | V2      | [`V2__inbox_incentivos.sql`](../incentivos-service/src/main/resources/db/migration/V2__inbox_incentivos.sql) | `evento_procesado` (Transactional Inbox) |
+| `incentivos-service`     | V3      | [`V3__outbox_incentivos.sql`](../incentivos-service/src/main/resources/db/migration/V3__outbox_incentivos.sql) | `outbox_incentivos` (Transactional Outbox) |
 | `logistica-service`      | V1      | [`V1__init_logistica.sql`](../logistica-service/src/main/resources/db/migration/V1__init_logistica.sql) | `chofer`, `camion`, `ruta`, `entrega`, direcciones, cambios de estado, solicitudes y `evento_entrega` |
 | `logistica-service`      | V2      | [`V2__orden_visita_rutas.sql`](../logistica-service/src/main/resources/db/migration/V2__orden_visita_rutas.sql) | `parada_ruta` |
-| `donaciones-service`     | —       | sin migraciones (no tiene entidades JPA) | —                                                                               |
+| `donaciones-service`     | V1–V13  | [`db/migration/`](../donaciones-service/src/main/resources/db/migration/) (adaptadores JPA bajo `@Profile("postgres")`) | necesidades, catálogo, personas, direcciones, donantes, donaciones y propuestas; `solicitud_entrega`, `outbox_logistica` y `evento_consumido` en V12 |
 
 #### Esquema del schema `notificaciones` (V1) [OBSERVED]
 
@@ -231,7 +233,7 @@ notificaciones-service/src/main/resources/
     ├── V1__init_notificaciones.sql        ← migración inicial del schema notificaciones
     └── V2__inbox_notificaciones.sql       ← tabla evento_procesado (inbox)
 
-incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql
+incentivos-service/src/main/resources/db/migration/V1__init_incentivos.sql, V2__inbox_incentivos.sql, V3__outbox_incentivos.sql
 logistica-service/src/main/resources/db/migration/V1__init_logistica.sql, V2__orden_visita_rutas.sql
 ```
 

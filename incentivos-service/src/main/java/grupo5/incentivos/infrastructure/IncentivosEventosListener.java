@@ -31,8 +31,9 @@ import org.springframework.stereotype.Service;
  * Consume los eventos de dominio que llegan por RabbitMQ y los traduce a las operaciones que hoy
  * expone la API REST del servicio.
  *
- * <p>Está apagado por defecto para no procesar dos veces lo mismo mientras la comunicación siga
- * yendo por HTTP. Se activa con {@code incentivos.rabbitmq.enabled=true}.
+ * <p>Está encendido por defecto ({@code incentivos.rabbitmq.enabled=true}). Se apaga con {@code
+ * INCENTIVOS_RABBITMQ_ENABLED=false}, por ejemplo para no procesar dos veces lo mismo mientras la
+ * comunicación siga yendo por HTTP.
  *
  * <p>No hay try/catch por evento: si el payload no cumple el contrato o el procesamiento falla, la
  * excepción sale del método y el container de Rabbit rechaza el mensaje sin reencolarlo, porque la
