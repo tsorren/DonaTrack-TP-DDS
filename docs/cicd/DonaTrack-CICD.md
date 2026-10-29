@@ -118,13 +118,13 @@ graph TD
 A diferencia del pipeline de PR (`cancel-in-progress: true`), el pipeline de merge usa `cancel-in-progress: false`. Dos merges consecutivos se serializan para evitar publicar un estado intermedio o dejar GHCR con imágenes incompletas.
 
 ### 2.4. Filtro de Paths
-El merge pipeline solo se dispara cuando hay cambios en código fuente (`*/src/**`), `pom.xml`, `Dockerfile` o `docker-compose*.yml`. Commits de solo documentación o ADRs no consumen minutos de runner ni cuota de GHCR.
+El merge pipeline solo se dispara cuando hay cambios en código fuente (`*/src/**`), `pom.xml`, `Dockerfile`, `docker-compose*.yml` o en los contratos (`docs/arquitectura/contratos/**`): un PR de "contrato primero" (D5) pasa por el post-merge y por su diff de OpenAPI. El resto de los commits de documentación o ADRs no consume minutos de runner ni cuota de GHCR.
 
 ---
 
 ### 2.5. Despliegue reproducible — `deploy.yml`
 
-[`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml) (RM-07, D3 de la SPEC-05) no depende de Render. Corre después de cada `merge.yml` exitoso y a mano (`gh workflow run deploy.yml --ref ENTREGA_5 -f corrida=<run-id>`):
+[`.github/workflows/deploy.yml`](../../.github/workflows/deploy.yml) (RM-07, D3 de la SPEC-05) no depende de Render. Corre después de cada `merge.yml` exitoso y a mano (`gh workflow run deploy.yml --ref ENTREGA_5 -f corrida=<run-id>`). GitHub solo dispara esos eventos para workflows que existen en la rama por defecto: `deploy.yml` empieza a correr cuando llega a `main`. Solo acepta manifiestos de corridas del propio repositorio, nunca de un fork, y el resolvedor rechaza imágenes fuera de `ghcr.io/<repo>/<servicio>@sha256:`.
 
 1. **ensayo**: baja el manifiesto M (el último promovido de la rama o el de la corrida indicada) y el anterior, M-1. `scripts/ensayo-despliegue.sh` levanta el stack de preprod con los digests de M, corre el smoke (`/actuator/health` en `UP`, `/v3/api-docs` y el grupo `smoke`), despliega M-1 encima y repite el smoke: el rollback queda ensayado en cada corrida.
 2. **render** (opcional, solo a mano): si existe el secreto `RENDER_DEPLOY_HOOK_LOGISTICA`, llama al deploy hook con la imagen de Logística por digest; si no existe, avisa y no falla.
@@ -174,7 +174,7 @@ El correcto funcionamiento de todos los flujos de integración y notificaciones 
 | `DISCORD_WEBHOOK_URL` | Webhook de Discord para recordatorios de inactividad | URL del webhook del canal de alertas/reminders |
 | `DISCORD_SEMANTIC_DIFF_WEBHOOK_URL` | Webhook de Discord exclusivo para reportar los diffs arquitectónicos visuales generados por la comparación UML | URL del webhook del canal de arquitectura |
 | `DISCORD_USER_MAP` | JSON confidencial que mapea usuarios de GitHub con sus IDs de Discord de 18 dígitos | `{"github_user": "123456789012345678"}` |
-| `RENDER_DEPLOY_HOOK_LOGISTICA` | Opcional. Deploy hook de Render para Logística; lo usa `deploy.yml` en la corrida manual. Sin él, el paso avisa y no falla. Conviene guardarlo en un Environment `produccion` con revisores | URL del deploy hook del panel de Render |
+| `RENDER_DEPLOY_HOOK_LOGISTICA` | Opcional. Deploy hook de Render para Logística; lo usa `deploy.yml` en la corrida manual. Sin él, el paso avisa y no falla. Se lee como secreto del repositorio; si se guarda en un Environment con revisores, hay que sumar `environment:` al job `render` | URL del deploy hook del panel de Render |
 | `PACKAGES_CLEANUP_PAT` | PAT Classic con scope `delete:packages` para limpiar tags efímeros `pr-N` de GHCR tras merge. Sin este secreto, la limpieza falla silenciosamente (el pipeline no se bloquea). | PAT generado en GitHub → Settings → Developer settings |
 
 ---

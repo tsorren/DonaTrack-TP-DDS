@@ -87,7 +87,8 @@ def mark_inherited(failed_cases, changed_services):
     changed = set(changed_services)
     for fc in failed_cases:
         services = services_of(fc)
-        fc["inherited"] = bool(services) and not (services & changed)
+        cruza_servicios = group_of(fc["class"]) == "e2e"
+        fc["inherited"] = bool(services) and not cruza_servicios and not (services & changed)
         fc["services"] = sorted(services)
 
 

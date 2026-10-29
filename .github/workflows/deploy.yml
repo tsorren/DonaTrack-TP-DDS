@@ -75,9 +75,10 @@ jobs:
           RAMA: ${{ github.event.workflow_run.head_branch || github.ref_name }}
           CORRIDA: ${{ inputs.corrida }}
         run: |
-          # Corridas de merge.yml de la rama con manifiesto vigente, de la más nueva a la más vieja
+          # Corridas de merge.yml de la rama con manifiesto vigente, de la más nueva a la más vieja;
+          # solo del propio repo (un PR desde un fork no puede inyectar un manifiesto)
           mapfile -t RUNS < <(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=manifiesto-version&per_page=100" \
-            --jq ".artifacts[] | select(.expired | not) | select(.workflow_run.head_branch == \"${RAMA}\") | .workflow_run.id")
+            --jq ".artifacts[] | select(.expired | not) | select(.workflow_run.head_branch == \"${RAMA}\") | select(.workflow_run.head_repository_id == .workflow_run.repository_id) | .workflow_run.id")
           if [[ ${#RUNS[@]} -eq 0 ]]; then
             echo "::error::La rama ${RAMA} no tiene manifiestos promovidos (merge.yml, job promote)."
             exit 1
@@ -118,6 +119,8 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   # Job 2: Render (opcional, solo a mano)
   # ──────────────────────────────────────────────────────────────────────────
+  # Lee RENDER_DEPLOY_HOOK_LOGISTICA como secreto del repositorio. Si se guarda en
+  # un Environment (p. ej. "produccion" con revisores), sumar environment: a este job.
   render:
     needs: ensayo
     if: ${{ github.event_name == 'workflow_dispatch' }}

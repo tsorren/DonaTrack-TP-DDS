@@ -70,7 +70,7 @@ Se propone **B**:
 * Confirmar en RM-01 que el plan de Neon permite una base por servicio en el mismo proyecto.
 * Confirmar que el enunciado de E5 no exige un schema por servicio. `[DOCUMENTED]` La fuente de RNF-AUTH-06 dice "Enunciado E5: un schema por servicio, motor compartido (por analogía)". `[OBSERVED]` El enunciado de E5 no está en `docs/entregas/`. Si lo exige, el enunciado manda (AGENTS.md §2) y esta propuesta se rechaza o se difiere.
 
-Justificación: es el pedido del usuario con el menor costo, y deja C a un cambio de host.
+Justificación: es el pedido del usuario con el menor costo, y deja C a un cambio de host. Lleva el patrón *Database per Service* al nivel que PostgreSQL hace cumplir: el límite de cada bounded context pasa a ser una base, no una convención de permisos.
 
 ## Consecuencias Positivas
 

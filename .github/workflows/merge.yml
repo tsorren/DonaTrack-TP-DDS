@@ -51,6 +51,8 @@ on:
       - '.dockerignore'
       - 'docker-compose*.yml'
       - 'docker-compose*.yaml'
+      # D5: un PR de "contrato primero" solo toca docs; el post-merge lo valida igual
+      - 'docs/arquitectura/contratos/**'
   # Corte de entrega (D5): corrida manual del post-merge sobre la cabeza de ENTREGA_x.
   workflow_dispatch:
 

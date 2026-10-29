@@ -39,10 +39,14 @@ for pom in */pom.xml; do
     # RM-02: un servicio modificado solo se valida con su propia imagen.
     resolver "$svc" "${GHCR_BASE}/${svc}:${PR_TAG}"
   elif [[ -n "${MANIFIESTO:-}" ]]; then
-    if ref=$(python scripts/manifiesto_version.py leer "$MANIFIESTO" --servicio "$svc"); then
-      resolver "$svc" "$ref"
-    else
+    if ! ref=$(python scripts/manifiesto_version.py leer "$MANIFIESTO" --servicio "$svc"); then
       FAILED+=("$svc")
+    elif [[ "$ref" != "${GHCR_BASE}/${svc}@sha256:"* ]]; then
+      # Un manifiesto solo puede apuntar a imágenes del registro del repo, por digest
+      echo "::error::${svc}: el manifiesto apunta a ${ref}, fuera de ${GHCR_BASE}/${svc}@sha256."
+      FAILED+=("$svc")
+    else
+      resolver "$svc" "$ref"
     fi
   elif [[ -n "${BASE_TAG:-}" ]]; then
     # Transición: hasta que la rama base tenga un manifiesto promovido (RM-06).

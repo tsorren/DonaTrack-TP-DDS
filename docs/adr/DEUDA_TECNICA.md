@@ -151,7 +151,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] in-progress` — Fases 1, 2, 3A y 4 implementadas: ArchUnit universal y fitness functions activas, Pitest acotado a matching, persistencia efímera con `@ServiceConnection` y controllers en `@WebMvcTest`, validación viva de contratos OpenAPI en `ContractIT` erradicando AP-01, pruebas de rendimiento migradas a k6 erradicando AP-02 (`PerformanceStressIT` eliminado); Subfase 3B (AMQP) catalogada como `[DEFERRED_PENDING_RABBITMQ_CONTRACTS]`; **implementada por RM-08 (2026-10-28, rama `E5_preprod_fiel_rm08`)**: consumidor espía en el E2E y validación contra los schemas `evento-*`, aviso en el PR y error en el post-merge ([ADR de política de contratos](./20261028-politica-de-evolucion-de-contratos-entre-servicios.md)) |
 | Target | Monorepo · `integration-tests` · microservicios (`donaciones`, `logistica`, `incentivos`, `notificaciones`) |
-| Cuándo se saldará | **Saldada en Entrega 4 (Fases 1, 2, 3A y 4)**; Subfase 3B (AMQP) diferida formalmente hasta la congelación de contratos RabbitMQ |
+| Cuándo se saldará | **Saldada en Entrega 4 (Fases 1, 2, 3A y 4)**; Subfase 3B (AMQP) implementada por RM-08 (E5, 2026-10-28) |
 
 ---
 
@@ -358,7 +358,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] in-progress` — relevado en `origin/main` `a808942c` por el análisis [preprod fiel](../testing/preprod-fiel.md) (B2, B3). La rama `E5_preprod_fiel_rm08` (2026-10-28) implementa RM-06 (`merge.yml`: candidato `:sha-<7>`, `preprod-post-merge`, `promote` y manifiesto; `main.yml`: servicios no modificados por digest) y RM-07 sin Render (`deploy.yml`, ensayo con smoke y rollback). Se cierra cuando la primera corrida post-merge y de `deploy.yml` lo confirme |
 | Target | `.github/workflows/merge.yml` · `.github/workflows/main.yml` · `.github/workflows/deploy.yml` |
-| Cuándo se saldará | Con la primera corrida en CI de la rama, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-06 y RM-07); sujeto a la aprobación del ADR. Render ya no es precondición (D3) |
+| Cuándo se saldará | Con la primera corrida en CI, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-06 y RM-07); sujeto a la aprobación del ADR. Render ya no es precondición (D3). `deploy.yml` corre recién cuando llegue a `main`: GitHub solo dispara `workflow_run` y `workflow_dispatch` de workflows presentes en la rama por defecto |
 
 1. **Imagen publicada sin preprod:** `merge.yml` reconstruye desde el commit integrado y publica `:<rama>`, `:sha-<7>` y `:latest` sin correr el preprod (`merge.yml:259-269`). La imagen que valida el PR (`pr-<N>`) no es la que se publica.
 2. **Estado post-merge sin validar:** `main.yml` solo corre en `pull_request` (`main.yml:44-46`). `[INFERRED]` Dos PR en verde pueden romper la base al combinarse.

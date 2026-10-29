@@ -661,14 +661,15 @@ jobs:
 
       # RM-06: los servicios no modificados se fijan por digest desde el último manifiesto
       # promovido de la rama base (artefacto manifiesto-version de merge.yml, job promote).
-      # Mientras la base no tenga uno, el resolvedor usa su tag con un aviso.
+      # Mientras la base no tenga uno, el resolvedor usa su tag con un aviso. Solo se aceptan
+      # artefactos de corridas del propio repo: un PR desde un fork no puede inyectar uno.
       - name: Obtener el último manifiesto promovido de la rama base
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BASE_REF: ${{ github.base_ref }}
         run: |
           RUN_ID=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=manifiesto-version&per_page=100" \
-            --jq "[.artifacts[] | select(.expired | not) | select(.workflow_run.head_branch == \"${BASE_REF}\")][0].workflow_run.id // empty")
+            --jq "[.artifacts[] | select(.expired | not) | select(.workflow_run.head_branch == \"${BASE_REF}\") | select(.workflow_run.head_repository_id == .workflow_run.repository_id)][0].workflow_run.id // empty")
           if [[ -n "$RUN_ID" ]] && gh run download "$RUN_ID" -n manifiesto-version -D manifiesto; then
             echo "MANIFIESTO=manifiesto/manifiesto-version.json" >> "$GITHUB_ENV"
             echo "📜 Manifiesto de ${BASE_REF}: corrida ${RUN_ID}"

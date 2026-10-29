@@ -50,7 +50,7 @@ FAILSAFE_XML_LOGISTICA_FAILURE = """<?xml version="1.0" encoding="UTF-8"?>
 
 FAILSAFE_XML_E2E_FAILURE = """<?xml version="1.0" encoding="UTF-8"?>
 <testsuite name="grupo5.tests.e2e.FullDistributedDonationE2EIT" tests="1" failures="1" errors="0" skipped="0" time="0.3">
-    <testcase name="flujoCompleto" classname="grupo5.tests.e2e.FullDistributedDonationE2EIT" time="0.3">
+    <testcase name="testFlujoCompletoDistribuidoConLogisticaYRabbitMQ" classname="grupo5.tests.e2e.FullDistributedDonationE2EIT" time="0.3">
         <failure message="timeout" type="AssertionError">stacktrace aqui</failure>
     </testcase>
 </testsuite>

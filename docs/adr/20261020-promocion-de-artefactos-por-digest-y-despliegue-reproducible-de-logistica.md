@@ -110,7 +110,7 @@ Se adoptan **1A** y **2D** (revisión 2026-10-28; la versión del 2026-10-20 ado
 6. **Despliegue reproducible (2D).** Un workflow nuevo, `deploy.yml`, corre después de cada `merge.yml` exitoso y a mano (`workflow_dispatch`, con la corrida cuyo manifiesto se quiere desplegar). Levanta en el runner el stack de preprod con los digests del manifiesto M (`scripts/ensayo-despliegue.sh`).
 7. **Smoke.** `/actuator/health` en `UP` con una espera que tolera el arranque en frío, `/v3/api-docs` y el grupo `smoke` de `integration-tests`, para los 4 servicios.
 8. **Rollback ensayado.** Sobre el mismo stack despliega el manifiesto anterior, M-1, y repite el smoke. Se ensaya en cada corrida.
-9. **Render (2A como adaptador opcional).** Solo en la corrida manual y solo si existe el secreto `RENDER_DEPLOY_HOOK_LOGISTICA`: llama al deploy hook con `imgURL=<imagen de Logística>@sha256:<digest>`. Si el secreto no existe, avisa y no falla. Al crearlo, conviene guardarlo en un GitHub Environment `produccion` con revisores requeridos (configuración fuera del repo).
+9. **Render (2A como adaptador opcional).** Solo en la corrida manual y solo si existe el secreto `RENDER_DEPLOY_HOOK_LOGISTICA`: llama al deploy hook con `imgURL=<imagen de Logística>@sha256:<digest>`. Si el secreto no existe, avisa y no falla. Hoy se lee como secreto del repositorio; si se guarda en un GitHub Environment `produccion` con revisores requeridos (configuración fuera del repo), el job `render` tiene que declarar `environment: produccion`.
 10. **Pausa.** Se mantiene la pausa entre defensas: Render solo recibe un despliegue a pedido.
 
 **Precondiciones del adaptador de Render** (RM-01; ya no bloquean la parte 2):
@@ -139,6 +139,7 @@ Justificación: es la única combinación que lleva P1 y P12 a 2 sin alargar el 
 * Un artefacto vencido deja de servir para un rollback. Si hace falta más de 90 días, el manifiesto pasa a guardarse en otro lado (por ejemplo, un asset de release).
 * El ensayo (2D) corre en el runner, no en la nube: valida el artefacto y el procedimiento, no la plataforma de Render. El despliegue real solo cubre Logística.
 * Cada merge con imágenes suma el ensayo de despliegue (dos arranques del stack) a los minutos de CI.
+* `deploy.yml` solo corre cuando está en la rama por defecto (`main`): en `ENTREGA_x` no se dispara hasta que esa entrega llegue a `main`.
 
 ## Validación
 

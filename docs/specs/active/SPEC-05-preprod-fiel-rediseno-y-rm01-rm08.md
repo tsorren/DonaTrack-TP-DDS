@@ -86,7 +86,7 @@ RM-07 dependía de Render en dos precondiciones sin confirmar (plan gratuito con
 | Rollback ensayado | 10 | 3 | 5: se ensaya en cada corrida | 3 |
 | **Total** | 100 | **3,2** | **4,6** | **3,0** |
 
-- **Recomendada: B.** `deploy.yml` (`workflow_dispatch` con el manifiesto, y después de `promote`) levanta el stack con los digests del manifiesto M, corre el smoke (`/actuator/health`, `/v3/api-docs` y los tests `smoke`), despliega M-1 encima y repite el smoke (rollback ensayado). Si existe el secreto `RENDER_DEPLOY_HOOK_LOGISTICA`, un paso extra llama al deploy hook con el digest de Logística; si no existe, se saltea con aviso y no falla.
+- **Recomendada: B.** `deploy.yml` (`workflow_dispatch` con el manifiesto, y después de `promote`) levanta el stack con los digests del manifiesto M, corre el smoke (`/actuator/health`, `/v3/api-docs` y los tests `smoke`), despliega M-1 encima y repite el smoke (rollback ensayado). Si existe el secreto `RENDER_DEPLOY_HOOK_LOGISTICA`, un paso extra llama al deploy hook con el digest de Logística; si no existe, se saltea con aviso y no falla. *Al implementar:* ese paso corre solo en la corrida manual, por la pausa entre defensas que el ADR de promoción ya fijaba (alternativa 2B descartada).
 - **Efecto en el puntaje:** P12 sube a 2 por promoción reproducible con smoke y rollback; el despliegue real en Render queda como mejora condicionada.
 - **ADR:** se revisa el ADR `proposed` de promoción (punto de despliegue), sin ADR nuevo. Está sin publicar y sin aprobar, así que se puede corregir.
 - **RM-01** se reduce: las preguntas de Render dejan de bloquear. Queda el pedido de aprobaciones y la verificación de Neon para D1.
