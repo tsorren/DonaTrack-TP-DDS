@@ -197,7 +197,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
 | [`persistencia/README.md`](../persistencia/README.md) | Base de Datos | Arquitectura de una base por servicio en el mismo PostgreSQL (DTI-26), roles, URLs JDBC y ciclo Flyway. | 🟢 Sincronizado |
-| [`persistencia/init-db/01-init-schemas-roles.sql`](../persistencia/init-db/01-init-schemas-roles.sql) | Base de Datos | Inicialización idempotente de esquemas PostgreSQL y roles (sin contraseña) con privilegios mínimos. | 🟢 Sincronizado |
+| [`persistencia/init-db/01-init-schemas-roles.sql`](../persistencia/init-db/01-init-schemas-roles.sql) | Base de Datos | Inicialización idempotente de una base por servicio (dueño su rol, sin `CONNECT` para PUBLIC), su schema y los roles (sin contraseña). | 🟢 Sincronizado |
 | [`persistencia/init-db/02-set-role-passwords.sh`](../persistencia/init-db/02-set-role-passwords.sh) | Base de Datos | Fija las contraseñas de los roles desde variables de entorno (`.env`, ver [`.env.example`](../.env.example)). | 🟢 Sincronizado |
 | `notificaciones-service` (JPA + Flyway) | Persistencia | Mapeo relacional, migraciones Flyway V1 (schema) y V2 (inbox `evento_procesado`) y testing con Testcontainers PostgreSQL 16. | 🟢 Sincronizado |
 | [`docs/adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md`](adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) | ADR Persistencia | Formalización de arquitectura multi-schema y segregación de credenciales. `superseded` (2026-10-29) por el ADR de base por servicio. | 🟢 Sincronizado |
