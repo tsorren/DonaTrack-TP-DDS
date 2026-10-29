@@ -1,6 +1,7 @@
 package grupo5.tests.contract;
 
 import static io.restassured.RestAssured.given;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,10 +12,17 @@ import com.atlassian.oai.validator.model.SimpleRequest;
 import com.atlassian.oai.validator.report.ValidationReport;
 import com.atlassian.oai.validator.restassured.OpenApiValidationFilter;
 import grupo5.tests.BaseIT;
+import grupo5.tests.builders.PersonaTestDataBuilder;
+import grupo5.tests.dto.PersonaTestDTO;
+import grupo5.tests.utils.TestIdGenerator;
 import io.restassured.http.ContentType;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -253,14 +261,79 @@ class ContractIT extends BaseIT {
   }
 
   @Test
-  void testRabbitMqMessagingContractsDeferred() {
-    // [DEFERRED_PENDING_RABBITMQ_CONTRACTS]
-    // Subfase 3B: La validación asincrónica de eventos AMQP contra JSON Schemas queda
-    // catalogada y diferida hasta la congelación de contratos de mensajería con RabbitMQ
-    // según docs/testing/auditoria/05-roadmap-migracion.md §2.3.
-    Path schemaPath = Path.of(resolveContractPath("schemas/evento-entrega-exitosa.schema.json"));
-    assertTrue(
-        Files.exists(schemaPath),
-        "Los esquemas base de eventos deben existir en docs/arquitectura/contratos/schemas/");
+  void testValidadorDeEventosAmqpAplicaLosSchemas() throws IOException {
+    // RM-08: reemplaza al test diferido. El validador del espía AMQP (draft 2020-12) carga todos
+    // los schemas evento-*, acepta un mensaje válido y rechaza uno incompleto, un UUID malformado
+    // y un tipo sin schema. Los mensajes reales se validan en FullDistributedDonationE2EIT.
+    try (Stream<Path> schemas = Files.list(Path.of(resolveContractPath("schemas")))) {
+      List<Path> eventos =
+          schemas.filter(p -> p.getFileName().toString().startsWith("evento-")).toList();
+      assertFalse(eventos.isEmpty(), "Debe haber schemas evento-* en contratos/schemas/");
+      for (Path schema : eventos) {
+        String tipo =
+            schema.getFileName().toString().replace("evento-", "").replace(".schema.json", "");
+        // Un objeto vacío nunca es válido: si el schema no cargara, no habría violaciones
+        assertFalse(
+            ContratosAmqp.validar(tipo.replace('-', '.'), "{}".getBytes(StandardCharsets.UTF_8))
+                .isEmpty(),
+            "El schema " + schema.getFileName() + " debe cargar y exigir sus campos");
+      }
+    }
+
+    String valido =
+        """
+        {
+          "rutaId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "donacionIndependienteId": "98765432-abcd-ef01-2345-6789abcdef01",
+          "fechaAsignacion": "2026-09-05T13:30:00Z",
+          "campoNuevo": "D5: los schemas de eventos aceptan campos extra"
+        }
+        """;
+    assertEquals(
+        List.of(), ContratosAmqp.validar("ruta.asignada", valido.getBytes(StandardCharsets.UTF_8)));
+    assertFalse(
+        ContratosAmqp.validar(
+                "ruta.asignada", "{\"rutaId\": \"no-es-uuid\"}".getBytes(StandardCharsets.UTF_8))
+            .isEmpty(),
+        "Un mensaje incompleto o con UUID malformado debe rechazarse");
+    assertFalse(
+        ContratosAmqp.validar("tipo.sin.schema.v1", valido.getBytes(StandardCharsets.UTF_8))
+            .isEmpty(),
+        "Un tipo de mensaje sin schema debe rechazarse");
+  }
+
+  @Test
+  void testDonacionesPersonasContract() {
+    // RM-08: Donaciones se valida en vivo con OpenApiValidationFilter, como los otros 3 servicios
+    requireServiceAvailable(DONACIONES_URL, "donaciones-service");
+
+    OpenApiValidationFilter validationFilter =
+        new OpenApiValidationFilter(resolveContractPath("openapi-donaciones.yaml"));
+
+    PersonaTestDTO persona =
+        PersonaTestDataBuilder.humana()
+            .conNombre("Contrato")
+            .conDocumento(TestIdGenerator.randomDni())
+            .conEmail(TestIdGenerator.randomEmail("contrato"))
+            .build();
+
+    String personaId =
+        given()
+            .filter(validationFilter)
+            .contentType(ContentType.JSON)
+            .body(persona)
+            .when()
+            .post(DONACIONES_URL + "/api/personas")
+            .then()
+            .statusCode(201)
+            .extract()
+            .path("id");
+
+    given()
+        .filter(validationFilter)
+        .when()
+        .get(DONACIONES_URL + "/api/personas/" + personaId)
+        .then()
+        .statusCode(200);
   }
 }

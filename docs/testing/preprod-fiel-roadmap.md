@@ -26,9 +26,9 @@ Estado en la rama `E5_preprod_fiel_rm08` (2026-10-28). `[VERIFIED]` = ejecutado 
 | RM-04 | Implementado | `[VERIFIED]` `./run-preprod-tests.sh --images local`; `--images ghcr` en CI |
 | RM-05 | Implementado | `[VERIFIED]` preprod en verde con `mongo:7.0` fijado por digest |
 | RM-19 | Solo documentación | ADR `proposed`; el código espera a `E4_donaciones_minio` y `E4_persistencia_donaciones` |
-| RM-06 | Implementado | `[VERIFIED]` script de manifiesto (tests); `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `preprod-post-merge` y `promote` |
-| RM-07 | Implementado | `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `deploy.yml` y `scripts/ensayo-despliegue.sh` |
-| RM-08 | Implementado | Ver el reporte del PR |
+| RM-06 | Implementado | `[VERIFIED]` script de manifiesto (4 tests) y resolvedor por digest con los digests reales de `:entrega_5`; `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `preprod-post-merge` y `promote` |
+| RM-07 | Implementado | `[VERIFIED]` `scripts/ensayo-despliegue.sh` en local (smoke 4/4 con M y con M-1 encima); `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `deploy.yml` |
+| RM-08 | Implementado; encontró 3 defectos reales ([DTI-27](../adr/DEUDA_TECNICA.md#dti-27)) | `[VERIFIED]` validador del espía, diff de OpenAPI (aviso y error) y `validate-contracts.js`; con `CONTRATOS_ESTRICTO=true` el E2E falla por 2 eventos de Donaciones sin un campo requerido, y la validación en vivo de Donaciones falla por la spec de `POST /api/personas` |
 
 ## 0. Cómo leer este documento
 

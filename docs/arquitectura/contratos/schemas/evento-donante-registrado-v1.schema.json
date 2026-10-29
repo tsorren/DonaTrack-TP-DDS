@@ -33,5 +33,5 @@
     }
   },
   "required": ["donanteId", "personaId", "nombre", "fecha", "credencialesDeAcceso"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

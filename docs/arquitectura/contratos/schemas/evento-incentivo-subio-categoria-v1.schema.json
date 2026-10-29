@@ -27,5 +27,5 @@
     }
   },
   "required": ["personaDonanteId", "fecha", "nombreNuevaCategoria", "nombreViejaCategoria"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

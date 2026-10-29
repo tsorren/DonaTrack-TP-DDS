@@ -1,0 +1,4 @@
+# D5 de la SPEC-05 (ADR 20261028, política de evolución de contratos): "contrato primero".
+# GitHub pide la revisión del responsable de integración en cada PR que toca un contrato.
+# Que esa revisión sea obligatoria depende de la protección de rama (configuración de GitHub).
+/docs/arquitectura/contratos/ @tsorren

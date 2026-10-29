@@ -56,5 +56,5 @@
     "justificacion",
     "replanificable"
   ],
-  "additionalProperties": false
+  "additionalProperties": true
 }

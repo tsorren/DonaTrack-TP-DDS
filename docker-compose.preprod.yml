@@ -171,6 +171,9 @@ services:
 
   rabbitmq:
     image: rabbitmq:3.13-alpine
+    # RM-08: el consumidor espía de integration-tests captura los mensajes; solo en loopback
+    ports:
+      - "127.0.0.1:5672:5672"
     environment:
       - RABBITMQ_DEFAULT_USER=donatrack
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS:?ver .env.example}

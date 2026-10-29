@@ -149,7 +149,7 @@
 | ADR | [20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes](./20260906-estrategia-ambientes-efimeros-testcontainers-en-componentes.md) |
 | ADR complementario | [20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp](./20260906-estrategia-contratos-openapi-wiremock-y-esquemas-amqp.md) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] in-progress` — Fases 1, 2, 3A y 4 implementadas: ArchUnit universal y fitness functions activas, Pitest acotado a matching, persistencia efímera con `@ServiceConnection` y controllers en `@WebMvcTest`, validación viva de contratos OpenAPI en `ContractIT` erradicando AP-01, pruebas de rendimiento migradas a k6 erradicando AP-02 (`PerformanceStressIT` eliminado); Subfase 3B (AMQP) catalogada como `[DEFERRED_PENDING_RABBITMQ_CONTRACTS]` |
+| Implementation status | `[OBSERVED] in-progress` — Fases 1, 2, 3A y 4 implementadas: ArchUnit universal y fitness functions activas, Pitest acotado a matching, persistencia efímera con `@ServiceConnection` y controllers en `@WebMvcTest`, validación viva de contratos OpenAPI en `ContractIT` erradicando AP-01, pruebas de rendimiento migradas a k6 erradicando AP-02 (`PerformanceStressIT` eliminado); Subfase 3B (AMQP) catalogada como `[DEFERRED_PENDING_RABBITMQ_CONTRACTS]`; **implementada por RM-08 (2026-10-28, rama `E5_preprod_fiel_rm08`)**: consumidor espía en el E2E y validación contra los schemas `evento-*`, aviso en el PR y error en el post-merge ([ADR de política de contratos](./20261028-politica-de-evolucion-de-contratos-entre-servicios.md)) |
 | Target | Monorepo · `integration-tests` · microservicios (`donaciones`, `logistica`, `incentivos`, `notificaciones`) |
 | Cuándo se saldará | **Saldada en Entrega 4 (Fases 1, 2, 3A y 4)**; Subfase 3B (AMQP) diferida formalmente hasta la congelación de contratos RabbitMQ |
 
@@ -395,3 +395,22 @@ La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema
 | Implementation status | `[OBSERVED] not-started` — por decisión del usuario (2026-10-28, SPEC-05) solo se documentó: `persistencia/init-db`, los composes y las properties chocan con `origin/E4_donaciones_minio` y `origin/E4_persistencia_donaciones` |
 | Target | `persistencia/init-db/*` · 3 composes · 3 `application-postgres.properties` · 4 tests de Testcontainers · `persistencia/README.md` |
 | Cuándo se saldará | Después de que mergeen las dos ramas de E4, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-19). Precondiciones: Neon admite una base por servicio (RM-01) y el enunciado de E5 no exige un schema por servicio |
+
+---
+
+## DTI-27 — Contratos de Donaciones incumplidos, detectados por los contratos vivos (RM-08)
+<a id="dti-27"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261028-politica-de-evolucion-de-contratos-entre-servicios](./20261028-politica-de-evolucion-de-contratos-entre-servicios.md) |
+| Decision status | `proposed` |
+| Implementation status | `[VERIFIED] divergence` — `run-preprod-tests.sh` con `CONTRATOS_ESTRICTO=true` (2026-10-28, rama `E5_preprod_fiel_rm08`): el E2E falla por los ítems 1 y 2, y `ContractIT.testDonacionesPersonasContract` por el ítem 3 |
+| Target | `donaciones-service` (publicación de eventos) · `docs/arquitectura/contratos/openapi-donaciones.yaml` |
+| Cuándo se saldará | Antes del corte de E5 (D5: el post-merge de `ENTREGA_5` falla y no promueve hasta que se corrijan) |
+
+1. **`donacion.en-camino.v1` sin `urlMapa`.** El schema y el DTO (`EventoDonacionEnCaminoV1`, `@NotBlank`) lo exigen, pero en el E2E Donaciones publica el evento con `urlMapa` en `null` y `@JsonInclude(NON_NULL)` lo omite.
+2. **`donacion.recibida.v1` sin `patenteCamion`.** Mismo caso (`EventoDonacionRecibidaV1`, `@NotBlank`).
+3. **`POST /api/personas` sin body en la spec.** `openapi-donaciones.yaml` no declara el body del request ni el de la respuesta 201; el servicio recibe y devuelve una persona. La validación en vivo de Donaciones (RM-08, criterio 2) lo rechaza.
+
+Para los ítems 1 y 2 se decide qué cambia: el productor (siempre envía el dato) o el contrato (el campo deja de ser requerido; cambio compatible para los consumidores).

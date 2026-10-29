@@ -119,6 +119,12 @@ El script es el **punto de entrada único** (RM-04 del [roadmap de preprod fiel]
 
 Los envoltorios conservan su nombre y sus argumentos: `run-preprod-tests-stay.sh` equivale a `--stay` y `run-hybrid-tests.sh` a `--target hybrid`.
 
+**Contratos vivos (RM-08, [política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md)):**
+
+* `FullDistributedDonationE2EIT` arranca un consumidor espía (`EspiaAmqp`), que copia los mensajes de `donaciones.exchange`, `incentivos.exchange` y `logistica.exchange` desde el puerto AMQP publicado en `127.0.0.1:5672`. Al terminar, `ContratosAmqp` valida cada mensaje contra su schema `evento-*` (JSON Schema draft 2020-12, elegido por el header `__TypeId__`); un tipo sin schema es una violación.
+* Con `CONTRATOS_ESTRICTO=true` (post-merge y corte de entrega) una violación hace fallar el E2E; sin él (PR y local), queda como `::warning::` en `integration-tests/target/contratos-amqp-avisos.txt` y el script la muestra al final.
+* `scripts/diff-contratos.sh <ref-base> aviso|error` compara las specs OpenAPI con `oasdiff` (imagen `tufin/oasdiff`, fijada por digest). Para probar en local un cambio de spec antes del PR: `scripts/diff-contratos.sh origin/ENTREGA_5 aviso`.
+
 ```bash
 # Fail-Fast inmediato (Smoke Tests)
 ./run-preprod-tests.sh --skip-build --groups smoke

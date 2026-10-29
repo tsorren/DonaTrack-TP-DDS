@@ -100,7 +100,8 @@ export EXECUTION_ID
 LOG_DIR="logs/registro/${EXECUTION_ID}"
 
 # Reportes de una corrida anterior falsearían el resultado de esta
-rm -rf integration-tests/target/failsafe-reports integration-tests/target/surefire-reports
+CONTRATOS_AVISOS="integration-tests/target/contratos-amqp-avisos.txt"
+rm -rf integration-tests/target/failsafe-reports integration-tests/target/surefire-reports "$CONTRATOS_AVISOS"
 
 # ── Cleanup y Diagnóstico de Logs al salir (con o sin error) ────────────────
 cleanup() {
@@ -111,6 +112,12 @@ cleanup() {
   # pero, si la suite pasó, se propaga (ADR 20260903 protocolo de salida semántico).
   local diag_code=0
   docker compose -f "$COMPOSE_FILE" logs --no-color --timestamps > "$LOG_DIR/docker-compose-full.log" 2>/dev/null || { diag_code=$?; warn "No se pudieron recolectar los logs de contenedores (exit $diag_code)."; }
+
+  # RM-08 (D5): sin CONTRATOS_ESTRICTO, las violaciones de contratos AMQP son avisos
+  if [[ -s "$CONTRATOS_AVISOS" ]]; then
+    step "Avisos de contratos AMQP (en el post-merge fallan)"
+    cat "$CONTRATOS_AVISOS"
+  fi
 
   step "Ejecutando diagnóstico y análisis de logs (${EXECUTION_ID})"
   python scripts/analyze_preprod_logs.py --file "$LOG_DIR/docker-compose-full.log" --export-report || { diag_code=$?; warn "analyze_preprod_logs.py terminó con exit $diag_code."; }
@@ -221,6 +228,9 @@ done
 
 # ── Paso 3: Ejecutar suite ───────────────────────────────────────────────────
 run_suite() {
+  # El consumidor espía de RM-08 se conecta al broker con la contraseña generada en .env
+  RABBITMQ_PASS="$(sed -n 's/^RABBITMQ_PASS=//p' .env)"
+  export RABBITMQ_PASS
   local groups="$1"
   local mvn_args=(
     verify

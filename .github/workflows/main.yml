@@ -716,6 +716,28 @@ jobs:
           retention-days: 3
 
   # ──────────────────────────────────────────────────────────────────────────
+  # Job 9b: Diff de contratos OpenAPI (RM-08)
+  # ──────────────────────────────────────────────────────────────────────────
+  # D5 (SPEC-05): en el PR un cambio incompatible es un aviso, para no frenar
+  # a otro equipo con un cambio coordinado; el post-merge de merge.yml y el
+  # corte de entrega fallan. Por eso el Quality Gate no lo exige.
+  contract-diff:
+    needs: validate-git-flow
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Cambios incompatibles en las specs OpenAPI (aviso)
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: scripts/diff-contratos.sh "origin/${BASE_REF}" aviso
+
+  # ──────────────────────────────────────────────────────────────────────────
   # Job 10: Quality Gate (Consolidador Final)
   # ──────────────────────────────────────────────────────────────────────────
   quality-gate:
