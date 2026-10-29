@@ -45,20 +45,24 @@ public interface StoragePort {
    */
   String urlTemporal(String bucket, String clave, Duration vigencia, Operacion operacion);
 
-  /** Letras, números, guiones, guiones bajos y puntos, con a lo sumo una barra entre segmentos. */
-  Pattern CLAVE_VALIDA =
-      Pattern.compile("[A-Za-z0-9_-][A-Za-z0-9._-]*(/[A-Za-z0-9_-][A-Za-z0-9._-]*)*");
+  /**
+   * Un segmento de la clave: letras, números, guiones, guiones bajos y puntos, sin empezar con
+   * punto. La clave son segmentos separados por una sola barra; se valida segmento por segmento
+   * para no repetir un grupo en la regex (S5998).
+   */
+  Pattern SEGMENTO_VALIDO = Pattern.compile("[A-Za-z0-9_-][A-Za-z0-9._-]*");
 
   /**
    * Rechaza claves que podrían escapar del bucket o de su prefijo: vacías, absolutas, con {@code
    * ..}, barras invertidas o caracteres de control. Devuelve la misma clave si es válida.
    */
   static String validarClave(String clave) {
-    if (clave == null || clave.length() > 512 || !CLAVE_VALIDA.matcher(clave).matches()) {
+    if (clave == null || clave.isEmpty() || clave.length() > 512) {
       throw new IllegalArgumentException("Clave de objeto inválida");
     }
-    for (String segmento : clave.split("/")) {
-      if (segmento.contains("..")) {
+    // El límite -1 conserva los segmentos vacíos: así se rechazan "/a", "a/" y "a//b"
+    for (String segmento : clave.split("/", -1)) {
+      if (!SEGMENTO_VALIDO.matcher(segmento).matches() || segmento.contains("..")) {
         throw new IllegalArgumentException("Clave de objeto inválida");
       }
     }

@@ -18,7 +18,7 @@ import lombok.Getter;
 @Getter
 public class DonacionIndependiente extends AgregadoConEventos<EventoDonacionIndependiente> {
   private final UUID id;
-  private UUID donacionOriginalId;
+  private final UUID donacionOriginalId;
 
   @Getter(AccessLevel.NONE)
   private List<ItemDonacionIndependiente> items;

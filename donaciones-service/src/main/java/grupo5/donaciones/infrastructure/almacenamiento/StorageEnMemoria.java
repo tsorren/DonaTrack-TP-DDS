@@ -19,7 +19,24 @@ public class StorageEnMemoria implements StoragePort {
 
   static final String ESQUEMA_URL = "memoria://";
 
-  private record Objeto(byte[] contenido, String tipoContenido) {}
+  // Clase y no record: un record con un arreglo compararía el arreglo por referencia (S6218)
+  private static final class Objeto {
+    private final byte[] contenido;
+    private final String tipoContenido;
+
+    Objeto(byte[] contenido, String tipoContenido) {
+      this.contenido = contenido;
+      this.tipoContenido = tipoContenido;
+    }
+
+    byte[] contenido() {
+      return contenido;
+    }
+
+    String tipoContenido() {
+      return tipoContenido;
+    }
+  }
 
   private final Map<String, Objeto> objetos = new ConcurrentHashMap<>();
 
