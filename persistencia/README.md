@@ -1,26 +1,25 @@
 # Capa de Persistencia — DonaTrack
 
-Documentación técnica de la base de datos PostgreSQL centralizada con arquitectura multi-schema y aislamiento de roles por Bounded Context.
+Documentación técnica de PostgreSQL: un motor compartido con **una base por servicio** y, dentro de cada una, el schema y el rol de su Bounded Context.
 
-> Decisión de arquitectura de referencia (`superseded` el 2026-10-29 por el [ADR de base por servicio](../docs/adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md); el código lo sigue hasta implementar RM-19): [`ADR — Persistencia Multi-Schema`](../docs/adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md)
-
-> **Cambio aceptado, sin implementar (RM-19):** el [ADR de base de datos por servicio en el mismo motor](../docs/adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (`accepted`, 2026-10-29) decide una base por servicio (`notificaciones`, `incentivos`, `donaciones`, `logistica`) con el mismo schema `<servicio>` adentro, en el mismo PostgreSQL. Las URLs pasarían a `/<servicio>?currentSchema=<servicio>`. Este documento describe lo que hay hoy: el código cambia después de que mergeen `E4_donaciones_minio` y `E4_persistencia_donaciones` (DTI-26).
+> Decisión de arquitectura vigente: [ADR de base de datos por servicio en el mismo motor](../docs/adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (`accepted`, implementado el 2026-10-29, RM-19 y DTI-26). Reemplaza al [ADR de persistencia multi-schema](../docs/adr/20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) (`superseded`).
 
 ---
 
-## Arquitectura multi-schema
+## Una base por servicio
 
-Un único servidor **PostgreSQL 16** ([OBSERVED]) aloja cuatro schemas lógicos, uno por microservicio. El aislamiento entre dominios se enforcea en la capa de base de datos mediante roles dedicados con permisos mínimos.
+Un único servidor **PostgreSQL 16** ([OBSERVED]) aloja cuatro bases, una por microservicio. Cada base tiene como dueño el rol de su servicio y adentro el schema `<servicio>`. PostgreSQL no permite consultas entre bases, así que el aislamiento entre dominios no depende de los `GRANT`.
 
 ```
-donatrack (base de datos)
-├── schema: notificaciones  ← notificaciones-service
-├── schema: donaciones       ← donaciones-service (placeholder)
-├── schema: logistica        ← logistica-service
-└── schema: incentivos       ← incentivos-service
+PostgreSQL 16
+├── base: notificaciones → schema notificaciones  ← notificaciones-service (dueño: notificaciones_user)
+├── base: donaciones     → schema donaciones      ← donaciones-service     (dueño: donaciones_user)
+├── base: logistica      → schema logistica       ← perfil postgres de logistica-service (dueño: logistica_user)
+├── base: incentivos     → schema incentivos      ← incentivos-service     (dueño: incentivos_user)
+└── base: donatrack      (POSTGRES_DB: solo administración, sin datos)
 ```
 
-> **Por qué un único servidor:** Reduce el consumo de ~800 MB (4 × 200 MB por contenedor separado) a un único demonio PostgreSQL. En producción, cada schema puede migrarse a instancias RDS/Aurora independientes sin cambios en el código JPA.
+> **Por qué un único servidor:** Reduce el consumo de ~800 MB (4 × 200 MB por contenedor separado) a un único demonio PostgreSQL. Pasar a un motor por servicio solo cambia el host de cada URL JDBC.
 
 ---
 
@@ -28,11 +27,11 @@ donatrack (base de datos)
 
 Todos los roles se crean idempotentemente y sin contraseña en [`01-init-schemas-roles.sql`](init-db/01-init-schemas-roles.sql); [`02-set-role-passwords.sh`](init-db/02-set-role-passwords.sh) les fija la contraseña desde variables de entorno ([OBSERVED]). Ninguna contraseña está versionada.
 
-| Role                  | Variable de contraseña (`.env`) | Schema propio    | Estado                     |
+| Role                  | Variable de contraseña (`.env`) | Base y schema    | Estado                     |
 |-----------------------|---------------------------------|------------------|----------------------------|
 | `admin`               | `POSTGRES_PASSWORD`             | —                | Superusuario Docker        |
 | `notificaciones_user` | `NOTIFICACIONES_DB_PASSWORD`    | `notificaciones` | **Activo** — JPA conectado |
-| `donaciones_user`     | `DONACIONES_DB_PASSWORD`        | `donaciones`     | Placeholder                |
+| `donaciones_user`     | `DONACIONES_DB_PASSWORD`        | `donaciones`     | **Activo** — JPA conectado |
 | `logistica_user`      | `LOGISTICA_DB_PASSWORD`         | `logistica`      | **Activo** — JPA conectado |
 | `incentivos_user`     | `INCENTIVOS_DB_PASSWORD`        | `incentivos`     | **Activo** — JPA conectado |
 
@@ -41,16 +40,17 @@ Antes del primer `docker compose up`: `cp .env.example .env` (valores de desarro
 ### Política de permisos (aislamiento cruzado)
 
 ```sql
--- notificaciones_user: acceso total a su schema, revocado en los demás
-GRANT USAGE, CREATE ON SCHEMA notificaciones TO notificaciones_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA notificaciones GRANT ALL ON TABLES TO notificaciones_user;
-ALTER DEFAULT PRIVILEGES IN SCHEMA notificaciones GRANT ALL ON SEQUENCES TO notificaciones_user;
+-- Cada base es del rol de su servicio; nadie más se conecta
+CREATE DATABASE notificaciones OWNER notificaciones_user;   -- vía \gexec, solo si falta
+REVOKE CONNECT ON DATABASE notificaciones, incentivos, logistica, donaciones FROM PUBLIC;
+-- También en POSTGRES_DB (donatrack) y en postgres
 
-REVOKE ALL ON SCHEMA donaciones, logistica, incentivos FROM notificaciones_user;
+\connect notificaciones
+CREATE SCHEMA IF NOT EXISTS notificaciones AUTHORIZATION notificaciones_user;
 ALTER ROLE notificaciones_user SET search_path = notificaciones;
 ```
 
-Un intento de consulta cruzada falla con `permission denied for schema`. [OBSERVED]
+Un rol que intenta conectarse a otra base falla con `permission denied for database "<base>"` (`User does not have CONNECT privilege`). [VERIFIED] 2026-10-29, con `postgres:16-alpine`: cada uno de los 4 roles entra solo a su base; las otras 3, `donatrack` y `postgres` le rechazan la conexión.
 
 ---
 
@@ -75,15 +75,15 @@ PostgreSQL ejecuta todos los archivos `.sql` del directorio `docker-entrypoint-i
 
 | Servicio                 | Puerto | JDBC URL                                                                 | Usuario               |
 |--------------------------|--------|--------------------------------------------------------------------------|-----------------------|
-| `notificaciones-service` | 8081   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=notificaciones` | `notificaciones_user` |
-| `donaciones-service`     | 8080   | pendiente (sin datasource configurado aún)                               | `donaciones_user`     |
-| `logistica-service`      | 8083   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=logistica`      | `logistica_user`      |
-| `incentivos-service`     | 8082   | `jdbc:postgresql://postgres:5432/donatrack?currentSchema=incentivos`     | `incentivos_user`     |
+| `notificaciones-service` | 8081   | `jdbc:postgresql://postgres:5432/notificaciones?currentSchema=notificaciones` | `notificaciones_user` |
+| `donaciones-service`     | 8080   | `jdbc:postgresql://postgres:5432/donaciones?currentSchema=donaciones`         | `donaciones_user`     |
+| `logistica-service`      | 8083   | `jdbc:postgresql://localhost:5432/logistica?currentSchema=logistica` (solo el perfil `postgres`; en los composes usa MongoDB) | `logistica_user`      |
+| `incentivos-service`     | 8082   | `jdbc:postgresql://postgres:5432/incentivos?currentSchema=incentivos`         | `incentivos_user`     |
 
 ### Acceso local (fuera de Docker)
 
 ```
-jdbc:postgresql://localhost:5432/donatrack?currentSchema=notificaciones
+jdbc:postgresql://localhost:5432/notificaciones?currentSchema=notificaciones
 ```
 
 ---
@@ -166,7 +166,7 @@ Parámetros de conexión:
 | Servidor       | `postgres`              |
 | Usuario        | `notificaciones_user`   |
 | Contraseña     | `NOTIFICACIONES_DB_PASSWORD` de `.env` |
-| Base de datos  | `donatrack`             |
+| Base de datos  | `notificaciones` (cada rol entra solo a la base de su servicio) |
 
 > Para explorar como superusuario usar `admin` / `POSTGRES_PASSWORD` de `.env`.
 

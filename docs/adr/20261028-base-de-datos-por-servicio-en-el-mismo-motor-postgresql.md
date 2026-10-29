@@ -5,7 +5,7 @@
 - Deciders: tsorren (responsable de integración), por instrucción explícita del 2026-10-29; propuesta del usuario en la SPEC-05
 - Tags: persistencia, postgresql, database-per-service, aislamiento, neon, preprod, entrega-5
 
-> **Origen:** [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md), decisión D1 (`APPROVED_BY_USER`, 2026-10-28) y roadmap de [preprod fiel](../testing/preprod-fiel-roadmap.md), ítem RM-19. **Ninguna parte de esta decisión está implementada:** el código espera a que mergeen `E4_donaciones_minio` y `E4_persistencia_donaciones`, que tocan los mismos archivos.
+> **Origen:** [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md), decisión D1 (`APPROVED_BY_USER`, 2026-10-28) y roadmap de [preprod fiel](../testing/preprod-fiel-roadmap.md), ítem RM-19. **Nota de implementación (2026-10-29, rama `E5_dti26_base_por_servicio`):** implementada en el repo después del merge de #897 (DTI-26). Además de lo previsto, también se revoca `CONNECT` en `POSTGRES_DB` (`donatrack`) y en `postgres`: sin eso, un rol de servicio podía conectarse a la base administrativa. Los tests de Donaciones no cambiaron porque usan la base por defecto del contenedor. Fuera del repo queda la precondición de RM-01 (Neon).
 
 ## Contexto y Problema
 
@@ -94,4 +94,4 @@ Justificación: es el pedido del usuario con el menor costo, y deja C a un cambi
 
 * Roadmap: [RM-19 y RM-20](../testing/preprod-fiel-roadmap.md).
 * Precondición en la nube: RM-01 (Neon).
-* Deuda: [DTI-26](./DEUDA_TECNICA.md#dti-26) (decisión documentada, implementación pendiente).
+* Deuda: [DTI-26](./DEUDA_TECNICA.md#dti-26) (implementada en el repo el 2026-10-29; queda RM-01).
