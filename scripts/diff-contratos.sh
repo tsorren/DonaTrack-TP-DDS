@@ -9,6 +9,8 @@
 #   aviso  (PR)                  → ::warning:: y sale con 0
 #   error  (post-merge y corte)  → ::error:: y sale con 1
 # Una spec que no existe en la base es nueva: no tiene nada que romper.
+# Los cambios incompatibles aceptados (revisados por CODEOWNERS) están en
+# docs/arquitectura/contratos/cambios-incompatibles-aceptados.txt.
 # =============================================================================
 set -euo pipefail
 
@@ -26,6 +28,7 @@ fi
 TMP="target/diff-contratos"
 rm -rf "$TMP" && mkdir -p "$TMP"
 ROTOS=0
+IGNORAR="docs/arquitectura/contratos/cambios-incompatibles-aceptados.txt"
 
 for spec in docs/arquitectura/contratos/openapi-*.yaml; do
   nombre="${spec##*/}"
@@ -34,7 +37,7 @@ for spec in docs/arquitectura/contratos/openapi-*.yaml; do
     continue
   fi
   if MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd -W 2>/dev/null || pwd)":/w -w /w "$OASDIFF" \
-      breaking "/w/$TMP/$nombre" "/w/$spec" --fail-on ERR > "$TMP/$nombre.txt" 2>&1; then
+      breaking "/w/$TMP/$nombre" "/w/$spec" --fail-on ERR --err-ignore "/w/$IGNORAR" > "$TMP/$nombre.txt" 2>&1; then
     echo "✅ ${nombre}: sin cambios incompatibles respecto de ${BASE}."
   else
     ROTOS=$((ROTOS + 1))

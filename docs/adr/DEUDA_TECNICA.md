@@ -407,10 +407,10 @@ La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema
 | Decision status | `proposed` |
 | Implementation status | `[VERIFIED] divergence` — `run-preprod-tests.sh` con `CONTRATOS_ESTRICTO=true` (2026-10-28, rama `E5_preprod_fiel_rm08`): el E2E falla por los ítems 1 y 2, y `ContractIT.testDonacionesPersonasContract` por el ítem 3 |
 | Target | `donaciones-service` (publicación de eventos) · `docs/arquitectura/contratos/openapi-donaciones.yaml` |
-| Cuándo se saldará | Antes del corte de E5 (D5: el post-merge de `ENTREGA_5` falla y no promueve hasta que se corrijan) |
+| Cuándo se saldará | Antes del corte de E5 (D5: el post-merge de `ENTREGA_5` falla y no promueve hasta que se corrijan). El ítem 3 ya está resuelto; quedan el 1 y el 2 |
 
 1. **`donacion.en-camino.v1` sin `urlMapa`.** El schema y el DTO (`EventoDonacionEnCaminoV1`, `@NotBlank`) lo exigen, pero en el E2E Donaciones publica el evento con `urlMapa` en `null` y `@JsonInclude(NON_NULL)` lo omite.
 2. **`donacion.recibida.v1` sin `patenteCamion`.** Mismo caso (`EventoDonacionRecibidaV1`, `@NotBlank`).
-3. **`POST /api/personas` sin body en la spec.** `openapi-donaciones.yaml` no declara el body del request ni el de la respuesta 201; el servicio recibe y devuelve una persona. La validación en vivo de Donaciones (RM-08, criterio 2) lo rechaza.
+3. **`POST /api/personas` sin body en la spec.** `openapi-donaciones.yaml` no declara el body del request ni el de la respuesta 201; el servicio recibe y devuelve una persona. La validación en vivo de Donaciones (RM-08, criterio 2) lo rechaza. **Resuelto (2026-10-29, decisión del responsable de integración: completar la spec):** `PersonaInputDTO` y `PersonaOutputDTO` (polimórficos HUMANA/JURIDICA, con dirección y medios de contacto) en `components`, y el body de `POST`, `GET` y `PUT` de `/api/personas`. `ContractIT` pasa 7/7 contra el preprod. oasdiff marca el body requerido nuevo como incompatible: está registrado en `cambios-incompatibles-aceptados.txt`, porque el servicio siempre lo exigió.
 
 Para los ítems 1 y 2 se decide qué cambia: el productor (siempre envía el dato) o el contrato (el campo deja de ser requerido; cambio compatible para los consumidores).

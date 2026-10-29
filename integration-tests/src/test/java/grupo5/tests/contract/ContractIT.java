@@ -319,22 +319,20 @@ class ContractIT extends BaseIT {
             .conEmail(TestIdGenerator.randomEmail("contrato"))
             .build();
 
-    String personaId =
-        given()
-            .filter(validationFilter)
-            .contentType(ContentType.JSON)
-            .body(persona)
-            .when()
-            .post(DONACIONES_URL + "/api/personas")
-            .then()
-            .statusCode(201)
-            .extract()
-            .path("id");
+    given()
+        .filter(validationFilter)
+        .contentType(ContentType.JSON)
+        .body(persona)
+        .when()
+        .post(DONACIONES_URL + "/api/personas")
+        .then()
+        .statusCode(201);
 
+    // El listado valida la respuesta de varias personas (HUMANA y JURIDICA) contra el schema
     given()
         .filter(validationFilter)
         .when()
-        .get(DONACIONES_URL + "/api/personas/" + personaId)
+        .get(DONACIONES_URL + "/api/personas")
         .then()
         .statusCode(200);
   }

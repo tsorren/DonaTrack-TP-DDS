@@ -71,7 +71,8 @@ Se propone **H + C + contrato primero**, con **D** solo para un cambio que cruza
    * diff de OpenAPI contra la rama base con `oasdiff` (cambios incompatibles).
 4. **Corte de entrega.** El responsable de integración lanza el post-merge a mano (`workflow_dispatch` de `merge.yml`) sobre `ENTREGA_x` 24 h antes del vencimiento.
 5. **D. Expandir y contraer** solo para un cambio incompatible que el consumidor no llega a migrar antes del corte.
-6. **Fallas heredadas.** `report_test_failures.py` marca como "heredadas de la base" las fallas de servicios que el PR no modificó, para que cada integrante sepa si un rojo es suyo. La marca no cambia el resultado.
+6. **Cambios incompatibles aceptados.** Un cambio que oasdiff marca como incompatible pero que el equipo acepta (por ejemplo, documentar un body que el servicio siempre exigió) se registra en `docs/arquitectura/contratos/cambios-incompatibles-aceptados.txt`, con su motivo. `scripts/diff-contratos.sh` se lo pasa a oasdiff (`--err-ignore`). El archivo está bajo CODEOWNERS, así que cada excepción la revisa el responsable de integración.
+7. **Fallas heredadas.** `report_test_failures.py` marca como "heredadas de la base" las fallas de servicios que el PR no modificó, para que cada integrante sepa si un rojo es suyo. La marca no cambia el resultado.
 
 Justificación: es la única combinación que no frena a otro equipo y deja la entrega protegida, sin debilitar un gate existente. Aplica el principio de *Tolerant Reader* (el consumidor ignora lo que no conoce, y el contrato escrito lo acompaña) y respeta los límites de cada bounded context: cada equipo cambia su contrato publicado, no el código del otro.
 
@@ -89,7 +90,7 @@ Justificación: es la única combinación que no frena a otro equipo y deja la e
 * `ENTREGA_x` puede quedar con un contrato roto hasta el corte; el post-merge falla y no promueve (RM-06) hasta que se arregle hacia adelante.
 * El aviso del PR depende de que alguien lo lea.
 * Los schemas abiertos ya no detectan un campo de más mal escrito; sí detectan el requerido que falta. Tampoco detectan datos de un hecho metidos en el comando `entrega.solicitada.v1`: esa separación pasa a depender de la revisión del contrato.
-* El corte compara las specs contra `main` (la última entrega presentada): todo cambio incompatible de la entrega lo hace fallar, también uno coordinado y ya migrado. La única salida es expandir y contraer (D).
+* El corte compara las specs contra `main` (la última entrega presentada): todo cambio incompatible de la entrega lo hace fallar, también uno coordinado y ya migrado, salvo que esté registrado como aceptado (punto 6) o se aplique expandir y contraer (D).
 * El espía liga `donaciones.exchange` solo con los prefijos conocidos (`donacion.`, `donante.`, `persona.` y el comando de la instancia del preprod), para no ocultar los rechazos `mandatory` del broker: un evento nuevo de Donaciones con otro prefijo no se captura hasta sumar su clave.
 * El corte depende de una corrida manual: si nadie la lanza, el último post-merge es el gate.
 
