@@ -23,7 +23,7 @@ Un entorno preproductivo es fiel respecto de una producción concreta. Para Dona
 | Donaciones, Incentivos, Notificaciones, n8n, MinIO | Locales, con Docker Compose | `[DOCUMENTED]` arquitectura-sistema.md §7 |
 | Despliegue | Manual. CI publica imágenes en GHCR; no hay despliegue automático | `[DOCUMENTED]` arquitectura-sistema.md §7 · `[OBSERVED]` `merge.yml:200-287` |
 
-Cambios ya comprometidos por el [enunciado del TP Anual 2026](../entregas/Enunciado-TP-Anual-2026.pdf) `[DOCUMENTED]`:
+Cambios ya comprometidos por el enunciado del TP Anual 2026 (PDF fuera del repo) `[DOCUMENTED]`:
 
 - **E5 (pág. 25):** persistencia políglota. Logística en una base documental con ODM; el resto en un esquema relacional propio con ORM.
 - **E6 (págs. 26–27):** cliente liviano desacoplado (MVC) y servicio de autenticación con SSO y Social-Login. Hoy `auth-service` y `cliente-liviano` son placeholders `[OBSERVED]` (`auth-service/README.md:1-13`, `cliente-liviano/README.md:1-12`).

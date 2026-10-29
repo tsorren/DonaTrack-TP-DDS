@@ -21,7 +21,7 @@
 | R4 | No se incorporan dependencias en `pom.xml` ni imágenes Docker sin aprobación previa. Este documento aplica la misma regla a las acciones y herramientas nuevas de CI, aunque AGENTS.md no las nombre | `[DOCUMENTED]` AGENTS.md §6 · la extensión a CI es `[PROPOSED]` |
 | R5 | No se introducen canales de comunicación nuevos entre servicios sin ADR | `[DOCUMENTED]` AGENTS.md §4.2 |
 | R6 | Datos sintéticos, sin PII ni credenciales en el repositorio | `[DOCUMENTED]` AGENTS.md §4.3 |
-| R7 | E5 trae una base documental para Logística, E6 auth-service y cliente liviano, E7 observabilidad y seguridad | `[DOCUMENTED]` [enunciado](../entregas/Enunciado-TP-Anual-2026.pdf), págs. 25–28 |
+| R7 | E5 trae una base documental para Logística, E6 auth-service y cliente liviano, E7 observabilidad y seguridad | `[DOCUMENTED]` enunciado del TP Anual 2026 (PDF fuera del repo), págs. 25–28 |
 
 ## 2. Método de evaluación
 
