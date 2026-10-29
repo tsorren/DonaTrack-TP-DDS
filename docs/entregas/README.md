@@ -27,3 +27,4 @@
   - **Entrega 5** — Persistencia: persistencia políglota (relacional con ORM por servicio; documental con ODM para Logística) y desnormalización.
   - **Entrega 6** — Interfaz de Usuario y Arquitectura MVC: cliente liviano desacoplado con template engine, servicio de autenticación con SSO y Social-Login — ver [`cliente-liviano/README.md`](../../cliente-liviano/README.md) y [`auth-service/README.md`](../../auth-service/README.md).
   - **Entrega 7** — Observabilidad y Seguridad: métricas/trazas/logs, monitoreo con autorestart, rate limiting, y gRPC o GraphQL.
+- Las fechas de E5 a E7 del mapa salen del borrador de calendario de la cátedra que cita el [roadmap de preprod fiel](../testing/preprod-fiel-roadmap.md); el enunciado no las trae. `DEUDA_TECNICA.md` todavía fecha E6 en la semana del 23 de noviembre (pendiente de revisión).
