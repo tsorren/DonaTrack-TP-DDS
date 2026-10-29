@@ -28,7 +28,7 @@ Estado en la rama `E5_preprod_fiel_rm08` (2026-10-28). `[VERIFIED]` = ejecutado 
 | RM-19 | Solo documentación | ADR `proposed`; el código espera a `E4_donaciones_minio` y `E4_persistencia_donaciones` |
 | RM-06 | Implementado | `[VERIFIED]` script de manifiesto (4 tests) y resolvedor por digest con los digests reales de `:entrega_5`; `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `preprod-post-merge` y `promote` |
 | RM-07 | Implementado | `[VERIFIED]` la mecánica de `scripts/ensayo-despliegue.sh` en local (smoke 4/4 en los dos despliegues, con M y M-1 iguales: el rollback entre versiones distintas, con migraciones de por medio, no se ensayó en local); `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `deploy.yml`, que además corre recién cuando llegue a `main` (rama por defecto) |
-| RM-08 | Implementado; encontró 3 defectos reales ([DTI-27](../adr/DEUDA_TECNICA.md#dti-27)), el ítem 3 ya resuelto | `[VERIFIED]` validador del espía, diff de OpenAPI (aviso y error) y `validate-contracts.js`; Donaciones validado en vivo (`ContractIT` 7/7, después de completar la spec de `/api/personas`); con `CONTRATOS_ESTRICTO=true` el E2E falla por 2 eventos de Donaciones sin un campo requerido (DTI-27, ítems 1 y 2) |
+| RM-08 | Implementado; encontró 3 defectos reales ([DTI-27](../adr/DEUDA_TECNICA.md#dti-27)), los 3 ítems resueltos en código (el 1 y el 2 con el productor que siempre envía el dato) | `[VERIFIED]` validador del espía, diff de OpenAPI (aviso y error) y `validate-contracts.js`; Donaciones validado en vivo (`ContractIT` 7/7, después de completar la spec de `/api/personas`); con `CONTRATOS_ESTRICTO=true` el E2E pasa 30/30 desde la corrección de los ítems 1 y 2 de DTI-27 (2026-10-29) |
 
 ## 0. Cómo leer este documento
 
@@ -229,8 +229,8 @@ Se revisó cada decisión candidata de la [§6 de la fase 2](preprod-fiel-arquit
 | Datos únicos y matriz de cobertura (RM-16) | No | — | Sin ADR. Confirmado |
 | Configuración de producción con desvíos declarados (RM-11) | Sí | No | Sin ADR. Confirmado |
 | Escaneo de dependencias e imágenes (RM-14) | Sí | No | Sin ADR. Confirmado |
-| Base de datos por servicio en el mismo motor (RM-19, D1 de la SPEC-05) | Sí | Sí: cambia la estrategia de persistencia | **ADR `proposed`:** [base por servicio](../adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md); propone reemplazar al de multi-schema (la relación `superseded` la aprueba un humano). Deuda: DTI-26 |
-| Política de evolución de contratos (RM-08, D5 de la SPEC-05) | Sí | Sí: integración entre servicios y trade-off entre fricción y protección | **ADR `proposed`:** [política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md) |
+| Base de datos por servicio en el mismo motor (RM-19, D1 de la SPEC-05) | Sí | Sí: cambia la estrategia de persistencia | **ADR `accepted` (2026-10-29):** [base por servicio](../adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md); reemplaza al de multi-schema, que queda `superseded`. Deuda: DTI-26 |
+| Política de evolución de contratos (RM-08, D5 de la SPEC-05) | Sí | Sí: integración entre servicios y trade-off entre fricción y protección | **ADR `accepted` (2026-10-29):** [política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md) |
 | Despliegue sin Render (RM-07, D3 de la SPEC-05) | No: revisa un ADR `proposed` sin publicar | — | Se revisó el [ADR de promoción](../adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) (alternativa 2D) |
 | WireMock como contenedor (RM-10) | No | — | Sin ADR. Confirmado |
 | Bloqueo de salida a internet en CI (RM-10) | Sí | No | Sin ADR. Confirmado |

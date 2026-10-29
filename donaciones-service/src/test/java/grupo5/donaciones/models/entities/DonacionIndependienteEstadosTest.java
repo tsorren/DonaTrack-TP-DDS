@@ -119,6 +119,58 @@ class DonacionIndependienteEstadosTest {
   }
 
   @Test
+  void cambiarEstado_aEnTrasladoSinUrlMapa_lanzaValidationException() {
+    donacion.asignar(ACTOR, receptor);
+    donacion.planificarRuta(ACTOR);
+    var solicitud =
+        new SolicitudCambioEstadoDonacionIndependiente(TipoEstadoDonacion.EN_TRASLADO, ACTOR);
+
+    var ex = assertThrows(ValidationException.class, () -> donacion.cambiarEstado(solicitud));
+
+    assertEquals(ErrorCatalog.DONACION_INDEPENDIENTE_RECORRIDO_SIN_URL_MAPA, ex.getError());
+    assertInstanceOf(ListaParaEntregar.class, donacion.getEstadoActual());
+  }
+
+  @Test
+  void cambiarEstado_aEnTrasladoConUrlMapa_publicaEventoConLaUrl() {
+    donacion.asignar(ACTOR, receptor);
+    donacion.planificarRuta(ACTOR);
+    var solicitud =
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.EN_TRASLADO,
+            null,
+            null,
+            "https://seguimiento.test/r1",
+            null,
+            null,
+            ACTOR);
+
+    donacion.cambiarEstado(solicitud);
+
+    assertInstanceOf(EnTraslado.class, donacion.getEstadoActual());
+    assertTrue(
+        donacion.getDomainEvents().stream()
+            .anyMatch(
+                e ->
+                    e instanceof EventoRutaIniciada r
+                        && "https://seguimiento.test/r1".equals(r.urlMapa())));
+  }
+
+  @Test
+  void cambiarEstado_aEntregadaSinPatente_lanzaValidationException() {
+    donacion.asignar(ACTOR, receptor);
+    donacion.planificarRuta(ACTOR);
+    donacion.iniciarRecorrido(ACTOR);
+    var solicitud =
+        new SolicitudCambioEstadoDonacionIndependiente(TipoEstadoDonacion.ENTREGADA, ACTOR);
+
+    var ex = assertThrows(ValidationException.class, () -> donacion.cambiarEstado(solicitud));
+
+    assertEquals(ErrorCatalog.DONACION_INDEPENDIENTE_ENTREGA_SIN_PATENTE, ex.getError());
+    assertInstanceOf(EnTraslado.class, donacion.getEstadoActual());
+  }
+
+  @Test
   void registrarFalla_sinJustificacion_lanzaExcepcion() {
     donacion.asignar(ACTOR, receptor);
     donacion.planificarRuta(ACTOR);

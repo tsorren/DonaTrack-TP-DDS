@@ -1,8 +1,8 @@
 # Base de datos por servicio en el mismo motor PostgreSQL
 
-- Status: proposed
-- Date: 2026-10-28
-- Deciders: Pendiente de decisión grupal (propuesta del usuario en la SPEC-05)
+- Status: accepted
+- Date: 2026-10-28 (aceptado el 2026-10-29)
+- Deciders: tsorren (responsable de integración), por instrucción explícita del 2026-10-29; propuesta del usuario en la SPEC-05
 - Tags: persistencia, postgresql, database-per-service, aislamiento, neon, preprod, entrega-5
 
 > **Origen:** [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md), decisión D1 (`APPROVED_BY_USER`, 2026-10-28) y roadmap de [preprod fiel](../testing/preprod-fiel-roadmap.md), ítem RM-19. **Ninguna parte de esta decisión está implementada:** el código espera a que mergeen `E4_donaciones_minio` y `E4_persistencia_donaciones`, que tocan los mismos archivos.
@@ -27,7 +27,7 @@ Problema: ¿cómo se aísla la persistencia relacional de cada servicio al nivel
 
 ## Relaciones Arquitectónicas
 
-1. **Propone reemplazar:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) (`proposed`). La relación `superseded` la aprueba un humano (AGENTS.md §9.3); hasta entonces, los dos quedan `proposed` y el código sigue al de 2026-09-02.
+1. **Propone reemplazar:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) Reemplazado (`superseded`) al aceptar este ADR, el 2026-10-29. Hasta implementar RM-19 (DTI-26), el código sigue al de 2026-09-02.
 2. **Conserva** de ese ADR: un rol por servicio con mínimo privilegio, el script de init idempotente y el schema `<servicio>` dentro de cada base.
 3. **Se aplica igual a objetos:** el equivalente en MinIO (una instancia por servicio) queda como RM-20 del roadmap, después de E7. No pide ADR propio si este se aprueba: aplica el mismo criterio a otro almacén.
 
@@ -81,7 +81,7 @@ Justificación: es el pedido del usuario con el menor costo, y deja C a un cambi
 ## Consecuencias Negativas
 
 * Cambian las URLs JDBC y el script de init: hay que migrar los volúmenes locales (`docker compose down -v`).
-* Durante la transición conviven dos ADRs `proposed` sobre persistencia, hasta que un humano apruebe el reemplazo.
+* Durante la transición, el código sigue al ADR reemplazado hasta que se implemente RM-19 (DTI-26).
 * Choca con dos ramas abiertas de E4; implementarlo antes obligaría a rehacer sus cambios.
 
 ## Validación

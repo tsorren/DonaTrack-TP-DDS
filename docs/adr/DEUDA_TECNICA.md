@@ -385,13 +385,13 @@ La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema
 
 ---
 
-## DTI-26 — Base de datos por servicio: decisión propuesta, sin implementar
+## DTI-26 — Base de datos por servicio: decisión aceptada, sin implementar
 <a id="dti-26"></a>
 
 | Campo | Valor |
 |---|---|
 | ADR | [20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql](./20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (propone reemplazar a [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md)) |
-| Decision status | `proposed` (los dos ADRs; la relación `superseded` la aprueba un humano) |
+| Decision status | `accepted` (2026-10-29); el ADR de multi-schema queda `superseded` |
 | Implementation status | `[OBSERVED] not-started` — por decisión del usuario (2026-10-28, SPEC-05) solo se documentó: `persistencia/init-db`, los composes y las properties chocan con `origin/E4_donaciones_minio` y `origin/E4_persistencia_donaciones` |
 | Target | `persistencia/init-db/*` · 3 composes · 3 `application-postgres.properties` · 4 tests de Testcontainers · `persistencia/README.md` |
 | Cuándo se saldará | Después de que mergeen las dos ramas de E4, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-19). Precondiciones: Neon admite una base por servicio (RM-01) y el enunciado de E5 no exige un schema por servicio |
@@ -404,13 +404,15 @@ La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema
 | Campo | Valor |
 |---|---|
 | ADR | [20261028-politica-de-evolucion-de-contratos-entre-servicios](./20261028-politica-de-evolucion-de-contratos-entre-servicios.md) |
-| Decision status | `proposed` |
-| Implementation status | `[VERIFIED] divergence` — `run-preprod-tests.sh` con `CONTRATOS_ESTRICTO=true` (2026-10-28, rama `E5_preprod_fiel_rm08`): el E2E falla por los ítems 1 y 2, y `ContractIT.testDonacionesPersonasContract` por el ítem 3 |
+| Decision status | `accepted` (2026-10-29) |
+| Implementation status | **Resuelta.** `[VERIFIED] implemented` — `CONTRATOS_ESTRICTO=true PREPROD_STRICT=true ./run-preprod-tests.sh` (2026-10-29, rama `E5_dti27_adrs_pendientes`): 30/30, exit 0 y sin avisos de contratos AMQP. El ítem 3 se corrigió en la spec y los ítems 1 y 2 en el productor |
 | Target | `donaciones-service` (publicación de eventos) · `docs/arquitectura/contratos/openapi-donaciones.yaml` |
-| Cuándo se saldará | Antes del corte de E5 (D5: el post-merge de `ENTREGA_5` falla y no promueve hasta que se corrijan). El ítem 3 ya está resuelto; quedan el 1 y el 2 |
+| Cuándo se saldará | Antes del corte de E5 (D5: el post-merge de `ENTREGA_5` falla y no promueve hasta que se corrijan). Saldada el 2026-10-29: los 3 ítems están resueltos y verificados con el E2E estricto |
 
-1. **`donacion.en-camino.v1` sin `urlMapa`.** El schema y el DTO (`EventoDonacionEnCaminoV1`, `@NotBlank`) lo exigen, pero en el E2E Donaciones publica el evento con `urlMapa` en `null` y `@JsonInclude(NON_NULL)` lo omite.
-2. **`donacion.recibida.v1` sin `patenteCamion`.** Mismo caso (`EventoDonacionRecibidaV1`, `@NotBlank`).
+1. **`donacion.en-camino.v1` sin `urlMapa`.** El schema y el DTO (`EventoDonacionEnCaminoV1`, `@NotBlank`) lo exigen, pero en el E2E Donaciones publica el evento con `urlMapa` en `null` y `@JsonInclude(NON_NULL)` lo omite. **Resuelto (2026-10-29, decisión del responsable de integración: el productor siempre envía):** `PATCH /donaciones-independientes/{id}/estado` con `EN_TRASLADO` y sin `urlMapa` devuelve 400 (`ERR-VAL-415`, `DONACION_INDEPENDIENTE_RECORRIDO_SIN_URL_MAPA`). La causa era la transición por REST: Logística sí manda `urlMapa` en `RutaIniciada` (`GeneradorDeUrlSeguimiento`).
+2. **`donacion.recibida.v1` sin `patenteCamion`.** Mismo caso (`EventoDonacionRecibidaV1`, `@NotBlank`). **Resuelto (2026-10-29, misma decisión):** `ENTREGADA` sin `patenteCamion` devuelve 400 (`ERR-VAL-416`, `DONACION_INDEPENDIENTE_ENTREGA_SIN_PATENTE`). El validador va en los estados `ListaParaEntregar` y `EnTraslado`, así que una transición inválida sigue dando `ESTADO_DONACION_TRANSICION_INVALIDA`. Los clientes de `integration-tests` mandan ambos datos.
 3. **`POST /api/personas` sin body en la spec.** `openapi-donaciones.yaml` no declara el body del request ni el de la respuesta 201; el servicio recibe y devuelve una persona. La validación en vivo de Donaciones (RM-08, criterio 2) lo rechaza. **Resuelto (2026-10-29, decisión del responsable de integración: completar la spec):** `PersonaInputDTO` y `PersonaOutputDTO` (polimórficos HUMANA/JURIDICA, con dirección y medios de contacto) en `components`, y el body de `POST`, `GET` y `PUT` de `/api/personas`. `ContractIT` pasa 7/7 contra el preprod, incluida una persona eliminada: la anonimización (DTI-01) devuelve `ANONIMIZADO`, por eso la salida de los medios de contacto no exige formato de correo. oasdiff marca el body requerido nuevo como incompatible: está registrado en `cambios-incompatibles-aceptados.txt`, porque el servicio siempre lo exigió.
 
-Para los ítems 1 y 2 se decide qué cambia: el productor (siempre envía el dato) o el contrato (el campo deja de ser requerido; cambio compatible para los consumidores).
+Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siempre envíe el dato; el contrato de los eventos no cambia. La alternativa descartada era dejar el campo opcional en los schemas y los DTOs de Donaciones y Notificaciones (cambio compatible para los consumidores): Notificaciones usa ambos datos para armar el aviso y la URL de seguimiento ya la genera Logística.
+
+**Cambio de contrato de la API:** el body de `PATCH /donaciones-independientes/{id}/estado` ahora exige `urlMapa` si el estado es `EN_TRASLADO` y `patenteCamion` si es `ENTREGADA`. El schema y el OpenAPI lo dicen en la descripción de los campos; `oasdiff` no lo marca porque ambos campos siguen siendo opcionales en el schema.

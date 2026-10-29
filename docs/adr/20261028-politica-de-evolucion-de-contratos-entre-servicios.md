@@ -1,8 +1,8 @@
 # Política de evolución de contratos entre servicios
 
-- Status: proposed
-- Date: 2026-10-28
-- Deciders: Pendiente de decisión grupal (política propuesta por el usuario en la SPEC-05; responsable de integración: tsorren)
+- Status: accepted
+- Date: 2026-10-28 (aceptado el 2026-10-29)
+- Deciders: tsorren (responsable de integración), por instrucción explícita del 2026-10-29; política propuesta por el usuario en la SPEC-05
 - Tags: contratos, openapi, json-schema, amqp, cicd, quality-gate, equipos, entrega-5
 
 > **Origen:** [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md), decisión D5 (`APPROVED_BY_USER`, 2026-10-28), e ítem RM-08 del [roadmap de preprod fiel](../testing/preprod-fiel-roadmap.md). `[OBSERVED]` Implementada en la rama `E5_preprod_fiel_rm08`.
