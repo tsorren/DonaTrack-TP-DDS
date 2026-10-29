@@ -27,7 +27,7 @@ Problema: ¿cómo se aísla la persistencia relacional de cada servicio al nivel
 
 ## Relaciones Arquitectónicas
 
-1. **Reemplaza:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) Reemplazado (`superseded`) al aceptar este ADR, el 2026-10-29. Hasta implementar RM-19 (DTI-26), el código sigue al de 2026-09-02.
+1. **Reemplaza:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md), que queda `superseded` desde la aceptación de este ADR (2026-10-29). Hasta implementar RM-19 (DTI-26), el código sigue al de 2026-09-02.
 2. **Conserva** de ese ADR: un rol por servicio con mínimo privilegio, el script de init idempotente y el schema `<servicio>` dentro de cada base.
 3. **Se aplica igual a objetos:** el equivalente en MinIO (una instancia por servicio) queda como RM-20 del roadmap, después de E7. No pide ADR propio si este se aprueba: aplica el mismo criterio a otro almacén.
 
