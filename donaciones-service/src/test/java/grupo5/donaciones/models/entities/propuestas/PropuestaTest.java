@@ -11,6 +11,7 @@ import grupo5.donaciones.fixtures.NecesidadMother;
 import grupo5.donaciones.models.entities.donacionesIndependientes.AsignacionRealizada;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.NecesidadExtraordinaria;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,6 +151,8 @@ class PropuestaTest {
 
     // Simulate listener mutation
     String actor = event.actor();
+    // DTI-06: la necesidad no guarda sus donaciones; se juntan las asignadas para verificarlas
+    List<DonacionIndependiente> asignadas = new ArrayList<>();
     for (PosibleFragmentacion f : event.fragmentaciones()) {
       DonacionIndependiente donacionOriginal = donacionConSobrante;
       Integer cantidadNecesaria = f.getCantidadNecesaria();
@@ -161,12 +164,13 @@ class PropuestaTest {
         donacionAsignar = donacionOriginal;
       }
 
-      donacionAsignar.asignar(actor, necesidad);
-      necesidad.asignarDonacion(donacionAsignar);
+      donacionAsignar.asignar(actor, necesidad.destinoDeAsignacion());
+      asignadas.add(donacionAsignar);
     }
 
-    assertEquals(1, necesidad.getDonacionesAsignadas().size());
-    assertEquals(5, necesidad.getDonacionesAsignadas().getFirst().getCantidad());
+    assertEquals(1, asignadas.size());
+    assertEquals(5, asignadas.getFirst().getCantidad());
+    assertEquals(necesidad.getId(), asignadas.getFirst().getNecesidadId());
     assertEquals(5, donacionConSobrante.getCantidad());
   }
 
@@ -184,6 +188,8 @@ class PropuestaTest {
 
     // Simulate listener mutation
     String actor = event.actor();
+    // DTI-06: la necesidad no guarda sus donaciones; se juntan las asignadas para verificarlas
+    List<DonacionIndependiente> asignadas = new ArrayList<>();
     for (PosibleFragmentacion f : event.fragmentaciones()) {
       DonacionIndependiente donacionOriginal = donacionExacta;
       Integer cantidadNecesaria = f.getCantidadNecesaria();
@@ -195,12 +201,13 @@ class PropuestaTest {
         donacionAsignar = donacionOriginal;
       }
 
-      donacionAsignar.asignar(actor, necesidad);
-      necesidad.asignarDonacion(donacionAsignar);
+      donacionAsignar.asignar(actor, necesidad.destinoDeAsignacion());
+      asignadas.add(donacionAsignar);
     }
 
-    assertEquals(1, necesidad.getDonacionesAsignadas().size());
-    assertSame(donacionExacta, necesidad.getDonacionesAsignadas().getFirst());
+    assertEquals(1, asignadas.size());
+    assertSame(donacionExacta, asignadas.getFirst());
+    assertEquals(necesidad.getId(), donacionExacta.getNecesidadId());
     assertInstanceOf(AsignacionRealizada.class, donacionExacta.getEstadoActual());
   }
 

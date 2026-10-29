@@ -75,6 +75,14 @@ class SubcategoriaTest {
   }
 
   @Test
+  void agregarAlias_conUnAliasYaExistente_loIgnora() {
+    subcategoria.agregarAlias("celu");
+    subcategoria.agregarAlias("celu");
+
+    assertEquals(1, subcategoria.getAliases().size());
+  }
+
+  @Test
   void tieneAlias_cuandoExiste_debeRetornarTrue() {
     subcategoria.agregarAlias("movil");
 

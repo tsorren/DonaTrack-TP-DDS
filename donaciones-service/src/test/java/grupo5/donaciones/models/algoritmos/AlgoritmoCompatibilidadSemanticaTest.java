@@ -49,7 +49,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
     Bien bien = BienMother.mueble(descripcion);
     BienNormalizado bienConDescripcion = BienMother.aceptado(bien, subcategoria.getId());
     List<ItemDonacionIndependiente> items =
-        List.of(new ItemDonacionIndependiente(bienConDescripcion, cantidad));
+        List.of(new ItemDonacionIndependiente(UUID.randomUUID(), bienConDescripcion, cantidad));
     return new DonacionIndependiente(UUID.randomUUID(), items);
   }
 
@@ -69,7 +69,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
     NecesidadExtraordinaria necesidad =
         new NecesidadExtraordinaria(subcategoria.getId(), 3, "silla madera");
     List<ItemDonacionIndependiente> items =
-        List.of(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
+        List.of(new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizadoOtro, 5));
     DonacionIndependiente donacionOtraCategoria =
         new DonacionIndependiente(UUID.randomUUID(), items);
 
@@ -102,7 +102,7 @@ class AlgoritmoCompatibilidadSemanticaTest {
     NecesidadExtraordinaria necesidad =
         new NecesidadExtraordinaria(subcategoria.getId(), 3, "silla madera");
     List<ItemDonacionIndependiente> items =
-        List.of(new ItemDonacionIndependiente(bienNormalizadoOtro, 5));
+        List.of(new ItemDonacionIndependiente(UUID.randomUUID(), bienNormalizadoOtro, 5));
     DonacionIndependiente donacion1 = new DonacionIndependiente(UUID.randomUUID(), items);
     DonacionIndependiente donacion2 = new DonacionIndependiente(UUID.randomUUID(), items);
 

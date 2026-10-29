@@ -40,6 +40,23 @@ public class EntradaOutboxLogistica {
     this.estado = EstadoEntradaOutbox.PENDIENTE;
   }
 
+  private EntradaOutboxLogistica(RegistroEntradaOutbox registro) {
+    this.id = registro.id();
+    this.solicitudId = registro.solicitudId();
+    this.proveedorId = registro.proveedorId();
+    this.datos = registro.datos();
+    this.traceId = registro.traceId();
+    this.maxIntentos = registro.maxIntentos();
+    this.intentos = registro.intentos();
+    this.proximoIntento = registro.proximoIntento();
+    this.estado = registro.estado();
+  }
+
+  /** Reconstituye una entrada guardada (adaptador JPA del outbox): no valida. */
+  public static EntradaOutboxLogistica reconstituir(RegistroEntradaOutbox registro) {
+    return new EntradaOutboxLogistica(registro);
+  }
+
   /**
    * @param disponibleDesde momento a partir del cual el relay puede enviarla (ahora, o más tarde si
    *     es el primer intento de una nueva ronda)

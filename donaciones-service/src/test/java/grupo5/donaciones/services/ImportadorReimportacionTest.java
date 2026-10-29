@@ -9,7 +9,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import grupo5.donaciones.dto.donantes.DonanteInputDTO;
+import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
 import grupo5.donaciones.fixtures.PersonaMother;
+import grupo5.donaciones.infrastructure.almacenamiento.StorageEnMemoria;
 import grupo5.donaciones.models.entities.donantes.Archivo;
 import grupo5.donaciones.models.entities.donantes.EstadoArchivo;
 import grupo5.donaciones.models.entities.personas.Correo;
@@ -20,6 +22,7 @@ import grupo5.donaciones.models.entities.personas.TipoDocumento;
 import grupo5.donaciones.models.entities.personas.TipoJuridico;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
 import grupo5.donaciones.models.ports.CargadorDonantes;
+import grupo5.donaciones.models.ports.StoragePort;
 import grupo5.donaciones.models.repositories.IArchivoDonantesRepository;
 import grupo5.donaciones.models.repositories.impl.PersonasRepositoryEnMemoria;
 import grupo5.donaciones.services.impl.ImportadorService;
@@ -29,6 +32,8 @@ import grupo5.donaciones.services.impl.ValidadorPersonaDuplicada;
 import grupo5.donaciones.services.mappers.DireccionMapper;
 import grupo5.donaciones.services.mappers.MedioDeContactoMapper;
 import grupo5.donaciones.services.mappers.PersonaMapper;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
@@ -54,6 +59,7 @@ class ImportadorReimportacionTest {
   private PersonasRepositoryEnMemoria personasRepository;
   private IArchivoDonantesRepository archivoRepository;
   private CargadorDonantes lectorCSV;
+  private final StoragePort storage = new StorageEnMemoria();
   private IDonantesService donantesService;
   private ImportadorService importador;
 
@@ -82,7 +88,9 @@ class ImportadorReimportacionTest {
             medioMapper,
             new ValidadorPersonaDuplicada(personasRepository),
             personasService,
-            donantesService);
+            donantesService,
+            storage,
+            AlmacenamientoFixtures.propiedades());
   }
 
   @Test
@@ -267,9 +275,9 @@ class ImportadorReimportacionTest {
 
   private Archivo importar(Map<String, String> fila) {
     UUID archivoId = UUID.randomUUID();
-    Archivo archivo = new Archivo("/ruta/donantes.csv");
+    Archivo archivo = nuevoArchivoEnStorage();
     when(archivoRepository.findById(archivoId)).thenReturn(Optional.of(archivo));
-    when(lectorCSV.cargarDonantes(archivo.getPath())).thenReturn(List.of(fila));
+    when(lectorCSV.cargarDonantes(any(InputStream.class))).thenReturn(List.of(fila));
 
     importador.procesarImportacionAsincronica(archivoId);
     return archivo;
@@ -278,5 +286,17 @@ class ImportadorReimportacionTest {
   private static boolean contieneCorreo(List<MedioDeContacto> medios, String direccion) {
     return medios.stream()
         .anyMatch(m -> m instanceof Correo c && direccion.equals(c.getDireccionCorreo()));
+  }
+
+  /** Un padrón guardado en el storage: el path del archivo es su clave. */
+  private Archivo nuevoArchivoEnStorage() {
+    String clave = UUID.randomUUID() + ".csv";
+    storage.guardar(
+        AlmacenamientoFixtures.BUCKET_PADRONES,
+        clave,
+        new ByteArrayInputStream(new byte[] {1}),
+        1,
+        "text/csv");
+    return new Archivo(clave);
   }
 }

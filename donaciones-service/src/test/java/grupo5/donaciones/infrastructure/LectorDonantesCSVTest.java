@@ -4,9 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,7 +43,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, contenido);
 
     // Act
-    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(archivoCSV.toString());
+    List<Map<String, String>> resultado = leer(archivoCSV);
 
     // Assert
     assertEquals(2, resultado.size());
@@ -64,7 +68,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, "");
 
     // Act
-    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(archivoCSV.toString());
+    List<Map<String, String>> resultado = leer(archivoCSV);
 
     // Assert
     assertTrue(resultado.isEmpty());
@@ -77,7 +81,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, "TipoPersona,Nombre,Email");
 
     // Act
-    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(archivoCSV.toString());
+    List<Map<String, String>> resultado = leer(archivoCSV);
 
     // Assert
     assertTrue(resultado.isEmpty());
@@ -91,7 +95,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, contenido);
 
     // Act
-    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(archivoCSV.toString());
+    List<Map<String, String>> resultado = leer(archivoCSV);
 
     // Assert
     assertEquals(1, resultado.size());
@@ -115,7 +119,7 @@ class LectorDonantesCSVTest {
     Files.writeString(archivoCSV, contenido);
 
     // Act
-    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(archivoCSV.toString());
+    List<Map<String, String>> resultado = leer(archivoCSV);
 
     // Assert
     // Debería haber procesado solo las 2 filas válidas (Ana y David)
@@ -135,7 +139,7 @@ class LectorDonantesCSVTest {
     Path rutaDelArchivo = Paths.get(recurso.toURI());
 
     // Act
-    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(rutaDelArchivo.toString());
+    List<Map<String, String>> resultado = leer(rutaDelArchivo);
 
     // Assert
     assertTrue(resultado.size() > 19000, "Debería haber leído la gran mayoría de las 20000 filas.");
@@ -144,5 +148,34 @@ class LectorDonantesCSVTest {
     assertTrue(primeraFila.containsKey("TipoPersona"));
     assertTrue(primeraFila.containsKey("Email"));
     assertTrue(primeraFila.containsKey("Nombre/Razón Social"));
+  }
+
+  @Test
+  void cargarDonantes_conBomDesdeUnStream_deberiaQuitarloDeLaCabeceraYCerrarElStream() {
+    byte[] contenido =
+        (LectorDonantesCSV.BOM + "Nombre,Email\nAna,ana@mail.com").getBytes(StandardCharsets.UTF_8);
+    boolean[] cerrado = {false};
+    InputStream stream =
+        new ByteArrayInputStream(contenido) {
+          @Override
+          public void close() throws IOException {
+            cerrado[0] = true;
+            super.close();
+          }
+        };
+
+    List<Map<String, String>> resultado = lectorCSV.cargarDonantes(stream);
+
+    assertEquals(1, resultado.size());
+    assertEquals("Ana", resultado.get(0).get("Nombre"));
+    assertTrue(cerrado[0]);
+  }
+
+  private List<Map<String, String>> leer(Path archivo) {
+    try (InputStream contenido = Files.newInputStream(archivo)) {
+      return lectorCSV.cargarDonantes(contenido);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 }

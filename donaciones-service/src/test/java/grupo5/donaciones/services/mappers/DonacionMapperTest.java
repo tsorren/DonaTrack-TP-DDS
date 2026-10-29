@@ -8,11 +8,14 @@ import grupo5.donaciones.dto.direcciones.DireccionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
 import grupo5.donaciones.fixtures.PersonaMother;
+import grupo5.donaciones.models.entities.donaciones.Bien;
 import grupo5.donaciones.models.entities.donaciones.Deposito;
 import grupo5.donaciones.models.entities.donaciones.Donacion;
 import grupo5.donaciones.models.entities.donaciones.Estado;
 import grupo5.donaciones.models.entities.donaciones.EstadoDonacion;
+import grupo5.donaciones.models.entities.donaciones.ItemDonacion;
 import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Humana;
 import grupo5.donaciones.models.entities.ubicaciones.Direccion;
@@ -46,7 +49,8 @@ class DonacionMapperTest {
             new DireccionMapper(),
             donantesRepositoryMock,
             personasRepositoryMock,
-            personaMapperMock);
+            personaMapperMock,
+            AlmacenamientoFixtures.fotosBienes());
   }
 
   @Test
@@ -119,6 +123,23 @@ class DonacionMapperTest {
   }
 
   @Test
+  void toOutputDTO_deberiaDevolverLaFotoComoUrlDeDescargaYLasExternasSinCambios() {
+    Donacion donacion = new Donacion(UUID.randomUUID(), null, "una donacion", null);
+    String referencia = "/fotos-bienes/3f2b9c1e-7a4d-4e8f-9b0a-1c2d3e4f5a6b.jpg";
+    donacion.agregarItem(new ItemDonacion(new Bien("arroz", referencia, null, null, 1.0, 1.0), 1));
+    donacion.agregarItem(
+        new ItemDonacion(new Bien("fideos", "https://externa/f.png", null, null, 1.0, 1.0), 1));
+
+    DonacionOutputDTO output = mapper.toOutputDTO(donacion);
+
+    // El storage en memoria firma con el esquema memoria://<bucket>/<clave>
+    assertEquals(
+        "memoria://donaciones-fotos-bienes/3f2b9c1e-7a4d-4e8f-9b0a-1c2d3e4f5a6b.jpg",
+        output.items().get(0).fotoUrl());
+    assertEquals("https://externa/f.png", output.items().get(1).fotoUrl());
+  }
+
+  @Test
   void toOutputDTO_conDonacionNula_deberiaRetornarNulo() {
     assertNull(mapper.toOutputDTO(null));
   }
@@ -158,7 +179,7 @@ class DonacionMapperTest {
     Humana persona = PersonaMother.humanaValida();
     Donante donante = new Donante(persona.getId());
     Deposito deposito = new Deposito("Deposito Norte", crearDireccion());
-    Donacion donacion = new Donacion(donante.getId(), deposito);
+    Donacion donacion = new Donacion(donante.getId(), deposito, "Donación de prueba", null);
     donacion.marcarNormalizada();
     donacion.marcarSegmentada();
 

@@ -44,6 +44,7 @@
 |---|---|---|---|---|
 | `ERR-INF-001` | `CSV_READ_ERROR` | Error al leer un archivo CSV | `500` | `InfrastructureException` |
 | `ERR-INF-002` | `CSV_PROCESS_ERROR` | Error al procesar el contenido de un CSV | `500` | `InfrastructureException` |
+| `ERR-INF-003` | `ALMACENAMIENTO_ERROR` | Falla del almacenamiento de objetos (MinIO): objeto inexistente al abrirlo o proveedor caído | `500` | `InfrastructureException` (`StoragePort.AlmacenamientoException`) |
 | `ERR-INF-710` | `NOTIFICACION_INCENTIVOS_ERROR` | Fallo al enviar notificación de incentivos | `500` | `InfrastructureException` |
 
 ---
@@ -90,6 +91,9 @@
 | `ERR-VAL-208` | `ESTADO_ARCHIVO_INVALIDO` | Estado de archivo CSV inválido | `400` |
 | `ERR-VAL-209` | `DEPOSITO_NOMBRE_NULO` | Nombre de depósito nulo o vacío | `400` |
 | `ERR-VAL-210` | `DEPOSITO_DIRECCION_NULA` | Dirección de depósito nula | `400` |
+| `ERR-VAL-212` | `DONACION_SIN_DESCRIPCION` | La donación no tiene descripción general (obligatoria en el enunciado y en el DER) | `400` |
+| `ERR-VAL-213` | `ARCHIVO_DONANTES_INVALIDO` | El padrón subido está vacío o no tiene extensión `.csv` | `400` |
+| `ERR-VAL-214` | `ARCHIVO_DONANTES_TAMANIO_EXCEDIDO` | El padrón supera el tamaño máximo (50 MB) | `400` |
 
 ### Bienes y Categorías (3xx)
 
@@ -110,6 +114,10 @@
 | `ERR-VAL-314` | `BIEN_NORMALIZADO_RANGO_CONFIANZA` | Rango de confianza del bien normalizado inválido | `400` |
 | `ERR-VAL-315` | `BIEN_NORMALIZADO_SIN_ESTADO` | Bien normalizado sin estado definido | `400` |
 | `ERR-VAL-316` | `DIMENSIONES_BIEN_INVALIDAS` | Dimensiones del bien inválidas | `400` |
+| `ERR-VAL-318` | `FOTO_BIEN_TIPO_NO_PERMITIDO` | La foto del bien no es JPEG, PNG ni WebP (al pedir la URL de subida o al validar la foto subida) | `400` |
+| `ERR-VAL-319` | `FOTO_BIEN_REFERENCIA_INVALIDA` | `fotoUrl` empieza con `/fotos-bienes/` pero no tiene una clave generada por el servicio | `400` |
+| `ERR-VAL-320` | `FOTO_BIEN_NO_ENCONTRADA` | La referencia de la foto no corresponde a un objeto subido | `400` |
+| `ERR-VAL-321` | `FOTO_BIEN_TAMANIO_EXCEDIDO` | La foto subida supera el tamaño máximo (10 MB) | `400` |
 
 ### Segmentaciones (4xx)
 
@@ -124,6 +132,7 @@
 | `ERR-VAL-410` | `ESTADO_DONACION_TRANSICION_INVALIDA` | Transición de estado de donación no permitida | `400` |
 | `ERR-VAL-411` | `DONACION_INDEPENDIENTE_ASIGNACION_SIN_NECESIDAD` | Asignación de donación independiente sin necesidad | `400` |
 | `ERR-VAL-412` | `DONACION_INDEPENDIENTE_FALLA_SIN_JUSTIFICACION` | Fallo de donación independiente sin justificación | `400` |
+| `ERR-VAL-414` | `ITEM_DONACION_INDEPENDIENTE_SIN_ITEM_NORMALIZADO` | Ítem de donación independiente sin el ítem normalizado del que sale | `400` |
 | `ERR-VAL-415` | `DONACION_INDEPENDIENTE_RECORRIDO_SIN_URL_MAPA` | Cambio a `EN_TRASLADO` sin `urlMapa` (lo exige `donacion.en-camino.v1`) | `400` |
 | `ERR-VAL-416` | `DONACION_INDEPENDIENTE_ENTREGA_SIN_PATENTE` | Cambio a `ENTREGADA` sin `patenteCamion` (lo exige `donacion.recibida.v1`) | `400` |
 
@@ -139,15 +148,13 @@
 | `ERR-VAL-506` | `NECESIDAD_SIN_SUBCATEGORIA` | Necesidad sin subcategoría definida | `400` |
 | `ERR-VAL-507` | `CANTIDAD_NECESITADA_INVALIDA` | Cantidad necesitada inválida (≤ 0) | `400` |
 | `ERR-VAL-508` | `DESCRIPCION_NECESIDAD_VACIA` | Descripción de necesidad vacía | `400` |
-| `ERR-VAL-509` | `ASIGNAR_DONACION_NULA` | Donación a asignar es nula | `400` |
-| `ERR-VAL-510` | `DONACION_YA_ASIGNADA` | La donación ya fue asignada a esta necesidad | `400` |
-| `ERR-VAL-511` | `DONACION_NO_PERTENECE_A_NECESIDAD` | La donación no pertenece a esta necesidad | `400` |
 | `ERR-VAL-512` | `NECESIDAD_RECURRENTE_SIN_PERIODO` | Necesidad recurrente sin periodo definido | `400` |
 | `ERR-VAL-513` | `FECHA_INICIO_NULA` | Fecha de inicio nula | `400` |
 | `ERR-VAL-514` | `FECHA_INICIO_FUTURA` | Fecha de inicio está en el futuro | `400` |
-| `ERR-VAL-516` | `PERIODO_DONACION_NULA` | Donación de periodo es nula | `400` |
 | `ERR-VAL-517` | `ENTIDAD_BENEFICIARIA_TIPO_INVALIDO` | Una entidad beneficiaria no puede ser una empresa (organización sin fines de lucro) | `400` |
 | `ERR-VAL-518` | `ENTIDAD_BENEFICIARIA_SIN_DIRECCION` | Una entidad beneficiaria requiere dirección (la entrega se hace allí) | `400` |
+
+> Códigos retirados (no reutilizar): `ERR-VAL-509` `ASIGNAR_DONACION_NULA`, `ERR-VAL-510` `DONACION_YA_ASIGNADA`, `ERR-VAL-511` `DONACION_NO_PERTENECE_A_NECESIDAD` y `ERR-VAL-516` `PERIODO_DONACION_NULA`. Quedaron sin uso cuando la necesidad dejó de guardar sus donaciones (DTI-06).
 
 ### Matchmaking (6xx)
 
@@ -216,7 +223,10 @@
 |---|---|---|---|---|
 | `ERR-EST-107` | `JURIDICA_SIN_REPRESENTANTES_RESTANTES` | Operación dejaría a la jurídica sin representantes | `409` | |
 | `ERR-EST-108` | `PERSONA_ANONIMIZADA_NO_OPERABLE` | La persona fue anonimizada: no se la puede editar ni registrarle o reactivarle un rol de donante o de entidad | `409` | |
+| `ERR-EST-112` | `JURIDICA_REPRESENTANTE_EN_OTRA_JURIDICA` | La humana ya es representante de otra jurídica (una humana representa a una sola) | `409` | |
+| `ERR-EST-113` | `PERSONA_DUPLICADA_EN_CONFLICTO` | El correo ya pertenece a otra persona con un documento distinto: no se puede decidir si es la misma | `409` | Lo usa el importador CSV: la fila cuenta como error |
 | `ERR-EST-211` | `DONANTE_INACTIVO` | El donante está dado de baja y no puede cargar donaciones | `409` | |
+| `ERR-EST-317` | `SUBCATEGORIA_EN_USO` | La subcategoría (o una de las subcategorías de la categoría) tiene necesidades que la usan | `409` | La FK `fk_necesidad_subcategoria` es la red de seguridad |
 | `ERR-EST-406` | `FRAGMENTACION_CANTIDAD_INSUFICIENTE` | Cantidad insuficiente para fragmentar | `409` | |
 | `ERR-EST-409` | `ITEM_DONACION_INDEPENDIENTE_FRAGMENTACION_INVALIDA` | Fragmentación de ítem independiente inválida | `409` | |
 | `ERR-EST-413` | `SOLICITUD_ENTREGA_TRANSICION_INVALIDA` | Transición de estado de solicitud de entrega a logística inválida (broker) | `409` | |
@@ -224,6 +234,8 @@
 | `ERR-EST-519` | `ENTIDAD_BENEFICIARIA_INACTIVA` | La entidad beneficiaria está dada de baja | `409` | |
 | `ERR-EST-520` | `DONACION_A_SI_MISMO` | Una jurídica no puede recibir su propia donación | `409` | Se controla al aprobar la propuesta |
 | `ERR-EST-521` | `NECESIDAD_INACTIVA` | La necesidad ya no está activa y no se puede aprobar la propuesta | `409` | |
+| `ERR-EST-522` | `NECESIDAD_MODIFICADA_CONCURRENTEMENTE` | Otra operación guardó la necesidad después de que se leyó (bloqueo optimista) | `409` | Releer y reintentar |
+| `ERR-EST-523` | `DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE` | Otra operación guardó la donación independiente después de que se leyó (bloqueo optimista) | `409` | Releer y reintentar |
 | `ERR-EST-702` | `DONANTE_INCENTIVOS_NO_ENCONTRADO` | Donante no encontrado en servicio de incentivos | **`404`** | Excepción especial en handler |
 | `ERR-EST-708` | `INSIGNIA_NO_ENCONTRADA` | Insignia no encontrada | **`404`** | Excepción especial en handler |
 | `ERR-EST-716` | `RANKING_NO_ENCONTRADO` | Ranking mensual no encontrado para el período solicitado | **`404`** | Excepción especial en handler |
@@ -245,6 +257,9 @@ Estos errores no se originan en `ErrorCatalog` directamente, pero el handler los
 | `ConstraintViolationException` | `400` | `ERR-CSR-003` |
 | `MissingRequestHeaderException` | `400` | `ERR-CSR-003` |
 | `MissingServletRequestParameterException` | `400` | `ERR-CSR-003` |
+| `MissingServletRequestPartException` (falta una parte multipart) | `400` | `ERR-CSR-003` |
+| `MaxUploadSizeExceededException` (archivo mayor a `spring.servlet.multipart.max-file-size`) | `413` | `ERR-CSR-003` |
+| `HttpMediaTypeNotSupportedException` | `415` | `ERR-CSR-003` |
 | `HttpMessageNotReadableException` | `400` | `ERR-CSR-003` |
 | `MethodArgumentTypeMismatchException` | `400` | `ERR-CSR-003` |
 | `DateTimeParseException` | `400` | `ERR-CSR-003` |
@@ -258,8 +273,8 @@ Estos errores no se originan en `ErrorCatalog` directamente, pero el handler los
 
 | Prefijo | Dominio | Cantidad | HTTP Status típico |
 |---|---|---|---|
-| `ERR-INF` | Infraestructura | 3 | `500` |
+| `ERR-INF` | Infraestructura | 4 | `500` |
 | `ERR-CSR` | Comunes / Transversales | 4 | `400` / `404` / `500` |
-| `ERR-VAL` | Validación de dominio | 93 | `400` |
-| `ERR-EST` | Estado de negocio | 12 | `409` (excepto 702, 708 y 716 → `404`) |
-| **Total** | | **112** | |
+| `ERR-VAL` | Validación de dominio | 99 | `400` |
+| `ERR-EST` | Estado de negocio | 22 | `409` (excepto 702, 708 y 716 → `404`) |
+| **Total** | | **129** | |

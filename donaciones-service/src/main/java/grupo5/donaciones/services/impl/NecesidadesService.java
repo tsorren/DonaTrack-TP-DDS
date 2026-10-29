@@ -15,6 +15,7 @@ import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.INecesidadesService;
 import java.time.Period;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -24,14 +25,21 @@ public class NecesidadesService implements INecesidadesService {
   private final INecesidadesRepository necesidadRepository;
   private final IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository;
   private final ISubcategoriasRepository subcategoriaRepository;
+  private final AcumuladosDeAsignacion acumulados;
 
   public NecesidadesService(
       INecesidadesRepository necesidadRepository,
       IEntidadesBeneficiariasRepository entidadesBeneficiariasRepository,
-      ISubcategoriasRepository subcategoriaRepository) {
+      ISubcategoriasRepository subcategoriaRepository,
+      AcumuladosDeAsignacion acumulados) {
     this.necesidadRepository = necesidadRepository;
     this.entidadesBeneficiariasRepository = entidadesBeneficiariasRepository;
     this.subcategoriaRepository = subcategoriaRepository;
+    this.acumulados = acumulados;
+  }
+
+  private NecesidadDTO toDTO(Necesidad necesidad) {
+    return necesidad.toDTO(acumulados.asignadoA(necesidad));
   }
 
   @Override
@@ -39,20 +47,20 @@ public class NecesidadesService implements INecesidadesService {
     Necesidad necesidadDominio = convertirDTOANecesidad(dto);
     necesidadRepository.save(necesidadDominio);
 
-    return necesidadDominio.toDTO();
+    return toDTO(necesidadDominio);
   }
 
   @Override
   public NecesidadDTO obtenerPorId(UUID id) {
-    return necesidadRepository
-        .findById(id)
-        .orElseThrow(() -> new RecursoNoEncontradoException(id))
-        .toDTO();
+    return toDTO(
+        necesidadRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id)));
   }
 
   public List<NecesidadDTO> listarConFiltros(UUID entidadId, String tipo) {
-    return necesidadRepository.findAll().stream()
-        .map(Necesidad::toDTO)
+    List<Necesidad> necesidades = necesidadRepository.findAll();
+    Map<UUID, Integer> asignado = acumulados.asignadoA(necesidades);
+    return necesidades.stream()
+        .map(n -> n.toDTO(asignado.getOrDefault(n.getId(), 0)))
         .filter(dto -> entidadId == null || entidadId.equals(dto.idEntidad()))
         .filter(dto -> tipo == null || tipo.equalsIgnoreCase(dto.tipo()))
         .toList();
@@ -64,7 +72,7 @@ public class NecesidadesService implements INecesidadesService {
         necesidadRepository.findById(id).orElseThrow(() -> new RecursoNoEncontradoException(id));
     necesidad.actualizar(dto.descripcion(), dto.cantidadNecesitada());
     necesidadRepository.save(necesidad);
-    return necesidad.toDTO();
+    return toDTO(necesidad);
   }
 
   @Override

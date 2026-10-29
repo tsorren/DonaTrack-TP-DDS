@@ -39,7 +39,7 @@ class SegmentadorSimpleTest {
   void setUp() {
     Humana humana = PersonaMother.humanaValida();
     Donante donante = new Donante(humana.getId());
-    donacion = new Donacion(donante.getId());
+    donacion = new Donacion(donante.getId(), null, "Donación de prueba", null);
 
     Categoria categoriaRopa = new Categoria("Ropa", false, true, Unidad.UNIDADES);
     Categoria categoriaAlimentos = new Categoria("Alimentos", false, true, Unidad.KILOGRAMO);

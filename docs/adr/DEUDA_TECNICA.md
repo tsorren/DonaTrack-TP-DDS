@@ -73,9 +73,9 @@
 | ADR | [20260901-dti-06](./donaciones-service/20260901-dti-06-desacoplamiento-de-referencias-directas-entre-agregados-por-uuid.md) |
 | ADR complementario | [20260901-evaluacion-de-interfaz-asignable](./donaciones-service/20260901-evaluacion-de-interfaz-asignable-vs-identificador-entidad-beneficiaria.md) |
 | Decision status | `proposed` |
-| Implementation status | `[INFERRED] deferred` — crítico para mapeo relacional |
+| Implementation status | `[VERIFIED] implemented` — Paso 6 de la persistencia de Donaciones (rama `E4_persistencia_donaciones`, 2026-10-22). `Necesidad` y `PeriodoNecesidad` ya no guardan donaciones; `DonacionIndependiente` guarda `necesidadId`, `periodoId` y `entidadBeneficiariaId` (`DestinoAsignacion`), y `Asignable` se eliminó. Lo asignado se suma sobre las donaciones (`AcumuladosDeAsignacion`) y se pasa como parámetro. Detalle en `docs/entrega-4/donaciones/bitacora-persistencia.md` |
 | Target | donaciones-service · Entrega de persistencia (prioridad alta) |
-| Cuándo se saldará | **Entrega 4 (Semana del 14 de Septiembre 2026)** (vencida; reprogramación pendiente del equipo) — obligatorio para mapeo independiente de entidades JPA |
+| Cuándo se saldará | Saldada en código; los dos ADR siguen `proposed` hasta que un revisor humano los acepte |
 
 ---
 
