@@ -1,8 +1,34 @@
 # Preprod fiel: roadmap por entrega y decisiones
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Fase 3 de 3 · 2026-10-20 · borrador para revisar con el equipo**
+> **Fase 3 de 3 · 2026-10-20 · rediseñada el 2026-10-28 por la [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md)**
 > Fase 1: [criterio, estado y brechas](preprod-fiel.md). Fase 2: [arquitectura objetivo](preprod-fiel-arquitectura-objetivo.md). Fase 3: roadmap por entrega y ADR (este documento).
+
+## Rediseño del 2026-10-28 y estado de implementación
+
+La [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) (`APPROVED_BY_USER`) cambió cinco cosas; las tablas de la §3 ya las reflejan:
+
+| Decisión | Qué cambia |
+|---|---|
+| D1 | Base de datos por servicio en el mismo motor PostgreSQL: ítem nuevo **RM-19**, por ahora solo documentado ([ADR](../adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md), `proposed`) |
+| D2 | MinIO por servicio a futuro: ítem nuevo **RM-20**, después de E7, sin código |
+| D3 | RM-07 sin Render: ensayo del manifiesto en el runner, con smoke y rollback; Render como adaptador opcional ([ADR de promoción](../adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md), revisado) |
+| D4 | RM-08 con `amqp-client` + `networknt/json-schema-validator` y el puerto AMQP en `127.0.0.1` |
+| D5 | Contratos: aviso en el PR, bloqueo en el post-merge y en el corte de `ENTREGA_x`; schemas de eventos abiertos ([ADR de política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md), `proposed`) |
+
+Estado en la rama `E5_preprod_fiel_rm08` (2026-10-28). `[VERIFIED]` = ejecutado en local; `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` = depende de GitHub Actions y se valida en la primera corrida.
+
+| Ítem | Estado | Evidencia |
+|---|---|---|
+| RM-01 | Bloqueado: es coordinación, lo abre el equipo | Issue con las aprobaciones pendientes de la §5 y las verificaciones en el panel de Render y de Neon (una base por servicio, D1) |
+| RM-02 | Implementado | `[VERIFIED]` `ContractIT` con `PREPROD_STRICT=true` y el stack apagado falla; el reporte falla ante un salteado de un grupo requerido; `RepositoriosJpaTest` corre (6 tests) |
+| RM-03 | Implementado | `[VERIFIED]` 18 de 18 jobs con `timeout-minutes`; medición en el commit del ítem |
+| RM-04 | Implementado | `[VERIFIED]` `./run-preprod-tests.sh --images local`; `--images ghcr` en CI |
+| RM-05 | Implementado | `[VERIFIED]` preprod en verde con `mongo:7.0` fijado por digest |
+| RM-19 | Solo documentación | ADR `proposed`; el código espera a `E4_donaciones_minio` y `E4_persistencia_donaciones` |
+| RM-06 | Implementado | `[VERIFIED]` script de manifiesto (tests); `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `preprod-post-merge` y `promote` |
+| RM-07 | Implementado | `[TESTS_NOT_EXECUTED_BY_EVALUATOR]` `deploy.yml` y `scripts/ensayo-despliegue.sh` |
+| RM-08 | Implementado | Ver el reporte del PR |
 
 ## 0. Cómo leer este documento
 
@@ -57,11 +83,13 @@ Las demás se marcan **Mejora**: suben el puntaje, pero si no entran en la entre
 
 | ID | Ítem | Tipo | Brechas | Propiedades | Dependencias | Tamaño | Hecho cuando… |
 |---|---|---|---|---|---|---|---|
-| RM-01 | **Pedido de aprobaciones y precondiciones de Render** | Coordinación (desbloquea E6–E7) | Ninguna: es un ítem de coordinación | Ninguna directa; habilita RM-05, RM-07, RM-08, RM-10, RM-11, RM-12, RM-13, RM-14 y RM-18 | Ninguna | 1 issue con las 10 piezas de la §5 y 2 preguntas sobre el panel de Render | Cada pieza tiene registrada una decisión (aprobada o rechazada). Se sabe si Render construye desde el repo o desde una imagen, y si el plan gratuito permite un servicio desde imagen |
+| RM-01 | **Pedido de aprobaciones y precondiciones en la nube** (rediseño D3 y D1: las preguntas de Render ya no bloquean) | Coordinación (desbloquea E6–E7) | Ninguna: es un ítem de coordinación | Ninguna directa; habilita RM-10, RM-11, RM-14, RM-18, RM-19 y el adaptador de Render de RM-07 | Ninguna | 1 issue (lo abre el equipo) con las piezas pendientes de la §5, 2 preguntas sobre el panel de Render y 1 sobre Neon | Cada pieza tiene registrada una decisión (aprobada o rechazada). Se sabe si Render construye desde el repo o desde una imagen, si el plan gratuito permite un servicio desde imagen y si Neon admite una base por servicio en el mismo proyecto (D1) |
 | RM-02 | **Gate cerrado ante la duda** (B1-A) | Bloqueante | B1 | P11 (sigue en 1 hasta RM-04), P1 (sigue en 1 hasta RM-06) | Ninguna | 4 archivos: `BaseIT.java`, `report_test_failures.py`, `main.yml` y `pom.xml`. 1 caso nuevo en `scripts/tests/test_report_test_failures.py` | (1) Con `PREPROD_STRICT=true` y `/v3/api-docs` caído, `ContractIT` falla en lugar de saltearse. (2) Un XML de Failsafe con un test salteado de un grupo requerido hace que el script salga con un código distinto de 0. (3) Un PR que modifica un servicio sin imagen `pr-<N>` falla el job con `::error`. (4) Si existe `SONAR_TOKEN`, un quality gate de Sonar en rojo bloquea. (5) `RepositoriosJpaTest` corre en `mvn verify -pl notificaciones-service`. Si falla por una causa real, el ítem 8 de DTI-16 queda abierto con esa causa: nunca se vuelve a excluir para tener un build verde (AGENTS.md §4.3) |
 | RM-03 | **Tiempo máximo por job** (B12-A, primera parte) | Mejora | B12 | P11 | Ninguna | 5 workflows, 18 jobs: `main.yml` 10, `merge.yml` 5, y 1 cada uno en `agent-governance.yml`, `deploy-pages.yml` y `pr-reminders.yml` | Los 18 jobs tienen `timeout-minutes`. Cada valor es al menos el doble del máximo de sus últimas 10 corridas exitosas, y la medición queda en el PR. Para `preprod-validation`, el máximo medido es 3 min 19 s (§1) |
 | RM-04 | **Punto de entrada único** (B12-A, segunda parte) | Mejora | B12 | **P11 1 → 2** (con RM-02 y RM-03) | Conviene hacerlo junto con RM-05: los dos tocan el script y la espera de salud | 5 archivos: `run-preprod-tests.sh` con `--images ghcr\|local` y `--target compose\|hybrid`, los envoltorios `run-preprod-tests-stay.sh` y `run-hybrid-tests.sh`, el paso de preprod de `main.yml` y la guía `docs/testing/integration-tests.md` | CI invoca `run-preprod-tests.sh --images ghcr`. Local, el mismo comando con `--images local` corre los mismos grupos con los mismos criterios de falla. Los dos envoltorios conservan su nombre y sus argumentos (R1) |
 | RM-05 | **Base documental de Logística en preprod** | Bloqueante | Ninguna: evita una brecha nueva | P2 se mantiene en 1 (no sube; evita que baje). Sin este ítem, Logística no arranca en preprod | Elección del motor y del ODM en E5 (ADR-E5-A del [borrador](../requerimientos/borrador-requerimientos-e5-e6.md), §1) y aprobación de la imagen (R4) | 3 o 4 archivos: `docker-compose.preprod.yml` (1 servicio y las variables de Logística), `scripts/generar-env-db.sh` (credenciales generadas), `run-preprod-tests.sh` (espera de salud) y, si espera ahí, `main.yml` | `preprod-validation` en verde con Logística sobre la base documental. La imagen está fijada por digest y tiene la versión del servicio gestionado elegido. `LogisticaIntegrationIT` y el E2E corren sin salteados (lo garantiza RM-02) |
+
+| RM-19 | **Base de datos por servicio en el mismo motor** (D1 de la SPEC-05) | Mejora | Ninguna: endurece el aislamiento | P4 (aislamiento de datos) | [ADR](../adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) `proposed`; que mergeen `E4_donaciones_minio` y `E4_persistencia_donaciones`, que tocan los mismos archivos; RM-01 (Neon) | Unos 11 archivos: `persistencia/init-db/*`, 3 composes, 3 `application-postgres.properties`, 4 tests de Testcontainers con sus copias del script y `persistencia/README.md` | Cada servicio se conecta a `/<servicio>?currentSchema=<servicio>`; el rol de un servicio no puede conectarse a la base de otro; Flyway, los tests de Testcontainers y el preprod quedan en verde. **En esta entrega, solo documentado** (decisión del usuario) |
 
 **Por qué B10 no va en E5.** En E5 no hay una versión anterior desde la cual migrar. Donaciones persiste por primera vez y Logística cambia de motor `[DOCUMENTED]` (borrador, §1). La prueba de actualización tiene sentido a partir de que exista una versión promovida con el nuevo modelo.
 
@@ -72,8 +100,8 @@ Las demás se marcan **Mejora**: suben el puntaje, pero si no entran en la entre
 | ID | Ítem | Tipo | Brechas | Propiedades | Dependencias | Tamaño | Hecho cuando… |
 |---|---|---|---|---|---|---|---|
 | RM-06 | **Promoción por digest con preprod post-merge** (B2-A) | Mejora (base de RM-07, RM-13, RM-14 y RM-15) | B2 | **P1 1 → 2**, **P12 0 → 1** | ADR [promoción por digest](../adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) (`proposed`). RM-02 y RM-04 | 2 workflows. En `merge.yml`: `docker-publish` publica solo `:sha-<7>`, y se suman 2 jobs (`preprod-post-merge` y `promote`). En `main.yml`: los servicios no modificados se resuelven por digest desde el último manifiesto. 1 script que genera y lee el manifiesto | (1) Después de un merge, los digests de `:<rama>` y `:latest` son iguales al de `:sha-<7>` validado: se compara con `docker buildx imagetools inspect`. (2) En un ensayo con un IT roto, el post-merge falla y `:<rama>` sigue apuntando al digest anterior. (3) Cada promoción publica un manifiesto con el commit y el digest de cada servicio |
-| RM-07 | **Despliegue reproducible con smoke y rollback** (B3-A, segunda parte) | Mejora | B3 | **P12 1 → 2** | RM-06 (manifiesto) y las precondiciones de Render de RM-01. Si el plan gratuito no permite servicios desde una imagen, P12 queda en 1 (§6) | 1 workflow nuevo, `deploy.yml`, con 2 jobs (despliegue y smoke). 1 GitHub Environment `produccion` con 2 secretos: el deploy hook y la URL AMQP de CloudAMQP para el ciclo corto. 1 clase o script de smoke | (1) `deploy.yml` con el manifiesto M despliega el digest D, y el digest que Render muestra en el evento de despliegue es D. (2) El smoke recibe `UP` en `/actuator/health` dentro de una espera que tolera el arranque en frío (R3), responde `/v3/api-docs` y completa un ciclo AMQP corto. (3) Se ensaya un rollback: el manifiesto M-1 se despliega y su smoke da verde |
-| RM-08 | **Contratos vivos** (B4-A) | Mejora | B4 | **P7 1 → 2** | Aprobación de `json-schema-validator` y del cliente AMQP (test), de la herramienta de diff de OpenAPI y del puerto AMQP en `127.0.0.1` (RM-01, §5). Hasta RM-11 el espía usa AMQP sin TLS | 5 archivos: `integration-tests/pom.xml` (2 dependencias de test), 1 utilidad nueva (consumidor espía), `ContractIT.java`, `docker-compose.preprod.yml` (puerto en loopback) y `main.yml` (paso de diff). Reemplaza el test diferido (`ContractIT.java:262-271`) por la validación de los 19 schemas `evento-*` de `docs/arquitectura/contratos/schemas/` | (1) Cada mensaje capturado durante el E2E valida contra su schema, y un tipo de mensaje sin schema hace fallar el test. (2) Donaciones se valida en vivo con `OpenApiValidationFilter`, como los otros 3 servicios. (3) En un PR de prueba que elimina un campo de una spec, el diff marca error |
+| RM-07 | **Despliegue reproducible con smoke y rollback** (B3-A, segunda parte; rediseñado por D3: sin Render) | Mejora | B3 | **P12 1 → 2** | RM-06 (manifiesto). Render es opcional: solo si existe el secreto `RENDER_DEPLOY_HOOK_LOGISTICA` | 1 workflow nuevo, `deploy.yml` (ensayo y Render opcional), y 1 script, `scripts/ensayo-despliegue.sh` | (1) `deploy.yml` levanta en el runner el stack con los digests del manifiesto M. (2) El smoke recibe `UP` en `/actuator/health` dentro de una espera que tolera el arranque en frío (R3), responde `/v3/api-docs` y pasa el grupo `smoke`. (3) Despliega M-1 encima y su smoke da verde (rollback ensayado en cada corrida). (4) Sin el secreto de Render, avisa y no falla |
+| RM-08 | **Contratos vivos** (B4-A; diseño A de D4 y política de D5) | Mejora | B4 | **P7 1 → 2** | Aprobados por el usuario (2026-10-28): `com.networknt:json-schema-validator` y `com.rabbitmq:amqp-client` (test), la imagen `tufin/oasdiff` y el puerto AMQP en `127.0.0.1`. Hasta RM-11 el espía usa AMQP sin TLS. [ADR de política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md) `proposed` | `integration-tests/pom.xml` (2 dependencias de test), consumidor espía y validador, `ContractIT.java`, el E2E, `docker-compose.preprod.yml` (puerto en loopback), `main.yml` y `merge.yml` (diff de OpenAPI), 15 schemas `evento-*` abiertos, `scripts/validate-contracts.js` y `.github/CODEOWNERS`. Reemplaza el test diferido de `ContractIT` | (1) Cada mensaje capturado durante el E2E valida contra su schema, y un tipo de mensaje sin schema es una violación. (2) Donaciones se valida en vivo con `OpenApiValidationFilter`, como los otros 3 servicios. (3) En un PR de prueba que elimina un campo de una spec, el diff marca el cambio incompatible. **D5:** (1) y (3) avisan en el PR y fallan en el post-merge y en el corte de entrega |
 | RM-09 | **Auth y cliente liviano en preprod, con tests de credenciales** (B8-A, parte de auth) | Bloqueante (P2 bajaría con 2 componentes nuevos fuera de preprod) | B8 (parte) | **P9 0 → 1** | Que existan `auth-service` y `cliente-liviano` (trabajo funcional de E6). El diseño de auth de E6 | 3 o 4 archivos: `docker-compose.preprod.yml` (2 servicios), `main.yml` y `merge.yml` si el descubrimiento de servicios no los incluye solo, y 1 clase nueva `SeguridadIT` con unos 6 tests: sin `X-API-Key`, con `X-Actor` inválido, sin token, token vencido, rol insuficiente y token válido | Preprod levanta los 6 servicios. `SeguridadIT` corre en un grupo requerido, sin salteados, y los casos negativos devuelven 401 o 403 según el contrato |
 | RM-10 | **Dobles HTTP y salida a internet bloqueada en CI** (B9-A) | Bloqueante si auth usa un proveedor externo de Social-Login. Mejora en otro caso | B9 | **P5 1 → 2**, **P2 1 → 2** (con RM-05 y RM-09) | Aprobación de la imagen de WireMock (RM-01, §5). Sin ella se aplica B9-B y P5 queda en 1 | 5 o 6 archivos: `docker-compose.preprod.yml` (1 servicio y la URL de `externo` para Donaciones), 1 carpeta de mappings con unos 3 archivos (`externo`, el reemplazo de `httpbin.org` y el doble del proveedor de identidad), los 2 workflows de n8n, `n8n/README.md` y `main.yml` (regla `DOCKER-USER`). 1 IT de fallas del proveedor `externo` | (1) Ningún workflow de `n8n/` (`*.json`) referencia `httpbin.org`, y `n8n/README.md` describe el doble. (2) Con la regla activa, un `wget` a internet desde un contenedor falla, y preprod da verde. (3) El IT de fallas inyecta demora y 5xx en `externo` y verifica la respuesta esperada de Donaciones. (4) El login de prueba usa el doble del proveedor de identidad, sin salir a internet |
 
@@ -99,6 +127,7 @@ Las demás se marcan **Mejora**: suben el puntaje, pero si no entran en la entre
 | ID | Ítem | Brechas | Propiedades | Dependencias | Tamaño | Hecho cuando… |
 |---|---|---|---|---|---|---|
 | RM-17 | **Backlog de cobertura** medido por RM-16, por caso de uso y por camino negativo (QA-GAP-05) | B6 | **P6 1 → 2** | RM-16 (la matriz que mide el backlog) | 1 clase IT por flujo sin cubrir. Piso `[INFERRED]`: unas 64 operaciones sin ejercitar (fase 1, P6); el número exacto de clases sale de la matriz de RM-16 | Cada caso de uso del enunciado y cada operación de las specs tiene un escenario feliz y uno negativo contra el entorno, según el reporte de RM-16 |
+| RM-20 | **MinIO por servicio** (D2 de la SPEC-05) | Ninguna: endurece el aislamiento de objetos | P4 | RM-19 aprobado (mismo criterio en otro almacén, sin ADR propio) | Sin código hasta después de E7. Mientras tanto, cada servicio tiene su usuario y sus buckets (llega con `E4_donaciones_minio`) | Cada servicio usa su propia instancia de MinIO, con su endpoint y sus credenciales |
 | RM-18 | **Toxiproxy** (B5-B): latencia y cortes parciales | B5 | P8 sigue en 2; suma latencia y cortes parciales | RM-13 y la aprobación de la imagen (RM-01) | 3 archivos: `docker-compose.preprod.yml` (1 servicio y el ruteo de RabbitMQ y PostgreSQL por el proxy), `ResilienciaIT` (unos 2 tests) y 1 configuración de proxies | Con 2 s de latencia en el broker, el outbox entrega todos los eventos y `ResilienciaIT` da verde |
 
 Evoluciones condicionadas, sin ítem: la merge queue de GitHub (B2-B), solo si el post-merge muestra roturas frecuentes de la base, y el staging permanente en la nube (B3-B), solo si más componentes pasan a la nube y con un ADR sucesor del de tolerancia al desorden, que la descarta.
@@ -175,11 +204,11 @@ Piezas que requieren aprobación (R4 de la fase 2), con el ítem que las necesit
 
 | Pieza | Tipo | Ítem | Si se rechaza |
 |---|---|---|---|
-| Imagen del motor documental | Imagen Docker | RM-05 | La decide el ADR de E5. Sin ella, Logística no corre en preprod |
-| `json-schema-validator` | Dependencia de test | RM-08 | P7 queda en 1 |
-| Cliente AMQP (`com.rabbitmq:amqp-client`) | Dependencia de test | RM-08, RM-12, RM-13 | P7, P8 y P10 quedan en 1, 0 y 1 |
-| Puerto AMQP en `127.0.0.1` | Cambio de compose | RM-08 | Igual que el cliente AMQP |
-| Herramienta de diff de OpenAPI | Herramienta de CI | RM-08 | Falta el chequeo de compatibilidad; P7 queda en 1 |
+| Imagen del motor documental | Imagen Docker | RM-05 | **Resuelta:** `mongo:7.0`, fijada por digest (RM-05) |
+| `json-schema-validator` | Dependencia de test | RM-08 | **Aprobada** (2026-10-28): `com.networknt:json-schema-validator` (draft 2020-12) |
+| Cliente AMQP (`com.rabbitmq:amqp-client`) | Dependencia de test | RM-08, RM-12, RM-13 | **Aprobada** (2026-10-28) |
+| Puerto AMQP en `127.0.0.1` | Cambio de compose | RM-08 | **Aprobado** (2026-10-28) |
+| Herramienta de diff de OpenAPI | Herramienta de CI | RM-08 | **Aprobada** (2026-10-28): imagen `tufin/oasdiff`, fijada por digest |
 | Imagen de WireMock | Imagen Docker | RM-10 | Se aplica B9-B y P5 queda en 1 |
 | Configuración de Dependabot | Configuración de GitHub | RM-11, RM-14 | Los digests se actualizan a mano |
 | `actions/dependency-review-action` | Acción de CI | RM-14 | P9 queda en 1 |
@@ -200,6 +229,9 @@ Se revisó cada decisión candidata de la [§6 de la fase 2](preprod-fiel-arquit
 | Datos únicos y matriz de cobertura (RM-16) | No | — | Sin ADR. Confirmado |
 | Configuración de producción con desvíos declarados (RM-11) | Sí | No | Sin ADR. Confirmado |
 | Escaneo de dependencias e imágenes (RM-14) | Sí | No | Sin ADR. Confirmado |
+| Base de datos por servicio en el mismo motor (RM-19, D1 de la SPEC-05) | Sí | Sí: cambia la estrategia de persistencia | **ADR `proposed`:** [base por servicio](../adr/20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md); propone reemplazar al de multi-schema (la relación `superseded` la aprueba un humano). Deuda: DTI-26 |
+| Política de evolución de contratos (RM-08, D5 de la SPEC-05) | Sí | Sí: integración entre servicios y trade-off entre fricción y protección | **ADR `proposed`:** [política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md) |
+| Despliegue sin Render (RM-07, D3 de la SPEC-05) | No: revisa un ADR `proposed` sin publicar | — | Se revisó el [ADR de promoción](../adr/20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) (alternativa 2D) |
 | WireMock como contenedor (RM-10) | No | — | Sin ADR. Confirmado |
 | Bloqueo de salida a internet en CI (RM-10) | Sí | No | Sin ADR. Confirmado |
 | Truststore generado para el cliente de test con AMQPS (§1) | No: detalle del entorno de test, con una herramienta del JDK | — | Sin ADR |
@@ -222,7 +254,8 @@ Se revisó cada decisión candidata de la [§6 de la fase 2](preprod-fiel-arquit
 
 | Riesgo o decisión | Efecto | Quién decide |
 |---|---|---|
-| El plan gratuito de Render no permite un servicio desde imagen | P12 queda en 1. El despliegue sigue construyendo en Render y no despliega la imagen validada | Equipo, con lo que muestre el panel (RM-01) |
+| El plan gratuito de Render no permite un servicio desde imagen | Con D3, P12 llega a 2 por el ensayo del manifiesto en el runner; solo el adaptador de Render queda sin usar | Equipo, con lo que muestre el panel (RM-01) |
+| El enunciado de E5 exige un schema por servicio | RM-19 se rechaza o se difiere: el enunciado manda (AGENTS.md §2) | Equipo, leyendo el enunciado de E5 |
 | E5 y E6 tienen mucho trabajo funcional | Las mejoras se corren a la entrega siguiente. Los ítems bloqueantes no | Equipo, entrega por entrega |
 | RM-12 y RM-13 fallan hasta que se corrijan DTI-16 (ítems 3, 4 y 7) y DTI-22 (en `origin/main`) | Los tests están en rojo por un defecto real. No se deshabilitan (AGENTS.md §4.3) | Equipo: corregir antes o en el mismo PR |
 | La política exacta del escaneo de imágenes | Qué severidad bloquea la promoción | Equipo (RM-14) |

@@ -382,3 +382,16 @@
 3. **Sonar opcional:** el quality gate final no exige `sonar-analysis` (`main.yml:912`, `"never"`).
 
 La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema, estaba registrada en el ítem 8 de DTI-16 y quedó resuelta con RM-02.
+
+---
+
+## DTI-26 — Base de datos por servicio: decisión propuesta, sin implementar
+<a id="dti-26"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql](./20261028-base-de-datos-por-servicio-en-el-mismo-motor-postgresql.md) (propone reemplazar a [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md)) |
+| Decision status | `proposed` (los dos ADRs; la relación `superseded` la aprueba un humano) |
+| Implementation status | `[OBSERVED] not-started` — por decisión del usuario (2026-10-28, SPEC-05) solo se documentó: `persistencia/init-db`, los composes y las properties chocan con `origin/E4_donaciones_minio` y `origin/E4_persistencia_donaciones` |
+| Target | `persistencia/init-db/*` · 3 composes · 3 `application-postgres.properties` · 4 tests de Testcontainers · `persistencia/README.md` |
+| Cuándo se saldará | Después de que mergeen las dos ramas de E4, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-19). Precondiciones: Neon admite una base por servicio (RM-01) y el enunciado de E5 no exige un schema por servicio |

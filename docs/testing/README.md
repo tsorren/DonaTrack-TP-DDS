@@ -20,7 +20,7 @@ docs/testing/
 ├── decisiones-diseno-auditoria-qa.md      # ⚖️ Decisiones y alternativas descartadas
 ├── preprod-fiel.md                        # 🧭 Preprod fiel: criterio, estado y brechas (fase 1)
 ├── preprod-fiel-arquitectura-objetivo.md  # 🏗️ Preprod fiel: arquitectura objetivo (fase 2)
-├── preprod-fiel-roadmap.md                # 🗺️ Preprod fiel: roadmap por entrega y ADR (fase 3)
+├── preprod-fiel-roadmap.md                # 🗺️ Preprod fiel: roadmap, rediseño SPEC-05 y estado (fase 3)
 │
 ├── auditoria/                             # 🔬 Compendio hiper-granular de auditoría QA
 │   ├── README.md                          # Portal de auditoría, síntesis ejecutiva y glosario
@@ -45,7 +45,7 @@ docs/testing/
 * [**Decisiones de Diseño y Alternativas Descartadas**](decisiones-diseno-auditoria-qa.md): Registro fundamentado de alternativas evaluadas y descartadas (`[REJECTED]`).
 * [**Preprod fiel: criterio, estado y brechas (`preprod-fiel.md`)**](preprod-fiel.md): Criterio de 12 propiedades para un entorno preproductivo fiel, medición del pipeline y de `integration-tests` (9/24) y brechas B1–B12 priorizadas. Fase 1 de 3.
 * [**Preprod fiel: arquitectura objetivo (`preprod-fiel-arquitectura-objetivo.md`)**](preprod-fiel-arquitectura-objetivo.md): Alternativas con matriz ponderada para B1–B12, entorno preprod, etapas del pipeline (PR, post-merge, promoción, despliegue), estratos S0–S7 y evaluación de ADR. Fase 2 de 3.
-* [**Preprod fiel: roadmap (`preprod-fiel-roadmap.md`)**](preprod-fiel-roadmap.md): Roadmap RM-01 a RM-18 por entrega (E5, E6, E7 y después), con brechas, propiedades, dependencias, tamaño y criterio de hecho; proyección del puntaje (10, 17, 23 y 24 de 24), aprobaciones pendientes y confirmación Gate A + Gate B, con 1 ADR `proposed`. Fase 3 de 3.
+* [**Preprod fiel: roadmap (`preprod-fiel-roadmap.md`)**](preprod-fiel-roadmap.md): Roadmap RM-01 a RM-20 por entrega (E5, E6, E7 y después), con brechas, propiedades, dependencias, tamaño y criterio de hecho; rediseño de la [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) (base por servicio, despliegue sin Render, política de contratos) y estado de implementación de RM-02 a RM-08; proyección del puntaje, aprobaciones y confirmación Gate A + Gate B, con 3 ADRs `proposed`. Fase 3 de 3.
 
 ---
 

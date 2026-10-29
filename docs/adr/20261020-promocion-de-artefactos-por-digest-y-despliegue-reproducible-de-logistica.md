@@ -5,7 +5,9 @@
 - Deciders: Pendiente de decisión grupal
 - Tags: cicd, despliegue, docker, ghcr, render, preprod, promocion, rollback, entrega-6
 
-> **Origen:** análisis "preprod fiel" en tres fases: [criterio y brechas](../testing/preprod-fiel.md) (B2, B3; P1, P12), [arquitectura objetivo](../testing/preprod-fiel-arquitectura-objetivo.md) (§3 B2 y B3, §6) y [roadmap](../testing/preprod-fiel-roadmap.md) (RM-06 y RM-07). Base relevada: `origin/main` en `a808942c`. Ninguna parte de esta decisión está implementada.
+> **Origen:** análisis "preprod fiel" en tres fases: [criterio y brechas](../testing/preprod-fiel.md) (B2, B3; P1, P12), [arquitectura objetivo](../testing/preprod-fiel-arquitectura-objetivo.md) (§3 B2 y B3, §6) y [roadmap](../testing/preprod-fiel-roadmap.md) (RM-06 y RM-07). Base relevada: `origin/main` en `a808942c`.
+>
+> **Revisión 2026-10-28** ([SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md), D3, aprobada por el usuario): el despliegue deja de depender de Render. Se suma la alternativa **2D** (ensayo del manifiesto en un entorno efímero del runner, con smoke y rollback) como elegida, y Render queda como adaptador opcional. La parte 1 no cambia. `[OBSERVED]` Implementada en la rama `E5_preprod_fiel_rm08` (`merge.yml`: `preprod-post-merge` y `promote`; `deploy.yml`); se valida con la primera corrida post-merge.
 
 ## Contexto y Problema
 
@@ -65,7 +67,8 @@ La decisión tiene dos partes: cómo se promueve un artefacto (parte 1) y cómo 
 
 | Alternativa | Veredicto |
 |---|---|
-| **2A. Workflow manual con un manifiesto de versión, deploy hook por digest, smoke y rollback** | ✅ Elegida |
+| **2D. Ensayo del manifiesto en un entorno efímero del runner, con smoke y rollback; Render como adaptador opcional** (revisión 2026-10-28) | ✅ Elegida |
+| 2A. Workflow manual con un manifiesto de versión, deploy hook por digest, smoke y rollback | Elegida en la versión del 2026-10-20; queda como adaptador opcional de 2D: bloqueada por las precondiciones de Render (RM-01) |
 | 2B. Despliegue automático después de cada promoción a `main` | ❌ Despierta y redespliega la instancia en cada merge, contra la pausa entre defensas y las 750 horas del plan |
 | 2C. Staging permanente en la nube con la suite híbrida post-merge | ❌ Triplica secretos y cuotas, y el ADR de tolerancia al desorden la descarta |
 | Status quo: despliegue manual desde el panel de Render | ❌ Eliminada: no se reproduce desde el repo ni deja rastro |
@@ -91,28 +94,31 @@ La decisión tiene dos partes: cómo se promueve un artefacto (parte 1) y cómo 
 
 **2B.** *Pros:* nadie se olvida de desplegar. *Contras:* contradice la pausa entre defensas del ADR de PaaS (punto 6) y consume horas del plan sin necesidad.
 
+**2D (revisión 2026-10-28).** *Pros:* no depende de terceros ni de las precondiciones de Render; el mismo manifiesto levanta el mismo set de digests; el rollback se ensaya en cada corrida y solo usa `docker compose`. *Contras:* es el mismo artefacto en otra plataforma, no el despliegue real en la nube. Puntaje de la SPEC-05 (D3): 4,6 contra 3,2 de 2A, 3,0 de otro PaaS.
+
 **2C.** *Pros:* es la más fiel a la nube. *Contras:* una segunda instancia en Render, una rama de Neon y un vhost en CloudAMQP, con sus secretos en CI. Adoptarla pediría un ADR sucesor del de tolerancia al desorden.
 
 ## Resultado de la Decisión
 
-Se adoptan **1A** y **2A**:
+Se adoptan **1A** y **2D** (revisión 2026-10-28; la versión del 2026-10-20 adoptaba 2A, que queda como adaptador opcional):
 
 1. **Build único.** `merge.yml` construye una vez desde el commit integrado y publica solo `:sha-<7>`, como **candidato**.
 2. **Preprod post-merge.** Corre el preprod con todas las imágenes fijadas por digest, también las de los servicios no modificados, con los estratos del post-merge (S3 a S6, definidos en la [arquitectura objetivo, §5.3](../testing/preprod-fiel-arquitectura-objetivo.md#53-estratos-de-la-suite)).
 3. **Promoción.** Si el post-merge da verde, re-etiqueta el mismo digest a `:<rama>` y, en `main`, a `:latest`, con `docker buildx imagetools create`, sin reconstruir. Si falla, no promueve: `:<rama>` sigue apuntando a la última versión validada.
 4. **Manifiesto de versión.** Cada promoción publica un JSON con la rama, el commit, la corrida y el digest de cada servicio. Es la unidad de despliegue y de rollback. Por defecto se guarda como artefacto del workflow `[PROPOSED]`: la retención por defecto de 90 días alcanza para el curso `[INFERRED]`.
 5. **Preprod de PR con digests.** Los servicios no modificados se resuelven por digest desde el último manifiesto promovido de la rama base, en lugar del tag mutable `:<base>`. Un servicio modificado sin imagen `pr-<N>` hace fallar el job.
-6. **Despliegue.** Un workflow nuevo, `deploy.yml`, se dispara a mano (`workflow_dispatch`) con un manifiesto. Corre en un GitHub Environment `produccion`, que guarda el deploy hook de Logística y la URL AMQP de CloudAMQP. Llama al deploy hook con `imgURL=ghcr.io/tsorren/donatrack-tp-dds/logistica-service@sha256:<digest>`.
-7. **Smoke post-despliegue.** Health, `/v3/api-docs` y un ciclo AMQP corto contra la URL pública, con una espera que tolera el arranque en frío.
-8. **Rollback.** Es el mismo workflow con el manifiesto anterior. Se ensaya una vez por entrega.
-9. **Pausa.** Se mantiene la pausa entre defensas. Solo se despliega a pedido.
+6. **Despliegue reproducible (2D).** Un workflow nuevo, `deploy.yml`, corre después de cada `merge.yml` exitoso y a mano (`workflow_dispatch`, con la corrida cuyo manifiesto se quiere desplegar). Levanta en el runner el stack de preprod con los digests del manifiesto M (`scripts/ensayo-despliegue.sh`).
+7. **Smoke.** `/actuator/health` en `UP` con una espera que tolera el arranque en frío, `/v3/api-docs` y el grupo `smoke` de `integration-tests`, para los 4 servicios.
+8. **Rollback ensayado.** Sobre el mismo stack despliega el manifiesto anterior, M-1, y repite el smoke. Se ensaya en cada corrida.
+9. **Render (2A como adaptador opcional).** Solo en la corrida manual y solo si existe el secreto `RENDER_DEPLOY_HOOK_LOGISTICA`: llama al deploy hook con `imgURL=<imagen de Logística>@sha256:<digest>`. Si el secreto no existe, avisa y no falla. Al crearlo, conviene guardarlo en un GitHub Environment `produccion` con revisores requeridos (configuración fuera del repo).
+10. **Pausa.** Se mantiene la pausa entre defensas: Render solo recibe un despliegue a pedido.
 
-**Precondiciones**, a verificar en el panel de Render antes de implementar la parte 2:
+**Precondiciones del adaptador de Render** (RM-01; ya no bloquean la parte 2):
 
 * Que el servicio de Logística se pueda configurar con la imagen de GHCR como origen en el plan gratuito.
 * Cómo construye hoy: si construye desde el repo, hay que cambiar el origen del servicio.
 
-Si la primera no se cumple, se implementa solo la parte 1. La parte 2 queda registrada como no aplicable al plan gratuito, y P12 queda en 1 (roadmap, §7).
+Si la primera no se cumple, el adaptador queda sin usar; P12 llega igual a 2 por el despliegue reproducible con smoke y rollback (SPEC-05, D3).
 
 Justificación: es la única combinación que lleva P1 y P12 a 2 sin alargar el PR ni salir de las cuotas gratuitas. Aplica "Build Once, Deploy Many": un artefacto inmutable atraviesa todas las etapas. También separa responsabilidades: validar es del post-merge, promover del job de promoción y desplegar del workflow de despliegue, cada uno con un único motivo de cambio.
 
@@ -129,18 +135,19 @@ Justificación: es la única combinación que lleva P1 y P12 a 2 sin alargar el 
 * El preprod corre dos veces por cambio. Hoy son unos 3 minutos por corrida (roadmap, §1), más el build.
 * Entre el merge y la promoción hay una ventana en la que `:<rama>` todavía apunta a la versión anterior.
 * Si el post-merge falla, la rama queda con una cabeza no promovida, y el equipo tiene que arreglarla hacia adelante.
-* Hay un secreto nuevo en GitHub. Quien tenga la URL del deploy hook puede desplegar. Se mitiga con el Environment `produccion`, con revisores requeridos.
+* Si se usa el adaptador de Render, hay un secreto nuevo en GitHub: quien tenga la URL del deploy hook puede desplegar. Se mitiga con el Environment `produccion`, con revisores requeridos.
 * Un artefacto vencido deja de servir para un rollback. Si hace falta más de 90 días, el manifiesto pasa a guardarse en otro lado (por ejemplo, un asset de release).
-* Solo cubre el despliegue de Logística. El resto de los servicios sigue corriendo local.
+* El ensayo (2D) corre en el runner, no en la nube: valida el artefacto y el procedimiento, no la plataforma de Render. El despliegue real solo cubre Logística.
+* Cada merge con imágenes suma el ensayo de despliegue (dos arranques del stack) a los minutos de CI.
 
 ## Validación
 
 1. Después de un merge, los digests de `:<rama>` y `:latest` coinciden con el de `:sha-<7>` validado (`docker buildx imagetools inspect`).
 2. En un ensayo con un IT roto, el post-merge falla y `:<rama>` no cambia.
 3. Cada promoción publica su manifiesto.
-4. `deploy.yml` con el manifiesto M despliega el digest D, y el digest del evento de despliegue de Render es D.
-5. El smoke da verde contra la URL pública.
-6. El rollback con el manifiesto M-1 da verde.
+4. `deploy.yml` con el manifiesto M levanta en el runner los digests de M y el smoke da verde.
+5. Sobre el mismo stack, el manifiesto M-1 se despliega y su smoke da verde (rollback ensayado).
+6. Solo con el adaptador de Render: el digest del evento de despliegue de Render es el de Logística en M.
 
 ## Trabajo Futuro / Links
 
