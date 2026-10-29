@@ -123,7 +123,7 @@ class RepositoriosLogisticaJpaTest {
   @Container @ServiceConnection
   static PostgreSQLContainer<?> postgres =
       new PostgreSQLContainer<>("postgres:16-alpine")
-          .withDatabaseName("donatrack")
+          .withDatabaseName("logistica")
           .withUsername("logistica_user")
           .withPassword("logi_pass_2026")
           .withCopyFileToContainer(
