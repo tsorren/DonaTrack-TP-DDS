@@ -735,7 +735,7 @@ components:
         mediosDeContacto:
           type: array
           nullable: true
-          items: { $ref: '#/components/schemas/MedioDeContactoDTO' }
+          items: { $ref: '#/components/schemas/MedioDeContactoInputDTO' }
         nombre: { type: string, minLength: 1 }
         apellido: { type: string, minLength: 1 }
         genero: { type: string, enum: [PREFIERO_NO_DECIR, HOMBRE, MUJER, NO_BINARIO], nullable: true }
@@ -751,7 +751,7 @@ components:
         mediosDeContacto:
           type: array
           nullable: true
-          items: { $ref: '#/components/schemas/MedioDeContactoDTO' }
+          items: { $ref: '#/components/schemas/MedioDeContactoInputDTO' }
         razonSocial: { type: string, minLength: 1 }
         tipoJuridico: { type: string, enum: [GUBERNAMENTAL, ONG, EMPRESA, INSTITUCION] }
         rubro: { type: string, nullable: true }
@@ -775,7 +775,7 @@ components:
         mediosDeContacto:
           type: array
           nullable: true
-          items: { $ref: '#/components/schemas/MedioDeContactoDTO' }
+          items: { $ref: '#/components/schemas/MedioDeContactoOutputDTO' }
         nombre: { type: string, nullable: true }
         apellido: { type: string, nullable: true }
         genero: { type: string, enum: [PREFIERO_NO_DECIR, HOMBRE, MUJER, NO_BINARIO], nullable: true }
@@ -792,7 +792,7 @@ components:
         mediosDeContacto:
           type: array
           nullable: true
-          items: { $ref: '#/components/schemas/MedioDeContactoDTO' }
+          items: { $ref: '#/components/schemas/MedioDeContactoOutputDTO' }
         razonSocial: { type: string, nullable: true }
         tipoJuridico: { type: string, enum: [GUBERNAMENTAL, ONG, EMPRESA, INSTITUCION], nullable: true }
         rubro: { type: string, nullable: true }
@@ -825,7 +825,7 @@ components:
         localidad: { type: string, nullable: true }
         provincia: { type: string, nullable: true }
         pais: { type: string, nullable: true }
-    MedioDeContactoDTO:
+    MedioDeContactoInputDTO:
       type: object
       description: CORREO exige direccionCorreo; TELEFONO y WHATSAPP exigen numero.
       required: [tipo]
@@ -833,6 +833,17 @@ components:
         tipo: { type: string, enum: [CORREO, TELEFONO, WHATSAPP] }
         esPredeterminado: { type: boolean, nullable: true }
         direccionCorreo: { type: string, format: email, nullable: true }
+        caracteristica: { type: string, nullable: true }
+        codigoArea: { type: string, nullable: true }
+        numero: { type: string, nullable: true }
+    MedioDeContactoOutputDTO:
+      type: object
+      description: Sin formato de correo en la salida; una persona anonimizada (DTI-01) devuelve "ANONIMIZADO" en sus datos personales.
+      required: [tipo]
+      properties:
+        tipo: { type: string, enum: [CORREO, TELEFONO, WHATSAPP] }
+        esPredeterminado: { type: boolean, nullable: true }
+        direccionCorreo: { type: string, nullable: true }
         caracteristica: { type: string, nullable: true }
         codigoArea: { type: string, nullable: true }
         numero: { type: string, nullable: true }

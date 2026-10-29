@@ -319,16 +319,27 @@ class ContractIT extends BaseIT {
             .conEmail(TestIdGenerator.randomEmail("contrato"))
             .build();
 
+    String personaId =
+        given()
+            .filter(validationFilter)
+            .contentType(ContentType.JSON)
+            .body(persona)
+            .when()
+            .post(DONACIONES_URL + "/api/personas")
+            .then()
+            .statusCode(201)
+            .extract()
+            .path("id");
+
+    // Eliminar anonimiza la persona: el listado la incluye con "ANONIMIZADO" en sus datos
     given()
         .filter(validationFilter)
-        .contentType(ContentType.JSON)
-        .body(persona)
         .when()
-        .post(DONACIONES_URL + "/api/personas")
+        .delete(DONACIONES_URL + "/api/personas/" + personaId)
         .then()
-        .statusCode(201);
+        .statusCode(204);
 
-    // El listado valida la respuesta de varias personas (HUMANA y JURIDICA) contra el schema
+    // El listado valida la respuesta de varias personas, incluida la anonimizada, contra el schema
     given()
         .filter(validationFilter)
         .when()
