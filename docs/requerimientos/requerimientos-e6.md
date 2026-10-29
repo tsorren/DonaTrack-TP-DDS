@@ -680,10 +680,10 @@ Sin ADR (AGENTS.md §9.2):
 | Documento | Divergencia |
 |---|---|
 | [`docs/arquitectura/contratos-rest.md`](../arquitectura/contratos-rest.md) | No lista `GET /api/entregas/mapa` ni los dos `GET /api/entregas/seguimiento/...` que existen en `EntregasController` `[OBSERVED]` |
-| [`docs/ESTADO_DOCUMENTACION.md`](../ESTADO_DOCUMENTACION.md) §3.6 | Describe `cliente-liviano` como reservado para la "Entrega 5"; la consigna lo ubica en E6 |
-| [`docs/adr/DEUDA_TECNICA.md`](../adr/DEUDA_TECNICA.md) DTI-09 | Llama "Entrega 6: Despliegue, Observabilidad y Seguridad" a la entrega de la integración con `auth-service`; según el enunciado, E6 es "Interfaz de Usuario y Arquitectura MVC" y E7 es "Observabilidad y Seguridad" |
+| [`docs/ESTADO_DOCUMENTACION.md`](../ESTADO_DOCUMENTACION.md) §3.6 | Describe `cliente-liviano` como reservado para la "Entrega 5"; la consigna lo ubica en E6 · **Corregida en la rama `E5_enunciado_y_barrido` (2026-10-29)** |
+| [`docs/adr/DEUDA_TECNICA.md`](../adr/DEUDA_TECNICA.md) DTI-09 | Llama "Entrega 6: Despliegue, Observabilidad y Seguridad" a la entrega de la integración con `auth-service`; según el enunciado, E6 es "Interfaz de Usuario y Arquitectura MVC" y E7 es "Observabilidad y Seguridad" · **Marcada para revisar** en `DEUDA_TECNICA.md` (rama `E5_enunciado_y_barrido`, 2026-10-29) |
 | [ADR DTI-07](../adr/notificaciones-service/20260902-dti-07-dependencia-diferida-de-auth-service-para-key-broker.md) (`proposed`) | Fija el "Hito Canónico de Cancelación" en "Entrega 6"; la D29 lo pasa a E7. No se edita el ADR: corresponde un ADR sucesor o una actualización por el revisor humano |
-| [`docs/entregas/README.md`](../entregas/README.md) | Llama "Despliegue, Observabilidad y Seguridad" a E6; el enunciado completo lo corrige |
+| [`docs/entregas/README.md`](../entregas/README.md) | Llama "Despliegue, Observabilidad y Seguridad" a E6; el enunciado completo lo corrige · **Corregida en la rama `E5_enunciado_y_barrido` (2026-10-29)** |
 | `logistica-service/.../dto/entregas/EntregaMapaPublicoResponseDTO.java` | El Javadoc dice que no incluye la dirección exacta, pero expone `latitud` y `longitud` exactas (HB-07) |
 | `docs/adr/DEUDA_TECNICA.md` DTI-09 y DTI-14 | Fechan E6 en la "semana del 23 de noviembre"; ni el enunciado ni el repo tienen el calendario que lo respalde |
-| `docs/entregas/` | El enunciado completo (`Enunciado-TP-Anual-2026.pdf`) sigue en la rama `E5_enunciado_tp_anual`, sin integrar |
+| `docs/entregas/` | El enunciado completo (`Enunciado-TP-Anual-2026.pdf`) sigue en la rama `E5_enunciado_tp_anual`, sin integrar · **Corregida en la rama `E5_enunciado_y_barrido` (2026-10-29)** |

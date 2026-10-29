@@ -62,7 +62,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[OBSERVED] in-progress` — responsabilidades divididas entre `GestorPropuestasDeAsignacion` (dominio) y `PropuestaDeAsignacionService` (aplicación); `AlgoritmosService` no introducido |
 | Target | donaciones-service (prioridad baja/media) |
-| Cuándo se saldará | **Entrega 5 (Semana del 19 de Octubre 2026)** — refactor previo a la integración con la interfaz Web MVC |
+| Cuándo se saldará | **Entrega 5 (Semana del 19 de Octubre 2026)** — refactor previo a la integración con la interfaz Web MVC · **A revisar:** el enunciado final ([Enunciado-TP-Anual-2026.pdf](../entregas/Enunciado-TP-Anual-2026.pdf)) renumera las entregas: E5 es Persistencia, E6 Interfaz de Usuario y Arquitectura MVC, E7 Observabilidad y Seguridad. La reprogramación queda a cargo del equipo |
 
 ---
 
@@ -114,7 +114,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — endpoints creados para testing; requiere auth-service y Spring Security |
 | Target | `incentivos-service` (`ProcesosIncentivosController`, `InactividadService`) |
-| Cuándo se saldará | **Entrega 6: Despliegue, Observabilidad y Seguridad (Semana del 23 de Noviembre 2026)** — integración con `auth-service`, protección perimetral con roles (`ROLE_ADMIN`), traslado a `/api/admin/` y respuesta `202 Accepted` asíncrona |
+| Cuándo se saldará | **Entrega 6: Despliegue, Observabilidad y Seguridad (Semana del 23 de Noviembre 2026)** — integración con `auth-service`, protección perimetral con roles (`ROLE_ADMIN`), traslado a `/api/admin/` y respuesta `202 Accepted` asíncrona · **A revisar:** el enunciado final ([Enunciado-TP-Anual-2026.pdf](../entregas/Enunciado-TP-Anual-2026.pdf)) renumera las entregas: E5 es Persistencia, E6 Interfaz de Usuario y Arquitectura MVC, E7 Observabilidad y Seguridad. La reprogramación queda a cargo del equipo |
 
 ---
 
@@ -126,7 +126,7 @@
 | Decision status | `proposed` |
 | Implementation status | `[INFERRED] deferred` — preserva consistencia con patrón preexistente en Entrega 2 |
 | Target | `common-lib` (`GlobalExceptionHandler`, `ErrorCatalog`) · `incentivos-service` (`RankingController`) |
-| Cuándo se saldará | **Entrega 5: Arquitectura Web MVC (Semana del 19 de Octubre 2026)** — refactor de capa Web y reemplazo del `if/else` por resolución idiomática de `Optional` o jerarquía tipada |
+| Cuándo se saldará | **Entrega 5: Arquitectura Web MVC (Semana del 19 de Octubre 2026)** — refactor de capa Web y reemplazo del `if/else` por resolución idiomática de `Optional` o jerarquía tipada · **A revisar:** el enunciado final ([Enunciado-TP-Anual-2026.pdf](../entregas/Enunciado-TP-Anual-2026.pdf)) renumera las entregas: E5 es Persistencia, E6 Interfaz de Usuario y Arquitectura MVC, E7 Observabilidad y Seguridad. La reprogramación queda a cargo del equipo |
 
 ---
 
