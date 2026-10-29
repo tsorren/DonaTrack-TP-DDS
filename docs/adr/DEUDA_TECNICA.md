@@ -356,9 +356,9 @@
 | ADR | [20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica](./20261020-promocion-de-artefactos-por-digest-y-despliegue-reproducible-de-logistica.md) |
 | ADR complementario | [logistica-service/20261009-despliegue-de-logistica-en-paas-con-contenedores](./logistica-service/20261009-despliegue-de-logistica-en-paas-con-contenedores.md) (puntos 1 y 5) |
 | Decision status | `proposed` |
-| Implementation status | `[OBSERVED] not-started` — relevado en `origin/main` `a808942c` por el análisis [preprod fiel](../testing/preprod-fiel.md) (B2, B3) |
-| Target | `.github/workflows/merge.yml` · `.github/workflows/main.yml` · `deploy.yml` nuevo |
-| Cuándo se saldará | E6, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-06 y RM-07); sujeto a la aprobación del ADR y a las precondiciones de Render |
+| Implementation status | `[OBSERVED] in-progress` — relevado en `origin/main` `a808942c` por el análisis [preprod fiel](../testing/preprod-fiel.md) (B2, B3). La rama `E5_preprod_fiel_rm08` (2026-10-28) implementa RM-06 (`merge.yml`: candidato `:sha-<7>`, `preprod-post-merge`, `promote` y manifiesto; `main.yml`: servicios no modificados por digest) y RM-07 sin Render (`deploy.yml`, ensayo con smoke y rollback). Se cierra cuando la primera corrida post-merge y de `deploy.yml` lo confirme |
+| Target | `.github/workflows/merge.yml` · `.github/workflows/main.yml` · `.github/workflows/deploy.yml` |
+| Cuándo se saldará | Con la primera corrida en CI de la rama, según el [roadmap](../testing/preprod-fiel-roadmap.md) (RM-06 y RM-07); sujeto a la aprobación del ADR. Render ya no es precondición (D3) |
 
 1. **Imagen publicada sin preprod:** `merge.yml` reconstruye desde el commit integrado y publica `:<rama>`, `:sha-<7>` y `:latest` sin correr el preprod (`merge.yml:259-269`). La imagen que valida el PR (`pr-<N>`) no es la que se publica.
 2. **Estado post-merge sin validar:** `main.yml` solo corre en `pull_request` (`main.yml:44-46`). `[INFERRED]` Dos PR en verde pueden romper la base al combinarse.

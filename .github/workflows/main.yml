@@ -640,6 +640,7 @@ jobs:
     permissions:
       contents: read
       packages: read
+      actions: read
     steps:
       - name: Checkout del código
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -658,12 +659,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # RM-06: los servicios no modificados se fijan por digest desde el último manifiesto
+      # promovido de la rama base (artefacto manifiesto-version de merge.yml, job promote).
+      # Mientras la base no tenga uno, el resolvedor usa su tag con un aviso.
+      - name: Obtener el último manifiesto promovido de la rama base
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          RUN_ID=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=manifiesto-version&per_page=100" \
+            --jq "[.artifacts[] | select(.expired | not) | select(.workflow_run.head_branch == \"${BASE_REF}\")][0].workflow_run.id // empty")
+          if [[ -n "$RUN_ID" ]] && gh run download "$RUN_ID" -n manifiesto-version -D manifiesto; then
+            echo "MANIFIESTO=manifiesto/manifiesto-version.json" >> "$GITHUB_ENV"
+            echo "📜 Manifiesto de ${BASE_REF}: corrida ${RUN_ID}"
+            cat manifiesto/manifiesto-version.json
+          else
+            echo "::warning::${BASE_REF} todavía no tiene un manifiesto promovido: los servicios no modificados usan el tag :${BASE_REF}."
+          fi
+
       # RM-04: el job invoca el mismo punto de entrada que se usa en local. El script
       # resuelve las imágenes (scripts/resolver-imagenes-ghcr.sh), levanta el stack, corre
       # smoke y después contract,integration,e2e, reporta (report_test_failures.py) y desmonta.
       #   - Servicio modificado: imagen pr-<N> obligatoria (RM-02).
-      #   - Servicio no modificado: tag de la rama base real ([FIX-5]), normalizado a
-      #     minúsculas y sin "/" (requisito OCI).
+      #   - Servicio no modificado: digest del manifiesto (RM-06) o, sin manifiesto, tag
+      #     de la rama base real ([FIX-5]), normalizado a minúsculas y sin "/" (OCI).
       - name: Validación pre-producción (run-preprod-tests.sh --images ghcr)
         env:
           DOCKER_MATRIX: ${{ needs.detect-changes.outputs.docker-matrix }}

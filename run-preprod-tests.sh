@@ -17,7 +17,7 @@
 # Envoltorios con el nombre y los argumentos de siempre: run-preprod-tests-stay.sh (--stay)
 # y run-hybrid-tests.sh (--target hybrid).
 #
-# Con --images ghcr, scripts/resolver-imagenes-ghcr.sh lee PR_TAG, CHANGED_SERVICES,
+# Con --images ghcr, scripts/resolver-imagenes-ghcr.sh lee PR_TAG, CHANGED_SERVICES, MANIFIESTO
 # y BASE_TAG del entorno.
 #
 # Requisitos: Java 21, Maven, Docker con Compose v2 (docker compose --wait), python3

@@ -7,7 +7,8 @@
 #   GHCR_BASE         ghcr.io/<owner>/<repo> en minúsculas (default: el de este repo)
 #   PR_TAG            pr-<N>; si está, cada servicio de CHANGED_SERVICES exige esa imagen (RM-02)
 #   CHANGED_SERVICES  servicios modificados por el PR, separados por coma o espacio
-#   BASE_TAG          tag de la rama base para los servicios no modificados
+#   MANIFIESTO        manifiesto de versión (RM-06): los demás servicios se fijan por digest
+#   BASE_TAG          tag de la rama base; solo se usa, con aviso, si no hay manifiesto
 #
 # Sale con 1 si algún servicio no se pudo resolver.
 # =============================================================================
@@ -37,10 +38,18 @@ for pom in */pom.xml; do
   if [[ -n "${PR_TAG:-}" && "$CHANGED" == *" $svc "* ]]; then
     # RM-02: un servicio modificado solo se valida con su propia imagen.
     resolver "$svc" "${GHCR_BASE}/${svc}:${PR_TAG}"
+  elif [[ -n "${MANIFIESTO:-}" ]]; then
+    if ref=$(python scripts/manifiesto_version.py leer "$MANIFIESTO" --servicio "$svc"); then
+      resolver "$svc" "$ref"
+    else
+      FAILED+=("$svc")
+    fi
   elif [[ -n "${BASE_TAG:-}" ]]; then
+    # Transición: hasta que la rama base tenga un manifiesto promovido (RM-06).
+    echo "::warning::Sin manifiesto de versión: ${svc} usa el tag mutable :${BASE_TAG}."
     resolver "$svc" "${GHCR_BASE}/${svc}:${BASE_TAG}"
   else
-    echo "::error::${svc}: no hay PR_TAG ni BASE_TAG para resolver su imagen."
+    echo "::error::${svc}: no hay PR_TAG, MANIFIESTO ni BASE_TAG para resolver su imagen."
     FAILED+=("$svc")
   fi
 done

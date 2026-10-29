@@ -108,7 +108,7 @@ El script es el **punto de entrada único** (RM-04 del [roadmap de preprod fiel]
 
 | Opción | Valores | Efecto |
 |---|---|---|
-| `--images` | `local` (default) · `ghcr` | `local` compila los JARs y construye las imágenes; `ghcr` las baja de GHCR con `scripts/resolver-imagenes-ghcr.sh`, que lee `PR_TAG`, `CHANGED_SERVICES` y `BASE_TAG` del entorno |
+| `--images` | `local` (default) · `ghcr` | `local` compila los JARs y construye las imágenes; `ghcr` las baja de GHCR con `scripts/resolver-imagenes-ghcr.sh`, que lee `PR_TAG`, `CHANGED_SERVICES`, `MANIFIESTO` (RM-06: servicios no modificados por digest) y `BASE_TAG` del entorno |
 | `--target` | `compose` (default) · `hybrid` | `hybrid` corre el stack híbrido con la nube (`scripts/preprod-hybrid.sh`); acepta los argumentos de `run-hybrid-tests.sh` |
 | `--skip-build` | — | Reusa los JARs de `*/target/` (`--images local`) |
 | `--test <Clase>` | — | Corre una clase puntual (`-Dit.test`) |
