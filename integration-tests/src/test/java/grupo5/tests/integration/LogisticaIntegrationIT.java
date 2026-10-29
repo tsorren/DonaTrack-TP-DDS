@@ -11,7 +11,6 @@ import grupo5.tests.utils.PollingUtils;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -21,8 +20,7 @@ class LogisticaIntegrationIT extends BaseIT {
 
   @BeforeEach
   void setUp() {
-    Assumptions.assumeTrue(
-        isServiceAvailable(LOGISTICA_URL), "logistica-service no disponible en " + LOGISTICA_URL);
+    requireServiceAvailable(LOGISTICA_URL, "logistica-service");
   }
 
   @Test

@@ -15,7 +15,6 @@ import io.restassured.http.ContentType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -38,9 +37,7 @@ class ContractIT extends BaseIT {
   @Test
   void testNotificacionesPersonasContract() {
     // donaciones-service sincroniza réplicas de personas mediante PUT /api/notificaciones/personas
-    Assumptions.assumeTrue(
-        isServiceAvailable(NOTIFICACIONES_URL),
-        "notificaciones-service no disponible en " + NOTIFICACIONES_URL);
+    requireServiceAvailable(NOTIFICACIONES_URL, "notificaciones-service");
 
     String specPath = resolveContractPath("openapi-notificaciones.yaml");
     OpenApiValidationFilter validationFilter = new OpenApiValidationFilter(specPath);
@@ -85,9 +82,7 @@ class ContractIT extends BaseIT {
   @Test
   void testIncentivosDonacionesContract() {
     // donaciones-service notifica eventos de donación mediante POST /api/incentivos/donaciones
-    Assumptions.assumeTrue(
-        isServiceAvailable(INCENTIVOS_URL),
-        "incentivos-service no disponible en " + INCENTIVOS_URL);
+    requireServiceAvailable(INCENTIVOS_URL, "incentivos-service");
 
     String specPath = resolveContractPath("openapi-incentivos.yaml");
     OpenApiValidationFilter validationFilter = new OpenApiValidationFilter(specPath);
@@ -137,8 +132,7 @@ class ContractIT extends BaseIT {
   @Test
   void testLogisticaEntregasContract() {
     // donaciones-service solicita planificación de entrega mediante POST /api/entregas
-    Assumptions.assumeTrue(
-        isServiceAvailable(LOGISTICA_URL), "logistica-service no disponible en " + LOGISTICA_URL);
+    requireServiceAvailable(LOGISTICA_URL, "logistica-service");
 
     String specPath = resolveContractPath("openapi-logistica.yaml");
     OpenApiValidationFilter validationFilter = new OpenApiValidationFilter(specPath);

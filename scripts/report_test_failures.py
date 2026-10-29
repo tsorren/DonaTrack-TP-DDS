@@ -9,14 +9,20 @@ estructurado tanto en consola como en GitHub Step Summary ($GITHUB_STEP_SUMMARY)
 
 Códigos de salida semánticos:
   0: Éxito (tests ejecutados > 0, 0 fallos, 0 errores).
-  1: Fallo funcional (fallos > 0, errores > 0, o 0 tests con --fail-on-zero-tests).
+  1: Fallo funcional (fallos > 0, errores > 0, 0 tests con --fail-on-zero-tests, o un
+     test salteado de un grupo de --required-groups).
   2: Fallo de infraestructura / tooling (excepciones no controladas).
+
+Con --changed-services, las fallas cuyos nombres solo mencionan servicios que el PR no
+modificó se marcan como "heredadas de la base" (SPEC-05, D5). La marca es informativa:
+no cambia el código de salida.
 """
 
 import sys
 import os
 import glob
 import argparse
+import re
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
@@ -50,6 +56,50 @@ class Colors:
 if not sys.stdout.isatty():
     Colors.disable()
 
+# Raíz del nombre de cada servicio tal como aparece en clases y métodos de test
+# (DonacionesApiClient, testLogisticaEntregasContract, ...).
+SERVICE_TOKENS = {
+    "donaciones-service": "donacion",
+    "notificaciones-service": "notificacion",
+    "incentivos-service": "incentivo",
+    "logistica-service": "logistica",
+}
+
+
+def group_of(classname):
+    """Grupo de la suite por paquete: grupo5.tests.<grupo>.Clase (coincide con su @Tag)."""
+    m = re.search(r"\.tests\.([a-z0-9]+)\.", classname)
+    return m.group(1) if m else None
+
+
+def services_of(case):
+    """Servicios mencionados en la clase o el método del caso."""
+    name = f"{case['class']}.{case['method']}".lower()
+    return {svc for svc, token in SERVICE_TOKENS.items() if token in name}
+
+
+def mark_inherited(failed_cases, changed_services):
+    """Marca como heredada la falla que solo menciona servicios que el PR no modificó.
+
+    Una falla sin servicio reconocible (por ejemplo, un E2E) nunca se marca: ante la duda,
+    es del PR.
+    """
+    changed = set(changed_services)
+    for fc in failed_cases:
+        services = services_of(fc)
+        fc["inherited"] = bool(services) and not (services & changed)
+        fc["services"] = sorted(services)
+
+
+def split_csv(value):
+    return [v.strip() for v in value.split(",") if v.strip()]
+
+
+def required_skipped(skipped_cases, required_groups):
+    """Casos salteados que pertenecen a un grupo requerido."""
+    groups = set(required_groups)
+    return [sc for sc in skipped_cases if group_of(sc["class"]) in groups]
+
 
 def parse_reports_in_directory(reports_dir):
     """Parsea todos los archivos TEST-*.xml dentro de un directorio dado."""
@@ -60,6 +110,7 @@ def parse_reports_in_directory(reports_dir):
     total_skipped = 0
     total_time = 0.0
     failed_cases = []
+    skipped_cases = []
 
     for xml_path in xml_files:
         try:
@@ -83,6 +134,17 @@ def parse_reports_in_directory(reports_dir):
 
                     failure = testcase.find("failure")
                     error = testcase.find("error")
+                    skipped = testcase.find("skipped")
+
+                    if skipped is not None:
+                        skipped_cases.append({
+                            "class": classname,
+                            "method": name,
+                            # Failsafe deja el motivo en el texto (primera línea de la traza)
+                            "message": skipped.attrib.get("message")
+                            or (skipped.text or "").strip().split("\n")[0]
+                            or "Sin motivo",
+                        })
 
                     if failure is not None or error is not None:
                         elem = failure if failure is not None else error
@@ -111,7 +173,8 @@ def parse_reports_in_directory(reports_dir):
         "errors": total_errors,
         "skipped": total_skipped,
         "time": total_time,
-        "failed_cases": failed_cases
+        "failed_cases": failed_cases,
+        "skipped_cases": skipped_cases
     }
 
 
@@ -124,7 +187,8 @@ def parse_all_directories(directories):
         "errors": 0,
         "skipped": 0,
         "time": 0.0,
-        "failed_cases": []
+        "failed_cases": [],
+        "skipped_cases": []
     }
 
     for d in directories:
@@ -139,6 +203,7 @@ def parse_all_directories(directories):
             consolidated["skipped"] += data["skipped"]
             consolidated["time"] += data["time"]
             consolidated["failed_cases"].extend(data["failed_cases"])
+            consolidated["skipped_cases"].extend(data["skipped_cases"])
 
     return consolidated
 
@@ -182,6 +247,8 @@ def print_terminal_report(data):
         full_name = f"{fc['class']}.{fc['method']}"
         source = f"[{fc.get('source_dir', '')}] " if fc.get('source_dir') else ""
         print(f"\n{Colors.BOLD}{Colors.RED}#{i} {source}[{fc['kind']}] {full_name}{Colors.RESET} ({fc['time']}s)")
+        if fc.get("inherited"):
+            print(f"   • {Colors.YELLOW}Heredada de la base:{Colors.RESET} el PR no modificó {', '.join(fc['services'])}")
         print(f"   • {Colors.BOLD}Tipo de Error:{Colors.RESET} {fc['type']}")
         print(f"   • {Colors.BOLD}Motivo:{Colors.RESET}        {fc['message']}")
 
@@ -233,6 +300,8 @@ def write_github_summary(data, workspace_root, output_dir=None):
             lines.append(f"* **Tipo:** `{fc['type']}`")
             lines.append(f"* **Mensaje:** {fc['message']}")
             lines.append(f"* **Duración:** `{fc['time']}s`")
+            if fc.get("inherited"):
+                lines.append(f"* **Heredada de la base:** el PR no modificó {', '.join(fc['services'])}")
             lines.append("")
             lines.append("```java")
             lines.append(fc["stacktrace"])
@@ -289,6 +358,18 @@ def main():
         help="Retornar código de salida 1 si no se ejecutó ninguna prueba (total == 0)."
     )
     parser.add_argument(
+        "--required-groups",
+        dest="required_groups",
+        default="",
+        help="Grupos (paquete grupo5.tests.<grupo>) en los que un test salteado hace fallar (ej. smoke,contract,integration,e2e)."
+    )
+    parser.add_argument(
+        "--changed-services",
+        dest="changed_services",
+        default=None,
+        help="Servicios modificados por el PR, separados por coma. Marca como heredadas las fallas de los demás."
+    )
+    parser.add_argument(
         "--output-dir",
         dest="output_dir",
         default=None,
@@ -312,6 +393,8 @@ def main():
 
     try:
         data = parse_all_directories(dirs_to_check)
+        if args.changed_services is not None:
+            mark_inherited(data["failed_cases"], split_csv(args.changed_services))
         print_terminal_report(data)
         write_github_summary(data, workspace_root, output_dir=args.output_dir)
 
@@ -326,11 +409,18 @@ def main():
                 return 1
             return 0
 
+        exit_code = 0
         if failures > 0 or errors > 0:
-            print(f"{Colors.RED}::error::Se detectaron {failures} fallos y {errors} errores en la suite de pruebas.{Colors.RESET}", file=sys.stderr)
-            return 1
+            inherited = sum(1 for fc in data["failed_cases"] if fc.get("inherited"))
+            detail = f" ({inherited} heredadas de la base)" if inherited else ""
+            print(f"{Colors.RED}::error::Se detectaron {failures} fallos y {errors} errores en la suite de pruebas{detail}.{Colors.RESET}", file=sys.stderr)
+            exit_code = 1
 
-        return 0
+        for sc in required_skipped(data["skipped_cases"], split_csv(args.required_groups)):
+            print(f"{Colors.RED}::error::Test salteado en un grupo requerido ({group_of(sc['class'])}): {sc['class']}.{sc['method']} — {sc['message']}{Colors.RESET}", file=sys.stderr)
+            exit_code = 1
+
+        return exit_code
 
     except Exception as ex:
         print(f"{Colors.RED}❌ Error catastrófico en report_test_failures: {ex}{Colors.RESET}", file=sys.stderr)

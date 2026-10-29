@@ -382,6 +382,7 @@ jobs:
             -Dsonar.host.url="$SONAR_URL" \
             -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml \
             -Dsonar.junit.reportPaths=**/target/surefire-reports \
+            -Dsonar.qualitygate.wait=true \
             -Dspotless.check.skip=true
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -621,7 +622,7 @@ jobs:
   # Job 9: Validación en Pre-Producción
   # ──────────────────────────────────────────────────────────────────────────
   preprod-validation:
-    needs: [build-and-test, docker-build]
+    needs: [detect-changes, build-and-test, docker-build]
     # [FIX-PREPROD-IF] Sin always(), GitHub Actions inyecta success() implícito
     # que exige que TODAS las dependencias directas sean 'success'. Si docker-build
     # fue 'skipped' (legítimamente, sin Dockerfiles modificados), success() → false
@@ -634,6 +635,8 @@ jobs:
     timeout-minutes: 20
     env:
       EXECUTION_ID: "run_${{ github.run_id }}_${{ github.run_attempt }}"
+      # RM-02: un servicio caído hace fallar el test en lugar de saltearlo (BaseIT).
+      PREPROD_STRICT: "true"
     permissions:
       contents: read
       packages: read
@@ -669,6 +672,8 @@ jobs:
       # PREREQUISITO: el pipeline de merge (push a main/ENTREGA_*) debe publicar
       # el tag correspondiente al nombre de la rama en GHCR al integrar cambios.
       - name: Obtener imágenes de GHCR y preparar servicios
+        env:
+          DOCKER_MATRIX: ${{ needs.detect-changes.outputs.docker-matrix }}
         run: |
           REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           GHCR_BASE="ghcr.io/${REPO_LOWER}"
@@ -688,6 +693,9 @@ jobs:
             fi
           done
 
+          # RM-02: un servicio modificado por el PR solo corre con su imagen pr-<N>.
+          CHANGED_SERVICES=" $(echo "$DOCKER_MATRIX" | jq -r '.include[].service' | tr '\n' ' ') "
+
           FAILED_SERVICES=()
           for svc in "${ALL_SERVICES[@]}"; do
             # [FIX-PREPROD-DOCKERFILE] Solo intentar resolver imagen para módulos
@@ -705,11 +713,16 @@ jobs:
 
             echo "📦 Resolviendo imagen para: $svc"
 
-            if docker pull "$PR_IMAGE" 2>/dev/null; then
-              echo "  ✅ Imagen PR descargada de GHCR: $PR_IMAGE"
-              docker tag "$PR_IMAGE" "$LOCAL_IMAGE"
+            if [[ "$CHANGED_SERVICES" == *" $svc "* ]]; then
+              if docker pull "$PR_IMAGE" 2>/dev/null; then
+                echo "  ✅ Imagen PR descargada de GHCR: $PR_IMAGE"
+                docker tag "$PR_IMAGE" "$LOCAL_IMAGE"
+              else
+                echo "::error::$svc fue modificado por el PR y no tiene imagen $PR_IMAGE: no se valida con la imagen de la base."
+                FAILED_SERVICES+=("$svc")
+              fi
             elif docker pull "$BASE_IMAGE" 2>/dev/null; then
-              echo "  ⚠️  Imagen PR no encontrada. Usando imagen base estable: $BASE_IMAGE"
+              echo "  ℹ️  Servicio no modificado: usando imagen base estable: $BASE_IMAGE"
               docker tag "$BASE_IMAGE" "$LOCAL_IMAGE"
             else
               echo "  ❌ No se encontró imagen ni en PR ni en rama base para: $svc"
@@ -806,8 +819,14 @@ jobs:
 
       - name: Reportar Fallos de Pruebas Automatizadas
         if: always()
+        env:
+          DOCKER_MATRIX: ${{ needs.detect-changes.outputs.docker-matrix }}
         run: |
-          python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports --fail-on-zero-tests
+          # RM-02: un salteado en un grupo requerido falla. D5: las fallas de servicios
+          # que el PR no modificó se marcan como heredadas de la base.
+          CHANGED=$(echo "$DOCKER_MATRIX" | jq -r '[.include[].service] | join(",")')
+          python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports --fail-on-zero-tests \
+            --required-groups smoke,contract,integration,e2e --changed-services "$CHANGED"
 
       - name: Subir Reportes de Pruebas (Failsafe & Surefire)
         if: always()
@@ -858,6 +877,10 @@ jobs:
       #   "any-docker"    → requerido si any-docker-service == true
       #   "never"         → siempre opcional (skipped aceptado sin condiciones)
       - name: Evaluar resultado consolidado del pipeline
+        env:
+          # RM-02: con SONAR_TOKEN configurado, Sonar deja de ser opcional.
+          SONAR_CONFIGURED: ${{ secrets.SONAR_TOKEN != '' }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
           echo "══════════════════════════════════════════"
           echo "       QUALITY GATE — RESULTADOS"
@@ -874,6 +897,8 @@ jobs:
           #   $3 = "always"      → siempre requerido
           #        "any-service"  → requerido si hay servicios modificados
           #        "any-docker"   → requerido si hay servicios con Dockerfile modificados
+          #        "sonar"        → requerido si hay servicios modificados, existe
+          #                         SONAR_TOKEN y la base es main o ENTREGA_*
           #        "never"        → siempre opcional
           check_job() {
             local name="$1"
@@ -886,6 +911,7 @@ jobs:
               always)      is_required=true ;;
               any-service) [[ "$any_service" == "true" ]] && is_required=true ;;
               any-docker)  [[ "$any_docker"  == "true" ]] && is_required=true ;;
+              sonar)       [[ "$any_service" == "true" && "$SONAR_CONFIGURED" == "true" && ( "$BASE_REF" == "main" || "$BASE_REF" == ENTREGA_* ) ]] && is_required=true ;;
               never)       is_required=false ;;
             esac
 
@@ -918,8 +944,10 @@ jobs:
           # Jobs requeridos solo si hay servicios con Dockerfile modificados
           check_job "docker-build"        "${{ needs.docker-build.result }}"        "any-docker"
 
+          # Requerido solo si existe SONAR_TOKEN (RM-02)
+          check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"      "sonar"
+
           # Jobs opcionales (skipped siempre aceptado)
-          check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"      "never"
           if [[ "$enable_diagrams" == "true" ]]; then
             check_job "generate-diagrams" "${{ needs.generate-diagrams.result }}"   "any-service"
           else
