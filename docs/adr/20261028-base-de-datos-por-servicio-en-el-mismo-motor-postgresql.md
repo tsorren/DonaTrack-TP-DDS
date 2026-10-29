@@ -9,7 +9,7 @@
 
 ## Contexto y Problema
 
-`[DOCUMENTED]` El ADR [arquitectura de persistencia multi-schema](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) (`proposed`) decidió **un motor PostgreSQL con una base `donatrack` y un schema por servicio**, cada uno con su rol y `REVOKE` cruzados.
+`[DOCUMENTED]` El ADR [arquitectura de persistencia multi-schema](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) (`proposed` al escribir este ADR; `superseded` desde el 2026-10-29) decidió **un motor PostgreSQL con una base `donatrack` y un schema por servicio**, cada uno con su rol y `REVOKE` cruzados.
 
 `[OBSERVED]` Así está hoy: `persistencia/init-db/01-init-schemas-roles.sql` crea los schemas y los roles, y los servicios se conectan a `jdbc:postgresql://postgres:5432/donatrack?currentSchema=<servicio>` (`docker-compose.preprod.yml`).
 
@@ -27,7 +27,7 @@ Problema: ¿cómo se aísla la persistencia relacional de cada servicio al nivel
 
 ## Relaciones Arquitectónicas
 
-1. **Propone reemplazar:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) Reemplazado (`superseded`) al aceptar este ADR, el 2026-10-29. Hasta implementar RM-19 (DTI-26), el código sigue al de 2026-09-02.
+1. **Reemplaza:** [20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql](./20260902-arquitectura-de-persistencia-multi-schema-y-aislamiento-de-roles-en-postgresql.md) Reemplazado (`superseded`) al aceptar este ADR, el 2026-10-29. Hasta implementar RM-19 (DTI-26), el código sigue al de 2026-09-02.
 2. **Conserva** de ese ADR: un rol por servicio con mínimo privilegio, el script de init idempotente y el schema `<servicio>` dentro de cada base.
 3. **Se aplica igual a objetos:** el equivalente en MinIO (una instancia por servicio) queda como RM-20 del roadmap, después de E7. No pide ADR propio si este se aprueba: aplica el mismo criterio a otro almacén.
 

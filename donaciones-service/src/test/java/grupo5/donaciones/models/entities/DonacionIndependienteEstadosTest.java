@@ -157,6 +157,17 @@ class DonacionIndependienteEstadosTest {
   }
 
   @Test
+  void cambiarEstado_aEntregadaConPatenteDesdeEnDeposito_sigueSiendoTransicionInvalida() {
+    var solicitud =
+        new SolicitudCambioEstadoDonacionIndependiente(
+            TipoEstadoDonacion.ENTREGADA, null, null, null, "AB123CD", null, ACTOR);
+
+    var ex = assertThrows(BusinessStateException.class, () -> donacion.cambiarEstado(solicitud));
+
+    assertEquals(ErrorCatalog.ESTADO_DONACION_TRANSICION_INVALIDA, ex.getError());
+  }
+
+  @Test
   void cambiarEstado_aEntregadaSinPatente_lanzaValidationException() {
     donacion.asignar(ACTOR, receptor);
     donacion.planificarRuta(ACTOR);
