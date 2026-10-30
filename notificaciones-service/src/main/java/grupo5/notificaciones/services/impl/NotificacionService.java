@@ -239,9 +239,13 @@ public class NotificacionService {
       return List.of();
     }
     if (leida == null) {
-      return repository.findByPersonaId(personaId).stream().map(this::toDTO).toList();
+      return repository.findByPersonaId(personaId).stream()
+          .map(NotificacionService::toDTO)
+          .toList();
     }
-    return repository.findByPersonaIdAndLeida(personaId, leida).stream().map(this::toDTO).toList();
+    return repository.findByPersonaIdAndLeida(personaId, leida).stream()
+        .map(NotificacionService::toDTO)
+        .toList();
   }
 
   public List<NotificacionDTO> obtenerPorPersona(UUID personaId) {
