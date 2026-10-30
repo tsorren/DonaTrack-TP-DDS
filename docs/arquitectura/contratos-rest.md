@@ -161,8 +161,11 @@ Todos los microservicios exponen su documentación interactiva Swagger UI y su d
 | `POST` | `/notificaciones` | **[Legado, DTI-13]** Alias de `POST /api/notificaciones/eventos`; hoy solo lo invoca `incentivos-service` por Feign (`NotificacionesFeignClient`) y se dará de baja al completar la migración a AMQP | [`evento-notificable.schema.json`](./contratos/schemas/evento-notificable.schema.json) | `202`, `400` |
 | `GET` | `/api/notificaciones` | **[Canónico]** Consulta y filtrado de notificaciones por `personaId` (UUID) y/o `estado` (Enum `EstadoNotificacion`) | — | `200`, `400` |
 | `GET` | `/api/notificaciones/{id}` | **[Canónico]** Consulta de notificación por su identificador unívoco | — | `200`, `404` |
-| `GET` | `/api/notificaciones/persona/{personaId}` | **[Canónico]** Consulta de historial de notificaciones despachadas a una persona | — | `200` |
-| `GET` | `/notificaciones/persona/{personaId}` | **[Secundario QA]** Alias secundario de consulta de historial por persona (preservado para compatibilidad con `NotificacionesApiClient` y suites E2E) | — | `200` |
+| `GET` | `/api/notificaciones/persona/{personaId}` | **[Canónico]** Consulta de historial de notificaciones despachadas a una persona (filtro opcional `?leida=true|false`) | — | `200` |
+| `GET` | `/notificaciones/persona/{personaId}` | **[Secundario QA]** Alias secundario de consulta de historial por persona (filtro opcional `?leida=true|false`) | — | `200` |
+| `GET` | `/api/notificaciones/persona/{personaId}/no-leidas/conteo` | **[Canónico]** Conteo de notificaciones no leídas para badge de UI | — | `200` |
+| `PATCH` | `/api/notificaciones/{id}/leida` | **[Canónico]** Marcar notificación como leída o no leída (`?leida=true|false`, default: `true`) | — | `200`, `404` |
+| `PATCH` | `/api/notificaciones/persona/{personaId}/marcar-todas-leidas` | **[Canónico]** Marcar todas las notificaciones de una persona como leídas masivamente | — | `204` |
 | `PUT` | `/api/notificaciones/personas` | Sincronización idempotente de réplica de persona y contactos (reconciliación diferencial sin Key Churn) | [`persona-replica.schema.json`](./contratos/schemas/persona-replica.schema.json) | `200`, `400` |
 | `GET` | `/api/notificaciones/personas/{id}` | Consulta de réplica de persona | — | `200`, `404` |
 | `DELETE` | `/api/notificaciones/personas/{id}` | Baja y desasociación de datos de contacto (Crypto-Shredding) | — | `204`, `404` |
