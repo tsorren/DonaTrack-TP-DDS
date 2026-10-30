@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!--/* Muestra del armazón de las pantallas privadas (/estilos/armazon): el tablero del donante de
+       /estilos dentro de layout-privado. Datos de ejemplo. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Muestra del área privada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="solo-lectores">Inicio</h1>
+  <section th:replace="~{paginas/estilos :: section.destacado}"></section>
+  <div th:replace="~{paginas/estilos :: div.cifras}"></div>
+  <div th:replace="~{paginas/estilos :: div.muestra-grilla}"></div>
+  <section th:replace="~{paginas/estilos :: section[aria-labelledby='notas-titulo']}"></section>
+</th:block>
+</body>
+</html>
