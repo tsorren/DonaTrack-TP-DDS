@@ -18,7 +18,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 /** Con el perfil mongo la aplicación completa arranca y queda conectada a MongoDB. */
 @DisabledIfDockerUnavailable
 @ActiveProfiles("mongo")
-@SpringBootTest(classes = LogisticaServiceApplication.class)
+@SpringBootTest(
+    classes = LogisticaServiceApplication.class,
+    properties = "logistica.token-vuelta=token-sintetico")
 class ContextoMongoIT {
 
   @DynamicPropertySource

@@ -83,7 +83,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @SpringJUnitConfig(
     classes = PlanificacionTransaccionesMongoTest.Contexto.class,
     initializers = ConfigDataApplicationContextInitializer.class)
-@TestPropertySource(properties = "logistica.tracking.base-url=http://localhost/seguimiento")
+@TestPropertySource(
+    properties = {
+      "logistica.tracking.base-url=http://localhost/seguimiento",
+      "logistica.token-vuelta=token-sintetico"
+    })
 class PlanificacionTransaccionesMongoTest {
 
   private static final String BASE = "transacciones";

@@ -1,7 +1,8 @@
 package grupo5.logistica.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -17,6 +18,9 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -83,17 +87,15 @@ class LogisticaEventPublisherTest {
     }
   }
 
-  @Test
-  void sinTokenConfigurado_seMandaSoloElIdYNuncaUnTokenVacio() {
-    LogisticaEventPublisher publisher =
-        new LogisticaEventPublisher(rabbitTemplate, "donatrack", "");
+  @ParameterizedTest
+  @NullAndEmptySource
+  @ValueSource(strings = " ")
+  void sinTokenConfigurado_noArrancaYNombraLaVariable(String token) {
+    IllegalStateException error =
+        assertThrows(
+            IllegalStateException.class,
+            () -> new LogisticaEventPublisher(rabbitTemplate, "donatrack", token));
 
-    publisher.publicarRutaAsignada(
-        new EventoRutaAsignada(UUID.randomUUID(), UUID.randomUUID(), LocalDateTime.now()));
-
-    MessageProperties propiedades =
-        propiedadesQueSeAgregan(RabbitMQConfig.ROUTING_KEY_RUTA_ASIGNADA);
-    assertEquals("donatrack", propiedades.getHeader(RabbitMQConfig.HEADER_PROVEEDOR_ID));
-    assertFalse(propiedades.getHeaders().containsKey(RabbitMQConfig.HEADER_PROVEEDOR_TOKEN));
+    assertTrue(error.getMessage().contains("LOGISTICA_TOKEN_VUELTA"));
   }
 }
