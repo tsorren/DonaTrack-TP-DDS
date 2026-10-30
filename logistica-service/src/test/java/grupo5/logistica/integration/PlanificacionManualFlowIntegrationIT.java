@@ -35,7 +35,8 @@ import org.springframework.web.context.WebApplicationContext;
     classes = LogisticaServiceApplication.class,
     properties = {
       "logistica.planificacion.manual-enabled=true",
-      "logistica.planificacion.cron.expression=0 0 0 1 1 *"
+      "logistica.planificacion.cron.expression=0 0 0 1 1 *",
+      "logistica.token-vuelta=token-sintetico"
     })
 class PlanificacionManualFlowIntegrationIT {
 
