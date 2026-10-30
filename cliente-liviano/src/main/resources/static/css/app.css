@@ -36,7 +36,7 @@ h1 {
   white-space: nowrap;
 }
 
-/* Botones: píldoras del prototipo. Primario verde, secundario petróleo y fantasma (vidrio) sobre
+/* Botones: píldoras del prototipo. Primario verde, secundario grafito y fantasma (vidrio) sobre
    fondos oscuros. */
 :is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]) {
   display: inline-flex;
@@ -265,6 +265,161 @@ h1 {
   background-color: var(--color-marca-brillante);
   border-color: var(--color-marca-brillante);
   box-shadow: var(--sombra-nodo);
+}
+
+.navegacion :is(.icono, .navegacion-corto) {
+  display: none;
+}
+
+/* Armazón de las pantallas privadas (layout-privado, bitácora 2026-10-30). Arriba, campana y
+   cuenta; en el celular, la navegación es una barra fija abajo con ícono y nombre corto. */
+.armazon .encabezado {
+  flex-wrap: nowrap;
+  gap: var(--espacio-2);
+}
+
+.encabezado-fin {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin-inline-start: auto;
+}
+
+.boton-icono {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  background-color: var(--color-fondo);
+  border-radius: 50%;
+  box-shadow: var(--sombra-tarjeta);
+  color: var(--color-titulo);
+}
+
+.cuenta {
+  position: relative;
+  margin: 0;
+}
+
+.cuenta > summary {
+  display: grid;
+  place-items: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  margin: 0;
+  background-image: var(--color-degradado-impulso);
+  border-radius: 50%;
+  box-shadow: var(--sombra-tarjeta);
+  color: var(--color-texto-sobre-accion);
+  font-weight: 700;
+  line-height: 1;
+  list-style: none;
+}
+
+.cuenta[open] > summary {
+  margin: 0;
+}
+
+.cuenta > summary::after,
+.cuenta > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Cerrado, el menú no ocupa lugar: si solo queda oculto, el navegador igual lo mide. */
+.cuenta:not([open]) > .cuenta-menu {
+  display: none;
+}
+
+.cuenta-menu {
+  position: absolute;
+  top: calc(100% + var(--espacio-2));
+  right: 0;
+  display: grid;
+  min-width: 13.75rem;
+  padding: var(--espacio-3);
+  background-color: var(--color-fondo);
+  border-radius: var(--radio-control);
+  box-shadow: var(--sombra-elevada);
+}
+
+.cuenta-menu p {
+  display: grid;
+  margin: 0 0 var(--espacio-2);
+}
+
+.cuenta-menu a {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-titulo);
+}
+
+.armazon #contenido {
+  display: grid;
+  gap: 1.375rem;
+  align-content: start;
+  min-width: 0;
+  padding: 1.625rem var(--espacio-4) 7rem;
+}
+
+.armazon .navegacion {
+  position: fixed;
+  right: var(--espacio-2);
+  bottom: var(--espacio-2);
+  left: var(--espacio-2);
+  z-index: var(--capa-avisos);
+  max-width: none;
+  padding: var(--espacio-1);
+  border-radius: var(--radio-panel);
+  box-shadow: var(--sombra-flotante);
+}
+
+.armazon .navegacion::before,
+.armazon .navegacion ul::before,
+.armazon .navegacion-nodo {
+  display: none;
+}
+
+/* El nombre completo queda para los lectores de pantalla; a la vista, el corto. */
+.armazon .navegacion-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.armazon .navegacion ul {
+  display: grid;
+  grid-auto-columns: minmax(min-content, 1fr);
+  grid-auto-flow: column;
+  gap: 0;
+}
+
+.armazon .navegacion a {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--espacio-1);
+  padding: 0.375rem 0.125rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.armazon .navegacion :is(.icono, .navegacion-corto) {
+  display: block;
+}
+
+.armazon .navegacion a[aria-current="page"] .icono {
+  color: var(--color-marca-brillante);
+  filter: var(--sombra-icono);
+}
+
+/* Los avisos breves aparecen encima de la barra inferior, sin taparla. */
+.armazon .avisos {
+  bottom: 6rem;
 }
 
 /* Panel blanco: la tarjeta base del área privada. */
@@ -1217,11 +1372,33 @@ dialog > article > footer button {
   object-fit: cover;
 }
 
-.tarjeta > .insignia {
-  margin: 1.375rem 1.375rem 0;
+.tarjeta-portada {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 330 / 244;
+  overflow: hidden;
+  isolation: isolate;
+  background-image: var(--color-degradado-destacado);
+  color: var(--color-marca-brillante);
 }
 
-.tarjeta:has(.tarjeta-foto) > .insignia {
+.tarjeta-portada::before {
+  content: "";
+  position: absolute;
+  inset: -120px -60px auto auto;
+  z-index: -1;
+  width: 1281px;
+  height: 1295px;
+  background: url("../img/topografico.svg") no-repeat;
+  opacity: 0.9;
+}
+
+.tarjeta-portada .icono {
+  filter: var(--sombra-icono);
+}
+
+.tarjeta > .insignia {
   position: absolute;
   top: var(--espacio-4);
   right: var(--espacio-4);
@@ -1594,6 +1771,68 @@ dialog > article > footer button {
 @media (min-width: 53.75em) {
   .encabezado {
     padding-inline: var(--espacio-5);
+  }
+
+  .armazon-cuerpo {
+    display: grid;
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+  }
+
+  .armazon #contenido {
+    padding: 1.625rem var(--espacio-6) var(--espacio-7);
+  }
+
+  .armazon .avisos {
+    bottom: var(--espacio-4);
+  }
+
+  .armazon .navegacion {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    padding: var(--espacio-4);
+    overflow: clip;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .armazon .navegacion::before,
+  .armazon .navegacion ul::before,
+  .armazon .navegacion-nodo {
+    display: block;
+  }
+
+  .armazon .navegacion-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .armazon .navegacion ul {
+    position: sticky;
+    top: calc(var(--medida-barra-superior) + var(--espacio-4));
+    display: flex;
+    gap: var(--espacio-1);
+  }
+
+  .armazon .navegacion a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.875rem;
+    padding: 0.625rem var(--espacio-3);
+    font-size: 0.90625rem;
+    font-weight: 400;
+  }
+
+  .armazon .navegacion a[aria-current="page"] {
+    font-weight: 700;
+  }
+
+  .armazon .navegacion :is(.icono, .navegacion-corto) {
+    display: none;
   }
 
   .destacado {

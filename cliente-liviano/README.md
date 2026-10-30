@@ -1,7 +1,8 @@
 # cliente-liviano — Interfaz web de DonaTrack
 
-> **Estado:** en construcción (Entrega 6). Hay layout, componentes base y catálogo `/estilos`; la
-> identidad visual es provisoria y todavía no hay pantallas de negocio.
+> **Estado:** en construcción (Entrega 6). Hay layouts público y privado, componentes base, el
+> catálogo `/estilos` y la muestra del área privada `/estilos/armazon`; la identidad visual está
+> definida y todavía no hay pantallas de negocio.
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---

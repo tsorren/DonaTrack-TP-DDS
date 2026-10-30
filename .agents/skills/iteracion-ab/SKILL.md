@@ -38,6 +38,8 @@ description: >-
    - Se ven con `?variante=<tema>-a` o `?variante=<tema>-b`.
    - En el nombre del archivo, el `:` del tema se escribe `-` (`layout:entregas` →
      `layout-entregas-a.css`): solo letras minúsculas, números y guiones.
+   - Lo que comparten varias variantes (un marco, una lista) va en `variantes/comun/`, que no
+     cuenta como variante: las plantillas lo usan como fragmento y el CSS con `@import`.
 4. **Comprobar y capturar:**
 
    ```bash
@@ -48,7 +50,9 @@ description: >-
    `target/capturas/comparacion.html`: un visor para 1920 × 1080 con índice de secciones, dos
    variantes lado a lado, cambio de ancho y desplazamiento a la par. El primer comentario del CSS
    de cada variante es su descripción en el visor. Con más de dos opciones, se nombran
-   `<tema>-a`, `-b`, `-c`… y el visor las recorre con las flechas.
+   `<tema>-a`, `-b`, `-c`… y el visor las recorre con las flechas. Con varios temas a la vez
+   (decisiones en tanda), se pasan todas en una sola corrida y un enlace
+   `comparacion.html#izq=<variante>&der=<variante>&ancho=<px>` abre cada comparación.
 5. **Autocrítica.** Mirar las capturas con las preguntas de la dirección de arte, completar la
    tabla de criterios y elegir una recomendación.
 6. **Mostrar al usuario:**

@@ -42,15 +42,18 @@ flowchart LR
     IE --> PE[Mi perfil]
   end
   subgraph Admin
-    IA[Inicio] --> RDo[Registrar donantes]
-    IA --> REn[Registrar entidades]
-    IA --> AE[Aprobar entidades]
-    IA --> RDn[Registrar donaciones]
-    IA --> DO[Donaciones] --> DV[Detalle y vencimiento]
+    IA[Inicio] --> DOa[Donantes]
+    DOa --> RDo[Registrar donante]
+    DOa --> CSV[Importar CSV, con su resultado por fila]
+    IA --> ENa[Entidades]
+    ENa --> REn[Registrar entidad]
+    ENa --> AE[Aprobar entidades]
+    IA --> DO[Donaciones]
+    DO --> RDn[Registrar donación]
+    DO --> DV[Detalle y vencimiento]
     IA --> AS[Asignaciones] --> PR[Propuesta]
     IA --> CA[Camiones]
     IA --> RK[Ranking]
-    IA --> CSV[Importar CSV] --> RES[Resultado por fila]
   end
 ```
 
@@ -82,18 +85,21 @@ flowchart LR
 | Seguir entregas → **Confirmar recepción** | Entidad | 2 → 3 | RF-14, **RF-12** | pág. 28 | E1 · **flujo piloto** |
 | Notificaciones | Entidad | 2 | RF-13 | — | E1 |
 | Inicio del admin | Admin | 1 | — | pág. 13 | E1 |
-| Registrar donantes / entidades / donaciones | Admin | 2 | RF-15 | pág. 13 (menú) | E1 |
-| Aprobar entidades | Admin | 2 | RF-21 | — | E6 |
+| Donantes → registrar donante | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
+| Entidades → registrar entidad | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
+| Entidades → aprobar entidades | Admin | 2 → 3 | RF-21 | — | E6 |
+| Donaciones → registrar donación | Admin | 2 → 3 | RF-15 | pág. 13 (menú) | E1 |
 | Donaciones → detalle y vencimiento | Admin | 2 → 3 | RF-16 | pág. 13 (menú) | E1 |
 | Asignaciones → propuesta | Admin | 2 → 3 | RF-17 | — | E6 |
 | Camiones | Admin | 2 | RF-18 | pág. 13 (menú) | E1 |
 | Ranking | Admin | 2 | RF-19 | — | E6 |
-| Importar CSV → resultado | Admin | 2 → 3 | RF-20 | — | E6 |
+| Donantes → importar CSV (resultado en la misma pantalla) | Admin | 2 → 3 | RF-20 | — | E6 |
 
 ## Observaciones para el diseño
 
-- El admin tiene 9 secciones de nivel 2. Una fila de píldoras con 9 opciones es mucha carga:
-  conviene agruparlas (por ejemplo, Altas · Donaciones · Logística · Reportes). Se decide con un
-  A/B del tema `layout:navegacion-admin` ([catálogo de temas](temas-ab.md)).
+- El admin tenía 9 secciones de nivel 2. Quedan 6 por tema, como el prototipo: registrar,
+  importar y aprobar son acciones dentro de cada lista. El resultado de importar el CSV se muestra
+  en la misma pantalla, para no pasar de 3 niveles
+  ([bitácora, 2026-10-30](bitacora.md)).
 - "Mapa de entregadas" y "Donaciones realizadas" comparten el mapa en los bocetos. Se decide al
   diseñar ese flujo si van juntas o separadas.

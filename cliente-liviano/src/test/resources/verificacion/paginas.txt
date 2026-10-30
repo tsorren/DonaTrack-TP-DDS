@@ -1,3 +1,4 @@
 # Páginas que comprueba VerificacionVisualTest (mvn test -pl cliente-liviano -Pvisual).
 # Una ruta por línea, con su ?escenario= si hace falta. Las líneas con # se ignoran.
 /estilos
+/estilos/armazon

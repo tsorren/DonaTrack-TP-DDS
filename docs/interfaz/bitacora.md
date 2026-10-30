@@ -21,6 +21,127 @@ entregable para la cátedra. Las comparaciones A/B agregan sus capturas en `evid
 
 ## Decisiones
 
+### 2026-10-30 · proceso · Decisiones en tanda: 7 rondas preparadas de una vez
+
+- **Decisión:** las comparaciones se preparan juntas y el usuario las recorre seguidas, sin
+  esperar al agente entre una y otra: una sola corrida de la comprobación visual con todas las
+  opciones, una página de resumen con la recomendada de cada ronda y las preguntas en tres
+  tandas. Las piezas que comparten varias opciones van en una carpeta `variantes/comun/`, que no
+  cuenta como variante y se borra con ellas. El visor abre una comparación desde un enlace
+  (`#izq=…&der=…&ancho=…`).
+- **Alternativas:** una ronda por vez, con el agente en el medio.
+- **Por qué:** pedido del usuario: decidir rápido, sin tiempos muertos.
+- **Costo:** si una decisión cambia otra (la paleta y los estados), las opciones se arman sobre
+  las dos variantes posibles.
+- **Quién decidió:** usuario.
+- **Evidencia:** la de cada ronda, en su entrada.
+
+### 2026-10-30 · paleta · Grafito cálido y menta
+
+- **Decisión:** la paleta Grafito cálido y menta: grafito y grises cálidos en lugar del verde
+  petróleo del prototipo, con la misma menta, el turquesa y los rojos. Cierra la entrada
+  "Pendiente entre la del prototipo y Grafito cálido", más abajo.
+- **Alternativas:** la paleta del prototipo tal cual (verde petróleo, menta y turquesa), que era
+  la recomendada por ser fiel al prototipo.
+- **Por qué:** al usuario le gustó por sobria y cálida; la menta mantiene la marca y lo vivo.
+- **Costo:** se aparta del prototipo en el color base: hay que contárselo a la diseñadora. El
+  "verde petróleo" de los textos de la bitácora anterior ahora es grafito.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/paleta/` (de la ronda anterior) y las capturas de los estados sobre
+  grafito en `evidencia/componente-insignia/`.
+
+### 2026-10-30 · componente:insignia · "En camino" pasa a azul
+
+- **Decisión:** el estado "en camino" (y los avisos informativos) usan un azul (#2457a3 sobre
+  #eaf1fc) en lugar del azul petróleo. Pendiente, entregada y con problema quedan igual. Ajusta
+  la entrada "Estados en tinte, un color por estado", más abajo.
+- **Alternativas:** dejar los cuatro estados como estaban.
+- **Por qué:** comprobado por el agente: con la paleta del prototipo, el azul petróleo quedaba a
+  12° de tono del verde de la marca y se confundía. El azul se distingue con las dos paletas y
+  cumple el contraste (6,2:1).
+- **Costo:** ninguno.
+- **Quién decidió:** usuario, con la recomendación del agente.
+- **Evidencia:** `evidencia/componente-insignia/estados-*` (A y B sobre las dos paletas).
+
+### 2026-10-30 · layout:armazon-privado · Barra lateral fija, como el prototipo
+
+- **Decisión:** las pantallas privadas usan `layout-privado.html`: en escritorio, la barra
+  lateral con la ruta punteada, de todo el alto y con la lista fija al desplazarse; arriba, la
+  marca, la campana de notificaciones y el menú de la cuenta (Mi perfil y Salir). La muestra está
+  en `/estilos/armazon`.
+- **Alternativas:** una barra superior con las secciones en una franja; un riel angosto con ícono
+  y nombre corto.
+- **Por qué:** es el diseño del prototipo, mantiene el motivo de la ruta y deja las secciones
+  siempre a la vista.
+- **Costo:** la barra lateral le quita 248 px al contenido en escritorio. Las pantallas de
+  notificaciones y perfil, y la salida, llegan con sus flujos y con el IdP. El prototipo podía
+  plegar la barra con JavaScript: no se trajo.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/layout-armazon-privado/`.
+
+### 2026-10-30 · layout:armazon-privado · Sin buscador arriba, por ahora
+
+- **Decisión:** la barra superior del área privada no lleva el buscador del prototipo.
+- **Alternativas:** el buscador a la derecha, como el prototipo.
+- **Por qué:** ningún requisito dice qué busca; las listas que lo necesitan (por ejemplo, las
+  entidades, RF-06) tienen su propio buscador. Si aparece la necesidad, se suma.
+- **Costo:** se aparta del prototipo.
+- **Quién decidió:** usuario, con la recomendación del agente.
+- **Evidencia:** las capturas de `evidencia/layout-armazon-privado/` muestran el buscador
+  descartado.
+
+### 2026-10-30 · layout:navegacion-celular · Barra inferior, como el prototipo
+
+- **Decisión:** en el celular, las secciones van en una barra fija abajo, con ícono y nombre
+  corto (por ejemplo, "Donaciones" por "Mis donaciones"). Los lectores de pantalla leen el nombre
+  completo. Es el mismo fragmento `navegacion`, acomodado por `layout-privado`.
+- **Alternativas:** un botón "Menú" arriba que abre la lista completa.
+- **Por qué:** las secciones quedan a un toque y al alcance del pulgar; la entidad usa el
+  celular con una mano.
+- **Costo:** entran 5 secciones como mucho. El admin, con más secciones, usa la versión de
+  escritorio (ver la decisión siguiente).
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/layout-navegacion-celular/`.
+
+### 2026-10-30 · layout:navegacion-admin · 6 secciones por tema, como el prototipo
+
+- **Decisión:** el menú del admin tiene Inicio y 6 secciones: Donantes, Entidades, Donaciones,
+  Asignaciones, Camiones y Ranking. Registrar donantes, importarlos por CSV, registrar y aprobar
+  entidades y registrar donaciones pasan a ser acciones dentro de cada lista. Actualizado en el
+  [mapa del sitio](mapa-del-sitio.md).
+- **Alternativas:** las 9 secciones del mapa en una lista; las 9 en 4 grupos con título (Altas,
+  Donaciones, Logística y Reportes).
+- **Por qué:** 7 opciones se leen de un vistazo y cada lista junta lo que se hace con ese tema.
+- **Costo:** registrar e importar quedan a un clic más. Importar donantes pasa al nivel 3: su
+  resultado por fila se muestra en esa misma pantalla, para no pasar de 3 niveles (se confirma
+  al diseñar el flujo).
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/layout-navegacion-admin/`.
+
+### 2026-10-30 · componente:tarjeta · Sin foto, portada con el ícono de lo donado
+
+- **Decisión:** cuando una entrega todavía no tiene foto, la tarjeta muestra una portada del
+  mismo tamaño con el ícono de lo donado (alimentos, ropa, útiles) sobre el fondo oscuro de la
+  marca, con las curvas. El estado flota arriba, como en las tarjetas con foto. Los íconos son
+  los del prototipo.
+- **Alternativas:** una portada con la ruta punteada y el avance; solo texto, como estaba.
+- **Por qué:** todas las tarjetas miden lo mismo y cada una se reconoce de un vistazo. La ruta
+  repetía lo que dice el estado.
+- **Costo:** cada entrega necesita su categoría para elegir el ícono. La foto del prototipo sigue
+  sin licencia clara: el ejemplo usa un dibujo propio.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/componente-tarjeta/`.
+
+### 2026-10-30 · modo-oscuro · Solo modo claro
+
+- **Decisión:** el sitio tiene solo modo claro (`data-theme="light"` en los dos layouts).
+- **Alternativas:** también un modo oscuro que siga al del celular o la compu.
+- **Por qué:** el prototipo no lo tiene y duplicaría la revisión de cada pantalla (contraste y
+  capturas) en una entrega con fecha.
+- **Costo:** quien usa el modo oscuro ve el sitio claro.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/modo-oscuro/`.
+
 ### 2026-10-30 · proceso · Las comparaciones se ven en un visor, no en una galería
 
 - **Decisión:** `target/capturas/index.html` y `comparacion.html` son un visor pensado para

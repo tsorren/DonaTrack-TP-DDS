@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<!--/* Estructura común. Uso: <html th:replace="~{layout :: pagina(~{::title}, ~{::contenido})}">.
-       data-theme="light" fija el modo claro hasta que la identidad defina el oscuro. */-->
+<!--/* Estructura común de las pantallas públicas. Uso:
+       <html th:replace="~{layout :: pagina(~{::title}, ~{::contenido})}">. Las privadas usan
+       layout-privado, que toma de acá la cabecera y la marca. data-theme="light": solo modo claro
+       (bitácora, 2026-10-30). */-->
 <html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org"
       th:fragment="pagina(titulo, contenido)">
-<head>
+<head th:fragment="cabeza(titulo)">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title th:replace="${titulo}">DonaTrack</title>
@@ -19,14 +21,12 @@
 <body>
   <a class="saltar" href="#contenido">Saltar al contenido</a>
   <header class="encabezado">
-    <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir al inicio">
+    <a th:fragment="marca" class="marca" href="/" th:href="@{/}"
+       aria-label="DonaTrack, ir al inicio">
       <span class="marca-simbolo"><img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt=""
             width="15" height="20"></span>
       <span class="marca-nombre">Dona<em>Track</em></span>
     </a>
-    <th:block th:if="${navegacion}">
-      <nav th:replace="~{fragmentos/navegacion :: navegacion(${navegacion})}"></nav>
-    </th:block>
   </header>
   <main id="contenido" class="container" tabindex="-1" th:insert="${contenido}"></main>
   <footer class="pie container">

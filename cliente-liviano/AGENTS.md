@@ -42,12 +42,13 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `grupo5.cliente.vistas` | Modelos de vista (records) que consume la plantilla |
 | `grupo5.cliente.puertos` | Interfaces para obtener y enviar datos |
 | `grupo5.cliente.maqueta` | Adaptadores con datos de ejemplo (perfil `maqueta`) y sus escenarios |
-| `templates/layout.html` | Estructura común: encabezado, navegación, contenido, pie y región de avisos |
+| `templates/layout.html` | Estructura de las pantallas públicas: encabezado, contenido, pie y región de avisos |
+| `templates/layout-privado.html` | Estructura de las pantallas privadas: barra lateral (barra inferior en el celular), campana, cuenta y región de avisos |
 | `templates/fragmentos/` | Un componente = un fragmento parametrizado |
 | `templates/paginas/` | Una vista por pantalla |
 | `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre |
 | `static/css/app.css` | Estilos de componentes y pantallas, solo con tokens de uso |
-| `static/css/variantes/` | Variantes A/B activas (se borran al decidir) |
+| `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
 
 ## Reglas de plantillas
 

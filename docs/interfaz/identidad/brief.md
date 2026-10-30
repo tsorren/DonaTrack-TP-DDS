@@ -35,7 +35,8 @@ Tomado del [mapa del sitio](../mapa-del-sitio.md) y de los [bocetos de E1](../bo
   `sofiadeane/frontend-donatrack` (2026-10-02). Reemplaza a los bocetos de E1 como punto de
   partida. Se puede mejorar: la primera comparación A/B enfrenta el prototipo tal cual con una
   versión que lo lleva más lejos, y cada desvío queda en la [bitácora](../bitacora.md).
-  - **Color:** verde petróleo oscuro (`#163a3a`, `#1d4d4d`), verde menta (`#50d794`, `#54da8e`),
+  - **Color (del prototipo; la paleta final cambia el verde petróleo por grafito cálido, ver la
+    [bitácora](../bitacora.md)):** verde petróleo oscuro (`#163a3a`, `#1d4d4d`), verde menta (`#50d794`, `#54da8e`),
     turquesa (`#36c7b4`), tinta casi negra (`#292928`) y un gris azulado de fondo (`#f4f6fc`).
   - **Letra:** solo DM Sans (OFL), autoalojada.
   - **Forma:** botones en píldora; tarjetas y bandas con esquinas amplias (10 a 40 px).

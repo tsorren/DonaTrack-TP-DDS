@@ -116,8 +116,10 @@
     <p class="catalogo-patron">Fragmento <code>icono</code>: trazo de 24 × 24 que toma el color del
       texto. Siempre acompañan a un texto.</p>
     <ul class="muestras">
-      <li><svg th:replace="~{fragmentos/icono :: icono('donaciones', 24)}"></svg><code>donaciones</code></li>
-      <li><svg th:replace="~{fragmentos/icono :: icono('camiones', 24)}"></svg><code>camiones</code></li>
+      <li th:each="nombre : ${ {'inicio', 'donaciones', 'entidades', 'incentivos', 'seguimiento',
+          'notificaciones', 'camiones', 'cat-alimentos', 'cat-vestimenta', 'cat-escolares'} }"><svg
+          th:replace="~{fragmentos/icono :: icono(${nombre}, 24)}"></svg><code
+          th:text="${nombre}">nombre</code></li>
       <li><svg th:replace="~{fragmentos/icono :: icono('check', 24)}"></svg><code>check</code></li>
       <li><svg th:replace="~{fragmentos/icono :: icono('alerta', 24)}"></svg><code>alerta</code></li>
       <li><svg th:replace="~{fragmentos/icono :: icono('flecha', 24)}"></svg><code>flecha</code></li>
@@ -266,7 +268,7 @@
   <section class="catalogo" aria-labelledby="tarjeta-titulo">
     <h2 id="tarjeta-titulo">Tarjeta</h2>
     <p class="catalogo-patron">Patrón: Material Cards. Fragmento <code>tarjeta</code>. Con foto y
-      sin foto.</p>
+      sin foto: sin foto, la portada muestra el ícono de lo donado.</p>
     <div class="tarjetas">
       <th:block th:each="entrega : ${entregas}">
         <article th:replace="~{fragmentos/tarjeta :: tarjeta(${entrega})}"></article>
@@ -304,7 +306,9 @@
   <section class="catalogo" aria-labelledby="navegacion-titulo">
     <h2 id="navegacion-titulo">Navegación</h2>
     <p class="catalogo-patron">Patrón: Material Navigation rail. Fragmento <code>navegacion</code>:
-      la barra lateral, con un nodo de la ruta por sección. La actual brilla.</p>
+      la barra lateral, con un nodo de la ruta por sección. La actual brilla. En las pantallas
+      privadas, en el celular, pasa a una barra inferior: <a href="/estilos/armazon"
+      th:href="@{/estilos/armazon}">ver la muestra del área privada</a>.</p>
     <nav th:replace="~{fragmentos/navegacion :: navegacion(${opciones})}"></nav>
   </section>
 </th:block>

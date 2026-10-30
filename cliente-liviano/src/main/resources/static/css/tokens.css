@@ -1,7 +1,8 @@
 /*
  * tokens.css: única fuente de colores, tipografías, espacios, bordes y puntos de quiebre (D20).
- * Versión 1 (F3): la identidad del prototipo v2 de la diseñadora (Figma "Prototipo v2" y
- * sofiadeane/frontend-donatrack), con los ajustes de contraste AA de docs/interfaz/bitacora.md.
+ * Versión 2: la identidad del prototipo v2 de la diseñadora (Figma "Prototipo v2" y
+ * sofiadeane/frontend-donatrack) con la paleta Grafito cálido y menta y los ajustes de contraste AA
+ * de docs/interfaz/bitacora.md.
  *
  * 1. Valores base (--p-*): la paleta. Solo se usan en este archivo. Los colores opacos van en
  *    #rrggbb, para que InterfazFitnessTest pueda medir el contraste.
@@ -33,29 +34,31 @@
 }
 
 :root {
-  /* 1. Valores base: los del prototipo v2, sin cambios. */
-  --p-petroleo-900: #163a3a;
-  --p-petroleo-800: #1d4d4d;
-  --p-petroleo-100: #cfefe7;
+  /* 1. Valores base: Grafito cálido y menta (bitácora, 2026-10-30). El grafito reemplaza al verde
+     petróleo del prototipo; la menta, el turquesa y los rojos son los del prototipo. */
+  --p-grafito-900: #2a2624;
+  --p-grafito-800: #38332f;
+  --p-grafito-100: #e9e2da;
   --p-verde-500: #50d794;
   --p-verde-400: #54da8e;
   --p-verde-50: #eafbf3;
   --p-turquesa-500: #36c7b4;
   --p-pizarra: #364d4a;
-  --p-tinta: #292928;
+  --p-tinta: #262321;
   --p-tinta-suave: #6b6b6b;
-  --p-gris-100: #f3f4f6;
-  --p-gris-50: #f4f6fc;
+  --p-gris-100: #f0ede9;
+  --p-gris-50: #f7f5f2;
   --p-blanco: #ffffff;
   --p-rojo-600: #b9443b;
   --p-rojo-50: #fdf1ef;
 
   /* Agregados por contraste AA (bitácora, 2026-10-30): borde de campos de 3:1, verde y ámbar de
-     texto y los tonos de aviso que el prototipo dejó propuestos. */
-  --p-borde-control: #7b8f8d;
+     texto y los tonos de aviso que el prototipo dejó propuestos. El azul de "en camino" se separa
+     del grafito y del verde de la marca. */
+  --p-borde-control: #8a847e;
   --p-verde-700: #146c46;
-  --p-azul-petroleo-700: #14596a;
-  --p-azul-petroleo-50: #e5f4f7;
+  --p-azul-700: #2457a3;
+  --p-azul-50: #eaf1fc;
   --p-ambar-800: #8a4b00;
   --p-ambar-50: #fff3dd;
 
@@ -66,13 +69,13 @@
   --p-blanco-a18: rgb(255 255 255 / 18%);
   --p-blanco-a20: rgb(255 255 255 / 20%);
   --p-blanco-a72: rgb(255 255 255 / 72%);
-  --p-gris-50-a78: rgb(244 246 252 / 78%);
-  --p-petroleo-a06: rgb(22 58 58 / 6%);
-  --p-petroleo-a08: rgb(22 58 58 / 8%);
-  --p-petroleo-a14: rgb(22 58 58 / 14%);
-  --p-petroleo-a15: rgb(22 58 58 / 15%);
-  --p-petroleo-a35: rgb(22 58 58 / 35%);
-  --p-petroleo-a45: rgb(22 58 58 / 45%);
+  --p-gris-50-a78: rgb(247 245 242 / 78%);
+  --p-grafito-a06: rgb(42 38 36 / 6%);
+  --p-grafito-a08: rgb(42 38 36 / 8%);
+  --p-grafito-a14: rgb(42 38 36 / 14%);
+  --p-grafito-a15: rgb(42 38 36 / 15%);
+  --p-grafito-a35: rgb(42 38 36 / 35%);
+  --p-grafito-a45: rgb(42 38 36 / 45%);
   --p-negro-a25: rgb(0 0 0 / 25%);
   --p-verde-a28: rgb(84 218 142 / 28%);
   --p-verde-a30: rgb(84 218 142 / 30%);
@@ -93,26 +96,26 @@
   --color-superficie: var(--p-gris-100);
   --color-texto: var(--p-tinta);
   --color-texto-suave: var(--p-tinta-suave);
-  --color-titulo: var(--p-petroleo-900);
-  --color-borde: var(--p-petroleo-a08);
+  --color-titulo: var(--p-grafito-900);
+  --color-borde: var(--p-grafito-a08);
   --color-borde-control: var(--p-borde-control);
-  --color-enlace: var(--p-petroleo-900);
+  --color-enlace: var(--p-grafito-900);
   --color-accion-primaria: var(--p-verde-400);
   --color-accion-primaria-activa: var(--p-verde-500);
-  --color-accion-secundaria: var(--p-petroleo-900);
-  --color-accion-secundaria-activa: var(--p-petroleo-800);
-  --color-texto-sobre-accion: var(--p-petroleo-900);
+  --color-accion-secundaria: var(--p-grafito-900);
+  --color-accion-secundaria-activa: var(--p-grafito-800);
+  --color-texto-sobre-accion: var(--p-grafito-900);
   --color-texto-sobre-secundaria: var(--p-blanco);
-  --color-foco: var(--p-petroleo-900);
+  --color-foco: var(--p-grafito-900);
   --color-foco-sobre-oscuro: var(--p-verde-400);
   --color-foco-anillo: var(--p-verde-500-a16);
-  --color-velo: var(--p-petroleo-a45);
+  --color-velo: var(--p-grafito-a45);
 
   /* Superficies oscuras (panel destacado, barra lateral, misión) */
-  --color-destacado-fondo: var(--p-petroleo-900);
-  --color-destacado-fondo-alto: var(--p-petroleo-800);
+  --color-destacado-fondo: var(--p-grafito-900);
+  --color-destacado-fondo-alto: var(--p-grafito-800);
   --color-destacado-texto: var(--p-blanco);
-  --color-destacado-texto-suave: var(--p-petroleo-100);
+  --color-destacado-texto-suave: var(--p-grafito-100);
   --color-destacado-texto-tenue: var(--p-blanco-a72);
   --color-vidrio: var(--p-blanco-a10);
   --color-vidrio-tenue: var(--p-blanco-a06);
@@ -125,20 +128,20 @@
   --color-marca: var(--p-verde-500);
   --color-marca-brillante: var(--p-verde-400);
   --color-marca-alterna: var(--p-turquesa-500);
-  --color-marca-suave: var(--p-petroleo-100);
+  --color-marca-suave: var(--p-grafito-100);
   --color-marca-fondo: var(--p-verde-50);
   --color-marca-texto: var(--p-verde-700);
   --color-pizarra: var(--p-pizarra);
   --color-ruta: var(--p-verde-a70);
   --color-ruta-linea: var(--p-verde-a35);
   --color-ruta-anillo: var(--p-verde-a55);
-  --color-segmento-vacio: var(--p-petroleo-a15);
+  --color-segmento-vacio: var(--p-grafito-a15);
 
   /* Estados */
   --color-exito-fondo: var(--p-verde-50);
   --color-exito-texto: var(--p-verde-700);
-  --color-info-fondo: var(--p-azul-petroleo-50);
-  --color-info-texto: var(--p-azul-petroleo-700);
+  --color-info-fondo: var(--p-azul-50);
+  --color-info-texto: var(--p-azul-700);
   --color-advertencia-fondo: var(--p-ambar-50);
   --color-advertencia-texto: var(--p-ambar-800);
   --color-error-fondo: var(--p-rojo-50);
@@ -149,15 +152,15 @@
   /* Degradados de identidad */
   --color-degradado-destacado: linear-gradient(
     144.6deg,
-    var(--p-petroleo-900) 0%,
-    var(--p-petroleo-800) 60%,
-    var(--p-petroleo-900) 100%
+    var(--p-grafito-900) 0%,
+    var(--p-grafito-800) 60%,
+    var(--p-grafito-900) 100%
   );
   --color-degradado-lateral: linear-gradient(
     170deg,
-    var(--p-petroleo-900) 0%,
-    var(--p-petroleo-800) 55%,
-    var(--p-petroleo-900) 100%
+    var(--p-grafito-900) 0%,
+    var(--p-grafito-800) 55%,
+    var(--p-grafito-900) 100%
   );
   --color-degradado-impulso: linear-gradient(
     120deg,
@@ -211,10 +214,10 @@
   --borde-acento: 0.25rem;
   --borde-ruta: 2px;
 
-  --sombra-tarjeta: 0 1px 15px var(--p-petroleo-a08);
-  --sombra-elevada: 0 10px 30px var(--p-petroleo-a14);
-  --sombra-flotante: 0 12px 30px var(--p-petroleo-a35);
-  --sombra-boton: 0 10px 15px var(--p-petroleo-a06);
+  --sombra-tarjeta: 0 1px 15px var(--p-grafito-a08);
+  --sombra-elevada: 0 10px 30px var(--p-grafito-a14);
+  --sombra-flotante: 0 12px 30px var(--p-grafito-a35);
+  --sombra-boton: 0 10px 15px var(--p-grafito-a06);
   --sombra-foto: -1px 1px 15px var(--p-negro-a25);
   --sombra-moneda: 0 12px 24px var(--p-turquesa-a35);
   --sombra-aviso: var(--sombra-elevada);

@@ -1,11 +1,15 @@
 <!--/* Navegación por rol: la barra lateral del prototipo v2. Cada sección es un nodo de la ruta
-       punteada; la actual brilla. Patrón: Material Navigation rail. opciones: List<OpcionNavegacion>. */-->
+       punteada; la actual brilla. En layout-privado, en el celular, pasa a la barra inferior con
+       ícono y nombre corto (bitácora, 2026-10-30). Patrón: Material Navigation rail y Navigation bar.
+       opciones: List<OpcionNavegacion>. */-->
 <nav th:fragment="navegacion(opciones)" class="navegacion" aria-label="Secciones">
   <ul>
     <li th:each="opcion : ${opciones}">
       <a href="#" th:href="@{${opcion.ruta}}"
          th:aria-current="${opcion.actual} ? 'page' : null"><span class="navegacion-nodo"
-            aria-hidden="true"></span><span th:text="${opcion.texto}">Sección</span></a>
+            aria-hidden="true"></span><svg th:replace="~{fragmentos/icono :: icono(${opcion.icono}, 22)}"></svg><span
+            class="navegacion-texto" th:text="${opcion.texto}">Sección</span><span
+            class="navegacion-corto" aria-hidden="true" th:text="${opcion.textoCorto}">Sección</span></a>
     </li>
   </ul>
 </nav>

@@ -19,6 +19,7 @@ clara. Para sumar un tema, se agrega una fila.
 | `componente:<nombre>` | Diseño de un componente | Identidad | Claridad, estados, toque | `/estilos` |
 | `microcopy:<flujo>` | Textos de un flujo | Diseño | ¿Se entiende sin ayuda? ¿Suena a nosotros? | Las pantallas del flujo |
 | `layout:navegacion-admin` | Agrupación del menú del admin (9 secciones) | Identidad | Encontrar cada sección en 1 intento | Inicio del admin |
+| `modo-oscuro` | Un modo oscuro además del claro | Todo lo demás | ¿Se lee igual de bien? ¿Vale revisar cada pantalla dos veces? | `/estilos` |
 
 ## Orden sugerido para la identidad
 

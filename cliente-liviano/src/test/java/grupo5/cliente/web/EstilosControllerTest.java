@@ -41,6 +41,22 @@ class EstilosControllerTest {
         .andExpect(content().string(containsString("Código de seguimiento: a1b2c3d4e5f6")))
         .andExpect(content().string(containsString("insignia insignia--con-problema")))
         .andExpect(content().string(containsString("htmx-indicator htmx-request")))
-        .andExpect(content().string(containsString("<dialog id=\"dialogo-demo\"")));
+        .andExpect(content().string(containsString("<dialog id=\"dialogo-demo\"")))
+        .andExpect(content().string(containsString("class=\"tarjeta-portada\"")));
+  }
+
+  @Test
+  void muestraDelArmazonUsaElLayoutPrivado() throws Exception {
+    mvc.perform(get("/estilos/armazon"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("paginas/estilos-armazon"))
+        .andExpect(content().string(containsString("<body class=\"armazon\">")))
+        .andExpect(content().string(containsString("href=\"#contenido\"")))
+        .andExpect(content().string(containsString("<main id=\"contenido\"")))
+        .andExpect(content().string(containsString("aria-live=\"polite\"")))
+        .andExpect(content().string(containsString("aria-current=\"page\"")))
+        .andExpect(content().string(containsString("aria-label=\"Cuenta de Ana\"")))
+        .andExpect(content().string(containsString("aria-label=\"Notificaciones\"")))
+        .andExpect(content().string(containsString("Hola, Ana")));
   }
 }

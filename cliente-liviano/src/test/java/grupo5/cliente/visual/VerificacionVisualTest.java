@@ -80,7 +80,8 @@ class VerificacionVisualTest {
   /**
    * Visor de capturas (index.html y comparacion.html), pensado para 1920 × 1080: índice de
    * secciones a la izquierda, una o dos variantes lado a lado, ancho y página a elección y
-   * desplazamiento a la par. @TITULO@ y @DATOS@ (JSON) se completan al generarlo.
+   * desplazamiento a la par. Un enlace con {@code #izq=<variante>&der=<variante>&ancho=<px>} abre
+   * esa comparación. @TITULO@ y @DATOS@ (JSON) se completan al generarlo.
    */
   private static final String VISOR =
       """
@@ -197,7 +198,15 @@ class VerificacionVisualTest {
         pintar();
       });
       ['izq', 'der', 'pagina'].forEach(id => $(id).addEventListener('change', pintar));
-      pintar();
+      function desdeEnlace() {
+        const pedido = new URLSearchParams(location.hash.slice(1));
+        const indice = lado => d.variantes.findIndex(v => v.nombre === pedido.get(lado));
+        ['izq', 'der'].filter(lado => indice(lado) >= 0).forEach(lado => { $(lado).value = indice(lado); });
+        if (d.anchos.includes(Number(pedido.get('ancho')))) ancho = Number(pedido.get('ancho'));
+        pintar();
+      }
+      window.addEventListener('hashchange', desdeEnlace);
+      desdeEnlace();
       </script></body></html>
       """;
 

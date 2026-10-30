@@ -1,6 +1,7 @@
 package grupo5.cliente.web;
 
 import grupo5.cliente.vistas.CifraVista;
+import grupo5.cliente.vistas.CuentaVista;
 import grupo5.cliente.vistas.EntregaVista;
 import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.OpcionNavegacion;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-/** Catálogo de componentes con todos sus estados (RF-CL-05). Los datos son de ejemplo. */
+/**
+ * Catálogo de componentes con todos sus estados (RF-CL-05) y la muestra del armazón de las
+ * pantallas privadas. Los datos son de ejemplo.
+ */
 @Controller
 class EstilosController {
 
@@ -26,6 +30,7 @@ class EstilosController {
               "Comedor Barrio Ejemplo",
               "18 de mayo de 2026",
               EstadoEntrega.EN_CAMINO,
+              "cat-alimentos",
               FOTO,
               FOTO_ALT,
               "#entrega-1"),
@@ -34,6 +39,7 @@ class EstilosController {
               "Merendero Ejemplo Sur",
               "17 de mayo de 2026",
               EstadoEntrega.ENTREGADA,
+              "cat-vestimenta",
               FOTO,
               FOTO_ALT,
               "#entrega-2"),
@@ -42,6 +48,7 @@ class EstilosController {
               "Escuela Ejemplo 12",
               "16 de mayo de 2026",
               EstadoEntrega.CON_PROBLEMA,
+              "cat-escolares",
               null,
               null,
               "#entrega-3"));
@@ -63,19 +70,35 @@ class EstilosController {
           new PasoRecorrido("En camino", "Hoy, 14:30", Avance.ACTUAL),
           new PasoRecorrido("Entregada", "Pendiente", Avance.PENDIENTE));
 
+  /** Las secciones del donante del prototipo v2; Notificaciones va en la campana. */
   private static final List<OpcionNavegacion> NAVEGACION =
       List.of(
-          new OpcionNavegacion("Inicio", "#inicio", false),
-          new OpcionNavegacion("Entregas a confirmar", "#entregas", true),
-          new OpcionNavegacion("Necesidades", "#necesidades", false));
+          new OpcionNavegacion("Inicio", "Inicio", "inicio", "#contenido", true),
+          new OpcionNavegacion("Mis donaciones", "Donaciones", "donaciones", "#donaciones", false),
+          new OpcionNavegacion("Entidades", "Entidades", "entidades", "#entidades", false),
+          new OpcionNavegacion("Incentivos", "Incentivos", "incentivos", "#incentivos", false),
+          new OpcionNavegacion("Seguimiento", "Seguimiento", "seguimiento", "#seguimiento", false));
 
   @GetMapping("/estilos")
   String estilos(Model model) {
+    datosDeEjemplo(model);
+    return "paginas/estilos";
+  }
+
+  /** El tablero del donante de /estilos dentro de layout-privado. */
+  @GetMapping("/estilos/armazon")
+  String armazon(Model model) {
+    datosDeEjemplo(model);
+    model.addAttribute("navegacion", NAVEGACION);
+    model.addAttribute("cuenta", new CuentaVista("Ana", "Donante"));
+    return "paginas/estilos-armazon";
+  }
+
+  private static void datosDeEjemplo(Model model) {
     model.addAttribute("entregas", ENTREGAS);
     model.addAttribute("estados", EstadoEntrega.values());
     model.addAttribute("opciones", NAVEGACION);
     model.addAttribute("pasos", PASOS);
     model.addAttribute("realizadas", REALIZADAS);
-    return "paginas/estilos";
   }
 }
