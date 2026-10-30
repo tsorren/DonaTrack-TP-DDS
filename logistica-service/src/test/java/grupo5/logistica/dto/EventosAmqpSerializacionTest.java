@@ -7,6 +7,7 @@ import grupo5.logistica.dto.eventos.EventoEntregaFallida;
 import grupo5.logistica.dto.eventos.EventoRutaAsignada;
 import grupo5.logistica.dto.eventos.EventoRutaIniciada;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -18,7 +19,8 @@ import tools.jackson.databind.json.JsonMapper;
  */
 class EventosAmqpSerializacionTest {
 
-  private static final LocalDateTime FECHA = LocalDateTime.of(2026, 10, 22, 14, 30, 5, 123456789);
+  private static final LocalDateTime FECHA =
+      LocalDateTime.of(2026, Month.OCTOBER, 22, 14, 30, 5, 123456789);
   private static final String FECHA_RFC3339 = "\"2026-10-22T14:30:05Z\"";
 
   private final JsonMapper mapper = JsonMapper.builder().build();

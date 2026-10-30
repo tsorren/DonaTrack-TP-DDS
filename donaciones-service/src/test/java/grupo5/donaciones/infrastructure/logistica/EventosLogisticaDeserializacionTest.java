@@ -7,6 +7,7 @@ import grupo5.donaciones.dto.comunicaciones.EventoEntregaFallida;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -18,7 +19,7 @@ import tools.jackson.databind.json.JsonMapper;
  */
 class EventosLogisticaDeserializacionTest {
 
-  private static final LocalDateTime FECHA = LocalDateTime.of(2026, 10, 22, 14, 30, 5);
+  private static final LocalDateTime FECHA = LocalDateTime.of(2026, Month.OCTOBER, 22, 14, 30, 5);
   private static final String ID = UUID.randomUUID().toString();
 
   private final JsonMapper mapper = JsonMapper.builder().build();
