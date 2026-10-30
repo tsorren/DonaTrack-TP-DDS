@@ -146,7 +146,7 @@ public final class PollingUtils {
 
   @SuppressWarnings("unchecked")
   public static UUID esperarEntregaCreadaParaDonacion(LogisticaApiClient client, UUID donacionId) {
-    // ponytail: lista todas las entregas en cada intento (DIT-05); filtrar si el stack crece mucho
+    // Lista todas las entregas en cada intento (DIT-05); filtrar por donación si el stack crece
     Predicate<Map<String, Object>> deLaDonacion =
         e -> donacionId.toString().equals(e.get("idDonacion"));
     Response resp =

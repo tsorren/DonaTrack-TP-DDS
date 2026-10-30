@@ -1,8 +1,8 @@
 # Diagnóstico del módulo `integration-tests` (E5)
 
 > **Fecha:** 2026-10-29 · **Rama:** `E5_mejora_integration_tests` (base `origin/ENTREGA_5`, `8ed69e48`)
-> **Alcance:** las 9 clases IT de `integration-tests/` (30 `@Test`) y su documentación. No toca servicios.
-> **Estado:** fase 1 de la mejora (diagnóstico). La fase 2 implementa solo lo que se elija en el gate (§6).
+> **Alcance:** las 9 clases IT de `integration-tests/` (30 `@Test`) y su documentación. Por una decisión de la fase 2, también la corrección de las fechas de 4 eventos de Logística (§7).
+> **Estado:** fase 1 (diagnóstico, §1–§6) y fase 2 (implementación de P1–P5, §7) terminadas.
 
 Este informe evalúa la suite en cuatro ejes: cobertura de flujos E5, robustez, calidad del código de test, y costo y ejecución.
 Toma como punto de partida los hallazgos y el roadmap que ya existen:
@@ -110,8 +110,8 @@ Este diagnóstico no los reabre.
 
 ## 6. Propuestas para la fase 2 (gate)
 
-Solo cambian `integration-tests/` y la documentación de testing.
-Ninguna crea una decisión arquitectónica nueva: aplican patrones ya adoptados (clientes tipados, `PollingUtils`, espía RM-08).
+Tal como se plantearon, solo cambian `integration-tests/` y la documentación de testing. La corrección de Logística se decidió después, en la fase 2 (§7).
+Al momento del gate, ninguna creaba una decisión arquitectónica nueva: aplican patrones ya adoptados (clientes tipados, `PollingUtils`, espía RM-08).
 No requieren ADR (Gate A de `AGENTS.md` §9.1).
 
 | Prioridad | Propuesta | Cierra | Tamaño `[INFERRED]` |
@@ -155,8 +155,8 @@ En el gate se eligieron P1 a P5. Durante la implementación se tomaron dos decis
 |---|---|---|
 | P1 (F-01) | El E2E ya no cambia estados por REST. Logística crea la entrega desde el comando AMQP, planifica, saca la ruta y la entidad confirma. Donaciones pasa por `ListaParaEntregar`, `EnTraslado` y `Entregada` aplicando los eventos. Antes de iniciar la ruta, el test espera `ListaParaEntregar`, porque las colas de `ruta.asignada` y `ruta.iniciada` no garantizan orden. | `FullDistributedDonationE2EIT`, `LogisticaApiClient.confirmarEntrega`, `DonacionesApiClient.obtenerDonacionIndependiente` |
 | P2 (QA-GAP-05) | Test nuevo: la entrega llega `NO_RECIBIDA` sin replanificar, Donaciones la pasa a `EntregaFallida` y el donante recibe una notificación con el motivo. | `FullDistributedDonationE2EIT` |
-| P3 (DIT-07, DIT-08, AP-09) | `PollingUtils` queda con un solo método genérico y un factor de timeout `-Dit.timeout.factor`. Se borró `esperarDonanteEliminadoEnIncentivos`, que no tenía usos. Escenarios compartidos en `BaseIT`: `crearDonante`, `crearEntidad`, `asignarYAprobar` y `entregarPorRest`. Datos de Logística en `LogisticaTestData`. | `PollingUtils`, `BaseIT`, `CrossServiceCommunicationIT`, `LogisticaTestData` |
-| P4 (DIT-02) | Que falte uno de los 8 tipos de evento que publica el flujo del E2E es una violación de contrato, con la misma política que las demás: aviso en PR y fallo con `CONTRATOS_ESTRICTO=true`. El log lista los schemas que el E2E no ejercitó. | `ContratosAmqp.faltantes`/`sinEjercitar`, `FullDistributedDonationE2EIT` |
+| P3 (DIT-07, DIT-08, AP-09) | `PollingUtils` queda con un solo método genérico y un factor de timeout `-Dit.timeout.factor`. Se borraron `esperarDonanteEliminadoEnIncentivos` y `esperarDonacionEstado`, que no tenían usos, y se sumaron `esperarDonacionIndependienteEstado` y `esperarNotificacionCon`. Escenarios compartidos en `BaseIT`: `crearDonante`, `crearEntidad`, `asignarYAprobar` y `entregarPorRest`. Datos de Logística en `LogisticaTestData`. | `PollingUtils`, `BaseIT`, `CrossServiceCommunicationIT`, `LogisticaTestData` |
+| P4 (DIT-02) | Que falte uno de los 9 tipos de evento que publica el flujo del E2E es una violación de contrato, con la misma política que las demás: aviso en PR y fallo con `CONTRATOS_ESTRICTO=true`. El log lista los schemas que el E2E no ejercitó. | `ContratosAmqp.faltantes`/`sinEjercitar`, `FullDistributedDonationE2EIT` |
 | P5 (DIT-03, DIT-09) | En los flujos de una sola donación, las notificaciones se verifican por evento (asignada, en camino, recibida, bienvenida, motivo de falla), no por cantidad. `testComplexE2EMultipleDonationsFlow` sigue contando (`>= 5`), porque son dos donaciones. Los errores se verifican por código del `ErrorCatalog` (`ERR-CSR-001`, `ERR-CSR-003`). `DonationIntegrationIT` verifica la persistencia con su donante. `integration-tests.md` quedó alineado con lo que se prueba. | `ErrorHandlingIntegrationIT`, `DonationIntegrationIT`, `integration-tests.md` |
 | DIT-12 | `LogisticaIntegrationIT` lleva su entrega sin donación hasta `ENTREGADA` y absorbe el contrato vivo del `POST /api/entregas`, que estaba en `ContractIT`. | `LogisticaIntegrationIT`, `ContractIT` |
 | Contratos de Logística | `[VERIFIED]` Con P4, el espía capturó por primera vez los eventos de vuelta de Logística: `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa` y `entrega.fallida` violaban sus schemas, porque publicaban `LocalDateTime` sin zona y el schema exige `date-time` RFC 3339. Se aplicó la convención de Donaciones: `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")`. `[VERIFIED]` Donaciones lee las fechas de los 4 eventos con y sin `Z`, así que los mensajes en vuelo siguen sirviendo. | 4 eventos en `logistica-service/.../dto/eventos/`; `EventosAmqpSerializacionTest` (Logística); `EventosLogisticaDeserializacionTest` (Donaciones); ejemplos de `docs/arquitectura/eventos-amqp.md` |
@@ -165,7 +165,7 @@ En el gate se eligieron P1 a P5. Durante la implementación se tomaron dos decis
 
 | Gate | Comando | Resultado |
 |---|---|---|
-| Gate 3/4, aviso | `./run-preprod-tests.sh --skip-build` (con la imagen de Logística corregida) | `[VERIFIED]` 30/30 en verde, 0 salteados, sin avisos de contratos AMQP. El E2E vio los 8 tipos esperados. |
+| Gate 3/4, aviso | `./run-preprod-tests.sh --skip-build` (con la imagen de Logística corregida) | `[VERIFIED]` 30/30 en verde, 0 salteados, sin avisos de contratos AMQP. El E2E vio los 8 tipos esperados (`entrega.solicitada.v1`, el noveno, se sumó después de la auditoría de cierre; `[INFERRED]` ya se publicaba, porque su schema no figuraba entre los no ejercitados). |
 | Gate 3/4, estricto | `CONTRATOS_ESTRICTO=true ./run-preprod-tests.sh --skip-build` | `[VERIFIED]` 30/30 en verde al primer intento. |
 | Gate 2, Logística | `mvn clean test -pl logistica-service -am` | `[VERIFIED]` 525 tests, 0 fallos (1 salteado preexistente). |
 | Gate 2, Donaciones | `mvn clean test -pl donaciones-service -am` | 780 tests. 15 clases con contenedores fallaron por timeout de arranque: Docker Desktop no alcanzó a levantar a tiempo los contenedores en paralelo. `[VERIFIED]` Reintentadas con el reactor, las 15 y el test nuevo dieron 120/120 en verde. |

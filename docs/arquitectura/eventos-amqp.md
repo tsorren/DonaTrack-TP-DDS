@@ -239,6 +239,8 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 }
 ```
 
+> **Fechas con `Z`.** Las fechas de los eventos se serializan con `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")` sobre un `LocalDateTime`. Es la misma convención en Donaciones y en Logística. El sufijo `Z` supone que la JVM corre en UTC: así corren los contenedores, que no fijan `TZ`. Con otra zona, la hora publicada queda corrida.
+
 #### Ruta Asignada (`ruta.asignada`)
 ```json
 {

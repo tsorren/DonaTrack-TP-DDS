@@ -33,6 +33,7 @@ class FullDistributedDonationE2EIT extends BaseIT {
   private static final Set<String> EVENTOS_ESPERADOS =
       Set.of(
           "donacion.asignada.v1",
+          "entrega.solicitada.v1",
           "ruta.asignada",
           "ruta.iniciada",
           "donacion.en-camino.v1",
@@ -65,9 +66,8 @@ class FullDistributedDonationE2EIT extends BaseIT {
       List<EspiaAmqp.Mensaje> mensajes = espia.mensajes();
       violaciones.addAll(ContratosAmqp.validar(mensajes));
       violaciones.addAll(ContratosAmqp.faltantes(mensajes, EVENTOS_ESPERADOS));
-      LOG.info(
-          "[contratos-amqp] schemas evento-* sin ejercitar en el E2E: "
-              + ContratosAmqp.sinEjercitar(mensajes));
+      List<String> sinEjercitar = ContratosAmqp.sinEjercitar(mensajes);
+      LOG.info(() -> "[contratos-amqp] schemas evento-* sin ejercitar en el E2E: " + sinEjercitar);
       espia.close();
     }
     // Política H de D5: falla con CONTRATOS_ESTRICTO=true (post-merge y corte); si no, avisa
