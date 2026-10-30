@@ -1,6 +1,7 @@
 package grupo5.cliente.maqueta;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Las variantes de prueba están en src/test/resources: prueba-a (estilo) y prueba-b (estructura).
+ * La alternativa de prueba, en static/css/alternativas/prueba/.
  */
 @WebMvcTest
 @Import(MaquetaConfig.class)
@@ -55,6 +57,32 @@ class VariantesInterceptorTest {
   @Test
   void unaVarianteSinArchivosNoExiste() throws Exception {
     mvc.perform(get("/estilos").param("variante", "tema-sin-archivos-a"))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void sinAlternativaLaPaginaUsaLasHojasDeGlassmorphism() throws Exception {
+    mvc.perform(get("/estilos"))
+        .andExpect(status().isOk())
+        .andExpect(model().attributeDoesNotExist("alternativa"))
+        .andExpect(content().string(containsString("href=\"/css/tokens.css\"")))
+        .andExpect(content().string(containsString("href=\"/css/app.css\"")));
+  }
+
+  @Test
+  void unaAlternativaReemplazaLasHojasDeLaIdentidad() throws Exception {
+    mvc.perform(get("/estilos").param("alternativa", "prueba").param("variante", "prueba-a"))
+        .andExpect(status().isOk())
+        .andExpect(model().attribute("alternativa", "prueba"))
+        .andExpect(content().string(containsString("/css/alternativas/prueba/tokens.css")))
+        .andExpect(content().string(containsString("/css/alternativas/prueba/app.css")))
+        .andExpect(content().string(not(containsString("href=\"/css/tokens.css\""))))
+        .andExpect(content().string(containsString("/css/variantes/prueba-a.css")));
+  }
+
+  @Test
+  void unNombreQueNoEsUnaCarpetaDeAlternativaNoExiste() throws Exception {
+    mvc.perform(get("/estilos").param("alternativa", "../variantes"))
         .andExpect(status().isNotFound());
   }
 }

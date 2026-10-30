@@ -46,8 +46,9 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `templates/layout-privado.html` | Estructura de las pantallas privadas: barra lateral (barra inferior en el celular), campana, cuenta y región de avisos |
 | `templates/fragmentos/` | Un componente = un fragmento parametrizado |
 | `templates/paginas/` | Una vista por pantalla |
-| `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre |
-| `static/css/app.css` | Estilos de componentes y pantallas, solo con tokens de uso |
+| `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre de la Alternativa Glassmorphism, la que se ve por defecto |
+| `static/css/app.css` | Estilos de componentes y pantallas de Glassmorphism, solo con tokens de uso |
+| `static/css/alternativas/<nombre>/` | Otra alternativa de identidad, con su `tokens.css` y su `app.css` completos (hoy, `cozy-medieval`). En el perfil `maqueta` se elige con `?alternativa=<nombre>` |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
 
 ## Reglas de plantillas
@@ -74,9 +75,12 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 
 - Pantallas y componentes usan **solo tokens de uso** (`--color-*`, `--fuente-*`, `--tamano-*`,
   `--espacio-*`, `--radio-*`, `--borde-*`, `--sombra-*`, `--movimiento-*`, `--capa-*` y `--medida-*`).
-- Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de
+- Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de un
   `tokens.css`.
-- Fuera de `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
+- Fuera de los `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
+- Hay dos alternativas de identidad que comparten plantillas y textos: cada componente o pantalla
+  nueva se estiliza en el `app.css` de cada una
+  ([ADR propuesto](../docs/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
 - Las media queries usan solo los puntos de quiebre de `tokens.css` (`--medida-quiebre-*`), con
   mobile first.
 - Fuentes con licencia OFL, servidas desde `static/fuentes/` junto con su licencia.

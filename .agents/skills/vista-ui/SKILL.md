@@ -38,8 +38,9 @@ description: >-
 5. **Componente nuevo.**
    - Fragmento parametrizado en `templates/fragmentos/`.
    - Agregarlo a `/estilos` con todos sus estados y el patrón que sigue.
-6. **Estilos** en `app.css`.
-   - Solo tokens de uso y los puntos de quiebre de `tokens.css`, con mobile first.
+6. **Estilos** en el `app.css` de cada alternativa de identidad: el de Glassmorphism
+   (`static/css/`) y el de cada carpeta de `static/css/alternativas/`.
+   - Solo tokens de uso y los puntos de quiebre de su `tokens.css`, con mobile first.
    - Una sola audacia por pantalla.
 7. **Variante A/B.** Si surge una duda de disposición, usar `iteracion-ab`.
 

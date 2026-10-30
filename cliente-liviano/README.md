@@ -31,7 +31,8 @@ mvn test -pl cliente-liviano -Pvisual                                         # 
 ```
 
 - Puerto 8090. El perfil `maqueta` usa datos de ejemplo y admite `?escenario=<nombre>` (vacío,
-  lento, error, sin permiso) y `?variante=<tema>-a|b` para las comparaciones A/B.
+  lento, error, sin permiso), `?variante=<tema>-a|b` para las comparaciones A/B y
+  `?alternativa=cozy-medieval` para ver la Alternativa Cozy / Medieval (sin él, Glassmorphism).
 - En Claude Code, `.claude/launch.json` lo levanta en el panel del navegador.
 - La verificación visual baja Playwright y Chromium la primera vez (unos 200 MB) y deja el
   resultado en `target/capturas/`. No corre en el CI

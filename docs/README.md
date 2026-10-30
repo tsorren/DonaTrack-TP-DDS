@@ -120,6 +120,7 @@ docs/
 │   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad
 │   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
 │   ├── temas-ab.md · bitacora.md          # Catálogo de temas A/B y decisiones de diseño
+│   ├── identidad/                         # Un brief por alternativa: Glassmorphism y Cozy / Medieval
 │   └── plantillas/                        # Ficha de flujo, iteración A/B y brief de identidad
 │
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)

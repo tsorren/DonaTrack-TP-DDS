@@ -36,6 +36,17 @@ flowchart LR
 | 5. Comprobación | Las vistas | Tests en verde y capturas en los 3 anchos | (dentro de `vista-ui`) |
 | 6. Revisión | Flujo, vistas y capturas | Veredicto con hallazgos | `revision-ui` |
 
+**Dos alternativas de identidad.** El sitio tiene dos identidades que comparten pantallas,
+componentes y textos, para comparar qué mensaje transmite cada una
+([ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)):
+
+| Alternativa | Mensaje | Brief | Hojas de estilo | Cómo se ve |
+|---|---|---|---|---|
+| Glassmorphism | Profesional y seria | [brief.md](identidad/brief.md) | `static/css/tokens.css` y `app.css` | Por defecto |
+| Cozy / Medieval | Cálida y de aventura | [brief-cozy-medieval.md](identidad/brief-cozy-medieval.md) | `static/css/alternativas/cozy-medieval/` | `?alternativa=cozy-medieval` (perfil `maqueta`) |
+
+Cada pantalla o componente nuevo se estiliza en las hojas de las dos alternativas.
+
 **Comparaciones A/B.** Cuando una decisión de gusto o de forma tiene más de una buena respuesta
 (una paleta, una tipografía, el orden de una pantalla), el agente arma dos variantes que difieren
 solo en ese tema y el usuario elige. Skill `iteracion-ab`; temas posibles en el
@@ -87,7 +98,8 @@ El proceso no debe cansar a quien decide. Reglas para el agente:
 
 **Una pantalla está lista cuando:**
 
-- [ ] usa solo los colores, tipografías y espacios con nombre de `tokens.css`;
+- [ ] usa solo los colores, tipografías y espacios con nombre de `tokens.css`, y se ve bien en
+      las dos alternativas de identidad;
 - [ ] muestra todos sus estados (vacío, cargando, éxito, error, sin permiso) con el texto del flujo;
 - [ ] funciona sin JavaScript en lo esencial (ver, navegar y enviar formularios);
 - [ ] pasa la comprobación automática en los 3 anchos: accesibilidad AA sin errores, nada
@@ -136,7 +148,8 @@ Cada regla vive en un solo archivo. Para cambiar algo, se edita ese archivo y na
 | Comparar un tema nuevo con A/B | Agrego una fila en [`temas-ab.md`](temas-ab.md) |
 | Sumar un componente | Creo su archivo en `templates/fragmentos/` y lo agrego a `/estilos` (un test falla si falta) |
 | Comprobar una página más | Agrego una línea en `cliente-liviano/src/test/resources/verificacion/paginas.txt` |
-| Cambiar la identidad (colores, letras) | Edito solo la sección de valores base de `tokens.css` |
+| Cambiar la identidad (colores, letras) | Edito solo la sección de valores base del `tokens.css` de esa alternativa |
+| Sumar una alternativa de identidad | Creo su brief en `identidad/` y la carpeta `static/css/alternativas/<nombre>/` con su `tokens.css` y su `app.css`; la comprobación visual la recorre sola |
 | Cambiar los anchos de referencia | Edito la constante `AnchosDeReferencia` y la tabla de arriba |
 | Cambiar una regla de diseño | Edito [dirección de arte](direccion-de-arte.md) o [patrones y textos](patrones-y-microcopy.md) |
 | Sumar una skill | Creo `.agents/skills/<nombre>/SKILL.md` y su adaptador `.claude/skills/<nombre>/SKILL.md` (copiar uno existente y cambiar nombre y descripción); la agrego a `docs/context-index.md` |
@@ -163,4 +176,4 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [temas-ab.md](temas-ab.md) | Temas que se pueden comparar con A/B |
 | [bitacora.md](bitacora.md) | Decisiones de diseño, con su porqué |
 | [plantillas/](plantillas/) | Ficha de flujo, iteración A/B y brief de identidad |
-| `identidad/`, `flujos/`, `evidencia/` | Lo que produce el proceso |
+| `identidad/`, `flujos/`, `evidencia/` | Lo que produce el proceso: un brief por alternativa, las fichas de flujo y las capturas (las de Cozy / Medieval, en `evidencia/cozy-medieval/`) |

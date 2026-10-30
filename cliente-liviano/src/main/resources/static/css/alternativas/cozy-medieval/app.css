@@ -1,0 +1,1936 @@
+/*
+ * Estilos de la Alternativa Cozy / Medieval: El cartógrafo (brief-cozy-medieval.md). Hoja completa
+ * y propia: no hereda nada del app.css de Glassmorphism; comparte con él solo las plantillas.
+ * Solo usa tokens de uso de su tokens.css y los puntos de quiebre declarados ahí, con mobile
+ * first. Lo verifica InterfazFitnessTest.
+ *
+ * Reglas del brief: los datos (tablas, formularios, listas) van sobre pergamino limpio; lo
+ * medieval va en los marcos, los títulos, la barra lateral, los vacíos y los logros, y cada adorno
+ * cuenta algo del sistema. La audacia de la pantalla es el panel destacado: una hoja de mapa con
+ * su rosa de los vientos y el camino de tinta.
+ */
+
+/* Base */
+body {
+  font-size: var(--tamano-texto);
+}
+
+:focus-visible {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+:is(h1, h2, h3, h4) {
+  font-family: var(--fuente-titulos);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+/* Las secciones abren con un filete de libro: un rombo y la línea de latón. */
+h2 {
+  position: relative;
+  padding-block-end: var(--espacio-3);
+}
+
+h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: min(10rem, 60%);
+  height: 0.75rem;
+  background-color: var(--color-laton);
+  mask: url("../../../img/cozy-medieval/filete.svg") left center / contain no-repeat;
+}
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+a {
+  text-underline-offset: 0.18em;
+}
+
+/* Botones: hojas apoyadas sobre el papel, con una sombra corta de tinta. */
+:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  padding: 0.6875rem 1.25rem;
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: transform var(--movimiento-rapido);
+}
+
+:is(button, [role="button"]):active {
+  transform: translateY(1px);
+}
+
+:is(button, [role="button"]):not(.outline, .fantasma) {
+  box-shadow: 0 2px 0 var(--color-filete);
+}
+
+/* Fantasma: el botón de trazo, en tinta sobre el pergamino. */
+.fantasma {
+  background-color: transparent;
+  border: var(--borde-ancho) solid var(--color-titulo);
+  color: var(--color-titulo);
+}
+
+.fantasma:hover {
+  background-color: var(--color-superficie);
+  border-color: var(--color-titulo);
+  color: var(--color-titulo);
+}
+
+/* Sobre madera o cuero, el trazo es de latón. */
+:is(.mision, .catalogo-oscuro) .fantasma {
+  border-color: var(--color-laton-brillante);
+  color: var(--color-destacado-texto);
+}
+
+:is(.mision, .catalogo-oscuro) .fantasma:hover {
+  background-color: var(--color-destacado-hover);
+  border-color: var(--color-laton-brillante);
+  color: var(--color-destacado-texto);
+}
+
+:is(.mision, .navegacion, .catalogo-oscuro) :focus-visible {
+  outline-color: var(--color-foco-sobre-oscuro);
+}
+
+.enlace-fuerte {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding-inline: var(--espacio-3);
+  color: var(--color-enlace);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--color-filete);
+}
+
+.enlace-fuerte:hover {
+  text-decoration-color: currentcolor;
+}
+
+/* Íconos de grabado: el mismo dibujo, con un trazo más fino de tinta. */
+.icono {
+  stroke-width: 1.5;
+}
+
+/* Layout: la cabecera es el borde superior de la hoja, con doble filete. */
+.saltar {
+  position: absolute;
+  top: var(--espacio-2);
+  left: var(--espacio-4);
+  z-index: calc(var(--capa-avisos) + 1);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding-inline: var(--espacio-4);
+  background-color: var(--color-destacado-fondo);
+  color: var(--color-destacado-texto);
+  border-radius: var(--radio-boton);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.saltar:focus {
+  transform: none;
+}
+
+.encabezado {
+  position: sticky;
+  top: 0;
+  z-index: var(--capa-avisos);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-4);
+  min-height: var(--medida-barra-superior);
+  padding: 0 0.875rem;
+  background-color: var(--color-fondo-pagina);
+  border-block-end: 4px double var(--color-filete);
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: var(--medida-toque-minimo);
+  padding: var(--espacio-1) var(--espacio-2) var(--espacio-1) var(--espacio-1);
+  color: var(--color-titulo);
+  border-radius: var(--radio-control);
+  font-family: var(--fuente-rotulos);
+  font-size: 1.1875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+
+/* El símbolo es un sello de latón con el logo grabado en tinta. */
+.marca-simbolo {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-ancho) solid var(--color-laton-texto);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 0 0 2px var(--color-placa-brillo);
+}
+
+.marca-simbolo img {
+  width: 15px;
+  height: 20px;
+  visibility: hidden;
+}
+
+.marca-simbolo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-titulo);
+  mask: url("../../../img/logo.svg") center / 15px 20px no-repeat;
+}
+
+.marca-nombre em {
+  color: var(--color-marca-texto);
+  font-style: normal;
+}
+
+#contenido {
+  padding-block: 1.625rem var(--espacio-7);
+}
+
+.pie {
+  padding-block: var(--espacio-5);
+  color: var(--color-texto-suave);
+  border-block-start: var(--borde-ancho) solid var(--color-borde);
+}
+
+/* Navegación por rol: la tapa de nogal del atlas. El camino es una línea de puntos de latón con
+   un remache por sección; la sección actual es una pestaña de pergamino. */
+.navegacion {
+  position: relative;
+  display: block;
+  max-width: 15.5rem;
+  padding: var(--espacio-4);
+  background-color: var(--color-destacado-fondo);
+  color: var(--color-destacado-texto);
+  border: var(--borde-ancho) solid var(--color-destacado-borde);
+  border-radius: var(--radio-tarjeta);
+}
+
+.navegacion ul {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0;
+}
+
+.navegacion ul::before {
+  content: "";
+  position: absolute;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  left: 21px;
+  border-inline-start: var(--borde-ruta) dotted var(--color-ruta-sobre-oscuro);
+}
+
+.navegacion li {
+  display: block;
+  padding: 0;
+  list-style: none;
+}
+
+.navegacion a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  padding: 0.625rem var(--espacio-3);
+  color: var(--color-destacado-texto-suave);
+  border-radius: var(--radio-control);
+  font-size: var(--tamano-chico);
+  text-decoration: none;
+  transition: background-color var(--movimiento-duracion);
+}
+
+.navegacion a:hover {
+  background-color: var(--color-destacado-hover);
+  color: var(--color-destacado-texto);
+}
+
+.navegacion-nodo {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  width: var(--medida-nodo-chico);
+  height: var(--medida-nodo-chico);
+  margin-inline-start: var(--espacio-1);
+  background-color: var(--color-destacado-fondo);
+  border: var(--borde-ruta) solid var(--color-laton);
+  border-radius: var(--radio-sello);
+}
+
+.navegacion a[aria-current="page"] {
+  background-color: var(--color-fondo);
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+.navegacion a[aria-current="page"] .navegacion-nodo {
+  background-color: var(--color-laton);
+  border-color: var(--color-laton-texto);
+}
+
+.navegacion :is(.icono, .navegacion-corto) {
+  display: none;
+}
+
+/* Armazón de las pantallas privadas. En el celular, la navegación es una barra fija abajo, de
+   nogal con un canto de latón. */
+.armazon .encabezado {
+  flex-wrap: nowrap;
+  gap: var(--espacio-2);
+}
+
+.encabezado-fin {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin-inline-start: auto;
+}
+
+.boton-icono {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  background-color: var(--color-fondo);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-sello);
+  color: var(--color-titulo);
+}
+
+.boton-icono:hover {
+  background-color: var(--color-superficie);
+}
+
+.cuenta {
+  position: relative;
+  margin: 0;
+}
+
+/* La cuenta es una moneda de latón con la inicial. */
+.cuenta > summary {
+  display: grid;
+  place-items: center;
+  width: var(--medida-toque-minimo);
+  height: var(--medida-toque-minimo);
+  margin: 0;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-ancho) solid var(--color-laton-texto);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 0 0 3px var(--color-placa-brillo);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-weight: 700;
+  line-height: 1;
+  list-style: none;
+}
+
+.cuenta[open] > summary {
+  margin: 0;
+}
+
+.cuenta > summary::after,
+.cuenta > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Cerrado, el menú no ocupa lugar: si solo queda oculto, el navegador igual lo mide. */
+.cuenta:not([open]) > .cuenta-menu {
+  display: none;
+}
+
+.cuenta-menu {
+  position: absolute;
+  top: calc(100% + var(--espacio-2));
+  right: 0;
+  display: grid;
+  min-width: 13.75rem;
+  padding: var(--espacio-3);
+  background-color: var(--color-fondo);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-control);
+  box-shadow: var(--sombra-elevada);
+}
+
+.cuenta-menu p {
+  display: grid;
+  margin: 0 0 var(--espacio-2);
+}
+
+.cuenta-menu a {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-enlace);
+}
+
+.armazon #contenido {
+  display: grid;
+  gap: 1.375rem;
+  align-content: start;
+  min-width: 0;
+  padding: 1.625rem var(--espacio-4) 7rem;
+}
+
+.armazon .navegacion {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--capa-avisos);
+  max-width: none;
+  padding: var(--espacio-1) var(--espacio-1) var(--espacio-2);
+  border: 0;
+  border-block-start: var(--borde-marco) solid var(--color-laton);
+  border-radius: 0;
+  box-shadow: var(--sombra-flotante);
+}
+
+.armazon .navegacion ul::before,
+.armazon .navegacion-nodo {
+  display: none;
+}
+
+/* El nombre completo queda para los lectores de pantalla; a la vista, el corto. */
+.armazon .navegacion-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.armazon .navegacion ul {
+  display: grid;
+  grid-auto-columns: minmax(min-content, 1fr);
+  grid-auto-flow: column;
+  gap: 0;
+}
+
+.armazon .navegacion a {
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--espacio-1);
+  padding: 0.375rem 0.125rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.armazon .navegacion :is(.icono, .navegacion-corto) {
+  display: block;
+}
+
+.armazon .navegacion a[aria-current="page"] {
+  background-color: transparent;
+  color: var(--color-laton-brillante);
+}
+
+/* Los avisos breves aparecen encima de la barra inferior, sin taparla. */
+.armazon .avisos {
+  bottom: 6rem;
+}
+
+/* Panel: una hoja de pergamino con su trazo de tinta. */
+.panel {
+  position: relative;
+  margin: 0;
+  padding: 1.25rem 1.375rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-filete);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-papel);
+}
+
+.panel h3 {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-4);
+}
+
+.panel-bajada {
+  margin: var(--espacio-1) 0 var(--espacio-4);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.panel-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+/* Panel destacado: la hoja del mapa, con la cuadrícula de meridianos, la rosa de los vientos y,
+   en pantallas anchas, el camino de tinta con las cartelas de cada cifra. */
+.destacado {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-5);
+  min-height: 13.125rem;
+  padding: var(--espacio-5) 1.25rem;
+  overflow: hidden;
+  isolation: isolate;
+  background-color: var(--color-fondo);
+  background-image:
+    linear-gradient(var(--color-trama) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-trama) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+  border: var(--borde-hoja) solid var(--color-filete);
+  border-radius: var(--radio-panel);
+  box-shadow: var(--sombra-papel);
+}
+
+/* En el celular, la rosa queda en la esquina, recortada, para no pasar por detrás del texto. */
+.destacado::before {
+  content: "";
+  position: absolute;
+  top: -1.75rem;
+  right: -1.75rem;
+  z-index: -1;
+  width: var(--medida-rosa);
+  aspect-ratio: 1;
+  background-color: var(--color-borde);
+  mask: url("../../../img/cozy-medieval/rosa-de-los-vientos.svg") center / contain no-repeat;
+}
+
+.destacado h3 {
+  margin: 0.875rem 0 var(--espacio-2);
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.1;
+}
+
+.destacado p {
+  max-width: 46ch;
+  margin: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-grande);
+}
+
+.destacado .destacado-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  width: fit-content;
+  color: var(--color-laton-texto);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.destacado-etiqueta::before {
+  content: "";
+  width: var(--medida-rombo);
+  height: var(--medida-rombo);
+  background-color: var(--color-laton);
+  transform: rotate(45deg);
+}
+
+.destacado-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 1.25rem;
+}
+
+.destacado-red {
+  display: none;
+  position: relative;
+}
+
+.destacado-red svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: var(--color-ruta);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.5 9;
+}
+
+/* Cada parada del camino es un pueblo: un círculo de tinta con el centro de pergamino. */
+.destacado-nodo {
+  position: absolute;
+  width: 0.875rem;
+  height: 0.875rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-ruta) solid var(--color-titulo);
+  border-radius: var(--radio-sello);
+}
+
+.destacado-nodo--1 {
+  top: 161px;
+  left: 11px;
+}
+
+.destacado-nodo--2 {
+  top: 95px;
+  left: 153px;
+}
+
+/* Las cifras del mapa van en cartelas: el rótulo de un lugar en un mapa antiguo. */
+.destacado-chip {
+  position: absolute;
+  min-width: 7rem;
+  padding: 0.5rem var(--espacio-3);
+  background-color: var(--color-fondo);
+  border: var(--borde-ancho) solid var(--color-titulo);
+  border-radius: var(--radio-chico);
+  text-align: center;
+}
+
+.destacado-chip b {
+  display: block;
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: 1.375rem;
+}
+
+.destacado-chip span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+}
+
+.destacado-chip--1 {
+  top: 84px;
+  left: 8px;
+}
+
+.destacado-chip--2 {
+  top: 118px;
+  left: 186px;
+}
+
+.destacado-chip--3 {
+  top: -8px;
+  right: -6px;
+}
+
+/* Cifras: los asientos del libro de cuentas. */
+.cifras {
+  display: grid;
+  gap: 1.125rem;
+}
+
+:is(.cifra, .resumen-entregas, .categoria) {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 12.25rem;
+  overflow: hidden;
+  isolation: isolate;
+  container-type: inline-size;
+  border-radius: var(--radio-panel);
+  text-decoration: none;
+}
+
+.cifra-etiqueta {
+  font-family: var(--fuente-rotulos);
+  font-size: clamp(14px, 5.5cqi, 17px);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.cifra {
+  padding: 1.25rem 1.375rem 1.125rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-filete);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-texto);
+  transition: border-color var(--movimiento-duracion);
+}
+
+.cifra:hover {
+  border-color: var(--color-marca);
+}
+
+.cifra .cifra-etiqueta {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: 2rem;
+  padding: 0 2.75rem 0 0;
+  color: var(--color-titulo);
+}
+
+.cifra .cifra-etiqueta::before {
+  content: "";
+  flex: none;
+  width: var(--medida-rombo);
+  height: var(--medida-rombo);
+  background-color: var(--color-laton);
+  transform: rotate(45deg);
+}
+
+.cifra-ir {
+  position: absolute;
+  top: var(--espacio-4);
+  right: var(--espacio-4);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-sello);
+  color: var(--color-marca-texto);
+}
+
+.cifra-cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: var(--espacio-3);
+}
+
+.cifra-valor {
+  color: var(--color-titulo);
+  font-size: clamp(40px, 18cqi, 60px);
+  font-weight: 800;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1;
+}
+
+.cifra-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 5px;
+  margin-top: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.cifra-chip b {
+  color: var(--color-marca-texto);
+  font-style: normal;
+  font-weight: 800;
+}
+
+.cifra-grafico {
+  display: block;
+  max-width: 100%;
+  height: 4.5rem;
+  margin: var(--espacio-4) 0 0 auto;
+  overflow: visible;
+}
+
+.cifra-grafico rect {
+  fill: var(--color-segmento-vacio);
+  stroke: var(--color-ruta);
+  stroke-width: 1;
+  rx: 1px;
+}
+
+.cifra-grafico rect.actual {
+  fill: var(--color-marca);
+  stroke: var(--color-marca);
+}
+
+.resumen-entregas {
+  order: -1;
+  justify-content: center;
+  gap: var(--espacio-3);
+  padding: 1.25rem 1.375rem 1.375rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-filete);
+  box-shadow: var(--sombra-papel);
+}
+
+/* Si el título no entra al lado de la moneda, baja. */
+.resumen-entregas-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3) 1.125rem;
+}
+
+.resumen-entregas h3 {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: clamp(18px, 7cqi, 26px);
+  line-height: 1.1;
+}
+
+.resumen-entregas h3 span {
+  display: block;
+}
+
+/* La moneda: una medalla de latón con el canto grabado. */
+.moneda {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: clamp(72px, 26cqi, 100px);
+  aspect-ratio: 1;
+  margin: 7px;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 0 0 4px var(--color-placa-brillo);
+}
+
+.moneda::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border: var(--borde-ruta) dotted var(--color-laton-texto);
+  border-radius: var(--radio-sello);
+}
+
+.moneda b {
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: clamp(30px, 11cqi, 44px);
+  font-weight: 900;
+  line-height: 1;
+}
+
+.segmentos {
+  display: block;
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  border: var(--borde-ancho) solid var(--color-titulo);
+  border-radius: var(--radio-chico);
+}
+
+.segmentos rect {
+  fill: var(--color-segmento);
+}
+
+.segmento--entregadas {
+  --color-segmento: var(--color-marca);
+}
+
+.segmento--camino {
+  --color-segmento: var(--color-marca-alterna);
+}
+
+.segmento--proceso {
+  --color-segmento: var(--color-marca-suave);
+}
+
+.segmento--sin-entregar {
+  --color-segmento: var(--color-segmento-vacio);
+}
+
+.leyenda {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.375rem 0.875rem;
+  margin: 0;
+  padding: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.leyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  list-style: none;
+}
+
+.leyenda li::before {
+  content: "";
+  flex: none;
+  width: 11px;
+  height: 11px;
+  background-color: var(--color-segmento);
+  border: var(--borde-ancho) solid var(--color-titulo);
+}
+
+/* La categoría: una placa de latón, como la de una puerta. */
+.categoria {
+  justify-content: flex-end;
+  gap: 0.375rem;
+  padding: 1.25rem 1.375rem;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  color: var(--color-titulo);
+}
+
+/* El tamaño sigue al ancho de la placa para que el nombre entre entero. */
+.categoria-nombre {
+  font-family: var(--fuente-titulos);
+  font-size: clamp(22px, 10cqi, 40px);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.categoria-proxima {
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* Recorrido: el camino de puntos de tinta, con una parada numerada por paso. Vertical en el
+   celular, horizontal desde el quiebre medio. */
+.recorrido {
+  position: relative;
+  display: grid;
+  gap: 0.875rem;
+  margin: 0.375rem 0 var(--espacio-3);
+  padding: 0 0 0 2px;
+}
+
+.recorrido::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  bottom: 15px;
+  left: 15px;
+  border-inline-start: var(--borde-ruta) dotted var(--color-ruta);
+}
+
+.recorrido-paso {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  list-style: none;
+}
+
+.recorrido-texto {
+  display: grid;
+}
+
+.recorrido-texto small {
+  font-size: var(--tamano-mini);
+  font-style: italic;
+}
+
+.recorrido-nodo {
+  z-index: 1;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--medida-nodo);
+  height: var(--medida-nodo);
+  background-color: var(--color-fondo);
+  border: var(--borde-ruta) solid var(--color-titulo);
+  border-radius: var(--radio-sello);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.recorrido-paso--hecho .recorrido-nodo {
+  background-color: var(--color-marca);
+  border-color: var(--color-marca);
+  color: var(--color-texto-sobre-accion);
+}
+
+.recorrido-paso--actual {
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+.recorrido-paso--actual .recorrido-nodo {
+  background-color: var(--color-destacado-fondo);
+  border-color: var(--color-destacado-fondo);
+  box-shadow: 0 0 0 3px var(--color-laton-brillante);
+  color: var(--color-destacado-texto);
+}
+
+.recorrido-paso--pendiente .recorrido-nodo {
+  border-style: dashed;
+  color: var(--color-texto-suave);
+}
+
+/* Misión: el logro va en cuero oscuro con un sello de latón. */
+.mision {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-1);
+  background-color: var(--color-destacado-fondo-alto);
+  border: var(--borde-hoja) solid var(--color-laton);
+  color: var(--color-destacado-texto);
+}
+
+.mision > h3,
+.mision > .panel-bajada {
+  justify-self: end;
+  text-align: end;
+}
+
+.mision > h3 {
+  color: var(--color-destacado-texto);
+}
+
+.mision .panel-bajada,
+.mision-pie {
+  color: var(--color-destacado-texto-suave);
+}
+
+.mision-sello-fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin: 0.625rem 0 var(--espacio-4);
+}
+
+.mision-sello-fila p {
+  display: grid;
+  margin: 0;
+  color: var(--color-destacado-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.mision-sello-fila b {
+  color: var(--color-destacado-texto);
+  font-family: var(--fuente-rotulos);
+  font-size: 1.1875rem;
+}
+
+.mision-sello {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 0 0 3px var(--color-placa-brillo);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-weight: 800;
+}
+
+.mision-barra {
+  display: block;
+  width: 100%;
+  height: 10px;
+  margin: 0;
+  overflow: hidden;
+  appearance: none;
+  background-color: var(--color-destacado-pista);
+  border: var(--borde-ancho) solid var(--color-laton);
+  border-radius: var(--radio-chico);
+}
+
+.mision-barra::-webkit-progress-bar {
+  background-color: var(--color-destacado-pista);
+}
+
+/* [value] le gana a la regla de Pico para progress[value]. */
+.mision-barra[value]::-webkit-progress-value {
+  background-color: var(--color-laton-brillante);
+}
+
+.mision-barra[value]::-moz-progress-bar {
+  background-color: var(--color-laton-brillante);
+}
+
+.mision-pie {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--espacio-2) 0 0.875rem;
+  font-size: var(--tamano-chico);
+}
+
+.mision [role="button"] {
+  justify-self: start;
+}
+
+/* Notificaciones: cada una lleva un rombo de tinta verde, como una marca en el mapa. */
+.notas {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.notas li {
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin: 0;
+  padding: 0.625rem var(--espacio-3) 0.625rem 0.375rem;
+  border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
+  list-style: none;
+}
+
+.notas li:last-child {
+  border-block-end: 0;
+}
+
+.notas li::before {
+  content: "";
+  width: var(--medida-rombo);
+  height: var(--medida-rombo);
+  margin-inline-start: 2px;
+  background-color: var(--color-marca);
+  transform: rotate(45deg);
+}
+
+.notas li:hover {
+  background-color: var(--color-fondo-pagina);
+}
+
+.notas p {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+}
+
+.notas time {
+  grid-column: 2;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* Avisos breves: una nota de pergamino con su rombo de color. */
+.avisos {
+  position: fixed;
+  right: var(--espacio-4);
+  bottom: var(--espacio-4);
+  left: var(--espacio-4);
+  z-index: var(--capa-avisos);
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-2);
+  pointer-events: none;
+}
+
+.avisos > * {
+  pointer-events: auto;
+}
+
+.aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+  max-width: var(--medida-lectura);
+  padding: 0.875rem 1.125rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-filete);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-texto);
+}
+
+.aviso::before {
+  content: "";
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  margin-top: 0.4375rem;
+  background-color: var(--color-marca-alterna);
+  transform: rotate(45deg);
+}
+
+.aviso--exito::before {
+  background-color: var(--color-marca);
+}
+
+.aviso p {
+  margin: 0;
+}
+
+.avisos .aviso {
+  box-shadow: var(--sombra-aviso);
+}
+
+/* Banner: algo que afecta a toda la pantalla, enmarcado entero en su color. */
+.banner {
+  display: grid;
+  gap: 0.625rem;
+  margin-block-end: var(--espacio-5);
+  padding: 1.25rem 1.375rem;
+  border: var(--borde-marco) solid currentcolor;
+  border-radius: var(--radio-panel);
+}
+
+.banner h2 {
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-size: 1.125rem;
+}
+
+.banner h2::after {
+  content: none;
+}
+
+.banner p,
+.banner small {
+  margin: 0;
+  color: inherit;
+}
+
+.banner--error {
+  background-color: var(--color-error-fondo);
+  color: var(--color-error-texto);
+}
+
+.banner--advertencia {
+  background-color: var(--color-advertencia-fondo);
+  color: var(--color-advertencia-texto);
+}
+
+/* Diálogo: una hoja de pergamino sobre el escritorio en penumbra. */
+dialog > article {
+  padding: 1.75rem;
+  border: var(--borde-hoja) solid var(--color-filete);
+  border-radius: var(--radio-panel);
+  box-shadow: var(--sombra-elevada);
+}
+
+dialog > article h2 {
+  font-size: var(--tamano-titulo-3);
+}
+
+dialog > article > footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  margin: var(--espacio-5) 0 0;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+
+dialog > article > footer button {
+  margin: 0;
+}
+
+/* Carga en curso */
+.esqueleto {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4) var(--espacio-2);
+}
+
+/* Pico dibuja un spinner en todo aria-busy; el esqueleto ya muestra la carga. */
+.esqueleto[aria-busy="true"]::before {
+  content: none;
+}
+
+.esqueleto-fila {
+  height: 14px;
+  background-image: var(--color-degradado-esqueleto);
+  background-size: 200% 100%;
+  border-radius: var(--radio-chico);
+  animation: esqueleto var(--movimiento-pulso) ease-in-out infinite;
+}
+
+.esqueleto-fila:last-child {
+  width: 60%;
+}
+
+@keyframes esqueleto {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.cargando {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* Estado vacío: la rosa de los vientos marca dónde empezar. Los tres nodos de la ruta del
+   fragmento son de Glassmorphism y acá no se muestran. */
+.estado-vacio {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-5) var(--espacio-2);
+}
+
+.estado-vacio h3 {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-4);
+}
+
+.estado-vacio p {
+  max-width: var(--medida-lectura);
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.ruta-chica {
+  width: var(--medida-rosa-chica);
+  aspect-ratio: 1;
+  background-color: var(--color-laton);
+  mask: url("../../../img/cozy-medieval/rosa-de-los-vientos.svg") center / contain no-repeat;
+}
+
+.ruta-chica span {
+  display: none;
+}
+
+/* Estado de una entrega: un sello en tinte, con un color por estado y su ícono. */
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: fit-content;
+  padding: 0.25rem var(--espacio-3) 0.25rem 0.5rem;
+  border: var(--borde-ancho) solid currentcolor;
+  border-radius: var(--radio-insignia);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.insignia .icono {
+  flex: none;
+  stroke-width: 2;
+}
+
+.insignia--pendiente {
+  background-color: var(--color-advertencia-fondo);
+  color: var(--color-advertencia-texto);
+}
+
+.insignia--en-camino {
+  background-color: var(--color-info-fondo);
+  color: var(--color-info-texto);
+}
+
+.insignia--entregada {
+  background-color: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.insignia--con-problema {
+  background-color: var(--color-error-fondo);
+  color: var(--color-error-texto);
+}
+
+/* Tarjeta de una entrega: la foto va pegada a la hoja, con su borde de papel. */
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: var(--espacio-5);
+}
+
+.tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-2) 0;
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-filete);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-papel);
+  color: var(--color-texto);
+}
+
+.tarjeta-foto {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 330 / 244;
+  object-fit: cover;
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-foto);
+}
+
+/* Sin foto: el ícono de lo donado en grabado, sobre la trama de un dibujo a pluma. */
+.tarjeta-portada {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 330 / 244;
+  background-color: var(--color-superficie);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-trama) 0 1px,
+    transparent 1px 7px
+  );
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-chico);
+  color: var(--color-titulo);
+}
+
+.tarjeta-portada .icono {
+  stroke-width: 1.1;
+}
+
+.tarjeta > .insignia {
+  position: absolute;
+  top: var(--espacio-4);
+  right: var(--espacio-4);
+  margin: 0;
+  box-shadow: 0 0 0 2px var(--color-fondo);
+}
+
+.tarjeta-cuerpo {
+  display: grid;
+  gap: 0.25rem;
+  padding: var(--espacio-3) var(--espacio-3) 1rem;
+}
+
+.tarjeta-destino {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  color: var(--color-marca-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.tarjeta-destino img {
+  filter: var(--color-filtro-tinta);
+}
+
+.tarjeta-titulo {
+  margin: 0;
+  font-family: var(--fuente-texto);
+  font-size: 1.3125rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.tarjeta-titulo a {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-titulo);
+  text-decoration: none;
+}
+
+.tarjeta-titulo a:hover {
+  text-decoration: underline;
+}
+
+.tarjeta-fecha {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* Tabla: un libro de registro, con filas separadas por una línea de tinta. En el celular cada
+   fila es un bloque; desde el quiebre chico, columnas. */
+.tabla {
+  width: 100%;
+  margin: 0;
+}
+
+.tabla caption {
+  padding-block-end: var(--espacio-3);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-weight: 700;
+  text-align: start;
+}
+
+.tabla thead {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.tabla,
+.tabla tbody,
+.tabla tr,
+.tabla th,
+.tabla td {
+  display: block;
+}
+
+.tabla tr {
+  padding: var(--espacio-3) var(--espacio-2);
+  border-block-end: var(--borde-ancho) solid var(--color-borde);
+}
+
+.tabla tr:hover {
+  background-color: var(--color-fondo-pagina);
+}
+
+.tabla :is(th, td) {
+  padding: var(--espacio-1) 0;
+  background-color: transparent;
+  border: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.tabla th[scope="row"] {
+  color: var(--color-titulo);
+  font-size: var(--tamano-texto);
+  font-weight: 700;
+}
+
+.tabla td::before {
+  content: attr(data-etiqueta) ": ";
+  font-weight: 700;
+}
+
+/* Campos de formulario: etiqueta fuerte, borde de 3:1 y el campo apenas hundido en el papel. */
+.campo {
+  display: grid;
+  gap: 0.375rem;
+  align-content: start;
+  margin-block-end: var(--espacio-4);
+}
+
+.campo > label {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.campo > input {
+  min-height: 3.125rem;
+  margin: 0;
+  box-shadow: var(--sombra-hundido);
+  transition: border-color var(--movimiento-rapido);
+}
+
+.campo > input:not([type="file"], :disabled):hover {
+  border-color: var(--color-marca);
+}
+
+.campo > small {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.campo > .campo-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+  color: var(--color-error-texto);
+  font-size: var(--tamano-chico);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.campo-error::before {
+  content: "!";
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  background-color: var(--color-error-texto);
+  color: var(--color-texto-sobre-error);
+  border-radius: var(--radio-sello);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.campo:has([aria-invalid="true"]) > label {
+  color: var(--color-error-texto);
+}
+
+.campo > [aria-invalid="true"] {
+  border-width: var(--borde-ruta);
+}
+
+/* Catálogo /estilos: cada sección es una hoja de pergamino. */
+.catalogo-intro,
+.catalogo-patron {
+  max-width: var(--medida-lectura);
+  color: var(--color-texto-suave);
+}
+
+.catalogo {
+  margin-block-end: 1.375rem;
+  padding: 1.375rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-filete);
+  border-radius: var(--radio-tarjeta);
+  box-shadow: var(--sombra-papel);
+}
+
+.catalogo > h2 {
+  margin-block-end: var(--espacio-3);
+}
+
+.catalogo-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.catalogo-fila > * {
+  margin: 0;
+}
+
+.catalogo-oscuro {
+  margin-top: var(--espacio-4);
+  padding: var(--espacio-4);
+  background-color: var(--color-destacado-fondo);
+  border-radius: var(--radio-tarjeta);
+}
+
+.catalogo-columnas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--medida-tarjeta-minima)), 1fr));
+  gap: var(--espacio-5);
+}
+
+.muestra-pantalla {
+  display: grid;
+  gap: 1.375rem;
+  margin-block-end: var(--espacio-6);
+}
+
+.muestra-pantalla > :is(h2, .catalogo-patron) {
+  margin: 0;
+}
+
+.muestra-grilla {
+  display: grid;
+  gap: 1.125rem;
+}
+
+.muestras {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--medida-tarjeta-minima)), 1fr));
+  gap: var(--espacio-3);
+  padding: 0;
+}
+
+.muestras li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  color: var(--color-titulo);
+  list-style: none;
+}
+
+.muestra {
+  flex: none;
+  width: var(--medida-muestra);
+  height: var(--medida-muestra);
+  border: var(--borde-ancho) solid var(--color-titulo);
+  border-radius: var(--radio-chico);
+}
+
+.muestra--destacado {
+  background-color: var(--color-destacado-fondo);
+}
+
+.muestra--marca {
+  background-color: var(--color-marca-brillante);
+}
+
+.muestra--marca-alterna {
+  background-color: var(--color-marca-alterna);
+}
+
+.muestra--marca-suave {
+  background-color: var(--color-marca-suave);
+}
+
+.muestra--fondo-pagina {
+  background-color: var(--color-fondo-pagina);
+}
+
+.muestra--fondo {
+  background-color: var(--color-fondo);
+}
+
+.muestra--superficie {
+  background-color: var(--color-superficie);
+}
+
+.muestra--texto {
+  background-color: var(--color-texto);
+}
+
+.muestra--texto-suave {
+  background-color: var(--color-texto-suave);
+}
+
+.muestra--accion {
+  background-color: var(--color-accion-primaria);
+}
+
+.muestra--foco {
+  background-color: var(--color-foco);
+}
+
+.muestra--exito {
+  background-color: var(--color-exito-texto);
+}
+
+.muestra--info {
+  background-color: var(--color-info-texto);
+}
+
+.muestra--advertencia {
+  background-color: var(--color-advertencia-texto);
+}
+
+.muestra--error {
+  background-color: var(--color-error-texto);
+}
+
+/* Desde 600 px: la tabla pasa a columnas, con el encabezado sobre un doble filete. */
+@media (min-width: 37.5em) {
+  .tabla {
+    display: table;
+    border-collapse: collapse;
+  }
+
+  .tabla thead {
+    position: static;
+    display: table-header-group;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .tabla tbody {
+    display: table-row-group;
+  }
+
+  .tabla tr {
+    display: table-row;
+  }
+
+  .tabla :is(th, td) {
+    display: table-cell;
+    padding: var(--espacio-3) var(--espacio-4);
+    vertical-align: middle;
+    border-block-end: var(--borde-ancho) solid var(--color-borde);
+  }
+
+  .tabla thead th {
+    color: var(--color-titulo);
+    font-weight: 700;
+    border-block-end: 4px double var(--color-filete);
+  }
+
+  .tabla tr > :last-child {
+    width: var(--medida-columna-estado);
+  }
+
+  .tabla tbody tr:hover > * {
+    background-color: var(--color-fondo-pagina);
+  }
+
+  .tabla td::before {
+    content: none;
+  }
+}
+
+/* Desde 860 px: escritorio. La barra lateral de nogal, el panel destacado más amplio y el
+   recorrido horizontal. */
+@media (min-width: 53.75em) {
+  .encabezado {
+    padding-inline: var(--espacio-5);
+  }
+
+  .armazon-cuerpo {
+    display: grid;
+    grid-template-columns: 15.5rem minmax(0, 1fr);
+  }
+
+  .armazon #contenido {
+    padding: 1.625rem var(--espacio-6) var(--espacio-7);
+  }
+
+  .armazon .avisos {
+    bottom: var(--espacio-4);
+  }
+
+  .armazon .navegacion {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    padding: var(--espacio-4);
+    border: 0;
+    border-inline-end: var(--borde-marco) solid var(--color-laton);
+    box-shadow: none;
+  }
+
+  .armazon .navegacion ul::before,
+  .armazon .navegacion-nodo {
+    display: block;
+  }
+
+  .armazon .navegacion-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .armazon .navegacion ul {
+    position: sticky;
+    top: calc(var(--medida-barra-superior) + var(--espacio-4));
+    display: flex;
+    gap: var(--espacio-1);
+  }
+
+  .armazon .navegacion a {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.875rem;
+    padding: 0.625rem var(--espacio-3);
+    font-size: var(--tamano-chico);
+    font-weight: 400;
+  }
+
+  .armazon .navegacion a[aria-current="page"] {
+    background-color: var(--color-fondo);
+    color: var(--color-titulo);
+    font-weight: 700;
+  }
+
+  .armazon .navegacion :is(.icono, .navegacion-corto) {
+    display: none;
+  }
+
+  .destacado {
+    padding: 1.875rem 2.125rem;
+  }
+
+  .cifras {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resumen-entregas {
+    order: 0;
+  }
+
+  .categoria {
+    grid-column: 1 / -1;
+    min-height: 9.375rem;
+  }
+
+  .recorrido {
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 0;
+    padding: 0;
+  }
+
+  .recorrido::before {
+    top: 15px;
+    right: 10%;
+    bottom: auto;
+    left: 10%;
+    border-block-start: var(--borde-ruta) dotted var(--color-ruta);
+    border-inline-start: 0;
+  }
+
+  .recorrido-paso {
+    flex-direction: column;
+    gap: var(--espacio-2);
+    text-align: center;
+  }
+
+  .notas li {
+    grid-template-columns: 12px 1fr auto;
+  }
+
+  .notas time {
+    grid-column: auto;
+  }
+}
+
+/* Desde 1100 px: la hoja del mapa completa, con el camino de tinta y sus cartelas. */
+@media (min-width: 68.75em) {
+  .destacado {
+    grid-template-columns: minmax(0, 1fr) 22.5rem;
+  }
+
+  /* La rosa pasa a la esquina libre del mapa, arriba a la izquierda del camino. */
+  .destacado::before {
+    top: 1.875rem;
+    right: auto;
+    left: calc(100% - 2.125rem - 22.5rem);
+    width: var(--medida-rosa-chica);
+    background-color: var(--color-filete);
+  }
+
+  .destacado-red {
+    display: block;
+  }
+
+  .cifras {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .categoria {
+    grid-column: auto;
+    min-height: 12.25rem;
+  }
+
+  .muestra-grilla {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  }
+}

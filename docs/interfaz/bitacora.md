@@ -6,6 +6,11 @@
 Cada decisión de diseño queda acá, de la más nueva a la más vieja, con el mismo formato que usa el
 entregable para la cátedra. Las comparaciones A/B agregan sus capturas en `evidencia/<tema>/`.
 
+Desde el 2026-10-30 hay dos alternativas de identidad. Las decisiones anteriores a la entrada
+"Dos alternativas de identidad" son de la **Alternativa Glassmorphism**. Las de la **Alternativa
+Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
+`evidencia/cozy-medieval/`.
+
 ## Formato
 
 ```markdown
@@ -20,6 +25,103 @@ entregable para la cátedra. Las comparaciones A/B agregan sus capturas en `evid
 ```
 
 ## Decisiones
+
+### 2026-10-30 · paleta (Cozy / Medieval) · Nogal y bosque
+
+- **Decisión:** pergamino y tinta sepia para leer; barra lateral y cuero de nogal oscuro; acciones
+  en verde bosque; latón para sellos, monedas y la placa de categoría. Los estados, en tinte, con
+  texto e ícono: ámbar (pendiente), azul de mapa (en camino), verde bosque (entregada) y rojo lacre
+  (con problema).
+- **Alternativas:** Bosque y latón: barra lateral verde bosque y botones de latón con letra de
+  tinta.
+- **Por qué:** el verde marca la acción principal y el latón queda para los detalles; con latón en
+  los botones, todo lo dorado competía. Era la recomendada.
+- **Costo:** ninguno. Contrastes AA comprobados en su `tokens.css`.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/cozy-medieval/paleta/` (B). En esta tanda, la A de cada ronda es la
+  base: sus capturas están en `evidencia/cozy-medieval/direccion-general/a-cartografo-*`.
+
+### 2026-10-30 · forma (Cozy / Medieval) · Pergamino suave
+
+- **Decisión:** esquinas redondeadas (de 6 a 16 px; los estados, en píldora), un solo trazo de
+  tinta en paneles y tarjetas, sombra suave y botones con una sombra corta de tinta. Sin dobles
+  filetes.
+- **Alternativas:** Hoja de atlas (esquinas casi rectas y doble filete en los marcos importantes,
+  la recomendada); Marco tallado (madera con remaches de latón).
+- **Por qué:** al usuario le gustó más: es la más amable.
+- **Costo:** se pierde el doble filete de atlas, que reforzaba la idea del mapa. El mapa queda en
+  la cuadrícula, la rosa de los vientos y el camino de tinta. La cabecera y el encabezado de las
+  tablas conservan su doble línea.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/cozy-medieval/forma/` (B y C).
+
+### 2026-10-30 · tipografia (Cozy / Medieval) · Almendra para títulos y rótulos
+
+- **Decisión:** Almendra, de Ana Sanfelippo, en títulos y rótulos; Alegreya, de Juan Pablo del
+  Peral (Huerta Tipográfica), en el texto. Las dos son de diseñadores argentinos, con licencia OFL
+  y servidas desde el propio sitio.
+- **Alternativas:** Cinzel, mayúsculas de inscripción (la recomendada); Grenze Gotisch, gótica
+  legible.
+- **Por qué:** al usuario le gustó más: es más cálida y medieval.
+- **Costo:** Almendra tiene solo dos pesos (normal y negrita). Cinzel y Grenze Gotisch se borraron
+  del sitio.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/cozy-medieval/tipografia/` (B y C).
+
+### 2026-10-30 · direccion-general (Cozy / Medieval) · El cartógrafo
+
+- **Decisión:** "cada donación deja un camino en el mapa". La audacia es el saludo del tablero:
+  una hoja de mapa con la cuadrícula de meridianos, la rosa de los vientos y, en pantallas
+  anchas, el camino de tinta con las cifras en cartelas. La barra lateral es de nogal, con un
+  camino de puntos de latón, y la sección actual es una pestaña de pergamino. Los íconos tienen
+  trazo de grabado; los estados vacíos muestran la rosa de los vientos ("por dónde empezar"). La
+  rosa y el filete de los títulos son dibujos propios.
+- **Alternativas:** La aldea del bosque: barra verde bosque, botones de latón, marcos de madera con
+  remaches y el saludo en un cartel.
+- **Por qué:** es la más adulta y cuenta el recorrido de cada donación, que es el centro de
+  DonaTrack. Era la recomendada.
+- **Costo:** la aldea queda como segunda capa del concepto, sin elementos propios por ahora.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/cozy-medieval/direccion-general/`.
+
+### 2026-10-30 · identidad (Cozy / Medieval) · Brief aprobado
+
+- **Decisión:** [brief de la Alternativa Cozy / Medieval](identidad/brief-cozy-medieval.md):
+  medieval de juego de rol para adultos, en todo el sitio; idea rectora "el mapa del viaje", con
+  la aldea que se ayuda como segunda capa; contenido claro con la barra lateral oscura; pergamino
+  y tinta, verde bosque, latón y madera tallada; íconos de grabado en tinta; los mismos textos que
+  Glassmorphism.
+- **Alternativas:** las opciones de tres rondas de preguntas, con seis fotos de referencia del
+  usuario (mapa antiguo, carreta, tablero de una isla, menú de misiones, cómoda tallada y una
+  paleta de otoño). Para la intensidad: cálida con toques medievales, o casi sin medieval.
+- **Por qué:** el usuario quiere contrastar dos mensajes, uno profesional y serio y otro cálido y
+  de aventura. Antes de elegir la intensidad pidió los pros y contras de cada una, que quedaron en
+  el brief. Al aprobarlo sumó una condición: nada efectista; cada adorno cuenta algo del sistema.
+- **Costo:** el riesgo de parecer un juego o de cansar en las pantallas de trabajo. Se cuida así:
+  los datos van sobre pergamino limpio, la letra decorativa solo en títulos y sin texturas de
+  fondo.
+- **Quién decidió:** usuario.
+- **Evidencia:** las fotos de referencia no se guardan en el repositorio (no son nuestras); el
+  brief las describe.
+
+### 2026-10-30 · proceso · Dos alternativas de identidad: cada una con su hoja completa
+
+- **Decisión:** la identidad que había hasta hoy pasa a llamarse **Alternativa Glassmorphism** y
+  queda igual: sus hojas (`static/css/tokens.css` y `app.css`) no se tocan y es la que se ve por
+  defecto. La **Alternativa Cozy / Medieval** tiene su propio `tokens.css` y su propio `app.css`,
+  completos, en `static/css/alternativas/cozy-medieval/`. Las dos comparten las pantallas, los
+  componentes y los textos. En la maqueta se elige con `?alternativa=cozy-medieval`, también
+  junto con `?variante=`. La comprobación visual recorre las dos y las compara.
+  [ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md).
+- **Alternativas:** una sola hoja de colores con una sección por alternativa y los estilos
+  compartidos (la recomendada por el agente, por el mantenimiento); una rama propia para Cozy.
+- **Por qué:** el usuario prefirió darle a Cozy libertad total sin tocar nada de Glassmorphism.
+- **Costo:** cada pantalla o componente nuevo se estiliza dos veces, una por alternativa, y se
+  revisa dos veces. La regla "un solo `tokens.css`" (RNF-UI-11) pasa a ser "uno por
+  alternativa", sujeta a la aprobación del ADR. Fuera de la maqueta todavía no hay forma de
+  elegir la alternativa.
+- **Quién decidió:** usuario.
+- **Evidencia:** `evidencia/cozy-medieval/alternativas/` (Glassmorphism y Cozy lado a lado).
 
 ### 2026-10-30 · proceso · Decisiones en tanda: 7 rondas preparadas de una vez
 

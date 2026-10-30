@@ -1,0 +1,384 @@
+/*
+ * Alternativa Cozy / Medieval: El cartógrafo. Cada donación deja un camino de tinta en el mapa:
+ * pergamino, tinta sepia, barra lateral de nogal, acciones en verde bosque y detalles de latón.
+ * Títulos en Almendra, texto en Alegreya y hojas de pergamino suave.
+ */
+
+/*
+ * tokens.css de la Alternativa Cozy / Medieval (brief: docs/interfaz/identidad/
+ * brief-cozy-medieval.md). Es la única fuente de colores, letras, espacios, bordes y puntos de
+ * quiebre de esta alternativa; la usa su propio app.css. Mismos niveles que el tokens.css de
+ * Glassmorphism (D20):
+ *
+ * 1. Valores base (--p-*): la paleta. Solo se usan en este archivo. Los colores opacos van en
+ *    #rrggbb, para que InterfazFitnessTest pueda medir el contraste.
+ * 2. Usos: lo único que usan pantallas y componentes.
+ * 3. Pico: sus variables (--pico-*) se asignan solo acá, a partir de los usos.
+ */
+
+/* Alegreya (texto; variable, peso 400–900, normal y cursiva) de Juan Pablo del Peral, Huerta
+   Tipográfica, y Almendra (títulos y rótulos; pesos 400 y 700) de Ana Sanfelippo. Google Fonts,
+   subconjuntos latino y latino extendido; licencias SIL OFL 1.1 en static/fuentes/OFL-*.txt. */
+@font-face {
+  font-family: Alegreya;
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../../../fuentes/alegreya-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: Alegreya;
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../../../fuentes/alegreya-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: Alegreya;
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../../../fuentes/alegreya-cursiva-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: Alegreya;
+  font-style: italic;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url("../../../fuentes/alegreya-cursiva-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: Almendra;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../../fuentes/almendra-400-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: Almendra;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../../../fuentes/almendra-400-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: Almendra;
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../../../fuentes/almendra-700-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: Almendra;
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../../../fuentes/almendra-700-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  /* 1. Valores base: Nogal y bosque. Pergamino y tinta sepia para leer; nogal para la barra
+     lateral y el cuero; verde bosque para actuar; latón para los detalles. */
+  --p-pergamino-50: #fbf6ea;
+  --p-pergamino-100: #f3e9d2;
+  --p-pergamino-200: #e9dcbc;
+  --p-pergamino-300: #dccaa3;
+  --p-tinta-900: #21170e;
+  --p-tinta-800: #2b1f14;
+  --p-tinta-600: #5c4a37;
+  --p-borde-control: #8b7558;
+  --p-nogal-900: #2a1d14;
+  --p-nogal-800: #3b2b1e;
+  --p-bosque-800: #234a2f;
+  --p-bosque-700: #2e5b3b;
+  --p-bosque-50: #e3ede0;
+  --p-laton-300: #d8b464;
+  --p-laton-500: #b4882f;
+  --p-laton-700: #7a5718;
+  --p-azul-700: #24496f;
+  --p-azul-50: #e4ecf2;
+  --p-ambar-800: #7b4706;
+  --p-ambar-50: #f6e2b6;
+  --p-lacre-700: #8c2a1f;
+  --p-lacre-50: #f7e3dc;
+
+  /* Transparencias derivadas */
+  --p-tinta-a08: rgb(43 31 20 / 8%);
+  --p-tinta-a12: rgb(43 31 20 / 12%);
+  --p-tinta-a20: rgb(43 31 20 / 20%);
+  --p-tinta-a35: rgb(43 31 20 / 35%);
+  --p-tinta-a55: rgb(43 31 20 / 55%);
+  --p-nogal-a30: rgb(42 29 20 / 30%);
+  --p-nogal-a45: rgb(42 29 20 / 45%);
+  --p-nogal-a60: rgb(42 29 20 / 60%);
+  --p-pergamino-a10: rgb(251 246 234 / 10%);
+  --p-pergamino-a18: rgb(251 246 234 / 18%);
+  --p-pergamino-a35: rgb(251 246 234 / 35%);
+  --p-laton-a35: rgb(216 180 100 / 35%);
+  --p-laton-a60: rgb(216 180 100 / 60%);
+  --p-bosque-a16: rgb(46 91 59 / 16%);
+  --p-lacre-a16: rgb(140 42 31 / 16%);
+
+  --p-fuente-texto: Alegreya, "Iowan Old Style", Georgia, serif;
+  --p-fuente-titulos: Almendra, Alegreya, Georgia, serif;
+
+  /* 2. Usos */
+  --color-fondo-pagina: var(--p-pergamino-100);
+  --color-fondo: var(--p-pergamino-50);
+  --color-superficie: var(--p-pergamino-200);
+  --color-texto: var(--p-tinta-800);
+  --color-texto-suave: var(--p-tinta-600);
+  --color-titulo: var(--p-tinta-900);
+  --color-borde: var(--p-tinta-a20);
+  --color-borde-control: var(--p-borde-control);
+  --color-filete: var(--p-tinta-a35);
+  --color-filete-tenue: var(--p-tinta-a12);
+  --color-enlace: var(--p-bosque-700);
+  --color-enlace-activo: var(--p-bosque-800);
+  --color-accion-primaria: var(--p-bosque-700);
+  --color-accion-primaria-activa: var(--p-bosque-800);
+  --color-accion-secundaria: var(--p-nogal-900);
+  --color-accion-secundaria-activa: var(--p-nogal-800);
+  --color-texto-sobre-accion: var(--p-pergamino-50);
+  --color-texto-sobre-secundaria: var(--p-pergamino-50);
+  --color-placa-brillo: var(--p-pergamino-a35);
+  --color-foco: var(--p-bosque-800);
+  --color-foco-sobre-oscuro: var(--p-laton-300);
+  --color-foco-anillo: var(--p-bosque-a16);
+  --color-velo: var(--p-nogal-a60);
+
+  /* Madera y cuero: la barra lateral, la misión y la cinta oscura del catálogo */
+  --color-destacado-fondo: var(--p-nogal-900);
+  --color-destacado-fondo-alto: var(--p-nogal-800);
+  --color-destacado-texto: var(--p-pergamino-50);
+  --color-destacado-texto-suave: var(--p-pergamino-300);
+  --color-destacado-borde: var(--p-laton-a35);
+  --color-destacado-hover: var(--p-pergamino-a10);
+  --color-destacado-pista: var(--p-pergamino-a18);
+
+  /* Marca: el camino de tinta, el latón y los acentos */
+  --color-marca: var(--p-bosque-700);
+  --color-marca-brillante: var(--p-laton-300);
+  --color-marca-alterna: var(--p-azul-700);
+  --color-marca-suave: var(--p-laton-500);
+  --color-marca-fondo: var(--p-bosque-50);
+  --color-marca-texto: var(--p-bosque-700);
+  --color-laton: var(--p-laton-500);
+  --color-laton-brillante: var(--p-laton-300);
+  --color-laton-texto: var(--p-laton-700);
+  --color-ruta: var(--p-tinta-600);
+  --color-ruta-sobre-oscuro: var(--p-laton-a60);
+  --color-trama: var(--p-tinta-a08);
+  --color-segmento-vacio: var(--p-tinta-a12);
+
+  /* Estados de una entrega y avisos: sellos en tinte, siempre con texto */
+  --color-exito-fondo: var(--p-bosque-50);
+  --color-exito-texto: var(--p-bosque-700);
+  --color-info-fondo: var(--p-azul-50);
+  --color-info-texto: var(--p-azul-700);
+  --color-advertencia-fondo: var(--p-ambar-50);
+  --color-advertencia-texto: var(--p-ambar-800);
+  --color-error-fondo: var(--p-lacre-50);
+  --color-error-texto: var(--p-lacre-700);
+  --color-texto-sobre-error: var(--p-pergamino-50);
+  --color-error-anillo: var(--p-lacre-a16);
+
+  --color-degradado-esqueleto: linear-gradient(
+    90deg,
+    var(--p-pergamino-200),
+    var(--p-pergamino-100),
+    var(--p-pergamino-200)
+  );
+
+  /* Íconos y dibujos de la marca en tinta (grabado), sobre cualquier color de origen. */
+  --color-filtro-tinta: grayscale(1) sepia(1) saturate(0.7) brightness(0.42);
+
+  --fuente-texto: var(--p-fuente-texto);
+  /* Títulos grandes y rótulos chicos (marca, etiquetas, sellos, números de paso): hoy, la misma
+     letra; una letra más decorativa puede quedar solo en los títulos. */
+  --fuente-titulos: var(--p-fuente-titulos);
+  --fuente-rotulos: var(--p-fuente-titulos);
+
+  /* Almendra es angosta y va en minúsculas: los títulos van un poco más grandes que el texto
+     de Glassmorphism. */
+  --tamano-mini: 0.8125rem;
+  --tamano-chico: 0.9375rem;
+  --tamano-texto: 1.0625rem;
+  --tamano-texto-grande: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --tamano-titulo-4: 1.1875rem;
+  --tamano-titulo-3: 1.4375rem;
+  --tamano-titulo-2: clamp(1.375rem, 1.2rem + 0.5vw, 1.625rem);
+  --tamano-titulo-1: clamp(2rem, 1.5rem + 1.6vw, 2.875rem);
+  --tamano-cifra: clamp(2.5rem, 1.9rem + 2.4vw, 3.75rem);
+
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-7: 3rem;
+
+  /* Pergamino suave: esquinas redondeadas y un solo trazo de tinta, sin dobles filetes. */
+  --radio-chico: 6px;
+  --radio-control: 10px;
+  --radio-boton: 10px;
+  --radio-tarjeta: 14px;
+  --radio-panel: 16px;
+  --radio-insignia: 999px;
+  --radio-sello: 50%;
+
+  --borde-ancho: 1px;
+  --borde-hoja: 1.5px;
+  --borde-marco: 2px;
+  --borde-foco: 3px;
+  --borde-acento: 0.25rem;
+  --borde-ruta: 2px;
+
+  --sombra-papel: 0 8px 18px -10px var(--p-nogal-a45);
+  --sombra-elevada: 0 16px 30px -16px var(--p-nogal-a60);
+  --sombra-flotante: 0 10px 26px var(--p-nogal-a45);
+  --sombra-foto: 0 1px 3px var(--p-nogal-a30);
+  --sombra-hundido: inset 0 1px 2px var(--p-tinta-a12);
+  --sombra-aviso: var(--sombra-elevada);
+
+  --movimiento-rapido: 120ms;
+  --movimiento-duracion: 200ms;
+  --movimiento-lento: 300ms;
+  --movimiento-pulso: 1.4s;
+  --movimiento-curva: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --capa-avisos: 10;
+
+  /* 48 × 48 px: área de toque mínima (RNF-UI-10). */
+  --medida-toque-minimo: 3rem;
+  --medida-lectura: 70ch;
+  --medida-tarjeta-minima: 16rem;
+  --medida-muestra: 2.5rem;
+  --medida-nodo: 1.875rem;
+  --medida-nodo-chico: 0.625rem;
+  --medida-rombo: 0.5rem;
+  --medida-barra-superior: 4.25rem;
+  --medida-columna-estado: 11.5rem;
+  --medida-rosa: 9rem;
+  --medida-rosa-chica: 3.5rem;
+
+  /* Los mismos puntos de quiebre que Glassmorphism (600, 860 y 1100 px): las dos alternativas
+     comparten las plantillas. InterfazFitnessTest compara el literal. */
+  --medida-quiebre-chico: 37.5em;
+  --medida-quiebre-medio: 53.75em;
+  --medida-quiebre-ancho: 68.75em;
+
+  /* 3. Pico: base */
+  --pico-font-family: var(--fuente-texto);
+  --pico-border-radius: var(--radio-control);
+  --pico-spacing: var(--espacio-4);
+  --pico-form-element-spacing-vertical: 0.75rem;
+  --pico-form-element-spacing-horizontal: 0.875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --movimiento-rapido: 0ms;
+    --movimiento-duracion: 0ms;
+    --movimiento-lento: 0ms;
+    --movimiento-pulso: 0s;
+  }
+}
+
+/* 3. Pico: colores del tema claro, con el mismo selector que usa Pico. */
+[data-theme=light],
+:root:not([data-theme=dark]) {
+  --pico-background-color: var(--color-fondo-pagina);
+  --pico-color: var(--color-texto);
+  --pico-h1-color: var(--color-titulo);
+  --pico-h2-color: var(--color-titulo);
+  --pico-h3-color: var(--color-titulo);
+  --pico-h4-color: var(--color-titulo);
+  --pico-h5-color: var(--color-titulo);
+  --pico-h6-color: var(--color-titulo);
+  --pico-muted-color: var(--color-texto-suave);
+  --pico-muted-border-color: var(--color-borde);
+  --pico-primary: var(--color-enlace);
+  --pico-primary-underline: var(--color-filete);
+  --pico-primary-hover: var(--color-enlace-activo);
+  --pico-primary-hover-underline: var(--color-enlace-activo);
+  --pico-primary-background: var(--color-accion-primaria);
+  --pico-primary-border: var(--color-accion-primaria);
+  --pico-primary-hover-background: var(--color-accion-primaria-activa);
+  --pico-primary-hover-border: var(--color-accion-primaria-activa);
+  --pico-primary-focus: var(--color-foco-anillo);
+  --pico-primary-inverse: var(--color-texto-sobre-accion);
+  --pico-secondary: var(--color-accion-secundaria);
+  --pico-secondary-underline: var(--color-filete);
+  --pico-secondary-background: var(--color-accion-secundaria);
+  --pico-secondary-border: var(--color-accion-secundaria);
+  --pico-secondary-hover: var(--color-accion-secundaria-activa);
+  --pico-secondary-hover-underline: var(--color-accion-secundaria-activa);
+  --pico-secondary-hover-background: var(--color-accion-secundaria-activa);
+  --pico-secondary-hover-border: var(--color-accion-secundaria-activa);
+  --pico-secondary-focus: var(--color-foco-anillo);
+  --pico-secondary-inverse: var(--color-texto-sobre-secundaria);
+  --pico-form-element-background-color: var(--color-fondo);
+  --pico-form-element-border-color: var(--color-borde-control);
+  --pico-form-element-color: var(--color-texto);
+  --pico-form-element-placeholder-color: var(--color-texto-suave);
+  --pico-form-element-active-border-color: var(--color-marca);
+  --pico-form-element-focus-color: var(--color-foco-anillo);
+  --pico-form-element-invalid-border-color: var(--color-error-texto);
+  --pico-form-element-invalid-active-border-color: var(--color-error-texto);
+  --pico-form-element-invalid-focus-color: var(--color-error-anillo);
+  --pico-card-background-color: var(--color-fondo);
+  --pico-card-border-color: var(--color-filete);
+  --pico-card-box-shadow: var(--sombra-papel);
+  --pico-card-sectioning-background-color: var(--color-superficie);
+  --pico-table-border-color: var(--color-borde);
+  --pico-code-background-color: var(--color-superficie);
+  --pico-code-color: var(--color-titulo);
+  --pico-del-color: var(--color-error-texto);
+  --pico-ins-color: var(--color-exito-texto);
+  --pico-modal-overlay-background-color: var(--color-velo);
+}
+
+h1 {
+  --pico-font-size: var(--tamano-titulo-1);
+}
+
+h2 {
+  --pico-font-size: var(--tamano-titulo-2);
+}
+
+h3 {
+  --pico-font-size: var(--tamano-titulo-3);
+}
+
+h4 {
+  --pico-font-size: var(--tamano-titulo-4);
+}

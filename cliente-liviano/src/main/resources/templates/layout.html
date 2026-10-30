@@ -2,7 +2,9 @@
 <!--/* Estructura común de las pantallas públicas. Uso:
        <html th:replace="~{layout :: pagina(~{::title}, ~{::contenido})}">. Las privadas usan
        layout-privado, que toma de acá la cabecera y la marca. data-theme="light": solo modo claro
-       (bitácora, 2026-10-30). */-->
+       (bitácora, 2026-10-30). Las hojas de identidad son las de Glassmorphism, salvo que el
+       modelo traiga alternativa (perfil maqueta, ?alternativa=cozy-medieval): entonces, las de
+       static/css/alternativas/<alternativa>/. */-->
 <html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org"
       th:fragment="pagina(titulo, contenido)">
 <head th:fragment="cabeza(titulo)">
@@ -11,8 +13,10 @@
   <title th:replace="${titulo}">DonaTrack</title>
   <link rel="stylesheet" href="/webjars/picocss__pico/css/pico.min.css"
         th:href="@{/webjars/picocss__pico/css/pico.min.css}">
-  <link rel="stylesheet" href="/css/tokens.css" th:href="@{/css/tokens.css}">
-  <link rel="stylesheet" href="/css/app.css" th:href="@{/css/app.css}">
+  <link rel="stylesheet" href="/css/tokens.css"
+        th:href="${alternativa} ? @{/css/alternativas/{nombre}/tokens.css(nombre=${alternativa})} : @{/css/tokens.css}">
+  <link rel="stylesheet" href="/css/app.css"
+        th:href="${alternativa} ? @{/css/alternativas/{nombre}/app.css(nombre=${alternativa})} : @{/css/app.css}">
   <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
   <script src="/webjars/htmx.org/dist/htmx.min.js"

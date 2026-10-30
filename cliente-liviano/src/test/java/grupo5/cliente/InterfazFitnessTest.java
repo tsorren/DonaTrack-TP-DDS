@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +27,7 @@ class InterfazFitnessTest {
 
   private static final Path RECURSOS = Path.of("src/main/resources");
   private static final Path CSS = RECURSOS.resolve("static/css");
-  private static final Path TOKENS = CSS.resolve("tokens.css");
+  private static final String TOKENS = "tokens.css";
   private static final Path VARIANTES = CSS.resolve("variantes");
   private static final Path PLANTILLAS = RECURSOS.resolve("templates");
   private static final Path FRAGMENTOS = PLANTILLAS.resolve("fragmentos");
@@ -50,7 +51,8 @@ class InterfazFitnessTest {
 
   /**
    * Pares texto-fondo con contraste AA: 4,5 para texto y 3 para bordes y foco (WCAG 1.4.3 y
-   * 1.4.11). Un par nuevo de colores en tokens.css se agrega acá.
+   * 1.4.11). Un par nuevo de colores en tokens.css se agrega acá. Rigen para el tokens.css de cada
+   * alternativa: static/css/ (Glassmorphism) y static/css/alternativas/<nombre>/.
    */
   private static final List<Par> PARES =
       List.of(
@@ -151,13 +153,17 @@ class InterfazFitnessTest {
 
   @Test
   void mediaQueriesUsanSoloLosQuiebresDeTokens() {
-    Set<String> quiebres =
-        QUIEBRE
-            .matcher(leer(TOKENS))
-            .results()
-            .map(m -> m.group(1).strip())
-            .collect(Collectors.toSet());
-    assertThat(quiebres).as("tokens.css declara --medida-quiebre-*").isNotEmpty();
+    Set<String> quiebres = new HashSet<>();
+    for (Path tokens : hojasDeTokens()) {
+      Set<String> propios =
+          QUIEBRE
+              .matcher(leer(tokens))
+              .results()
+              .map(m -> m.group(1).strip())
+              .collect(Collectors.toSet());
+      assertThat(propios).as("%s declara --medida-quiebre-*", tokens).isNotEmpty();
+      quiebres.addAll(propios);
+    }
 
     List<String> fallas = new ArrayList<>();
     for (Path css : archivos(CSS, ".css")) {
@@ -207,31 +213,33 @@ class InterfazFitnessTest {
 
   @Test
   void paresDeTokensCumplenContrasteAA() {
-    Map<String, String> tokens = new HashMap<>();
-    DECLARACION
-        .matcher(leer(TOKENS))
-        .results()
-        .forEach(m -> tokens.putIfAbsent(m.group(1), m.group(2).strip()));
-
     List<String> fallas = new ArrayList<>();
-    for (Par par : PARES) {
-      double contraste = contraste(color(tokens, par.texto()), color(tokens, par.fondo()));
-      if (contraste < par.minimo()) {
-        fallas.add(
-            "%s sobre %s: %.2f (mínimo %.1f)"
-                .formatted(par.texto(), par.fondo(), contraste, par.minimo()));
+    for (Path hoja : hojasDeTokens()) {
+      Map<String, String> tokens = new HashMap<>();
+      DECLARACION
+          .matcher(leer(hoja))
+          .results()
+          .forEach(m -> tokens.putIfAbsent(m.group(1), m.group(2).strip()));
+      for (Par par : PARES) {
+        double contraste =
+            contraste(color(hoja, tokens, par.texto()), color(hoja, tokens, par.fondo()));
+        if (contraste < par.minimo()) {
+          fallas.add(
+              "%s: %s sobre %s: %.2f (mínimo %.1f)"
+                  .formatted(hoja, par.texto(), par.fondo(), contraste, par.minimo()));
+        }
       }
     }
     assertThat(fallas).isEmpty();
   }
 
   /** Resuelve var(--x) hasta un #rrggbb y devuelve su luminancia relativa (WCAG). */
-  private static double color(Map<String, String> tokens, String token) {
+  private static double color(Path hoja, Map<String, String> tokens, String token) {
     String valor = tokens.get(token);
-    assertThat(valor).as("%s no está declarado en tokens.css", token).isNotNull();
+    assertThat(valor).as("%s no está declarado en %s", token, hoja).isNotNull();
     Matcher referencia = REFERENCIA.matcher(valor);
     if (referencia.lookingAt()) {
-      return color(tokens, referencia.group(1));
+      return color(hoja, tokens, referencia.group(1));
     }
     Matcher hex = HEX.matcher(valor);
     assertThat(hex.matches()).as("%s = %s: se espera #rrggbb", token, valor).isTrue();
@@ -253,8 +261,17 @@ class InterfazFitnessTest {
         / (Math.min(luminanciaA, luminanciaB) + 0.05);
   }
 
+  /** Un tokens.css por alternativa de identidad. */
+  private static List<Path> hojasDeTokens() {
+    return archivos(CSS, ".css").stream().filter(InterfazFitnessTest::esTokens).toList();
+  }
+
   private static List<Path> cssFueraDeTokens() {
-    return archivos(CSS, ".css").stream().filter(css -> !css.equals(TOKENS)).toList();
+    return archivos(CSS, ".css").stream().filter(css -> !esTokens(css)).toList();
+  }
+
+  private static boolean esTokens(Path css) {
+    return css.getFileName().toString().equals(TOKENS);
   }
 
   private static List<Path> archivos(Path carpeta, String extension) {

@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -31,10 +32,11 @@ import tools.jackson.databind.json.JsonMapper;
 /**
  * Comprobación visual (perfil Maven {@code visual}): por cada página de {@code paginas.txt}, en los
  * anchos de referencia, saca una captura y exige axe AA sin violaciones, controles de 48 × 48 px o
- * más y nada desbordado; en los anchos intermedios, solo que nada se desborde. Con {@code
- * -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada variante y arma la
- * comparación. Resultado en {@code target/capturas/}: PNG, index.html, comparacion.html y
- * reporte.json.
+ * más y nada desbordado; en los anchos intermedios, solo que nada se desborde. Sin propiedades,
+ * recorre Glassmorphism y cada alternativa de {@code static/css/alternativas/} y las compara. Con
+ * {@code -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada variante, sobre la
+ * alternativa de {@code -Dverificacion.alternativa=<nombre>} si se indica. Resultado en {@code
+ * target/capturas/}: PNG, index.html, comparacion.html y reporte.json.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("maqueta")
@@ -74,8 +76,11 @@ class VerificacionVisualTest {
       }
       """;
 
-  private static final Path VARIANTES_CSS = Path.of("src/main/resources/static/css/variantes");
+  private static final Path CSS = Path.of("src/main/resources/static/css");
+  private static final Path VARIANTES_CSS = CSS.resolve("variantes");
+  private static final Path ALTERNATIVAS_CSS = CSS.resolve("alternativas");
   private static final Pattern COMENTARIO = Pattern.compile("/\\*(.*?)\\*/", Pattern.DOTALL);
+  private static final String GLASSMORPHISM = "glassmorphism";
 
   /**
    * Visor de capturas (index.html y comparacion.html), pensado para 1920 × 1080: índice de
@@ -219,6 +224,36 @@ class VerificacionVisualTest {
       }))
       """;
 
+  /**
+   * Lo que se captura en cada pasada: una alternativa de identidad (vacía: Glassmorphism) y una
+   * variante A/B (vacía: ninguna).
+   */
+  private record Opcion(String alternativa, String variante) {
+
+    String nombre() {
+      if (!variante.isEmpty()) {
+        return variante;
+      }
+      return alternativa.isEmpty() ? GLASSMORPHISM : alternativa;
+    }
+
+    String consulta() {
+      List<String> parametros = new ArrayList<>();
+      if (!alternativa.isEmpty()) {
+        parametros.add("alternativa=" + alternativa);
+      }
+      if (!variante.isEmpty()) {
+        parametros.add("variante=" + variante);
+      }
+      return String.join("&", parametros);
+    }
+
+    String sufijo() {
+      return (alternativa.isEmpty() ? "" : "--" + alternativa)
+          + (variante.isEmpty() ? "" : "--" + variante);
+    }
+  }
+
   private record Captura(
       String ruta, String variante, int ancho, String archivo, Object secciones) {}
 
@@ -228,7 +263,7 @@ class VerificacionVisualTest {
 
   @Test
   void paginasCumplenElPisoEnTodosLosAnchos() throws IOException {
-    List<String> variantes = variantes();
+    List<Opcion> opciones = opciones();
     List<Captura> capturas = new ArrayList<>();
     List<Falla> fallas = new ArrayList<>();
     Files.createDirectories(CAPTURAS);
@@ -236,11 +271,12 @@ class VerificacionVisualTest {
     try (Playwright playwright = Playwright.create();
         Browser navegador = playwright.chromium().launch()) {
       Page pagina = navegador.newPage();
-      for (String variante : variantes) {
+      for (Opcion opcion : opciones) {
+        String variante = opcion.nombre();
         for (String ruta : paginas()) {
           for (int ancho : AnchosDeReferencia.REFERENCIA) {
-            if (abrir(pagina, ruta, variante, ancho, fallas)) {
-              String archivo = nombreDeCaptura(ruta, variante, ancho);
+            if (abrir(pagina, ruta, opcion, ancho, fallas)) {
+              String archivo = nombreDeCaptura(ruta, opcion, ancho);
               pagina.evaluate(CARGAR_IMAGENES);
               pagina.screenshot(
                   new Page.ScreenshotOptions()
@@ -253,7 +289,7 @@ class VerificacionVisualTest {
             }
           }
           for (int ancho : AnchosDeReferencia.INTERMEDIOS) {
-            if (abrir(pagina, ruta, variante, ancho, fallas)) {
+            if (abrir(pagina, ruta, opcion, ancho, fallas)) {
               revisarDesborde(pagina, ruta, variante, ancho, fallas);
             }
           }
@@ -262,10 +298,10 @@ class VerificacionVisualTest {
     }
 
     Files.writeString(
-        CAPTURAS.resolve("index.html"), visor(capturas, variantes), StandardCharsets.UTF_8);
-    if (variantes.size() > 1) {
+        CAPTURAS.resolve("index.html"), visor(capturas, opciones), StandardCharsets.UTF_8);
+    if (opciones.size() > 1) {
       Files.writeString(
-          CAPTURAS.resolve("comparacion.html"), visor(capturas, variantes), StandardCharsets.UTF_8);
+          CAPTURAS.resolve("comparacion.html"), visor(capturas, opciones), StandardCharsets.UTF_8);
     }
     JsonMapper.builder()
         .build()
@@ -275,18 +311,17 @@ class VerificacionVisualTest {
     assertThat(fallas).as("Detalle en %s", CAPTURAS.resolve("reporte.json")).isEmpty();
   }
 
-  private boolean abrir(Page pagina, String ruta, String variante, int ancho, List<Falla> fallas) {
+  private boolean abrir(Page pagina, String ruta, Opcion opcion, int ancho, List<Falla> fallas) {
     pagina.setViewportSize(ancho, AnchosDeReferencia.ALTO);
     String separador = ruta.contains("?") ? "&" : "?";
+    String consulta = opcion.consulta();
     String url =
-        "http://localhost:"
-            + puerto
-            + ruta
-            + (variante.isEmpty() ? "" : separador + "variante=" + variante);
+        "http://localhost:" + puerto + ruta + (consulta.isEmpty() ? "" : separador + consulta);
     Response respuesta = pagina.navigate(url);
     if (respuesta == null || !respuesta.ok()) {
       int estado = respuesta == null ? 0 : respuesta.status();
-      fallas.add(new Falla(ruta, variante, ancho, "pagina", "HTTP " + estado + " en " + url));
+      fallas.add(
+          new Falla(ruta, opcion.nombre(), ancho, "pagina", "HTTP " + estado + " en " + url));
       return false;
     }
     return true;
@@ -339,24 +374,45 @@ class VerificacionVisualTest {
         .toList();
   }
 
-  /** Sin variantes, una sola pasada sobre las páginas tal como están (variante vacía). */
-  private static List<String> variantes() {
-    String valor = System.getProperty("verificacion.variantes", "");
+  /**
+   * Con variantes, una pasada por variante sobre la alternativa pedida. Sin variantes, una pasada
+   * por alternativa: Glassmorphism y las de static/css/alternativas/, o solo la pedida.
+   */
+  private static List<Opcion> opciones() throws IOException {
+    String alternativa = System.getProperty("verificacion.alternativa", "").strip();
     List<String> variantes =
-        Arrays.stream(valor.split(",")).map(String::strip).filter(v -> !v.isEmpty()).toList();
-    return variantes.isEmpty() ? List.of("") : variantes;
+        Arrays.stream(System.getProperty("verificacion.variantes", "").split(","))
+            .map(String::strip)
+            .filter(v -> !v.isEmpty())
+            .toList();
+    if (!variantes.isEmpty()) {
+      return variantes.stream().map(variante -> new Opcion(alternativa, variante)).toList();
+    }
+    if (!alternativa.isEmpty()) {
+      return List.of(new Opcion(alternativa, ""));
+    }
+    List<Opcion> opciones = new ArrayList<>(List.of(new Opcion("", "")));
+    if (Files.isDirectory(ALTERNATIVAS_CSS)) {
+      try (Stream<Path> carpetas = Files.list(ALTERNATIVAS_CSS)) {
+        carpetas
+            .filter(carpeta -> Files.exists(carpeta.resolve("tokens.css")))
+            .map(carpeta -> carpeta.getFileName().toString())
+            .sorted()
+            .forEach(nombre -> opciones.add(new Opcion(nombre, "")));
+      }
+    }
+    return opciones;
   }
 
-  private static String nombreDeCaptura(String ruta, String variante, int ancho) {
+  private static String nombreDeCaptura(String ruta, Opcion opcion, int ancho) {
     String base = ruta.replaceAll("[^A-Za-z0-9]+", "-").replaceAll("^-|-$", "");
-    String sufijo = variante.isEmpty() ? "" : "--" + variante;
-    return (base.isEmpty() ? "inicio" : base) + sufijo + "-" + ancho + ".png";
+    return (base.isEmpty() ? "inicio" : base) + opcion.sufijo() + "-" + ancho + ".png";
   }
 
   /**
    * Datos del visor: capturas por página, variante y ancho, con la descripción de cada variante.
    */
-  private static String visor(List<Captura> capturas, List<String> variantes) throws IOException {
+  private static String visor(List<Captura> capturas, List<Opcion> opciones) throws IOException {
     Map<String, Map<String, Map<Integer, Map<String, Object>>>> porPagina = new LinkedHashMap<>();
     for (Captura captura : capturas) {
       porPagina
@@ -367,8 +423,8 @@ class VerificacionVisualTest {
               Map.of("archivo", captura.archivo(), "secciones", captura.secciones()));
     }
     List<Map<String, String>> descritas = new ArrayList<>();
-    for (String variante : variantes) {
-      descritas.add(Map.of("nombre", variante, "descripcion", descripcion(variante)));
+    for (Opcion opcion : opciones) {
+      descritas.add(Map.of("nombre", opcion.nombre(), "descripcion", descripcion(opcion)));
     }
     String datos =
         JsonMapper.builder()
@@ -380,20 +436,27 @@ class VerificacionVisualTest {
                     "anchos", AnchosDeReferencia.REFERENCIA))
             .replace("</", "<\\/");
     return VISOR
-        .replace("@TITULO@", HtmlUtils.htmlEscape(titulo(variantes)))
+        .replace("@TITULO@", HtmlUtils.htmlEscape(titulo(opciones)))
         .replace("@DATOS@", datos);
   }
 
-  private static String titulo(List<String> variantes) {
-    return variantes.size() > 1
-        ? "Comparación: " + String.join(" / ", variantes)
-        : "Capturas" + (variantes.get(0).isEmpty() ? "" : ": " + variantes.get(0));
+  private static String titulo(List<Opcion> opciones) {
+    List<String> nombres = opciones.stream().map(Opcion::nombre).toList();
+    return nombres.size() > 1
+        ? "Comparación: " + String.join(" / ", nombres)
+        : "Capturas: " + nombres.get(0);
   }
 
-  /** Primer comentario del CSS de la variante, en una línea; vacío si no hay. */
-  private static String descripcion(String variante) throws IOException {
-    Path css = VARIANTES_CSS.resolve(variante + ".css");
-    if (!Files.exists(css)) {
+  /**
+   * Primer comentario del CSS de la variante o, sin variante, del tokens.css de la alternativa, en
+   * una línea; vacío para Glassmorphism o si no hay.
+   */
+  private static String descripcion(Opcion opcion) throws IOException {
+    Path css =
+        opcion.variante().isEmpty()
+            ? ALTERNATIVAS_CSS.resolve(opcion.alternativa()).resolve("tokens.css")
+            : VARIANTES_CSS.resolve(opcion.variante() + ".css");
+    if ((opcion.alternativa().isEmpty() && opcion.variante().isEmpty()) || !Files.exists(css)) {
       return "";
     }
     Matcher comentario = COMENTARIO.matcher(Files.readString(css, StandardCharsets.UTF_8));

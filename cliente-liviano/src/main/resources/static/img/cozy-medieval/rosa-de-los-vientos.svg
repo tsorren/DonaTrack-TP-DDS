@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Rosa de los vientos grabada, dibujo propio de la Alternativa Cozy / Medieval. Un solo color:
+       app.css la usa como máscara y la pinta con un token. Medio rombo lleno y medio en trazo. -->
+  <g fill="none" stroke="#000">
+    <circle cx="50" cy="50" r="45" stroke-width="1.4"/>
+    <circle cx="50" cy="50" r="41" stroke-width="3" stroke-dasharray="0.5 3.08"/>
+    <circle cx="50" cy="50" r="37.5" stroke-width="0.7"/>
+    <circle cx="50" cy="50" r="12" stroke-width="0.7"/>
+  </g>
+  <g transform="rotate(45 50 50)">
+    <path d="M50 20 47 47 50 50Z M80 50 53 47 50 50Z M50 80 53 53 50 50Z M20 50 47 53 50 50Z"/>
+    <path d="M50 20 53 47 50 50Z M80 50 53 53 50 50Z M50 80 47 53 50 50Z M20 50 47 47 50 50Z"
+          fill="none" stroke="#000" stroke-width="0.8" stroke-linejoin="round"/>
+  </g>
+  <path d="M50 3 44 44 50 50Z M97 50 56 44 50 50Z M50 97 56 56 50 50Z M3 50 44 56 50 50Z"/>
+  <path d="M50 3 56 44 50 50Z M97 50 56 56 50 50Z M50 97 44 56 50 50Z M3 50 44 44 50 50Z"
+        fill="none" stroke="#000" stroke-width="1" stroke-linejoin="round"/>
+  <circle cx="50" cy="50" r="2.4"/>
+</svg>

@@ -653,6 +653,7 @@ Two-Gate Rule de [`docs/adr/README.md`](../adr/README.md): solo cuando hay decis
 | ADR-E6-06 Stack del cliente liviano: Thymeleaf, HTMX, Pico.css, tokens y mapas | D17–D21 | Sí | Tecnología nueva | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
 | ADR-E6-07 Posición del camión: fuente, privacidad y actualización | D22, D23, D24 | Sí | Modelo de datos, privacidad y posible canal nuevo | Esperar D22 |
 | ADR-E6-08 Fotos de recepción en almacenamiento de objetos | D27 | Sí | Persistencia y privacidad | Listo |
+| Dos alternativas de identidad visual con hojas propias | Refina D20 | Sí | Cambia D20 y la verificación de RNF-UI-11; costo de mantener dos hojas | Redactado (`proposed`): [ADR](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md) |
 
 Sin ADR (AGENTS.md §9.2):
 - D28: endpoints aditivos sobre un patrón decidido.

@@ -40,6 +40,9 @@ description: >-
      `layout-entregas-a.css`): solo letras minúsculas, números y guiones.
    - Lo que comparten varias variantes (un marco, una lista) va en `variantes/comun/`, que no
      cuenta como variante: las plantillas lo usan como fragmento y el CSS con `@import`.
+   - Para comparar sobre otra alternativa de identidad (por ejemplo, Cozy / Medieval), la
+     variante se suma a esa alternativa: `?alternativa=<nombre>&variante=<tema>-a`. Sin
+     `alternativa`, la variante va sobre Glassmorphism.
 4. **Comprobar y capturar:**
 
    ```bash
@@ -52,7 +55,9 @@ description: >-
    de cada variante es su descripción en el visor. Con más de dos opciones, se nombran
    `<tema>-a`, `-b`, `-c`… y el visor las recorre con las flechas. Con varios temas a la vez
    (decisiones en tanda), se pasan todas en una sola corrida y un enlace
-   `comparacion.html#izq=<variante>&der=<variante>&ancho=<px>` abre cada comparación.
+   `comparacion.html#izq=<variante>&der=<variante>&ancho=<px>` abre cada comparación. Sobre otra
+   alternativa, se suma `-Dverificacion.alternativa=<nombre>`. Sin propiedades, la corrida
+   compara las alternativas entre sí.
 5. **Autocrítica.** Mirar las capturas con las preguntas de la dirección de arte, completar la
    tabla de criterios y elegir una recomendación.
 6. **Mostrar al usuario:**
@@ -65,7 +70,8 @@ description: >-
    - Aplicar la elegida (en `tokens.css`, `app.css` o la plantilla real).
    - Borrar las dos variantes de `variantes/`.
    - Copiar las capturas de 360 y 1280 px de cada variante a `docs/interfaz/evidencia/<tema>/`
-     (menos de 400 KB cada una).
+     (menos de 400 KB cada una); las de otra alternativa, a
+     `docs/interfaz/evidencia/<alternativa>/<tema>/`.
    - Escribir la entrada en la [bitácora](../../../docs/interfaz/bitacora.md): Decisión /
      Alternativas / Por qué / Costo / Quién decidió / Evidencia.
 
