@@ -66,6 +66,7 @@ docs/
 │   ├── preprod-fiel.md                    # Preprod fiel: criterio, estado y brechas (fase 1)
 │   ├── preprod-fiel-arquitectura-objetivo.md # Preprod fiel: arquitectura objetivo (fase 2)
 │   ├── preprod-fiel-roadmap.md            # Preprod fiel: roadmap por entrega y ADR (fase 3)
+│   ├── diagnostico-integration-tests-e5.md # Diagnóstico de integration-tests en E5
 │   ├── auditoria/                         # 🟢 Compendio especializado de auditoría QA (01 a 06 + README)
 │   └── postman/                           # LEGADO: copia anterior; la fuente vigente es ../postman/ (raíz del repo)
 │
@@ -271,6 +272,7 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | [`docs/testing/preprod-fiel.md`](testing/preprod-fiel.md) | Preprod fiel | Criterio de 12 propiedades para un preprod fiel, medición de CI/CD e `integration-tests` sobre `origin/main` y brechas B1–B12. Fase 1 de 3. | 🟢 Sincronizado |
 | [`docs/testing/preprod-fiel-arquitectura-objetivo.md`](testing/preprod-fiel-arquitectura-objetivo.md) | Preprod fiel | Alternativas ponderadas por brecha B1–B12, arquitectura objetivo de entorno, pipeline y estratos de la suite, y evaluación Gate A + Gate B de ADR. Fase 2 de 3. | 🟢 Sincronizado |
 | [`docs/testing/preprod-fiel-roadmap.md`](testing/preprod-fiel-roadmap.md) | Preprod fiel | Roadmap RM-01 a RM-20 por entrega (E5–E7), rediseño de la SPEC-05, estado de implementación, proyección del puntaje, aprobaciones y confirmación Gate A + Gate B. Fase 3 de 3. | 🟢 Sincronizado |
+| [`docs/testing/diagnostico-integration-tests-e5.md`](testing/diagnostico-integration-tests-e5.md) | Diagnóstico IT | Diagnóstico de `integration-tests` en E5: línea base de 3 corridas con stack nuevo, la última seguida de 2 más sobre el mismo stack, hallazgos DIT-01 a DIT-12 cruzados con F-xx, QA-GAP-xx y RM-xx, propuestas P1–P5 y su implementación en la fase 2 (§7). | 🟢 Sincronizado |
 | [`docs/testing/auditoria/README.md`](testing/auditoria/README.md) | Portal Auditoría QA | Índice maestro, síntesis ejecutiva, mapa de navegación y glosario canónico de QA. | 🟢 Sincronizado |
 | [`docs/testing/auditoria/01-diagnostico-ejecutivo.md`](testing/auditoria/01-diagnostico-ejecutivo.md) | Diagnóstico QA | Radiografía factual, evaluación teórica (Khorikov, Google SWE, Fowler) e INC-01. | 🟢 Sincronizado |
 | [`docs/testing/auditoria/02-matriz-antipatrones.md`](testing/auditoria/02-matriz-antipatrones.md) | Smells QA | Matriz de hallazgos empíricos: AP-01 a AP-10 y fortalezas FT-01 a FT-05. | 🟢 Sincronizado |

@@ -239,12 +239,14 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 }
 ```
 
+> **Fechas con `Z`.** Las fechas de los eventos se serializan con `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")` sobre un `LocalDateTime`. Es la misma convención en Donaciones y en Logística. El sufijo `Z` supone que la JVM corre en UTC: así corren los contenedores, que no fijan `TZ`. Con otra zona, la hora publicada queda corrida.
+
 #### Ruta Asignada (`ruta.asignada`)
 ```json
 {
   "rutaId": "7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d",
   "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  "fechaAsignacion": "2026-09-16T08:00:00"
+  "fechaAsignacion": "2026-09-16T08:00:00Z"
 }
 ```
 
@@ -257,7 +259,7 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "donacionesIndependientesIds": [
     "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
   ],
-  "fechaInicio": "2026-09-16T09:15:00",
+  "fechaInicio": "2026-09-16T09:15:00Z",
   "urlMapa": "http://localhost:8080/seguimiento/7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d"
 }
 ```
@@ -269,7 +271,7 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "camionId": "11223344-5566-7788-99aa-bbccddeeff00",
   "patenteCamion": "AB123CD",
-  "fechaEntrega": "2026-09-16T11:40:00"
+  "fechaEntrega": "2026-09-16T11:40:00Z"
 }
 ```
 
@@ -279,7 +281,7 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
   "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
   "justificacion": "Domicilio sin atención al momento de la visita",
-  "fechaFalla": "2026-09-16T11:40:00",
+  "fechaFalla": "2026-09-16T11:40:00Z",
   "replanificable": true
 }
 ```

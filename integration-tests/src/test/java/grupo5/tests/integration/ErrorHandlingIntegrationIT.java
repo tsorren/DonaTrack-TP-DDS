@@ -1,5 +1,6 @@
 package grupo5.tests.integration;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 import grupo5.tests.BaseIT;
@@ -11,6 +12,9 @@ import org.junit.jupiter.api.Test;
 
 @Tag("integration")
 class ErrorHandlingIntegrationIT extends BaseIT {
+  // Códigos del ErrorCatalog de common-lib
+  private static final String RECURSO_NO_ENCONTRADO = "ERR-CSR-001";
+  private static final String ARGUMENTO_INVALIDO = "ERR-CSR-003";
 
   @Test
   void testCrearPersonaInvalidaRetornaBadRequestEstructurado() {
@@ -21,7 +25,7 @@ class ErrorHandlingIntegrationIT extends BaseIT {
         .crearPersona(personaInvalida)
         .then()
         .statusCode(400)
-        .body("code", notNullValue())
+        .body("code", equalTo(ARGUMENTO_INVALIDO))
         .body("traceId", notNullValue());
   }
 
@@ -32,7 +36,7 @@ class ErrorHandlingIntegrationIT extends BaseIT {
         .obtenerDonacion(idInexistente)
         .then()
         .statusCode(404)
-        .body("code", notNullValue())
+        .body("code", equalTo(RECURSO_NO_ENCONTRADO))
         .body("traceId", notNullValue());
   }
 
@@ -42,6 +46,6 @@ class ErrorHandlingIntegrationIT extends BaseIT {
         .calcularRanking("periodo-invalido")
         .then()
         .statusCode(400)
-        .body("code", notNullValue());
+        .body("code", equalTo(ARGUMENTO_INVALIDO));
   }
 }

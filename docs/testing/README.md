@@ -21,6 +21,7 @@ docs/testing/
 ├── preprod-fiel.md                        # 🧭 Preprod fiel: criterio, estado y brechas (fase 1)
 ├── preprod-fiel-arquitectura-objetivo.md  # 🏗️ Preprod fiel: arquitectura objetivo (fase 2)
 ├── preprod-fiel-roadmap.md                # 🗺️ Preprod fiel: roadmap, rediseño SPEC-05 y estado (fase 3)
+├── diagnostico-integration-tests-e5.md    # 🩺 Diagnóstico de integration-tests en E5
 │
 ├── auditoria/                             # 🔬 Compendio hiper-granular de auditoría QA
 │   ├── README.md                          # Portal de auditoría, síntesis ejecutiva y glosario
@@ -46,6 +47,7 @@ docs/testing/
 * [**Preprod fiel: criterio, estado y brechas (`preprod-fiel.md`)**](preprod-fiel.md): Criterio de 12 propiedades para un entorno preproductivo fiel, medición del pipeline y de `integration-tests` (9/24) y brechas B1–B12 priorizadas. Fase 1 de 3.
 * [**Preprod fiel: arquitectura objetivo (`preprod-fiel-arquitectura-objetivo.md`)**](preprod-fiel-arquitectura-objetivo.md): Alternativas con matriz ponderada para B1–B12, entorno preprod, etapas del pipeline (PR, post-merge, promoción, despliegue), estratos S0–S7 y evaluación de ADR. Fase 2 de 3.
 * [**Preprod fiel: roadmap (`preprod-fiel-roadmap.md`)**](preprod-fiel-roadmap.md): Roadmap RM-01 a RM-20 por entrega (E5, E6, E7 y después), con brechas, propiedades, dependencias, tamaño y criterio de hecho; rediseño de la [SPEC-05](../specs/active/SPEC-05-preprod-fiel-rediseno-y-rm01-rm08.md) (base por servicio, despliegue sin Render, política de contratos) y estado de implementación de RM-02 a RM-08; proyección del puntaje, aprobaciones y confirmación Gate A + Gate B, con 3 ADRs `proposed`. Fase 3 de 3.
+* [**Diagnóstico de integration-tests en E5 (`diagnostico-integration-tests-e5.md`)**](diagnostico-integration-tests-e5.md): Línea base medida (3 corridas del script canónico), hallazgos de cobertura, robustez, calidad y costo cruzados con F-xx, QA-GAP-xx y RM-xx, propuestas P1–P5 con matriz de alternativas y lo implementado en la fase 2 (E2E por el camino real de Logística, camino de falla, cobertura de contratos AMQP).
 
 ---
 

@@ -5,6 +5,7 @@ import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,6 +47,22 @@ public class LogisticaApiClient {
     return given()
         .contentType(ContentType.JSON)
         .body(body)
+        .when()
+        .patch(baseUrl + "/api/entregas/" + entregaId + "/estado");
+  }
+
+  /** ENTREGADA exige al menos una foto de recepción. */
+  public Response confirmarEntrega(UUID entregaId, String actor) {
+    return given()
+        .contentType(ContentType.JSON)
+        .body(
+            Map.of(
+                "estado",
+                "ENTREGADA",
+                "actor",
+                actor,
+                "fotosRecepcion",
+                List.of("https://fotos.donatrack.test/recepcion/" + entregaId + ".jpg")))
         .when()
         .patch(baseUrl + "/api/entregas/" + entregaId + "/estado");
   }
@@ -111,13 +128,5 @@ public class LogisticaApiClient {
 
   public Response obtenerChofer(UUID choferId) {
     return given().when().get(baseUrl + "/api/choferes/" + choferId);
-  }
-
-  public Response crearEntrega(Object body) {
-    return given().contentType(ContentType.JSON).body(body).when().post(baseUrl + "/api/entregas");
-  }
-
-  public UUID crearEntregaOk(Object body) {
-    return UUID.fromString(crearEntrega(body).then().statusCode(201).extract().path("id"));
   }
 }

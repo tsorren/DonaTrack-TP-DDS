@@ -13,6 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Assertions;
 
 /**
@@ -73,6 +76,30 @@ public final class ContratosAmqp {
           .forEach(violaciones::add);
     }
     return violaciones;
+  }
+
+  /** Tipos esperados que el espía no vio: un evento que deja de publicarse también es violación. */
+  public static List<String> faltantes(List<EspiaAmqp.Mensaje> mensajes, Set<String> esperados) {
+    Set<String> vistos = mensajes.stream().map(EspiaAmqp.Mensaje::tipo).collect(Collectors.toSet());
+    return esperados.stream()
+        .filter(tipo -> !vistos.contains(tipo))
+        .sorted()
+        .map(tipo -> tipo + ": el flujo no lo publicó")
+        .toList();
+  }
+
+  /** Schemas {@code evento-*} que ningún mensaje capturado ejercitó (cobertura de contratos). */
+  public static List<String> sinEjercitar(List<EspiaAmqp.Mensaje> mensajes) throws IOException {
+    Set<Path> usados =
+        mensajes.stream().map(m -> schemaDe(m.tipo()).getFileName()).collect(Collectors.toSet());
+    try (Stream<Path> schemas = Files.list(directorioSchemas())) {
+      return schemas
+          .map(Path::getFileName)
+          .filter(p -> p.toString().startsWith("evento-") && !usados.contains(p))
+          .map(Path::toString)
+          .sorted()
+          .toList();
+    }
   }
 
   /**

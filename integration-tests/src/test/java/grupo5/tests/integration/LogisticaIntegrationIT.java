@@ -1,16 +1,19 @@
 package grupo5.tests.integration;
 
+import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import com.atlassian.oai.validator.restassured.OpenApiValidationFilter;
 import grupo5.tests.BaseIT;
+import grupo5.tests.builders.LogisticaTestData;
 import grupo5.tests.utils.PollingUtils;
+import io.restassured.http.ContentType;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -25,7 +28,7 @@ class LogisticaIntegrationIT extends BaseIT {
 
   @Test
   void testCrearCamionYVerificarPersistencia() {
-    Map<String, Object> camion = nuevoCamion();
+    Map<String, Object> camion = LogisticaTestData.camion();
 
     UUID camionId = logisticaClient.crearCamionOk(camion);
     assertNotNull(camionId, "El camión debería haberse creado con un ID asignado");
@@ -49,7 +52,7 @@ class LogisticaIntegrationIT extends BaseIT {
 
   @Test
   void testCrearChoferYVerificarPersistencia() {
-    Map<String, Object> chofer = nuevoChofer();
+    Map<String, Object> chofer = LogisticaTestData.chofer();
 
     UUID choferId = logisticaClient.crearChoferOk(chofer);
     assertNotNull(choferId, "El chofer debería haberse creado con un ID asignado");
@@ -71,10 +74,26 @@ class LogisticaIntegrationIT extends BaseIT {
         .body("id", hasItem(choferId.toString()));
   }
 
+  /**
+   * La entrega no tiene donación detrás, así que se lleva hasta ENTREGADA: una entrega ajena que
+   * quedara pendiente caería en la ruta del E2E, y Donaciones descarta el {@code ruta.iniciada}
+   * entero si menciona una donación que no conoce.
+   */
   @Test
-  void testEntregaNoRecibidaVuelveAPendienteSinRuta() {
-    UUID entregaId = logisticaClient.crearEntregaOk(nuevaEntrega());
-    assertNotNull(entregaId, "La entrega debería haberse creado con un ID asignado");
+  void testEntregaNoRecibidaSeReplanificaYSeEntrega() {
+    // Contrato vivo del POST /api/entregas (antes en ContractIT)
+    UUID entregaId =
+        UUID.fromString(
+            given()
+                .filter(new OpenApiValidationFilter(contrato("openapi-logistica.yaml")))
+                .contentType(ContentType.JSON)
+                .body(LogisticaTestData.entregaSinDonacion())
+                .when()
+                .post(LOGISTICA_URL + "/api/entregas")
+                .then()
+                .statusCode(201)
+                .extract()
+                .path("id"));
 
     logisticaClient
         .obtenerEntrega(entregaId)
@@ -85,12 +104,7 @@ class LogisticaIntegrationIT extends BaseIT {
         .body("destino.calle", equalTo("Av. San Martin"))
         .body("destino.altura", equalTo(1234));
 
-    logisticaClient.crearCamionOk(nuevoCamion());
-    logisticaClient.crearChoferOk(nuevoChofer());
-    logisticaClient.ejecutarPlanificacion().then().statusCode(202);
-    UUID rutaId = PollingUtils.esperarRutaAsignada(logisticaClient, entregaId);
-
-    logisticaClient.cambiarEstadoRuta(rutaId, "EN_TRASLADO", "CHOFER").then().statusCode(200);
+    planificarYSalir(entregaId);
     logisticaClient
         .cambiarEstadoEntrega(entregaId, "NO_RECIBIDA", "ENTIDAD", "Nadie atendió el timbre", true)
         .then()
@@ -116,41 +130,22 @@ class LogisticaIntegrationIT extends BaseIT {
         .body(
             "historialEstado.estadoNuevo",
             contains("EN_TRASLADO", "NO_RECIBIDA", "REVISION", "PENDIENTE"));
+
+    // Replanificada (vuelve a tener ruta), sale de nuevo y se entrega
+    planificarYSalir(entregaId);
+    logisticaClient
+        .confirmarEntrega(entregaId, "ENTIDAD")
+        .then()
+        .statusCode(200)
+        .body("estadoActual", equalTo("ENTREGADA"));
   }
 
-  private static Map<String, Object> nuevoCamion() {
-    return Map.of(
-        "patente", "AB" + ThreadLocalRandom.current().nextInt(100, 999) + "CD",
-        "capacidadVolumen", 45.0f,
-        "altura", 2.8f,
-        "capacidadKG", 3500.0f);
-  }
-
-  private static Map<String, Object> nuevoChofer() {
-    return Map.of(
-        "nombre",
-        "Roberto",
-        "apellido",
-        "Gomez",
-        "licencia",
-        "LIC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(),
-        "telefonoContacto",
-        "+5411" + ThreadLocalRandom.current().nextInt(10000000, 99999999));
-  }
-
-  private static Map<String, Object> nuevaEntrega() {
-    return Map.of(
-        "idDonacion", UUID.randomUUID(),
-        "idBeneficiaria", UUID.randomUUID(),
-        "destino",
-            Map.of(
-                "calle", "Av. San Martin",
-                "altura", 1234,
-                "codigoPostal", "1416",
-                "localidad", "CABA",
-                "provincia", "Buenos Aires",
-                "pais", "Argentina"),
-        "pesoTotalKG", 20.0f,
-        "volumenTotalM3", 2.5f);
+  /** Planifica con un camión y un chofer nuevos y saca a la calle la ruta de la entrega. */
+  private static void planificarYSalir(UUID entregaId) {
+    logisticaClient.crearCamionOk(LogisticaTestData.camion());
+    logisticaClient.crearChoferOk(LogisticaTestData.chofer());
+    logisticaClient.ejecutarPlanificacion().then().statusCode(202);
+    UUID rutaId = PollingUtils.esperarRutaAsignada(logisticaClient, entregaId);
+    logisticaClient.cambiarEstadoRuta(rutaId, "EN_TRASLADO", "CHOFER").then().statusCode(200);
   }
 }
