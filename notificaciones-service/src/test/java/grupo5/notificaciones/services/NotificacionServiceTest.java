@@ -302,4 +302,65 @@ class NotificacionServiceTest {
     assertEquals(1, resultado.size());
     verify(repository, times(1)).findByPersonaIdAndLeida(personaId, false);
   }
+
+  private static EventoDonacionAsignadaV1 donacionAsignada() {
+    return new EventoDonacionAsignadaV1(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        TEST_DATE_TIME,
+        UUID.randomUUID(),
+        "Ropa",
+        new DestinoEventoDTO("Calle", 100, null, null, "1000", "Loc", "Prov", "Arg"),
+        5.0,
+        0.1);
+  }
+
+  @Test
+  void procesar_conMessageId_usaElMessageIdComoClaveDelInbox() {
+    JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+    NotificacionService serviceConDb =
+        new NotificacionService(repository, mapper, eventPublisher, jdbcTemplate);
+    EventoDonacionAsignadaV1 evento = donacionAsignada();
+    DonacionAsignada entidad = mock(DonacionAsignada.class);
+    when(mapper.toEntity(evento)).thenReturn(entidad);
+    when(jdbcTemplate.update(anyString(), any(UUID.class), any(LocalDateTime.class))).thenReturn(1);
+    UUID messageId = UUID.randomUUID();
+
+    serviceConDb.procesar(evento, messageId.toString());
+
+    verify(jdbcTemplate).update(anyString(), eq(messageId), any(LocalDateTime.class));
+    verify(repository).saveAll(any());
+  }
+
+  @Test
+  void procesar_sinMessageId_procesaSinRegistrarEnInbox() {
+    JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+    NotificacionService serviceConDb =
+        new NotificacionService(repository, mapper, eventPublisher, jdbcTemplate);
+    EventoDonacionAsignadaV1 evento = donacionAsignada();
+    DonacionAsignada entidad = mock(DonacionAsignada.class);
+    when(mapper.toEntity(evento)).thenReturn(entidad);
+
+    serviceConDb.procesar(evento, null);
+
+    verifyNoInteractions(jdbcTemplate);
+    verify(repository).saveAll(any());
+  }
+
+  @Test
+  void procesar_eventoLegacySinEventId_procesaSinRegistrarEnInbox() {
+    JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+    NotificacionService serviceConDb =
+        new NotificacionService(repository, mapper, eventPublisher, jdbcTemplate);
+    EventoDonanteInactivoDTO dto =
+        new EventoDonanteInactivoDTO(null, UUID.randomUUID(), TEST_DATE_TIME, 21);
+    EventoNotificable entidad = mock(EventoNotificable.class);
+    when(mapper.toEntity(dto)).thenReturn(entidad);
+
+    serviceConDb.procesar(dto);
+
+    verifyNoInteractions(jdbcTemplate);
+    verify(repository).saveAll(any());
+  }
 }
