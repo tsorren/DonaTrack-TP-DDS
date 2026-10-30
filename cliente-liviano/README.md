@@ -1,6 +1,7 @@
 # cliente-liviano — Interfaz web de DonaTrack
 
-> **Estado:** en construcción (Entrega 6)
+> **Estado:** en construcción (Entrega 6). Hay layout, componentes base y catálogo `/estilos`; la
+> identidad visual es provisoria y todavía no hay pantallas de negocio.
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
 
 ---
@@ -19,6 +20,21 @@ consume las APIs REST de los servicios a través del gateway.
   [`docs/interfaz/README.md`](../docs/interfaz/README.md).
 - **Decisiones de diseño tomadas:** [`docs/interfaz/bitacora.md`](../docs/interfaz/bitacora.md).
 - **Decisiones de arquitectura:** [`docs/adr/cliente-liviano/`](../docs/adr/cliente-liviano/).
+
+## Cómo levantarlo
+
+```bash
+mvn -pl cliente-liviano spring-boot:run -Dspring-boot.run.profiles=maqueta   # http://localhost:8090/estilos
+mvn clean test -pl cliente-liviano -am                                        # reglas de tokens, catálogo y vistas
+mvn test -pl cliente-liviano -Pvisual                                         # capturas, accesibilidad, toque y desbordes
+```
+
+- Puerto 8090. El perfil `maqueta` usa datos de ejemplo y admite `?escenario=<nombre>` (vacío,
+  lento, error, sin permiso) y `?variante=<tema>-a|b` para las comparaciones A/B.
+- En Claude Code, `.claude/launch.json` lo levanta en el panel del navegador.
+- La verificación visual baja Playwright y Chromium la primera vez (unos 200 MB) y deja el
+  resultado en `target/capturas/`. No corre en el CI
+  ([DTI-28](../docs/adr/DEUDA_TECNICA.md#dti-28)).
 
 ## Responsabilidades
 

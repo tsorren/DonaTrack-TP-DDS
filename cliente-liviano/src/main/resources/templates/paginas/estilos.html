@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<!--/* Catálogo /estilos (RF-CL-05). Cada fragmento de fragmentos/ figura acá con todos sus estados
+       y el patrón que sigue; InterfazFitnessTest falla si falta alguno. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Catálogo de componentes - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1>Catálogo de componentes</h1>
+  <p class="catalogo-intro">Cada componente de la interfaz con todos sus estados y el patrón que
+    sigue. Los colores, letras y formas son provisorios hasta definir la identidad visual.</p>
+
+  <section class="catalogo" aria-labelledby="colores-titulo">
+    <h2 id="colores-titulo">Colores</h2>
+    <p class="catalogo-patron">Colores de uso definidos en <code>tokens.css</code>.</p>
+    <ul class="muestras">
+      <li><span class="muestra muestra--fondo"></span><code>--color-fondo</code></li>
+      <li><span class="muestra muestra--superficie"></span><code>--color-superficie</code></li>
+      <li><span class="muestra muestra--texto"></span><code>--color-texto</code></li>
+      <li><span class="muestra muestra--texto-suave"></span><code>--color-texto-suave</code></li>
+      <li><span class="muestra muestra--accion"></span><code>--color-accion-primaria</code></li>
+      <li><span class="muestra muestra--foco"></span><code>--color-foco</code></li>
+      <li><span class="muestra muestra--exito"></span><code>--color-exito-texto</code></li>
+      <li><span class="muestra muestra--info"></span><code>--color-info-texto</code></li>
+      <li><span class="muestra muestra--advertencia"></span><code>--color-advertencia-texto</code></li>
+      <li><span class="muestra muestra--error"></span><code>--color-error-texto</code></li>
+    </ul>
+  </section>
+
+  <section class="catalogo" aria-labelledby="tipografia-titulo">
+    <h2 id="tipografia-titulo">Tipografía</h2>
+    <p class="catalogo-patron">Escala de títulos y texto de <code>tokens.css</code>.</p>
+    <h3>Título de sección</h3>
+    <h4>Título de bloque</h4>
+    <p>Texto de lectura: las donaciones llegan a quienes las necesitan y cada paso queda a la
+      vista. <a href="#tipografia-titulo">Un enlace dentro del texto</a>.</p>
+    <p><small>Texto chico para ayudas y datos secundarios.</small></p>
+  </section>
+
+  <section class="catalogo" aria-labelledby="botones-titulo">
+    <h2 id="botones-titulo">Botones</h2>
+    <p class="catalogo-patron">Patrón: Material Buttons (filled, outlined, text). Una acción
+      principal por pantalla.</p>
+    <div class="catalogo-fila">
+      <button type="button">Confirmar recepción</button>
+      <button type="button" class="secondary">Ver detalle</button>
+      <button type="button" class="outline">Agregar otra foto</button>
+      <button type="button" disabled>Confirmar recepción</button>
+      <button type="button" aria-busy="true">Enviando…</button>
+      <a href="#botones-titulo" role="button" class="outline">Enlace con forma de botón</a>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="campo-titulo">
+    <h2 id="campo-titulo">Campo de formulario</h2>
+    <p class="catalogo-patron">Patrón: Material Text fields. Fragmento <code>campo</code>.</p>
+    <div class="catalogo-columnas">
+      <div th:replace="~{fragmentos/campo :: campo('cantidad', 'Cantidad de bultos', 'number',
+           'Contá las cajas o bolsas que recibiste.', null, false)}"></div>
+      <div th:replace="~{fragmentos/campo :: campo('remito', 'Número de remito', 'text', null,
+           'Falta el número de remito. Está arriba a la derecha del papel.', false)}"></div>
+      <div th:replace="~{fragmentos/campo :: campo('entidad', 'Entidad', 'text',
+           'Se completa con tu entidad.', null, true)}"></div>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="fotos-titulo">
+    <h2 id="fotos-titulo">Carga de fotos</h2>
+    <p class="catalogo-patron">Patrón: HIG Photo pickers. Fragmento <code>carga-fotos</code>.</p>
+    <div class="catalogo-columnas">
+      <div th:replace="~{fragmentos/carga-fotos :: carga-fotos('fotos', 'Fotos de lo que llegó',
+           'JPG o PNG, hasta 5 MB cada una. Se usan para mostrar que la donación llegó.', null)}"></div>
+      <div th:replace="~{fragmentos/carga-fotos :: carga-fotos('fotos-error', 'Fotos de lo que llegó',
+           null, 'La foto pesa más de 5 MB. Probá con una más liviana.')}"></div>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="aviso-titulo">
+    <h2 id="aviso-titulo">Aviso breve</h2>
+    <p class="catalogo-patron">Patrón: Material Snackbar. Fragmento <code>aviso</code>. En las
+      pantallas aparece en la región de avisos, abajo.</p>
+    <div class="catalogo-columnas">
+      <div th:replace="~{fragmentos/aviso :: aviso('Recepción confirmada. Gracias por avisar.', 'exito')}"></div>
+      <div th:replace="~{fragmentos/aviso :: aviso('Guardamos tus cambios.', 'info')}"></div>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="banners-titulo">
+    <h2 id="banners-titulo">Banner</h2>
+    <p class="catalogo-patron">Patrón: Material Banners. Fragmento <code>banner</code>.</p>
+    <div th:replace="~{fragmentos/banner :: banner('No pudimos cargar tus entregas',
+         'Es un problema nuestro. Probá de nuevo en unos minutos; si sigue, escribinos con este código.',
+         'error', 'a1b2c3d4e5f6')}"></div>
+    <div th:replace="~{fragmentos/banner :: banner('Estás sin conexión',
+         'Lo que cargues se envía cuando vuelva la conexión.', 'advertencia', null)}"></div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="dialogo-demo-titulo-seccion">
+    <h2 id="dialogo-demo-titulo-seccion">Diálogo de confirmación</h2>
+    <p class="catalogo-patron">Patrón: Material Dialogs y HIG Alerts. Fragmento
+      <code>dialogo</code>. Solo para acciones que no se pueden deshacer.</p>
+    <form id="form-dialogo-demo" action="#" method="get">
+      <button type="button" class="outline" commandfor="dialogo-demo" command="show-modal">Cancelar
+        la entrega</button>
+    </form>
+    <dialog th:replace="~{fragmentos/dialogo :: dialogo('dialogo-demo', '¿Cancelar la entrega?',
+            'La entidad deja de esperarla y no se puede deshacer.', 'Sí, cancelar',
+            'form-dialogo-demo')}"></dialog>
+  </section>
+
+  <section class="catalogo" aria-labelledby="carga-titulo">
+    <h2 id="carga-titulo">Carga en curso</h2>
+    <p class="catalogo-patron">Patrón: Material Progress indicators. Fragmentos
+      <code>esqueleto</code> (una lista que tarda) y <code>cargando</code> (una acción que tarda).</p>
+    <div class="catalogo-columnas">
+      <div th:replace="~{fragmentos/esqueleto :: esqueleto(3)}"></div>
+      <p><span th:replace="~{fragmentos/cargando :: cargando('cargando-demo', 'Enviando fotos…', true)}"></span></p>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="vacio-titulo">
+    <h2 id="vacio-titulo">Estado vacío</h2>
+    <p class="catalogo-patron">Patrón: Material Empty states. Fragmento <code>estado-vacio</code>.</p>
+    <div class="catalogo-columnas">
+      <section th:replace="~{fragmentos/estado-vacio :: estado-vacio('Todavía no tenés entregas para confirmar',
+               'Cuando una donación llegue a tu entidad, aparece acá para que confirmes la recepción.',
+               'Ver necesidades publicadas', '#vacio-titulo')}"></section>
+      <section th:replace="~{fragmentos/estado-vacio :: estado-vacio('No hay resultados',
+               'Probá con otra palabra o sacá algún filtro.', null, null)}"></section>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="insignia-titulo">
+    <h2 id="insignia-titulo">Estado de una entrega</h2>
+    <p class="catalogo-patron">Fragmento <code>insignia</code>. Color y texto siempre juntos.</p>
+    <p class="catalogo-fila">
+      <th:block th:each="estado : ${estados}">
+        <span th:replace="~{fragmentos/insignia :: insignia(${estado})}">Estado</span>
+      </th:block>
+    </p>
+  </section>
+
+  <section class="catalogo" aria-labelledby="tarjeta-titulo">
+    <h2 id="tarjeta-titulo">Tarjeta</h2>
+    <p class="catalogo-patron">Patrón: Material Cards. Fragmento <code>tarjeta</code>. Con foto y
+      sin foto.</p>
+    <div class="tarjetas">
+      <th:block th:each="entrega : ${entregas}">
+        <article th:replace="~{fragmentos/tarjeta :: tarjeta(${entrega})}"></article>
+      </th:block>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="tabla-titulo">
+    <h2 id="tabla-titulo">Tabla</h2>
+    <p class="catalogo-patron">Patrón: Material Data tables. En el celular, cada fila se muestra
+      como una tarjeta.</p>
+    <table class="tabla">
+      <caption>Entregas de la semana</caption>
+      <thead>
+        <tr>
+          <th scope="col">Donación</th>
+          <th scope="col">Destino</th>
+          <th scope="col">Fecha</th>
+          <th scope="col">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="entrega : ${entregas}">
+          <th scope="row" data-etiqueta="Donación" th:text="${entrega.titulo}">Donación</th>
+          <td data-etiqueta="Destino" th:text="${entrega.destino}">Destino</td>
+          <td data-etiqueta="Fecha" th:text="${entrega.fecha}">Fecha</td>
+          <td data-etiqueta="Estado">
+            <span th:replace="~{fragmentos/insignia :: insignia(${entrega.estado})}">Estado</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="catalogo" aria-labelledby="navegacion-titulo">
+    <h2 id="navegacion-titulo">Navegación</h2>
+    <p class="catalogo-patron">Patrón: Material Navigation bar. Fragmento <code>navegacion</code>.
+      La sección actual queda marcada.</p>
+    <nav th:replace="~{fragmentos/navegacion :: navegacion(${opciones})}"></nav>
+  </section>
+</th:block>
+</body>
+</html>

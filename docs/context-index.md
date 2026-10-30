@@ -32,6 +32,7 @@ Cargar cuando: codebase desconocido, orientación global del sistema, o tarea cr
 | `incentivos-service` | [`arquitectura/aggregates-incentivos.md`](arquitectura/aggregates-incentivos.md) | Scheduler / cron → ADRs en `docs/adr/incentivos-service/`; AMQP / Pub-Sub → [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md), ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md) |
 | `notificaciones-service` | [`arquitectura/aggregates-notificaciones.md`](arquitectura/aggregates-notificaciones.md) | REST / Persistencia JPA / AMQP RabbitMQ Pub-Sub → ADRs en `docs/adr/notificaciones-service/`, ADR transversal [`adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md`](adr/20260911-topologia-pubsub-amqp-y-desacoplamiento-notificaciones.md), [`arquitectura/eventos-amqp.md`](arquitectura/eventos-amqp.md) y [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-13) |
 | `common-lib` | [`arquitectura/shared-kernel.md`](arquitectura/shared-kernel.md) | Impacto cross-service → aggregates docs de los servicios afectados |
+| `cliente-liviano` | [`../cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) | Proceso de diseño, identidad y flujos → [`interfaz/README.md`](interfaz/README.md); stack (D17–D21) y verificación visual → ADRs en `docs/adr/cliente-liviano/`; verificación fuera del CI → [`adr/DEUDA_TECNICA.md`](adr/DEUDA_TECNICA.md) (DTI-28) |
 
 ---
 

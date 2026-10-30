@@ -1,0 +1,9 @@
+<!--/* Navegación por rol. Patrón: Material Navigation bar. opciones: List<OpcionNavegacion>. */-->
+<nav th:fragment="navegacion(opciones)" class="navegacion" aria-label="Secciones">
+  <ul>
+    <li th:each="opcion : ${opciones}">
+      <a href="#" th:href="@{${opcion.ruta}}" th:text="${opcion.texto}"
+         th:aria-current="${opcion.actual} ? 'page' : null">Sección</a>
+    </li>
+  </ul>
+</nav>

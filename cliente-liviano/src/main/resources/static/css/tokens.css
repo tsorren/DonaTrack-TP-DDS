@@ -1,0 +1,186 @@
+/*
+ * tokens.css: única fuente de colores, tipografías, espacios, bordes y puntos de quiebre (D20).
+ * PROVISORIO hasta la identidad visual (skill identidad-visual).
+ *
+ * 1. Valores base (--p-*): la paleta. Solo se usan en este archivo. Colores en #rrggbb, para que
+ *    InterfazFitnessTest pueda medir el contraste.
+ * 2. Usos: lo único que usan pantallas y componentes.
+ * 3. Pico: sus variables (--pico-*) se asignan solo acá, a partir de los usos.
+ */
+
+:root {
+  /* 1. Valores base */
+  --p-blanco: #ffffff;
+  --p-gris-50: #f3f5f4;
+  --p-gris-200: #d9dfdc;
+  --p-gris-600: #66716d;
+  --p-tinta-700: #3f4a46;
+  --p-tinta-900: #18211e;
+  --p-verde-100: #e1f2e9;
+  --p-verde-700: #1b6b4c;
+  --p-verde-800: #14523a;
+  --p-azul-100: #e3ecf8;
+  --p-azul-700: #1d4f91;
+  --p-ambar-100: #fcefd4;
+  --p-ambar-800: #6f4500;
+  --p-rojo-100: #fbe3e0;
+  --p-rojo-700: #a8261d;
+  --p-sombra: rgb(24 33 30 / 14%);
+  --p-anillo: rgb(29 79 145 / 35%);
+  --p-velo: rgb(24 33 30 / 60%);
+  --p-fuente-sistema: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+
+  /* 2. Usos */
+  --color-fondo: var(--p-blanco);
+  --color-superficie: var(--p-gris-50);
+  --color-texto: var(--p-tinta-900);
+  --color-texto-suave: var(--p-tinta-700);
+  --color-titulo: var(--p-tinta-900);
+  --color-borde: var(--p-gris-200);
+  --color-borde-control: var(--p-gris-600);
+  --color-enlace: var(--p-verde-700);
+  --color-accion-primaria: var(--p-verde-700);
+  --color-accion-primaria-activa: var(--p-verde-800);
+  --color-accion-secundaria: var(--p-tinta-700);
+  --color-accion-secundaria-activa: var(--p-tinta-900);
+  --color-texto-sobre-accion: var(--p-blanco);
+  --color-foco: var(--p-azul-700);
+  --color-foco-anillo: var(--p-anillo);
+  --color-velo: var(--p-velo);
+  --color-exito-fondo: var(--p-verde-100);
+  --color-exito-texto: var(--p-verde-800);
+  --color-info-fondo: var(--p-azul-100);
+  --color-info-texto: var(--p-azul-700);
+  --color-advertencia-fondo: var(--p-ambar-100);
+  --color-advertencia-texto: var(--p-ambar-800);
+  --color-error-fondo: var(--p-rojo-100);
+  --color-error-texto: var(--p-rojo-700);
+
+  --fuente-texto: var(--p-fuente-sistema);
+  --fuente-titulos: var(--p-fuente-sistema);
+
+  /* Escala con proporción 1,25. */
+  --tamano-chico: 0.875rem;
+  --tamano-texto: 1rem;
+  --tamano-titulo-4: 1.25rem;
+  --tamano-titulo-3: 1.5625rem;
+  --tamano-titulo-2: 1.953rem;
+  --tamano-titulo-1: 2.441rem;
+
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-7: 3rem;
+
+  --radio-control: 0.5rem;
+  --radio-tarjeta: 0.75rem;
+  --radio-insignia: 999px;
+
+  --borde-ancho: 1px;
+  --borde-foco: 3px;
+  --borde-acento: 0.25rem;
+
+  --sombra-tarjeta: 0 1px 2px var(--p-sombra);
+  --sombra-aviso: 0 0.5rem 1.5rem var(--p-sombra);
+
+  --movimiento-duracion: 150ms;
+  --movimiento-pulso: 1.2s;
+
+  --capa-avisos: 10;
+
+  /* 48 × 48 px: área de toque mínima (RNF-UI-10). */
+  --medida-toque-minimo: 3rem;
+  --medida-lectura: 70ch;
+  --medida-tarjeta-minima: 16rem;
+  --medida-muestra: 2.5rem;
+
+  /* Puntos de quiebre: las media queries de app.css usan solo estos valores, con min-width.
+     No se pueden leer con var() dentro de @media: InterfazFitnessTest compara el literal. */
+  --medida-quiebre-medio: 48em;
+  --medida-quiebre-ancho: 80em;
+
+  /* 3. Pico: base */
+  --pico-font-family: var(--fuente-texto);
+  --pico-border-radius: var(--radio-control);
+  --pico-spacing: var(--espacio-4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --movimiento-duracion: 0ms;
+    --movimiento-pulso: 0s;
+  }
+}
+
+/* 3. Pico: colores del tema claro, con el mismo selector que usa Pico. */
+[data-theme=light],
+:root:not([data-theme=dark]) {
+  --pico-background-color: var(--color-fondo);
+  --pico-color: var(--color-texto);
+  --pico-h1-color: var(--color-titulo);
+  --pico-h2-color: var(--color-titulo);
+  --pico-h3-color: var(--color-titulo);
+  --pico-h4-color: var(--color-titulo);
+  --pico-h5-color: var(--color-titulo);
+  --pico-h6-color: var(--color-titulo);
+  --pico-muted-color: var(--color-texto-suave);
+  --pico-muted-border-color: var(--color-borde);
+  --pico-primary: var(--color-enlace);
+  --pico-primary-underline: var(--color-enlace);
+  --pico-primary-background: var(--color-accion-primaria);
+  --pico-primary-border: var(--color-accion-primaria);
+  --pico-primary-hover: var(--color-accion-primaria-activa);
+  --pico-primary-hover-underline: var(--color-accion-primaria-activa);
+  --pico-primary-hover-background: var(--color-accion-primaria-activa);
+  --pico-primary-hover-border: var(--color-accion-primaria-activa);
+  --pico-primary-focus: var(--color-foco-anillo);
+  --pico-primary-inverse: var(--color-texto-sobre-accion);
+  --pico-secondary: var(--color-accion-secundaria);
+  --pico-secondary-underline: var(--color-accion-secundaria);
+  --pico-secondary-background: var(--color-accion-secundaria);
+  --pico-secondary-border: var(--color-accion-secundaria);
+  --pico-secondary-hover: var(--color-accion-secundaria-activa);
+  --pico-secondary-hover-underline: var(--color-accion-secundaria-activa);
+  --pico-secondary-hover-background: var(--color-accion-secundaria-activa);
+  --pico-secondary-hover-border: var(--color-accion-secundaria-activa);
+  --pico-secondary-focus: var(--color-foco-anillo);
+  --pico-secondary-inverse: var(--color-texto-sobre-accion);
+  --pico-form-element-background-color: var(--color-fondo);
+  --pico-form-element-border-color: var(--color-borde-control);
+  --pico-form-element-color: var(--color-texto);
+  --pico-form-element-placeholder-color: var(--color-texto-suave);
+  --pico-form-element-active-border-color: var(--color-foco);
+  --pico-form-element-focus-color: var(--color-foco-anillo);
+  --pico-form-element-invalid-border-color: var(--color-error-texto);
+  --pico-form-element-invalid-active-border-color: var(--color-error-texto);
+  --pico-form-element-invalid-focus-color: var(--color-foco-anillo);
+  --pico-card-background-color: var(--color-fondo);
+  --pico-card-border-color: var(--color-borde);
+  --pico-card-box-shadow: var(--sombra-tarjeta);
+  --pico-card-sectioning-background-color: var(--color-superficie);
+  --pico-table-border-color: var(--color-borde);
+  --pico-code-background-color: var(--color-superficie);
+  --pico-code-color: var(--color-texto);
+  --pico-del-color: var(--color-error-texto);
+  --pico-ins-color: var(--color-exito-texto);
+  --pico-modal-overlay-background-color: var(--color-velo);
+}
+
+h1 {
+  --pico-font-size: var(--tamano-titulo-1);
+}
+
+h2 {
+  --pico-font-size: var(--tamano-titulo-2);
+}
+
+h3 {
+  --pico-font-size: var(--tamano-titulo-3);
+}
+
+h4 {
+  --pico-font-size: var(--tamano-titulo-4);
+}

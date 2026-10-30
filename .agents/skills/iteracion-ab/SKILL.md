@@ -36,6 +36,8 @@ description: >-
      `<tema>-b.css`. Solo redefinen tokens o reglas de `app.css`, nunca colores sueltos.
    - Cambios de estructura: `templates/variantes/<tema>-a.html` y `<tema>-b.html`.
    - Se ven con `?variante=<tema>-a` o `?variante=<tema>-b`.
+   - En el nombre del archivo, el `:` del tema se escribe `-` (`layout:entregas` →
+     `layout-entregas-a.css`): solo letras minúsculas, números y guiones.
 4. **Comprobar y capturar:**
 
    ```bash

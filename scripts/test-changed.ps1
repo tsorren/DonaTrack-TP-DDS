@@ -109,7 +109,7 @@ if ($escalateToReactor) {
 }
 
 # 4. Analyze per-service changes
-$knownModules = @("donaciones-service", "logistica-service", "notificaciones-service", "viandas-service", "incentivos-service", "integration-tests")
+$knownModules = @("donaciones-service", "logistica-service", "notificaciones-service", "viandas-service", "incentivos-service", "cliente-liviano", "integration-tests")
 $moduleMap = @{}
 
 foreach ($mod in $knownModules) {

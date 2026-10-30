@@ -1,0 +1,13 @@
+<!--/* Tarjeta de una entrega. Patrón: Material Cards. El título es el enlace principal; la foto,
+       si hay, va primero. entrega: EntregaVista. */-->
+<article th:fragment="tarjeta(entrega)" class="tarjeta">
+  <img th:if="${entrega.foto}" class="tarjeta-foto" src="/img/ejemplo-entrega.svg"
+       alt="Foto de la entrega" th:src="@{${entrega.foto}}" th:alt="${entrega.fotoAlt}"
+       width="640" height="400" loading="lazy">
+  <h3 class="tarjeta-titulo">
+    <a href="#" th:href="@{${entrega.enlace}}" th:text="${entrega.titulo}">Entrega</a>
+  </h3>
+  <p class="tarjeta-detalle" th:text="${entrega.destino}">Destino</p>
+  <p class="tarjeta-detalle" th:text="${entrega.fecha}">Fecha</p>
+  <span th:replace="~{fragmentos/insignia :: insignia(${entrega.estado})}">Estado</span>
+</article>

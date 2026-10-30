@@ -1,0 +1,4 @@
+<!--/* Insignia de estado de una entrega. Color y texto juntos: el color nunca va solo.
+       estado: EstadoEntrega. */-->
+<span th:fragment="insignia(estado)" class="insignia" th:classappend="|insignia--${estado.tono}|"
+      th:text="${estado.texto}">Estado</span>
