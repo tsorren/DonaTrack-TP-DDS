@@ -175,6 +175,10 @@ public class DonacionesApiClient {
         .patch(baseUrl + "/donaciones-independientes/" + diId + "/estado");
   }
 
+  public Response obtenerDonacionIndependiente(UUID diId) {
+    return given().when().get(baseUrl + "/donaciones-independientes/" + diId);
+  }
+
   public Response obtenerOpenApi() {
     return given().when().get(baseUrl + "/v3/api-docs");
   }

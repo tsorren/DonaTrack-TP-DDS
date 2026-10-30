@@ -71,6 +71,7 @@ Lo que sigue son flujos entre servicios que E5 da por funcionando y que la suite
 | **DIT-04** | **Los tests comparten estado global y un fallo arrastra a los siguientes.** `[OBSERVED]` `ejecutarAsignacion` toma todas las necesidades activas sin satisfacer y todas las donaciones en depósito. `[INFERRED]` Si un test falla antes de aprobar su propuesta, deja una necesidad abierta en "No Perecederos" que compite en el matching del test siguiente. `testComplexE2EMultipleDonationsFlow` exige exactamente 2 fragmentaciones. El nombre único del bien no aísla: el algoritmo filtra por subcategoría. La planificación de Logística también es global. El orden de las clases cambia entre Windows y CI (§1). | `donaciones-service/.../PropuestaDeAsignacionService.java:74-91`; `AlgoritmoCompatibilidadSemantica.java:20`; `CrossServiceCommunicationIT.java:430`; `LogisticaIntegrationIT.java:90`; log de CI `40815880445` | Bajo-medio, latente. En el camino verde no se manifiesta: 3 corridas seguidas sobre el mismo stack pasaron (§1). El riesgo es que un fallo real aparezca como varios. Ya está planificado en RM-16 (E7): ejecución secuencial de los tests de estado global. |
 | **AP-09** (desvío) | **Los timeouts están fijos y no coinciden con lo documentado.** `PollingUtils` usa 5 s, 8 s y 10 s fijos; la matriz de antipatrones declara 15 s. No hay un factor configurable para el stack híbrido o un runner lento. | `PollingUtils.java:23,53,84,114,146,178,219,251,291,321`; `auditoria/02-matriz-antipatrones.md:43` | Bajo hoy (§1). Medio para `--target hybrid`. |
 | **DIT-05** | **Un sondeo crece con los datos.** `esperarEntregaCreadaParaDonacion` lista todas las entregas en cada intento, en lugar de filtrar por donación. | `PollingUtils.java:256` | Bajo |
+| **DIT-12** (fase 2) | **Una entrega ajena bloquea la ruta entera.** `[OBSERVED]` El planificador pone todas las entregas sin ruta en el primer camión con capacidad. `VerificadorOrigenEventos` descarta el evento completo si una de sus donaciones no es del proveedor. `[INFERRED]` Por eso, una entrega creada por `POST /api/entregas` sin donación detrás hace que ninguna donación de esa ruta pase a `EN_TRASLADO`. `ContractIT` y `LogisticaIntegrationIT` dejaban entregas así pendientes. | `AsignadorDeEntregasPorDimension.java`; `PlanificacionService.java:107`; `VerificadorOrigenEventos.java` (`esOrigenValido`) | Alto para P1: el E2E fallaba según el orden de las clases. Se resolvió en los tests (§7). Que el servicio descarte el evento entero es una decisión de seguridad ("falla cerrado"); evaluarla queda fuera de este alcance. |
 | **DIT-06** | **Los datos de prueba tienen poca entropía.** La patente del camión admite 900 valores; `randomDni` genera DNIs de longitud variable (7 a 9 dígitos). | `LogisticaIntegrationIT.java:123`; `TestIdGenerator.java:12-15` | Bajo. Solo afecta a un stack reutilizado. |
 
 ---
@@ -94,7 +95,7 @@ Lo que sigue son flujos entre servicios que E5 da por funcionando y que la suite
 | Tests de Failsafe dentro del job | ≈25 s | log de CI 40815880445 |
 | Ciclo local completo sin compilar (stack nuevo) | 242 a 277 s, de los cuales ≈27 a 50 s son de Failsafe | §1 |
 
-**DIT-11 — el stack local no arranca de forma estable.** `[OBSERVED]` En 2 de 5 arranques locales del stack (Docker Desktop 29.8.2 sobre Windows), RabbitMQ terminó con `Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces`. Compose marcó la dependencia como fallida y no corrió ningún test. El gate lo detectó bien: `total_tests == 0` falla. RabbitMQ no tiene volumen nombrado en `docker-compose.preprod.yml` y usa el volumen anónimo de la imagen. La causa raíz: `Insufficient evidence to determine`. Las corridas de CI (Linux) vistas no lo muestran. No es un problema de la suite y queda fuera del alcance de esta tarea, porque el compose es infraestructura.
+**DIT-11 — el stack local no arranca de forma estable.** `[OBSERVED]` En 4 de 11 arranques locales del stack, sumando las fases 1 y 2 (Docker Desktop 29.8.2 sobre Windows), RabbitMQ terminó con `Error when reading /var/lib/rabbitmq/.erlang.cookie: eacces`. Compose marcó la dependencia como fallida y no corrió ningún test. El gate lo detectó bien: `total_tests == 0` falla. RabbitMQ no tiene volumen nombrado en `docker-compose.preprod.yml` y usa el volumen anónimo de la imagen. La causa raíz: `Insufficient evidence to determine`. Las corridas de CI (Linux) vistas no lo muestran. No es un problema de la suite y queda fuera del alcance de esta tarea, porque el compose es infraestructura.
 
 `[INFERRED]` El costo lo domina el arranque del stack (imágenes, healthchecks, importación de n8n), no los tests.
 Acelerar la suite no cambia el tiempo de CI de forma apreciable.
@@ -140,3 +141,42 @@ No requieren ADR (Gate A de `AGENTS.md` §9.1).
 **Recomendada: A.**
 B repetiría lo que ya cubren los tests de componente de Donaciones (`LogisticaEventListenerTest`, `ProcesadorEventosLogisticaTest`).
 C deja F-01 abierto.
+
+---
+
+## 7. Fase 2: lo implementado
+
+En el gate se eligieron P1 a P5. Durante la implementación se tomaron dos decisiones más:
+
+- **DIT-12:** ningún test deja entregas ajenas pendientes.
+- **Contratos de Logística:** se corrige el productor.
+
+| Propuesta | Qué cambió | Archivos |
+|---|---|---|
+| P1 (F-01) | El E2E ya no cambia estados por REST. Logística crea la entrega desde el comando AMQP, planifica, saca la ruta y la entidad confirma. Donaciones pasa por `ListaParaEntregar`, `EnTraslado` y `Entregada` aplicando los eventos. Antes de iniciar la ruta, el test espera `ListaParaEntregar`, porque las colas de `ruta.asignada` y `ruta.iniciada` no garantizan orden. | `FullDistributedDonationE2EIT`, `LogisticaApiClient.confirmarEntrega`, `DonacionesApiClient.obtenerDonacionIndependiente` |
+| P2 (QA-GAP-05) | Test nuevo: la entrega llega `NO_RECIBIDA` sin replanificar, Donaciones la pasa a `EntregaFallida` y el donante recibe una notificación con el motivo. | `FullDistributedDonationE2EIT` |
+| P3 (DIT-07, DIT-08, AP-09) | `PollingUtils` queda con un solo método genérico y un factor de timeout `-Dit.timeout.factor`. Se borró `esperarDonanteEliminadoEnIncentivos`, que no tenía usos. Escenarios compartidos en `BaseIT`: `crearDonante`, `crearEntidad`, `asignarYAprobar` y `entregarPorRest`. Datos de Logística en `LogisticaTestData`. | `PollingUtils`, `BaseIT`, `CrossServiceCommunicationIT`, `LogisticaTestData` |
+| P4 (DIT-02) | Que falte uno de los 8 tipos de evento que publica el flujo del E2E es una violación de contrato, con la misma política que las demás: aviso en PR y fallo con `CONTRATOS_ESTRICTO=true`. El log lista los schemas que el E2E no ejercitó. | `ContratosAmqp.faltantes`/`sinEjercitar`, `FullDistributedDonationE2EIT` |
+| P5 (DIT-03, DIT-09) | En los flujos de una sola donación, las notificaciones se verifican por evento (asignada, en camino, recibida, bienvenida, motivo de falla), no por cantidad. `testComplexE2EMultipleDonationsFlow` sigue contando (`>= 5`), porque son dos donaciones. Los errores se verifican por código del `ErrorCatalog` (`ERR-CSR-001`, `ERR-CSR-003`). `DonationIntegrationIT` verifica la persistencia con su donante. `integration-tests.md` quedó alineado con lo que se prueba. | `ErrorHandlingIntegrationIT`, `DonationIntegrationIT`, `integration-tests.md` |
+| DIT-12 | `LogisticaIntegrationIT` lleva su entrega sin donación hasta `ENTREGADA` y absorbe el contrato vivo del `POST /api/entregas`, que estaba en `ContractIT`. | `LogisticaIntegrationIT`, `ContractIT` |
+| Contratos de Logística | `[VERIFIED]` Con P4, el espía capturó por primera vez los eventos de vuelta de Logística: `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa` y `entrega.fallida` violaban sus schemas, porque publicaban `LocalDateTime` sin zona y el schema exige `date-time` RFC 3339. Se aplicó la convención de Donaciones: `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")`. `[VERIFIED]` Donaciones lee las fechas de los 4 eventos con y sin `Z`, así que los mensajes en vuelo siguen sirviendo. | 4 eventos en `logistica-service/.../dto/eventos/`; `EventosAmqpSerializacionTest` (Logística); `EventosLogisticaDeserializacionTest` (Donaciones); ejemplos de `docs/arquitectura/eventos-amqp.md` |
+
+**Validación de la fase 2:**
+
+| Gate | Comando | Resultado |
+|---|---|---|
+| Gate 3/4, aviso | `./run-preprod-tests.sh --skip-build` (con la imagen de Logística corregida) | `[VERIFIED]` 30/30 en verde, 0 salteados, sin avisos de contratos AMQP. El E2E vio los 8 tipos esperados. |
+| Gate 3/4, estricto | `CONTRATOS_ESTRICTO=true ./run-preprod-tests.sh --skip-build` | `[VERIFIED]` 30/30 en verde al primer intento. |
+| Gate 2, Logística | `mvn clean test -pl logistica-service -am` | `[VERIFIED]` 525 tests, 0 fallos (1 salteado preexistente). |
+| Gate 2, Donaciones | `mvn clean test -pl donaciones-service -am` | 780 tests. 15 clases con contenedores fallaron por timeout de arranque: Docker Desktop no alcanzó a levantar a tiempo los contenedores en paralelo. `[VERIFIED]` Reintentadas con el reactor, las 15 y el test nuevo dieron 120/120 en verde. |
+| Formato | `mvn spotless:check` en los 3 módulos tocados | `[VERIFIED]` sin violaciones |
+
+`[OBSERVED]` Durante la fase 2, DIT-11 volvió a cortar 2 arranques del stack antes de correr un solo test. Ninguna corrida válida falló por inestabilidad de la suite.
+
+**Lo que no se cubre:**
+
+- DIT-01: misiones y ranking siguen entrando por el atajo REST.
+- DIT-04: el estado global queda para RM-16.
+- DIT-05, DIT-06 y DIT-10.
+- DIT-11: el arranque de RabbitMQ en Docker Desktop.
+- La política de descartar el evento entero (DIT-12, del servicio).

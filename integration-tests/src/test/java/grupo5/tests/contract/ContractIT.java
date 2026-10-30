@@ -34,20 +34,12 @@ import org.junit.jupiter.api.Test;
 @Tag("contract")
 class ContractIT extends BaseIT {
 
-  private static String resolveContractPath(String filename) {
-    Path pathInSubmodule = Path.of("../docs/arquitectura/contratos/", filename);
-    if (Files.exists(pathInSubmodule)) {
-      return pathInSubmodule.toAbsolutePath().toString();
-    }
-    return Path.of("docs/arquitectura/contratos/", filename).toAbsolutePath().toString();
-  }
-
   @Test
   void testNotificacionesPersonasContract() {
     // donaciones-service sincroniza réplicas de personas mediante PUT /api/notificaciones/personas
     requireServiceAvailable(NOTIFICACIONES_URL, "notificaciones-service");
 
-    String specPath = resolveContractPath("openapi-notificaciones.yaml");
+    String specPath = contrato("openapi-notificaciones.yaml");
     OpenApiValidationFilter validationFilter = new OpenApiValidationFilter(specPath);
 
     String personaPayload =
@@ -80,7 +72,7 @@ class ContractIT extends BaseIT {
             "openapi-notificaciones.yaml",
             "openapi-logistica.yaml",
             "openapi-incentivos.yaml")) {
-      String path = resolveContractPath(specFile);
+      String path = contrato(specFile);
       OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(path).build();
       org.junit.jupiter.api.Assertions.assertNotNull(
           validator, "El validador para " + specFile + " debe construirse exitosamente");
@@ -92,7 +84,7 @@ class ContractIT extends BaseIT {
     // donaciones-service notifica eventos de donación mediante POST /api/incentivos/donaciones
     requireServiceAvailable(INCENTIVOS_URL, "incentivos-service");
 
-    String specPath = resolveContractPath("openapi-incentivos.yaml");
+    String specPath = contrato("openapi-incentivos.yaml");
     OpenApiValidationFilter validationFilter = new OpenApiValidationFilter(specPath);
 
     UUID donanteId = UUID.randomUUID();
@@ -138,48 +130,11 @@ class ContractIT extends BaseIT {
   }
 
   @Test
-  void testLogisticaEntregasContract() {
-    // donaciones-service solicita planificación de entrega mediante POST /api/entregas
-    requireServiceAvailable(LOGISTICA_URL, "logistica-service");
-
-    String specPath = resolveContractPath("openapi-logistica.yaml");
-    OpenApiValidationFilter validationFilter = new OpenApiValidationFilter(specPath);
-
-    String entregaPayload =
-        """
-        {
-          "idDonacion": "%s",
-          "idBeneficiaria": "%s",
-          "destino": {
-            "calle": "Av. Corrientes",
-            "altura": 1234,
-            "codigoPostal": "1043",
-            "localidad": "CABA",
-            "provincia": "Buenos Aires",
-            "pais": "Argentina"
-          },
-          "pesoTotalKG": 10.5,
-          "volumenTotalM3": 2.0
-        }
-        """
-            .formatted(UUID.randomUUID(), UUID.randomUUID());
-
-    given()
-        .filter(validationFilter)
-        .contentType(ContentType.JSON)
-        .body(entregaPayload)
-        .when()
-        .post(LOGISTICA_URL + "/api/entregas")
-        .then()
-        .statusCode(201);
-  }
-
-  @Test
   void testAdversarialBreakingChangeContractValidation() {
     // Verificación adversaria: si un cliente altera el contrato omitiendo campos requeridos
     // o alterando tipos de datos, OpenApiValidationFilter y el validador estricto deben
     // rechazar el request inmediatamente (detección de breaking changes).
-    String specPath = resolveContractPath("openapi-notificaciones.yaml");
+    String specPath = contrato("openapi-notificaciones.yaml");
     OpenApiInteractionValidator validator = OpenApiInteractionValidator.createFor(specPath).build();
 
     // 1. Request válido contra OpenAPI
@@ -267,7 +222,7 @@ class ContractIT extends BaseIT {
     // RM-08: reemplaza al test diferido. El validador del espía AMQP (draft 2020-12) carga todos
     // los schemas evento-*, acepta un mensaje válido y rechaza uno incompleto, un UUID malformado
     // y un tipo sin schema. Los mensajes reales se validan en FullDistributedDonationE2EIT.
-    try (Stream<Path> schemas = Files.list(Path.of(resolveContractPath("schemas")))) {
+    try (Stream<Path> schemas = Files.list(Path.of(contrato("schemas")))) {
       List<Path> eventos =
           schemas.filter(p -> p.getFileName().toString().startsWith("evento-")).toList();
       assertFalse(eventos.isEmpty(), "Debe haber schemas evento-* en contratos/schemas/");
@@ -310,7 +265,7 @@ class ContractIT extends BaseIT {
     requireServiceAvailable(DONACIONES_URL, "donaciones-service");
 
     OpenApiValidationFilter validationFilter =
-        new OpenApiValidationFilter(resolveContractPath("openapi-donaciones.yaml"));
+        new OpenApiValidationFilter(contrato("openapi-donaciones.yaml"));
 
     PersonaTestDTO persona =
         PersonaTestDataBuilder.humana()

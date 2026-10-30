@@ -1,13 +1,9 @@
 package grupo5.tests.integration;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.Matchers.equalTo;
 
 import grupo5.tests.BaseIT;
 import grupo5.tests.builders.DonacionTestDataBuilder;
-import grupo5.tests.builders.PersonaTestDataBuilder;
-import grupo5.tests.dto.DonacionTestDTO;
-import grupo5.tests.dto.PersonaTestDTO;
-import grupo5.tests.utils.PollingUtils;
 import grupo5.tests.utils.TestIdGenerator;
 import java.util.UUID;
 import org.junit.jupiter.api.Tag;
@@ -16,28 +12,25 @@ import org.junit.jupiter.api.Test;
 @Tag("integration")
 class DonationIntegrationIT extends BaseIT {
 
+  /**
+   * El bien no es un alimento, así que la donación no se segmenta y no entra al stock de "No
+   * Perecederos" que usan los tests de matching (DIT-04).
+   */
   @Test
-  void testCrearDonacion() {
-    // 1. Crear persona
-    PersonaTestDTO persona =
-        PersonaTestDataBuilder.humana()
-            .conNombre("Maria")
-            .conDocumento(TestIdGenerator.randomDni())
-            .conEmail(TestIdGenerator.randomEmail("maria"))
-            .build();
-    UUID personaId = donacionesClient.crearPersonaOk(persona);
+  void testCrearDonacionQuedaPersistidaConSuDonante() {
+    UUID donanteId = crearDonante("Maria").donanteId();
 
-    // 2. Esperar replicación y crear donante
-    PollingUtils.esperarReplicacionPersona(notificacionesClient, personaId);
-    UUID donanteId = donacionesClient.crearDonanteOk(personaId);
+    UUID donacionId =
+        donacionesClient.crearDonacionOk(
+            DonacionTestDataBuilder.deAlimento(TestIdGenerator.uniqueItemName("pantalon"), 5)
+                .conDonante(donanteId)
+                .build());
 
-    // 3. Crear donación con ítem aislado
-    DonacionTestDTO donacion =
-        DonacionTestDataBuilder.deAlimento(TestIdGenerator.uniqueItemName("pantalon"), 5)
-            .conDonante(donanteId)
-            .build();
-
-    UUID donacionId = donacionesClient.crearDonacionOk(donacion);
-    assertNotNull(donacionId);
+    donacionesClient
+        .obtenerDonacion(donacionId)
+        .then()
+        .statusCode(200)
+        .body("id", equalTo(donacionId.toString()))
+        .body("donante.idDonante", equalTo(donanteId.toString()));
   }
 }

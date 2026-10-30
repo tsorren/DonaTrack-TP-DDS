@@ -42,28 +42,30 @@ integration-tests/
     ├── builders/                                # Test Data Builders fluidos
     │   ├── DonacionTestDataBuilder.java
     │   ├── NecesidadTestDataBuilder.java
-    │   └── PersonaTestDataBuilder.java
+    │   ├── PersonaTestDataBuilder.java
+    │   └── LogisticaTestData.java               # Camión, chofer y entrega sin donación
     │
     ├── utils/                                   # Generadores y sondeos inteligentes
     │   ├── TestIdGenerator.java                 # Generación de DNIs, CUITs, emails y bienes únicos
-    │   └── PollingUtils.java                    # Sondeos Awaitility con diagnóstico detallado en timeout
+    │   ├── PollingUtils.java                    # Un sondeo Awaitility genérico con diagnóstico en timeout
+    │   └── EspiaAmqp.java                       # Consumidor espía de RM-08
     │
     ├── smoke/                                   # @Tag("smoke") — Fail-Fast en < 2 segundos
     │   └── SmokeIT.java                         # Liveness de los 4 microservicios (OpenAPI 200)
     │
     ├── contract/                                # @Tag("contract")
     │   ├── ContractIT.java                      # Verificación OpenAPI de endpoints críticos
-    │   └── TracingContractIT.java               # Verificación y propagación de header X-Trace-Id
+    │   └── TracingContractIT.java               # Header X-Trace-Id en las respuestas (la propagación es RM-12)
     │
     ├── integration/                             # @Tag("integration")
     │   ├── CrossServiceCommunicationIT.java     # Replicación REST y side-effects
     │   ├── DonationIntegrationIT.java
     │   ├── PersonIntegrationIT.java
-    │   ├── LogisticaIntegrationIT.java          # Camiones, choferes y entregas de logística
-    │   └── ErrorHandlingIntegrationIT.java      # Contratos de error 400, 404, 409 y fieldErrors
+    │   ├── LogisticaIntegrationIT.java          # Camiones, choferes, entregas y contrato del POST /api/entregas
+    │   └── ErrorHandlingIntegrationIT.java      # Errores 400 y 404 con el código del ErrorCatalog
     │
     ├── e2e/                                     # @Tag("e2e")
-    │   └── FullDistributedDonationE2EIT.java    # Flujo completo con Logística y RabbitMQ
+    │   └── FullDistributedDonationE2EIT.java    # Entrega exitosa y fallida por el camino real de Logística
     │
     └── (k6 performance)                        # Pruebas de rendimiento desacopladas (tests/performance/k6/)
         ├── donaciones-creacion-carga.js         # Carga con rampa y SLA p(95) < 500ms
@@ -99,6 +101,20 @@ UUID personaId = donacionesClient.crearPersonaOk(persona);
 ### D. Sondeos Inteligentes de Negocio (`PollingUtils`)
 Se eliminaron por completo las esperas ciegas (`esperarAsync` / `Thread.sleep`). Las sincronizaciones asíncronas son gestionadas por Awaitility evaluando condiciones de dominio reales (ej: esperar que `GET /api/donaciones/{id}` tenga estado `SEGMENTADA`), capturando e imprimiendo el último cuerpo de respuesta en caso de timeout para diagnóstico inmediato.
 
+Todas las esperas pasan por `PollingUtils.esperar(descripción, timeout, consulta, condición)`, que consulta cada 200 ms. Los timeouts son de 5 a 10 s. Para un stack más lento, como el híbrido o un runner cargado, `-Dit.timeout.factor=2` los multiplica todos.
+
+### E. Escenarios compartidos (`BaseIT`)
+`BaseIT` arma los pasos que repiten varios tests:
+
+* `crearDonante`: persona replicada en Notificaciones y registrada como donante.
+* `crearEntidad`: entidad beneficiaria.
+* `asignarYAprobar`: necesidad, matching y aprobación; devuelve las donaciones independientes.
+* `entregarPorRest`: atajo que lleva las donaciones a `ENTREGADA` por REST, como un transportista.
+
+El camino real lo cubre solo el E2E: Logística planifica, saca la ruta y confirma o rechaza la entrega, y Donaciones aplica `ruta.asignada`, `ruta.iniciada`, `entrega.exitosa` y `entrega.fallida`.
+
+> **Sin entregas ajenas pendientes.** La planificación es global y pone todas las entregas pendientes en el primer camión con capacidad. Si `ruta.iniciada` menciona una donación que no es del proveedor, Donaciones descarta el evento entero. Por eso, un test que crea una entrega sin donación detrás (`LogisticaIntegrationIT`) la lleva hasta `ENTREGADA`. Ver [diagnóstico E5](diagnostico-integration-tests-e5.md), DIT-12.
+
 ---
 
 ## 4. Ejecución de Pruebas
@@ -121,7 +137,7 @@ Los envoltorios conservan su nombre y sus argumentos: `run-preprod-tests-stay.sh
 
 **Contratos vivos (RM-08, [política de contratos](../adr/20261028-politica-de-evolucion-de-contratos-entre-servicios.md)):**
 
-* `FullDistributedDonationE2EIT` arranca un consumidor espía (`EspiaAmqp`), que copia los mensajes de `donaciones.exchange`, `incentivos.exchange` y `logistica.exchange` desde el puerto AMQP publicado en `127.0.0.1:5672`. En `donaciones.exchange` se liga solo a `donacion.#`, `donante.#`, `persona.#` y al comando de la instancia del preprod, para no ocultar los rechazos `mandatory` del broker: un evento con otro prefijo requiere sumar su clave en `EspiaAmqp`. Al terminar, `ContratosAmqp` valida cada mensaje contra su schema `evento-*` (JSON Schema draft 2020-12, elegido por el header `__TypeId__`); un tipo sin schema es una violación.
+* `FullDistributedDonationE2EIT` arranca un consumidor espía (`EspiaAmqp`), que copia los mensajes de `donaciones.exchange`, `incentivos.exchange` y `logistica.exchange` desde el puerto AMQP publicado en `127.0.0.1:5672`. En `donaciones.exchange` se liga solo a `donacion.#`, `donante.#`, `persona.#` y al comando de la instancia del preprod, para no ocultar los rechazos `mandatory` del broker: un evento con otro prefijo requiere sumar su clave en `EspiaAmqp`. Al terminar, `ContratosAmqp` valida cada mensaje contra su schema `evento-*` (JSON Schema draft 2020-12, elegido por el header `__TypeId__`); un tipo sin schema es una violación. También es violación que falte uno de los tipos que el flujo tiene que publicar (`EVENTOS_ESPERADOS` del E2E). El log de la corrida lista los schemas que el E2E no ejercitó (`[contratos-amqp]`).
 * Con `CONTRATOS_ESTRICTO=true` (post-merge y corte de entrega) una violación hace fallar el E2E; sin él (PR y local), queda como `::warning::` en `integration-tests/target/contratos-amqp-avisos.txt` y el script la muestra al final.
 * `scripts/diff-contratos.sh <ref-base> aviso|error` compara las specs OpenAPI con `oasdiff` (imagen `tufin/oasdiff`, fijada por digest). Para probar en local un cambio de spec antes del PR: `scripts/diff-contratos.sh origin/ENTREGA_5 aviso`. Un cambio incompatible aceptado se registra en `docs/arquitectura/contratos/cambios-incompatibles-aceptados.txt` (lo revisa el responsable de integración).
 
