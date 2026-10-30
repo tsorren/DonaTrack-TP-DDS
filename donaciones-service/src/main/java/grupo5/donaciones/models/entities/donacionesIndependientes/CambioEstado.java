@@ -24,4 +24,18 @@ public class CambioEstado {
     this.justificacion = justificacion;
     this.actor = actor;
   }
+
+  /** Constructor de reconstitución para el adaptador JPA: conserva el momento del cambio. */
+  public CambioEstado(
+      EstadoDonacionIndependiente estadoAnterior,
+      EstadoDonacionIndependiente estadoNuevo,
+      LocalDateTime timestamp,
+      String justificacion,
+      String actor) {
+    this.estadoAnterior = estadoAnterior;
+    this.estadoNuevo = estadoNuevo;
+    this.timestamp = timestamp;
+    this.justificacion = justificacion;
+    this.actor = actor;
+  }
 }

@@ -16,13 +16,11 @@ public class PersonaRepositoryJpaAdapter
     extends CrudRepositoryJpaAdapter<Persona, PersonaEntity, SpringDataPersonaRepository>
     implements IPersonaRepository {
 
-  private final SpringDataPersonaRepository springDataRepo;
   private final PersonaPersistenciaMapper mapper;
 
   public PersonaRepositoryJpaAdapter(
       SpringDataPersonaRepository springDataRepo, PersonaPersistenciaMapper mapper) {
     super(springDataRepo, mapper::toEntity, mapper::toDomain);
-    this.springDataRepo = springDataRepo;
     this.mapper = mapper;
   }
 

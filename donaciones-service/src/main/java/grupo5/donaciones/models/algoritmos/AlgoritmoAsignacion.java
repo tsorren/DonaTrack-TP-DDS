@@ -23,16 +23,19 @@ public abstract class AlgoritmoAsignacion {
   }
 
   public List<Propuesta> ejecutar(
-      List<Necesidad> necesidades, List<DonacionIndependiente> donaciones) {
+      List<Necesidad> necesidades,
+      List<DonacionIndependiente> donaciones,
+      DatosDeAsignacion datos) {
     List<Propuesta> propuestas = new ArrayList<>();
     StockDeDonaciones stock = new StockDeDonaciones(donaciones);
 
-    for (Necesidad necesidad : ordenarNecesidades(necesidades)) {
+    for (Necesidad necesidad : ordenarNecesidades(necesidades, datos)) {
       if (propuestas.size() >= limitePropuestas) break;
 
       List<DonacionIndependiente> candidatas = filtrarDonaciones(necesidad, stock.disponibles());
       if (!candidatas.isEmpty()) {
-        Propuesta propuesta = crearPropuestaDesde(necesidad, candidatas, stock);
+        Propuesta propuesta =
+            crearPropuestaDesde(necesidad, candidatas, stock, datos.asignadoA(necesidad.getId()));
         stock.registrarReservas(propuesta);
         propuestas.add(propuesta);
       }
@@ -43,12 +46,13 @@ public abstract class AlgoritmoAsignacion {
   private static Propuesta crearPropuestaDesde(
       Necesidad necesidad,
       List<DonacionIndependiente> donacionesOrdenadas,
-      StockDeDonaciones stock) {
+      StockDeDonaciones stock,
+      int cantidadYaAsignada) {
 
     Propuesta propuesta = new Propuesta();
     propuesta.asociarNecesidad(necesidad.getId());
 
-    int cantidadRestante = necesidad.getCantidadNecesitada() - necesidad.cantidadAcumulada();
+    int cantidadRestante = necesidad.cantidadRestante(cantidadYaAsignada);
 
     for (int i = 0; i < donacionesOrdenadas.size() && cantidadRestante > 0; i++) {
       DonacionIndependiente donacion = donacionesOrdenadas.get(i);
@@ -70,7 +74,7 @@ public abstract class AlgoritmoAsignacion {
         && Objects.equals(donacion.getSubcategoriaId(), necesidad.getSubcategoriaId());
   }
 
-  public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades) {
+  public List<Necesidad> ordenarNecesidades(List<Necesidad> necesidades, DatosDeAsignacion datos) {
     if (necesidades == null)
       throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDADES_NULAS);
     return necesidades;
@@ -80,13 +84,7 @@ public abstract class AlgoritmoAsignacion {
       Necesidad necesidad, List<DonacionIndependiente> donaciones) {
     if (necesidad == null) throw new ValidationException(ErrorCatalog.ALGORITMO_NECESIDAD_NULA);
     if (donaciones == null) throw new ValidationException(ErrorCatalog.ALGORITMO_DONACIONES_NULAS);
-    List<DonacionIndependiente> filtradas = new ArrayList<>();
-    for (DonacionIndependiente donacion : donaciones) {
-      if (mismaSubcategoria(donacion, necesidad)) {
-        filtradas.add(donacion);
-      }
-    }
-    return filtradas;
+    return donaciones.stream().filter(donacion -> mismaSubcategoria(donacion, necesidad)).toList();
   }
 
   public abstract List<DonacionIndependiente> filtrarDonaciones(

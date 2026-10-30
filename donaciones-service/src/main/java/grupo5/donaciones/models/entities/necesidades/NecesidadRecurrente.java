@@ -4,9 +4,7 @@ import grupo5.common.exceptions.BusinessStateException;
 import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.NecesidadDTO;
-import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -17,7 +15,7 @@ import lombok.Getter;
 
 @Getter
 public class NecesidadRecurrente extends Necesidad {
-  private Period periodo;
+  private final Period periodo;
 
   @Getter(AccessLevel.NONE)
   private List<PeriodoNecesidad> periodos;
@@ -40,8 +38,20 @@ public class NecesidadRecurrente extends Necesidad {
     this.periodos = new ArrayList<>();
 
     validarNecesidadRecurrente(fechaInicio);
-    this.periodos.add(
-        new PeriodoNecesidad(fechaInicio.plus(this.periodo), List.of(), cantidadNecesitada, this));
+    this.periodos.add(new PeriodoNecesidad(fechaInicio.plus(this.periodo), cantidadNecesitada));
+  }
+
+  /** Constructor de reconstitución para el adaptador JPA */
+  public NecesidadRecurrente(
+      DatosNecesidad datos, Period periodo, Boolean activa, List<PeriodoNecesidad> periodos) {
+    super(datos);
+    this.periodo = periodo;
+    this.activa = activa == null || activa;
+    this.periodos = periodos != null ? new ArrayList<>(periodos) : new ArrayList<>();
+  }
+
+  public void actualizarPeriodos(List<PeriodoNecesidad> periodos) {
+    this.periodos = periodos != null ? new ArrayList<>(periodos) : new ArrayList<>();
   }
 
   private void validarNecesidadRecurrente(LocalDate fechaInicio) {
@@ -56,14 +66,6 @@ public class NecesidadRecurrente extends Necesidad {
     }
   }
 
-  @Override
-  public List<DonacionIndependiente> getDonacionesAsignadas() {
-    PeriodoNecesidad actual = obtenerPeriodoActual();
-    return actual != null && actual.donacionesAsignadas() != null
-        ? actual.donacionesAsignadas()
-        : List.of();
-  }
-
   public List<PeriodoNecesidad> getPeriodos() {
     return List.copyOf(periodos);
   }
@@ -73,34 +75,26 @@ public class NecesidadRecurrente extends Necesidad {
     return this.periodos.get(this.periodos.size() - 1);
   }
 
-  public void asignarDonacion(DonacionIndependiente donacionAsignada) {
+  @Override
+  public DestinoAsignacion destinoDeAsignacion() {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     if (actual == null) {
       throw new BusinessStateException(ErrorCatalog.SIN_PERIODO_ACTIVO);
     }
-    PeriodoNecesidad nuevoActual = actual.asignarDonacion(donacionAsignada);
-    this.periodos.set(this.periodos.size() - 1, nuevoActual);
+    return new DestinoAsignacion(getId(), actual.id(), getEntidadId());
   }
 
   @Override
-  public void quitarDonacion(DonacionIndependiente donacion) {
+  public UUID periodoActualId() {
     PeriodoNecesidad actual = obtenerPeriodoActual();
-    if (actual != null) {
-      PeriodoNecesidad nuevoActual = actual.quitarDonacion(donacion);
-      this.periodos.set(this.periodos.size() - 1, nuevoActual);
-    }
+    return actual != null ? actual.id() : null;
   }
 
+  /** Se satisface dentro del período actual, según su cantidad objetivo. */
   @Override
-  public Integer cantidadAcumulada() {
+  public boolean estaSatisfechaCon(int cantidadAcumulada) {
     PeriodoNecesidad actual = obtenerPeriodoActual();
-    return actual != null ? actual.cantidadAcumulada() : 0;
-  }
-
-  @Override
-  public boolean estaSatisfecha() {
-    PeriodoNecesidad actual = obtenerPeriodoActual();
-    return actual != null && actual.estaSatisfecha();
+    return actual != null && actual.estaSatisfechaCon(cantidadAcumulada);
   }
 
   public boolean hayQueGenerarNuevo(LocalDate fechaActual) {
@@ -112,13 +106,14 @@ public class NecesidadRecurrente extends Necesidad {
     return !actual.estaEnPeriodo(fechaActual);
   }
 
-  public boolean renovarPeriodoSiCorresponde(LocalDate fechaActual) {
+  /** {@code acumuladoDelPeriodoActual}: lo asignado al período que se cierra. */
+  public boolean renovarPeriodoSiCorresponde(LocalDate fechaActual, int acumuladoDelPeriodoActual) {
     if (!hayQueGenerarNuevo(fechaActual)) {
       return false;
     }
     PeriodoNecesidad actual = obtenerPeriodoActual();
     if (actual != null) {
-      actual.finalizo();
+      actual.finalizo(acumuladoDelPeriodoActual);
     }
     generarNuevoPeriodo();
     return true;
@@ -131,8 +126,7 @@ public class NecesidadRecurrente extends Necesidad {
             ? LocalDate.now(ZoneId.systemDefault()).plus(this.periodo)
             : actual.fechaFin().plus(this.periodo);
 
-    this.periodos.add(
-        new PeriodoNecesidad(nuevaFechaFin, List.of(), super.getCantidadNecesitada(), this));
+    this.periodos.add(new PeriodoNecesidad(nuevaFechaFin, super.getCantidadNecesitada()));
   }
 
   public boolean getActiva() {
@@ -150,25 +144,14 @@ public class NecesidadRecurrente extends Necesidad {
   }
 
   @Override
-  public int contarDonacionesAsignadasDesde(LocalDateTime desde) {
-    if (this.periodos == null || desde == null) return 0;
-    return this.periodos.stream()
-        .filter(p -> p.donacionesAsignadas() != null)
-        .flatMap(p -> p.donacionesAsignadas().stream())
-        .filter(d -> d.getFechaRegistro() != null && d.getFechaRegistro().isAfter(desde))
-        .mapToInt(d -> 1)
-        .sum();
-  }
-
-  @Override
   public TipoNecesidad getTipoNecesidad() {
     return TipoNecesidad.RECURRENTE;
   }
 
   @Override
-  public NecesidadDTO toDTO() {
+  public NecesidadDTO toDTO(int cantidadAcumulada) {
     PeriodoNecesidad actual = obtenerPeriodoActual();
     LocalDate fechaFin = actual != null ? actual.fechaFin() : null;
-    return super.toDTO(fechaFin);
+    return super.toDTO(fechaFin, estaSatisfechaCon(cantidadAcumulada));
   }
 }

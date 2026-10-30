@@ -13,7 +13,8 @@
     "donanteId": {
       "type": "string",
       "format": "uuid",
-      "description": "Identificador del donante"
+      "description": "DEPRECATED: vale lo mismo que personaId (el id del donante es el de su persona). Usar personaId. Se mantiene por compatibilidad hasta completar el ciclo de migración.",
+      "deprecated": true
     },
     "personaId": {
       "type": "string",
@@ -48,7 +49,7 @@
         "pais": { "type": "string" }
       },
       "required": ["calle", "altura", "codigoPostal", "localidad", "provincia", "pais"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "description": "Dirección física de destino de la entrega (entidad beneficiaria)"
     },
     "pesoTotalKG": {
@@ -73,5 +74,5 @@
     "pesoTotalKG",
     "volumenTotalM3"
   ],
-  "additionalProperties": false
+  "additionalProperties": true
 }

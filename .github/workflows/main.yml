@@ -61,6 +61,7 @@ jobs:
   validate-git-flow:
     if: github.event.action != 'edited' || github.event.changes.base != null
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
     steps:
@@ -80,7 +81,9 @@ jobs:
             fi
           fi
 
-          # Caso 2: Merge a ENTREGA_N — solo desde ramas E<N>_* o ENTREGA_<N>_*
+          # Caso 2: Merge a ENTREGA_N — desde ramas E<N>_* o ENTREGA_<N>_*, o desde
+          # E<N-1>_* (trabajo que quedó abierto al cerrar la entrega anterior y se
+          # reapunta a la nueva, sin renombrar la rama ni recrear la PR).
           # [FIX-7] La excepción hardcodeada para E1_CORREGIDA fue eliminada.
           # La regla genérica ya acepta E1_CORREGIDA porque comienza con "E1_".
           # Si se necesitan excepciones adicionales, parametrizar via variable de
@@ -89,9 +92,23 @@ jobs:
             DELIVERY_NUM="${BASH_REMATCH[1]}"
             REQUIRED_PREFIX="E${DELIVERY_NUM}_"
             REQUIRED_LONG_PREFIX="ENTREGA_${DELIVERY_NUM}_"
+            # 10# evita que un número con cero a la izquierda (ENTREGA_08) se lea como octal
+            PREVIOUS_NUM=$((10#$DELIVERY_NUM - 1))
+            PREVIOUS_PREFIX=""
+            if (( PREVIOUS_NUM >= 1 )); then
+              PREVIOUS_PREFIX="E${PREVIOUS_NUM}_"
+            fi
 
-            if [[ ! "$SRC_BRANCH" =~ ^${REQUIRED_PREFIX}.* && ! "$SRC_BRANCH" =~ ^${REQUIRED_LONG_PREFIX}.* ]]; then
-              echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con '$REQUIRED_PREFIX' o '$REQUIRED_LONG_PREFIX'."
+            if [[ "$SRC_BRANCH" == "$REQUIRED_PREFIX"* || "$SRC_BRANCH" == "$REQUIRED_LONG_PREFIX"* ]]; then
+              :
+            elif [[ -n "$PREVIOUS_PREFIX" && "$SRC_BRANCH" == "$PREVIOUS_PREFIX"* ]]; then
+              echo "::notice::Rama de la entrega anterior ('$PREVIOUS_PREFIX') aceptada hacia '$BASE_BRANCH'."
+            else
+              ALLOWED="'$REQUIRED_PREFIX' o '$REQUIRED_LONG_PREFIX'"
+              if [[ -n "$PREVIOUS_PREFIX" ]]; then
+                ALLOWED="'$REQUIRED_PREFIX', '$REQUIRED_LONG_PREFIX' o '$PREVIOUS_PREFIX' (entrega anterior)"
+              fi
+              echo "::error::Pull Requests hacia '$BASE_BRANCH' deben iniciar con $ALLOWED."
               echo "  Ejemplo: ${REQUIRED_PREFIX}nombre-del-requerimiento"
               exit 1
             fi
@@ -105,6 +122,7 @@ jobs:
   detect-changes:
     needs: validate-git-flow
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read
@@ -204,6 +222,7 @@ jobs:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.any-service == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
     steps:
@@ -228,6 +247,7 @@ jobs:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.any-service == 'true' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     strategy:
@@ -297,6 +317,7 @@ jobs:
     needs: [lint-and-format, build-and-test]
     if: ${{ always() && needs.build-and-test.result == 'success' && needs.lint-and-format.result == 'success' && (github.base_ref == 'main' || startsWith(github.base_ref, 'ENTREGA_')) }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       checks: write
@@ -361,6 +382,7 @@ jobs:
             -Dsonar.host.url="$SONAR_URL" \
             -Dsonar.coverage.jacoco.xmlReportPaths=**/target/site/jacoco/jacoco.xml \
             -Dsonar.junit.reportPaths=**/target/surefire-reports \
+            -Dsonar.qualitygate.wait=true \
             -Dspotless.check.skip=true
 
   # ──────────────────────────────────────────────────────────────────────────
@@ -370,6 +392,7 @@ jobs:
     needs: [detect-changes, build-and-test]
     if: ${{ needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.docker-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       packages: write
@@ -443,6 +466,7 @@ jobs:
     needs: [detect-changes, build-and-test]
     if: ${{ needs.detect-changes.outputs.enable-diagrams == 'true' && needs.build-and-test.result == 'success' && toJSON(fromJSON(needs.detect-changes.outputs.services-matrix).include) != '[]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect-changes.outputs.services-matrix) }}
@@ -503,11 +527,13 @@ jobs:
         run: |
           echo "📐 Generando diagrama de clase para ${{ matrix.service }} en rama Base..."
           if [ -d "${{ matrix.service }}" ]; then
-            mvn -B clean test \
+            if ! mvn -B clean test \
               -pl ${{ matrix.service }} -am \
               -DskipTests=true \
               -Dspotless.check.skip=true \
-              -Dplantuml-generator.skip=false || true
+              -Dplantuml-generator.skip=false; then
+              echo "::warning::No se pudo generar el diagrama de ${{ matrix.service }} en la rama base; la comparación queda sin línea base."
+            fi
           fi
 
           if [ ! -f "${{ matrix.service }}/target/modelo_tecnico.puml" ]; then
@@ -550,6 +576,7 @@ jobs:
     needs: [detect-changes, generate-diagrams]
     if: false # Deshabilitado
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
       pull-requests: write
@@ -595,7 +622,7 @@ jobs:
   # Job 9: Validación en Pre-Producción
   # ──────────────────────────────────────────────────────────────────────────
   preprod-validation:
-    needs: [build-and-test, docker-build]
+    needs: [detect-changes, build-and-test, docker-build]
     # [FIX-PREPROD-IF] Sin always(), GitHub Actions inyecta success() implícito
     # que exige que TODAS las dependencias directas sean 'success'. Si docker-build
     # fue 'skipped' (legítimamente, sin Dockerfiles modificados), success() → false
@@ -605,11 +632,15 @@ jobs:
     #   - docker-build puede ser success O skipped (ambos son estados válidos)
     if: ${{ always() && needs.build-and-test.result == 'success' && (needs.docker-build.result == 'success' || needs.docker-build.result == 'skipped') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       EXECUTION_ID: "run_${{ github.run_id }}_${{ github.run_attempt }}"
+      # RM-02: un servicio caído hace fallar el test en lugar de saltearlo (BaseIT).
+      PREPROD_STRICT: "true"
     permissions:
       contents: read
       packages: read
+      actions: read
     steps:
       - name: Checkout del código
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -628,158 +659,44 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # [FIX-5] Estrategia de resolución de imágenes en 3 niveles:
-      #   1. Imagen del PR (tag pr-N) — servicio modificado en este PR
-      #   2. Imagen de la rama base real en GHCR (tag = github.base_ref sanitizado)
-      #   3. Error explícito — sin recompilación silenciosa que destruye tiempos
-      #
-      # CORRECCIÓN respecto a la iteración anterior: BASE_TAG usaba "latest"
-      # estático, lo que mezcla imágenes de entregas distintas. Por ejemplo,
-      # un PR a ENTREGA_2 descargaba imágenes de ENTREGA_1 (el latest de main),
-      # generando fallos contractuales si los endpoints cambiaron entre entregas.
-      # Se usa github.base_ref directamente (ej. "ENTREGA_2") como tag base.
-      #
-      # PREREQUISITO: el pipeline de merge (push a main/ENTREGA_*) debe publicar
-      # el tag correspondiente al nombre de la rama en GHCR al integrar cambios.
-      - name: Obtener imágenes de GHCR y preparar servicios
+      # RM-06: los servicios no modificados se fijan por digest desde el último manifiesto
+      # promovido de la rama base (artefacto manifiesto-version de merge.yml, job promote).
+      # Mientras la base no tenga uno, el resolvedor usa su tag con un aviso. Solo se aceptan
+      # artefactos de corridas del propio repo: un PR desde un fork no puede inyectar uno.
+      - name: Obtener el último manifiesto promovido de la rama base
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          GHCR_BASE="ghcr.io/${REPO_LOWER}"
-          PR_TAG="pr-${{ github.event.pull_request.number }}"
-          # [FIX-5] Tag de rama base real: evita mezcla entre entregas distintas.
-          # El nombre de rama puede contener mayúsculas y "/" no válidos en tags OCI;
-          # se normaliza a minúsculas y se reemplaza "/" por "-".
-          BASE_TAG=$(echo "${{ github.base_ref }}" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
-
-          # Descubrimiento dinámico de servicios (idéntico a Job 2)
-          ALL_SERVICES=()
-          for pom in */pom.xml; do
-            [ -f "$pom" ] || continue
-            dir=$(dirname "$pom")
-            if [[ "$dir" != "common-lib" && "$dir" != "integration-tests" && "$dir" != "adr-generator" ]]; then
-              ALL_SERVICES+=("$dir")
-            fi
-          done
-
-          FAILED_SERVICES=()
-          for svc in "${ALL_SERVICES[@]}"; do
-            # [FIX-PREPROD-DOCKERFILE] Solo intentar resolver imagen para módulos
-            # que tienen Dockerfile. Sin este guard, el bucle intenta docker pull
-            # para librerías internas, clientes API o módulos batch sin contenedor,
-            # los dos pulls fallan y el servicio entra en FAILED_SERVICES → exit 1.
-            if [ ! -f "$svc/Dockerfile" ]; then
-              echo "⏭️  Omitiendo $svc (no posee Dockerfile — no es un servicio contenerizable)"
-              continue
-            fi
-
-            PR_IMAGE="${GHCR_BASE}/${svc}:${PR_TAG}"
-            BASE_IMAGE="${GHCR_BASE}/${svc}:${BASE_TAG}"
-            LOCAL_IMAGE="donatrack/${svc}:preprod"
-
-            echo "📦 Resolviendo imagen para: $svc"
-
-            if docker pull "$PR_IMAGE" 2>/dev/null; then
-              echo "  ✅ Imagen PR descargada de GHCR: $PR_IMAGE"
-              docker tag "$PR_IMAGE" "$LOCAL_IMAGE"
-            elif docker pull "$BASE_IMAGE" 2>/dev/null; then
-              echo "  ⚠️  Imagen PR no encontrada. Usando imagen base estable: $BASE_IMAGE"
-              docker tag "$BASE_IMAGE" "$LOCAL_IMAGE"
-            else
-              echo "  ❌ No se encontró imagen ni en PR ni en rama base para: $svc"
-              FAILED_SERVICES+=("$svc")
-            fi
-          done
-
-          if [ ${#FAILED_SERVICES[@]} -gt 0 ]; then
-            echo "::error::Las siguientes imágenes no pudieron resolverse: ${FAILED_SERVICES[*]}"
-            echo "::error::Asegúrese de que el pipeline de merge publica el tag '$BASE_TAG' en GHCR."
-            exit 1
+          RUN_ID=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?name=manifiesto-version&per_page=100" \
+            --jq "[.artifacts[] | select(.expired | not) | select(.workflow_run.head_branch == \"${BASE_REF}\") | select(.workflow_run.head_repository_id == .workflow_run.repository_id)][0].workflow_run.id // empty")
+          if [[ -n "$RUN_ID" ]] && gh run download "$RUN_ID" -n manifiesto-version -D manifiesto; then
+            echo "MANIFIESTO=manifiesto/manifiesto-version.json" >> "$GITHUB_ENV"
+            echo "📜 Manifiesto de ${BASE_REF}: corrida ${RUN_ID}"
+            cat manifiesto/manifiesto-version.json
+          else
+            echo "::warning::${BASE_REF} todavía no tiene un manifiesto promovido: los servicios no modificados usan el tag :${BASE_REF}."
           fi
 
-      - name: Provisionar Entorno de Pre-Producción (Sin recompilar)
+      # RM-04: el job invoca el mismo punto de entrada que se usa en local. El script
+      # resuelve las imágenes (scripts/resolver-imagenes-ghcr.sh), levanta el stack, corre
+      # smoke y después contract,integration,e2e, reporta (report_test_failures.py) y desmonta.
+      #   - Servicio modificado: imagen pr-<N> obligatoria (RM-02).
+      #   - Servicio no modificado: digest del manifiesto (RM-06) o, sin manifiesto, tag
+      #     de la rama base real ([FIX-5]), normalizado a minúsculas y sin "/" (OCI).
+      - name: Validación pre-producción (run-preprod-tests.sh --images ghcr)
+        env:
+          DOCKER_MATRIX: ${{ needs.detect-changes.outputs.docker-matrix }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_REPOSITORY: ${{ github.repository }}
+          RAW_BASE_REF: ${{ github.base_ref }}
         run: |
-          docker compose -f docker-compose.preprod.yml up --no-build --wait -d
-          echo "✅ Stack de Pre-Producción levantado y healthy."
-
-      - name: Importar y Activar Workflows en n8n
-        run: |
-          echo "📥 Importando workflows en n8n..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n import:workflow --separate --input=/etc/n8n/workflows
-
-          echo "🚀 Activando workflows en n8n..."
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=1
-          docker compose -f docker-compose.preprod.yml exec -T n8n n8n publish:workflow --id=2
-
-          echo "🔄 Reiniciando n8n para aplicar webhooks..."
-          docker compose -f docker-compose.preprod.yml restart n8n
-
-          echo "⏳ Esperando disponibilidad de n8n..."
-          attempts=0
-          until curl -s -f http://localhost:5678/healthz >/dev/null; do
-            attempts=$((attempts+1))
-            if [ $attempts -ge 30 ]; then
-              echo "❌ Error: n8n no respondió en el tiempo límite."
-              exit 1
-            fi
-            sleep 1
-          done
-          echo "✅ n8n listo con workflows activos."
-
-      - name: Verificar disponibilidad de /v3/api-docs
-        run: |
-          set -e
-          URLs=(
-            "http://localhost:8080/v3/api-docs"
-            "http://localhost:8081/v3/api-docs"
-            "http://localhost:8082/v3/api-docs"
-            "http://localhost:8083/v3/api-docs"
-          )
-          for url in "${URLs[@]}"; do
-            echo "Esperando endpoint $url..."
-            attempt=0
-            until curl -s -f "$url" >/dev/null; do
-              attempt=$((attempt+1))
-              if [ $attempt -ge 60 ]; then
-                echo "::error:: $url no respondió con HTTP 200 tras 60 intentos."
-                docker compose -f docker-compose.preprod.yml logs --no-color || true
-                exit 1
-              fi
-              sleep 2
-            done
-            echo "✅ $url disponible"
-          done
-
-      - name: 1. Smoke Tests (Fail-Fast)
-        run: |
-          mvn verify -pl integration-tests -DskipTests=false -Dgroups=smoke \
-            -Ddonaciones.url=http://localhost:8080 \
-            -Dnotificaciones.url=http://localhost:8081 \
-            -Dincentivos.url=http://localhost:8082 \
-            -Dlogistica.url=http://localhost:8083
-
-      - name: 2. Pruebas de Contrato, Integración y E2E
-        run: |
-          mvn verify -pl integration-tests -DskipTests=false -Dgroups="contract,integration,e2e" \
-            -Ddonaciones.url=http://localhost:8080 \
-            -Dnotificaciones.url=http://localhost:8081 \
-            -Dincentivos.url=http://localhost:8082 \
-            -Dlogistica.url=http://localhost:8083
-
-      - name: Recolectar Logs de Contenedores
-        if: always()
-        run: |
-          mkdir -p docker-logs
-          docker compose -f docker-compose.preprod.yml logs --no-color --timestamps > docker-logs/docker-preprod-full.log || true
-
-      - name: Analizar Logs de Contenedores y Diagnóstico
-        if: always()
-        run: |
-          python scripts/analyze_preprod_logs.py --file docker-logs/docker-preprod-full.log --export-report
-
-      - name: Reportar Fallos de Pruebas Automatizadas
-        if: always()
-        run: |
-          python scripts/report_test_failures.py --dir integration-tests/target/failsafe-reports --dir integration-tests/target/surefire-reports --fail-on-zero-tests
+          export GHCR_BASE="ghcr.io/$(echo "$GH_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
+          export PR_TAG="pr-${PR_NUMBER}"
+          export BASE_TAG=$(echo "$RAW_BASE_REF" | tr '[:upper:]' '[:lower:]' | tr '/' '-')
+          # D5: las fallas de servicios que el PR no modificó se marcan como heredadas.
+          export CHANGED_SERVICES=$(echo "$DOCKER_MATRIX" | jq -r '[.include[].service] | join(",")')
+          ./run-preprod-tests.sh --images ghcr
 
       - name: Subir Reportes de Pruebas (Failsafe & Surefire)
         if: always()
@@ -796,13 +713,30 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: docker-preprod-logs
-          path: docker-logs/
+          path: logs/registro/
           retention-days: 3
 
-      - name: Desmantelar Entorno
-        if: always()
-        run: |
-          docker compose -f docker-compose.preprod.yml down -v
+  # ──────────────────────────────────────────────────────────────────────────
+  # Job 9b: Diff de contratos OpenAPI (RM-08)
+  # ──────────────────────────────────────────────────────────────────────────
+  # D5 (SPEC-05): en el PR un cambio incompatible es un aviso, para no frenar
+  # a otro equipo con un cambio coordinado; el post-merge de merge.yml y el
+  # corte de entrega fallan. Por eso el Quality Gate no lo exige.
+  contract-diff:
+    needs: validate-git-flow
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Cambios incompatibles en las specs OpenAPI (aviso)
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: scripts/diff-contratos.sh "origin/${BASE_REF}" aviso
 
   # ──────────────────────────────────────────────────────────────────────────
   # Job 10: Quality Gate (Consolidador Final)
@@ -811,6 +745,7 @@ jobs:
     needs: [validate-git-flow, detect-changes, lint-and-format, build-and-test, sonar-analysis, docker-build, generate-diagrams, semantic-uml-diff, preprod-validation]
     if: always() && (github.event.action != 'edited' || github.event.changes.base != null)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     permissions:
       contents: read
       checks: write
@@ -829,6 +764,10 @@ jobs:
       #   "any-docker"    → requerido si any-docker-service == true
       #   "never"         → siempre opcional (skipped aceptado sin condiciones)
       - name: Evaluar resultado consolidado del pipeline
+        env:
+          # RM-02: con SONAR_TOKEN configurado, Sonar deja de ser opcional.
+          SONAR_CONFIGURED: ${{ secrets.SONAR_TOKEN != '' }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
           echo "══════════════════════════════════════════"
           echo "       QUALITY GATE — RESULTADOS"
@@ -845,6 +784,8 @@ jobs:
           #   $3 = "always"      → siempre requerido
           #        "any-service"  → requerido si hay servicios modificados
           #        "any-docker"   → requerido si hay servicios con Dockerfile modificados
+          #        "sonar"        → requerido si hay servicios modificados, existe
+          #                         SONAR_TOKEN y la base es main o ENTREGA_*
           #        "never"        → siempre opcional
           check_job() {
             local name="$1"
@@ -857,6 +798,7 @@ jobs:
               always)      is_required=true ;;
               any-service) [[ "$any_service" == "true" ]] && is_required=true ;;
               any-docker)  [[ "$any_docker"  == "true" ]] && is_required=true ;;
+              sonar)       [[ "$any_service" == "true" && "$SONAR_CONFIGURED" == "true" && ( "$BASE_REF" == "main" || "$BASE_REF" == ENTREGA_* ) ]] && is_required=true ;;
               never)       is_required=false ;;
             esac
 
@@ -889,8 +831,10 @@ jobs:
           # Jobs requeridos solo si hay servicios con Dockerfile modificados
           check_job "docker-build"        "${{ needs.docker-build.result }}"        "any-docker"
 
+          # Requerido solo si existe SONAR_TOKEN (RM-02)
+          check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"      "sonar"
+
           # Jobs opcionales (skipped siempre aceptado)
-          check_job "sonar-analysis"      "${{ needs.sonar-analysis.result }}"      "never"
           if [[ "$enable_diagrams" == "true" ]]; then
             check_job "generate-diagrams" "${{ needs.generate-diagrams.result }}"   "any-service"
           else

@@ -5,14 +5,15 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.algoritmos.AlgoritmoAsignacion;
 import grupo5.donaciones.models.algoritmos.AlgoritmoCompatibilidadSemantica;
 import grupo5.donaciones.models.algoritmos.AlgoritmoPrioridadSubAtendidos;
+import grupo5.donaciones.models.algoritmos.DatosDeAsignacion;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.necesidades.Necesidad;
 import grupo5.donaciones.models.normalizacion.ComparadorTexto;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +38,9 @@ public class GestorPropuestasDeAsignacion {
   }
 
   public List<Propuesta> generarPropuestas(
-      List<Necesidad> necesidades, List<DonacionIndependiente> donaciones) {
+      List<Necesidad> necesidades,
+      List<DonacionIndependiente> donaciones,
+      DatosDeAsignacion datos) {
     if (necesidades == null || donaciones == null) {
       throw new ValidationException(ErrorCatalog.ARGUMENTO_NULO);
     }
@@ -48,9 +51,11 @@ public class GestorPropuestasDeAsignacion {
         donaciones.size(),
         necesidades.size());
 
-    List<Propuesta> p1 = algoritmos.getFirst().ejecutar(necesidades, donaciones);
+    List<Propuesta> p1 = algoritmos.getFirst().ejecutar(necesidades, donaciones, datos);
     List<Propuesta> p2 =
-        algoritmos.size() > 1 ? algoritmos.get(1).ejecutar(necesidades, donaciones) : List.of();
+        algoritmos.size() > 1
+            ? algoritmos.get(1).ejecutar(necesidades, donaciones, datos)
+            : List.of();
 
     log.info("Propuestas generadas por algoritmo 1: {}, por algoritmo 2: {}", p1.size(), p2.size());
 
@@ -60,17 +65,13 @@ public class GestorPropuestasDeAsignacion {
   }
 
   List<Propuesta> consolidar(List<Propuesta> propuesta1, List<Propuesta> propuesta2) {
-    Set<UUID> necesidadesCubiertasEnPropuesta1 = new HashSet<>();
-    for (Propuesta propuesta : propuesta1) {
-      necesidadesCubiertasEnPropuesta1.add(propuesta.getNecesidadQueSatisfaceId());
-    }
+    Set<UUID> necesidadesCubiertasEnPropuesta1 =
+        propuesta1.stream().map(Propuesta::getNecesidadQueSatisfaceId).collect(Collectors.toSet());
 
-    List<Propuesta> propuestasEnAmbos = new ArrayList<>();
-    for (Propuesta propuesta : propuesta2) {
-      if (necesidadesCubiertasEnPropuesta1.contains(propuesta.getNecesidadQueSatisfaceId())) {
-        propuestasEnAmbos.add(propuesta);
-      }
-    }
+    List<Propuesta> propuestasEnAmbos =
+        propuesta2.stream()
+            .filter(p -> necesidadesCubiertasEnPropuesta1.contains(p.getNecesidadQueSatisfaceId()))
+            .toList();
 
     if (!propuestasEnAmbos.isEmpty()) {
       return propuestasEnAmbos;

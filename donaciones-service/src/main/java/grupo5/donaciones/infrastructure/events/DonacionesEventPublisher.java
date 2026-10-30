@@ -19,6 +19,8 @@ import org.slf4j.MDC;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Adaptador de salida: publica los eventos de dominio de Donaciones en {@code donaciones.exchange}.
@@ -79,16 +81,36 @@ public class DonacionesEventPublisher implements IDonacionesEventPublisher {
     publicar(RabbitMQConfig.ROUTING_KEY_DONACION_SEGMENTADA, evento);
   }
 
+  /**
+   * Si hay una transacción abierta, el mensaje sale recién cuando se confirma: un rollback no deja
+   * un aviso de algo que no quedó guardado. Si la app se cae entre el commit y el envío, el aviso
+   * se pierde (no hay outbox de notificaciones).
+   */
   private void publicar(String routingKey, Object evento) {
+    // Los headers se arman ahora, con el traceId de la operación que originó el evento
+    MessagePostProcessor headers = agregarHeadersDeTrazabilidad();
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      TransactionSynchronizationManager.registerSynchronization(
+          new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+              enviar(routingKey, evento, headers);
+            }
+          });
+      return;
+    }
+    enviar(routingKey, evento, headers);
+  }
+
+  private void enviar(String routingKey, Object evento, MessagePostProcessor headers) {
     log.info(
         "Publicando evento en {} con routingKey={}",
         RabbitMQConfig.EXCHANGE_DONACIONES,
         routingKey);
-    rabbitTemplate.convertAndSend(
-        RabbitMQConfig.EXCHANGE_DONACIONES, routingKey, evento, agregarHeadersDeTrazabilidad());
+    rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_DONACIONES, routingKey, evento, headers);
   }
 
-  private MessagePostProcessor agregarHeadersDeTrazabilidad() {
+  private static MessagePostProcessor agregarHeadersDeTrazabilidad() {
     String traceId = MDC.get(FeignTraceRequestInterceptor.MDC_TRACE_KEY);
     String traceIdEfectivo =
         (traceId == null || traceId.isBlank())

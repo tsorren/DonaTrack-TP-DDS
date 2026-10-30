@@ -1,5 +1,7 @@
 # Plan de Refactor por Oleadas — Servicio de Notificaciones
 
+> **Documento histórico.** Diagnóstico al 2026-09-06; no describe el estado vigente (por ejemplo, Donaciones ya no usa Feign y `FeignRetryConfig` no existe). Estado actual: [arquitectura-sistema.md](../../../entrega-4/arquitectura/arquitectura-sistema.md).
+
 > Adaptación de [`plan-refactor-oleadas-generico-v2.md`](../plan-refactor-oleadas-generico-v2.md) al servicio de notificaciones, siguiendo la receta de su §7. Se apoya en los hallazgos de [`fase-0-auditoria.md`](./fase-0-auditoria.md) — leer ese documento primero. Rama de trabajo: `E4_refactor-notificaciones`.
 >
 > Convención de estado por oleada: `✅` = hay diff de código y la suite pasa en verde. `📝` = decisión de diseño/análisis, sin diff. Las Oleadas 1, 2, 3, 4, 6, 7 y 8 ya están ejecutadas y documentadas con su propia "Bitácora de ejecución" (formato de gobernanza de la plantilla v2 §3: Problema/Evidencia/Objetivo/Fuera de scope/Tests/Diseño/IA/Verificación humana); las Oleadas 5, 9, 9.5, 10 y 11 todavía son plan, sin ejecutar.

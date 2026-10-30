@@ -1,5 +1,6 @@
 package grupo5.notificaciones.controllers;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -274,6 +275,14 @@ class NotificacionControllerTest {
         .andExpect(status().isAccepted());
 
     verify(notificacionService, times(1)).procesar(any(EventoNotificableDTO.class));
+  }
+
+  @Test
+  void procesarEvento_endpointLegacy_estaDeprecado() throws Exception {
+    assertTrue(
+        NotificacionController.class
+            .getMethod("procesarEventoLegacy", EventoNotificableDTO.class)
+            .isAnnotationPresent(Deprecated.class));
   }
 
   @Test

@@ -18,6 +18,7 @@ import grupo5.donaciones.models.entities.donantes.Donante;
 import grupo5.donaciones.models.entities.personas.Persona;
 import grupo5.donaciones.models.repositories.IDonantesRepository;
 import grupo5.donaciones.models.repositories.IPersonasRepository;
+import grupo5.donaciones.services.IFotosBienesService;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -29,16 +30,19 @@ public class DonacionMapper {
   private final IDonantesRepository donantesRepository;
   private final IPersonasRepository personasRepository;
   private final PersonaMapper personaMapper;
+  private final IFotosBienesService fotosBienes;
 
   public DonacionMapper(
       DireccionMapper direccionMapper,
       IDonantesRepository donantesRepository,
       IPersonasRepository personasRepository,
-      PersonaMapper personaMapper) {
+      PersonaMapper personaMapper,
+      IFotosBienesService fotosBienes) {
     this.direccionMapper = direccionMapper;
     this.donantesRepository = donantesRepository;
     this.personasRepository = personasRepository;
     this.personaMapper = personaMapper;
+    this.fotosBienes = fotosBienes;
   }
 
   public Donacion toEntity(DonacionInputDTO dto, Persona persona) {
@@ -75,7 +79,7 @@ public class DonacionMapper {
     }
 
     List<ItemDonacionOutputDTO> items =
-        donacion.getItems().stream().map(DonacionMapper::toItemOutputDTO).toList();
+        donacion.getItems().stream().map(this::toItemOutputDTO).toList();
 
     List<CambioEstadoOutputDTO> historial =
         donacion.getHistorialEstados().stream()
@@ -128,10 +132,11 @@ public class DonacionMapper {
     return new ItemDonacion(bien, dto.cantidad());
   }
 
-  private static ItemDonacionOutputDTO toItemOutputDTO(ItemDonacion item) {
+  /** La foto se devuelve como URL temporal de descarga: en el bien se guarda la referencia. */
+  private ItemDonacionOutputDTO toItemOutputDTO(ItemDonacion item) {
     return new ItemDonacionOutputDTO(
         item.bien().descripcion(),
-        item.bien().fotoUrl(),
+        fotosBienes.urlParaMostrar(item.bien().fotoUrl()),
         item.bien().fechaVencimiento(),
         item.bien().estado(),
         item.bien().pesoUnitario(),

@@ -174,12 +174,12 @@ class NotificacionTest {
 
   @Test
   void historialEstado_deberiaAcumularCadaTransicionConTimestampDentroDeLaVentanaDeEjecucion() {
-    LocalDateTime antesDeEjecutar = LocalDateTime.now();
+    LocalDateTime antesDeEjecutar = LocalDateTime.now(Notificacion.ZONA_HORARIA);
 
     Notificacion notificacion = NotificacionMother.pendiente(persona, "Hola");
     notificacion.actualizarEstado(EstadoNotificacion.ENVIADA);
 
-    LocalDateTime despuesDeEjecutar = LocalDateTime.now();
+    LocalDateTime despuesDeEjecutar = LocalDateTime.now(Notificacion.ZONA_HORARIA);
     List<CambioEstadoNotificacion> historial = notificacion.getHistorialEstado();
 
     assertEquals(2, historial.size());

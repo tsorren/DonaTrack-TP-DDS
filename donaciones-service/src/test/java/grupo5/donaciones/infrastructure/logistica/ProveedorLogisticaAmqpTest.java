@@ -13,6 +13,7 @@ import grupo5.donaciones.dto.logistica.DatosEntregaLogistica;
 import grupo5.donaciones.services.logistica.EnvioInciertoException;
 import grupo5.donaciones.services.logistica.EnvioRechazadoException;
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class ProveedorLogisticaAmqpTest {
           null,
           10.0,
           1.0,
-          LocalDateTime.of(2026, 10, 7, 12, 0));
+          LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0));
 
   private RabbitTemplate template;
   private ProveedorLogisticaAmqp proveedor;

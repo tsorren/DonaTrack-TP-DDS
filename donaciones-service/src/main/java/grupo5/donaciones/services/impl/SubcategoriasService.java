@@ -1,5 +1,7 @@
 package grupo5.donaciones.services.impl;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
 import grupo5.donaciones.dto.categorias.AliasSubcategoriaInputDTO;
 import grupo5.donaciones.dto.categorias.SubcategoriaInputDTO;
@@ -7,6 +9,8 @@ import grupo5.donaciones.dto.categorias.SubcategoriaOutputDTO;
 import grupo5.donaciones.models.entities.categorias.Categoria;
 import grupo5.donaciones.models.entities.categorias.Subcategoria;
 import grupo5.donaciones.models.repositories.ICategoriasRepository;
+import grupo5.donaciones.models.repositories.IItemDonacionNormalizadoRepository;
+import grupo5.donaciones.models.repositories.INecesidadesRepository;
 import grupo5.donaciones.models.repositories.ISubcategoriasRepository;
 import grupo5.donaciones.services.ISubcategoriasService;
 import grupo5.donaciones.services.mappers.SubcategoriaMapper;
@@ -19,14 +23,20 @@ public class SubcategoriasService implements ISubcategoriasService {
 
   private final ISubcategoriasRepository subcategoriasRepository;
   private final ICategoriasRepository categoriasRepository;
+  private final INecesidadesRepository necesidadesRepository;
+  private final IItemDonacionNormalizadoRepository itemsNormalizadosRepository;
   private final SubcategoriaMapper subcategoriaMapper;
 
   public SubcategoriasService(
       ISubcategoriasRepository subcategoriasRepository,
       ICategoriasRepository categoriasRepository,
+      INecesidadesRepository necesidadesRepository,
+      IItemDonacionNormalizadoRepository itemsNormalizadosRepository,
       SubcategoriaMapper subcategoriaMapper) {
     this.subcategoriasRepository = subcategoriasRepository;
     this.categoriasRepository = categoriasRepository;
+    this.necesidadesRepository = necesidadesRepository;
+    this.itemsNormalizadosRepository = itemsNormalizadosRepository;
     this.subcategoriaMapper = subcategoriaMapper;
   }
 
@@ -41,12 +51,21 @@ public class SubcategoriasService implements ISubcategoriasService {
     return subcategoriaMapper.toOutputDTO(entity);
   }
 
+  private boolean estaEnUso(UUID subcategoriaId) {
+    return necesidadesRepository.existsBySubcategoriaId(subcategoriaId)
+        || itemsNormalizadosRepository.existsBySubcategoriaId(subcategoriaId);
+  }
+
   @Override
   public SubcategoriaOutputDTO eliminar(UUID id) {
     Subcategoria entity =
         subcategoriasRepository
             .findById(id)
             .orElseThrow(() -> new RecursoNoEncontradoException(id));
+    // Necesidades e ítems normalizados la referencian: las FK de V6 y V9 también lo impiden
+    if (estaEnUso(id)) {
+      throw new BusinessStateException(ErrorCatalog.SUBCATEGORIA_EN_USO);
+    }
     subcategoriasRepository.delete(entity);
     return subcategoriaMapper.toOutputDTO(entity);
   }

@@ -43,10 +43,8 @@ public class AdministracionProveedoresService implements IAdministracionProveedo
   public List<ProveedorLogisticaDTO> cambiarProveedorPreferido(String proveedorId) {
     String anterior = preferencia.proveedorPreferido();
     preferencia.cambiarProveedorPreferido(proveedorId);
-    log.info(
-        "[BROKER-LOGISTICA] Proveedor preferido cambiado de {} a {}",
-        anterior,
-        preferencia.proveedorPreferido());
+    String nuevo = preferencia.proveedorPreferido();
+    log.info("[BROKER-LOGISTICA] Proveedor preferido cambiado de {} a {}", anterior, nuevo);
     return listarProveedores();
   }
 

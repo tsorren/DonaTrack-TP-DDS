@@ -11,6 +11,7 @@ import grupo5.donaciones.models.privacidad.Anonimizable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -31,6 +32,25 @@ public final class Juridica extends Persona {
     }
     validarJuridica(razonSocial, tipo, rubro);
     this.representantes.add(representanteInicial);
+    this.razonSocial = razonSocial;
+    this.tipo = tipo;
+    this.rubro = rubro;
+  }
+
+  /** Reconstituye una jurídica ya persistida (no exige representantes ni vuelve a validar). */
+  @SuppressWarnings("java:S107")
+  public Juridica(
+      UUID id,
+      TipoDocumento tipoDocumento,
+      String documento,
+      Direccion direccion,
+      List<MedioDeContacto> mediosDeContacto,
+      List<Humana> representantes,
+      String razonSocial,
+      TipoJuridico tipo,
+      String rubro) {
+    super(id, tipoDocumento, documento, direccion, mediosDeContacto);
+    this.representantes.addAll(representantes);
     this.razonSocial = razonSocial;
     this.tipo = tipo;
     this.rubro = rubro;
@@ -88,6 +108,11 @@ public final class Juridica extends Persona {
   @Override
   public String getNombreCompleto() {
     return this.razonSocial;
+  }
+
+  @Override
+  public boolean estaAnonimizada() {
+    return Anonimizable.VALOR_STRING.equals(this.razonSocial);
   }
 
   @Override

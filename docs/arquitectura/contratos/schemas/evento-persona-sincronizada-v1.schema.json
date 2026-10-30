@@ -46,11 +46,11 @@
           }
         },
         "required": ["tipo"],
-        "additionalProperties": false
+        "additionalProperties": true
       },
       "description": "Lista de canales de contacto disponibles para despachar alertas"
     }
   },
   "required": ["personaId", "denominacion", "tipoPersona"],
-  "additionalProperties": false
+  "additionalProperties": true
 }

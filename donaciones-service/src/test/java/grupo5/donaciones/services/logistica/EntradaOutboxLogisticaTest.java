@@ -3,12 +3,13 @@ package grupo5.donaciones.services.logistica;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class EntradaOutboxLogisticaTest {
 
-  private static final LocalDateTime AHORA = LocalDateTime.of(2026, 10, 7, 12, 0);
+  private static final LocalDateTime AHORA = LocalDateTime.of(2026, Month.OCTOBER, 7, 12, 0);
 
   private static EntradaOutboxLogistica nueva(int maxIntentos) {
     return EntradaOutboxLogistica.nueva(

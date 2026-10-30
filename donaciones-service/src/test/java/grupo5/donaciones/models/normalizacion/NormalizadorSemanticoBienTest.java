@@ -43,7 +43,7 @@ class NormalizadorSemanticoBienTest {
 
     Humana humana = new Humana("Juan", "Perez", LocalDate.of(2026, Month.JUNE, 18));
     Donante donante = new Donante(humana.getId());
-    donacion = new Donacion(donante.getId());
+    donacion = new Donacion(donante.getId(), null, "Donación de prueba", null);
     normalizador = new NormalizadorSemanticoBien(comparador);
   }
 

@@ -28,8 +28,11 @@ La interacción entre microservicios se desacopla temporal y espacialmente media
 donaciones-service
 [donaciones.exchange] ──(donacion.asignada.v1)─► [notificaciones.donaciones]      ──► Notificaciones (Inbox)
    (TopicExchange)    ──(entrega.solicitada.donatrack.v1)► [logistica.donatrack.entregas.solicitadas] ──► Logística (comando del broker)
-                      ──(donacion.asignada.v1)─► [incentivos.donaciones]          ──► Incentivos (Gamificación)
-                      ──(persona.sincronizada.v1)► [incentivos.personas]          ──► Incentivos (Donantes)
+                      ──(donacion.segmentada.v1)► [incentivos.donacion-segmentada]   ──► Incentivos
+                      ──(donacion.recibida.v1)──► [incentivos.donacion-recibida]     ──► Incentivos
+                      ──(persona.sincronizada.v1)► [incentivos.persona-sincronizada] ──► Incentivos
+                      ──(donante.registrado.v1)─► [incentivos.donante-registrado]    ──► Incentivos
+                      ──(donante.dado-de-baja.v1)► [incentivos.donante-dado-de-baja] ──► Incentivos
                       ──(donacion.*.v1 / etc.)──► [notificaciones.donaciones]
                              │
                      (x-dead-letter)
@@ -75,13 +78,14 @@ logistica-service
 | N° | Evento de Dominio | Emisor | TopicExchange | Routing Key | Tipo AMQP (`__TypeId__`) | Colas Receptoras | JSON Schema de Contrato |
 |:---:|---|---|---|---|---|---|---|
 | 1 | Donación Asignada | `donaciones-service` | `donaciones.exchange` | `donacion.asignada.v1` | `donacion.asignada.v1` | `notificaciones.donaciones` | [`evento-donacion-asignada-v1.schema.json`](./contratos/schemas/evento-donacion-asignada-v1.schema.json) |
-| 1b | Donación Segmentada | `donaciones-service` | `donaciones.exchange` | `donacion.segmentada.v1` | `donacion.segmentada.v1` | `incentivos.donaciones` | [`evento-donacion-segmentada.schema.json`](./contratos/schemas/evento-donacion-segmentada.schema.json) |
+| 1b | Donación Segmentada | `donaciones-service` | `donaciones.exchange` | `donacion.segmentada.v1` | `donacion.segmentada.v1` | `incentivos.donacion-segmentada` | [`evento-donacion-segmentada-v1.schema.json`](./contratos/schemas/evento-donacion-segmentada-v1.schema.json) |
 | 2 | Donación en Camino | `donaciones-service` | `donaciones.exchange` | `donacion.en-camino.v1` | `donacion.en-camino.v1` | `notificaciones.donaciones` | [`evento-donacion-en-camino-v1.schema.json`](./contratos/schemas/evento-donacion-en-camino-v1.schema.json) |
-| 3 | Donación Recibida | `donaciones-service` | `donaciones.exchange` | `donacion.recibida.v1` | `donacion.recibida.v1` | `notificaciones.donaciones` | [`evento-donacion-recibida-v1.schema.json`](./contratos/schemas/evento-donacion-recibida-v1.schema.json) |
+| 3 | Donación Recibida | `donaciones-service` | `donaciones.exchange` | `donacion.recibida.v1` | `donacion.recibida.v1` | `notificaciones.donaciones`, `incentivos.donacion-recibida` | [`evento-donacion-recibida-v1.schema.json`](./contratos/schemas/evento-donacion-recibida-v1.schema.json) |
 | 4 | Entrega Fallida | `donaciones-service` | `donaciones.exchange` | `donacion.entrega-fallida.v1` | `donacion.entrega-fallida.v1` | `notificaciones.donaciones` | [`evento-donacion-entrega-fallida-v1.schema.json`](./contratos/schemas/evento-donacion-entrega-fallida-v1.schema.json) |
 | 5 | Donación Vencida | `donaciones-service` | `donaciones.exchange` | `donacion.vencida.v1` | `donacion.vencida.v1` | `notificaciones.donaciones` | [`evento-donacion-vencida-v1.schema.json`](./contratos/schemas/evento-donacion-vencida-v1.schema.json) |
-| 6 | Donante Registrado | `donaciones-service` | `donaciones.exchange` | `donante.registrado.v1` | `donante.registrado.v1` | `notificaciones.donaciones` | [`evento-donante-registrado-v1.schema.json`](./contratos/schemas/evento-donante-registrado-v1.schema.json) |
-| 7 | Persona Sincronizada | `donaciones-service` | `donaciones.exchange` | `persona.sincronizada.v1` | `persona.sincronizada.v1` | `notificaciones.donaciones`, `incentivos.personas` | [`evento-persona-sincronizada-v1.schema.json`](./contratos/schemas/evento-persona-sincronizada-v1.schema.json) |
+| 6 | Donante Registrado | `donaciones-service` | `donaciones.exchange` | `donante.registrado.v1` | `donante.registrado.v1` | `notificaciones.donaciones`, `incentivos.donante-registrado` | [`evento-donante-registrado-v1.schema.json`](./contratos/schemas/evento-donante-registrado-v1.schema.json) |
+| 7 | Persona Sincronizada | `donaciones-service` | `donaciones.exchange` | `persona.sincronizada.v1` | `persona.sincronizada.v1` | `notificaciones.donaciones`, `incentivos.persona-sincronizada` | [`evento-persona-sincronizada-v1.schema.json`](./contratos/schemas/evento-persona-sincronizada-v1.schema.json) |
+| 7b | Donante Dado de Baja | `donaciones-service` | `donaciones.exchange` | `donante.dado-de-baja.v1` | `donante.dado-de-baja.v1` | `incentivos.donante-dado-de-baja` | [`evento-donante-dado-de-baja-v1.schema.json`](./contratos/schemas/evento-donante-dado-de-baja-v1.schema.json) |
 | 8 | Misión Cumplida | `incentivos-service` | `incentivos.exchange` | `incentivo.mision-cumplida.v1` | `incentivo.mision-cumplida.v1` | `notificaciones.incentivos` | [`evento-incentivo-mision-cumplida-v1.schema.json`](./contratos/schemas/evento-incentivo-mision-cumplida-v1.schema.json) |
 | 9 | Subió de Categoría | `incentivos-service` | `incentivos.exchange` | `incentivo.subio-categoria.v1` | `incentivo.subio-categoria.v1` | `notificaciones.incentivos` | [`evento-incentivo-subio-categoria-v1.schema.json`](./contratos/schemas/evento-incentivo-subio-categoria-v1.schema.json) |
 | 10 | Donante Inactivo | `incentivos-service` | `incentivos.exchange` | `incentivo.donante-inactivo.v1` | `incentivo.donante-inactivo.v1` | `notificaciones.incentivos` | [`evento-incentivo-donante-inactivo-v1.schema.json`](./contratos/schemas/evento-incentivo-donante-inactivo-v1.schema.json) |
@@ -112,8 +116,8 @@ Todo proveedor de logística informa el avance de una entrega publicando en `log
 
 | Cola Principal | Argumento DLX | Exchange DLX | Routing Key | Cola Terminal (DLQ) |
 |---|---|---|---|---|
-| `notificaciones.donaciones` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.donaciones` | `notificaciones.donaciones.dlq` |
-| `notificaciones.incentivos` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.incentivos` | `notificaciones.incentivos.dlq` |
+| `notificaciones.donaciones` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.donaciones.dlq` | `notificaciones.donaciones.dlq` |
+| `notificaciones.incentivos` | `x-dead-letter-exchange` | `notificaciones.dlx` | `notificaciones.incentivos.dlq` | `notificaciones.incentivos.dlq` |
 
 ---
 
@@ -136,7 +140,8 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 ```json
 {
   "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
-  "personaDonanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+  "donanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+  "personaId": "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a44",
   "fecha": "2026-09-15T14:30:00Z",
   "personaBeneficiariaId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
   "descripcion": "Caja de alimentos no perecederos (10 kg)",
@@ -156,17 +161,18 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
 #### Donación Segmentada (`donacion.segmentada.v1`)
 ```json
 {
-  "personaDonanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
-  "categorias": ["ALIMENTOS"],
-  "cantidad": 10,
-  "fecha": "2026-09-15T14:30:00Z"
+  "donanteId": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+  "fecha": "2026-09-15T14:30:00Z",
+  "items": [{ "categoria": "ALIMENTOS", "cantidad": 10 }]
 }
 ```
 
 #### Donante Registrado (`donante.registrado.v1`)
 ```json
 {
-  "personaDonanteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "donanteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "personaId": "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a55",
+  "nombre": "Juan Pérez",
   "fecha": "2026-09-11T10:00:00Z",
   "credencialesDeAcceso": "clave-inicial-temporal-123"
 }
@@ -211,6 +217,72 @@ Cada mensaje publicado en RabbitMQ incluye en sus `MessageProperties`:
   "fecha": "2026-09-11T16:00:00Z",
   "nombreNuevaCategoria": "Plata",
   "nombreViejaCategoria": "Bronce"
+}
+```
+
+#### Entrega Solicitada (`entrega.solicitada.<proveedorId>.v1`)
+```json
+{
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "personaBeneficiariaId": "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+  "destino": {
+    "calle": "Av. Medrano",
+    "altura": 951,
+    "codigoPostal": "C1179AAQ",
+    "localidad": "CABA",
+    "provincia": "Buenos Aires",
+    "pais": "Argentina"
+  },
+  "pesoTotalKG": 10.5,
+  "volumenTotalM3": 0.25,
+  "fecha": "2026-09-15T14:30:00Z"
+}
+```
+
+> **Fechas con `Z`.** Las fechas de los eventos se serializan con `@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")` sobre un `LocalDateTime`. Es la misma convención en Donaciones y en Logística. El sufijo `Z` supone que la JVM corre en UTC: así corren los contenedores, que no fijan `TZ`. Con otra zona, la hora publicada queda corrida.
+
+#### Ruta Asignada (`ruta.asignada`)
+```json
+{
+  "rutaId": "7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "fechaAsignacion": "2026-09-16T08:00:00Z"
+}
+```
+
+#### Ruta Iniciada (`ruta.iniciada`)
+```json
+{
+  "rutaId": "7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d",
+  "camionId": "11223344-5566-7788-99aa-bbccddeeff00",
+  "patenteCamion": "AB123CD",
+  "donacionesIndependientesIds": [
+    "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+  ],
+  "fechaInicio": "2026-09-16T09:15:00Z",
+  "urlMapa": "http://localhost:8080/seguimiento/7f9c2e10-1234-4a5b-8c9d-0e1f2a3b4c5d"
+}
+```
+
+#### Entrega Exitosa (`entrega.exitosa`)
+```json
+{
+  "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "camionId": "11223344-5566-7788-99aa-bbccddeeff00",
+  "patenteCamion": "AB123CD",
+  "fechaEntrega": "2026-09-16T11:40:00Z"
+}
+```
+
+#### Entrega Fallida (`entrega.fallida`)
+```json
+{
+  "entregaId": "55667788-99aa-bbcc-ddee-ff0011223344",
+  "donacionIndependienteId": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "justificacion": "Domicilio sin atención al momento de la visita",
+  "fechaFalla": "2026-09-16T11:40:00Z",
+  "replanificable": true
 }
 ```
 

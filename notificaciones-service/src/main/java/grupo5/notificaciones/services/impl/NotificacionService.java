@@ -18,6 +18,7 @@ import grupo5.notificaciones.models.repositories.INotificacionRepository;
 import grupo5.notificaciones.services.mappers.EventoMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -33,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class NotificacionService {
   private static final Logger log = LoggerFactory.getLogger(NotificacionService.class);
+  private static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
 
   private final INotificacionRepository repository;
   private final EventoMapper mapper;
@@ -71,7 +73,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoDonacionAsignadaV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.donacionIndependienteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -80,7 +82,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoDonanteRegistradoV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -89,7 +91,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoDonacionEnCaminoV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -98,7 +100,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoDonacionRecibidaV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -107,7 +109,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoDonacionEntregaFallidaV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -116,7 +118,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoDonacionVencidaV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.donanteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -125,7 +127,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoIncentivoDonanteInactivoV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.personaDonanteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -134,7 +136,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoIncentivoMisionCumplidaV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.personaDonanteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -143,7 +145,7 @@ public class NotificacionService {
 
   @Transactional
   public void procesar(EventoIncentivoSubioCategoriaV1 evento, @Nullable String messageId) {
-    UUID eventId = resolverEventId(evento.personaDonanteId(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       return;
     }
@@ -156,7 +158,7 @@ public class NotificacionService {
     if (dto == null) {
       return;
     }
-    UUID eventId = resolverEventId(dto.id(), messageId);
+    UUID eventId = resolverEventId(messageId);
     if (yaRegistradoEnInbox(eventId)) {
       log.info("Evento persona.sincronizada duplicado ignorado (Inbox): {}", eventId);
       return;
@@ -171,8 +173,12 @@ public class NotificacionService {
    * mensaje es un duplicado que hay que ignorar. Sin jdbcTemplate (perfil en memoria) no hay inbox
    * y nunca se considera duplicado.
    */
-  private boolean yaRegistradoEnInbox(UUID eventId) {
+  private boolean yaRegistradoEnInbox(@Nullable UUID eventId) {
     if (jdbcTemplate == null) {
+      return false;
+    }
+    if (eventId == null) {
+      log.warn("[INBOX_SIN_CLAVE] Evento sin eventId/messageId: se procesa sin deduplicar");
       return false;
     }
     int rows =
@@ -180,7 +186,7 @@ public class NotificacionService {
             "INSERT INTO evento_procesado (event_id, fecha_procesamiento) VALUES (?, ?)"
                 + " ON CONFLICT (event_id) DO NOTHING",
             eventId,
-            LocalDateTime.now());
+            LocalDateTime.now(ZONA_HORARIA));
     if (rows == 0) {
       log.info("Evento duplicado ignorado (Inbox): {}", eventId);
       return true;
@@ -194,32 +200,26 @@ public class NotificacionService {
     notificaciones.forEach(this::publicarYLimpiarDomainEvents);
   }
 
-  private static UUID resolverEventId(@Nullable UUID fallbackId, @Nullable String messageId) {
-    if (messageId != null && !messageId.isBlank()) {
-      try {
-        return UUID.fromString(messageId);
-      } catch (IllegalArgumentException e) {
-        return UUID.nameUUIDFromBytes(messageId.getBytes(StandardCharsets.UTF_8));
-      }
+  /**
+   * La clave del inbox es el messageId AMQP que fija el emisor. Sin messageId no hay clave estable:
+   * se devuelve null y el evento se procesa sin deduplicar. Un id de entidad (donanteId) o un UUID
+   * aleatorio como respaldo descartaría eventos distintos del mismo donante o nunca deduplicaría.
+   */
+  @Nullable
+  private static UUID resolverEventId(@Nullable String messageId) {
+    if (messageId == null || messageId.isBlank()) {
+      return null;
     }
-    if (fallbackId != null) {
-      return fallbackId;
+    try {
+      return UUID.fromString(messageId);
+    } catch (IllegalArgumentException e) {
+      return UUID.nameUUIDFromBytes(messageId.getBytes(StandardCharsets.UTF_8));
     }
-    return UUID.randomUUID();
   }
 
   @Transactional
   public void procesar(EventoNotificableDTO dto) {
-    UUID eventId = dto.eventId();
-    if (eventId == null) {
-      eventId = UUID.randomUUID();
-      log.info(
-          "[FALLBACK_LEGACY_EVENT_ID] Generado eventId {} para evento legacy de tipo {}",
-          eventId,
-          dto.getClass().getSimpleName());
-    }
-
-    if (yaRegistradoEnInbox(eventId)) {
+    if (yaRegistradoEnInbox(dto.eventId())) {
       return;
     }
     persistirYPublicar(mapper.toEntity(dto));
@@ -231,7 +231,7 @@ public class NotificacionService {
   }
 
   public Optional<NotificacionDTO> obtenerPorId(UUID id) {
-    return repository.findById(id).map(this::toDTO);
+    return repository.findById(id).map(NotificacionService::toDTO);
   }
 
   public List<NotificacionDTO> obtenerPorPersona(UUID personaId, @Nullable Boolean leida) {
@@ -262,10 +262,10 @@ public class NotificacionService {
     } else {
       notificaciones = repository.findAll();
     }
-    return notificaciones.stream().map(this::toDTO).toList();
+    return notificaciones.stream().map(NotificacionService::toDTO).toList();
   }
 
-  private NotificacionDTO toDTO(Notificacion n) {
+  private static NotificacionDTO toDTO(Notificacion n) {
     return new NotificacionDTO(
         n.getId(),
         n.getMensaje(),

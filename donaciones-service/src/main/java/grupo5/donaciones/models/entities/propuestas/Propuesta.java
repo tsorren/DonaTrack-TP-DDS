@@ -36,6 +36,20 @@ public class Propuesta extends AgregadoConEventos<PropuestaAprobada> {
     this.id = id;
   }
 
+  /** Constructor de reconstitución para el adaptador JPA: no valida ni registra eventos. */
+  public Propuesta(
+      UUID id,
+      UUID necesidadQueSatisfaceId,
+      EstadoPropuesta estado,
+      LocalDateTime fechaCreacion,
+      List<PosibleFragmentacion> posiblesFragmentaciones) {
+    this.id = id;
+    this.necesidadQueSatisfaceId = necesidadQueSatisfaceId;
+    this.estado = estado;
+    this.fechaCreacion = fechaCreacion;
+    this.posiblesFragmentaciones = new ArrayList<>(posiblesFragmentaciones);
+  }
+
   public void asociarNecesidad(UUID necesidadId) {
     this.necesidadQueSatisfaceId = necesidadId;
   }

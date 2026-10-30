@@ -5,6 +5,8 @@ target/
 .kotlin
 .idea/
 .github/tests/
+# Credenciales de CloudAMQP/Neon para run-hybrid-tests.sh
+/donatrack-logistica.env
 
 ### Logs y Temporales ###
 *.log
@@ -54,3 +56,9 @@ __pycache__/
 .grepai/
 .agents/*
 !.agents/skills/
+
+# Credenciales locales de docker compose (ver .env.example)
+.env
+
+# Reportes de analyze_preprod_logs.py --export-report
+docker-logs/

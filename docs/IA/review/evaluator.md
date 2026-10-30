@@ -2,7 +2,7 @@
 
 > **Fuente canónica de la política de revisión de implementación para agentes de IA.**  
 > Define roles, modos de independencia, Review Contract y vectores de revisión.  
-> Complementa `AGENTS.md` §7.4 — que define la *profundidad* (QUICK / STANDARD / ARCHITECTURAL).  
+> Complementa `AGENTS.md` §7.3 — que define la *profundidad* (QUICK / STANDARD / ARCHITECTURAL).  
 > Auditoría documental (fuente separada): [`../../auditoria/plan-revisor-critico.md`](../../auditoria/plan-revisor-critico.md)
 
 ---
@@ -61,7 +61,7 @@ Mismo contexto realiza la revisión después de implementar.
 - declarar explícitamente `Mode: SELF_REVIEW` en el Review Contract;
 - nunca etiquetar `SELF_REVIEW` como `INDEPENDENT_REVIEW`;
 - emitir Review Contract completo con los mismos campos;
-- para ARCHITECTURAL: incluir `[SELF_REVIEW_FALLBACK]` en el Reporte de Fase 7.
+- para ARCHITECTURAL: incluir `[SELF_REVIEW_FALLBACK]` en el Reporte de cierre (AGENTS.md §12).
 
 ### `LIGHTWEIGHT_CLOSING_CHECK`
 
@@ -335,17 +335,17 @@ El Evaluator puede solicitar contexto adicional explícitamente antes de emitir 
 | Condición | Acción |
 |---|---|
 | `PASS` | Cerrar normalmente |
-| Solo findings ADVISORY | `PASS` posible; reportar en Fase 7; equipo humano decide |
+| Solo findings ADVISORY | `PASS` posible; reportar en el Reporte de cierre (AGENTS.md §12); equipo humano decide |
 | Varias iteraciones sin convergencia (orientativamente 2–3 ciclos) | Escalar: `[ESCALATED_TO_HUMAN]` |
 | Findings BLOCKING nuevos en cada ciclo | Escalar: scope o spec probablemente mal definido |
 | Correcciones requieren decisión arquitectónica nueva | Escalar: posible ADR necesario |
 | Generator y Evaluator no convergen sobre evidencia observable | Escalar |
 
-`[ESCALATED_TO_HUMAN]` en el Reporte de Fase 7 indica que la iteración fue detenida. La decisión de continuar es del equipo.
+`[ESCALATED_TO_HUMAN]` en el Reporte de cierre (AGENTS.md §12) indica que la iteración fue detenida. La decisión de continuar es del equipo.
 
 ### Hallazgos ADVISORY
 
-Un finding ADVISORY queda documentado en el Review Contract y/o en el Reporte de Fase 7.
+Un finding ADVISORY queda documentado en el Review Contract y/o en el Reporte de cierre (AGENTS.md §12).
 
 El Evaluator **no decide automáticamente**:
 

@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-09T05:52:56.033Z",
+  "generatedAt": "2026-10-28T19:52:10.190Z",
   "harnessVersion": "6.4.0",
   "stats": {
     "servicesCount": 4,
-    "endpointsCount": 100,
+    "endpointsCount": 104,
     "schemasCount": 25,
     "eventsCount": 9
   },
@@ -43,7 +43,8 @@
           "requestBody": "CambioEstadoDonacionIndependienteRequestDTO",
           "responses": {
             "200": "DonacionIndependienteResponseDTO",
-            "400": "-"
+            "400": "-",
+            "409": "-"
           }
         },
         {
@@ -54,7 +55,8 @@
           "requestBody": "DonacionInputDTO",
           "responses": {
             "201": "DonacionOutputDTO",
-            "400": "-"
+            "400": "-",
+            "409": "-"
           }
         },
         {
@@ -65,6 +67,17 @@
           "requestBody": "-",
           "responses": {
             "200": "DonacionOutputDTO"
+          }
+        },
+        {
+          "path": "/api/donaciones/fotos",
+          "method": "POST",
+          "summary": "Pedir una URL prefirmada para subir la foto de un bien",
+          "operationId": "solicitarSubidaFoto",
+          "requestBody": "SolicitudSubidaFotoInputDTO",
+          "responses": {
+            "200": "SubidaFotoOutputDTO",
+            "400": "-"
           }
         },
         {
@@ -85,7 +98,8 @@
           "operationId": "registrarNecesidad",
           "requestBody": "-",
           "responses": {
-            "201": "-"
+            "201": "-",
+            "409": "-"
           }
         },
         {
@@ -118,7 +132,8 @@
           "responses": {
             "200": "-",
             "400": "-",
-            "404": "-"
+            "404": "-",
+            "409": "-"
           }
         },
         {
@@ -169,7 +184,8 @@
           "operationId": "actualizarEstadoPropuesta",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "-",
+            "409": "-"
           }
         },
         {
@@ -179,7 +195,11 @@
           "operationId": "registrarEntidadBeneficiaria",
           "requestBody": "-",
           "responses": {
-            "201": "-"
+            "200": "-",
+            "201": "-",
+            "400": "-",
+            "404": "-",
+            "409": "-"
           }
         },
         {
@@ -206,13 +226,14 @@
         {
           "path": "/api/entidades/{id}",
           "method": "PUT",
-          "summary": "Actualizar entidad beneficiaria",
+          "summary": "Revalidar entidad beneficiaria",
           "operationId": "actualizarEntidad",
           "requestBody": "-",
           "responses": {
             "200": "-",
             "400": "-",
-            "404": "-"
+            "404": "-",
+            "409": "-"
           }
         },
         {
@@ -233,7 +254,10 @@
           "operationId": "registrarDonante",
           "requestBody": "-",
           "responses": {
-            "201": "-"
+            "200": "-",
+            "201": "-",
+            "404": "-",
+            "409": "-"
           }
         },
         {
@@ -260,7 +284,7 @@
         {
           "path": "/api/donantes/{id}",
           "method": "DELETE",
-          "summary": "Eliminar donante",
+          "summary": "Dar de baja donante",
           "operationId": "eliminarDonante",
           "requestBody": "-",
           "responses": {
@@ -275,8 +299,10 @@
           "operationId": "cargarArchivoDonantes",
           "requestBody": "-",
           "responses": {
-            "202": "-",
-            "400": "-"
+            "202": "ArchivoDonantesResponse",
+            "400": "-",
+            "413": "-",
+            "415": "-"
           }
         },
         {
@@ -286,7 +312,7 @@
           "operationId": "obtenerArchivoDonantes",
           "requestBody": "-",
           "responses": {
-            "200": "-",
+            "200": "ArchivoDonantesResponse",
             "404": "-"
           }
         },
@@ -340,7 +366,8 @@
           "requestBody": "-",
           "responses": {
             "200": "-",
-            "404": "-"
+            "404": "-",
+            "409": "-"
           }
         },
         {
@@ -393,7 +420,8 @@
           "requestBody": "-",
           "responses": {
             "200": "-",
-            "404": "-"
+            "404": "-",
+            "409": "-"
           }
         },
         {
@@ -480,7 +508,8 @@
           "requestBody": "-",
           "responses": {
             "200": "-",
-            "404": "-"
+            "404": "-",
+            "409": "-"
           }
         },
         {
@@ -732,7 +761,7 @@
     {
       "title": "DonaTrack - Logística Service API",
       "fileName": "openapi-logistica.yaml",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "serverUrl": "http://localhost:8083",
       "endpoints": [
         {
@@ -758,6 +787,37 @@
           }
         },
         {
+          "path": "/api/entregas/mapa",
+          "method": "GET",
+          "summary": "Listar donaciones entregadas con coordenadas válidas para el mapa público (RF-02)",
+          "operationId": "listarMapaPublico",
+          "requestBody": "-",
+          "responses": {
+            "200": "EntregaMapaPublicoResponseDTO"
+          }
+        },
+        {
+          "path": "/api/entregas/seguimiento/donaciones/{idDonacion}",
+          "method": "GET",
+          "summary": "Consultar seguimiento de traslado por ID de donación para el donante (RF-09)",
+          "operationId": "obtenerSeguimientoPorDonacion",
+          "requestBody": "-",
+          "responses": {
+            "200": "SeguimientoEntregaResponseDTO",
+            "404": "-"
+          }
+        },
+        {
+          "path": "/api/entregas/seguimiento/beneficiarios/{idBeneficiaria}",
+          "method": "GET",
+          "summary": "Listar seguimiento de entregas por ID de beneficiario (RF-14)",
+          "operationId": "listarSeguimientoPorBeneficiaria",
+          "requestBody": "-",
+          "responses": {
+            "200": "SeguimientoEntregaResponseDTO"
+          }
+        },
+        {
           "path": "/api/entregas/{id}",
           "method": "GET",
           "summary": "Consultar entrega por ID",
@@ -776,17 +836,20 @@
           "requestBody": "CambioEstadoEntregaRequestDTO",
           "responses": {
             "200": "EntregaResponseDTO",
-            "400": "-"
+            "400": "-",
+            "404": "-"
           }
         },
         {
           "path": "/api/entregas/{id}/fotos",
           "method": "PATCH",
-          "summary": "Adjuntar foto de recepción de entrega",
+          "summary": "Adjuntar fotos adicionales de recepción de entrega",
           "operationId": "adjuntarFotoRecepcion",
-          "requestBody": "-",
+          "requestBody": "AdjuntarFotoRecepcionRequestDTO",
           "responses": {
-            "200": "EntregaResponseDTO"
+            "200": "EntregaResponseDTO",
+            "400": "-",
+            "404": "-"
           }
         },
         {
@@ -807,7 +870,7 @@
           "operationId": "listarRutas",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "RutaResponseDTO"
           }
         },
         {
@@ -817,17 +880,19 @@
           "operationId": "obtenerRutaPorId",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "RutaResponseDTO",
+            "404": "-"
           }
         },
         {
           "path": "/api/rutas/{id}/entregas",
           "method": "GET",
-          "summary": "Consultar ruta junto con el detalle de sus entregas",
+          "summary": "Consultar ruta junto con el detalle de sus entregas en orden de visita",
           "operationId": "obtenerRutaConEntregas",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "RutaConEntregasResponseDTO",
+            "404": "-"
           }
         },
         {
@@ -835,9 +900,11 @@
           "method": "POST",
           "summary": "Agregar entrega a una ruta existente",
           "operationId": "agregarEntregaRuta",
-          "requestBody": "-",
+          "requestBody": "AgregarEntregaRutaRequestDTO",
           "responses": {
-            "201": "-"
+            "201": "RutaResponseDTO",
+            "400": "-",
+            "404": "-"
           }
         },
         {
@@ -845,9 +912,11 @@
           "method": "PATCH",
           "summary": "Cambiar estado de la ruta",
           "operationId": "cambiarEstadoRuta",
-          "requestBody": "-",
+          "requestBody": "CambioEstadoRutaRequestDTO",
           "responses": {
-            "200": "-"
+            "200": "RutaResponseDTO",
+            "400": "-",
+            "404": "-"
           }
         },
         {
@@ -855,9 +924,10 @@
           "method": "POST",
           "summary": "Registrar nuevo camión en la flota",
           "operationId": "registrarCamion",
-          "requestBody": "-",
+          "requestBody": "CamionRequestDTO",
           "responses": {
-            "201": "-"
+            "201": "CamionResponseDTO",
+            "400": "-"
           }
         },
         {
@@ -867,7 +937,7 @@
           "operationId": "listarCamiones",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "CamionResponseDTO"
           }
         },
         {
@@ -877,7 +947,7 @@
           "operationId": "obtenerCamionPorId",
           "requestBody": "-",
           "responses": {
-            "200": "-",
+            "200": "CamionResponseDTO",
             "404": "-"
           }
         },
@@ -897,9 +967,9 @@
           "method": "PATCH",
           "summary": "Cambiar estado operativo de un camión",
           "operationId": "cambiarEstadoCamion",
-          "requestBody": "-",
+          "requestBody": "CambioEstadoCamionRequestDTO",
           "responses": {
-            "200": "-",
+            "200": "CamionResponseDTO",
             "400": "-",
             "404": "-"
           }
@@ -909,9 +979,10 @@
           "method": "POST",
           "summary": "Registrar chofer",
           "operationId": "registrarChofer",
-          "requestBody": "-",
+          "requestBody": "ChoferRequestDTO",
           "responses": {
-            "201": "-"
+            "201": "ChoferResponseDTO",
+            "400": "-"
           }
         },
         {
@@ -921,7 +992,7 @@
           "operationId": "listarChoferes",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "ChoferResponseDTO"
           }
         },
         {
@@ -931,7 +1002,7 @@
           "operationId": "obtenerChoferPorId",
           "requestBody": "-",
           "responses": {
-            "200": "-",
+            "200": "ChoferResponseDTO",
             "404": "-"
           }
         },
@@ -951,9 +1022,9 @@
           "method": "PATCH",
           "summary": "Cambiar estado de un chofer",
           "operationId": "cambiarEstadoChofer",
-          "requestBody": "-",
+          "requestBody": "CambioEstadoChoferRequestDTO",
           "responses": {
-            "200": "-",
+            "200": "ChoferResponseDTO",
             "400": "-",
             "404": "-"
           }
@@ -975,7 +1046,8 @@
           "operationId": "obtenerSolicitudPlanificacion",
           "requestBody": "-",
           "responses": {
-            "200": "-"
+            "200": "SolicitudPlanificacionResponseDTO",
+            "404": "-"
           }
         },
         {
@@ -983,9 +1055,9 @@
           "method": "POST",
           "summary": "Procesar callback de resultados de optimización de rutas",
           "operationId": "procesarCallbackPlanificacion",
-          "requestBody": "-",
+          "requestBody": "CallbackPlanificacionRequestDTO",
           "responses": {
-            "200": "-"
+            "200": "SolicitudPlanificacionResponseDTO"
           }
         },
         {
@@ -993,9 +1065,9 @@
           "method": "POST",
           "summary": "Webhook alias para recepción de resultados del optimizador de rutas",
           "operationId": "procesarCallbackRutasAlias",
-          "requestBody": "-",
+          "requestBody": "CallbackPlanificacionRequestDTO",
           "responses": {
-            "200": "-"
+            "200": "SolicitudPlanificacionResponseDTO"
           }
         }
       ]

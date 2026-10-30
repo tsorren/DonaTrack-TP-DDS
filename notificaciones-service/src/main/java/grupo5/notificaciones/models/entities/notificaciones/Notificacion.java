@@ -25,6 +25,8 @@ import lombok.Getter;
 @Getter
 public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
     implements Anonimizable {
+  static final ZoneId ZONA_HORARIA = ZoneId.of("America/Argentina/Buenos_Aires");
+
   private UUID id;
   private UUID personaId;
   private String mensaje;
@@ -37,14 +39,14 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
   private List<CambioEstadoNotificacion> historialEstado;
 
   public Notificacion(UUID personaId, String mensaje) {
-    this(personaId, mensaje, LocalDateTime.now());
+    this(personaId, mensaje, LocalDateTime.now(ZONA_HORARIA));
   }
 
   public Notificacion(UUID personaId, String mensaje, LocalDateTime fechaCreacion) {
     this.id = UUID.randomUUID();
     this.personaId = personaId;
     this.mensaje = mensaje;
-    this.fechaCreacion = fechaCreacion != null ? fechaCreacion : LocalDateTime.now();
+    this.fechaCreacion = fechaCreacion != null ? fechaCreacion : LocalDateTime.now(ZONA_HORARIA);
     this.historialEstado = new ArrayList<>();
     this.leida = false;
     this.fechaLectura = null;
@@ -91,7 +93,7 @@ public class Notificacion extends AgregadoConEventos<NotificacionDomainEvent>
   public void actualizarEstado(EstadoNotificacion nuevoEstado) {
     EstadoNotificacion anterior = this.estadoNotificacion;
     this.estadoNotificacion = nuevoEstado;
-    LocalDateTime timestamp = LocalDateTime.now(ZoneId.systemDefault());
+    LocalDateTime timestamp = LocalDateTime.now(ZONA_HORARIA);
     this.historialEstado.add(new CambioEstadoNotificacion(anterior, nuevoEstado, timestamp));
     this.registrarDomainEvent(nuevoEstado, timestamp);
   }

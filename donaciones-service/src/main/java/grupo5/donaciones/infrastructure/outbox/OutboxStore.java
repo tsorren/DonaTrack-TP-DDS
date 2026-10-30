@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -22,10 +21,8 @@ public class OutboxStore {
   }
 
   public List<OutboxEntry> obtenerListosParaReintentar() {
-    LocalDateTime ahora = LocalDateTime.now();
-    return pendientes.values().stream()
-        .filter(e -> !e.getProximoIntento().isAfter(ahora))
-        .collect(Collectors.toList());
+    LocalDateTime ahora = LocalDateTime.now(OutboxEntry.ZONA_HORARIA);
+    return pendientes.values().stream().filter(e -> !e.getProximoIntento().isAfter(ahora)).toList();
   }
 
   public void remover(UUID id) {

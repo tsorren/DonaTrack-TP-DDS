@@ -53,8 +53,16 @@ const ROUTING_MODULE_EXCLUSIONS = new Set(['integration-tests']);
 const TEMPORAL_DRIFT_SKIP_MODULES = new Set(['integration-tests']);
 
 // Services with authorized JPA dependency per docs/context-index.md temporal constraints.
-// notificaciones-service: JPA active with Flyway V1 (persistencia en memoria bajo @Profile("!postgres")).
-const JPA_AUTHORIZED_SERVICES = new Set(['notificaciones-service']);
+// notificaciones-service, logistica-service: JPA active with Flyway V1+V2.
+// incentivos-service: JPA active with Flyway V1 under @Profile("postgres").
+// donaciones-service: JPA active with Flyway V1-V12 under @Profile("postgres") (Entrega 5).
+// All four keep in-memory persistence under @Profile("!postgres").
+const JPA_AUTHORIZED_SERVICES = new Set([
+  'notificaciones-service',
+  'logistica-service',
+  'incentivos-service',
+  'donaciones-service',
+]);
 
 module.exports = {
   SKIP_DIRS,

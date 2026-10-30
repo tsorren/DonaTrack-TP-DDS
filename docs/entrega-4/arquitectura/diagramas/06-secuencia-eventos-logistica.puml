@@ -61,7 +61,7 @@ else origen válido
   note over nucleo : Si el envío lanza error, se reintenta\ndesde un outbox en memoria.
 end
 
-mq -[#5E4B8B]>> ncons : cola notificaciones.donaciones\n(binding donacion.#)
+mq -[#5E4B8B]>> ncons : cola notificaciones.donaciones\n(binding exacto donacion.en-camino.v1)
 ncons -> inbox : insertar messageId\n(si existe, no inserta)
 alt ya estaba registrado
   ncons -> ncons : duplicado: se ignora

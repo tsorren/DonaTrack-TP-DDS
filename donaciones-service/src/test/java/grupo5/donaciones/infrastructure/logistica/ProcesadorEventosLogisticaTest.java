@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.donaciones.dto.comunicaciones.EventoEntregaExitosa;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaAsignada;
 import grupo5.donaciones.dto.comunicaciones.EventoRutaIniciada;
@@ -25,6 +27,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.transaction.PlatformTransactionManager;
 
 @ExtendWith(MockitoExtension.class)
 class ProcesadorEventosLogisticaTest {
@@ -32,6 +36,8 @@ class ProcesadorEventosLogisticaTest {
   @Mock private IDonacionesIndependientesService donacionesIndependientesService;
   @Mock private IEventosConsumidosRepository eventosConsumidosRepository;
   @Mock private IDonacionesIndependientesRepository donacionesIndependientesRepository;
+  // Sin transaction manager, como el perfil en memoria: getIfAvailable devuelve null
+  @Mock private ObjectProvider<PlatformTransactionManager> transactionManager;
 
   private static final String ORIGEN = "cola-de-prueba";
 
@@ -152,6 +158,43 @@ class ProcesadorEventosLogisticaTest {
     assertDoesNotThrow(() -> procesador.procesarEntregaExitosa(evento, ORIGEN));
 
     // No queda como consumido: si el mismo evento vuelve a llegar, se procesa de nuevo.
+    verify(eventosConsumidosRepository, never()).registrar(any());
+  }
+
+  @Test
+  void onRutaAsignada_siOtraOperacionGuardoLaDonacionALaVez_reintentaYAplicaElCambio() {
+    UUID donacionId = UUID.randomUUID();
+    EventoRutaAsignada evento =
+        new EventoRutaAsignada(UUID.randomUUID(), donacionId, LocalDateTime.now());
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+    when(donacionesIndependientesService.cambiarEstado(eq(donacionId), any(), any()))
+        .thenThrow(
+            new BusinessStateException(
+                ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE))
+        .thenReturn(null);
+
+    procesador.procesarRutaAsignada(evento, ORIGEN);
+
+    verify(donacionesIndependientesService, times(2)).cambiarEstado(eq(donacionId), any(), any());
+    verify(eventosConsumidosRepository, times(1)).registrar(any(EventoConsumido.class));
+  }
+
+  @Test
+  void onRutaAsignada_siElConflictSeRepite_dejaDeReintentarYNoRegistraElEvento() {
+    UUID donacionId = UUID.randomUUID();
+    EventoRutaAsignada evento =
+        new EventoRutaAsignada(UUID.randomUUID(), donacionId, LocalDateTime.now());
+    when(eventosConsumidosRepository.yaFueConsumido(any(), any(), any())).thenReturn(false);
+    when(donacionesIndependientesRepository.findById(donacionId)).thenReturn(Optional.empty());
+    when(donacionesIndependientesService.cambiarEstado(eq(donacionId), any(), any()))
+        .thenThrow(
+            new BusinessStateException(
+                ErrorCatalog.DONACION_INDEPENDIENTE_MODIFICADA_CONCURRENTEMENTE));
+
+    procesador.procesarRutaAsignada(evento, ORIGEN);
+
+    verify(donacionesIndependientesService, times(3)).cambiarEstado(eq(donacionId), any(), any());
     verify(eventosConsumidosRepository, never()).registrar(any());
   }
 }

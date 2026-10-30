@@ -5,7 +5,6 @@ import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.models.entities.donacionesIndependientes.DonacionIndependiente;
 import grupo5.donaciones.models.entities.propuestas.PosibleFragmentacion;
 import grupo5.donaciones.models.entities.propuestas.Propuesta;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,13 +22,10 @@ public class StockDeDonaciones {
   }
 
   public List<DonacionIndependiente> disponibles() {
-    List<DonacionIndependiente> resultado = new ArrayList<>();
-    for (Map.Entry<DonacionIndependiente, Integer> entrada : cantidades.entrySet()) {
-      if (entrada.getValue() > 0) {
-        resultado.add(entrada.getKey());
-      }
-    }
-    return resultado;
+    return cantidades.entrySet().stream()
+        .filter(entrada -> entrada.getValue() > 0)
+        .map(Map.Entry::getKey)
+        .toList();
   }
 
   public int disponibleDe(DonacionIndependiente donacion) {

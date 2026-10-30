@@ -6,6 +6,7 @@ import grupo5.notificaciones.models.entities.notificaciones.Notificacion;
 import grupo5.notificaciones.models.entities.notificaciones.eventos.CambioEstadoNotificacion;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,12 +24,13 @@ public class NotificacionPersistenciaMapper {
     entity.setLeida(domain.isLeida());
     entity.setFechaLectura(domain.getFechaLectura());
 
-    List<CambioEstadoEmbeddable> historial = new ArrayList<>();
-
-    for (CambioEstadoNotificacion h : domain.getHistorialEstado()) {
-      historial.add(
-          new CambioEstadoEmbeddable(h.getEstadoAnterior(), h.getEstadoNuevo(), h.getTimestamp()));
-    }
+    List<CambioEstadoEmbeddable> historial =
+        domain.getHistorialEstado().stream()
+            .map(
+                h ->
+                    new CambioEstadoEmbeddable(
+                        h.getEstadoAnterior(), h.getEstadoNuevo(), h.getTimestamp()))
+            .collect(Collectors.toCollection(ArrayList::new));
 
     entity.setHistorialEstado(historial);
     return entity;

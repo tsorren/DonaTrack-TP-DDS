@@ -18,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -153,6 +156,44 @@ public class GlobalExceptionHandler {
         ex.getClass().getSimpleName(),
         detail);
     return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
+  }
+
+  @ExceptionHandler(MissingServletRequestPartException.class)
+  public ResponseEntity<ErrorResponse> handleMissingPart(MissingServletRequestPartException ex) {
+    String detail = "La parte '" + ex.getRequestPartName() + "' es obligatoria.";
+    log.warn(
+        "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Missing multipart part: {}",
+        ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
+        ex.getClass().getSimpleName(),
+        detail);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
+  }
+
+  @ExceptionHandler(MaxUploadSizeExceededException.class)
+  public ResponseEntity<ErrorResponse> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+    String detail = "El archivo supera el tamaño máximo permitido.";
+    log.warn(
+        "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Upload too large: {}",
+        ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
+        ex.getClass().getSimpleName(),
+        ex.getMessage());
+    return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE)
+        .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
+  }
+
+  @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+  public ResponseEntity<ErrorResponse> handleMediaTypeNotSupported(
+      HttpMediaTypeNotSupportedException ex) {
+    String detail =
+        "Tipo de contenido no soportado. Se espera: " + ex.getSupportedMediaTypes() + ".";
+    log.warn(
+        "[ERROR-HANDLER] [ERROR-CODE: {}] [EXCEPTION: {}] - Unsupported media type: {}",
+        ErrorCatalog.ARGUMENTO_INVALIDO.getCode(),
+        ex.getClass().getSimpleName(),
+        ex.getContentType());
+    return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
         .body(new ErrorResponse(ex, ErrorCatalog.ARGUMENTO_INVALIDO.getCode(), detail));
   }
 

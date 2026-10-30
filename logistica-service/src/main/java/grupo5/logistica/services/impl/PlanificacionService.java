@@ -94,12 +94,16 @@ public class PlanificacionService implements IPlanificacionService {
   @Override
   @Transactional
   public void iniciarPlanificacion() {
-    iniciarPlanificacion(LocalDate.now(clock).plusDays(1));
+    planificar(LocalDate.now(clock).plusDays(1));
   }
 
   @Override
   @Transactional
   public void iniciarPlanificacion(LocalDate fechaObjetivo) {
+    planificar(fechaObjetivo);
+  }
+
+  private void planificar(LocalDate fechaObjetivo) {
     List<Entrega> entregas = entregasRepository.findSinRuta();
     if (entregas.isEmpty()) {
       log.info("No hay entregas pendientes de planificación.");

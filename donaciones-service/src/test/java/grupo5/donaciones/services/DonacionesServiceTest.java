@@ -9,9 +9,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import grupo5.common.exceptions.BusinessStateException;
+import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.common.exceptions.RecursoNoEncontradoException;
+import grupo5.common.exceptions.ValidationException;
 import grupo5.donaciones.dto.donaciones.inputs.DonacionInputDTO;
+import grupo5.donaciones.dto.donaciones.inputs.ItemDonacionInputDTO;
 import grupo5.donaciones.dto.donaciones.outputs.DonacionOutputDTO;
+import grupo5.donaciones.fixtures.AlmacenamientoFixtures;
 import grupo5.donaciones.fixtures.DTOFixtures;
 import grupo5.donaciones.fixtures.DonacionMother;
 import grupo5.donaciones.fixtures.DonanteMother;
@@ -62,10 +67,19 @@ class DonacionesServiceTest {
         new PersonaMapper(new DireccionMapper(), new MedioDeContactoMapper());
     mapper =
         new DonacionMapper(
-            new DireccionMapper(), donantesRepository, personasRepository, personaMapper);
+            new DireccionMapper(),
+            donantesRepository,
+            personasRepository,
+            personaMapper,
+            AlmacenamientoFixtures.fotosBienes());
     service =
         new DonacionesService(
-            donacionesRepository, donantesRepository, mapper, procesadorDonaciones, eventPublisher);
+            donacionesRepository,
+            donantesRepository,
+            mapper,
+            procesadorDonaciones,
+            eventPublisher,
+            AlmacenamientoFixtures.fotosBienes());
 
     Humana persona = PersonaMother.juanPerez();
     donante = DonanteMother.paraPersona(persona);
@@ -86,6 +100,48 @@ class DonacionesServiceTest {
     verify(donacionesRepository).save(any(Donacion.class));
     verify(eventPublisher, times(1)).publishEvent(any(DonacionCargada.class));
     verify(procesadorDonaciones).procesar(any(Donacion.class));
+  }
+
+  @Test
+  void cargarDonacion_conUnaFotoQueNoSeSubio_lanzaFotoNoEncontradaYNoGuarda() {
+    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.of(donante));
+    DonacionInputDTO conFoto =
+        new DonacionInputDTO(
+            donante.getId(),
+            inputDTO.descripcion(),
+            List.of(
+                new ItemDonacionInputDTO(
+                    "Arroz 1kg",
+                    "/fotos-bienes/3f2b9c1e-7a4d-4e8f-9b0a-1c2d3e4f5a6b.jpg",
+                    null,
+                    null,
+                    1.0,
+                    0.002,
+                    10)),
+            inputDTO.nombreDeposito(),
+            inputDTO.direccion(),
+            inputDTO.fecha());
+
+    ValidationException ex =
+        assertThrows(ValidationException.class, () -> service.cargarDonacion(conFoto));
+
+    assertEquals(ErrorCatalog.FOTO_BIEN_NO_ENCONTRADA, ex.getError());
+    verify(donacionesRepository, never()).save(any());
+    verify(procesadorDonaciones, never()).procesar(any());
+  }
+
+  @Test
+  void cargarDonacion_cuandoElDonanteEstaDeBaja_lanzaDonanteInactivoYNoGuarda() {
+    donante.darDeBaja();
+    when(donantesRepository.findById(donante.getId())).thenReturn(Optional.of(donante));
+
+    BusinessStateException ex =
+        assertThrows(BusinessStateException.class, () -> service.cargarDonacion(inputDTO));
+
+    assertEquals(ErrorCatalog.DONANTE_INACTIVO, ex.getError());
+    verify(donacionesRepository, never()).save(any());
+    verify(eventPublisher, never()).publishEvent(any());
+    verify(procesadorDonaciones, never()).procesar(any());
   }
 
   @Test

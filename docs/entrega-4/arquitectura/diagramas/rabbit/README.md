@@ -20,8 +20,8 @@ Notación común:
 
 ![Hechos de Donaciones en donaciones.exchange](rabbit-01-hechos-donaciones.png)
 
-- Notificaciones liga una sola cola con tres comodines; Incentivos liga una cola por cada clave que usa.
-- Notificaciones no procesa `donacion.segmentada.v1` ni `donante.dado-de-baja.v1`, pero los recibe por comodín: terminan en la DLQ (inferido, sin ejecución).
+- Notificaciones liga una sola cola con 7 claves exactas, una por handler (`RabbitMQConfig.ROUTING_KEYS_DONACIONES_CONSUMIDAS`); Incentivos liga una cola por cada clave que usa.
+- `donacion.segmentada.v1` y `donante.dado-de-baja.v1` no se ligan a la cola de Notificaciones, que no los procesa.
 
 ## rabbit-02 — Comando de entrega
 

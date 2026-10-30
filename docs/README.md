@@ -2,7 +2,8 @@
 
 > **Portal de Documentación y Arquitectura del Sistema**  
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> Última actualización: **2026-09-19**
+> Última actualización: **2026-10-14**  
+> Punto de entrada del repositorio: [`Readme.md`](../Readme.md)
 
 ---
 
@@ -39,7 +40,7 @@ docs/
 │   ├── contratos/                         # Especificaciones OpenAPI 3.0 (YAML), Schemas JSON y guía de migración E4
 │   └── diseno/                            # Bitácoras de refactor por oleadas, diagramas PUML y anexos
 │       ├── README.md                      # 🟢 Portal de diseño y anexos técnicos
-│       ├── donaciones/
+│       ├── donaciones/                # Diagrama de clases, DER implementado (V1-V12), cambios al DER y componentes de persistencia
 │       ├── incentivos/
 │       ├── logistica/
 │       ├── notificaciones/
@@ -53,8 +54,12 @@ docs/
 │   ├── testing-performance.md             # Optimización de compilación, surefire, slices WebMvc y TIA
 │   ├── plan-auditoria-y-blueprint-qa.md   # Plan de auditoría y arquitectura target de testing y QA
 │   ├── decisiones-diseno-auditoria-qa.md  # Decisiones de diseño y justificación de alternativas descartadas
+│   ├── preprod-fiel.md                    # Criterio de preprod fiel, estado de CI/CD e integración y brechas
+│   ├── preprod-fiel-arquitectura-objetivo.md # Alternativas por brecha, entorno, pipeline y estratos objetivo
+│   ├── preprod-fiel-roadmap.md            # Roadmap por entrega (E5–E7), rediseño de la SPEC-05 y estado de implementación
+│   ├── diagnostico-integration-tests-e5.md # Diagnóstico de integration-tests en E5: línea base, hallazgos y propuestas
 │   ├── auditoria/                         # 🧪 Compendio de auditoría de testing y arquitectura target (6 docs + README)
-│   └── postman/                           # 12 colecciones y flujos E2E distribuidos
+│   └── postman/                           # LEGADO: copia anterior; la fuente vigente es ../postman/ (raíz del repo)
 │
 ├── cicd/                                  # Automatización, CI/CD y políticas de PR
 │   ├── README.md                          # 🟢 Portal de CI/CD y automatización
@@ -83,17 +88,17 @@ docs/
 ├── adr/                                   # 🔒 Registros de Decisión de Arquitectura (Log4brains)
 │   ├── README.md                          # ⚖️ Fuente canónica de ADR governance (Two-Gate Rule, lifecycle, MADR)
 │   ├── index.md                           # 🟢 Base de conocimientos local de Log4brains
-│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-14) con ADRs enlazados
+│   ├── DEUDA_TECNICA.md                   # Registro de deuda técnica (DTI-01 a DTI-27) con ADRs enlazados
 │   └── donaciones, notificaciones, etc.   # Decisiones de arquitectura por microservicio (Log4brains)
 │
 ├── specs/                                 # 📋 Especificaciones técnicas y funcionales (SDD)
 │   ├── README.md                          # Normas de ciclo de vida de especificaciones
-│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04)
+│   ├── active/                            # Specs en curso de diseño o implementación (SPEC-03, SPEC-04, SPEC-05)
 │   └── completed/                         # Specs cerradas y verificadas (SPEC-01, SPEC-02)
 │
 ├── generated/                              # 🤖 Conocimiento generado mecánicamente del repositorio (Generated Knowledge)
 │   ├── README.md                          # Visión general y reglas de regeneración
-│   ├── endpoints-catalog.md               # Catálogo unificado de 94 endpoints REST
+│   ├── endpoints-catalog.md               # Catálogo unificado de 100 endpoints REST
 │   ├── events-catalog.md                  # Catálogo unificado de eventos AMQP y schemas
 │   ├── architecture-graph.md              # Topología y grafo de dependencias entre microservicios
 │   └── contracts-summary.json             # Sumario estructurado de contratos en formato JSON
@@ -106,7 +111,13 @@ docs/
 │   ├── informe-orquestadores-control-planes-coding-agents.md
 │   └── evals-agentes-resumen.md
 │
-├── entrega-4/                             # 🟢 Principios y documento de arquitectura de Entrega 4
+├── requerimientos/                        # 📋 Requerimientos por entrega
+│   └── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
+│
+├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
+│   ├── README.md                          # Índice de los .md de la entrega
+│   ├── integracion/                       # Catálogo de mensajes y matriz productor-consumidor
+│   ├── donaciones/                        # Bitácoras, plan y guion del broker de logística
 │   ├── arquitectura/principios.md         # Reglas comunes de persistencia, outbox, aislamiento e idempotencia
 │   ├── arquitectura/entregable-5/         # Entregable 5: informe .docx/.pdf, fuente y constructor
 │   ├── arquitectura/arquitectura-sistema.md # Respaldo técnico verificado del entregable 5
@@ -115,9 +126,10 @@ docs/
 │       └── rabbit/                        # Topología RabbitMQ por flujo (exchanges, colas, DLQ)
 │
 └── entregas/                              # 🔒 Enunciados oficiales y diagramas entregados
-    ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 4
+    ├── README.md                          # 🎓 Matriz curricular e índice de entregas 1 a 7
     ├── 1/ … 4/                            # PDFs de requerimientos de cátedra
-    └── interfaz/                          # Bocetos Figma y mapa de navegación
+    ├── Enunciado-TP-Anual-2026.pdf        # Enunciado completo y final (entregas 1 a 7)
+    └── 1/interfaz/                        # Bocetos Figma y mapa de navegación (dentro de la entrega 1)
 ```
 
 ---
@@ -154,12 +166,18 @@ docs/
 * 🔄 **Guía de Migración de Contratos E4 (Notificaciones):** [arquitectura/contratos/guia-migracion-notificaciones-e4.md](arquitectura/contratos/guia-migracion-notificaciones-e4.md)
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
+* 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
+* 📚 **Índice de documentación de Entrega 4:** [entrega-4/README.md](entrega-4/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
 * 🏗️ **Documento de Arquitectura del Sistema (Entrega 4, entregable 5):** [entrega-4/arquitectura/entregable-5/](entrega-4/arquitectura/entregable-5/README.md) · respaldo técnico: [arquitectura-sistema.md](entrega-4/arquitectura/arquitectura-sistema.md) · topología RabbitMQ: [diagramas/rabbit/](entrega-4/arquitectura/diagramas/rabbit/README.md)
 * 🏛️ **Auditoría Integral y Blueprint de Testing y QA (Documento Maestro):** [testing/auditoria-arquitectura-testing.md](testing/auditoria-arquitectura-testing.md)
 * 🧪 **Guía de Pruebas de Integración:** [testing/integration-tests.md](testing/integration-tests.md)
 * ⚡ **Optimización de Compilación y Testing (TIA):** [testing/testing-performance.md](testing/testing-performance.md)
 * 🎯 **Auditoría y Backlog Crítico de QA:** [testing/auditoria/README.md](testing/auditoria/README.md)
+* 🧭 **Preprod fiel — criterio, estado y brechas de CI/CD e integración:** [testing/preprod-fiel.md](testing/preprod-fiel.md)
+* 🏗️ **Preprod fiel — arquitectura objetivo de entorno, pipeline y suite:** [testing/preprod-fiel-arquitectura-objetivo.md](testing/preprod-fiel-arquitectura-objetivo.md)
+* 🗺️ **Preprod fiel — roadmap por entrega y decisiones:** [testing/preprod-fiel-roadmap.md](testing/preprod-fiel-roadmap.md)
+* 🩺 **Diagnóstico de integration-tests (E5):** [testing/diagnostico-integration-tests-e5.md](testing/diagnostico-integration-tests-e5.md)
 * 🚀 **Pipeline de CI/CD y Workflows:** [cicd/DonaTrack-CICD.md](cicd/DonaTrack-CICD.md)
 * 🤖 **Protocolo y Prompts de IA:** [IA/README.md](IA/README.md)
 * 🛡️ **Pre-Flight SonarCloud para IA:** [IA/07-errores-frecuentes-sonarcloud-ia.md](IA/07-errores-frecuentes-sonarcloud-ia.md)
@@ -168,10 +186,11 @@ docs/
 * 🧪 **Harness Evals — Output Contract, Critical Failures, A/B:** [IA/evals/README.md](IA/evals/README.md)
 * ⚖️ **ADR Governance — Two-Gate Rule, lifecycle, MADR:** [adr/README.md](adr/README.md)
 * 📝 **Índice de Deuda Técnica:** [adr/DEUDA_TECNICA.md](adr/DEUDA_TECNICA.md)
-* 🗄️ **Arquitectura de Persistencia PostgreSQL:** [../persistencia/README.md](../persistencia/README.md)
+* 🗄️ **Arquitectura de Persistencia (PostgreSQL y MongoDB de logística):** [../persistencia/README.md](../persistencia/README.md)
 * ⚙️ **Workflows y Webhooks de n8n:** [../n8n/README.md](../n8n/README.md)
 * 📮 **Colecciones Postman y Newman CLI:** [../postman/README.md](../postman/README.md)
 * 🔒 **Auth Service (Bounded Context Reservado):** [../auth-service/README.md](../auth-service/README.md)
 * 💻 **Cliente Liviano (Bounded Context Reservado):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
-* 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql)
+* 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql) y [../persistencia/init-db/02-set-role-passwords.sh](../persistencia/init-db/02-set-role-passwords.sh) (contraseñas desde `.env`, ver [../.env.example](../.env.example))
+* 🪣 **MinIO de Donaciones (padrones CSV y fotos de bienes):** [entrega-4/donaciones/bitacora-minio.md](entrega-4/donaciones/bitacora-minio.md) · plan: [entrega-4/donaciones/plan-minio-csv-y-fotos.md](entrega-4/donaciones/plan-minio-csv-y-fotos.md) · usuarios por servicio: [../persistencia/minio/init-usuarios.sh](../persistencia/minio/init-usuarios.sh)
 

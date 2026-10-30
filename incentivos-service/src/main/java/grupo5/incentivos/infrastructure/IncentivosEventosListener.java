@@ -1,22 +1,18 @@
 package grupo5.incentivos.infrastructure;
 
-import grupo5.common.exceptions.BusinessStateException;
-import grupo5.common.exceptions.ErrorCatalog;
 import grupo5.incentivos.config.RabbitMQConfig;
 import grupo5.incentivos.dto.DonacionExitosaRequest;
 import grupo5.incentivos.dto.ModificarDonanteRequest;
 import grupo5.incentivos.dto.NuevaDonacionRequest;
-import grupo5.incentivos.dto.RegistrarDonanteRequest;
 import grupo5.incentivos.dto.events.EventoDonacionRecibidaV1;
 import grupo5.incentivos.dto.events.EventoDonacionSegmentadaV1;
-import grupo5.incentivos.dto.events.EventoDonanteDadoDeBajaV1;
-import grupo5.incentivos.dto.events.EventoDonanteRegistradoV1;
 import grupo5.incentivos.dto.events.EventoPersonaSincronizadaV1;
 import grupo5.incentivos.models.entities.donante.DonanteIncentivos;
 import grupo5.incentivos.services.IGestionDonanteService;
 import grupo5.incentivos.services.IMisionesDonacionService;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -25,20 +21,32 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.support.AmqpHeaders;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.lang.Nullable;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Service;
 
 /**
  * Consume los eventos de dominio que llegan por RabbitMQ y los traduce a las operaciones que hoy
  * expone la API REST del servicio.
  *
- * <p>Está apagado por defecto para no procesar dos veces lo mismo mientras la comunicación siga
- * yendo por HTTP. Se activa con {@code incentivos.rabbitmq.enabled=true}.
+ * <p>Está encendido por defecto ({@code incentivos.rabbitmq.enabled=true}). Se apaga con {@code
+ * INCENTIVOS_RABBITMQ_ENABLED=false}, por ejemplo para no procesar dos veces lo mismo mientras la
+ * comunicación siga yendo por HTTP.
  *
  * <p>No hay try/catch por evento: si el payload no cumple el contrato o el procesamiento falla, la
  * excepción sale del método y el container de Rabbit rechaza el mensaje sin reencolarlo, porque la
  * {@code rabbitListenerContainerFactory} tiene {@code defaultRequeueRejected=false} (ver {@link
- * RabbitMQConfig}).
+ * RabbitMQConfig}). Cada cola declara una cola de mensajes muertos (DLQ), donde termina el mensaje
+ * rechazado.
+ *
+ * <p>Las donaciones segmentadas y recibidas suman en los totales del donante, así que no son
+ * idempotentes: se deduplican por messageId con el inbox ({@code IEventosProcesados}). El cambio de
+ * nombre lo es por construcción y no lo necesita.
+ *
+ * <p>El alta y la baja del donante no están acá sino en {@link DonanteCicloDeVidaListener}: tienen
+ * que consumirse en orden, desde una sola cola y con un solo consumidor.
  */
 @Service
 @ConditionalOnProperty(name = "incentivos.rabbitmq.enabled", havingValue = "true")
@@ -59,25 +67,10 @@ public class IncentivosEventosListener {
     this.validator = validator;
   }
 
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONANTE_REGISTRADO)
-  public void onDonanteRegistrado(EventoDonanteRegistradoV1 evento) {
-    validar(evento);
-    log.info("Evento donante.registrado recibido (donante {})", evento.donanteId());
-
-    gestionDonanteService.registrarDonante(
-        new RegistrarDonanteRequest(evento.donanteId(), evento.personaId(), evento.nombre()));
-  }
-
-  @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONANTE_DADO_DE_BAJA)
-  public void onDonanteDadoDeBaja(EventoDonanteDadoDeBajaV1 evento) {
-    validar(evento);
-    log.info("Evento donante.dado-de-baja recibido (donante {})", evento.donanteId());
-
-    darDeBaja(evento.donanteId());
-  }
-
   @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONACION_SEGMENTADA)
-  public void onDonacionSegmentada(EventoDonacionSegmentadaV1 evento) {
+  public void onDonacionSegmentada(
+      EventoDonacionSegmentadaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
     validar(evento);
     log.info("Evento donacion.segmentada recibido (donante {})", evento.donanteId());
 
@@ -88,16 +81,20 @@ public class IncentivosEventosListener {
     LocalDate fecha = evento.fecha().atZone(ZoneId.systemDefault()).toLocalDate();
 
     misionesDonacionService.procesarDonacion(
-        new NuevaDonacionRequest(evento.donanteId(), categorias, cantidadBienes, fecha));
+        new NuevaDonacionRequest(evento.donanteId(), categorias, cantidadBienes, fecha),
+        resolverEventId(messageId));
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_DONACION_RECIBIDA)
-  public void onDonacionRecibida(EventoDonacionRecibidaV1 evento) {
+  public void onDonacionRecibida(
+      EventoDonacionRecibidaV1 evento,
+      @Header(name = AmqpHeaders.MESSAGE_ID, required = false) String messageId) {
     validar(evento);
     log.info("Evento donacion.recibida recibido (donante {})", evento.donanteId());
 
     misionesDonacionService.procesarDonacionExitosa(
-        new DonacionExitosaRequest(evento.donanteId(), evento.personaBeneficiariaId()));
+        new DonacionExitosaRequest(evento.donanteId(), evento.personaBeneficiariaId()),
+        resolverEventId(messageId));
   }
 
   @RabbitListener(queues = RabbitMQConfig.QUEUE_INCENTIVOS_PERSONA_SINCRONIZADA)
@@ -121,14 +118,21 @@ public class IncentivosEventosListener {
     }
   }
 
-  private void darDeBaja(UUID donanteId) {
+  /**
+   * La clave de deduplicación es el messageId AMQP que fija el emisor (donaciones-service lo genera
+   * en cada publicación). Sin messageId no hay clave estable: se devuelve null y el evento se
+   * procesa sin deduplicar, igual que en notificaciones-service.
+   */
+  @Nullable
+  private static UUID resolverEventId(@Nullable String messageId) {
+    if (messageId == null || messageId.isBlank()) {
+      log.warn("[INBOX_SIN_CLAVE] Evento sin messageId: se procesa sin deduplicar");
+      return null;
+    }
     try {
-      gestionDonanteService.darDeBaja(donanteId);
-    } catch (BusinessStateException e) {
-      if (e.getError() != ErrorCatalog.DONANTE_INCENTIVOS_NO_ENCONTRADO) {
-        throw e;
-      }
-      log.info("El donante {} ya no existe en incentivos: la baja ya estaba aplicada", donanteId);
+      return UUID.fromString(messageId);
+    } catch (IllegalArgumentException e) {
+      return UUID.nameUUIDFromBytes(messageId.getBytes(StandardCharsets.UTF_8));
     }
   }
 
