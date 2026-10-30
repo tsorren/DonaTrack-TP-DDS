@@ -251,8 +251,8 @@ Reglas para lo público (D26):
 | RNF-UI-04 | Microcopy y ayudas: etiquetas, tooltips, placeholders, onboarding hints | Checklist por flujo crítico (registro, donación, confirmar recepción, importar CSV) |
 | RNF-UI-05 | Feedback no intrusivo (toasts, modals, banners) en toda acción | Cada acción tiene mensaje de éxito y de error |
 | RNF-UI-06 | Loaders, skeletons o spinners si la latencia pasa de 300 ms | `hx-indicator` en cada request HTMX; prueba con la red throttled |
-| RNF-UI-07 | Responsive (media queries, flexbox, grillas): móvil, tablet, desktop | Capturas en 3 anchos (360, 768, 1280 px) |
-| RNF-UI-08 | Sin distorsión ni superposición en ningún tamaño | Mismo set de capturas |
+| RNF-UI-07 | Responsive (media queries, flexbox, grillas): móvil, tablet, desktop | Capturas en los anchos de referencia 360, 1280 y 1920 px; la tablet queda cubierta por un barrido automático de anchos intermedios ([decisión del 2026-10-30](../interfaz/bitacora.md)) |
+| RNF-UI-08 | Sin distorsión ni superposición en ningún tamaño | Mismas capturas + comprobación automática de desbordes entre 360 y 1920 px |
 | RNF-UI-09 | WCAG nivel AA: ARIA, foco visible, HTML semántico | axe o Lighthouse sobre `/estilos` y las pantallas principales, sin violaciones AA |
 | RNF-UI-10 | Áreas de toque de al menos 48x48 px | Auditoría de Lighthouse y token de tamaño mínimo |
 | RNF-UI-11 | Tokens de diseño unificados (colores, tipografías, espaciados, bordes) | Un solo `tokens.css`; las pantallas usan solo tokens semánticos (D20) |

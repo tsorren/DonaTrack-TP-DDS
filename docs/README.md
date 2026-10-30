@@ -2,7 +2,7 @@
 
 > **Portal de Documentación y Arquitectura del Sistema**  
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5  
-> Última actualización: **2026-10-14**  
+> Última actualización: **2026-10-30**  
 > Punto de entrada del repositorio: [`Readme.md`](../Readme.md)
 
 ---
@@ -114,6 +114,14 @@ docs/
 ├── requerimientos/                        # 📋 Requerimientos por entrega
 │   └── requerimientos-e6.md               # RF/RNF de E6 y decisiones D1–D30 (insumo de ADRs)
 │
+├── interfaz/                              # 🎨 Proceso de diseño de la interfaz del cliente liviano (E6)
+│   ├── README.md                          # Proceso en 6 pasos, quién decide, listo para entregar, cómo extender
+│   ├── bocetos-e1.md · mapa-del-sitio.md  # Insumos: inventario de bocetos de E1 y mapa con niveles
+│   ├── direccion-de-arte.md               # Ambición gráfica con piso de accesibilidad
+│   ├── patrones-y-microcopy.md            # Componentes, estados, avisos, textos y heurísticas
+│   ├── temas-ab.md · bitacora.md          # Catálogo de temas A/B y decisiones de diseño
+│   └── plantillas/                        # Ficha de flujo, iteración A/B y brief de identidad
+│
 ├── entrega-4/                             # 🟢 Documentación de Entrega 4 (índice: README.md)
 │   ├── README.md                          # Índice de los .md de la entrega
 │   ├── integracion/                       # Catálogo de mensajes y matriz productor-consumidor
@@ -167,6 +175,7 @@ docs/
 * 📊 **Trazabilidad y Formato de Logs:** [arquitectura/logging-trazabilidad.md](arquitectura/logging-trazabilidad.md)
 * 🎓 **Matriz Curricular de Entregas:** [entregas/README.md](entregas/README.md)
 * 📋 **Requerimientos de Entrega 6 (cliente liviano, autenticación y gateway):** [requerimientos/requerimientos-e6.md](requerimientos/requerimientos-e6.md)
+* 🎨 **Proceso de diseño de la interfaz (UX, identidad visual y vistas):** [interfaz/README.md](interfaz/README.md) · reglas del módulo: [../cliente-liviano/AGENTS.md](../cliente-liviano/AGENTS.md)
 * 📚 **Índice de documentación de Entrega 4:** [entrega-4/README.md](entrega-4/README.md)
 * 📜 **Principios Arquitectónicos de Entrega 4:** [entrega-4/arquitectura/principios.md](entrega-4/arquitectura/principios.md)
 * 🏗️ **Documento de Arquitectura del Sistema (Entrega 4, entregable 5):** [entrega-4/arquitectura/entregable-5/](entrega-4/arquitectura/entregable-5/README.md) · respaldo técnico: [arquitectura-sistema.md](entrega-4/arquitectura/arquitectura-sistema.md) · topología RabbitMQ: [diagramas/rabbit/](entrega-4/arquitectura/diagramas/rabbit/README.md)
@@ -190,7 +199,7 @@ docs/
 * ⚙️ **Workflows y Webhooks de n8n:** [../n8n/README.md](../n8n/README.md)
 * 📮 **Colecciones Postman y Newman CLI:** [../postman/README.md](../postman/README.md)
 * 🔒 **Auth Service (Bounded Context Reservado):** [../auth-service/README.md](../auth-service/README.md)
-* 💻 **Cliente Liviano (Bounded Context Reservado):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
+* 💻 **Cliente Liviano (interfaz web de E6):** [../cliente-liviano/README.md](../cliente-liviano/README.md)
 * 🗄️ **Scripts de Inicialización de Base de Datos (PostgreSQL):** [../persistencia/init-db/01-init-schemas-roles.sql](../persistencia/init-db/01-init-schemas-roles.sql) y [../persistencia/init-db/02-set-role-passwords.sh](../persistencia/init-db/02-set-role-passwords.sh) (contraseñas desde `.env`, ver [../.env.example](../.env.example))
 * 🪣 **MinIO de Donaciones (padrones CSV y fotos de bienes):** [entrega-4/donaciones/bitacora-minio.md](entrega-4/donaciones/bitacora-minio.md) · plan: [entrega-4/donaciones/plan-minio-csv-y-fotos.md](entrega-4/donaciones/plan-minio-csv-y-fotos.md) · usuarios por servicio: [../persistencia/minio/init-usuarios.sh](../persistencia/minio/init-usuarios.sh)
 

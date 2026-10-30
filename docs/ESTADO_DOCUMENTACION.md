@@ -150,10 +150,12 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 |---|---|---|:---:|
 | [`AGENTS.md`](../AGENTS.md) | Gobernanza Raíz | Núcleo canónico de políticas, niveles de tarea (QUICK/STANDARD/ARCHITECTURAL) y Quality Gates. | 🟢 Sincronizado |
 | [`common-lib/AGENTS.md`](../common-lib/AGENTS.md) | Gobernanza Nested | Reglas de pertenencia del Shared Kernel, contratos protegidos y validación reactor. | 🟢 Sincronizado |
+| [`cliente-liviano/AGENTS.md`](../cliente-liviano/AGENTS.md) | Gobernanza Nested | Guardarraíles de la interfaz (RNF-CL-06): proceso obligatorio, pertenencia, tokens, HTMX y validación. | 🟢 Sincronizado |
+| [`.claude/skills/`](../.claude/skills/) y [`.claude/rules/interfaz.md`](../.claude/rules/interfaz.md) | Adaptadores Claude Code | Adaptadores que hacen descubribles las skills de interfaz y cargan las reglas al tocar `cliente-liviano/` o `docs/interfaz/`. | 🟢 Sincronizado |
 | [`docs/context-index.md`](context-index.md) | Context Routing | Routing de contexto para agentes de IA por servicio, tarea y temporal constraints. | 🟢 Sincronizado |
 | [`docs/IA/review/evaluator.md`](IA/review/evaluator.md) | Revisión Crítica | Roles Generator/Evaluator, Review Contract y vectores de revisión V1–V9. | 🟢 Sincronizado |
 | [`scripts/agent-check/`](../scripts/agent-check/) | Enforcement CI | Suite de validación mecánica de integridad referencial, canonicidad, skills y ADRs. | 🟢 Sincronizado |
-| [`.agents/skills/`](../.agents/skills/) | Suite de Skills | Suite de 8 skills modulares para el Engineering Loop y auditoría adversarial de PRs con GrepAI. | 🟢 Sincronizado |
+| [`.agents/skills/`](../.agents/skills/) | Suite de Skills | Suite de 13 skills: 8 del Engineering Loop y review de PRs, y 5 del proceso de diseño de la interfaz (identidad-visual, iteracion-ab, ux-flujo, vista-ui, revision-ui). | 🟢 Sincronizado |
 | [`docs/specs/`](specs/README.md) | Especificaciones SDD | Catálogo centralizado de especificaciones funcionales y técnicas (active/completed). | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md`](specs/active/SPEC-03-topologia-amqp-y-desacoplamiento-notificaciones.md) | Especificación SDD | Topología AMQP Pub/Sub canónica, colas segregadas, envelope nativo, 10 schemas y Hard Cutover. | 🟢 Sincronizado |
 | [`docs/specs/active/SPEC-04-broker-integracion-logistica.md`](specs/active/SPEC-04-broker-integracion-logistica.md) | Especificación SDD | Broker de Integración con Logística: selección de proveedor (AMQP/HTTP), comando dirigido, `mandatory` + acuse, outbox basado en datos. | 🟢 Sincronizado |
@@ -295,7 +297,9 @@ Para evitar conflictos de merge recurrentes por solapamiento de índices secuenc
 | Documento / Artefacto | Área | Propósito / Alcance | Estado |
 |---|---|---|:---:|
 | [`auth-service/README.md`](../auth-service/README.md) | Bounded Context | Placeholder: Bounded context reservado para autenticación (Entrega 6) y Key Broker (Entrega 7, decisión D29 de [requerimientos-e6](requerimientos/requerimientos-e6.md)). | 🟢 Sincronizado |
-| [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Placeholder: Bounded context reservado para la interfaz de usuario y arquitectura MVC (Entrega 6). | 🟢 Sincronizado |
+| [`cliente-liviano/README.md`](../cliente-liviano/README.md) | Bounded Context | Interfaz web de E6 (Spring MVC + Thymeleaf + HTMX): estado y enlaces al proceso de diseño. | 🟢 Sincronizado |
+| [`docs/interfaz/README.md`](interfaz/README.md) | Diseño de Interfaz E6 | Proceso de diseño en 6 pasos, reglas para preguntar al usuario, anchos de referencia, criterio de listo y receta para extender. | 🟢 Sincronizado |
+| [`docs/interfaz/`](interfaz/) (bocetos, mapa, dirección de arte, patrones, temas A/B, bitácora, plantillas) | Diseño de Interfaz E6 | Insumos, criterios y registro de decisiones del proceso de diseño del cliente liviano. | 🟢 Sincronizado |
 | [`docs/requerimientos/requerimientos-e6.md`](requerimientos/requerimientos-e6.md) | Requerimientos Entrega 6 | RF y RNF del servicio de autenticación, el API gateway y el cliente liviano; huecos de backend; decisiones D1–D30 con alternativas (5 pendientes) y ADRs candidatos. | 🟢 Sincronizado |
 | [`docs/entrega-4/arquitectura/principios.md`](entrega-4/arquitectura/principios.md) | Principios Entrega 4 | Reglas comunes de persistencia, outbox, aislamiento e idempotencia de Entrega 4. | 🟢 Sincronizado |
 | [`docs/entrega-4/README.md`](entrega-4/README.md) | Índice Entrega 4 | Índice de todos los `.md` de `docs/entrega-4/` y de la guía de migración de Notificaciones. | 🟢 Sincronizado |
