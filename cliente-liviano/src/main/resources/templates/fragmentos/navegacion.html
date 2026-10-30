@@ -1,9 +1,11 @@
-<!--/* Navegación por rol. Patrón: Material Navigation bar. opciones: List<OpcionNavegacion>. */-->
+<!--/* Navegación por rol: la barra lateral del prototipo v2. Cada sección es un nodo de la ruta
+       punteada; la actual brilla. Patrón: Material Navigation rail. opciones: List<OpcionNavegacion>. */-->
 <nav th:fragment="navegacion(opciones)" class="navegacion" aria-label="Secciones">
   <ul>
     <li th:each="opcion : ${opciones}">
-      <a href="#" th:href="@{${opcion.ruta}}" th:text="${opcion.texto}"
-         th:aria-current="${opcion.actual} ? 'page' : null">Sección</a>
+      <a href="#" th:href="@{${opcion.ruta}}"
+         th:aria-current="${opcion.actual} ? 'page' : null"><span class="navegacion-nodo"
+            aria-hidden="true"></span><span th:text="${opcion.texto}">Sección</span></a>
     </li>
   </ul>
 </nav>

@@ -54,6 +54,7 @@ class VariantesInterceptorTest {
 
   @Test
   void unaVarianteSinArchivosNoExiste() throws Exception {
-    mvc.perform(get("/estilos").param("variante", "paleta-a")).andExpect(status().isNotFound());
+    mvc.perform(get("/estilos").param("variante", "tema-sin-archivos-a"))
+        .andExpect(status().isNotFound());
   }
 }

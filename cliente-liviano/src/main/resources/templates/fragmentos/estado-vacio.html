@@ -1,6 +1,8 @@
 <!--/* Estado vacío. Patrón: Material Empty states. Dice qué significa y invita a la acción posible.
+       La ruta chica (tres nodos, el último encendido) es la del prototipo v2.
        accionTexto y accionRuta pueden ser null si no hay acción. */-->
 <section th:fragment="estado-vacio(titulo, texto, accionTexto, accionRuta)" class="estado-vacio">
+  <div class="ruta-chica" aria-hidden="true"><span></span><span></span><span></span></div>
   <h3 th:text="${titulo}">Todavía no hay nada acá</h3>
   <p th:text="${texto}">Qué significa y qué se puede hacer.</p>
   <a th:if="${accionTexto}" href="#" th:href="@{${accionRuta}}" role="button"

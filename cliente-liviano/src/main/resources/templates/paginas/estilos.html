@@ -10,12 +10,129 @@
 <th:block th:fragment="contenido">
   <h1>Catálogo de componentes</h1>
   <p class="catalogo-intro">Cada componente de la interfaz con todos sus estados y el patrón que
-    sigue. Los colores, letras y formas son provisorios hasta definir la identidad visual.</p>
+    sigue. Identidad: la del prototipo v2 (paleta, DM Sans, ruta punteada y curvas).</p>
+
+  <section class="muestra-pantalla" aria-labelledby="muestra-titulo">
+    <h2 id="muestra-titulo">Muestra: inicio de una persona donante</h2>
+    <p class="catalogo-patron">El tablero del prototipo v2 armado con los componentes del
+      catálogo. Datos de ejemplo. Las cifras (fragmento <code>cifra</code>) llevan a sus entregas;
+      el recorrido (fragmento <code>recorrido</code>, patrón Material Steppers) muestra los pasos
+      hechos, el actual y los pendientes.</p>
+
+    <section class="destacado" aria-labelledby="hola-titulo">
+      <div>
+        <p class="destacado-etiqueta">Tu impacto</p>
+        <h3 id="hola-titulo">Hola, Ana</h3>
+        <p>Tu última donación ya salió del depósito y va camino a Comedor Barrio Ejemplo.</p>
+        <div class="destacado-acciones">
+          <a href="#recorrido-titulo" role="button">Ver seguimiento</a>
+          <a href="#tarjeta-titulo" role="button" class="fantasma">Mis donaciones</a>
+        </div>
+      </div>
+      <div class="destacado-red" aria-hidden="true">
+        <svg viewBox="0 0 360 200" preserveAspectRatio="none" focusable="false">
+          <path d="M18 168 C 80 150, 110 110, 160 102 S 270 60, 340 14"/>
+        </svg>
+        <span class="destacado-nodo destacado-nodo--1"></span>
+        <span class="destacado-nodo destacado-nodo--2"></span>
+        <span class="destacado-chip destacado-chip--1"><b>7</b><span>donaciones</span></span>
+        <span class="destacado-chip destacado-chip--2"><b>2</b><span>entidades ayudadas</span></span>
+        <span class="destacado-chip destacado-chip--3"><b>2</b><span>entregadas</span></span>
+      </div>
+    </section>
+
+    <div class="cifras">
+      <a th:replace="~{fragmentos/cifra :: cifra(${realizadas})}"></a>
+      <article class="resumen-entregas" aria-labelledby="entregadas-titulo">
+        <div class="resumen-entregas-cabecera">
+          <span class="moneda"><b>2</b></span>
+          <h3 id="entregadas-titulo">Donaciones <span>entregadas</span></h3>
+        </div>
+        <svg class="segmentos" viewBox="0 0 100 10" preserveAspectRatio="none"
+             aria-hidden="true" focusable="false">
+          <rect class="segmento--entregadas" x="0" y="0" width="27.3" height="10"/>
+          <rect class="segmento--camino" x="28.8" y="0" width="13.6" height="10"/>
+          <rect class="segmento--proceso" x="43.9" y="0" width="40.9" height="10"/>
+          <rect class="segmento--sin-entregar" x="86.3" y="0" width="13.7" height="10"/>
+        </svg>
+        <ul class="leyenda">
+          <li class="segmento--entregadas">2 entregadas</li>
+          <li class="segmento--camino">1 en camino</li>
+          <li class="segmento--proceso">3 en proceso</li>
+          <li class="segmento--sin-entregar">1 sin entregar</li>
+        </ul>
+      </article>
+      <section class="categoria" aria-labelledby="categoria-titulo">
+        <span class="cifra-etiqueta" id="categoria-titulo">Categoría actual</span>
+        <span class="categoria-nombre">Colaborador</span>
+        <span class="categoria-proxima">Próxima: Sostenedor</span>
+      </section>
+    </div>
+
+    <div class="muestra-grilla">
+      <section class="panel" aria-labelledby="recorrido-titulo">
+        <div class="panel-encabezado">
+          <div>
+            <h3 id="recorrido-titulo">Recorrido de tu última donación</h3>
+            <p class="panel-bajada">Lentejas secas · 15 kg</p>
+          </div>
+          <span th:replace="~{fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
+        </div>
+        <ol th:replace="~{fragmentos/recorrido :: recorrido('Recorrido de tu última donación',
+            ${pasos})}"></ol>
+        <a href="#tarjeta-titulo" class="enlace-fuerte">Ver el detalle</a>
+      </section>
+
+      <section class="panel mision" aria-labelledby="mision-titulo">
+        <h3 id="mision-titulo">Tu misión actual</h3>
+        <p class="panel-bajada">Colaborador → Sostenedor</p>
+        <div class="mision-sello-fila">
+          <span class="mision-sello">2/3</span>
+          <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+        </div>
+        <progress class="mision-barra" value="66" max="100"
+                  aria-label="Progreso de la misión">66 %</progress>
+        <p class="mision-pie"><span>66 %</span><span>Falta 1 paso</span></p>
+        <a href="#insignia-titulo" role="button" class="fantasma">Ver incentivos</a>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="notas-titulo">
+      <h3 id="notas-titulo">Notificaciones recientes</h3>
+      <p class="panel-bajada">Lo último que pasó con tus donaciones</p>
+      <ul class="notas">
+        <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+          <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+        <li><p>Tu donación quedó lista para entregar.</p>
+          <time datetime="2026-10-14T09:10">ayer</time></li>
+        <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+          <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+      </ul>
+    </section>
+  </section>
+
+  <section class="catalogo" aria-labelledby="iconos-titulo">
+    <h2 id="iconos-titulo">Íconos</h2>
+    <p class="catalogo-patron">Fragmento <code>icono</code>: trazo de 24 × 24 que toma el color del
+      texto. Siempre acompañan a un texto.</p>
+    <ul class="muestras">
+      <li><svg th:replace="~{fragmentos/icono :: icono('donaciones', 24)}"></svg><code>donaciones</code></li>
+      <li><svg th:replace="~{fragmentos/icono :: icono('camiones', 24)}"></svg><code>camiones</code></li>
+      <li><svg th:replace="~{fragmentos/icono :: icono('check', 24)}"></svg><code>check</code></li>
+      <li><svg th:replace="~{fragmentos/icono :: icono('alerta', 24)}"></svg><code>alerta</code></li>
+      <li><svg th:replace="~{fragmentos/icono :: icono('flecha', 24)}"></svg><code>flecha</code></li>
+    </ul>
+  </section>
 
   <section class="catalogo" aria-labelledby="colores-titulo">
     <h2 id="colores-titulo">Colores</h2>
     <p class="catalogo-patron">Colores de uso definidos en <code>tokens.css</code>.</p>
     <ul class="muestras">
+      <li><span class="muestra muestra--destacado"></span><code>--color-destacado-fondo</code></li>
+      <li><span class="muestra muestra--marca"></span><code>--color-marca-brillante</code></li>
+      <li><span class="muestra muestra--marca-alterna"></span><code>--color-marca-alterna</code></li>
+      <li><span class="muestra muestra--marca-suave"></span><code>--color-marca-suave</code></li>
+      <li><span class="muestra muestra--fondo-pagina"></span><code>--color-fondo-pagina</code></li>
       <li><span class="muestra muestra--fondo"></span><code>--color-fondo</code></li>
       <li><span class="muestra muestra--superficie"></span><code>--color-superficie</code></li>
       <li><span class="muestra muestra--texto"></span><code>--color-texto</code></li>
@@ -50,6 +167,10 @@
       <button type="button" disabled>Confirmar recepción</button>
       <button type="button" aria-busy="true">Enviando…</button>
       <a href="#botones-titulo" role="button" class="outline">Enlace con forma de botón</a>
+    </div>
+    <div class="catalogo-fila catalogo-oscuro">
+      <button type="button">Ver seguimiento</button>
+      <button type="button" class="fantasma">Mis donaciones</button>
     </div>
   </section>
 
@@ -182,8 +303,8 @@
 
   <section class="catalogo" aria-labelledby="navegacion-titulo">
     <h2 id="navegacion-titulo">Navegación</h2>
-    <p class="catalogo-patron">Patrón: Material Navigation bar. Fragmento <code>navegacion</code>.
-      La sección actual queda marcada.</p>
+    <p class="catalogo-patron">Patrón: Material Navigation rail. Fragmento <code>navegacion</code>:
+      la barra lateral, con un nodo de la ruta por sección. La actual brilla.</p>
     <nav th:replace="~{fragmentos/navegacion :: navegacion(${opciones})}"></nav>
   </section>
 </th:block>

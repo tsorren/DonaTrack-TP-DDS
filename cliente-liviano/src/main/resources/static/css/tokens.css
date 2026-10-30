@@ -1,71 +1,195 @@
 /*
  * tokens.css: única fuente de colores, tipografías, espacios, bordes y puntos de quiebre (D20).
- * PROVISORIO hasta la identidad visual (skill identidad-visual).
+ * Versión 1 (F3): la identidad del prototipo v2 de la diseñadora (Figma "Prototipo v2" y
+ * sofiadeane/frontend-donatrack), con los ajustes de contraste AA de docs/interfaz/bitacora.md.
  *
- * 1. Valores base (--p-*): la paleta. Solo se usan en este archivo. Colores en #rrggbb, para que
- *    InterfazFitnessTest pueda medir el contraste.
+ * 1. Valores base (--p-*): la paleta. Solo se usan en este archivo. Los colores opacos van en
+ *    #rrggbb, para que InterfazFitnessTest pueda medir el contraste.
  * 2. Usos: lo único que usan pantallas y componentes.
  * 3. Pico: sus variables (--pico-*) se asignan solo acá, a partir de los usos.
  */
 
+/* DM Sans (variable, peso 300–900), autoalojada. Google Fonts v17, subconjuntos latino y latino
+   extendido; licencia SIL OFL 1.1 en static/fuentes/OFL-dm-sans.txt. */
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url("../fuentes/dm-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url("../fuentes/dm-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
-  /* 1. Valores base */
+  /* 1. Valores base: los del prototipo v2, sin cambios. */
+  --p-petroleo-900: #163a3a;
+  --p-petroleo-800: #1d4d4d;
+  --p-petroleo-100: #cfefe7;
+  --p-verde-500: #50d794;
+  --p-verde-400: #54da8e;
+  --p-verde-50: #eafbf3;
+  --p-turquesa-500: #36c7b4;
+  --p-pizarra: #364d4a;
+  --p-tinta: #292928;
+  --p-tinta-suave: #6b6b6b;
+  --p-gris-100: #f3f4f6;
+  --p-gris-50: #f4f6fc;
   --p-blanco: #ffffff;
-  --p-gris-50: #f3f5f4;
-  --p-gris-200: #d9dfdc;
-  --p-gris-600: #66716d;
-  --p-tinta-700: #3f4a46;
-  --p-tinta-900: #18211e;
-  --p-verde-100: #e1f2e9;
-  --p-verde-700: #1b6b4c;
-  --p-verde-800: #14523a;
-  --p-azul-100: #e3ecf8;
-  --p-azul-700: #1d4f91;
-  --p-ambar-100: #fcefd4;
-  --p-ambar-800: #6f4500;
-  --p-rojo-100: #fbe3e0;
-  --p-rojo-700: #a8261d;
-  --p-sombra: rgb(24 33 30 / 14%);
-  --p-anillo: rgb(29 79 145 / 35%);
-  --p-velo: rgb(24 33 30 / 60%);
-  --p-fuente-sistema: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --p-rojo-600: #b9443b;
+  --p-rojo-50: #fdf1ef;
+
+  /* Agregados por contraste AA (bitácora, 2026-10-30): borde de campos de 3:1, verde y ámbar de
+     texto y los tonos de aviso que el prototipo dejó propuestos. */
+  --p-borde-control: #7b8f8d;
+  --p-verde-700: #146c46;
+  --p-azul-petroleo-700: #14596a;
+  --p-azul-petroleo-50: #e5f4f7;
+  --p-ambar-800: #8a4b00;
+  --p-ambar-50: #fff3dd;
+
+  /* Transparencias derivadas */
+  --p-blanco-a06: rgb(255 255 255 / 6%);
+  --p-blanco-a10: rgb(255 255 255 / 10%);
+  --p-blanco-a14: rgb(255 255 255 / 14%);
+  --p-blanco-a18: rgb(255 255 255 / 18%);
+  --p-blanco-a20: rgb(255 255 255 / 20%);
+  --p-blanco-a72: rgb(255 255 255 / 72%);
+  --p-gris-50-a78: rgb(244 246 252 / 78%);
+  --p-petroleo-a06: rgb(22 58 58 / 6%);
+  --p-petroleo-a08: rgb(22 58 58 / 8%);
+  --p-petroleo-a14: rgb(22 58 58 / 14%);
+  --p-petroleo-a15: rgb(22 58 58 / 15%);
+  --p-petroleo-a35: rgb(22 58 58 / 35%);
+  --p-petroleo-a45: rgb(22 58 58 / 45%);
+  --p-negro-a25: rgb(0 0 0 / 25%);
+  --p-verde-a28: rgb(84 218 142 / 28%);
+  --p-verde-a30: rgb(84 218 142 / 30%);
+  --p-verde-a35: rgb(84 218 142 / 35%);
+  --p-verde-a40: rgb(84 218 142 / 40%);
+  --p-verde-a55: rgb(84 218 142 / 55%);
+  --p-verde-a70: rgb(84 218 142 / 70%);
+  --p-verde-a80: rgb(84 218 142 / 80%);
+  --p-verde-500-a16: rgb(80 215 148 / 16%);
+  --p-turquesa-a35: rgb(54 199 180 / 35%);
+  --p-rojo-a16: rgb(185 68 59 / 16%);
+
+  --p-fuente: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* 2. Usos */
+  --color-fondo-pagina: var(--p-gris-50);
   --color-fondo: var(--p-blanco);
-  --color-superficie: var(--p-gris-50);
-  --color-texto: var(--p-tinta-900);
-  --color-texto-suave: var(--p-tinta-700);
-  --color-titulo: var(--p-tinta-900);
-  --color-borde: var(--p-gris-200);
-  --color-borde-control: var(--p-gris-600);
-  --color-enlace: var(--p-verde-700);
-  --color-accion-primaria: var(--p-verde-700);
-  --color-accion-primaria-activa: var(--p-verde-800);
-  --color-accion-secundaria: var(--p-tinta-700);
-  --color-accion-secundaria-activa: var(--p-tinta-900);
-  --color-texto-sobre-accion: var(--p-blanco);
-  --color-foco: var(--p-azul-700);
-  --color-foco-anillo: var(--p-anillo);
-  --color-velo: var(--p-velo);
-  --color-exito-fondo: var(--p-verde-100);
-  --color-exito-texto: var(--p-verde-800);
-  --color-info-fondo: var(--p-azul-100);
-  --color-info-texto: var(--p-azul-700);
-  --color-advertencia-fondo: var(--p-ambar-100);
+  --color-superficie: var(--p-gris-100);
+  --color-texto: var(--p-tinta);
+  --color-texto-suave: var(--p-tinta-suave);
+  --color-titulo: var(--p-petroleo-900);
+  --color-borde: var(--p-petroleo-a08);
+  --color-borde-control: var(--p-borde-control);
+  --color-enlace: var(--p-petroleo-900);
+  --color-accion-primaria: var(--p-verde-400);
+  --color-accion-primaria-activa: var(--p-verde-500);
+  --color-accion-secundaria: var(--p-petroleo-900);
+  --color-accion-secundaria-activa: var(--p-petroleo-800);
+  --color-texto-sobre-accion: var(--p-petroleo-900);
+  --color-texto-sobre-secundaria: var(--p-blanco);
+  --color-foco: var(--p-petroleo-900);
+  --color-foco-sobre-oscuro: var(--p-verde-400);
+  --color-foco-anillo: var(--p-verde-500-a16);
+  --color-velo: var(--p-petroleo-a45);
+
+  /* Superficies oscuras (panel destacado, barra lateral, misión) */
+  --color-destacado-fondo: var(--p-petroleo-900);
+  --color-destacado-fondo-alto: var(--p-petroleo-800);
+  --color-destacado-texto: var(--p-blanco);
+  --color-destacado-texto-suave: var(--p-petroleo-100);
+  --color-destacado-texto-tenue: var(--p-blanco-a72);
+  --color-vidrio: var(--p-blanco-a10);
+  --color-vidrio-tenue: var(--p-blanco-a06);
+  --color-vidrio-barra: var(--p-blanco-a14);
+  --color-vidrio-borde: var(--p-blanco-a20);
+  --color-vidrio-borde-suave: var(--p-blanco-a18);
+  --color-barra-superior: var(--p-gris-50-a78);
+
+  /* Marca: la ruta punteada, sus nodos y los acentos */
+  --color-marca: var(--p-verde-500);
+  --color-marca-brillante: var(--p-verde-400);
+  --color-marca-alterna: var(--p-turquesa-500);
+  --color-marca-suave: var(--p-petroleo-100);
+  --color-marca-fondo: var(--p-verde-50);
+  --color-marca-texto: var(--p-verde-700);
+  --color-pizarra: var(--p-pizarra);
+  --color-ruta: var(--p-verde-a70);
+  --color-ruta-linea: var(--p-verde-a35);
+  --color-ruta-anillo: var(--p-verde-a55);
+  --color-segmento-vacio: var(--p-petroleo-a15);
+
+  /* Estados */
+  --color-exito-fondo: var(--p-verde-50);
+  --color-exito-texto: var(--p-verde-700);
+  --color-info-fondo: var(--p-azul-petroleo-50);
+  --color-info-texto: var(--p-azul-petroleo-700);
+  --color-advertencia-fondo: var(--p-ambar-50);
   --color-advertencia-texto: var(--p-ambar-800);
-  --color-error-fondo: var(--p-rojo-100);
-  --color-error-texto: var(--p-rojo-700);
+  --color-error-fondo: var(--p-rojo-50);
+  --color-error-texto: var(--p-rojo-600);
+  --color-texto-sobre-error: var(--p-blanco);
+  --color-error-anillo: var(--p-rojo-a16);
 
-  --fuente-texto: var(--p-fuente-sistema);
-  --fuente-titulos: var(--p-fuente-sistema);
+  /* Degradados de identidad */
+  --color-degradado-destacado: linear-gradient(
+    144.6deg,
+    var(--p-petroleo-900) 0%,
+    var(--p-petroleo-800) 60%,
+    var(--p-petroleo-900) 100%
+  );
+  --color-degradado-lateral: linear-gradient(
+    170deg,
+    var(--p-petroleo-900) 0%,
+    var(--p-petroleo-800) 55%,
+    var(--p-petroleo-900) 100%
+  );
+  --color-degradado-impulso: linear-gradient(
+    120deg,
+    var(--p-turquesa-500) 0%,
+    var(--p-verde-500) 100%
+  );
+  --color-degradado-pagina: radial-gradient(
+    900px 420px at 100% 0%,
+    var(--p-verde-50) 0%,
+    transparent 70%
+  );
+  --color-degradado-halo: radial-gradient(circle, var(--p-verde-500-a16) 0%, transparent 70%);
+  --color-degradado-esqueleto: linear-gradient(
+    90deg,
+    var(--p-gris-100),
+    var(--p-gris-50),
+    var(--p-gris-100)
+  );
 
-  /* Escala con proporción 1,25. */
+  --fuente-texto: var(--p-fuente);
+  --fuente-titulos: var(--p-fuente);
+
+  /* Tamaños del prototipo (de celular a escritorio con clamp). */
+  --tamano-mini: 0.8125rem;
   --tamano-chico: 0.875rem;
   --tamano-texto: 1rem;
-  --tamano-titulo-4: 1.25rem;
-  --tamano-titulo-3: 1.5625rem;
-  --tamano-titulo-2: 1.953rem;
-  --tamano-titulo-1: 2.441rem;
+  --tamano-texto-grande: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --tamano-titulo-4: 1.0625rem;
+  --tamano-titulo-3: 1.375rem;
+  --tamano-titulo-2: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+  --tamano-titulo-1: clamp(2rem, 1.5rem + 1.6vw, 2.75rem);
+  --tamano-cifra: clamp(2.875rem, 2rem + 3vw, 4.625rem);
 
   --espacio-1: 0.25rem;
   --espacio-2: 0.5rem;
@@ -75,42 +199,68 @@
   --espacio-6: 2rem;
   --espacio-7: 3rem;
 
-  --radio-control: 0.5rem;
-  --radio-tarjeta: 0.75rem;
+  --radio-chico: 0.625rem;
+  --radio-control: 0.875rem;
+  --radio-boton: 999px;
+  --radio-tarjeta: 1.25rem;
+  --radio-panel: 1.5rem;
   --radio-insignia: 999px;
 
   --borde-ancho: 1px;
   --borde-foco: 3px;
   --borde-acento: 0.25rem;
+  --borde-ruta: 2px;
 
-  --sombra-tarjeta: 0 1px 2px var(--p-sombra);
-  --sombra-aviso: 0 0.5rem 1.5rem var(--p-sombra);
+  --sombra-tarjeta: 0 1px 15px var(--p-petroleo-a08);
+  --sombra-elevada: 0 10px 30px var(--p-petroleo-a14);
+  --sombra-flotante: 0 12px 30px var(--p-petroleo-a35);
+  --sombra-boton: 0 10px 15px var(--p-petroleo-a06);
+  --sombra-foto: -1px 1px 15px var(--p-negro-a25);
+  --sombra-moneda: 0 12px 24px var(--p-turquesa-a35);
+  --sombra-aviso: var(--sombra-elevada);
+  /* Aura del nodo encendido: el espacio con los vecinos se mide desde su borde. */
+  --sombra-nodo: 0 0 0 8px var(--p-verde-a28), 0 0 24px 6px var(--p-verde-a40);
+  --sombra-nodo-chico: 0 0 0 3px var(--p-verde-a30);
+  --sombra-icono: drop-shadow(0 0 6px var(--p-verde-a80));
 
-  --movimiento-duracion: 150ms;
+  --movimiento-rapido: 120ms;
+  --movimiento-duracion: 200ms;
+  --movimiento-lento: 300ms;
   --movimiento-pulso: 1.2s;
+  --movimiento-curva: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --capa-avisos: 10;
 
-  /* 48 × 48 px: área de toque mínima (RNF-UI-10). */
+  /* 48 × 48 px: área de toque mínima (RNF-UI-10). El prototipo usa 44 px; acá rige 48. */
   --medida-toque-minimo: 3rem;
   --medida-lectura: 70ch;
   --medida-tarjeta-minima: 16rem;
   --medida-muestra: 2.5rem;
+  --medida-nodo: 1.875rem;
+  --medida-nodo-chico: 0.625rem;
+  --medida-barra-superior: 4.25rem;
+  --medida-columna-estado: 11.5rem;
 
-  /* Puntos de quiebre: las media queries de app.css usan solo estos valores, con min-width.
-     No se pueden leer con var() dentro de @media: InterfazFitnessTest compara el literal. */
-  --medida-quiebre-medio: 48em;
-  --medida-quiebre-ancho: 80em;
+  /* Puntos de quiebre del prototipo (600, 860 y 1100 px): las media queries de app.css usan solo
+     estos valores, con min-width. No se pueden leer con var() dentro de @media:
+     InterfazFitnessTest compara el literal. */
+  --medida-quiebre-chico: 37.5em;
+  --medida-quiebre-medio: 53.75em;
+  --medida-quiebre-ancho: 68.75em;
 
   /* 3. Pico: base */
   --pico-font-family: var(--fuente-texto);
   --pico-border-radius: var(--radio-control);
   --pico-spacing: var(--espacio-4);
+  --pico-form-element-spacing-vertical: 0.75rem;
+  --pico-form-element-spacing-horizontal: 0.875rem;
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
+    --movimiento-rapido: 0ms;
     --movimiento-duracion: 0ms;
+    --movimiento-lento: 0ms;
     --movimiento-pulso: 0s;
   }
 }
@@ -118,7 +268,7 @@
 /* 3. Pico: colores del tema claro, con el mismo selector que usa Pico. */
 [data-theme=light],
 :root:not([data-theme=dark]) {
-  --pico-background-color: var(--color-fondo);
+  --pico-background-color: var(--color-fondo-pagina);
   --pico-color: var(--color-texto);
   --pico-h1-color: var(--color-titulo);
   --pico-h2-color: var(--color-titulo);
@@ -132,8 +282,8 @@
   --pico-primary-underline: var(--color-enlace);
   --pico-primary-background: var(--color-accion-primaria);
   --pico-primary-border: var(--color-accion-primaria);
-  --pico-primary-hover: var(--color-accion-primaria-activa);
-  --pico-primary-hover-underline: var(--color-accion-primaria-activa);
+  --pico-primary-hover: var(--color-accion-secundaria-activa);
+  --pico-primary-hover-underline: var(--color-accion-secundaria-activa);
   --pico-primary-hover-background: var(--color-accion-primaria-activa);
   --pico-primary-hover-border: var(--color-accion-primaria-activa);
   --pico-primary-focus: var(--color-foco-anillo);
@@ -147,23 +297,23 @@
   --pico-secondary-hover-background: var(--color-accion-secundaria-activa);
   --pico-secondary-hover-border: var(--color-accion-secundaria-activa);
   --pico-secondary-focus: var(--color-foco-anillo);
-  --pico-secondary-inverse: var(--color-texto-sobre-accion);
+  --pico-secondary-inverse: var(--color-texto-sobre-secundaria);
   --pico-form-element-background-color: var(--color-fondo);
   --pico-form-element-border-color: var(--color-borde-control);
   --pico-form-element-color: var(--color-texto);
   --pico-form-element-placeholder-color: var(--color-texto-suave);
-  --pico-form-element-active-border-color: var(--color-foco);
+  --pico-form-element-active-border-color: var(--color-marca);
   --pico-form-element-focus-color: var(--color-foco-anillo);
   --pico-form-element-invalid-border-color: var(--color-error-texto);
   --pico-form-element-invalid-active-border-color: var(--color-error-texto);
-  --pico-form-element-invalid-focus-color: var(--color-foco-anillo);
+  --pico-form-element-invalid-focus-color: var(--color-error-anillo);
   --pico-card-background-color: var(--color-fondo);
   --pico-card-border-color: var(--color-borde);
   --pico-card-box-shadow: var(--sombra-tarjeta);
   --pico-card-sectioning-background-color: var(--color-superficie);
   --pico-table-border-color: var(--color-borde);
   --pico-code-background-color: var(--color-superficie);
-  --pico-code-color: var(--color-texto);
+  --pico-code-color: var(--color-titulo);
   --pico-del-color: var(--color-error-texto);
   --pico-ins-color: var(--color-exito-texto);
   --pico-modal-overlay-background-color: var(--color-velo);

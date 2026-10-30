@@ -18,8 +18,12 @@
 </head>
 <body>
   <a class="saltar" href="#contenido">Saltar al contenido</a>
-  <header class="encabezado container">
-    <a class="marca" href="/" th:href="@{/}">DonaTrack</a>
+  <header class="encabezado">
+    <a class="marca" href="/" th:href="@{/}" aria-label="DonaTrack, ir al inicio">
+      <span class="marca-simbolo"><img src="/img/logo.svg" th:src="@{/img/logo.svg}" alt=""
+            width="15" height="20"></span>
+      <span class="marca-nombre">Dona<em>Track</em></span>
+    </a>
     <th:block th:if="${navegacion}">
       <nav th:replace="~{fragmentos/navegacion :: navegacion(${navegacion})}"></nav>
     </th:block>

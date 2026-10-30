@@ -1,8 +1,11 @@
 package grupo5.cliente.web;
 
+import grupo5.cliente.vistas.CifraVista;
 import grupo5.cliente.vistas.EntregaVista;
 import grupo5.cliente.vistas.EstadoEntrega;
 import grupo5.cliente.vistas.OpcionNavegacion;
+import grupo5.cliente.vistas.PasoRecorrido;
+import grupo5.cliente.vistas.PasoRecorrido.Avance;
 import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,6 +46,23 @@ class EstilosController {
               null,
               "#entrega-3"));
 
+  private static final CifraVista REALIZADAS =
+      new CifraVista(
+          "Donaciones realizadas",
+          "7",
+          "+3",
+          "respecto al mes pasado",
+          List.of(10, 18, 14, 26, 70, 40),
+          "#tarjeta-titulo");
+
+  private static final List<PasoRecorrido> PASOS =
+      List.of(
+          new PasoRecorrido("En depósito", "12 de octubre", Avance.HECHO),
+          new PasoRecorrido("Asignada", "13 de octubre", Avance.HECHO),
+          new PasoRecorrido("Lista para entregar", "14 de octubre", Avance.HECHO),
+          new PasoRecorrido("En camino", "Hoy, 14:30", Avance.ACTUAL),
+          new PasoRecorrido("Entregada", "Pendiente", Avance.PENDIENTE));
+
   private static final List<OpcionNavegacion> NAVEGACION =
       List.of(
           new OpcionNavegacion("Inicio", "#inicio", false),
@@ -54,6 +74,8 @@ class EstilosController {
     model.addAttribute("entregas", ENTREGAS);
     model.addAttribute("estados", EstadoEntrega.values());
     model.addAttribute("opciones", NAVEGACION);
+    model.addAttribute("pasos", PASOS);
+    model.addAttribute("realizadas", REALIZADAS);
     return "paginas/estilos";
   }
 }

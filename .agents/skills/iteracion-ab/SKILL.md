@@ -45,7 +45,10 @@ description: >-
    ```
 
    Deja capturas en 360, 1280 y 1920 px, el reporte de accesibilidad y
-   `target/capturas/comparacion.html` con A y B lado a lado.
+   `target/capturas/comparacion.html`: un visor para 1920 × 1080 con índice de secciones, dos
+   variantes lado a lado, cambio de ancho y desplazamiento a la par. El primer comentario del CSS
+   de cada variante es su descripción en el visor. Con más de dos opciones, se nombran
+   `<tema>-a`, `-b`, `-c`… y el visor las recorre con las flechas.
 5. **Autocrítica.** Mirar las capturas con las preguntas de la dirección de arte, completar la
    tabla de criterios y elegir una recomendación.
 6. **Mostrar al usuario:**

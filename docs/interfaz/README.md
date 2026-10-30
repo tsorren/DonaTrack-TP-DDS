@@ -29,7 +29,7 @@ flowchart LR
 
 | Paso | Qué entra | Qué sale | Skill |
 |---|---|---|---|
-| 1. Insumos | Bocetos de E1, mapa del sitio, requerimientos de E6 | Contexto listo | — ([bocetos](bocetos-e1.md), [mapa](mapa-del-sitio.md)) |
+| 1. Insumos | Prototipo v2 de la diseñadora (punto de partida, ver [brief](identidad/brief.md)), bocetos de E1, mapa del sitio, requerimientos de E6 | Contexto listo | — ([bocetos](bocetos-e1.md), [mapa](mapa-del-sitio.md)) |
 | 2. Identidad visual | Respuestas del usuario en 2 o 3 rondas cortas | `identidad/brief.md` y la paleta, tipografía y forma en `tokens.css` | `identidad-visual` |
 | 3. Diseño del flujo | Un flujo (por ejemplo, confirmar recepción) | `flujos/<flujo>.md` con recorrido, estados, textos y revisión de usabilidad | `ux-flujo` |
 | 4. Pantallas | El flujo aprobado | Vistas y componentes en `cliente-liviano/` | `vista-ui` |

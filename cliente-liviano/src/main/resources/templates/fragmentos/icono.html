@@ -1,0 +1,15 @@
+<!--/* Ícono de trazo (24 × 24, toma el color del texto), del prototipo v2. Siempre decorativo:
+       acompaña a un texto que dice lo mismo. nombre: donaciones | camiones | check | alerta | flecha.
+       tamanio: en px. */-->
+<svg th:fragment="icono(nombre, tamanio)" class="icono" xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 24 24" width="20" height="20" th:attr="width=${tamanio},height=${tamanio}"
+     fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+     stroke-linejoin="round" aria-hidden="true" focusable="false">
+  <th:block th:switch="${nombre}">
+    <th:block th:case="'donaciones'"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></th:block>
+    <th:block th:case="'camiones'"><path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></th:block>
+    <th:block th:case="'check'"><path d="m5 12.5 4.5 4.5L19 7.5"/></th:block>
+    <th:block th:case="'alerta'"><path d="M12 3.5 21.5 20h-19z"/><path d="M12 10v4.5M12 17.5v.01"/></th:block>
+    <th:block th:case="'flecha'"><path d="M5 12h14M13 6l6 6-6 6"/></th:block>
+  </th:block>
+</svg>

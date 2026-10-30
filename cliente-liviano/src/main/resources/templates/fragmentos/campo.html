@@ -7,5 +7,6 @@
          th:aria-invalid="${error != null} ? 'true' : null"
          th:aria-describedby="${error != null or ayuda != null} ? ${id + '-ayuda'} : null">
   <small th:if="${error != null or ayuda != null}" th:id="${id + '-ayuda'}"
-         th:text="${error ?: ayuda}">Texto de ayuda</small>
+         th:classappend="${error != null} ? 'campo-error'" th:text="${error ?: ayuda}">Texto de
+    ayuda</small>
 </div>

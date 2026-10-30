@@ -15,7 +15,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -69,7 +74,144 @@ class VerificacionVisualTest {
       }
       """;
 
-  private record Captura(String ruta, String variante, int ancho, String archivo) {}
+  private static final Path VARIANTES_CSS = Path.of("src/main/resources/static/css/variantes");
+  private static final Pattern COMENTARIO = Pattern.compile("/\\*(.*?)\\*/", Pattern.DOTALL);
+
+  /**
+   * Visor de capturas (index.html y comparacion.html), pensado para 1920 × 1080: índice de
+   * secciones a la izquierda, una o dos variantes lado a lado, ancho y página a elección y
+   * desplazamiento a la par. @TITULO@ y @DATOS@ (JSON) se completan al generarlo.
+   */
+  private static final String VISOR =
+      """
+      <!DOCTYPE html><html lang="es-AR"><head><meta charset="utf-8"><title>@TITULO@</title>
+      <style>
+      *{box-sizing:border-box}
+      body{margin:0;font:15px/1.4 system-ui,sans-serif;color:#1d2327;background:#e3e7ea}
+      header{display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px;min-height:60px;
+        padding:10px 16px;background:#fff;box-shadow:0 1px 6px #0003}
+      h1{margin:0;font-size:17px}
+      select,button{font:inherit;padding:5px 10px;border:1px solid #8a959a;border-radius:6px;
+        background:#fff;cursor:pointer}
+      button[aria-pressed=true]{background:#1d2327;border-color:#1d2327;color:#fff}
+      .ayuda{color:#5b6469;font-size:13px}
+      main{display:grid;grid-template-columns:230px 1fr 1fr;gap:12px;height:calc(100vh - 60px);
+        padding:12px}
+      main.una{grid-template-columns:230px 1fr}
+      main.una #der-columna{display:none}
+      nav{overflow:auto;padding:8px;background:#fff;border-radius:10px;box-shadow:0 1px 4px #0002}
+      nav b{display:block;padding:6px 8px;font-size:13px;color:#5b6469}
+      nav button{display:block;width:100%;margin:2px 0;border:0;text-align:left;
+        background:transparent}
+      nav button:hover{background:#eef1f3}
+      section{display:flex;flex-direction:column;min-height:0;overflow:hidden;background:#fff;
+        border-radius:10px;box-shadow:0 1px 4px #0002}
+      section p{margin:0;padding:10px 14px;border-bottom:1px solid #d5dadd}
+      section p b{display:block;font-size:16px}
+      .lienzo{flex:1;overflow:auto;background:#f0f2f3}
+      .lienzo img{display:block;width:100%;height:auto;margin:0 auto}
+      .lienzo img.angosta{width:360px;box-shadow:0 0 0 1px #c9cfd2}
+      </style></head><body>
+      <header><h1>@TITULO@</h1>
+      <label>Izquierda <select id="izq"></select></label>
+      <label class="dos">Derecha <select id="der"></select></label>
+      <label id="pagina-campo">Página <select id="pagina"></select></label>
+      <span>Ancho <span id="anchos"></span></span>
+      <label class="dos"><input type="checkbox" id="sincro" checked> Desplazamiento a la par</label>
+      <span class="ayuda"><span class="dos">← → cambian la derecha · </span>1, 2 y 3 cambian el
+        ancho</span>
+      </header>
+      <main id="principal">
+      <nav aria-label="Secciones de la página"><b>Ir a</b><div id="secciones"></div></nav>
+      <section><p id="izq-texto"></p><div class="lienzo" id="izq-lienzo"><img id="izq-img" alt=""></div></section>
+      <section id="der-columna"><p id="der-texto"></p><div class="lienzo" id="der-lienzo"><img id="der-img" alt=""></div></section>
+      </main>
+      <script type="application/json" id="datos">@DATOS@</script>
+      <script>
+      const d = JSON.parse(document.getElementById('datos').textContent);
+      const $ = id => document.getElementById(id);
+      const paginas = Object.keys(d.capturas);
+      const dos = d.variantes.length > 1;
+      let ancho = d.anchos.includes(1280) ? 1280 : d.anchos[0];
+      $('principal').classList.toggle('una', !dos);
+      document.querySelectorAll('.dos').forEach(e => { e.hidden = !dos; });
+      d.variantes.forEach((v, i) => { $('izq').add(new Option(v.nombre || 'actual', i)); $('der').add(new Option(v.nombre, i)); });
+      $('der').selectedIndex = Math.min(1, d.variantes.length - 1);
+      paginas.forEach(p => $('pagina').add(new Option(p, p)));
+      $('pagina-campo').hidden = paginas.length < 2;
+      d.anchos.forEach(a => {
+        const b = document.createElement('button');
+        b.textContent = a; b.dataset.ancho = a; b.onclick = () => { ancho = a; pintar(); };
+        $('anchos').append(b, ' ');
+      });
+      const lados = () => dos ? ['izq', 'der'] : ['izq'];
+      const captura = lado => d.capturas[$('pagina').value][d.variantes[$(lado).value].nombre][ancho];
+      function irA(titulo) {
+        for (const lado of lados()) {
+          const img = $(lado + '-img'), s = captura(lado).secciones.find(x => x.titulo === titulo);
+          if (s) $(lado + '-lienzo').scrollTop = s.y * img.clientWidth / img.naturalWidth - 8;
+        }
+      }
+      function pintar() {
+        for (const lado of lados()) {
+          const v = d.variantes[$(lado).value], img = $(lado + '-img');
+          img.src = captura(lado).archivo;
+          img.alt = (v.nombre || 'Página actual') + ', ' + ancho + ' px';
+          img.className = ancho < 600 ? 'angosta' : '';
+          const titulo = document.createElement('b');
+          titulo.textContent = v.nombre || 'Página actual';
+          $(lado + '-texto').replaceChildren(titulo, v.descripcion);
+        }
+        $('secciones').replaceChildren(...captura('izq').secciones.map(s => {
+          const b = document.createElement('button');
+          b.textContent = s.titulo; b.onclick = () => irA(s.titulo);
+          return b;
+        }));
+        document.querySelectorAll('[data-ancho]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ancho == ancho));
+      }
+      function marcar() {
+        const img = $('izq-img'), escala = img.clientWidth / img.naturalWidth;
+        const arriba = $('izq-lienzo').scrollTop + 20;
+        const actual = captura('izq').secciones.filter(s => s.y * escala <= arriba).pop();
+        document.querySelectorAll('#secciones button').forEach(b =>
+          b.setAttribute('aria-pressed', !!actual && b.textContent === actual.titulo));
+      }
+      let moviendo = false;
+      for (const [este, otro] of [['izq-lienzo', 'der-lienzo'], ['der-lienzo', 'izq-lienzo']]) {
+        $(este).addEventListener('scroll', () => {
+          if (este === 'izq-lienzo') marcar();
+          if (!dos || !$('sincro').checked || moviendo) return;
+          moviendo = true;
+          const a = $(este), b = $(otro);
+          b.scrollTop = a.scrollTop / Math.max(1, a.scrollHeight - a.clientHeight) * (b.scrollHeight - b.clientHeight);
+          requestAnimationFrame(() => { moviendo = false; });
+        });
+      }
+      document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'SELECT') return;
+        const n = d.variantes.length, der = $('der');
+        if (dos && e.key === 'ArrowRight') der.selectedIndex = (der.selectedIndex + 1) % n;
+        else if (dos && e.key === 'ArrowLeft') der.selectedIndex = (der.selectedIndex + n - 1) % n;
+        else if (d.anchos[e.key - 1]) ancho = d.anchos[e.key - 1];
+        else return;
+        pintar();
+      });
+      ['izq', 'der', 'pagina'].forEach(id => $(id).addEventListener('change', pintar));
+      pintar();
+      </script></body></html>
+      """;
+
+  /** Título (h2) y altura de cada sección de main, para el índice del visor. */
+  private static final String SECCIONES =
+      """
+      () => [...document.querySelectorAll('main > section > h2')].map(h => ({
+        titulo: h.textContent.trim(),
+        y: Math.round(h.getBoundingClientRect().top + window.scrollY)
+      }))
+      """;
+
+  private record Captura(
+      String ruta, String variante, int ancho, String archivo, Object secciones) {}
 
   record Falla(String ruta, String variante, int ancho, String tipo, String detalle) {}
 
@@ -95,7 +237,7 @@ class VerificacionVisualTest {
                   new Page.ScreenshotOptions()
                       .setPath(CAPTURAS.resolve(archivo))
                       .setFullPage(true));
-              capturas.add(new Captura(ruta, variante, ancho, archivo));
+              capturas.add(new Captura(ruta, variante, ancho, archivo, pagina.evaluate(SECCIONES)));
               revisarAccesibilidad(pagina, ruta, variante, ancho, fallas);
               revisarToque(pagina, ruta, variante, ancho, fallas);
               revisarDesborde(pagina, ruta, variante, ancho, fallas);
@@ -110,12 +252,11 @@ class VerificacionVisualTest {
       }
     }
 
-    Files.writeString(CAPTURAS.resolve("index.html"), galeria(capturas), StandardCharsets.UTF_8);
+    Files.writeString(
+        CAPTURAS.resolve("index.html"), visor(capturas, variantes), StandardCharsets.UTF_8);
     if (variantes.size() > 1) {
       Files.writeString(
-          CAPTURAS.resolve("comparacion.html"),
-          comparacion(capturas, variantes),
-          StandardCharsets.UTF_8);
+          CAPTURAS.resolve("comparacion.html"), visor(capturas, variantes), StandardCharsets.UTF_8);
     }
     JsonMapper.builder()
         .build()
@@ -203,58 +344,50 @@ class VerificacionVisualTest {
     return (base.isEmpty() ? "inicio" : base) + sufijo + "-" + ancho + ".png";
   }
 
-  private static String galeria(List<Captura> capturas) {
-    StringBuilder html = encabezado("Capturas");
+  /**
+   * Datos del visor: capturas por página, variante y ancho, con la descripción de cada variante.
+   */
+  private static String visor(List<Captura> capturas, List<String> variantes) throws IOException {
+    Map<String, Map<String, Map<Integer, Map<String, Object>>>> porPagina = new LinkedHashMap<>();
     for (Captura captura : capturas) {
-      html.append("<figure><img src=\"")
-          .append(HtmlUtils.htmlEscape(captura.archivo()))
-          .append("\" alt=\"\"><figcaption>")
-          .append(HtmlUtils.htmlEscape(captura.ruta()))
-          .append(' ')
-          .append(HtmlUtils.htmlEscape(captura.variante()))
-          .append(' ')
-          .append(captura.ancho())
-          .append(" px</figcaption></figure>\n");
+      porPagina
+          .computeIfAbsent(captura.ruta(), ruta -> new LinkedHashMap<>())
+          .computeIfAbsent(captura.variante(), variante -> new TreeMap<>())
+          .put(
+              captura.ancho(),
+              Map.of("archivo", captura.archivo(), "secciones", captura.secciones()));
     }
-    return html.append("</body></html>\n").toString();
+    List<Map<String, String>> descritas = new ArrayList<>();
+    for (String variante : variantes) {
+      descritas.add(Map.of("nombre", variante, "descripcion", descripcion(variante)));
+    }
+    String datos =
+        JsonMapper.builder()
+            .build()
+            .writeValueAsString(
+                Map.of(
+                    "variantes", descritas,
+                    "capturas", porPagina,
+                    "anchos", AnchosDeReferencia.REFERENCIA))
+            .replace("</", "<\\/");
+    return VISOR
+        .replace("@TITULO@", HtmlUtils.htmlEscape(titulo(variantes)))
+        .replace("@DATOS@", datos);
   }
 
-  /** Una fila por página y ancho, con una columna por variante. */
-  private static String comparacion(List<Captura> capturas, List<String> variantes) {
-    StringBuilder html = encabezado("Comparación " + String.join(" / ", variantes));
-    html.append("<table><tr><th>Página</th>");
-    variantes.forEach(v -> html.append("<th>").append(HtmlUtils.htmlEscape(v)).append("</th>"));
-    html.append("</tr>\n");
-    capturas.stream()
-        .filter(captura -> captura.variante().equals(variantes.get(0)))
-        .forEach(
-            fila -> {
-              html.append("<tr><th>")
-                  .append(HtmlUtils.htmlEscape(fila.ruta()))
-                  .append("<br>")
-                  .append(fila.ancho())
-                  .append(" px</th>");
-              for (String variante : variantes) {
-                String archivo = nombreDeCaptura(fila.ruta(), variante, fila.ancho());
-                html.append("<td><img src=\"")
-                    .append(HtmlUtils.htmlEscape(archivo))
-                    .append("\" alt=\"")
-                    .append(HtmlUtils.htmlEscape(variante))
-                    .append("\"></td>");
-              }
-              html.append("</tr>\n");
-            });
-    return html.append("</table></body></html>\n").toString();
+  private static String titulo(List<String> variantes) {
+    return variantes.size() > 1
+        ? "Comparación: " + String.join(" / ", variantes)
+        : "Capturas" + (variantes.get(0).isEmpty() ? "" : ": " + variantes.get(0));
   }
 
-  private static StringBuilder encabezado(String titulo) {
-    return new StringBuilder()
-        .append("<!DOCTYPE html><html lang=\"es-AR\"><head><meta charset=\"utf-8\"><title>")
-        .append(HtmlUtils.htmlEscape(titulo))
-        .append("</title><style>img{max-width:100%;height:auto}td{vertical-align:top}")
-        .append("figure{display:inline-block;width:30%;vertical-align:top}</style>")
-        .append("</head><body><h1>")
-        .append(HtmlUtils.htmlEscape(titulo))
-        .append("</h1>\n");
+  /** Primer comentario del CSS de la variante, en una línea; vacío si no hay. */
+  private static String descripcion(String variante) throws IOException {
+    Path css = VARIANTES_CSS.resolve(variante + ".css");
+    if (!Files.exists(css)) {
+      return "";
+    }
+    Matcher comentario = COMENTARIO.matcher(Files.readString(css, StandardCharsets.UTF_8));
+    return comentario.find() ? comentario.group(1).replaceAll("\\s*\\*\\s*", " ").strip() : "";
   }
 }

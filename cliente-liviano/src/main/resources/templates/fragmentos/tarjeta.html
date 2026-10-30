@@ -1,13 +1,17 @@
-<!--/* Tarjeta de una entrega. Patrón: Material Cards. El título es el enlace principal; la foto,
-       si hay, va primero. entrega: EntregaVista. */-->
+<!--/* Tarjeta de una entrega: la tarjeta de donación del prototipo v2. Patrón: Material Cards. La
+       foto, si hay, va primero y el estado flota sobre ella; el título es el enlace principal.
+       entrega: EntregaVista. */-->
 <article th:fragment="tarjeta(entrega)" class="tarjeta">
   <img th:if="${entrega.foto}" class="tarjeta-foto" src="/img/ejemplo-entrega.svg"
        alt="Foto de la entrega" th:src="@{${entrega.foto}}" th:alt="${entrega.fotoAlt}"
        width="640" height="400" loading="lazy">
-  <h3 class="tarjeta-titulo">
-    <a href="#" th:href="@{${entrega.enlace}}" th:text="${entrega.titulo}">Entrega</a>
-  </h3>
-  <p class="tarjeta-detalle" th:text="${entrega.destino}">Destino</p>
-  <p class="tarjeta-detalle" th:text="${entrega.fecha}">Fecha</p>
   <span th:replace="~{fragmentos/insignia :: insignia(${entrega.estado})}">Estado</span>
+  <div class="tarjeta-cuerpo">
+    <p class="tarjeta-destino"><img src="/img/icono-donante.svg" th:src="@{/img/icono-donante.svg}"
+         alt="" width="20" height="15"><span th:text="${entrega.destino}">Destino</span></p>
+    <h3 class="tarjeta-titulo">
+      <a href="#" th:href="@{${entrega.enlace}}" th:text="${entrega.titulo}">Entrega</a>
+    </h3>
+    <p class="tarjeta-fecha" th:text="${entrega.fecha}">Fecha</p>
+  </div>
 </article>
