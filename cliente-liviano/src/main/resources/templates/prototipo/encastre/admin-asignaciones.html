@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: Asignar donaciones (RF-17), la primera tarea del turno. La pieza
+       de lo de ahora es la propuesta del algoritmo para la leche en polvo, que vence el viernes:
+       cada entidad candidata con sus tres piezas (pidió leche, está cerca, recibe esta semana);
+       la propuesta es la que las completa. Abajo, la franja de la semana sobre la mesa, que filtra
+       la bandeja de propuestas y asignaciones; ahí está también la donación que cruza el sitio, las
+       lentejas de Ana, en camino. Al aceptar (admin-asignaciones-aceptada), la tira del turno suma
+       su primera pieza y aparece lo que sigue. Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Asignar donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-asignaciones :: pantalla(false)}"></th:block>
+</th:block>
+
+<!--/* aceptada: si la propuesta de la leche ya se aceptó. */-->
+<th:block th:fragment="pantalla(aceptada)"
+          th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                   filas=${ {
+                     {'que':'Leche en polvo · 12 kg', 'de':'DT-0418 · de Almacén Ejemplo', 'entidad':'Merendero Ejemplo Sur', 'cuando':(aceptada ? 'Aceptada hoy, 15:20' : 'Vence el viernes 16 de octubre'), 'ver':(aceptada ? 'aceptada' : 'espera'), 'nueva':aceptada},
+                     {'que':'Fideos secos · 35 kg', 'de':'DT-0415 · de Cooperativa Ejemplo', 'entidad':'Escuela Ejemplo 12', 'cuando':'Hace 6 días en el depósito', 'ver':'espera', 'nueva':false},
+                     {'que':'Conservas · 24 unidades', 'de':'DT-0410 · de Almacén Ejemplo', 'entidad':'Comedor Barrio Ejemplo', 'cuando':'Aceptada el lunes 12', 'ver':'aceptada', 'nueva':false},
+                     {'que':'Frazadas · 30 unidades', 'de':'DT-0409 · de Tienda Ejemplo', 'entidad':'Hogar Ejemplo Norte', 'cuando':'Aceptada el lunes 12', 'ver':'aceptada', 'nueva':false},
+                     {'que':'Mochilas · 15 unidades', 'de':'DT-0408 · de Elena', 'entidad':'Escuela Ejemplo 12', 'cuando':'Aceptada el viernes 9', 'ver':'aceptada', 'nueva':false},
+                     {'que':'Polenta · 25 kg', 'de':'DT-0406 · de Molino Ejemplo', 'entidad':'Comedor Ejemplo Oeste', 'cuando':'Aceptada el jueves 8', 'ver':'aceptada', 'nueva':false},
+                     {'que':'Leche larga vida · 48 litros', 'de':'DT-0405 · de Lácteos Ejemplo', 'entidad':'Merendero Ejemplo Sur', 'cuando':'Aceptada el jueves 8', 'ver':'aceptada', 'nueva':false},
+                     {'que':'Harina · 50 kg', 'de':'DT-0402 · de Molino Ejemplo', 'entidad':'Asociación Vecinal Ejemplo del Barrio Sur', 'cuando':'Aceptada el miércoles 7', 'ver':'aceptada', 'nueva':false},
+                     {'que':'Lentejas secas · 15 kg', 'de':'DT-0412 · de Ana', 'entidad':'Comedor Barrio Ejemplo', 'cuando':'Salió hoy, 14:30', 'ver':'camino', 'nueva':false},
+                     {'que':'Pan lactal · 60 unidades', 'de':'DT-0404 · de Panadería Ejemplo', 'entidad':'Merendero Ejemplo Sur', 'cuando':'Salió hoy, 14:30', 'ver':'camino', 'nueva':false},
+                     {'que':'Abrigos · 25 unidades', 'de':'DT-0403 · de Bruno', 'entidad':'Hogar Ejemplo Norte', 'cuando':'Salió hoy, 14:30', 'ver':'camino', 'nueva':false},
+                     {'que':'Ropa de abrigo · 18 unidades', 'de':'DT-0399 · de Ana', 'entidad':'Merendero Ejemplo Sur', 'cuando':'Llegó el martes 13', 'ver':'entregada', 'nueva':false},
+                     {'que':'Útiles escolares · 120 unidades', 'de':'DT-0401 · de Librería Ejemplo', 'entidad':'Escuela Ejemplo 12', 'cuando':'Llegó hoy, faltan dos cajas', 'ver':'entregada', 'nueva':false},
+                     {'que':'Arroz · 30 kg', 'de':'DT-0397 · de Cooperativa Ejemplo', 'entidad':'Comedor Ejemplo Oeste', 'cuando':'Llegó el lunes 12', 'ver':'entregada', 'nueva':false},
+                     {'que':'Jabón · 40 unidades', 'de':'DT-0396 · de Carla', 'entidad':'Hogar Ejemplo Norte', 'cuando':'Llegó el viernes 9', 'ver':'entregada', 'nueva':false}} },
+                   estados=${ {'espera':{'texto':'Espera tu decisión', 'tono':'sol'},
+                               'aceptada':{'texto':'Aceptada', 'tono':'lila'},
+                               'camino':{'texto':'En camino', 'tono':'azul'},
+                               'entregada':{'texto':'Entregada', 'tono':'menta'}} }">
+  <div class="tablero adm-tablero adm-seccion">
+    <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Asignar donaciones',
+             'Elegí a dónde va cada donación.', ${aceptada ? 1 : 0})}"></section>
+
+    <th:block th:if="${aceptada}">
+      <section th:replace="~{prototipo/encastre/admin-inicio :: logro(
+               'La leche en polvo va a Merendero Ejemplo Sur',
+               'Le avisamos al merendero. Sale mañana en el primer recorrido.', 1)}"></section>
+    </th:block>
+
+    <!--/* La propuesta del algoritmo: cada candidata con sus tres piezas, escritas una vez. */-->
+    <section th:unless="${aceptada}" class="pieza adm-foco adm-propuesta pieza-ahora"
+             id="propuesta-leche" aria-labelledby="propuesta-titulo"
+             th:with="criterios=${ {'Pidió leche', 'Está a menos de 3 km', 'Recibe esta semana'} },
+                      candidatas=${ {
+                        {'nombre':'Merendero Ejemplo Sur', 'distancia':'A 2,1 km', 'cumple':{true, true, true}},
+                        {'nombre':'Escuela Ejemplo 12', 'distancia':'A 1,4 km', 'cumple':{false, true, true}},
+                        {'nombre':'Comedor Barrio Ejemplo', 'distancia':'A 3,8 km', 'cumple':{true, false, false}}} }">
+      <p class="adm-foco-rotulo"><span class="adm-urgencia adm-urgencia--urgente">Urgente</span><span>Lo
+        que te toca ahora</span></p>
+      <h2 id="propuesta-titulo" tabindex="-1">La leche en polvo vence el viernes</h2>
+      <ul class="adm-datos">
+        <li>Leche en polvo · 12 kg, de Almacén Ejemplo</li>
+        <li>Propuesta: Merendero Ejemplo Sur</li>
+      </ul>
+      <form class="adm-acciones" method="post" action="/prototipo/encastre/admin-asignaciones-aceptada"
+            th:action="@{/prototipo/encastre/admin-asignaciones-aceptada}">
+        <input type="hidden" name="propuesta" value="leche-merendero">
+        <button type="submit">Aceptar la propuesta</button>
+      </form>
+      <div class="adm-foco-zona">
+        <h3 class="adm-subtitulo">Lo que propone el algoritmo</h3>
+        <ol class="adm-bandejita">
+          <li th:each="c, v : ${candidatas}" class="adm-candidata"
+              th:classappend="${v.first} ? 'adm-candidata--propuesta'">
+            <p class="adm-candidata-nombre"><b th:text="${c.nombre}">Entidad</b><small
+               th:text="${v.first} ? |${c.distancia} · la propuesta| : ${c.distancia}">A 2 km</small></p>
+            <ul class="adm-criterios">
+              <li th:each="criterio, w : ${criterios}"
+                  th:classappend="${c.cumple[w.index]} ? 'adm-criterio--si' : 'adm-criterio--no'"><svg
+                  class="adm-criterio-forma" viewBox="22 14 56 72" aria-hidden="true"
+                  focusable="false"><use href="#encastre-pieza"
+                  th:href="${w.last} ? '#encastre-pieza-borde' : '#encastre-pieza'"/></svg><span
+                  th:text="${c.cumple[w.index]} ? ${criterio} : |No: ${#strings.toLowerCase(criterio)}|">Criterio</span></li>
+            </ul>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section th:replace="~{prototipo/encastre/admin-inicio :: franja('Esta semana', 'asignaciones',
+             '/prototipo/encastre/admin-asignaciones', ${ {
+               {'clave':'espera', 'texto':'Esperan tu decisión', 'cifra':(aceptada ? 1 : 2), 'tono':'sol'},
+               {'clave':'aceptada', 'texto':'Aceptadas', 'cifra':(aceptada ? 7 : 6), 'tono':'lila'},
+               {'clave':'camino', 'texto':'En camino', 'cifra':3, 'tono':'azul'},
+               {'clave':'entregada', 'texto':'Entregadas', 'cifra':4, 'tono':'menta'}} }, '')}"></section>
+
+    <section class="adm-bandeja" aria-labelledby="bandeja-titulo">
+      <div class="adm-bandeja-cabeza">
+        <div>
+          <h2 id="bandeja-titulo">Propuestas y asignaciones</h2>
+          <p>De la semana, lo que espera tu decisión primero.</p>
+        </div>
+        <form method="post" action="/prototipo/encastre/admin-asignaciones"
+              th:action="@{/prototipo/encastre/admin-asignaciones}">
+          <button type="submit" class="outline">Ejecutar la asignación</button>
+        </form>
+      </div>
+      <table class="tabla" aria-labelledby="bandeja-titulo">
+        <thead>
+          <tr><th scope="col">Donación</th><th scope="col">Entidad</th><th scope="col">Cuándo</th>
+            <th scope="col">Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="f : ${filas}" th:if="${ver == '' or ver == f.ver}"
+              th:classappend="${f.nueva} ? 'adm-fila--nueva'">
+            <th scope="row"><span th:text="${f.que}">Donación</span><small
+                th:text="${f.de}">Código</small></th>
+            <td data-etiqueta="Entidad" th:text="${f.entidad}">Entidad</td>
+            <td data-etiqueta="Cuándo" th:text="${f.cuando}">Cuándo</td>
+            <td data-etiqueta="Estado"><span class="adm-estado"
+                th:classappend="|adm-tono--${estados[f.ver].tono}|"
+                th:text="${estados[f.ver].texto}">Estado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

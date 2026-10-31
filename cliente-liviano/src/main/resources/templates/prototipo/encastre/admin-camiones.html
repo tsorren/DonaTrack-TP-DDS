@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: Camiones (RF-18: alta, cambio de estado y baja), la última tarea
+       del turno. La pieza de lo de ahora es el camión que lleva nueve días en el taller: pasarlo a
+       disponible cierra el turno (envía a admin-inicio-al-dia). Al lado, el camión que está en la
+       calle con su recorrido de paradas como piezas (la lista es el dibujo): lleva las lentejas de
+       Ana. Abajo, la franja de la flota sobre la mesa, que filtra la bandeja de camiones, con el
+       cambio de estado en cada fila y el alta en un plegable. Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Camiones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="tablero adm-tablero adm-seccion adm-camiones"
+       th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                camiones=${ {
+                  {'patente':'AB 123 CD', 'carga':'Hasta 1.500 kg', 'donde':'En la calle: va a Comedor Barrio Ejemplo', 'ver':'calle'},
+                  {'patente':'AC 456 EF', 'carga':'Hasta 1.500 kg', 'donde':'En el taller desde el lunes 5', 'ver':'taller'},
+                  {'patente':'AD 789 GH', 'carga':'Hasta 3.000 kg', 'donde':'En el depósito: sale mañana, 8:00', 'ver':'disponible'},
+                  {'patente':'AE 012 IJ', 'carga':'Hasta 800 kg', 'donde':'En el depósito', 'ver':'disponible'},
+                  {'patente':'AA 345 KL', 'carga':'Hasta 1.000 kg', 'donde':'De baja desde agosto', 'ver':'baja'}} },
+                estados=${ {'disponible':{'texto':'Disponible', 'tono':'menta'},
+                            'calle':{'texto':'En la calle', 'tono':'azul'},
+                            'taller':{'texto':'En el taller', 'tono':'durazno'},
+                            'baja':{'texto':'De baja', 'tono':'gris'}} },
+                paradas=${ {
+                  {'nombre':'Depósito central', 'detalle':'Salió hoy, 14:30', 'avance':'hecho'},
+                  {'nombre':'Merendero Ejemplo Sur', 'detalle':'Pan lactal · llegó 15:05', 'avance':'hecho'},
+                  {'nombre':'Comedor Barrio Ejemplo', 'detalle':'Lentejas de Ana · cerca de las 16:20', 'avance':'actual'},
+                  {'nombre':'Hogar Ejemplo Norte', 'detalle':'Abrigos · cerca de las 17:00', 'avance':'pendiente'}} }">
+    <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Camiones',
+             'La flota y por dónde anda.', 4)}"></section>
+
+    <section class="pieza adm-foco pieza-ahora" id="camion-taller" aria-labelledby="taller-titulo">
+      <p class="adm-foco-rotulo"><span class="adm-urgencia adm-urgencia--semana">Esta
+        semana</span><span>Lo que te toca ahora</span></p>
+      <h2 id="taller-titulo" tabindex="-1">El camión AC 456 EF lleva nueve días en el taller</h2>
+      <form class="adm-acciones" method="post" action="/prototipo/encastre/admin-inicio-al-dia"
+            th:action="@{/prototipo/encastre/admin-inicio-al-dia}">
+        <input type="hidden" name="camion" value="AC 456 EF">
+        <input type="hidden" name="estado" value="disponible">
+        <button type="submit">Ya volvió: pasarlo a disponible</button>
+      </form>
+      <div class="adm-foco-detalle">
+        <p>Si ya volvió, pasalo a disponible para que entre en los próximos recorridos. Si sigue
+          en el taller, cambiale el estado más tarde desde la bandeja.</p>
+        <ul class="adm-datos">
+          <li>AC 456 EF · hasta 1.500 kg</li>
+          <li>En el taller desde el lunes 5 de octubre</li>
+        </ul>
+      </div>
+    </section>
+
+    <!--/* El camión en la calle: cada parada, una pieza (hecha, la de ahora, la que falta). */-->
+    <section class="pieza adm-ruta" aria-labelledby="ruta-titulo">
+      <div class="adm-ruta-cabeza">
+        <h2 id="ruta-titulo">En la calle</h2>
+        <p class="adm-bajada">AB 123 CD · <span th:text="|${#lists.size(paradas) - 1} paradas|">3
+          paradas</span></p>
+      </div>
+      <ol class="recorrido piezas-chicas adm-paradas" aria-label="Paradas de AB 123 CD">
+        <li th:each="p, v : ${paradas}" class="recorrido-paso"
+            th:classappend="|recorrido-paso--${p.avance}|"
+            th:aria-current="${p.avance == 'actual'} ? 'step' : null">
+          <span class="recorrido-nodo" aria-hidden="true"><th:block
+                th:if="${p.avance == 'hecho'}"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 18)}"></svg></th:block><th:block
+                th:if="${p.avance == 'actual'}"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('camiones', 18)}"></svg></th:block><th:block
+                th:if="${p.avance == 'pendiente'}" th:text="${v.count}">1</th:block></span>
+          <span class="recorrido-texto"><span th:text="${p.nombre}">Parada</span><small
+                th:text="${p.avance == 'hecho'} ? |${p.detalle} · hecha| : (${p.avance == 'actual'} ? |${p.detalle} · ahora| : |${p.detalle} · falta|)">Detalle</small></span>
+        </li>
+      </ol>
+    </section>
+
+    <section th:replace="~{prototipo/encastre/admin-inicio :: franja('La flota', 'camiones',
+             '/prototipo/encastre/admin-camiones', ${ {
+               {'clave':'disponible', 'texto':'Disponibles', 'cifra':2, 'tono':'menta'},
+               {'clave':'calle', 'texto':'En la calle', 'cifra':1, 'tono':'azul'},
+               {'clave':'taller', 'texto':'En el taller', 'cifra':1, 'tono':'durazno'},
+               {'clave':'baja', 'texto':'De baja', 'cifra':1, 'tono':'gris'}} }, '')}"></section>
+
+    <section class="adm-bandeja" aria-labelledby="bandeja-titulo">
+      <div class="adm-bandeja-cabeza">
+        <div>
+          <h2 id="bandeja-titulo">Camiones</h2>
+          <p>Cambiá el estado de cada uno; "De baja" lo saca de los recorridos.</p>
+        </div>
+        <details class="adm-plegable adm-plegable--mesa">
+          <summary>Sumar camión</summary>
+          <form method="post" action="/prototipo/encastre/admin-camiones"
+                th:action="@{/prototipo/encastre/admin-camiones}">
+            <div class="campo">
+              <label for="alta-patente">Patente</label>
+              <input id="alta-patente" name="patente" type="text" required autocomplete="off"
+                     aria-describedby="alta-patente-ayuda">
+              <small id="alta-patente-ayuda">Como en la chapa: AB 123 CD.</small>
+            </div>
+            <div class="campo">
+              <label for="alta-carga">Carga máxima, en kilos</label>
+              <input id="alta-carga" name="carga" type="number" min="1" required>
+            </div>
+            <button type="submit" class="secondary">Sumar camión</button>
+          </form>
+        </details>
+      </div>
+      <table class="tabla" aria-labelledby="bandeja-titulo">
+        <thead>
+          <tr><th scope="col">Camión</th><th scope="col">Dónde está</th><th scope="col">Estado</th>
+            <th scope="col">Cambiar estado</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="c, v : ${camiones}" th:if="${ver == '' or ver == c.ver}">
+            <th scope="row"><span th:text="${c.patente}">Patente</span><small
+                th:text="${c.carga}">Carga</small></th>
+            <td data-etiqueta="Dónde está" th:text="${c.donde}">Dónde</td>
+            <td data-etiqueta="Estado"><span class="adm-estado"
+                th:classappend="|adm-tono--${estados[c.ver].tono}|"
+                th:text="${estados[c.ver].texto}">Estado</span></td>
+            <td data-etiqueta="Cambiar estado">
+              <form class="adm-cambio" method="post" action="/prototipo/encastre/admin-camiones"
+                    th:action="@{/prototipo/encastre/admin-camiones}">
+                <label class="solo-lectores" th:for="|estado-${v.count}|"
+                       th:text="|Estado de ${c.patente}|">Estado</label>
+                <select th:id="|estado-${v.count}|" name="estado">
+                  <option th:each="e : ${estados}" th:value="${e.key}" th:text="${e.value.texto}"
+                          th:selected="${e.key == c.ver}">Estado</option>
+                </select>
+                <button type="submit" class="outline">Cambiar</button>
+              </form>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: registrar una donación que entró al depósito (RF-15), con el
+       donante en el mismo paso si es nuevo. Pantalla de trabajo, sobria: una pieza crema con el
+       formulario y, al costado, qué pasa después con lo que se registra. Envía a
+       admin-donaciones-registrada. El error (admin-donaciones-registrar-error) es el mismo
+       formulario cuando el servidor no encuentra al donante: un banner claro arriba, el campo
+       marcado con qué hacer, lo escrito conservado y el alta del donante ya abierta.
+       Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Registrar donación - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-donaciones-registrar :: formulario(false)}"></th:block>
+</th:block>
+
+<!--/* error: si el servidor no encontró al donante escrito. */-->
+<th:block th:fragment="formulario(error)">
+  <div class="tablero adm-tablero adm-seccion adm-registrar">
+    <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Registrar donación',
+             'Anotá lo que entró al depósito.', 2)}"></section>
+
+    <div th:if="${error}" class="adm-aviso-error" tabindex="-1" autofocus
+         th:insert="~{alternativas/encastre/fragmentos/banner :: banner('No encontramos a ese donante',
+         'Revisá cómo está escrito o registralo en este mismo paso, más abajo. Lo demás que escribiste quedó como estaba.',
+         'error', null)}"></div>
+
+    <form class="pieza adm-formulario" method="post"
+          action="/prototipo/encastre/admin-donaciones-registrada"
+          th:action="@{/prototipo/encastre/admin-donaciones-registrada}"
+          aria-labelledby="adm-titulo">
+      <fieldset>
+        <legend>Quién la trae</legend>
+        <div class="campo">
+          <label for="donante">Donante</label>
+          <input id="donante" name="donante" type="text" required autocomplete="off"
+                 aria-describedby="donante-ayuda" th:value="${error} ? 'Almacen Ejemplo Sur' : null"
+                 th:aria-invalid="${error} ? 'true' : null">
+          <small id="donante-ayuda" th:classappend="${error} ? 'campo-error'"
+                 th:text="${error} ? 'No hay ningún donante que se llame así. Revisá cómo se escribe o registralo abajo.' : 'Su nombre o su correo, como figura en Donantes.'">Su
+            nombre o su correo, como figura en Donantes.</small>
+        </div>
+        <details class="adm-plegable" th:open="${error}">
+          <summary>Es alguien nuevo: registrarlo acá</summary>
+          <div class="adm-campos">
+            <div class="campo">
+              <label for="nuevo-nombre">Nombre</label>
+              <input id="nuevo-nombre" name="nuevo-nombre" type="text" autocomplete="off">
+            </div>
+            <div class="campo">
+              <label for="nuevo-correo">Correo</label>
+              <input id="nuevo-correo" name="nuevo-correo" type="email" autocomplete="off"
+                     aria-describedby="nuevo-correo-ayuda">
+              <small id="nuevo-correo-ayuda">Le llega su usuario para seguir su donación.</small>
+            </div>
+          </div>
+        </details>
+      </fieldset>
+
+      <fieldset>
+        <legend>Qué es</legend>
+        <div class="adm-campos">
+          <div class="campo">
+            <label for="categoria">Categoría</label>
+            <select id="categoria" name="categoria" required>
+              <option value="" th:selected="${!error}">Elegí una</option>
+              <option value="alimentos" th:selected="${error}">Alimentos</option>
+              <option value="ropa">Ropa y abrigo</option>
+              <option value="escolares">Útiles escolares</option>
+              <option value="higiene">Higiene y limpieza</option>
+              <option value="otra">Otra</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="que">Qué es</label>
+            <input id="que" name="que" type="text" required autocomplete="off"
+                   aria-describedby="que-ayuda" th:value="${error} ? 'Arroz largo fino' : null">
+            <small id="que-ayuda">Como lo va a leer la entidad: "Arroz largo fino".</small>
+          </div>
+          <div class="campo">
+            <label for="cantidad">Cantidad</label>
+            <input id="cantidad" name="cantidad" type="number" min="1" required
+                   th:value="${error} ? '20' : null">
+          </div>
+          <div class="campo">
+            <label for="unidad">Unidad</label>
+            <select id="unidad" name="unidad" required>
+              <option value="kg">Kilos</option>
+              <option value="unidades">Unidades</option>
+              <option value="litros">Litros</option>
+              <option value="paquetes">Paquetes</option>
+              <option value="pares">Pares</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="vence">Vence</label>
+            <input id="vence" name="vence" type="date" min="2026-10-14"
+                   aria-describedby="vence-ayuda" th:value="${error} ? '2027-06-30' : null">
+            <small id="vence-ayuda">Si no vence, dejalo vacío.</small>
+          </div>
+          <div class="campo">
+            <label for="entro">Entró al depósito</label>
+            <input id="entro" name="entro" type="date" max="2026-10-14" value="2026-10-14" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="adm-acciones">
+        <button type="submit">Registrar donación</button>
+        <a href="/prototipo/encastre/admin-donaciones"
+           th:href="@{/prototipo/encastre/admin-donaciones}" class="enlace-fuerte">Volver a
+          donaciones</a>
+      </div>
+    </form>
+
+    <section class="pieza adm-luego" aria-labelledby="luego-titulo">
+      <h2 id="luego-titulo">Qué pasa después</h2>
+      <ol class="adm-luego-pasos">
+        <li><b>Queda en el depósito</b><span>Con su código, en la bandeja de Donaciones.</span></li>
+        <li><b>Entra en la asignación</b><span>El algoritmo le busca la entidad que más la
+          necesita.</span></li>
+        <li><b>Quien la donó la sigue</b><span>Desde su cuenta, hasta que la entidad confirma que
+          llegó.</span></li>
+      </ol>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

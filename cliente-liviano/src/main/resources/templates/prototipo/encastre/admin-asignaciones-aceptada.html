@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: la propuesta de la leche, aceptada. La tira del turno suma su
+       primera pieza (encastra), el logro dice qué cambió y lo de ahora pasa a ser la tarea que sigue
+       (la entidad que pide sumarse). Es admin-asignaciones con aceptada = true. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Propuesta aceptada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-asignaciones :: pantalla(true)}"></th:block>
+</th:block>
+</body>
+</html>

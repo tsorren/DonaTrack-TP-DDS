@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: registrar una donación, cuando el servidor no encuentra al
+       donante escrito. Sobrio: el banner dice qué pasó y qué hacer, el campo queda marcado, lo
+       escrito se conserva y el alta del donante ya está abierta. Sale a
+       admin-donaciones-registrada al enviar, o vuelve a Donaciones. Es admin-donaciones-registrar
+       con error = true. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Revisá el donante - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-donaciones-registrar :: formulario(true)}"></th:block>
+</th:block>
+</body>
+</html>

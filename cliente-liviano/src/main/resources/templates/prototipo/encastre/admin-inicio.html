@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin (iteración 3): el turno del depósito, de a una tarea. Arriba, el
+       título llano y la voz del turno ("Hoy te toca atender 5 cosas."), con el turno como una tira
+       de piezas que se completa: lo resuelto encastra en menta, lo de ahora es la pieza naranja y
+       lo que falta, el hueco. Abajo, la tarjeta de foco (Resolver / Después) con la cola al
+       costado, la franja de circulación del depósito sobre la mesa, que filtra las donaciones, y lo
+       último que pasó. Cuando la cola se vacía (admin-inicio-al-dia), la tira queda armada y la
+       voz dice "Todo al día. Buen turno.".
+       Este archivo guarda también las piezas que comparten las pantallas del admin (como hace
+       Cozy en su prototipo): la cabeza de cada sección con su tira chica del turno, el turno
+       (las cinco tareas, escritas una sola vez), la franja que filtra y el logro de una acción.
+       Datos de ejemplo; hoy es el miércoles 14 de octubre de 2026. Estilos: prototipo/admin.css;
+       mejora: js/encastre-admin.js ("Después" pasa a la próxima tarea sin recargar). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-inicio :: inicio(0)}"></th:block>
+</th:block>
+
+<!--/* El tablero del inicio. hechas: cuántas tareas del turno ya están resueltas (0 a 5). */-->
+<th:block th:fragment="inicio(hechas)">
+  <div class="tablero adm-tablero adm-inicio">
+    <section class="pieza adm-cabeza adm-cabeza--turno" aria-labelledby="adm-titulo">
+      <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/admin.css"
+            th:href="@{/css/alternativas/encastre/prototipo/admin.css}">
+      <h1 id="adm-titulo">Inicio</h1>
+      <th:block th:replace="~{prototipo/encastre/admin-inicio :: turno(${hechas}, 'voz')}"></th:block>
+      <p class="adm-bajada">Miércoles 14 de octubre · Depósito central</p>
+      <th:block th:replace="~{prototipo/encastre/admin-inicio :: turno(${hechas}, 'tira')}"></th:block>
+    </section>
+
+    <th:block th:replace="~{prototipo/encastre/admin-inicio :: turno(${hechas}, 'foco')}"></th:block>
+
+    <!--/* Con la cola vacía, la tarjeta de foco es la pieza de lo que quedó resuelto. */-->
+    <section th:if="${hechas == 5}" class="pieza adm-listo" aria-labelledby="listo-titulo">
+      <h2 id="listo-titulo">La cola quedó vacía</h2>
+      <p>Resolviste las cinco cosas del turno. Si entra algo nuevo, aparece acá primero.</p>
+      <div class="adm-acciones">
+        <a href="/prototipo/encastre/admin-ranking" th:href="@{/prototipo/encastre/admin-ranking}"
+           role="button">Ver el ranking</a>
+        <a href="/prototipo/encastre/admin-donaciones"
+           th:href="@{/prototipo/encastre/admin-donaciones}" role="button"
+           class="outline">Ver donaciones</a>
+      </div>
+    </section>
+
+    <th:block th:replace="~{prototipo/encastre/admin-inicio :: turno(${hechas}, 'cola')}"></th:block>
+
+    <section th:replace="~{prototipo/encastre/admin-inicio :: franja('En circulación', 'donaciones',
+             '/prototipo/encastre/admin-donaciones', ${ {
+               {'clave':'deposito', 'texto':'En el depósito', 'cifra':(hechas == 5 ? 17 : 18), 'tono':'sol'},
+               {'clave':'asignada', 'texto':'Asignadas', 'cifra':(hechas == 5 ? 12 : 11), 'tono':'lila'},
+               {'clave':'lista', 'texto':'Listas para entregar', 'cifra':7, 'tono':'menta'},
+               {'clave':'camino', 'texto':'En camino', 'cifra':8, 'tono':'azul'},
+               {'clave':'problema', 'texto':'Con problema', 'cifra':1, 'tono':'rosa'}} }, '')}"></section>
+
+    <section class="pieza novedades adm-novedades" aria-labelledby="novedades-titulo">
+      <h2 id="novedades-titulo">Lo último que pasó</h2>
+      <p class="bajada">En el depósito y en la calle, lo más nuevo primero</p>
+      <ul class="novedades-lista piezas-chicas">
+        <li><p>Salió el camión AB 123 CD con las lentejas secas de Ana (15 kg) para Comedor Barrio
+          Ejemplo.</p><time datetime="2026-10-14T14:30">hoy, 14:30</time></li>
+        <li><p>Escuela Ejemplo 12 avisó un problema con los útiles escolares: faltan dos
+          cajas.</p><time datetime="2026-10-14T11:05">hoy, 11:05</time></li>
+        <li><p>Merendero Ejemplo Sur confirmó que recibió la ropa de abrigo.</p><time
+          datetime="2026-10-13T17:40">ayer</time></li>
+      </ul>
+    </section>
+  </div>
+  <script src="/js/encastre-admin.js" th:src="@{/js/encastre-admin.js}" defer></script>
+</th:block>
+
+<!--/* La cabeza de una sección de trabajo: el nombre llano es el título y la voz va de bajada; al
+       costado, la tira chica del turno, que vuelve al inicio. Trae la hoja del admin. */-->
+<section th:fragment="cabeza(titulo, voz, hechas)" class="pieza adm-cabeza"
+         aria-labelledby="adm-titulo">
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/admin.css"
+        th:href="@{/css/alternativas/encastre/prototipo/admin.css}">
+  <div class="adm-cabeza-texto">
+    <h1 id="adm-titulo" th:text="${titulo}">Sección</h1>
+    <p class="adm-voz" th:text="${voz}">Lo que dice Encastre.</p>
+  </div>
+  <a class="adm-turno-mini" href="/prototipo/encastre/admin-inicio"
+     th:href="@{/prototipo/encastre/admin-inicio}">
+    <span class="adm-turno-mini-texto">Tu turno <b th:text="|${hechas} de 5 listas|">0 de 5
+      listas</b></span>
+    <th:block th:replace="~{prototipo/encastre/admin-inicio :: turno(${hechas}, 'mini')}"></th:block>
+  </a>
+</section>
+
+<!--/* El turno: las cinco tareas del día, escritas una sola vez, de la más urgente a la menos. Cada
+       vista las dibuja a su modo. hechas: cuántas están resueltas. vista: voz (la frase del
+       turno) | tira (la tira grande del inicio) | mini (la de la cabeza de cada sección) | cola |
+       foco (la tarjeta de foco del inicio, con Después) | sigue (lo que sigue, después de un
+       logro). */-->
+<th:block th:fragment="turno(hechas, vista)"
+          th:with="tareas=${ {
+            {'clave':'leche', 'corto':'Leche',
+             'titulo':'La leche en polvo vence el viernes y sigue sin destino',
+             'texto':'El algoritmo ya propuso una entidad. Revisá la propuesta y aceptala.',
+             'seccion':'Asignar donaciones', 'urgencia':'Urgente', 'tono':'urgente',
+             'ruta':'/prototipo/encastre/admin-asignaciones#propuesta-leche',
+             'datos':{'Leche en polvo · 12 kg', 'Vence el viernes 16 de octubre',
+                      'Propuesta: Merendero Ejemplo Sur'},
+             'hora':'15:20', 'hecho':'La leche en polvo va a Merendero Ejemplo Sur.'},
+            {'clave':'entidad', 'corto':'Entidad',
+             'titulo':'Una entidad nueva pide sumarse a la red',
+             'texto':'Asociación Civil Manos Unidas del Barrio Ejemplo Norte mandó su pedido con los papeles completos.',
+             'seccion':'Entidades', 'urgencia':'Hoy', 'tono':'hoy',
+             'ruta':'/prototipo/encastre/admin-entidades#pedido-manos',
+             'datos':{'Comedor · Barrio Ejemplo Norte', 'Pidió el viernes 9 de octubre',
+                      'Papeles completos'},
+             'hora':'15:34', 'hecho':'Manos Unidas del Barrio Ejemplo Norte ya es parte de la red.'},
+            {'clave':'yogur', 'corto':'Yogur',
+             'titulo':'El yogur venció ayer y sigue en el depósito',
+             'texto':'Marcalo vencido para que salga de la asignación y nadie lo cargue en un camión.',
+             'seccion':'Donaciones', 'urgencia':'Hoy', 'tono':'hoy',
+             'ruta':'/prototipo/encastre/admin-donaciones#vencida-yogur',
+             'datos':{'Yogur · 40 unidades', 'Venció el martes 13 de octubre',
+                      'De Lácteos Ejemplo'},
+             'hora':'15:41', 'hecho':'El yogur quedó marcado como vencido.'},
+            {'clave':'padron', 'corto':'Padrón',
+             'titulo':'El padrón de la feria del sábado espera su importación',
+             'texto':'Es un archivo CSV con las personas que se anotaron para donar. Importalo para darles usuario.',
+             'seccion':'Donantes', 'urgencia':'Esta semana', 'tono':'semana',
+             'ruta':'/prototipo/encastre/admin-donantes#importar',
+             'datos':{'feria-sabado.csv', '20.000 filas', 'Llegó el lunes 12 de octubre'},
+             'hora':'15:52', 'hecho':'Entraron 19.940 donantes nuevos del padrón de la feria.'},
+            {'clave':'camion', 'corto':'Camión',
+             'titulo':'El camión AC 456 EF lleva nueve días en el taller',
+             'texto':'Si ya volvió, pasalo a disponible para que entre en los próximos recorridos.',
+             'seccion':'Camiones', 'urgencia':'Esta semana', 'tono':'semana',
+             'ruta':'/prototipo/encastre/admin-camiones#camion-taller',
+             'datos':{'AC 456 EF · hasta 1.500 kg', 'En el taller desde el lunes 5 de octubre'},
+             'hora':'16:03', 'hecho':'El camión AC 456 EF volvió a estar disponible.'}} },
+            total=${#lists.size(tareas)}">
+
+  <p th:if="${vista == 'voz'}" class="adm-voz adm-voz--turno"
+     th:classappend="${hechas == total} ? 'adm-voz--logro'"
+     th:text="${hechas == total} ? 'Todo al día. Buen turno.' : |Hoy te toca atender ${total - hechas} cosas.|">Hoy
+    te toca atender 5 cosas.</p>
+
+  <div th:if="${vista == 'tira' or vista == 'mini'}" th:remove="${vista == 'mini'} ? 'tag' : 'none'"
+       class="adm-tira-zona">
+    <ol class="adm-tira" th:classappend="|adm-tira--${vista}|"
+        th:attr="aria-label=${vista == 'tira'} ? 'Tu turno' : null,aria-hidden=${vista == 'mini'} ? 'true' : null">
+      <li th:each="t, v : ${tareas}"
+          th:with="estado=${v.count <= hechas ? 'hecha' : (v.count == hechas + 1 ? 'ahora' : 'falta')}"
+          th:class="|adm-tira-pieza adm-tira-pieza--${estado}|" th:attr="data-tarea=${t.clave}"
+          th:classappend="${v.count == hechas} ? 'adm-tira-pieza--recien'"
+          th:aria-current="${estado == 'ahora'} ? 'step' : null">
+        <span class="adm-tira-cuerpo" aria-hidden="true"><svg class="adm-tira-forma"
+              viewBox="22 14 56 72" focusable="false"><use href="#encastre-pieza"
+              th:href="${v.last} ? '#encastre-pieza-borde' : '#encastre-pieza'"/></svg><th:block
+              th:if="${estado == 'hecha'}"><svg
+              th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 24)}"></svg></th:block></span>
+        <span class="adm-tira-texto"><span th:text="${t.corto}">Tarea</span><small
+              th:text="${estado == 'hecha'} ? 'Lista' : (${estado == 'ahora'} ? 'Ahora' : 'Falta')">Falta</small></span>
+      </li>
+    </ol>
+    <p th:if="${vista == 'tira'}" class="adm-tira-cuenta"
+       th:text="|${hechas} de ${total} listas|">0 de 5 listas</p>
+  </div>
+
+  <section th:if="${vista == 'cola'}" class="pieza adm-cola" aria-labelledby="cola-titulo">
+    <h2 id="cola-titulo" th:text="${hechas == total} ? 'Lo que resolviste hoy' : 'La cola de hoy'">La
+      cola de hoy</h2>
+    <ol class="adm-cola-lista">
+      <li th:each="t, v : ${tareas}" th:attr="data-tarea=${t.clave}"
+          th:classappend="${v.count == hechas + 1} ? 'adm-cola-item--foco'">
+        <a th:if="${v.count > hechas}" class="adm-cola-enlace" href="#"
+           th:href="@{${t.ruta}}"><span class="adm-urgencia"
+           th:classappend="|adm-urgencia--${t.tono}|" th:text="${t.urgencia}">Hoy</span><b
+           th:text="${t.titulo}">Tarea</b><small th:text="${t.seccion}">Sección</small></a>
+        <p th:unless="${v.count > hechas}" class="adm-cola-hecha"><span class="adm-cola-signo"
+           aria-hidden="true"><svg
+           th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 16)}"></svg></span><b
+           th:text="${t.hecho}">Resuelta.</b><small><time th:text="|${t.seccion} · ${t.hora}|">Sección</time></small></p>
+      </li>
+    </ol>
+  </section>
+
+  <!--/* Lo que sigue, dentro del logro de una sección: la próxima tarea y su acción. */-->
+  <div th:each="t, v : ${tareas}" th:if="${vista == 'sigue' and v.count == hechas + 1}"
+       class="adm-sigue">
+    <p class="adm-sigue-rotulo">Lo que sigue <small
+       th:text="|Tarea ${v.count} de ${total}|">Tarea 1 de 5</small></p>
+    <p class="adm-sigue-titulo" th:text="${t.titulo}">Tarea</p>
+    <a href="#" th:href="@{${t.ruta}}" role="button">Resolver</a>
+  </div>
+
+  <section th:each="t, v : ${tareas}" th:if="${vista == 'foco' and v.count > hechas}"
+           class="pieza adm-foco pieza-ahora" th:id="|foco-${t.clave}|"
+           th:attr="data-tarea=${t.clave}" th:hidden="${v.count > hechas + 1}"
+           th:aria-labelledby="|foco-${t.clave}-titulo|">
+    <p class="adm-foco-rotulo"><span class="adm-urgencia"
+       th:classappend="|adm-urgencia--${t.tono}|" th:text="${t.urgencia}">Urgente</span><span>Lo que
+       te toca ahora</span><small th:text="|Tarea ${v.count} de ${total}|">Tarea 1 de 5</small></p>
+    <h2 th:id="|foco-${t.clave}-titulo|" tabindex="-1" th:text="${t.titulo}">Tarea</h2>
+    <div class="adm-acciones">
+      <a href="#" th:href="@{${t.ruta}}" role="button">Resolver</a>
+      <form class="adm-despues" method="post"
+            action="/prototipo/encastre/admin-inicio" th:action="@{/prototipo/encastre/admin-inicio}">
+        <button type="submit" class="outline">Después</button>
+      </form>
+    </div>
+    <div class="adm-foco-detalle">
+      <p th:text="${t.texto}">Qué es y qué hacer.</p>
+      <ul class="adm-datos">
+        <li th:each="dato : ${t.datos}" th:text="${dato}">Dato</li>
+      </ul>
+    </div>
+  </section>
+</th:block>
+
+<!--/* La franja que filtra: sobre la mesa, el total y sus partes como tramos de piezas con el ancho
+       de su cifra, y debajo un filtro por parte (?ver=<clave>), que la pantalla aplica. La lista de
+       filtros dice lo mismo que el dibujo. filtros: lista de {clave, texto, cifra, tono}.
+       porDefecto: el filtro puesto si la dirección no trae ninguno ('' si son todas). */-->
+<section th:fragment="franja(titulo, unidad, ruta, filtros, porDefecto)" class="adm-franja"
+         aria-labelledby="franja-titulo"
+         th:with="cifras=${filtros.![#this['cifra']]}, suma=${#aggregates.sum(cifras)},
+                  ver=${param.ver != null ? param.ver[0] : porDefecto}">
+  <div class="adm-franja-cabeza">
+    <h2 id="franja-titulo" th:text="${titulo}">En circulación</h2>
+    <p><b th:text="${#numbers.formatInteger(suma, 1, 'POINT')}">45</b> <span
+       th:text="${unidad}">donaciones</span></p>
+  </div>
+  <svg class="adm-franja-tramos" aria-hidden="true" focusable="false" width="100%" height="28">
+    <rect th:each="f, v : ${filtros}" th:class="|adm-tono--${f.tono}|" y="0" height="100%" rx="8"
+          x="0" width="0"
+          th:with="antes=${v.first ? 0 : #aggregates.sum(cifras.subList(0, v.index))}"
+          th:attr="x=|${antes * 100.0 / suma}%|,width=|${f.cifra * 100.0 / suma}%|"></rect>
+    <circle th:each="f, v : ${filtros}" th:unless="${v.last}" th:class="|adm-tono--${f.tono}|"
+            cy="50%" r="7" cx="0"
+            th:with="hasta=${#aggregates.sum(cifras.subList(0, v.count))}"
+            th:attr="cx=|${hasta * 100.0 / suma}%|"></circle>
+  </svg>
+  <ul class="adm-filtros">
+    <li th:each="f : ${filtros}"><a class="adm-filtro" th:classappend="|adm-tono--${f.tono}|"
+        href="#" th:href="@{${ruta}(ver=${f.clave})}"
+        th:aria-current="${ver == f.clave} ? 'true' : null"><span th:text="${f.texto}">Parte</span>
+      <b th:text="${#numbers.formatInteger(f.cifra, 1, 'POINT')}">0</b></a></li>
+    <li th:if="${porDefecto == '' and ver != ''}"><a class="adm-filtro adm-filtro--todas" href="#"
+        th:href="@{${ruta}}">Ver todas</a></li>
+  </ul>
+</section>
+
+<!--/* Lo que acaba de salir bien: una pieza menta con su tilde, que recibe el foco al cargar. Si la
+       acción resolvió una tarea del turno, trae lo que sigue con su acción: una cosa a la vez.
+       hechas: las tareas resueltas con esta, o -1 si no fue una tarea del turno. */-->
+<section th:fragment="logro(titulo, texto, hechas)" class="pieza adm-logro" tabindex="-1"
+         autofocus aria-labelledby="logro-titulo">
+  <span class="adm-logro-signo" aria-hidden="true"><svg
+        th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 28)}"></svg></span>
+  <h2 id="logro-titulo" th:text="${titulo}">Listo.</h2>
+  <p th:text="${texto}">Qué cambió.</p>
+  <th:block th:if="${hechas >= 0}">
+    <th:block th:replace="~{prototipo/encastre/admin-inicio :: turno(${hechas}, 'sigue')}"></th:block>
+  </th:block>
+</section>
+</body>
+</html>

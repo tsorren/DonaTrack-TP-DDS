@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: el inicio con la cola vacía. La tira del turno queda armada (las
+       cinco piezas encastran una tras otra, la celebración del turno), la voz dice "Todo al día.
+       Buen turno." y la cola pasa a ser lo que se resolvió hoy. Llega desde el último paso del turno
+       (admin-camiones). Es el tablero de admin-inicio con hechas = 5. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Inicio, todo al día - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-inicio :: inicio(5)}"></th:block>
+</th:block>
+</body>
+</html>

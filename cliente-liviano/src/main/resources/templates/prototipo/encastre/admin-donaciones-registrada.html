@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: la donación recién registrada (llega desde
+       admin-donaciones-registrar). El logro dice qué pasó, el arroz aparece marcado arriba de la
+       bandeja y la franja suma una al depósito; lo de ahora sigue siendo el yogur vencido. Es
+       admin-donaciones con estado = registrada. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Donación registrada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-donaciones :: pantalla('registrada')}"></th:block>
+</th:block>
+</body>
+</html>

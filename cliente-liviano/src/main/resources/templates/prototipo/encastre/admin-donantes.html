@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: Donantes (RF-15 registrar, RF-20 importar por CSV), la cuarta
+       tarea del turno. La pieza de lo de ahora es la importación del padrón de la feria: el
+       archivo y el botón, y que se procesa sin esperar. Abajo, la franja de quienes tienen usuario
+       sobre la mesa, que filtra la bandeja de donantes, y el alta a mano en un plegable. El
+       resultado sale en la misma pantalla (admin-donantes-importado): la franja pasa a ser el
+       padrón por fila (nuevos, actualizados, con error) y la bandeja, las filas que no entraron,
+       con qué hacer. Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Donantes - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-donantes :: pantalla(false)}"></th:block>
+</th:block>
+
+<!--/* importado: si el padrón de la feria ya se importó. */-->
+<th:block th:fragment="pantalla(importado)"
+          th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                   filas=${ {
+                     {'nombre':'Panadería Ejemplo', 'correo':'panaderia@ejemplo.com', 'donaciones':31, 'categoria':'Transformador', 'ver':'con'},
+                     {'nombre':'Bruno', 'correo':'bruno@ejemplo.com', 'donaciones':26, 'categoria':'Sostenedor', 'ver':'con'},
+                     {'nombre':'Lácteos Ejemplo', 'correo':'lacteos@ejemplo.com', 'donaciones':24, 'categoria':'Sostenedor', 'ver':'con'},
+                     {'nombre':'Carla', 'correo':'carla@ejemplo.com', 'donaciones':15, 'categoria':'Sostenedor', 'ver':'con'},
+                     {'nombre':'Almacén Ejemplo', 'correo':'almacen@ejemplo.com', 'donaciones':12, 'categoria':'Colaborador', 'ver':'con'},
+                     {'nombre':'Ana', 'correo':'ana@ejemplo.com', 'donaciones':7, 'categoria':'Colaborador', 'ver':'con'},
+                     {'nombre':'Molino Ejemplo', 'correo':'molino@ejemplo.com', 'donaciones':6, 'categoria':'Colaborador', 'ver':'con'},
+                     {'nombre':'Cooperativa Ejemplo', 'correo':'cooperativa@ejemplo.com', 'donaciones':5, 'categoria':'Colaborador', 'ver':'con'},
+                     {'nombre':'Elena', 'correo':'elena@ejemplo.com', 'donaciones':4, 'categoria':'Colaborador', 'ver':'con'},
+                     {'nombre':'Diego', 'correo':'diego@ejemplo.com', 'donaciones':3, 'categoria':'Colaborador', 'ver':'con'},
+                     {'nombre':'Gabriela', 'correo':'Sin correo', 'donaciones':2, 'categoria':'Colaborador', 'ver':'sin'},
+                     {'nombre':'Fabián', 'correo':'Sin correo', 'donaciones':1, 'categoria':'Colaborador', 'ver':'sin'}} },
+                   errores=${ {
+                     {'fila':'1.204', 'pasa':'El correo no tiene arroba.', 'hacer':'Corregí el correo.'},
+                     {'fila':'2.877', 'pasa':'Falta el nombre.', 'hacer':'Completá el nombre.'},
+                     {'fila':'3.310', 'pasa':'El correo se repite con la fila 3.309.', 'hacer':'Dejá una sola fila por persona.'},
+                     {'fila':'4.452', 'pasa':'El teléfono tiene letras.', 'hacer':'Dejá solo números en el teléfono.'},
+                     {'fila':'6.019', 'pasa':'La fila tiene cinco columnas y van tres.', 'hacer':'Revisá que no sobre una coma.'},
+                     {'fila':'7.731', 'pasa':'Falta el nombre.', 'hacer':'Completá el nombre.'},
+                     {'fila':'9.006', 'pasa':'El correo no tiene arroba.', 'hacer':'Corregí el correo.'},
+                     {'fila':'11.548', 'pasa':'El correo se repite con la fila 11.547.', 'hacer':'Dejá una sola fila por persona.'},
+                     {'fila':'13.302', 'pasa':'La fila está vacía a la mitad.', 'hacer':'Completala o borrala.'},
+                     {'fila':'15.880', 'pasa':'El teléfono tiene letras.', 'hacer':'Dejá solo números en el teléfono.'},
+                     {'fila':'18.214', 'pasa':'Falta el correo.', 'hacer':'Completá el correo: sin él no hay usuario.'},
+                     {'fila':'19.977', 'pasa':'La fila tiene cinco columnas y van tres.', 'hacer':'Revisá que no sobre una coma.'}} }">
+  <div class="tablero adm-tablero adm-seccion">
+    <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Donantes',
+             'Quienes donan y cómo entran.', ${importado ? 4 : 3})}"></section>
+
+    <th:block th:if="${importado}">
+      <section th:replace="~{prototipo/encastre/admin-inicio :: logro(
+               'Entraron 19.940 donantes nuevos del padrón de la feria',
+               'Ya tienen usuario. Quedaron 12 filas afuera: están abajo.', 4)}"></section>
+      <section th:replace="~{prototipo/encastre/admin-inicio :: franja('El padrón de la feria', 'filas',
+               '/prototipo/encastre/admin-donantes', ${ {
+                 {'clave':'nuevo', 'texto':'Donantes nuevos', 'cifra':19940, 'tono':'menta'},
+                 {'clave':'actualizado', 'texto':'Ya estaban y se actualizaron', 'cifra':48, 'tono':'azul'},
+                 {'clave':'error', 'texto':'Con error', 'cifra':12, 'tono':'rosa'}} }, '')}"></section>
+      <section class="adm-bandeja" id="errores" aria-labelledby="bandeja-titulo">
+        <div class="adm-bandeja-cabeza">
+          <div>
+            <h2 id="bandeja-titulo">Las filas que no entraron</h2>
+            <p>Corregilas en el archivo y volvé a importarlo: las que ya entraron no se repiten.</p>
+          </div>
+          <a href="/prototipo/encastre/admin-donantes#importar"
+             th:href="@{/prototipo/encastre/admin-donantes#importar}" role="button"
+             class="outline">Volver a importar</a>
+        </div>
+        <table class="tabla" aria-labelledby="bandeja-titulo">
+          <thead>
+            <tr><th scope="col">Fila</th><th scope="col">Qué pasa</th><th scope="col">Qué hacer</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="e : ${errores}">
+              <th scope="row" th:text="|Fila ${e.fila}|">Fila</th>
+              <td data-etiqueta="Qué pasa" th:text="${e.pasa}">Qué pasa</td>
+              <td data-etiqueta="Qué hacer" th:text="${e.hacer}">Qué hacer</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </th:block>
+
+    <th:block th:unless="${importado}">
+      <section class="pieza adm-foco pieza-ahora" id="importar" aria-labelledby="importar-titulo">
+        <p class="adm-foco-rotulo"><span class="adm-urgencia adm-urgencia--semana">Esta
+          semana</span><span>Lo que te toca ahora</span></p>
+        <h2 id="importar-titulo" tabindex="-1">Importá el padrón de la feria del sábado</h2>
+        <form class="adm-importar" method="post" enctype="multipart/form-data"
+              action="/prototipo/encastre/admin-donantes-importado"
+              th:action="@{/prototipo/encastre/admin-donantes-importado}">
+          <div class="campo carga-fotos">
+            <label for="padron">Archivo CSV</label>
+            <input id="padron" name="padron" type="file" accept=".csv,text/csv" required
+                   aria-describedby="padron-ayuda">
+            <small id="padron-ayuda">Una fila por persona: nombre, correo y teléfono.</small>
+          </div>
+          <button type="submit">Importar</button>
+        </form>
+        <div class="adm-foco-detalle">
+          <p>Se procesa de a partes, sin que tengas que esperar: podés seguir con el turno. Cada
+            persona nueva recibe su usuario por correo.</p>
+          <ul class="adm-datos">
+            <li>feria-sabado.csv</li>
+            <li>20.000 filas</li>
+            <li>Llegó el lunes 12 de octubre</li>
+          </ul>
+        </div>
+      </section>
+
+      <section th:replace="~{prototipo/encastre/admin-inicio :: franja('Quienes donan', 'personas',
+               '/prototipo/encastre/admin-donantes', ${ {
+                 {'clave':'con', 'texto':'Con usuario', 'cifra':80, 'tono':'menta'},
+                 {'clave':'sin', 'texto':'Sin usuario', 'cifra':6, 'tono':'sol'}} }, '')}"></section>
+
+      <section class="adm-bandeja" aria-labelledby="bandeja-titulo">
+        <div class="adm-bandeja-cabeza">
+          <div>
+            <h2 id="bandeja-titulo">Donantes</h2>
+            <p>Los que más donaron, primero.</p>
+          </div>
+          <details class="adm-plegable adm-plegable--mesa">
+            <summary>Registrar donante</summary>
+            <form method="post" action="/prototipo/encastre/admin-donantes"
+                  th:action="@{/prototipo/encastre/admin-donantes}">
+              <div class="campo">
+                <label for="alta-nombre">Nombre</label>
+                <input id="alta-nombre" name="nombre" type="text" required autocomplete="off">
+              </div>
+              <div class="campo">
+                <label for="alta-correo">Correo</label>
+                <input id="alta-correo" name="correo" type="email" required autocomplete="off"
+                       aria-describedby="alta-correo-ayuda">
+                <small id="alta-correo-ayuda">Le llega su usuario para entrar.</small>
+              </div>
+              <button type="submit" class="secondary">Registrar donante</button>
+            </form>
+          </details>
+        </div>
+        <table class="tabla" aria-labelledby="bandeja-titulo">
+          <thead>
+            <tr><th scope="col">Donante</th><th scope="col">Donaciones</th>
+              <th scope="col">Categoría</th><th scope="col">Usuario</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="f : ${filas}" th:if="${ver == '' or ver == f.ver}">
+              <th scope="row"><span th:text="${f.nombre}">Nombre</span><small
+                  th:text="${f.correo}">Correo</small></th>
+              <td data-etiqueta="Donaciones" th:text="${f.donaciones}">0</td>
+              <td data-etiqueta="Categoría" th:text="${f.categoria}">Categoría</td>
+              <td data-etiqueta="Usuario"><span class="adm-estado"
+                  th:classappend="${f.ver == 'con'} ? 'adm-tono--menta' : 'adm-tono--sol'"
+                  th:text="${f.ver == 'con'} ? 'Con usuario' : 'Sin usuario'">Usuario</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

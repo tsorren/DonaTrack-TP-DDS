@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: el yogur, marcado vencido (RF-16). Pantalla sumada al flujo: es
+       el logro de la tercera tarea del turno. La tira suma su tercera pieza, la fila del yogur queda
+       en gris y lo de ahora pasa a ser el padrón de la feria. Es admin-donaciones con
+       estado = vencida. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Donación vencida - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-donaciones :: pantalla('vencida')}"></th:block>
+</th:block>
+</body>
+</html>

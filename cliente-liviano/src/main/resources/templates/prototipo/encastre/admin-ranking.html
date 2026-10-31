@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: Ranking (RF-19), el del último mes cerrado y el selector de los
+       anteriores. El selector es la franja de los meses sobre la mesa (?ver=<mes>); el podio es una
+       pieza donde cada donación de los tres primeros es una pieza apilada: la torre más alta gana.
+       Sale de los mismos datos que la bandeja, que dice lo mismo en texto. Sin tarea: el turno ya
+       está al día. Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Ranking - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <div class="tablero adm-tablero adm-seccion adm-ranking"
+       th:with="meses=${ {
+                  'septiembre':{'nombre':'septiembre', 'puestos':{
+                    {'nombre':'Panadería Ejemplo', 'donaciones':14, 'categoria':'Transformador'},
+                    {'nombre':'Bruno', 'donaciones':11, 'categoria':'Sostenedor'},
+                    {'nombre':'Lácteos Ejemplo', 'donaciones':9, 'categoria':'Sostenedor'},
+                    {'nombre':'Carla', 'donaciones':6, 'categoria':'Sostenedor'},
+                    {'nombre':'Almacén Ejemplo', 'donaciones':5, 'categoria':'Colaborador'},
+                    {'nombre':'Ana', 'donaciones':4, 'categoria':'Colaborador'}}},
+                  'agosto':{'nombre':'agosto', 'puestos':{
+                    {'nombre':'Bruno', 'donaciones':12, 'categoria':'Sostenedor'},
+                    {'nombre':'Panadería Ejemplo', 'donaciones':10, 'categoria':'Transformador'},
+                    {'nombre':'Carla', 'donaciones':8, 'categoria':'Sostenedor'},
+                    {'nombre':'Lácteos Ejemplo', 'donaciones':7, 'categoria':'Sostenedor'},
+                    {'nombre':'Diego', 'donaciones':5, 'categoria':'Colaborador'},
+                    {'nombre':'Elena', 'donaciones':4, 'categoria':'Colaborador'}}},
+                  'julio':{'nombre':'julio', 'puestos':{
+                    {'nombre':'Lácteos Ejemplo', 'donaciones':13, 'categoria':'Sostenedor'},
+                    {'nombre':'Bruno', 'donaciones':9, 'categoria':'Sostenedor'},
+                    {'nombre':'Panadería Ejemplo', 'donaciones':9, 'categoria':'Transformador'},
+                    {'nombre':'Elena', 'donaciones':6, 'categoria':'Colaborador'},
+                    {'nombre':'Carla', 'donaciones':5, 'categoria':'Sostenedor'},
+                    {'nombre':'Fabián', 'donaciones':3, 'categoria':'Colaborador'}}}} },
+                clave=${param.ver != null and meses.containsKey(param.ver[0]) ? param.ver[0] : 'septiembre'},
+                mes=${meses.get(clave)}">
+    <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Ranking',
+             'Quienes más donaron, mes a mes.', 5)}"></section>
+
+    <section th:replace="~{prototipo/encastre/admin-inicio :: franja('Los meses', 'donaciones',
+             '/prototipo/encastre/admin-ranking', ${ {
+               {'clave':'julio', 'texto':'Julio', 'cifra':312, 'tono':'lila'},
+               {'clave':'agosto', 'texto':'Agosto', 'cifra':298, 'tono':'menta'},
+               {'clave':'septiembre', 'texto':'Septiembre', 'cifra':341, 'tono':'sol'}} }, 'septiembre')}"></section>
+
+    <!--/* El podio: una torre por puesto, una pieza por donación, desde los mismos datos. */-->
+    <section class="pieza adm-podio" aria-labelledby="podio-titulo">
+      <h2 id="podio-titulo" th:text="|El podio de ${mes.nombre}|">El podio de septiembre</h2>
+      <ol class="adm-torres">
+        <li th:each="p, v : ${mes.puestos}" th:if="${v.count <= 3}" class="adm-torre"
+            th:classappend="|adm-torre--${v.count}|">
+          <span class="adm-torre-piezas" aria-hidden="true"><svg
+                th:each="n : ${#numbers.sequence(1, p.donaciones)}" class="adm-torre-pieza"
+                viewBox="22 14 56 72" focusable="false"><use href="#encastre-pieza"/></svg></span>
+          <span class="adm-torre-puesto" th:text="|${v.count}.º|">1.º</span>
+          <b th:text="${p.nombre}">Nombre</b>
+          <span th:text="|${p.donaciones} donaciones|">0 donaciones</span>
+        </li>
+      </ol>
+    </section>
+
+    <section class="adm-bandeja" aria-labelledby="bandeja-titulo">
+      <div class="adm-bandeja-cabeza">
+        <div>
+          <h2 id="bandeja-titulo" th:text="|Ranking de ${mes.nombre}|">Ranking de septiembre</h2>
+          <p>Por cantidad de donaciones entregadas en el mes.</p>
+        </div>
+      </div>
+      <table class="tabla" aria-labelledby="bandeja-titulo">
+        <thead>
+          <tr><th scope="col">Donante</th><th scope="col">Puesto</th>
+            <th scope="col">Donaciones</th><th scope="col">Categoría</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="p, v : ${mes.puestos}">
+            <th scope="row" th:text="${p.nombre}">Nombre</th>
+            <td data-etiqueta="Puesto" th:text="|${v.count}.º|">1.º</td>
+            <td data-etiqueta="Donaciones" th:text="${p.donaciones}">0</td>
+            <td data-etiqueta="Categoría" th:text="${p.categoria}">Categoría</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

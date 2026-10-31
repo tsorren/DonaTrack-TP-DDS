@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: el resultado de importar el padrón (RF-20), en la misma pantalla
+       de Donantes. La tira del turno suma su cuarta pieza; la franja muestra el padrón por fila
+       (nuevos, actualizados, con error) y la bandeja, las doce filas que no entraron con qué hacer.
+       Lo de ahora pasa a ser el camión del taller. Es admin-donantes con importado = true. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Padrón importado - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-donantes :: pantalla(true)}"></th:block>
+</th:block>
+</body>
+</html>

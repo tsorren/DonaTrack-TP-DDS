@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: la entidad nueva, aprobada. Entra en la red (su fila, marcada,
+       arriba de la bandeja; la franja suma una activa), la tira del turno suma su segunda pieza y lo
+       de ahora pasa a ser el yogur vencido. Es admin-entidades con aprobada = true. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Entidad aprobada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-entidades :: pantalla(true)}"></th:block>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: Entidades (RF-15 registrar, RF-21 aprobar), la segunda tarea del
+       turno. La pieza de lo de ahora es el pedido de una entidad nueva, con su nombre largo entero
+       y sus papeles como piezas que completan el rompecabezas; se aprueba o se rechaza con el
+       motivo. Abajo, la franja de la red sobre la mesa, que filtra la bandeja de entidades, y el
+       alta a mano en un plegable. Al aprobar (admin-entidades-aprobada), la entidad entra en la
+       red: la tira del turno suma su pieza y aparece lo que sigue. Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-entidades :: pantalla(false)}"></th:block>
+</th:block>
+
+<!--/* aprobada: si el pedido de Manos Unidas ya se aprobó. */-->
+<th:block th:fragment="pantalla(aprobada)"
+          th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                   filas=${ {
+                     {'nombre':'Asociación Civil Manos Unidas del Barrio Ejemplo Norte', 'tipo':'Comedor', 'lugar':'Barrio Ejemplo Norte · a 4,2 km', 'recibio':(aprobada ? 'Se sumó hoy' : 'Pidió sumarse el viernes 9'), 'ver':(aprobada ? 'activa' : 'pide'), 'nueva':aprobada},
+                     {'nombre':'Biblioteca Popular Ejemplo', 'tipo':'Biblioteca', 'lugar':'Centro · a 3,4 km', 'recibio':'Pidió sumarse el lunes 12 · le falta la constancia de domicilio', 'ver':'pide', 'nueva':false},
+                     {'nombre':'Comedor Barrio Ejemplo', 'tipo':'Comedor', 'lugar':'Barrio Ejemplo · a 3,8 km', 'recibio':'6 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Merendero Ejemplo Sur', 'tipo':'Merendero', 'lugar':'Barrio Sur · a 2,1 km', 'recibio':'5 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Escuela Ejemplo 12', 'tipo':'Escuela', 'lugar':'Centro · a 1,4 km', 'recibio':'4 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Hogar Ejemplo Norte', 'tipo':'Hogar', 'lugar':'Barrio Norte · a 3,9 km', 'recibio':'4 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Comedor Ejemplo Oeste', 'tipo':'Comedor', 'lugar':'Barrio Oeste · a 1,8 km', 'recibio':'3 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Asociación Vecinal Ejemplo del Barrio Sur', 'tipo':'Asociación vecinal', 'lugar':'Barrio Sur · a 2,6 km', 'recibio':'3 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Jardín Ejemplo 4', 'tipo':'Escuela', 'lugar':'Centro · a 1,1 km', 'recibio':'2 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Parroquia Ejemplo', 'tipo':'Comedor', 'lugar':'Barrio Este · a 2,9 km', 'recibio':'2 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Club Ejemplo', 'tipo':'Merendero', 'lugar':'Barrio Oeste · a 2,4 km', 'recibio':'2 donaciones en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Centro de Día Ejemplo', 'tipo':'Hogar', 'lugar':'Barrio Norte · a 4,8 km', 'recibio':'1 donación en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Ropero Ejemplo', 'tipo':'Ropero', 'lugar':'Centro · a 0,9 km', 'recibio':'1 donación en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Huerta Comunitaria Ejemplo', 'tipo':'Comedor', 'lugar':'Barrio Este · a 5,3 km', 'recibio':'Ninguna en octubre', 'ver':'activa', 'nueva':false},
+                     {'nombre':'Merendero Ejemplo Este', 'tipo':'Merendero', 'lugar':'Barrio Este · a 4,4 km', 'recibio':'Suspendida desde el 1 de octubre: no confirma las entregas', 'ver':'suspendida', 'nueva':false}} },
+                   estados=${ {'pide':{'texto':'Pide sumarse', 'tono':'sol'},
+                               'activa':{'texto':'Activa', 'tono':'menta'},
+                               'suspendida':{'texto':'Suspendida', 'tono':'gris'}} }">
+  <div class="tablero adm-tablero adm-seccion">
+    <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Entidades',
+             'Las que reciben y las que piden entrar.', ${aprobada ? 2 : 1})}"></section>
+
+    <th:block th:if="${aprobada}">
+      <section th:replace="~{prototipo/encastre/admin-inicio :: logro(
+               'Manos Unidas ya es parte de la red',
+               'Recibió su usuario y ya puede publicar lo que necesita.', 2)}"></section>
+    </th:block>
+
+    <!--/* El pedido: los papeles, escritos una vez, son las piezas que lo completan. */-->
+    <section th:unless="${aprobada}" class="pieza adm-foco pieza-ahora" id="pedido-manos"
+             aria-labelledby="pedido-titulo"
+             th:with="papeles=${ {
+               {'nombre':'Estatuto', 'esta':true},
+               {'nombre':'Constancia de domicilio', 'esta':true},
+               {'nombre':'Inscripción en el registro de entidades', 'esta':true}} }">
+      <p class="adm-foco-rotulo"><span class="adm-urgencia adm-urgencia--hoy">Hoy</span><span>Lo que
+        te toca ahora</span></p>
+      <h2 id="pedido-titulo" tabindex="-1" class="adm-titulo-largo">Asociación Civil Manos Unidas del
+        Barrio Ejemplo Norte pide sumarse</h2>
+      <div class="adm-acciones">
+        <form method="post" action="/prototipo/encastre/admin-entidades-aprobada"
+              th:action="@{/prototipo/encastre/admin-entidades-aprobada}">
+          <input type="hidden" name="entidad" value="manos-unidas">
+          <button type="submit">Aprobar</button>
+        </form>
+        <details class="adm-plegable">
+          <summary>Rechazar</summary>
+          <form method="post" action="/prototipo/encastre/admin-entidades"
+                th:action="@{/prototipo/encastre/admin-entidades}">
+            <div class="campo">
+              <label for="motivo">Por qué la rechazás</label>
+              <textarea id="motivo" name="motivo" rows="3" required
+                        aria-describedby="motivo-ayuda"></textarea>
+              <small id="motivo-ayuda">Le llega a la entidad por correo, tal como lo escribas.</small>
+            </div>
+            <button type="submit" class="secondary">Rechazar el pedido</button>
+          </form>
+        </details>
+      </div>
+      <ul class="adm-datos">
+        <li>Comedor · Barrio Ejemplo Norte, a 4,2 km</li>
+        <li>Pidió el viernes 9 de octubre</li>
+      </ul>
+      <div class="adm-foco-zona">
+        <h3 class="adm-subtitulo">Sus papeles</h3>
+        <ul class="adm-bandejita">
+          <li th:each="papel, v : ${papeles}">
+            <p class="adm-papel" th:classappend="${papel.esta} ? 'adm-criterio--si' : 'adm-criterio--no'"><svg
+               class="adm-criterio-forma" viewBox="22 14 56 72" aria-hidden="true"
+               focusable="false"><use href="#encastre-pieza"
+               th:href="${v.last} ? '#encastre-pieza-borde' : '#encastre-pieza'"/></svg><span
+               th:text="${papel.nombre}">Papel</span><small
+               th:text="${papel.esta} ? 'Está' : 'Falta'">Está</small></p>
+          </li>
+        </ul>
+        <p class="adm-nota" th:text="|${#lists.size(papeles.?[esta])} de ${#lists.size(papeles)} papeles: está todo para aprobarla.|">3
+          de 3 papeles: está todo para aprobarla.</p>
+      </div>
+    </section>
+
+    <section th:replace="~{prototipo/encastre/admin-inicio :: franja('La red', 'entidades',
+             '/prototipo/encastre/admin-entidades', ${ {
+               {'clave':'activa', 'texto':'Activas', 'cifra':(aprobada ? 13 : 12), 'tono':'menta'},
+               {'clave':'pide', 'texto':'Piden sumarse', 'cifra':(aprobada ? 1 : 2), 'tono':'sol'},
+               {'clave':'suspendida', 'texto':'Suspendidas', 'cifra':1, 'tono':'gris'}} }, '')}"></section>
+
+    <section class="adm-bandeja" aria-labelledby="bandeja-titulo">
+      <div class="adm-bandeja-cabeza">
+        <div>
+          <h2 id="bandeja-titulo">Entidades</h2>
+          <p>Las que piden sumarse primero; después, las que más recibieron este mes.</p>
+        </div>
+        <details class="adm-plegable adm-plegable--mesa">
+          <summary>Registrar entidad</summary>
+          <form method="post" action="/prototipo/encastre/admin-entidades"
+                th:action="@{/prototipo/encastre/admin-entidades}">
+            <div class="campo">
+              <label for="nueva-nombre">Nombre</label>
+              <input id="nueva-nombre" name="nombre" type="text" required>
+            </div>
+            <div class="campo">
+              <label for="nueva-tipo">Tipo</label>
+              <select id="nueva-tipo" name="tipo" required>
+                <option value="comedor">Comedor</option>
+                <option value="merendero">Merendero</option>
+                <option value="escuela">Escuela</option>
+                <option value="hogar">Hogar</option>
+                <option value="otra">Otra</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="nueva-correo">Correo de quien la representa</label>
+              <input id="nueva-correo" name="correo" type="email" required
+                     aria-describedby="nueva-correo-ayuda">
+              <small id="nueva-correo-ayuda">Le llega su usuario para entrar.</small>
+            </div>
+            <button type="submit" class="secondary">Registrar entidad</button>
+          </form>
+        </details>
+      </div>
+      <table class="tabla" aria-labelledby="bandeja-titulo">
+        <thead>
+          <tr><th scope="col">Entidad</th><th scope="col">Dónde</th><th scope="col">Este mes</th>
+            <th scope="col">Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="f : ${filas}" th:if="${ver == '' or ver == f.ver}"
+              th:classappend="${f.nueva} ? 'adm-fila--nueva'">
+            <th scope="row"><span th:text="${f.nombre}">Entidad</span><small
+                th:text="${f.tipo}">Tipo</small></th>
+            <td data-etiqueta="Dónde" th:text="${f.lugar}">Lugar</td>
+            <td data-etiqueta="Este mes" th:text="${f.recibio}">Recibió</td>
+            <td data-etiqueta="Estado"><span class="adm-estado"
+                th:classappend="|adm-tono--${estados[f.ver].tono}|"
+                th:text="${estados[f.ver].texto}">Estado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

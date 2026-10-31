@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre, admin: Donaciones (RF-15 registrar, RF-16 vencidas), la tercera tarea
+       del turno. La pieza de lo de ahora es el yogur que venció ayer, para marcarlo vencido. Abajo,
+       la franja de circulación sobre la mesa (la de la referencia del tablero), que filtra la
+       bandeja de veinte donaciones; registrar lo que entra es la acción de la bandeja. Estados:
+       admin-donaciones-registrada (el arroz, recién registrado, arriba de la bandeja) y
+       admin-donaciones-vencida (el yogur, marcado; la tira suma su pieza y aparece lo que sigue).
+       Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/admin-donaciones :: pantalla('')}"></th:block>
+</th:block>
+
+<!--/* estado: '' | registrada (se acaba de registrar el arroz) | vencida (se acaba de marcar el
+       yogur; el arroz ya estaba registrado). */-->
+<th:block th:fragment="pantalla(estado)"
+          th:with="ver=${param.ver != null ? param.ver[0] : ''},
+                   arroz=${estado != ''}, vencida=${estado == 'vencida'},
+                   filas=${ {
+                     {'que':'Arroz · 20 kg', 'de':'DT-0422 · de Almacén Ejemplo', 'destino':'Sin asignar', 'cuando':'Registrada hoy, 15:41', 'ver':'deposito', 'nueva':(estado == 'registrada'), 'esta':arroz},
+                     {'que':'Yogur · 40 unidades', 'de':'DT-0421 · de Lácteos Ejemplo', 'destino':'Sin asignar', 'cuando':(vencida ? 'Marcada vencida hoy, 15:41' : 'Venció ayer, martes 13'), 'ver':(vencida ? 'vencida' : 'deposito'), 'nueva':vencida, 'esta':true},
+                     {'que':'Fideos secos · 35 kg', 'de':'DT-0415 · de Cooperativa Ejemplo', 'destino':'Propuesta: Escuela Ejemplo 12', 'cuando':'Hace 6 días en el depósito', 'ver':'deposito', 'nueva':false, 'esta':true},
+                     {'que':'Harina · 50 kg', 'de':'DT-0416 · de Molino Ejemplo', 'destino':'Sin asignar', 'cuando':'Hace 5 días en el depósito', 'ver':'deposito', 'nueva':false, 'esta':true},
+                     {'que':'Aceite · 24 litros', 'de':'DT-0417 · de Almacén Ejemplo', 'destino':'Sin asignar', 'cuando':'Hace 4 días en el depósito', 'ver':'deposito', 'nueva':false, 'esta':true},
+                     {'que':'Cuadernos · 200 unidades', 'de':'DT-0411 · de Librería Ejemplo', 'destino':'Sin asignar', 'cuando':'Hace 4 días en el depósito', 'ver':'deposito', 'nueva':false, 'esta':true},
+                     {'que':'Pañales · 12 paquetes', 'de':'DT-0413 · de Diego', 'destino':'Sin asignar', 'cuando':'Hace 3 días en el depósito', 'ver':'deposito', 'nueva':false, 'esta':true},
+                     {'que':'Zapatillas · 20 pares', 'de':'DT-0414 · de Tienda Ejemplo', 'destino':'Sin asignar', 'cuando':'Hace 3 días en el depósito', 'ver':'deposito', 'nueva':false, 'esta':true},
+                     {'que':'Jabón · 40 unidades', 'de':'DT-0420 · de Carla', 'destino':'Sin asignar', 'cuando':'Hace 2 días en el depósito', 'ver':'deposito', 'nueva':false, 'esta':true},
+                     {'que':'Galletitas · 80 paquetes', 'de':'DT-0419 · de Bruno', 'destino':'Sin asignar', 'cuando':'Vence el lunes 30 de noviembre', 'ver':'deposito', 'nueva':false, 'esta':true},
+                     {'que':'Leche en polvo · 12 kg', 'de':'DT-0418 · de Almacén Ejemplo', 'destino':'Merendero Ejemplo Sur', 'cuando':'Aceptada hoy, 15:20 · vence el viernes 16', 'ver':'asignada', 'nueva':false, 'esta':true},
+                     {'que':'Conservas · 24 unidades', 'de':'DT-0410 · de Almacén Ejemplo', 'destino':'Comedor Barrio Ejemplo', 'cuando':'Aceptada el lunes 12', 'ver':'asignada', 'nueva':false, 'esta':true},
+                     {'que':'Frazadas · 30 unidades', 'de':'DT-0409 · de Tienda Ejemplo', 'destino':'Hogar Ejemplo Norte', 'cuando':'Aceptada el lunes 12', 'ver':'asignada', 'nueva':false, 'esta':true},
+                     {'que':'Mochilas · 15 unidades', 'de':'DT-0408 · de Elena', 'destino':'Escuela Ejemplo 12', 'cuando':'Aceptada el viernes 9', 'ver':'asignada', 'nueva':false, 'esta':true},
+                     {'que':'Polenta · 25 kg', 'de':'DT-0406 · de Molino Ejemplo', 'destino':'Comedor Ejemplo Oeste', 'cuando':'Lista desde el martes 13', 'ver':'lista', 'nueva':false, 'esta':true},
+                     {'que':'Leche larga vida · 48 litros', 'de':'DT-0405 · de Lácteos Ejemplo', 'destino':'Merendero Ejemplo Sur', 'cuando':'Lista desde el martes 13', 'ver':'lista', 'nueva':false, 'esta':true},
+                     {'que':'Lentejas secas · 15 kg', 'de':'DT-0412 · de Ana', 'destino':'Comedor Barrio Ejemplo', 'cuando':'Salió hoy, 14:30, en el camión AB 123 CD', 'ver':'camino', 'nueva':false, 'esta':true},
+                     {'que':'Pan lactal · 60 unidades', 'de':'DT-0404 · de Panadería Ejemplo', 'destino':'Merendero Ejemplo Sur', 'cuando':'Llegó hoy, 15:05: falta que la confirmen', 'ver':'camino', 'nueva':false, 'esta':true},
+                     {'que':'Abrigos · 25 unidades', 'de':'DT-0403 · de Bruno', 'destino':'Hogar Ejemplo Norte', 'cuando':'Salió hoy, 14:30, en el camión AB 123 CD', 'ver':'camino', 'nueva':false, 'esta':true},
+                     {'que':'Útiles escolares · 120 unidades', 'de':'DT-0401 · de Librería Ejemplo', 'destino':'Escuela Ejemplo 12', 'cuando':'Faltan dos cajas: avisó hoy, 11:05', 'ver':'problema', 'nueva':false, 'esta':true}} },
+                   estados=${ {'deposito':{'texto':'En el depósito', 'tono':'sol'},
+                               'asignada':{'texto':'Asignada', 'tono':'lila'},
+                               'lista':{'texto':'Lista para entregar', 'tono':'menta'},
+                               'camino':{'texto':'En camino', 'tono':'azul'},
+                               'problema':{'texto':'Con problema', 'tono':'rosa'},
+                               'vencida':{'texto':'Vencida', 'tono':'gris'}} }">
+  <div class="tablero adm-tablero adm-seccion">
+    <section th:replace="~{prototipo/encastre/admin-inicio :: cabeza('Donaciones',
+             'Lo que entra al depósito y sale.', ${vencida ? 3 : 2})}"></section>
+
+    <th:block th:if="${estado == 'registrada'}">
+      <section th:replace="~{prototipo/encastre/admin-inicio :: logro(
+               'Registraste 20 kg de arroz',
+               'Quedó en el depósito como DT-0422.', -1)}"></section>
+    </th:block>
+
+    <th:block th:if="${vencida}">
+      <section th:replace="~{prototipo/encastre/admin-inicio :: logro(
+               'El yogur quedó marcado como vencido',
+               'Salió de la asignación: nadie lo carga en un camión.', 3)}"></section>
+    </th:block>
+
+    <section th:unless="${vencida}" class="pieza adm-foco pieza-ahora" id="vencida-yogur"
+             aria-labelledby="vencida-titulo">
+      <p class="adm-foco-rotulo"><span class="adm-urgencia adm-urgencia--hoy">Hoy</span><span>Lo que
+        te toca ahora</span></p>
+      <h2 id="vencida-titulo" tabindex="-1">El yogur venció ayer y sigue en el depósito</h2>
+      <form class="adm-acciones" method="post" action="/prototipo/encastre/admin-donaciones-vencida"
+            th:action="@{/prototipo/encastre/admin-donaciones-vencida}">
+        <input type="hidden" name="donacion" value="DT-0421">
+        <button type="submit">Marcar vencida</button>
+      </form>
+      <div class="adm-foco-detalle">
+        <p>Marcarla vencida la saca de la asignación: así nadie la carga en un camión. Queda
+          registrado que la marcaste vos.</p>
+        <ul class="adm-datos">
+          <li>Yogur · 40 unidades</li>
+          <li>DT-0421 · de Lácteos Ejemplo</li>
+          <li>Venció el martes 13 de octubre</li>
+        </ul>
+      </div>
+    </section>
+
+    <section th:replace="~{prototipo/encastre/admin-inicio :: franja('En circulación', 'donaciones',
+             '/prototipo/encastre/admin-donaciones', ${ {
+               {'clave':'deposito', 'texto':'En el depósito', 'cifra':(estado == 'registrada' ? 18 : 17), 'tono':'sol'},
+               {'clave':'asignada', 'texto':'Asignadas', 'cifra':12, 'tono':'lila'},
+               {'clave':'lista', 'texto':'Listas para entregar', 'cifra':7, 'tono':'menta'},
+               {'clave':'camino', 'texto':'En camino', 'cifra':8, 'tono':'azul'},
+               {'clave':'problema', 'texto':'Con problema', 'cifra':1, 'tono':'rosa'}} }, '')}"></section>
+
+    <section class="adm-bandeja" aria-labelledby="bandeja-titulo">
+      <div class="adm-bandeja-cabeza">
+        <div>
+          <h2 id="bandeja-titulo">Donaciones</h2>
+          <p>Las que esperan más, primero. Se ven hasta veinte por vez: filtrá con la franja.</p>
+        </div>
+        <a href="/prototipo/encastre/admin-donaciones-registrar"
+           th:href="@{/prototipo/encastre/admin-donaciones-registrar}" role="button"
+           class="outline">Registrar donación</a>
+      </div>
+      <table class="tabla" aria-labelledby="bandeja-titulo">
+        <thead>
+          <tr><th scope="col">Donación</th><th scope="col">Destino</th><th scope="col">Cuándo</th>
+            <th scope="col">Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr th:each="f : ${filas}" th:if="${f.esta and (ver == '' or ver == f.ver)}"
+              th:classappend="${f.nueva} ? 'adm-fila--nueva'">
+            <th scope="row"><span th:text="${f.que}">Donación</span><small
+                th:text="${f.de}">Código</small></th>
+            <td data-etiqueta="Destino" th:text="${f.destino}">Destino</td>
+            <td data-etiqueta="Cuándo" th:text="${f.cuando}">Cuándo</td>
+            <td data-etiqueta="Estado"><span class="adm-estado"
+                th:classappend="|adm-tono--${estados[f.ver].tono}|"
+                th:text="${estados[f.ver].texto}">Estado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

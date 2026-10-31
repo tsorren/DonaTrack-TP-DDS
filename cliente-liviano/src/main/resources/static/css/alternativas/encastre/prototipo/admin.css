@@ -1,0 +1,1466 @@
+/*
+ * Encastre, prototipo del admin (iteración 3): el turno del depósito, de a una tarea. Se carga
+ * desde las plantillas prototipo/encastre/admin-*.html, después de estructura.css y
+ * componentes.css, y solo usa sus piezas, sus tokens de uso y sus quiebres (mobile first).
+ *
+ * El turno es una tira de piezas (#encastre-pieza) que se completa: menta lo resuelto, naranja lo
+ * de ahora, hueco lo que falta. La tarjeta de foco es la única pieza naranja de cada pantalla
+ * (pieza-ahora). Las secciones de trabajo son bandejas sobrias: la franja que filtra va tallada
+ * en la mesa de tinta, sin pieza, y la tabla es la bandeja del sistema.
+ */
+
+/* El tablero del admin: una pieza debajo de la otra en el celular; sin las áreas del inicio del
+   donante. */
+.tablero.adm-tablero {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: none;
+}
+
+.adm-tablero > * {
+  grid-area: auto;
+}
+
+.adm-tablero h2 {
+  margin: 0;
+  color: var(--color-pieza-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-pieza-titulo);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.adm-tablero :is(ul, ol) {
+  margin: 0;
+  padding: 0;
+}
+
+.adm-tablero li {
+  list-style: none;
+}
+
+/* Pico estira los botones de un formulario; acá cada uno mide lo que dice. */
+.adm-tablero :is(button, [type="submit"]) {
+  width: auto;
+}
+
+.adm-tablero form {
+  margin: 0;
+}
+
+/* La pieza que va antes de una franja o de una bandeja no tiene en qué encastrar: la mesa. */
+.tablero > .pieza:has(+ :is(.adm-franja, .adm-bandeja, .adm-aviso-error))::after {
+  content: none;
+}
+
+/* La cabeza: el nombre llano de la sección es el título; la voz, la bajada. */
+.adm-cabeza {
+  --medida-lengueta-x: 18%;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--espacio-3) var(--espacio-4);
+}
+
+.adm-cabeza h1 {
+  margin: 0;
+  color: var(--color-pieza-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-1);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.adm-cabeza-texto {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.adm-voz {
+  margin: 0;
+  font-size: var(--tamano-texto-grande);
+  font-weight: 700;
+}
+
+.adm-bajada {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+/* La cabeza del inicio: la voz del turno, grande, y la tira entera debajo. */
+.adm-cabeza--turno {
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-2);
+}
+
+.adm-tira-zona {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espacio-2) var(--espacio-4);
+  margin-block-start: var(--espacio-2);
+}
+
+/* En el celular, la tira grande va sin sus nombres a la vista (los dice la cola, y quedan para
+   los lectores de pantalla), para que la tarjeta de foco entre en la primera pantalla. */
+.adm-tira--tira {
+  width: 12rem;
+  max-width: 100%;
+}
+
+.adm-tira--tira .adm-tira-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.adm-voz--turno {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+/* Con la cola vacía, la voz es el logro del turno: grande, con el marcador de sol del saludo de
+   la ancla. */
+.adm-voz--logro {
+  margin-block: var(--espacio-1) var(--espacio-2);
+  font-size: var(--tamano-mision);
+  line-height: 1.1;
+  text-decoration: underline;
+  text-decoration-color: var(--color-marcador);
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: 0.34em;
+  text-underline-offset: -0.14em;
+}
+
+/* La tira del turno: una pieza por tarea, que encastra en la de al lado por su lengüeta. */
+.adm-tira {
+  display: flex;
+}
+
+.adm-tira-pieza {
+  --color-adm-pieza: var(--color-junta-tenue);
+
+  display: grid;
+  flex: 1 1 0;
+  align-content: start;
+  gap: var(--espacio-2);
+  min-width: 0;
+  margin: 0;
+}
+
+.adm-tira-cuerpo {
+  position: relative;
+  display: grid;
+  grid-template-rows: 16fr 56fr;
+  aspect-ratio: 56 / 72;
+  color: var(--color-pieza-texto);
+}
+
+.adm-tira-forma {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: var(--color-adm-pieza);
+  stroke: var(--color-junta);
+  stroke-width: 3;
+}
+
+.adm-tira-cuerpo .icono {
+  position: relative;
+  grid-row: 2;
+  place-self: center;
+  width: 42%;
+  height: auto;
+  stroke-width: 3;
+}
+
+.adm-tira-pieza--hecha {
+  --color-adm-pieza: var(--color-pieza-menta);
+}
+
+.adm-tira-pieza--ahora {
+  --color-adm-pieza: var(--color-ahora);
+}
+
+.adm-tira-pieza--falta .adm-tira-forma {
+  stroke-dasharray: 5 4;
+  stroke-width: 2;
+}
+
+.adm-tira-texto {
+  display: grid;
+  padding-inline-end: 18%;
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.adm-tira-texto small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.adm-tira-cuenta {
+  max-width: 5rem;
+  margin: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+/* La tira chica de la cabeza: el turno de un vistazo, que vuelve al inicio. */
+.adm-turno-mini {
+  display: grid;
+  gap: var(--espacio-1);
+  min-height: var(--medida-toque-minimo);
+  padding: var(--espacio-2) var(--espacio-3);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.adm-turno-mini:hover {
+  background: var(--color-pieza-gris-alta);
+  color: var(--color-pieza-texto);
+}
+
+.adm-turno-mini b {
+  font-weight: 800;
+}
+
+.adm-turno-mini-texto {
+  display: grid;
+  line-height: 1.25;
+}
+
+.adm-tira--mini {
+  width: 6rem;
+  margin: var(--espacio-1) 0 0;
+}
+
+.adm-tira--mini .adm-tira-texto {
+  display: none;
+}
+
+.adm-tira--mini .adm-tira-forma {
+  stroke-width: 4;
+}
+
+/* La tarjeta de foco: lo de ahora, la única pieza naranja. */
+.adm-foco {
+  --color-pieza-fondo: var(--color-pieza-naranja);
+  --medida-lengueta-x: 24%;
+
+  gap: var(--espacio-4);
+}
+
+.adm-foco[hidden] {
+  display: none;
+}
+
+.adm-foco h2 {
+  font-size: var(--tamano-mision);
+  line-height: 1.04;
+}
+
+.adm-foco h2:focus {
+  outline: none;
+}
+
+.adm-foco-rotulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+  margin: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+/* En el celular, el número de la tarea lo dice la tira de arriba: la acción entra en la primera
+   pantalla. */
+.adm-foco-rotulo small {
+  display: none;
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.adm-foco-detalle {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-3);
+}
+
+.adm-foco-detalle p {
+  max-width: 46ch;
+  margin: 0;
+  font-weight: 600;
+}
+
+.adm-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.adm-acciones > *,
+.adm-acciones form > * {
+  margin-block: 0;
+}
+
+.adm-acciones form {
+  margin: 0;
+}
+
+/* Los datos de una tarea: piezas chicas de crema, una por dato. */
+.adm-datos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--espacio-2);
+}
+
+.adm-datos li {
+  margin: 0;
+  padding: var(--espacio-1) var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+/* Lo que acompaña a la tarea dentro de la pieza de foco: una bandeja de tinta con piezas crema
+   (las candidatas de una propuesta, los papeles de una entidad). */
+.adm-foco-zona {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-2);
+  min-width: 0;
+}
+
+.adm-tablero .adm-subtitulo {
+  margin: 0;
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.adm-bandejita {
+  display: grid;
+  gap: var(--medida-junta);
+  padding: var(--medida-junta);
+  background: var(--color-junta);
+  border-radius: var(--radio-pieza);
+}
+
+.adm-bandejita > li {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: calc(var(--radio-pieza) - var(--medida-junta));
+}
+
+.adm-candidata-nombre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--espacio-3);
+  margin: 0;
+}
+
+.adm-candidata-nombre small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+/* La propuesta: la candidata cuyas piezas completan el rompecabezas, con la junta más gruesa. */
+.adm-candidata--propuesta {
+  box-shadow: inset 0 0 0 var(--borde-foco) var(--color-junta);
+}
+
+/* Cada criterio, una pieza: puesta (menta) si se cumple, hueco a trazos si no. */
+.adm-criterios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-1) var(--espacio-4);
+}
+
+.adm-criterios li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.adm-criterio-forma {
+  flex: none;
+  width: 1.125rem;
+  height: 1.45rem;
+  overflow: visible;
+  fill: var(--color-pieza-menta);
+  stroke: var(--color-junta);
+  stroke-width: 6;
+}
+
+.adm-criterio--no {
+  color: var(--color-texto-suave);
+}
+
+.adm-criterio--no .adm-criterio-forma {
+  fill: var(--color-junta-tenue);
+  stroke-dasharray: 9 7;
+  stroke-width: 4;
+}
+
+/* Un signo de color con su texto: la urgencia de una tarea y el estado de una fila. Crema, con el
+   punto del color; nunca un bloque naranja. */
+.adm-urgencia,
+.adm-estado {
+  --color-adm-signo: var(--color-junta);
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  width: fit-content;
+  padding: 0.125rem var(--espacio-3) 0.125rem var(--espacio-2);
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-boton);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.adm-urgencia::before,
+.adm-estado::before {
+  content: "";
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  background: var(--color-adm-signo);
+  border-radius: 50%;
+}
+
+.adm-urgencia--urgente {
+  --color-adm-signo: var(--color-error-texto);
+}
+
+.adm-urgencia--hoy {
+  --color-adm-signo: var(--color-advertencia-texto);
+}
+
+.adm-urgencia--semana {
+  --color-adm-signo: var(--color-info-texto);
+}
+
+/* La cola: las tareas del turno en orden, la que está en foco puesta en tinta. */
+.adm-cola {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+.adm-cola-lista {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.adm-cola-lista li {
+  margin: 0;
+}
+
+.adm-cola-enlace,
+.adm-cola-hecha {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-1);
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+  color: var(--color-pieza-texto);
+  text-decoration: none;
+}
+
+.adm-cola-enlace:hover {
+  background: var(--color-pieza-gris-alta);
+  color: var(--color-pieza-texto);
+}
+
+.adm-cola-enlace b,
+.adm-cola-hecha b {
+  font-size: var(--tamano-chico);
+  line-height: 1.3;
+}
+
+.adm-cola-enlace small,
+.adm-cola-hecha small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.adm-cola-item--foco .adm-cola-enlace {
+  background: var(--color-pieza-tinta);
+  color: var(--color-mesa-texto);
+}
+
+.adm-cola-item--foco .adm-cola-enlace small {
+  color: var(--color-mesa-texto-suave);
+}
+
+.adm-cola-item--foco .adm-cola-enlace:focus-visible {
+  outline-color: var(--color-foco);
+}
+
+.adm-cola-hecha {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--espacio-3);
+}
+
+.adm-cola-hecha > :not(.adm-cola-signo) {
+  grid-column: 2;
+}
+
+.adm-cola-signo {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-pieza-menta);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: 50%;
+}
+
+/* Con la cola vacía, la tarjeta de foco es lo que quedó resuelto. */
+.adm-listo {
+  --color-pieza-fondo: var(--color-pieza-menta);
+  --medida-lengueta-x: 24%;
+
+  gap: var(--espacio-4);
+}
+
+.adm-listo p {
+  max-width: 46ch;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* La franja que filtra: tallada en la mesa de tinta, sin pieza. Los tramos tienen el ancho de su
+   cifra y muerden al siguiente con su lengüeta; cada filtro es una pieza crema con su punto. */
+.adm-franja {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4) var(--espacio-relleno-linea) var(--espacio-5);
+  color: var(--color-mesa-texto);
+}
+
+.adm-franja :focus-visible {
+  outline-color: var(--color-foco-sobre-oscuro);
+}
+
+.adm-franja-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-2) var(--espacio-4);
+}
+
+.adm-tablero .adm-franja h2 {
+  color: var(--color-mesa-texto);
+  font-size: var(--tamano-titulo-3);
+}
+
+.adm-franja-cabeza p {
+  margin: 0;
+  font-weight: 700;
+}
+
+.adm-franja-cabeza b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+}
+
+.adm-franja-tramos {
+  display: block;
+  overflow: visible;
+}
+
+.adm-franja-tramos :is(rect, circle) {
+  fill: var(--color-adm-tono);
+  stroke: var(--color-mesa);
+  stroke-width: 4;
+}
+
+.adm-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.adm-filtros li {
+  margin: 0;
+}
+
+.adm-filtro {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  padding: 0 var(--espacio-4) 0 var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-pieza);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.adm-filtro::before {
+  content: "";
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  background: var(--color-adm-tono);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: 50%;
+}
+
+.adm-filtro b {
+  font-weight: 800;
+}
+
+.adm-filtro:hover {
+  background: var(--color-pieza-gris-alta);
+  color: var(--color-pieza-texto);
+}
+
+/* El filtro puesto: la pieza de sol, como la sección actual del riel. */
+.adm-filtro[aria-current] {
+  background: var(--color-pieza-sol);
+}
+
+.adm-filtro--todas {
+  background: transparent;
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-mesa-texto);
+  color: var(--color-mesa-texto);
+}
+
+.adm-filtro--todas::before {
+  content: none;
+}
+
+.adm-filtro--todas:hover {
+  background: transparent;
+  color: var(--color-mesa-texto);
+  text-decoration: underline;
+}
+
+/* El color de cada parte (tramo, filtro y estado). */
+.adm-tono--sol {
+  --color-adm-tono: var(--color-pieza-sol);
+  --color-adm-signo: var(--color-pieza-sol);
+}
+
+.adm-tono--lila {
+  --color-adm-tono: var(--color-pieza-lila);
+  --color-adm-signo: var(--color-pieza-lila);
+}
+
+.adm-tono--menta {
+  --color-adm-tono: var(--color-pieza-menta);
+  --color-adm-signo: var(--color-pieza-menta);
+}
+
+.adm-tono--azul {
+  --color-adm-tono: var(--color-tramo-en-camino);
+  --color-adm-signo: var(--color-tramo-en-camino);
+}
+
+.adm-tono--rosa {
+  --color-adm-tono: var(--color-tramo-sin-entregar);
+  --color-adm-signo: var(--color-tramo-sin-entregar);
+}
+
+.adm-tono--durazno {
+  --color-adm-tono: var(--color-pieza-durazno);
+  --color-adm-signo: var(--color-pieza-durazno);
+}
+
+.adm-tono--gris {
+  --color-adm-tono: var(--color-pieza-gris);
+  --color-adm-signo: var(--color-pieza-gris);
+}
+
+/* El estado de una fila lleva el punto con su aro de tinta: se ve sobre la crema. */
+.adm-estado::before {
+  box-shadow: 0 0 0 var(--borde-junta) var(--color-junta);
+}
+
+/* Lo que acaba de salir bien: una pieza menta con su tilde. */
+.adm-logro {
+  --color-pieza-fondo: var(--color-pieza-menta);
+  --medida-lengueta-x: 24%;
+
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-4);
+}
+
+.adm-logro > :not(.adm-logro-signo) {
+  grid-column: 2;
+  margin: 0;
+}
+
+.adm-logro p {
+  max-width: 52ch;
+  font-weight: 600;
+}
+
+.adm-logro h2 {
+  font-size: var(--tamano-titulo-3);
+}
+
+/* Lo que sigue: una pieza crema encastrada en el logro, con la próxima tarea y su acción. */
+.adm-sigue {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  margin-block-start: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-4) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.adm-logro > .adm-sigue {
+  grid-column: 1 / -1;
+}
+
+.adm-sigue p {
+  margin: 0;
+}
+
+.adm-sigue-rotulo {
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.adm-sigue-rotulo small {
+  margin-inline-start: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.adm-sigue-titulo {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.adm-sigue [role="button"] {
+  margin-block: 0;
+}
+
+.adm-logro-signo {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-pieza-menta);
+}
+
+/* La bandeja: sobre la mesa, su título y la tabla del sistema (cada fila, una pieza crema). */
+.adm-bandeja {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--espacio-3);
+  min-width: 0;
+  padding: var(--espacio-4) var(--espacio-relleno-linea) var(--espacio-5);
+  color: var(--color-mesa-texto);
+}
+
+.adm-bandeja :focus-visible {
+  outline-color: var(--color-foco-sobre-oscuro);
+}
+
+.adm-bandeja .tabla :focus-visible {
+  outline-color: var(--color-foco);
+}
+
+.adm-bandeja-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+}
+
+.adm-tablero .adm-bandeja h2 {
+  color: var(--color-mesa-texto);
+  font-size: var(--tamano-titulo-3);
+}
+
+.adm-bandeja-cabeza p {
+  margin: 0;
+  color: var(--color-mesa-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.adm-bandeja .tabla caption {
+  color: var(--color-mesa-texto);
+}
+
+.adm-bandeja .tabla th[scope="row"] small {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.adm-bandeja .tabla form {
+  margin: var(--espacio-2) 0 0;
+}
+
+/* La bandeja del sistema le da un ancho fijo a la última columna (el estado); en la de camiones,
+   la última es el cambio de estado y mide lo que pide. */
+.adm-camiones .tabla tbody tr > :last-child {
+  width: auto;
+}
+
+/* Entre 600 y 860 px la bandeja ya es tabla y la columna del estado mide lo que pide. */
+.adm-bandeja .tabla tbody tr > :last-child {
+  width: auto;
+}
+
+.adm-bandeja .tabla :is(button, [role="button"]) {
+  margin-block: 0;
+}
+
+/* La fila nueva o recién cambiada: la tinta la marca a la izquierda. */
+.adm-fila--nueva > * {
+  background-color: var(--color-pieza-sol);
+}
+
+/* El título largo de una pieza de foco (el nombre entero de una entidad) baja un tamaño. */
+.adm-foco h2.adm-titulo-largo {
+  font-size: var(--tamano-titulo-2);
+  line-height: 1.12;
+}
+
+/* Los papeles de una entidad: cada uno, una pieza puesta o un hueco, con su nombre. */
+.adm-papel {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.adm-papel small {
+  margin-inline-start: auto;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+}
+
+.adm-nota {
+  margin: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+/* Plegable de una acción secundaria (rechazar, registrar a mano): el resumen es una pieza crema
+   del tamaño de un botón; abierto, el formulario cae debajo. */
+.adm-plegable {
+  margin: 0;
+}
+
+.adm-plegable > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding: 0.625rem 1.25rem;
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  box-shadow: var(--sombra-pisada);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  line-height: 1.2;
+  list-style: none;
+}
+
+.adm-plegable > summary::-webkit-details-marker {
+  display: none;
+}
+
+.adm-plegable > summary::after {
+  content: "+";
+  margin-inline-start: var(--espacio-2);
+  float: none;
+  width: auto;
+  height: auto;
+  background: none;
+  transform: none;
+}
+
+.adm-plegable[open] > summary::after {
+  content: "−";
+}
+
+.adm-plegable > summary:hover {
+  background: var(--color-pieza-gris-alta);
+}
+
+.adm-plegable > :not(summary) {
+  display: grid;
+  gap: var(--espacio-2);
+  margin-block-start: var(--espacio-3);
+}
+
+.adm-plegable--mesa[open] > form {
+  padding: var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-pieza);
+  color: var(--color-pieza-texto);
+}
+
+.adm-plegable--mesa :focus-visible {
+  outline-color: var(--color-foco);
+}
+
+.adm-plegable--mesa > summary:focus-visible {
+  outline-color: var(--color-foco-sobre-oscuro);
+}
+
+/* Campos de lista y de texto largo, con la misma pieza que los de una línea. */
+.campo > :is(select, textarea) {
+  min-height: 3.125rem;
+  margin: 0;
+  background-color: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  box-shadow: none;
+  color: var(--color-texto);
+  font-weight: 700;
+}
+
+.campo > :is(select, textarea):focus {
+  border-color: var(--color-ahora);
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-ahora);
+}
+
+/* El formulario de trabajo: una pieza crema con sus grupos; sin juego. */
+.adm-formulario {
+  gap: var(--espacio-5);
+}
+
+.adm-formulario fieldset {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.adm-formulario legend {
+  margin-block-end: var(--espacio-3);
+  padding: 0;
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.adm-campos {
+  display: grid;
+  gap: 0 var(--espacio-4);
+}
+
+/* En el celular, la acción del formulario queda a la vista sobre el riel mientras se completa. */
+.adm-formulario > .adm-acciones {
+  position: sticky;
+  bottom: calc(var(--medida-riel-alto) + var(--espacio-2));
+  z-index: 3;
+  margin-inline: calc(-1 * var(--espacio-3));
+  padding: var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+}
+
+.adm-aviso-error .banner {
+  margin: 0;
+}
+
+.adm-aviso-error:focus-visible {
+  outline-offset: 4px;
+}
+
+/* Qué pasa después: tres piezas chicas en fila de lectura. */
+.adm-luego {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+
+  align-content: start;
+}
+
+.adm-luego h2 {
+  font-size: var(--tamano-titulo-3);
+}
+
+.adm-luego-pasos {
+  display: grid;
+  gap: var(--medida-junta);
+  counter-reset: paso;
+}
+
+.adm-luego-pasos li {
+  display: grid;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: var(--espacio-3) var(--espacio-4) var(--espacio-3) 3.25rem;
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+  counter-increment: paso;
+  position: relative;
+  font-size: var(--tamano-chico);
+}
+
+.adm-luego-pasos li::before {
+  content: counter(paso);
+  position: absolute;
+  top: var(--espacio-3);
+  left: var(--espacio-3);
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+  font-weight: 800;
+}
+
+/* La importación: el hueco del archivo y su botón. */
+.adm-importar {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+}
+
+.adm-importar .campo {
+  width: 100%;
+  margin: 0;
+}
+
+/* Sobre el naranja, la ayuda va en tinta: el gris no llega al contraste. */
+.adm-foco .campo > small,
+.adm-foco .campo > label {
+  color: var(--color-pieza-texto);
+}
+
+.adm-importar input[type="file"] {
+  background-color: var(--color-pieza-crema);
+  color: var(--color-texto);
+}
+
+/* El camión en la calle: el recorrido del sistema, con las paradas como piezas. */
+.adm-ruta {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+.adm-ruta-cabeza {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+/* El cambio de estado de un camión, en su fila. */
+.adm-cambio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.adm-bandeja .tabla .adm-cambio {
+  margin: 0;
+}
+
+.adm-cambio select {
+  width: auto;
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  background-color: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+/* El podio: una torre por puesto y una pieza por donación, apiladas, que encastran por su
+   lengüeta. El primero, al medio y de sol; el segundo, a la izquierda; el tercero, a la derecha. */
+.adm-podio {
+  --color-pieza-fondo: var(--color-pieza-crema);
+}
+
+.adm-torres {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--espacio-3);
+}
+
+.adm-torre {
+  --color-adm-pieza: var(--color-pieza-lila);
+
+  display: grid;
+  flex: 1 1 0;
+  justify-items: center;
+  gap: var(--espacio-1);
+  max-width: 11rem;
+  margin: 0;
+  font-size: var(--tamano-chico);
+  text-align: center;
+}
+
+.adm-torre--1 {
+  --color-adm-pieza: var(--color-pieza-sol);
+
+  order: 2;
+}
+
+.adm-torre--2 {
+  order: 1;
+}
+
+.adm-torre--3 {
+  --color-adm-pieza: var(--color-pieza-menta);
+
+  order: 3;
+}
+
+/* De a tres piezas por hilera, de abajo hacia arriba: cada una encastra en la de al lado y en la
+   de abajo. */
+.adm-torre-piezas {
+  --medida-adm-torre: 1.5rem;
+
+  display: flex;
+  flex-wrap: wrap-reverse;
+  width: calc(3 * var(--medida-adm-torre));
+  padding-block-start: 0.375rem;
+  transform-origin: bottom;
+}
+
+.adm-torre-pieza {
+  width: var(--medida-adm-torre);
+  height: calc(var(--medida-adm-torre) * 72 / 56);
+  margin-block-start: calc(var(--medida-adm-torre) * -16 / 56);
+  overflow: visible;
+  fill: var(--color-adm-pieza);
+  stroke: var(--color-junta);
+  stroke-width: 5;
+}
+
+.adm-torre-puesto {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.adm-torre b {
+  line-height: 1.2;
+}
+
+/* Movimiento, solo si la persona no lo pidió reducir: la pieza que se acaba de resolver encastra
+   en la tira; con la cola vacía, encastran todas, una tras otra. */
+@media (prefers-reduced-motion: no-preference) {
+  .adm-tira-pieza--recien .adm-tira-cuerpo,
+  .adm-tira--tira .adm-tira-pieza--hecha .adm-tira-cuerpo {
+    animation: adm-encastra var(--movimiento-encastre) var(--movimiento-curva) both;
+  }
+
+  .adm-tira--tira .adm-tira-pieza--hecha:nth-child(2) .adm-tira-cuerpo {
+    animation-delay: 120ms;
+  }
+
+  .adm-tira--tira .adm-tira-pieza--hecha:nth-child(3) .adm-tira-cuerpo {
+    animation-delay: 240ms;
+  }
+
+  .adm-tira--tira .adm-tira-pieza--hecha:nth-child(4) .adm-tira-cuerpo {
+    animation-delay: 360ms;
+  }
+
+  .adm-tira--tira .adm-tira-pieza--hecha:nth-child(n + 5) .adm-tira-cuerpo {
+    animation-delay: 480ms;
+  }
+
+  .adm-logro-signo {
+    animation: adm-salta 600ms var(--movimiento-curva) 300ms both;
+  }
+
+  .adm-torre-piezas {
+    animation: adm-crece 700ms var(--movimiento-curva) both;
+  }
+
+  .adm-torre--1 .adm-torre-piezas {
+    animation-delay: 300ms;
+  }
+
+  .adm-torre--3 .adm-torre-piezas {
+    animation-delay: 150ms;
+  }
+}
+
+@keyframes adm-crece {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes adm-encastra {
+  from {
+    transform: translateY(-1rem) rotate(-8deg) scale(1.1);
+  }
+}
+
+@keyframes adm-salta {
+  40% {
+    transform: scale(1.2) rotate(-8deg);
+  }
+}
+
+/* Alto contraste: las piezas de la tira, los filtros y los signos se dibujan con bordes. */
+@media (forced-colors: active) {
+  .adm-tira-forma {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .adm-tira-pieza--ahora .adm-tira-forma {
+    stroke-width: 6;
+  }
+
+  .adm-filtro,
+  .adm-cola-enlace,
+  .adm-turno-mini {
+    border: var(--borde-junta) solid;
+  }
+
+  .adm-filtro[aria-current],
+  .adm-cola-item--foco .adm-cola-enlace {
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
+  }
+
+  .adm-urgencia::before,
+  .adm-estado::before,
+  .adm-filtro::before {
+    border: var(--borde-junta) solid CanvasText;
+  }
+}
+
+/* Desde 600 px: los datos de la tira se leen enteros y los campos van de a dos. */
+@media (min-width: 37.5em) {
+  .adm-tira-texto {
+    font-size: var(--tamano-chico);
+  }
+
+  .adm-tira--tira {
+    width: 30rem;
+  }
+
+  .adm-formulario > .adm-acciones {
+    position: static;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .adm-foco-rotulo small {
+    display: inline;
+  }
+
+  .adm-tira-cuenta {
+    max-width: none;
+  }
+
+  .adm-tira--tira .adm-tira-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .adm-campos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+
+  .adm-torre-piezas {
+    --medida-adm-torre: 2.25rem;
+  }
+}
+
+/* Desde 860 px: el tablero en doce columnas; en el inicio, la tarjeta de foco con la cola al
+   costado, y su lengüeta entra de costado en la cola. */
+@media (min-width: 53.75em) {
+  .tablero.adm-tablero {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .adm-tablero > * {
+    grid-column: 1 / -1;
+  }
+
+  /* El inicio: la cabeza y la tarjeta de foco a la izquierda, la cola al costado, a lo alto. */
+  .adm-inicio > .adm-cabeza {
+    grid-row: 1;
+    grid-column: 1 / span 7;
+  }
+
+  .adm-inicio > :is(.adm-foco, .adm-listo) {
+    grid-row: 2;
+    grid-column: 1 / span 7;
+  }
+
+  .adm-inicio > .adm-cola {
+    grid-row: 1 / span 2;
+    grid-column: 8 / -1;
+  }
+
+  .tablero.adm-inicio > :is(.adm-foco, .adm-listo):not(:last-child)::after {
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .adm-foco {
+    align-content: start;
+  }
+
+  .adm-bandeja .tabla th[scope="row"] {
+    min-width: 9.5rem;
+  }
+
+  /* El logro a lo ancho: lo que pasó a la izquierda, lo que sigue a la derecha. */
+  .adm-logro {
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--espacio-5);
+  }
+
+  .adm-logro > .adm-sigue {
+    grid-row: 1 / span 2;
+    grid-column: 3;
+    margin: 0;
+  }
+
+  /* En una sección, la pieza de foco va a lo ancho: la tarea y su acción a la izquierda, lo que la
+     acompaña a la derecha. */
+  .adm-seccion > .adm-foco {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    column-gap: var(--espacio-6);
+  }
+
+  .adm-seccion > .adm-foco > * {
+    grid-column: 1;
+  }
+
+  .adm-seccion > .adm-foco > :is(.adm-foco-zona, .adm-foco-detalle) {
+    grid-row: 1 / span 6;
+    grid-column: 2;
+  }
+
+  /* Registrar: el formulario y, al costado, qué pasa después; la lengüeta entra de costado. */
+  .adm-registrar > .adm-formulario {
+    grid-column: 1 / span 8;
+  }
+
+  .adm-registrar > .adm-luego {
+    grid-column: 9 / -1;
+  }
+
+  /* Camiones: la tarea y, al costado, el camión que está en la calle con sus paradas en
+     columna. */
+  .adm-camiones > .adm-foco {
+    grid-column: 1 / span 7;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adm-camiones > .adm-foco > :is(.adm-foco-zona, .adm-foco-detalle) {
+    grid-row: auto;
+    grid-column: 1;
+  }
+
+  .adm-camiones > .adm-ruta {
+    grid-column: 8 / -1;
+  }
+
+  .tablero:is(.adm-registrar, .adm-camiones) > :is(.adm-formulario, .adm-foco):not(:last-child)::after {
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .adm-paradas {
+    flex-direction: column;
+  }
+
+  .adm-paradas > :not(:last-child)::after {
+    top: 100%;
+    left: calc(var(--medida-lengueta-x) - var(--medida-lengueta-aro));
+    width: calc(2 * var(--medida-lengueta-aro));
+    height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    --medida-lengueta-cx: 50%;
+    --medida-lengueta-cy: var(--medida-lengueta-d);
+  }
+
+  .adm-paradas .recorrido-paso {
+    flex-direction: row;
+    align-items: center;
+  }
+}
