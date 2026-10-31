@@ -35,7 +35,7 @@
            categoría); acá esos id son secciones del catálogo y no se repiten. */-->
     <div class="tablero" th:fragment="tablero(anclaCifra, anclaCategoria)">
       <section class="pieza saludo" aria-labelledby="hola-titulo">
-        <h3 id="hola-titulo">Hola, Ana</h3>
+        <h2 id="hola-titulo">Hola, Ana</h2>
         <p class="saludo-texto">Tu última donación ya salió del depósito y va camino a Comedor
           Barrio Ejemplo.</p>
         <div class="saludo-acciones">
@@ -44,11 +44,11 @@
         </div>
         <div class="saludo-armado">
           <p class="rotulo">Lo que ya armaste</p>
-          <div class="saludo-fichas piezas-chicas" aria-hidden="true">
-            <span class="ficha ficha--lila"><b>7</b><span>donaciones</span></span>
-            <span class="ficha ficha--menta"><b>2</b><span>entidades ayudadas</span></span>
-            <span class="ficha ficha--rosa"><b>2</b><span>entregadas</span></span>
-          </div>
+          <ul class="saludo-fichas piezas-chicas">
+            <li class="ficha ficha--lila"><b>7</b> <span>donaciones</span></li>
+            <li class="ficha ficha--menta"><b>2</b> <span>entidades ayudadas</span></li>
+            <li class="ficha ficha--rosa"><b>2</b> <span>entregadas</span></li>
+          </ul>
         </div>
       </section>
 
@@ -59,7 +59,7 @@
       <section class="pieza mision pieza-ahora" aria-labelledby="mision-titulo"
                th:with="hechos=2, total=3">
         <div class="mision-cabeza">
-          <h3 id="mision-titulo">Lo que te toca ahora</h3>
+          <h2 id="mision-titulo">Lo que te toca ahora</h2>
           <p class="mision-rango">Colaborador → Sostenedor</p>
         </div>
         <div class="mision-nombre">
@@ -115,7 +115,7 @@
                         total=${#aggregates.sum(cifras)}">
         <div class="llegaron-cabeza">
           <span class="moneda"><b>2</b></span>
-          <h3 id="entregadas-titulo">Ya llegaron</h3>
+          <h2 id="entregadas-titulo">Ya llegaron</h2>
         </div>
         <svg class="tramos" aria-hidden="true" focusable="false" width="100%" height="28">
           <rect th:each="cifra, vuelta : ${cifras}" th:class="|tramo--${tonos[vuelta.index]}|"
@@ -138,7 +138,7 @@
       <section class="pieza viaje" aria-labelledby="recorrido-titulo">
         <div class="viaje-cabeza">
           <div>
-            <h3 id="recorrido-titulo">Por dónde va tu donación</h3>
+            <h2 id="recorrido-titulo">Por dónde va tu donación</h2>
             <p class="bajada">Lentejas secas · 15 kg</p>
           </div>
           <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
@@ -149,7 +149,7 @@
       </section>
 
       <section class="pieza novedades" aria-labelledby="notas-titulo">
-        <h3 id="notas-titulo">Lo último que pasó</h3>
+        <h2 id="notas-titulo">Lo último que pasó</h2>
         <p class="bajada">Avisos de tus donaciones, lo más nuevo primero</p>
         <ul class="novedades-lista piezas-chicas">
           <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
@@ -170,7 +170,7 @@
         texto. Siempre acompañan a un texto.</p>
     </div>
     <ul class="catalogo-demo muestras">
-      <li th:each="nombre : ${ {'inicio', 'donaciones', 'entidades', 'incentivos', 'seguimiento',
+      <li th:each="nombre : ${ {'inicio', 'donaciones', 'entidades', 'personas', 'incentivos', 'seguimiento',
           'notificaciones', 'camiones', 'cat-alimentos', 'cat-vestimenta', 'cat-escolares'} }"><svg
           th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${nombre}, 24)}"></svg><code
           th:text="${nombre}">nombre</code></li>

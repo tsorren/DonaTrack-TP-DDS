@@ -330,6 +330,20 @@
   bottom: calc(var(--medida-riel-alto) + var(--espacio-3));
 }
 
+/* El foco no queda debajo del riel fijo: al llevarlo con Tab, la página corre lo enfocado hasta
+   arriba del riel (WCAG 2.4.11). El alto es el del riel de .armazon, que html no hereda: una fila,
+   o dos sin JavaScript con seis secciones o más. Con :where, una parte que suma su barra fija
+   (html:has(.ent-pulgar)) gana sin pelear la especificidad. */
+html:where(:has(.armazon nav.navegacion)) {
+  scroll-padding-bottom: calc(var(--medida-riel-celular) + var(--espacio-4));
+}
+
+html:where(:has(.armazon nav.navegacion > ul > li:nth-child(6)):not(:has(.navegacion--con-mas))) {
+  scroll-padding-bottom: calc(
+    2 * var(--medida-riel-celular) - var(--medida-junta) + var(--espacio-4)
+  );
+}
+
 .tablero-zona {
   position: relative;
   display: grid;
@@ -580,11 +594,11 @@ nav.navegacion .navegacion-mas a::before {
   gap: var(--medida-junta);
 }
 
-.tablero :is(h3, p) {
+.tablero :is(h2, h3, p) {
   margin: 0;
 }
 
-.tablero h3 {
+.tablero :is(h2, h3) {
   color: var(--color-pieza-texto);
   font-family: var(--fuente-juego);
   font-size: var(--tamano-pieza-titulo);
@@ -598,7 +612,7 @@ nav.navegacion .navegacion-mas a::before {
   --medida-lengueta-x: 70%;
 }
 
-.tablero .saludo h3 {
+.tablero .saludo :is(h2, h3) {
   font-size: var(--tamano-saludo);
   line-height: 1.08;
   text-decoration: underline;
@@ -673,7 +687,7 @@ nav.navegacion .navegacion-mas a::before {
   gap: var(--espacio-4);
 }
 
-.tablero .mision h3 {
+.tablero .mision :is(h2, h3) {
   font-size: var(--tamano-mision);
   line-height: 1.02;
 }
@@ -997,7 +1011,7 @@ nav.navegacion .navegacion-mas a::before {
 }
 
 .tramo--proceso {
-  --color-tramo: var(--color-pieza-sol);
+  --color-tramo: var(--color-pieza-lila);
 }
 
 .tramo--sin-entregar {
@@ -1029,6 +1043,12 @@ nav.navegacion .navegacion-mas a::before {
   height: 0.75rem;
   background: var(--color-tramo);
   border-radius: 50%;
+}
+
+/* El lila de "en proceso" y la menta de la pieza son dos pasteles: el punto lleva la junta de
+   tinta para no perderse sobre la pieza. */
+.leyenda .tramo--proceso::before {
+  box-shadow: inset 0 0 0 var(--borde-junta) var(--color-junta);
 }
 
 @container (min-width: 20rem) {
@@ -1598,6 +1618,11 @@ nav.navegacion .navegacion-mas a::before {
 
   .armazon {
     padding-bottom: var(--espacio-6);
+  }
+
+  html:where(:has(.armazon nav.navegacion)),
+  html:where(:has(.armazon nav.navegacion > ul > li:nth-child(6)):not(:has(.navegacion--con-mas))) {
+    scroll-padding-bottom: 0;
   }
 
   .armazon .avisos {

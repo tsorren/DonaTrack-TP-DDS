@@ -1,5 +1,5 @@
 <!--/* Ícono de trazo (24 × 24, toma el color del texto), del prototipo v2. Siempre decorativo:
-       acompaña a un texto que dice lo mismo. nombre: inicio | donaciones | entidades | incentivos |
+       acompaña a un texto que dice lo mismo. nombre: inicio | donaciones | entidades | personas | incentivos |
        seguimiento | notificaciones | camiones | check | alerta | flecha | cat-alimentos |
        cat-vestimenta | cat-escolares. tamanio: en px. */-->
 <svg th:fragment="icono(nombre, tamanio)" class="icono" xmlns="http://www.w3.org/2000/svg"
@@ -10,6 +10,7 @@
     <th:block th:case="'inicio'"><path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/></th:block>
     <th:block th:case="'donaciones'"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></th:block>
     <th:block th:case="'entidades'"><path d="M4 21V5l8-2v18"/><path d="M12 9h8v12"/><path d="M8 8v.01M8 12v.01M8 16v.01M16 13v.01M16 17v.01"/></th:block>
+    <th:block th:case="'personas'"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20.5v-1a6.5 6.5 0 0 1 13 0v1"/><path d="M15.5 4.6a3.5 3.5 0 0 1 0 6.8"/><path d="M18 13.6a6.5 6.5 0 0 1 3.5 5.9v1"/></th:block>
     <th:block th:case="'incentivos'"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"/></th:block>
     <th:block th:case="'seguimiento'"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h6.5a3.5 3.5 0 0 0 0-7h-5a3.5 3.5 0 0 1 0-7H16"/></th:block>
     <th:block th:case="'notificaciones'"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></th:block>

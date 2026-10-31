@@ -81,6 +81,13 @@ class PrototipoController {
               new Seccion("Camiones", "camiones", "admin-camiones"),
               new Seccion("Ranking", ICONO_INCENTIVOS, "admin-ranking")));
 
+  /**
+   * Íconos que una alternativa ya dibuja y las otras todavía no: la sección los toma solo en esa
+   * alternativa (Encastre tiene personas para Donantes; Cozy sigue con su trofeo).
+   */
+  private static final Map<String, Map<String, String>> ICONOS_PROPIOS =
+      Map.of("encastre", Map.of("admin-donantes", "personas"));
+
   private static final Map<String, CuentaVista> CUENTAS =
       Map.of(
           "donante", new CuentaVista("Ana", "Donante"),
@@ -131,7 +138,9 @@ class PrototipoController {
                     new OpcionNavegacion(
                         seccion.texto(),
                         seccion.textoCorto(),
-                        seccion.icono(),
+                        ICONOS_PROPIOS
+                            .getOrDefault(alt, Map.of())
+                            .getOrDefault(seccion.pantalla(), seccion.icono()),
                         base(alternativa) + seccion.pantalla(),
                         seccion.equals(actual)))
             .toList());
