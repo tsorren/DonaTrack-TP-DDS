@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -28,6 +29,12 @@ import org.springframework.web.server.ResponseStatusException;
 class PrototipoController {
 
   private static final String CARPETA = "prototipo/cozy-medieval/";
+  private static final String NOMBRE = "(publico|donante|entidad|admin)(-[a-z]+)+";
+  private static final String NO_EXISTE = "No existe esa pantalla";
+
+  /** Pantallas que el layout privado enlaza fuera del menú y todavía no están dibujadas. */
+  private static final Map<String, String> FUERA_DEL_MENU = Map.of("perfil", "Mi perfil");
+
   private static final String SIN_DIBUJAR = "sin-dibujar";
   private static final String ALTERNATIVA = "cozy-medieval";
   private static final String INICIO = "Inicio";
@@ -89,11 +96,7 @@ class PrototipoController {
    */
   @GetMapping("/prototipo/{pantalla}")
   String pantalla(@PathVariable String pantalla, Model model) {
-    // La vista se arma solo con un nombre de rol, letras y guiones que existe como plantilla o en
-    // el menú.
-    boolean dibujada =
-        pantalla.matches("(publico|donante|entidad|admin)(-[a-z]+)+")
-            && recursos.getResource("classpath:templates/" + CARPETA + pantalla + ".html").exists();
+    boolean dibujada = dibujada(pantalla);
     String rol = pantalla.split("-")[0];
     List<Seccion> menu = MENUS.getOrDefault(rol, List.of());
     Seccion actual =
@@ -104,12 +107,15 @@ class PrototipoController {
                         || pantalla.startsWith(seccion.pantalla() + "-"))
             .findFirst()
             .orElse(null);
-    if (!dibujada && (actual == null || !actual.pantalla().equals(pantalla))) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe esa pantalla");
+    boolean enElMenu = actual != null && actual.pantalla().equals(pantalla);
+    String fueraDelMenu =
+        pantalla.matches(NOMBRE) ? FUERA_DEL_MENU.get(pantalla.substring(rol.length() + 1)) : null;
+    if (!dibujada && !enElMenu && fueraDelMenu == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
     EstilosController.datosDeEjemplo(model);
     model.addAttribute("alternativa", ALTERNATIVA);
-    model.addAttribute("seccion", actual == null ? null : actual.texto());
+    model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());
     model.addAttribute(
         "navegacion",
         menu.stream()
@@ -124,5 +130,23 @@ class PrototipoController {
             .toList());
     model.addAttribute("cuenta", CUENTAS.get(rol));
     return CARPETA + (dibujada ? pantalla : SIN_DIBUJAR);
+  }
+
+  /**
+   * Los formularios del prototipo se envían con POST, para que lo escrito (una contraseña, por
+   * ejemplo) no quede en la dirección; vuelven a la pantalla de destino sin sus datos.
+   */
+  @PostMapping("/prototipo/{pantalla}")
+  String enviar(@PathVariable String pantalla) {
+    if (!dibujada(pantalla)) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
+    }
+    return "redirect:/prototipo/" + pantalla;
+  }
+
+  /** La vista se arma solo con un nombre de rol, letras y guiones que existe como plantilla. */
+  private boolean dibujada(String pantalla) {
+    return pantalla.matches(NOMBRE)
+        && recursos.getResource("classpath:templates/" + CARPETA + pantalla + ".html").exists();
   }
 }
