@@ -26,6 +26,39 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · concepto (Encastre) · Iteración 1: gana Rompecabezas (concepto-b), con la navegación de bolsillo de Bolsillo y un solo color fuerte para lo de ahora
+
+- **Decisión:** para el inicio del donante de Encastre gana **concepto-b, Rompecabezas**: un
+  tablero de piezas con lengüetas y muescas, una bandeja de tinta, un hueco con forma de pieza
+  para lo que falta ("Falta 1 paso") y un riel de piezas como navegación. Se le suman dos piezas
+  de los otros conceptos: la navegación abajo en el celular, al alcance del pulgar (de
+  concepto-a, hecha con piezas encastradas y el nombre corto visible), y un solo color fuerte,
+  el naranja, para "lo de ahora" (de concepto-c): la misión, el paso actual y "Ver seguimiento".
+  Se hicieron 12 arreglos sobre concepto-b: tira del celular abajo y entera, colores forzados y
+  signo por estado (tilde, camión, número), pasteles más apagados, ids de destino para "Mis
+  donaciones" y "Ver incentivos", tramos y misión dibujados desde los datos, riel de escritorio
+  hasta el pie. concepto-a y concepto-c quedan como variantes de registro.
+- **Alternativas:**
+  - **concepto-a, Bolsillo:** la mejor primera pantalla del celular, pero en escritorio es una
+    tarjeta grande y una columna de tarjetas, la plantilla de dashboard que se quería dejar atrás.
+  - **concepto-c, Recorrido:** buena disciplina de color, pero su línea vertical con paradas
+    repite el gesto del panel de Glassmorphism, el orden invertido traba la lectura y la cápsula
+    de navegación no entra con 7 secciones.
+  - Una mezcla a partes iguales de los tres: se descarta porque da un concepto tímido.
+- **Por qué:** es el único concepto que no podría ser de otro producto: el encaje es la idea, el
+  nombre de la alternativa y el juego a la vez, y el hueco con forma de pieza dice "lo que te toca
+  ahora" mejor que un texto. Sus dos bloqueos se arreglan sin tocar la idea; lo flojo de A y de C
+  está en la idea misma. Matriz ponderada: B 3,95; A 3,70; C 3,00.
+- **Costo:** la misión sigue dibujada con piezas a mano en parte; falta resolver el estado sin
+  donación en camino, el admin de 7 secciones (pieza "Más") y el resto de las pantallas, que
+  quedan para la iteración 2 (sistema). Las variantes a y c siguen en el repo hasta que la
+  iteración 2 las borre. **Reemplaza:** no reemplaza nada (es el primer diseño de la pantalla
+  de inicio de Encastre; el armazón actual de Encastre es el punto de partida y no una decisión
+  registrada).
+- **Quién decidió:** corrida creativa desatendida; el usuario decide con el merge.
+- **Evidencia:** [capturas del antes y de los tres conceptos](evidencia/encastre/concepto-armazon/)
+  (360, 1280, 1920 y 360 × 640); [encargo](encargos/encastre.md).
+
 ### 2026-10-31 · proceso (Encastre) · Encargo creativo: una tercera alternativa amable, clara y concreta, de bloques de color y de a una tarea
 
 - **Decisión:** se suma una tercera alternativa de identidad, Encastre, a partir de la opción 2 de
