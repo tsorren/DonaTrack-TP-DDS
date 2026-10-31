@@ -1,0 +1,8 @@
+/* B — Solo la costa punteada: la misma isla en blanco con su costa de puntos, pero sin las líneas
+   de agua alrededor. Queda más limpia y conserva el contorno del mapa. */
+
+/* Apaga el rayado de agua de la sección "Estado vacío" del app.css de Cozy. La costa punteada,
+   la tierra lisa y la rosa junto a la acción quedan como están. */
+.estado-vacio-agua {
+  display: none;
+}
