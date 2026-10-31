@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: recepción confirmada, el momento de juego de la
+       entidad ("cada donación llega y se nota"). La pieza de sol del festejo trae la fila de
+       Legumbres secas con las tres piezas de las lentejas recién puestas: caen y encastran una tras
+       otra, saltan las chispas y la moneda de lo que ya llegó suma una (movimiento solo sin "reducir
+       movimiento"; sin él, se ve quieto y completo). Sale a Volver al inicio (el inicio de después,
+       sin nada más hoy) o a Donaciones recibidas, y abajo sigue la cola. Estilos:
+       prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Recepción confirmada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/entidad.css"
+        th:href="@{/css/alternativas/encastre/prototipo/entidad.css}">
+  <div class="tablero ent-pantalla ent-pantalla--confirmada">
+    <section class="pieza ent-festejo" aria-labelledby="festejo-titulo">
+      <h1 id="festejo-titulo">Llegó y encastró</h1>
+      <p class="rotulo-menu">Seguir entregas</p>
+      <p class="ent-listo" role="status" tabindex="-1" autofocus>Recepción confirmada. Gracias
+        por avisar.</p>
+      <div class="ent-festejo-fila">
+        <svg class="ent-chispas" viewBox="0 0 300 40" aria-hidden="true" focusable="false">
+          <g th:each="c : ${ { {x: 6, y: 10, g: -24}, {x: 58, y: -4, g: 30}, {x: 112, y: 8, g: -12},
+                               {x: 176, y: -6, g: 40}, {x: 226, y: 6, g: -30}, {x: 272, y: -2, g: 16} } }"
+             class="ent-chispa" transform="translate(6 10) rotate(-24) scale(0.42)"
+             th:attr="transform=|translate(${c.x} ${c.y}) rotate(${c.g}) scale(0.42)|"><use
+             href="#encastre-pieza"/></g>
+        </svg>
+        <ul th:replace="~{prototipo/encastre/entidad-necesidades :: necesidades('legumbres', true, false, false)}"></ul>
+      </div>
+      <p class="ent-festejo-texto">Las lentejas secas de Ana ya son parte de tu tablero: tres
+        piezas más en Legumbres secas. Le avisamos a Ana que llegaron.</p>
+      <div class="ent-pulgar">
+        <a href="/prototipo/encastre/entidad-inicio-vacio"
+           th:href="@{/prototipo/encastre/entidad-inicio-vacio}" role="button">Volver al inicio</a>
+        <a href="/prototipo/encastre/entidad-recibidas"
+           th:href="@{/prototipo/encastre/entidad-recibidas}" class="enlace-fuerte">Donaciones
+          recibidas</a>
+      </div>
+    </section>
+    <section th:replace="~{prototipo/encastre/entidad-inicio :: llegaron(4)}"></section>
+    <section th:replace="~{prototipo/encastre/entidad-inicio :: despues}"></section>
+  </div>
+</th:block>
+</body>
+</html>

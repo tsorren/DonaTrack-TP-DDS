@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: Inicio. "Una entrega a la vez, con una mano": la
+       pantalla es la pieza naranja de lo que llega ahora (las lentejas de Ana, 15 kg), que en el
+       celular ocupa la primera pantalla y deja "Confirmar recepción" abajo, al alcance del pulgar
+       (si la pieza crece, el botón queda pegado sobre el riel). Adentro, el tramo que le falta al
+       camión y las piezas que trae: 15 kg son 3 piezas de 5 kg que van a encastrar en la fila de
+       Legumbres secas del tablero. Al costado (abajo en el celular), lo que viene después, de a una,
+       y lo que ya llegó; abajo, el tablero de la entidad (entidad-necesidades :: necesidades).
+       Fragmentos de esta plantilla:
+       - inicio(vacio): la pantalla entera; vacio es el inicio de después de confirmar: hoy no llega
+         nada más, las lentejas ya están en el tablero y la cola sigue (entidad-inicio-vacio).
+       - despues: lo que viene después (también en entidad-seguimiento-confirmada).
+       - llegaron(cuantas): las entregas confirmadas en octubre, con su enlace a Donaciones
+         recibidas. Estilos: prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/entidad-inicio :: inicio(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="inicio(vacio)">
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/entidad.css"
+        th:href="@{/css/alternativas/encastre/prototipo/entidad.css}">
+  <div class="tablero ent-pantalla ent-pantalla--inicio">
+    <!--/* Lo de ahora. El avance del camión (aproximado) y las piezas salen de las cifras. */-->
+    <section th:unless="${vacio}" class="pieza pieza-ahora ent-ahora" aria-labelledby="ahora-titulo"
+             th:with="avance=70, kilos=15, porPieza=5, antes=10, total=40">
+      <h1 id="ahora-titulo">Lo que te llega ahora</h1>
+      <p class="rotulo-menu">Inicio</p>
+      <div class="ent-ahora-que">
+        <p class="ent-ahora-nombre">Lentejas secas</p>
+        <p class="ent-ahora-datos"><span class="ent-ahora-kilos"
+           th:text="|${kilos} kg|">15 kg</span><span>De Ana · 3 bultos</span></p>
+      </div>
+      <div class="ent-tramo">
+        <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[1]})}">En
+          camino</span>
+        <svg class="ent-tramo-dibujo" viewBox="0 0 300 44" aria-hidden="true" focusable="false"
+             th:with="x=${14 + avance * 272 / 100}">
+          <line class="ent-tramo-falta" x1="14" y1="22" x2="286" y2="22"/>
+          <line class="ent-tramo-hecho" x1="14" y1="22" x2="204" y2="22" th:attr="x2=${x}"/>
+          <circle class="ent-tramo-deposito" cx="14" cy="22" r="8"/>
+          <circle class="ent-tramo-puerta" cx="284" cy="22" r="11"/>
+          <g class="ent-tramo-camion" transform="translate(204 22)"
+             th:attr="transform=|translate(${x} 22)|">
+            <circle r="17"/>
+            <g transform="translate(-10 -10)"><svg
+               th:replace="~{alternativas/encastre/fragmentos/icono :: icono('camiones', 20)}"></svg></g>
+          </g>
+        </svg>
+        <p class="ent-tramo-puntas"><span>Depósito Central<small>Salió hoy, 14:30</small></span><span>Tu
+          puerta<small>Llega a eso de las 16:30</small></span></p>
+        <a href="/prototipo/encastre/entidad-seguimiento"
+           th:href="@{/prototipo/encastre/entidad-seguimiento}" class="enlace-fuerte">Ver
+          seguimiento</a>
+      </div>
+      <!--/* Lo que llega, en piezas: una cada porPieza kilos. */-->
+      <div class="ent-encastra">
+        <ol class="ent-ranuras ent-ranuras--sueltas" aria-hidden="true">
+          <li th:each="i : ${#numbers.sequence(1, kilos / porPieza)}"
+              class="ent-ranura ent-ranura--suelta"><svg class="ent-ranura-forma"
+              viewBox="22 14 56 72" focusable="false"><use href="#encastre-pieza"/></svg></li>
+        </ol>
+        <p th:with="piezas=${kilos / porPieza}">Son <b th:text="|${piezas} piezas|">3 piezas</b>
+          para <a href="#necesidad-legumbres">Legumbres secas</a>: con ellas llegás a <b
+          th:text="|${antes + kilos} de ${total} kg|">25 de 40 kg</b>.</p>
+      </div>
+      <div class="ent-pulgar">
+        <a href="/prototipo/encastre/entidad-seguimiento-confirmar"
+           th:href="@{/prototipo/encastre/entidad-seguimiento-confirmar}"
+           role="button">Confirmar recepción</a>
+      </div>
+    </section>
+
+    <!--/* Sin nada que llegue hoy: el lugar de lo de ahora es un hueco con forma de pieza. */-->
+    <section th:if="${vacio}" class="pieza ent-ahora ent-ahora--vacia" aria-labelledby="ahora-titulo">
+      <h1 id="ahora-titulo">Hoy no te llega nada más</h1>
+      <p class="rotulo-menu">Inicio</p>
+      <section th:replace="~{alternativas/encastre/fragmentos/estado-vacio :: estado-vacio(
+               'Tu próxima entrega sale mañana',
+               'Cuando una donación salga para el comedor, aparece acá con lo que tenés que hacer. Mientras, mirá lo que le falta a tu tablero.',
+               'Ver necesidades', '/prototipo/encastre/entidad-necesidades')}"></section>
+    </section>
+
+    <section th:replace="~{prototipo/encastre/entidad-inicio :: despues}"></section>
+    <section th:replace="~{prototipo/encastre/entidad-inicio :: llegaron(${vacio ? 4 : 3})}"></section>
+
+    <section class="ent-tablero" aria-labelledby="tablero-titulo">
+      <div class="ent-tablero-cabeza">
+        <h2 id="tablero-titulo">Tu tablero</h2>
+        <p>Cada fila es algo que le hace falta al comedor: las piezas llenas ya llegaron, las de
+          trazo vienen en camino y los huecos de tinta son lo que todavía falta.</p>
+      </div>
+      <ul th:replace="~{prototipo/encastre/entidad-necesidades :: necesidades(null, ${vacio}, false, false)}"></ul>
+      <a href="/prototipo/encastre/entidad-necesidades"
+         th:href="@{/prototipo/encastre/entidad-necesidades}" class="enlace-fuerte">Ver
+        necesidades</a>
+    </section>
+  </div>
+</th:block>
+
+<section th:fragment="despues" class="pieza ent-despues" aria-labelledby="despues-titulo"
+         th:with="cola=${ {
+           {que: 'Arroz · 20 kg', cuando: 'Sale mañana, jueves 15, a las 9:00', quien: 'De Bruno · camión 1'},
+           {que: 'Leche en polvo · 12 latas', cuando: 'Sale el sábado 17 de octubre', quien: 'De Almacén Ejemplo'} } }">
+  <h2 id="despues-titulo">Lo que viene después</h2>
+  <p class="bajada">De a una: cuando salga del depósito, pasa arriba.</p>
+  <ol class="ent-cola piezas-chicas">
+    <li th:each="c : ${cola}">
+      <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[0]})}">Pendiente</span>
+      <b th:text="${c.que}">Arroz · 20 kg</b>
+      <span th:text="${c.cuando}">Sale mañana</span>
+      <small th:text="${c.quien}">De Bruno</small>
+    </li>
+  </ol>
+  <a href="/prototipo/encastre/entidad-seguimiento"
+     th:href="@{/prototipo/encastre/entidad-seguimiento}" class="enlace-fuerte">Ver seguimiento</a>
+</section>
+
+<section th:fragment="llegaron(cuantas)" class="pieza ent-llegaron" aria-labelledby="llegaron-titulo">
+  <div class="llegaron-cabeza">
+    <span class="moneda"><b th:text="${cuantas}">3</b></span>
+    <h2 id="llegaron-titulo">Ya llegaron</h2>
+  </div>
+  <p th:text="|${cuantas} entregas confirmadas en octubre. Cada una sumó piezas a tu tablero.|">3
+    entregas confirmadas en octubre.</p>
+  <a href="/prototipo/encastre/entidad-recibidas"
+     th:href="@{/prototipo/encastre/entidad-recibidas}" class="enlace-fuerte">Donaciones
+    recibidas</a>
+</section>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: la necesidad recién publicada (respuesta de
+       "Publicar necesidad"). La misma pantalla de Necesidades con el aviso arriba, con foco, y la
+       fila nueva al final del tablero, entera en huecos: todavía no llegó nada. Sale a Volver al
+       inicio o a pedir otra. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Necesidad publicada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/entidad-necesidades :: pantalla(true)}"></th:block>
+</th:block>
+</body>
+</html>

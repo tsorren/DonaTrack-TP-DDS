@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: Donaciones recibidas (RF-11: las donaciones
+       asignadas a la entidad, filtrables por estado). Arriba, lo de ahora: la que falta confirmar,
+       en la pieza naranja. Después, la franja que filtra: los tramos dicen cuántas hay de cada
+       estado (salen de las filas) y cada estado es una pieza que filtra con ?estado=<tono>, un GET
+       de verdad: la bandeja muestra solo esas. Sin filas para ese estado, el hueco con la salida a
+       Todas. La bandeja es la tabla del sistema, una pieza crema por fila sobre la mesa. Estilos:
+       prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Donaciones recibidas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/entidad.css"
+        th:href="@{/css/alternativas/encastre/prototipo/entidad.css}">
+  <div class="tablero ent-pantalla ent-pantalla--recibidas"
+       th:with="filas=${ {
+         {que: 'Lentejas secas · 15 kg', de: 'Ana', para: 'Legumbres secas', cuando: 'Salió hoy, 14:30', e: 1, t: 'en-camino'},
+         {que: 'Arroz · 20 kg', de: 'Bruno', para: 'Arroz', cuando: 'Sale el 15 de octubre', e: 0, t: 'pendiente'},
+         {que: 'Leche en polvo · 12 latas', de: 'Almacén Ejemplo', para: 'Leche en polvo', cuando: 'Sale el 17 de octubre', e: 0, t: 'pendiente'},
+         {que: 'Leche en polvo · 12 latas', de: 'Carla', para: 'Leche en polvo', cuando: 'Llegó el 9 de octubre', e: 2, t: 'entregada'},
+         {que: 'Garbanzos · 10 kg', de: 'Darío', para: 'Legumbres secas', cuando: 'Llegó el 7 de octubre', e: 2, t: 'entregada'},
+         {que: 'Fideos secos · 8 kg', de: 'Elena', para: 'Fideos', cuando: 'Llegó el 2 de octubre', e: 2, t: 'entregada'},
+         {que: 'Aceite de girasol · 6 litros', de: 'Fede', para: 'Aceite', cuando: 'Salió el 1 de octubre', e: 3, t: 'con-problema'},
+         {que: 'Yerba · 5 kg', de: 'Gabi', para: 'Infusiones', cuando: 'Llegó el 28 de septiembre', e: 2, t: 'entregada'} } },
+               filtros=${ {
+         {t: 'todas', texto: 'Todas', tramo: null},
+         {t: 'entregada', texto: 'Entregadas', tramo: 'entregadas'},
+         {t: 'en-camino', texto: 'En camino', tramo: 'camino'},
+         {t: 'pendiente', texto: 'Por salir', tramo: 'proceso'},
+         {t: 'con-problema', texto: 'Con problema', tramo: 'sin-entregar'} } },
+               filtro=${param.estado == null ? 'todas' : param.estado[0]},
+               vistas=${filtro == 'todas' ? filas : filas.?[t == #root.filtro]},
+               elegido=${filtros.?[t == #root.filtro]}">
+    <section class="pieza ent-cabeza" aria-labelledby="recibidas-titulo">
+      <h1 id="recibidas-titulo">Todo lo que te mandaron</h1>
+      <p class="rotulo-menu">Donaciones recibidas</p>
+      <p class="ent-cabeza-texto">Lo que ya llegó, lo que viene y lo que tuvo un problema, con quién
+        lo donó y para qué necesidad.</p>
+    </section>
+
+    <section class="pieza pieza-ahora ent-falta" aria-labelledby="falta-titulo">
+      <h2 id="falta-titulo">Te falta confirmar una</h2>
+      <p class="ent-falta-que"><b>Lentejas secas · 15 kg</b> De Ana. Llega hoy a eso de las
+        16:30.</p>
+      <div class="ent-pulgar">
+        <a href="/prototipo/encastre/entidad-seguimiento-confirmar"
+           th:href="@{/prototipo/encastre/entidad-seguimiento-confirmar}"
+           role="button">Confirmar recepción</a>
+      </div>
+    </section>
+
+    <!--/* La franja que filtra: los tramos, en el orden de los filtros, con el ancho de su cifra. */-->
+    <nav class="pieza ent-franja" aria-label="Filtrar por estado"
+         th:with="tramos=${filtros.?[tramo != null]}, total=${#lists.size(filas)},
+                  cifras=${ {#lists.size(filas.?[t == 'entregada']), #lists.size(filas.?[t == 'en-camino']),
+                             #lists.size(filas.?[t == 'pendiente']), #lists.size(filas.?[t == 'con-problema'])} }">
+      <p class="rotulo">Mirá por estado</p>
+      <svg class="tramos ent-franja-tramos" aria-hidden="true" focusable="false" width="100%"
+           height="20">
+        <rect th:each="f, vuelta : ${tramos}" th:class="|tramo--${f.tramo}|" y="0" height="100%"
+              rx="7" x="0" width="0"
+              th:with="antes=${vuelta.first ? 0 : #aggregates.sum(cifras.subList(0, vuelta.index))}"
+              th:attr="x=|${antes * 100.0 / total}%|,width=|${cifras[vuelta.index] * 100.0 / total}%|"></rect>
+      </svg>
+      <ul class="ent-filtros">
+        <li th:each="f : ${filtros}"
+            th:with="cuantas=${f.t == 'todas' ? #lists.size(filas) : #lists.size(filas.?[t == #root.f.t])}">
+          <a href="/prototipo/encastre/entidad-recibidas"
+             th:href="${f.t == 'todas'} ? @{/prototipo/encastre/entidad-recibidas} : @{/prototipo/encastre/entidad-recibidas(estado=${f.t})}"
+             th:classappend="${f.tramo} ? |tramo--${f.tramo}|"
+             th:aria-current="${f.t == filtro} ? 'true' : null"><span
+             th:text="${f.texto}">Todas</span><b th:text="${cuantas}">8</b></a>
+        </li>
+      </ul>
+    </nav>
+
+    <section class="ent-bandeja" aria-labelledby="bandeja-titulo">
+      <h2 id="bandeja-titulo" class="ent-mesa-titulo"
+          th:text="${#lists.isEmpty(elegido) or filtro == 'todas'} ? 'Todas las donaciones' : |Donaciones: ${elegido[0].texto}|">Todas
+        las donaciones</h2>
+      <table th:unless="${#lists.isEmpty(vistas)}" class="tabla">
+        <thead>
+          <tr>
+            <th scope="col">Donación</th>
+            <th scope="col">Para</th>
+            <th scope="col">Cuándo</th>
+            <th scope="col">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="f : ${vistas}">
+            <th scope="row" data-etiqueta="Donación"><span th:text="${f.que}">Lentejas secas · 15
+              kg</span><small th:text="|De ${f.de}|">De Ana</small></th>
+            <td data-etiqueta="Para" th:text="${f.para}">Legumbres secas</td>
+            <td data-etiqueta="Cuándo" th:text="${f.cuando}">Salió hoy, 14:30</td>
+            <td data-etiqueta="Estado">
+              <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[f.e]})}">En
+                camino</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div th:if="${#lists.isEmpty(vistas)}" class="pieza ent-bandeja-vacia">
+        <section th:replace="~{alternativas/encastre/fragmentos/estado-vacio :: estado-vacio(
+                 'No hay donaciones con ese estado',
+                 'Probá con otro estado de la franja o mirá todas juntas.',
+                 'Ver todas', '/prototipo/encastre/entidad-recibidas')}"></section>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: Seguir entregas (RF-14 y RF-CL-07). El barrio es
+       un mosaico de manzanas: las calles son la junta de tinta entre las piezas. Tu puerta es la
+       manzana de sol (dirección exacta); el Depósito Central, la de tinta; el camión con las
+       lentejas va en una zona aproximada sobre su ruta, con la hora de la última actualización. Al
+       lado (arriba en el celular, para que la acción quede a mano), la lista con lo mismo, en el
+       orden en que llegan: la primera es la pieza naranja de lo de ahora, con "Confirmar
+       recepción". Las manzanas, las rutas y los camiones salen de los datos de th:with: aguantan
+       más entregas y más camiones. Estilos: prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Seguir entregas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/entidad.css"
+        th:href="@{/css/alternativas/encastre/prototipo/entidad.css}">
+  <div class="tablero ent-pantalla ent-pantalla--seguimiento"
+       th:with="entregas=${ {
+         {que: 'Lentejas secas · 15 kg', de: 'De Ana · camión 2', estado: 1, ahora: true,
+          cuando: 'Llega a eso de las 16:30. Va a unos 3 km de tu puerta.', x: 299, y: 97},
+         {que: 'Arroz · 20 kg', de: 'De Bruno · camión 1', estado: 0, ahora: false,
+          cuando: 'Sale del depósito mañana, jueves 15, a las 9:00.', x: 33, y: 264},
+         {que: 'Leche en polvo · 12 latas', de: 'De Almacén Ejemplo', estado: 0, ahora: false,
+          cuando: 'Sale el sábado 17 de octubre. Todavía sin camión.', x: 33, y: 264} } },
+               hecho='M63 289V175H299V97', falta='M299 97V61H417V32'">
+    <section class="pieza ent-cabeza" aria-labelledby="seguimiento-titulo">
+      <h1 id="seguimiento-titulo">Por dónde vienen tus entregas</h1>
+      <p class="rotulo-menu">Seguir entregas</p>
+      <p class="ent-cabeza-texto">Una en camino y dos por salir del depósito. Tu puerta se ve
+        exacta; el camión, en una zona aproximada.</p>
+      <p class="ent-actualizado">Posición actualizada hoy, 16:05</p>
+    </section>
+
+    <section class="ent-lista" aria-labelledby="lista-titulo">
+      <h2 id="lista-titulo" class="ent-mesa-titulo">En el orden en que llegan</h2>
+      <ol class="ent-entregas">
+        <li th:each="e, vuelta : ${entregas}" class="pieza ent-entrega"
+            th:classappend="${e.ahora} ? 'pieza-ahora ent-entrega--ahora'">
+          <span class="ent-marca" aria-hidden="true" th:text="${vuelta.count}">1</span>
+          <h3 th:text="${e.que}">Lentejas secas · 15 kg</h3>
+          <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[e.estado]})}">En
+            camino</span>
+          <p class="ent-entrega-de" th:text="${e.de}">De Ana</p>
+          <p th:text="${e.cuando}">Llega a eso de las 16:30.</p>
+          <div th:if="${e.ahora}" class="ent-pulgar">
+            <a href="/prototipo/encastre/entidad-seguimiento-confirmar"
+               th:href="@{/prototipo/encastre/entidad-seguimiento-confirmar}"
+               role="button">Confirmar recepción</a>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="pieza ent-mapa" aria-labelledby="mapa-titulo">
+      <h2 id="mapa-titulo">El barrio, en piezas</h2>
+      <!--/* Manzanas de 51 × 49 cada 59 × 57; las calles quedan en la junta. La ruta sigue las
+             calles: lo hecho en sol, lo que falta a trazos. */-->
+      <svg class="ent-mapa-dibujo" viewBox="0 0 480 300" aria-hidden="true" focusable="false">
+        <rect class="ent-mapa-calles" width="480" height="300" rx="14"/>
+        <th:block th:each="fila : ${#numbers.sequence(0, 4)}">
+          <rect th:each="col : ${#numbers.sequence(0, 7)}" class="ent-manzana" width="51"
+                height="49" rx="8" x="8" y="8"
+                th:classappend="${(col == 7 and fila == 0) ? 'ent-manzana--puerta' : ((col == 0 and fila == 4) ? 'ent-manzana--deposito' : ((col * 3 + fila * 5) % 7 == 2 ? 'ent-manzana--plaza' : ''))}"
+                th:attr="x=${8 + col * 59},y=${8 + fila * 57}"></rect>
+        </th:block>
+        <path class="ent-ruta-falta" d="M299 97V61H417V32" th:attr="d=${falta}"/>
+        <path class="ent-ruta-hecho" d="M63 289V175H299V97" th:attr="d=${hecho}"/>
+        <path class="ent-mapa-pin" transform="translate(446 32)" d="M0 12C-9 2-10-3-10-6a10 10 0 0 1 20 0c0 3-1 8-10 18Z"/>
+        <circle class="ent-mapa-pin-ojo" cx="446" cy="26" r="4"/>
+        <th:block th:each="e, vuelta : ${entregas}">
+          <g th:if="${e.ahora}" class="ent-mapa-camion" transform="translate(299 97)"
+             th:attr="transform=|translate(${e.x} ${e.y})|">
+            <circle class="ent-mapa-zona" r="36"/>
+            <circle class="ent-mapa-camion-fondo" r="16"/>
+            <g transform="translate(-10 -10)"><svg
+               th:replace="~{alternativas/encastre/fragmentos/icono :: icono('camiones', 20)}"></svg></g>
+          </g>
+          <g class="ent-mapa-numero" transform="translate(33 264)"
+             th:attr="transform=|translate(${e.ahora ? e.x + 22 : e.x - 36 + vuelta.index * 24} ${e.ahora ? e.y - 22 : e.y - 4})|">
+            <circle r="11"/>
+            <text text-anchor="middle" dy="5" th:text="${vuelta.count}">1</text>
+          </g>
+        </th:block>
+      </svg>
+      <ul class="ent-mapa-leyenda">
+        <li class="ent-mapa-leyenda--puerta">Tu puerta: Calle Ejemplo 1234 (exacta)</li>
+        <li class="ent-mapa-leyenda--deposito">Depósito Central: de ahí salen las tres</li>
+        <li class="ent-mapa-leyenda--camion">Camión 2 con las lentejas: zona aproximada</li>
+      </ul>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

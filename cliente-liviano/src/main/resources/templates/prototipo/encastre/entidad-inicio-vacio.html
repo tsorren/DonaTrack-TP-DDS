@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: Inicio sin nada que llegue hoy. Es el inicio de
+       después de confirmar las lentejas: el lugar de lo de ahora queda como hueco con forma de
+       pieza, con la salida a Necesidades; las lentejas ya están en el tablero (4 entregas en
+       octubre) y la cola sigue con lo que sale mañana. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/entidad-inicio :: inicio(true)}"></th:block>
+</th:block>
+</body>
+</html>

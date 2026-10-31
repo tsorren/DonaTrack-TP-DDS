@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: Confirmar recepción (flujo piloto, RF-12: al
+       menos una foto válida; la entrega pasa a entregada). Con una mano, de a un paso: la foto, los
+       bultos y el remito son tres piezas una debajo de la otra, y arriba la tira de tres fichas se
+       pone de color a medida que cada campo queda bien (solo CSS, con :has y :valid). El botón va
+       pegado abajo, sobre el riel, al alcance del pulgar. Al pie, la fila de Legumbres secas con
+       los huecos que van a llenar estas lentejas. Es un formulario real (POST, multipart por las
+       fotos, lo obligatorio con required) que va a entidad-seguimiento-confirmada.
+       Fragmento formulario(conError): la pantalla entera; con conError, el estado de
+       entidad-seguimiento-confirmar-error: el resumen con foco antes de los pasos, cada error en su
+       campo y lo que ya se escribió de vuelta en el suyo. Los campos van escritos a mano con el
+       marcado de campo y carga-fotos, que no admiten required ni un valor cargado; el de fotos, sin
+       capture: así el celular ofrece la cámara y la galería. Estilos: prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Confirmar recepción - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/entidad-seguimiento-confirmar :: formulario(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="formulario(conError)">
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/entidad.css"
+        th:href="@{/css/alternativas/encastre/prototipo/entidad.css}">
+  <form class="tablero ent-pantalla ent-pantalla--confirmar"
+        action="/prototipo/encastre/entidad-seguimiento-confirmada"
+        th:action="@{/prototipo/encastre/entidad-seguimiento-confirmada}" method="post"
+        enctype="multipart/form-data" aria-labelledby="confirmar-titulo">
+    <section class="pieza ent-cabeza ent-confirmar-que" aria-labelledby="confirmar-titulo">
+      <h1 id="confirmar-titulo">Confirmar recepción</h1>
+      <p class="rotulo-menu">Seguir entregas</p>
+      <p class="ent-confirmar-nombre">Lentejas secas <span>15 kg</span></p>
+      <p class="ent-cabeza-texto">De Ana. Salieron 3 bultos del Depósito Central hoy a las 14:30.
+        Tres pasos y listo.</p>
+      <ol class="ent-fichas piezas-chicas" aria-hidden="true">
+        <li class="ent-ficha ent-ficha--fotos"><span>1</span>Foto</li>
+        <li class="ent-ficha ent-ficha--bultos"><span>2</span>Bultos</li>
+        <li class="ent-ficha ent-ficha--remito"><span>3</span>Remito</li>
+      </ol>
+      <a href="/prototipo/encastre/entidad-seguimiento"
+         th:href="@{/prototipo/encastre/entidad-seguimiento}" class="enlace-fuerte">Ver
+        seguimiento</a>
+    </section>
+
+    <!--/* Los errores, antes de los pasos y con foco al cargar: cada uno lleva a su campo. */-->
+    <div th:if="${conError}" class="ent-errores" tabindex="-1" autofocus>
+      <section th:replace="~{alternativas/encastre/fragmentos/banner :: banner(
+               'Revisá dos cosas antes de confirmar',
+               'La entrega todavía no quedó confirmada. Corregí esto y volvé a tocar Confirmar recepción.',
+               'error', null)}"></section>
+      <ul class="ent-errores-lista">
+        <li><a href="#fotos">La foto pesa más de 5 MB</a></li>
+        <li><a href="#remito">Falta el número de remito</a></li>
+      </ul>
+    </div>
+
+    <section class="pieza ent-paso ent-paso--fotos" aria-labelledby="paso-fotos">
+      <h2 id="paso-fotos"><span class="ent-paso-numero" aria-hidden="true">1</span>Sacale una
+        foto a lo que llegó</h2>
+      <div class="campo carga-fotos">
+        <label for="fotos">Fotos de lo que llegó</label>
+        <input id="fotos" name="fotos" type="file" accept="image/*" multiple required
+               aria-describedby="fotos-ayuda" th:aria-invalid="${conError} ? 'true' : null">
+        <small id="fotos-ayuda" th:classappend="${conError} ? 'campo-error'"
+               th:text="${conError} ? 'La foto pesa más de 5 MB. Elegí otra, más liviana.' : 'Al menos una, de la cámara o de la galería. JPG o PNG, hasta 5 MB cada una. Se usan para mostrar que la donación llegó.'">Al
+          menos una, de la cámara o de la galería.</small>
+      </div>
+    </section>
+
+    <section class="pieza ent-paso ent-paso--bultos" aria-labelledby="paso-bultos">
+      <h2 id="paso-bultos"><span class="ent-paso-numero" aria-hidden="true">2</span>Contá los
+        bultos</h2>
+      <div class="campo">
+        <label for="bultos">Cantidad de bultos</label>
+        <input id="bultos" name="bultos" type="number" min="1" inputmode="numeric" required
+               aria-describedby="bultos-ayuda" th:value="${conError} ? '3' : null">
+        <small id="bultos-ayuda">Contá las cajas o bolsas que recibiste. Salieron 3 del
+          depósito.</small>
+      </div>
+    </section>
+
+    <section class="pieza ent-paso ent-paso--remito" aria-labelledby="paso-remito">
+      <h2 id="paso-remito"><span class="ent-paso-numero" aria-hidden="true">3</span>Anotá el
+        remito</h2>
+      <div class="campo">
+        <label for="remito">Número de remito</label>
+        <input id="remito" name="remito" type="text" required aria-describedby="remito-ayuda"
+               th:aria-invalid="${conError} ? 'true' : null">
+        <small id="remito-ayuda" th:classappend="${conError} ? 'campo-error'"
+               th:text="${conError} ? 'Falta el número de remito. Está arriba a la derecha del papel.' : 'Está arriba a la derecha del papel.'">Está
+          arriba a la derecha del papel.</small>
+      </div>
+    </section>
+
+    <section class="pieza ent-confirmar-pie" aria-labelledby="pie-titulo">
+      <h2 id="pie-titulo">Dónde encastra</h2>
+      <p>Al confirmar, las lentejas quedan entregadas, sus piezas llenan tres huecos de Legumbres
+        secas y le avisamos a Ana que llegaron.</p>
+      <ul th:replace="~{prototipo/encastre/entidad-necesidades :: necesidades('legumbres', false, false, false)}"></ul>
+    </section>
+
+    <div class="ent-pulgar ent-pulgar--mesa">
+      <button type="submit">Confirmar recepción</button>
+    </div>
+  </form>
+</th:block>
+</body>
+</html>

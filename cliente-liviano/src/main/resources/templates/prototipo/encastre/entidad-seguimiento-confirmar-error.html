@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: Confirmar recepción con errores (la respuesta
+       del servidor cuando algo no está bien). Sobrio: el resumen con foco antes de los pasos, cada
+       error en su campo con su signo, los bultos que ya se escribieron de vuelta en su campo y la
+       foto para elegir de nuevo. Se envía igual que la pantalla sin errores. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Revisá la confirmación - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/entidad-seguimiento-confirmar :: formulario(true)}"></th:block>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<!--/* Prototipo de Encastre (iteración 3), entidad: Necesidades (RF-10: alta, edición y baja de las
+       necesidades propias). El tablero de la entidad: cada necesidad es una fila de piezas que se
+       llena con las entregas que llegan (las llenas ya llegaron, las de trazo vienen en camino o por
+       salir, los huecos de tinta son lo que falta). Arriba, pedir una necesidad nueva; al publicarla,
+       entidad-necesidades-publicada muestra la fila nueva, entera en huecos.
+       Fragmentos de esta plantilla (los usan las demás pantallas de la entidad):
+       - pantalla(publicada): la pantalla entera; publicada suma el aviso y la fila nueva.
+       - necesidades(solo, recibida, publicada, editable): el tablero. Los datos van escritos una sola
+         vez acá. solo: la clave de una necesidad para mostrar solo esa, o null. recibida: las lentejas
+         de Ana (15 kg, "hoy") ya llegaron y sus piezas son nuevas (la confirmación y el inicio de
+         después). publicada: suma la necesidad que se acaba de publicar. editable: cada fila trae
+         "Cambiar o dar de baja". Cada pieza vale "pieza" unidades; lo que dice el dibujo está
+         también en texto. Estilos: prototipo/entidad.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Necesidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/encastre/entidad-necesidades :: pantalla(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla(publicada)">
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/entidad.css"
+        th:href="@{/css/alternativas/encastre/prototipo/entidad.css}">
+  <div class="tablero ent-pantalla ent-pantalla--necesidades">
+    <section class="pieza ent-cabeza" aria-labelledby="necesidades-titulo">
+      <h1 id="necesidades-titulo">Tu tablero de necesidades</h1>
+      <p class="rotulo-menu">Necesidades</p>
+      <p class="ent-cabeza-texto">Cada fila es algo que le hace falta al comedor. Las piezas llenas
+        ya llegaron; los huecos de tinta, lo que todavía falta.</p>
+    </section>
+
+    <div th:if="${publicada}" class="ent-aviso" role="status" tabindex="-1" autofocus>
+      <div th:replace="~{alternativas/encastre/fragmentos/aviso :: aviso('Publicamos tu necesidad: aceite de girasol, 20 litros, hasta el 30 de octubre. Ya la ven quienes donan.', 'exito')}"></div>
+    </div>
+
+    <!--/* Pedir una necesidad nueva: un formulario sobrio, con la acción al alcance del pulgar. */-->
+    <section class="pieza ent-pedir" aria-labelledby="pedir-titulo">
+      <h2 id="pedir-titulo">Pedí lo que falta</h2>
+      <form class="ent-pedir-form" action="/prototipo/encastre/entidad-necesidades-publicada"
+            th:action="@{/prototipo/encastre/entidad-necesidades-publicada}" method="post">
+        <div class="campo ent-pedir-que">
+          <label for="necesidad">Qué hace falta</label>
+          <input id="necesidad" name="necesidad" type="text" required
+                 aria-describedby="necesidad-ayuda">
+          <small id="necesidad-ayuda">Por ejemplo: aceite de girasol, pañales, útiles.</small>
+        </div>
+        <div class="campo">
+          <label for="cantidad">Cuánto</label>
+          <input id="cantidad" name="cantidad" type="number" min="1" required>
+        </div>
+        <div class="campo">
+          <label for="unidad">En qué</label>
+          <select id="unidad" name="unidad" required>
+            <option value="kg">Kilos</option>
+            <option value="litros">Litros</option>
+            <option value="latas">Latas</option>
+            <option value="cajas">Cajas</option>
+            <option value="unidades">Unidades</option>
+          </select>
+        </div>
+        <div class="campo ent-pedir-hasta">
+          <label for="hasta">Hasta cuándo</label>
+          <input id="hasta" name="hasta" type="date" min="2026-10-14" required>
+        </div>
+        <div class="ent-pulgar">
+          <button type="submit">Publicar necesidad</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="ent-tablero" aria-labelledby="tablero-titulo">
+      <div class="ent-tablero-cabeza">
+        <h2 id="tablero-titulo">Lo que ya pediste</h2>
+        <p>Lo nuevo va al final. Podés cambiar cuánto y hasta cuándo, o darla de baja.</p>
+      </div>
+      <ul th:replace="~{prototipo/encastre/entidad-necesidades :: necesidades(null, false, ${publicada}, true)}"></ul>
+      <a th:if="${publicada}" href="/prototipo/encastre/entidad-inicio"
+         th:href="@{/prototipo/encastre/entidad-inicio}" class="enlace-fuerte">Volver al inicio</a>
+    </section>
+  </div>
+</th:block>
+
+<ul th:fragment="necesidades(solo, recibida, publicada, editable)" class="ent-necesidades"
+    th:with="necesidades=${ {
+      {clave: 'legumbres', nombre: 'Legumbres secas', unidad: 'kg', total: 40, llegaron: 10,
+       vienen: 15, hoy: 15, pieza: 5, hasta: '2026-10-31', fecha: 'Hasta el 31 de octubre', nueva: false},
+      {clave: 'leche', nombre: 'Leche en polvo', unidad: 'latas', total: 24, llegaron: 12,
+       vienen: 12, hoy: 0, pieza: 4, hasta: '2026-10-25', fecha: 'Hasta el 25 de octubre', nueva: false},
+      {clave: 'arroz', nombre: 'Arroz', unidad: 'kg', total: 30, llegaron: 0,
+       vienen: 20, hoy: 0, pieza: 5, hasta: '2026-11-06', fecha: 'Hasta el 6 de noviembre', nueva: false},
+      {clave: 'aceite', nombre: 'Aceite de girasol', unidad: 'litros', total: 20, llegaron: 0,
+       vienen: 0, hoy: 0, pieza: 5, hasta: '2026-10-30', fecha: 'Hasta el 30 de octubre', nueva: true} } }">
+  <li th:each="n, vuelta : ${necesidades}"
+      th:if="${(solo == null or n.clave == solo) and (publicada or !n.nueva)}"
+      class="pieza ent-necesidad"
+      th:classappend="|ent-necesidad--${vuelta.index % 4}${n.nueva ? ' ent-necesidad--nueva' : ''}|"
+      th:with="ll=${n.llegaron + (recibida ? n.hoy : 0)}, vi=${n.vienen - (recibida ? n.hoy : 0)},
+               fa=${n.total - ll - vi}, piezas=${n.total / n.pieza}">
+    <h3 th:id="|necesidad-${n.clave}|">
+      <span th:text="${n.nombre}">Legumbres secas</span><span th:if="${n.nueva}"
+            class="ent-nueva">Nueva</span>
+    </h3>
+    <p class="ent-necesidad-cifra"><b th:text="${ll}">10</b> de <span
+       th:text="|${n.total} ${n.unidad}|">40 kg</span></p>
+    <p class="ent-necesidad-fecha" th:text="${n.fecha}">Hasta el 31 de octubre</p>
+    <!--/* Las piezas salen de las cifras: una cada "pieza" unidades. La última es de borde. */-->
+    <ol class="ent-ranuras" aria-hidden="true">
+      <li th:each="i : ${#numbers.sequence(1, piezas)}"
+          th:with="hasta=${i * n.pieza},
+                   tipo=${hasta <= ll ? (recibida and hasta > n.llegaron ? 'nueva' : 'llena') : (hasta <= ll + vi ? 'viene' : 'hueco')}"
+          th:class="|ent-ranura ent-ranura--${tipo}|"><svg class="ent-ranura-forma"
+          viewBox="22 14 56 72" focusable="false"><use href="#encastre-pieza"
+          th:href="${i == piezas} ? '#encastre-pieza-borde' : '#encastre-pieza'"/></svg><th:block
+          th:if="${tipo == 'llena' or tipo == 'nueva'}"><svg
+          th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 16)}"></svg></th:block></li>
+    </ol>
+    <ul class="ent-leyenda">
+      <li class="ent-leyenda--llena" th:text="|Llegaron ${ll} ${n.unidad}|">Llegaron 10 kg</li>
+      <li class="ent-leyenda--viene" th:if="${vi > 0}" th:text="|Vienen ${vi} ${n.unidad}|">Vienen
+        15 kg</li>
+      <li class="ent-leyenda--hueco" th:if="${fa > 0}" th:text="|Faltan ${fa} ${n.unidad}|">Faltan
+        15 kg</li>
+    </ul>
+    <!--/* Edición y baja (RF-10): plegadas, para que el tablero se lea primero. */-->
+    <details th:if="${editable}" class="ent-cambiar">
+      <summary>Cambiar o dar de baja</summary>
+      <form class="ent-cambiar-form" action="/prototipo/encastre/entidad-necesidades"
+            th:action="@{/prototipo/encastre/entidad-necesidades}" method="post"
+            th:id="|cambiar-${n.clave}|">
+        <div class="campo">
+          <label for="cantidad-legumbres" th:for="|cantidad-${n.clave}|"
+                 th:text="|Cuánto hace falta, en ${n.unidad}|">Cuánto hace falta</label>
+          <input id="cantidad-legumbres" name="cantidad" type="number" min="1" required
+                 th:id="|cantidad-${n.clave}|" th:value="${n.total}">
+        </div>
+        <div class="campo">
+          <label for="hasta-legumbres" th:for="|hasta-${n.clave}|">Hasta cuándo</label>
+          <input id="hasta-legumbres" name="hasta" type="date" required
+                 th:id="|hasta-${n.clave}|" th:value="${n.hasta}">
+        </div>
+        <div class="ent-cambiar-acciones">
+          <button type="submit" class="secondary">Guardar cambios</button>
+          <button type="button" class="outline" command="show-modal"
+                  th:attr="commandfor=|baja-${n.clave}|">Dar de baja</button>
+        </div>
+      </form>
+      <dialog th:replace="~{alternativas/encastre/fragmentos/dialogo :: dialogo(|baja-${n.clave}|,
+              |¿Dar de baja ${n.nombre}?|,
+              'Deja de verse para quienes donan. Lo que ya está en camino te llega igual.',
+              'Sí, dar de baja', |cambiar-${n.clave}|)}"></dialog>
+    </details>
+  </li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,1583 @@
+/*
+ * Encastre, prototipo del flujo (iteración 3), entidad: "una entrega a la vez, con una mano".
+ * Cada pantalla es un tablero (.tablero del sistema) de piezas que encastran. La pieza de lo que
+ * llega ahora ocupa la primera pantalla del celular y deja la acción abajo, al alcance del pulgar
+ * (.ent-pulgar, pegada sobre el riel); el tablero de la entidad son sus necesidades, una fila de
+ * piezas cada una, que se llena con lo que llega (.ent-ranura). Al confirmar, las piezas nuevas
+ * caen y encastran. Solo tokens de uso y los quiebres de tokens.css, mobile first.
+ */
+
+/* La pantalla: una columna en el celular, también desde 600 px salvo donde se dice. */
+.ent-pantalla > * {
+  min-width: 0;
+}
+
+.ent-pantalla :is(h1, h2) {
+  margin: 0;
+  color: var(--color-pieza-texto);
+  font-family: var(--fuente-juego);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+
+.ent-pantalla h1 {
+  font-size: var(--tamano-mision);
+}
+
+.ent-pantalla .pieza h2 {
+  font-size: var(--tamano-titulo-2);
+}
+
+/* El nombre del menú va después del título en el HTML y arriba en pantalla. */
+.ent-pantalla .pieza > .rotulo-menu {
+  order: -1;
+}
+
+/* Una pieza seguida de algo que no es pieza (la mesa, un aviso) no saca lengüeta. */
+.ent-pantalla > .pieza:has(+ :not(.pieza))::after {
+  content: none;
+}
+
+/* Hacia abajo, dentro de las listas de piezas. */
+.ent-necesidades > :not(:last-child)::after,
+.ent-entregas > :not(:last-child)::after,
+.ent-cola > :not(:last-child)::after {
+  content: "";
+  top: 100%;
+  left: calc(var(--medida-lengueta-x, 50%) - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  --medida-lengueta-cx: 50%;
+  --medida-lengueta-cy: var(--medida-lengueta-d);
+}
+
+/* Hacia la derecha, en la tira de fichas de la confirmación. */
+.ent-fichas > :not(:last-child)::after {
+  content: "";
+  top: calc(50% - var(--medida-lengueta-aro));
+  left: 100%;
+  width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  height: calc(2 * var(--medida-lengueta-aro));
+  --medida-lengueta-cx: var(--medida-lengueta-d);
+  --medida-lengueta-cy: 50%;
+}
+
+.ent-cabeza-texto {
+  max-width: 44ch;
+  font-size: var(--tamano-texto-grande);
+  font-weight: 600;
+}
+
+/* La barra del pulgar: la acción de la pantalla, abajo. En el celular queda pegada sobre el riel
+   mientras su pieza está a la vista; desde 600 px va en su lugar. */
+.ent-pulgar {
+  position: sticky;
+  bottom: calc(var(--medida-riel-alto) + var(--espacio-2));
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
+  margin-top: auto;
+  padding-top: var(--espacio-3);
+  background: var(--color-pieza-fondo);
+}
+
+.ent-pulgar > :is(button, [role="button"]) {
+  flex: 1 1 12rem;
+  margin-block: 0;
+}
+
+.ent-pulgar--mesa {
+  padding: var(--espacio-3) var(--espacio-2) var(--espacio-2);
+  background: var(--color-mesa);
+}
+
+/* Enlaces y títulos sobre la mesa de tinta. */
+.ent-tablero,
+.ent-lista,
+.ent-bandeja {
+  display: grid;
+  gap: var(--medida-junta);
+  align-content: start;
+}
+
+.ent-tablero-cabeza {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-5) var(--espacio-relleno-linea) var(--espacio-3);
+}
+
+.ent-pantalla .ent-tablero-cabeza h2,
+.ent-pantalla .ent-mesa-titulo {
+  color: var(--color-mesa-texto);
+  font-size: var(--tamano-pieza-titulo);
+}
+
+.ent-mesa-titulo {
+  padding: var(--espacio-4) var(--espacio-relleno-linea) var(--espacio-2);
+}
+
+.ent-tablero-cabeza p {
+  max-width: 60ch;
+  color: var(--color-mesa-texto-suave);
+  font-weight: 600;
+}
+
+.ent-tablero > .enlace-fuerte,
+.ent-tablero > .enlace-fuerte:hover {
+  justify-self: start;
+  margin-inline: var(--espacio-relleno-linea);
+  color: var(--color-mesa-texto);
+}
+
+/* El aviso que llega escrito: toma el foco al cargar, pero no es un control (sin contorno); el
+   giro con que encastra no ensancha la página. */
+.ent-aviso {
+  display: grid;
+  padding-block: var(--espacio-2);
+  overflow-x: clip;
+}
+
+.ent-aviso:focus,
+.ent-errores:focus,
+.ent-listo:focus {
+  outline: none;
+}
+
+/* La confirmación, en una línea con su signo, para que la fila se vea entera arriba. */
+.ent-listo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-weight: 800;
+}
+
+.ent-listo::before {
+  content: "✓" / "";
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+}
+
+/* Lo que te llega ahora: la pieza naranja que llena la primera pantalla del celular. */
+.ent-ahora {
+  --color-pieza-fondo: var(--color-pieza-naranja);
+  --medida-lengueta-x: 30%;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+  min-height: calc(
+    100svh - var(--medida-toque-minimo) - 2 * var(--espacio-2) - var(--medida-riel-alto) - 3 *
+      var(--medida-junta)
+  );
+}
+
+.ent-ahora > .rotulo-menu {
+  align-self: flex-start;
+}
+
+.ent-ahora-que {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.ent-ahora-nombre {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-saludo);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+
+.ent-ahora-datos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+  font-weight: 800;
+}
+
+.ent-ahora-kilos,
+.ent-confirmar-nombre span {
+  padding: var(--espacio-1) var(--espacio-3);
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-boton);
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+  line-height: 1.1;
+}
+
+/* El tramo que le falta al camión, dibujado desde su avance. */
+.ent-tramo {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.ent-tramo > :is(.insignia, .enlace-fuerte) {
+  justify-self: start;
+}
+
+.ent-tramo-dibujo {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ent-tramo-falta,
+.ent-tramo-hecho {
+  stroke: var(--color-pieza-tinta);
+  stroke-linecap: round;
+}
+
+.ent-tramo-falta {
+  stroke-width: 4;
+  stroke-dasharray: 1 9;
+}
+
+.ent-tramo-hecho {
+  stroke-width: 7;
+}
+
+.ent-tramo-deposito {
+  fill: var(--color-pieza-tinta);
+}
+
+.ent-tramo-puerta {
+  fill: var(--color-pieza-crema);
+  stroke: var(--color-pieza-tinta);
+  stroke-width: 4;
+}
+
+.ent-tramo-camion {
+  color: var(--color-pieza-tinta);
+}
+
+.ent-tramo-camion > circle {
+  fill: var(--color-pieza-crema);
+  stroke: var(--color-pieza-tinta);
+  stroke-width: 3;
+}
+
+.ent-tramo-puntas {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.ent-tramo-puntas span {
+  display: grid;
+}
+
+.ent-tramo-puntas span:last-child {
+  text-align: end;
+}
+
+.ent-tramo-puntas small {
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+/* Las piezas que trae: sueltas, sobre un pedazo de crema, apuntando a su fila del tablero. */
+.ent-encastra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3) var(--espacio-4);
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+  font-weight: 600;
+}
+
+.ent-encastra p {
+  flex: 1 1 12rem;
+}
+
+.ent-encastra a {
+  color: var(--color-pieza-texto);
+  font-weight: 800;
+}
+
+/* Una fila de piezas (ranuras), dibujadas con #encastre-pieza del layout: la lengüeta de la
+   derecha entra en la muesca de la siguiente. */
+.ent-ranuras {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: var(--espacio-1);
+  margin: 0;
+  padding: 0 var(--espacio-4) 0 0;
+  list-style: none;
+}
+
+.ent-ranura {
+  position: relative;
+  display: grid;
+  flex: 1 0 1.875rem;
+  grid-template-rows: 16fr 56fr;
+  max-width: 3.5rem;
+  aspect-ratio: 56 / 72;
+  margin: 0;
+  color: var(--color-pieza-texto);
+  list-style: none;
+}
+
+.ent-ranura-forma {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  stroke: var(--color-junta);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.ent-ranura > .icono {
+  position: relative;
+  grid-row: 2;
+  place-self: center;
+  width: 42%;
+  height: auto;
+  stroke-width: 3;
+}
+
+.ent-ranura--llena .ent-ranura-forma {
+  fill: var(--color-pieza-crema);
+}
+
+.ent-ranura--nueva .ent-ranura-forma,
+.ent-ranura--suelta .ent-ranura-forma {
+  fill: var(--color-pieza-sol);
+}
+
+.ent-ranura--viene .ent-ranura-forma {
+  fill: var(--color-junta-tenue);
+  stroke-dasharray: 5 4;
+}
+
+.ent-ranura--hueco .ent-ranura-forma {
+  fill: var(--color-hueco);
+  stroke: var(--color-hueco-borde);
+  stroke-dasharray: 5 4;
+  stroke-width: 2;
+}
+
+.ent-ranuras--sueltas {
+  gap: var(--espacio-3);
+  padding: 0;
+}
+
+.ent-ranura--suelta {
+  flex: none;
+  width: 2.75rem;
+  rotate: -8deg;
+}
+
+.ent-ranura--suelta:nth-child(even) {
+  rotate: 10deg;
+}
+
+/* El tablero de la entidad: una pieza por necesidad, una debajo de la otra. */
+.ent-necesidades {
+  container-type: inline-size;
+  display: grid;
+  gap: var(--medida-junta);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ent-necesidad {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+  --medida-lengueta-x: 18%;
+
+  gap: var(--espacio-2) var(--espacio-5);
+  list-style: none;
+}
+
+.ent-necesidad--1 {
+  --color-pieza-fondo: var(--color-pieza-menta);
+}
+
+.ent-necesidad--2 {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+.ent-necesidad--3 {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+.tablero .ent-necesidad h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2);
+  font-size: var(--tamano-titulo-3);
+}
+
+.ent-nueva {
+  padding: 0 var(--espacio-2);
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-boton);
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.ent-necesidad-cifra {
+  font-weight: 800;
+}
+
+.ent-necesidad-cifra b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-1);
+  line-height: 1;
+}
+
+.ent-necesidad-fecha {
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.ent-necesidad > .ent-ranuras {
+  margin-block: var(--espacio-2);
+}
+
+.ent-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-1) var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  list-style: none;
+}
+
+.ent-leyenda > li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  list-style: none;
+}
+
+.ent-leyenda > li::before {
+  content: "";
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: 0.25rem;
+}
+
+.ent-leyenda--llena::before {
+  background: var(--color-pieza-crema);
+}
+
+.ent-leyenda--viene::before {
+  background: var(--color-junta-tenue);
+  border-style: dashed;
+}
+
+.ent-leyenda--hueco::before {
+  background: var(--color-hueco);
+}
+
+/* Cambiar o dar de baja: plegado, una pieza crema que se abre. */
+.ent-cambiar {
+  margin: var(--espacio-2) 0 0;
+}
+
+.ent-cambiar > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--medida-toque-minimo);
+  padding: 0 var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.ent-cambiar-form {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: var(--espacio-2) 0 0;
+  padding: var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-pieza);
+}
+
+.ent-cambiar-form .campo {
+  margin: 0;
+}
+
+.ent-cambiar-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.ent-cambiar-acciones > * {
+  margin-block: 0;
+}
+
+/* Pedir una necesidad nueva. */
+.ent-pedir-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--espacio-3);
+}
+
+.ent-pedir-form > :is(.ent-pedir-que, .ent-pedir-hasta, .ent-pulgar) {
+  grid-column: 1 / -1;
+}
+
+.ent-pedir-form select {
+  min-height: 3.125rem;
+  margin: 0;
+  background-color: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  color: var(--color-texto);
+  font-weight: 700;
+}
+
+/* Lo que viene después: piezas grises, todavía sin color, en fila. */
+.ent-despues {
+  --color-pieza-fondo: var(--color-pieza-gris);
+  --medida-lengueta-x: 70%;
+}
+
+.ent-cola {
+  flex-direction: column;
+}
+
+.ent-cola > li {
+  --color-pieza-fondo: var(--color-pieza-crema);
+
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-fondo);
+  border-radius: var(--radio-chico);
+}
+
+.ent-cola > li > .insignia {
+  margin-bottom: var(--espacio-1);
+}
+
+.ent-cola b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.1;
+}
+
+.ent-cola span:not([class]) {
+  font-weight: 700;
+}
+
+.ent-cola small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.ent-despues > .enlace-fuerte,
+.ent-llegaron > .enlace-fuerte {
+  justify-self: start;
+}
+
+/* Ya llegaron: la moneda con la cifra. */
+.ent-llegaron {
+  --color-pieza-fondo: var(--color-pieza-menta);
+
+  align-content: center;
+}
+
+.ent-llegaron p {
+  font-weight: 700;
+}
+
+/* El inicio vacío: el hueco de lo de ahora. */
+.ent-ahora--vacia {
+  --color-pieza-fondo: var(--color-pieza-crema);
+
+  min-height: 0;
+}
+
+/* Confirmar recepción, de a un paso. */
+.ent-confirmar-nombre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-1);
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ent-confirmar-que > .enlace-fuerte {
+  justify-self: start;
+}
+
+.ent-fichas {
+  flex-wrap: nowrap;
+}
+
+.ent-ficha {
+  --color-pieza-fondo: var(--color-pieza-gris);
+
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-width: 0;
+  padding: var(--espacio-2);
+  background: var(--color-pieza-fondo);
+  border-radius: var(--radio-chico);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+}
+
+.ent-ficha span {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+}
+
+/* Cada ficha se pone de color cuando su campo queda bien. */
+.ent-pantalla--confirmar:has(#fotos:valid) .ent-ficha--fotos,
+.ent-pantalla--confirmar:has(#bultos:valid) .ent-ficha--bultos,
+.ent-pantalla--confirmar:has(#remito:valid) .ent-ficha--remito {
+  --color-pieza-fondo: var(--color-pieza-menta);
+}
+
+.ent-paso {
+  gap: var(--espacio-3);
+}
+
+.ent-paso--fotos {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+.ent-paso--bultos {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+.ent-paso--remito {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+}
+
+.ent-pantalla .ent-paso h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  font-size: var(--tamano-titulo-3);
+}
+
+.ent-paso-numero {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--color-pieza-tinta);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+}
+
+.ent-paso:has(input:valid) .ent-paso-numero {
+  background: var(--color-pieza-crema);
+  color: var(--color-pieza-texto);
+}
+
+.ent-paso .campo {
+  margin: 0;
+}
+
+/* Un paso con error se vuelve crema: el error es sobrio y se lee. */
+.ent-paso:has([aria-invalid="true"]) {
+  --color-pieza-fondo: var(--color-pieza-crema);
+
+  outline: var(--borde-junta) dashed var(--color-error-texto);
+  outline-offset: calc(-1 * var(--espacio-2));
+}
+
+.ent-paso .carga-fotos > input[type="file"] {
+  min-height: 5rem;
+  padding: var(--espacio-4);
+  background-color: var(--color-pieza-crema);
+}
+
+.ent-paso #bultos {
+  max-width: 10rem;
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+}
+
+.ent-errores {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-pieza);
+}
+
+.ent-errores .banner {
+  margin: 0;
+}
+
+.ent-errores-lista {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ent-errores-lista li {
+  margin: 0;
+  list-style: none;
+}
+
+.ent-errores-lista a {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-error-texto);
+  font-weight: 800;
+}
+
+.ent-confirmar-pie {
+  --color-pieza-fondo: var(--color-pieza-crema);
+}
+
+/* Recepción confirmada: la pieza de sol del festejo. */
+.ent-festejo {
+  --color-pieza-fondo: var(--color-pieza-sol);
+  --medida-lengueta-x: 30%;
+
+  gap: var(--espacio-4);
+}
+
+.ent-pantalla .ent-festejo h1 {
+  font-size: var(--tamano-saludo);
+  line-height: 0.98;
+}
+
+.ent-festejo-texto {
+  max-width: 40ch;
+  font-size: var(--tamano-texto-grande);
+  font-weight: 700;
+}
+
+/* Las chispas: piezas chicas que caen sobre la fila, en una franja arriba de ella. */
+.ent-festejo-fila {
+  position: relative;
+  padding-top: var(--espacio-6);
+}
+
+.ent-chispas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 2;
+  height: var(--espacio-7);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.ent-chispa {
+  fill: var(--color-pieza-lila);
+  stroke: var(--color-junta);
+  stroke-width: 6;
+}
+
+.ent-chispa:nth-child(3n + 2) {
+  fill: var(--color-pieza-menta);
+}
+
+.ent-chispa:nth-child(3n) {
+  fill: var(--color-pieza-crema);
+}
+
+/* Seguir entregas. */
+.ent-actualizado {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-1) var(--espacio-3);
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-boton);
+  color: var(--color-mesa-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.ent-actualizado::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--color-pieza-menta);
+  border-radius: 50%;
+}
+
+.ent-entregas {
+  display: grid;
+  gap: var(--medida-junta);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ent-entrega {
+  --medida-lengueta-x: 70%;
+
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+  list-style: none;
+}
+
+.ent-entrega > * {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.ent-entrega > .ent-marca {
+  grid-row: span 2;
+  grid-column: 1;
+  align-self: start;
+}
+
+.ent-entrega > .ent-pulgar {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+}
+
+.tablero .ent-entrega h3 {
+  font-size: var(--tamano-titulo-3);
+}
+
+.ent-entrega--ahora {
+  --color-pieza-fondo: var(--color-pieza-naranja);
+}
+
+.ent-entrega-de {
+  font-weight: 800;
+}
+
+.ent-marca {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+}
+
+/* El mapa: el barrio como mosaico de manzanas; las calles son la junta. */
+.ent-mapa {
+  gap: var(--espacio-3);
+}
+
+.ent-mapa-dibujo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.ent-mapa-calles {
+  fill: var(--color-pieza-tinta);
+}
+
+.ent-manzana {
+  fill: var(--color-pieza-gris);
+}
+
+.ent-manzana--plaza {
+  fill: var(--color-pieza-menta);
+}
+
+.ent-manzana--deposito {
+  fill: var(--color-pieza-lila);
+}
+
+.ent-manzana--puerta {
+  fill: var(--color-pieza-sol);
+}
+
+.ent-ruta-hecho,
+.ent-ruta-falta {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ent-ruta-hecho {
+  stroke: var(--color-pieza-sol);
+  stroke-width: 7;
+}
+
+.ent-ruta-falta {
+  stroke: var(--color-pieza-crema);
+  stroke-width: 4;
+  stroke-dasharray: 1 9;
+}
+
+.ent-mapa-pin {
+  fill: var(--color-pieza-tinta);
+  stroke: var(--color-pieza-crema);
+  stroke-width: 2;
+}
+
+.ent-mapa-pin-ojo {
+  fill: var(--color-pieza-crema);
+}
+
+.ent-mapa-zona {
+  fill: none;
+  stroke: var(--color-ahora);
+  stroke-dasharray: 6 5;
+  stroke-width: 3;
+}
+
+.ent-mapa-camion {
+  color: var(--color-pieza-tinta);
+}
+
+.ent-mapa-camion-fondo {
+  fill: var(--color-ahora);
+  stroke: var(--color-pieza-crema);
+  stroke-width: 3;
+}
+
+.ent-mapa-numero circle {
+  fill: var(--color-pieza-crema);
+  stroke: var(--color-pieza-tinta);
+  stroke-width: 2;
+}
+
+.ent-mapa-numero text {
+  fill: var(--color-pieza-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+}
+
+.ent-mapa-leyenda {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  list-style: none;
+}
+
+.ent-mapa-leyenda li {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  list-style: none;
+}
+
+.ent-mapa-leyenda li::before {
+  content: "";
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: 0.25rem;
+}
+
+.ent-mapa-leyenda--puerta::before {
+  background: var(--color-pieza-sol);
+}
+
+.ent-mapa-leyenda--deposito::before {
+  background: var(--color-pieza-lila);
+}
+
+.ent-mapa-leyenda--camion::before {
+  border-color: var(--color-ahora-texto);
+  border-style: dashed;
+  border-radius: 50%;
+}
+
+/* Donaciones recibidas: la que falta, la franja que filtra y la bandeja. */
+.ent-falta {
+  --color-pieza-fondo: var(--color-pieza-naranja);
+}
+
+.ent-falta-que {
+  display: grid;
+  font-weight: 700;
+}
+
+.ent-falta-que b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+}
+
+.ent-franja {
+  --medida-lengueta-x: 18%;
+
+  gap: var(--espacio-3);
+}
+
+.ent-franja-tramos {
+  display: block;
+}
+
+.ent-franja .tramos rect {
+  stroke: var(--color-pieza-fondo);
+}
+
+.ent-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ent-filtros li {
+  margin: 0;
+  list-style: none;
+}
+
+.ent-filtros a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  padding: 0 var(--espacio-2) 0 var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-boton);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.ent-filtros a:hover {
+  background: var(--color-pieza-gris-alta);
+  color: var(--color-pieza-texto);
+}
+
+.ent-filtros a[class*="tramo--"]::before {
+  content: "";
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  background: var(--color-tramo);
+  border-radius: 50%;
+}
+
+.ent-filtros b {
+  display: grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0 var(--espacio-1);
+  background: var(--color-pieza-gris);
+  border-radius: var(--radio-boton);
+}
+
+.ent-filtros a[aria-current="true"] {
+  background: var(--color-pieza-tinta);
+  color: var(--color-mesa-texto);
+}
+
+.ent-filtros a[aria-current="true"] b {
+  background: var(--color-pieza-sol);
+  color: var(--color-pieza-texto);
+}
+
+.ent-bandeja th[scope="row"] > * {
+  display: block;
+}
+
+.ent-bandeja th[scope="row"] small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.ent-bandeja-vacia {
+  --color-pieza-fondo: var(--color-pieza-crema);
+}
+
+/* Movimiento, solo si la persona no pidió reducirlo: las piezas recién llegadas caen y encastran
+   una tras otra, las chispas saltan después; una necesidad nueva entra al tablero; las piezas que
+   trae la entrega de ahora flotan buscando su hueco. */
+@media (prefers-reduced-motion: no-preference) {
+  .ent-ranura--nueva {
+    animation: ent-cae 560ms var(--movimiento-curva) 300ms both;
+  }
+
+  /* La fila nueva baja y encastra en la de arriba, sin girar: es ancha. */
+  .ent-necesidad--nueva {
+    animation: ent-baja 560ms var(--movimiento-curva) 300ms both;
+  }
+
+  .ent-ranura--nueva ~ .ent-ranura--nueva {
+    animation-delay: 480ms;
+  }
+
+  .ent-ranura--nueva ~ .ent-ranura--nueva ~ .ent-ranura--nueva {
+    animation-delay: 660ms;
+  }
+
+  .ent-chispa {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: ent-chispa 640ms var(--movimiento-curva) 1000ms both;
+  }
+
+  .ent-ranura--suelta {
+    animation: ent-busca 1.6s var(--movimiento-curva) 500ms 2;
+  }
+
+  .ent-ranura--suelta:nth-child(even) {
+    animation-delay: 650ms;
+  }
+}
+
+@keyframes ent-cae {
+  from {
+    translate: 0 -2.5rem;
+    rotate: -18deg;
+    scale: 1.15;
+  }
+
+  70% {
+    translate: 0 0.25rem;
+    rotate: 2deg;
+  }
+}
+
+@keyframes ent-baja {
+  from {
+    translate: 0 -2rem;
+  }
+
+  70% {
+    translate: 0 0.25rem;
+  }
+}
+
+@keyframes ent-chispa {
+  from {
+    scale: 0;
+  }
+
+  60% {
+    scale: 1.25;
+  }
+}
+
+@keyframes ent-busca {
+  50% {
+    translate: 0.25rem 0.375rem;
+    rotate: 0deg;
+  }
+}
+
+/* Alto contraste: las piezas se dibujan con los colores del sistema y los signos se siguen
+   viendo. */
+@media (forced-colors: active) {
+  .ent-ranura-forma,
+  .ent-ranura--viene .ent-ranura-forma,
+  .ent-ranura--hueco .ent-ranura-forma {
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .ent-ranura--llena .ent-ranura-forma,
+  .ent-ranura--nueva .ent-ranura-forma {
+    fill: CanvasText;
+  }
+
+  .ent-ranura > .icono {
+    color: Canvas;
+  }
+
+  .ent-tramo-dibujo :is(line, circle) {
+    stroke: CanvasText;
+  }
+
+  .ent-mapa-dibujo,
+  .ent-leyenda > li::before,
+  .ent-mapa-leyenda li::before,
+  .ent-filtros a::before,
+  .ent-franja-tramos {
+    forced-color-adjust: none;
+  }
+
+  .ent-ficha,
+  .ent-ahora-kilos,
+  .ent-actualizado,
+  .ent-marca {
+    border: var(--borde-junta) solid;
+  }
+
+  .ent-filtros a[aria-current="true"] {
+    outline: var(--borde-foco) solid CanvasText;
+    outline-offset: 2px;
+  }
+}
+
+/* Cada necesidad, con espacio: el nombre y la cifra a la izquierda, la fila de piezas a la
+   derecha. */
+@container (min-width: 34rem) {
+  .ent-necesidad {
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    grid-template-areas:
+      "nombre ranuras"
+      "cifra ranuras"
+      "fecha leyenda"
+      "cambiar cambiar";
+    align-items: center;
+  }
+
+  .ent-necesidad > h3 {
+    grid-area: nombre;
+  }
+
+  .ent-necesidad > .ent-necesidad-cifra {
+    grid-area: cifra;
+  }
+
+  .ent-necesidad > .ent-necesidad-fecha {
+    grid-area: fecha;
+  }
+
+  .ent-necesidad > .ent-ranuras {
+    grid-area: ranuras;
+    margin: 0;
+  }
+
+  .ent-necesidad > .ent-leyenda {
+    grid-area: leyenda;
+  }
+
+  .ent-necesidad > .ent-cambiar {
+    grid-area: cambiar;
+  }
+
+  .ent-necesidad .ent-ranura {
+    flex-basis: 2.75rem;
+  }
+}
+
+/* Desde 600 px: sin riel abajo, la acción va en su lugar; el inicio, en dos columnas. */
+@media (min-width: 37.5em) {
+  .tablero.ent-pantalla {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: none;
+  }
+
+  .ent-ahora {
+    --medida-lengueta-x: 22%;
+
+    min-height: 0;
+  }
+
+  .ent-pulgar {
+    position: static;
+  }
+
+  .ent-pulgar--mesa {
+    padding: var(--espacio-3) 0 0;
+  }
+
+  .ent-pulgar > :is(button, [role="button"]) {
+    flex: 0 1 auto;
+  }
+
+  .ent-pantalla .ent-ahora h1 {
+    font-size: var(--tamano-titulo-1);
+  }
+
+  .tablero.ent-pantalla--inicio,
+  .tablero.ent-pantalla--confirmada {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tablero.ent-pantalla--inicio {
+    grid-template-areas:
+      "ahora ahora"
+      "despues llegaron"
+      "tablero tablero";
+  }
+
+  .tablero.ent-pantalla--confirmada {
+    grid-template-areas:
+      "festejo festejo"
+      "llegaron despues";
+  }
+
+  .ent-ahora,
+  .ent-ahora--vacia {
+    grid-area: ahora;
+  }
+
+  .ent-despues {
+    grid-area: despues;
+  }
+
+  .ent-llegaron {
+    grid-area: llegaron;
+  }
+
+  .tablero.ent-pantalla--inicio > .ent-tablero {
+    grid-area: tablero;
+  }
+
+  .ent-festejo {
+    grid-area: festejo;
+  }
+
+  /* Lo que viene después entra a la derecha en lo que ya llegó. */
+  .tablero.ent-pantalla--inicio > .ent-despues::after {
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .tablero.ent-pantalla--confirmada > .ent-llegaron::after {
+    content: "";
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .ent-ranura--suelta {
+    width: 3.25rem;
+  }
+
+  .ent-filtros a {
+    padding-inline-start: var(--espacio-4);
+  }
+}
+
+/* Desde 860 px: cada mapa con su lista al costado; los formularios con su resumen al lado. */
+@media (min-width: 53.75em) {
+  .tablero.ent-pantalla--seguimiento,
+  .tablero.ent-pantalla--recibidas,
+  .tablero.ent-pantalla--necesidades,
+  .tablero.ent-pantalla--confirmar {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+
+  .tablero.ent-pantalla--seguimiento {
+    grid-template-areas:
+      "cabeza lista"
+      "mapa lista";
+    grid-template-rows: auto 1fr;
+    align-items: start;
+  }
+
+  .ent-pantalla--seguimiento > .ent-cabeza {
+    grid-area: cabeza;
+  }
+
+  .ent-pantalla--seguimiento > .ent-lista {
+    grid-area: lista;
+  }
+
+  .ent-pantalla--seguimiento > .ent-mapa {
+    grid-area: mapa;
+  }
+
+  .ent-lista > .ent-mesa-titulo {
+    padding-top: var(--espacio-2);
+  }
+
+  /* La cabeza baja y entra en el mapa. */
+  .tablero.ent-pantalla--seguimiento > .ent-cabeza::after {
+    content: "";
+    --medida-lengueta-x: 20%;
+  }
+
+  .tablero.ent-pantalla--recibidas {
+    grid-template-areas:
+      "cabeza falta"
+      "franja franja"
+      "bandeja bandeja";
+  }
+
+  .tablero.ent-pantalla--recibidas > .ent-cabeza {
+    grid-area: cabeza;
+  }
+
+  .ent-falta {
+    --medida-lengueta-x: 50%;
+
+    grid-area: falta;
+  }
+
+  .ent-franja {
+    grid-area: franja;
+  }
+
+  .ent-bandeja {
+    grid-area: bandeja;
+  }
+
+  /* La cabeza entra a la derecha en la que falta confirmar. */
+  .tablero.ent-pantalla--recibidas > .ent-cabeza::after,
+  .tablero.ent-pantalla--necesidades > .ent-cabeza:not(:has(+ .ent-aviso))::after {
+    top: calc(50% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .tablero.ent-pantalla--necesidades {
+    grid-template-areas:
+      "cabeza pedir"
+      "aviso pedir"
+      "tablero pedir";
+    grid-template-rows: auto auto 1fr;
+    align-items: start;
+  }
+
+  .tablero.ent-pantalla--necesidades > .ent-cabeza {
+    grid-area: cabeza;
+  }
+
+  .tablero.ent-pantalla--necesidades > .ent-aviso {
+    grid-area: aviso;
+  }
+
+  .tablero.ent-pantalla--necesidades > .ent-pedir {
+    grid-area: pedir;
+  }
+
+  .tablero.ent-pantalla--necesidades > .ent-tablero {
+    grid-area: tablero;
+  }
+
+  /* Confirmar: los pasos a la izquierda; dónde encastra y el botón, a la derecha. */
+  .tablero.ent-pantalla--confirmar {
+    grid-auto-flow: row dense;
+    align-items: start;
+  }
+
+  .ent-pantalla--confirmar > * {
+    grid-column: 1;
+  }
+
+  /* Dónde encastra acompaña los pasos; el botón queda debajo del último. */
+  .ent-pantalla--confirmar > .ent-confirmar-pie {
+    position: sticky;
+    top: var(--espacio-4);
+    grid-row: span 6;
+    grid-column: 2;
+  }
+
+  .tablero.ent-pantalla--confirmar > .ent-paso--remito::after {
+    content: none;
+  }
+}
+
+/* Desde 1100 px: el inicio, con la pieza de ahora a la izquierda y la cola al costado. */
+@media (min-width: 68.75em) {
+  .tablero.ent-pantalla--inicio,
+  .tablero.ent-pantalla--confirmada {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .tablero.ent-pantalla--inicio {
+    grid-template-areas:
+      "ahora despues"
+      "ahora llegaron"
+      "tablero tablero";
+  }
+
+  .tablero.ent-pantalla--confirmada {
+    grid-template-areas:
+      "festejo llegaron"
+      "festejo despues";
+    grid-template-rows: auto 1fr;
+  }
+
+  /* Lo de ahora entra a la derecha en la cola; la cola baja a lo que ya llegó. */
+  .tablero.ent-pantalla--inicio > .ent-ahora::after,
+  .tablero.ent-pantalla--confirmada > .ent-festejo::after {
+    top: calc(25% - var(--medida-lengueta-aro));
+    left: 100%;
+    width: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    height: calc(2 * var(--medida-lengueta-aro));
+    --medida-lengueta-cx: var(--medida-lengueta-d);
+    --medida-lengueta-cy: 50%;
+  }
+
+  .tablero.ent-pantalla--inicio > .ent-despues::after {
+    top: 100%;
+    left: calc(50% - var(--medida-lengueta-aro));
+    width: calc(2 * var(--medida-lengueta-aro));
+    height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    --medida-lengueta-cx: 50%;
+    --medida-lengueta-cy: var(--medida-lengueta-d);
+  }
+
+  .tablero.ent-pantalla--confirmada > .ent-llegaron::after {
+    top: 100%;
+    left: calc(50% - var(--medida-lengueta-aro));
+    width: calc(2 * var(--medida-lengueta-aro));
+    height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+    --medida-lengueta-cx: 50%;
+    --medida-lengueta-cy: var(--medida-lengueta-d);
+  }
+
+  .ent-ahora-que {
+    margin-block: var(--espacio-4);
+  }
+}
