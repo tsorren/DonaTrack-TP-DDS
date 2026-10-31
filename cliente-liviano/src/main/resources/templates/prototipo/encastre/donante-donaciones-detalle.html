@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: el detalle de una donación (nivel 3 de Mis
+       donaciones). ?donacion= elige una de las siete de donante-donaciones (lentejas, utiles, leche,
+       cuadernos, arroz, ropa y fideos); sin el parámetro, las lentejas de Ana, la donación que cruza
+       el sitio; una clave desconocida muestra el hueco con la vuelta a Mis donaciones. Arriba, lo
+       de ahora (la pieza naranja): el nombre de la donación, dónde está y qué sigue, con la salida
+       que corresponde, y la pieza que viaja: las cinco paradas con su fecha, la pieza en la suya y
+       el hueco de la entidad. Debajo, lo que donaste, en piezas chicas. Hoy es el miércoles 14 de octubre de 2026. Estilos: prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Detalle de tu donación - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Mis donaciones</h1>
+  <div class="don-tablero don-detalle"
+       th:with="pedida=${param.donacion == null ? 'lentejas' : param.donacion[0]},
+                etapas=${ {'En depósito', 'Asignada', 'Lista para entregar', 'En camino', 'Entregada'} },
+                dons=${ {
+         {clave: 'lentejas', titulo: 'Lentejas secas', cantidad: '15 kg', icono: 'cat-alimentos', categoria: 'Alimentos',
+          entidad: 'Comedor Barrio Ejemplo', necesidad: 'Lentejas para el guiso de los martes y jueves',
+          etapa: 3, tono: 'camino', estado: 1, signo: 'camiones',
+          fechas: {'12 de octubre', '13 de octubre', '14 de octubre', 'Hoy, 14:30', 'Pendiente'},
+          ahora: 'Va en camino a Comedor Barrio Ejemplo',
+          ahoraTexto: 'Salió del depósito hoy a las 14:30. El camión la deja en el comedor esta tarde; cuando la reciban, te avisamos.'},
+         {clave: 'utiles', titulo: 'Útiles escolares', cantidad: '2 cajas', icono: 'cat-escolares', categoria: 'Útiles escolares',
+          entidad: 'Escuela Ejemplo 12', necesidad: 'Un kit de útiles por chico para el segundo cuatrimestre',
+          etapa: 3, tono: 'problema', estado: 3, signo: 'alerta',
+          fechas: {'5 de octubre', '6 de octubre', '8 de octubre', '9 de octubre', 'No se pudo entregar'},
+          ahora: 'No se pudo entregar',
+          ahoraTexto: 'El 9 de octubre la escuela estaba cerrada y las cajas volvieron al depósito. Salen de nuevo el viernes 16 de octubre; no tenés que hacer nada.'},
+         {clave: 'leche', titulo: 'Leche en polvo', cantidad: '6 kg', icono: 'cat-alimentos', categoria: 'Alimentos',
+          entidad: 'Merendero Ejemplo Sur', necesidad: 'Leche para la merienda de todos los días',
+          etapa: 2, tono: 'proceso', estado: 0, signo: 'donaciones',
+          fechas: {'9 de octubre', '12 de octubre', '14 de octubre', 'Mañana', 'Pendiente'},
+          ahora: 'Lista para salir',
+          ahoraTexto: 'Ya está preparada en el depósito. Sale mañana, jueves 15 de octubre, hacia Merendero Ejemplo Sur.'},
+         {clave: 'cuadernos', titulo: 'Cuadernos', cantidad: '20 cuadernos', icono: 'cat-escolares', categoria: 'Útiles escolares',
+          entidad: 'Escuela Ejemplo 12', necesidad: 'Cuadernos para el apoyo escolar',
+          etapa: 1, tono: 'proceso', estado: 0, signo: 'donaciones',
+          fechas: {'10 de octubre', '13 de octubre', 'Pendiente', 'Pendiente', 'Pendiente'},
+          ahora: 'Asignada a Escuela Ejemplo 12',
+          ahoraTexto: 'Ya sabemos adónde va. Ahora la preparamos en el depósito para que salga con el próximo camión.'},
+         {clave: 'arroz', titulo: 'Arroz', cantidad: '10 kg', icono: 'cat-alimentos', categoria: 'Alimentos',
+          entidad: null, necesidad: null,
+          etapa: 0, tono: 'proceso', estado: 0, signo: 'donaciones',
+          fechas: {'13 de octubre', 'Pendiente', 'Pendiente', 'Pendiente', 'Pendiente'},
+          ahora: 'En el depósito, buscando su lugar',
+          ahoraTexto: 'La recibimos el 13 de octubre. Todavía no tiene entidad: la asignamos a la necesidad que mejor le calce y te avisamos.'},
+         {clave: 'ropa', titulo: 'Ropa de abrigo', cantidad: '12 prendas', icono: 'cat-vestimenta', categoria: 'Ropa y abrigo',
+          entidad: 'Merendero Ejemplo Sur', necesidad: 'Camperas y buzos para el invierno, talles 8 a 14',
+          etapa: 4, tono: 'entregada', estado: 2, signo: 'check',
+          fechas: {'26 de septiembre', '29 de septiembre', '6 de octubre', '9 de octubre', '9 de octubre'},
+          ahora: 'Ya encastró en Merendero Ejemplo Sur',
+          ahoraTexto: 'La recibieron el 9 de octubre y confirmaron la recepción con fotos. Esta pieza ya es parte de lo que armaste.'},
+         {clave: 'fideos', titulo: 'Fideos secos', cantidad: '8 kg', icono: 'cat-alimentos', categoria: 'Alimentos',
+          entidad: 'Comedor Barrio Ejemplo', necesidad: 'Fideos para el almuerzo de todos los días',
+          etapa: 4, tono: 'entregada', estado: 2, signo: 'check',
+          fechas: {'28 de septiembre', '30 de septiembre', '2 de octubre', '5 de octubre', '5 de octubre'},
+          ahora: 'Ya encastró en Comedor Barrio Ejemplo',
+          ahoraTexto: 'La recibieron el 5 de octubre y confirmaron la recepción con fotos. Esta pieza ya es parte de lo que armaste.'} } },
+                elegidas=${dons.?[clave == #root.pedida]},
+                d=${#lists.isEmpty(elegidas) ? null : elegidas[0]}">
+
+    <th:block th:if="${d == null}">
+      <section class="pieza don-cabeza" aria-labelledby="perdida-titulo">
+        <h2 id="perdida-titulo" class="don-titulo">No encontramos esa donación</h2>
+        <section th:replace="~{alternativas/encastre/fragmentos/estado-vacio :: estado-vacio(
+                 'Esta pieza no está en tu tablero',
+                 'Puede que el enlace esté incompleto. Buscala en la lista de tus donaciones.',
+                 'Volver a Mis donaciones', '/prototipo/encastre/donante-donaciones')}"></section>
+      </section>
+    </th:block>
+
+    <th:block th:if="${d != null}">
+    <!--/* Lo de ahora: la pieza naranja. El nombre de la donación, dónde está y qué sigue, con la
+           salida que corresponde a su etapa, y la pieza que viaja: las cinco paradas con su fecha,
+           la pieza en la de su etapa (con el signo de la etapa), las anteriores hechas y, al final,
+           el hueco de la entidad (o la pieza ya encastrada, si llegó). */-->
+    <section class="pieza pieza-ahora don-cabeza don-detalle-ahora" aria-labelledby="detalle-titulo">
+      <a class="enlace-fuerte don-volver" href="/prototipo/encastre/donante-donaciones"
+         th:href="@{/prototipo/encastre/donante-donaciones}">Volver a Mis donaciones</a>
+      <h2 id="detalle-titulo" class="don-titulo" th:text="${d.titulo}">Lentejas secas</h2>
+      <span class="don-ficha don-ficha--grande" th:classappend="|don-tono--${d.tono}|"
+            aria-hidden="true"><svg class="don-pieza" viewBox="10 10 90 90" focusable="false"><use
+            href="#encastre-pieza"/></svg><svg
+            th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${d.icono}, 48)}"></svg></span>
+      <div class="don-detalle-estado">
+        <p class="rotulo">Dónde está ahora</p>
+        <h3 th:text="${d.ahora}">Va en camino a Comedor Barrio Ejemplo</h3>
+        <p class="don-detalle-ahora-texto" th:text="${d.ahoraTexto}">Salió del depósito hoy a las
+          14:30.</p>
+        <div class="don-acciones">
+          <a th:if="${d.tono == 'camino'}" href="/prototipo/encastre/donante-seguimiento"
+             th:href="@{/prototipo/encastre/donante-seguimiento}" role="button">Ver seguimiento</a>
+          <a th:if="${d.tono == 'entregada'}" href="/prototipo/encastre/donante-incentivos"
+             th:href="@{/prototipo/encastre/donante-incentivos}" role="button">Ver incentivos</a>
+          <a th:if="${d.tono == 'proceso' or d.tono == 'problema'}"
+             href="/prototipo/encastre/donante-donaciones"
+             th:href="@{/prototipo/encastre/donante-donaciones}" role="button">Mis donaciones</a>
+        </div>
+      </div>
+      <ol class="don-ruta" th:classappend="|don-tono--${d.tono}|"
+          aria-label="Por dónde va tu donación">
+        <li th:each="etapa, vuelta : ${etapas}" class="don-parada"
+            th:with="avance=${vuelta.index < d.etapa or d.etapa == 4 ? 'hecho' : (vuelta.index == d.etapa ? 'actual' : 'pendiente')}"
+            th:classappend="|don-parada--${avance}${vuelta.last ? ' don-parada--destino' : ''}|"
+            th:aria-current="${avance == 'actual'} ? 'step' : null">
+          <span class="don-parada-marca" aria-hidden="true"><svg
+                th:if="${avance == 'actual' or vuelta.last}" class="don-pieza"
+                viewBox="10 10 90 90" focusable="false"><use href="#encastre-pieza"/></svg><th:block
+                th:if="${avance == 'actual'}"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${d.signo}, 20)}"></svg></th:block><th:block
+                th:if="${avance == 'hecho'}"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 16)}"></svg></th:block></span>
+          <span class="don-parada-texto"><b
+                th:text="${avance == 'actual' and d.tono == 'problema' ? 'Volvió al depósito' : etapa}">En
+                depósito</b><small
+                th:text="${vuelta.last and d.entidad != null ? 'En ' + d.entidad + ' · ' + d.fechas[vuelta.index] : d.fechas[vuelta.index]}">12
+                de octubre</small></span>
+        </li>
+      </ol>
+    </section>
+
+    <!--/* Lo que donaste: qué es, cuánto y para quién, en piezas chicas. */-->
+    <section class="pieza don-detalle-datos" aria-labelledby="datos-titulo">
+      <h2 id="datos-titulo" class="don-subtitulo">Lo que donaste</h2>
+      <dl class="don-datos">
+        <div><dt>Cuánto</dt><dd th:text="${d.cantidad}">15 kg</dd></div>
+        <div><dt>Categoría</dt><dd th:text="${d.categoria}">Alimentos</dd></div>
+        <div><dt>Para quién</dt><dd th:text="${d.entidad ?: 'Todavía sin entidad'}">Comedor Barrio
+          Ejemplo</dd></div>
+        <div th:if="${d.necesidad}"><dt>Para qué</dt><dd th:text="${d.necesidad}">Lentejas para el
+          guiso de los martes y jueves</dd></div>
+        <div><dt>Estado</dt><dd><span
+             th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[d.estado]})}">En
+          camino</span></dd></div>
+      </dl>
+    </section>
+    </th:block>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: Entidades (RF-06: entidades activas, con búsqueda por
+       nombre y de a páginas). Arriba, la cabeza con el buscador (formulario get; el prototipo vuelve
+       a esta pantalla). Después, el mosaico: cada entidad es una pieza con su nombre, cuántas
+       necesidades tiene abiertas y el hueco de lo que más le falta, que dice cuánto ("Faltan
+       30 kg de lentejas"); si Ana ya le donó, sus piezas ahí. Cada nombre lleva a
+       donante-entidades-detalle?entidad=<clave>. Abajo, el paso de página. Datos de ejemplo; hoy es
+       el miércoles 14 de octubre de 2026. Estilos: prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Entidades</h1>
+  <div class="don-tablero don-entidades"
+       th:with="entidades=${ {
+         {clave: 'comedor', nombre: 'Comedor Barrio Ejemplo', zona: 'Zona oeste · comedor comunitario',
+          abiertas: 3, falta: 'Faltan 30 kg de lentejas', tuyas: 2, tono: 'lila'},
+         {clave: 'merendero', nombre: 'Merendero Ejemplo Sur', zona: 'Zona sur · merendero de barrio',
+          abiertas: 3, falta: 'Faltan 40 prendas de abrigo', tuyas: 2, tono: 'menta'},
+         {clave: 'escuela', nombre: 'Escuela Ejemplo 12', zona: 'Zona centro · escuela primaria',
+          abiertas: 2, falta: 'Faltan 65 kits de útiles', tuyas: 2, tono: 'azul'},
+         {clave: 'manos', nombre: 'Asociación Civil Manos Unidas del Barrio Ejemplo Norte',
+          zona: 'Zona norte · ropero y comedor', abiertas: 4, falta: 'Faltan 25 latas de leche en polvo',
+          tuyas: 0, tono: 'durazno'},
+         {clave: 'hogar', nombre: 'Hogar Ejemplo Norte', zona: 'Zona norte · hogar de día',
+          abiertas: 2, falta: 'Faltan 50 frazadas', tuyas: 0, tono: 'rosa'} } }">
+
+    <section class="pieza don-cabeza" aria-labelledby="entidades-titulo">
+      <h2 id="entidades-titulo" class="don-titulo">Dónde encastra lo que donás</h2>
+      <p class="don-cabeza-texto">Entidades activas y lo que más les falta. Entrá a una para ver
+        todo lo que necesita.</p>
+      <form class="don-buscar" role="search" action="/prototipo/encastre/donante-entidades"
+            th:action="@{/prototipo/encastre/donante-entidades}" method="get">
+        <div class="campo">
+          <label for="buscar-nombre">Buscar por nombre</label>
+          <input id="buscar-nombre" name="nombre" type="search" autocomplete="off"
+                 aria-describedby="buscar-nombre-ayuda">
+          <small id="buscar-nombre-ayuda">Por ejemplo: comedor, escuela o merendero.</small>
+        </div>
+        <button type="submit">Buscar</button>
+      </form>
+    </section>
+
+    <section class="pieza don-mosaico-caja" aria-labelledby="lista-titulo">
+      <h2 id="lista-titulo" class="don-subtitulo">Entidades activas</h2>
+      <p class="bajada">Mostramos 5 de 9, las que más necesitan primero</p>
+      <ul class="don-mosaico">
+        <li th:each="e : ${entidades}" class="don-entidad" th:classappend="|don-entidad--${e.tono}|">
+          <h3><a href="/prototipo/encastre/donante-entidades-detalle"
+                 th:href="@{/prototipo/encastre/donante-entidades-detalle(entidad=${e.clave})}"
+                 th:text="${e.nombre}">Comedor Barrio Ejemplo</a></h3>
+          <p class="don-entidad-zona" th:text="${e.zona}">Zona oeste · comedor comunitario</p>
+          <p class="don-hueco"><svg class="don-hueco-forma" viewBox="10 10 90 90"
+             aria-hidden="true" focusable="false"><use href="#encastre-pieza"/></svg><span
+             th:text="${e.falta}">Faltan 30 kg de lentejas</span></p>
+          <p class="don-entidad-pie"><span
+             th:text="${e.abiertas == 1 ? '1 necesidad abierta' : e.abiertas + ' necesidades abiertas'}">3
+            necesidades abiertas</span><span th:if="${e.tuyas > 0}" class="don-entidad-tuyas"
+             th:text="${e.tuyas == 1 ? '1 pieza tuya' : e.tuyas + ' piezas tuyas'}">2 piezas tuyas</span></p>
+        </li>
+      </ul>
+      <nav class="don-paginas" aria-label="Páginas de entidades">
+        <p>Página 1 de 2</p>
+        <a href="/prototipo/encastre/donante-entidades?pagina=2"
+           th:href="@{/prototipo/encastre/donante-entidades(pagina=2)}" role="button"
+           class="outline">Ver más entidades</a>
+      </nav>
+    </section>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>

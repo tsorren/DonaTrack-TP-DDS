@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: una entidad (nivel 3 de Entidades). ?entidad= elige
+       una de las cinco de donante-entidades (comedor, merendero, escuela, manos y hogar); sin el
+       parámetro, Comedor Barrio Ejemplo, adonde van las lentejas de Ana; una clave desconocida
+       muestra el hueco con la vuelta a Entidades. Arriba, su nombre. Después, lo de ahora (la pieza
+       naranja): lo que le falta, cada necesidad como un rompecabezas a medio armar, con las piezas
+       que ya recibió puestas y el hueco que dice cuánto falta; "Donar para esta necesidad" (va
+       antes del dibujo, para que en el celular se vea sin bajar) abre (details) un paso corto, qué
+       y cuánto vas a llevar, que se envía con post a donante-entidades-anotada. Después, las piezas
+       de Ana en esta entidad, cada una con el enlace a su detalle, y al final quiénes son. Datos de ejemplo; hoy es el miércoles 14 de octubre de 2026. Estilos:
+       prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Una entidad - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Entidades</h1>
+  <div class="don-tablero don-entidad-detalle"
+       th:with="pedida=${param.entidad == null ? 'comedor' : param.entidad[0]},
+                tramos=5,
+                entidades=${ {
+      {clave: 'comedor', nombre: 'Comedor Barrio Ejemplo',
+       frase: 'Un comedor comunitario en la zona oeste. Cocina el almuerzo para 120 personas de lunes a sábado.',
+       desde: 'marzo de 2026', recibidas: 58,
+       necesidades: {
+         {clave: 'lentejas', titulo: 'Lentejas secas', icono: 'cat-alimentos', recibido: 10, total: 40, unidad: 'kg',
+          motivo: 'Para el guiso de los martes y jueves.', ejemplo: 'Por ejemplo: dos paquetes de 5 kg.'},
+         {clave: 'leche', titulo: 'Leche en polvo', icono: 'cat-alimentos', recibido: 12, total: 24, unidad: 'latas',
+          motivo: 'Para el desayuno de los chicos.', ejemplo: 'Por ejemplo: latas de 800 g.'},
+         {clave: 'aceite', titulo: 'Aceite de girasol', icono: 'cat-alimentos', recibido: 0, total: 20, unidad: 'litros',
+          motivo: 'Para cocinar todos los días.', ejemplo: 'Por ejemplo: botellas de 1,5 litros.'} },
+       tuyas: {
+         {clave: 'lentejas', texto: 'Lentejas secas, 15 kg. Va en camino: salió hoy a las 14:30.', estado: 1},
+         {clave: 'fideos', texto: 'Fideos secos, 8 kg. Llegó el 5 de octubre.', estado: 2} } },
+      {clave: 'merendero', nombre: 'Merendero Ejemplo Sur',
+       frase: 'Un merendero de barrio en la zona sur. Da la merienda a 60 chicos de lunes a viernes.',
+       desde: 'abril de 2026', recibidas: 41,
+       necesidades: {
+         {clave: 'ropa', titulo: 'Ropa de abrigo', icono: 'cat-vestimenta', recibido: 80, total: 120, unidad: 'prendas',
+          motivo: 'Camperas y buzos para el invierno, talles 8 a 14.', ejemplo: 'Por ejemplo: dos camperas talle 10.'},
+         {clave: 'leche', titulo: 'Leche en polvo', icono: 'cat-alimentos', recibido: 12, total: 30, unidad: 'kg',
+          motivo: 'Para la merienda de todos los días.', ejemplo: 'Por ejemplo: bolsas de 1 kg.'},
+         {clave: 'cuadernos', titulo: 'Cuadernos', icono: 'cat-escolares', recibido: 10, total: 50, unidad: 'cuadernos',
+          motivo: 'Para el apoyo escolar de los sábados.', ejemplo: 'Por ejemplo: cuadernos rayados de 48 hojas.'} },
+       tuyas: {
+         {clave: 'ropa', texto: 'Ropa de abrigo, 12 prendas. Llegó el 9 de octubre.', estado: 2},
+         {clave: 'leche', texto: 'Leche en polvo, 6 kg. Sale del depósito mañana.', estado: 0} } },
+      {clave: 'escuela', nombre: 'Escuela Ejemplo 12',
+       frase: 'Una escuela primaria en la zona centro, con 300 chicos en dos turnos.',
+       desde: 'junio de 2026', recibidas: 23,
+       necesidades: {
+         {clave: 'utiles', titulo: 'Útiles escolares', icono: 'cat-escolares', recibido: 35, total: 100, unidad: 'kits',
+          motivo: 'Un kit por chico: lápices, goma, regla y cuaderno.', ejemplo: 'Por ejemplo: kits armados en bolsitas.'},
+         {clave: 'guardapolvos', titulo: 'Guardapolvos', icono: 'cat-vestimenta', recibido: 15, total: 40, unidad: 'guardapolvos',
+          motivo: 'Blancos, talles 6 a 12.', ejemplo: 'Por ejemplo: tres guardapolvos talle 8.'} },
+       tuyas: {
+         {clave: 'utiles', texto: 'Útiles escolares, 2 cajas. No se pudo entregar: sale de nuevo el viernes 16.', estado: 3},
+         {clave: 'cuadernos', texto: 'Cuadernos, 20 cuadernos. Asignada el 13 de octubre.', estado: 0} } },
+      {clave: 'manos', nombre: 'Asociación Civil Manos Unidas del Barrio Ejemplo Norte',
+       frase: 'Un ropero comunitario y un comedor en la zona norte, con 200 familias anotadas.',
+       desde: 'septiembre de 2026', recibidas: 9,
+       necesidades: {
+         {clave: 'leche', titulo: 'Leche en polvo', icono: 'cat-alimentos', recibido: 5, total: 30, unidad: 'latas',
+          motivo: 'Para las familias con chicos chicos.', ejemplo: 'Por ejemplo: latas de 800 g.'},
+         {clave: 'zapatillas', titulo: 'Zapatillas', icono: 'cat-vestimenta', recibido: 6, total: 40, unidad: 'pares',
+          motivo: 'Talles 28 a 40, usadas en buen estado.', ejemplo: 'Por ejemplo: dos pares talle 34.'} },
+       tuyas: { } },
+      {clave: 'hogar', nombre: 'Hogar Ejemplo Norte',
+       frase: 'Un hogar de día para personas mayores en la zona norte. Da el almuerzo a 35 personas.',
+       desde: 'agosto de 2026', recibidas: 12,
+       necesidades: {
+         {clave: 'frazadas', titulo: 'Frazadas', icono: 'cat-vestimenta', recibido: 10, total: 60, unidad: 'frazadas',
+          motivo: 'Para las tardes de descanso.', ejemplo: 'Por ejemplo: frazadas de una plaza.'},
+         {clave: 'fideos', titulo: 'Fideos secos', icono: 'cat-alimentos', recibido: 40, total: 80, unidad: 'kg',
+          motivo: 'Para el almuerzo de todos los días.', ejemplo: 'Por ejemplo: paquetes de 500 g.'} },
+       tuyas: { } }
+    } },
+                elegidas=${entidades.?[clave == #root.pedida]},
+                e=${#lists.isEmpty(elegidas) ? null : elegidas[0]}">
+
+    <th:block th:if="${e == null}">
+      <section class="pieza don-cabeza" aria-labelledby="perdida-titulo">
+        <h2 id="perdida-titulo" class="don-titulo">No encontramos esa entidad</h2>
+        <section th:replace="~{alternativas/encastre/fragmentos/estado-vacio :: estado-vacio(
+                 'Esta entidad no está en la lista',
+                 'Puede que el enlace esté incompleto o que ya no reciba donaciones. Buscala entre las activas.',
+                 'Volver a Entidades', '/prototipo/encastre/donante-entidades')}"></section>
+      </section>
+    </th:block>
+
+    <th:block th:if="${e != null}">
+    <section class="pieza don-cabeza don-entidad-cabeza" aria-labelledby="entidad-titulo">
+      <a class="enlace-fuerte don-volver" href="/prototipo/encastre/donante-entidades"
+         th:href="@{/prototipo/encastre/donante-entidades}">Volver a Entidades</a>
+      <h2 id="entidad-titulo" class="don-titulo" th:text="${e.nombre}">Comedor Barrio Ejemplo</h2>
+    </section>
+
+    <!--/* Lo de ahora: lo que le falta. Cada necesidad, un rompecabezas de cinco piezas: las que ya
+           recibió (redondeadas a quintos), puestas; la siguiente, el hueco que dice cuánto falta; el
+           resto, huecos vacíos. La cuenta exacta va en texto. */-->
+    <section id="necesidades" class="pieza pieza-ahora don-necesidades"
+             aria-labelledby="necesidades-titulo">
+      <p class="rotulo">Lo que te toca ahora</p>
+      <h2 id="necesidades-titulo" class="don-subtitulo">Lo que le falta</h2>
+      <ul class="don-pedidos">
+        <li th:each="n : ${e.necesidades}" class="don-pedido" th:id="|pedido-${n.clave}|"
+            th:with="falta=${n.total - n.recibido},
+                     puestas=${n.recibido * tramos / n.total}">
+          <div class="don-pedido-cabeza">
+            <span class="don-pedido-signo" aria-hidden="true"><svg
+                  th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${n.icono}, 24)}"></svg></span>
+            <div>
+              <h3 th:text="${n.titulo}">Lentejas secas</h3>
+              <p th:text="${n.motivo}">Para el guiso de los martes y jueves.</p>
+            </div>
+          </div>
+          <details class="don-donar">
+            <summary>Donar para esta necesidad<span class="solo-lectores"
+                     th:text="|: ${n.titulo}|">: lentejas secas</span></summary>
+            <form method="post" action="/prototipo/encastre/donante-entidades-anotada"
+                  th:action="@{/prototipo/encastre/donante-entidades-anotada}"
+                  th:aria-labelledby="|donar-${n.clave}-titulo|">
+              <h4 th:id="|donar-${n.clave}-titulo|">Contanos qué vas a llevar</h4>
+              <input type="hidden" name="entidad" th:value="${e.clave}">
+              <input type="hidden" name="necesidad" th:value="${n.clave}">
+              <div class="campo">
+                <label th:for="|donar-${n.clave}-que|">Qué vas a llevar</label>
+                <input th:id="|donar-${n.clave}-que|" name="que" type="text" required
+                       th:aria-describedby="|donar-${n.clave}-que-ayuda|">
+                <small th:id="|donar-${n.clave}-que-ayuda|" th:text="${n.ejemplo}">Por ejemplo: dos
+                  paquetes de 5 kg.</small>
+              </div>
+              <div class="campo">
+                <label th:for="|donar-${n.clave}-cuanto|" th:text="|Cuánto (en ${n.unidad})|">Cuánto (en
+                  kg)</label>
+                <input th:id="|donar-${n.clave}-cuanto|" name="cantidad" type="number"
+                       inputmode="numeric" min="1" th:max="${falta}" required
+                       th:aria-describedby="|donar-${n.clave}-cuanto-ayuda|">
+                <small th:id="|donar-${n.clave}-cuanto-ayuda|"
+                       th:text="|Hasta ${falta}: es lo que falta.|">Hasta 30: es lo que falta.</small>
+              </div>
+              <button type="submit">Anotar mi donación</button>
+            </form>
+          </details>
+          <div class="mision-piezas don-pedido-piezas">
+            <th:block th:each="tramo : ${#numbers.sequence(1, tramos)}"
+                      th:with="forma=${tramo == tramos} ? '#encastre-pieza-borde' : '#encastre-pieza'">
+              <span class="mision-pieza" aria-hidden="true" th:if="${tramo <= puestas}"><svg
+                    class="mision-forma" viewBox="22 14 56 72" focusable="false"><use
+                    href="#encastre-pieza" th:href="${forma}"/></svg></span>
+              <span class="mision-hueco" aria-hidden="true" th:if="${tramo == puestas + 1}"><svg
+                    class="mision-forma" viewBox="22 14 56 72" focusable="false"><use
+                    href="#encastre-pieza" th:href="${forma}"/></svg><span
+                    th:text="|Faltan ${falta}|">Faltan 30</span></span>
+              <span class="mision-hueco mision-hueco--vacio" aria-hidden="true"
+                    th:if="${tramo > puestas + 1}"><svg class="mision-forma" viewBox="22 14 56 72"
+                    focusable="false"><use href="#encastre-pieza" th:href="${forma}"/></svg></span>
+            </th:block>
+          </div>
+          <p class="don-pedido-cuenta"><span
+             th:text="|Recibieron ${n.recibido} de ${n.total} ${n.unidad}.|">Recibieron 10 de 40 kg.</span>
+            <b th:text="|Faltan ${falta} ${n.unidad}.|">Faltan 30 kg.</b></p>
+        </li>
+      </ul>
+    </section>
+
+    <section class="pieza don-huella" aria-labelledby="huella-titulo">
+      <h2 id="huella-titulo" class="don-subtitulo">Tus piezas acá</h2>
+      <p th:if="${#lists.isEmpty(e.tuyas)}" class="don-huella-vacia">Todavía no donaste acá. Elegí
+        una necesidad y tu primera pieza encastra en esta entidad.</p>
+      <ul th:unless="${#lists.isEmpty(e.tuyas)}" class="don-huellas">
+        <li th:each="t : ${e.tuyas}">
+          <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[t.estado]})}">En
+            camino</span>
+          <p th:text="${t.texto}">Lentejas secas, 15 kg.</p>
+          <a class="enlace-fuerte" href="/prototipo/encastre/donante-donaciones-detalle"
+             th:href="@{/prototipo/encastre/donante-donaciones-detalle(donacion=${t.clave})}">Ver el
+            detalle</a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="pieza don-detalle-datos" aria-labelledby="quienes-titulo">
+      <h2 id="quienes-titulo" class="don-subtitulo">Quiénes son</h2>
+      <p class="don-cabeza-texto" th:text="${e.frase}">Un comedor comunitario en la zona oeste.</p>
+      <dl class="don-datos">
+        <div><dt>Recibe donaciones desde</dt><dd th:text="${e.desde}">marzo de 2026</dd></div>
+        <div><dt>Necesidades abiertas</dt><dd th:text="${#lists.size(e.necesidades)}">3</dd></div>
+        <div><dt>Donaciones recibidas este año</dt><dd th:text="${e.recibidas}">58</dd></div>
+      </dl>
+    </section>
+    </th:block>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>

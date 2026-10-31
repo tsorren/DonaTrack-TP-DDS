@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: Seguimiento sin entregas activas. Arriba, la cabeza;
+       después, el mapa vacío (las calles y el depósito, sin camiones con donaciones tuyas) y, al
+       lado, el hueco que lo dice en texto, con la salida a Mis donaciones, donde se ve cuándo sale
+       la próxima. Estilos: prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Seguimiento - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Seguimiento</h1>
+  <div class="don-tablero don-seguimiento don-seguimiento--vacio">
+    <section class="pieza don-cabeza" aria-labelledby="seguimiento-titulo">
+      <h2 id="seguimiento-titulo" class="don-titulo">Tus piezas en la calle</h2>
+      <p class="don-cabeza-texto">Ahora no viaja ninguna donación tuya.</p>
+    </section>
+
+    <section class="pieza don-paradas" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo" class="solo-lectores">Sin entregas en camino</h2>
+      <section th:replace="~{alternativas/encastre/fragmentos/estado-vacio :: estado-vacio(
+               'No hay camiones con tus donaciones',
+               'Cuando una donación tuya salga del depósito, la ves acá en el mapa, con su camión y la hora de la última actualización.',
+               'Mis donaciones', '/prototipo/encastre/donante-donaciones')}"></section>
+    </section>
+
+    <figure class="pieza don-mapa">
+      <svg class="don-mapa-dibujo" viewBox="0 0 640 400" aria-hidden="true" focusable="false">
+        <path class="don-mapa-calles"
+              d="M0 40H640M0 110H640M0 215H640M0 320H640M70 0V400M180 0V400M290 0V400M430 0V400M560 0V400"/>
+        <rect class="don-mapa-plaza" x="194" y="124" width="82" height="77" rx="10"/>
+        <g class="don-mapa-parada" transform="translate(70 320)">
+          <circle r="17"/>
+          <text y="6" text-anchor="middle">1</text>
+        </g>
+      </svg>
+      <figcaption>El mapa sin camiones con tus donaciones. El 1 es el Depósito Central
+        Ejemplo, de donde salen.</figcaption>
+    </figure>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>

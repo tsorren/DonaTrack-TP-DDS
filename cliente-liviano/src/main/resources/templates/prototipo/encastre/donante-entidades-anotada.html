@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: la donación quedó anotada (adonde lleva "Anotar mi
+       donación" de donante-entidades-detalle, con post). Arriba, el aviso que toma el foco al
+       cargar: la pieza nueva cae en el tablero (con movimiento solo si no se pidió reducirlo).
+       Después, lo de ahora (la pieza naranja): llevarla al depósito, con su dirección y su horario
+       (datos sintéticos). Al final, el recorrido que le espera, con la pieza puesta en la primera
+       parada. Salidas: Mis donaciones y la vuelta a Entidades. El prototipo no guarda lo escrito,
+       así que no nombra la necesidad. Estilos: prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Donación anotada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Entidades</h1>
+  <div class="don-tablero don-anotada"
+       th:with="paradas=${ {
+         {nombre: 'Anotada', detalle: 'Hoy', avance: 'actual'},
+         {nombre: 'En depósito', detalle: 'Cuando la lleves', avance: 'pendiente'},
+         {nombre: 'Asignada', detalle: 'Pendiente', avance: 'pendiente'},
+         {nombre: 'En camino', detalle: 'Pendiente', avance: 'pendiente'},
+         {nombre: 'Entregada', detalle: 'En la entidad que elegiste', avance: 'pendiente'} } }">
+    <section class="pieza don-cabeza don-anotada-aviso" role="status"
+             aria-labelledby="anotada-titulo" tabindex="-1" autofocus>
+      <svg class="don-cae" viewBox="10 10 90 90" aria-hidden="true" focusable="false"><use
+           href="#encastre-pieza"/></svg>
+      <h2 id="anotada-titulo" class="don-titulo">Tu donación quedó anotada</h2>
+      <p class="don-cabeza-texto">Gracias. Tenés una pieza nueva: el primer tramo lo hacés vos.</p>
+    </section>
+
+    <section class="pieza pieza-ahora don-detalle-ahora" aria-labelledby="ahora-titulo">
+      <p class="rotulo">Lo que te toca ahora</p>
+      <h2 id="ahora-titulo">Llevala al depósito</h2>
+      <dl class="don-datos don-datos--ahora">
+        <div><dt>Depósito</dt><dd>Depósito Central Ejemplo</dd></div>
+        <div><dt>Dirección</dt><dd>Calle Ejemplo 1234, Ciudad Ejemplo</dd></div>
+        <div><dt>Horario</dt><dd>Lunes a viernes de 9 a 17 h; sábados de 9 a 13 h</dd></div>
+      </dl>
+      <p class="don-detalle-ahora-texto">Decí que es una donación anotada a tu nombre. Cuando la
+        registremos, te avisamos y la ves en Mis donaciones.</p>
+      <div class="don-acciones">
+        <a href="/prototipo/encastre/donante-donaciones"
+           th:href="@{/prototipo/encastre/donante-donaciones}" role="button">Mis donaciones</a>
+        <a href="/prototipo/encastre/donante-entidades"
+           th:href="@{/prototipo/encastre/donante-entidades}" class="enlace-fuerte">Volver a
+          Entidades</a>
+      </div>
+    </section>
+
+    <section class="pieza don-detalle-viaje don-anotada-viaje" aria-labelledby="viaje-titulo">
+      <h2 id="viaje-titulo" class="don-subtitulo">El viaje que le espera</h2>
+      <ol class="don-ruta don-tono--proceso" aria-label="El viaje que le espera">
+        <li th:each="p, vuelta : ${paradas}" class="don-parada"
+            th:classappend="|don-parada--${p.avance}${vuelta.last ? ' don-parada--destino' : ''}|"
+            th:aria-current="${p.avance == 'actual'} ? 'step' : null">
+          <span class="don-parada-marca" aria-hidden="true"><svg
+                th:if="${p.avance == 'actual' or vuelta.last}" class="don-pieza"
+                viewBox="10 10 90 90" focusable="false"><use href="#encastre-pieza"/></svg><th:block
+                th:if="${p.avance == 'actual'}"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('donaciones', 20)}"></svg></th:block></span>
+          <span class="don-parada-texto"><b th:text="${p.nombre}">Anotada</b><small
+                th:text="${p.detalle}">Hoy</small></span>
+        </li>
+      </ol>
+    </section>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>

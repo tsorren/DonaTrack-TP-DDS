@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: Incentivos (RF-07: misiones con su avance e
+       insignias ganadas; solo para donante humano). Arriba, la cabeza: qué falta para la misión
+       de ahora, con la salida a Entidades, y el rango como una escalera de tres piezas: Colaborador puesta, Sostenedor el hueco que sigue y Transformador
+       el que viene después. Después, lo de ahora (la pieza naranja): la misión Donante constante,
+       el rompecabezas a medio armar donde el hueco dice qué falta ("Falta 1 mes"). Luego, las otras
+       misiones, cada una su rompecabezas chico, y las insignias ganadas, piezas puestas con su
+       fecha. Cada misión sale de sus cifras escritas una vez (hechos y total, th:with): las piezas,
+       el hueco, el sello, la barra y el porcentaje. Datos de ejemplo; hoy es el miércoles 14 de
+       octubre de 2026. Estilos: la misión, de estructura.css; el resto, de prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Incentivos - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Incentivos</h1>
+  <div class="don-tablero don-incentivos"
+       th:with="rangos=${ {'Colaborador', 'Sostenedor', 'Transformador'} }, rango=0,
+                misiones=${ {
+         {nombre: 'Tres destinos', meta: 'Ayudá a tres entidades distintas', hechos: 2, total: 3,
+          unidad: 'entidad', unidades: 'entidades'},
+         {nombre: 'Abrigo de invierno', meta: 'Doná ropa de abrigo dos veces', hechos: 1, total: 2,
+          unidad: 'donación', unidades: 'donaciones'} } },
+                insignias=${ {
+         {nombre: 'Primera pieza', texto: 'Hiciste tu primera donación.', fecha: '26 de septiembre de 2026'},
+         {nombre: 'Cinco donaciones', texto: 'Llegaste a cinco donaciones.', fecha: '9 de octubre de 2026'},
+         {nombre: 'Colaborador', texto: 'Subiste a tu primera categoría.', fecha: '9 de octubre de 2026'} } }">
+
+    <section class="pieza don-cabeza don-rango-caja" aria-labelledby="incentivos-titulo">
+      <h2 id="incentivos-titulo" class="don-titulo">Lo que vas armando</h2>
+      <p class="don-cabeza-texto">Sos <b th:text="${rangos[rango]}">Colaborador</b>. Te falta un
+        mes para cumplir Donante constante: elegí a quién donar en noviembre.</p>
+      <div class="don-acciones">
+        <a href="/prototipo/encastre/donante-entidades"
+           th:href="@{/prototipo/encastre/donante-entidades}" role="button">Ver entidades</a>
+      </div>
+      <ol class="don-rango" aria-label="Tu categoría">
+        <li th:each="r, v : ${rangos}"
+            th:class="${v.index < rango + 1 ? 'don-rango-paso don-rango-paso--puesta' : (v.index == rango + 1 ? 'don-rango-paso don-rango-paso--proxima' : 'don-rango-paso')}"
+            th:aria-current="${v.index == rango} ? 'step' : null">
+          <svg class="don-pieza" viewBox="10 10 90 90" aria-hidden="true" focusable="false"><use
+               href="#encastre-pieza" th:href="${v.last} ? '#encastre-pieza-borde' : '#encastre-pieza'"/></svg>
+          <span class="don-rango-texto"><b th:text="${r}">Colaborador</b><small
+                th:text="${v.index == rango ? 'Tu categoría' : (v.index == rango + 1 ? 'La próxima' : 'Después')}">Tu
+                categoría</small></span>
+        </li>
+      </ol>
+    </section>
+
+    <!--/* Lo de ahora: la misión que está por cumplirse, con el hueco que dice qué falta. */-->
+    <section class="pieza mision pieza-ahora" aria-labelledby="mision-titulo"
+             th:with="hechos=2, total=3, unidad='mes', unidades='meses', falta=${total - hechos}">
+      <div class="mision-cabeza">
+        <h2 id="mision-titulo">Lo que te toca ahora</h2>
+        <p class="mision-rango">Colaborador → Sostenedor</p>
+      </div>
+      <div class="mision-nombre">
+        <span class="mision-sello" th:text="|${hechos}/${total}|">2/3</span>
+        <p><b>Donante constante</b><span>Doná tres meses seguidos. Septiembre y octubre ya están:
+          doná en noviembre y la cumplís.</span></p>
+      </div>
+      <div class="mision-piezas">
+        <th:block th:each="mes : ${#numbers.sequence(1, total)}"
+                  th:with="forma=${mes == total} ? '#encastre-pieza-borde' : '#encastre-pieza'">
+          <span class="mision-pieza" aria-hidden="true" th:if="${mes <= hechos}"><svg
+                class="mision-forma" viewBox="22 14 56 72" focusable="false"><use
+                href="#encastre-pieza" th:href="${forma}"/></svg><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 26)}"></svg></span>
+          <p class="mision-hueco" th:if="${mes == hechos + 1}"><svg class="mision-forma"
+             viewBox="22 14 56 72" aria-hidden="true" focusable="false"><use
+             href="#encastre-pieza" th:href="${forma}"/></svg><span
+             th:text="|Falta ${falta} ${falta == 1 ? unidad : unidades}|">Falta 1 mes</span><svg
+             class="mision-suelta" viewBox="10 10 90 90" aria-hidden="true" focusable="false"><use
+             href="#encastre-pieza"/></svg></p>
+          <span class="mision-hueco mision-hueco--vacio" aria-hidden="true"
+                th:if="${mes > hechos + 1}"><svg class="mision-forma" viewBox="22 14 56 72"
+                focusable="false"><use href="#encastre-pieza" th:href="${forma}"/></svg></span>
+        </th:block>
+      </div>
+      <progress class="mision-barra" value="66" max="100" th:attr="value=${hechos * 100 / total}"
+                aria-label="Progreso de la misión" th:text="|${hechos * 100 / total} %|">66 %</progress>
+      <div class="mision-pie">
+        <span class="mision-por" th:text="|${hechos * 100 / total} %|">66 %</span>
+      </div>
+    </section>
+
+    <section class="pieza don-misiones" aria-labelledby="misiones-titulo">
+      <h2 id="misiones-titulo" class="don-subtitulo">Otras misiones a medio armar</h2>
+      <ul class="don-misiones-lista">
+        <li th:each="m : ${misiones}" class="don-mision"
+            th:with="falta=${m.total - m.hechos}">
+          <div class="don-mision-nombre">
+            <span class="mision-sello" th:text="|${m.hechos}/${m.total}|">2/3</span>
+            <p><b th:text="${m.nombre}">Tres destinos</b><span th:text="${m.meta}">Ayudá a tres
+              entidades distintas</span></p>
+          </div>
+          <div class="mision-piezas don-mision-piezas">
+            <th:block th:each="paso : ${#numbers.sequence(1, m.total)}"
+                      th:with="forma=${paso == m.total} ? '#encastre-pieza-borde' : '#encastre-pieza'">
+              <span class="mision-pieza" aria-hidden="true" th:if="${paso <= m.hechos}"><svg
+                    class="mision-forma" viewBox="22 14 56 72" focusable="false"><use
+                    href="#encastre-pieza" th:href="${forma}"/></svg><svg
+                    th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 26)}"></svg></span>
+              <p class="mision-hueco" th:if="${paso == m.hechos + 1}"><svg class="mision-forma"
+                 viewBox="22 14 56 72" aria-hidden="true" focusable="false"><use
+                 href="#encastre-pieza" th:href="${forma}"/></svg><span
+                 th:text="|Falta ${falta} ${falta == 1 ? m.unidad : m.unidades}|">Falta 1
+                entidad</span></p>
+              <span class="mision-hueco mision-hueco--vacio" aria-hidden="true"
+                    th:if="${paso > m.hechos + 1}"><svg class="mision-forma" viewBox="22 14 56 72"
+                    focusable="false"><use href="#encastre-pieza" th:href="${forma}"/></svg></span>
+            </th:block>
+          </div>
+          <progress class="mision-barra" value="66" max="100"
+                    th:attr="value=${m.hechos * 100 / m.total}"
+                    th:aria-label="|Progreso de ${m.nombre}|"
+                    th:text="|${m.hechos * 100 / m.total} %|">66 %</progress>
+        </li>
+      </ul>
+    </section>
+
+    <section class="pieza don-insignias" aria-labelledby="insignias-titulo">
+      <h2 id="insignias-titulo" class="don-subtitulo">Lo que ya ganaste</h2>
+      <ul class="don-insignias-lista">
+        <li th:each="i : ${insignias}" class="don-insignia">
+          <span class="don-insignia-signo" aria-hidden="true"><svg class="don-pieza"
+                viewBox="10 10 90 90" focusable="false"><use href="#encastre-pieza"/></svg><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('incentivos', 24)}"></svg></span>
+          <h3 th:text="${i.nombre}">Primera pieza</h3>
+          <p th:text="${i.texto}">Tu primera donación llegó a una entidad.</p>
+          <p class="don-insignia-fecha" th:text="${i.fecha}">22 de agosto de 2026</p>
+        </li>
+      </ul>
+    </section>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>

@@ -1,0 +1,1747 @@
+/*
+ * Prototipo Encastre, iteración 3, donante: tu donación es una pieza que viaja hasta encastrar.
+ * Cada donación es una pieza del color de su etapa (se prepara: sol; en camino, lo de ahora:
+ * naranja; con problema: rosa; llegó: menta) que avanza por las paradas hasta calzar en el hueco
+ * de su entidad, y cada misión es un rompecabezas a medio armar donde el hueco dice qué falta.
+ * Se apoya en estructura.css y componentes.css (la pieza, la lengüeta, el riel, los controles):
+ * acá solo las piezas propias del donante, con el prefijo don-.
+ * Solo tokens de uso y los quiebres de tokens.css, mobile first (InterfazFitnessTest).
+ */
+
+/* La mesa de cada pantalla: las piezas, una debajo de la otra, y cada una encastra en la de abajo
+   con su lengüeta. Las grillas de cada ancho, al final. */
+.don-tablero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--medida-junta);
+}
+
+.don-tablero > .pieza:not(:last-child)::after {
+  content: "";
+  top: 100%;
+  bottom: auto;
+  left: calc(var(--medida-lengueta-x, 30%) - var(--medida-lengueta-aro));
+  width: calc(2 * var(--medida-lengueta-aro));
+  height: calc(var(--medida-lengueta-d) + var(--medida-lengueta-aro));
+  --medida-lengueta-cx: 50%;
+  --medida-lengueta-cy: var(--medida-lengueta-d);
+}
+
+.don-tablero :is(h2, h3, h4, p) {
+  margin: 0;
+}
+
+.don-tablero :is(h2, h3, h4) {
+  color: var(--color-pieza-texto);
+}
+
+.don-tablero :is(h2, h3) a {
+  color: inherit;
+  text-decoration-thickness: var(--borde-junta);
+  text-underline-offset: 0.18em;
+}
+
+.don-tablero ul,
+.don-tablero ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.don-tablero li {
+  margin: 0;
+  list-style: none;
+}
+
+/* La cabeza: la primera pieza, con lugar arriba para el nombre del menú (rotulo-menu, del layout)
+   y el título de voz con el marcador de sol, como el saludo de la ancla. */
+.don-cabeza {
+  --medida-lengueta-x: 18%;
+
+  padding-top: calc(var(--espacio-relleno-bloque) + var(--medida-rotulo-menu) + var(--espacio-3));
+}
+
+.don-titulo {
+  max-width: 18ch;
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-mision);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-decoration: underline;
+  text-decoration-color: var(--color-marcador);
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: 0.3em;
+  text-underline-offset: -0.12em;
+}
+
+.don-cabeza-texto {
+  max-width: 46ch;
+  font-size: var(--tamano-texto-grande);
+  font-weight: 600;
+}
+
+.don-subtitulo {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-pieza-titulo);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.don-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
+}
+
+.don-acciones > * {
+  margin: 0;
+}
+
+/* Lo de ahora: una sola pieza naranja por pantalla (pieza-ahora); con ella en main, el botón
+   principal es de tinta (componentes.css). */
+.don-tablero .pieza-ahora {
+  --color-pieza-fondo: var(--color-ahora);
+}
+
+/* El color de la etapa: la pieza de cada donación lo toma de acá. */
+.don-tono--proceso {
+  --color-don-etapa: var(--color-pieza-sol);
+}
+
+.don-tono--camino {
+  --color-don-etapa: var(--color-ahora);
+}
+
+.don-tono--problema {
+  --color-don-etapa: var(--color-pieza-rosa);
+}
+
+.don-tono--entregada {
+  --color-don-etapa: var(--color-pieza-menta);
+}
+
+/* La pieza dibujada (#encastre-pieza del layout): del color de su etapa, con la junta de tinta. */
+.don-pieza {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: var(--color-don-etapa, var(--color-ahora));
+  stroke: var(--color-junta);
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
+/* La ficha de una donación: su pieza con el ícono de lo donado encima. */
+.don-ficha {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+}
+
+.don-ficha > .don-pieza {
+  position: absolute;
+  inset: 0;
+}
+
+.don-ficha > .icono {
+  position: relative;
+  margin: 6% 12% 0 0;
+}
+
+/* La pieza que viaja: un recorrido de paradas. En una pieza angosta va de arriba abajo, con la vía
+   a la izquierda; en una ancha, de izquierda a derecha. La donación es la pieza puesta en la parada
+   actual; la última parada es el hueco de la entidad, donde va a encastrar. */
+.viaje,
+.don-ahora,
+.don-detalle-ahora,
+.don-detalle-viaje,
+.don-anotada-viaje {
+  container-type: inline-size;
+}
+
+.don-ruta {
+  --medida-don-marca: 3.25rem;
+  --color-don-viaja: var(--color-don-etapa, var(--color-ahora));
+
+  position: relative;
+  display: grid;
+}
+
+.pieza-ahora .don-ruta {
+  --color-don-viaja: var(--color-pieza-crema);
+}
+
+.don-parada {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--medida-don-marca) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: calc(var(--medida-don-marca) + var(--espacio-2));
+}
+
+/* La vía hasta la parada siguiente: firme donde ya pasó, a trazos donde falta. */
+.don-parada:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(var(--medida-don-marca) / 2 - 0.125rem);
+  height: 100%;
+  border-left: 0.25rem solid var(--color-junta);
+}
+
+.don-parada:is(.don-parada--actual, .don-parada--pendiente):not(:last-child)::before {
+  border-left-style: dashed;
+  border-left-color: var(--color-junta-media);
+}
+
+.don-parada-marca {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: var(--medida-don-marca);
+  height: var(--medida-don-marca);
+}
+
+.don-parada-marca > .don-pieza {
+  position: absolute;
+  inset: 0;
+}
+
+.don-parada-marca > .icono {
+  position: relative;
+}
+
+.don-parada--hecho .don-parada-marca::before,
+.don-parada--pendiente:not(.don-parada--destino) .don-parada-marca::before {
+  content: "";
+  position: absolute;
+  inset: 25%;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+}
+
+.don-parada--hecho .don-parada-marca {
+  color: var(--color-mesa-texto);
+}
+
+.don-parada--pendiente:not(.don-parada--destino) .don-parada-marca::before {
+  inset: 32%;
+  background: var(--color-pieza-crema);
+  border: 0.1875rem dashed var(--color-junta);
+}
+
+/* La pieza en camino: grande, del color de lo de ahora (crema dentro de la pieza naranja). */
+.don-parada--actual .don-pieza {
+  fill: var(--color-don-viaja);
+}
+
+.don-parada--actual .don-parada-marca > .icono {
+  margin: 6% 12% 0 0;
+}
+
+/* El hueco de la entidad: la forma de la pieza, a trazos, esperando. */
+.don-parada--destino.don-parada--pendiente .don-pieza {
+  fill: var(--color-junta-tenue);
+  stroke-dasharray: 9 7;
+  stroke-width: 4;
+}
+
+.don-parada--destino.don-parada--hecho .don-pieza {
+  fill: var(--color-pieza-menta);
+}
+
+.don-parada--destino.don-parada--hecho .don-parada-marca::before {
+  content: none;
+}
+
+.don-parada--destino.don-parada--hecho .don-parada-marca {
+  color: var(--color-pieza-texto);
+}
+
+.don-parada--destino.don-parada--hecho .don-parada-marca > .icono {
+  margin: 6% 12% 0 0;
+}
+
+.don-parada-texto {
+  display: grid;
+  min-width: 0;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.don-parada-texto small {
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.don-parada--actual .don-parada-texto b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.05;
+}
+
+@container (min-width: 34rem) {
+  .don-ruta {
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    grid-auto-flow: column;
+  }
+
+  .don-parada {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: calc(var(--medida-don-marca) + var(--espacio-4)) auto;
+    align-items: start;
+    gap: var(--espacio-2);
+  }
+
+  .don-parada-marca {
+    align-self: center;
+  }
+
+  .don-parada:not(:last-child)::before {
+    top: calc(var(--medida-don-marca) / 2 + var(--espacio-2) - 0.125rem);
+    left: calc(var(--medida-don-marca) / 2);
+    width: 100%;
+    height: 0;
+    border-top: 0.25rem solid var(--color-junta);
+    border-left: 0;
+  }
+
+  .don-parada:is(.don-parada--actual, .don-parada--pendiente):not(:last-child)::before {
+    border-top-style: dashed;
+    border-top-color: var(--color-junta-media);
+  }
+
+  .don-parada-texto {
+    padding-inline-end: var(--espacio-2);
+  }
+
+  .don-ruta {
+    --medida-don-marca: 3.75rem;
+  }
+
+  /* En la pieza de lo de ahora, la que viaja es protagonista. */
+  .pieza-ahora .don-ruta {
+    --medida-don-marca: 5rem;
+  }
+}
+
+/* Mis donaciones. La cabeza lleva la franja que filtra, plegada. */
+.don-filtro {
+  margin: 0;
+}
+
+.don-tablero .don-filtro > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding: 0.625rem 1.25rem;
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  box-shadow: var(--sombra-pisada);
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  list-style: none;
+  cursor: pointer;
+}
+
+.don-filtro > summary::-webkit-details-marker {
+  display: none;
+}
+
+.don-filtro > summary::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-inline-start: var(--espacio-3);
+  border-right: var(--borde-junta) solid currentcolor;
+  border-bottom: var(--borde-junta) solid currentcolor;
+  transform: translateY(-25%) rotate(45deg);
+}
+
+.don-filtro[open] > summary::after {
+  transform: translateY(25%) rotate(-135deg);
+}
+
+.don-filtro > form {
+  display: grid;
+  gap: var(--espacio-4);
+  margin-top: var(--espacio-4);
+  padding: var(--espacio-4);
+  background: var(--color-pieza-gris);
+  border-radius: var(--radio-pieza);
+}
+
+.don-filtro button {
+  justify-self: start;
+  margin: 0;
+}
+
+/* Las opciones del filtro: fichas que se eligen. La elegida es de tinta. */
+.don-fichas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.don-fichas > legend {
+  width: 100%;
+  margin-bottom: var(--espacio-2);
+  padding: 0;
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+}
+
+.don-fichas > label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  padding: 0 var(--espacio-4) 0 var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-boton);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* El botón de radio cubre la ficha entera (el toque es de toda la ficha); el punto lo dibuja la
+   ficha. */
+.don-fichas input {
+  position: absolute;
+  inset: calc(-1 * var(--borde-junta));
+  width: auto;
+  height: auto;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.don-fichas > label::before {
+  content: "";
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+  border: var(--borde-junta) solid currentcolor;
+  border-radius: 50%;
+}
+
+.don-fichas > label:has(:checked)::before {
+  background: var(--color-pieza-sol);
+}
+
+.don-fichas > label:has(:checked) {
+  background: var(--color-pieza-tinta);
+  color: var(--color-mesa-texto);
+}
+
+.don-fichas > label:has(:focus-visible) {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* Lo de ahora: la donación en camino, en la pieza naranja. */
+.don-ahora {
+  --medida-lengueta-x: 70%;
+
+  gap: var(--espacio-4);
+}
+
+.don-ahora-cabeza {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.don-ahora .rotulo {
+  color: var(--color-pieza-texto);
+}
+
+.don-ahora h2 {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-mision);
+  font-weight: 800;
+  line-height: 1.02;
+}
+
+.don-ahora-dato {
+  font-weight: 700;
+}
+
+/* El tablero de viaje: un carril por donación. */
+.don-viajes {
+  --color-pieza-fondo: var(--color-pieza-azul);
+  --medida-lengueta-x: 22%;
+
+  container-type: inline-size;
+}
+
+.don-carriles {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.don-carril {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.don-carril--rotulos {
+  display: none;
+}
+
+.don-carril-que {
+  display: grid;
+  align-content: center;
+}
+
+.don-carril h3 {
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.don-carril h3 a,
+.don-ahora h2 a {
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--medida-toque-minimo);
+  min-height: var(--medida-toque-minimo);
+}
+
+.don-carril-que p {
+  margin-top: calc(-1 * var(--espacio-2));
+  font-size: var(--tamano-chico);
+  font-weight: 600;
+}
+
+.don-carril-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-2);
+  font-size: var(--tamano-chico);
+}
+
+/* Los tramos: cinco paradas en columnas; la pieza en la suya, la vía firme hasta ella y a trazos
+   después, y al final el hueco de la entidad. */
+.don-tramos {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: center;
+}
+
+.don-tramo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 2.75rem;
+}
+
+.don-tramo:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: calc(50% - 0.125rem);
+  left: 50%;
+  width: 100%;
+  border-top: 0.25rem dashed var(--color-junta-media);
+}
+
+.don-tramo--hecho:not(:last-child)::before {
+  border-top-style: solid;
+  border-top-color: var(--color-junta);
+}
+
+.don-tramo--hecho::after,
+.don-tramo--falta:not(:last-child)::after {
+  content: "";
+  position: relative;
+  width: 0.875rem;
+  height: 0.875rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+}
+
+.don-tramo--falta:not(:last-child)::after {
+  background: var(--color-pieza-crema);
+  border: 0.1875rem dashed var(--color-junta);
+}
+
+.don-tramo > .don-ficha {
+  position: relative;
+  z-index: 1;
+  width: 3rem;
+  height: 3rem;
+}
+
+.don-tramo > .don-pieza {
+  position: relative;
+  z-index: 1;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.don-tramo--falta > .don-pieza {
+  fill: var(--color-junta-tenue);
+  stroke-dasharray: 9 7;
+  stroke-width: 4;
+}
+
+.don-carril--rotulos .don-tramos li {
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+}
+
+@container (min-width: 36rem) {
+  .don-carril {
+    grid-template-columns: minmax(13rem, 1fr) minmax(0, 2.2fr);
+    grid-template-areas:
+      "que tramos"
+      "que estado";
+    align-items: center;
+    gap: var(--espacio-1) var(--espacio-5);
+  }
+
+  .don-carril--rotulos {
+    display: grid;
+    grid-template-areas: "que tramos";
+    padding-block: 0;
+    background: none;
+  }
+
+  .don-carril-que {
+    grid-area: que;
+  }
+
+  .don-tramos {
+    grid-area: tramos;
+  }
+
+  .don-carril-estado {
+    grid-area: estado;
+  }
+}
+
+/* Ya encastraron: la pieza de la donación, puesta en la pieza de su entidad. */
+.don-encastradas {
+  --color-pieza-fondo: var(--color-pieza-menta);
+
+  container-type: inline-size;
+}
+
+.don-encastres {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.don-encastre {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-4);
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.don-encastre-dibujo {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  stroke: var(--color-junta);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+
+.don-encastre-entidad {
+  fill: var(--color-pieza-tinta);
+}
+
+.don-encastre-pieza {
+  fill: var(--color-pieza-menta);
+}
+
+.don-encastre h3 {
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+}
+
+.don-encastre h3 a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+}
+
+.don-encastre p {
+  font-size: var(--tamano-chico);
+}
+
+.don-encastre-cuando {
+  font-weight: 800;
+}
+
+@container (min-width: 40rem) {
+  .don-encastres {
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  }
+}
+
+/* El detalle de una donación: en la pieza naranja, el nombre, dónde está y su recorrido; debajo,
+   lo que donaste. */
+.don-volver {
+  justify-self: start;
+}
+
+.don-detalle-estado {
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.don-detalle-estado h3 {
+  max-width: 28ch;
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.don-detalle-estado .don-acciones {
+  margin-top: var(--espacio-2);
+}
+
+.don-detalle-datos {
+  --color-pieza-fondo: var(--color-pieza-crema);
+}
+
+/* La pieza de la donación, grande, bajo su nombre (solo en pantallas anchas: en el celular, el
+   recorrido ya la muestra). En camino es crema: el naranja ya es la pieza de lo de ahora. */
+.don-ficha--grande {
+  display: none;
+}
+
+.don-ficha--grande.don-tono--camino {
+  --color-don-etapa: var(--color-pieza-crema);
+}
+
+.don-ficha--grande > .icono {
+  width: 34%;
+  height: auto;
+}
+
+.don-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr));
+  gap: var(--medida-junta);
+  margin: 0;
+}
+
+.don-datos > div {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-1);
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-gris);
+  border-radius: var(--radio-chico);
+}
+
+.don-datos dt {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+}
+
+.don-datos dd {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.don-detalle-ahora h2 {
+  max-width: 24ch;
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-mision);
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.don-detalle-ahora .rotulo {
+  color: var(--color-pieza-texto);
+}
+
+.don-detalle-ahora-texto {
+  max-width: 60ch;
+  font-size: var(--tamano-texto-grande);
+  font-weight: 600;
+}
+
+.don-detalle-viaje {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+/* La pieza suelta que espera (Mis donaciones vacía) y la que cae (donación anotada). */
+.don-detalle-viaje,
+.don-anotada-aviso {
+  position: relative;
+}
+
+.don-suelta,
+.don-cae {
+  position: absolute;
+  top: var(--espacio-4);
+  right: var(--espacio-4);
+  width: 3.5rem;
+  height: 3.5rem;
+  overflow: visible;
+  fill: var(--color-pieza-sol);
+  stroke: var(--color-junta);
+  stroke-width: 5;
+  transform: rotate(16deg);
+}
+
+.don-cae {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
+.don-anotada-aviso > .don-titulo {
+  padding-inline-end: 4.5rem;
+}
+
+.don-anotada-aviso:focus-visible {
+  outline: var(--borde-foco) solid var(--color-foco-sobre-oscuro);
+  outline-offset: 2px;
+}
+
+/* Los datos sobre lo de ahora: piezas crema en la pieza naranja. */
+.don-datos--ahora > div {
+  background: var(--color-pieza-crema);
+}
+
+/* Entidades: el buscador en la cabeza y el mosaico de entidades. */
+.don-buscar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--espacio-2) var(--espacio-3);
+}
+
+.don-buscar > .campo {
+  flex: 1 1 9rem;
+  margin: 0;
+}
+
+.don-buscar > button {
+  margin-block-end: 1.625rem;
+}
+
+.don-mosaico-caja {
+  --color-pieza-fondo: var(--color-pieza-gris);
+  --medida-lengueta-x: 22%;
+}
+
+.don-mosaico {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--medida-junta);
+}
+
+.don-entidad {
+  --color-pieza-fondo: var(--color-pieza-crema);
+
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4);
+  background: var(--color-pieza-fondo);
+  border-radius: var(--radio-chico);
+}
+
+.don-entidad--lila {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+.don-entidad--menta {
+  --color-pieza-fondo: var(--color-pieza-menta);
+}
+
+.don-entidad--azul {
+  --color-pieza-fondo: var(--color-pieza-azul);
+}
+
+.don-entidad--durazno {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+}
+
+.don-entidad--rosa {
+  --color-pieza-fondo: var(--color-pieza-rosa);
+}
+
+.don-entidad h3 {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.don-entidad h3 a {
+  display: inline-block;
+  min-height: var(--medida-toque-minimo);
+  padding-block: var(--espacio-1);
+}
+
+.don-entidad-zona {
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+/* El hueco de lo que falta: la forma de la pieza a trazos y lo que falta en palabras. */
+.don-hueco {
+  display: flex;
+  align-items: center;
+  align-self: end;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-4) var(--espacio-3) var(--espacio-3);
+  background: var(--color-hueco);
+  border: 0.125rem dashed var(--color-hueco-borde);
+  border-radius: var(--radio-chico);
+  color: var(--color-mesa-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.don-hueco-forma {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  overflow: visible;
+  fill: none;
+  stroke: var(--color-hueco-borde);
+  stroke-dasharray: 8 6;
+  stroke-width: 5;
+}
+
+.don-entidad-pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--espacio-1) var(--espacio-3);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.don-entidad-tuyas {
+  padding: 0 var(--espacio-2);
+  background: var(--color-pieza-crema);
+  border: 2px solid var(--color-junta);
+  border-radius: var(--radio-boton);
+  font-weight: 800;
+}
+
+.don-paginas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  font-weight: 800;
+}
+
+.don-paginas > * {
+  margin: 0;
+}
+
+/* Una entidad: lo que le falta, cada necesidad un rompecabezas a medio armar. */
+.don-necesidades {
+  --medida-lengueta-x: 70%;
+}
+
+.don-necesidades > .rotulo {
+  color: var(--color-pieza-texto);
+}
+
+.don-pedidos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: var(--medida-junta);
+}
+
+.don-pedido {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.don-pedido-cabeza {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-3);
+}
+
+.don-pedido-signo {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--color-pieza-tinta);
+  border-radius: 50%;
+  color: var(--color-mesa-texto);
+}
+
+.don-pedido h3 {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.don-pedido-cabeza p,
+.don-pedido-cuenta {
+  font-size: var(--tamano-chico);
+}
+
+.don-pedido-piezas {
+  max-width: 16rem;
+}
+
+.don-pedido-cuenta b {
+  display: block;
+}
+
+/* Donar para esta necesidad: el paso corto, plegado. */
+.don-tablero .don-donar > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding: 0.625rem 1.25rem;
+  background: var(--color-pieza-tinta);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: var(--radio-pieza);
+  box-shadow: var(--sombra-pisada);
+  color: var(--color-pieza-crema);
+  font-size: var(--tamano-chico);
+  font-weight: 800;
+  list-style: none;
+  cursor: pointer;
+}
+
+.don-donar > summary::-webkit-details-marker {
+  display: none;
+}
+
+.don-tablero .don-donar[open] > summary {
+  background: var(--color-pieza-gris);
+  color: var(--color-pieza-texto);
+}
+
+.don-donar > form {
+  display: grid;
+  gap: var(--espacio-3);
+  margin-top: var(--espacio-3);
+  padding-top: var(--espacio-3);
+  border-top: var(--borde-junta) dashed var(--color-junta);
+}
+
+.don-donar h4 {
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+}
+
+.don-donar .campo,
+.don-donar button {
+  margin: 0;
+}
+
+.don-donar button {
+  justify-self: start;
+}
+
+/* Tus piezas acá. */
+.don-huella {
+  --color-pieza-fondo: var(--color-pieza-menta);
+}
+
+.don-huellas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  gap: var(--medida-junta);
+}
+
+.don-huellas > li {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.don-huella-vacia {
+  max-width: 50ch;
+  font-weight: 600;
+}
+
+/* Incentivos: la escalera de categorías, tres piezas que encastran y crecen. */
+.don-rango {
+  display: flex;
+  align-items: flex-end;
+}
+
+.don-rango-paso {
+  display: grid;
+  flex: 1 1 0;
+  justify-items: start;
+  gap: var(--espacio-2);
+  min-width: 0;
+}
+
+.don-rango-paso > .don-pieza {
+  --medida-don-rango: 3.25rem;
+
+  width: var(--medida-don-rango);
+  height: var(--medida-don-rango);
+  fill: var(--color-junta-tenue);
+  stroke-dasharray: 9 7;
+  stroke-width: 4;
+}
+
+.don-rango-paso:nth-child(2) > .don-pieza {
+  --medida-don-rango: 3.75rem;
+}
+
+.don-rango-paso:nth-child(n + 3) > .don-pieza {
+  --medida-don-rango: 4.25rem;
+}
+
+.don-rango-paso--puesta > .don-pieza {
+  fill: var(--color-pieza-rosa);
+  stroke-dasharray: none;
+  stroke-width: 5;
+}
+
+.don-rango-paso--proxima > .don-pieza {
+  stroke: var(--color-junta);
+}
+
+.don-rango-paso:not(.don-rango-paso--puesta, .don-rango-paso--proxima) > .don-pieza {
+  fill: none;
+  stroke: var(--color-junta-media);
+}
+
+.don-rango-texto {
+  display: grid;
+  min-width: 0;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.don-rango-texto b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-chico);
+}
+
+.don-rango-texto small {
+  font-size: var(--tamano-mini);
+}
+
+/* La misión de lo de ahora es la de la ancla (estructura.css): acá no ocupa un área del tablero. */
+.don-tablero > .mision,
+:is(.don-mision, .don-pedido) > :is(.mision-piezas, .mision-barra) {
+  grid-area: auto;
+}
+
+.don-tablero .mision h2 {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-mision);
+  font-weight: 800;
+  line-height: 1.02;
+}
+
+.don-misiones {
+  --color-pieza-fondo: var(--color-pieza-lila);
+}
+
+.don-misiones-lista {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.don-mision {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.don-mision-nombre {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.don-mision-nombre p {
+  display: grid;
+}
+
+.don-mision-nombre b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.15;
+}
+
+.don-mision .mision-pieza .mision-forma {
+  fill: var(--color-pieza-lila);
+  stroke: var(--color-junta);
+}
+
+.don-mision-piezas {
+  max-width: 24rem;
+}
+
+.don-mision .mision-barra::-webkit-progress-value {
+  background: var(--color-pieza-tinta);
+  border-radius: var(--radio-boton);
+}
+
+.don-insignias {
+  --color-pieza-fondo: var(--color-pieza-menta);
+}
+
+.don-insignias-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: var(--medida-junta);
+}
+
+.don-insignia {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: var(--espacio-1);
+  padding: var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.don-insignia-signo {
+  --color-don-etapa: var(--color-pieza-sol);
+
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: var(--espacio-2);
+}
+
+.don-insignia-signo > .don-pieza {
+  position: absolute;
+  inset: 0;
+}
+
+.don-insignia-signo > .icono {
+  position: relative;
+  margin: 6% 12% 0 0;
+}
+
+.don-insignia h3 {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+}
+
+.don-insignia p {
+  font-size: var(--tamano-chico);
+}
+
+.don-insignia-fecha {
+  font-weight: 800;
+}
+
+/* Notificaciones: cada día, una pieza; cada aviso, una pieza chica con el signo de su tipo. */
+.don-dia {
+  --color-pieza-fondo: var(--color-pieza-durazno);
+
+  container-type: inline-size;
+}
+
+.don-dia-lista {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.don-aviso {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.don-aviso-signo {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: var(--color-don-aviso);
+  border: var(--borde-junta) solid var(--color-junta);
+  border-radius: 50%;
+}
+
+.don-aviso--asignacion {
+  --color-don-aviso: var(--color-pieza-lila);
+}
+
+.don-aviso--lista {
+  --color-don-aviso: var(--color-pieza-sol);
+}
+
+.don-aviso--recepcion {
+  --color-don-aviso: var(--color-pieza-menta);
+}
+
+.don-aviso--problema {
+  --color-don-aviso: var(--color-pieza-rosa);
+}
+
+.don-aviso--mision {
+  --color-don-aviso: var(--color-pieza-durazno);
+}
+
+.don-aviso--ascenso {
+  --color-don-aviso: var(--color-pieza-azul);
+}
+
+.don-aviso-cuerpo {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-1);
+}
+
+.don-aviso-tipo {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-weight: 800;
+}
+
+.don-aviso-texto {
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+@container (min-width: 36rem) {
+  .don-dia-lista {
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  }
+}
+
+/* Seguimiento: el mapa, con su lista al lado. */
+.don-mapa {
+  --color-pieza-fondo: var(--color-pieza-gris);
+
+  gap: var(--espacio-2);
+}
+
+.don-mapa-dibujo {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.don-mapa-calles {
+  fill: none;
+  stroke: var(--color-pieza-crema);
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+
+.don-mapa-plaza {
+  fill: var(--color-pieza-menta);
+}
+
+.don-mapa-via {
+  stroke: var(--color-pieza-tinta);
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+
+.don-mapa-via--falta {
+  stroke: var(--color-junta-media);
+  stroke-dasharray: 4 14;
+}
+
+.don-mapa-parada circle {
+  fill: var(--color-pieza-crema);
+  stroke: var(--color-junta);
+  stroke-width: 4;
+}
+
+.don-mapa-parada text {
+  fill: var(--color-pieza-texto);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.don-mapa-parada--hecha circle {
+  fill: var(--color-pieza-tinta);
+}
+
+.don-mapa-parada--hecha text {
+  fill: var(--color-mesa-texto);
+}
+
+.don-mapa-hueco {
+  fill: var(--color-junta-tenue);
+  stroke: var(--color-junta);
+  stroke-dasharray: 9 7;
+  stroke-width: 4;
+}
+
+.don-mapa-zona {
+  fill: var(--color-junta-tenue);
+  stroke: var(--color-junta);
+  stroke-dasharray: 6 6;
+  stroke-width: 2;
+}
+
+.don-mapa-camion {
+  color: var(--color-pieza-tinta);
+  fill: var(--color-ahora);
+  stroke: var(--color-junta);
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
+.don-mapa-camion use {
+  fill: var(--color-ahora);
+}
+
+.don-seguimiento-ahora h2,
+.don-aviso-ahora h2 {
+  font-size: var(--tamano-titulo-2);
+}
+
+.don-mapa-camion .icono {
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+}
+
+.don-mapa figcaption {
+  color: var(--color-pieza-texto);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.don-actualizada {
+  font-weight: 700;
+}
+
+.don-paradas {
+  --color-pieza-fondo: var(--color-pieza-azul);
+
+  container-type: inline-size;
+}
+
+@container (min-width: 40rem) {
+  .don-paradas-lista {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+}
+
+.don-paradas-camion {
+  max-width: 52ch;
+  font-weight: 600;
+}
+
+.don-paradas-lista {
+  display: grid;
+  gap: var(--medida-junta);
+}
+
+.don-paradas-item {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-3);
+  padding: var(--espacio-2) var(--espacio-4) var(--espacio-2) var(--espacio-3);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
+}
+
+.don-paradas-item p {
+  display: grid;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.don-paradas-item small {
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+}
+
+.don-paradas-numero {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--color-pieza-crema);
+  border: 0.1875rem solid var(--color-junta);
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+.don-paradas-item--hecha .don-paradas-numero {
+  background: var(--color-pieza-tinta);
+  color: var(--color-mesa-texto);
+}
+
+.don-paradas-item--destino .don-paradas-numero {
+  background: var(--color-junta-tenue);
+  border-style: dashed;
+}
+
+/* Movimiento, solo si la persona no pidió reducirlo: la pieza en camino se mece sobre la vía y
+   cada pieza entregada entra en su entidad. Quieta, cada una ya está en su lugar. */
+@media (prefers-reduced-motion: no-preference) {
+  .don-parada--actual .don-parada-marca {
+    animation: don-viaja 2.4s var(--movimiento-curva) 400ms 2;
+  }
+
+  .don-encastre-pieza {
+    animation: don-encastra var(--movimiento-encastre) var(--movimiento-curva) 300ms both;
+  }
+
+  .don-cae {
+    animation: don-cae 700ms var(--movimiento-curva) 200ms both;
+  }
+
+  .don-parada--destino.don-parada--hecho .don-pieza,
+  .don-ficha--grande.don-tono--entregada {
+    animation: don-encastra var(--movimiento-encastre) var(--movimiento-curva) 400ms both;
+  }
+
+  .don-suelta {
+    animation: don-prueba 1.6s var(--movimiento-curva) 600ms 2;
+  }
+
+  .don-insignia-signo {
+    animation: don-salta 600ms var(--movimiento-curva) 300ms both;
+  }
+
+  .don-mapa-zona {
+    animation: don-late 1.8s ease-in-out 400ms 3;
+  }
+}
+
+@keyframes don-cae {
+  from {
+    opacity: 0;
+    transform: translateY(-3rem) rotate(-40deg);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(0.25rem) rotate(22deg);
+  }
+}
+
+@keyframes don-prueba {
+  50% {
+    transform: translate(-0.5rem, 0.5rem) rotate(4deg);
+  }
+}
+
+@keyframes don-salta {
+  40% {
+    transform: scale(1.18) rotate(-8deg);
+  }
+}
+
+@keyframes don-late {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes don-viaja {
+  50% {
+    transform: translateX(0.375rem) rotate(-4deg);
+  }
+}
+
+@keyframes don-encastra {
+  from {
+    transform: translateX(-1.5rem) rotate(-10deg);
+  }
+}
+
+/* Alto contraste: las piezas dibujadas y las vías se siguen viendo. */
+@media (forced-colors: active) {
+  .don-pieza,
+  .don-encastre-dibujo,
+  .don-suelta,
+  .don-cae,
+  .don-hueco-forma,
+  .don-mapa-dibujo :is(circle, use, line),
+  .don-mapa-camion svg {
+    forced-color-adjust: none;
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .don-mapa-parada text {
+    fill: CanvasText;
+  }
+
+  .don-parada::before,
+  .don-tramo::before {
+    border-color: CanvasText;
+  }
+
+  .don-carril,
+  .don-encastre,
+  .don-entidad,
+  .don-pedido,
+  .don-mision,
+  .don-insignia,
+  .don-aviso,
+  .don-paradas-item,
+  .don-hueco,
+  .don-datos > div {
+    border: 2px solid;
+  }
+
+  .don-parada[aria-current="step"] {
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
+  }
+}
+
+/* Desde 600 px: la escalera de categorías crece. */
+@media (min-width: 37.5em) {
+  .don-rango-paso > .don-pieza {
+    --medida-don-rango: 4.5rem;
+  }
+
+  .don-rango-paso:nth-child(2) > .don-pieza {
+    --medida-don-rango: 5.25rem;
+  }
+
+  .don-rango-paso:nth-child(n + 3) > .don-pieza {
+    --medida-don-rango: 6rem;
+  }
+
+  .don-pedido-piezas {
+    max-width: 22rem;
+  }
+}
+
+/* Desde 860 px: la cabeza es una franja, con el título a la izquierda y lo demás a la derecha; la
+   vuelta y el recorrido, de punta a punta. */
+@media (min-width: 53.75em) {
+  .don-cabeza {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--espacio-6);
+  }
+
+  .don-cabeza > * {
+    grid-column: 2;
+  }
+
+  .don-cabeza > .don-titulo {
+    grid-column: 1;
+  }
+
+  .don-cabeza > :is(.don-volver, .don-ruta, .estado-vacio) {
+    grid-column: 1 / -1;
+  }
+
+  .don-detalle > .don-cabeza > .don-titulo {
+    grid-row: 2;
+  }
+
+  .don-detalle .don-ficha--grande {
+    display: grid;
+    grid-row: 3;
+    grid-column: 1;
+    justify-self: center;
+    width: 9rem;
+    height: 9rem;
+    transform: rotate(-8deg);
+  }
+
+  .don-detalle .don-detalle-estado {
+    grid-row: 2 / span 2;
+    align-self: center;
+  }
+}
+
+/* Desde 1100 px: las pantallas que reparten sus piezas en columnas. */
+@media (min-width: 68.75em) {
+  .don-seguimiento,
+  .don-incentivos {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .don-seguimiento > :is(.don-cabeza, .don-paradas),
+  .don-incentivos > :is(.don-cabeza, .don-insignias) {
+    grid-column: 1 / -1;
+  }
+
+  .don-seguimiento > .don-mapa {
+    grid-row: 2;
+    grid-column: 1;
+  }
+
+  .don-seguimiento > .don-seguimiento-ahora {
+    grid-row: 2;
+    grid-column: 2;
+  }
+
+  .don-seguimiento--vacio > .don-paradas {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .don-seguimiento--vacio > .don-paradas::after {
+    content: none;
+  }
+
+  .don-seguimiento--vacio > .don-mapa {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}

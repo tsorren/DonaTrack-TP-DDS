@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: Notificaciones (RF-08: asignación, misión cumplida,
+       ascenso y recepción, y los avisos del viaje de cada donación). No está en el riel: el rótulo
+       "Notificaciones" lo escribe la pantalla. Arriba, la cabeza; después, lo de ahora (la pieza
+       naranja): el aviso más nuevo, con su salida. Debajo, los demás avisos agrupados por día, cada
+       uno una pieza chica con el signo de su tipo (color, signo y texto juntos) que encastra en la
+       vía del día, y su enlace. Aguanta más días y más avisos: todo sale de dias (th:with). Hoy es
+       el miércoles 14 de octubre de 2026. Estilos: prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Notificaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Notificaciones</h1>
+  <div class="don-tablero don-avisos"
+       th:with="tipos=${ {
+         asignacion: {nombre: 'Asignación', icono: 'entidades'},
+         lista: {nombre: 'Viaje', icono: 'donaciones'},
+         recepcion: {nombre: 'Recepción', icono: 'check'},
+         problema: {nombre: 'Problema en la entrega', icono: 'alerta'},
+         mision: {nombre: 'Misión cumplida', icono: 'incentivos'},
+         ascenso: {nombre: 'Ascenso', icono: 'incentivos'} } },
+                dias=${ {
+         {dia: 'Hoy', avisos: {
+           {tipo: 'lista', texto: 'Tus lentejas quedaron listas para entregar.', hora: '9:10', cuando: '2026-10-14T09:10',
+            enlace: '/prototipo/encastre/donante-donaciones-detalle', accion: 'Ver el detalle', clave: 'lentejas'} } },
+         {dia: 'Ayer, martes 13', avisos: {
+           {tipo: 'asignacion', texto: 'Asignamos tus lentejas a una necesidad de Comedor Barrio Ejemplo.', hora: '11:00',
+            cuando: '2026-10-13T11:00', enlace: '/prototipo/encastre/donante-donaciones-detalle', accion: 'Ver el detalle', clave: 'lentejas'},
+           {tipo: 'asignacion', texto: 'Asignamos tus cuadernos a Escuela Ejemplo 12.', hora: '10:15',
+            cuando: '2026-10-13T10:15', enlace: '/prototipo/encastre/donante-donaciones-detalle', accion: 'Ver el detalle', clave: 'cuadernos'} } },
+         {dia: 'Antes', avisos: {
+           {tipo: 'asignacion', texto: 'Asignamos tu leche en polvo a Merendero Ejemplo Sur.', hora: 'Lunes 12, 16:40',
+            cuando: '2026-10-12T16:40', enlace: '/prototipo/encastre/donante-donaciones-detalle', accion: 'Ver el detalle', clave: 'leche'},
+           {tipo: 'recepcion', texto: 'Merendero Ejemplo Sur recibió tu ropa de abrigo.', hora: 'Viernes 9, 17:20',
+            cuando: '2026-10-09T17:20', enlace: '/prototipo/encastre/donante-donaciones-detalle', accion: 'Ver el detalle', clave: 'ropa'},
+           {tipo: 'mision', texto: 'Cumpliste la misión Cinco donaciones.', hora: 'Viernes 9, 12:05',
+            cuando: '2026-10-09T12:05', enlace: '/prototipo/encastre/donante-incentivos', accion: 'Ver incentivos', clave: null},
+           {tipo: 'ascenso', texto: 'Subiste a Colaborador. La próxima categoría es Sostenedor.', hora: 'Viernes 9, 12:05',
+            cuando: '2026-10-09T12:05', enlace: '/prototipo/encastre/donante-incentivos', accion: 'Ver incentivos', clave: null},
+           {tipo: 'problema', texto: 'Tus útiles escolares no se pudieron entregar: la escuela estaba cerrada. Salen de nuevo el viernes 16.',
+            hora: 'Viernes 9, 11:30', cuando: '2026-10-09T11:30', enlace: '/prototipo/encastre/donante-donaciones-detalle',
+            accion: 'Ver el detalle', clave: 'utiles'},
+           {tipo: 'recepcion', texto: 'Comedor Barrio Ejemplo recibió tus fideos secos.', hora: 'Lunes 5, 13:00',
+            cuando: '2026-10-05T13:00', enlace: '/prototipo/encastre/donante-donaciones-detalle', accion: 'Ver el detalle', clave: 'fideos'} } } } }">
+
+    <section class="pieza don-cabeza" aria-labelledby="avisos-titulo">
+      <h2 id="avisos-titulo" class="don-titulo">Lo que pasó con tus piezas</h2>
+      <p class="don-cabeza-texto">Te avisamos cuando una donación cambia de parada, cuando llega,
+        cuando cumplís una misión y cuando subís de categoría.</p>
+    </section>
+
+    <section class="pieza pieza-ahora don-detalle-ahora don-aviso-ahora" aria-labelledby="ahora-titulo">
+      <p class="rotulo">Lo más nuevo</p>
+      <h2 id="ahora-titulo">El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo</h2>
+      <p class="don-detalle-ahora-texto">Viaje · <time datetime="2026-10-14T14:30">hoy, 14:30</time></p>
+      <div class="don-acciones">
+        <a href="/prototipo/encastre/donante-seguimiento"
+           th:href="@{/prototipo/encastre/donante-seguimiento}" role="button">Ver seguimiento</a>
+      </div>
+    </section>
+
+    <section th:each="d, vd : ${dias}" class="pieza don-dia" th:aria-labelledby="|dia-${vd.index}|">
+      <h2 class="don-subtitulo" th:id="|dia-${vd.index}|" th:text="${d.dia}">Hoy</h2>
+      <ul class="don-dia-lista">
+        <li th:each="a : ${d.avisos}" class="don-aviso" th:classappend="|don-aviso--${a.tipo}|">
+          <span class="don-aviso-signo" aria-hidden="true"><svg
+                th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${tipos[a.tipo].icono}, 20)}"></svg></span>
+          <div class="don-aviso-cuerpo">
+            <p class="don-aviso-tipo"><span th:text="${tipos[a.tipo].nombre}">Asignación</span> ·
+              <time th:datetime="${a.cuando}" th:text="${a.hora}">11:00</time></p>
+            <p class="don-aviso-texto" th:text="${a.texto}">Asignamos tus lentejas.</p>
+            <a class="enlace-fuerte" th:href="${a.clave == null} ? @{${a.enlace}} : @{${a.enlace}(donacion=${a.clave})}"
+               href="/prototipo/encastre/donante-donaciones-detalle"><span th:text="${a.accion}">Ver el
+              detalle</span><span class="solo-lectores" th:text="|: ${a.texto}|"></span></a>
+          </div>
+        </li>
+      </ul>
+    </section>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>

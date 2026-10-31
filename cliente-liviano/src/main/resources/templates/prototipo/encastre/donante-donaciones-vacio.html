@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: Mis donaciones sin ninguna donación (una cuenta nueva).
+       Arriba, la cabeza; después, lo de ahora (la pieza naranja): elegir una entidad y lo que le
+       falta, con la salida a Entidades. Al final, el tablero de viaje vacío: las cinco paradas y el
+       hueco de la entidad, con la pieza suelta antes de la primera, esperando; dice en texto cómo
+       viaja cada donación. Estilos: prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Mis donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Mis donaciones</h1>
+  <div class="don-tablero don-vacio"
+       th:with="etapas=${ {'En depósito', 'Asignada', 'Lista para entregar', 'En camino', 'Entregada'} },
+                detalles=${ {'La llevás vos', 'Elegimos su necesidad', 'La preparamos', 'Sale en un camión', 'Encastra en su entidad'} }">
+    <section class="pieza don-cabeza" aria-labelledby="vacio-titulo">
+      <h2 id="vacio-titulo" class="don-titulo">Todavía no armaste ninguna pieza</h2>
+      <p class="don-cabeza-texto">Acá vas a ver cada donación que hagas, parada por parada, hasta
+        que llegue a su entidad.</p>
+    </section>
+
+    <section class="pieza pieza-ahora don-detalle-ahora" aria-labelledby="ahora-titulo">
+      <p class="rotulo">Lo que te toca ahora</p>
+      <h2 id="ahora-titulo">Elegí una entidad y lo que le falta</h2>
+      <p class="don-detalle-ahora-texto">Cada entidad muestra sus necesidades con lo que ya
+        recibió. Elegí una, anotá tu donación y llevala al depósito.</p>
+      <div class="don-acciones">
+        <a href="/prototipo/encastre/donante-entidades"
+           th:href="@{/prototipo/encastre/donante-entidades}" role="button">Ver entidades</a>
+      </div>
+    </section>
+
+    <section class="pieza don-detalle-viaje" aria-labelledby="como-titulo">
+      <h2 id="como-titulo" class="don-subtitulo">Así viaja cada donación</h2>
+      <svg class="don-suelta" viewBox="10 10 90 90" aria-hidden="true" focusable="false"><use
+           href="#encastre-pieza"/></svg>
+      <ol class="don-ruta don-ruta--espera" aria-label="Así viaja cada donación">
+        <li th:each="etapa, vuelta : ${etapas}" class="don-parada don-parada--pendiente"
+            th:classappend="${vuelta.last} ? 'don-parada--destino'">
+          <span class="don-parada-marca" aria-hidden="true"><svg th:if="${vuelta.last}"
+                class="don-pieza" viewBox="10 10 90 90" focusable="false"><use
+                href="#encastre-pieza"/></svg></span>
+          <span class="don-parada-texto"><b th:text="${etapa}">En depósito</b><small
+                th:text="${detalles[vuelta.index]}">La llevás vos</small></span>
+        </li>
+      </ol>
+    </section>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>

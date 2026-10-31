@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<!--/* Prototipo Encastre, iteración 3, donante: Seguimiento (RF-09: el mapa de sus entregas activas,
+       con el camión, su posición y la última actualización). Arriba, la cabeza. Después, lo de
+       ahora (la pieza naranja): la donación que viaja, en qué camión y qué falta para que encastre,
+       con la salida a su detalle. El mapa es una pieza: las calles en crema, el recorrido del camión
+       como una vía (firme donde ya pasó, a trazos donde falta), las paradas numeradas, el camión
+       como la pieza naranja con su zona aproximada (la posición exacta solo la ve la
+       administración) y, al final, el hueco de la entidad. Al lado, la lista dice lo mismo en
+       texto. Todo sale de entregas (th:with): más entregas, más camiones y más paradas se dibujan
+       igual. Hoy es el miércoles 14 de octubre de 2026. Estilos: prototipo/donante.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Seguimiento - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="rotulo-menu">Seguimiento</h1>
+  <div class="don-tablero don-seguimiento"
+       th:with="entregas=${ {
+         {donacion: 'Lentejas secas', cantidad: '15 kg', clave: 'lentejas', camion: 'Camión 3',
+          actualizada: 'hoy, 16:20', tramo: 1, avance: 0.5,
+          paradas: {
+            {nombre: 'Depósito Central Ejemplo', detalle: 'Salió hoy a las 14:30', x: 70, y: 320},
+            {nombre: 'Merendero Ejemplo Sur', detalle: 'Dejó otra entrega a las 15:40', x: 290, y: 320},
+            {nombre: 'Hogar Ejemplo Norte', detalle: 'Deja otra entrega antes que la tuya', x: 290, y: 110},
+            {nombre: 'Comedor Barrio Ejemplo', detalle: 'Tu donación encastra acá esta tarde', x: 560, y: 110} } } } },
+                e=${entregas[0]}">
+
+    <section class="pieza don-cabeza" aria-labelledby="seguimiento-titulo">
+      <h2 id="seguimiento-titulo" class="don-titulo">Tus piezas en la calle</h2>
+      <p class="don-cabeza-texto"
+         th:text="${#lists.size(entregas) == 1 ? 'Ahora viaja 1 donación tuya.' : 'Ahora viajan ' + #lists.size(entregas) + ' donaciones tuyas.'}">Ahora
+        viaja 1 donación tuya.</p>
+    </section>
+
+    <section class="pieza pieza-ahora don-detalle-ahora don-seguimiento-ahora"
+             aria-labelledby="ahora-titulo">
+      <p class="rotulo">Ahora viaja</p>
+      <h2 id="ahora-titulo"
+          th:text="|Tus ${#strings.toLowerCase(e.donacion)} van en el ${e.camion}|">Tus lentejas
+        secas van en el Camión 3</h2>
+      <p class="don-detalle-ahora-texto">Llegan a Comedor Barrio Ejemplo esta tarde. Antes, el camión
+        pasa por Hogar Ejemplo Norte.</p>
+      <p class="don-actualizada">Última actualización: <b th:text="${e.actualizada}">hoy, 16:20</b></p>
+      <div class="don-acciones">
+        <a href="/prototipo/encastre/donante-donaciones-detalle"
+           th:href="@{/prototipo/encastre/donante-donaciones-detalle(donacion=${e.clave})}"
+           role="button">Ver el detalle</a>
+      </div>
+    </section>
+
+    <!--/* El mapa: decorativo; la lista de al lado dice lo mismo. Las calles son fijas; el
+           recorrido, las paradas, el camión y el hueco salen de entregas. */-->
+    <figure class="pieza don-mapa">
+      <svg class="don-mapa-dibujo" viewBox="0 0 640 400" aria-hidden="true" focusable="false">
+        <path class="don-mapa-calles"
+              d="M0 40H640M0 110H640M0 215H640M0 320H640M70 0V400M180 0V400M290 0V400M430 0V400M560 0V400"/>
+        <rect class="don-mapa-plaza" x="194" y="124" width="82" height="77" rx="10"/>
+        <g th:each="ent : ${entregas}"
+           th:with="t=${ent.tramo}, a=${ent.paradas[ent.tramo]}, b=${ent.paradas[ent.tramo + 1]},
+                    cx=${a.x + (b.x - a.x) * ent.avance}, cy=${a.y + (b.y - a.y) * ent.avance}">
+          <th:block th:each="p, v : ${ent.paradas}" th:unless="${v.last}"
+                    th:with="q=${ent.paradas[v.index + 1]}">
+            <line th:if="${v.index < t}" class="don-mapa-via" x1="0" y1="0" x2="0" y2="0"
+                  th:attr="x1=${p.x},y1=${p.y},x2=${q.x},y2=${q.y}"/>
+            <line th:if="${v.index > t}" class="don-mapa-via don-mapa-via--falta" x1="0" y1="0"
+                  x2="0" y2="0" th:attr="x1=${p.x},y1=${p.y},x2=${q.x},y2=${q.y}"/>
+          </th:block>
+          <line class="don-mapa-via" x1="0" y1="0" x2="0" y2="0"
+                th:attr="x1=${a.x},y1=${a.y},x2=${cx},y2=${cy}"/>
+          <line class="don-mapa-via don-mapa-via--falta" x1="0" y1="0" x2="0" y2="0"
+                th:attr="x1=${cx},y1=${cy},x2=${b.x},y2=${b.y}"/>
+          <th:block th:each="p, v : ${ent.paradas}">
+            <g th:unless="${v.last}" class="don-mapa-parada"
+               th:classappend="${v.index <= t} ? 'don-mapa-parada--hecha'"
+               th:attr="transform=|translate(${p.x} ${p.y})|">
+              <circle r="17"/>
+              <text y="6" text-anchor="middle" th:text="${v.count}">1</text>
+            </g>
+            <use th:if="${v.last}" class="don-mapa-hueco" href="#encastre-pieza" x="0" y="0"
+                 width="80" height="80"
+                 th:attr="x=${p.x - 38},y=${p.y - 46}"/>
+          </th:block>
+          <circle class="don-mapa-zona" r="54" cx="0" cy="0" th:attr="cx=${cx},cy=${cy}"/>
+          <g class="don-mapa-camion" th:attr="transform=|translate(${cx - 39} ${cy - 44})|">
+            <svg viewBox="10 10 90 90" width="80" height="80"><use href="#encastre-pieza"/></svg>
+            <g transform="translate(22 30)"><svg
+               th:replace="~{alternativas/encastre/fragmentos/icono :: icono('camiones', 26)}"></svg></g>
+          </g>
+        </g>
+      </svg>
+      <figcaption>El recorrido del camión, con la posición aproximada. La lista dice lo mismo.</figcaption>
+    </figure>
+
+    <section class="pieza don-paradas" aria-labelledby="paradas-titulo">
+      <h2 id="paradas-titulo" class="don-subtitulo">Por dónde pasa</h2>
+      <th:block th:each="ent : ${entregas}">
+        <p class="don-paradas-camion"><b th:text="${ent.camion}">Camión 3</b>, con tus <span
+           th:text="${#strings.toLowerCase(ent.donacion) + ' (' + ent.cantidad + ')'}">lentejas secas (15
+          kg)</span>. Va entre <span th:text="${ent.paradas[ent.tramo].nombre}">Merendero Ejemplo
+          Sur</span> y <span th:text="${ent.paradas[ent.tramo + 1].nombre}">Hogar Ejemplo Norte</span>
+          (posición aproximada, <span th:text="${ent.actualizada}">hoy, 16:20</span>).</p>
+        <ol class="don-paradas-lista">
+          <li th:each="p, v : ${ent.paradas}"
+              th:class="${v.index <= ent.tramo ? 'don-paradas-item don-paradas-item--hecha' : (v.last ? 'don-paradas-item don-paradas-item--destino' : 'don-paradas-item')}">
+            <span class="don-paradas-numero" aria-hidden="true"
+                  th:text="${v.last ? '' : v.count}">1</span>
+            <p><b th:text="${p.nombre}">Depósito Central Ejemplo</b><small
+               th:text="${p.detalle}">Salió hoy a las 14:30</small></p>
+          </li>
+        </ol>
+      </th:block>
+    </section>
+  </div>
+  <link rel="stylesheet" href="/css/alternativas/encastre/prototipo/donante.css"
+        th:href="@{/css/alternativas/encastre/prototipo/donante.css}">
+</th:block>
+</body>
+</html>
