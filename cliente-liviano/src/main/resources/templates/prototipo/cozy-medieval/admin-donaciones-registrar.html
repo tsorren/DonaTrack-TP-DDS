@@ -2,8 +2,14 @@
 <!--/* Prototipo, admin (iteración 3): registrar una donación (nivel 3, cuelga de Donaciones). El
        mismo libro del depósito, con un renglón nuevo: el formulario en la hoja, los campos en el
        orden en que se lee el remito (quién, qué, cuánto y cuándo vence) y la ayuda donde hay duda.
-       Envía a admin-donaciones (?que=<nombre>), que muestra el aviso. Con ?error=cantidad, el
-       error junto al campo. Estilos: prototipo/admin.css. */-->
+       Es un POST a admin-donaciones-registrada, que muestra el aviso. Los obligatorios llevan
+       required (el navegador frena el envío vacío); están escritos a mano porque el fragmento campo
+       no lo admite, con su mismo marcado y sus clases.
+       Fragmento de esta plantilla:
+       - formulario(conError): la pantalla entera; con conError, el estado de
+         admin-donaciones-registrar-error: lo que se escribió, el resumen enfocado arriba con un
+         enlace al campo y el error junto a su campo (la fecha de vencimiento ya pasó).
+       Estilos: prototipo/admin.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -11,24 +17,42 @@
 </head>
 <body>
 <th:block th:fragment="contenido">
+  <th:block th:replace="~{prototipo/cozy-medieval/admin-donaciones-registrar :: formulario(false)}"></th:block>
+</th:block>
+
+<th:block th:fragment="formulario(conError)">
   <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/admin.css"
         th:href="@{/css/alternativas/cozy-medieval/prototipo/admin.css}">
   <section class="admin-libro admin-libro--angosto" aria-labelledby="registrar-titulo">
+    <header class="admin-etiqueta">
+      <h1 id="registrar-titulo">Registrar donación</h1>
+      <p class="admin-rotulo">Un renglón nuevo en el libro del depósito</p>
+    </header>
     <a class="enlace-fuerte admin-volver" href="/prototipo/admin-donaciones"
        th:href="@{/prototipo/admin-donaciones}">Volver a donaciones</a>
-    <header class="admin-etiqueta">
-      <p class="admin-rotulo">Donaciones</p>
-      <h1 id="registrar-titulo">Registrar una donación</h1>
-    </header>
     <div class="admin-hoja">
+      <div th:if="${conError}" class="admin-errores" tabindex="-1" autofocus>
+        <h2>Revisá un dato antes de registrar</h2>
+        <ul role="list">
+          <li><a href="#vencimiento">La fecha de vencimiento ya pasó</a></li>
+        </ul>
+      </div>
       <p class="admin-bajada">Anotala como figura en el remito. Queda en el depósito hasta que se
         asigne.</p>
-      <form class="admin-formulario" action="/prototipo/admin-donaciones"
-            th:action="@{/prototipo/admin-donaciones}" method="get">
-        <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('donante', 'Quién la donó', 'text',
-             'El nombre de la persona o de la organización.', null, false)}"></div>
-        <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('que', 'Qué se donó', 'text',
-             'Por ejemplo, arroz, ropa de abrigo o cuadernos.', null, false)}"></div>
+      <form class="admin-formulario" action="/prototipo/admin-donaciones-registrada"
+            th:action="@{/prototipo/admin-donaciones-registrada}" method="post">
+        <div class="campo">
+          <label for="donante">Quién la donó</label>
+          <input id="donante" name="donante" type="text" required
+                 aria-describedby="donante-ayuda" th:value="${conError} ? 'Almacén Ejemplo'">
+          <small id="donante-ayuda">El nombre de la persona o de la organización.</small>
+        </div>
+        <div class="campo">
+          <label for="que">Qué se donó</label>
+          <input id="que" name="que" type="text" required
+                 aria-describedby="que-ayuda" th:value="${conError} ? 'Leche larga vida'">
+          <small id="que-ayuda">Por ejemplo, arroz, ropa de abrigo o cuadernos.</small>
+        </div>
         <div class="campo">
           <label for="rubro">Categoría</label>
           <select id="rubro" name="rubro">
@@ -37,15 +61,17 @@
             <option>Útiles escolares</option>
           </select>
         </div>
-        <div class="admin-formulario-par"
-             th:with="error=${param.error != null ? 'Falta la cantidad. Escribí cuántos kilos, paquetes o unidades llegaron.' : null}">
-          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('cantidad', 'Cantidad', 'number', null,
-               ${error}, false)}"></div>
+        <div class="admin-formulario-par">
+          <div class="campo">
+            <label for="cantidad">Cantidad</label>
+            <input id="cantidad" name="cantidad" type="number" min="1" required
+                   th:value="${conError} ? '24'">
+          </div>
           <div class="campo">
             <label for="unidad">Unidad</label>
             <select id="unidad" name="unidad">
               <option>kg</option>
-              <option>unidades</option>
+              <option th:selected="${conError}">unidades</option>
               <option>paquetes</option>
               <option>latas</option>
               <option>bolsas</option>
@@ -53,8 +79,14 @@
             </select>
           </div>
         </div>
-        <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('vencimiento', 'Vence el', 'date',
-             'Dejalo vacío si no vence, como la ropa o los útiles.', null, false)}"></div>
+        <div class="campo">
+          <label for="vencimiento">Vence el</label>
+          <input id="vencimiento" name="vencimiento" type="date" aria-describedby="vencimiento-ayuda"
+                 th:value="${conError} ? '2026-10-10'" th:aria-invalid="${conError} ? 'true'">
+          <small id="vencimiento-ayuda" th:classappend="${conError} ? 'campo-error'"
+                 th:text="${conError} ? 'Esa fecha ya pasó: el 10 de octubre. Revisala en el remito: lo vencido no se reparte.' : 'Dejalo vacío si no vence, como la ropa o los útiles.'">Dejalo
+            vacío si no vence, como la ropa o los útiles.</small>
+        </div>
         <div class="admin-formulario-acciones">
           <button type="submit">Registrar donación</button>
           <a href="/prototipo/admin-donaciones" th:href="@{/prototipo/admin-donaciones}"

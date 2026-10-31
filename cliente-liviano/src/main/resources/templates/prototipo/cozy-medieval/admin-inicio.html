@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <!--/* Prototipo, admin (iteración 3): la mesa de trabajo. Sin audacia (estructura-cozy-medieval.md):
-       tres objetos sobrios sobre la mesa. La nota del día, con el saludo y cuántas decisiones
-       esperan; la bandeja de cuero con su etiqueta, "Lo que espera tu decisión", con un legajo por lista
-       (entidades, donaciones por vencer y asignaciones), cada uno con su pestaña de latón (lo que
-       te espera), la cantidad en texto y el enlace a su lista; y el libro de cuentas con el estado
-       general en asientos, sin gráficos. Datos de ejemplo, coherentes con las otras pantallas del
+       tres objetos sobrios sobre la mesa. La nota del día, con el título, el saludo y cuántas
+       decisiones esperan; la bandeja de cuero con su etiqueta, "Lo que espera tu decisión", con un
+       legajo por lista (entidades, donaciones por vencer y asignaciones), cada uno con su pestaña
+       de latón (lo que te espera), la cantidad en texto y el enlace a su lista; y el libro de
+       cuentas con el estado general en asientos, sin gráficos. El legajo de las entidades lleva la
+       imagen del admin: el mapa chico de la región, con el depósito y las entidades activas en
+       tinta y los pueblos que piden sumarse en lápiz, con su lista al lado. Los lugares son los de
+       los mapas de admin-asignaciones. Datos de ejemplo, coherentes con las otras pantallas del
        admin. Estilos: prototipo/admin.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
@@ -15,13 +18,13 @@
 <th:block th:fragment="contenido">
   <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/admin.css"
         th:href="@{/css/alternativas/cozy-medieval/prototipo/admin.css}">
-  <h1 class="solo-lectores">Inicio</h1>
   <div class="admin-mesa">
-    <section class="mesa-nota admin-nota" aria-labelledby="hola-titulo">
+    <div class="mesa-nota admin-nota">
+      <h1>Tu mesa de trabajo</h1>
       <p class="admin-rotulo"><time datetime="2026-10-15">Jueves 15 de octubre de 2026</time></p>
-      <h2 id="hola-titulo">Hola, Leo</h2>
-      <p>Hoy te esperan 9 decisiones. Las donaciones que vencen no pueden esperar mucho.</p>
-    </section>
+      <p><b>Hola, Leo.</b> Hoy te esperan 5 decisiones. La leche en polvo vence en 2 días: su
+        propuesta va primero.</p>
+    </div>
 
     <!--/* La bandeja: un legajo por lista que espera. La pestaña dice de qué cajón sale; la
            cantidad va en texto, en el título del legajo, y el enlace lleva a su lista. */-->
@@ -31,24 +34,64 @@
         <li class="admin-legajo">
           <p class="admin-legajo-pestana">Entidades</p>
           <h3 class="admin-legajo-cuenta">3 entidades piden sumarse</h3>
-          <p>La más antigua llegó el 9 de octubre. Una tiene la documentación incompleta.</p>
+          <p>La más antigua llegó el 9 de octubre. A una le falta la constancia de domicilio.</p>
+          <!--/* La región: el dibujo no se lee; la lista de abajo dice lo mismo. */-->
+          <figure class="admin-region">
+            <div class="viaje-mapa admin-mapa">
+              <svg viewBox="0 0 640 360" aria-hidden="true" focusable="false">
+                <g class="admin-activas">
+                  <circle cx="330" cy="120" r="7"/><circle cx="420" cy="300" r="7"/>
+                  <circle cx="545" cy="140" r="7"/><circle cx="190" cy="120" r="7"/>
+                  <circle cx="160" cy="310" r="7"/><circle cx="480" cy="210" r="7"/>
+                  <circle cx="590" cy="250" r="7"/><circle cx="560" cy="60" r="7"/>
+                  <circle cx="400" cy="50" r="7"/><circle cx="250" cy="300" r="7"/>
+                  <circle cx="360" cy="250" r="7"/><circle cx="520" cy="320" r="7"/>
+                </g>
+                <g class="viaje-parada viaje-parada--hecho" transform="translate(100 230)">
+                  <path class="viaje-lugar" d="M-58 -14h30v22h-30zM-58 -14l15 -11 15 11M-49 8v-10h12v10M-43 -25v-6"/>
+                  <circle class="viaje-signo" r="9"/>
+                  <text class="admin-mapa-nombre" x="-40" y="44">Depósito</text>
+                </g>
+                <g class="admin-lugar-lapiz" transform="translate(250 60)">
+                  <circle r="16"/>
+                  <text class="admin-mapa-nombre admin-mapa-nombre--fin" x="-26" y="10">Hogar</text>
+                </g>
+                <g class="admin-lugar-lapiz" transform="translate(300 215)">
+                  <circle r="16"/>
+                  <text class="admin-mapa-nombre admin-mapa-nombre--fin" x="-20" y="-22">Biblioteca</text>
+                </g>
+                <g class="admin-lugar-lapiz" transform="translate(50 140)">
+                  <circle r="16"/>
+                  <text class="admin-mapa-nombre" x="-30" y="44">Comedor Oeste</text>
+                </g>
+              </svg>
+            </div>
+            <figcaption>
+              <p>En tinta, el depósito y las 12 entidades activas. En lápiz, las que piden sumarse:</p>
+              <ul role="list" class="admin-lista-lapiz">
+                <li>Hogar Ejemplo Norte, al norte, a 3,9 km del depósito.</li>
+                <li>Biblioteca Popular Ejemplo, en el centro, a 3,4 km.</li>
+                <li>Comedor Ejemplo Oeste, al oeste, a 1,8 km.</li>
+              </ul>
+            </figcaption>
+          </figure>
           <a href="/prototipo/admin-entidades" th:href="@{/prototipo/admin-entidades}"
              role="button" class="outline">Revisar entidades</a>
         </li>
         <li class="admin-legajo">
           <p class="admin-legajo-pestana">Donaciones</p>
-          <h3 class="admin-legajo-cuenta">4 donaciones vencen esta semana</h3>
+          <h3 class="admin-legajo-cuenta">4 donaciones vencen en los próximos 7 días</h3>
           <p class="admin-vence"><svg
              th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('alerta', 18)}"></svg><span>La
-             primera, Leche en polvo, vence en 2 días.</span></p>
-          <a href="/prototipo/admin-donaciones?vence=semana"
-             th:href="@{/prototipo/admin-donaciones(vence='semana')}" role="button"
+             primera, Leche en polvo, vence en 2 días y espera tu decisión.</span></p>
+          <a href="/prototipo/admin-donaciones?vence=pronto"
+             th:href="@{/prototipo/admin-donaciones(vence='pronto')}" role="button"
              class="outline">Ver las que vencen</a>
         </li>
         <li class="admin-legajo">
           <p class="admin-legajo-pestana">Asignar donaciones</p>
           <h3 class="admin-legajo-cuenta">2 asignaciones propuestas</h3>
-          <p>Arroz para Comedor Barrio Ejemplo, y útiles escolares para Escuela Ejemplo 12.</p>
+          <p>Leche en polvo para Merendero Ejemplo Sur, y arroz para Comedor Barrio Ejemplo.</p>
           <a href="/prototipo/admin-asignaciones" th:href="@{/prototipo/admin-asignaciones}"
              role="button" class="outline">Revisar propuestas</a>
         </li>
@@ -63,8 +106,8 @@
       <div class="mesa-libro-hoja">
         <h3>Donaciones</h3>
         <dl class="mesa-asientos">
-          <div><dt>en el depósito</dt><dd>5</dd></div>
-          <div><dt>asignadas</dt><dd>2</dd></div>
+          <div><dt>en el depósito</dt><dd>3</dd></div>
+          <div><dt>asignadas</dt><dd>4</dd></div>
           <div><dt>en camino</dt><dd>1</dd></div>
           <div><dt>entregadas en octubre</dt><dd>42</dd></div>
         </dl>
