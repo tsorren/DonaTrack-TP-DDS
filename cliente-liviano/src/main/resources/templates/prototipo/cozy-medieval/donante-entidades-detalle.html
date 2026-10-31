@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<!--/* Prototipo, iteración 3, grupo juego: una entidad, Merendero Ejemplo Sur, vista por el donante.
+       La tira dice quiénes son, con la vuelta a los pueblos. Lo principal es lo que necesitan: cada
+       necesidad con su categoría, para qué es, cuánto recibieron, cuánto falta y "Donar para esta
+       necesidad" (formulario get a esta misma pantalla, que con ?necesidad= muestra arriba el aviso
+       de que quedó anotada, con el camino a las cartas). Al costado, el plano del pueblo grabado a
+       pluma, visto desde arriba (las manzanas en tinta tenue, la plaza y el merendero), con el sello
+       de latón (◉) de la donación de Ana que ya llegó, y su huella en este pueblo, con el enlace a esa
+       donación. El plano no se lee: el pie y la huella lo dicen en texto. Datos de ejemplo, los mismos
+       de la ficha 2 del nomenclador. Estilos: juego.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Merendero Ejemplo Sur - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/juego.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/juego.css}">
+  <div class="juego juego--detalle"
+       th:with="necesidad=${param.necesidad != null ? param.necesidad[0] : ''},
+                anotada=${necesidad == 'ropa' ? 'ropa de abrigo'
+                        : (necesidad == 'leche' ? 'leche en polvo'
+                        : (necesidad == 'cuadernos' ? 'cuadernos' : ''))}">
+
+    <section th:if="${anotada != ''}" class="juego-aviso" role="status"
+             aria-labelledby="aviso-titulo">
+      <h2 id="aviso-titulo">Anotamos tu donación</h2>
+      <p th:text="|Vas a donar ${anotada} para Merendero Ejemplo Sur. Llevá tu donación al depósito cuando puedas: cuando la registremos, te llega una carta.|">Vas
+        a donar ropa de abrigo para Merendero Ejemplo Sur.</p>
+      <a href="/prototipo/donante-cartas" th:href="@{/prototipo/donante-cartas}"
+         class="enlace-fuerte">Ver tus cartas</a>
+    </section>
+
+    <section class="juego-tira juego-tira--pueblo" aria-labelledby="pueblo-h1">
+      <a class="juego-volver enlace-fuerte" href="/prototipo/donante-entidades"
+         th:href="@{/prototipo/donante-entidades}"><svg
+         th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('flecha', 20)}"></svg>Volver
+        a los pueblos</a>
+      <div class="juego-tira-cartela">
+        <h1 id="pueblo-h1">Merendero Ejemplo Sur</h1>
+        <p class="juego-tira-frase">Un merendero de barrio en la zona sur. Da la merienda a 60
+          chicos de lunes a viernes y apoyo escolar los sábados.</p>
+      </div>
+      <dl class="juego-datos">
+        <div><dt>Recibe donaciones desde</dt><dd>marzo de 2024</dd></div>
+        <div><dt>Necesidades abiertas</dt><dd>3</dd></div>
+        <div><dt>Donaciones recibidas este año</dt><dd>41</dd></div>
+      </dl>
+    </section>
+
+    <section id="necesidades" class="juego-pedidos" aria-labelledby="necesidades-titulo">
+      <h2 id="necesidades-titulo" class="juego-etiqueta">Lo que necesitan</h2>
+      <ul class="juego-pedidos-lista" role="list">
+        <li class="juego-pedido">
+          <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-vestimenta', 28)}"></svg>
+          <div class="juego-pedido-texto">
+            <h3>Ropa de abrigo</h3>
+            <p class="juego-pedido-motivo">Ropa y abrigo. Camperas y buzos para el invierno,
+              talles 8 a 14.</p>
+            <progress value="80" max="120" aria-hidden="true">80 de 120</progress>
+            <p class="juego-pedido-cuenta">Recibieron 80 de 120 prendas. <b>Faltan 40.</b></p>
+          </div>
+          <form method="get" action="/prototipo/donante-entidades-detalle"
+                th:action="@{/prototipo/donante-entidades-detalle}">
+            <input type="hidden" name="necesidad" value="ropa">
+            <button type="submit">Donar para esta necesidad<span class="solo-lectores">: ropa de
+              abrigo</span></button>
+          </form>
+        </li>
+        <li class="juego-pedido">
+          <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 28)}"></svg>
+          <div class="juego-pedido-texto">
+            <h3>Leche en polvo</h3>
+            <p class="juego-pedido-motivo">Alimentos. Para la merienda de todos los días.</p>
+            <progress value="12" max="30" aria-hidden="true">12 de 30</progress>
+            <p class="juego-pedido-cuenta">Recibieron 12 de 30 kg. <b>Faltan 18 kg.</b></p>
+          </div>
+          <form method="get" action="/prototipo/donante-entidades-detalle"
+                th:action="@{/prototipo/donante-entidades-detalle}">
+            <input type="hidden" name="necesidad" value="leche">
+            <button type="submit">Donar para esta necesidad<span class="solo-lectores">: leche en
+              polvo</span></button>
+          </form>
+        </li>
+        <li class="juego-pedido">
+          <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-escolares', 28)}"></svg>
+          <div class="juego-pedido-texto">
+            <h3>Cuadernos</h3>
+            <p class="juego-pedido-motivo">Útiles escolares. Para el apoyo escolar de los
+              sábados.</p>
+            <progress value="10" max="50" aria-hidden="true">10 de 50</progress>
+            <p class="juego-pedido-cuenta">Recibieron 10 de 50 cuadernos. <b>Faltan 40.</b></p>
+          </div>
+          <form method="get" action="/prototipo/donante-entidades-detalle"
+                th:action="@{/prototipo/donante-entidades-detalle}">
+            <input type="hidden" name="necesidad" value="cuadernos">
+            <button type="submit">Donar para esta necesidad<span
+                    class="solo-lectores">: cuadernos</span></button>
+          </form>
+        </li>
+      </ul>
+    </section>
+
+    <!--/* El plano del pueblo, como los planos de lleno y vacío: en cada manzana, lo edificado en
+           tinta tenue, el patio en papel y las medianeras a intervalos desparejos (un trazo a rayas
+           a lo largo del borde); las calles son el papel. La plaza, punteada, con sus árboles, y el
+           merendero a pluma, con el sello de latón. */-->
+    <figure class="juego-plano">
+      <svg viewBox="0 0 400 260" aria-hidden="true" focusable="false">
+        <path class="juego-plano-edificado"
+              d="M10 10h120v105H10zM150 10h110v105H150zM280 10h110v105H280zM10 135h120v115H10zM280 135h110v115H280z"/>
+        <path class="juego-plano-patio"
+              d="M28 28h84v69H28zM168 28h74v69h-74zM298 28h74v69h-74zM28 153h84v79H28zM298 153h74v79h-74z"/>
+        <path class="juego-plano-edificado" d="M60 52h20v14H60zM330 58h24v12h-24zM40 188h16v22H40zM322 178h14v26h-14z"/>
+        <path class="juego-plano-medianeras"
+              d="M19 19h102v87H19zM159 19h92v87h-92zM289 19h92v87h-92zM19 144h102v97H19zM289 144h92v97h-92z"/>
+        <g class="juego-plano-plaza">
+          <rect x="150" y="135" width="110" height="115" rx="2"/>
+          <path d="M150 135 260 250M260 135 150 250"/>
+          <circle cx="205" cy="192" r="13"/>
+          <circle cx="167" cy="160" r="8"/>
+          <circle cx="243" cy="158" r="6"/>
+          <circle cx="170" cy="226" r="6"/>
+          <circle cx="241" cy="228" r="8"/>
+          <circle cx="205" cy="149" r="5"/>
+          <circle cx="205" cy="237" r="5"/>
+        </g>
+        <path class="juego-plano-merendero" d="M172 82V46l33-20 33 20v36ZM197 82V64h16v18M172 46h66"/>
+        <circle class="juego-mapa-sello" cx="246" cy="30" r="10"/>
+      </svg>
+      <figcaption>El plano de Merendero Ejemplo Sur. El sello de latón marca que una donación
+        tuya ya llegó.</figcaption>
+    </figure>
+
+    <section class="juego-huella" aria-labelledby="huella-titulo">
+      <h2 id="huella-titulo">Tu huella en este pueblo</h2>
+      <p><span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[2]})}">Entregada</span>
+        Ropa de abrigo, 12 prendas. Llegó el 28 de septiembre.</p>
+      <a href="/prototipo/donante-donaciones-detalle"
+         th:href="@{/prototipo/donante-donaciones-detalle}" class="enlace-fuerte">Ver la
+        donación</a>
+    </section>
+
+    <aside th:replace="~{prototipo/cozy-medieval/donante-cartas :: sobre}"></aside>
+  </div>
+</th:block>
+</body>
+</html>

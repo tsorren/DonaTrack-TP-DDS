@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<!--/* Prototipo, iteración 3, grupo juego: las entidades que el donante puede ayudar (RF-06) como los
+       pueblos de un mapa con su nomenclador al lado. Arriba, la tira con el título y el filtro
+       (formulario get real: nombre y categoría). Después, el mapa grabado de la región: cada pueblo
+       con su número y, sellado de latón (◉), el que ya recibió una donación de Ana; sin caminos de
+       tinta, que son solo de las entregas. Al lado, la misma información en texto: el nomenclador,
+       una ficha por pueblo con su número, quiénes son, lo que Ana ya donó ahí, sus necesidades
+       abiertas (cuánto recibieron y cuánto falta) y "Donar". El filtro funciona en la maqueta: la
+       plantilla esconde los pueblos y las necesidades que no coinciden; "Higiene" no tiene
+       necesidades abiertas y muestra el estado vacío (?categoria=higiene). Todas las fichas llevan al
+       detalle de Merendero Ejemplo Sur, el único dibujado. Datos de ejemplo. Estilos: juego.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Entidades - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/juego.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/juego.css}">
+  <div class="juego juego--entidades"
+       th:with="cat=${param.categoria != null ? param.categoria[0] : ''},
+                nombre=${param.nombre != null ? #strings.trim(param.nombre[0]) : ''},
+                comedor=${(cat == '' or cat == 'alimentos')
+                          and #strings.containsIgnoreCase('Comedor Barrio Ejemplo', nombre)},
+                merendero=${(cat == '' or cat == 'alimentos' or cat == 'ropa' or cat == 'escolares')
+                            and #strings.containsIgnoreCase('Merendero Ejemplo Sur', nombre)},
+                escuela=${(cat == '' or cat == 'escolares' or cat == 'ropa')
+                          and #strings.containsIgnoreCase('Escuela Ejemplo 12', nombre)},
+                hogar=${(cat == '' or cat == 'ropa' or cat == 'alimentos')
+                        and #strings.containsIgnoreCase('Hogar Ejemplo Norte', nombre)},
+                cuantos=${(comedor ? 1 : 0) + (merendero ? 1 : 0) + (escuela ? 1 : 0) + (hogar ? 1 : 0)}">
+
+    <section class="juego-tira juego-tira--filtro" aria-labelledby="pueblos-h1">
+      <div class="juego-tira-cartela">
+        <h1 id="pueblos-h1">Los pueblos que podés ayudar</h1>
+        <p class="juego-tira-frase">Cada pueblo es una entidad: un comedor, un merendero, una
+          escuela o un hogar. Elegí una necesidad abierta y doná.</p>
+      </div>
+      <form class="juego-filtro" method="get" action="/prototipo/donante-entidades"
+            th:action="@{/prototipo/donante-entidades}" aria-label="Filtrar pueblos">
+        <div class="campo">
+          <label for="nombre">Buscar por nombre</label>
+          <input id="nombre" name="nombre" type="search" th:value="${nombre}">
+        </div>
+        <div class="campo">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" name="categoria">
+            <option value="" th:selected="${cat == ''}">Todas</option>
+            <option value="alimentos" th:selected="${cat == 'alimentos'}">Alimentos</option>
+            <option value="ropa" th:selected="${cat == 'ropa'}">Ropa y abrigo</option>
+            <option value="escolares" th:selected="${cat == 'escolares'}">Útiles escolares</option>
+            <option value="higiene" th:selected="${cat == 'higiene'}">Higiene</option>
+          </select>
+        </div>
+        <p class="juego-filtro-acciones">
+          <button type="submit">Filtrar</button>
+          <a th:if="${cat != '' or nombre != ''}" href="/prototipo/donante-entidades"
+             th:href="@{/prototipo/donante-entidades}" class="enlace-fuerte">Quitar el filtro</a>
+        </p>
+      </form>
+    </section>
+
+    <!--/* El mapa de la región: dibujo sin lectura (aria-hidden); la leyenda y el nomenclador dicen
+           lo mismo. Las coordenadas son las del terreno de mesa-mapa-terreno.svg (640 × 360). */-->
+    <figure class="juego-region">
+      <div class="viaje-mapa juego-mapa">
+        <svg viewBox="0 0 640 360" aria-hidden="true" focusable="false">
+          <g th:if="${comedor}" class="juego-pueblo" transform="translate(110 200) scale(1.35)">
+            <path class="viaje-lugar" d="M-16 14V-2L0-16 16-2v16ZM-5 14V4h10v10"/>
+            <text class="viaje-numero" y="-26">1</text>
+          </g>
+          <g th:if="${merendero}" class="juego-pueblo" transform="translate(300 236) scale(1.35)">
+            <circle class="juego-mapa-sello" cx="27" cy="-10" r="9"/>
+            <path class="viaje-lugar" d="M-16 14V-2L0-16 16-2v16ZM-5 14V4h10v10"/>
+            <text class="viaje-numero" y="-26">2</text>
+          </g>
+          <g th:if="${escuela}" class="juego-pueblo" transform="translate(390 140) scale(1.35)">
+            <path class="viaje-lugar" d="M-16 14V-2L0-16 16-2v16ZM-5 14V4h10v10"/>
+            <text class="viaje-numero" y="-26">3</text>
+          </g>
+          <g th:if="${hogar}" class="juego-pueblo" transform="translate(548 176) scale(1.35)">
+            <path class="viaje-lugar" d="M-16 14V-2L0-16 16-2v16ZM-5 14V4h10v10"/>
+            <text class="viaje-numero" y="-26">4</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>
+        <p class="juego-rotulo">El mapa de la región</p>
+        <ul class="juego-leyenda" role="list">
+          <li><svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('inicio', 20)}"></svg>
+            Un pueblo; su número es el de su ficha</li>
+          <li class="juego-leyenda-sellado">Pueblo sellado: ya llegó una donación tuya</li>
+        </ul>
+      </figcaption>
+    </figure>
+
+    <section class="juego-nomenclador" aria-labelledby="nomenclador-titulo">
+      <h2 id="nomenclador-titulo" class="juego-etiqueta"
+          th:text="${cuantos == 1} ? '1 pueblo con necesidades abiertas' : |${cuantos} pueblos con necesidades abiertas|">4
+        pueblos con necesidades abiertas</h2>
+      <th:block th:if="${cuantos == 0}"><section
+          th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'Ningún pueblo necesita eso por ahora',
+               'Probá con otra categoría o con otro nombre. Las necesidades cambian seguido.',
+               'Ver todos los pueblos', '/prototipo/donante-entidades')}"></section></th:block>
+
+      <ol th:unless="${cuantos == 0}" class="juego-fichas" role="list">
+        <li th:if="${comedor}">
+          <article class="juego-ficha" aria-labelledby="ficha-comedor">
+            <span class="juego-ficha-numero" aria-hidden="true">1</span>
+            <h3 id="ficha-comedor"><a href="/prototipo/donante-entidades-detalle"
+                th:href="@{/prototipo/donante-entidades-detalle}">Comedor Barrio Ejemplo</a></h3>
+            <p class="juego-ficha-tipo">Comedor comunitario en la zona oeste</p>
+            <p class="juego-ficha-huella"><span
+               th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[1]})}">En camino</span>
+              Tus lentejas secas van en camino.</p>
+            <p class="juego-rotulo">Necesita</p>
+            <ul class="juego-necesidades" role="list">
+              <li th:if="${cat == '' or cat == 'alimentos'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 22)}"></svg>
+                <b>Lentejas secas</b>
+                <progress value="90" max="150" aria-hidden="true">90 de 150</progress>
+                <span>Faltan 60 kg de 150</span>
+              </li>
+              <li th:if="${cat == '' or cat == 'alimentos'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 22)}"></svg>
+                <b>Aceite</b>
+                <progress value="20" max="40" aria-hidden="true">20 de 40</progress>
+                <span>Faltan 20 litros de 40</span>
+              </li>
+            </ul>
+            <a href="/prototipo/donante-entidades-detalle#necesidades"
+               th:href="@{/prototipo/donante-entidades-detalle#necesidades}"
+               role="button" class="fantasma">Donar<span class="solo-lectores"> a Comedor Barrio Ejemplo</span></a>
+          </article>
+        </li>
+        <li th:if="${merendero}">
+          <article class="juego-ficha" aria-labelledby="ficha-merendero">
+            <span class="juego-ficha-numero juego-ficha-numero--sellado" aria-hidden="true">2</span>
+            <h3 id="ficha-merendero"><a href="/prototipo/donante-entidades-detalle"
+                th:href="@{/prototipo/donante-entidades-detalle}">Merendero Ejemplo Sur</a></h3>
+            <p class="juego-ficha-tipo">Merendero en la zona sur</p>
+            <p class="juego-ficha-huella"><span
+               th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[2]})}">Entregada</span>
+              Tu ropa de abrigo ya llegó.</p>
+            <p class="juego-rotulo">Necesita</p>
+            <ul class="juego-necesidades" role="list">
+              <li th:if="${cat == '' or cat == 'ropa'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-vestimenta', 22)}"></svg>
+                <b>Ropa de abrigo</b>
+                <progress value="80" max="120" aria-hidden="true">80 de 120</progress>
+                <span>Faltan 40 prendas de 120</span>
+              </li>
+              <li th:if="${cat == '' or cat == 'alimentos'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 22)}"></svg>
+                <b>Leche en polvo</b>
+                <progress value="12" max="30" aria-hidden="true">12 de 30</progress>
+                <span>Faltan 18 kg de 30</span>
+              </li>
+              <li th:if="${cat == '' or cat == 'escolares'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-escolares', 22)}"></svg>
+                <b>Cuadernos</b>
+                <progress value="10" max="50" aria-hidden="true">10 de 50</progress>
+                <span>Faltan 40 cuadernos de 50</span>
+              </li>
+            </ul>
+            <a href="/prototipo/donante-entidades-detalle#necesidades"
+               th:href="@{/prototipo/donante-entidades-detalle#necesidades}"
+               role="button" class="fantasma">Donar<span class="solo-lectores"> a Merendero Ejemplo Sur</span></a>
+          </article>
+        </li>
+        <li th:if="${escuela}">
+          <article class="juego-ficha" aria-labelledby="ficha-escuela">
+            <span class="juego-ficha-numero" aria-hidden="true">3</span>
+            <h3 id="ficha-escuela"><a href="/prototipo/donante-entidades-detalle"
+                th:href="@{/prototipo/donante-entidades-detalle}">Escuela Ejemplo 12</a></h3>
+            <p class="juego-ficha-tipo">Escuela primaria en la zona centro</p>
+            <p class="juego-rotulo">Necesita</p>
+            <ul class="juego-necesidades" role="list">
+              <li th:if="${cat == '' or cat == 'escolares'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-escolares', 22)}"></svg>
+                <b>Útiles escolares</b>
+                <progress value="35" max="100" aria-hidden="true">35 de 100</progress>
+                <span>Faltan 65 kits de 100</span>
+              </li>
+              <li th:if="${cat == '' or cat == 'ropa'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-vestimenta', 22)}"></svg>
+                <b>Guardapolvos</b>
+                <progress value="15" max="40" aria-hidden="true">15 de 40</progress>
+                <span>Faltan 25 de 40</span>
+              </li>
+            </ul>
+            <a href="/prototipo/donante-entidades-detalle#necesidades"
+               th:href="@{/prototipo/donante-entidades-detalle#necesidades}"
+               role="button" class="fantasma">Donar<span class="solo-lectores"> a Escuela Ejemplo 12</span></a>
+          </article>
+        </li>
+        <li th:if="${hogar}">
+          <article class="juego-ficha" aria-labelledby="ficha-hogar">
+            <span class="juego-ficha-numero" aria-hidden="true">4</span>
+            <h3 id="ficha-hogar"><a href="/prototipo/donante-entidades-detalle"
+                th:href="@{/prototipo/donante-entidades-detalle}">Hogar Ejemplo Norte</a></h3>
+            <p class="juego-ficha-tipo">Hogar de día para personas mayores en la zona norte</p>
+            <p class="juego-rotulo">Necesita</p>
+            <ul class="juego-necesidades" role="list">
+              <li th:if="${cat == '' or cat == 'ropa'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-vestimenta', 22)}"></svg>
+                <b>Frazadas</b>
+                <progress value="10" max="60" aria-hidden="true">10 de 60</progress>
+                <span>Faltan 50 de 60</span>
+              </li>
+              <li th:if="${cat == '' or cat == 'alimentos'}" class="juego-necesidad">
+                <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('cat-alimentos', 22)}"></svg>
+                <b>Fideos secos</b>
+                <progress value="40" max="80" aria-hidden="true">40 de 80</progress>
+                <span>Faltan 40 kg de 80</span>
+              </li>
+            </ul>
+            <a href="/prototipo/donante-entidades-detalle#necesidades"
+               th:href="@{/prototipo/donante-entidades-detalle#necesidades}"
+               role="button" class="fantasma">Donar<span class="solo-lectores"> a Hogar Ejemplo Norte</span></a>
+          </article>
+        </li>
+      </ol>
+    </section>
+
+    <aside th:replace="~{prototipo/cozy-medieval/donante-cartas :: sobre}"></aside>
+  </div>
+</th:block>
+</body>
+</html>

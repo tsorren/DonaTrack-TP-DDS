@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!--/* Prototipo, iteración 3, grupo juego: las cartas del camino sin ninguna carta (estado vacío de
+       donante-cartas). La bandeja de nogal, con su etiqueta, guarda la tierra sin explorar: qué
+       significa y la acción posible, ver las entidades para hacer la primera donación. Estilos:
+       juego.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Cartas del camino - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/juego.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/juego.css}">
+  <div class="juego juego--cartas">
+    <section class="juego-tira" aria-labelledby="cartas-h1">
+      <div class="juego-tira-cartela">
+        <h1 id="cartas-h1">Cartas del camino</h1>
+        <p class="juego-tira-frase">Todavía no te llegó ninguna carta.</p>
+      </div>
+    </section>
+
+    <section class="juego-bandeja juego-bandeja--vacia" aria-labelledby="sin-abrir-titulo">
+      <h2 id="sin-abrir-titulo" class="juego-etiqueta">Sin abrir <span>(0)</span></h2>
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'Tu bandeja está vacía',
+               'Cuando una donación tuya avance (se asigne, salga a entregar o llegue a su pueblo) o cumplas una misión, te escribimos una carta acá.',
+               'Ver entidades', '/prototipo/donante-entidades')}"></section>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

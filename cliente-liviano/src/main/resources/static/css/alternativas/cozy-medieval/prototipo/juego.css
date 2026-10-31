@@ -1,0 +1,1451 @@
+/*
+ * Prototipo de la iteración 3, grupo juego: la gamificación ligera del donante (el cuaderno de
+ * sellos), los pueblos que puede ayudar (el mapa de la región con su nomenclador y la ficha de un
+ * pueblo) y sus cartas (la bandeja de sobres y el legajo de las leídas). Todo apoyado sobre la mesa
+ * del cartógrafo de layout-privado; se carga después de app.css. Solo tokens de uso y los quiebres
+ * de tokens.css, con mobile first; las consultas de contenedor miden en rem fijos, como en app.css.
+ *
+ * Los signos son los de la directiva: ● cumplida, ◆ ahora (latón), ○ lo que falta, ◉ el pueblo
+ * sellado. El latón lleva siempre trazo oscuro; el rojo lacre no se usa. Cada objeto tiene un solo
+ * recurso material: la costura del cuaderno, el fieltro del estuche, la solapa del sobre, la puntita
+ * doblada de la carta leída, la bandeja de nogal, el doble filete del mapa y del plano.
+ */
+
+/* La mesa de esta parte: una columna en el celular; cada pantalla arma su grilla más abajo. */
+.juego {
+  --medida-juego-solapa: 2.25rem;
+  --medida-juego-sello: 4.5rem;
+  --medida-juego-medalla: 3.75rem;
+  --medida-juego-numero: 2.25rem;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-5);
+}
+
+.juego > * {
+  min-width: 0;
+  margin: 0;
+  color: var(--color-texto);
+  box-shadow: var(--sombra-objeto);
+}
+
+.juego :is(h1, h2, h3, p, figure, figcaption, dl, dd, ul, ol, li, section, article, form) {
+  margin: 0;
+}
+
+.juego :is(ul, ol) {
+  padding: 0;
+}
+
+.juego li {
+  list-style: none;
+}
+
+.juego :is(h1, h2, h3) {
+  color: var(--color-titulo);
+}
+
+.juego article {
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* El rótulo: lo que en un mapa nombra una parte, en cursiva y sin mayúsculas. */
+.juego-rotulo {
+  color: var(--color-texto-suave);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* La etiqueta de papel en su portaetiquetas de latón, como la de los cajones: nombra lo que va
+   apoyado en la madera (la bandeja, el legajo, el nomenclador). */
+.juego-etiqueta {
+  justify-self: start;
+  width: fit-content;
+  padding: var(--espacio-1) var(--espacio-3);
+  background-color: var(--color-mesa-etiqueta);
+  border: var(--borde-marco) solid var(--color-laton-brillante);
+  border-radius: 2px;
+  box-shadow: 0 0 0 var(--borde-ancho) var(--color-laton-texto), var(--sombra-objeto-bajo);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-texto);
+  font-weight: 700;
+}
+
+.juego-etiqueta span {
+  font-weight: 400;
+}
+
+/* La tira: el título de cada pantalla en una tira de pergamino con su filete interior. */
+.juego-tira {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-5);
+  padding: var(--espacio-5) var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+}
+
+.juego-tira::before {
+  content: "";
+  position: absolute;
+  inset: var(--espacio-2);
+  border: var(--borde-ancho) solid var(--color-filete-tenue);
+  pointer-events: none;
+}
+
+.juego-tira h1 {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.juego-tira-frase {
+  max-width: 46ch;
+  margin-block-start: var(--espacio-3);
+  font-size: var(--tamano-texto-grande);
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.juego-tira-frase b {
+  color: var(--color-titulo);
+  font-style: normal;
+}
+
+/* ─── Misiones e insignias ─────────────────────────────────────────────────────────────────── */
+
+/* La escala del viaje: como la barra de escala de un mapa, una casilla por misión con el filete de
+   cada rango más largo. ● cumplida en tinta; la de ahora, de latón rayado hasta donde llegó, con la
+   banderita "Estás acá"; ○ las que faltan, en blanco. Debajo, el nombre de cada rango y su cuenta. */
+.juego-escala {
+  display: grid;
+  gap: var(--espacio-3);
+}
+
+.juego .juego-escala-rangos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-block-start: 3rem;
+}
+
+.juego-escala-tramos {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  height: 1.125rem;
+  border-block: var(--borde-marco) solid var(--color-titulo);
+}
+
+/* El filete de cada rango sobresale arriba y abajo de la barra. */
+.juego-escala-tramos::before,
+.juego-escala-rango:last-child .juego-escala-tramos::after {
+  content: "";
+  position: absolute;
+  inset-block: -0.5rem;
+  border-inline-start: var(--borde-marco) solid var(--color-titulo);
+}
+
+.juego-escala-tramos::before {
+  left: 0;
+}
+
+.juego-escala-rango:last-child .juego-escala-tramos::after {
+  right: 0;
+}
+
+.juego-tramo {
+  position: relative;
+  background-color: var(--color-fondo);
+}
+
+.juego-tramo + .juego-tramo {
+  border-inline-start: var(--borde-ancho) solid var(--color-titulo);
+}
+
+.juego-tramo--cumplida {
+  background-color: var(--color-titulo);
+}
+
+.juego-tramo progress {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  appearance: none;
+  background-color: var(--color-fondo);
+  border: 0;
+  border-radius: 0;
+  vertical-align: top;
+}
+
+.juego-tramo progress::-webkit-progress-bar {
+  background-color: var(--color-fondo);
+}
+
+.juego-tramo progress::-webkit-progress-value {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-signo-sello) 0 4px,
+    var(--color-signo-trazo) 4px 5.5px
+  );
+}
+
+.juego-tramo progress::-moz-progress-bar {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-signo-sello) 0 4px,
+    var(--color-signo-trazo) 4px 5.5px
+  );
+}
+
+/* La banderita de latón, atada con un hilo de tinta a la misión en curso. */
+.juego-aca {
+  position: absolute;
+  bottom: calc(100% + 1rem);
+  left: 50%;
+  translate: -50% 0;
+  padding: 0 var(--espacio-2);
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  border-radius: 3px;
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.juego-aca::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  height: calc(1rem + var(--borde-marco));
+  border-inline-start: var(--borde-marco) solid var(--color-titulo);
+}
+
+.juego-escala-nombre {
+  display: grid;
+  justify-items: center;
+  padding: var(--espacio-3) var(--espacio-1) 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.juego-escala-nombre b {
+  color: var(--color-texto);
+}
+
+.juego-escala-rango--actual .juego-escala-nombre b {
+  color: var(--color-titulo);
+}
+
+.juego-escala-nombre span {
+  font-style: italic;
+}
+
+/* El cuaderno abierto: tapas de cuero y dos hojas cosidas por el medio con hilo de latón. En el
+   celular, una hoja debajo de la otra y la costura entre las dos. */
+.juego-cuaderno {
+  display: grid;
+  padding: var(--espacio-2);
+  background-color: var(--color-mesa-cuero);
+  border-radius: var(--radio-chico);
+}
+
+.juego-hoja {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-3);
+  padding: var(--espacio-5) var(--espacio-4);
+  background-color: var(--color-fondo);
+}
+
+.juego-hoja + .juego-hoja {
+  border-block-start: var(--borde-marco) dashed var(--color-laton-texto);
+}
+
+.juego-mision-titulo {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.juego-mision-condicion {
+  margin-block-start: calc(-1 * var(--espacio-2));
+  font-size: var(--tamano-texto-grande);
+  font-style: italic;
+}
+
+/* La hoja de sellos: una casilla por paso, separadas por reglas finas. El sello puesto es de latón,
+   con el grabado del cuaderno y apenas torcido, como estampado a mano; el que falta, el hueco
+   punteado con la condición escrita debajo. */
+.juego-sellos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-block: var(--espacio-2);
+  border-block: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.juego-sello {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  padding: var(--espacio-4) var(--espacio-1) var(--espacio-3);
+  text-align: center;
+}
+
+.juego-sello + .juego-sello {
+  border-inline-start: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.juego-sello-marca {
+  position: relative;
+  width: var(--medida-juego-sello);
+  aspect-ratio: 1;
+  margin-block-end: var(--espacio-2);
+}
+
+.juego-sello-marca::before,
+.juego-sello-marca::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  mask: url("../../../../img/cozy-medieval/sello-mision-hueco.svg") center / contain no-repeat;
+}
+
+.juego-sello-marca::after {
+  background-color: var(--color-sello-hueco);
+}
+
+.juego-sello--puesto .juego-sello-marca::before {
+  background-color: var(--color-laton-brillante);
+  mask-image: url("../../../../img/cozy-medieval/sello-mision-silueta.svg");
+}
+
+.juego-sello--puesto .juego-sello-marca::after {
+  background-color: var(--color-laton-texto);
+  mask-image: url("../../../../img/cozy-medieval/sello-mision.svg");
+}
+
+.juego-sello--puesto:nth-child(odd) .juego-sello-marca {
+  rotate: -9deg;
+}
+
+.juego-sello--puesto:nth-child(even) .juego-sello-marca {
+  rotate: 7deg;
+}
+
+.juego-sello b {
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+}
+
+.juego-sello small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.juego-sello:not(.juego-sello--puesto) small {
+  color: var(--color-titulo);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.juego-cuenta,
+.juego-premio {
+  font-size: var(--tamano-chico);
+}
+
+.juego-cuenta b {
+  color: var(--color-titulo);
+}
+
+.juego-premio {
+  font-style: italic;
+}
+
+.juego-premio b {
+  color: var(--color-titulo);
+  font-style: normal;
+}
+
+.juego-accion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+  margin-block-start: var(--espacio-2);
+}
+
+.juego-accion span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* El índice de la otra hoja: los rangos con sus misiones, limpios, una regla entre misión y misión
+   y el signo de cada una, con su texto. */
+.juego-indice-rango {
+  display: grid;
+  gap: var(--espacio-1);
+  padding-block-start: var(--espacio-3);
+}
+
+.juego-indice-rango h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--espacio-3);
+  padding-block-end: var(--espacio-1);
+  border-block-end: var(--borde-regla-doble) double var(--color-filete);
+  font-size: var(--tamano-titulo-3);
+}
+
+.juego-indice-rango h3 small,
+.juego-indice-nota {
+  color: var(--color-texto-suave);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.juego-mision {
+  display: grid;
+  grid-template-columns: var(--medida-signo) minmax(0, 1fr);
+  column-gap: var(--espacio-2);
+  padding-block: var(--espacio-2);
+  border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.juego-mision > * {
+  grid-column: 2;
+}
+
+.juego-mision b {
+  color: var(--color-titulo);
+}
+
+.juego-mision span {
+  font-size: var(--tamano-chico);
+}
+
+.juego-mision em {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+}
+
+.juego-mision--curso em {
+  color: var(--color-titulo);
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ○ por venir, ● cumplida, ◆ en curso: los signos del recorrido. */
+.juego-mision::before {
+  content: "";
+  grid-row: 1;
+  grid-column: 1;
+  align-self: center;
+  justify-self: center;
+  box-sizing: border-box;
+  width: var(--medida-signo-punto);
+  height: var(--medida-signo-punto);
+  background-color: var(--color-fondo);
+  border: var(--borde-ruta) solid var(--color-signo-tinta);
+  border-radius: var(--radio-sello);
+}
+
+.juego-mision--cumplida::before {
+  background-color: var(--color-titulo);
+  border-color: var(--color-titulo);
+}
+
+.juego-mision--curso::before {
+  width: var(--medida-alfiler);
+  height: var(--medida-alfiler);
+  background-color: var(--color-signo-sello);
+  border-color: var(--color-signo-trazo);
+  border-radius: 0;
+  rotate: 45deg;
+}
+
+/* El estuche de las insignias: una caja de nogal forrada en fieltro verde. La ganada es una
+   medalla de latón grabada, colgada de su cinta; las que faltan, el hueco en el fieltro. El texto
+   va en papel claro sobre el fieltro (4,9:1 el suave). */
+.juego-estuche {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-5) var(--espacio-4);
+  background-color: var(--color-marca);
+  border: 0.625rem solid var(--color-mesa-cajon);
+  border-radius: var(--radio-chico);
+  box-shadow: inset 0 2px 10px var(--color-mesa-sombra), var(--sombra-objeto);
+  color: var(--color-texto-sobre-accion);
+}
+
+.juego .juego-estuche h2 {
+  color: var(--color-texto-sobre-accion);
+  font-size: var(--tamano-titulo-2);
+}
+
+.juego-estuche-bajada {
+  color: var(--color-destacado-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.juego-medallas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-4) var(--espacio-2);
+  margin-block-start: var(--espacio-3);
+}
+
+.juego-medalla {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  text-align: center;
+}
+
+.juego-medalla-disco {
+  position: relative;
+  width: var(--medida-juego-medalla);
+  aspect-ratio: 1;
+  margin-block: var(--espacio-5) var(--espacio-2);
+  border: var(--borde-marco) dotted var(--color-destacado-texto-suave);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 2px 5px var(--color-mesa-sombra);
+}
+
+.juego-medalla--ganada .juego-medalla-disco {
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  box-shadow: 0 4px 6px var(--color-mesa-sombra);
+}
+
+.juego-medalla--ganada .juego-medalla-disco::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-laton-texto);
+  mask: url("../../../../img/cozy-medieval/prototipo-juego-medalla.svg") center / contain no-repeat;
+}
+
+/* La cinta: papel y nogal, con el corte en V, colgando sobre el canto. */
+.juego-medalla--ganada .juego-medalla-disco::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 50%;
+  width: 1.375rem;
+  height: var(--espacio-5);
+  translate: -50% 0;
+  background: linear-gradient(
+    to right,
+    var(--color-fondo) 0 30%,
+    var(--color-mesa-cajon) 30% 70%,
+    var(--color-fondo) 70%
+  );
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 72%, 0 100%);
+}
+
+.juego-medalla b {
+  color: var(--color-destacado-texto-suave);
+  font-size: var(--tamano-chico);
+  line-height: 1.25;
+}
+
+.juego-medalla--ganada b {
+  color: var(--color-texto-sobre-accion);
+}
+
+.juego-medalla small {
+  color: var(--color-destacado-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  line-height: 1.25;
+}
+
+/* ─── El sobre y las cartas ────────────────────────────────────────────────────────────────── */
+
+/* El sobre cerrado, visto de atrás: la solapa en V con su sombra y el botón de tinta en la punta
+   (el de la carta de la cabecera). Lo usan el enlace a las cartas y las cartas sin abrir. */
+.juego :is(.juego-sobre, .juego-carta--nueva) {
+  padding-block-start: calc(var(--medida-juego-solapa) + var(--espacio-4));
+  background:
+    radial-gradient(
+      circle at 50% var(--medida-juego-solapa),
+      var(--color-fondo) 0 0.3rem,
+      var(--color-signo-tinta) 0.3rem 0.45rem,
+      transparent 0.5rem
+    ),
+    linear-gradient(
+        to top right,
+        transparent calc(50% - 0.75px),
+        var(--color-filete) calc(50% - 0.75px) calc(50% + 0.75px),
+        var(--color-trama) calc(50% + 0.75px)
+      )
+      left top / 50% var(--medida-juego-solapa) no-repeat,
+    linear-gradient(
+        to top left,
+        transparent calc(50% - 0.75px),
+        var(--color-filete) calc(50% - 0.75px) calc(50% + 0.75px),
+        var(--color-trama) calc(50% + 0.75px)
+      )
+      right top / 50% var(--medida-juego-solapa) no-repeat,
+    var(--color-fondo);
+  border-radius: 2px;
+}
+
+.juego-sobre {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  padding-inline: var(--espacio-4);
+  padding-block-end: var(--espacio-4);
+  rotate: -0.6deg;
+}
+
+.juego .juego-sobre h2 {
+  font-size: var(--tamano-titulo-3);
+}
+
+/* La bandeja: un cajón de nogal abierto sobre la mesa, con su etiqueta; adentro, los sobres. */
+.juego-bandeja,
+.juego-legajo,
+.juego-nomenclador {
+  display: grid;
+  align-content: start;
+  gap: var(--espacio-4);
+  box-shadow: none;
+}
+
+.juego-bandeja {
+  padding: var(--espacio-4) var(--espacio-3) var(--espacio-5);
+  background-color: var(--color-mesa-cajon);
+  border: var(--espacio-2) solid var(--color-mesa-junta);
+  border-radius: var(--radio-chico);
+  box-shadow:
+    inset 0 8px 12px -4px var(--color-mesa-hueco),
+    var(--sombra-objeto);
+}
+
+.juego-cartas {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.juego-carta {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-2);
+}
+
+.juego .juego-carta {
+  padding: var(--espacio-4);
+  background-color: var(--color-fondo);
+  box-shadow: var(--sombra-objeto);
+}
+
+.juego-cartas > li:nth-child(odd) .juego-carta {
+  rotate: -0.5deg;
+}
+
+.juego-cartas > li:nth-child(even) .juego-carta {
+  rotate: 0.4deg;
+}
+
+/* La carta leída, desplegada: la puntita de arriba doblada (se ve la madera donde falta). */
+.juego .juego-carta:not(.juego-carta--nueva) {
+  background:
+    linear-gradient(45deg, var(--color-superficie) 50%, transparent 50%) right top / 1.5rem
+      1.5rem no-repeat,
+    linear-gradient(225deg, transparent 1.06rem, var(--color-fondo) 1.06rem);
+}
+
+.juego .juego-carta--nueva {
+  padding-block-start: calc(var(--medida-juego-solapa) + var(--espacio-4));
+}
+
+.juego-carta-cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-1) var(--espacio-3);
+  padding-inline-end: var(--espacio-4);
+}
+
+.juego-carta-estado {
+  order: 1;
+  color: var(--color-texto-suave);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+}
+
+/* "Sin abrir": el rótulo en un recuadro de tinta, que se lee aunque no se vea el color. */
+.juego-carta--nueva .juego-carta-estado {
+  padding: 0 var(--espacio-2);
+  border: var(--borde-ancho) solid var(--color-titulo);
+  border-radius: 2px;
+  color: var(--color-titulo);
+  font-style: normal;
+  font-weight: 700;
+}
+
+.juego-carta h3 {
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-texto-grande);
+  font-weight: 400;
+  line-height: 1.35;
+}
+
+.juego-carta--nueva h3 {
+  font-weight: 700;
+}
+
+/* El título es el enlace, y toda la carta se puede tocar. */
+.juego-carta h3 a {
+  display: block;
+  min-height: var(--medida-toque-minimo);
+  padding-block: var(--espacio-1);
+  color: var(--color-titulo);
+  text-decoration-color: var(--color-filete);
+}
+
+.juego-carta h3 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.juego-carta h3 a:hover {
+  text-decoration-color: currentcolor;
+}
+
+.juego-carta-pie {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--espacio-3);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+}
+
+/* La carta de una misión lleva el sello del cuaderno en lugar del signo de una entrega. */
+.juego-carta-mision {
+  display: inline-grid;
+  grid-template-columns: var(--medida-signo) auto;
+  align-items: center;
+  gap: var(--espacio-1);
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+  font-weight: 700;
+}
+
+.juego-carta-mision::before {
+  content: "";
+  justify-self: center;
+  width: 1.375rem;
+  aspect-ratio: 1;
+  background-color: var(--color-laton-texto);
+  mask: url("../../../../img/cozy-medieval/sello-mision.svg") center / contain no-repeat;
+}
+
+.juego-bandeja--vacia .estado-vacio {
+  box-shadow: var(--sombra-objeto);
+}
+
+/* ─── Los pueblos ──────────────────────────────────────────────────────────────────────────── */
+
+/* El filtro: dos renglones del registro y el botón; desde 600 px, en una fila. */
+.juego-filtro {
+  display: grid;
+  align-items: end;
+  gap: var(--espacio-3);
+}
+
+.juego-filtro .campo {
+  margin: 0;
+}
+
+.juego-filtro .campo > :is(input, select) {
+  width: 100%;
+  min-height: 3.125rem;
+  margin: 0;
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-filete-tenue);
+  border-block-end: var(--borde-marco) solid var(--color-borde-control);
+  border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+  box-shadow: var(--sombra-hundido);
+}
+
+.juego-filtro .campo > :is(input, select):is(:hover, :focus) {
+  border-block-end-color: var(--color-marca);
+}
+
+.juego-filtro-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-4);
+}
+
+.juego-filtro button {
+  width: auto;
+  margin: 0;
+}
+
+/* El mapa de la región: el de Tu viaje (app.css), con los pueblos numerados y sin caminos. */
+.juego-region {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3);
+  background-color: var(--color-fondo-pagina);
+  border-radius: 2px;
+}
+
+.juego-region figcaption {
+  display: grid;
+  gap: var(--espacio-1);
+  padding-inline: var(--espacio-1);
+  color: var(--color-texto);
+  font-size: var(--tamano-chico);
+}
+
+.juego-leyenda {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.juego-leyenda li {
+  display: grid;
+  grid-template-columns: var(--medida-signo) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.juego-leyenda .icono {
+  justify-self: center;
+  color: var(--color-signo-tinta);
+}
+
+.juego-leyenda-sellado::before {
+  content: "";
+  justify-self: center;
+  box-sizing: border-box;
+  width: var(--medida-signo-alto);
+  height: var(--medida-signo-alto);
+  background-color: var(--color-signo-trazo);
+  border: var(--borde-ruta) solid var(--color-signo-trazo);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 0 0 3px var(--color-signo-sello);
+}
+
+.juego-mapa-sello {
+  fill: var(--color-signo-sello);
+  stroke: var(--color-signo-trazo);
+  stroke-width: 5;
+}
+
+/* El nomenclador: una ficha de archivo por pueblo, con su número del mapa en un círculo de tinta
+   (de latón, si ya está sellado) y sus necesidades, cada una con cuánto falta. */
+.juego-fichas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
+  align-items: start;
+  gap: var(--espacio-5) var(--espacio-4);
+}
+
+.juego .juego-ficha {
+  display: grid;
+  grid-template-columns: var(--medida-juego-numero) minmax(0, 1fr);
+  gap: var(--espacio-2) var(--espacio-3);
+  padding: var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-block-start: var(--borde-regla-doble) double var(--color-filete);
+  border-radius: 2px;
+  box-shadow: var(--sombra-objeto);
+  container-type: inline-size;
+}
+
+.juego-ficha > * {
+  grid-column: 2;
+}
+
+.juego-ficha-numero {
+  display: grid;
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  place-items: center;
+  width: var(--medida-juego-numero);
+  aspect-ratio: 1;
+  border: var(--borde-marco) solid var(--color-titulo);
+  border-radius: var(--radio-sello);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
+  font-variant-numeric: lining-nums;
+}
+
+.juego-ficha-numero--sellado {
+  background-color: var(--color-laton-brillante);
+  border-color: var(--color-laton-texto);
+}
+
+.juego-ficha h3 {
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.15;
+}
+
+.juego-ficha h3 a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-titulo);
+  text-decoration-color: var(--color-filete);
+}
+
+.juego-ficha-tipo {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.juego-ficha-huella {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--espacio-2);
+  font-size: var(--tamano-chico);
+}
+
+.juego-ficha .juego-rotulo {
+  margin-block-start: var(--espacio-2);
+}
+
+.juego-ficha [role="button"] {
+  justify-self: start;
+  margin-block-start: var(--espacio-2);
+}
+
+.juego-necesidades {
+  display: grid;
+}
+
+/* Cada necesidad: el ícono, el nombre, la barra de lo recibido (latón, lo confirmado) y lo que
+   falta. En una ficha angosta, en tres renglones; con lugar, el nombre y lo que falta a la par. */
+.juego-necesidad {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  grid-template-areas:
+    "icono nombre"
+    "icono barra"
+    "icono cuenta";
+  align-items: center;
+  gap: 2px var(--espacio-2);
+  padding-block: var(--espacio-2);
+  border-block-start: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.juego-necesidad .icono {
+  grid-area: icono;
+  align-self: start;
+  color: var(--color-texto-suave);
+}
+
+.juego-necesidad b {
+  grid-area: nombre;
+  color: var(--color-titulo);
+}
+
+.juego-necesidad progress {
+  grid-area: barra;
+}
+
+.juego-necesidad span {
+  grid-area: cuenta;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+@container (min-width: 24rem) {
+  .juego-necesidad {
+    grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icono nombre cuenta"
+      "icono barra barra";
+  }
+
+  .juego-necesidad span {
+    text-align: end;
+  }
+}
+
+/* La barra de una necesidad: lo recibido en latón, dentro de un trazo de tinta. */
+:is(.juego-necesidad, .juego-pedido) progress {
+  display: block;
+  width: 100%;
+  height: 0.625rem;
+  margin: var(--espacio-1) 0;
+  overflow: hidden;
+  appearance: none;
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-signo-tinta);
+  border-radius: var(--radio-chico);
+}
+
+:is(.juego-necesidad, .juego-pedido) progress::-webkit-progress-bar {
+  background-color: var(--color-fondo-pagina);
+}
+
+:is(.juego-necesidad, .juego-pedido) progress::-webkit-progress-value {
+  background-color: var(--color-laton);
+}
+
+:is(.juego-necesidad, .juego-pedido) progress::-moz-progress-bar {
+  background-color: var(--color-laton);
+}
+
+/* ─── La ficha de un pueblo ────────────────────────────────────────────────────────────────── */
+
+.juego-volver {
+  gap: var(--espacio-2);
+  justify-self: start;
+  margin-block: calc(-1 * var(--espacio-2)) calc(-1 * var(--espacio-3));
+}
+
+.juego-volver .icono {
+  rotate: 180deg;
+}
+
+.juego-datos {
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.juego-datos div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--espacio-3);
+  padding-block: var(--espacio-2);
+  border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.juego-datos dt {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-weight: 400;
+}
+
+.juego-datos dd {
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+/* Lo que necesitan: la hoja del pedido, limpia, una necesidad por renglón con su botón. */
+.juego-pedidos {
+  display: grid;
+  gap: var(--espacio-2);
+  padding: var(--espacio-5) var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  container: pedidos / inline-size;
+  scroll-margin-block-start: var(--espacio-4);
+}
+
+.juego-pedido {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: var(--espacio-3);
+  padding-block: var(--espacio-4);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.juego-pedido > .icono {
+  color: var(--color-texto-suave);
+}
+
+.juego-pedido-texto {
+  display: grid;
+  gap: var(--espacio-1);
+}
+
+.juego-pedido h3 {
+  font-size: var(--tamano-titulo-3);
+}
+
+.juego-pedido-motivo {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.juego-pedido-cuenta {
+  font-size: var(--tamano-chico);
+}
+
+.juego-pedido-cuenta b {
+  color: var(--color-titulo);
+}
+
+.juego-pedido form {
+  grid-column: 2;
+}
+
+.juego-pedido button {
+  width: auto;
+  margin: 0;
+}
+
+@container pedidos (min-width: 38rem) {
+  .juego-pedido {
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--espacio-4);
+  }
+
+  .juego-pedido > .icono {
+    align-self: start;
+  }
+
+  .juego-pedido form {
+    grid-column: 3;
+  }
+}
+
+/* El plano del pueblo: lámina de pergamino con doble filete; las manzanas, de lleno y vacío (lo
+   edificado en tinta tenue, el patio y las medianeras en papel; las calles son el papel de abajo),
+   la plaza punteada con sus árboles y el merendero a pluma, con su sello. */
+.juego-plano {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3);
+  background-color: var(--color-fondo-pagina);
+  border-radius: 2px;
+}
+
+.juego-plano svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-regla-doble) double var(--color-titulo);
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.juego-plano-edificado {
+  fill: var(--color-filete);
+}
+
+.juego-plano-patio {
+  fill: var(--color-fondo-pagina);
+}
+
+.juego-plano-medianeras {
+  stroke: var(--color-fondo-pagina);
+  stroke-dasharray: 1.5 24 1.5 16 1.5 30 1.5 19;
+  stroke-width: 18;
+}
+
+.juego-plano-plaza :is(rect, circle) {
+  stroke: var(--color-filete);
+  stroke-width: 1.5;
+}
+
+.juego-plano-plaza circle {
+  fill: var(--color-filete-tenue);
+}
+
+.juego-plano-plaza path {
+  stroke: var(--color-filete-tenue);
+  stroke-width: 2;
+}
+
+.juego-plano-plaza rect {
+  stroke-dasharray: 2 5;
+  stroke-linecap: round;
+}
+
+.juego-plano-merendero {
+  fill: var(--color-fondo);
+  stroke: var(--color-titulo);
+  stroke-width: 2.5;
+}
+
+.juego-plano figcaption {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.juego-huella {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-2);
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-3);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  rotate: 0.4deg;
+}
+
+.juego .juego-huella h2 {
+  font-size: var(--tamano-titulo-3);
+}
+
+.juego-huella p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--espacio-2);
+  font-size: var(--tamano-chico);
+}
+
+/* El aviso de que la donación quedó anotada: la esquela del éxito, en verde con su texto. */
+.juego-aviso {
+  display: grid;
+  justify-items: start;
+  gap: var(--espacio-1);
+  padding: var(--espacio-4) var(--espacio-5);
+  background-color: var(--color-exito-fondo);
+  border-inline-start: var(--borde-acento) solid var(--color-exito-texto);
+  border-radius: 2px;
+}
+
+.juego .juego-aviso h2 {
+  color: var(--color-exito-texto);
+  font-size: var(--tamano-titulo-3);
+}
+
+.juego-aviso .enlace-fuerte {
+  color: var(--color-exito-texto);
+}
+
+/* ─── Las grillas de cada pantalla ─────────────────────────────────────────────────────────── */
+
+@media (min-width: 37.5em) {
+  .juego {
+    --medida-juego-solapa: 3rem;
+    --medida-juego-sello: 5.25rem;
+    --medida-juego-medalla: 4.25rem;
+  }
+
+  .juego-tira {
+    padding: var(--espacio-6);
+  }
+
+  .juego-escala-nombre {
+    font-size: var(--tamano-chico);
+  }
+
+  .juego-escala-nombre span {
+    font-size: var(--tamano-mini);
+  }
+
+  .juego-filtro {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .juego-filtro-acciones {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 53.75em) {
+  .juego {
+    gap: var(--espacio-6);
+  }
+
+  .juego-cuaderno {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .juego-hoja {
+    padding: var(--espacio-6) var(--espacio-5);
+  }
+
+  .juego-hoja + .juego-hoja {
+    border-block-start: 0;
+    border-inline-start: var(--borde-marco) dashed var(--color-laton-texto);
+  }
+
+  .juego-hoja:first-child {
+    box-shadow: inset -14px 0 12px -14px var(--color-mesa-sombra);
+  }
+
+  .juego-hoja:last-child {
+    box-shadow: inset 14px 0 12px -14px var(--color-mesa-sombra);
+  }
+
+  .juego--incentivos {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      "tira tira"
+      "cuaderno cuaderno"
+      "estuche sobre";
+  }
+
+  .juego--incentivos > .juego-tira {
+    grid-area: tira;
+  }
+
+  .juego--incentivos > .juego-cuaderno {
+    grid-area: cuaderno;
+  }
+
+  .juego--incentivos > .juego-estuche {
+    grid-area: estuche;
+  }
+
+  .juego--incentivos > .juego-sobre {
+    grid-area: sobre;
+  }
+
+  .juego--cartas {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  }
+
+  .juego--cartas > .juego-tira {
+    grid-column: 1 / -1;
+  }
+
+  /* El mapa, grande a la izquierda, queda a la vista mientras se recorre el nomenclador. */
+  .juego--entidades {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      "tira tira"
+      "mapa fichas"
+      "mapa sobre";
+  }
+
+  .juego--entidades > .juego-region {
+    position: sticky;
+    top: var(--espacio-4);
+  }
+
+  .juego--entidades > .juego-tira {
+    grid-area: tira;
+  }
+
+  .juego--entidades > .juego-region {
+    grid-area: mapa;
+  }
+
+  .juego--entidades > .juego-nomenclador {
+    grid-area: fichas;
+  }
+
+  .juego--entidades > .juego-sobre {
+    grid-area: sobre;
+  }
+
+  .juego--detalle {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas:
+      "aviso aviso"
+      "tira plano"
+      "pedidos huella"
+      "pedidos sobre"
+      "pedidos .";
+    grid-template-rows: auto auto auto auto 1fr;
+  }
+
+  .juego--detalle > .juego-aviso {
+    grid-area: aviso;
+  }
+
+  .juego--detalle > .juego-tira {
+    grid-area: tira;
+    align-self: stretch;
+  }
+
+  .juego--detalle > .juego-plano {
+    grid-area: plano;
+  }
+
+  .juego--detalle > .juego-pedidos {
+    grid-area: pedidos;
+  }
+
+  .juego--detalle > .juego-huella {
+    grid-area: huella;
+  }
+
+  .juego--detalle > .juego-sobre {
+    grid-area: sobre;
+  }
+}
+
+@media (min-width: 68.75em) {
+  .juego-rango {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: var(--espacio-6);
+  }
+
+  .juego-rango .juego-escala {
+    padding-inline-start: var(--espacio-6);
+    border-inline-start: var(--borde-regla-doble) double var(--color-filete);
+  }
+
+  .juego--incentivos {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas:
+      "tira tira tira tira tira tira tira tira tira tira tira tira"
+      "cuaderno cuaderno cuaderno cuaderno cuaderno cuaderno cuaderno cuaderno estuche estuche estuche estuche"
+      "cuaderno cuaderno cuaderno cuaderno cuaderno cuaderno cuaderno cuaderno sobre sobre sobre sobre";
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .juego-tira--filtro {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: end;
+    gap: var(--espacio-6);
+  }
+}
+
+/* Con colores forzados (alto contraste), los dibujos pintados toman el color del texto. */
+@media (forced-colors: active) {
+  .juego-sello-marca::before,
+  .juego-sello-marca::after,
+  .juego-medalla-disco::after,
+  .juego-carta-mision::before,
+  .juego-leyenda-sellado::before,
+  .juego-mision::before {
+    forced-color-adjust: none;
+    background-color: var(--color-forzado-texto);
+  }
+
+  .juego-sello--puesto .juego-sello-marca::before {
+    background-color: var(--color-forzado-fondo);
+  }
+
+  .juego > *,
+  .juego .juego-carta,
+  .juego .juego-ficha {
+    border: var(--borde-ancho) solid;
+  }
+}
