@@ -1,0 +1,12 @@
+<!--/* Recorrido de una donación: la ruta punteada del prototipo v2, con nodos numerados. Patrón:
+       Material Steppers. Cada paso dice su estado en texto; el actual lleva aria-current="step".
+       titulo: nombre accesible de la lista. pasos: List<PasoRecorrido>. */-->
+<ol th:fragment="recorrido(titulo, pasos)" class="recorrido" th:aria-label="${titulo}">
+  <li th:each="paso, vuelta : ${pasos}" class="recorrido-paso"
+      th:classappend="|recorrido-paso--${paso.avance.tono}|"
+      th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
+    <span class="recorrido-nodo" aria-hidden="true" th:text="${vuelta.count}">1</span>
+    <span class="recorrido-texto"><span th:text="${paso.nombre}">Paso</span><small
+          th:text="${paso.detalle}">Detalle</small></span>
+  </li>
+</ol>

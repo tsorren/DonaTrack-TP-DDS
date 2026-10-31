@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cliente-liviano",
+      "runtimeExecutable": "mvn",
+      "runtimeArgs": [
+        "-pl",
+        "cliente-liviano",
+        "spring-boot:run",
+        "-Dspring-boot.run.profiles=maqueta"
+      ],
+      "port": 8090
+    }
+  ]
+}

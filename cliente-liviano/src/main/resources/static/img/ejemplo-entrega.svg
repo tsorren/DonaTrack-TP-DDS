@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" role="img">
+  <!-- Ilustración sintética para datos de ejemplo: cajas junto a una puerta. -->
+  <rect width="640" height="400" fill="#e9ecea"/>
+  <rect x="380" y="60" width="180" height="300" fill="#c9d1cd"/>
+  <rect x="400" y="80" width="140" height="280" fill="#8a9a93"/>
+  <circle cx="520" cy="230" r="8" fill="#e9ecea"/>
+  <rect y="360" width="640" height="40" fill="#b8c2bd"/>
+  <rect x="90" y="250" width="150" height="110" fill="#b98b52"/>
+  <rect x="240" y="270" width="120" height="90" fill="#a37744"/>
+  <rect x="120" y="170" width="120" height="80" fill="#c99a5f"/>
+  <rect x="155" y="170" width="50" height="16" fill="#e2c49a"/>
+  <rect x="140" y="250" width="50" height="16" fill="#d8b584"/>
+  <rect x="275" y="270" width="50" height="14" fill="#d8b584"/>
+</svg>

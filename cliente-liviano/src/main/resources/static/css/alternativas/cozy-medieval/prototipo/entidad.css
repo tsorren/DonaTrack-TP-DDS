@@ -1,0 +1,1229 @@
+/*
+ * Prototipo de Cozy / Medieval (iteración 3), grupo entidad: tu pueblo, seguir entregas, el acta de
+ * recepción, el acta sellada y las necesidades. Se carga después de app.css, desde cada plantilla
+ * de templates/prototipo/cozy-medieval/entidad-*.html. Solo tokens de uso de tokens.css; las
+ * medidas propias llevan prefijo --medida-entidad-*.
+ *
+ * La entidad usa la app en el celular, en el lugar de la entrega, con una mano: la acción
+ * principal va arriba y a todo el ancho; los objetos son papeles sobre la mesa de nogal, cada uno
+ * con un solo recurso material (el troquel de los talones, la cenefa del mapa, la línea de la
+ * firma). Las consultas de contenedor miden en rem: la condición de @container no acepta var().
+ */
+
+:root {
+  --medida-entidad-columna-signo: 2.5rem;
+  --medida-entidad-muesca: 1rem;
+  --medida-entidad-hoja: 72rem;
+}
+
+/* Los signos del mapa, para las listas de la entidad (los mismos dibujos de app.css). Cada uno va
+   con su texto al lado. El hueco punteado del sello es "espera tu confirmación": el lugar del
+   sello que todavía no está. */
+.entidad-signo {
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--medida-signo);
+  height: var(--medida-signo-alto);
+  vertical-align: middle;
+}
+
+.entidad-signo--hueco {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: var(--borde-ruta) dotted var(--color-signo-trazo);
+  border-radius: var(--radio-sello);
+}
+
+.entidad-signo--en-camino {
+  background-color: var(--color-signo-tinta);
+  mask: url("../../../../img/cozy-medieval/signo-en-camino.svg") center / contain no-repeat;
+}
+
+.entidad-signo--con-problema {
+  background-color: var(--color-signo-problema);
+  mask: url("../../../../img/cozy-medieval/signo-con-problema.svg") center / contain no-repeat;
+}
+
+.entidad-signo--pendiente {
+  width: var(--medida-signo-punto);
+  height: var(--medida-signo-punto);
+  background-color: var(--color-fondo);
+  border: var(--borde-ruta) solid var(--color-signo-tinta);
+  border-radius: var(--radio-sello);
+}
+
+.entidad-signo--entregada {
+  width: var(--medida-signo-alto);
+  height: var(--medida-signo-alto);
+  background-color: var(--color-signo-trazo);
+  border: var(--borde-ruta) solid var(--color-signo-trazo);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 0 0 3px var(--color-signo-sello);
+}
+
+/* Los papeles de la entidad sobre la mesa: pergamino, la sombra de un objeto apoyado y el texto
+   siempre sobre el papel, nunca sobre la madera. */
+.entidad-cabecera,
+.entidad-talones,
+.entidad-pueblo,
+.entidad-pedidos,
+.entidad-ruta,
+.entidad-acta,
+.entidad-pedidos-hoja {
+  margin: 0;
+  color: var(--color-texto);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  box-shadow: var(--sombra-objeto);
+}
+
+:is(.entidad-cabecera, .entidad-talones, .entidad-pueblo, .entidad-pedidos, .entidad-ruta,
+  .entidad-acta, .entidad-pedidos-hoja) :is(h1, h2, h3) {
+  margin: 0;
+  color: var(--color-titulo);
+}
+
+/* El nombre de la sección del menú, chico y grabado en latón, sobre el título: en el HTML va
+   después del h1 (el título se lee primero) y se ve arriba. Sus cabeceras son grillas, para
+   poder subirlo. */
+.entidad-rotulo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  order: -1;
+  margin: 0;
+  color: var(--color-laton-texto);
+  font-size: var(--tamano-mini);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.entidad-rotulo::before {
+  content: "";
+  flex: none;
+  width: 1.5rem;
+  border-block-start: var(--borde-ancho) solid currentcolor;
+}
+
+:is(.entidad-cabecera, .entidad-ruta-titulo, .entidad-pedidos-titulo, .entidad-acta-cabecera) {
+  display: grid;
+  row-gap: var(--espacio-1);
+}
+
+/* El saludo del inicio: un papel chico, el primero de la mesa, con el día de hoy. */
+.entidad-cabecera {
+  padding: var(--espacio-4);
+}
+
+.entidad-cabecera h1 {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.entidad-cabecera .mesa-bajada {
+  margin: 0;
+}
+
+/* Tu pueblo, la mesa del inicio: en el celular, uno debajo del otro, lo que hay que hacer
+   primero; con lugar, los talones y lo que pediste a la izquierda del mapa. */
+.entidad-mesa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-5);
+}
+
+@container mesa (min-width: 48rem) {
+  .entidad-mesa--inicio {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas:
+      "cabecera pueblo"
+      "talones pueblo"
+      "pedidos pueblo";
+    gap: var(--espacio-6) var(--espacio-5);
+  }
+
+  .entidad-mesa--inicio > .entidad-cabecera {
+    grid-area: cabecera;
+  }
+
+  .entidad-mesa--inicio > .entidad-talones {
+    grid-area: talones;
+  }
+
+  .entidad-mesa--inicio > .entidad-pueblo {
+    grid-area: pueblo;
+  }
+
+  .entidad-mesa--inicio > .entidad-pedidos {
+    grid-area: pedidos;
+  }
+}
+
+@container mesa (min-width: 72rem) {
+  .entidad-mesa--inicio {
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    gap: var(--espacio-7) var(--espacio-6);
+  }
+}
+
+/* Los talones: lo que llegó a tu puerta. Cada entrega es un remito con su talón arriba, separado
+   por el troquel (la línea punteada con una muesca en cada punta). La acción, a todo el ancho del
+   remito, al alcance del pulgar. */
+.entidad-talones {
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-4);
+  container: talones / inline-size;
+}
+
+.entidad-talones-cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.entidad-talones-cabecera h2 {
+  font-size: var(--tamano-titulo-2);
+}
+
+.entidad-talones-cabecera .mesa-bajada {
+  margin-block-end: 0;
+}
+
+.entidad-talones--vacio {
+  padding: var(--espacio-3);
+}
+
+.entidad-talones--vacio .estado-vacio {
+  margin: 0;
+}
+
+.entidad-talones-lista {
+  display: grid;
+  gap: var(--espacio-4);
+  margin: var(--espacio-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entidad-talon {
+  display: grid;
+  margin: 0;
+  overflow: hidden;
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-objeto-bajo);
+}
+
+.entidad-talon-cabo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-4);
+  color: var(--color-texto-suave);
+  border-block-end: var(--borde-marco) dashed var(--color-filete);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.entidad-talon-cabo::before,
+.entidad-talon-cabo::after {
+  content: "";
+  position: absolute;
+  bottom: calc(var(--medida-entidad-muesca) / -2);
+  width: var(--medida-entidad-muesca);
+  height: var(--medida-entidad-muesca);
+  background-color: var(--color-fondo);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-sello);
+}
+
+.entidad-talon-cabo::before {
+  left: calc(var(--medida-entidad-muesca) / -2);
+}
+
+.entidad-talon-cabo::after {
+  right: calc(var(--medida-entidad-muesca) / -2);
+}
+
+.entidad-talon-cuerpo {
+  display: grid;
+  gap: var(--espacio-1);
+  padding: var(--espacio-3) var(--espacio-4) var(--espacio-4);
+}
+
+.entidad-talon-cuerpo h3 {
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-4);
+}
+
+.entidad-talon-cuerpo p {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.entidad-talon-cuerpo [role="button"] {
+  margin-block-start: var(--espacio-3);
+}
+
+/* Con lugar, el talón pasa a la izquierda, con el troquel de arriba abajo, y el botón se acomoda
+   a su texto. */
+@container talones (min-width: 30rem) {
+  .entidad-talon {
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+  }
+
+  .entidad-talon-cabo {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: var(--espacio-3);
+    border-block-end: 0;
+    border-inline-end: var(--borde-marco) dashed var(--color-filete);
+  }
+
+  .entidad-talon-cabo::before,
+  .entidad-talon-cabo::after {
+    right: calc(var(--medida-entidad-muesca) / -2);
+    left: auto;
+  }
+
+  .entidad-talon-cabo::before {
+    top: calc(var(--medida-entidad-muesca) / -2);
+    bottom: auto;
+  }
+
+  .entidad-talon-cuerpo [role="button"] {
+    justify-self: start;
+  }
+}
+
+/* Tu pueblo: la hoja del mapa, con su cartela de doble filete (la de app.css), el mapa grabado y
+   la leyenda. Con lugar, la leyenda va a la derecha del mapa. */
+.entidad-pueblo {
+  display: grid;
+  gap: var(--espacio-4);
+  padding: var(--espacio-3) var(--espacio-3) var(--espacio-4);
+  background-color: var(--color-fondo-pagina);
+  container: pueblo / inline-size;
+}
+
+.entidad-pueblo .mesa-mapa-cartela h2 {
+  flex-basis: 100%;
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.entidad-pueblo-cuerpo {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+@container pueblo (min-width: 44rem) {
+  .entidad-pueblo-cuerpo {
+    grid-template-columns: minmax(0, 1fr) minmax(13rem, 16rem);
+    align-items: center;
+    gap: var(--espacio-5);
+  }
+}
+
+.entidad-pueblo-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--espacio-5);
+  padding: var(--espacio-3) var(--espacio-2) 0;
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.entidad-pueblo-pie p {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin: 0;
+  font-size: var(--tamano-chico);
+}
+
+/* Los mapas de la entidad usan el papel, la cuadrícula y la cenefa del mapa del viaje (app.css),
+   sin su terreno: cada uno dibuja el suyo, lejos de sus caminos. */
+.viaje-mapa:is(.entidad-pueblo-mapa, .entidad-tramo-mapa)::before {
+  content: none;
+}
+
+.viaje-mapa:is(.entidad-pueblo-mapa, .entidad-tramo-mapa) svg {
+  overflow: hidden;
+}
+
+.entidad-pueblo-mapa {
+  aspect-ratio: 640 / 440;
+}
+
+/* El dibujo del tramo muestra su punta, la del pueblo (preserveAspectRatio slice): en el celular,
+   tu puerta y el pueblo; desde 600 px, un poco más de camino. */
+.entidad-tramo-mapa {
+  aspect-ratio: 3 / 2;
+}
+
+@media (min-width: 37.5em) {
+  .entidad-tramo-mapa {
+    aspect-ratio: 2 / 1;
+  }
+}
+
+/* Las piezas propias de los mapas: el terreno y la muralla a pluma fina, el humo del comedor, el
+   hueco punteado del sello que espera, la punta ▸ de lo que viene, ○ de lo que no salió, ╳ en
+   lacre del camino cortado, las paradas cumplidas y el sello de latón con su grabado. */
+.entidad-terreno :is(path, circle),
+.entidad-humo {
+  stroke: var(--color-filete);
+  stroke-width: 1.5;
+}
+
+.entidad-muralla {
+  stroke: var(--color-filete);
+  stroke-width: 2;
+  stroke-dasharray: 6 7;
+}
+
+.entidad-hueco {
+  fill: var(--color-fondo-pagina);
+  stroke: var(--color-sello-hueco);
+  stroke-width: 3.5;
+  stroke-dasharray: 0 7;
+}
+
+.entidad-hueco--grande {
+  fill: none;
+  stroke-width: 4.5;
+  stroke-dasharray: 0 10;
+}
+
+.entidad-punta {
+  fill: var(--color-titulo);
+}
+
+.entidad-por-salir {
+  fill: var(--color-fondo-pagina);
+  stroke: var(--color-signo-tinta);
+  stroke-width: 3;
+}
+
+.entidad-corte {
+  stroke: var(--color-signo-problema);
+  stroke-width: 5;
+}
+
+.entidad-parada {
+  fill: var(--color-titulo);
+  stroke: var(--color-fondo-pagina);
+  stroke-width: 3;
+}
+
+.entidad-sello-canto {
+  fill: var(--color-laton-brillante);
+  stroke: var(--color-laton-texto);
+  stroke-width: 3;
+}
+
+.entidad-sello-anillo {
+  stroke: var(--color-laton-texto);
+  stroke-width: 2.5;
+}
+
+.entidad-sello-rosa {
+  fill: var(--color-laton-texto);
+}
+
+.entidad-sello-mancha {
+  fill: var(--color-trama);
+}
+
+/* Con el mapa grande, los números y la banderita vuelven a su tamaño (como en el viaje). */
+@container pueblo (min-width: 30rem) {
+  .entidad-pueblo :is(.viaje-numero, .viaje-bandera text) {
+    font-size: 22px;
+  }
+}
+
+/* La leyenda del pueblo: el número del camino, su signo y su texto. */
+.entidad-leyenda {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0 var(--espacio-2);
+  font-size: var(--tamano-chico);
+}
+
+.entidad-leyenda li {
+  display: grid;
+  grid-template-columns: 1rem var(--medida-signo) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-2);
+  margin: 0;
+  list-style: none;
+}
+
+.entidad-leyenda-numero {
+  color: var(--color-titulo);
+  font-weight: 800;
+  font-variant-numeric: lining-nums;
+  text-align: end;
+}
+
+.entidad-leyenda .entidad-signo {
+  justify-self: center;
+  margin-block-start: 0.2em;
+}
+
+.entidad-leyenda b {
+  display: block;
+  color: var(--color-titulo);
+}
+
+.entidad-leyenda small {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+}
+
+/* Lo que pediste: renglones con la regla de tinta, lo pedido y cuánto llegó. */
+.entidad-pedidos {
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-3);
+}
+
+.entidad-pedidos h2 {
+  font-size: var(--tamano-titulo-2);
+}
+
+.entidad-pedidos-lista {
+  margin: 0;
+  padding: 0;
+  border-block-start: var(--borde-regla-doble) double var(--color-titulo);
+}
+
+.entidad-pedidos-lista li {
+  display: grid;
+  margin: 0;
+  padding: var(--espacio-2) 0;
+  border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
+  list-style: none;
+}
+
+.entidad-pedidos-lista b {
+  color: var(--color-titulo);
+}
+
+.entidad-pedidos-lista span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* Seguir entregas: un libro de ruta. Arriba, el título y la leyenda de las etapas, que lleva a cada
+   grupo; después, los grupos por etapa, cada uno con su signo grande. Con lugar, la leyenda queda
+   a la derecha, a la vista mientras se baja. */
+.entidad-ruta {
+  display: grid;
+  gap: var(--espacio-4);
+  max-width: var(--medida-entidad-hoja);
+  margin-inline: auto;
+  padding: var(--espacio-5) var(--espacio-4);
+}
+
+.entidad-ruta-titulo h1,
+.entidad-pedidos-titulo h1 {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.entidad-ruta-titulo .mesa-bajada,
+.entidad-pedidos-titulo .mesa-bajada {
+  margin-block-end: 0;
+}
+
+/* Pico pone el nav en flex: la leyenda va a todo el ancho. */
+.entidad-ruta-leyenda {
+  display: block;
+}
+
+.entidad-ruta-leyenda ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 0 var(--espacio-3);
+  margin: 0;
+  padding: var(--espacio-1) 0;
+  border-block: var(--borde-ancho) solid var(--color-filete);
+}
+
+.entidad-ruta-leyenda li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.entidad-ruta-leyenda a {
+  display: grid;
+  grid-template-columns: var(--medida-signo) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  padding: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  line-height: 1.25;
+  text-decoration-color: var(--color-filete);
+}
+
+.entidad-ruta-leyenda .entidad-signo {
+  justify-self: center;
+}
+
+@container mesa (min-width: 56rem) {
+  .entidad-ruta {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    grid-template-areas:
+      "titulo leyenda"
+      "libro leyenda";
+    align-items: start;
+    gap: var(--espacio-4) var(--espacio-6);
+    padding: var(--espacio-6);
+  }
+
+  .entidad-ruta-titulo {
+    grid-area: titulo;
+  }
+
+  .entidad-ruta-leyenda {
+    position: sticky;
+    top: var(--espacio-4);
+    grid-area: leyenda;
+  }
+
+  .entidad-ruta-leyenda ul {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--espacio-2) 0;
+    border-block: var(--borde-regla-doble) double var(--color-titulo);
+  }
+
+  .entidad-ruta-libro {
+    grid-area: libro;
+  }
+}
+
+.entidad-grupo {
+  padding-block: var(--espacio-4);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+  container: talones / inline-size;
+}
+
+.entidad-grupo:first-child {
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
+.entidad-grupo-cabecera {
+  display: grid;
+  grid-template-columns: var(--medida-entidad-columna-signo) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--espacio-3);
+  min-height: var(--medida-toque-minimo);
+}
+
+.entidad-grupo-cabecera .entidad-signo {
+  justify-self: center;
+  scale: 1.4;
+}
+
+.entidad-grupo-cabecera h2,
+.entidad-grupo-nombre {
+  color: var(--color-titulo);
+  font-family: var(--fuente-titulos);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.entidad-grupo-cabecera p,
+.entidad-grupo-cuenta {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.entidad-grupo--problema h2 {
+  color: var(--color-error-texto);
+}
+
+/* Las entregadas, plegadas: el renglón del grupo es el que se abre (sin la flecha de Pico, que
+   va a la derecha, en tinta). */
+.entidad-grupo--plegado {
+  margin: 0;
+}
+
+.entidad-grupo--plegado > summary {
+  grid-template-columns: var(--medida-entidad-columna-signo) minmax(0, 1fr) auto auto;
+  line-height: 1.2;
+}
+
+.entidad-grupo--plegado > summary::after {
+  float: none;
+  margin: 0;
+}
+
+.entidad-renglones {
+  margin: var(--espacio-2) 0 0;
+  padding: 0;
+}
+
+.entidad-renglones li {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: var(--espacio-3) 0 var(--espacio-3)
+    calc(var(--medida-entidad-columna-signo) + var(--espacio-3));
+  border-block-start: var(--borde-ancho) solid var(--color-filete-tenue);
+  list-style: none;
+}
+
+.entidad-renglones b {
+  color: var(--color-titulo);
+}
+
+.entidad-renglones span {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* El acta de recepción: un documento. Arriba, el título con doble filete, qué llega y sus datos;
+   el último tramo; las pruebas y lo que recibiste; al pie, la línea de la firma con el botón. Con
+   lugar, en dos columnas: lo que llega a la izquierda, lo que contás a la derecha. */
+.entidad-acta {
+  display: grid;
+  gap: var(--espacio-5);
+  max-width: var(--medida-entidad-hoja);
+  margin-inline: auto;
+  padding: var(--espacio-3) var(--espacio-4) var(--espacio-5);
+}
+
+.entidad-volver {
+  gap: var(--espacio-2);
+  order: -1;
+  justify-self: start;
+}
+
+.entidad-volver .icono {
+  rotate: 180deg;
+}
+
+.entidad-acta-cabecera {
+  padding-block-end: var(--espacio-4);
+  border-block-end: var(--borde-regla-doble) double var(--color-titulo);
+}
+
+.entidad-acta-cabecera h1 {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.entidad-acta-que {
+  margin: var(--espacio-2) 0 var(--espacio-4);
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.entidad-acta-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--espacio-3) var(--espacio-4);
+  margin: 0;
+}
+
+.entidad-acta-datos div {
+  display: grid;
+  align-content: start;
+}
+
+.entidad-acta-datos dt {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.entidad-acta-datos dd {
+  margin: 0;
+  color: var(--color-titulo);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.entidad-acta h2 {
+  margin-block-end: var(--espacio-3);
+  font-size: var(--tamano-titulo-3);
+}
+
+.entidad-tramo {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.entidad-acta-campos {
+  display: grid;
+  gap: var(--espacio-4);
+}
+
+.entidad-acta-campos .campo:last-child {
+  margin-block-end: 0;
+}
+
+/* Los errores, antes del tramo (y, con lugar, arriba de los campos): qué falta, en lacre, y un
+   enlace a cada campo. */
+.entidad-acta-errores {
+  padding: var(--espacio-4);
+  color: var(--color-error-texto);
+  background-color: var(--color-error-fondo);
+  border: var(--borde-marco) solid var(--color-error-texto);
+  border-radius: var(--radio-chico);
+}
+
+.entidad-acta .entidad-acta-errores h2 {
+  margin-block-end: var(--espacio-1);
+  color: var(--color-error-texto);
+  font-size: var(--tamano-titulo-4);
+}
+
+.entidad-acta-errores ul {
+  margin: 0;
+  padding: 0;
+}
+
+.entidad-acta-errores li {
+  margin: 0;
+  list-style: none;
+}
+
+.entidad-acta-errores a {
+  display: flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-error-texto);
+  font-weight: 700;
+}
+
+/* La firma: quién recibe, sobre la línea; el botón, al pie, a todo el ancho en el celular. */
+.entidad-acta-firma {
+  display: grid;
+  gap: var(--espacio-3);
+  padding-block-start: var(--espacio-5);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.entidad-acta-linea {
+  margin: 0;
+  padding-block-end: var(--espacio-2);
+  color: var(--color-texto);
+  border-block-end: var(--borde-hoja) solid var(--color-titulo);
+  font-style: italic;
+}
+
+.entidad-acta-firma button {
+  width: 100%;
+  margin: 0;
+}
+
+.entidad-acta-nota {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+@container mesa (min-width: 60rem) {
+  form.entidad-acta {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "volver volver"
+      "cabecera campos"
+      "tramo campos"
+      "firma firma";
+    align-items: start;
+    gap: var(--espacio-5) var(--espacio-7);
+    padding: var(--espacio-4) var(--espacio-6) var(--espacio-6);
+  }
+
+  form.entidad-acta > .entidad-volver {
+    grid-area: volver;
+  }
+
+  form.entidad-acta > .entidad-acta-cabecera {
+    grid-area: cabecera;
+  }
+
+  form.entidad-acta > .entidad-acta-tramo {
+    grid-area: tramo;
+  }
+
+  form.entidad-acta > .entidad-acta-campos {
+    grid-area: campos;
+  }
+
+  form.entidad-acta:has(> .entidad-acta-errores) {
+    grid-template-areas:
+      "volver volver"
+      "cabecera errores"
+      "tramo campos"
+      "firma firma";
+  }
+
+  form.entidad-acta > .entidad-acta-errores {
+    grid-area: errores;
+  }
+
+  .entidad-acta-firma {
+    grid-area: firma;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    column-gap: var(--espacio-6);
+  }
+
+  .entidad-acta-firma button {
+    grid-row: 1;
+    grid-column: 2;
+    width: auto;
+    padding-inline: var(--espacio-6);
+  }
+}
+
+/* El acta sellada y la que todavía espera. El aviso, en el verde del éxito, con su texto. */
+.entidad-sellada {
+  display: grid;
+  align-items: start;
+  gap: var(--espacio-5);
+  max-width: var(--medida-entidad-hoja);
+  margin-inline: auto;
+}
+
+.entidad-sellada .entidad-acta {
+  max-width: none;
+  margin: 0;
+}
+
+/* El aviso va antes del dibujo en el HTML (se lee primero) y se ve debajo del sello. */
+.entidad-acta--sellada > .entidad-acta-cabecera {
+  order: -2;
+}
+
+.entidad-acta--sellada > .entidad-tramo {
+  order: -1;
+}
+
+.entidad-sellada-aviso {
+  margin: 0;
+  padding: var(--espacio-3) var(--espacio-4);
+  color: var(--color-exito-texto);
+  background-color: var(--color-exito-fondo);
+  border-inline-start: var(--borde-acento) solid var(--color-marca);
+  font-size: var(--tamano-texto-grande);
+  font-weight: 700;
+}
+
+.entidad-sellada-siguiente h2 {
+  font-size: var(--tamano-titulo-2);
+}
+
+.entidad-sellada-salidas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--espacio-5);
+  margin-block-start: var(--espacio-3);
+}
+
+@container mesa (min-width: 60rem) {
+  .entidad-sellada {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: var(--espacio-6);
+  }
+
+  .entidad-sellada .entidad-acta {
+    padding: var(--espacio-5) var(--espacio-6) var(--espacio-6);
+  }
+}
+
+/* La tinta llega y sella: el último tramo se entinta, el sello cae sobre el pueblo y deja su
+   mancha, y aparece el aviso. Una sola vez (solo con entidad-tramo--recien) y solo si la persona
+   no pidió reducir el movimiento: si no, se ve ya sellada. */
+@media (prefers-reduced-motion: no-preference) {
+  .entidad-tramo--recien .entidad-tramo-ultimo {
+    stroke-dasharray: 1;
+    animation: entidad-entintar 900ms var(--movimiento-curva) both;
+  }
+
+  .entidad-tramo--recien :is(.entidad-sello, .entidad-sello-mancha) {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .entidad-tramo--recien .entidad-sello {
+    animation: entidad-sellar 380ms 850ms cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  }
+
+  .entidad-tramo--recien .entidad-sello-mancha {
+    animation: entidad-mancha 600ms 1000ms ease-out both;
+  }
+
+  .entidad-sellada:has(.entidad-tramo--recien) .entidad-sellada-aviso {
+    animation: entidad-aparecer var(--movimiento-lento) 1200ms var(--movimiento-curva) both;
+  }
+}
+
+@keyframes entidad-entintar {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes entidad-sellar {
+  from {
+    opacity: 0;
+    scale: 1.8;
+    rotate: -20deg;
+  }
+}
+
+@keyframes entidad-mancha {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+
+  40% {
+    opacity: 1;
+    scale: 1.25;
+  }
+}
+
+@keyframes entidad-aparecer {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+}
+
+/* Las necesidades: una hoja con el título, el formulario para publicar otra (plegado) y el libro
+   de registro (la tabla de app.css). */
+.entidad-pedidos-hoja {
+  display: grid;
+  gap: var(--espacio-5);
+  max-width: var(--medida-entidad-hoja);
+  margin-inline: auto;
+  padding: var(--espacio-5) var(--espacio-4);
+}
+
+.entidad-publicada {
+  margin: 0;
+  padding: var(--espacio-3) var(--espacio-4);
+  color: var(--color-exito-texto);
+  background-color: var(--color-exito-fondo);
+  border-inline-start: var(--borde-acento) solid var(--color-marca);
+  font-weight: 700;
+}
+
+.entidad-publicar {
+  margin: 0;
+}
+
+/* "Publicar otra necesidad" abre el formulario: tiene el cuerpo del botón principal. */
+details.entidad-publicar > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  padding: 0.6875rem 1.25rem;
+  color: var(--color-texto-sobre-accion);
+  background-color: var(--color-accion-primaria);
+  border-radius: var(--radio-boton);
+  box-shadow: 0 3px 0 var(--color-accion-primaria-activa), var(--sombra-foto);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+details.entidad-publicar > summary::after {
+  content: none;
+}
+
+details.entidad-publicar > summary:hover {
+  background-color: var(--color-accion-primaria-activa);
+}
+
+details.entidad-publicar[open] > summary {
+  color: var(--color-titulo);
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-titulo);
+  box-shadow: 0 2px 0 var(--color-filete), var(--sombra-foto);
+}
+
+.entidad-publicar-form {
+  display: grid;
+  gap: 0 var(--espacio-4);
+  margin-block-start: var(--espacio-4);
+  padding: var(--espacio-4);
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-chico);
+}
+
+.entidad-publicar-form button {
+  justify-self: start;
+}
+
+@container mesa (min-width: 48rem) {
+  .entidad-pedidos-hoja {
+    padding: var(--espacio-6);
+  }
+
+  .entidad-publicar-form {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .entidad-publicar-form button {
+    grid-column: 1;
+  }
+}
+
+.entidad-pedidos-tabla caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* En el celular, cada dato con su nombre a la vista, y "cómo va" en su propio renglón, con la
+   regla de tinta debajo. */
+.entidad-pedidos-tabla td::before {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+  font-style: italic;
+}
+
+.entidad-pedidos-tabla tr > :last-child {
+  flex-basis: 100%;
+  order: 0;
+}
+
+.entidad-pedidos-tabla td small {
+  display: block;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+}
+
+.entidad-pedidos-tabla progress {
+  display: block;
+  width: 100%;
+  height: 0.375rem;
+  margin: var(--espacio-1) 0 0;
+  color: var(--color-signo-tinta);
+  background-color: var(--color-superficie);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-radius: var(--radio-insignia);
+}
+
+.entidad-pedidos-tabla progress::-webkit-progress-bar {
+  background-color: var(--color-superficie);
+}
+
+.entidad-pedidos-tabla progress::-webkit-progress-value {
+  background-color: var(--color-signo-tinta);
+}
+
+.entidad-pedidos-tabla progress::-moz-progress-bar {
+  background-color: var(--color-signo-tinta);
+}
+
+/* Con colores forzados (alto contraste), los signos y las piezas de los mapas toman el color del
+   texto sobre el de la hoja. */
+@media (forced-colors: active) {
+  .entidad-signo {
+    forced-color-adjust: none;
+  }
+
+  .entidad-signo:is(.entidad-signo--en-camino, .entidad-signo--con-problema,
+    .entidad-signo--entregada) {
+    background-color: var(--color-forzado-texto);
+  }
+
+  .entidad-signo:is(.entidad-signo--hueco, .entidad-signo--pendiente, .entidad-signo--entregada) {
+    border-color: var(--color-forzado-texto);
+  }
+
+  /* ◉ entregada: el anillo de adentro, en el color de la hoja, como en app.css. */
+  .entidad-signo--entregada {
+    box-shadow: inset 0 0 0 3px var(--color-forzado-fondo);
+  }
+
+  .entidad-signo--pendiente {
+    background-color: var(--color-forzado-fondo);
+  }
+
+  :is(.entidad-terreno :is(path, circle), .entidad-humo, .entidad-muralla, .entidad-hueco, .entidad-por-salir,
+    .entidad-corte, .entidad-parada, .entidad-sello-canto, .entidad-sello-anillo) {
+    stroke: var(--color-forzado-texto);
+  }
+
+  :is(.entidad-hueco, .entidad-por-salir, .entidad-sello-canto) {
+    fill: var(--color-forzado-fondo);
+  }
+
+  :is(.entidad-punta, .entidad-parada, .entidad-sello-rosa) {
+    fill: var(--color-forzado-texto);
+  }
+
+  .entidad-hueco--grande {
+    fill: none;
+  }
+
+  :is(.entidad-cabecera, .entidad-talones, .entidad-pueblo, .entidad-pedidos, .entidad-ruta,
+    .entidad-acta, .entidad-pedidos-hoja),
+  details.entidad-publicar > summary {
+    border: var(--borde-ancho) solid;
+  }
+
+  /* La regla de tinta de "cómo va": la parte llena en el color del texto. */
+  .entidad-pedidos-tabla progress {
+    forced-color-adjust: none;
+    background-color: var(--color-forzado-fondo);
+    border-color: var(--color-forzado-texto);
+  }
+
+  .entidad-pedidos-tabla progress::-webkit-progress-bar {
+    background-color: var(--color-forzado-fondo);
+  }
+
+  .entidad-pedidos-tabla progress::-webkit-progress-value {
+    background-color: var(--color-forzado-texto);
+  }
+
+  .entidad-pedidos-tabla progress::-moz-progress-bar {
+    background-color: var(--color-forzado-texto);
+  }
+}

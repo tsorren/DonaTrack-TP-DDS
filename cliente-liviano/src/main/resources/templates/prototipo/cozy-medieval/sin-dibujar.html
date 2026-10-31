@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (PrototipoController): una sección del menú que todavía no tiene
+       su pantalla dibujada. Es la tierra sin explorar del estado vacío, con la vuelta al inicio del
+       rol. seccion: el nombre de la sección del menú. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Sin dibujar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 th:text="${seccion}">Sección</h1>
+  <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+           'Esta parte del mapa todavía no está dibujada',
+           'La pantalla llega con su flujo. Mientras tanto, volvé a tu inicio.',
+           'Volver al inicio', ${navegacion[0].ruta})}"></section>
+</th:block>
+</body>
+</html>

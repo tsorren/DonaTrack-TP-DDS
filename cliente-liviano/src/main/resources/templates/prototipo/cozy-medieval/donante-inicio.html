@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--/* Prototipo, grupo "viaje": el inicio del donante, la mesa del cartógrafo de la iteración 2 con
+       los enlaces del flujo. Trae del catálogo el libro de cuentas tal cual (estilos.html), con la
+       cifra del mes apuntando a Mis donaciones (realizadas, repetida acá con otra ruta: la cifra
+       solo lee etiqueta, valor, cambio, cambioTexto y ruta). La nota, el mapa del viaje, la carta y
+       el cuaderno son los del catálogo con sus enlaces reales: Ver seguimiento (la principal),
+       Elegir a quién donar y Mis donaciones (en papel, para no competir con ella), Ver
+       el detalle (las lentejas en camino), Ver todas las cartas y Ver incentivos. Estilos:
+       app.css; no necesita hoja propia. Los títulos de los objetos son h3, como en la muestra,
+       para que tomen sus mismos tamaños. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Inicio - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1 class="solo-lectores">Inicio</h1>
+  <div class="mesa-objetos">
+    <section class="mesa-nota" aria-labelledby="hola-titulo">
+      <h3 id="hola-titulo">Hola, Ana</h3>
+      <p>Tu última donación ya salió del depósito y va camino a Comedor Barrio Ejemplo.</p>
+      <div class="mesa-nota-acciones">
+        <a href="/prototipo/donante-seguimiento" th:href="@{/prototipo/donante-seguimiento}"
+           role="button">Ver seguimiento</a>
+        <a href="/prototipo/donante-entidades" th:href="@{/prototipo/donante-entidades}"
+           role="button" class="fantasma">Elegir a quién donar</a>
+        <a href="/prototipo/donante-donaciones" th:href="@{/prototipo/donante-donaciones}"
+           role="button" class="fantasma">Mis donaciones</a>
+      </div>
+    </section>
+
+    <section class="mesa-mapa" aria-labelledby="recorrido-titulo">
+      <div class="mesa-mapa-cartela">
+        <h3 id="recorrido-titulo">Tu viaje</h3>
+        <p>Lentejas secas · 15 kg</p>
+        <span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
+      </div>
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/recorrido :: recorrido('Tu viaje', ${pasos})}"></div>
+      <a href="/prototipo/donante-donaciones-detalle"
+         th:href="@{/prototipo/donante-donaciones-detalle(donacion='lentejas')}"
+         class="enlace-fuerte">Ver el detalle</a>
+    </section>
+
+    <section class="mesa-carta" aria-labelledby="notas-titulo">
+      <h3 id="notas-titulo">Cartas del camino</h3>
+      <p class="mesa-bajada">Las últimas noticias de tus donaciones</p>
+      <ul class="notas">
+        <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+          <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+        <li><p>Tu donación quedó lista para entregar.</p>
+          <time datetime="2026-10-14T09:10">ayer</time></li>
+        <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+          <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+      </ul>
+      <a href="/prototipo/donante-cartas" th:href="@{/prototipo/donante-cartas}"
+         class="enlace-fuerte">Ver todas las cartas</a>
+    </section>
+
+    <th:block th:with="realizadas=${ {etiqueta: realizadas.etiqueta, valor: realizadas.valor,
+                                      cambio: realizadas.cambio, cambioTexto: realizadas.cambioTexto,
+                                      ruta: '/prototipo/donante-donaciones'} }">
+      <section th:replace="~{alternativas/cozy-medieval/paginas/estilos :: section.mesa-libro}"></section>
+    </th:block>
+
+    <section class="mesa-cuaderno mision" aria-labelledby="mision-titulo">
+      <h3 id="mision-titulo">Tu misión en curso</h3>
+      <p class="mesa-bajada">Colaborador → Sostenedor</p>
+      <div class="mision-encabezado">
+        <p class="mision-nombre"><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+        <p class="mision-cuenta"><span>2/3</span><span>66 %</span></p>
+      </div>
+      <div class="mision-cuaderno">
+        <span class="mision-casilla mision-casilla--sellada" aria-hidden="true"></span>
+        <span class="mision-casilla mision-casilla--sellada" aria-hidden="true"></span>
+        <span class="mision-casilla" aria-hidden="true"></span>
+        <progress class="solo-lectores" value="66" max="100"
+                  aria-label="Progreso de la misión">66 %</progress>
+        <p class="mision-falta">Falta 1 paso</p>
+      </div>
+      <a href="/prototipo/donante-incentivos" th:href="@{/prototipo/donante-incentivos}"
+         role="button" class="fantasma">Ver incentivos</a>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

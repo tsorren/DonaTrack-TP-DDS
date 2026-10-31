@@ -416,3 +416,20 @@ La exclusión de `RepositoriosJpaTest` de Surefire, otra vía del mismo problema
 Para los ítems 1 y 2 se evaluaron dos caminos. Se eligió que el productor siempre envíe el dato; el contrato de los eventos no cambia. La alternativa descartada era dejar el campo opcional en los schemas y los DTOs de Donaciones y Notificaciones (cambio compatible para los consumidores): Notificaciones usa ambos datos para armar el aviso y la URL de seguimiento ya la genera Logística.
 
 **Cambio de contrato de la API:** el body de `PATCH /donaciones-independientes/{id}/estado` ahora exige `urlMapa` si el estado es `EN_TRASLADO` y `patenteCamion` si es `ENTREGADA`. El schema y el OpenAPI lo dicen en la descripción de los campos; `oasdiff` no lo marca porque ambos campos siguen siendo opcionales en el schema.
+
+---
+
+## DTI-28 — La verificación visual del cliente liviano no corre en el CI
+<a id="dti-28"></a>
+
+| Campo | Valor |
+|---|---|
+| ADR | [20261030-verificacion-visual-con-playwright-y-axe](./cliente-liviano/20261030-verificacion-visual-con-playwright-y-axe.md) |
+| ADR complementario | [20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas](./cliente-liviano/20261030-stack-del-cliente-liviano-thymeleaf-htmx-pico-tokens-y-mapas.md) |
+| Decision status | `proposed` |
+| Implementation status | `[OBSERVED] deferred` — `VerificacionVisualTest` (axe AA, toque de 48 px, desbordes y capturas) corre solo con `mvn test -pl cliente-liviano -Pvisual`. El CI (`main.yml`, job `build-and-test`) corre `mvn clean verify -pl cliente-liviano -am` sin el perfil, así que no la ejecuta. En el CI corre `InterfazFitnessTest` (tokens, colores, quiebres, catálogo y contraste) |
+| Target | `.github/workflows/main.yml` (un job o paso con `-Pvisual` y caché de los navegadores de Playwright) · `cliente-liviano/pom.xml` |
+| Cuándo se saldará | Antes del cierre de E6, cuando haya pantallas reales además del catálogo `/estilos`. Hasta entonces, cada flujo la corre a mano (skill `vista-ui`) |
+
+1. **Riesgo:** un PR puede romper la accesibilidad, el toque o el responsive sin que el CI lo note.
+2. **Costo de saldarla:** el job baja unos 200 MB de driver más Chromium; con caché, es una vez por versión de Playwright.

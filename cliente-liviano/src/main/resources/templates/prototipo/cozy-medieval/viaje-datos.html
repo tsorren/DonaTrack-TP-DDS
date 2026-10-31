@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!--/* Prototipo, grupo "viaje": los datos de ejemplo de las donaciones de Ana, escritos una sola vez
+       para Mis donaciones, su detalle y Seguimiento. No es una pantalla (PrototipoController solo
+       muestra nombres que empiezan con un rol). Sintéticos y coherentes con la mesa del inicio:
+       siete donaciones, dos entregadas a dos entidades, una en camino, tres por salir y una con
+       el camino cortado. "Hoy" es el 15 de octubre de 2026. La de las lentejas usa los pasos del
+       modelo (pasos), los mismos del inicio; las otras escriben los suyos con los avances del
+       modelo (hecho, actual y falta), para que el fragmento recorrido los dibuje igual.
+       seguimiento, solo en las entregas en curso, es lo que dice la hoja de ruta de Seguimiento.
+       Uso: <th:block th:replace="~{prototipo/cozy-medieval/viaje-datos :: viaje(~{::pantalla})}">,
+       con <th:block th:fragment="pantalla"> en la página: adentro están donaciones y los
+       estados (pendiente, enCamino, entregada, conProblema). */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="viaje(pantalla)"
+    th:with="pendiente=${estados[0]}, enCamino=${estados[1]}, entregada=${estados[2]}, conProblema=${estados[3]},
+             hecho=${pasos[0].avance}, actual=${pasos[3].avance}, falta=${pasos[4].avance},
+             foto='/img/ejemplo-entrega.svg',
+             donaciones=${ {
+      {clave: 'arroz', numero: 7, titulo: 'Arroz largo fino', cantidad: '10 kg',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: null,
+       donada: '14 de octubre de 2026', llego: null, estado: pendiente,
+       nota: 'En el depósito, espera destino', foto: null, fotoAlt: null,
+       pasos: { {nombre: 'En depósito', detalle: '14 de octubre', avance: actual},
+                {nombre: 'Asignada', detalle: 'Pendiente', avance: falta},
+                {nombre: 'Lista para entregar', detalle: 'Pendiente', avance: falta},
+                {nombre: 'En camino', detalle: 'Pendiente', avance: falta},
+                {nombre: 'Entregada', detalle: 'Pendiente', avance: falta} },
+       cartas: { {texto: 'Recibimos tu donación en el depósito.', cuando: '14 de octubre, 17:00', fecha: '2026-10-14T17:00'} } },
+
+      {clave: 'leche', numero: 6, titulo: 'Leche en polvo', cantidad: '6 kg',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Merendero Ejemplo Sur',
+       donada: '13 de octubre de 2026', llego: null, estado: pendiente,
+       nota: 'Asignada, espera el camión', foto: null, fotoAlt: null,
+       seguimiento: 'Sale del depósito el 16 de octubre.',
+       pasos: { {nombre: 'En depósito', detalle: '13 de octubre', avance: hecho},
+                {nombre: 'Asignada', detalle: '14 de octubre', avance: actual},
+                {nombre: 'Lista para entregar', detalle: 'Pendiente', avance: falta},
+                {nombre: 'En camino', detalle: 'Pendiente', avance: falta},
+                {nombre: 'Entregada', detalle: 'Pendiente', avance: falta} },
+       cartas: { {texto: 'Asignamos tu donación a una necesidad de Merendero Ejemplo Sur.', cuando: '14 de octubre, 12:15', fecha: '2026-10-14T12:15'},
+                 {texto: 'Recibimos tu donación en el depósito.', cuando: '13 de octubre, 10:00', fecha: '2026-10-13T10:00'} } },
+
+      {clave: 'lentejas', numero: 5, titulo: 'Lentejas secas', cantidad: '15 kg',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Comedor Barrio Ejemplo',
+       donada: '12 de octubre de 2026', llego: null, estado: enCamino,
+       nota: 'Salió hoy a las 14:30', foto: null, fotoAlt: null,
+       seguimiento: 'El camión va por la mitad del camino. Posición aproximada, actualizada hoy a las 16:25.',
+       pasos: pasos,
+       cartas: { {texto: 'El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.', cuando: 'Hoy, 14:30', fecha: '2026-10-15T14:30'},
+                 {texto: 'Tu donación quedó lista para entregar.', cuando: '14 de octubre, 9:10', fecha: '2026-10-14T09:10'},
+                 {texto: 'Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.', cuando: '13 de octubre, 11:00', fecha: '2026-10-13T11:00'},
+                 {texto: 'Recibimos tu donación en el depósito.', cuando: '12 de octubre, 10:00', fecha: '2026-10-12T10:00'} } },
+
+      {clave: 'utiles', numero: 4, titulo: 'Útiles escolares', cantidad: '2 cajas',
+       categoria: 'cat-escolares', categoriaTexto: 'Útiles escolares', destino: 'Escuela Ejemplo 12',
+       donada: '8 de octubre de 2026', llego: null, estado: conProblema,
+       nota: 'No pudo llegar; sale de nuevo el 17 de octubre', foto: null, fotoAlt: null,
+       seguimiento: 'El camino estaba cortado. Última noticia: 11 de octubre, 16:10.',
+       pasos: { {nombre: 'En depósito', detalle: '8 de octubre', avance: hecho},
+                {nombre: 'Asignada', detalle: '9 de octubre', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '10 de octubre', avance: hecho},
+                {nombre: 'En camino', detalle: '11 de octubre: no pudo llegar', avance: actual},
+                {nombre: 'Entregada', detalle: 'Nueva salida: 17 de octubre', avance: falta} },
+       cartas: { {texto: 'El camión no pudo llegar a Escuela Ejemplo 12: el camino estaba cortado. Sale de nuevo el 17 de octubre.', cuando: '11 de octubre, 16:10', fecha: '2026-10-11T16:10'},
+                 {texto: 'El camión salió a entregar tus útiles escolares.', cuando: '11 de octubre, 9:00', fecha: '2026-10-11T09:00'},
+                 {texto: 'Asignamos tu donación a una necesidad de Escuela Ejemplo 12.', cuando: '9 de octubre, 10:20', fecha: '2026-10-09T10:20'} } },
+
+      {clave: 'zapatillas', numero: 3, titulo: 'Zapatillas', cantidad: '4 pares',
+       categoria: 'cat-vestimenta', categoriaTexto: 'Vestimenta', destino: null,
+       donada: '6 de octubre de 2026', llego: null, estado: pendiente,
+       nota: 'Espera una necesidad que le corresponda', foto: null, fotoAlt: null,
+       pasos: { {nombre: 'En depósito', detalle: '6 de octubre', avance: actual},
+                {nombre: 'Asignada', detalle: 'Pendiente', avance: falta},
+                {nombre: 'Lista para entregar', detalle: 'Pendiente', avance: falta},
+                {nombre: 'En camino', detalle: 'Pendiente', avance: falta},
+                {nombre: 'Entregada', detalle: 'Pendiente', avance: falta} },
+       cartas: { {texto: 'Recibimos tu donación en el depósito.', cuando: '6 de octubre, 15:00', fecha: '2026-10-06T15:00'} } },
+
+      {clave: 'ropa', numero: 2, titulo: 'Ropa de abrigo', cantidad: '12 prendas',
+       categoria: 'cat-vestimenta', categoriaTexto: 'Vestimenta', destino: 'Merendero Ejemplo Sur',
+       donada: '2 de octubre de 2026', llego: '9 de octubre de 2026', estado: entregada,
+       nota: 'Llegó el 9 de octubre', foto: foto,
+       fotoAlt: 'Cajas con la ropa de abrigo junto a la puerta del merendero',
+       pasos: { {nombre: 'En depósito', detalle: '2 de octubre', avance: hecho},
+                {nombre: 'Asignada', detalle: '3 de octubre', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '6 de octubre', avance: hecho},
+                {nombre: 'En camino', detalle: '9 de octubre', avance: hecho},
+                {nombre: 'Entregada', detalle: '9 de octubre', avance: hecho} },
+       cartas: { {texto: 'Merendero Ejemplo Sur confirmó que recibió tu ropa de abrigo y sumó una foto.', cuando: '9 de octubre, 18:05', fecha: '2026-10-09T18:05'},
+                 {texto: 'El camión salió a entregar tu ropa de abrigo.', cuando: '9 de octubre, 11:40', fecha: '2026-10-09T11:40'},
+                 {texto: 'Asignamos tu donación a una necesidad de Merendero Ejemplo Sur.', cuando: '3 de octubre, 9:30', fecha: '2026-10-03T09:30'} } },
+
+      {clave: 'fideos', numero: 1, titulo: 'Fideos secos', cantidad: '8 kg',
+       categoria: 'cat-alimentos', categoriaTexto: 'Alimentos', destino: 'Comedor Barrio Ejemplo',
+       donada: '1 de octubre de 2026', llego: '5 de octubre de 2026', estado: entregada,
+       nota: 'Llegó el 5 de octubre', foto: foto,
+       fotoAlt: 'Cajas con los fideos apiladas junto a la puerta del comedor',
+       pasos: { {nombre: 'En depósito', detalle: '1 de octubre', avance: hecho},
+                {nombre: 'Asignada', detalle: '2 de octubre', avance: hecho},
+                {nombre: 'Lista para entregar', detalle: '3 de octubre', avance: hecho},
+                {nombre: 'En camino', detalle: '5 de octubre', avance: hecho},
+                {nombre: 'Entregada', detalle: '5 de octubre', avance: hecho} },
+       cartas: { {texto: 'Comedor Barrio Ejemplo confirmó que recibió tus fideos y sumó una foto.', cuando: '5 de octubre, 17:20', fecha: '2026-10-05T17:20'},
+                 {texto: 'El camión salió a entregar tus fideos.', cuando: '5 de octubre, 10:00', fecha: '2026-10-05T10:00'},
+                 {texto: 'Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.', cuando: '2 de octubre, 12:00', fecha: '2026-10-02T12:00'} } }
+    } }">
+  <th:block th:replace="${pantalla}"></th:block>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,36 @@
+# Voz propia de Cozy / Medieval (brief-cozy-medieval.md, Voz): títulos y rótulos que Cozy dice a su
+# modo. Una línea por texto: <lo que dice Glassmorphism> => <lo que dice Cozy>. Un lado vacío es un
+# rótulo que Cozy suma (=> Estás acá) o que no usa (Tu impacto =>). Sin números, que son datos, y
+# nunca en un botón o un enlace. InterfazFitnessTest exige que cada línea esté en uso. En el
+# catálogo /estilos también entra la descripción de un componente que Cozy dibuja de otro modo
+# (la navegación son cajones, no una barra).
+
+# Inicio y navegación
+Recorrido de tu última donación => Tu viaje
+Notificaciones recientes => Cartas del camino
+Lo último que pasó con tus donaciones => Las últimas noticias de tus donaciones
+Tu misión actual => Tu misión en curso
+Categoría actual => Tu rango
+Tu impacto => Tu huella
+Donaciones =>
+=> Llegaron a destino
+=> Estás acá
+Patrón: Material Navigation rail. Fragmento => Patrón: Material Navigation bar. Fragmento
+: la barra lateral, con un nodo de la ruta por sección. La actual brilla. En las pantallas privadas, en el celular, pasa a una barra inferior: => : la cajonera, con un cajón por sección. El de la sección actual está abierto. En las pantallas privadas, en el celular, baja al borde de la mesa:
+
+# Catálogo
+Catálogo de componentes => El muestrario del cartógrafo
+=> Tintas, papeles y metales
+=> La letra del atlas
+=> Grabados a pluma
+=> Los signos del mapa
+=> Cuero, madera y latón
+=> Una esquela
+=> Los renglones del registro
+=> Las fotos de la prueba
+=> Mientras se dibuja
+=> Un aviso clavado en la mesa
+=> Una carta en la penumbra
+=> Tierra sin explorar
+=> Las fichas del viaje
+=> El libro de registro

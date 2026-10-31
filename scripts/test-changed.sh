@@ -141,7 +141,7 @@ if [[ "$ESCALATE_REACTOR" == "true" ]]; then
 fi
 
 # 5. Agrupar por módulo
-KNOWN_MODULES=("donaciones-service" "logistica-service" "notificaciones-service" "viandas-service" "incentivos-service" "integration-tests")
+KNOWN_MODULES=("donaciones-service" "logistica-service" "notificaciones-service" "viandas-service" "incentivos-service" "cliente-liviano" "integration-tests")
 
 for mod in "${KNOWN_MODULES[@]}"; do
   MOD_FILES=()

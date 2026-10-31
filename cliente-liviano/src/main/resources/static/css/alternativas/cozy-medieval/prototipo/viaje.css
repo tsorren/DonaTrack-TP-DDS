@@ -1,0 +1,896 @@
+/*
+ * Prototipo de Cozy, grupo "viaje": el viaje de las donaciones de una persona donante (inicio,
+ * Mis donaciones, su detalle y Seguimiento), sobre la mesa del cartógrafo. Usa las piezas de
+ * app.css (los signos del mapa, la nota, el mapa con esquineros, la carta y el libro) y agrega
+ * los objetos propios de estas pantallas: la hoja de consulta, el fichero con sus guías y fichas,
+ * la etiqueta del envío, la foto pegada a su pueblo, el mapa grabado de Seguimiento y su hoja de
+ * ruta. Solo tokens de uso. Las consultas de contenedor miden en rem fijos (la condición de
+ * @container no acepta var()), como en app.css.
+ */
+
+/* La página: los objetos sobre la mesa, con un ancho que se puede leer. */
+.viaje-pagina {
+  display: grid;
+  gap: var(--espacio-5);
+  max-width: var(--medida-hoja);
+  margin-inline: auto;
+}
+
+.viaje-pagina > * {
+  margin: 0;
+}
+
+/* La hoja de consulta: el título de la página y el filtro, en papel liso. */
+.viaje-cabecera {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  box-shadow: var(--sombra-objeto);
+  rotate: -0.25deg;
+}
+
+.viaje-cabecera h1 {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.viaje-bajada {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* El nombre de la sección del menú, chico y grabado en latón, sobre el título: en el HTML va
+   después del h1 (el título se lee primero) y se ve arriba, en la cabecera y en la cartela. */
+.viaje-pagina .viaje-rotulo {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: var(--espacio-2);
+  order: -1;
+  margin: 0;
+  color: var(--color-laton-texto);
+  font-size: var(--tamano-mini);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.viaje-rotulo::before {
+  content: "";
+  flex: none;
+  width: 1.5rem;
+  border-block-start: var(--borde-ancho) solid currentcolor;
+}
+
+/* El filtro: dos renglones del registro y el botón, que bajan si no entran. */
+.viaje-filtro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--espacio-3) var(--espacio-4);
+  margin: 0;
+  padding-block-start: var(--espacio-3);
+  border-block-start: var(--borde-regla-doble) double var(--color-filete);
+}
+
+.viaje-filtro-campo {
+  display: grid;
+  flex: 1 1 12rem;
+  gap: 0.375rem;
+}
+
+.viaje-filtro label {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.viaje-filtro select {
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-filete-tenue);
+  border-block-end: var(--borde-marco) solid var(--color-borde-control);
+  border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+  box-shadow: var(--sombra-hundido);
+  color: var(--color-texto);
+}
+
+.viaje-filtro button {
+  flex: none;
+  width: auto;
+  margin: 0;
+}
+
+/* El fichero: el cajón abierto, visto desde arriba, con sus paredes de nogal y el hueco oscuro. */
+.fichero {
+  display: grid;
+  gap: var(--espacio-4);
+  padding: var(--espacio-4) var(--espacio-2) var(--espacio-3);
+  background-color: var(--color-mesa-cajon);
+  border: var(--espacio-2) solid var(--color-mesa-veta);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-objeto), inset 0 0 0 2px var(--color-mesa-junta),
+    inset 0 10px 18px -6px var(--color-mesa-sombra);
+  container: fichero / inline-size;
+}
+
+/* Una guía por etapa: la tarjeta más alta, con la pestaña que asoma. Las pestañas avanzan hacia
+   la derecha con el viaje (de --medida-guia-paso 0 a 3), también en el celular, más angostas.
+   La guía es un details: la pestaña lo abre y lo cierra, con la flecha de Pico. */
+.guia {
+  --medida-guia-paso: 0;
+  --medida-pestana: min(23rem, 82%);
+
+  margin: 0;
+  border-block-end: var(--espacio-2) solid var(--color-superficie);
+  border-radius: 0 0 var(--radio-chico) var(--radio-chico);
+}
+
+.guia--1 {
+  --medida-guia-paso: 1;
+}
+
+.guia--2 {
+  --medida-guia-paso: 2;
+}
+
+.guia--3 {
+  --medida-guia-paso: 3;
+}
+
+/* La pestaña: el signo y la etapa arriba, la cantidad debajo y la flecha de Pico al costado. */
+.guia > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0 var(--espacio-3);
+  box-sizing: border-box;
+  width: min(100%, var(--medida-pestana));
+  min-height: var(--medida-toque-minimo);
+  margin-inline-start: max(0px, (100% - var(--medida-pestana)) * var(--medida-guia-paso) / 3);
+  padding: var(--espacio-2) var(--espacio-4);
+  background-color: var(--color-superficie);
+  border-radius: var(--radio-tarjeta) var(--radio-tarjeta) 0 0;
+  line-height: 1.3;
+}
+
+.guia[open] > summary {
+  margin-block-end: 0;
+}
+
+.guia > summary::after {
+  grid-area: 1 / 2 / span 2;
+  margin-inline-start: 0;
+}
+
+
+.guia > summary h2 {
+  margin: 0;
+  white-space: normal;
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-4);
+  font-style: normal;
+}
+
+.guia-cuenta {
+  padding-inline-start: calc(var(--medida-signo) + var(--espacio-1));
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.guia-cuerpo {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-2) var(--espacio-2);
+  background-color: var(--color-superficie);
+  border-start-end-radius: var(--radio-chico);
+}
+
+.guia-bajada {
+  margin: 0 var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* Las fichas: una por donación, como en un fichero de biblioteca. El número va al margen,
+   separado por la regla del margen; los datos, en renglones limpios. */
+.fichas {
+  display: grid;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: 0;
+}
+
+.ficha {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  grid-template-areas:
+    "numero titulo"
+    "numero cantidad"
+    "numero datos"
+    "numero estado";
+  gap: 0 var(--espacio-3);
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-3) var(--espacio-3) 0;
+  background-color: var(--color-fondo);
+  background-image: linear-gradient(to right, transparent calc(3rem + var(--espacio-3) / 2),
+    var(--color-filete) 0 calc(3rem + var(--espacio-3) / 2 + 1px), transparent 0);
+  border-radius: 2px;
+  box-shadow: var(--sombra-objeto-bajo);
+  list-style: none;
+}
+
+.ficha > * {
+  margin: 0;
+}
+
+.ficha-titulo {
+  grid-area: titulo;
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-4);
+}
+
+.ficha-titulo a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-enlace);
+}
+
+.ficha-numero {
+  grid-area: numero;
+  padding-block-start: 0.875rem;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  font-variant-numeric: lining-nums;
+  text-align: end;
+}
+
+.ficha-cantidad {
+  grid-area: cantidad;
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+.ficha-datos {
+  display: grid;
+  grid-area: datos;
+  gap: 0;
+  font-size: var(--tamano-chico);
+}
+
+.ficha-datos div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--espacio-2);
+}
+
+.ficha-datos dt {
+  color: var(--color-texto-suave);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.ficha-datos dd {
+  margin: 0;
+  color: var(--color-texto);
+}
+
+.ficha-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--espacio-3);
+  grid-area: estado;
+  margin-block-start: var(--espacio-2);
+}
+
+.ficha-nota {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* Con lugar, cada ficha es un asiento del registro en un renglón: qué y cuánto, para quién y
+   cuándo, y en qué etapa; las columnas caen a la par en todas las fichas. */
+@container fichero (min-width: 44rem) {
+  .fichero {
+    padding: var(--espacio-5) var(--espacio-4) var(--espacio-4);
+  }
+
+  .ficha {
+    grid-template-columns: 3.5rem minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.2fr);
+    grid-template-areas:
+      "numero titulo datos estado"
+      "numero cantidad datos estado";
+    align-items: start;
+    background-image: linear-gradient(to right, transparent calc(3.5rem + var(--espacio-3) / 2),
+      var(--color-filete) 0 calc(3.5rem + var(--espacio-3) / 2 + 1px), transparent 0);
+  }
+
+  .ficha-estado {
+    flex-direction: column;
+    align-items: start;
+    margin-block-start: 0.75rem;
+  }
+
+  .ficha-datos {
+    margin-block-start: 0.75rem;
+  }
+}
+
+/* La vuelta a la sección: un señalador de papel apoyado en la mesa, con la flecha hacia atrás. */
+.viaje-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  justify-self: start;
+  min-height: var(--medida-toque-minimo);
+  padding: 0 var(--espacio-4) 0 var(--espacio-3);
+  background-color: var(--color-fondo);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-objeto-bajo);
+  color: var(--color-enlace);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.viaje-volver .icono {
+  rotate: 180deg;
+}
+
+/* El detalle: el mapa grande; al lado, con lugar, la etiqueta y la carta. Las piezas de app.css
+   (el mapa y la carta) se ubican acá por columna, no por las zonas de la mesa del inicio. */
+.viaje-detalle > :is(.mesa-mapa, .etiqueta, .mesa-carta) {
+  grid-area: auto;
+  box-shadow: var(--sombra-objeto);
+}
+
+/* El h1 va primero en el HTML; la vuelta y el aviso del camino cortado se ven antes. */
+.viaje-detalle > .viaje-volver {
+  order: -2;
+}
+
+.viaje-detalle > .banner {
+  order: -1;
+  margin: 0;
+}
+
+/* La leyenda va siempre en columna, al lado de la foto: el mapa deja de medirse para app.css. */
+.detalle-mapa {
+  container-type: normal;
+}
+
+.detalle-mapa .mesa-mapa-cartela h1 {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+/* El viaje: el mapa a todo el ancho y, debajo, la leyenda y la foto. Si llegó, la foto sube hasta
+   quedar pegada debajo del pueblo de destino (el pueblo está al 89 % del ancho y al 61 % del alto
+   del mapa, que mide 16:9: 19 % del ancho por encima de su borde de abajo); el hueco de la que
+   falta queda debajo del mapa, sin pisarlo. Sin caja propia, .viaje deja de
+   medirse: el tamaño de las letras del mapa lo decide este contenedor, como lo hace app.css. */
+.detalle-viaje {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42%;
+  grid-template-areas:
+    "mapa mapa"
+    "leyenda foto";
+  gap: var(--espacio-4);
+  container: detalle / inline-size;
+}
+
+@container detalle (min-width: 30rem) {
+  .detalle-viaje :is(.viaje-numero, .viaje-bandera text) {
+    font-size: 22px;
+  }
+}
+
+.detalle-viaje > .viaje {
+  display: contents;
+}
+
+.detalle-viaje .viaje-mapa {
+  grid-area: mapa;
+}
+
+.detalle-viaje .recorrido {
+  grid-area: leyenda;
+  align-self: start;
+}
+
+/* ┄╳┄ Si el camino se cortó, la marca de lacre sobre el tramo que falta: entre la cuarta parada y
+   el pueblo, al 79 % del ancho del mapa y al 45 % de su alto (el 25,5 % de su ancho). */
+.detalle-corte {
+  z-index: 2;
+  grid-area: mapa;
+  place-self: start;
+  width: 3.5rem;
+  height: 2rem;
+  margin: 25.5% 0 0 79.3%;
+  translate: -50% -50%;
+  background-color: var(--color-signo-problema);
+  mask: url("../../../../img/cozy-medieval/signo-con-problema.svg") center / contain no-repeat;
+}
+
+@media (forced-colors: active) {
+  .detalle-corte {
+    forced-color-adjust: none;
+    background-color: var(--color-forzado-texto);
+  }
+}
+
+/* La foto pegada: la copia con su borde de papel y la cinta arriba, apenas torcida, debajo del
+   pueblo sellado; el pie dice cuándo llegó y de quién es la foto. */
+.foto-pegada {
+  position: relative;
+  z-index: 2;
+  grid-area: foto;
+  align-self: start;
+  margin: calc(-19cqi - var(--espacio-4)) 0 0;
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-3);
+  background-color: var(--color-fondo);
+  box-shadow: var(--sombra-objeto);
+  rotate: 2deg;
+}
+
+.foto-pegada::before {
+  content: "";
+  position: absolute;
+  top: -0.625rem;
+  left: 50%;
+  width: 40%;
+  height: 1.25rem;
+  translate: -50% 0;
+  background-color: var(--color-superficie);
+  box-shadow: var(--sombra-foto);
+  rotate: -4deg;
+}
+
+.foto-pegada img {
+  display: block;
+  width: 100%;
+  height: auto;
+  box-shadow: var(--sombra-foto);
+}
+
+.foto-pegada figcaption {
+  display: grid;
+  margin-block-start: var(--espacio-2);
+  color: var(--color-texto);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.foto-pegada figcaption span + span {
+  color: var(--color-texto-suave);
+}
+
+/* Mientras viaja, el hueco en lápiz donde va a ir la foto, con lo que falta escrito: debajo del
+   mapa, sin subir sobre el dibujo (solo la foto que llegó se pega al pueblo). */
+.foto-pegada--hueco {
+  display: grid;
+  place-items: center;
+  justify-self: end;
+  width: min(100%, 15rem);
+  aspect-ratio: 8 / 5;
+  margin: 0;
+  padding: var(--espacio-3);
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ruta) dashed var(--color-borde-control);
+  box-shadow: none;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  line-height: 1.35;
+  text-align: center;
+  rotate: none;
+}
+
+.foto-pegada--hueco::before {
+  content: none;
+}
+
+/* La etiqueta del envío: cartulina con el ojal de latón a la izquierda y las esquinas cortadas,
+   atada a lo que viaja. Adentro, los datos en limpio, uno por renglón. */
+.etiqueta {
+  position: relative;
+  padding: var(--espacio-4) var(--espacio-4) var(--espacio-4) var(--espacio-7);
+  background-color: var(--color-superficie);
+  clip-path: polygon(var(--espacio-5) 0, 100% 0, 100% 100%, var(--espacio-5) 100%,
+    0 calc(100% - var(--espacio-5)), 0 var(--espacio-5));
+  rotate: -0.6deg;
+}
+
+.etiqueta::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: var(--espacio-4);
+  width: 1rem;
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  background-color: var(--color-mesa-madera);
+  border: 0.25rem solid var(--color-laton-brillante);
+  border-radius: var(--radio-sello);
+  box-shadow: 0 0 0 var(--borde-ancho) var(--color-signo-trazo);
+}
+
+.etiqueta h2 {
+  margin: 0 0 var(--espacio-3);
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-2);
+}
+
+.etiqueta dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--espacio-4);
+  margin: 0;
+}
+
+.etiqueta dl div {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+  padding: 0.375rem 0;
+  border-block-end: var(--borde-ancho) solid var(--color-filete);
+}
+
+.etiqueta dt {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.etiqueta dd {
+  margin: 0;
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+.detalle-cartas .notas li {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.detalle-cartas h2 {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-2);
+}
+
+/* Con lugar, el mapa a la izquierda, en dos tercios; la etiqueta y la carta, a su derecha. */
+@container mesa (min-width: 56rem) {
+  .viaje-detalle {
+    grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+    align-items: start;
+    column-gap: var(--espacio-6);
+  }
+
+  .viaje-detalle > :is(.viaje-volver, .banner) {
+    grid-column: 1 / -1;
+  }
+
+  .viaje-detalle > .mesa-mapa {
+    grid-column: 1;
+    grid-row: span 2;
+  }
+
+  .viaje-detalle > :is(.etiqueta, .mesa-carta) {
+    grid-column: 2;
+  }
+}
+
+/* Seguimiento: el mapa grabado y, al lado, la hoja de ruta. */
+.viaje-seguimiento > :is(.mesa-mapa, .hoja-ruta) {
+  grid-area: auto;
+  box-shadow: var(--sombra-objeto);
+}
+
+.seguimiento-hoja .mesa-mapa-cartela h1 {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+/* El mapa grabado: la tierra, la cuadrícula y la cenefa del mapa del viaje (app.css), un poco
+   más alto para que entren tres caminos con sus nombres. */
+.seguimiento-mapa {
+  aspect-ratio: 8 / 5;
+  container: seguimiento / inline-size;
+}
+
+/* El terreno, más tenue que en el mapa del viaje: acá mandan los caminos y los nombres. */
+.seguimiento-mapa::before {
+  background-color: var(--color-borde);
+}
+
+.seguimiento-pueblo .viaje-signo {
+  fill: var(--color-fondo-pagina);
+  stroke: var(--color-signo-tinta);
+  stroke-width: 3;
+}
+
+/* ○ Lo que falta, en el camino que todavía no salió. */
+.seguimiento-falta {
+  fill: var(--color-fondo-pagina);
+  stroke: var(--color-signo-tinta);
+  stroke-width: 3;
+}
+
+/* ┄▸ El camión, en su posición aproximada: la cabeza del camino de tinta. */
+.seguimiento-camion > circle:first-child {
+  fill: var(--color-fondo);
+  stroke: var(--color-titulo);
+  stroke-width: 3;
+}
+
+.seguimiento-camion path,
+.seguimiento-camion circle + path ~ circle {
+  fill: none;
+  stroke: var(--color-titulo);
+  stroke-width: 2;
+}
+
+/* ┄╳┄ El camino cortado: la cruz de lacre donde se cortó. */
+.seguimiento-corte {
+  stroke: var(--color-signo-problema);
+  stroke-width: 6;
+}
+
+/* Los nombres del mapa, con un halo de papel. En el mapa chico, más grandes en su dibujo. */
+.seguimiento-rotulo {
+  fill: var(--color-titulo);
+  stroke: var(--color-fondo-pagina);
+  stroke-width: 6px;
+  paint-order: stroke;
+  font-family: var(--fuente-texto);
+  font-size: 30px;
+  font-style: italic;
+  text-anchor: middle;
+}
+
+.seguimiento-rotulo--inicio {
+  text-anchor: start;
+}
+
+.seguimiento-rotulo--fin {
+  text-anchor: end;
+}
+
+.seguimiento-rotulo--fuerte {
+  font-style: normal;
+  font-weight: 800;
+}
+
+.seguimiento-rotulo--problema {
+  fill: var(--color-error-texto);
+  text-anchor: start;
+}
+
+@container seguimiento (min-width: 30rem) {
+  .seguimiento-rotulo {
+    font-size: 20px;
+  }
+}
+
+@container seguimiento (min-width: 48rem) {
+  .seguimiento-rotulo {
+    font-size: 17px;
+  }
+}
+
+/* La hoja de ruta: una hoja de talonario, con la línea de puntos donde se cortó del taco. Cada
+   entrega lleva el número del mapa en su columna y sus datos al lado. */
+.hoja-ruta {
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-3);
+  background-color: var(--color-fondo);
+  background-image: radial-gradient(circle, var(--color-mesa-madera) 0 3px, transparent 3.5px);
+  background-position: 0 0.375rem;
+  background-repeat: repeat-x;
+  background-size: 0.875rem 0.875rem;
+  border-radius: 0 0 2px 2px;
+  rotate: 0.4deg;
+}
+
+.hoja-ruta > * {
+  margin: 0;
+}
+
+.hoja-ruta h2 {
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-2);
+}
+
+.hoja-ruta-lista {
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+
+.hoja-ruta-entrega {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  column-gap: var(--espacio-3);
+  margin: 0;
+  padding: var(--espacio-2) 0 var(--espacio-3);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+  list-style: none;
+}
+
+.hoja-ruta-entrega > :not(.hoja-ruta-numero) {
+  grid-column: 2;
+  margin: 0;
+}
+
+.hoja-ruta-numero {
+  display: grid;
+  grid-row: span 4;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-block-start: 0.375rem;
+  border: var(--borde-marco) solid var(--color-titulo);
+  border-radius: var(--radio-sello);
+  color: var(--color-titulo);
+  font-weight: 800;
+  font-variant-numeric: lining-nums;
+}
+
+.hoja-ruta-entrega h3 {
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-4);
+}
+
+.hoja-ruta-entrega h3 a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  color: var(--color-enlace);
+}
+
+.hoja-ruta-destino {
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+.hoja-ruta-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--espacio-3);
+  margin-block-start: var(--espacio-1);
+  color: var(--color-texto);
+  font-size: var(--tamano-chico);
+}
+
+.hoja-ruta-actualizado,
+.hoja-ruta-pie {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.hoja-ruta-pie {
+  padding-block-start: var(--espacio-3);
+  border-block-start: var(--borde-regla-doble) double var(--color-filete);
+}
+
+/* Los estados vacíos: la tierra sin explorar del fragmento, más grande, como un mapa en blanco
+   apoyado en la mesa; debajo, la pista de primer uso con las etapas del viaje. */
+.viaje-vacio > .estado-vacio {
+  padding-block-end: var(--espacio-7);
+  box-shadow: var(--sombra-objeto);
+}
+
+.viaje-vacio > .estado-vacio h3 {
+  font-family: var(--fuente-titulos);
+  font-size: var(--tamano-titulo-2);
+}
+
+.viaje-etapas {
+  padding: var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  box-shadow: var(--sombra-objeto-bajo);
+  rotate: 0.3deg;
+}
+
+.viaje-etapas h2 {
+  margin: 0 0 var(--espacio-3);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-4);
+}
+
+.viaje-etapas ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--espacio-3) var(--espacio-5);
+  margin: 0;
+  padding: 0;
+}
+
+.viaje-etapas li {
+  display: grid;
+  gap: var(--espacio-1);
+  margin: 0;
+  list-style: none;
+}
+
+.viaje-etapas small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+/* Con lugar, el mapa a la izquierda, en dos tercios, y la hoja de ruta a su lado. */
+@container mesa (min-width: 56rem) {
+  .viaje-seguimiento {
+    grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr);
+    align-items: start;
+    column-gap: var(--espacio-6);
+  }
+}
+
+/* Con colores forzados (alto contraste) la hoja pinta los fondos y borra las sombras: los papeles,
+   las pestañas del fichero y la vuelta conservan su borde. app.css deja sin ajustar el dibujo del
+   mapa; las piezas propias del mapa grabado (el terreno, los pueblos, ○, el camión, ╳ y los
+   nombres) toman el color del texto, con el centro de los huecos en el de la hoja. */
+@media (forced-colors: active) {
+  .viaje-cabecera,
+  .guia > summary,
+  .ficha,
+  .viaje-volver,
+  .etiqueta,
+  .foto-pegada,
+  .hoja-ruta,
+  .viaje-etapas {
+    border: var(--borde-ancho) solid;
+  }
+
+  .seguimiento-mapa::before {
+    background-color: var(--color-forzado-texto);
+  }
+
+  .seguimiento-pueblo .viaje-signo,
+  .seguimiento-falta,
+  .seguimiento-camion > circle:first-child {
+    fill: var(--color-forzado-fondo);
+    stroke: var(--color-forzado-texto);
+  }
+
+  .seguimiento-camion path,
+  .seguimiento-camion circle + path ~ circle,
+  .seguimiento-corte {
+    stroke: var(--color-forzado-texto);
+  }
+
+  .seguimiento-rotulo {
+    fill: var(--color-forzado-texto);
+    stroke: var(--color-forzado-fondo);
+  }
+}
