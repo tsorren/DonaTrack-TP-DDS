@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 16">
+  <!-- Signo del camino de tinta: un tramo entero del recorrido de una donación, de trazo lleno,
+       sin cortes ni punta (a diferencia de ┄▸ "en camino"). En la leyenda acompaña a las donaciones
+       realizadas: la tinta es una donación. Dibujo propio de la Alternativa Cozy / Medieval, de un
+       solo color: app.css lo usa como máscara. -->
+  <path d="M2.5 12.5C8.5 12.5 8 8 14 8S19.5 3.5 25.5 3.5" fill="none" stroke="#000"
+        stroke-width="2.2" stroke-linecap="round"/>
+</svg>
