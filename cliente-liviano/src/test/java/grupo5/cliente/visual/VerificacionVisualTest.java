@@ -9,6 +9,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Response;
+import com.microsoft.playwright.options.ScreenshotAnimations;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,7 +39,9 @@ import tools.jackson.databind.json.JsonMapper;
  * {@code -Dverificacion.variantes=<tema>-a,<tema>-b} hace lo mismo con cada variante, sobre la
  * alternativa de {@code -Dverificacion.alternativa=<nombre>} si se indica. Con {@code
  * -Dverificacion.paginas=/a,/b} recorre esas rutas en lugar de las de paginas.txt. Resultado en
- * {@code target/capturas/}: PNG, index.html, comparacion.html y reporte.json.
+ * {@code target/capturas/}: PNG, index.html, comparacion.html y reporte.json. Las capturas congelan
+ * las animaciones de la página, no las que van dentro de una imagen (el spinner de Pico): para
+ * comparar dos corridas, {@code scripts/visual/Imagenes.java comparar} con carpeta de ruido.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("maqueta")
@@ -283,7 +286,8 @@ class VerificacionVisualTest {
               pagina.screenshot(
                   new Page.ScreenshotOptions()
                       .setPath(CAPTURAS.resolve(archivo))
-                      .setFullPage(true));
+                      .setFullPage(true)
+                      .setAnimations(ScreenshotAnimations.DISABLED));
               capturas.add(new Captura(ruta, variante, ancho, archivo, pagina.evaluate(SECCIONES)));
               revisarAccesibilidad(pagina, ruta, variante, ancho, fallas);
               revisarToque(pagina, ruta, variante, ancho, fallas);
@@ -379,7 +383,8 @@ class VerificacionVisualTest {
     String medida = AnchosDeReferencia.CELULAR + "x" + AnchosDeReferencia.ALTO_CELULAR;
     pagina.screenshot(
         new Page.ScreenshotOptions()
-            .setPath(CAPTURAS.resolve(nombreDeCaptura(ruta, opcion, medida))));
+            .setPath(CAPTURAS.resolve(nombreDeCaptura(ruta, opcion, medida)))
+            .setAnimations(ScreenshotAnimations.DISABLED));
   }
 
   /**

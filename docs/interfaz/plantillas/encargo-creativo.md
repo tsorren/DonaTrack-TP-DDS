@@ -84,7 +84,7 @@ alternativa ([Libertad creativa](../direccion-de-arte.md#libertad-creativa)).
 | Conceptos en la iteración 1 | de 2 a 4 (recomendado: 3) |
 | Rama | `E6_<nombre>` (con PR hacia `ENTREGA_6`, el CI exige el prefijo) |
 | Al terminar | PR en borrador hacia `<rama base>` · solo la rama, sin push |
-| Presupuesto | tope de uso; si se acaba, la corrida cierra la iteración en curso y deja la nota de traspaso |
+| Presupuesto | lo propone el agente (agentes, tokens y tiempo, con la corrida de prueba como medida) y se aprueba con el encargo; si se acaba el uso, se retoma desde la última nota de traspaso |
 | Modelo de la sesión | Opus (los roles de la corrida declaran el suyo en la skill) |
 
 ## 10. Aprobación

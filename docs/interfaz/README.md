@@ -170,7 +170,7 @@ Cada regla vive en un solo archivo. Para cambiar algo, se edita ese archivo y na
 | Diseñar algo nuevo y creativo sin estar presente | Uso `relevamiento-creativo` (preguntas y encargo) y después `corrida-creativa` (el workflow `.claude/workflows/corrida-creativa.js`) |
 | Cambiar cómo se encarga o se critica el trabajo creativo | Edito las plantillas `encargo-constructor.md` o `encargo-critico.md`; el workflow las lee |
 | Cambiar la identidad (colores, letras) | Edito solo la sección de valores base del `tokens.css` de esa alternativa |
-| Sumar una alternativa de identidad | Creo su brief en `identidad/` y la carpeta `static/css/alternativas/<nombre>/` con su `tokens.css` y su `app.css`; la comprobación visual la recorre sola |
+| Sumar una alternativa de identidad | Creo su brief en `identidad/`, la carpeta `static/css/alternativas/<nombre>/` con su `tokens.css` y su `app.css`, el juego completo de plantillas en `templates/alternativas/<nombre>/` (una gemela por plantilla y fragmento; el test de reglas lo exige) y su tabla de voz en `src/test/resources/voz/<nombre>.txt`; la comprobación visual la recorre sola |
 | Cambiar los anchos de referencia | Edito la constante `AnchosDeReferencia` y la tabla de arriba |
 | Cambiar una regla de diseño | Edito [dirección de arte](direccion-de-arte.md) o [patrones y textos](patrones-y-microcopy.md) |
 | Sumar una skill | Creo `.agents/skills/<nombre>/SKILL.md` y su adaptador `.claude/skills/<nombre>/SKILL.md` (copiar uno existente y cambiar nombre y descripción); la agrego a `docs/context-index.md` |

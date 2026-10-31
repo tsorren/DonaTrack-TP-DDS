@@ -12,7 +12,7 @@ java scripts/visual/Imagenes.java <orden> <argumentos>
 | Orden | Para qué | Ejemplo |
 |---|---|---|
 | `jpg` | Pasar capturas a JPG de 400 KB o menos (la evidencia de `docs/interfaz/evidencia/`). Con una carpeta, convierte todos los PNG que cumplen el glob | `jpg cliente-liviano/target/capturas docs/interfaz/evidencia/cozy-medieval/concepto-portada 400 "*--concepto-*"` |
-| `comparar` | Comprobar que una alternativa no cambió: compara píxel a píxel los PNG que se llaman igual y dice la caja de cada diferencia. Sin glob, solo los de Glassmorphism (sin `--` en el nombre). Sale con 1 si algo cambió o falta | `comparar <carpeta-antes> cliente-liviano/target/capturas` |
+| `comparar` | Comprobar que una alternativa no cambió: compara píxel a píxel los PNG que se llaman igual y dice la caja de cada diferencia. Sin glob, solo los de Glassmorphism (sin `--` en el nombre). Con una carpeta de ruido (otra corrida de la misma base), no cuenta lo que ya cambia entre antes y ruido. Sale con 1 si algo cambió o falta | `comparar <carpeta-antes> cliente-liviano/target/capturas "*.png" <carpeta-ruido>` |
 | `recorte` | Una zona de una captura, opcionalmente escalada (para mirar de cerca o para un epígrafe) | `recorte a.png zona.png 0 0 1280 900 0.5` |
 | `lado` | La misma zona de dos capturas, lado a lado y con rótulos | `lado antes.png despues.png lado.png 0 0 1280 900 0.5 "Antes" "Después"` |
 | `tamano` | Ancho × alto de una o varias imágenes | `tamano a.png b.png` |
@@ -41,3 +41,16 @@ mvn test -pl cliente-liviano -Pvisual -Dtest=VerificacionVisualTest -Dsurefire.f
 
 Además de la página completa en 360, 1280 y 1920 px, deja la primera pantalla del celular
 (`<página>-360x640.png`): lo que se ve sin desplazar.
+
+## Comparar dos corridas sin falsas alarmas
+
+Las capturas congelan las animaciones de la página, pero no las que van dentro de una imagen (el
+spinner de Pico, en los botones `aria-busy`): dos corridas del mismo código pueden diferir en unos
+cientos de píxeles. Para comprobar que algo no cambió, corré la verificación dos veces antes de
+empezar (la primera es el antes y la segunda, el ruido) y pasá las dos a `comparar`. Las celdas de
+16 px donde antes y ruido ya difieren, y sus vecinas, no cuentan; un cambio en cualquier otro lugar
+sí.
+
+```bash
+java scripts/visual/Imagenes.java comparar <antes> cliente-liviano/target/capturas "{estilos,estilos-armazon}-[0-9]*.png" <ruido>
+```

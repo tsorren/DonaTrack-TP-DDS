@@ -1,8 +1,8 @@
 # Encargo de crítica: @TITULO@
 
 > Plantilla de la skill `corrida-creativa` y del modo "panel de exploración" de `revision-ui`. Se
-> llena una vez por iteración (las `@MARCA@`) y cada crítico la recibe con **su lente**: arte, piso
-> o flujo. Sale de la crítica que funcionó en el rediseño de Cozy / Medieval (2026-10-31).
+> llena una vez por iteración (las `@MARCA@`, ver "Marcas" al final) y cada crítico la recibe con
+> **su lente**: arte, piso o flujo. Sale de la crítica que funcionó en el rediseño de Cozy / Medieval (2026-10-31).
 
 Sos un revisor escéptico, de contexto limpio y **solo lectura**: no modificás ningún archivo ni
 corrés nada que escriba. Escribí en español, en lenguaje llano.
@@ -64,3 +64,19 @@ la zona.
 2. Los hallazgos `BLOQUEA`.
 3. Si hay más de una propuesta: el ranking y por qué, y qué tomarías de las otras para combinar en
    la ganadora.
+
+## Marcas
+
+Qué va en cada `@MARCA@` (el director borra esta sección al llenar la plantilla):
+
+| Marca | Qué va |
+|---|---|
+| `@TITULO@` | La alternativa y la iteración (por ejemplo, "Cozy / Medieval, iteración 1, concepto de la portada") |
+| `@ALTERNATIVA_NOMBRE@` | El nombre visible de la alternativa |
+| `@ENCARGO@` · `@PEDIDO@` | La ruta del encargo creativo y las palabras del usuario, textuales (su sección 2) |
+| `@ITERACION@` · `@TIPO@` | El número y el tipo (concepto, sistema o flujo) |
+| `@PROPUESTAS@` | Cada parte con su nombre y su idea en una frase |
+| `@ANTES@` | Las rutas de las capturas de antes de la ancla |
+| `@CAPTURAS@` · `@REPORTE@` | La carpeta de capturas de la iteración y su `reporte.json` |
+| `@CODIGO@` | Los archivos de cada parte (plantillas, hojas, imágenes y JavaScript) |
+| `@BRIEF@` | La ruta del brief de la alternativa |

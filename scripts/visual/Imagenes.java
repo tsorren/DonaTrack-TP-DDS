@@ -36,7 +36,7 @@ public class Imagenes {
       """
       Uso: java scripts/visual/Imagenes.java <orden> <argumentos>
         jpg <origen.png|carpeta> <destino.jpg|carpeta> [maxKB=400] [glob=*.png]
-        comparar <antes> <después> [glob]   sin glob: los PNG de Glassmorphism (sin "--")
+        comparar <antes> <después> [glob] [ruido]   sin glob: los PNG de Glassmorphism (sin "--")
         recorte <entrada> <salida.png> <x> <y> <ancho> <alto> [escala=1]
         lado <a> <b> <salida.png> <x> <y> <ancho> <alto> <escala> <rótulo A> <rótulo B>
         tamano <imagen>...
@@ -44,6 +44,9 @@ public class Imagenes {
       """;
 
   private static final long KB = 1024;
+
+  /** Lado de la celda de ruido: un cambio a una celda o menos de una zona ruidosa no cuenta. */
+  private static final int CELDA = 16;
 
   public static void main(String[] a) throws IOException {
     System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true, UTF_8));
@@ -132,11 +135,14 @@ public class Imagenes {
 
   /**
    * Compara píxel a píxel los PNG de antes con los de después que se llaman igual; de cada uno
-   * distinto, dice la caja donde cambió. Sale con 1 si alguno cambió o falta.
+   * distinto, dice la caja donde cambió. Sale con 1 si alguno cambió o falta. Con una carpeta de
+   * ruido (otra corrida de la misma base), no cuenta lo que ya difiere entre antes y ruido: las
+   * animaciones que la captura no congela.
    */
   private static int comparar(String[] a) throws IOException {
     Path antes = Path.of(a[1]);
     Path despues = Path.of(a[2]);
+    Path ruido = a.length > 4 ? Path.of(a[4]) : null;
     List<Path> pngs =
         a.length > 3
             ? archivos(antes, a[3])
@@ -147,7 +153,12 @@ public class Imagenes {
     for (Path png : pngs) {
       String nombre = png.getFileName().toString();
       Path otra = despues.resolve(nombre);
-      String diferencia = Files.exists(otra) ? diferencia(leer(png), leer(otra)) : "FALTA";
+      BufferedImage base = leer(png);
+      boolean[][] zonas =
+          ruido != null && Files.exists(ruido.resolve(nombre))
+              ? zonasDeRuido(base, leer(ruido.resolve(nombre)))
+              : null;
+      String diferencia = Files.exists(otra) ? diferencia(base, leer(otra), zonas) : "FALTA";
       System.out.println((diferencia.isEmpty() ? "IGUAL " : diferencia + " ") + nombre);
       if (!diferencia.isEmpty()) {
         distintas++;
@@ -155,13 +166,41 @@ public class Imagenes {
     }
     System.out.println(
         distintas == 0
-            ? "SIN CAMBIOS (" + pngs.size() + " capturas)"
+            ? "SIN CAMBIOS (" + pngs.size() + " capturas" + (ruido == null ? ")" : ", sin el ruido)")
             : "HAY DIFERENCIAS: " + distintas + " de " + pngs.size());
     return distintas == 0 ? 0 : 1;
   }
 
-  /** Vacío si son iguales; si no, cuántos píxeles cambiaron y en qué caja. */
-  private static String diferencia(BufferedImage x, BufferedImage y) {
+  /** Las celdas de CELDA px donde dos corridas de la misma base ya difieren (nada si no miden igual). */
+  private static boolean[][] zonasDeRuido(BufferedImage x, BufferedImage y) {
+    int ancho = x.getWidth();
+    boolean[][] zonas = new boolean[x.getHeight() / CELDA + 1][ancho / CELDA + 1];
+    if (ancho == y.getWidth() && x.getHeight() == y.getHeight()) {
+      int[] px = x.getRGB(0, 0, ancho, x.getHeight(), null, 0, ancho);
+      int[] py = y.getRGB(0, 0, ancho, x.getHeight(), null, 0, ancho);
+      for (int i = 0; i < px.length; i++) {
+        if (px[i] != py[i]) {
+          zonas[i / ancho / CELDA][i % ancho / CELDA] = true;
+        }
+      }
+    }
+    return zonas;
+  }
+
+  /** Si el píxel cae en una celda de ruido o en una vecina. */
+  private static boolean enRuido(boolean[][] zonas, int x, int y) {
+    for (int f = y / CELDA - 1; f <= y / CELDA + 1; f++) {
+      for (int c = x / CELDA - 1; c <= x / CELDA + 1; c++) {
+        if (f >= 0 && f < zonas.length && c >= 0 && c < zonas[f].length && zonas[f][c]) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /** Vacío si son iguales (sin contar las zonas de ruido); si no, cuántos píxeles y en qué caja. */
+  private static String diferencia(BufferedImage x, BufferedImage y, boolean[][] ruido) {
     int ancho = x.getWidth();
     int alto = x.getHeight();
     if (ancho != y.getWidth() || alto != y.getHeight()) {
@@ -175,7 +214,7 @@ public class Imagenes {
     int x1 = -1;
     int y1 = -1;
     for (int i = 0; i < px.length; i++) {
-      if (px[i] != py[i]) {
+      if (px[i] != py[i] && (ruido == null || !enRuido(ruido, i % ancho, i / ancho))) {
         distintos++;
         x0 = Math.min(x0, i % ancho);
         x1 = Math.max(x1, i % ancho);

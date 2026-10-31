@@ -64,7 +64,8 @@ así. Las opciones de abajo son una guía: se adaptan a lo que mostraron las ref
 **Ronda 3 — libertades, voz y juego**
 
 1. "¿Qué puede cambiar la corrida?" (`multiSelect`) → "La composición de cada pantalla
-   (Recomendada)" · "La navegación" · "La voz en títulos y rótulos" · "JavaScript como mejora".
+   (Recomendada)" · "La navegación" · "La voz en títulos y rótulos" · "Movimiento e interacción
+   encima de lo que ya funciona" (es JavaScript propio como mejora; la página sigue andando sin él).
    Datos, acciones, piso, stack y la otra alternativa no se preguntan: son fijos.
 2. "¿Cómo habla?" → dos o tres tonos con un título de muestra cada uno en el `preview` (la tabla
    "Glassmorphism dice / esta dice").
@@ -77,7 +78,8 @@ así. Las opciones de abajo son una guía: se adaptan a lo que mostraron las ref
    más. Es la pantalla ancla de la iteración de concepto.
 2. "¿Hasta dónde llega?" → "Tres vueltas: concepto, sistema y flujo completo (Recomendada)" · "Dos:
    concepto y sistema" · "Una: solo conceptos de una pantalla".
-3. "¿Abro un PR al terminar?" → "Sí, en borrador (Recomendada)" · "No, dejo la rama".
+3. "Al terminar, ¿dejo el trabajo listo para revisar en GitHub?" → "Sí, como borrador para revisar
+   (Recomendada)" (un PR en borrador) · "No, lo dejo guardado en una rama".
 
 ## 3. Armar el encargo
 
@@ -90,13 +92,18 @@ así. Las opciones de abajo son una guía: se adaptan a lo que mostraron las ref
    [`brief-identidad.md`](../../../docs/interfaz/plantillas/brief-identidad.md) en
    `docs/interfaz/identidad/brief-<nombre>.md`.
 4. Completar la sección 9 (la corrida): conceptos (3 por defecto), rama (`E6_<nombre>` si hay PR),
-   presupuesto y el tamaño estimado en unidades contadas (iteraciones × conceptos, más críticos y
-   arreglos).
+   el tamaño en unidades contadas y el presupuesto. El presupuesto lo propone el agente, no se
+   pregunta: unos 10 agentes por iteración con 2 conceptos (director, constructores, integración,
+   3 críticos, decisión, arreglos y cierre), uno de preparación y de 4 a 7 entre el cierre, la
+   auditoría y el PR. La corrida de prueba (1 iteración y 2 conceptos) usó 15 agentes, unos 2
+   millones de tokens de los subagentes y 74 minutos (`corrida-creativa`, sección 2). Se aprueba
+   junto con el encargo.
 
 ## 4. Aprobación
 
 Mostrar un resumen de 5 a 8 líneas (qué se diseña, el mensaje, lo que se toma y lo que no, hasta
-dónde llega, PR sí o no, tamaño) y preguntar una sola cosa: "¿Arranco la corrida con este encargo?"
+dónde llega, si queda listo para revisar en GitHub, el tamaño y el presupuesto) y preguntar una
+sola cosa: "¿Arranco la corrida con este encargo?"
 → "Sí, arrancá (Recomendada)" · "Cambiar algo" · "Guardarlo y arrancar después".
 
 Con el sí:

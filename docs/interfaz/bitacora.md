@@ -48,12 +48,19 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
   explícito, la divergencia real y los guardarraíles automáticos. Escrito, se repite sin depender
   de una sesión.
 - **Costo:** una corrida completa usa decenas de agentes (unos 38 con tres iteraciones y dos
-  conceptos). La iteración de flujo depende de `PrototipoController`, que hoy sirve solo a Cozy /
+  conceptos). La de prueba, con una iteración y dos conceptos, usó 15 agentes, unos 2 millones de
+  tokens de los subagentes y 74 minutos. La iteración de flujo depende de `PrototipoController`, que hoy sirve solo a Cozy /
   Medieval. Para comparar conceptos sobre una pantalla del prototipo, las variantes de estructura
   ahora también la reemplazan (`?variante=` en `/prototipo/<pantalla>`).
 - **Quién decidió:** usuario (aprobó la propuesta, opción A, el 2026-10-31).
-- **Evidencia:** una corrida de prueba sobre la portada pública (una iteración, dos conceptos),
-  con su nota en la carpeta de notas de la sesión.
+- **Evidencia:** una corrida de prueba sobre la portada pública de Cozy (una iteración, dos
+  conceptos, sin PR) en la rama local `prueba/corrida-creativa-portada`, que no se sube: terminó
+  con la auditoría en PASS y ganó "El libro del viaje". Mostró tres fallas del proceso, ya
+  corregidas: la comparación de lo que no se diseña daba DISTINTO sin cambios reales (spinners
+  animados; ahora las capturas congelan las animaciones y `comparar` descuenta una carpeta de
+  ruido), los arreglos de la auditoría dejaban vieja la página de antes y después, y el
+  pre-auditor no podía ver qué archivos cambiaron. Nota de traspaso en la carpeta de notas de la
+  sesión.
 
 ### 2026-10-31 · flujo (Cozy / Medieval) · Iteración 3: el flujo completo del sitio, como prototipo
 

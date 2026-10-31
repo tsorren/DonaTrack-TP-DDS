@@ -2,8 +2,8 @@
 
 > Plantilla de la skill `corrida-creativa` (sale de los encargos que funcionaron en el rediseño de
 > Cozy / Medieval, 2026-10-31). El director de cada iteración la copia a la carpeta de la corrida,
-> reemplaza cada `@MARCA@`, borra las secciones de "Qué se construye" que no son de esta iteración y
-> la deja autocontenida: quien la recibe no conoce la conversación ni el encargo creativo de memoria.
+> reemplaza cada `@MARCA@` (qué va en cada una: sección "Marcas", al final, que también se borra),
+> borra las secciones de "Qué se construye" que no son de esta iteración y la deja autocontenida: quien la recibe no conoce la conversación ni el encargo creativo de memoria.
 > Cada constructor recibe además, en su mensaje, **su parte**: su idea o su zona y sus archivos.
 
 ## Por qué existe este encargo
@@ -139,9 +139,10 @@ lleva números y nunca va dentro de un control.
 
 - Solo tokens de uso en `var()`: `--color-*`, `--fuente-*`, `--tamano-*`, `--espacio-*`,
   `--radio-*`, `--borde-*`, `--sombra-*`, `--movimiento-*`, `--capa-*`, `--medida-*` (los de
-  `static/css/alternativas/@ALTERNATIVA@/tokens.css`). Una variante puede declarar valores base
-  nuevos en líneas que empiezan con `--p-` y usarlos con `var(--p-…)`; ningún otro color literal.
-  Nada de `--pico-*`.
+  `static/css/alternativas/@ALTERNATIVA@/tokens.css`). Solo la hoja de una variante de concepto
+  (`static/css/variantes/`) puede declarar valores base nuevos, en líneas que empiezan con `--p-`, y
+  usarlos con `var(--p-…)`; las hojas del sistema y del prototipo, solo tokens de uso. Ningún otro
+  color literal. Nada de `--pico-*`.
 - `@media` solo con `min-width` y los quiebres de `tokens.css` (mobile first). `@container`, libre.
 - Sin atributos `style`, sin `<style>`, sin `th:style`. Texto con `th:text` o literal.
 - HTML semántico: `header`, `nav`, `main`, `section` con título, listas, `th scope`.
@@ -183,3 +184,30 @@ los materiales si lo justifica.
 - Tu respuesta final, en el formato que te pidan: rama y SHA; la idea en tres frases; cómo navega en
   escritorio y en el celular; la voz que sumaste; qué pisaste fuera de tu zona; lo mejor y lo más
   flojo según tu propia crítica; el resultado de `reporte.json` y de `InterfazFitnessTest`.
+
+## Marcas
+
+Qué va en cada `@MARCA@` (el director borra esta sección al llenar la plantilla):
+
+| Marca | Qué va |
+|---|---|
+| `@TITULO@` | La alternativa, la iteración y qué se construye (por ejemplo, "Cozy / Medieval, iteración 1, concepto de la portada") |
+| `@ALTERNATIVA_NOMBRE@` · `@ALTERNATIVA@` | El nombre visible y el de carpeta (`cozy-medieval`) |
+| `@ENCARGO@` · `@PEDIDO@` | La ruta del encargo creativo y las palabras del usuario, textuales (su sección 2) |
+| `@REFERENCIAS@` · `@BRIEF@` · `@VOZ@` | Las rutas de la carpeta de referencias, del brief y de la tabla de voz |
+| `@ANTES@` | Las rutas de las capturas de antes de la ancla |
+| `@QUE@` | Lo que se construye, en pocas palabras: "un concepto de la portada", "el sistema de Cozy", "el flujo del donante" |
+| `@COMPARACION@` | En concepto: cuántos conceptos más se hacen en paralelo y que el tuyo tiene que ser opuesto en composición y navegación. En sistema y flujo: cómo encaja tu zona con las otras |
+| `@ITERACION@` · `@TIPO@` | El número y el tipo (concepto, sistema o flujo) |
+| `@PREVIO@` | Lo que dejó la iteración anterior (el ganador y su commit de control) o "Es la primera iteración." |
+| `@PIDEN@` | Lo que los críticos le pidieron al ganador de la anterior (de su `decision.md`); en la primera, "Nada todavía." |
+| `@ANCLA@` | La ruta de la pantalla ancla, con la barra inicial (`/prototipo/publico-portada`) |
+| `@MODELO@` | Lo que la plantilla de la ancla recibe del controller, o "ninguno: los datos van escritos en la plantilla" |
+| `@DATOS@` | Contra qué se comparan los datos y las acciones: la plantilla actual de la ancla, con su ruta |
+| `@HOY@` | La fecha del calendario de los datos de ejemplo (la que usa el catálogo) |
+| `@JAVASCRIPT@` | Lo que dice el encargo (sección 6): permitido como mejora, en `static/js/<variante>.js` y respetando "reducir movimiento", o no |
+| `@ARREGLOS@` | La ruta de `arreglos.md` de la iteración |
+| `@BASE@` | El SHA de la base de la iteración |
+| `@RUTAS@` | Las rutas a comprobar, separadas por coma y sin la barra inicial |
+| `@VARIANTES@` | En concepto, `-Dverificacion.variantes=<tu variante>`; en las demás, vacío |
+| `@COMMIT@` | El mensaje del commit: "E6: <alternativa>, iteración <n>, <parte>" |

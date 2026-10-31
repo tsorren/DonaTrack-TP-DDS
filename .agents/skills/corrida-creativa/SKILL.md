@@ -41,7 +41,9 @@ description: >-
 ## 2. Cómo se lanza
 
 Con el workflow guardado [`.claude/workflows/corrida-creativa.js`](../../../.claude/workflows/corrida-creativa.js),
-por nombre (invocarlo es el pedido explícito del usuario de correrlo):
+por nombre (invocarlo es el pedido explícito del usuario de correrlo). La lista de workflows se arma
+al abrir la sesión: si `corrida-creativa` no figura (por ejemplo, porque el archivo es de esta misma
+sesión), se lanza igual con `scriptPath: ".claude/workflows/corrida-creativa.js"` en lugar de `name`.
 
 ```text
 Workflow({ name: "corrida-creativa", args: {
@@ -54,8 +56,14 @@ Workflow({ name: "corrida-creativa", args: {
 ```
 
 Sin la herramienta Workflow, los mismos pasos se hacen a mano con la herramienta Agent (los
-constructores con `isolation: "worktree"`), siguiendo la sección 3. Al terminar, mandarle al usuario
-la página de antes y después y el enlace del PR.
+constructores con `isolation: "worktree"`), siguiendo la sección 3.
+
+Al terminar, **la sesión que lanzó la corrida** le manda al usuario la página de antes y después
+(`SendUserFile`) y el enlace del PR: los agentes de la corrida no pueden mandarle archivos.
+
+Lo que cuesta, medido en la corrida de prueba (la portada de Cozy, 1 iteración y 2 conceptos, sin
+PR): 15 agentes, unos 2 millones de tokens de los subagentes y 74 minutos. Cada iteración más suma
+otro tanto o más (el sistema y el flujo tocan más archivos).
 
 ## 3. Qué hace cada iteración
 
@@ -66,7 +74,7 @@ la anterior.
 |---|---|---|---|
 | 1. Concepto | Una pantalla (la ancla del encargo), con su navegación y su voz | Variantes de estructura `templates/variantes/concepto-<letra>.html` y su CSS; se ven con `?variante=` también sobre `/prototipo/<pantalla>` | Un concepto por constructor (de 2 a 4), opuestos en composición y navegación |
 | 2. Sistema | El ganador en el juego real de plantillas: navegación, layouts, pantallas y catálogo `/estilos` | `templates/alternativas/<alt>/` y `static/css/alternativas/<alt>/`, sin plantillas nuevas (gemelas) | Zonas de propiedad con archivos disjuntos (por ejemplo, estructura y componentes) |
-| 3. Flujo | El recorrido completo como prototipo navegable | `/prototipo/<pantalla>` (hoy `PrototipoController` sirve solo a Cozy / Medieval: para otra alternativa, la corrida para en el sistema y lo anota) | Un grupo de pantallas por rol |
+| 3. Flujo | El recorrido completo como prototipo navegable | `/prototipo/<pantalla>` (hoy `PrototipoController` sirve solo a Cozy / Medieval: para otra alternativa, la corrida no hace el flujo, sigue al cierre con lo hecho y lo deja como pendiente) | Un grupo de pantallas por rol |
 
 Pasos de cada iteración (cada uno es un agente; los de "paralelo" respetan un tope de 5 por paso):
 
@@ -86,7 +94,8 @@ Pasos de cada iteración (cada uno es un agente; los de "paralelo" respetan un t
 6. **Arreglar (en paralelo, por parte).** Cada arreglo conserva la idea; lo que no se puede hacer
    sin traicionarla se explica.
 7. **Cerrar la iteración.** Gates (`mvn test -pl cliente-liviano`, el piso con `reporte.json` en
-   `[]` y la comparación píxel a píxel de las identidades que no se diseñan), evidencia en JPG de
+   `[]` y la comparación píxel a píxel de las identidades que no se diseñan, sin el ruido medido
+   antes de empezar), evidencia en JPG de
    400 KB o menos en `docs/interfaz/evidencia/<alt>/<tema>/`, la entrada de la bitácora (con lo que
    reemplaza), el commit de control y la nota de traspaso en la carpeta.
 
@@ -102,8 +111,12 @@ los borra al llevar el ganador al juego real.
 2. **Documentación al día:** README de interfaz, `docs/ESTADO_DOCUMENTACION.md` y, en el flujo, la
    ficha `docs/interfaz/flujo-completo-<alt>.md`; `node scripts/agent-check.js`.
 3. **Auditoría de cierre:** la autorrevisión (una fila por criterio), un pre-auditor
-   (`lector-auditoria`, si está) y `qa-gatekeeper` en Sonnet alto; hasta dos rondas con arreglos.
-4. **PR**, solo si el encargo lo autoriza y la auditoría dio PASS: rama `E6_*`, PR en borrador hacia
+   (`lector-auditoria`, si está; recibe la lista de archivos cambiados porque no corre `git`) y
+   `qa-gatekeeper` en Sonnet alto (si no está, el agente por defecto con el mismo pedido, en solo
+   lectura); hasta dos rondas con arreglos. Si un arreglo toca plantillas o estilos, quien lo hace
+   vuelve a sacar las capturas, la evidencia y la página de antes y después, para que muestren lo
+   que queda comiteado.
+4. **PR**, solo si el encargo lo autoriza y la auditoría corrió y dio PASS: rama `E6_*`, PR en borrador hacia
    la rama base con la plantilla de [`docs/IA/04-checklist-antes-de-pr.md`](../../../docs/IA/04-checklist-antes-de-pr.md).
    Antes del push, comprobar la cuenta de GitHub activa.
 
@@ -113,8 +126,9 @@ los borra al llevar el ganador al juego real.
   intermedios, y la primera pantalla del celular en 360 × 640).
 - **Gemelas y voz:** `InterfazFitnessTest` (mismos datos y acciones; la voz solo en títulos y
   rótulos; solo tokens de uso; los quiebres de `tokens.css`).
-- **Lo que no se diseña no cambia:** captura antes de empezar y `Imagenes.java comparar` en cada
-  cierre.
+- **Lo que no se diseña no cambia:** dos capturas antes de empezar (la segunda mide el ruido: lo
+  que se mueve aunque nada cambie, como el spinner de Pico, que va dentro de una imagen y la captura
+  no lo congela) y `Imagenes.java comparar` con esa carpeta de ruido en cada cierre.
 - **Libertad y oficio:** la dirección de arte. Nunca "cambio mínimo" en una exploración.
 
 ## 6. Fricciones previstas
@@ -127,13 +141,18 @@ los borra al llevar el ganador al juego real.
 | Las barras fijas salen a mitad de la captura completa | Mirar también la primera pantalla (360 × 640); si hay duda, el navegador con un puerto propio |
 | `paginas.txt` editado a mano para acotar | `-Dverificacion.paginas=a,b` (sin la barra inicial en Git Bash) |
 | Las herramientas de imagen vivían en carpetas temporales | `scripts/visual/Imagenes.java` |
+| La comparación da DISTINTO sin que nada cambie (spinners animados) | Las capturas congelan las animaciones de la página; lo que queda (lo de adentro de una imagen) lo descuenta la carpeta de ruido |
+| Los arreglos de la auditoría dejan vieja la página de antes y después | El arreglador vuelve a sacar capturas, evidencia y página |
+| El workflow guardado no figura por nombre | `scriptPath` (sección 2) |
 
 ## 7. Criterio de salida
 
 - [ ] Cada iteración con su commit de control, su entrada en la bitácora y su evidencia.
 - [ ] `mvn test -pl cliente-liviano` en verde, `reporte.json` en `[]` y las identidades que no se
       diseñan sin cambios (comparación píxel a píxel).
-- [ ] Página de antes y después en la carpeta de trabajo, mandada al usuario.
+- [ ] Página de antes y después en la carpeta de trabajo, con las capturas de lo comiteado, y
+      mandada al usuario por la sesión que lanzó la corrida.
 - [ ] Documentación al día y `node scripts/agent-check.js` en verde.
-- [ ] Auditoría de cierre con PASS (o lo que quedó abierto, declarado).
+- [ ] Auditoría de cierre con PASS (o lo que quedó abierto, declarado, como un flujo que no se pudo
+      hacer).
 - [ ] PR en borrador si el encargo lo autoriza; si no, la rama lista y sin push.
