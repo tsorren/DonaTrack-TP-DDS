@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): donaciones con su vencimiento. El libro del depósito: la
+       etiqueta con el título y "Registrar donación" sobre el cuero; en la hoja, los filtros (un
+       formulario get a esta misma pantalla, que filtra de verdad: buscar, categoría y vencimiento)
+       y el registro de lo que todavía no se entregó, ordenado por vencimiento. Las que vencen esta
+       semana llevan la marca al margen y lo dicen en texto ("Vence en 2 días"), no solo con color.
+       Sin resultados, la tierra sin explorar con "Limpiar filtros". Con ?que=<nombre> (lo manda
+       admin-donaciones-registrar), el aviso de registrada. Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/admin.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/admin.css}">
+  <section class="admin-libro" aria-labelledby="donaciones-titulo"
+           th:with="buscar=${param.buscar != null ? param.buscar[0] : ''},
+                    categoria=${param.categoria != null ? param.categoria[0] : ''},
+                    vence=${param.vence != null ? param.vence[0] : ''},
+                    donaciones=${ {
+                      {nombre: 'Leche en polvo', cantidad: '10 latas', donante: 'Ana', categoria: 'Alimentos',
+                       ingreso: '5 de octubre', vence: '17 de octubre', fecha: '2026-10-17',
+                       aviso: 'Vence en 2 días', estado: 'En depósito', tono: 'pendiente'},
+                      {nombre: 'Fideos secos', cantidad: '20 paquetes', donante: 'Almacén Ejemplo',
+                       categoria: 'Alimentos', ingreso: '3 de octubre', vence: '19 de octubre',
+                       fecha: '2026-10-19', aviso: 'Vence en 4 días', estado: 'Asignada', tono: 'pendiente'},
+                      {nombre: 'Galletitas', cantidad: '30 paquetes', donante: 'Bruno', categoria: 'Alimentos',
+                       ingreso: '8 de octubre', vence: '20 de octubre', fecha: '2026-10-20',
+                       aviso: 'Vence en 5 días', estado: 'En depósito', tono: 'pendiente'},
+                      {nombre: 'Arroz', cantidad: '25 kg', donante: 'Carla', categoria: 'Alimentos',
+                       ingreso: '1 de octubre', vence: '21 de octubre', fecha: '2026-10-21',
+                       aviso: 'Vence en 6 días', estado: 'En depósito', tono: 'pendiente'},
+                      {nombre: 'Lentejas secas', cantidad: '15 kg', donante: 'Ana', categoria: 'Alimentos',
+                       ingreso: '12 de octubre', vence: '20 de noviembre', fecha: '2026-11-20',
+                       aviso: '', estado: 'En camino', tono: 'en-camino'},
+                      {nombre: 'Harina', cantidad: '40 kg', donante: 'Almacén Ejemplo', categoria: 'Alimentos',
+                       ingreso: '10 de octubre', vence: '15 de diciembre', fecha: '2026-12-15',
+                       aviso: '', estado: 'En depósito', tono: 'pendiente'},
+                      {nombre: 'Ropa de abrigo', cantidad: '3 bolsas', donante: 'Diego', categoria: 'Vestimenta',
+                       ingreso: '11 de octubre', vence: '', fecha: '', aviso: '', estado: 'Asignada',
+                       tono: 'pendiente'},
+                      {nombre: 'Útiles escolares', cantidad: '2 cajas', donante: 'Ana',
+                       categoria: 'Útiles escolares', ingreso: '13 de octubre', vence: '', fecha: '',
+                       aviso: '', estado: 'En depósito', tono: 'pendiente'}
+                    } },
+                    vistas=${donaciones.?[(#vars.categoria == '' or #this['categoria'] == #vars.categoria)
+                                          and (#vars.vence != 'semana' or #this['aviso'] != '')
+                                          and (#vars.vence != 'sin' or #this['vence'] == '')
+                                          and (#vars.buscar == ''
+                                               or #strings.containsIgnoreCase(#this['nombre'], #vars.buscar)
+                                               or #strings.containsIgnoreCase(#this['donante'], #vars.buscar))]}">
+    <header class="admin-etiqueta">
+      <p class="admin-rotulo">Donaciones y vencimientos</p>
+      <h1 id="donaciones-titulo">Lo que guarda el depósito</h1>
+    </header>
+    <a class="admin-accion" href="/prototipo/admin-donaciones-registrar"
+       th:href="@{/prototipo/admin-donaciones-registrar}" role="button">Registrar donación</a>
+    <div class="admin-hoja">
+      <p class="admin-bajada">Lo que todavía no se entregó, de lo que vence primero a lo que no
+        vence. <a th:href="@{/prototipo/admin-donaciones(vence='semana')}"
+        href="/prototipo/admin-donaciones?vence=semana">Ver solo las 4 que vencen esta semana</a>.</p>
+      <div class="admin-avisos" role="status">
+        <th:block th:if="${param.que != null}" th:with="que=${param.que[0]}"><div
+             th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso(|Registraste ${que}. Ya está en el libro del depósito.|, 'exito')}"></div></th:block>
+      </div>
+
+      <search aria-label="Filtrar donaciones">
+      <form class="admin-filtros" action="/prototipo/admin-donaciones"
+            th:action="@{/prototipo/admin-donaciones}" method="get">
+        <div class="campo admin-filtro-buscar">
+          <label for="buscar">Buscar por donación o donante</label>
+          <input id="buscar" name="buscar" type="search" th:value="${buscar}">
+        </div>
+        <div class="campo">
+          <label for="categoria">Categoría</label>
+          <select id="categoria" name="categoria">
+            <option value="">Todas</option>
+            <option th:each="c : ${ {'Alimentos', 'Vestimenta', 'Útiles escolares'} }"
+                    th:value="${c}" th:text="${c}" th:selected="${c == categoria}">Categoría</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="vence">Vencimiento</label>
+          <select id="vence" name="vence">
+            <option value="">Cualquiera</option>
+            <option value="semana" th:selected="${vence == 'semana'}">Vence esta semana</option>
+            <option value="sin" th:selected="${vence == 'sin'}">No vence</option>
+          </select>
+        </div>
+        <div class="admin-filtros-acciones">
+          <button type="submit" class="outline">Filtrar</button>
+          <a th:if="${buscar != '' or categoria != '' or vence != ''}" class="enlace-fuerte"
+             href="/prototipo/admin-donaciones" th:href="@{/prototipo/admin-donaciones}">Limpiar
+            filtros</a>
+        </div>
+      </form>
+      </search>
+
+      <table th:unless="${#lists.isEmpty(vistas)}" class="admin-registro admin-registro--donaciones">
+        <caption th:text="${#lists.size(vistas) == 1} ? '1 donación sin entregar' : |${#lists.size(vistas)} donaciones sin entregar|">8
+          donaciones sin entregar</caption>
+        <thead>
+          <tr>
+            <th scope="col">Donación</th>
+            <th scope="col">Donó</th>
+            <th scope="col">Categoría</th>
+            <th scope="col">Ingresó</th>
+            <th scope="col">Vence</th>
+            <th scope="col">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="d : ${vistas}" th:classappend="${d.aviso != ''} ? 'admin-vence-pronto'">
+            <th scope="row"><span th:text="${d.nombre}">Donación</span><small
+                th:text="${d.cantidad}">Cantidad</small></th>
+            <td data-etiqueta="Donó" th:text="${d.donante}">Donante</td>
+            <td data-etiqueta="Categoría" th:text="${d.categoria}">Categoría</td>
+            <td data-etiqueta="Ingresó" th:text="${d.ingreso}">Fecha</td>
+            <td data-etiqueta="Vence">
+              <time th:if="${d.vence != ''}" th:datetime="${d.fecha}" th:text="${d.vence}">Fecha</time>
+              <span th:if="${d.vence == ''}">No vence</span>
+              <strong th:if="${d.aviso != ''}" class="admin-vence"><svg
+                 th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('alerta', 16)}"></svg><span
+                 th:text="${d.aviso}">Vence pronto</span></strong>
+            </td>
+            <td data-etiqueta="Estado"><span class="insignia" th:classappend="|insignia--${d.tono}|"><span
+                th:text="${d.estado}">Estado</span></span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <th:block th:if="${#lists.isEmpty(vistas)}"><section
+               th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'No hay donaciones con esos filtros',
+               'Probá con otra palabra o sacá algún filtro.',
+               'Limpiar filtros', '/prototipo/admin-donaciones')}"></section></th:block>
+    </div>
+  </section>
+</th:block>
+</body>
+</html>

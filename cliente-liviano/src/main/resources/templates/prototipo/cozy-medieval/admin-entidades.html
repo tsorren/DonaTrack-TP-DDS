@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): aprobar entidades. El libro de registro sobre la mesa: tapas
+       de cuero con la etiqueta de papel que lleva el título y, adentro, la hoja con las solicitudes
+       (nombre, tipo, fecha y documentación) y la decisión de cada fila. La documentación usa los
+       signos del mapa: ● completa y ○ lo que falta; sin la documentación completa, "Aprobar" queda
+       deshabilitado y dice por qué. Aprobar envía su formulario a esta misma pantalla
+       (?aprobar=<id>): la fila deja escrita la decisión y arriba aparece el aviso. Rechazar abre la
+       carta del diálogo, que pide el motivo (?rechazar=<id>&motivo=...). El diálogo repite la
+       estructura y las clases del fragmento dialogo y le suma los campos del motivo: el fragmento
+       no tiene lugar para un campo. Sin solicitudes: admin-entidades-vacio. Estilos:
+       prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Entidades por aprobar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/admin.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/admin.css}">
+  <section class="admin-libro" aria-labelledby="entidades-titulo"
+           th:with="aprobada=${param.aprobar != null ? param.aprobar[0] : ''},
+                    rechazada=${param.rechazar != null ? param.rechazar[0] : ''},
+                    solicitudes=${ {
+                      {id: 'hogar-ejemplo-norte', nombre: 'Hogar Ejemplo Norte', tipo: 'Hogar de día',
+                       fecha: '2026-10-09', llego: '9 de octubre de 2026', completa: true,
+                       documentos: 'Estatuto, CUIT y domicilio'},
+                      {id: 'biblioteca-popular-ejemplo', nombre: 'Biblioteca Popular Ejemplo',
+                       tipo: 'Biblioteca', fecha: '2026-10-12', llego: '12 de octubre de 2026',
+                       completa: false, documentos: 'constancia de domicilio'},
+                      {id: 'comedor-ejemplo-oeste', nombre: 'Comedor Ejemplo Oeste', tipo: 'Comedor',
+                       fecha: '2026-10-14', llego: '14 de octubre de 2026', completa: true,
+                       documentos: 'Estatuto, CUIT y domicilio'}
+                    } }">
+    <header class="admin-etiqueta">
+      <p class="admin-rotulo">Entidades por aprobar</p>
+      <h1 id="entidades-titulo">Nuevos pueblos para el mapa</h1>
+    </header>
+    <div class="admin-hoja">
+      <p class="admin-bajada">Cuando aprobás una entidad, aparece en el mapa y puede publicar sus
+        necesidades.</p>
+      <div class="admin-avisos" role="status">
+        <th:block th:if="${aprobada != ''}"><div
+             th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso('Aprobaste la solicitud. La entidad ya aparece en el mapa.', 'exito')}"></div></th:block>
+        <th:block th:if="${rechazada != ''}"><div
+             th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso('Rechazaste la solicitud. Le avisamos a la entidad por correo, con el motivo.', 'info')}"></div></th:block>
+      </div>
+
+      <table class="admin-registro admin-registro--entidades">
+        <caption>3 solicitudes, de la más antigua a la más nueva</caption>
+        <thead>
+          <tr>
+            <th scope="col">Entidad</th>
+            <th scope="col">Tipo</th>
+            <th scope="col">Llegó</th>
+            <th scope="col">Documentación</th>
+            <th scope="col">Decisión</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="e : ${solicitudes}">
+            <th scope="row" th:text="${e.nombre}">Entidad</th>
+            <td data-etiqueta="Tipo" th:text="${e.tipo}">Tipo</td>
+            <td data-etiqueta="Llegó"><time th:datetime="${e.fecha}" th:text="${e.llego}">Fecha</time></td>
+            <td data-etiqueta="Documentación">
+              <span class="admin-doc" th:classappend="${e.completa} ? 'admin-doc--completa'"
+                    th:text="${e.completa} ? |Completa: ${e.documentos}| : |Falta: ${e.documentos}|">Completa</span>
+            </td>
+            <td class="admin-decision" data-etiqueta="Decisión">
+              <p th:if="${aprobada == e.id}" class="admin-decidida">Aprobada hoy</p>
+              <p th:if="${rechazada == e.id}" class="admin-decidida">Rechazada hoy</p>
+              <th:block th:if="${aprobada != e.id and rechazada != e.id}">
+                <form action="/prototipo/admin-entidades" th:action="@{/prototipo/admin-entidades}"
+                      method="get">
+                  <input type="hidden" name="aprobar" th:value="${e.id}">
+                  <button type="submit" th:disabled="${!e.completa}"
+                          th:aria-describedby="${e.completa} ? null : |falta-${e.id}|">Aprobar<span
+                          class="solo-lectores" th:text="| a ${e.nombre}|"> a la entidad</span></button>
+                </form>
+                <button type="button" class="outline" th:commandfor="|rechazar-${e.id}|"
+                        command="show-modal">Rechazar<span class="solo-lectores"
+                        th:text="| a ${e.nombre}|"> a la entidad</span></button>
+                <small th:unless="${e.completa}" th:id="|falta-${e.id}|">Se aprueba con la
+                  documentación completa.</small>
+              </th:block>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!--/* Una carta por fila, con el motivo. Cancelar la cierra sin tocar nada. */-->
+    <dialog th:each="e : ${solicitudes}" th:id="|rechazar-${e.id}|"
+            th:aria-labelledby="|rechazar-${e.id}-titulo|" class="admin-dialogo">
+      <article>
+        <h2 th:id="|rechazar-${e.id}-titulo|" th:text="|¿Rechazar a ${e.nombre}?|">¿Rechazar?</h2>
+        <p>Le avisamos por correo con el motivo. Puede volver a pedirlo cuando lo resuelva.</p>
+        <form th:id="|rechazo-${e.id}|" action="/prototipo/admin-entidades"
+              th:action="@{/prototipo/admin-entidades}" method="get">
+          <input type="hidden" name="rechazar" th:value="${e.id}">
+          <div class="campo">
+            <label th:for="|motivo-${e.id}|">Motivo</label>
+            <select th:id="|motivo-${e.id}|" name="motivo" required>
+              <option value="">Elegí un motivo</option>
+              <option value="documentacion">Falta documentación</option>
+              <option value="datos">Los datos no coinciden con los documentos</option>
+              <option value="fines">No es una organización sin fines de lucro</option>
+              <option value="otro">Otro motivo</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label th:for="|detalle-${e.id}|">Mensaje para la entidad (opcional)</label>
+            <textarea th:id="|detalle-${e.id}|" name="detalle" rows="3"
+                      th:aria-describedby="|detalle-${e.id}-ayuda|"></textarea>
+            <small th:id="|detalle-${e.id}-ayuda|">Por ejemplo, qué documento falta y cómo
+              mandarlo.</small>
+          </div>
+        </form>
+        <footer>
+          <button type="button" class="secondary" th:commandfor="|rechazar-${e.id}|"
+                  command="close">Cancelar</button>
+          <button type="submit" th:form="|rechazo-${e.id}|">Rechazar solicitud</button>
+        </footer>
+      </article>
+    </dialog>
+  </section>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--/* Prototipo, admin (iteración 3): aprobar entidades, sin solicitudes. El mismo libro de registro
+       que admin-entidades, con la tierra sin explorar en la hoja y la vuelta a la mesa de trabajo.
+       Estilos: prototipo/admin.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Entidades por aprobar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/admin.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/admin.css}">
+  <section class="admin-libro" aria-labelledby="entidades-titulo">
+    <header class="admin-etiqueta">
+      <p class="admin-rotulo">Entidades por aprobar</p>
+      <h1 id="entidades-titulo">Nuevos pueblos para el mapa</h1>
+    </header>
+    <div class="admin-hoja">
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'No hay entidades por aprobar',
+               'Cuando una entidad pida sumarse, su solicitud aparece acá con su documentación.',
+               'Volver al inicio', '/prototipo/admin-inicio')}"></section>
+    </div>
+  </section>
+</th:block>
+</body>
+</html>
