@@ -176,7 +176,9 @@ Los términos que el usuario puede llegar a ver, explicados en una línea:
 | [bocetos-e1.md](bocetos-e1.md) | Inventario de los bocetos de E1 |
 | [mapa-del-sitio.md](mapa-del-sitio.md) | Pantallas, roles y niveles |
 | [direccion-de-arte.md](direccion-de-arte.md) | Cómo apuntar alto en lo gráfico sin perder el piso |
-| [estructura-cozy-medieval.md](estructura-cozy-medieval.md) | Estructura, navegación y momentos de la Alternativa Cozy / Medieval |
+| [estructura-cozy-medieval.md](estructura-cozy-medieval.md) | Estructura, navegación y momentos de la Alternativa Cozy / Medieval (segunda versión: la mesa del cartógrafo) |
+| [flujo-completo-cozy-medieval.md](flujo-completo-cozy-medieval.md) | El flujo completo del sitio en Cozy: recorrido por rol, pantallas y decisiones del prototipo navegable (`/prototipo/<pantalla>` en la maqueta) |
+| [identidad/referencias-cozy-medieval/](identidad/referencias-cozy-medieval/README.md) | Las 18 imágenes de referencia de Cozy que trajo el usuario, con qué se toma de cada una |
 | [patrones-y-microcopy.md](patrones-y-microcopy.md) | Componentes, estados, avisos y textos |
 | [temas-ab.md](temas-ab.md) | Temas que se pueden comparar con A/B |
 | [bitacora.md](bitacora.md) | Decisiones de diseño, con su porqué |
