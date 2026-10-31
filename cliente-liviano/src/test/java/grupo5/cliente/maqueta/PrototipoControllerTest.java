@@ -16,7 +16,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** La pantalla de prueba está en src/test/resources/templates/prototipo/cozy-medieval/. */
+/**
+ * Las pantallas de prueba están en src/test/resources/templates/prototipo/: cozy-medieval/ y
+ * prueba/ (otra alternativa).
+ */
 @WebMvcTest(PrototipoController.class)
 @Import(MaquetaConfig.class)
 @ActiveProfiles("maqueta")
@@ -63,6 +66,32 @@ class PrototipoControllerTest {
         .andExpect(status().isOk())
         .andExpect(view().name("prototipo/cozy-medieval/sin-dibujar"))
         .andExpect(model().attribute("seccion", "Mi perfil"));
+  }
+
+  @Test
+  void otraAlternativaConPrototipoUsaSuCarpetaYSuMenuLlevaASuRuta() throws Exception {
+    mvc.perform(get("/prototipo/prueba/donante-donaciones-prueba"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/prueba/donante-donaciones-prueba"))
+        .andExpect(model().attribute("alternativa", "prueba"))
+        .andExpect(
+            content()
+                .string(
+                    containsString(
+                        "href=\"/prototipo/prueba/donante-donaciones\" aria-current=\"page\"")));
+    mvc.perform(get("/prototipo/prueba/admin-ranking"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("prototipo/prueba/sin-dibujar"));
+    mvc.perform(post("/prototipo/prueba/donante-donaciones-prueba"))
+        .andExpect(redirectedUrl("/prototipo/prueba/donante-donaciones-prueba"));
+  }
+
+  @Test
+  void unaAlternativaSinPrototipoNoExiste() throws Exception {
+    mvc.perform(get("/prototipo/inexistente/donante-inicio")).andExpect(status().isNotFound());
+    mvc.perform(get("/prototipo/Prueba/donante-inicio")).andExpect(status().isNotFound());
+    mvc.perform(get("/prototipo/..%2Fpaginas/donante-inicio")).andExpect(status().isNotFound());
+    mvc.perform(post("/prototipo/inexistente/donante-inicio")).andExpect(status().isNotFound());
   }
 
   @Test

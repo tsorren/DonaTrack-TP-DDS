@@ -16,20 +16,23 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Prototipo navegable del flujo completo de la Alternativa Cozy / Medieval (bitácora, iteración 3):
- * {@code /prototipo/<pantalla>} muestra {@code templates/prototipo/cozy-medieval/<pantalla>.html},
- * con los datos de ejemplo del catálogo ({@link EstilosController}) y los que escribe cada
- * plantilla, y la navegación de su rol (el prefijo del nombre: publico, donante, entidad o admin).
- * No son pantallas del sistema: no tienen gemela en Glassmorphism; cada una se construye en las dos
- * alternativas cuando se apruebe su flujo. Una sección del menú que todavía no tiene plantilla
- * muestra la tierra sin explorar.
+ * Prototipo navegable del flujo completo (bitácora, iteración 3 de Cozy / Medieval): {@code
+ * /prototipo/<pantalla>} muestra {@code templates/prototipo/cozy-medieval/<pantalla>.html} y {@code
+ * /prototipo/<alternativa>/<pantalla>}, la de otra alternativa que tenga su {@code
+ * sin-dibujar.html}, con los datos de ejemplo del catálogo ({@link EstilosController}) y los que
+ * escribe cada plantilla, y la navegación de su rol (el prefijo del nombre: publico, donante,
+ * entidad o admin). No son pantallas del sistema: no tienen gemela en Glassmorphism; cada una se
+ * construye en las dos alternativas cuando se apruebe su flujo. Una sección del menú que todavía no
+ * tiene plantilla muestra la tierra sin explorar.
  */
 @Controller
 @Profile("maqueta")
 class PrototipoController {
 
-  private static final String CARPETA = "prototipo/cozy-medieval/";
+  private static final String CARPETA = "prototipo/";
+  private static final String PREFIJO = "/prototipo/";
   private static final String NOMBRE = "(publico|donante|entidad|admin)(-[a-z]+)+";
+  private static final String NOMBRE_ALTERNATIVA = "[a-z]+(-[a-z]+)*";
   private static final String NO_EXISTE = "No existe esa pantalla";
 
   /** Pantallas que el layout privado enlaza fuera del menú y todavía no están dibujadas. */
@@ -94,9 +97,13 @@ class PrototipoController {
    * Una pantalla de nivel 3 lleva el nombre de su sección adelante ({@code
    * donante-donaciones-detalle}): el menú marca esa sección.
    */
-  @GetMapping("/prototipo/{pantalla}")
-  String pantalla(@PathVariable String pantalla, Model model) {
-    boolean dibujada = dibujada(pantalla);
+  @GetMapping({"/prototipo/{pantalla}", "/prototipo/{alternativa}/{pantalla}"})
+  String pantalla(
+      @PathVariable(required = false) String alternativa,
+      @PathVariable String pantalla,
+      Model model) {
+    String alt = alternativaConPrototipo(alternativa);
+    boolean dibujada = dibujada(alt, pantalla);
     String rol = pantalla.split("-")[0];
     List<Seccion> menu = MENUS.getOrDefault(rol, List.of());
     Seccion actual =
@@ -114,7 +121,7 @@ class PrototipoController {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
     EstilosController.datosDeEjemplo(model);
-    model.addAttribute("alternativa", ALTERNATIVA);
+    model.addAttribute("alternativa", alt);
     model.addAttribute("seccion", actual == null ? fueraDelMenu : actual.texto());
     model.addAttribute(
         "navegacion",
@@ -125,28 +132,48 @@ class PrototipoController {
                         seccion.texto(),
                         seccion.textoCorto(),
                         seccion.icono(),
-                        "/prototipo/" + seccion.pantalla(),
+                        base(alternativa) + seccion.pantalla(),
                         seccion.equals(actual)))
             .toList());
     model.addAttribute("cuenta", CUENTAS.get(rol));
-    return CARPETA + (dibujada ? pantalla : SIN_DIBUJAR);
+    return CARPETA + alt + "/" + (dibujada ? pantalla : SIN_DIBUJAR);
   }
 
   /**
    * Los formularios del prototipo se envían con POST, para que lo escrito (una contraseña, por
    * ejemplo) no quede en la dirección; vuelven a la pantalla de destino sin sus datos.
    */
-  @PostMapping("/prototipo/{pantalla}")
-  String enviar(@PathVariable String pantalla) {
-    if (!dibujada(pantalla)) {
+  @PostMapping({"/prototipo/{pantalla}", "/prototipo/{alternativa}/{pantalla}"})
+  String enviar(@PathVariable(required = false) String alternativa, @PathVariable String pantalla) {
+    if (!dibujada(alternativaConPrototipo(alternativa), pantalla)) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
     }
-    return "redirect:/prototipo/" + pantalla;
+    return "redirect:" + base(alternativa) + pantalla;
+  }
+
+  /** Sin alternativa en la ruta, Cozy / Medieval; con ella, solo si tiene su prototipo. */
+  private String alternativaConPrototipo(String alternativa) {
+    if (alternativa == null) {
+      return ALTERNATIVA;
+    }
+    if (!alternativa.matches(NOMBRE_ALTERNATIVA) || !existe(alternativa, SIN_DIBUJAR)) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, NO_EXISTE);
+    }
+    return alternativa;
+  }
+
+  private static String base(String alternativa) {
+    return alternativa == null ? PREFIJO : PREFIJO + alternativa + "/";
   }
 
   /** La vista se arma solo con un nombre de rol, letras y guiones que existe como plantilla. */
-  private boolean dibujada(String pantalla) {
-    return pantalla.matches(NOMBRE)
-        && recursos.getResource("classpath:templates/" + CARPETA + pantalla + ".html").exists();
+  private boolean dibujada(String alternativa, String pantalla) {
+    return pantalla.matches(NOMBRE) && existe(alternativa, pantalla);
+  }
+
+  private boolean existe(String alternativa, String plantilla) {
+    return recursos
+        .getResource("classpath:templates/" + CARPETA + alternativa + "/" + plantilla + ".html")
+        .exists();
   }
 }
