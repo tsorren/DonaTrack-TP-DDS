@@ -87,13 +87,18 @@
       <section class="panel mision" aria-labelledby="mision-titulo">
         <h3 id="mision-titulo">Tu misión actual</h3>
         <p class="panel-bajada">Colaborador → Sostenedor</p>
-        <div class="mision-sello-fila">
-          <span class="mision-sello">2/3</span>
-          <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+        <div class="mision-encabezado">
+          <p class="mision-nombre"><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+          <p class="mision-cuenta"><span>2/3</span><span>66 %</span></p>
         </div>
-        <progress class="mision-barra" value="66" max="100"
-                  aria-label="Progreso de la misión">66 %</progress>
-        <p class="mision-pie"><span>66 %</span><span>Falta 1 paso</span></p>
+        <div class="mision-cuaderno">
+          <span class="mision-casilla mision-casilla--sellada" aria-hidden="true"></span>
+          <span class="mision-casilla mision-casilla--sellada" aria-hidden="true"></span>
+          <span class="mision-casilla" aria-hidden="true"></span>
+          <progress class="solo-lectores" value="66" max="100"
+                    aria-label="Progreso de la misión">66 %</progress>
+          <p class="mision-falta">Falta 1 paso</p>
+        </div>
         <a href="#insignia-titulo" role="button" class="fantasma">Ver incentivos</a>
       </section>
     </div>

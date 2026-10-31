@@ -296,6 +296,18 @@
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
 
+  /* Estructura: cuaderno de sellos y tierra sin explorar */
+  /* El sello en relieve, sin tinta, de un paso que falta: el trazo da 4:1 sobre el pergamino y
+     la sombra, debajo, es solo papel hundido. */
+  --color-relieve: var(--p-borde-control);
+  --color-relieve-sombra: var(--p-tinta-a12);
+  /* La costa punteada de la tierra sin explorar (7,8:1 sobre el pergamino) y el rayado de agua
+     que la rodea, que es adorno. */
+  --color-costa: var(--p-tinta-600);
+  --color-agua: var(--p-tinta-a20);
+  --medida-sello: 4rem;
+  --medida-rosa-vacio: 3rem;
+
   /* 3. Pico: base */
   --pico-font-family: var(--fuente-texto);
   --pico-border-radius: var(--radio-control);
