@@ -62,7 +62,7 @@ flowchart LR
 |---|---|---|
 | `publico-portada` | **La encrucijada**: el título y "Donar ahora" sin desplazar en 360 px; tres caminos en lápiz que salen de la rosa (soy donante, sumar mi entidad, ver el mapa); lo que viajó este mes como fichas con la foto pegada; las cifras como leyenda de mapa | — |
 | `publico-mapa` | **El mapa grabado**: cada entidad, un pueblo; cada entrega, su camino de tinta desde el depósito; al lado, la misma información en una lista; filtro por categoría | Sin resultados (`?categoria=higiene`) |
-| `publico-ingresar` | **La libreta de viaje**: el paisaje a la izquierda y el formulario a la derecha | `publico-ingresar-error`; `publico-recuperar` |
+| `publico-ingresar` | **La libreta de viaje**: el paisaje a la izquierda y el formulario a la derecha | `publico-ingresar-error`; `publico-recuperar` y `publico-recuperar-enviado` |
 | `publico-registro` | **Elegí tu camino**: dos caminos, con lo que se puede hacer y lo que se pide en cada uno | `publico-registro-donante`, `publico-registro-entidad`, `publico-registro-entidad-enviada` (el alfiler avanza un paso) |
 | `donante-inicio` | **La mesa**: la nota del saludo, el mapa del viaje en curso, la carta, el libro de cuentas y el cuaderno de sellos | — |
 | `donante-donaciones` | **El fichero**: una tarjeta guía por etapa (○ por salir, ┄▸ en camino, ┄╳┄ camino cortado, ◉ llegaron a destino) con su cantidad; las entregadas, plegadas; filtro por estado y categoría | Sin resultados; `donante-donaciones-vacio` |
@@ -70,7 +70,7 @@ flowchart LR
 | `donante-seguimiento` | **El mapa de las entregas en curso**: un camino por entrega, con su número y su signo; al lado, la hoja de ruta | `donante-seguimiento-vacio` |
 | `donante-incentivos` | **El cuaderno de sellos**: la escala de rangos como una barra de mapa, la misión en curso con sus sellos y el estuche con las medallas | — |
 | `donante-entidades` | **Los pueblos**: el mapa de la región con su nomenclador; cada pueblo, con lo que falta de cada necesidad | Sin resultados (`?categoria=higiene`) |
-| `donante-entidades-detalle` | **Una entidad**: quiénes son, sus necesidades y cuánto falta, y "Donar para esta necesidad" | Donación anotada (`?necesidad=ropa`) |
+| `donante-entidades-detalle` | **Una entidad**: quiénes son, sus necesidades y cuánto falta, y "Donar para esta necesidad" | Otra entidad (`?pueblo=comedor`, `escuela` u `hogar`); el paso de qué y cuánto llevar (`?pueblo=…&necesidad=…`); `donante-entidades-anotada` (con el depósito y su horario) |
 | `donante-cartas` | **La bandeja de cartas**: sobres cerrados ("Sin abrir") y abiertos ("Leída"), cada una lleva a su donación | `donante-cartas-vacio` |
 | `entidad-inicio` | **Tu pueblo**: arriba, los talones de lo que llegó con "Confirmar recepción"; al lado, el pueblo con los caminos que le llegan | `entidad-inicio-vacio` |
 | `entidad-seguimiento` | **Caminos a tu pueblo**: un libro de ruta por etapas, lo que espera confirmación primero | — |
