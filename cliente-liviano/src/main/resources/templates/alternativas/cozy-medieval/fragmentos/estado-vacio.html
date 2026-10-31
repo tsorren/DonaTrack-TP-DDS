@@ -1,7 +1,8 @@
 <!--/* Estado vacío. Patrón: Material Empty states. Dice qué significa y invita a la acción posible.
        En Cozy es tierra sin explorar: el mensaje va en una isla en blanco, con la costa punteada
-       alrededor y el rayado de agua por fuera (dibujo aria-hidden: la costa es una sola curva,
-       en % de la isla, que se repite en cada capa). La rosa de los vientos es la ruta chica,
+       (la que nadie relevó), su primer tramo ya pasado a pluma y el rayado de agua por fuera
+       (dibujo aria-hidden: la costa es una sola curva, en % de la isla, que se repite en cada
+       capa). La rosa de los vientos es la ruta chica,
        junto a la acción; sin acción queda última y no se muestra. Sus tres nodos son de
        Glassmorphism y acá no se muestran.
        accionTexto y accionRuta pueden ser null si no hay acción. */-->
@@ -19,6 +20,7 @@
       </g>
       <path class="estado-vacio-tierra" stroke-width="10" th:attr="d=${costa}"/>
       <path class="estado-vacio-orilla" th:attr="d=${costa}"/>
+      <path class="estado-vacio-pluma" th:attr="d=${costa}"/>
     </svg>
     <h3 th:text="${titulo}">Todavía no hay nada acá</h3>
     <p th:text="${texto}">Qué significa y qué se puede hacer.</p>

@@ -1,6 +1,7 @@
 <!--/* Diálogo de confirmación. Patrón: Material Dialogs / HIG Alerts. <dialog> nativo; se abre con
        <button commandfor="<id>" command="show-modal">, sin JavaScript propio. Sin soporte del
-       navegador, el formulario se envía igual: la confirmación sin JS es una página aparte.
+       navegador, el formulario se envía igual: la confirmación sin JS es una página aparte. En
+       Cozy es una carta sobre la mesa en penumbra, con el título como membrete (muestrario.css).
        formulario: id del form que se envía al confirmar. */-->
 <dialog th:fragment="dialogo(id, titulo, texto, accion, formulario)" id="dialogo"
         th:id="${id}" aria-labelledby="dialogo-titulo" th:aria-labelledby="${id + '-titulo'}">

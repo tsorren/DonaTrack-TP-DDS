@@ -6,3 +6,18 @@
 # Inicio y navegación
 
 # Catálogo
+Catálogo de componentes => El muestrario del cartógrafo
+=> Tintas, papeles y metales
+=> La letra del atlas
+=> Grabados a pluma
+=> Los signos del mapa
+=> Cuero, madera y latón
+=> Una esquela
+=> Los renglones del registro
+=> Las fotos de la prueba
+=> Mientras se dibuja
+=> Un aviso clavado en la mesa
+=> Una carta en la penumbra
+=> Tierra sin explorar
+=> Las fichas del viaje
+=> El libro de registro

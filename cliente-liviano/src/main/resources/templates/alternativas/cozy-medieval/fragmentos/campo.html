@@ -1,5 +1,6 @@
 <!--/* Campo de formulario. Patrón: Material Text fields. Etiqueta visible arriba; ayuda o error
-       debajo, enlazados con aria-describedby. ayuda y error pueden ser null. */-->
+       debajo, enlazados con aria-describedby. En Cozy, un renglón del registro: papel apenas
+       hundido con la regla de tinta abajo (muestrario.css). ayuda y error pueden ser null. */-->
 <div th:fragment="campo(id, etiqueta, tipo, ayuda, error, deshabilitado)" class="campo">
   <label for="campo" th:for="${id}" th:text="${etiqueta}">Etiqueta</label>
   <input id="campo" type="text" th:id="${id}" th:name="${id}" th:type="${tipo}"

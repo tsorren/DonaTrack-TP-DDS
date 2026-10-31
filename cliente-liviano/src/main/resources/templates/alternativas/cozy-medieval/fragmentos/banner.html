@@ -1,5 +1,6 @@
 <!--/* Banner. Patrón: Material Banners. Algo que afecta a toda la pantalla. tipo: error | advertencia.
-       Solo el error es urgente (role="alert"). codigo: traceId para soporte, o null. */-->
+       Solo el error es urgente (role="alert"). En Cozy es un aviso clavado en la mesa con dos
+       chinches de latón (muestrario.css). codigo: traceId para soporte, o null. */-->
 <section th:fragment="banner(titulo, texto, tipo, codigo)" class="banner"
          th:classappend="|banner--${tipo}|" th:role="${tipo == 'error'} ? 'alert' : null"
          aria-labelledby="banner-titulo" th:aria-labelledby="|banner-${tipo}-titulo|">

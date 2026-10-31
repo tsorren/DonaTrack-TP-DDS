@@ -40,55 +40,6 @@ a {
   text-underline-offset: 0.18em;
 }
 
-/* Botones: hojas apoyadas sobre el papel, con una sombra corta de tinta. */
-:is(button, [role="button"], [type="submit"], [type="button"], [type="reset"]) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--espacio-2);
-  min-height: var(--medida-toque-minimo);
-  padding: 0.6875rem 1.25rem;
-  border-radius: var(--radio-boton);
-  font-size: var(--tamano-chico);
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  text-decoration: none;
-  transition: transform var(--movimiento-rapido);
-}
-
-:is(button, [role="button"]):active {
-  transform: translateY(1px);
-}
-
-:is(button, [role="button"]):not(.outline, .fantasma) {
-  box-shadow: 0 2px 0 var(--color-filete);
-}
-
-/* Fantasma: el botón de trazo, en tinta sobre el pergamino. */
-.fantasma {
-  background-color: transparent;
-  border: var(--borde-ancho) solid var(--color-titulo);
-  color: var(--color-titulo);
-}
-
-.fantasma:hover {
-  background-color: var(--color-superficie);
-  border-color: var(--color-titulo);
-  color: var(--color-titulo);
-}
-
-/* Sobre madera o cuero, el trazo es de latón. */
-.catalogo-oscuro .fantasma {
-  border-color: var(--color-laton-brillante);
-  color: var(--color-destacado-texto);
-}
-
-.catalogo-oscuro .fantasma:hover {
-  background-color: var(--color-destacado-hover);
-  border-color: var(--color-laton-brillante);
-  color: var(--color-destacado-texto);
-}
-
 :is(.mision, .navegacion, .catalogo-oscuro) :focus-visible {
   outline-color: var(--color-foco-sobre-oscuro);
 }
@@ -1490,8 +1441,7 @@ nav.navegacion ul {
   white-space: nowrap;
 }
 
-/* Avisos breves: una nota de pergamino con un filete lateral en el color de su tipo. Sin rombo: el
-   rombo es el signo de "ahora". El texto dice el tipo. */
+/* Avisos breves: la región donde aparecen, abajo. Cada aviso es una esquela (muestrario.css). */
 .avisos {
   position: fixed;
   right: var(--espacio-4);
@@ -1506,128 +1456,6 @@ nav.navegacion ul {
 
 .avisos > * {
   pointer-events: auto;
-}
-
-.aviso {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--espacio-3);
-  max-width: var(--medida-lectura);
-  padding: 0.875rem 1.125rem;
-  background-color: var(--color-fondo);
-  border: var(--borde-hoja) solid var(--color-filete);
-  border-inline-start: var(--borde-acento) solid var(--color-marca-alterna);
-  border-radius: var(--radio-tarjeta);
-  box-shadow: var(--sombra-papel);
-  color: var(--color-texto);
-}
-
-.aviso--exito {
-  border-inline-start-color: var(--color-marca);
-}
-
-.aviso p {
-  margin: 0;
-}
-
-.avisos .aviso {
-  box-shadow: var(--sombra-aviso);
-}
-
-/* Banner: algo que afecta a toda la pantalla, enmarcado entero en su color. */
-.banner {
-  display: grid;
-  gap: 0.625rem;
-  margin-block-end: var(--espacio-5);
-  padding: 1.25rem 1.375rem;
-  border: var(--borde-marco) solid currentcolor;
-  border-radius: var(--radio-panel);
-}
-
-.banner h2 {
-  margin: 0;
-  padding: 0;
-  color: inherit;
-  font-size: 1.125rem;
-}
-
-.banner p,
-.banner small {
-  margin: 0;
-  color: inherit;
-}
-
-.banner--error {
-  background-color: var(--color-error-fondo);
-  color: var(--color-error-texto);
-}
-
-.banner--advertencia {
-  background-color: var(--color-advertencia-fondo);
-  color: var(--color-advertencia-texto);
-}
-
-/* Diálogo: una hoja de pergamino sobre el escritorio en penumbra. */
-dialog > article {
-  padding: 1.75rem;
-  border: var(--borde-hoja) solid var(--color-filete);
-  border-radius: var(--radio-panel);
-  box-shadow: var(--sombra-elevada);
-}
-
-dialog > article h2 {
-  font-size: var(--tamano-titulo-3);
-}
-
-dialog > article > footer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.625rem;
-  margin: var(--espacio-5) 0 0;
-  padding: 0;
-  background: none;
-  border: 0;
-}
-
-dialog > article > footer button {
-  margin: 0;
-}
-
-/* Carga en curso */
-.esqueleto {
-  display: grid;
-  gap: var(--espacio-2);
-  padding: var(--espacio-4) var(--espacio-2);
-}
-
-/* Pico dibuja un spinner en todo aria-busy; el esqueleto ya muestra la carga. */
-.esqueleto[aria-busy="true"]::before {
-  content: none;
-}
-
-.esqueleto-fila {
-  height: 14px;
-  background-image: var(--color-degradado-esqueleto);
-  background-size: 200% 100%;
-  border-radius: var(--radio-chico);
-  animation: esqueleto var(--movimiento-pulso) ease-in-out infinite;
-}
-
-.esqueleto-fila:last-child {
-  width: 60%;
-}
-
-@keyframes esqueleto {
-  to {
-    background-position: -200% 0;
-  }
-}
-
-.cargando {
-  color: var(--color-texto-suave);
-  font-size: var(--tamano-chico);
-  font-style: italic;
 }
 
 /* Estado vacío: tierra sin explorar. Un trozo de mapa sin dibujar: el mensaje va en una isla en
@@ -1764,14 +1592,6 @@ svg.estado-vacio-costa {
 
 .insignia--con-problema {
   color: var(--color-error-texto);
-}
-
-/* Sobre una foto, la anotación va en su rótulo de papel. */
-.tarjeta > .insignia {
-  padding: var(--espacio-1) var(--espacio-3) var(--espacio-1) var(--espacio-1);
-  background-color: var(--color-fondo);
-  border: var(--borde-ancho) solid var(--color-filete);
-  border-radius: var(--radio-chico);
 }
 
 /* Signos del mapa: un signo, un significado, para el estado, la leyenda y el recorrido. */
@@ -1930,63 +1750,10 @@ svg.estado-vacio-costa {
   }
 }
 
-/* Tarjeta de una entrega: la foto va pegada a la hoja, con su borde de papel. */
-.tarjetas {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
-  gap: var(--espacio-5);
-}
-
-.tarjeta {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: var(--espacio-2) var(--espacio-2) 0;
-  background-color: var(--color-fondo);
-  border: var(--borde-hoja) solid var(--color-filete);
-  border-radius: var(--radio-tarjeta);
-  box-shadow: var(--sombra-papel);
-  color: var(--color-texto);
-}
-
-.tarjeta-foto {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 330 / 244;
-  object-fit: cover;
-  border: var(--borde-ancho) solid var(--color-filete);
-  border-radius: var(--radio-chico);
-  box-shadow: var(--sombra-foto);
-}
-
-/* Sin foto: el ícono de lo donado en grabado, sobre la trama de un dibujo a pluma. */
-.tarjeta-portada {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 330 / 244;
-  background-color: var(--color-superficie);
-  background-image: repeating-linear-gradient(
-    -45deg,
-    var(--color-trama) 0 1px,
-    transparent 1px 7px
-  );
-  border: var(--borde-ancho) solid var(--color-filete);
-  border-radius: var(--radio-chico);
-  color: var(--color-titulo);
-}
-
+/* Tarjeta de una entrega: la ficha con la foto pegada (la ficha, la foto y la etiqueta del estado,
+   en muestrario.css). */
 .tarjeta-portada .icono {
   stroke-width: 1.1;
-}
-
-.tarjeta > .insignia {
-  position: absolute;
-  top: var(--espacio-4);
-  right: var(--espacio-4);
-  margin: 0;
-  box-shadow: 0 0 0 2px var(--color-fondo);
 }
 
 .tarjeta-cuerpo {
@@ -2126,88 +1893,19 @@ svg.estado-vacio-costa {
   white-space: nowrap;
 }
 
-/* Campos de formulario: etiqueta fuerte, borde de 3:1 y el campo apenas hundido en el papel. */
-.campo {
-  display: grid;
-  gap: 0.375rem;
-  align-content: start;
-  margin-block-end: var(--espacio-4);
-}
-
-.campo > label {
-  margin: 0;
-  color: var(--color-titulo);
-  font-size: var(--tamano-chico);
-  font-weight: 700;
-}
-
-.campo > input {
-  min-height: 3.125rem;
-  margin: 0;
-  box-shadow: var(--sombra-hundido);
-  transition: border-color var(--movimiento-rapido);
-}
-
-.campo > input:not([type="file"], :disabled):hover {
-  border-color: var(--color-marca);
-}
-
-.campo > small {
-  margin: 0;
-  color: var(--color-texto-suave);
-  font-size: var(--tamano-chico);
-  font-style: italic;
-}
-
-.campo > .campo-error {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--espacio-2);
-  color: var(--color-error-texto);
-  font-size: var(--tamano-chico);
-  font-style: normal;
-  font-weight: 700;
-}
-
-.campo-error::before {
-  content: "!";
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
-  background-color: var(--color-error-texto);
-  color: var(--color-texto-sobre-error);
-  border-radius: var(--radio-sello);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-.campo:has([aria-invalid="true"]) > label {
-  color: var(--color-error-texto);
-}
-
-.campo > [aria-invalid="true"] {
-  border-width: var(--borde-ruta);
-}
-
-/* Catálogo /estilos: cada sección es una región de la hoja, con un filete de tinta arriba y su
-   título al margen desde 1100 px. */
+/* Catálogo /estilos: cada sección es una lámina del muestrario (muestrario.css). La muestra del
+   inicio es una región de la hoja, con un filete de tinta arriba y su título al margen desde
+   1100 px. */
 .catalogo-intro,
 .catalogo-patron {
   max-width: var(--medida-lectura);
   color: var(--color-texto-suave);
 }
 
-:is(.catalogo, .muestra-pantalla) {
+.muestra-pantalla {
   margin: 0;
   padding-block: var(--espacio-6);
   border-block-start: var(--borde-ancho) solid var(--color-filete);
-}
-
-.catalogo > h2 {
-  margin-block-end: var(--espacio-3);
 }
 
 /* La muestra apila sus piezas en el orden del HTML, con el mismo aire que el tablero. Adentro,
@@ -2227,12 +1925,12 @@ svg.estado-vacio-costa {
 /* El título no cambia de lugar en el HTML: queda primero y flota hacia el margen. El cuerpo
    arranca a la altura del título. */
 @media (min-width: 68.75em) {
-  :is(.catalogo, .muestra-pantalla) {
+  .muestra-pantalla {
     display: flow-root;
     padding-inline-start: calc(var(--medida-margen-titulo) + var(--espacio-6));
   }
 
-  :is(.catalogo, .muestra-pantalla) > h2 {
+  .muestra-pantalla > h2 {
     float: inline-start;
     width: var(--medida-margen-titulo);
     margin-inline-start: calc(-1 * (var(--medida-margen-titulo) + var(--espacio-6)));
@@ -2242,7 +1940,7 @@ svg.estado-vacio-costa {
     hyphenate-limit-chars: 10 4 4;
   }
 
-  :is(.catalogo, .muestra-pantalla) > h2 + * {
+  .muestra-pantalla > h2 + * {
     margin-block-start: 0;
   }
 }
@@ -2278,29 +1976,6 @@ svg.estado-vacio-costa {
 
 .muestra-grilla > * {
   margin: 0;
-}
-
-.muestras {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--medida-tarjeta-minima)), 1fr));
-  gap: var(--espacio-3);
-  padding: 0;
-}
-
-.muestras li {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-3);
-  color: var(--color-titulo);
-  list-style: none;
-}
-
-.muestra {
-  flex: none;
-  width: var(--medida-muestra);
-  height: var(--medida-muestra);
-  border: var(--borde-ancho) solid var(--color-titulo);
-  border-radius: var(--radio-chico);
 }
 
 .muestra--destacado {
