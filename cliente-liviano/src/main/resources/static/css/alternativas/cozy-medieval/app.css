@@ -405,11 +405,6 @@ nav.navegacion ul {
   background-color: var(--color-superficie);
 }
 
-/* La carta de la posta cierra con un sello de latón, rodeado por el trazo de tinta del dibujo. */
-.icono-sello {
-  fill: var(--color-laton-brillante);
-}
-
 .cuenta {
   position: relative;
   margin: 0;
@@ -1820,7 +1815,6 @@ svg.estado-vacio-costa {
     padding: 1.75rem var(--espacio-6);
   }
 }
-
 
 /* Estado de una entrega: una anotación del mapa, con el signo del viaje y su texto. */
 /* Sin píldora: cambia la forma del signo, no solo el color. El texto va en cursiva, como los
