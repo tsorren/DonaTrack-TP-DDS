@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <!--/* Prototipo Encastre, iteración 3, donante: Incentivos (RF-07: misiones con su avance e
        insignias ganadas; solo para donante humano). Arriba, la cabeza: qué falta para la misión
-       de ahora, con la salida a Entidades, y el rango como una escalera de tres piezas: Colaborador puesta, Sostenedor el hueco que sigue y Transformador
-       el que viene después. Después, lo de ahora (la pieza naranja): la misión Donante constante,
+       de ahora, con la salida a Entidades; debajo del título, el rango como una escalera de tres
+       piezas: Colaborador puesta, Sostenedor el hueco que sigue y Transformador el que viene después. Después, lo de ahora (la pieza naranja): la misión Donante constante,
        el rompecabezas a medio armar donde el hueco dice qué falta ("Falta 1 mes"). Luego, las otras
-       misiones, cada una su rompecabezas chico, y las insignias ganadas, piezas puestas con su
+       misiones, cada una con la pieza chica del sitio y lo que falta en texto al lado, y las insignias ganadas, piezas puestas con su
        fecha. Cada misión sale de sus cifras escritas una vez (hechos y total, th:with): las piezas,
        el hueco, el sello, la barra y el porcentaje. Datos de ejemplo; hoy es el miércoles 14 de
        octubre de 2026. Estilos: la misión, de estructura.css; el resto, de prototipo/donante.css. */-->
@@ -96,22 +96,19 @@
             <p><b th:text="${m.nombre}">Tres destinos</b><span th:text="${m.meta}">Ayudá a tres
               entidades distintas</span></p>
           </div>
-          <div class="mision-piezas don-mision-piezas">
-            <th:block th:each="paso : ${#numbers.sequence(1, m.total)}"
-                      th:with="forma=${paso == m.total} ? '#encastre-pieza-borde' : '#encastre-pieza'">
-              <span class="mision-pieza" aria-hidden="true" th:if="${paso <= m.hechos}"><svg
-                    class="mision-forma" viewBox="22 14 56 72" focusable="false"><use
-                    href="#encastre-pieza" th:href="${forma}"/></svg><svg
-                    th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 26)}"></svg></span>
-              <p class="mision-hueco" th:if="${paso == m.hechos + 1}"><svg class="mision-forma"
-                 viewBox="22 14 56 72" aria-hidden="true" focusable="false"><use
-                 href="#encastre-pieza" th:href="${forma}"/></svg><span
-                 th:text="|Falta ${falta} ${falta == 1 ? m.unidad : m.unidades}|">Falta 1
-                entidad</span></p>
-              <span class="mision-hueco mision-hueco--vacio" aria-hidden="true"
-                    th:if="${paso > m.hechos + 1}"><svg class="mision-forma" viewBox="22 14 56 72"
-                    focusable="false"><use href="#encastre-pieza" th:href="${forma}"/></svg></span>
-            </th:block>
+          <!--/* La pieza chica del sitio (la del tablero de la entidad): puesta, crema con tilde;
+                 falta, el hueco del sistema. Lo que falta va en texto al lado, entero. */-->
+          <div class="don-mision-armado">
+            <ol class="don-ranuras" aria-hidden="true">
+              <li th:each="paso : ${#numbers.sequence(1, m.total)}"
+                  th:class="${paso <= m.hechos} ? 'don-ranura don-ranura--puesta' : 'don-ranura don-ranura--hueco'"><svg
+                  class="don-ranura-forma" viewBox="22 14 56 72" focusable="false"><use
+                  href="#encastre-pieza" th:href="${paso == m.total} ? '#encastre-pieza-borde' : '#encastre-pieza'"/></svg><th:block
+                  th:if="${paso <= m.hechos}"><svg
+                  th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 16)}"></svg></th:block></li>
+            </ol>
+            <p class="don-mision-falta" th:if="${falta > 0}">Falta <b
+               th:text="|${falta} ${falta == 1 ? m.unidad : m.unidades}|">1 entidad</b></p>
           </div>
           <progress class="mision-barra" value="66" max="100"
                     th:attr="value=${m.hechos * 100 / m.total}"

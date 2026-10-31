@@ -5,7 +5,8 @@
        el sitio; una clave desconocida muestra el hueco con la vuelta a Mis donaciones. Arriba, lo
        de ahora (la pieza naranja): el nombre de la donación, dónde está y qué sigue, con la salida
        que corresponde, y la pieza que viaja: las cinco paradas con su fecha, la pieza en la suya y
-       el hueco de la entidad. Debajo, lo que donaste, en piezas chicas. Hoy es el miércoles 14 de octubre de 2026. Estilos: prototipo/donante.css. */-->
+       el hueco de la entidad. La pieza es del color de dónde está (lila en el depósito, azul en
+       camino, rosa con problema, menta si llegó), también dentro de la pieza naranja. Debajo, lo que donaste, en piezas chicas. Hoy es el miércoles 14 de octubre de 2026. Estilos: prototipo/donante.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -24,12 +25,12 @@
           fechas: {'12 de octubre', '13 de octubre', '14 de octubre', 'Hoy, 14:30', 'Pendiente'},
           ahora: 'Va en camino a Comedor Barrio Ejemplo',
           ahoraTexto: 'Salió del depósito hoy a las 14:30. El camión la deja en el comedor esta tarde; cuando la reciban, te avisamos.'},
-         {clave: 'utiles', titulo: 'Útiles escolares', cantidad: '2 cajas', icono: 'cat-escolares', categoria: 'Útiles escolares',
+         {clave: 'utiles', titulo: 'Útiles escolares', cantidad: '6 cajas', icono: 'cat-escolares', categoria: 'Útiles escolares',
           entidad: 'Escuela Ejemplo 12', necesidad: 'Un kit de útiles por chico para el segundo cuatrimestre',
-          etapa: 3, tono: 'problema', estado: 3, signo: 'alerta',
-          fechas: {'5 de octubre', '6 de octubre', '8 de octubre', '9 de octubre', 'No se pudo entregar'},
-          ahora: 'No se pudo entregar',
-          ahoraTexto: 'El 9 de octubre la escuela estaba cerrada y las cajas volvieron al depósito. Salen de nuevo el viernes 16 de octubre; no tenés que hacer nada.'},
+          etapa: 4, tono: 'problema', estado: 3, signo: 'alerta',
+          fechas: {'5 de octubre', '6 de octubre', '8 de octubre', 'Hoy, 8:30', 'Hoy, 11:05: faltan dos cajas'},
+          ahora: 'Llegó con dos cajas de menos',
+          ahoraTexto: 'Escuela Ejemplo 12 la recibió hoy y avisó a las 11:05 que faltan dos cajas. Lo estamos revisando con el depósito y te avisamos; no tenés que hacer nada.'},
          {clave: 'leche', titulo: 'Leche en polvo', cantidad: '6 kg', icono: 'cat-alimentos', categoria: 'Alimentos',
           entidad: 'Merendero Ejemplo Sur', necesidad: 'Leche para la merienda de todos los días',
           etapa: 2, tono: 'proceso', estado: 0, signo: 'donaciones',
@@ -104,7 +105,7 @@
       <ol class="don-ruta" th:classappend="|don-tono--${d.tono}|"
           aria-label="Por dónde va tu donación">
         <li th:each="etapa, vuelta : ${etapas}" class="don-parada"
-            th:with="avance=${vuelta.index < d.etapa or d.etapa == 4 ? 'hecho' : (vuelta.index == d.etapa ? 'actual' : 'pendiente')}"
+            th:with="avance=${vuelta.index < d.etapa or d.tono == 'entregada' ? 'hecho' : (vuelta.index == d.etapa ? 'actual' : 'pendiente')}"
             th:classappend="|don-parada--${avance}${vuelta.last ? ' don-parada--destino' : ''}|"
             th:aria-current="${avance == 'actual'} ? 'step' : null">
           <span class="don-parada-marca" aria-hidden="true"><svg
@@ -115,7 +116,7 @@
                 th:if="${avance == 'hecho'}"><svg
                 th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 16)}"></svg></th:block></span>
           <span class="don-parada-texto"><b
-                th:text="${avance == 'actual' and d.tono == 'problema' ? 'Volvió al depósito' : etapa}">En
+                th:text="${avance == 'actual' and d.tono == 'problema' ? 'Llegó incompleta' : etapa}">En
                 depósito</b><small
                 th:text="${vuelta.last and d.entidad != null ? 'En ' + d.entidad + ' · ' + d.fechas[vuelta.index] : d.fechas[vuelta.index]}">12
                 de octubre</small></span>

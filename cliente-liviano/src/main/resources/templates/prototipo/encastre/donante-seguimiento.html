@@ -4,7 +4,7 @@
        ahora (la pieza naranja): la donación que viaja, en qué camión y qué falta para que encastre,
        con la salida a su detalle. El mapa es una pieza: las calles en crema, el recorrido del camión
        como una vía (firme donde ya pasó, a trazos donde falta), las paradas numeradas, el camión
-       como la pieza naranja con su zona aproximada (la posición exacta solo la ve la
+       como la pieza azul de "en camino" con su zona aproximada (la posición exacta solo la ve la
        administración) y, al final, el hueco de la entidad. Al lado, la lista dice lo mismo en
        texto. Todo sale de entregas (th:with): más entregas, más camiones y más paradas se dibujan
        igual. Hoy es el miércoles 14 de octubre de 2026. Estilos: prototipo/donante.css. */-->
@@ -18,13 +18,13 @@
   <h1 class="rotulo-menu">Seguimiento</h1>
   <div class="don-tablero don-seguimiento"
        th:with="entregas=${ {
-         {donacion: 'Lentejas secas', cantidad: '15 kg', clave: 'lentejas', camion: 'Camión 3',
+         {donacion: 'Lentejas secas', cantidad: '15 kg', clave: 'lentejas', camion: 'camión AB 123 CD',
           actualizada: 'hoy, 16:20', tramo: 1, avance: 0.5,
           paradas: {
             {nombre: 'Depósito Central Ejemplo', detalle: 'Salió hoy a las 14:30', x: 70, y: 320},
             {nombre: 'Merendero Ejemplo Sur', detalle: 'Dejó otra entrega a las 15:40', x: 290, y: 320},
             {nombre: 'Hogar Ejemplo Norte', detalle: 'Deja otra entrega antes que la tuya', x: 290, y: 110},
-            {nombre: 'Comedor Barrio Ejemplo', detalle: 'Tu donación encastra acá esta tarde', x: 560, y: 110} } } } },
+            {nombre: 'Comedor Barrio Ejemplo', detalle: 'Tu donación encastra acá a eso de las 16:30', x: 560, y: 110} } } } },
                 e=${entregas[0]}">
 
     <section class="pieza don-cabeza" aria-labelledby="seguimiento-titulo">
@@ -39,9 +39,9 @@
       <p class="rotulo">Ahora viaja</p>
       <h2 id="ahora-titulo"
           th:text="|Tus ${#strings.toLowerCase(e.donacion)} van en el ${e.camion}|">Tus lentejas
-        secas van en el Camión 3</h2>
-      <p class="don-detalle-ahora-texto">Llegan a Comedor Barrio Ejemplo esta tarde. Antes, el camión
-        pasa por Hogar Ejemplo Norte.</p>
+        secas van en el camión AB 123 CD</h2>
+      <p class="don-detalle-ahora-texto">Llegan a Comedor Barrio Ejemplo a eso de las 16:30. Antes, el
+        camión pasa por Hogar Ejemplo Norte.</p>
       <p class="don-actualizada">Última actualización: <b th:text="${e.actualizada}">hoy, 16:20</b></p>
       <div class="don-acciones">
         <a href="/prototipo/encastre/donante-donaciones-detalle"
@@ -96,7 +96,7 @@
     <section class="pieza don-paradas" aria-labelledby="paradas-titulo">
       <h2 id="paradas-titulo" class="don-subtitulo">Por dónde pasa</h2>
       <th:block th:each="ent : ${entregas}">
-        <p class="don-paradas-camion"><b th:text="${ent.camion}">Camión 3</b>, con tus <span
+        <p class="don-paradas-camion">Va en el <b th:text="${ent.camion}">camión AB 123 CD</b>, con tus <span
            th:text="${#strings.toLowerCase(ent.donacion) + ' (' + ent.cantidad + ')'}">lentejas secas (15
           kg)</span>. Va entre <span th:text="${ent.paradas[ent.tramo].nombre}">Merendero Ejemplo
           Sur</span> y <span th:text="${ent.paradas[ent.tramo + 1].nombre}">Hogar Ejemplo Norte</span>

@@ -8,7 +8,10 @@
        entregadas, cada una puesta en la pieza de su entidad. Las siete donaciones (2 entregadas, 1
        en camino, 3 en proceso y 1 sin entregar) están escritas acá, en el calendario del prototipo
        (hoy es el miércoles 14 de octubre de 2026). Cada carril dice su etapa en texto: el dibujo de
-       los tramos es decorativo. Estilos: prototipo/donante.css. */-->
+       los tramos es decorativo. Cada pieza es del color de dónde está (el código de etapa del
+       sitio): en el depósito, lila; en camino, azul; con problema, rosa; llegó, menta. Los útiles
+       llegaron hoy a Escuela Ejemplo 12 con dos cajas de menos: están en la parada de la entidad,
+       con problema, y no cuentan como en camino. Estilos: prototipo/donante.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -22,8 +25,8 @@
                 dons=${ {
          {clave: 'lentejas', titulo: 'Lentejas secas', cantidad: '15 kg', icono: 'cat-alimentos', entidad: 'Comedor Barrio Ejemplo',
           etapa: 3, tono: 'camino', estado: 1, cuando: 'Salió hoy a las 14:30'},
-         {clave: 'utiles', titulo: 'Útiles escolares', cantidad: '2 cajas', icono: 'cat-escolares', entidad: 'Escuela Ejemplo 12',
-          etapa: 3, tono: 'problema', estado: 3, cuando: 'La escuela estaba cerrada el 9 de octubre. Sale de nuevo el viernes 16.'},
+         {clave: 'utiles', titulo: 'Útiles escolares', cantidad: '6 cajas', icono: 'cat-escolares', entidad: 'Escuela Ejemplo 12',
+          etapa: 4, tono: 'problema', estado: 3, cuando: 'La escuela avisó hoy, 11:05: faltan dos cajas.'},
          {clave: 'leche', titulo: 'Leche en polvo', cantidad: '6 kg', icono: 'cat-alimentos', entidad: 'Merendero Ejemplo Sur',
           etapa: 2, tono: 'proceso', estado: 0, cuando: 'Sale del depósito mañana'},
          {clave: 'cuadernos', titulo: 'Cuadernos', cantidad: '20 cuadernos', icono: 'cat-escolares', entidad: 'Escuela Ejemplo 12',
@@ -35,8 +38,8 @@
          {clave: 'fideos', titulo: 'Fideos secos', cantidad: '8 kg', icono: 'cat-alimentos', entidad: 'Comedor Barrio Ejemplo',
           etapa: 4, tono: 'entregada', estado: 2, cuando: 'Encastró el 5 de octubre'} } },
                 ahora=${dons[0]},
-                viajando=${dons.?[etapa < 4 and clave != 'lentejas']},
-                encastradas=${dons.?[etapa == 4]}">
+                viajando=${dons.?[tono != 'entregada' and clave != 'lentejas']},
+                encastradas=${dons.?[tono == 'entregada']}">
 
     <section class="pieza don-cabeza" aria-labelledby="donaciones-titulo">
       <h2 id="donaciones-titulo" class="don-titulo">Tus piezas en viaje</h2>
@@ -82,7 +85,8 @@
            th:href="@{/prototipo/encastre/donante-donaciones-detalle}" class="enlace-fuerte">Ver el
           detalle</a>
       </div>
-      <ol class="don-ruta" aria-label="Por dónde van tus lentejas">
+      <ol class="don-ruta" th:classappend="|don-tono--${ahora.tono}|"
+          aria-label="Por dónde van tus lentejas">
         <li th:each="paso, vuelta : ${pasos}" class="don-parada"
             th:classappend="|don-parada--${paso.avance.tono}${vuelta.last ? ' don-parada--destino' : ''}|"
             th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
@@ -102,7 +106,7 @@
     <!--/* El tablero de viaje: una fila de rótulos con las paradas (decorativa: cada carril dice su
            etapa en texto) y un carril por donación. Los tramos salen de la etapa de cada una. */-->
     <section class="pieza don-viajes" aria-labelledby="viajes-titulo">
-      <h2 id="viajes-titulo" class="don-subtitulo">Las que todavía viajan</h2>
+      <h2 id="viajes-titulo" class="don-subtitulo">Las que todavía no encastraron</h2>
       <div class="don-carril don-carril--rotulos" aria-hidden="true">
         <span></span>
         <ol class="don-tramos">
@@ -129,7 +133,7 @@
           </ol>
           <p class="don-carril-estado"><span
              th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[d.estado]})}">Estado</span>
-            <span><b th:text="${d.tono == 'problema' ? 'Volvió al depósito' : etapas[d.etapa]}">Lista
+            <span><b th:text="${d.tono == 'problema' ? 'Llegó incompleta' : etapas[d.etapa]}">Lista
                 para entregar</b>. <span
                   th:text="${d.cuando}">Sale del depósito mañana</span></span></p>
         </li>

@@ -4,7 +4,9 @@
        destinos reales del prototipo. Dos cambios de composición: el recorrido es la pieza que viaja
        (la donación avanza por las paradas hasta el hueco de la entidad, donde va a encastrar) y la
        misión dice qué falta de verdad ("Falta 1 mes"), con el avance y el texto sacados de las
-       mismas cifras (th:with). Los avisos de "Lo último que pasó" van en el calendario del prototipo:
+       mismas cifras (th:with). La pieza que viaja es del azul de "en camino" (el código de etapa
+       del sitio): la única pieza naranja es la misión. "Lo que ya armaste" es una lista que se oye, y
+       los títulos de las piezas son h2 (sin saltar del h1), con el mismo aspecto que en la ancla. Los avisos de "Lo último que pasó" van en el calendario del prototipo:
        hoy es el miércoles 14 de octubre de 2026, y el camión salió a las 14:30. Estilos: la grilla
        del tablero es de estructura.css; la pieza que viaja, de prototipo/donante.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
@@ -17,7 +19,7 @@
   <h1 class="rotulo-menu">Inicio</h1>
   <div class="tablero don-inicio">
     <section class="pieza saludo" aria-labelledby="hola-titulo">
-      <h3 id="hola-titulo">Hola, Ana</h3>
+      <h2 id="hola-titulo">Hola, Ana</h2>
       <p class="saludo-texto">Tu última donación ya salió del depósito y va camino a Comedor
         Barrio Ejemplo.</p>
       <div class="saludo-acciones">
@@ -29,11 +31,11 @@
       </div>
       <div class="saludo-armado">
         <p class="rotulo">Lo que ya armaste</p>
-        <div class="saludo-fichas piezas-chicas" aria-hidden="true">
-          <span class="ficha ficha--lila"><b>7</b><span>donaciones</span></span>
-          <span class="ficha ficha--menta"><b>2</b><span>entidades ayudadas</span></span>
-          <span class="ficha ficha--rosa"><b>2</b><span>entregadas</span></span>
-        </div>
+        <ul class="saludo-fichas piezas-chicas">
+          <li class="ficha ficha--lila"><b>7</b> <span>donaciones</span></li>
+          <li class="ficha ficha--rosa"><b>2</b> <span>entidades ayudadas</span></li>
+          <li class="ficha ficha--menta"><b>2</b> <span>entregadas</span></li>
+        </ul>
       </div>
     </section>
 
@@ -42,7 +44,7 @@
     <section class="pieza mision pieza-ahora" aria-labelledby="mision-titulo"
              th:with="hechos=2, total=3, unidad='mes', unidades='meses', falta=${total - hechos}">
       <div class="mision-cabeza">
-        <h3 id="mision-titulo">Lo que te toca ahora</h3>
+        <h2 id="mision-titulo">Lo que te toca ahora</h2>
         <p class="mision-rango">Colaborador → Sostenedor</p>
       </div>
       <div class="mision-nombre">
@@ -111,7 +113,7 @@
                       total=${#aggregates.sum(cifras)}">
       <div class="llegaron-cabeza">
         <span class="moneda"><b>2</b></span>
-        <h3 id="entregadas-titulo">Ya llegaron</h3>
+        <h2 id="entregadas-titulo">Ya llegaron</h2>
       </div>
       <svg class="tramos" aria-hidden="true" focusable="false" width="100%" height="28">
         <rect th:each="cifra, vuelta : ${cifras}" th:class="|tramo--${tonos[vuelta.index]}|"
@@ -137,12 +139,12 @@
     <section class="pieza viaje" aria-labelledby="recorrido-titulo">
       <div class="viaje-cabeza">
         <div>
-          <h3 id="recorrido-titulo">Por dónde va tu donación</h3>
+          <h2 id="recorrido-titulo">Por dónde va tu donación</h2>
           <p class="bajada">Lentejas secas · 15 kg</p>
         </div>
         <span th:replace="~{alternativas/encastre/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
       </div>
-      <ol class="don-ruta" aria-label="Por dónde va tu donación">
+      <ol class="don-ruta don-tono--camino" aria-label="Por dónde va tu donación">
         <li th:each="paso, vuelta : ${pasos}" class="don-parada"
             th:classappend="|don-parada--${paso.avance.tono}${vuelta.last ? ' don-parada--destino' : ''}|"
             th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
@@ -163,7 +165,7 @@
     </section>
 
     <section class="pieza novedades" aria-labelledby="notas-titulo">
-      <h3 id="notas-titulo">Lo último que pasó</h3>
+      <h2 id="notas-titulo">Lo último que pasó</h2>
       <p class="bajada">Avisos de tus donaciones, lo más nuevo primero</p>
       <ul class="novedades-lista piezas-chicas">
         <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>

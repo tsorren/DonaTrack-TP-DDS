@@ -1,8 +1,8 @@
 /*
  * Prototipo Encastre, iteración 3, donante: tu donación es una pieza que viaja hasta encastrar.
- * Cada donación es una pieza del color de su etapa (se prepara: sol; en camino, lo de ahora:
- * naranja; con problema: rosa; llegó: menta) que avanza por las paradas hasta calzar en el hueco
- * de su entidad, y cada misión es un rompecabezas a medio armar donde el hueco dice qué falta.
+ * Cada donación es una pieza del color de dónde está (anotada, con vos: sol; en el depósito: lila;
+ * en camino: azul; con problema: rosa; llegó: menta) que avanza por las paradas hasta calzar en el
+ * hueco de su entidad. El naranja es solo lo de ahora (pieza-ahora), nunca una etapa, y cada misión es un rompecabezas a medio armar donde el hueco dice qué falta.
  * Se apoya en estructura.css y componentes.css (la pieza, la lengüeta, el riel, los controles):
  * acá solo las piezas propias del donante, con el prefijo don-.
  * Solo tokens de uso y los quiebres de tokens.css, mobile first (InterfazFitnessTest).
@@ -99,19 +99,51 @@
   margin: 0;
 }
 
+/* El inicio: los títulos de las piezas son h2 (sin saltar niveles después del h1), con el mismo
+   aspecto que los h3 de la ancla (estructura.css). */
+.don-inicio h2 {
+  margin: 0;
+  color: var(--color-pieza-texto);
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-pieza-titulo);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.don-inicio .saludo h2 {
+  font-size: var(--tamano-saludo);
+  line-height: 1.08;
+  text-decoration: underline;
+  text-decoration-color: var(--color-marcador);
+  text-decoration-skip-ink: none;
+  text-decoration-thickness: 0.34em;
+  text-underline-offset: -0.14em;
+}
+
+.don-inicio .mision h2 {
+  font-size: var(--tamano-mision);
+  line-height: 1.02;
+}
+
 /* Lo de ahora: una sola pieza naranja por pantalla (pieza-ahora); con ella en main, el botón
    principal es de tinta (componentes.css). */
 .don-tablero .pieza-ahora {
   --color-pieza-fondo: var(--color-ahora);
 }
 
-/* El color de la etapa: la pieza de cada donación lo toma de acá. */
-.don-tono--proceso {
+/* El color de la etapa (el código del sitio: el color dice dónde está la donación). La pieza de
+   cada donación lo toma de acá; lleva ícono y no texto, así que en camino usa el azul de tramo. */
+.don-tono--anotada {
   --color-don-etapa: var(--color-pieza-sol);
 }
 
+.don-tono--proceso {
+  --color-don-etapa: var(--color-pieza-lila);
+}
+
 .don-tono--camino {
-  --color-don-etapa: var(--color-ahora);
+  --color-don-etapa: var(--color-tramo-en-camino);
 }
 
 .don-tono--problema {
@@ -128,7 +160,7 @@
   width: 100%;
   height: 100%;
   overflow: visible;
-  fill: var(--color-don-etapa, var(--color-ahora));
+  fill: var(--color-don-etapa, var(--color-pieza-crema));
   stroke: var(--color-junta);
   stroke-width: 5;
   stroke-linejoin: round;
@@ -167,14 +199,10 @@
 
 .don-ruta {
   --medida-don-marca: 3.25rem;
-  --color-don-viaja: var(--color-don-etapa, var(--color-ahora));
+  --color-don-viaja: var(--color-don-etapa, var(--color-pieza-crema));
 
   position: relative;
   display: grid;
-}
-
-.pieza-ahora .don-ruta {
-  --color-don-viaja: var(--color-pieza-crema);
 }
 
 .don-parada {
@@ -238,7 +266,7 @@
   border: 0.1875rem dashed var(--color-junta);
 }
 
-/* La pieza en camino: grande, del color de lo de ahora (crema dentro de la pieza naranja). */
+/* La pieza que viaja: grande, del color de su etapa (también dentro de la pieza naranja). */
 .don-parada--actual .don-pieza {
   fill: var(--color-don-viaja);
 }
@@ -247,9 +275,12 @@
   margin: 6% 12% 0 0;
 }
 
-/* El hueco de la entidad: la forma de la pieza, a trazos, esperando. */
-.don-parada--destino.don-parada--pendiente .don-pieza {
-  fill: var(--color-junta-tenue);
+/* El hueco de la entidad: el hueco del sistema (tinta con borde crema a trazos), esperando. */
+.don-parada--destino.don-parada--pendiente .don-pieza,
+.don-tramo--falta > .don-pieza,
+.don-mapa-hueco {
+  fill: var(--color-hueco);
+  stroke: var(--color-hueco-borde);
   stroke-dasharray: 9 7;
   stroke-width: 4;
 }
@@ -599,12 +630,6 @@
   height: 2.75rem;
 }
 
-.don-tramo--falta > .don-pieza {
-  fill: var(--color-junta-tenue);
-  stroke-dasharray: 9 7;
-  stroke-width: 4;
-}
-
 .don-carril--rotulos .don-tramos li {
   color: var(--color-pieza-texto);
   font-size: var(--tamano-mini);
@@ -735,13 +760,9 @@
 }
 
 /* La pieza de la donación, grande, bajo su nombre (solo en pantallas anchas: en el celular, el
-   recorrido ya la muestra). En camino es crema: el naranja ya es la pieza de lo de ahora. */
+   recorrido ya la muestra), del color de su etapa dentro de la pieza naranja. */
 .don-ficha--grande {
   display: none;
-}
-
-.don-ficha--grande.don-tono--camino {
-  --color-don-etapa: var(--color-pieza-crema);
 }
 
 .don-ficha--grande > .icono {
@@ -1128,7 +1149,8 @@
 
   width: var(--medida-don-rango);
   height: var(--medida-don-rango);
-  fill: var(--color-junta-tenue);
+  fill: var(--color-hueco);
+  stroke: var(--color-hueco-borde);
   stroke-dasharray: 9 7;
   stroke-width: 4;
 }
@@ -1143,12 +1165,9 @@
 
 .don-rango-paso--puesta > .don-pieza {
   fill: var(--color-pieza-rosa);
+  stroke: var(--color-junta);
   stroke-dasharray: none;
   stroke-width: 5;
-}
-
-.don-rango-paso--proxima > .don-pieza {
-  stroke: var(--color-junta);
 }
 
 .don-rango-paso:not(.don-rango-paso--puesta, .don-rango-paso--proxima) > .don-pieza {
@@ -1218,13 +1237,75 @@
   line-height: 1.15;
 }
 
-.don-mision .mision-pieza .mision-forma {
-  fill: var(--color-pieza-lila);
-  stroke: var(--color-junta);
+/* Las otras misiones: la pieza chica del sitio (la del tablero de la entidad), una por paso, la
+   lengüeta de la derecha en la muesca de la siguiente. Lo que falta, entero, al lado; si no entra,
+   baja. */
+.don-mision-armado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-4);
 }
 
-.don-mision-piezas {
-  max-width: 24rem;
+.don-ranuras {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: var(--espacio-1);
+  padding-inline-end: var(--espacio-3);
+}
+
+.don-ranura {
+  position: relative;
+  display: grid;
+  flex: none;
+  grid-template-rows: 16fr 56fr;
+  width: 3rem;
+  aspect-ratio: 56 / 72;
+  color: var(--color-pieza-texto);
+}
+
+.don-ranura-forma {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  stroke: var(--color-junta);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.don-ranura > .icono {
+  position: relative;
+  grid-row: 2;
+  place-self: center;
+  width: 42%;
+  height: auto;
+  stroke-width: 3;
+}
+
+.don-ranura--puesta .don-ranura-forma {
+  fill: var(--color-pieza-crema);
+}
+
+.don-ranura--hueco .don-ranura-forma {
+  fill: var(--color-hueco);
+  stroke: var(--color-hueco-borde);
+  stroke-dasharray: 5 4;
+  stroke-width: 2;
+}
+
+.don-mision-falta {
+  display: grid;
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.don-mision-falta b {
+  font-family: var(--fuente-juego);
+  font-size: var(--tamano-titulo-4);
+  font-weight: 800;
 }
 
 .don-mision .mision-barra::-webkit-progress-value {
@@ -1287,36 +1368,61 @@
   font-weight: 800;
 }
 
-/* Notificaciones: cada día, una pieza; cada aviso, una pieza chica con el signo de su tipo. */
+/* Notificaciones: cada día, una pieza atravesada por la vía del recorrido (firme: ya pasó). La
+   lengüeta de cada día cae sobre la vía, así que la vía sigue de un día al otro. Cada aviso es su
+   signo encastrado en la vía y, al lado, su pieza crema. */
 .don-dia {
   --color-pieza-fondo: var(--color-pieza-durazno);
+  --medida-don-via: calc(var(--espacio-relleno-linea) + 1.25rem);
+  --medida-lengueta-x: var(--medida-don-via);
+}
 
-  container-type: inline-size;
+.don-tablero > .don-dia::before {
+  content: "";
+  top: 0;
+  bottom: 0;
+  left: calc(var(--medida-don-via) - 0.125rem);
+  z-index: 0;
+  width: 0;
+  background: none;
+  border-left: 0.25rem solid var(--color-junta);
+}
+
+.don-dia > h2 {
+  padding-inline-start: calc(2.5rem + var(--espacio-3));
 }
 
 .don-dia-lista {
   display: grid;
-  gap: var(--medida-junta);
+  gap: var(--espacio-3);
+  max-width: 52rem;
 }
 
 .don-aviso {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 2.5rem minmax(0, 1fr);
   align-items: start;
   gap: var(--espacio-3);
-  padding: var(--espacio-3) var(--espacio-4);
-  background: var(--color-pieza-crema);
-  border-radius: var(--radio-chico);
 }
 
 .don-aviso-signo {
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
   width: 2.5rem;
   height: 2.5rem;
+  margin-top: var(--espacio-3);
   background: var(--color-don-aviso);
   border: var(--borde-junta) solid var(--color-junta);
   border-radius: 50%;
+  box-shadow: 0 0 0 var(--medida-junta) var(--color-pieza-fondo);
+}
+
+.don-aviso-cuerpo {
+  padding: var(--espacio-3) var(--espacio-4);
+  background: var(--color-pieza-crema);
+  border-radius: var(--radio-chico);
 }
 
 .don-aviso--asignacion {
@@ -1324,7 +1430,7 @@
 }
 
 .don-aviso--lista {
-  --color-don-aviso: var(--color-pieza-sol);
+  --color-don-aviso: var(--color-pieza-lila-alta);
 }
 
 .don-aviso--recepcion {
@@ -1336,11 +1442,11 @@
 }
 
 .don-aviso--mision {
-  --color-don-aviso: var(--color-pieza-durazno);
+  --color-don-aviso: var(--color-pieza-sol);
 }
 
 .don-aviso--ascenso {
-  --color-don-aviso: var(--color-pieza-azul);
+  --color-don-aviso: var(--color-pieza-crema);
 }
 
 .don-aviso-cuerpo {
@@ -1358,12 +1464,6 @@
 .don-aviso-texto {
   font-weight: 700;
   line-height: 1.35;
-}
-
-@container (min-width: 36rem) {
-  .don-dia-lista {
-    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
-  }
 }
 
 /* Seguimiento: el mapa, con su lista al lado. */
@@ -1422,13 +1522,6 @@
   fill: var(--color-mesa-texto);
 }
 
-.don-mapa-hueco {
-  fill: var(--color-junta-tenue);
-  stroke: var(--color-junta);
-  stroke-dasharray: 9 7;
-  stroke-width: 4;
-}
-
 .don-mapa-zona {
   fill: var(--color-junta-tenue);
   stroke: var(--color-junta);
@@ -1438,14 +1531,14 @@
 
 .don-mapa-camion {
   color: var(--color-pieza-tinta);
-  fill: var(--color-ahora);
+  fill: var(--color-tramo-en-camino);
   stroke: var(--color-junta);
   stroke-width: 5;
   stroke-linejoin: round;
 }
 
 .don-mapa-camion use {
-  fill: var(--color-ahora);
+  fill: var(--color-tramo-en-camino);
 }
 
 .don-seguimiento-ahora h2,
@@ -1529,8 +1622,10 @@
 }
 
 .don-paradas-item--destino .don-paradas-numero {
-  background: var(--color-junta-tenue);
+  background: var(--color-hueco);
+  border-color: var(--color-hueco-borde);
   border-style: dashed;
+  outline: 0.125rem solid var(--color-junta);
 }
 
 /* Movimiento, solo si la persona no pidió reducirlo: la pieza en camino se mece sobre la vía y
@@ -1627,7 +1722,8 @@
   }
 
   .don-parada::before,
-  .don-tramo::before {
+  .don-tramo::before,
+  .don-tablero > .don-dia::before {
     border-color: CanvasText;
   }
 
@@ -1637,7 +1733,7 @@
   .don-pedido,
   .don-mision,
   .don-insignia,
-  .don-aviso,
+  .don-aviso-cuerpo,
   .don-paradas-item,
   .don-hueco,
   .don-datos > div {
@@ -1647,6 +1743,22 @@
   .don-parada[aria-current="step"] {
     outline: 3px solid CanvasText;
     outline-offset: 2px;
+  }
+
+  /* Puesta, llena; falta, a trazos (el dibujo único del sitio). */
+  .don-ranura-forma {
+    forced-color-adjust: none;
+    fill: Canvas;
+    stroke: CanvasText;
+  }
+
+  .don-ranura--puesta .don-ranura-forma {
+    fill: CanvasText;
+  }
+
+  .don-ranura > .icono {
+    forced-color-adjust: none;
+    color: Canvas;
   }
 }
 
@@ -1666,6 +1778,10 @@
 
   .don-pedido-piezas {
     max-width: 22rem;
+  }
+
+  .don-ranura {
+    width: 3.5rem;
   }
 }
 
@@ -1707,6 +1823,28 @@
     grid-row: 2 / span 2;
     align-self: center;
   }
+
+  /* Incentivos: la escalera del rango, a la izquierda bajo el título; a la derecha, el texto y
+     la salida. Así la cabeza no deja vacía la mitad izquierda. */
+  .don-incentivos > .don-cabeza > .don-titulo {
+    grid-row: 1;
+  }
+
+  .don-incentivos > .don-cabeza > .don-cabeza-texto {
+    grid-row: 1;
+    align-self: end;
+  }
+
+  .don-incentivos > .don-cabeza > .don-acciones {
+    grid-row: 2;
+    align-self: start;
+  }
+
+  .don-incentivos > .don-cabeza > .don-rango {
+    grid-row: 2;
+    grid-column: 1;
+    align-self: end;
+  }
 }
 
 /* Desde 1100 px: las pantallas que reparten sus piezas en columnas. */
@@ -1724,6 +1862,19 @@
   .don-seguimiento > .don-mapa {
     grid-row: 2;
     grid-column: 1;
+  }
+
+  /* La misión sube justo debajo de su título: sin la fila elástica de la ancla, lo que sobra queda
+     abajo y no entre el título y el rompecabezas. Las dos columnas, a la par, para que las otras
+     misiones entren a lo ancho y las dos piezas tengan casi el mismo alto (la lengüeta de la misión
+     sigue cayendo en la pieza de abajo). */
+  .don-incentivos {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .don-incentivos > .mision {
+    grid-template-rows: auto;
+    align-content: start;
   }
 
   .don-seguimiento > .don-seguimiento-ahora {

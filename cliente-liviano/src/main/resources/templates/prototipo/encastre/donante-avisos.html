@@ -2,9 +2,11 @@
 <!--/* Prototipo Encastre, iteración 3, donante: Notificaciones (RF-08: asignación, misión cumplida,
        ascenso y recepción, y los avisos del viaje de cada donación). No está en el riel: el rótulo
        "Notificaciones" lo escribe la pantalla. Arriba, la cabeza; después, lo de ahora (la pieza
-       naranja): el aviso más nuevo, con su salida. Debajo, los demás avisos agrupados por día, cada
-       uno una pieza chica con el signo de su tipo (color, signo y texto juntos) que encastra en la
-       vía del día, y su enlace. Aguanta más días y más avisos: todo sale de dias (th:with). Hoy es
+       naranja): el aviso más nuevo, con su salida. Debajo, los demás avisos agrupados por día, lo más
+       nuevo arriba: cada día es una pieza atravesada por la vía del recorrido (firme: ya pasó), que
+       sigue de un día al otro por las lengüetas; el signo de cada aviso (color, signo y texto
+       juntos) encastra en la vía y, al lado, su pieza con el texto y el enlace. Lo que le pasó a tus
+       piezas, en el orden en que pasó. Aguanta más días y más avisos: todo sale de dias (th:with). Hoy es
        el miércoles 14 de octubre de 2026. Estilos: prototipo/donante.css. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/encastre/layout-privado :: pagina(~{::title}, ~{::contenido})}">
@@ -24,6 +26,9 @@
          ascenso: {nombre: 'Ascenso', icono: 'incentivos'} } },
                 dias=${ {
          {dia: 'Hoy', avisos: {
+           {tipo: 'problema', texto: 'Escuela Ejemplo 12 recibió tus útiles escolares, pero faltan dos cajas. Lo estamos revisando.',
+            hora: '11:05', cuando: '2026-10-14T11:05', enlace: '/prototipo/encastre/donante-donaciones-detalle',
+            accion: 'Ver el detalle', clave: 'utiles'},
            {tipo: 'lista', texto: 'Tus lentejas quedaron listas para entregar.', hora: '9:10', cuando: '2026-10-14T09:10',
             enlace: '/prototipo/encastre/donante-donaciones-detalle', accion: 'Ver el detalle', clave: 'lentejas'} } },
          {dia: 'Ayer, martes 13', avisos: {
@@ -40,9 +45,6 @@
             cuando: '2026-10-09T12:05', enlace: '/prototipo/encastre/donante-incentivos', accion: 'Ver incentivos', clave: null},
            {tipo: 'ascenso', texto: 'Subiste a Colaborador. La próxima categoría es Sostenedor.', hora: 'Viernes 9, 12:05',
             cuando: '2026-10-09T12:05', enlace: '/prototipo/encastre/donante-incentivos', accion: 'Ver incentivos', clave: null},
-           {tipo: 'problema', texto: 'Tus útiles escolares no se pudieron entregar: la escuela estaba cerrada. Salen de nuevo el viernes 16.',
-            hora: 'Viernes 9, 11:30', cuando: '2026-10-09T11:30', enlace: '/prototipo/encastre/donante-donaciones-detalle',
-            accion: 'Ver el detalle', clave: 'utiles'},
            {tipo: 'recepcion', texto: 'Comedor Barrio Ejemplo recibió tus fideos secos.', hora: 'Lunes 5, 13:00',
             cuando: '2026-10-05T13:00', enlace: '/prototipo/encastre/donante-donaciones-detalle', accion: 'Ver el detalle', clave: 'fideos'} } } } }">
 
