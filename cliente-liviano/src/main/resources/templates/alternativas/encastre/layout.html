@@ -17,6 +17,11 @@
         th:href="${alternativa} ? @{/css/alternativas/{nombre}/tokens.css(nombre=${alternativa})} : @{/css/tokens.css}">
   <link rel="stylesheet" href="/css/app.css"
         th:href="${alternativa} ? @{/css/alternativas/{nombre}/app.css(nombre=${alternativa})} : @{/css/app.css}">
+  <!--/* Encastre: una hoja por zona del sistema (iteración 2), después de app.css. */-->
+  <link rel="stylesheet" href="/css/alternativas/encastre/estructura.css"
+        th:href="@{/css/alternativas/encastre/estructura.css}">
+  <link rel="stylesheet" href="/css/alternativas/encastre/componentes.css"
+        th:href="@{/css/alternativas/encastre/componentes.css}">
   <link th:if="${varianteCss}" rel="stylesheet" href="/css/variantes/variante.css"
         th:href="@{/css/variantes/{nombre}.css(nombre=${varianteCss})}">
   <script src="/webjars/htmx.org/dist/htmx.min.js"

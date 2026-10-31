@@ -3,6 +3,9 @@
  * Versión 2: la identidad del prototipo v2 de la diseñadora (Figma "Prototipo v2" y
  * sofiadeane/frontend-donatrack) con la paleta Grafito cálido y menta y los ajustes de contraste AA
  * de docs/interfaz/bitacora.md.
+ * Encastre (iteración 2, preparación): la paleta crema, tinta y pasteles y las fuentes Baloo 2 y
+ * Nunito del ganador de la iteración 1 (concepto-b, Rompecabezas) reemplazan en su lugar a las de
+ * Glassmorphism; los usos conservan sus nombres.
  *
  * 1. Valores base (--p-*): la paleta. Solo se usan en este archivo. Los colores opacos van en
  *    #rrggbb, para que InterfazFitnessTest pueda medir el contraste.
@@ -10,24 +13,46 @@
  * 3. Pico: sus variables (--pico-*) se asignan solo acá, a partir de los usos.
  */
 
-/* DM Sans (variable, peso 300–900), autoalojada. Google Fonts v17, subconjuntos latino y latino
-   extendido; licencia SIL OFL 1.1 en static/fuentes/OFL-dm-sans.txt. */
+/* Encastre (iteración 2, preparación): Baloo 2 para títulos grandes y cifras, Nunito para el
+   texto, las dos variables y autoalojadas, con sus subconjuntos latino y latino extendido;
+   licencia SIL OFL 1.1 en static/fuentes/OFL-baloo-2.txt y OFL-nunito.txt. */
 @font-face {
-  font-family: "DM Sans";
+  font-family: "Baloo 2";
   font-style: normal;
-  font-weight: 300 900;
+  font-weight: 400 800;
   font-display: swap;
-  src: url("../../../fuentes/dm-sans-latin.woff2") format("woff2");
+  src: url("../../../fuentes/baloo-2-latin.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
     U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 @font-face {
-  font-family: "DM Sans";
+  font-family: "Baloo 2";
   font-style: normal;
-  font-weight: 300 900;
+  font-weight: 400 800;
   font-display: swap;
-  src: url("../../../fuentes/dm-sans-latin-ext.woff2") format("woff2");
+  src: url("../../../fuentes/baloo-2-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
+    U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
+    U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("../../../fuentes/nunito-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("../../../fuentes/nunito-latin-ext.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308,
     U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113,
     U+2C60-2C7F, U+A720-A7FF;
@@ -36,21 +61,44 @@
 :root {
   /* 1. Valores base: Grafito cálido y menta (bitácora, 2026-10-30). El grafito reemplaza al verde
      petróleo del prototipo; la menta, el turquesa y los rojos son los del prototipo. */
-  --p-grafito-900: #2a2624;
-  --p-grafito-800: #38332f;
-  --p-grafito-100: #e9e2da;
+  /* Encastre (iteración 2, preparación): la tinta, la crema y los grises cálidos de concepto-b
+     (Rompecabezas, ganador de la iteración 1) reemplazan al grafito y a los grises en su lugar. */
+  --p-grafito-900: #26242c;
+  --p-grafito-800: #3d3a45;
+  --p-grafito-100: #e7dfd2;
   --p-verde-500: #50d794;
   --p-verde-400: #54da8e;
   --p-verde-50: #eafbf3;
   --p-turquesa-500: #36c7b4;
   --p-pizarra: #364d4a;
-  --p-tinta: #262321;
-  --p-tinta-suave: #6b6b6b;
-  --p-gris-100: #f0ede9;
-  --p-gris-50: #f7f5f2;
-  --p-blanco: #ffffff;
+  --p-tinta: #26242c;
+  --p-tinta-suave: #4a4552;
+  --p-gris-100: #f1ebe1;
+  --p-gris-50: #fbf4e6;
+  --p-blanco: #fffcf5;
   --p-rojo-600: #b9443b;
   --p-rojo-50: #fdf1ef;
+
+  /* Encastre: los pasteles de las piezas y el naranja, el único color fuerte, para "lo de ahora"
+     (decisión de la iteración 1). Texto siempre en tinta: 5,9:1 sobre el naranja y más de 9:1
+     sobre los pasteles. */
+  --p-sol: #f7d46a;
+  --p-naranja: #f2843f;
+  --p-naranja-600: #e7742f;
+  --p-naranja-texto: #a3410f;
+  --p-lila: #ddd3ea;
+  --p-lila-alta: #e9e2f1;
+  --p-menta: #cae2cf;
+  --p-rosa: #efcdc3;
+  --p-azul: #cddaea;
+  --p-durazno: #f3d8b9;
+  --p-azul-tramo: #5b86d6;
+  --p-rosa-tramo: #e07a6e;
+  --p-tinta-a20: rgb(38 36 44 / 20%);
+  --p-tinta-a35: rgb(38 36 44 / 35%);
+  --p-crema-a80: rgb(251 244 230 / 80%);
+  --p-naranja-a25: rgb(242 132 63 / 25%);
+  --p-fuente-juego: "Baloo 2", "Nunito", system-ui, sans-serif;
 
   /* Agregados por contraste AA (bitácora, 2026-10-30): borde de campos de 3:1, verde y ámbar de
      texto y los tonos de aviso que el prototipo dejó propuestos. El azul de "en camino" se separa
@@ -69,13 +117,13 @@
   --p-blanco-a18: rgb(255 255 255 / 18%);
   --p-blanco-a20: rgb(255 255 255 / 20%);
   --p-blanco-a72: rgb(255 255 255 / 72%);
-  --p-gris-50-a78: rgb(247 245 242 / 78%);
-  --p-grafito-a06: rgb(42 38 36 / 6%);
-  --p-grafito-a08: rgb(42 38 36 / 8%);
-  --p-grafito-a14: rgb(42 38 36 / 14%);
-  --p-grafito-a15: rgb(42 38 36 / 15%);
-  --p-grafito-a35: rgb(42 38 36 / 35%);
-  --p-grafito-a45: rgb(42 38 36 / 45%);
+  --p-gris-50-a78: rgb(251 244 230 / 78%);
+  --p-grafito-a06: rgb(38 36 44 / 6%);
+  --p-grafito-a08: rgb(38 36 44 / 8%);
+  --p-grafito-a14: rgb(38 36 44 / 14%);
+  --p-grafito-a15: rgb(38 36 44 / 15%);
+  --p-grafito-a35: rgb(38 36 44 / 35%);
+  --p-grafito-a45: rgb(38 36 44 / 45%);
   --p-negro-a25: rgb(0 0 0 / 25%);
   --p-verde-a28: rgb(84 218 142 / 28%);
   --p-verde-a30: rgb(84 218 142 / 30%);
@@ -88,7 +136,7 @@
   --p-turquesa-a35: rgb(54 199 180 / 35%);
   --p-rojo-a16: rgb(185 68 59 / 16%);
 
-  --p-fuente: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --p-fuente: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* 2. Usos */
   --color-fondo-pagina: var(--p-gris-50);
@@ -100,15 +148,15 @@
   --color-borde: var(--p-grafito-a08);
   --color-borde-control: var(--p-borde-control);
   --color-enlace: var(--p-grafito-900);
-  --color-accion-primaria: var(--p-verde-400);
-  --color-accion-primaria-activa: var(--p-verde-500);
+  --color-accion-primaria: var(--p-naranja);
+  --color-accion-primaria-activa: var(--p-naranja-600);
   --color-accion-secundaria: var(--p-grafito-900);
   --color-accion-secundaria-activa: var(--p-grafito-800);
   --color-texto-sobre-accion: var(--p-grafito-900);
   --color-texto-sobre-secundaria: var(--p-blanco);
   --color-foco: var(--p-grafito-900);
-  --color-foco-sobre-oscuro: var(--p-verde-400);
-  --color-foco-anillo: var(--p-verde-500-a16);
+  --color-foco-sobre-oscuro: var(--p-sol);
+  --color-foco-anillo: var(--p-naranja-a25);
   --color-velo: var(--p-grafito-a45);
 
   /* Superficies oscuras (panel destacado, barra lateral, misión) */
@@ -125,12 +173,12 @@
   --color-barra-superior: var(--p-gris-50-a78);
 
   /* Marca: la ruta punteada, sus nodos y los acentos */
-  --color-marca: var(--p-verde-500);
-  --color-marca-brillante: var(--p-verde-400);
-  --color-marca-alterna: var(--p-turquesa-500);
+  --color-marca: var(--p-naranja);
+  --color-marca-brillante: var(--p-sol);
+  --color-marca-alterna: var(--p-lila);
   --color-marca-suave: var(--p-grafito-100);
-  --color-marca-fondo: var(--p-verde-50);
-  --color-marca-texto: var(--p-verde-700);
+  --color-marca-fondo: var(--p-durazno);
+  --color-marca-texto: var(--p-naranja-texto);
   --color-pizarra: var(--p-pizarra);
   --color-ruta: var(--p-verde-a70);
   --color-ruta-linea: var(--p-verde-a35);
@@ -182,6 +230,41 @@
 
   --fuente-texto: var(--p-fuente);
   --fuente-titulos: var(--p-fuente);
+  /* Letra decorativa: solo títulos grandes y cifras. */
+  --fuente-juego: var(--p-fuente-juego);
+
+  /* Encastre (iteración 2, preparación): las piezas del rompecabezas, la junta de tinta entre
+     ellas, "lo de ahora" en naranja y la geometría de la lengüeta (de concepto-b). Una pieza, un
+     color; el texto, siempre en tinta. */
+  --color-pieza-sol: var(--p-sol);
+  --color-pieza-naranja: var(--p-naranja);
+  --color-pieza-lila: var(--p-lila);
+  --color-pieza-lila-alta: var(--p-lila-alta);
+  --color-pieza-menta: var(--p-menta);
+  --color-pieza-rosa: var(--p-rosa);
+  --color-pieza-azul: var(--p-azul);
+  --color-pieza-durazno: var(--p-durazno);
+  --color-pieza-gris: var(--p-grafito-100);
+  --color-pieza-gris-alta: var(--p-gris-100);
+  --color-pieza-crema: var(--p-blanco);
+  --color-pieza-tinta: var(--p-grafito-900);
+  --color-pieza-texto: var(--p-tinta);
+  --color-junta: var(--p-grafito-900);
+  --color-junta-tenue: var(--p-tinta-a20);
+  --color-junta-media: var(--p-tinta-a35);
+  --color-mesa-velo: var(--p-crema-a80);
+  --color-ahora: var(--p-naranja);
+  --color-ahora-texto: var(--p-naranja-texto);
+  --color-tramo-en-camino: var(--p-azul-tramo);
+  --color-tramo-sin-entregar: var(--p-rosa-tramo);
+  --medida-lengueta: 0.875rem;
+  --medida-lengueta-salida: 0.5rem;
+  --medida-junta: 0.375rem;
+  --radio-pieza: 0.875rem;
+  --radio-mesa: 1.5rem;
+  --medida-mesa-maxima: 96rem;
+  --medida-riel-celular: 4.75rem;
+  --tamano-riel-corto: 0.6875rem;
 
   /* Tamaños del prototipo (de celular a escritorio con clamp). */
   --tamano-mini: 0.8125rem;
@@ -257,6 +340,9 @@
   --pico-spacing: var(--espacio-4);
   --pico-form-element-spacing-vertical: 0.75rem;
   --pico-form-element-spacing-horizontal: 0.875rem;
+
+  /* Zona componentes (iteración 2): los tokens nuevos de esa zona van solo debajo de esta línea.
+     El resto del archivo es de la zona estructura. */
 }
 
 @media (prefers-reduced-motion: reduce) {
