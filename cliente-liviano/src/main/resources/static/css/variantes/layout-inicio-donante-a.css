@@ -1,0 +1,68 @@
+/* A — Viaje a lo alto: el recorrido de tu donación baja por la hoja, de arriba abajo, y en pantallas anchas las cifras quedan a su costado, como la leyenda de un mapa. */
+
+/* El recorrido queda vertical en cualquier ancho: la lista deja de ser contenedor y la consulta
+   que lo pone horizontal no encuentra qué medir. En el celular ya era vertical. */
+.panel--viaje .recorrido {
+  container-type: normal;
+}
+
+/* Desde 1100 px, el viaje y la leyenda comparten el renglón. El orden de lectura y el del foco
+   siguen al HTML: lo que va primero en el HTML va a la izquierda. */
+@media (min-width: 68.75em) {
+  /* Inicio del donante: el viaje a la izquierda, en una columna a su medida, y la leyenda a su
+     costado, con el resto del ancho. Las dos arrancan bajo el mismo filete, con el mismo aire. */
+  .tablero {
+    grid-template-columns: minmax(0, 24rem) minmax(16rem, 1fr);
+    grid-template-areas: "saludo saludo" "viaje leyenda" "notas notas" "mision mision";
+    column-gap: 0;
+  }
+
+  .tablero > .tablero-leyenda {
+    padding: var(--espacio-6) 0 var(--espacio-2) var(--espacio-6);
+    border-block-start: var(--borde-ancho) solid var(--color-filete);
+  }
+
+  /* Muestra de /estilos: ahí la leyenda va antes que el viaje en el HTML, así que queda a la
+     izquierda y el viaje a su costado, también bajo un mismo filete. El título de la muestra
+     sigue al margen. */
+  .muestra-pantalla {
+    display: grid;
+    grid-template-columns: minmax(16rem, 1fr) minmax(0, 24rem);
+    column-gap: 0;
+    align-items: start;
+  }
+
+  .muestra-pantalla > * {
+    grid-column: 1 / -1;
+  }
+
+  .muestra-pantalla > :is(h2, h2 + *) {
+    grid-row: 1;
+  }
+
+  .muestra-grilla {
+    display: contents;
+  }
+
+  .muestra-pantalla > .cifras {
+    grid-column: 1;
+    padding-block-start: var(--espacio-5);
+    border-block-start: var(--borde-ancho) solid var(--color-filete);
+  }
+
+  .muestra-grilla > .panel--viaje {
+    grid-column: 2;
+    margin-block-start: var(--espacio-6);
+    padding-inline-start: var(--espacio-6);
+  }
+
+  .muestra-grilla > .mision {
+    grid-column: 1 / -1;
+    margin-block-start: var(--espacio-6);
+  }
+
+  /* En la columna de la leyenda, cada estado en su renglón: en dos columnas no entra. */
+  :is(.tablero-leyenda, .muestra-pantalla) .leyenda {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
