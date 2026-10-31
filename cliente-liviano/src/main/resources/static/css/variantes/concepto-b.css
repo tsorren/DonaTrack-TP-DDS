@@ -1,7 +1,7 @@
 /* Rompecabezas: tu inicio es un rompecabezas que se arma con lo que hiciste. Cada dato es una
    pieza de color que encastra con la de al lado, y lo que falta de tu misión es un hueco con forma
    de pieza. Las secciones son piezas de un riel que se encastra en el tablero: columna a la
-   izquierda en la computadora y tira arriba en el celular. */
+   izquierda en la computadora y tira fija abajo en el celular, al alcance del pulgar. */
 
 /* Encastre, iteración 1, concepto B. Las lengüetas son un círculo del color de la pieza con un
    aro del color de la junta: el aro pinta la muesca sobre la pieza vecina, así que ninguna pieza
@@ -35,12 +35,12 @@
   --p-sol: #f7d46a;
   --p-naranja: #f2843f;
   --p-naranja-texto: #a3410f;
-  --p-lila: #d8cbf4;
-  --p-lila-alta: #e6ddfa;
-  --p-menta: #bde5cc;
-  --p-rosa: #f6c4be;
-  --p-azul: #c5d7f4;
-  --p-durazno: #f8d3ae;
+  --p-lila: #ddd3ea;
+  --p-lila-alta: #e9e2f1;
+  --p-menta: #cae2cf;
+  --p-rosa: #efcdc3;
+  --p-azul: #cddaea;
+  --p-durazno: #f3d8b9;
   --p-gris-calido: #e7dfd2;
   --p-gris-calido-alta: #f1ebe1;
   --p-azul-tramo: #5b86d6;
@@ -68,6 +68,10 @@
   --p-radio-mesa: 1.5rem;
   --p-relleno: 1.625rem 1.125rem;
   --p-ancho-max: 96rem;
+
+  /* Riel fijo del celular: alto de la tira y tamaño de sus nombres cortos. */
+  --p-alto-riel: 4.75rem;
+  --p-letra-riel: 0.6875rem;
 }
 
 body.cb {
@@ -160,7 +164,7 @@ body.cb {
 
   max-width: var(--p-ancho-max);
   margin-inline: auto;
-  padding: 0 var(--espacio-2) var(--espacio-6);
+  padding: 0 var(--espacio-2) calc(var(--p-alto-riel) + var(--espacio-5));
 }
 
 /* Lengüeta: el círculo del color de la pieza y el aro de la junta, que hace la muesca. */
@@ -182,7 +186,6 @@ body.cb {
 
 /* Hacia abajo, en el celular: cada pieza del tablero entra en la siguiente. */
 :where(.cb-tablero > :not(:last-child))::after,
-.cb-riel a[aria-current="page"]::before,
 .cb-pasos > :not(:last-child)::after,
 .cb-notas ul > :not(:last-child)::after {
   content: "";
@@ -208,15 +211,20 @@ body.cb {
   --p-cy: 50%;
 }
 
-/* El riel: en el celular, una tira de piezas que se desliza de costado. Su relleno de abajo deja
-   lugar a la lengüeta de la sección actual, que baja y se encastra en el tablero. */
+/* El riel: en el celular, una tira fija abajo, al alcance del pulgar, con las cinco piezas
+   enteras y su nombre corto. La sección actual es la pieza de sol: su lengüeta sube y se encastra
+   en el tablero. */
 .cb-riel {
-  --p-r: 0.625rem;
-  --p-d: 0.375rem;
-  --p-sobra: calc(var(--p-r) + var(--p-d) + var(--p-g));
+  --p-r: 0.5rem;
+  --p-d: 0.3125rem;
 
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
   display: block;
-  padding: var(--p-g) var(--p-g) 0;
+  padding: var(--p-g);
   background: var(--p-tinta-cb);
   border-radius: var(--p-radio-mesa) var(--p-radio-mesa) 0 0;
 }
@@ -227,47 +235,96 @@ nav.cb-riel ul {
   display: flex;
   align-items: stretch;
   gap: var(--p-g);
-  margin: 0 0 calc(-1 * var(--p-sobra));
-  padding: 0 0 var(--p-sobra);
-  overflow-x: auto;
+  margin: 0;
+  padding: 0;
   list-style: none;
-  pointer-events: none;
-  scrollbar-width: none;
 }
 
 nav.cb-riel li {
   display: flex;
-  flex: 1 0 auto;
+  flex: 1 1 auto;
+  min-width: var(--medida-toque-minimo);
   margin: 0;
   padding: 0;
-  pointer-events: auto;
 }
 
-.cb-riel a {
+.cb-riel :is(a, summary) {
   --p-pieza: var(--p-gris-calido);
+  --p-y: 1.5rem;
 
   position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: var(--espacio-1);
   min-height: 4rem;
   margin: 0;
-  padding: var(--espacio-2) 1.125rem;
+  padding: var(--espacio-2) calc(var(--espacio-1) / 2);
   background: var(--p-pieza);
   border-radius: var(--p-radio-pieza);
   color: var(--p-tinta-cb);
-  font-size: var(--tamano-mini);
+  font-size: var(--p-letra-riel);
   font-weight: 800;
   line-height: 1.2;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.cb-riel a:hover {
+.cb-riel :is(a, summary):hover {
   --p-pieza: var(--p-gris-calido-alta);
+}
+
+/* La actual, hacia arriba: su lengüeta entra en el tablero. */
+.cb-riel a[aria-current="page"]::before {
+  content: "";
+  bottom: 100%;
+  left: calc(50% - var(--p-rg));
+  width: calc(2 * var(--p-rg));
+  height: calc(var(--p-d) + var(--p-rg));
+  --p-cx: 50%;
+  --p-cy: calc(100% - var(--p-d));
+}
+
+/* Más de cinco secciones: la pieza "Más" despliega el resto hacia arriba. */
+nav.cb-riel .cb-riel-extra {
+  display: none;
+}
+
+.cb-riel-mas details {
+  display: flex;
+  flex: 1;
+  margin: 0;
+}
+
+.cb-riel-mas summary {
+  list-style: none;
+}
+
+.cb-riel-mas summary::-webkit-details-marker,
+.cb-riel-mas summary::after {
+  display: none;
+}
+
+nav.cb-riel .cb-riel-mas ul {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + var(--p-g));
+  flex-direction: column;
+  min-width: 12rem;
+  padding: var(--p-g);
+  background: var(--p-tinta-cb);
+  border-radius: var(--p-radio-pieza);
+}
+
+nav.cb-riel .cb-riel-mas a {
+  min-height: var(--medida-toque-minimo);
+  font-size: var(--tamano-chico);
+}
+
+nav.cb-riel .cb-riel-mas a::after {
+  content: none;
 }
 
 .cb-riel a[aria-current="page"] {
@@ -287,6 +344,10 @@ nav.cb-riel li {
 .cb-riel a[aria-current="page"] .cb-riel-icono {
   background: var(--p-tinta-cb);
   color: var(--p-sol);
+}
+
+.cb-riel-corto {
+  max-width: 100%;
 }
 
 .cb-riel-texto {
@@ -311,7 +372,7 @@ nav.cb-riel li {
   gap: var(--p-g);
   padding: var(--p-g);
   background: var(--p-tinta-cb);
-  border-radius: 0 0 var(--p-radio-mesa) var(--p-radio-mesa);
+  border-radius: var(--p-radio-mesa);
 }
 
 .cb-pieza {
@@ -343,8 +404,7 @@ nav.cb-riel li {
   position: relative;
 }
 
-.cb .cb-rotulo,
-.cb-rotulo-suave {
+.cb :is(.cb-rotulo, .cb-rotulo-suave) {
   font-family: var(--p-fuente);
   font-size: var(--tamano-mini);
   font-weight: 800;
@@ -359,8 +419,7 @@ nav.cb-riel li {
   color: var(--p-crema);
 }
 
-.cb-rotulo-suave,
-.cb-bajada {
+.cb :is(.cb-rotulo-suave, .cb-bajada) {
   color: var(--p-tinta-suave-cb);
 }
 
@@ -394,6 +453,18 @@ nav.cb-riel li {
   text-decoration: underline;
 }
 
+/* Lo de ahora: el naranja, el único color fuerte (misión, paso actual y esta acción). */
+.cb-boton--ahora,
+.cb-boton--ahora:hover {
+  border-color: var(--p-tinta-cb);
+  background: var(--p-naranja);
+  color: var(--p-tinta-cb);
+}
+
+.cb-boton--ahora:hover {
+  text-decoration: underline;
+}
+
 .cb-acciones {
   display: flex;
   flex-wrap: wrap;
@@ -412,12 +483,15 @@ nav.cb-riel li {
 }
 
 .cb-hola-titulo {
+  margin-bottom: 0.15em;
   font-size: clamp(2.5rem, 1.6rem + 3.5vw, 4.5rem);
-  line-height: 1;
+  line-height: 1.15;
 }
 
 .cb-hola-titulo span {
   padding: 0 0.2em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
   background: var(--p-sol);
   border-radius: 0.25em;
 }
@@ -671,38 +745,33 @@ nav.cb-riel li {
   font-size: 1.5rem;
 }
 
+/* Cada tramo con un borde del color de la pieza: es la junta; la lengüeta, un círculo del color
+   del tramo con el mismo aro, muerde al siguiente. */
 .cb-tramos {
-  height: 1.75rem;
+  display: block;
+  overflow: visible;
 }
 
-.cb-tramo {
-  min-width: 1.5rem;
-  background: var(--p-pieza);
-  border-radius: var(--radio-chico);
+.cb-tramos :is(rect, circle) {
+  fill: var(--p-pieza);
+  stroke: var(--p-menta);
+  stroke-width: 4;
 }
 
 .cb-tramo--entregadas {
   --p-pieza: var(--p-tinta-cb);
-
-  flex: 2 1 0;
 }
 
 .cb-tramo--camino {
   --p-pieza: var(--p-azul-tramo);
-
-  flex: 1 1 0;
 }
 
 .cb-tramo--proceso {
   --p-pieza: var(--p-sol);
-
-  flex: 3 1 0;
 }
 
 .cb-tramo--sin-entregar {
   --p-pieza: var(--p-rosa-tramo);
-
-  flex: 1 1 0;
 }
 
 .cb .cb-leyenda {
@@ -826,7 +895,11 @@ nav.cb-riel li {
 }
 
 .cb-paso--actual {
-  --p-pieza: var(--p-sol);
+  --p-pieza: var(--p-naranja);
+}
+
+.cb-paso--actual .cb-paso-texto small {
+  color: var(--p-tinta-cb);
 }
 
 .cb-paso--pendiente {
@@ -933,17 +1006,43 @@ nav.cb-riel li {
 
   :is(.cb-pieza, .cb-riel a, .cb-mini > *)::before,
   :is(.cb-pieza, .cb-riel a, .cb-mini > *)::after,
-  .cb-leyenda li::before {
+  .cb-leyenda li::before,
+  .cb-tramos {
     forced-color-adjust: none;
+  }
+
+  .cb-riel a[aria-current="page"],
+  .cb-paso[aria-current="step"] {
+    border-width: 4px;
+    outline: 3px solid CanvasText;
+    outline-offset: 2px;
   }
 }
 
-/* Desde 600 px: el tablero en dos columnas y los pasos en fila. */
+/* Desde 600 px: el riel vuelve arriba como tira entera, el tablero en dos columnas y los pasos
+   en fila. */
 @media (min-width: 37.5em) {
   .cb-mesa {
     --p-relleno: 1.625rem;
 
-    padding-inline: var(--espacio-4);
+    padding: 0 var(--espacio-4) var(--espacio-6);
+  }
+
+  .cb-riel {
+    position: static;
+    padding: var(--p-g) var(--p-g) 0;
+  }
+
+  .cb-riel :is(a, summary) {
+    justify-content: center;
+    padding-inline: var(--espacio-2);
+    font-size: var(--tamano-mini);
+  }
+
+  .cb-riel a[aria-current="page"]::before {
+    top: 100%;
+    bottom: auto;
+    --p-cy: var(--p-d);
   }
 
   .cb #contenido {
@@ -951,10 +1050,26 @@ nav.cb-riel li {
     grid-template-areas:
       "hola hola"
       "mision mision"
-      "realizadas categoria"
-      "entregadas entregadas"
+      "categoria categoria"
+      "realizadas entregadas"
       "recorrido recorrido"
       "notas notas";
+    border-radius: 0 0 var(--p-radio-mesa) var(--p-radio-mesa);
+  }
+
+  /* La categoría, en una pieza baja: el rótulo arriba y, en la misma línea, el nombre y la
+     próxima (que baja si no entra). */
+  .cb-categoria {
+    --p-x: 25%;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-2) var(--espacio-4);
+  }
+
+  .cb-categoria h2 {
+    flex-basis: 100%;
   }
 
   .cb-hola {
@@ -987,7 +1102,7 @@ nav.cb-riel li {
     grid-area: notas;
   }
 
-  /* Realizadas encastra a la derecha (categoría) y abajo (ya llegaron). */
+  /* Realizadas encastra a la derecha (ya llegaron) y abajo (el recorrido). */
   .cb-tablero > .cb-realizadas::after,
   .cb :is(.cb-pasos, .cb-notas ul) > :not(:last-child)::after {
     content: "";
@@ -1047,8 +1162,8 @@ nav.cb-riel li {
   }
 }
 
-/* Desde 1100 px: el riel es una columna a la izquierda y la sección actual entra de costado en
-   el tablero; el tablero, en doce columnas. */
+/* Desde 1100 px: el riel es una columna a la izquierda, estirada hasta el pie del tablero, y la
+   sección actual entra de costado en el tablero; el tablero, en doce columnas. */
 @media (min-width: 68.75em) {
   .cb-mesa {
     --p-relleno: 2rem;
@@ -1064,8 +1179,17 @@ nav.cb-riel li {
   }
 
   .cb-riel {
+    align-self: stretch;
     padding: var(--p-g) 0 var(--p-g) var(--p-g);
     border-radius: var(--p-radio-mesa) 0 0 var(--p-radio-mesa);
+  }
+
+  nav.cb-riel .cb-riel-extra {
+    display: flex;
+  }
+
+  nav.cb-riel .cb-riel-mas {
+    display: none;
   }
 
   nav.cb-riel ul {
@@ -1125,20 +1249,32 @@ nav.cb-riel li {
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-template-areas:
       "hola hola hola hola hola hola hola mision mision mision mision mision"
-      "realizadas realizadas realizadas realizadas entregadas entregadas entregadas entregadas categoria categoria categoria categoria"
+      "categoria categoria categoria categoria categoria categoria categoria mision mision mision mision mision"
+      "realizadas realizadas realizadas realizadas realizadas realizadas entregadas entregadas entregadas entregadas entregadas entregadas"
       "recorrido recorrido recorrido recorrido recorrido recorrido recorrido recorrido recorrido recorrido recorrido recorrido"
       "notas notas notas notas notas notas notas notas notas notas notas notas";
-    border-radius: 0 var(--p-radio-mesa) var(--p-radio-mesa) var(--p-radio-mesa);
+    border-radius: 0 var(--p-radio-mesa) var(--p-radio-mesa) 0;
   }
 
   .cb-hola {
     --p-x: 20%;
   }
 
+  /* La misión ocupa el alto del saludo y la categoría juntos: lo que sobra lo toma el hueco. */
   .cb-mision {
     --p-x: 50%;
 
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* El hueco de la misión, más grande: el paso que falta manda en la columna. */
+  .cb-meses > * {
+    min-height: 8rem;
+  }
+
+  .cb-hueco {
+    font-size: 1.375rem;
   }
 
   .cb-mision-cabeza,
@@ -1149,11 +1285,11 @@ nav.cb-riel li {
   }
 
   .cb-categoria {
-    --p-x: 50%;
+    --p-x: 40%;
   }
 
   /* Lengüetas a la derecha. */
-  .cb-tablero > :is(.cb-hola, .cb-realizadas, .cb-entregadas)::after {
+  .cb-tablero > :is(.cb-hola, .cb-realizadas)::after {
     content: "";
     top: calc(var(--p-y, 50%) - var(--p-rg));
     left: 100%;
@@ -1164,8 +1300,9 @@ nav.cb-riel li {
   }
 
   /* Lengüetas hacia abajo. */
-  .cb-tablero > :is(.cb-hola, .cb-realizadas, .cb-entregadas)::before,
-  .cb-tablero > :is(.cb-mision, .cb-categoria, .cb-recorrido)::after {
+  .cb-tablero > .cb-realizadas::before,
+  .cb-tablero > :is(.cb-mision, .cb-categoria, .cb-recorrido, .cb-entregadas)::after,
+  .cb-tablero > .cb-hola::before {
     content: "";
     top: 100%;
     left: calc(var(--p-x, 50%) - var(--p-rg));
@@ -1175,7 +1312,7 @@ nav.cb-riel li {
     --p-cy: var(--p-d);
   }
 
-  .cb-tablero > :is(.cb-realizadas, .cb-entregadas)::before {
+  .cb-tablero > .cb-realizadas::before {
     left: calc(50% - var(--p-rg));
   }
 }

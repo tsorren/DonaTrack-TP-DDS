@@ -2,7 +2,7 @@
 <!--/* Encastre, iteración 1, concepto B: Rompecabezas. La pantalla es un rompecabezas armado con lo
        que hizo la persona: cada dato es una pieza de color con lengüetas que encastran en la de al
        lado, lo que falta es un hueco con forma de pieza y las secciones son piezas de un riel que se
-       encastra en el tablero (columna en escritorio, tira arriba en el celular). Mismos datos y
+       encastra en el tablero (columna en escritorio, tira fija abajo en el celular). Mismos datos y
        acciones que alternativas/encastre/paginas/estilos-armazon.html. */-->
 <html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{alternativas/encastre/layout :: cabeza(~{::title})}">
@@ -33,14 +33,30 @@
 
   <div class="cb-mesa">
     <!--/* El riel: una pieza por sección. La actual está encastrada en el tablero: su lengüeta
-           entra en la primera pieza. */-->
-    <nav class="cb-riel" aria-label="Secciones">
+           entra en el tablero. Con más de cinco secciones (admin), en el celular y la tableta
+           quedan cuatro piezas y una pieza "Más" que despliega el resto; en escritorio, la columna
+           las muestra todas. Con cinco o menos, la pieza "Más" no existe. */-->
+    <nav class="cb-riel" aria-label="Secciones"
+         th:with="muchas=${#lists.size(navegacion) > 5}">
       <ul>
-        <li th:each="opcion : ${navegacion}">
+        <li th:each="opcion, vuelta : ${navegacion}"
+            th:classappend="${muchas and vuelta.index >= 4} ? 'cb-riel-extra'">
           <a href="#" th:href="@{${opcion.ruta}}" th:aria-current="${opcion.actual} ? 'page' : null"><span
              class="cb-riel-icono"><svg th:replace="~{alternativas/encastre/fragmentos/icono :: icono(${opcion.icono}, 20)}"></svg></span><span
              class="cb-riel-texto" th:text="${opcion.texto}">Sección</span><span
              class="cb-riel-corto" aria-hidden="true" th:text="${opcion.textoCorto}">Sección</span></a>
+        </li>
+        <li class="cb-riel-mas" th:if="${muchas}">
+          <details>
+            <summary><span class="cb-riel-icono"><svg
+                     th:replace="~{alternativas/encastre/fragmentos/icono :: icono('flecha', 20)}"></svg></span><span>Más</span></summary>
+            <ul>
+              <li th:each="opcion, vuelta : ${navegacion}" th:if="${vuelta.index >= 4}">
+                <a href="#" th:href="@{${opcion.ruta}}" th:aria-current="${opcion.actual} ? 'page' : null"
+                   th:text="${opcion.texto}">Sección</a>
+              </li>
+            </ul>
+          </details>
         </li>
       </ul>
     </nav>
@@ -52,7 +68,7 @@
         <p class="cb-hola-texto">Tu última donación ya salió del depósito y va camino a Comedor
           Barrio Ejemplo.</p>
         <div class="cb-acciones">
-          <a href="#recorrido-titulo" role="button" class="cb-boton">Ver seguimiento</a>
+          <a href="#recorrido-titulo" role="button" class="cb-boton cb-boton--ahora">Ver seguimiento</a>
           <a href="#tarjeta-titulo" role="button" class="cb-boton cb-boton--borde">Mis donaciones</a>
         </div>
         <div class="cb-armado">
@@ -65,35 +81,39 @@
         </div>
       </section>
 
-      <section class="cb-pieza cb-mision" aria-labelledby="mision-titulo">
+      <section class="cb-pieza cb-mision" aria-labelledby="mision-titulo"
+               th:with="hechos=2, total=3, faltan=${total - hechos}, por=${hechos * 100 / total}">
         <div class="cb-mision-cabeza">
           <h2 id="mision-titulo">Lo que te toca ahora</h2>
           <p class="cb-mision-rango">Colaborador → Sostenedor</p>
         </div>
         <div class="cb-mision-nombre">
-          <span class="cb-mision-cuenta">2/3</span>
+          <span class="cb-mision-cuenta" th:text="|${hechos}/${total}|">2/3</span>
           <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
         </div>
-        <!--/* Los meses de la misión: dos piezas puestas y el hueco del paso que falta. */-->
+        <!--/* Los meses de la misión, desde las cifras: los hechos son piezas puestas; el siguiente,
+               el hueco con la pieza suelta; los demás que falten, huecos vacíos. */-->
         <div class="cb-meses cb-mini">
-          <span class="cb-mes" aria-hidden="true"><svg
-                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 28)}"></svg></span>
-          <span class="cb-mes" aria-hidden="true"><svg
-                th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 28)}"></svg></span>
-          <p class="cb-hueco"><span>Falta 1 paso</span>
-            <svg class="cb-suelta" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path
-                 d="M22 30H40A11 11 0 1 1 60 30H78V48A11 11 0 1 1 78 68V86H60A11 11 0 1 0 40 86H22V68A11 11 0 1 0 22 48Z"/></svg></p>
+          <th:block th:each="mes : ${#numbers.sequence(1, total)}">
+            <span class="cb-mes" aria-hidden="true" th:if="${mes <= hechos}"><svg
+                  th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 28)}"></svg></span>
+            <p class="cb-hueco" th:if="${mes == hechos + 1}"><span
+               th:text="|Falta ${faltan} ${faltan > 1 ? 'pasos' : 'paso'}|">Falta 1 paso</span>
+              <svg class="cb-suelta" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path
+                   d="M22 30H40A11 11 0 1 1 60 30H78V48A11 11 0 1 1 78 68V86H60A11 11 0 1 0 40 86H22V68A11 11 0 1 0 22 48Z"/></svg></p>
+            <span class="cb-hueco" aria-hidden="true" th:if="${mes > hechos + 1}"></span>
+          </th:block>
         </div>
-        <progress class="cb-mision-barra" value="66" max="100"
-                  aria-label="Progreso de la misión">66 %</progress>
+        <progress class="cb-mision-barra" value="66" max="100" th:value="${por}"
+                  aria-label="Progreso de la misión" th:text="|${por} %|">66 %</progress>
         <div class="cb-mision-pie">
-          <span class="cb-mision-por">66 %</span>
+          <span class="cb-mision-por" th:text="|${por} %|">66 %</span>
           <a href="#insignia-titulo" role="button" class="cb-boton cb-boton--borde">Ver incentivos</a>
         </div>
       </section>
 
       <a class="cb-pieza cb-realizadas" href="#" th:href="@{${realizadas.ruta}}">
-        <span class="cb-realizadas-etiqueta" th:text="${realizadas.etiqueta}">Donaciones realizadas</span>
+        <span class="cb-realizadas-etiqueta" id="tarjeta-titulo" th:text="${realizadas.etiqueta}">Donaciones realizadas</span>
         <span class="cb-realizadas-valor" th:text="${realizadas.valor}">7</span>
         <span class="cb-realizadas-cambio" th:if="${realizadas.cambio}"><b
               th:text="${realizadas.cambio}">+3</b> <span th:text="${realizadas.cambioTexto}">respecto al mes pasado</span></span>
@@ -106,27 +126,34 @@
         </svg>
       </a>
 
-      <article class="cb-pieza cb-entregadas" aria-labelledby="entregadas-titulo">
+      <!--/* Ya llegaron: una sola declaración de las cifras; los tramos y la leyenda salen de ahí. */-->
+      <article class="cb-pieza cb-entregadas" aria-labelledby="entregadas-titulo"
+               th:with="cifras=${ {2, 1, 3, 1} }, tonos=${ {'entregadas', 'camino', 'proceso', 'sin-entregar'} },
+                        nombres=${ {'entregadas', 'en camino', 'en proceso', 'sin entregar'} },
+                        total=${#aggregates.sum(cifras)}">
         <div class="cb-entregadas-cabeza">
-          <span class="cb-moneda"><b>2</b></span>
+          <span class="cb-moneda"><b th:text="${cifras[0]}">2</b></span>
           <h2 id="entregadas-titulo">Ya llegaron</h2>
         </div>
-        <div class="cb-tramos cb-mini" aria-hidden="true">
-          <span class="cb-tramo cb-tramo--entregadas"></span>
-          <span class="cb-tramo cb-tramo--camino"></span>
-          <span class="cb-tramo cb-tramo--proceso"></span>
-          <span class="cb-tramo cb-tramo--sin-entregar"></span>
-        </div>
+        <!--/* Un rect por tramo, del ancho de su cifra; después, la lengüeta de cada tramo, que
+               muerde al siguiente. */-->
+        <svg class="cb-tramos" aria-hidden="true" focusable="false" width="100%" height="28">
+          <rect th:each="cifra, vuelta : ${cifras}" th:class="|cb-tramo--${tonos[vuelta.index]}|"
+                y="0" height="100%" rx="8" x="0" width="0"
+                th:with="antes=${vuelta.first ? 0 : #aggregates.sum(cifras.subList(0, vuelta.index))}"
+                th:attr="x=|${antes * 100.0 / total}%|,width=|${cifra * 100.0 / total}%|"></rect>
+          <circle th:each="cifra, vuelta : ${cifras}" th:unless="${vuelta.last}"
+                  th:class="|cb-tramo--${tonos[vuelta.index]}|" cy="50%" r="7" cx="0"
+                  th:attr="cx=|${#aggregates.sum(cifras.subList(0, vuelta.count)) * 100.0 / total}%|"></circle>
+        </svg>
         <ul class="cb-leyenda">
-          <li class="cb-tramo--entregadas">2 entregadas</li>
-          <li class="cb-tramo--camino">1 en camino</li>
-          <li class="cb-tramo--proceso">3 en proceso</li>
-          <li class="cb-tramo--sin-entregar">1 sin entregar</li>
+          <li th:each="cifra, vuelta : ${cifras}" th:class="|cb-tramo--${tonos[vuelta.index]}|"
+              th:text="|${cifra} ${nombres[vuelta.index]}|">2 entregadas</li>
         </ul>
       </article>
 
-      <section class="cb-pieza cb-categoria" aria-labelledby="categoria-titulo">
-        <span class="cb-rotulo-suave" id="categoria-titulo">Tu categoría</span>
+      <section class="cb-pieza cb-categoria" aria-labelledby="insignia-titulo">
+        <h2 class="cb-rotulo-suave" id="insignia-titulo">Tu categoría</h2>
         <span class="cb-categoria-nombre">Colaborador</span>
         <span class="cb-categoria-proxima">Próxima: Sostenedor</span>
       </section>
@@ -144,7 +171,10 @@
           <li th:each="paso, vuelta : ${pasos}" class="cb-paso"
               th:classappend="|cb-paso--${paso.avance.tono}|"
               th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
-            <span class="cb-paso-numero" aria-hidden="true" th:text="${vuelta.count}">1</span>
+            <span class="cb-paso-numero" aria-hidden="true" th:switch="${paso.avance.name()}"><th:block
+                  th:case="'HECHO'"><svg th:replace="~{alternativas/encastre/fragmentos/icono :: icono('check', 18)}"></svg></th:block><th:block
+                  th:case="'ACTUAL'"><svg th:replace="~{alternativas/encastre/fragmentos/icono :: icono('camiones', 18)}"></svg></th:block><th:block
+                  th:case="*" th:text="${vuelta.count}">1</th:block></span>
             <span class="cb-paso-texto"><span th:text="${paso.nombre}">Paso</span><small
                   th:text="${paso.detalle}">Detalle</small></span>
           </li>
