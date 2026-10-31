@@ -190,7 +190,7 @@ Lo marcaron los críticos; se cumple al construir, sin preguntar:
 - **Tierra sin explorar:** el rayado rodea el mensaje, nunca va debajo del texto.
 - **Leyenda y mapa:** todo lo que dice un dibujo está también en texto o en una lista al lado
   (RF-CL-06).
-- **Plegables** (grupos de una lista, barra del admin) con `details` y `summary` o un enlace real:
+- **Plegables** (grupos de una lista, como las entregadas; el motivo de un rechazo) con `details` y `summary` o un enlace real:
   funcionan sin programación.
 
 ## Lo que todavía no se puede hacer
