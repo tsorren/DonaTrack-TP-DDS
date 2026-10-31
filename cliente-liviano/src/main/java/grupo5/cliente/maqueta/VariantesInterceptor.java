@@ -17,9 +17,12 @@ import org.springframework.web.servlet.ModelAndView;
 /**
  * Comparaciones de diseño. {@code ?alternativa=<nombre>} cambia la identidad visual: la página usa
  * {@code static/css/alternativas/<nombre>/tokens.css} y {@code app.css} en lugar de las de
- * Glassmorphism (bitácora, 2026-10-30). {@code ?variante=<tema>-a|b} (skill iteracion-ab) suma
- * {@code static/css/variantes/<variante>.css} a la página o la reemplaza por {@code
- * templates/variantes/<variante>.html}. Las dos se pueden combinar.
+ * Glassmorphism, y su propio juego de plantillas, {@code templates/alternativas/<nombre>/} (la
+ * vista {@code paginas/x} pasa a {@code alternativas/<nombre>/paginas/x} si existe; bitácora,
+ * 2026-10-30). {@code ?variante=<tema>-a|b} (skill iteracion-ab) suma {@code
+ * static/css/variantes/<variante>.css} a la página o la reemplaza por {@code
+ * templates/variantes/<variante>.html}. Las dos se pueden combinar; una variante de estructura gana
+ * sobre las plantillas de la alternativa.
  */
 class VariantesInterceptor implements HandlerInterceptor {
 
@@ -74,14 +77,19 @@ class VariantesInterceptor implements HandlerInterceptor {
     if (modelAndView == null) {
       return;
     }
+    String vista = modelAndView.getViewName();
+    boolean pagina = vista != null && vista.startsWith("paginas/");
     if (request.getAttribute(ATRIBUTO_ALTERNATIVA) instanceof String alternativa) {
       modelAndView.addObject("alternativa", alternativa);
+      String propia = "alternativas/" + alternativa + "/" + vista;
+      if (pagina && recursos.getResource("classpath:templates/" + propia + ".html").exists()) {
+        modelAndView.setViewName(propia);
+      }
     }
     if (!(request.getAttribute(ATRIBUTO) instanceof Variante variante)) {
       return;
     }
-    String vista = modelAndView.getViewName();
-    if (variante.estructura() && vista != null && vista.startsWith("paginas/")) {
+    if (variante.estructura() && pagina) {
       modelAndView.setViewName("variantes/" + variante.nombre());
     }
     if (variante.estilo()) {

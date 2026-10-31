@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<!--/* Catálogo /estilos (RF-CL-05). Cada fragmento de fragmentos/ figura acá con todos sus estados
+       y el patrón que sigue; InterfazFitnessTest falla si falta alguno. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Catálogo de componentes - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <h1>Catálogo de componentes</h1>
+  <p class="catalogo-intro">Cada componente de la interfaz con todos sus estados y el patrón que
+    sigue. Identidad: la de la alternativa activa. Sin indicar nada, Glassmorphism (la del
+    prototipo v2); con <code>?alternativa=cozy-medieval</code>, Cozy / Medieval.</p>
+
+  <section class="muestra-pantalla" aria-labelledby="muestra-titulo">
+    <h2 id="muestra-titulo">Muestra: inicio de una persona donante</h2>
+    <p class="catalogo-patron">El tablero del prototipo v2 armado con los componentes del
+      catálogo. Datos de ejemplo. Las cifras (fragmento <code>cifra</code>) llevan a sus entregas;
+      el recorrido (fragmento <code>recorrido</code>, patrón Material Steppers) muestra los pasos
+      hechos, el actual y los pendientes.</p>
+
+    <section class="destacado" aria-labelledby="hola-titulo">
+      <div>
+        <p class="destacado-etiqueta">Tu impacto</p>
+        <h3 id="hola-titulo">Hola, Ana</h3>
+        <p>Tu última donación ya salió del depósito y va camino a Comedor Barrio Ejemplo.</p>
+        <div class="destacado-acciones">
+          <a href="#recorrido-titulo" role="button">Ver seguimiento</a>
+          <a href="#tarjeta-titulo" role="button" class="fantasma">Mis donaciones</a>
+        </div>
+      </div>
+      <div class="destacado-red" aria-hidden="true">
+        <svg viewBox="0 0 360 200" preserveAspectRatio="none" focusable="false">
+          <path d="M18 168 C 80 150, 110 110, 160 102 S 270 60, 340 14"/>
+        </svg>
+        <span class="destacado-nodo destacado-nodo--1"></span>
+        <span class="destacado-nodo destacado-nodo--2"></span>
+        <span class="destacado-chip destacado-chip--1"><b>7</b><span>donaciones</span></span>
+        <span class="destacado-chip destacado-chip--2"><b>2</b><span>entidades ayudadas</span></span>
+        <span class="destacado-chip destacado-chip--3"><b>2</b><span>entregadas</span></span>
+      </div>
+    </section>
+
+    <div class="cifras">
+      <a th:replace="~{alternativas/cozy-medieval/fragmentos/cifra :: cifra(${realizadas})}"></a>
+      <article class="resumen-entregas" aria-labelledby="entregadas-titulo">
+        <div class="resumen-entregas-cabecera">
+          <span class="moneda"><b>2</b></span>
+          <h3 id="entregadas-titulo">Donaciones <span>entregadas</span></h3>
+        </div>
+        <svg class="segmentos" viewBox="0 0 100 10" preserveAspectRatio="none"
+             aria-hidden="true" focusable="false">
+          <rect class="segmento--entregadas" x="0" y="0" width="27.3" height="10"/>
+          <rect class="segmento--camino" x="28.8" y="0" width="13.6" height="10"/>
+          <rect class="segmento--proceso" x="43.9" y="0" width="40.9" height="10"/>
+          <rect class="segmento--sin-entregar" x="86.3" y="0" width="13.7" height="10"/>
+        </svg>
+        <ul class="leyenda">
+          <li class="segmento--entregadas">2 entregadas</li>
+          <li class="segmento--camino">1 en camino</li>
+          <li class="segmento--proceso">3 en proceso</li>
+          <li class="segmento--sin-entregar">1 sin entregar</li>
+        </ul>
+      </article>
+      <section class="categoria" aria-labelledby="categoria-titulo">
+        <span class="cifra-etiqueta" id="categoria-titulo">Categoría actual</span>
+        <span class="categoria-nombre">Colaborador</span>
+        <span class="categoria-proxima">Próxima: Sostenedor</span>
+      </section>
+    </div>
+
+    <div class="muestra-grilla">
+      <section class="panel" aria-labelledby="recorrido-titulo">
+        <div class="panel-encabezado">
+          <div>
+            <h3 id="recorrido-titulo">Recorrido de tu última donación</h3>
+            <p class="panel-bajada">Lentejas secas · 15 kg</p>
+          </div>
+          <span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
+        </div>
+        <ol th:replace="~{alternativas/cozy-medieval/fragmentos/recorrido :: recorrido('Recorrido de tu última donación',
+            ${pasos})}"></ol>
+        <a href="#tarjeta-titulo" class="enlace-fuerte">Ver el detalle</a>
+      </section>
+
+      <section class="panel mision" aria-labelledby="mision-titulo">
+        <h3 id="mision-titulo">Tu misión actual</h3>
+        <p class="panel-bajada">Colaborador → Sostenedor</p>
+        <div class="mision-sello-fila">
+          <span class="mision-sello">2/3</span>
+          <p><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+        </div>
+        <progress class="mision-barra" value="66" max="100"
+                  aria-label="Progreso de la misión">66 %</progress>
+        <p class="mision-pie"><span>66 %</span><span>Falta 1 paso</span></p>
+        <a href="#insignia-titulo" role="button" class="fantasma">Ver incentivos</a>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="notas-titulo">
+      <h3 id="notas-titulo">Notificaciones recientes</h3>
+      <p class="panel-bajada">Lo último que pasó con tus donaciones</p>
+      <ul class="notas">
+        <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+          <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+        <li><p>Tu donación quedó lista para entregar.</p>
+          <time datetime="2026-10-14T09:10">ayer</time></li>
+        <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+          <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+      </ul>
+    </section>
+  </section>
+
+  <section class="catalogo" aria-labelledby="iconos-titulo">
+    <h2 id="iconos-titulo">Íconos</h2>
+    <p class="catalogo-patron">Fragmento <code>icono</code>: trazo de 24 × 24 que toma el color del
+      texto. Siempre acompañan a un texto.</p>
+    <ul class="muestras">
+      <li th:each="nombre : ${ {'inicio', 'donaciones', 'entidades', 'incentivos', 'seguimiento',
+          'notificaciones', 'camiones', 'cat-alimentos', 'cat-vestimenta', 'cat-escolares'} }"><svg
+          th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono(${nombre}, 24)}"></svg><code
+          th:text="${nombre}">nombre</code></li>
+      <li><svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('check', 24)}"></svg><code>check</code></li>
+      <li><svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('alerta', 24)}"></svg><code>alerta</code></li>
+      <li><svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('flecha', 24)}"></svg><code>flecha</code></li>
+    </ul>
+  </section>
+
+  <section class="catalogo" aria-labelledby="colores-titulo">
+    <h2 id="colores-titulo">Colores</h2>
+    <p class="catalogo-patron">Colores de uso definidos en <code>tokens.css</code>.</p>
+    <ul class="muestras">
+      <li><span class="muestra muestra--destacado"></span><code>--color-destacado-fondo</code></li>
+      <li><span class="muestra muestra--marca"></span><code>--color-marca-brillante</code></li>
+      <li><span class="muestra muestra--marca-alterna"></span><code>--color-marca-alterna</code></li>
+      <li><span class="muestra muestra--marca-suave"></span><code>--color-marca-suave</code></li>
+      <li><span class="muestra muestra--fondo-pagina"></span><code>--color-fondo-pagina</code></li>
+      <li><span class="muestra muestra--fondo"></span><code>--color-fondo</code></li>
+      <li><span class="muestra muestra--superficie"></span><code>--color-superficie</code></li>
+      <li><span class="muestra muestra--texto"></span><code>--color-texto</code></li>
+      <li><span class="muestra muestra--texto-suave"></span><code>--color-texto-suave</code></li>
+      <li><span class="muestra muestra--accion"></span><code>--color-accion-primaria</code></li>
+      <li><span class="muestra muestra--foco"></span><code>--color-foco</code></li>
+      <li><span class="muestra muestra--exito"></span><code>--color-exito-texto</code></li>
+      <li><span class="muestra muestra--info"></span><code>--color-info-texto</code></li>
+      <li><span class="muestra muestra--advertencia"></span><code>--color-advertencia-texto</code></li>
+      <li><span class="muestra muestra--error"></span><code>--color-error-texto</code></li>
+    </ul>
+  </section>
+
+  <section class="catalogo" aria-labelledby="tipografia-titulo">
+    <h2 id="tipografia-titulo">Tipografía</h2>
+    <p class="catalogo-patron">Escala de títulos y texto de <code>tokens.css</code>.</p>
+    <h3>Título de sección</h3>
+    <h4>Título de bloque</h4>
+    <p>Texto de lectura: las donaciones llegan a quienes las necesitan y cada paso queda a la
+      vista. <a href="#tipografia-titulo">Un enlace dentro del texto</a>.</p>
+    <p><small>Texto chico para ayudas y datos secundarios.</small></p>
+  </section>
+
+  <section class="catalogo" aria-labelledby="botones-titulo">
+    <h2 id="botones-titulo">Botones</h2>
+    <p class="catalogo-patron">Patrón: Material Buttons (filled, outlined, text). Una acción
+      principal por pantalla.</p>
+    <div class="catalogo-fila">
+      <button type="button">Confirmar recepción</button>
+      <button type="button" class="secondary">Ver detalle</button>
+      <button type="button" class="outline">Agregar otra foto</button>
+      <button type="button" disabled>Confirmar recepción</button>
+      <button type="button" aria-busy="true">Enviando…</button>
+      <a href="#botones-titulo" role="button" class="outline">Enlace con forma de botón</a>
+    </div>
+    <div class="catalogo-fila catalogo-oscuro">
+      <button type="button">Ver seguimiento</button>
+      <button type="button" class="fantasma">Mis donaciones</button>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="campo-titulo">
+    <h2 id="campo-titulo">Campo de formulario</h2>
+    <p class="catalogo-patron">Patrón: Material Text fields. Fragmento <code>campo</code>.</p>
+    <div class="catalogo-columnas">
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('cantidad', 'Cantidad de bultos', 'number',
+           'Contá las cajas o bolsas que recibiste.', null, false)}"></div>
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('remito', 'Número de remito', 'text', null,
+           'Falta el número de remito. Está arriba a la derecha del papel.', false)}"></div>
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('entidad', 'Entidad', 'text',
+           'Se completa con tu entidad.', null, true)}"></div>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="fotos-titulo">
+    <h2 id="fotos-titulo">Carga de fotos</h2>
+    <p class="catalogo-patron">Patrón: HIG Photo pickers. Fragmento <code>carga-fotos</code>.</p>
+    <div class="catalogo-columnas">
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/carga-fotos :: carga-fotos('fotos', 'Fotos de lo que llegó',
+           'JPG o PNG, hasta 5 MB cada una. Se usan para mostrar que la donación llegó.', null)}"></div>
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/carga-fotos :: carga-fotos('fotos-error', 'Fotos de lo que llegó',
+           null, 'La foto pesa más de 5 MB. Probá con una más liviana.')}"></div>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="aviso-titulo">
+    <h2 id="aviso-titulo">Aviso breve</h2>
+    <p class="catalogo-patron">Patrón: Material Snackbar. Fragmento <code>aviso</code>. En las
+      pantallas aparece en la región de avisos, abajo.</p>
+    <div class="catalogo-columnas">
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso('Recepción confirmada. Gracias por avisar.', 'exito')}"></div>
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso('Guardamos tus cambios.', 'info')}"></div>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="banners-titulo">
+    <h2 id="banners-titulo">Banner</h2>
+    <p class="catalogo-patron">Patrón: Material Banners. Fragmento <code>banner</code>.</p>
+    <div th:replace="~{alternativas/cozy-medieval/fragmentos/banner :: banner('No pudimos cargar tus entregas',
+         'Es un problema nuestro. Probá de nuevo en unos minutos; si sigue, escribinos con este código.',
+         'error', 'a1b2c3d4e5f6')}"></div>
+    <div th:replace="~{alternativas/cozy-medieval/fragmentos/banner :: banner('Estás sin conexión',
+         'Lo que cargues se envía cuando vuelva la conexión.', 'advertencia', null)}"></div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="dialogo-demo-titulo-seccion">
+    <h2 id="dialogo-demo-titulo-seccion">Diálogo de confirmación</h2>
+    <p class="catalogo-patron">Patrón: Material Dialogs y HIG Alerts. Fragmento
+      <code>dialogo</code>. Solo para acciones que no se pueden deshacer.</p>
+    <form id="form-dialogo-demo" action="#" method="get">
+      <button type="button" class="outline" commandfor="dialogo-demo" command="show-modal">Cancelar
+        la entrega</button>
+    </form>
+    <dialog th:replace="~{alternativas/cozy-medieval/fragmentos/dialogo :: dialogo('dialogo-demo', '¿Cancelar la entrega?',
+            'La entidad deja de esperarla y no se puede deshacer.', 'Sí, cancelar',
+            'form-dialogo-demo')}"></dialog>
+  </section>
+
+  <section class="catalogo" aria-labelledby="carga-titulo">
+    <h2 id="carga-titulo">Carga en curso</h2>
+    <p class="catalogo-patron">Patrón: Material Progress indicators. Fragmentos
+      <code>esqueleto</code> (una lista que tarda) y <code>cargando</code> (una acción que tarda).</p>
+    <div class="catalogo-columnas">
+      <div th:replace="~{alternativas/cozy-medieval/fragmentos/esqueleto :: esqueleto(3)}"></div>
+      <p><span th:replace="~{alternativas/cozy-medieval/fragmentos/cargando :: cargando('cargando-demo', 'Enviando fotos…', true)}"></span></p>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="vacio-titulo">
+    <h2 id="vacio-titulo">Estado vacío</h2>
+    <p class="catalogo-patron">Patrón: Material Empty states. Fragmento <code>estado-vacio</code>.</p>
+    <div class="catalogo-columnas">
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio('Todavía no tenés entregas para confirmar',
+               'Cuando una donación llegue a tu entidad, aparece acá para que confirmes la recepción.',
+               'Ver necesidades publicadas', '#vacio-titulo')}"></section>
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio('No hay resultados',
+               'Probá con otra palabra o sacá algún filtro.', null, null)}"></section>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="insignia-titulo">
+    <h2 id="insignia-titulo">Estado de una entrega</h2>
+    <p class="catalogo-patron">Fragmento <code>insignia</code>. Color y texto siempre juntos.</p>
+    <p class="catalogo-fila">
+      <th:block th:each="estado : ${estados}">
+        <span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estado})}">Estado</span>
+      </th:block>
+    </p>
+  </section>
+
+  <section class="catalogo" aria-labelledby="tarjeta-titulo">
+    <h2 id="tarjeta-titulo">Tarjeta</h2>
+    <p class="catalogo-patron">Patrón: Material Cards. Fragmento <code>tarjeta</code>. Con foto y
+      sin foto: sin foto, la portada muestra el ícono de lo donado.</p>
+    <div class="tarjetas">
+      <th:block th:each="entrega : ${entregas}">
+        <article th:replace="~{alternativas/cozy-medieval/fragmentos/tarjeta :: tarjeta(${entrega})}"></article>
+      </th:block>
+    </div>
+  </section>
+
+  <section class="catalogo" aria-labelledby="tabla-titulo">
+    <h2 id="tabla-titulo">Tabla</h2>
+    <p class="catalogo-patron">Patrón: Material Data tables. En el celular, cada fila se muestra
+      como una tarjeta.</p>
+    <table class="tabla">
+      <caption>Entregas de la semana</caption>
+      <thead>
+        <tr>
+          <th scope="col">Donación</th>
+          <th scope="col">Destino</th>
+          <th scope="col">Fecha</th>
+          <th scope="col">Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="entrega : ${entregas}">
+          <th scope="row" data-etiqueta="Donación" th:text="${entrega.titulo}">Donación</th>
+          <td data-etiqueta="Destino" th:text="${entrega.destino}">Destino</td>
+          <td data-etiqueta="Fecha" th:text="${entrega.fecha}">Fecha</td>
+          <td data-etiqueta="Estado">
+            <span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${entrega.estado})}">Estado</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="catalogo" aria-labelledby="navegacion-titulo">
+    <h2 id="navegacion-titulo">Navegación</h2>
+    <p class="catalogo-patron">Patrón: Material Navigation rail. Fragmento <code>navegacion</code>:
+      la barra lateral, con un nodo de la ruta por sección. La actual brilla. En las pantallas
+      privadas, en el celular, pasa a una barra inferior: <a href="/estilos/armazon"
+      th:href="@{/estilos/armazon}">ver la muestra del área privada</a>.</p>
+    <nav th:replace="~{alternativas/cozy-medieval/fragmentos/navegacion :: navegacion(${opciones})}"></nav>
+  </section>
+</th:block>
+</body>
+</html>

@@ -75,8 +75,8 @@ Antes de mostrar una propuesta, el agente mira sus capturas en los 3 anchos y se
     `--movimiento-`, `--capa-` y `--medida-`. Por ejemplo, `--color-accion-primaria` o
     `--medida-toque-minimo`.
 - Las variables `--pico-*` se asignan solo en `tokens.css`, a partir de los usos.
-- Cada alternativa de identidad (Glassmorphism y Cozy / Medieval) tiene su propio `tokens.css` y
-  su propio `app.css`, con estas mismas reglas
+- Cada alternativa de identidad (Glassmorphism y Cozy / Medieval) tiene su propio `tokens.css`, su
+  propio `app.css` y su propio juego de plantillas, con estas mismas reglas
   ([ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
 - Los puntos de quiebre se declaran una vez en `tokens.css` como `--medida-quiebre-*`. Las media
   queries usan solo esos valores.

@@ -81,6 +81,29 @@ class VariantesInterceptorTest {
   }
 
   @Test
+  void unaAlternativaSinPlantillasPropiasUsaLasDeGlassmorphism() throws Exception {
+    mvc.perform(get("/estilos").param("alternativa", "prueba"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("paginas/estilos"));
+  }
+
+  @Test
+  void unaAlternativaConPlantillasPropiasUsaSuJuego() throws Exception {
+    mvc.perform(get("/estilos/armazon").param("alternativa", "cozy-medieval"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("alternativas/cozy-medieval/paginas/estilos-armazon"))
+        .andExpect(content().string(containsString("/css/alternativas/cozy-medieval/app.css")));
+  }
+
+  @Test
+  void unaVarianteDeEstructuraGanaSobreLasPlantillasDeLaAlternativa() throws Exception {
+    mvc.perform(get("/estilos").param("alternativa", "cozy-medieval").param("variante", "prueba-b"))
+        .andExpect(status().isOk())
+        .andExpect(view().name("variantes/prueba-b"))
+        .andExpect(model().attribute("alternativa", "cozy-medieval"));
+  }
+
+  @Test
   void unNombreQueNoEsUnaCarpetaDeAlternativaNoExiste() throws Exception {
     mvc.perform(get("/estilos").param("alternativa", "../variantes"))
         .andExpect(status().isNotFound());

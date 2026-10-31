@@ -35,6 +35,11 @@ description: >-
    - Cambios de estilo: `cliente-liviano/src/main/resources/static/css/variantes/<tema>-a.css` y
      `<tema>-b.css`. Solo redefinen tokens o reglas de `app.css`, nunca colores sueltos.
    - Cambios de estructura: `templates/variantes/<tema>-a.html` y `<tema>-b.html`.
+     Una variante de estructura **reemplaza la página entera**, también cuando hay alternativa
+     (`?alternativa=`): gana sobre la plantilla propia de la alternativa. En `/estilos` el modelo
+     no trae `cuenta` ni `navegacion`, así que la variante no puede usar `layout-privado`.
+   - **Preferir variantes solo de estilo** sobre el juego de plantillas de la alternativa: no se
+     duplica HTML y las dos opciones salen de la misma estructura.
    - Se ven con `?variante=<tema>-a` o `?variante=<tema>-b`.
    - En el nombre del archivo, el `:` del tema se escribe `-` (`layout:entregas` →
      `layout-entregas-a.css`): solo letras minúsculas, números y guiones.
@@ -42,7 +47,9 @@ description: >-
      cuenta como variante: las plantillas lo usan como fragmento y el CSS con `@import`.
    - Para comparar sobre otra alternativa de identidad (por ejemplo, Cozy / Medieval), la
      variante se suma a esa alternativa: `?alternativa=<nombre>&variante=<tema>-a`. Sin
-     `alternativa`, la variante va sobre Glassmorphism.
+     `alternativa`, la variante va sobre Glassmorphism. Cozy tiene su propio juego de plantillas
+     (`templates/alternativas/cozy-medieval/`): una variante de estilo se ve sobre ese juego; una de
+     estructura lo reemplaza.
 4. **Comprobar y capturar:**
 
    ```bash
@@ -67,7 +74,11 @@ description: >-
    - Preguntar con `AskUserQuestion`: "¿Con cuál seguimos?" → A (Recomendada) · B · "Una mezcla:
      decime qué tomo de cada una" · "Ninguna, probemos otra cosa".
 7. **Cerrar:**
-   - Aplicar la elegida (en `tokens.css`, `app.css` o la plantilla real).
+   - Aplicar la elegida (en `tokens.css`, `app.css` o la plantilla real). Si la comparación fue
+     sobre Cozy, se aplica en las plantillas de `templates/alternativas/cozy-medieval/` y en su
+     `app.css` (`static/css/alternativas/cozy-medieval/`), no en las de Glassmorphism. Si la
+     elegida cambia la estructura o un texto de una plantilla que existe en las dos alternativas,
+     se lleva a la gemela, o se deja constancia de por qué no.
    - Borrar las dos variantes de `variantes/`.
    - Copiar las capturas de 360 y 1280 px de cada variante a `docs/interfaz/evidencia/<tema>/`
      (menos de 400 KB cada una); las de otra alternativa, a

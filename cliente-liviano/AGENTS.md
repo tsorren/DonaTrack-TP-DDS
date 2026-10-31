@@ -46,9 +46,10 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 | `templates/layout-privado.html` | Estructura de las pantallas privadas: barra lateral (barra inferior en el celular), campana, cuenta y región de avisos |
 | `templates/fragmentos/` | Un componente = un fragmento parametrizado |
 | `templates/paginas/` | Una vista por pantalla |
+| `templates/alternativas/<nombre>/` | El juego completo de plantillas de otra alternativa (hoy, `cozy-medieval`): su `layout.html`, `layout-privado.html`, `fragmentos/` y `paginas/`, con la misma estructura de carpetas que `templates/`. En la maqueta, `?alternativa=<nombre>` lo elige |
 | `static/css/tokens.css` | Única fuente de colores, tipografías, espacios, bordes y puntos de quiebre de la Alternativa Glassmorphism, la que se ve por defecto |
 | `static/css/app.css` | Estilos de componentes y pantallas de Glassmorphism, solo con tokens de uso |
-| `static/css/alternativas/<nombre>/` | Otra alternativa de identidad, con su `tokens.css` y su `app.css` completos (hoy, `cozy-medieval`). En el perfil `maqueta` se elige con `?alternativa=<nombre>` |
+| `static/css/alternativas/<nombre>/` | Los estilos de esa alternativa de identidad, con su `tokens.css` y su `app.css` completos (hoy, `cozy-medieval`) |
 | `static/css/variantes/` | Variantes A/B activas (se borran al decidir); las piezas que comparten varias, en `variantes/comun/` |
 
 ## Reglas de plantillas
@@ -56,6 +57,13 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 - Cada componente es un fragmento en `templates/fragmentos/<componente>.html`. Figura en `/estilos`
   con todos sus estados y el patrón que sigue ([catálogo de patrones](../docs/interfaz/patrones-y-microcopy.md)).
   Un test falla si falta.
+- **Cada alternativa tiene su propio juego de plantillas.** Toda plantilla y todo fragmento de
+  `templates/` tiene su gemela, con el mismo nombre, en `templates/alternativas/<nombre>/` (y al
+  revés). Una pantalla o un componente nuevo se crea en los dos lugares. Los textos fijos deben ser
+  los mismos en las dos: un test compara cada par.
+- El catálogo `/estilos` de cada alternativa
+  (`templates/alternativas/<nombre>/paginas/estilos.html`) muestra todos los fragmentos de esa
+  alternativa. Un test falla si falta.
 - HTML semántico: `header`, `nav`, `main`, `footer`, `button`, `label`, `table` con `th scope`.
 - Texto siempre con `th:text`. `th:utext` nunca con datos que vienen de afuera.
 - Cada estado del flujo (vacío, cargando, éxito, error, sin permiso) tiene su representación. En el
@@ -78,8 +86,8 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 - Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de un
   `tokens.css`.
 - Fuera de los `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
-- Hay dos alternativas de identidad que comparten plantillas y textos: cada componente o pantalla
-  nueva se estiliza en el `app.css` de cada una
+- Hay dos alternativas de identidad, cada una con sus plantillas, sus textos iguales (vigilados por
+  test) y sus hojas de estilo: cada componente o pantalla nueva se escribe y se estiliza en cada una
   ([ADR propuesto](../docs/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
 - Las media queries usan solo los puntos de quiebre de `tokens.css` (`--medida-quiebre-*`), con
   mobile first.

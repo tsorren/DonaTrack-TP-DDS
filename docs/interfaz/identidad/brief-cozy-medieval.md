@@ -18,10 +18,10 @@ mensaje transmitir, cuál es su identidad y a qué usuarios les habla:
 | Glassmorphism | Profesional y seria: vidrio, grafito y menta, números de impacto |
 | Cozy / Medieval | Cálida y de aventura, como un juego de rol para adultos: mapa, pergamino, tinta y madera |
 
-Las dos comparten las pantallas y los textos. Cada alternativa tiene su hoja de estilos completa
-(ver la [bitácora](../bitacora.md)). Desde la
-[directiva de estructura](../estructura-cozy-medieval.md), Cozy también arma sus pantallas a su
-modo, con su propio juego de páginas y los mismos textos.
+Las dos tienen las mismas pantallas y los mismos textos. Cada alternativa tiene su hoja de estilos
+completa (ver la [bitácora](../bitacora.md)) y, desde la
+[directiva de estructura](../estructura-cozy-medieval.md), su propio juego de plantillas: Cozy arma
+sus pantallas a su modo, con el mismo texto que Glassmorphism.
 
 ## Personalidad
 
@@ -90,9 +90,9 @@ En una frase (propuesto): **cada donación deja un camino en el mapa.**
 
 ## Voz
 
-- **Textos:** los mismos que Glassmorphism (usuario). Las pantallas son compartidas: lo medieval
-  va solo en lo visual. El tono de aventura se puede probar más adelante, con una comparación de
-  textos.
+- **Textos:** los mismos que Glassmorphism (usuario). Cada alternativa tiene sus plantillas, pero
+  los textos fijos son iguales y un test lo comprueba. El tono de aventura se puede probar más
+  adelante, con una comparación de textos.
 - **Trato y registro:** vos, cercano (del [brief de Glassmorphism](brief.md#voz)).
 
 ## Forma y densidad
@@ -118,9 +118,10 @@ En una frase (propuesto): **cada donación deja un camino en el mapa.**
   controles de 48 px, nada desbordado entre 360 y 1920 px, lo esencial sin JavaScript y respeto
   por quien prefiere menos movimiento.
 - Letras con licencia OFL, servidas desde el propio sitio.
-- Los textos se comparten con Glassmorphism. La estructura de cada pantalla es propia de Cozy
-  desde la [directiva de estructura](../estructura-cozy-medieval.md) (2026-10-30); antes, lo propio
-  de Cozy iba solo en sus hojas de estilo.
+- Los textos son los mismos que los de Glassmorphism, escritos en el juego de plantillas de cada
+  alternativa y vigilados por un test. La estructura de cada pantalla es propia de Cozy desde la
+  [directiva de estructura](../estructura-cozy-medieval.md) (2026-10-30); antes, lo propio de Cozy
+  iba solo en sus hojas de estilo.
 
 ## Primera tanda (decidida)
 

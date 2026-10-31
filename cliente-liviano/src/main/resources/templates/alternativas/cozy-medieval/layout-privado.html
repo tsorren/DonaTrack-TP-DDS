@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!--/* Estructura de las pantallas privadas (bitácora, 2026-10-30): barra lateral con la ruta
+       punteada en escritorio, barra inferior en el celular y, arriba, campana y cuenta, sin buscador.
+       Uso: <html th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">. El modelo
+       trae navegacion (List<OpcionNavegacion>) y cuenta (CuentaVista). Las pantallas de
+       notificaciones y perfil, y la salida, llegan con sus flujos y con el IdP. */-->
+<html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="pagina(titulo, contenido)">
+<head th:replace="~{alternativas/cozy-medieval/layout :: cabeza(${titulo})}">
+  <title>DonaTrack</title>
+</head>
+<body class="armazon">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <header class="encabezado">
+    <a th:replace="~{alternativas/cozy-medieval/layout :: marca}">DonaTrack</a>
+    <div class="encabezado-fin">
+      <a class="boton-icono" href="/notificaciones" th:href="@{/notificaciones}"
+         aria-label="Notificaciones"><svg
+         th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('notificaciones', 22)}"></svg></a>
+      <details class="cuenta">
+        <summary th:aria-label="|Cuenta de ${cuenta.nombre}|" th:text="${cuenta.inicial}">A</summary>
+        <div class="cuenta-menu">
+          <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+          <a href="/perfil" th:href="@{/perfil}">Mi perfil</a>
+          <a href="/salir" th:href="@{/salir}">Salir</a>
+        </div>
+      </details>
+    </div>
+  </header>
+  <div class="armazon-cuerpo">
+    <nav th:replace="~{alternativas/cozy-medieval/fragmentos/navegacion :: navegacion(${navegacion})}"></nav>
+    <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+  </div>
+  <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
+  <div id="avisos" class="avisos" aria-live="polite"></div>
+</body>
+</html>

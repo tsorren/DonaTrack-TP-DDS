@@ -1,15 +1,19 @@
-# Dos alternativas de identidad visual, cada una con sus propias hojas de estilo
+# Dos alternativas de identidad visual, cada una con sus propias hojas de estilo y plantillas
 
 - Status: proposed
 - Date: 2026-10-30
-- Deciders: tsorren, al elegir entre tres opciones de convivencia en la sesión de la Alternativa Cozy / Medieval
+- Deciders: tsorren, al elegir entre tres opciones de hojas de estilo y cuatro de plantillas en la sesión de la Alternativa Cozy / Medieval
 - Tags: cliente-liviano, interfaz, identidad, tokens, entrega-6
 
 > **Origen:** pedido del usuario: diseñar una segunda identidad visual, la **Alternativa Cozy /
 > Medieval**, sin romper la actual, que pasa a llamarse **Alternativa Glassmorphism**
 > ([bitácora](../../interfaz/bitacora.md), 2026-10-30). `[OBSERVED]` Implementada en
-> `VariantesInterceptor`, `templates/layout.html` y `static/css/alternativas/cozy-medieval/` (rama
-> `E6_alternativa_cozy_medieval`).
+> `VariantesInterceptor`, `templates/layout.html`, `static/css/alternativas/cozy-medieval/` y
+> `templates/alternativas/cozy-medieval/`.
+>
+> **Actualización (2026-10-30):** la [directiva de estructura de Cozy](../../interfaz/estructura-cozy-medieval.md#cómo-se-separa-la-estructura)
+> cambió la parte de plantillas. Antes se compartían con Glassmorphism; ahora cada alternativa tiene
+> las suyas. El ADR sigue `proposed` y se editó en lugar de crear un sucesor, porque nunca se publicó.
 
 ## Contexto y Problema
 
@@ -26,13 +30,19 @@ transmitir, cuál es su identidad y a qué usuarios les habla:
 
 Glassmorphism tiene que quedar intacta y utilizable.
 
-Problema: ¿cómo conviven dos identidades sobre las mismas plantillas?
+Problema: ¿cómo conviven dos identidades sobre las mismas pantallas? Son dos preguntas:
+
+1. **Estilos:** ¿comparten las hojas de estilo o cada una tiene las suyas?
+2. **Plantillas:** ¿comparten el HTML (layouts, fragmentos y páginas) o cada una tiene el suyo?
+   Surgió cuando la directiva de estructura de Cozy pidió cambiar cómo se arma cada pantalla
+   (hoja con regiones, barra lateral con pestaña, portada, mapa), algo que las hojas de estilo solas
+   no alcanzan a hacer.
 
 ## Atributos de Calidad y Drivers de Decisión
 
 Pesos que reflejan las prioridades del usuario: Glassmorphism intacta 30 · libertad de diseño de
 la nueva alternativa 20 · comparar las dos sobre las mismas pantallas 20 · costo de mantener cada
-pantalla 20 · reversibilidad 10.
+pantalla 20 · reversibilidad 10. Valen para las dos preguntas.
 
 ## Relaciones Arquitectónicas
 
@@ -41,8 +51,12 @@ pantalla 20 · reversibilidad 10.
    **de cada alternativa**. No cambia el stack: sigue Pico.css tematizado por sus variables.
 2. **Complementa:** [verificación visual con Playwright y axe](./20261030-verificacion-visual-con-playwright-y-axe.md)
    (`proposed`): la comprobación recorre todas las alternativas.
+3. **Se apoya en:** la [directiva de estructura y navegación de Cozy](../../interfaz/estructura-cozy-medieval.md)
+   (aprobada por el usuario), que pide el juego propio de plantillas.
 
 ## Alternativas Consideradas
+
+### Hojas de estilo
 
 | Alternativa | Glassmorphism intacta | Libertad | Comparar | Costo por pantalla | Reversible | **Total** |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -51,6 +65,23 @@ pantalla 20 · reversibilidad 10.
 | C. Una rama propia para la nueva alternativa | 5 | 5 | 1 | 1 | 3 | 3,2 |
 
 El agente recomendó A, por el costo de mantenimiento. El usuario eligió B.
+
+### Plantillas
+
+Puntajes de 1 a 5; son estimaciones del agente (`[INFERRED]`). Además de los pesos, hay un requisito
+que decide si la opción sirve: ¿permite las decisiones de estructura de la
+[directiva](../../interfaz/estructura-cozy-medieval.md)?
+
+| Alternativa | Permite la estructura de Cozy | Glassmorphism intacta | Libertad | Comparar | Costo por pantalla | Reversible | **Total** |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| P1. Plantillas compartidas; todo lo propio en las hojas de estilo (lo que había) | No | 5 | 1 | 5 | 5 | 5 | 4,2, descartada por el requisito |
+| P2. Plantillas compartidas con desvíos dentro de cada una (`th:if` por alternativa) | Sí, con lío | 2 | 3 | 4 | 3 | 3 | 2,9 |
+| P3. Piezas propias de Cozy con respaldo en las compartidas: si falta una, se usa la de Glassmorphism | Sí | 5 | 4 | 5 | 3 | 4 | 4,3 |
+| **P4. Un juego completo de plantillas por alternativa (`templates/alternativas/<nombre>/`)** | Sí | 5 | 5 | 5 | 2 | 4 | **4,3** |
+
+Con estos pesos, P3 y P4 empatan. El agente recomendó P3, porque cada pieza nueva solo se duplica si
+Cozy la necesita. El usuario eligió **P4**: prefirió libertad total, sin depender de las piezas
+compartidas. Es decir, la libertad pesó más que el costo, algo que la tabla no refleja del todo.
 
 ## Resultado de la Decisión
 
@@ -61,15 +92,28 @@ Se elige **B**:
 - Cada alternativa nueva vive en `static/css/alternativas/<nombre>/`, con su `tokens.css` y su
   `app.css` completos. Hoy hay una: `cozy-medieval`. Su `app.css` no hereda nada del de
   Glassmorphism.
-- **Plantillas, fragmentos y textos se comparten.** Lo propio de cada alternativa va solo en sus
-  hojas: colores, letras, formas y adornos (como máscaras SVG en `static/img/<nombre>/`).
+- **Plantillas por alternativa.** Glassmorphism sigue en `templates/` (`layout.html`,
+  `layout-privado.html`, `fragmentos/` y `paginas/`), sin cambios. Cada alternativa nueva tiene su
+  copia completa en `templates/alternativas/<nombre>/`, con sus referencias internas (`~{...}`)
+  apuntando a las suyas. El juego no se apoya en las piezas de Glassmorphism: si a una alternativa
+  le falta una plantilla, un test lo detecta (el interceptor, para no romper la maqueta, usa la de
+  Glassmorphism si falta una página, pero eso no es parte del diseño). Los adornos (como máscaras SVG en `static/img/<nombre>/`) siguen en sus hojas.
+- **Textos iguales, con test.** Los textos fijos se escriben en cada juego de plantillas, pero
+  `InterfazFitnessTest` exige que cada par de gemelas muestre el mismo conjunto: nodos de texto,
+  `aria-label`, `alt`, `title`, `placeholder`, `data-etiqueta` y los textos entre comillas simples de
+  los atributos `th:*`. También exige que cada plantilla de `templates/` tenga su gemela en cada
+  alternativa (y al revés), y que el catálogo `/estilos` de cada alternativa
+  (`templates/alternativas/<nombre>/paginas/estilos.html`) muestre todos los fragmentos de esa
+  alternativa.
 - En el perfil `maqueta`, `?alternativa=<nombre>` elige la alternativa. `VariantesInterceptor` la
-  valida contra las carpetas que existen y `layout.html` carga sus dos hojas. Se combina con
-  `?variante=` de las comparaciones A/B. Sin el parámetro, y fuera del perfil `maqueta`, rige
-  Glassmorphism.
+  valida contra las carpetas que existen, `layout.html` carga sus dos hojas y la vista
+  `paginas/x` pasa a `alternativas/<nombre>/paginas/x` si esa plantilla existe. Se combina con
+  `?variante=` de las comparaciones A/B; una variante de estructura (`templates/variantes/<x>.html`)
+  reemplaza la página entera y gana sobre la de la alternativa. Sin el parámetro, y fuera del perfil
+  `maqueta`, rige Glassmorphism.
 - D20 rige dentro de cada alternativa: dos niveles de tokens, `--pico-*` solo en su
   `tokens.css`, pantallas y componentes solo con tokens de uso. Las dos alternativas declaran los
-  mismos puntos de quiebre, porque comparten las plantillas.
+  mismos puntos de quiebre, para comparar sobre los mismos anchos.
 - `InterfazFitnessTest` aplica sus reglas a cada `tokens.css`: contraste AA de los mismos pares de
   tokens de uso y quiebres declarados.
 - `VerificacionVisualTest`, sin propiedades, recorre Glassmorphism y cada alternativa, y las
@@ -83,14 +127,22 @@ Se elige **B**:
 - Glassmorphism no cambia: sus hojas no se tocan.
 - La nueva alternativa se diseña desde cero, sin pelear con las reglas de la otra.
 - Las dos se comparan lado a lado sobre las mismas pantallas y los mismos datos.
-- Quitar una alternativa es borrar su carpeta.
+- Cozy arma cada pantalla a su modo (regiones, barra con pestaña, portada, mapa) sin tocar nada de
+  Glassmorphism ni depender de sus piezas.
+- Quitar una alternativa es borrar sus dos carpetas (`static/css/alternativas/<nombre>/` y
+  `templates/alternativas/<nombre>/`).
 
 ### Negativas
 
-- **Cada componente o pantalla nueva se estiliza dos veces**, una en cada `app.css`, y la revisión
-  visual se duplica. Si se olvida una, la pantalla queda sin estilo en esa alternativa: la
+- **Cada pantalla y cada componente nuevo se escribe dos veces, en HTML y en estilos**, una por
+  alternativa: el doble de trabajo y de revisión visual. Si se olvida una, la pantalla queda sin estilo en esa alternativa: la
   verificación visual recorre las dos y suele detectarlo (contraste, toque o desborde), pero no
   siempre.
+- **Los textos se duplican** en los dos juegos de plantillas. Un test los vigila y falla si
+  difieren, pero un cambio de texto hay que hacerlo en dos lugares.
+- **Un arreglo de estructura hay que llevarlo a las dos.** Corregir un error de HTML en una
+  pantalla de Glassmorphism no corrige su gemela de Cozy. Los tests de gemelas atrapan que falte un
+  archivo o un texto, no que las dos estructuras se hayan desviado por error.
 - RNF-UI-11 dice "un solo `tokens.css`". Con este ADR se lee "uno por alternativa". Si se acepta,
   hay que ajustar ese texto de los requerimientos.
 - Copiar bloques entre los dos `app.css` puede contar como código duplicado en Sonar: cada hoja se
@@ -103,15 +155,33 @@ Se elige **B**:
 
 ## Análisis por alternativa
 
+Hojas de estilo:
+
 - **A. Una hoja de tokens con secciones:** menos código que mantener, pero el `tokens.css` de
   Glassmorphism cambia (suma una sección) y la nueva alternativa queda atada a los componentes de
   la otra; los adornos propios pelean con reglas que no son suyas.
 - **C. Rama propia:** cero código de convivencia, pero las dos no se pueden ver juntas, cada
   pantalla nueva hay que llevarla a las dos ramas y unir la rama pisaría a Glassmorphism.
 
+Plantillas:
+
+- **P1. Solo estilos:** es lo más barato, pero no deja hacer la mayoría de las decisiones de
+  estructura de Cozy (reparto de la hoja, barra con pestaña, portada, listas por etapa).
+- **P2. Desvíos dentro de las compartidas:** cada cambio de Cozy tocaría archivos de Glassmorphism,
+  que tiene que quedar intacta, y cada plantilla se llena de condiciones por alternativa.
+- **P3. Piezas propias con respaldo (la recomendada):** menos duplicación, pero Cozy depende de las
+  piezas compartidas, y un cambio en una de ellas puede romper la otra alternativa sin avisar.
+- **P4. Juego completo (elegida):** libertad total y aislamiento entre alternativas, a cambio del
+  doble de HTML y de estilos por pantalla y por componente, y de textos duplicados que un test
+  vigila.
+
 ## Validación
 
-- `[VERIFIED]` 2026-10-30: `InterfazFitnessTest` (6 tests) y `VariantesInterceptorTest` (8 tests,
-  3 nuevos para `?alternativa=`) en verde.
+- `[VERIFIED]` 2026-10-30, con las plantillas todavía compartidas: `InterfazFitnessTest` (6 tests) y
+  `VariantesInterceptorTest` (8 tests, 3 nuevos para `?alternativa=`) en verde.
+- `[OBSERVED]` El juego de plantillas de Cozy y el cambio en `VariantesInterceptor` están en el
+  código. `[PROPOSED]` Los tests de guardia de gemelas, de textos iguales y del catálogo por
+  alternativa en `InterfazFitnessTest`: se agregan en la misma tarea; hasta correrlos, la
+  validación de esta parte queda pendiente.
 - `[VERIFIED]` 2026-10-30: `mvn test -pl cliente-liviano -Pvisual` recorre Glassmorphism y
   `cozy-medieval` en `/estilos` y `/estilos/armazon`, sin hallazgos (`reporte.json` vacío).

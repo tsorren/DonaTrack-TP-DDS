@@ -36,18 +36,19 @@ flowchart LR
 | 5. Comprobación | Las vistas | Tests en verde y capturas en los 3 anchos | (dentro de `vista-ui`) |
 | 6. Revisión | Flujo, vistas y capturas | Veredicto con hallazgos | `revision-ui` |
 
-**Dos alternativas de identidad.** El sitio tiene dos identidades que comparten pantallas,
-componentes y textos, para comparar qué mensaje transmite cada una
+**Dos alternativas de identidad.** El sitio tiene dos identidades con las mismas pantallas,
+componentes y textos, cada una con sus plantillas y sus hojas de estilo, para comparar qué mensaje
+transmite cada una
 ([ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)):
 
-| Alternativa | Mensaje | Brief | Hojas de estilo | Cómo se ve |
+| Alternativa | Mensaje | Brief | Plantillas y hojas de estilo | Cómo se ve |
 |---|---|---|---|---|
-| Glassmorphism | Profesional y seria | [brief.md](identidad/brief.md) | `static/css/tokens.css` y `app.css` | Por defecto |
-| Cozy / Medieval | Cálida y de aventura | [brief-cozy-medieval.md](identidad/brief-cozy-medieval.md) | `static/css/alternativas/cozy-medieval/` | `?alternativa=cozy-medieval` (perfil `maqueta`) |
+| Glassmorphism | Profesional y seria | [brief.md](identidad/brief.md) | `templates/` y `static/css/tokens.css` y `app.css` | Por defecto |
+| Cozy / Medieval | Cálida y de aventura | [brief-cozy-medieval.md](identidad/brief-cozy-medieval.md) | `templates/alternativas/cozy-medieval/` y `static/css/alternativas/cozy-medieval/` | `?alternativa=cozy-medieval` (perfil `maqueta`) |
 
-Cada pantalla o componente nuevo se estiliza en las hojas de las dos alternativas. Cozy tiene
-además su propia [estructura y navegación](estructura-cozy-medieval.md) y, por decisión del
-usuario, va a tener su propio juego de páginas, con los mismos textos (implementación pendiente).
+Cada pantalla o componente nuevo se escribe y se estiliza dos veces, una por alternativa, con los
+mismos textos (un test compara los dos juegos). Cozy tiene además su propia
+[estructura y navegación](estructura-cozy-medieval.md).
 
 **Comparaciones A/B.** Cuando una decisión de gusto o de forma tiene más de una buena respuesta
 (una paleta, una tipografía, el orden de una pantalla), el agente arma dos variantes que difieren

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -30,8 +31,12 @@ class InterfazFitnessTest {
   private static final String TOKENS = "tokens.css";
   private static final Path VARIANTES = CSS.resolve("variantes");
   private static final Path PLANTILLAS = RECURSOS.resolve("templates");
-  private static final Path FRAGMENTOS = PLANTILLAS.resolve("fragmentos");
-  private static final Path CATALOGO = PLANTILLAS.resolve("paginas/estilos.html");
+
+  /** El juego de plantillas de cada alternativa (estructura-cozy-medieval.md). */
+  private static final Path JUEGOS = PLANTILLAS.resolve("alternativas");
+
+  private static final Path ESTRUCTURAS_AB = PLANTILLAS.resolve("variantes");
+  private static final String ALTERNATIVAS = "alternativas";
 
   /** Tokens de uso: lo único que pueden referenciar pantallas y componentes. */
   private static final List<String> PREFIJOS_DE_USO =
@@ -103,6 +108,23 @@ class InterfazFitnessTest {
   private static final Pattern ESTILO_EN_LINEA =
       Pattern.compile("<style|\\sstyle\\s*=|th:style", Pattern.CASE_INSENSITIVE);
   private static final Pattern HEX = Pattern.compile("#(\\p{XDigit}{6}|\\p{XDigit}{3})");
+
+  /** Textos de una plantilla: lo que se lee o se escucha. */
+  private static final Pattern COMENTARIO_HTML = Pattern.compile("<!--.*?-->", Pattern.DOTALL);
+
+  private static final Pattern NODO_DE_TEXTO = Pattern.compile(">([^<>]+)<");
+  private static final Pattern ATRIBUTO_DE_TEXTO =
+      Pattern.compile(
+          "\\s(?:th:)?(?:aria-label|alt|title|placeholder|data-etiqueta)\\s*=\\s*\"([^\"]*)\"");
+  private static final Pattern ATRIBUTO_TH = Pattern.compile("\\sth:[\\w-]+\\s*=\\s*\"([^\"]*)\"");
+  private static final Pattern LITERAL = Pattern.compile("'([^']*)'|\\|([^|]*)\\|");
+
+  /**
+   * Un literal de un atributo th:* es un texto si tiene mayúsculas, acentos o dos palabras; si no,
+   * es un nombre técnico (un ícono, un id, un tipo) que cada alternativa puede cambiar.
+   */
+  private static final Pattern PARECE_TEXTO =
+      Pattern.compile("\\p{Lu}|[^\\p{ASCII}]|\\p{L}{2,}[,.;:]?\\s+\\p{L}");
 
   private record Par(String texto, String fondo, double minimo) {}
 
@@ -201,14 +223,72 @@ class InterfazFitnessTest {
   }
 
   @Test
-  void cadaFragmentoFiguraEnElCatalogo() {
-    String catalogo = leer(CATALOGO);
-    List<String> faltan =
-        archivos(FRAGMENTOS, ".html").stream()
-            .map(fragmento -> fragmento.getFileName().toString().replace(".html", ""))
-            .filter(nombre -> !catalogo.contains("fragmentos/" + nombre + " ::"))
-            .toList();
-    assertThat(faltan).as("Componentes que faltan en /estilos (%s)", CATALOGO).isEmpty();
+  void cadaFragmentoFiguraEnElCatalogoDeSuAlternativa() {
+    List<String> faltan = new ArrayList<>(faltanEnElCatalogo(PLANTILLAS, ""));
+    for (Path juego : juegosDeAlternativas()) {
+      faltan.addAll(faltanEnElCatalogo(juego, prefijo(juego)));
+    }
+    assertThat(faltan).as("Componentes que faltan en el /estilos de su alternativa").isEmpty();
+  }
+
+  @Test
+  void cadaAlternativaTieneSuJuegoCompletoDePlantillas() {
+    List<String> fallas = new ArrayList<>();
+    Set<String> conHojas = new TreeSet<>();
+    for (Path tokens : hojasDeTokens()) {
+      if (tokens.getParent().getParent().endsWith(ALTERNATIVAS)) {
+        conHojas.add(tokens.getParent().getFileName().toString());
+      }
+    }
+    Set<String> conPlantillas = new TreeSet<>();
+    juegosDeAlternativas().forEach(juego -> conPlantillas.add(juego.getFileName().toString()));
+    if (!conHojas.equals(conPlantillas)) {
+      fallas.add("alternativas con hojas " + conHojas + " y con plantillas " + conPlantillas);
+    }
+
+    Set<String> comunes = new TreeSet<>();
+    plantillasDeGlassmorphism().forEach(plantilla -> comunes.add(relativa(PLANTILLAS, plantilla)));
+    for (Path juego : juegosDeAlternativas()) {
+      Set<String> propias = new TreeSet<>();
+      archivos(juego, ".html").forEach(plantilla -> propias.add(relativa(juego, plantilla)));
+      diferencia(juego.toString(), comunes, propias, fallas);
+    }
+    assertThat(fallas)
+        .as("Cada plantilla tiene su gemela en cada alternativa, y al revés")
+        .isEmpty();
+  }
+
+  @Test
+  void lasGemelasTienenLosMismosTextos() {
+    List<String> fallas = new ArrayList<>();
+    for (Path juego : juegosDeAlternativas()) {
+      for (Path comun : plantillasDeGlassmorphism()) {
+        Path gemela = juego.resolve(PLANTILLAS.relativize(comun));
+        if (Files.exists(gemela)) {
+          diferencia(gemela.toString(), textos(comun), textos(gemela), fallas);
+        }
+      }
+    }
+    assertThat(fallas)
+        .as("Los textos son los mismos en todas las alternativas; los signos van en SVG o CSS")
+        .isEmpty();
+  }
+
+  @Test
+  void lasPlantillasDeUnaAlternativaUsanSoloLasSuyas() {
+    List<String> fallas = new ArrayList<>();
+    for (Path juego : juegosDeAlternativas()) {
+      Pattern ajena = Pattern.compile("~\\{(?!::)(?!" + Pattern.quote(prefijo(juego)) + ")");
+      for (Path plantilla : archivos(juego, ".html")) {
+        List<String> lineas = lineas(plantilla);
+        for (int i = 0; i < lineas.size(); i++) {
+          if (ajena.matcher(lineas.get(i)).find()) {
+            fallas.add(ubicacion(plantilla, i) + ": " + lineas.get(i).strip());
+          }
+        }
+      }
+    }
+    assertThat(fallas).as("Referencias a plantillas de otra alternativa").isEmpty();
   }
 
   @Test
@@ -259,6 +339,77 @@ class InterfazFitnessTest {
   private static double contraste(double luminanciaA, double luminanciaB) {
     return (Math.max(luminanciaA, luminanciaB) + 0.05)
         / (Math.min(luminanciaA, luminanciaB) + 0.05);
+  }
+
+  private static List<String> faltanEnElCatalogo(Path juego, String prefijo) {
+    Path catalogo = juego.resolve("paginas/estilos.html");
+    String texto = leer(catalogo);
+    return archivos(juego.resolve("fragmentos"), ".html").stream()
+        .map(fragmento -> fragmento.getFileName().toString().replace(".html", ""))
+        .filter(nombre -> !texto.contains("~{" + prefijo + "fragmentos/" + nombre + " ::"))
+        .map(nombre -> catalogo + ": " + nombre)
+        .toList();
+  }
+
+  /** Nodos de texto, atributos que se leen y literales que parecen texto en atributos th:*. */
+  private static Set<String> textos(Path plantilla) {
+    String html = COMENTARIO_HTML.matcher(leer(plantilla)).replaceAll("");
+    Set<String> textos = new TreeSet<>();
+    NODO_DE_TEXTO.matcher(html).results().forEach(m -> agregarTexto(textos, m.group(1)));
+    ATRIBUTO_DE_TEXTO.matcher(html).results().forEach(m -> agregarTexto(textos, m.group(1)));
+    ATRIBUTO_TH
+        .matcher(html)
+        .results()
+        .flatMap(atributo -> LITERAL.matcher(atributo.group(1)).results())
+        .map(literal -> literal.group(1) != null ? literal.group(1) : literal.group(2))
+        .filter(literal -> PARECE_TEXTO.matcher(literal).find())
+        .forEach(literal -> agregarTexto(textos, literal));
+    return textos;
+  }
+
+  private static void agregarTexto(Set<String> textos, String texto) {
+    String limpio = texto.strip().replaceAll("\\s+", " ");
+    if (!limpio.isEmpty()) {
+      textos.add(limpio);
+    }
+  }
+
+  private static void diferencia(
+      String donde, Set<String> esperados, Set<String> propios, List<String> fallas) {
+    Set<String> faltan = new TreeSet<>(esperados);
+    faltan.removeAll(propios);
+    Set<String> sobran = new TreeSet<>(propios);
+    sobran.removeAll(esperados);
+    if (!faltan.isEmpty() || !sobran.isEmpty()) {
+      fallas.add(donde + ": faltan " + faltan + "; sobran " + sobran);
+    }
+  }
+
+  /** Las plantillas de templates/ salvo los juegos de alternativas y las variantes A/B. */
+  private static List<Path> plantillasDeGlassmorphism() {
+    return archivos(PLANTILLAS, ".html").stream()
+        .filter(plantilla -> !plantilla.startsWith(JUEGOS) && !plantilla.startsWith(ESTRUCTURAS_AB))
+        .toList();
+  }
+
+  private static List<Path> juegosDeAlternativas() {
+    if (!Files.isDirectory(JUEGOS)) {
+      return List.of();
+    }
+    try (Stream<Path> carpetas = Files.list(JUEGOS)) {
+      return carpetas.filter(Files::isDirectory).sorted().toList();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  /** Cómo nombran las plantillas de un juego a las suyas: ~{alternativas/<nombre>/...}. */
+  private static String prefijo(Path juego) {
+    return ALTERNATIVAS + "/" + juego.getFileName() + "/";
+  }
+
+  private static String relativa(Path base, Path archivo) {
+    return base.relativize(archivo).toString().replace('\\', '/');
   }
 
   /** Un tokens.css por alternativa de identidad. */
