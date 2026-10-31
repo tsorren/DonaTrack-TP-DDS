@@ -1,7 +1,8 @@
-<!--/* Navegación por rol: la barra lateral del prototipo v2. Cada sección es un nodo de la ruta
-       punteada; la actual brilla. En layout-privado, en el celular, pasa a la barra inferior con
-       ícono y nombre corto (bitácora, 2026-10-30). Patrón: Material Navigation rail y Navigation bar.
-       opciones: List<OpcionNavegacion>. */-->
+<!--/* Navegación por rol: el lomo de cuero del atlas (estructura-cozy-medieval.md). Cada sección es
+       un título del lomo; la actual es una pestaña de la hoja, con el signo ◆ en navegacion-nodo.
+       En layout-privado, en el celular, pasa a la barra de abajo: los íconos sobre un camino de
+       puntos, con el nombre corto, y la actual sube como un alfiler de latón. Los signos los dibuja
+       app.css. Patrón: Material Navigation rail y Navigation bar. opciones: List<OpcionNavegacion>. */-->
 <nav th:fragment="navegacion(opciones)" class="navegacion" aria-label="Secciones">
   <ul>
     <li th:each="opcion : ${opciones}">

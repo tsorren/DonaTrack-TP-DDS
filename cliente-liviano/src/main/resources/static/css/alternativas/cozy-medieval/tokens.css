@@ -296,6 +296,15 @@
   --medida-quiebre-medio: 53.75em;
   --medida-quiebre-ancho: 68.75em;
 
+  /* Estructura: lomo y navegación */
+  /* La veta del lomo de nogal: el mismo tono que --color-destacado-fondo-alto, así el texto de la
+     barra conserva el contraste que mide su par en InterfazFitnessTest. */
+  --color-destacado-veta: var(--p-nogal-800);
+  /* En el celular: alto de la barra de abajo y cuánto sobresale de ella el alfiler de la sección
+     actual. La página reserva los dos al final. */
+  --medida-barra-inferior: 4.375rem;
+  --medida-alfiler: 1.75rem;
+
   /* 3. Pico: base */
   --pico-font-family: var(--fuente-texto);
   --pico-border-radius: var(--radio-control);
