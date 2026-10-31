@@ -1,0 +1,8 @@
+# Voz propia de Cozy / Medieval (brief-cozy-medieval.md, Voz): títulos y rótulos que Cozy dice a su
+# modo. Una línea por texto: <lo que dice Glassmorphism> => <lo que dice Cozy>. Un lado vacío es un
+# rótulo que Cozy suma (=> Estás acá) o que no usa (Tu impacto =>). Sin números, que son datos, y
+# nunca en un botón o un enlace. InterfazFitnessTest exige que cada línea esté en uso.
+
+# Inicio y navegación
+
+# Catálogo
