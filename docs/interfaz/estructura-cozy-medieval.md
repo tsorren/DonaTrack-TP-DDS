@@ -1,7 +1,8 @@
 # Estructura y navegación de la Alternativa Cozy / Medieval
 
 > UTN-FRBA — Diseño de Sistemas (2026) — Grupo 5
-> **Estado:** aprobada por el usuario; implementación pendiente · **Fecha:** 2026-10-30
+> **Estado:** aprobada por el usuario; juego de plantillas propio y estructura base implementados
+> en `/estilos` y `/estilos/armazon` (ver la [bitácora](bitacora.md)) · **Fecha:** 2026-10-30
 > **Origen:** 8 rondas de preguntas (24 decisiones) con el usuario, armadas con tres expertos
 > (dirección de arte, arquitectura de la información y plantillas) y revisadas por cuatro críticos
 > (piso, arte, lenguaje y alcance) antes de mostrarse.

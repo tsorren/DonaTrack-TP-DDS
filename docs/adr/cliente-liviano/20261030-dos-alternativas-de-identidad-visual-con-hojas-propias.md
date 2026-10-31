@@ -179,9 +179,10 @@ Plantillas:
 
 - `[VERIFIED]` 2026-10-30, con las plantillas todavía compartidas: `InterfazFitnessTest` (6 tests) y
   `VariantesInterceptorTest` (8 tests, 3 nuevos para `?alternativa=`) en verde.
-- `[OBSERVED]` El juego de plantillas de Cozy y el cambio en `VariantesInterceptor` están en el
-  código. `[PROPOSED]` Los tests de guardia de gemelas, de textos iguales y del catálogo por
-  alternativa en `InterfazFitnessTest`: se agregan en la misma tarea; hasta correrlos, la
-  validación de esta parte queda pendiente.
+- `[VERIFIED]` 2026-10-30, con el juego de plantillas de Cozy: `InterfazFitnessTest` (9 tests: 4
+  nuevos de gemelas, textos iguales, referencias propias y catálogo por alternativa) y
+  `VariantesInterceptorTest` (11 tests: 3 nuevos para el juego propio y para la variante de
+  estructura que gana) en verde. Prueba de mutación: borrar una gemela, cambiar un texto, apuntar
+  a un fragmento de Glassmorphism y sacar un fragmento del catálogo de Cozy hacen fallar 4 tests.
 - `[VERIFIED]` 2026-10-30: `mvn test -pl cliente-liviano -Pvisual` recorre Glassmorphism y
   `cozy-medieval` en `/estilos` y `/estilos/armazon`, sin hallazgos (`reporte.json` vacío).
