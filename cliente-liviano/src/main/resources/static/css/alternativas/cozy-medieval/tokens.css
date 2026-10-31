@@ -440,3 +440,36 @@ h3 {
 h4 {
   --pico-font-size: var(--tamano-titulo-4);
 }
+
+/* Parte "mesa" (iteración 2, provisorio: al cerrar se ordena con el resto). La mesa de nogal vista
+   desde arriba, la cajonera de la navegación y los objetos apoyados en ella. Ningún texto va
+   directo sobre la madera, salvo el pie, en pergamino claro (7:1). */
+:root {
+  /* Las tablas de la mesa, su veta y la junta entre tabla y tabla; la cajonera, más oscura; el
+     frente de un cajón; el hueco de un cajón abierto, casi negro, y el cuero de las tapas. */
+  --p-mesa-madera: #4b3424;
+  --p-mesa-veta: #5a3f2c;
+  --p-mesa-junta: #2a1c12;
+  --p-mesa-cajonera: #2c1e14;
+  --p-mesa-cajon: #3e2b1d;
+  --p-mesa-hueco: #150d08;
+  --p-mesa-cuero: #33211a;
+  --p-mesa-sombra: rgb(18 10 4 / 55%);
+  --p-mesa-sombra-suave: rgb(18 10 4 / 28%);
+  --color-mesa-madera: var(--p-mesa-madera);
+  --color-mesa-veta: var(--p-mesa-veta);
+  --color-mesa-junta: var(--p-mesa-junta);
+  --color-mesa-cajonera: var(--p-mesa-cajonera);
+  --color-mesa-cajon: var(--p-mesa-cajon);
+  --color-mesa-hueco: var(--p-mesa-hueco);
+  --color-mesa-cuero: var(--p-mesa-cuero);
+  --color-mesa-sombra: var(--p-mesa-sombra);
+  /* La sombra de un objeto apoyado en la mesa: corta y dura al pie, larga y suave alrededor. */
+  --sombra-objeto: 0 1px 2px var(--p-mesa-sombra), 0 14px 26px -12px var(--p-mesa-sombra);
+  --sombra-objeto-bajo: 0 1px 1px var(--p-mesa-sombra), 0 4px 8px -3px var(--p-mesa-sombra-suave);
+  /* El alto de una tabla de la mesa, cuánto sale el cajón abierto y el alto de la cajonera de
+     abajo en el celular, que la página reserva al final. */
+  --medida-tabla: 12rem;
+  --medida-cajon-apertura: 0.875rem;
+  --medida-cajonera-celular: 5rem;
+}

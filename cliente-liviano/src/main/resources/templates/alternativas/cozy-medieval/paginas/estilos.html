@@ -25,73 +25,95 @@
       el recorrido (fragmento <code>recorrido</code>, patrón Material Steppers) muestra los pasos
       hechos, el actual y los pendientes.</p>
 
-    <section class="destacado" aria-labelledby="hola-titulo">
-      <div>
-        <p class="destacado-etiqueta">Tu impacto</p>
+    <!--/* La mesa del cartógrafo (bitácora, iteración 2): cada parte del inicio es un objeto apoyado
+           en la mesa de nogal. El orden del HTML es el de lectura y el del celular: la nota del
+           saludo, el mapa del viaje, la carta con las noticias, el libro de cuentas y el cuaderno
+           de sellos. La armazón (estilos-armazon.html) trae esta mesa entera; mesa.css acomoda los
+           objetos según el ancho que tienen, acá y allá. */-->
+    <div class="mesa-objetos">
+      <!--/* La nota del saludo: una esquela clavada a la mesa, lo primero que se lee. */-->
+      <section class="mesa-nota" aria-labelledby="hola-titulo">
         <h3 id="hola-titulo">Hola, Ana</h3>
         <p>Tu última donación ya salió del depósito y va camino a Comedor Barrio Ejemplo.</p>
-        <div class="destacado-acciones">
+        <div class="mesa-nota-acciones">
           <a href="#recorrido-titulo" role="button">Ver seguimiento</a>
           <a href="#tarjeta-titulo" role="button" class="fantasma">Mis donaciones</a>
         </div>
-      </div>
-      <div class="destacado-red">
-        <svg viewBox="0 0 360 200" preserveAspectRatio="none" focusable="false">
-          <path d="M18 168 C 80 150, 110 110, 160 102 S 270 60, 340 14"/>
-        </svg>
-        <span class="destacado-nodo destacado-nodo--1"></span>
-        <span class="destacado-nodo destacado-nodo--2"></span>
-        <span class="destacado-chip destacado-chip--1"><b>7</b><span>donaciones</span></span>
-        <span class="destacado-chip destacado-chip--2"><b>2</b><span>entidades ayudadas</span></span>
-        <span class="destacado-chip destacado-chip--3"><b>2</b><span>entregadas</span></span>
-      </div>
-    </section>
-
-    <div class="cifras">
-      <a th:replace="~{alternativas/cozy-medieval/fragmentos/cifra :: cifra(${realizadas})}"></a>
-      <article class="resumen-entregas" aria-labelledby="entregadas-titulo">
-        <div class="resumen-entregas-cabecera">
-          <span class="moneda"><b>2</b></span>
-          <h3 id="entregadas-titulo">Donaciones <span>entregadas</span></h3>
-        </div>
-        <svg class="segmentos" viewBox="0 0 100 10" preserveAspectRatio="none"
-             aria-hidden="true" focusable="false">
-          <rect class="segmento--entregadas" x="0" y="0" width="27.3" height="10"/>
-          <rect class="segmento--camino" x="28.8" y="0" width="13.6" height="10"/>
-          <rect class="segmento--proceso" x="43.9" y="0" width="40.9" height="10"/>
-          <rect class="segmento--sin-entregar" x="86.3" y="0" width="13.7" height="10"/>
-        </svg>
-        <ul class="leyenda">
-          <li class="segmento--entregadas">2 entregadas</li>
-          <li class="segmento--camino">1 en camino</li>
-          <li class="segmento--proceso">3 en proceso</li>
-          <li class="segmento--sin-entregar">1 sin entregar</li>
-        </ul>
-      </article>
-      <section class="categoria" aria-labelledby="categoria-titulo">
-        <span class="cifra-etiqueta" id="categoria-titulo">Categoría actual</span>
-        <span class="categoria-nombre">Colaborador</span>
-        <span class="categoria-proxima">Próxima: Sostenedor</span>
       </section>
-    </div>
 
-    <div class="muestra-grilla">
-      <section class="panel panel--viaje" aria-labelledby="recorrido-titulo">
-        <div class="panel-encabezado">
-          <div>
-            <h3 id="recorrido-titulo">Recorrido de tu última donación</h3>
-            <p class="panel-bajada">Lentejas secas · 15 kg</p>
-          </div>
+      <!--/* El mapa del viaje, el objeto más grande: la cartela con el título, el mapa y su leyenda
+             (fragmento recorrido) y el detalle. Esquineros de latón en las cuatro puntas. */-->
+      <section class="mesa-mapa" aria-labelledby="recorrido-titulo">
+        <div class="mesa-mapa-cartela">
+          <h3 id="recorrido-titulo">Tu viaje</h3>
+          <p>Lentejas secas · 15 kg</p>
           <span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
         </div>
-        <ol th:replace="~{alternativas/cozy-medieval/fragmentos/recorrido :: recorrido('Recorrido de tu última donación',
-            ${pasos})}"></ol>
+        <div th:replace="~{alternativas/cozy-medieval/fragmentos/recorrido :: recorrido('Tu viaje', ${pasos})}"></div>
         <a href="#tarjeta-titulo" class="enlace-fuerte">Ver el detalle</a>
       </section>
 
-      <section class="panel mision" aria-labelledby="mision-titulo">
-        <h3 id="mision-titulo">Tu misión actual</h3>
-        <p class="panel-bajada">Colaborador → Sostenedor</p>
+      <!--/* La carta: las cartas del camino, en una hoja plegada. Cada noticia es un tramo de la
+             hoja y el pliegue va entre una y otra, nunca sobre el texto. */-->
+      <section class="mesa-carta" aria-labelledby="notas-titulo">
+        <h3 id="notas-titulo">Cartas del camino</h3>
+        <p class="mesa-bajada">Las últimas noticias de tus donaciones</p>
+        <ul class="notas">
+          <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+            <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+          <li><p>Tu donación quedó lista para entregar.</p>
+            <time datetime="2026-10-14T09:10">ayer</time></li>
+          <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+            <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+        </ul>
+      </section>
+
+      <!--/* El libro de cuentas, abierto. A la izquierda, tu huella: los asientos con su guía de
+             puntos y la columna de doble filete, y el del mes (fragmento cifra) como total. A la
+             derecha, las que llegaron a destino con su sello, y el rango en su etiqueta pegada. */-->
+      <section class="mesa-libro" aria-labelledby="huella-titulo">
+        <div class="mesa-libro-hoja">
+          <h3 id="huella-titulo">Tu huella</h3>
+          <dl class="mesa-asientos">
+            <div><dt>donaciones</dt><dd>7</dd></div>
+            <div><dt>entidades ayudadas</dt><dd>2</dd></div>
+            <div><dt>entregadas</dt><dd>2</dd></div>
+          </dl>
+          <a th:replace="~{alternativas/cozy-medieval/fragmentos/cifra :: cifra(${realizadas})}"></a>
+        </div>
+        <div class="mesa-libro-hoja">
+          <section class="mesa-entregadas" aria-labelledby="entregadas-titulo">
+            <div class="mesa-entregadas-cabecera">
+              <span class="moneda"><b>2</b></span>
+              <h4 id="entregadas-titulo">Llegaron a destino</h4>
+            </div>
+            <svg class="segmentos" viewBox="0 0 100 10" preserveAspectRatio="none"
+                 aria-hidden="true" focusable="false">
+              <rect class="segmento--entregadas" x="0" y="0" width="27.3" height="10"/>
+              <rect class="segmento--camino" x="28.8" y="0" width="13.6" height="10"/>
+              <rect class="segmento--proceso" x="43.9" y="0" width="40.9" height="10"/>
+              <rect class="segmento--sin-entregar" x="86.3" y="0" width="13.7" height="10"/>
+            </svg>
+            <ul class="leyenda">
+              <li class="segmento--entregadas">2 entregadas</li>
+              <li class="segmento--camino">1 en camino</li>
+              <li class="segmento--proceso">3 en proceso</li>
+              <li class="segmento--sin-entregar">1 sin entregar</li>
+            </ul>
+          </section>
+          <section class="mesa-rango" aria-labelledby="categoria-titulo">
+            <h4 id="categoria-titulo">Tu rango</h4>
+            <p class="mesa-rango-nombre">Colaborador</p>
+            <p class="mesa-rango-proxima">Próxima: Sostenedor</p>
+          </section>
+        </div>
+      </section>
+
+      <!--/* El cuaderno de sellos: la misión en curso, un sello de latón por paso cumplido. Los
+             sellos reemplazan el dibujo de la barra de progreso, que sigue para los lectores. */-->
+      <section class="mesa-cuaderno mision" aria-labelledby="mision-titulo">
+        <h3 id="mision-titulo">Tu misión en curso</h3>
+        <p class="mesa-bajada">Colaborador → Sostenedor</p>
         <div class="mision-encabezado">
           <p class="mision-nombre"><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
           <p class="mision-cuenta"><span>2/3</span><span>66 %</span></p>
@@ -107,23 +129,6 @@
         <a href="#insignia-titulo" role="button" class="fantasma">Ver incentivos</a>
       </section>
     </div>
-
-    <section class="panel panel--notas" aria-labelledby="notas-titulo">
-      <div class="panel-encabezado">
-        <div>
-          <h3 id="notas-titulo">Notificaciones recientes</h3>
-          <p class="panel-bajada">Lo último que pasó con tus donaciones</p>
-        </div>
-      </div>
-      <ul class="notas">
-        <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
-          <time datetime="2026-10-15T14:30">hace 2 h</time></li>
-        <li><p>Tu donación quedó lista para entregar.</p>
-          <time datetime="2026-10-14T09:10">ayer</time></li>
-        <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
-          <time datetime="2026-10-13T11:00">hace 2 días</time></li>
-      </ul>
-    </section>
   </section>
 
   <section class="catalogo catalogo--mayor" aria-labelledby="colores-titulo">
@@ -337,9 +342,9 @@
 
   <section class="catalogo" aria-labelledby="navegacion-titulo">
     <h2 id="navegacion-titulo">Navegación</h2>
-    <p class="catalogo-patron">Patrón: Material Navigation rail. Fragmento <code>navegacion</code>:
-      la barra lateral, con un nodo de la ruta por sección. La actual brilla. En las pantallas
-      privadas, en el celular, pasa a una barra inferior: <a href="/estilos/armazon"
+    <p class="catalogo-patron">Patrón: Material Navigation bar. Fragmento <code>navegacion</code>:
+      la cajonera, con un cajón por sección. El de la sección actual está abierto. En las pantallas
+      privadas, en el celular, baja al borde de la mesa: <a href="/estilos/armazon"
       th:href="@{/estilos/armazon}">ver la muestra del área privada</a>.</p>
     <nav th:replace="~{alternativas/cozy-medieval/fragmentos/navegacion :: navegacion(${opciones})}"></nav>
   </section>

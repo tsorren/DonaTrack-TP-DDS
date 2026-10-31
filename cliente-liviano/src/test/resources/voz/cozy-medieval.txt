@@ -4,6 +4,17 @@
 # nunca en un botón o un enlace. InterfazFitnessTest exige que cada línea esté en uso.
 
 # Inicio y navegación
+Recorrido de tu última donación => Tu viaje
+Notificaciones recientes => Cartas del camino
+Lo último que pasó con tus donaciones => Las últimas noticias de tus donaciones
+Tu misión actual => Tu misión en curso
+Categoría actual => Tu rango
+Tu impacto => Tu huella
+Donaciones =>
+=> Llegaron a destino
+=> Estás acá
+Patrón: Material Navigation rail. Fragmento => Patrón: Material Navigation bar. Fragmento
+: la barra lateral, con un nodo de la ruta por sección. La actual brilla. En las pantallas privadas, en el celular, pasa a una barra inferior: => : la cajonera, con un cajón por sección. El de la sección actual está abierto. En las pantallas privadas, en el celular, baja al borde de la mesa:
 
 # Catálogo
 Catálogo de componentes => El muestrario del cartógrafo

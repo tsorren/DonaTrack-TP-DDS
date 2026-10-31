@@ -1,2 +1,1332 @@
 /* La mesa del cartógrafo: la mesa, la navegación (los cajones) y el inicio del donante (iteración 2,
    provisorio: al cerrar se une a app.css). Solo tokens de uso. */
+
+/*
+ * La pantalla es una mesa de nogal vista desde arriba. Arriba, la placa del fabricante (la marca),
+ * la cajonera (la navegación) y, en la otra punta, la carta de la posta y la moneda de la cuenta.
+ * Lo que se lee son objetos apoyados en la mesa, cada uno con su materia y su sombra: en las
+ * pantallas públicas, una hoja de pergamino; en el inicio del donante, la nota del saludo, el mapa
+ * del viaje, la carta con las noticias, el libro de cuentas y el cuaderno de sellos, alineados a
+ * una grilla invisible y apenas torcidos. Se apoya en app.css para los signos del mapa, la moneda,
+ * la tira y la leyenda de las entregas y los sellos del cuaderno.
+ */
+
+/* La mesa: el fondo de toda la página, de tablas de nogal con su junta y su veta (el dibujo del
+   lomo, a lo ancho). Nada de texto va directo sobre la madera, salvo el pie. */
+.mesa {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background-color: var(--color-mesa-madera);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 calc(var(--medida-tabla) - 3px),
+    var(--color-mesa-junta) calc(var(--medida-tabla) - 3px) var(--medida-tabla)
+  );
+}
+
+.mesa::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--color-mesa-veta);
+  mask: url("../../../img/cozy-medieval/veta-de-nogal-horizontal.svg") 0 0 / 40rem 6rem repeat;
+  pointer-events: none;
+}
+
+/* Sobre la madera, el foco es el anillo de latón; sobre el papel del menú, el de tinta. */
+:is(.encabezado, .navegacion, .pie) :focus-visible,
+.mesa > .saltar:focus-visible {
+  outline-color: var(--color-foco-sobre-oscuro);
+}
+
+.cuenta-menu :focus-visible {
+  outline-color: var(--color-foco);
+}
+
+/* Nada queda fijo arriba: los destinos de los enlaces solo piden un poco de aire. */
+:root:has(> .mesa) {
+  scroll-padding-block-start: var(--espacio-4);
+}
+
+/* La cabecera: el borde de arriba de la mesa. */
+.encabezado {
+  position: relative;
+  z-index: var(--capa-avisos);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3) var(--espacio-3) var(--espacio-2);
+}
+
+/* La placa del fabricante: papel en un marco de latón, atornillada a la madera. */
+.mesa .marca {
+  padding: var(--espacio-1) var(--espacio-3) var(--espacio-1) var(--espacio-1);
+  background-color: var(--color-fondo);
+  border: var(--borde-marco) solid var(--color-laton-brillante);
+  border-radius: var(--radio-chico);
+  box-shadow: 0 0 0 var(--borde-ancho) var(--color-laton-texto), var(--sombra-objeto-bajo);
+}
+
+.encabezado-fin {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin-inline-start: auto;
+}
+
+/* La carta de la posta: un sobre apoyado de costado. La cuenta: una moneda de latón. */
+.mesa .boton-icono {
+  border-color: var(--color-filete);
+  border-radius: 3px;
+  box-shadow: var(--sombra-objeto-bajo);
+  rotate: -4deg;
+}
+
+.mesa .cuenta > summary {
+  box-shadow:
+    inset 0 0 0 3px var(--color-placa-brillo),
+    var(--sombra-objeto-bajo);
+}
+
+.mesa .cuenta-menu {
+  border-radius: 3px;
+  box-shadow: var(--sombra-objeto);
+}
+
+/* La navegación: la cajonera, un cajón por sección. Así se ve en el catálogo y en la computadora;
+   en el celular, layout-privado la baja al borde de la mesa (más abajo). La cajonera mide su
+   ancho: con lugar, cada cajón lleva su nombre completo; si no, el ícono y el nombre corto. */
+.navegacion {
+  position: relative;
+  display: block;
+  padding: 0 var(--espacio-1) var(--espacio-1);
+  background-color: var(--color-mesa-cajonera);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-objeto);
+  container: cajonera / inline-size;
+}
+
+/* nav.… le gana a los márgenes negativos que Pico le pone a la lista de un nav. Columnas iguales,
+   nunca más angostas que un nombre corto: si no entran (siete secciones en el celular), la fila se
+   desplaza a lo ancho y deja asomar el cajón siguiente. Arriba, el lugar del cajón abierto, que
+   sube: queda adentro de la fila, para que no se corte. */
+nav.navegacion ul {
+  display: grid;
+  grid-auto-columns: minmax(4rem, 1fr);
+  grid-auto-flow: column;
+  gap: 2px;
+  margin: 0;
+  padding: var(--medida-cajon-apertura) 0 0;
+  overflow: auto hidden;
+  scroll-snap-type: x proximity;
+  scrollbar-color: var(--color-laton) transparent;
+  scrollbar-width: thin;
+}
+
+.navegacion li {
+  display: block;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  scroll-snap-align: start;
+}
+
+/* El frente del cajón: madera con el canto claro arriba y la sombra abajo, el portaetiquetas y el
+   tirador. */
+nav.navegacion a {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  padding: var(--espacio-2) 2px 1.375rem;
+  background-color: var(--color-mesa-cajon);
+  border: var(--borde-ancho) solid var(--color-mesa-junta);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 var(--borde-ancho) 0 var(--color-destacado-hover),
+    inset 0 -3px 0 var(--color-mesa-junta);
+  color: var(--color-destacado-texto-suave);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+/* Pico subraya el enlace actual y el que está bajo el mouse. */
+nav.navegacion a[href] {
+  text-decoration: none;
+}
+
+nav.navegacion a:hover {
+  background-color: var(--color-destacado-fondo-alto);
+  color: var(--color-destacado-texto);
+}
+
+nav.navegacion a:focus-visible {
+  outline-offset: calc(var(--borde-foco) * -1);
+}
+
+/* El tirador: media luna de latón con trazo oscuro. */
+.navegacion a::after {
+  content: "";
+  position: absolute;
+  bottom: var(--espacio-2);
+  left: 50%;
+  width: 1.75rem;
+  height: 0.375rem;
+  translate: -50% 0;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-ancho) solid var(--color-laton-texto);
+  border-radius: 0 0 var(--radio-insignia) var(--radio-insignia);
+  box-shadow: 0 2px 0 var(--color-mesa-junta);
+}
+
+/* El portaetiquetas: un marco de latón con su tarjeta de papel. Angosto, enmarca el ícono en
+   tinta y el nombre corto va grabado en la madera, debajo. */
+.navegacion-etiqueta {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: var(--espacio-1);
+  max-width: 100%;
+}
+
+.navegacion .icono {
+  box-sizing: content-box;
+  padding: 2px var(--espacio-2);
+  background-color: var(--color-fondo);
+  border: var(--borde-marco) solid var(--color-laton-brillante);
+  border-radius: 2px;
+  box-shadow: 0 0 0 var(--borde-ancho) var(--color-laton-texto);
+  color: var(--color-titulo);
+}
+
+.navegacion-corto {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* El nombre completo queda para los lectores de pantalla; a la vista, el corto. */
+.navegacion-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* El cajón abierto: el frente sale hacia arriba y deja ver el hueco. El signo ◆ (ahora) va en la
+   esquina del portaetiquetas. */
+nav.navegacion a[aria-current="page"] {
+  z-index: 1;
+  translate: 0 calc(-1 * var(--medida-cajon-apertura));
+  color: var(--color-destacado-texto);
+  box-shadow:
+    inset 0 var(--borde-ancho) 0 var(--color-destacado-hover),
+    inset 0 -3px 0 var(--color-mesa-junta),
+    0 6px 10px -4px var(--color-mesa-sombra);
+}
+
+nav.navegacion a[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 3px;
+  left: 3px;
+  height: var(--medida-cajon-apertura);
+  background-color: var(--color-mesa-hueco);
+  border-inline: 3px solid var(--color-mesa-cajon);
+}
+
+.navegacion a[aria-current="page"] .navegacion-etiqueta::before {
+  content: "";
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  z-index: 1;
+  width: 0.625rem;
+  height: 0.625rem;
+  background-color: var(--color-signo-sello);
+  border: var(--borde-ancho) solid var(--color-signo-trazo);
+  rotate: 45deg;
+}
+
+/* Con lugar, el nombre completo en la tarjeta del portaetiquetas, sin ícono, y el cajón abierto
+   baja hacia la mesa (quien la usa le deja lugar): arriba queda su hueco, con las hojas guardadas
+   adentro. */
+@container cajonera (min-width: 36rem) {
+  nav.navegacion ul {
+    grid-auto-columns: minmax(0, 10rem);
+    justify-content: center;
+    gap: var(--espacio-2);
+    padding: var(--espacio-2) var(--espacio-1) var(--espacio-1);
+    overflow: visible;
+  }
+
+  nav.navegacion a {
+    align-content: center;
+    min-height: 4.25rem;
+    padding: var(--espacio-2) var(--espacio-1) var(--espacio-5);
+  }
+
+  .navegacion a::after {
+    width: 2.5rem;
+    height: 0.5rem;
+  }
+
+  .navegacion :is(.icono, .navegacion-corto) {
+    display: none;
+  }
+
+  .navegacion-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    overflow: visible;
+    padding: 2px var(--espacio-2);
+    background-color: var(--color-fondo);
+    border: var(--borde-marco) solid var(--color-laton-brillante);
+    border-radius: 2px;
+    box-shadow: 0 0 0 var(--borde-ancho) var(--color-laton-texto);
+    clip-path: none;
+    color: var(--color-titulo);
+    font-family: var(--fuente-rotulos);
+    font-size: var(--tamano-mini);
+    letter-spacing: 0.02em;
+    text-align: center;
+    text-wrap: balance;
+    white-space: normal;
+  }
+
+  nav.navegacion a[aria-current="page"] {
+    translate: 0 calc(var(--medida-cajon-apertura) + var(--espacio-3));
+    box-shadow:
+      inset 0 var(--borde-ancho) 0 var(--color-destacado-hover),
+      inset 0 -3px 0 var(--color-mesa-junta),
+      0 10px 14px -6px var(--color-mesa-sombra);
+  }
+
+  nav.navegacion a[aria-current="page"]::before {
+    top: auto;
+    bottom: 100%;
+    height: calc(var(--medida-cajon-apertura) + var(--espacio-3) + var(--borde-ancho));
+    background:
+      linear-gradient(var(--color-fondo), var(--color-fondo)) 30% 100% / 50% 45% no-repeat,
+      linear-gradient(var(--color-superficie), var(--color-superficie)) 62% 100% / 64% 75%
+        no-repeat,
+      var(--color-mesa-hueco);
+    box-shadow: inset 0 6px 6px -3px var(--color-mesa-hueco);
+  }
+}
+
+/* En el catálogo, el lugar del cajón abierto cuando baja. */
+.catalogo > .navegacion {
+  margin-block-end: calc(var(--medida-cajon-apertura) + var(--espacio-3));
+}
+
+/* Las pantallas públicas: arriba la placa; una hoja de pergamino con su espesor (dos hojas más
+   debajo), apoyada en la mesa, y el pie grabado en la madera, alineados con la hoja. */
+body.mesa > #contenido.container {
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-7);
+  background-color: var(--color-fondo);
+  box-shadow:
+    0 3px 0 -1px var(--color-superficie),
+    0 6px 0 -2px var(--color-fondo-pagina),
+    var(--sombra-objeto);
+}
+
+.pie {
+  padding-block: var(--espacio-5);
+  color: var(--color-destacado-texto-suave);
+  font-style: italic;
+}
+
+@media (min-width: 37.5em) {
+  body.mesa:not(.armazon) > :is(.encabezado, #contenido, .pie) {
+    width: auto;
+    max-width: min(100% - 2 * var(--espacio-5), var(--medida-hoja));
+    margin-inline: auto;
+  }
+
+  body.mesa:not(.armazon) > .encabezado {
+    padding-inline: 0;
+  }
+
+  body.mesa > :is(#contenido, .pie).container {
+    padding-inline: var(--espacio-6);
+  }
+
+  body.mesa > #contenido.container {
+    margin-block-start: var(--espacio-2);
+    border-radius: 2px;
+  }
+}
+
+@media (min-width: 68.75em) {
+  body.mesa > :is(#contenido, .pie).container {
+    padding-inline: var(--espacio-7);
+  }
+}
+
+/* Las pantallas privadas: lo que se lee va directo sobre la mesa. Abajo, la página deja lugar
+   para la cajonera del celular y su cajón abierto. */
+.armazon #contenido {
+  padding: var(--espacio-3) var(--espacio-3)
+    calc(var(--medida-cajonera-celular) + var(--medida-cajon-apertura) + var(--espacio-6));
+  container: mesa / inline-size;
+}
+
+/* En el celular, la cajonera baja al borde de la mesa, el más cercano a la mano: fija abajo, a
+   todo el ancho y siempre con el ícono y el nombre corto (no mide su ancho). */
+.armazon .navegacion {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  border-block-start: 3px solid var(--color-mesa-junta);
+  border-radius: 0;
+  box-shadow: 0 -10px 22px -10px var(--color-mesa-sombra);
+  container-type: normal;
+}
+
+:root:has(> .armazon) {
+  scroll-padding-block-end: calc(
+    var(--medida-cajonera-celular) + var(--medida-cajon-apertura) + var(--espacio-3)
+  );
+}
+
+.armazon .avisos {
+  bottom: calc(var(--medida-cajonera-celular) + var(--medida-cajon-apertura) + var(--espacio-2));
+}
+
+/* Desde 860 px la cajonera sube al borde de arriba de la mesa, con los nombres completos: la placa
+   y la carta con la cuenta en el renglón de arriba; desde 1100 px, todo en uno. */
+@media (min-width: 53.75em) {
+  :root:has(> .armazon) {
+    scroll-padding-block-end: 0;
+  }
+
+  .armazon .encabezado {
+    display: grid;
+    grid-template-areas:
+      "marca fin"
+      "cajones cajones";
+    grid-template-columns: auto auto;
+    padding: var(--espacio-3) var(--espacio-5) 0;
+  }
+
+  .armazon .encabezado > .marca {
+    grid-area: marca;
+    justify-self: start;
+  }
+
+  .armazon .encabezado-fin {
+    grid-area: fin;
+    justify-self: end;
+  }
+
+  /* Sin capa propia: en la grilla, el z-index la pondría encima del menú de la cuenta. */
+  .armazon .navegacion {
+    position: static;
+    grid-area: cajones;
+    justify-self: center;
+    width: min(100%, 62rem);
+    margin-block-end: calc(var(--medida-cajon-apertura) + var(--espacio-3));
+    padding: 0;
+    border: 0;
+    border-block-end: 4px solid var(--color-mesa-junta);
+    border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+    box-shadow: var(--sombra-objeto);
+    container-type: inline-size;
+  }
+
+  .armazon #contenido {
+    padding: var(--espacio-4) var(--espacio-6) var(--espacio-7);
+  }
+
+  .armazon .avisos {
+    bottom: var(--espacio-4);
+  }
+}
+
+@media (min-width: 68.75em) {
+  .armazon .encabezado {
+    grid-template-areas: "marca cajones fin";
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--espacio-5);
+    padding-block-start: 0;
+  }
+
+  .armazon .encabezado > .marca,
+  .armazon .encabezado-fin {
+    margin-block-start: var(--espacio-4);
+  }
+
+  .armazon .navegacion {
+    padding-block-start: var(--espacio-2);
+    border-radius: 0 0 var(--radio-chico) var(--radio-chico);
+  }
+}
+
+/* La mesa de objetos: en el catálogo, sobre un trozo de mesa dentro de la hoja; en el inicio,
+   sobre la mesa misma. Una grilla invisible de doce columnas los alinea; cada objeto, apenas
+   torcido, lleva su sombra. El orden del HTML es el de lectura y el del celular. */
+.muestra-pantalla {
+  container: mesa / inline-size;
+}
+
+.muestra-pantalla > .mesa-objetos {
+  padding: var(--espacio-5) var(--espacio-3);
+  background-color: var(--color-mesa-madera);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-hundido);
+}
+
+.mesa-objetos {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: var(--espacio-5);
+  margin: 0;
+}
+
+.mesa-objetos > * {
+  margin: 0;
+  color: var(--color-texto);
+  box-shadow: var(--sombra-objeto);
+}
+
+.mesa-objetos :is(h3, h4) {
+  margin: 0;
+  color: var(--color-titulo);
+}
+
+.mesa-objetos h3 {
+  font-size: var(--tamano-titulo-2);
+}
+
+.mesa-bajada {
+  margin: var(--espacio-1) 0 var(--espacio-4);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* La nota del saludo: una esquela con su filete de papel de carta, clavada con una chinche de
+   latón. Corta, para que en el celular el mapa y el alfiler entren en la primera pantalla. */
+.mesa-nota {
+  position: relative;
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-4);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  rotate: -0.4deg;
+}
+
+.mesa-nota::before {
+  content: "";
+  position: absolute;
+  inset: var(--espacio-2);
+  border: var(--borde-ancho) solid var(--color-filete-tenue);
+  pointer-events: none;
+}
+
+.mesa-nota::after {
+  content: "";
+  position: absolute;
+  top: var(--espacio-2);
+  left: 50%;
+  width: 0.875rem;
+  height: 0.875rem;
+  translate: -50% 0;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  border-radius: var(--radio-sello);
+  box-shadow: 2px 3px 2px var(--color-mesa-sombra);
+}
+
+.mesa-objetos .mesa-nota h3 {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.mesa-nota p {
+  max-width: 36ch;
+  margin: var(--espacio-2) 0 var(--espacio-4);
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-grande);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Los dos botones entran en un renglón desde 360 px; si no entran, el segundo baja. */
+.mesa-nota-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.mesa-nota-acciones > * {
+  padding-inline: var(--espacio-3);
+}
+
+/* El mapa del viaje: la hoja grande, de pergamino de mapa, con esquineros de latón remachados en
+   las cuatro puntas (el latón lleva su borde oscuro hacia el papel). */
+.mesa-mapa {
+  position: relative;
+  display: grid;
+  gap: var(--espacio-3);
+  padding: var(--espacio-3);
+  background-color: var(--color-fondo-pagina);
+  border-radius: 2px;
+  container: mapa / inline-size;
+}
+
+.mesa-mapa::before {
+  --medida-esquinero: 1.375rem;
+
+  content: "";
+  position: absolute;
+  inset: -2px;
+  z-index: 1;
+  background:
+    radial-gradient(circle, var(--color-laton-texto) 0 2px, transparent 2.5px) 5px 5px / 9px 9px
+      no-repeat,
+    radial-gradient(circle, var(--color-laton-texto) 0 2px, transparent 2.5px) right 5px top 5px /
+      9px 9px no-repeat,
+    radial-gradient(circle, var(--color-laton-texto) 0 2px, transparent 2.5px) right 5px bottom
+      5px / 9px 9px no-repeat,
+    radial-gradient(circle, var(--color-laton-texto) 0 2px, transparent 2.5px) left 5px bottom 5px /
+      9px 9px no-repeat,
+    linear-gradient(135deg, var(--color-laton-brillante) 0 var(--medida-esquinero),
+      var(--color-laton-texto) var(--medida-esquinero) calc(var(--medida-esquinero) + 2px), transparent 0)
+      top left / 3rem 3rem no-repeat,
+    linear-gradient(225deg, var(--color-laton-brillante) 0 var(--medida-esquinero),
+      var(--color-laton-texto) var(--medida-esquinero) calc(var(--medida-esquinero) + 2px), transparent 0)
+      top right / 3rem 3rem no-repeat,
+    linear-gradient(315deg, var(--color-laton-brillante) 0 var(--medida-esquinero),
+      var(--color-laton-texto) var(--medida-esquinero) calc(var(--medida-esquinero) + 2px), transparent 0)
+      bottom right / 3rem 3rem no-repeat,
+    linear-gradient(45deg, var(--color-laton-brillante) 0 var(--medida-esquinero),
+      var(--color-laton-texto) var(--medida-esquinero) calc(var(--medida-esquinero) + 2px), transparent 0)
+      bottom left / 3rem 3rem no-repeat;
+  pointer-events: none;
+}
+
+/* La cartela: el título del mapa, qué viaja y en qué estado, sobre un doble filete. */
+.mesa-mapa-cartela {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-4);
+  padding: var(--espacio-2) var(--espacio-4) var(--espacio-3);
+  border-block-end: var(--borde-regla-doble) double var(--color-titulo);
+}
+
+.mesa-objetos .mesa-mapa-cartela h3 {
+  flex-basis: 100%;
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.mesa-mapa-cartela p {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.mesa-mapa > .enlace-fuerte {
+  justify-self: start;
+  margin-inline-start: var(--espacio-4);
+}
+
+/* El viaje: el mapa a todo el ancho del objeto y, debajo, su leyenda, en tantas columnas como
+   entren. Las consultas de contenedor miden en rem, que Pico agranda con la pantalla (20 px en
+   1280 y 21 px en 1920). */
+.viaje {
+  display: grid;
+  gap: var(--espacio-4);
+  container: viaje / inline-size;
+}
+
+/* Con el mapa muy ancho (la pantalla grande), la leyenda pasa a su derecha, como en los mapas
+   viejos: el mapa no crece de alto más que la nota y la carta juntas. */
+@container mapa (min-width: 50rem) {
+  .viaje {
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 14rem);
+    align-items: center;
+    gap: var(--espacio-6);
+  }
+}
+
+/* El mapa: la tierra con su cuadrícula de meridianos, el terreno a pluma y el camino, dentro de
+   una cenefa: un doble filete de tinta con las marcas de los grados en el borde. */
+.viaje-mapa {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background-color: var(--color-fondo-pagina);
+  background-image:
+    repeating-linear-gradient(to right, transparent 0 calc(12.5% - 1px),
+      var(--color-borde) calc(12.5% - 1px) 12.5%),
+    repeating-linear-gradient(to bottom, transparent 0 calc(22.2% - 1px),
+      var(--color-borde) calc(22.2% - 1px) 22.2%);
+  border: var(--borde-regla-doble) double var(--color-titulo);
+}
+
+.viaje-mapa::before,
+.viaje-mapa::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.viaje-mapa::before {
+  background-color: var(--color-filete);
+  mask: url("../../../img/cozy-medieval/mesa-mapa-terreno.svg") center / 100% 100% no-repeat;
+}
+
+.viaje-mapa::after {
+  background:
+    repeating-linear-gradient(to right, var(--color-titulo) 0 1px, transparent 1px 6.25%) top /
+      100% 5px no-repeat,
+    repeating-linear-gradient(to right, var(--color-titulo) 0 1px, transparent 1px 6.25%) bottom /
+      100% 5px no-repeat,
+    repeating-linear-gradient(to bottom, var(--color-titulo) 0 1px, transparent 1px 11.1%) left /
+      5px 100% no-repeat,
+    repeating-linear-gradient(to bottom, var(--color-titulo) 0 1px, transparent 1px 11.1%) right /
+      5px 100% no-repeat;
+}
+
+.viaje-mapa svg {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* El camino: en tinta hasta la etapa actual; lo que falta, en lápiz y a trazos. */
+.viaje-tramo--tinta {
+  stroke: var(--color-titulo);
+  stroke-width: 5;
+}
+
+.viaje-tramo--lapiz {
+  stroke: var(--color-camino-por-recorrer);
+  stroke-width: 3.5;
+  stroke-dasharray: 2 11;
+}
+
+/* El depósito de salida y el pueblo de destino, a pluma. */
+.viaje-lugar {
+  fill: var(--color-fondo-pagina);
+  stroke: var(--color-signo-tinta);
+  stroke-width: 2;
+}
+
+/* Las paradas, con los signos de la leyenda: ● cumplida, ○ lo que falta y ◉ el pueblo sellado. */
+.viaje-signo {
+  stroke: var(--color-fondo-pagina);
+  stroke-width: 3;
+}
+
+.viaje-parada--hecho .viaje-signo {
+  fill: var(--color-titulo);
+}
+
+.viaje-parada--pendiente .viaje-signo {
+  fill: var(--color-fondo-pagina);
+  stroke: var(--color-signo-tinta);
+}
+
+.viaje-parada--hecho:last-child .viaje-signo {
+  fill: var(--color-signo-sello);
+  stroke: var(--color-signo-trazo);
+  stroke-width: 5;
+}
+
+/* El número de cada parada, el mismo que en la leyenda, con un halo de papel. */
+.viaje-numero {
+  fill: var(--color-titulo);
+  stroke: var(--color-fondo-pagina);
+  stroke-width: 6px;
+  paint-order: stroke;
+  font-family: var(--fuente-texto);
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: lining-nums;
+  text-anchor: middle;
+}
+
+/* El alfiler de latón (◆, ahora) clavado en la etapa actual, con su sombra en el papel, y su
+   banderita de latón atada con un hilo, del lado libre del camino. */
+.viaje-alfiler-sombra {
+  fill: var(--color-mesa-sombra);
+}
+
+.viaje-alfiler-cabeza {
+  fill: var(--color-signo-sello);
+  stroke: var(--color-signo-trazo);
+  stroke-width: 3;
+}
+
+.viaje-alfiler-grabado {
+  stroke: var(--color-signo-trazo);
+  stroke-width: 1.5;
+}
+
+.viaje-hilo {
+  stroke: var(--color-titulo);
+  stroke-width: 2;
+}
+
+.viaje-bandera rect {
+  fill: var(--color-laton-brillante);
+  stroke: var(--color-laton-texto);
+  stroke-width: 3;
+}
+
+.viaje-bandera text {
+  fill: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: 28px;
+  font-weight: 700;
+  dominant-baseline: central;
+  text-anchor: middle;
+}
+
+/* Con el mapa grande, las letras vuelven a su tamaño. */
+@container viaje (min-width: 30rem) {
+  .viaje-numero {
+    font-size: 22px;
+  }
+
+  .viaje-bandera text {
+    font-size: 22px;
+  }
+}
+
+/* La leyenda: las etapas en columna, cada una con su número del mapa, su signo y su texto. El
+   tramo entre signo y signo, en tinta hasta la actual y en lápiz lo que falta. */
+.recorrido {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0 var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  font-size: var(--tamano-chico);
+  container: leyenda / inline-size;
+}
+
+.recorrido-paso {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.125rem var(--medida-signo) minmax(0, 1fr);
+  align-items: start;
+  gap: 0 var(--espacio-2);
+  margin: 0;
+  padding: 0 0 var(--espacio-4);
+  color: var(--color-texto);
+  list-style: none;
+}
+
+.recorrido-paso:last-child {
+  padding-block-end: 0;
+}
+
+.recorrido-nodo {
+  color: var(--color-titulo);
+  font-weight: 800;
+  font-variant-numeric: lining-nums;
+  line-height: 1.5;
+  text-align: end;
+}
+
+.recorrido-texto {
+  display: grid;
+  grid-column: 3;
+  justify-items: start;
+  line-height: 1.5;
+}
+
+.recorrido-texto small {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+}
+
+.recorrido-paso--actual {
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+.recorrido-paso--pendiente {
+  color: var(--color-texto-suave);
+}
+
+/* El signo de la parada (app.css), en su columna, a la altura del primer renglón. */
+.recorrido-paso::after {
+  position: absolute;
+  top: 0.75em;
+  left: calc(1.125rem + var(--espacio-2) + var(--medida-signo) / 2);
+  translate: -50% -50%;
+}
+
+.recorrido-paso::before {
+  content: "";
+  position: absolute;
+  top: 0.75em;
+  bottom: -0.75em;
+  left: calc(1.125rem + var(--espacio-2) + var(--medida-signo) / 2 - var(--borde-ruta) / 2);
+  border-inline-start: var(--borde-ruta) solid var(--color-signo-tinta);
+}
+
+:is(.recorrido-paso--actual, .recorrido-paso--pendiente)::before {
+  border-inline-start-style: dashed;
+  border-inline-start-color: var(--color-camino-por-recorrer);
+}
+
+.recorrido-paso:last-child::before {
+  content: none;
+}
+
+/* En dos columnas o más ya no hay tramo entre signos: el camino es el del mapa. */
+@container leyenda (min-width: 23rem) {
+  .recorrido-paso {
+    padding-block-end: var(--espacio-2);
+  }
+
+  .recorrido-paso::before {
+    content: none;
+  }
+}
+
+/* "Estás acá": el hito de latón junto a la etapa actual, con sus dos remaches. */
+.recorrido-aca {
+  margin-block-start: var(--espacio-1);
+  padding: 2px var(--espacio-4);
+  background:
+    radial-gradient(circle, var(--color-laton-texto) 0 1.5px, transparent 2px) left 5px center /
+      5px 5px no-repeat,
+    radial-gradient(circle, var(--color-laton-texto) 0 1.5px, transparent 2px) right 5px center /
+      5px 5px no-repeat,
+    var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  border-radius: 2px;
+  box-shadow:
+    inset 0 0 0 2px var(--color-placa-brillo),
+    var(--sombra-objeto-bajo);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-4);
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* La carta: una hoja plegada en tantos tramos como noticias. El pliegue va entre una noticia y la
+   otra, nunca sobre el texto: cada tramo es un plano del papel, uno a la luz y el siguiente
+   apenas en sombra. */
+.mesa-carta {
+  position: relative;
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-2);
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  rotate: 0.5deg;
+}
+
+.mesa-carta .notas li {
+  margin-inline: calc(-1 * var(--espacio-4));
+  padding: var(--espacio-3) var(--espacio-4);
+  border-block: 0;
+}
+
+.mesa-carta .notas li:first-child {
+  padding-block-start: var(--espacio-3);
+  border-block-start: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.mesa-carta .notas li + li {
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.mesa-carta .notas li:nth-child(even) {
+  background-image: linear-gradient(to bottom, var(--color-trama), transparent 70%);
+}
+
+/* El libro de cuentas: tapas de cuero y, abiertas, dos hojas. En angosto, una debajo de la otra. */
+.mesa-libro {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  padding: var(--espacio-2);
+  background-color: var(--color-mesa-cuero);
+  border-radius: var(--radio-chico);
+  container: libro / inline-size;
+}
+
+.mesa-libro-hoja {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+  padding: var(--espacio-5) var(--espacio-4);
+  background-color: var(--color-fondo);
+}
+
+.mesa-libro-hoja + .mesa-libro-hoja {
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+/* Los asientos: lo que cuenta, la guía de puntos hasta la columna de doble filete y el número. */
+.mesa-asientos {
+  margin: 0;
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.mesa-asientos div,
+.mesa-libro .cifra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.5rem;
+  align-items: baseline;
+  border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.mesa-asientos dt,
+.mesa-libro .cifra-etiqueta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-2) var(--espacio-2) 0;
+  font-weight: 400;
+}
+
+.mesa-asientos dt::after,
+.mesa-libro .cifra-etiqueta::after {
+  content: "";
+  flex: 1;
+  min-width: var(--espacio-4);
+  border-block-end: var(--borde-ruta) dotted var(--color-filete);
+}
+
+.mesa-asientos dd,
+.mesa-libro .cifra-valor {
+  align-self: stretch;
+  margin: 0;
+  padding: var(--espacio-2) 0 var(--espacio-2) var(--espacio-3);
+  border-inline-start: var(--borde-regla-doble) double var(--color-filete);
+  color: var(--color-titulo);
+  font-weight: 800;
+  font-variant-numeric: lining-nums tabular-nums;
+  text-align: end;
+}
+
+/* La cifra del mes es el total del asiento, debajo del doble filete. Toda la fila es el enlace a
+   sus entregas; lo que cuenta va subrayado, como un enlace. */
+.cifra {
+  color: var(--color-texto);
+  text-decoration: none;
+}
+
+.mesa-libro .cifra {
+  grid-template-areas:
+    "etiqueta valor"
+    "chip valor";
+  border-block: var(--borde-regla-doble) double var(--color-titulo);
+}
+
+.cifra .cifra-etiqueta {
+  grid-area: etiqueta;
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-decoration: underline var(--borde-ancho) var(--color-filete);
+  text-underline-offset: 0.2em;
+}
+
+.cifra:hover .cifra-etiqueta {
+  text-decoration-color: var(--color-titulo);
+}
+
+.cifra-valor {
+  grid-area: valor;
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.2;
+}
+
+.cifra-chip {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: chip;
+  gap: 0 5px;
+  padding-block-end: var(--espacio-2);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.cifra-chip b {
+  color: var(--color-titulo);
+  font-style: normal;
+  font-weight: 800;
+}
+
+/* Con el libro abierto, la hoja de la izquierda se completa con los renglones vacíos y su columna
+   de doble filete, hasta el pie. */
+@container libro (min-width: 30rem) {
+  .mesa-libro-hoja:first-child::after {
+    content: "";
+    flex: 1;
+    min-height: var(--espacio-6);
+    margin-block-start: calc(-1 * var(--espacio-4));
+    background:
+      linear-gradient(to right, var(--color-filete) 0 1px, transparent 1px 3px,
+        var(--color-filete) 3px 4px, transparent 4px) right 4.25rem top 0 / 4px 100% no-repeat,
+      repeating-linear-gradient(to bottom, transparent 0 calc(2.5rem - 1px),
+        var(--color-filete-tenue) calc(2.5rem - 1px) 2.5rem);
+  }
+}
+
+/* Las que llegaron a destino: el sello con su número, la tira del total y su leyenda. */
+.mesa-entregadas {
+  display: grid;
+  gap: var(--espacio-4);
+  container-type: inline-size;
+}
+
+.mesa-entregadas-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+
+.mesa-objetos .mesa-entregadas h4 {
+  font-size: var(--tamano-titulo-3);
+}
+
+/* El rango: la etiqueta pegada en la hoja, con su doble filete de latón oscuro (6:1). */
+.mesa-rango {
+  align-self: center;
+  width: min(100%, 17rem);
+  margin-block-start: auto;
+  padding: var(--espacio-4);
+  background-color: var(--color-superficie);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  box-shadow:
+    inset 0 0 0 4px var(--color-superficie),
+    inset 0 0 0 5px var(--color-laton-texto),
+    var(--sombra-objeto-bajo);
+  text-align: center;
+  rotate: -1.5deg;
+}
+
+.mesa-objetos .mesa-rango h4 {
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.mesa-rango p {
+  margin: 0;
+  color: var(--color-titulo);
+}
+
+.mesa-rango-nombre {
+  font-family: var(--fuente-titulos);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.mesa-rango-proxima {
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* El libro se abre en dos hojas, con el lomo en el medio. */
+@container libro (min-width: 30rem) {
+  .mesa-libro-hoja + .mesa-libro-hoja {
+    border-block-start: 0;
+    border-inline-start: var(--borde-ancho) solid var(--color-filete);
+  }
+
+  .mesa-libro-hoja:first-child {
+    box-shadow: inset -14px 0 12px -14px var(--color-mesa-sombra);
+  }
+
+  .mesa-libro-hoja:last-child {
+    box-shadow: inset 14px 0 12px -14px var(--color-mesa-sombra);
+  }
+}
+
+/* El cuaderno de sellos: hojas de pergamino cosidas a un lomo de cuero. */
+.mesa-cuaderno {
+  position: relative;
+  display: grid;
+  align-content: start;
+  padding: var(--espacio-5) var(--espacio-4) var(--espacio-5) calc(1.25rem + var(--espacio-4));
+  background-color: var(--color-fondo);
+  border-radius: 2px var(--radio-chico) var(--radio-chico) 2px;
+  rotate: 0.3deg;
+}
+
+.mesa-cuaderno::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 1.25rem;
+  background-color: var(--color-mesa-cuero);
+  border-inline-end: 2px dashed var(--color-destacado-texto-suave);
+  border-radius: 2px 0 0 2px;
+}
+
+.mesa-cuaderno [role="button"] {
+  justify-self: start;
+}
+
+/* Lo que se gana al cumplir la misión, en su cinta de pergamino con las puntas cortadas. */
+.mesa-cuaderno .mesa-bajada {
+  justify-self: start;
+  margin-block: var(--espacio-2) var(--espacio-4);
+  padding: 2px var(--espacio-5);
+  background-color: var(--color-superficie);
+  border-block: var(--borde-ancho) solid var(--color-laton-texto);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 0.625rem) 50%, 100% 100%, 0 100%, 0.625rem 50%);
+  color: var(--color-titulo);
+}
+
+/* La grilla de la mesa. Con lugar, dos zonas: la nota y la carta a la izquierda del mapa y,
+   abajo, el libro y el cuaderno, en doce columnas invisibles. */
+@container mesa (min-width: 40rem) {
+  .mesa-objetos {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-areas:
+      "nota nota nota nota nota mapa mapa mapa mapa mapa mapa mapa"
+      "carta carta carta carta carta mapa mapa mapa mapa mapa mapa mapa"
+      "libro libro libro libro libro libro libro cuaderno cuaderno cuaderno cuaderno cuaderno";
+    grid-template-rows: auto 1fr auto;
+    gap: var(--espacio-6) var(--espacio-5);
+  }
+
+  .mesa-nota {
+    grid-area: nota;
+  }
+
+  .mesa-mapa {
+    grid-area: mapa;
+  }
+
+  .mesa-carta {
+    grid-area: carta;
+  }
+
+  .mesa-libro {
+    grid-area: libro;
+  }
+
+  .mesa-cuaderno {
+    grid-area: cuaderno;
+  }
+}
+
+@container mesa (min-width: 56rem) {
+  .mesa-objetos {
+    grid-template-areas:
+      "nota nota nota nota mapa mapa mapa mapa mapa mapa mapa mapa"
+      "carta carta carta carta mapa mapa mapa mapa mapa mapa mapa mapa"
+      "libro libro libro libro libro libro libro libro cuaderno cuaderno cuaderno cuaderno";
+    gap: var(--espacio-7) var(--espacio-6);
+  }
+}
+
+/* Movimiento, solo si la persona no pidió reducirlo: el cajón actual se abre al llegar y los otros
+   se asoman al pasar el mouse. El mapa queda quieto: se lee apenas se abre la página. */
+@media (prefers-reduced-motion: no-preference) {
+  nav.navegacion a {
+    transition: translate var(--movimiento-duracion) var(--movimiento-curva);
+  }
+
+  nav.navegacion a[aria-current="page"] {
+    animation: mesa-abrir var(--movimiento-lento) var(--movimiento-curva) both;
+  }
+
+  nav.navegacion a:not([aria-current]):hover {
+    translate: 0 -0.25rem;
+  }
+}
+
+@container cajonera (min-width: 36rem) {
+  @media (prefers-reduced-motion: no-preference) {
+    nav.navegacion a:not([aria-current]):hover {
+      translate: 0 0.25rem;
+    }
+  }
+}
+
+@keyframes mesa-abrir {
+  from {
+    translate: 0 0;
+  }
+}
+
+/* Con colores forzados (alto contraste), los dibujos pintados toman el color del texto sobre el
+   de la hoja: los tiradores, el ◆ del cajón abierto, el mapa entero y los esquineros. */
+@media (forced-colors: active) {
+  .navegacion a::after,
+  .navegacion a[aria-current="page"] .navegacion-etiqueta::before,
+  .viaje-mapa::before,
+  .viaje-mapa svg {
+    forced-color-adjust: none;
+  }
+
+  .navegacion a::after,
+  .navegacion a[aria-current="page"] .navegacion-etiqueta::before,
+  .viaje-mapa::before {
+    background-color: var(--color-forzado-texto);
+  }
+
+  :is(.viaje-tramo, .viaje-lugar, .viaje-signo, .viaje-hilo, .viaje-alfiler-grabado),
+  .viaje-bandera rect,
+  .viaje-alfiler-cabeza {
+    stroke: var(--color-forzado-texto);
+  }
+
+  :is(.viaje-lugar, .viaje-alfiler-cabeza, .viaje-parada--pendiente .viaje-signo),
+  .viaje-bandera rect {
+    fill: var(--color-forzado-fondo);
+  }
+
+  .viaje-parada--hecho .viaje-signo,
+  .viaje-parada--hecho:last-child .viaje-signo,
+  .viaje-alfiler-sombra,
+  :is(.viaje-numero, .viaje-bandera text) {
+    fill: var(--color-forzado-texto);
+  }
+
+  .viaje-numero {
+    stroke: var(--color-forzado-fondo);
+  }
+
+  .mesa-objetos > *,
+  body.mesa > #contenido.container,
+  .recorrido-aca,
+  .mesa-rango {
+    border: var(--borde-ancho) solid;
+  }
+}

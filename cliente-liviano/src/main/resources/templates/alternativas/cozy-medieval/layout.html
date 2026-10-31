@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<!--/* Estructura común de las pantallas públicas. Uso:
+<!--/* Estructura común de las pantallas públicas: la mesa del cartógrafo (bitácora, iteración 2). La
+       pantalla es la mesa de nogal; arriba, la placa del fabricante (la marca); el contenido es una
+       hoja de pergamino apoyada en la mesa, y el pie va grabado en la madera. Uso:
        <html th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">. Las privadas usan
        layout-privado, que toma de acá la cabecera y la marca. data-theme="light": solo modo claro
        (bitácora, 2026-10-30). Las hojas de identidad son las de Glassmorphism, salvo que el
@@ -28,7 +30,7 @@
   <script src="/webjars/htmx.org/dist/htmx.min.js"
           th:src="@{/webjars/htmx.org/dist/htmx.min.js}" defer></script>
 </head>
-<body>
+<body class="mesa">
   <a class="saltar" href="#contenido">Saltar al contenido</a>
   <header class="encabezado">
     <a th:fragment="marca" class="marca" href="/" th:href="@{/}"

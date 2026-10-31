@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<!--/* Muestra del armazón de las pantallas privadas (/estilos/armazon): el inicio del donante,
-       armado con piezas de /estilos dentro de layout-privado. Datos de ejemplo. La hoja va en el
-       orden de lectura: el saludo; el viaje en curso, que es la audacia de la pantalla, con la
-       leyenda de las cifras; las notificaciones, que cuentan lo último del viaje, y al final la
-       misión. La composición está en app.css ("Inicio del donante"). */-->
+<!--/* Muestra del armazón de las pantallas privadas (/estilos/armazon): el inicio del donante como
+       la mesa del cartógrafo (bitácora, iteración 2), dentro de layout-privado. Datos de ejemplo.
+       Trae de /estilos la mesa entera con sus objetos (la nota, el mapa del viaje, la carta, el
+       libro de cuentas y el cuaderno de sellos) y la apoya sobre la mesa de nogal: mesa.css los
+       acomoda en una grilla invisible según el ancho que hay. */-->
 <html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
 <head>
@@ -12,17 +12,7 @@
 <body>
 <th:block th:fragment="contenido">
   <h1 class="solo-lectores">Inicio</h1>
-  <div class="tablero">
-    <section th:replace="~{alternativas/cozy-medieval/paginas/estilos :: section.destacado}"></section>
-    <section th:replace="~{alternativas/cozy-medieval/paginas/estilos :: section.panel--viaje}"></section>
-    <div class="tablero-leyenda">
-      <div th:replace="~{alternativas/cozy-medieval/paginas/estilos :: div.cifras}"></div>
-    </div>
-    <section th:replace="~{alternativas/cozy-medieval/paginas/estilos :: section.panel--notas}"></section>
-    <div class="tablero-mision">
-      <section th:replace="~{alternativas/cozy-medieval/paginas/estilos :: section.mision}"></section>
-    </div>
-  </div>
+  <div th:replace="~{alternativas/cozy-medieval/paginas/estilos :: div.mesa-objetos}"></div>
 </th:block>
 </body>
 </html>

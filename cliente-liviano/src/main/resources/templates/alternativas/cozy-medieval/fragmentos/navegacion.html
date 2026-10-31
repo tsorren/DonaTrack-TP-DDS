@@ -1,16 +1,17 @@
-<!--/* Navegación por rol: el lomo de cuero del atlas (estructura-cozy-medieval.md). Cada sección es
-       un título del lomo; la actual es una pestaña de la hoja, con el signo ◆ en navegacion-nodo.
-       En layout-privado, en el celular, pasa a la barra de abajo: los íconos sobre un camino de
-       puntos, con el nombre corto, y la actual sube como un alfiler de latón. Los signos los dibuja
-       app.css. Patrón: Material Navigation rail y Navigation bar. opciones: List<OpcionNavegacion>. */-->
+<!--/* Navegación por rol: los cajones de la cajonera del cartógrafo (bitácora, iteración 2). Cada
+       sección es un cajón con su portaetiquetas de latón y su tirador; el de la sección actual está
+       abierto y lleva el signo ◆ (ahora). En layout-privado, en la computadora, la cajonera va
+       arriba de la mesa, con los nombres completos; en el celular, en el borde de abajo, con el
+       ícono y el nombre corto, y se desplaza a lo ancho si las secciones no entran. Los cajones
+       los dibuja mesa.css. Patrón: Material Navigation bar. opciones: List<OpcionNavegacion>. */-->
 <nav th:fragment="navegacion(opciones)" class="navegacion" aria-label="Secciones">
   <ul>
     <li th:each="opcion : ${opciones}">
       <a href="#" th:href="@{${opcion.ruta}}"
-         th:aria-current="${opcion.actual} ? 'page' : null"><span class="navegacion-nodo"
-            aria-hidden="true"></span><svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono(${opcion.icono}, 22)}"></svg><span
+         th:aria-current="${opcion.actual} ? 'page' : null"><span class="navegacion-etiqueta"><svg
+            th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono(${opcion.icono}, 22)}"></svg><span
             class="navegacion-texto" th:text="${opcion.texto}">Sección</span><span
-            class="navegacion-corto" aria-hidden="true" th:text="${opcion.textoCorto}">Sección</span></a>
+            class="navegacion-corto" aria-hidden="true" th:text="${opcion.textoCorto}">Sección</span></span></a>
     </li>
   </ul>
 </nav>
