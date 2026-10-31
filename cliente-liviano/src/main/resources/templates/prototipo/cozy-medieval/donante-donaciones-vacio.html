@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--/* Prototipo, grupo "viaje": Mis donaciones sin ninguna donación. Sin filtro (no hay qué
+       filtrar): la tierra sin explorar, con la rosa junto a "Hacer mi primera donación", que lleva
+       a las entidades para elegir a quién ayudar. Debajo, la pista de primer uso: las etapas por
+       las que va a pasar cada donación, con los mismos signos de la lista. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Mis donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/viaje.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/viaje.css}">
+  <div class="viaje-pagina viaje-vacio">
+    <header class="viaje-cabecera">
+      <h1>Mis donaciones</h1>
+      <p class="viaje-bajada">Todavía no hiciste ninguna donación.</p>
+    </header>
+
+    <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+             'Tu mapa todavía está en blanco',
+             'Cuando dones, cada donación aparece acá, en la etapa de su viaje: desde el depósito hasta el pueblo que la espera.',
+             'Hacer mi primera donación', '/prototipo/donante-entidades')}"></section>
+
+    <section class="viaje-etapas" aria-labelledby="etapas-titulo">
+      <h2 id="etapas-titulo">Así viaja una donación</h2>
+      <ol role="list">
+        <li><span class="insignia insignia--pendiente"><span>Por salir</span></span>
+          <small>En el depósito, hasta tener destino y camión.</small></li>
+        <li><span class="insignia insignia--en-camino"><span>En camino</span></span>
+          <small>El camión la lleva a la entidad.</small></li>
+        <li><span class="insignia insignia--entregada"><span>Llegó a destino</span></span>
+          <small>La entidad confirma que la recibió y suma una foto.</small></li>
+      </ol>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<!--/* Prototipo, grupo "viaje": Mis donaciones (RF-05), por etapa del viaje. Arriba, el filtro por
+       estado y categoría (formulario get: filtra de verdad, sin JavaScript). Debajo, el fichero:
+       un cajón de fichas con una tarjeta guía por etapa (○ por salir, ┄▸ en camino, ┄╳┄ con el
+       camino cortado y ◉ llegaron a destino), con su signo y su cantidad. Las pestañas de las
+       guías avanzan hacia la derecha con el viaje. Cada donación es una ficha de catálogo: el
+       número al margen y sus datos en renglones; el título lleva a su detalle. Las guías son
+       details: las entregadas, plegadas (abiertas si se filtró por ellas). Si el filtro no deja
+       nada, la tierra sin explorar con "Sacar los filtros". Datos: viaje-datos.html. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Mis donaciones - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/viaje.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/viaje.css}">
+  <th:block th:replace="~{prototipo/cozy-medieval/viaje-datos :: viaje(~{::pantalla})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla"
+    th:with="filtroEstado=${param.estado == null ? '' : param.estado[0]},
+             filtroCategoria=${param.categoria == null ? '' : param.categoria[0]},
+             filtrado=${filtroEstado != '' or filtroCategoria != ''},
+             visibles=${donaciones.?[(#root.filtroEstado == '' or estado.tono == #root.filtroEstado)
+                       and (#root.filtroCategoria == '' or categoria == 'cat-' + #root.filtroCategoria)]},
+             grupos=${ {
+               {estado: pendiente, titulo: 'Por salir', bajada: 'En el depósito, esperando destino o camión.', plegado: false},
+               {estado: enCamino, titulo: 'En camino', bajada: 'Ya salieron hacia su pueblo.', plegado: false},
+               {estado: conProblema, titulo: 'Con el camino cortado', bajada: 'No pudieron llegar. Ya tienen una nueva salida.', plegado: false},
+               {estado: entregada, titulo: 'Llegaron a destino', bajada: 'La entidad confirmó que las recibió.', plegado: true}
+             } }">
+  <div class="viaje-pagina">
+    <!--/* La cabecera: el título y el filtro, en una hoja de consulta. El filtro son dos renglones
+           del registro y el botón; los valores son los de la URL. */-->
+    <header class="viaje-cabecera">
+      <h1>Mis donaciones</h1>
+      <p class="viaje-bajada" th:text="${#lists.size(donaciones) + ' donaciones, cada una en la etapa de su viaje.'}">7
+        donaciones, cada una en la etapa de su viaje.</p>
+    <form class="viaje-filtro" action="/prototipo/donante-donaciones"
+          th:action="@{/prototipo/donante-donaciones}" method="get" aria-label="Filtrar donaciones">
+      <div class="viaje-filtro-campo">
+        <label for="filtro-estado">Estado</label>
+        <select id="filtro-estado" name="estado">
+          <option value="">Todos</option>
+          <option th:each="estado : ${estados}" th:value="${estado.tono}" th:text="${estado.texto}"
+                  th:selected="${estado.tono == filtroEstado}">Pendiente</option>
+        </select>
+      </div>
+      <div class="viaje-filtro-campo">
+        <label for="filtro-categoria">Categoría</label>
+        <select id="filtro-categoria" name="categoria">
+          <option value="">Todas</option>
+          <option value="alimentos" th:selected="${filtroCategoria == 'alimentos'}">Alimentos</option>
+          <option value="vestimenta" th:selected="${filtroCategoria == 'vestimenta'}">Vestimenta</option>
+          <option value="escolares" th:selected="${filtroCategoria == 'escolares'}">Útiles escolares</option>
+        </select>
+      </div>
+      <button type="submit" class="secondary">Filtrar</button>
+      <a th:if="${filtrado}" class="enlace-fuerte" href="/prototipo/donante-donaciones"
+         th:href="@{/prototipo/donante-donaciones}">Sacar los filtros</a>
+    </form>
+    </header>
+
+    <!--/* El fichero: el cajón abierto, visto desde arriba. Una guía por etapa con donaciones. */-->
+    <div class="fichero" th:unless="${#lists.isEmpty(visibles)}">
+      <th:block th:each="grupo, vuelta : ${grupos}"
+                th:with="delGrupo=${visibles.?[estado == #root.grupo.estado]}">
+        <details th:unless="${#lists.isEmpty(delGrupo)}" class="guia"
+                 th:classappend="|guia--${vuelta.index}|"
+                 th:open="${!grupo.plegado or filtrado}">
+          <summary>
+            <h2 class="insignia" th:classappend="|insignia--${grupo.estado.tono}|"><span
+                th:text="${grupo.titulo}">Por salir</span></h2>
+            <span class="guia-cuenta"
+                  th:text="${#lists.size(delGrupo) == 1 ? '1 donación' : #lists.size(delGrupo) + ' donaciones'}">3
+              donaciones</span>
+          </summary>
+          <div class="guia-cuerpo">
+          <p class="guia-bajada" th:text="${grupo.bajada}">En el depósito.</p>
+          <ol class="fichas" role="list">
+            <li class="ficha" th:each="d : ${delGrupo}">
+              <h3 class="ficha-titulo"><a href="/prototipo/donante-donaciones-detalle"
+                  th:href="@{/prototipo/donante-donaciones-detalle(donacion=${d.clave})}"
+                  th:text="${d.titulo}">Lentejas secas</a></h3>
+              <p class="ficha-numero"><span class="solo-lectores">Donación número</span><span
+                 aria-hidden="true">N.º</span> <span th:text="${d.numero}">5</span></p>
+              <p class="ficha-cantidad" th:text="${d.cantidad}">15 kg</p>
+              <dl class="ficha-datos">
+                <div>
+                  <dt>Para</dt>
+                  <dd th:text="${d.destino ?: 'Todavía sin destino'}">Comedor Barrio Ejemplo</dd>
+                </div>
+                <div>
+                  <dt>Donada</dt>
+                  <dd th:text="${d.donada}">12 de octubre de 2026</dd>
+                </div>
+              </dl>
+              <p class="ficha-estado"><span
+                 th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${d.estado})}">Estado</span><span
+                 class="ficha-nota" th:text="${d.nota}">Salió hoy a las 14:30</span></p>
+            </li>
+          </ol>
+          </div>
+        </details>
+      </th:block>
+    </div>
+
+    <th:block th:if="${#lists.isEmpty(visibles)}">
+      <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+               'No hay donaciones con esos filtros', 'Probá con otro estado o con otra categoría.',
+               'Sacar los filtros', '/prototipo/donante-donaciones')}"></section>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

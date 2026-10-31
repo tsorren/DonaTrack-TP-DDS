@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!--/* Prototipo, grupo "viaje": Seguimiento (RF-09). Su audacia es el mapa grabado: desde el
+       depósito salen los caminos de las entregas en curso, cada una con su número, su signo y su
+       texto: ○ por salir (todo en lápiz), ┄▸ en camino (en tinta hasta el camión, en su posición
+       aproximada) y ┄╳┄ con el camino cortado (la cruz de lacre donde se cortó). Cada pueblo con
+       su nombre. Al lado, la hoja de ruta dice lo mismo en una lista (RF-CL-06), con la última
+       actualización (RF-CL-07), y cada entrega lleva a su detalle. El dibujo es de estas tres
+       entregas, en el orden de la lista (viaje-datos.html: de la más nueva a la más vieja); las que
+       todavía no tienen destino se nombran debajo. Sin entregas en curso: donante-seguimiento-vacio. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout-privado :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Seguimiento - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/viaje.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/viaje.css}">
+  <th:block th:replace="~{prototipo/cozy-medieval/viaje-datos :: viaje(~{::pantalla})}"></th:block>
+</th:block>
+
+<th:block th:fragment="pantalla"
+    th:with="enCurso=${donaciones.?[destino != null and estado.tono != 'entregada']},
+             sinDestino=${donaciones.?[destino == null].![titulo]}">
+  <div class="viaje-pagina viaje-seguimiento">
+    <!--/* El mapa grabado, con la cartela: qué se ve y cuándo se actualizó. */-->
+    <section class="mesa-mapa seguimiento-hoja" aria-labelledby="seguimiento-titulo">
+      <div class="mesa-mapa-cartela">
+        <h1 id="seguimiento-titulo">Los caminos de tus donaciones</h1>
+        <p th:text="|${#lists.size(enCurso)} entregas en curso. Posiciones aproximadas, actualizadas hoy a las 16:25.|">3
+          entregas en curso. Posiciones aproximadas, actualizadas hoy a las 16:25.</p>
+      </div>
+      <div class="viaje-mapa seguimiento-mapa">
+        <svg viewBox="0 0 640 400" aria-hidden="true" focusable="false">
+          <g class="viaje-rio">
+            <path d="M226 0C212 50 242 92 226 140C210 188 206 232 230 280C246 312 222 360 232 400"/>
+            <path d="M226 0C212 50 242 92 226 140C210 188 206 232 230 280C246 312 222 360 232 400"/>
+          </g>
+          <!--/* El depósito, de donde salen todos los caminos. */-->
+          <path class="viaje-lugar" transform="translate(95 205)"
+                d="M-58 -14h30v22h-30zM-58 -14l15 -11 15 11M-49 8v-10h12v10M-43 -25v-6"/>
+          <text class="seguimiento-rotulo seguimiento-rotulo--inicio" x="18" y="248">Depósito</text>
+
+          <!--/* 1, Leche en polvo: por salir, todo el camino en lápiz hasta Merendero Ejemplo Sur. */-->
+          <path class="viaje-tramo--lapiz" d="M100 205C150 222 170 300 260 318C350 334 460 325 540 325"/>
+          <!--/* 2, Lentejas secas: en camino, en tinta hasta el camión y en lápiz lo que falta. */-->
+          <path class="viaje-tramo--tinta" d="M100 205C170 205 190 128 260 124C300 122 320 121 350 120"/>
+          <path class="viaje-tramo--lapiz" d="M350 120C420 112 480 100 548 100"/>
+          <!--/* 3, Útiles escolares: en tinta hasta el río, donde se cortó; después, en lápiz. */-->
+          <path class="viaje-tramo--tinta" d="M100 205C150 210 180 216 210 218"/>
+          <path class="viaje-tramo--lapiz" d="M244 219C350 220 450 218 560 215"/>
+
+          <!--/* Los pueblos de destino: su parada ○, sus casas y su nombre. */-->
+          <g class="seguimiento-pueblo" transform="translate(548 100)">
+            <circle class="viaje-signo" r="9"/>
+            <path class="viaje-lugar" d="M24 -30h20v14h-20zM24 -23h20M30 -30l-6 7M40 -6h16v12h-16zM40 0h16M45 -6l-5 6M20 4h14v11h-14zM20 9.5h14"/>
+          </g>
+          <text class="seguimiento-rotulo seguimiento-rotulo--fin" x="606" y="58">Comedor Barrio Ejemplo</text>
+          <g class="seguimiento-pueblo" transform="translate(560 215)">
+            <circle class="viaje-signo" r="9"/>
+            <path class="viaje-lugar" d="M24 -30h20v14h-20zM24 -23h20M30 -30l-6 7M40 -6h16v12h-16zM40 0h16M45 -6l-5 6M20 4h14v11h-14zM20 9.5h14"/>
+          </g>
+          <text class="seguimiento-rotulo seguimiento-rotulo--fin" x="618" y="172">Escuela Ejemplo 12</text>
+          <g class="seguimiento-pueblo" transform="translate(540 325)">
+            <circle class="viaje-signo" r="9"/>
+            <path class="viaje-lugar" d="M24 -30h20v14h-20zM24 -23h20M30 -30l-6 7M40 -6h16v12h-16zM40 0h16M45 -6l-5 6M20 4h14v11h-14zM20 9.5h14"/>
+          </g>
+          <text class="seguimiento-rotulo seguimiento-rotulo--fin" x="598" y="378">Merendero Ejemplo Sur</text>
+
+          <!--/* Los signos de cada entrega, con su número y su texto. */-->
+          <circle class="seguimiento-falta" cx="330" cy="327" r="9"/>
+          <text class="seguimiento-rotulo seguimiento-rotulo--fuerte" x="330" y="302">1 Por salir</text>
+
+          <g class="seguimiento-camion" transform="translate(350 120)">
+            <circle r="19"/>
+            <path transform="translate(-12 -12)" d="M3 6h11v10H3zM14 10h4l3 3v3h-7z"/>
+            <circle cx="-5" cy="6" r="2"/>
+            <circle cx="5" cy="6" r="2"/>
+          </g>
+          <text class="seguimiento-rotulo seguimiento-rotulo--fuerte" x="350" y="88">2 En camino</text>
+
+          <path class="seguimiento-corte" d="M216 207l22 22M238 207l-22 22"/>
+          <text class="seguimiento-rotulo seguimiento-rotulo--fuerte seguimiento-rotulo--problema"
+                x="246" y="264">3 Con problema</text>
+        </svg>
+      </div>
+    </section>
+
+    <!--/* La hoja de ruta: la misma información que el mapa, en una lista, con el mismo número. */-->
+    <section class="hoja-ruta" aria-labelledby="ruta-titulo">
+      <h2 id="ruta-titulo">La hoja de ruta</h2>
+      <ol class="hoja-ruta-lista" role="list">
+        <li th:each="d, vuelta : ${enCurso}" class="hoja-ruta-entrega">
+          <span class="hoja-ruta-numero" aria-hidden="true" th:text="${vuelta.count}">1</span>
+          <h3><a href="/prototipo/donante-donaciones-detalle"
+                 th:href="@{/prototipo/donante-donaciones-detalle(donacion=${d.clave})}"
+                 th:text="${d.titulo}">Lentejas secas</a></h3>
+          <p class="hoja-ruta-destino" th:text="|${d.cantidad} para ${d.destino}|">15 kg para Comedor Barrio
+            Ejemplo</p>
+          <p class="hoja-ruta-estado"><span
+             th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${d.estado})}">Estado</span><span
+             th:text="${d.nota}">Salió hoy a las 14:30</span></p>
+          <p class="hoja-ruta-actualizado" th:text="${d['seguimiento']}">Posición aproximada.</p>
+        </li>
+      </ol>
+      <p class="hoja-ruta-pie" th:unless="${#lists.isEmpty(sinDestino)}"
+         th:text="|${#strings.listJoin(sinDestino, ' y ')} todavía esperan destino: aparecen en el mapa cuando se asignen. Las que ya llegaron están en Mis donaciones.|">Arroz
+        largo fino y Zapatillas todavía esperan destino.</p>
+      <a class="enlace-fuerte" href="/prototipo/donante-donaciones"
+         th:href="@{/prototipo/donante-donaciones}">Ver Mis donaciones</a>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>
