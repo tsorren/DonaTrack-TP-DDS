@@ -1,0 +1,90 @@
+# Video de presentación de Encastre (unos 3 min 20 s). Uso: scripts/visual/README.md, "Grabar un recorrido en video"
+pantalla 1280 720
+ir /prototipo/encastre/publico-portada
+cartel 6 | Encastre | La tercera identidad de DonaTrack: un dato, un bloque; una cosa a la vez. Recorrido por rol en el prototipo navegable.
+cartel 5 | Público · celular o escritorio, llega por un enlace | La portada se arma sola: cada rol es una pieza y el color dice dónde está la donación.
+esperar 3
+bajar 700 2.5
+esperar 2
+bajar 900 2.5
+esperar 2
+subir
+clic Registrarme
+esperar 3
+ir /prototipo/encastre/publico-mapa
+esperar 4
+ir /prototipo/encastre/publico-ingresar-error
+esperar 4
+
+cartel 5 | Donante · ratos libres | Lo que te toca ahora es una pieza naranja con su hueco: se ve sin leer. El resto, en bloques de un dato.
+ir /prototipo/encastre/donante-inicio
+esperar 4
+bajar 600 2.5
+esperar 3
+bajar 800 2.5
+esperar 2
+subir
+clic Ver seguimiento
+esperar 4
+bajar 600 2
+esperar 2
+clic Mis donaciones
+esperar 3
+ir /prototipo/encastre/donante-donaciones-detalle
+esperar 4
+ir /prototipo/encastre/donante-incentivos
+cartel 4 | Juego bien presente | Misiones con avance, insignias y rango: Colaborador, Sostenedor, Transformador.
+esperar 3
+bajar 700 2.5
+esperar 2
+
+cartel 5 | Entidad · en la entrega, con una mano | La entrega viaja como una pieza y encastra en el tablero al confirmar la recepción.
+ir /prototipo/encastre/entidad-inicio
+esperar 4
+bajar 600 2
+esperar 2
+ir /prototipo/encastre/entidad-seguimiento
+esperar 4
+ir /prototipo/encastre/entidad-seguimiento-confirmar-error
+esperar 4
+ir /prototipo/encastre/entidad-seguimiento-confirmar
+esperar 2
+clic Confirmar recepción
+esperar 5
+ir /prototipo/encastre/entidad-necesidades
+esperar 4
+
+cartel 5 | Administración · escritorio, muchas horas | El turno avanza de a una tarea: Resolver o Después. La cola espera al costado.
+ir /prototipo/encastre/admin-inicio
+esperar 5
+clic Resolver
+esperar 4
+ir /prototipo/encastre/admin-asignaciones
+esperar 4
+ir /prototipo/encastre/admin-camiones
+esperar 4
+ir /prototipo/encastre/admin-ranking
+esperar 4
+ir /prototipo/encastre/admin-inicio-al-dia
+esperar 4
+
+pantalla 390 844
+ir /prototipo/encastre/donante-inicio
+cartel 5 | En el celular | App de bolsillo: el dock abajo, la pieza de ahora arriba, un bloque por dato.
+esperar 3
+bajar 700 2.5
+esperar 2
+bajar 700 2.5
+esperar 2
+ir /prototipo/encastre/entidad-seguimiento-confirmar
+esperar 3
+bajar 600 2
+esperar 2
+ir /prototipo/encastre/publico-portada
+esperar 3
+bajar 900 3
+esperar 2
+
+pantalla 1280 720
+ir /prototipo/encastre/publico-portada
+cartel 7 | Encastre · cómo se ve el resto | Glassmorphism y Cozy / Medieval no cambian. Todo está en /prototipo/encastre/… con el perfil maqueta, y el catálogo en /estilos?alternativa=encastre.

@@ -54,3 +54,21 @@ sí.
 ```bash
 java scripts/visual/Imagenes.java comparar <antes> cliente-liviano/target/capturas "{estilos,estilos-armazon}-[0-9]*.png" <ruido>
 ```
+
+## Grabar un recorrido en video
+
+`Recorrido.java` graba el sitio según un guion (Playwright, el mismo que usa la verificación
+visual) y arma un MP4 de 1280×720, sin sonido, con ffmpeg. Cada orden del guion va en una línea:
+`pantalla <ancho> <alto>`, `ir <ruta>`, `esperar <s>`, `cartel <s> | <título> | <texto>`,
+`bajar <px> <s>`, `subir`, `clic <nombre del enlace o botón>` y `foco <selector CSS>`. Los tramos
+del celular quedan centrados sobre fondo oscuro. El video queda fuera del repo.
+
+Con el sitio levantado en el perfil `maqueta` y ffmpeg en el `PATH`:
+
+```bash
+M=~/.m2/repository; CP="$M/com/microsoft/playwright/playwright/1.63.0/playwright-1.63.0.jar;$M/com/microsoft/playwright/driver/1.63.0/driver-1.63.0.jar;$M/com/microsoft/playwright/driver-bundle/1.63.0/driver-bundle-1.63.0.jar;$M/com/google/code/gson/gson/2.14.0/gson-2.14.0.jar"
+java -cp "$CP" scripts/visual/Recorrido.java scripts/visual/guion-encastre.txt encastre.mp4 http://localhost:8090
+```
+
+En Linux o macOS, el separador del classpath es `:` en lugar de `;`. `guion-encastre.txt` es la
+presentación de Encastre para el equipo: los cuatro roles y un tramo en el celular.
