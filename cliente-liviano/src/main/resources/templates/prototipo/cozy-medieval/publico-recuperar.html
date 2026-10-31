@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): recuperar la contraseña (el desvío de
+       "¿Olvidaste tu contraseña?"). Una sola hoja de la libreta. El formulario (get) vuelve a esta
+       pantalla con ?enviado=si: entonces muestra el aviso, sin decir si el correo existe. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Recuperar la contraseña - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div class="publico" th:with="enviado=${param.enviado != null}">
+    <div class="libreta libreta--una">
+      <section class="libreta-hoja" aria-labelledby="recuperar-titulo">
+        <h1 id="recuperar-titulo">Recuperá tu contraseña</h1>
+        <th:block th:unless="${enviado}">
+          <p class="bajada">Escribí el correo de tu cuenta y te mandamos un enlace para crear una
+            contraseña nueva.</p>
+          <form action="/prototipo/publico-recuperar" method="get">
+            <input type="hidden" name="enviado" value="si">
+            <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('correo', 'Correo electrónico', 'email', null, null, false)}"></div>
+            <button type="submit">Enviarme el enlace</button>
+          </form>
+        </th:block>
+        <th:block th:if="${enviado}">
+          <div class="recuperar-enviado" role="status">
+            <div th:replace="~{alternativas/cozy-medieval/fragmentos/aviso :: aviso('Si el correo está registrado, te mandamos un enlace. Revisá tu bandeja de entrada: vence en una hora.', 'exito')}"></div>
+          </div>
+        </th:block>
+        <p class="libreta-separador">¿Te acordaste?</p>
+        <a href="/prototipo/publico-ingresar" role="button" class="fantasma">Volver a ingresar</a>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): ingresar. La libreta de viaje,
+       abierta sobre la mesa: a la izquierda, el paisaje de la encrucijada (adorno, solo con la
+       libreta abierta); a la derecha, el formulario. Es un prototipo: el envío lleva al inicio de la
+       persona donante de ejemplo con method="get". El fragmento libreta(error) lo reusa
+       publico-ingresar-error, con el banner de error. Estilos: prototipo/publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Ingresar - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div class="publico" th:fragment="libreta(error)">
+    <div class="libreta">
+      <div class="libreta-hoja libreta-hoja--adorno" aria-hidden="true">
+        <div class="grabado-paisaje"></div>
+        <blockquote>Cada donación deja un camino en el mapa.</blockquote>
+        <p class="nota-chica">Tu libreta guarda los tuyos.</p>
+      </div>
+      <section class="libreta-hoja" aria-labelledby="ingresar-titulo">
+        <h1 id="ingresar-titulo">Retomá tu viaje</h1>
+        <p class="bajada">Ingresá para seguir tus donaciones o las entregas de tu entidad.</p>
+        <th:block th:if="${error}">
+          <section th:replace="~{alternativas/cozy-medieval/fragmentos/banner :: banner('No pudimos ingresar',
+                     'El correo o la contraseña no coinciden. Revisalos y probá de nuevo, o pedí una contraseña nueva.',
+                     'error', null)}"></section>
+        </th:block>
+        <form action="/prototipo/donante-inicio" method="get">
+          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('correo', 'Correo electrónico', 'email', null, null, false)}"></div>
+          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('contrasena', 'Contraseña', 'password', null, null, false)}"></div>
+          <div class="libreta-fila">
+            <label class="casilla"><input type="checkbox" name="recordar"><span>Recordarme en este
+                dispositivo</span></label>
+            <a href="/prototipo/publico-recuperar" class="enlace-fuerte">¿Olvidaste tu contraseña?</a>
+          </div>
+          <button type="submit">Ingresar</button>
+        </form>
+        <p class="nota-prototipo">Es un prototipo: no se guarda nada. Ingresar te lleva al inicio de
+          una persona donante de ejemplo.</p>
+        <p class="libreta-separador">¿Primera vez?</p>
+        <a href="/prototipo/publico-registro" role="button" class="fantasma">Crear una cuenta</a>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

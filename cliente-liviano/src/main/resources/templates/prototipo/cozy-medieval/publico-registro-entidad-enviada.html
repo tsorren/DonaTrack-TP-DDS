@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): la solicitud de una entidad,
+       enviada (estado de éxito de publico-registro-entidad). La misma leyenda del recorrido, con el
+       alfiler un paso más adelante: el equipo la revisa. Salidas: la portada y el mapa. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Solicitud enviada - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div class="publico">
+    <div class="libreta libreta--una">
+      <section class="libreta-hoja" aria-labelledby="enviada-titulo">
+        <h1 id="enviada-titulo">Tu solicitud ya está en camino</h1>
+        <p class="bajada">Recibimos los datos de tu entidad. Te escribimos al correo de contacto
+          cuando el equipo la apruebe.</p>
+        <ol class="recorrido" role="list" aria-label="Cómo sigue la solicitud">
+          <li class="recorrido-paso recorrido-paso--hecho">
+            <span class="recorrido-nodo" aria-hidden="true">1</span>
+            <span class="recorrido-texto"><span>Enviaste la solicitud</span><small>31 de octubre de
+                2026</small></span>
+          </li>
+          <li class="recorrido-paso recorrido-paso--actual" aria-current="step">
+            <span class="recorrido-nodo" aria-hidden="true">2</span>
+            <span class="recorrido-texto"><span>El equipo la revisa</span><small>Hasta el 3 de
+                noviembre de 2026</small><em class="recorrido-aca">Estás acá</em></span>
+          </li>
+          <li class="recorrido-paso recorrido-paso--pendiente">
+            <span class="recorrido-nodo" aria-hidden="true">3</span>
+            <span class="recorrido-texto"><span>Tu pueblo aparece en el mapa</span><small>Te
+                avisamos por correo</small></span>
+          </li>
+        </ol>
+        <p class="libreta-separador">Mientras tanto</p>
+        <a href="/prototipo/publico-mapa" role="button" class="fantasma">Ver el mapa de entregadas</a>
+        <p class="libreta-desvio"><a href="/prototipo/publico-portada">Volver a la portada</a></p>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

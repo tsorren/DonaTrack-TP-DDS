@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): el mapa de entregadas. Su audacia es
+       el mapa grabado (estructura-cozy-medieval.md): la tierra a pluma (img/cozy-medieval/
+       prototipo-publico-tierra.svg), cada entidad un pueblo ⌂ y cada entrega su camino de tinta
+       desde el depósito; al lado, la misma información en una lista (RF-CL-06), con la fecha de
+       actualización (RF-CL-07). El mapa y la lista salen de los mismos datos de ejemplo, escritos
+       acá (pueblos). El filtro por categoría es un formulario get: ?categoria= recarga la página
+       sin JavaScript; una categoría sin entregas muestra la tierra sin explorar (estado vacío).
+       Los caminos se curvan más cuantas más entregas llegan al mismo pueblo. Estilos: publico.css. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Mapa de entregadas - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div class="publico"
+       th:with="crudo=${param.categoria != null ? param.categoria[0] : 'todas'},
+                filtro=${ {'alimentos', 'vestimenta', 'escolares', 'higiene'}.contains(crudo) ? crudo : 'todas'},
+                etiquetas=${ {todas: 'Todas', alimentos: 'Alimentos', vestimenta: 'Ropa y abrigo',
+                              escolares: 'Útiles escolares', higiene: 'Higiene'} },
+                pueblos=${ {
+                  {nombre: 'Comedor Barrio Ejemplo', x: 172, y: 142, lado: 'end', entregas: {
+                    {que: 'Lentejas secas, 15 kg', cat: 'alimentos', fecha: '16 de octubre de 2026'},
+                    {que: 'Arroz, 20 kg', cat: 'alimentos', fecha: '9 de octubre de 2026'},
+                    {que: 'Ropa de abrigo, 12 prendas', cat: 'vestimenta', fecha: '3 de octubre de 2026'} }},
+                  {nombre: 'Merendero Ejemplo Sur', x: 304, y: 472, lado: 'start', entregas: {
+                    {que: 'Leche en polvo, 10 kg', cat: 'alimentos', fecha: '21 de octubre de 2026'},
+                    {que: 'Ropa de abrigo, 8 camperas', cat: 'vestimenta', fecha: '17 de octubre de 2026'} }},
+                  {nombre: 'Escuela Ejemplo 12', x: 506, y: 150, lado: 'end', entregas: {
+                    {que: 'Mochilas, 12 unidades', cat: 'escolares', fecha: '24 de octubre de 2026'},
+                    {que: 'Útiles escolares, 30 cuadernos', cat: 'escolares', fecha: '14 de octubre de 2026'} }},
+                  {nombre: 'Hogar Ejemplo Norte', x: 330, y: 70, lado: 'start', entregas: {
+                    {que: 'Fideos secos, 25 kg', cat: 'alimentos', fecha: '22 de octubre de 2026'},
+                    {que: 'Frazadas, 10 unidades', cat: 'vestimenta', fecha: '11 de octubre de 2026'} }},
+                  {nombre: 'Biblioteca Ejemplo Oeste', x: 84, y: 392, lado: 'start', entregas: {
+                    {que: 'Útiles escolares, 15 cartucheras', cat: 'escolares', fecha: '28 de octubre de 2026'} }}
+                } },
+                cuentas=${pueblos.![#vars.filtro == 'todas' ? entregas.size() : entregas.?[cat == #vars.filtro].size()]},
+                total=${#aggregates.sum(cuentas)},
+                conEntregas=${cuentas.?[#this > 0].size()}">
+
+    <header class="mapa-cabecera papel">
+      <div>
+        <h1>Adónde llegaron las donaciones</h1>
+        <p class="bajada">Cada pueblo es una entidad; cada camino de tinta, una entrega que la
+          entidad confirmó en octubre de 2026.</p>
+      </div>
+      <p class="nota-chica">Actualizado el 31 de octubre de 2026 a las 9:00.</p>
+      <form class="filtro" action="/prototipo/publico-mapa" method="get">
+        <fieldset>
+          <legend>Categoría</legend>
+          <div class="filtro-opciones">
+            <label class="filtro-opcion"
+                   th:each="valor : ${ {'todas', 'alimentos', 'vestimenta', 'escolares', 'higiene'} }">
+              <input type="radio" name="categoria" value="todas" th:value="${valor}"
+                     th:checked="${filtro == valor}">
+              <span th:text="${etiquetas.get(valor)}">Todas</span>
+            </label>
+          </div>
+        </fieldset>
+        <button type="submit" class="secondary">Filtrar el mapa</button>
+      </form>
+    </header>
+
+    <div class="mapa-cuerpo">
+      <!--/* El mapa: el marco de meridianos y los esquineros del mapa del viaje (app.css), con la
+             tierra grabada; encima, el svg de los caminos, el depósito y los pueblos (aria-hidden:
+             la lista de al lado dice lo mismo). */-->
+      <section class="mapa-hoja mesa-mapa" aria-labelledby="mapa-titulo">
+        <div class="mesa-mapa-cartela">
+          <h2 id="mapa-titulo">El mapa grabado</h2>
+          <p th:text="${total == 0} ? 'Sin caminos en esta categoría' : |${total} ${total == 1 ? 'entrega' : 'entregas'} en ${conEntregas} ${conEntregas == 1 ? 'entidad' : 'entidades'}|">10 entregas en 5 entidades</p>
+        </div>
+        <div class="viaje-mapa mapa-grabado">
+          <svg viewBox="0 0 800 560" aria-hidden="true" focusable="false">
+            <g class="mapa-caminos">
+              <th:block th:each="p : ${pueblos}">
+                <path th:each="e, vuelta : ${p.entregas}"
+                      th:if="${filtro == 'todas' or e.cat == filtro}"
+                      th:with="c=${0.14 + 0.13 * vuelta.index}"
+                      th:attr="d=|M360 290Q${180 + p.x / 2.0 - c * (p.y - 290)} ${145 + p.y / 2.0 + c * (p.x - 360)} ${p.x} ${p.y}|"
+                      d="M360 290Q260 210 172 142"/>
+              </th:block>
+            </g>
+            <!--/* El depósito: el almacén con su bandera, en el centro de la ciudad. */-->
+            <g class="mapa-deposito" transform="translate(360 290)">
+              <path d="M-14 10V-6L0 -15 14 -6V10Z"/>
+              <path d="M-5 10V2H5V10"/>
+              <path d="M0 -15V-28"/>
+              <path class="mapa-bandera" d="M0 -28 11 -24 0 -20Z"/>
+            </g>
+            <text class="mapa-rotulo" x="360" y="324" text-anchor="middle">Depósito</text>
+            <g th:each="p, vuelta : ${pueblos}" class="mapa-pueblo"
+               th:classappend="${cuentas[vuelta.index] == 0} ? 'mapa-pueblo--sin'"
+               th:attr="transform=|translate(${p.x} ${p.y})|" transform="translate(172 142)">
+              <path class="mapa-casa" d="M-11 -9V-22L0 -31 11 -22V-9Z"/>
+              <th:block th:if="${cuentas[vuelta.index] > 0}">
+                <circle class="mapa-sello" r="8"/>
+                <circle class="mapa-sello-centro" r="3"/>
+              </th:block>
+              <text class="mapa-rotulo" th:attr="text-anchor=${p.lado},x=${p.lado == 'start' ? 16 : -16}"
+                    x="16" y="6" th:text="${p.nombre}">Pueblo</text>
+            </g>
+          </svg>
+        </div>
+        <ul class="mapa-leyenda" role="list" aria-label="Leyenda del mapa">
+          <li class="signo signo--pueblo">Una entidad</li>
+          <li class="signo signo--tinta">El camino de una entrega</li>
+          <li class="signo signo--entregada">Entregada: la entidad confirmó que llegó</li>
+        </ul>
+      </section>
+
+      <section class="mapa-lista papel" aria-labelledby="lista-titulo">
+        <h2 id="lista-titulo">Los pueblos del mapa</h2>
+        <p class="bajada" th:if="${total > 0}"
+           th:text="|Lo mismo que muestra el mapa, en lista: ${total} ${total == 1 ? 'entrega' : 'entregas'}${filtro == 'todas' ? '' : ' de ' + #strings.toLowerCase(etiquetas.get(filtro))}.|">Lo
+          mismo que muestra el mapa, en lista.</p>
+        <th:block th:if="${total == 0}">
+          <section th:replace="~{alternativas/cozy-medieval/fragmentos/estado-vacio :: estado-vacio(
+                     |Todavía no hay entregas de ${#strings.toLowerCase(etiquetas.get(filtro))}|,
+                     'Cuando una entidad confirme una entrega de esta categoría, su camino aparece en el mapa.',
+                     'Ver todas las categorías', '/prototipo/publico-mapa')}"></section>
+        </th:block>
+        <section th:each="p, vuelta : ${pueblos}" th:if="${cuentas[vuelta.index] > 0}" class="pueblo"
+                 th:with="suyas=${filtro == 'todas' ? p.entregas : p.entregas.?[cat == #vars.filtro]}"
+                 th:aria-labelledby="|pueblo-${vuelta.count}|">
+          <h3 class="signo signo--pueblo" th:id="|pueblo-${vuelta.count}|" th:text="${p.nombre}">Comedor
+            Barrio Ejemplo</h3>
+          <p class="pueblo-cuenta signo signo--entregada"
+             th:text="${cuentas[vuelta.index] == 1} ? '1 entrega' : |${cuentas[vuelta.index]} entregas|">3
+            entregas</p>
+          <ul role="list">
+            <li th:each="e : ${suyas}">
+              <svg th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono(|cat-${e.cat}|, 20)}"></svg>
+              <span><span th:text="${e.que}">Lentejas secas, 15 kg</span>
+                <small th:text="|${etiquetas.get(e.cat)} · ${e.fecha}|">Alimentos · 16 de octubre de 2026</small></span>
+            </li>
+          </ul>
+        </section>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

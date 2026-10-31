@@ -1,0 +1,968 @@
+/*
+ * Prototipo del flujo completo de Cozy (iteración 3), grupo público: la portada (la encrucijada),
+ * el mapa de entregadas (el mapa grabado), ingresar y registrarse (la libreta de viaje). Se carga
+ * desde cada plantilla, después de app.css. Solo tokens de uso de tokens.css, mobile first y los
+ * quiebres de tokens.css; las consultas de contenedor miden en rem fijos, como en app.css.
+ *
+ * Los grabados (el paisaje y la tierra del mapa) son dibujos propios de un solo color, generados
+ * con semilla fija: van como máscara y los pinta un token.
+ */
+
+/* Sin la hoja del layout público: los objetos van sueltos sobre la mesa, como en las pantallas
+   privadas (pisa el pergamino de body.mesa > #contenido de app.css). Ningún texto queda sobre la
+   madera: cada uno va en su papel. */
+body.mesa > #contenido.container:has(> .publico) {
+  padding: var(--espacio-4) var(--espacio-3) var(--espacio-7);
+  background: none;
+  box-shadow: none;
+}
+
+.publico {
+  display: grid;
+  gap: var(--espacio-6);
+}
+
+.publico :is(h1, h2, h3) {
+  margin: 0;
+}
+
+/* Pico separa cada section con un margen abajo; acá el aire lo da cada grilla. */
+.publico section {
+  margin-block-end: 0;
+}
+
+.papel {
+  background-color: var(--color-fondo);
+  border-radius: 2px;
+  box-shadow: var(--sombra-objeto);
+  color: var(--color-texto);
+}
+
+.bajada {
+  max-width: 40ch;
+  margin: var(--espacio-2) 0 0;
+  color: var(--color-texto-suave);
+  font-style: italic;
+}
+
+.nota-chica {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+}
+
+/* La rosa de los vientos marca por dónde empezar (en latón oscuro, 6:1 sobre el pergamino). */
+.rosa {
+  display: block;
+  width: var(--medida-rosa-vacio);
+  aspect-ratio: 1;
+  background-color: var(--color-laton-texto);
+  mask: url("../../../../img/cozy-medieval/rosa-de-los-vientos.svg") center / contain no-repeat;
+}
+
+/* El paisaje grabado de la encrucijada, a pluma, en tinta sepia. */
+.grabado-paisaje {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  background-color: var(--color-texto-suave);
+  mask: url("../../../../img/cozy-medieval/prototipo-publico-paisaje.svg") center / contain no-repeat;
+}
+
+/* Signos del mapa en texto: ⌂ un pueblo (una entidad), ◉ entregada y ┄▸ en camino. */
+.signo::before {
+  content: "";
+  display: inline-block;
+  flex: none;
+  margin-inline-end: var(--espacio-2);
+  vertical-align: -0.1em;
+}
+
+.signo--pueblo::before {
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--color-signo-tinta);
+  clip-path: polygon(50% 0, 100% 45%, 100% 100%, 0 100%, 0 45%);
+}
+
+.signo--entregada::before {
+  width: var(--medida-signo-alto);
+  height: var(--medida-signo-alto);
+  background-color: var(--color-signo-trazo);
+  border: var(--borde-ruta) solid var(--color-signo-trazo);
+  border-radius: var(--radio-sello);
+  box-shadow: inset 0 0 0 3px var(--color-signo-sello);
+}
+
+.signo--camino::before {
+  width: var(--medida-signo);
+  height: var(--medida-signo-alto);
+  background-color: var(--color-signo-tinta);
+  mask: url("../../../../img/cozy-medieval/signo-en-camino.svg") center / contain no-repeat;
+}
+
+/* El camino de una entrega: un trazo de tinta. */
+.signo--tinta::before {
+  width: var(--medida-signo);
+  height: 0;
+  border-block-start: 3px solid var(--color-texto);
+  vertical-align: 0.3em;
+}
+
+/* ------------------------------------------------------------------------------------------
+   La portada: la encrucijada.
+   ------------------------------------------------------------------------------------------ */
+
+/* La carta de la portada: arriba, el título y Donar ahora; el paisaje grabado; abajo, los tres
+   caminos que salen de la rosa. Un solo recurso material: el filete de tinta por dentro. */
+.carta-portada {
+  display: grid;
+  gap: var(--espacio-5);
+  padding: var(--espacio-6) var(--espacio-5);
+  outline: var(--borde-ancho) solid var(--color-filete);
+  outline-offset: calc(-1 * var(--espacio-2));
+  container: carta / inline-size;
+}
+
+.portada-entrada h1 {
+  max-width: 13ch;
+  font-size: var(--tamano-cifra);
+  line-height: 1.02;
+}
+
+.portada-entrada p {
+  max-width: 38ch;
+  margin: var(--espacio-3) 0 var(--espacio-5);
+  font-size: var(--tamano-texto-grande);
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.portada-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+}
+
+/* La encrucijada: en el celular, los caminos bajan de la rosa por un costado y se abren hacia cada
+   destino; con lugar, salen de la rosa en abanico hacia tres columnas. En lápiz: son caminos que
+   todavía no recorriste (la tinta es solo de las entregas). */
+.encrucijada {
+  display: grid;
+  gap: var(--espacio-3);
+  padding-block-start: var(--espacio-5);
+  border-block-start: var(--borde-regla-doble) double var(--color-filete);
+}
+
+.encrucijada > :is(h1, h2) {
+  font-size: var(--tamano-titulo-2);
+}
+
+.encrucijada > h1 {
+  font-size: var(--tamano-titulo-1);
+}
+
+.encrucijada > .bajada {
+  margin: 0 0 var(--espacio-3);
+}
+
+.encrucijada-caminos {
+  display: none;
+}
+
+.encrucijada > ul {
+  display: grid;
+  align-items: start;
+  margin: 0 0 0 calc(var(--medida-rosa-vacio) / 2 - 1px);
+  padding: 0;
+}
+
+.encrucijada > ul > li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  column-gap: var(--espacio-3);
+  align-content: start;
+  margin: 0;
+  padding: 0 0 var(--espacio-5) var(--espacio-5);
+  list-style: none;
+}
+
+.encrucijada > ul > li > :not(.encrucijada-hito) {
+  grid-column: 2;
+}
+
+.encrucijada > ul > li::before,
+.encrucijada > ul > li::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  border-color: var(--color-camino-por-recorrer);
+  border-style: dashed;
+  border-width: 0;
+}
+
+.encrucijada > ul > li::before {
+  top: 0;
+  bottom: 0;
+  border-inline-start-width: var(--borde-ruta);
+}
+
+.encrucijada > ul > li:last-child::before {
+  bottom: auto;
+  height: 1.5rem;
+}
+
+.encrucijada > ul > li::after {
+  top: 1.5rem;
+  width: var(--espacio-5);
+  border-block-start-width: var(--borde-ruta);
+}
+
+/* Cada destino: un mojón de tinta, redondo, con su dibujo. */
+.encrucijada-hito {
+  display: grid;
+  grid-row: span 3;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--color-fondo);
+  border: var(--borde-hoja) solid var(--color-titulo);
+  border-radius: var(--radio-sello);
+  box-shadow: 0 0 0 3px var(--color-fondo), 0 0 0 4px var(--color-filete);
+  color: var(--color-titulo);
+}
+
+.encrucijada > ul > li > :is(h2, h3) {
+  font-size: var(--tamano-titulo-3);
+}
+
+.encrucijada > ul > li > p {
+  margin: var(--espacio-1) 0 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.encrucijada > ul > li > [role="button"] {
+  justify-self: start;
+  margin-block-start: var(--espacio-3);
+}
+
+/* Con lugar, el abanico: la rosa al centro y los caminos hacia el centro de cada columna. */
+@container carta (min-width: 36rem) {
+  .encrucijada {
+    justify-items: center;
+    gap: 0;
+  }
+
+  .encrucijada > .bajada {
+    text-align: center;
+  }
+
+  .encrucijada > :is(h1, h2) {
+    margin-block-end: var(--espacio-3);
+  }
+
+  .encrucijada-caminos {
+    display: block;
+    width: 100%;
+    height: 4.5rem;
+    overflow: visible;
+    fill: none;
+    stroke: var(--color-camino-por-recorrer);
+    stroke-width: 2;
+    stroke-dasharray: 6 5;
+  }
+
+  .encrucijada > ul {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 0;
+    width: 100%;
+    margin: 0;
+  }
+
+  .encrucijada--dos > ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .encrucijada.encrucijada--dos > ul > li {
+    grid-row: span 6;
+  }
+
+  /* Cada columna comparte las filas de las otras: títulos, textos y botones quedan a la par. */
+  .encrucijada > ul > li {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding: 0 var(--espacio-4);
+    text-align: center;
+  }
+
+  .encrucijada > ul > li > :not(.encrucijada-hito) {
+    grid-column: 1;
+  }
+
+  .encrucijada-hito {
+    grid-row: auto;
+    margin-block-end: var(--espacio-3);
+  }
+
+  .encrucijada > ul > li::before,
+  .encrucijada > ul > li::after {
+    display: none;
+  }
+
+  .encrucijada > ul > li > [role="button"] {
+    justify-self: center;
+  }
+
+  .registro-puntos {
+    justify-self: center;
+    max-width: 24rem;
+    text-align: start;
+  }
+}
+
+/* En registrarse, la encrucijada es la carta entera: sin el filete de arriba. */
+.carta-registro .encrucijada {
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
+/* Registrarse: lo que significa cada camino, en una lista corta y lo que te pedimos. */
+.registro-puntos {
+  margin: var(--espacio-3) 0 0;
+  padding: 0;
+  font-size: var(--tamano-chico);
+}
+
+.registro-puntos li {
+  margin: 0 0 var(--espacio-1) 1.1rem;
+  list-style: disc;
+}
+
+.encrucijada .registro-pedido {
+  margin-block-start: var(--espacio-3);
+  padding-block-start: var(--espacio-2);
+  border-block-start: var(--borde-ancho) solid var(--color-filete-tenue);
+  font-style: italic;
+}
+
+.registro-cuenta {
+  margin: var(--espacio-3) 0 0;
+}
+
+/* Lo que viajó este mes: la tira de pergamino con el título y, debajo, las fichas sobre la mesa. */
+.destacadas {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+/* Las fichas del mes llenan la fila, sin columnas vacías en pantallas anchas. */
+.destacadas .tarjetas {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.tira {
+  justify-self: start;
+  max-width: 100%;
+  padding: var(--espacio-3) var(--espacio-5);
+  rotate: -0.5deg;
+}
+
+.tira h2 {
+  font-size: var(--tamano-titulo-2);
+}
+
+.tira p {
+  margin: var(--espacio-1) 0 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* El camino recorrido: las cifras como la leyenda de un mapa, cada una con su signo y su texto,
+   dentro de la cartela de doble filete. */
+.leyenda-portada {
+  display: grid;
+  gap: var(--espacio-4);
+  padding: var(--espacio-5);
+}
+
+.leyenda-portada > div {
+  padding-block-end: var(--espacio-3);
+  border-block-end: var(--borde-regla-doble) double var(--color-titulo);
+}
+
+.leyenda-portada h2 {
+  font-size: var(--tamano-titulo-2);
+}
+
+.leyenda-cifras {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding: 0;
+}
+
+.leyenda-cifras li {
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+  list-style: none;
+}
+
+.leyenda-cifras b {
+  margin-inline-end: var(--espacio-2);
+  color: var(--color-titulo);
+  font-family: var(--fuente-titulos);
+  font-size: var(--tamano-titulo-3);
+  font-variant-numeric: lining-nums;
+}
+
+.leyenda-portada .enlace-fuerte {
+  justify-self: start;
+}
+
+/* ------------------------------------------------------------------------------------------
+   El mapa de entregadas: el mapa grabado y, al lado, la misma información en una lista.
+   ------------------------------------------------------------------------------------------ */
+
+.mapa-cabecera {
+  display: grid;
+  gap: var(--espacio-4);
+  padding: var(--espacio-5);
+}
+
+.mapa-cabecera h1 {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+/* El filtro: una fila de opciones (radios con su etiqueta, del alto de un dedo) y el botón. */
+.filtro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--espacio-3);
+  margin: 0;
+  padding-block-start: var(--espacio-4);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.filtro fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.filtro legend {
+  margin-block-end: var(--espacio-2);
+  padding: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  font-weight: 700;
+}
+
+.filtro-opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+}
+
+.filtro .filtro-opcion {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  padding: 0 var(--espacio-4);
+  background-color: var(--color-fondo);
+  border: var(--borde-ancho) solid var(--color-borde-control);
+  border-radius: var(--radio-insignia);
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+  cursor: pointer;
+}
+
+/* El radio ocupa toda la etiqueta, invisible: se toca en cualquier parte de la opción. */
+.filtro-opcion input {
+  position: absolute;
+  inset: calc(-1 * var(--borde-ancho));
+  width: calc(100% + 2 * var(--borde-ancho));
+  height: calc(100% + 2 * var(--borde-ancho));
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* La elegida: el papel entintado, con su marca de verificación (no solo el color). */
+.filtro .filtro-opcion:has(:checked) {
+  background-color: var(--color-accion-secundaria);
+  border-color: var(--color-accion-secundaria);
+  color: var(--color-texto-sobre-secundaria);
+  font-weight: 700;
+}
+
+.filtro-opcion:has(:checked) span::before {
+  content: "✓ ";
+}
+
+.filtro [type="submit"] {
+  width: auto;
+  margin: 0;
+}
+
+.filtro-opcion:has(:focus-visible) {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.mapa-cuerpo {
+  display: grid;
+  align-items: start;
+  gap: var(--espacio-5);
+}
+
+.mapa-hoja .mesa-mapa-cartela h2 {
+  flex-basis: 100%;
+  font-size: var(--tamano-titulo-2);
+}
+
+/* La tierra grabada del mapa de entregadas, en el marco de meridianos del mapa del viaje. */
+.viaje-mapa.mapa-grabado {
+  aspect-ratio: 800 / 560;
+}
+
+.viaje-mapa.mapa-grabado::before {
+  mask-image: url("../../../../img/cozy-medieval/prototipo-publico-tierra.svg");
+}
+
+/* Cada entrega, su camino de tinta, del depósito al pueblo. */
+.mapa-caminos path {
+  stroke: var(--color-texto);
+  stroke-width: 2.4;
+}
+
+.mapa-deposito {
+  fill: var(--color-fondo);
+  stroke: var(--color-titulo);
+  stroke-width: 2;
+}
+
+.mapa-deposito .mapa-bandera {
+  fill: var(--color-titulo);
+  stroke: none;
+}
+
+/* El pueblo: su casa a pluma y, si recibió entregas, el sello de latón (◉ entregada). */
+.mapa-casa {
+  fill: var(--color-fondo);
+  stroke: var(--color-titulo);
+  stroke-width: 2;
+}
+
+.mapa-pueblo--sin .mapa-casa {
+  stroke: var(--color-camino-por-recorrer);
+  stroke-dasharray: 3 2;
+}
+
+.mapa-sello {
+  fill: var(--color-signo-sello);
+  stroke: var(--color-signo-trazo);
+  stroke-width: 3;
+}
+
+.mapa-sello-centro {
+  fill: var(--color-signo-trazo);
+}
+
+/* Los nombres, en cursiva como en los mapas, con un halo de papel; solo con el mapa grande. */
+.mapa-rotulo {
+  display: none;
+  fill: var(--color-titulo);
+  font-family: var(--fuente-texto);
+  font-size: 19px;
+  font-style: italic;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: var(--color-fondo-pagina);
+  stroke-width: 5px;
+}
+
+@container mapa (min-width: 26rem) {
+  .mapa-rotulo {
+    display: inline;
+  }
+}
+
+/* La leyenda del mapa: qué es cada signo, en texto. */
+.mapa-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2) var(--espacio-5);
+  margin: 0;
+  padding: 0 var(--espacio-3);
+  color: var(--color-texto);
+  font-size: var(--tamano-chico);
+}
+
+.mapa-leyenda li {
+  margin: 0;
+  list-style: none;
+}
+
+/* La lista: los pueblos del mapa, cada uno con sus entregas, en pergamino liso. */
+.mapa-lista {
+  padding: var(--espacio-5);
+}
+
+.mapa-lista > h2 {
+  font-size: var(--tamano-titulo-2);
+}
+
+.mapa-lista .estado-vacio {
+  margin-block-start: var(--espacio-4);
+}
+
+.pueblo {
+  padding-block: var(--espacio-4);
+  border-block-end: var(--borde-ancho) solid var(--color-filete-tenue);
+}
+
+.pueblo:last-child {
+  border-block-end: 0;
+}
+
+.mapa-lista .pueblo h3 {
+  display: flex;
+  align-items: baseline;
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-titulo-4);
+}
+
+.pueblo-cuenta {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.pueblo ul {
+  margin: var(--espacio-2) 0 0;
+  padding: 0;
+}
+
+.pueblo li {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  gap: var(--espacio-2);
+  margin: 0;
+  padding-block: var(--espacio-1);
+  list-style: none;
+}
+
+.pueblo li .icono {
+  margin-block-start: 0.15rem;
+  color: var(--color-texto-suave);
+}
+
+.pueblo li small {
+  display: block;
+  color: var(--color-texto-suave);
+}
+
+@media (min-width: 68.75em) {
+  .mapa-cuerpo {
+    grid-template-columns: minmax(0, 1.75fr) minmax(17rem, 1fr);
+  }
+
+  /* El mapa acompaña a la lista mientras se recorre. */
+  .mapa-hoja {
+    position: sticky;
+    top: var(--espacio-4);
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Ingresar y registrarse: la libreta de viaje, abierta sobre la mesa. Tapas de cuero (su único
+   recurso material) y dos hojas; en el celular, solo la del formulario.
+   ------------------------------------------------------------------------------------------ */
+
+.libreta {
+  display: grid;
+  width: 100%;
+  max-width: 30rem;
+  margin-inline: auto;
+  padding: var(--espacio-2);
+  background-color: var(--color-mesa-cuero);
+  border-radius: var(--radio-chico);
+  box-shadow: var(--sombra-objeto);
+}
+
+.libreta--una {
+  max-width: 30rem;
+}
+
+.libreta-hoja {
+  display: grid;
+  align-content: start;
+  padding: var(--espacio-6) var(--espacio-5);
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+.libreta-hoja + .libreta-hoja {
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.libreta-hoja h1 {
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.libreta-hoja h2 {
+  font-size: var(--tamano-titulo-3);
+}
+
+.libreta-hoja form {
+  margin: var(--espacio-5) 0 0;
+}
+
+.libreta-hoja form > [type="submit"] {
+  width: 100%;
+}
+
+.libreta-hoja .banner {
+  margin: var(--espacio-5) 0 0;
+}
+
+/* La hoja de adorno: el paisaje de la encrucijada y la frase; solo con la libreta abierta. */
+.libreta-hoja--adorno {
+  display: none;
+}
+
+.libreta-hoja--adorno blockquote {
+  margin: var(--espacio-5) 0 0;
+  padding: 0;
+  border: 0;
+  color: var(--color-titulo);
+  font-family: var(--fuente-titulos);
+  font-size: var(--tamano-titulo-3);
+  line-height: 1.25;
+  text-align: center;
+}
+
+.libreta-hoja--adorno .nota-chica {
+  margin-block-start: var(--espacio-2);
+  text-align: center;
+}
+
+/* Recordarme y la contraseña olvidada, en un renglón si entran. */
+.libreta-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 var(--espacio-3);
+  margin-block-end: var(--espacio-4);
+}
+
+/* La casilla: el input ocupa toda la etiqueta (48 px de alto), invisible; el cuadro dibujado
+   toma su estado. */
+.casilla {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--medida-toque-minimo);
+  margin: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-chico);
+  cursor: pointer;
+}
+
+.casilla input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.casilla span::before {
+  content: "";
+  display: inline-block;
+  flex: none;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin-inline-end: var(--espacio-2);
+  vertical-align: -0.3em;
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-marco) solid var(--color-borde-control);
+  border-radius: 4px;
+}
+
+/* Marcada: el cuadro entintado, con un margen de papel adentro (cambia la forma, no solo el color). */
+.casilla input:checked + span::before {
+  background-color: var(--color-accion-primaria);
+  border-color: var(--color-accion-primaria);
+  box-shadow: inset 0 0 0 3px var(--color-fondo-pagina);
+}
+
+.casilla input:focus-visible + span::before {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* El separador entre ingresar y crear una cuenta. */
+.libreta-separador {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  margin: var(--espacio-5) 0 var(--espacio-3);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.libreta-separador::before,
+.libreta-separador::after {
+  content: "";
+  flex: 1;
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.libreta-hoja > [role="button"] {
+  width: 100%;
+}
+
+.nota-prototipo {
+  margin: var(--espacio-4) 0 0;
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+}
+
+.libreta-desvio {
+  margin: var(--espacio-3) 0 0;
+  font-size: var(--tamano-chico);
+}
+
+/* Un desplegable con el aspecto de los campos: un renglón del registro. */
+.campo > select {
+  min-height: 3.125rem;
+  margin: 0;
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-filete-tenue);
+  border-block-end: var(--borde-marco) solid var(--color-borde-control);
+  border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+  box-shadow: var(--sombra-hundido);
+  color: var(--color-texto);
+}
+
+/* El paisaje al pie de una hoja de la libreta: solo con la libreta abierta. */
+.libreta-hoja > .grabado-paisaje {
+  display: none;
+}
+
+/* Cómo sigue la solicitud de una entidad: la leyenda del viaje, sin el mapa. */
+.libreta-hoja .recorrido {
+  margin-block-start: var(--espacio-4);
+}
+
+@media (min-width: 53.75em) {
+  .libreta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-width: 62rem;
+  }
+
+  .libreta--una {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 32rem;
+  }
+
+  .libreta-hoja--adorno {
+    display: grid;
+    align-content: center;
+  }
+
+  .libreta-hoja > .grabado-paisaje {
+    display: block;
+    align-self: end;
+    margin-block-start: var(--espacio-6);
+  }
+
+  .libreta-hoja {
+    padding: var(--espacio-7) var(--espacio-6);
+  }
+
+  /* El lomo en el medio: cada hoja se curva hacia él. */
+  .libreta-hoja + .libreta-hoja {
+    border-block-start: 0;
+    border-inline-start: var(--borde-ancho) solid var(--color-filete);
+    box-shadow: inset 14px 0 12px -14px var(--color-mesa-sombra);
+  }
+
+  .libreta-hoja:first-child:not(:last-child) {
+    box-shadow: inset -14px 0 12px -14px var(--color-mesa-sombra);
+  }
+}
+
+/* ------------------------------------------------------------------------------------------
+   Anchos: desde 600 px la mesa deja su borde y la carta respira más.
+   ------------------------------------------------------------------------------------------ */
+
+@media (min-width: 37.5em) {
+  body.mesa > #contenido.container:has(> .publico) {
+    padding-inline: 0;
+  }
+
+  .carta-portada,
+  .mapa-cabecera,
+  .mapa-lista,
+  .leyenda-portada {
+    padding: var(--espacio-6);
+  }
+}
+
+@media (min-width: 53.75em) {
+  .carta-portada {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    align-items: center;
+    column-gap: var(--espacio-6);
+    padding: var(--espacio-7);
+  }
+
+  .encrucijada {
+    grid-column: 1 / -1;
+  }
+
+  .leyenda-portada {
+    grid-template-columns: minmax(14rem, 1fr) minmax(0, 2.2fr);
+    align-items: center;
+    column-gap: var(--espacio-6);
+  }
+
+  .leyenda-portada > div {
+    grid-row: span 3;
+    padding: 0 var(--espacio-6) 0 0;
+    border-block-end: 0;
+    border-inline-end: var(--borde-regla-doble) double var(--color-titulo);
+  }
+
+  .leyenda-cifras {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mapa-cabecera {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .mapa-cabecera .filtro {
+    grid-column: 1 / -1;
+  }
+}

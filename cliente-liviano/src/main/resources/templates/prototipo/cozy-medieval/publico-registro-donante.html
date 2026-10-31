@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--/* Prototipo del flujo completo (iteración 3, grupo público): el formulario corto de la persona
+       donante, en la libreta de viaje (la hoja de adorno, como en ingresar). Tres datos y la
+       aceptación de las condiciones. Es un prototipo: el envío lleva al inicio de la persona
+       donante de ejemplo con method="get". Desvíos: ingresar y el camino de la entidad. */-->
+<html lang="es-AR" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{alternativas/cozy-medieval/layout :: pagina(~{::title}, ~{::contenido})}">
+<head>
+  <title>Registrarme como donante - DonaTrack</title>
+</head>
+<body>
+<th:block th:fragment="contenido">
+  <link rel="stylesheet" href="/css/alternativas/cozy-medieval/prototipo/publico.css"
+        th:href="@{/css/alternativas/cozy-medieval/prototipo/publico.css}">
+  <div class="publico">
+    <div class="libreta">
+      <div class="libreta-hoja libreta-hoja--adorno" aria-hidden="true">
+        <div class="grabado-paisaje"></div>
+        <blockquote>Cada donación deja un camino en el mapa.</blockquote>
+        <p class="nota-chica">Tu libreta guarda los tuyos.</p>
+      </div>
+      <section class="libreta-hoja" aria-labelledby="donante-titulo">
+        <h1 id="donante-titulo">Empezá tu viaje</h1>
+        <p class="bajada">Creá tu cuenta de persona donante. Son tres datos.</p>
+        <form action="/prototipo/donante-inicio" method="get">
+          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('nombre', 'Tu nombre', 'text', 'Como querés que te saludemos.', null, false)}"></div>
+          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('correo', 'Correo electrónico', 'email', 'Para avisarte cada tramo del viaje. No lo compartimos.', null, false)}"></div>
+          <div th:replace="~{alternativas/cozy-medieval/fragmentos/campo :: campo('contrasena', 'Contraseña', 'password', 'Al menos 8 caracteres, con una letra y un número.', null, false)}"></div>
+          <div class="libreta-fila">
+            <label class="casilla"><input type="checkbox" name="condiciones"><span>Acepto las
+                condiciones de uso y la política de privacidad</span></label>
+          </div>
+          <button type="submit">Crear mi cuenta</button>
+        </form>
+        <p class="nota-prototipo">Es un prototipo: no se guarda nada. Crear mi cuenta te lleva al
+          inicio de una persona donante de ejemplo.</p>
+        <p class="libreta-desvio">¿Ya tenés cuenta? <a href="/prototipo/publico-ingresar">Ingresar</a></p>
+        <p class="libreta-desvio">¿Sos una entidad? <a href="/prototipo/publico-registro-entidad">Registrá
+            tu entidad</a></p>
+      </section>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>
