@@ -1,7 +1,8 @@
 # Brief de identidad visual — Alternativa Cozy / Medieval
 
 > **Estado:** aprobado · **Fecha:** 2026-10-30 · **Aprobó:** usuario, con un agregado: evitar
-> lo efectista
+> lo efectista · **Cambio aprobado por el usuario (2026-10-30):** voz propia en títulos y rótulos,
+> con los mismos datos y acciones que Glassmorphism (sección Voz)
 > Resultado de la skill `identidad-visual` (3 rondas de preguntas), con las fotos de referencia del
 > usuario como insumo principal. Plantilla:
 > [`plantillas/brief-identidad.md`](../plantillas/brief-identidad.md). Lo que el usuario no definió
@@ -18,10 +19,11 @@ mensaje transmitir, cuál es su identidad y a qué usuarios les habla:
 | Glassmorphism | Profesional y seria: vidrio, grafito y menta, números de impacto |
 | Cozy / Medieval | Cálida y de aventura, como un juego de rol para adultos: mapa, pergamino, tinta y madera |
 
-Las dos tienen las mismas pantallas y los mismos textos. Cada alternativa tiene su hoja de estilos
-completa (ver la [bitácora](../bitacora.md)) y, desde la
+Las dos tienen las mismas pantallas, los mismos datos y las mismas acciones. Cada alternativa tiene
+su hoja de estilos completa (ver la [bitácora](../bitacora.md)) y, desde la
 [directiva de estructura](../estructura-cozy-medieval.md), su propio juego de plantillas: Cozy arma
-sus pantallas a su modo, con el mismo texto que Glassmorphism.
+sus pantallas a su modo, con los mismos datos y acciones que Glassmorphism y su propia voz en
+títulos y rótulos.
 
 ## Personalidad
 
@@ -75,6 +77,13 @@ las fotos ni sus personajes entran al sitio.
 | Cómoda de madera tallada | Madera color miel, tiradores de latón tallados, luz de tarde |
 | Paleta "Cozy Autumn" | Caramelo, beige, crema, óxido y espresso; letra con serifa |
 
+**Segunda tanda de referencias (usuario, 2026-10-31):** 18 imágenes en
+[`referencias-cozy-medieval/`](referencias-cozy-medieval/README.md), con esta dirección: "esquemorfismo
+rústico. Evitar que sea gimmick-y. Buscar profesionalismo. Gamificación ligera, creatividad e
+identidad propia. Explorar, aventura." Es decir: objetos de verdad (cuero, madera, latón y papel con
+cuerpo), ordenados con oficio editorial; el juego se insinúa (misiones, avance, sellos) sin volverse
+un videojuego.
+
 - **Sí o sí:** pergamino y tinta; verde bosque; latón y madera tallada.
 - **La paleta Cozy Autumn no es obligatoria.** Sus tonos pueden aparecer, pero sin el par crema y
   óxido como protagonista: está en ["Lo que evitamos"](../direccion-de-arte.md#lo-que-evitamos).
@@ -90,9 +99,16 @@ En una frase (propuesto): **cada donación deja un camino en el mapa.**
 
 ## Voz
 
-- **Textos:** los mismos que Glassmorphism (usuario). Cada alternativa tiene sus plantillas, pero
-  los textos fijos son iguales y un test lo comprueba. El tono de aventura se puede probar más
-  adelante, con una comparación de textos.
+- **Los mismos datos y acciones; voz propia en títulos y rótulos** (usuario, 2026-10-30). Reemplaza
+  la regla anterior, "los mismos textos que Glassmorphism". Cozy dice a su modo los títulos y los
+  rótulos: "Tu viaje" en lugar de "Recorrido de tu última donación", "Estás acá" junto a la etapa
+  actual. No cambian los datos (cifras, nombres, fechas y mensajes), los nombres de los botones y
+  enlaces ni adónde llevan. Un test lo vigila.
+- **La tabla de la voz** está en `cliente-liviano/src/test/resources/voz/cozy-medieval.txt`: una
+  línea por título o rótulo, con lo que dice Glassmorphism y lo que dice Cozy. Un rótulo propio no
+  lleva números, porque los números son datos, y nunca va dentro de un botón o un enlace.
+- **Tono (propuesto):** aventura adulta en palabras de todos los días: el viaje, el camino, las
+  cartas, el rango y la misión. Sin palabras antiguas ni jerga de videojuego.
 - **Trato y registro:** vos, cercano (del [brief de Glassmorphism](brief.md#voz)).
 
 ## Forma y densidad
@@ -118,8 +134,9 @@ En una frase (propuesto): **cada donación deja un camino en el mapa.**
   controles de 48 px, nada desbordado entre 360 y 1920 px, lo esencial sin JavaScript y respeto
   por quien prefiere menos movimiento.
 - Letras con licencia OFL, servidas desde el propio sitio.
-- Los textos son los mismos que los de Glassmorphism, escritos en el juego de plantillas de cada
-  alternativa y vigilados por un test. La estructura de cada pantalla es propia de Cozy desde la
+- Los datos y las acciones son los mismos que los de Glassmorphism, escritos en el juego de
+  plantillas de cada alternativa y vigilados por un test; los títulos y rótulos llevan la voz de
+  Cozy. La estructura de cada pantalla es propia de Cozy desde la
   [directiva de estructura](../estructura-cozy-medieval.md) (2026-10-30); antes, lo propio de Cozy
   iba solo en sus hojas de estilo.
 

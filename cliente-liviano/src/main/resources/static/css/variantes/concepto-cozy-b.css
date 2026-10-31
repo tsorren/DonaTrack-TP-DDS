@@ -1,0 +1,729 @@
+/*
+ * El libro abierto: tu inicio es tu diario de viaje, abierto sobre la mesa. A la izquierda, el
+ * saludo y tu viaje con el alfiler en "Estás acá"; a la derecha, tus cuentas, el ex libris de tu
+ * rango y el cuaderno de sellos. Cada sección cuelga de una cinta señaladora y se navega con un
+ * índice de uñeros que sale del canto del libro (en el celular, desde abajo).
+ */
+
+/*
+ * Variante de estructura concepto-cozy-b (templates/variantes/concepto-cozy-b.html), sobre el
+ * app.css de Cozy / Medieval. Materiales propios: el cuero de la tapa (con su filete dorado), el
+ * canto de las otras hojas en las pestañas y la seda de las cintas, que es el azul de los avisos
+ * (--color-marca-alterna): marca una sección, no se toca. Mobile first; desde 860 px, el libro
+ * abierto en dos páginas con el índice al costado.
+ */
+.libro-mesa {
+  --p-cuero: #4e2e1d;
+  --p-canto: #dccaa3;
+  --medida-tapa: 0.375rem;
+  --espacio-pagina: var(--espacio-5);
+  --medida-cinta: 4.75rem;
+  --medida-indice: 3.5rem;
+
+  /* El celular reserva abajo el alto del índice. */
+  padding-block-end: calc(var(--medida-indice) + var(--espacio-5));
+}
+
+/* La mesa de nogal, con su veta. */
+html:has(> .libro-mesa) {
+  background-color: var(--color-destacado-fondo);
+  scroll-padding-block: var(--espacio-4) calc(var(--medida-indice) + var(--espacio-4));
+}
+
+.libro-mesa::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--color-destacado-veta);
+  mask: url("../../img/cozy-medieval/veta-de-nogal.svg") 0 0 / 15.5rem auto repeat;
+  pointer-events: none;
+}
+
+/* La cabecera va sobre la mesa: la marca en pergamino y latón, la carta y la cuenta. */
+.libro-encabezado {
+  position: static;
+  flex-wrap: nowrap;
+  gap: var(--espacio-2);
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-inline: var(--espacio-3);
+  background-color: transparent;
+  border: 0;
+}
+
+.libro-encabezado .marca {
+  color: var(--color-destacado-texto);
+}
+
+.libro-encabezado .marca-nombre em {
+  color: var(--color-marca-brillante);
+}
+
+.libro-encabezado :focus-visible,
+.libro-tapa:focus-visible {
+  outline-color: var(--color-foco-sobre-oscuro);
+}
+
+.libro-encabezado .cuenta-menu :focus-visible {
+  outline-color: var(--color-foco);
+}
+
+/* El libro: la tapa de cuero con su filete dorado y, adentro, las dos páginas. En el celular, una
+   página debajo de la otra. */
+.libro {
+  margin: var(--espacio-1) var(--espacio-2) var(--espacio-5);
+}
+
+#contenido.libro-tapa {
+  display: grid;
+  padding: var(--medida-tapa);
+  background-color: var(--p-cuero);
+  border-radius: var(--radio-chico);
+  box-shadow:
+    inset 0 0 0 2px var(--p-cuero),
+    inset 0 0 0 3px var(--color-laton),
+    var(--sombra-elevada);
+}
+
+.libro-pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-6);
+  min-width: 0;
+  padding: var(--espacio-pagina) var(--espacio-4) var(--espacio-6);
+  background-color: var(--color-fondo);
+}
+
+.libro-pagina > * {
+  margin: 0;
+}
+
+/* El lomo, en el celular: una costura a lo ancho entre las dos páginas, con su sombra. */
+.libro-pagina--izquierda {
+  border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+  background-image: linear-gradient(to top, var(--color-filete-tenue), transparent var(--espacio-5));
+}
+
+.libro-pagina--derecha {
+  border-radius: 0 0 var(--radio-chico) var(--radio-chico);
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--color-borde-control) 0 0.625rem,
+      transparent 0.625rem 1.25rem
+    ),
+    linear-gradient(to bottom, var(--color-filete-tenue), transparent var(--espacio-5));
+  background-repeat: no-repeat;
+  background-size: 100% 2px, auto;
+  box-shadow:
+    0 3px 0 -1px var(--color-superficie),
+    0 6px 0 -2px var(--p-canto);
+}
+
+:where(.libro-pagina) :is(h2, h3) {
+  margin: 0;
+}
+
+/* Cintas señaladoras: el título de cada sección cuelga de la regla de arriba, hacia el lomo, con
+   la punta en cola de golondrina. La primera de una página cuelga del borde de arriba. */
+.libro-seccion {
+  display: flow-root;
+  padding-block-start: var(--espacio-5);
+  border-block-start: var(--borde-ancho) solid var(--color-filete);
+}
+
+.libro-pagina > .libro-seccion:first-child {
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
+.libro-cinta {
+  float: inline-end;
+  width: var(--medida-cinta);
+  min-block-size: 6.5rem;
+  margin: calc(-1 * var(--espacio-5)) 0 var(--espacio-3) var(--espacio-5);
+  padding: var(--espacio-4) var(--espacio-1) var(--espacio-6);
+  background-color: var(--color-marca-alterna);
+  box-shadow: inset 3px 0 0 var(--color-placa-brillo), inset -3px 0 0 var(--color-placa-brillo);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - var(--espacio-4)), 0 100%);
+  color: var(--color-texto-sobre-accion);
+  font-size: var(--tamano-texto);
+  line-height: 1.15;
+  text-align: center;
+  overflow-wrap: break-word;
+}
+
+.libro-seccion:first-child > .libro-cinta {
+  margin-block-start: calc(-1 * var(--espacio-pagina));
+}
+
+.libro-bajada {
+  margin: 0 0 var(--espacio-3);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* El capítulo: el saludo con una sola inicial grande, de latón, y sus dos acciones. */
+.libro-capitulo h2 {
+  margin-block-end: var(--espacio-3);
+  color: var(--color-titulo);
+  font-size: var(--tamano-titulo-1);
+  line-height: 1.05;
+}
+
+.libro-capitular {
+  max-width: 34ch;
+  margin: 0;
+  color: var(--color-texto);
+  font-size: var(--tamano-texto-grande);
+}
+
+.libro-capitular::first-letter {
+  float: inline-start;
+  margin: 0.3rem var(--espacio-2) 0 0;
+  padding: 0.2rem 0.4rem 0.25rem;
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  border-radius: var(--radio-chico);
+  color: var(--color-titulo);
+  font-family: var(--fuente-titulos);
+  font-size: 2.6em;
+  font-weight: 700;
+  line-height: 0.85;
+}
+
+.libro-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-2);
+  margin-block-start: var(--espacio-4);
+}
+
+.libro-acciones > * {
+  padding-inline: var(--espacio-4);
+}
+
+/* Tu viaje: el recorrido a lo alto, con el alfiler de latón y su rótulo en la etapa actual. */
+.libro-carga {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin: 0 0 var(--espacio-4);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+.libro-viaje .recorrido {
+  width: auto;
+  margin-block-end: var(--espacio-2);
+  container-type: normal;
+}
+
+.libro-viaje .recorrido-paso {
+  padding-block-end: var(--espacio-5);
+}
+
+.libro-viaje .recorrido-paso:last-child {
+  padding-block-end: 0;
+}
+
+.libro-viaje .recorrido-paso--actual {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-3);
+}
+
+.libro-viaje .recorrido-paso--actual::after {
+  width: calc(var(--medida-alfiler) + 0.25rem);
+  height: calc(var(--medida-alfiler) + 0.25rem);
+}
+
+.libro-aca {
+  padding: 0.125rem var(--espacio-3);
+  background-color: var(--color-laton-brillante);
+  border: var(--borde-hoja) solid var(--color-laton-texto);
+  border-radius: var(--radio-chico);
+  color: var(--color-titulo);
+  font-family: var(--fuente-rotulos);
+  font-size: var(--tamano-chico);
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Cartas del camino: una hoja suelta metida entre las páginas. */
+.libro-hoja-suelta {
+  display: flow-root;
+  padding: var(--espacio-3) var(--espacio-4) var(--espacio-2);
+  background-color: var(--color-fondo-pagina);
+  border: var(--borde-ancho) solid var(--color-filete-tenue);
+  box-shadow: var(--sombra-papel);
+  rotate: -1deg;
+}
+
+.libro-notas {
+  margin: 0;
+  padding: 0;
+}
+
+.libro-notas li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin: 0;
+  padding: var(--espacio-2) 0;
+  border-block-start: var(--borde-ancho) solid var(--color-filete-tenue);
+  list-style: none;
+}
+
+.libro-notas p {
+  margin: 0;
+  color: var(--color-titulo);
+  font-size: var(--tamano-chico);
+}
+
+.libro-notas time {
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-mini);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+/* Tu huella: las cifras como asientos de un libro de cuentas, en renglones con su guía de puntos
+   y el total bajo doble filete, que es el enlace a tus entregas. */
+.libro-cuentas {
+  display: flow-root;
+}
+
+.libro-asientos {
+  margin: 0;
+  padding: 0;
+}
+
+.libro-asientos li {
+  display: grid;
+  grid-template-columns: auto minmax(var(--espacio-4), 1fr) auto;
+  align-items: baseline;
+  gap: var(--espacio-2);
+  margin: 0;
+  padding: var(--espacio-2) 0 0.375rem;
+  border-block-end: var(--borde-ancho) solid
+    color-mix(in srgb, var(--color-marca-alterna) 35%, transparent);
+  list-style: none;
+}
+
+.libro-asientos span {
+  order: 1;
+  color: var(--color-texto);
+}
+
+.libro-asientos li::before {
+  content: "";
+  order: 2;
+  align-self: end;
+  margin-block-end: 0.45em;
+  border-block-end: var(--borde-ruta) dotted var(--color-filete);
+}
+
+.libro-asientos b,
+.libro-huella .cifra-valor {
+  order: 3;
+  color: var(--color-titulo);
+  font-family: var(--fuente-texto);
+  font-size: var(--tamano-titulo-3);
+  font-weight: 800;
+  font-variant-numeric: lining-nums tabular-nums;
+  line-height: 1.1;
+}
+
+.libro-huella .cifra {
+  grid-template-columns: auto minmax(var(--espacio-4), 1fr) auto;
+  grid-template-areas:
+    "etiqueta guia valor"
+    "chip chip valor";
+  gap: 0 var(--espacio-2);
+  margin-block-start: var(--espacio-1);
+  padding-block: var(--espacio-2);
+  border-block-start: var(--borde-regla-doble) double var(--color-filete);
+}
+
+.libro-huella .cifra::before {
+  content: "";
+  grid-area: guia;
+  align-self: center;
+  border-block-end: var(--borde-ruta) dotted var(--color-filete);
+}
+
+.libro-huella .cifra-valor {
+  font-size: var(--tamano-titulo-2);
+}
+
+/* Debajo de las cuentas: las que llegaron, con su sello, y el ex libris del rango. */
+.libro-pie-cuentas {
+  display: grid;
+  gap: var(--espacio-6);
+  margin-block-start: var(--espacio-5);
+}
+
+.libro-llegaron {
+  display: grid;
+  gap: var(--espacio-3);
+  margin: 0;
+  container-type: inline-size;
+}
+
+.libro-llegaron-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-2) var(--espacio-3);
+}
+
+.libro-llegaron h3 {
+  font-size: var(--tamano-titulo-3);
+}
+
+/* El rango, como el ex libris pegado en el libro: la placa con su doble filete de latón oscuro. */
+.libro-exlibris {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--espacio-1);
+  width: min(100%, 17rem);
+  margin: 0 auto;
+  padding: var(--espacio-5) var(--espacio-4);
+  background-color: var(--color-fondo);
+  border: var(--borde-marco) solid var(--color-laton-texto);
+  box-shadow:
+    inset 0 0 0 5px var(--color-fondo),
+    inset 0 0 0 6px var(--color-laton-texto),
+    var(--sombra-foto);
+  color: var(--color-titulo);
+  text-align: center;
+  rotate: -1.5deg;
+}
+
+.libro-exlibris h3 {
+  color: var(--color-laton-texto);
+  font-size: var(--tamano-chico);
+  letter-spacing: 0.08em;
+}
+
+.libro-exlibris p {
+  margin: 0;
+}
+
+.libro-exlibris-nombre {
+  font-family: var(--fuente-titulos);
+  font-size: var(--tamano-titulo-2);
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.libro-exlibris-proxima {
+  font-size: var(--tamano-chico);
+  font-style: italic;
+}
+
+/* Tu misión en curso: el cuaderno de sellos, sin marco propio: ya está en el libro. */
+.libro-mision .mision-encabezado {
+  margin-block-start: var(--espacio-2);
+}
+
+.libro-mision .mision-cuaderno {
+  margin-block-end: var(--espacio-5);
+}
+
+/* El índice de uñeros, en el celular: pestañas que salen del borde de abajo de la pantalla. La
+   actual es del papel de la página y se une a ella, sin filete entre las dos. */
+.libro-indice {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: var(--capa-avisos);
+  display: block;
+  padding: 0 2px var(--espacio-2);
+  background-color: var(--p-cuero);
+  border-block-start: var(--borde-marco) solid var(--color-laton);
+}
+
+nav.libro-indice ul {
+  display: grid;
+  grid-auto-columns: minmax(0, 9rem);
+  grid-auto-flow: column;
+  justify-content: center;
+  align-items: start;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+.libro-indice li {
+  display: block;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.libro-indice a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--medida-indice);
+  margin: 0;
+  padding: var(--espacio-1) 2px;
+  background-color: var(--p-canto);
+  border: var(--borde-ancho) solid var(--color-filete);
+  border-block-start: 0;
+  border-radius: 0 0 var(--radio-control) var(--radio-control);
+  color: var(--color-texto);
+  font-size: clamp(0.6875rem, 3.3vw, var(--tamano-mini));
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+}
+
+.libro-indice a:hover {
+  background-color: var(--color-fondo-pagina);
+  color: var(--color-titulo);
+}
+
+.libro-indice a[aria-current="page"] {
+  margin-block-start: calc(-1 * var(--borde-marco));
+  padding-block-start: calc(var(--espacio-1) + var(--borde-marco));
+  background-color: var(--color-fondo);
+  border-color: var(--color-fondo);
+  color: var(--color-titulo);
+  font-weight: 700;
+}
+
+.libro-indice a:focus-visible {
+  outline: var(--borde-foco) solid var(--color-foco);
+  outline-offset: -5px;
+}
+
+.libro-indice-texto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ◆ Ahora: el rombo de latón en la pestaña de la página abierta. */
+.libro-indice a[aria-current="page"] .libro-indice-corto::before {
+  content: "";
+  display: inline-block;
+  width: var(--medida-rombo);
+  height: var(--medida-rombo);
+  margin-inline-end: 0.3em;
+  background-color: var(--color-signo-sello);
+  border: var(--borde-ancho) solid var(--color-signo-trazo);
+  rotate: 45deg;
+  vertical-align: 0.1em;
+}
+
+.libro-mesa .avisos {
+  bottom: calc(var(--medida-indice) + var(--espacio-4));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .libro-indice a {
+    transition: transform var(--movimiento-rapido) var(--movimiento-curva);
+  }
+
+  .libro-indice a:not([aria-current]):hover {
+    transform: translateY(2px);
+  }
+}
+
+/* Desde 860 px: el libro abierto en dos páginas, con el lomo cosido al medio y el índice de
+   uñeros que sale del canto derecho, escalonado de arriba abajo. */
+@media (min-width: 53.75em) {
+  .libro-mesa {
+    --medida-tapa: 0.75rem;
+    --espacio-pagina: var(--espacio-6);
+    --medida-cinta: 5.5rem;
+
+    padding-block-end: 0;
+  }
+
+  html:has(> .libro-mesa) {
+    scroll-padding-block-end: var(--espacio-4);
+  }
+
+  .libro-encabezado {
+    padding-inline: var(--espacio-5);
+  }
+
+  .libro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    max-width: 72rem;
+    margin: var(--espacio-2) auto var(--espacio-7);
+    padding-inline: var(--espacio-5) var(--espacio-3);
+  }
+
+  #contenido.libro-tapa {
+    grid-row: 1;
+    grid-column: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-radius: var(--radio-control);
+  }
+
+  .libro-pagina {
+    padding: var(--espacio-pagina) var(--espacio-6) var(--espacio-7);
+  }
+
+  .libro-pagina--izquierda {
+    border-radius: var(--radio-chico) 0 0 var(--radio-chico);
+    background-image: linear-gradient(to left, var(--color-borde), transparent var(--espacio-7));
+    box-shadow:
+      0 3px 0 -1px var(--color-superficie),
+      0 6px 0 -2px var(--p-canto),
+      -3px 0 0 -1px var(--color-superficie),
+      -6px 0 0 -2px var(--p-canto);
+  }
+
+  .libro-pagina--derecha {
+    border-radius: 0 var(--radio-chico) var(--radio-chico) 0;
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        var(--color-borde-control) 0 0.75rem,
+        transparent 0.75rem 1.75rem
+      ),
+      linear-gradient(to right, var(--color-borde), transparent var(--espacio-7));
+    background-size: 2px 100%, auto;
+    box-shadow:
+      0 3px 0 -1px var(--color-superficie),
+      0 6px 0 -2px var(--p-canto),
+      3px 0 0 -1px var(--color-superficie),
+      6px 0 0 -2px var(--p-canto);
+  }
+
+  .libro-cinta {
+    min-block-size: 10rem;
+    font-size: var(--tamano-titulo-4);
+  }
+
+  /* Las cintas cuelgan junto al lomo, dentro de su sombra. */
+  .libro-pagina--izquierda .libro-cinta {
+    margin-inline-end: calc(-1 * var(--espacio-5));
+  }
+
+  .libro-pagina--derecha .libro-cinta {
+    float: inline-start;
+    margin-inline: calc(-1 * var(--espacio-5)) var(--espacio-5);
+  }
+
+  /* El viaje es lo que más se lee: en escritorio, en la letra del texto. */
+  .libro-viaje .recorrido {
+    font-size: var(--tamano-texto);
+  }
+
+  .libro-seccion:first-child > .libro-cinta {
+    margin-block-start: calc(-1 * (var(--espacio-pagina) + var(--medida-tapa)));
+  }
+
+  /* Las cartas quedan al pie de la página izquierda y la hoja asoma por abajo del libro. */
+  .libro-cartas {
+    margin-block-start: auto;
+  }
+
+  .libro-hoja-suelta {
+    position: relative;
+    z-index: 1;
+    margin-block-end: calc(-1 * (var(--espacio-7) + var(--medida-tapa) + var(--espacio-4)));
+  }
+
+  /* El índice: las pestañas salen del canto derecho, sobre el cuero, una debajo de la otra. */
+  .libro-indice {
+    position: relative;
+    inset: auto;
+    z-index: 1;
+    grid-row: 1;
+    grid-column: 2;
+    margin-inline-start: calc(-1 * var(--medida-tapa));
+    padding: var(--espacio-7) 0 0;
+    background-color: transparent;
+    border: 0;
+  }
+
+  nav.libro-indice ul {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--espacio-2);
+  }
+
+  .libro-indice a {
+    flex-direction: row;
+    gap: var(--espacio-2);
+    min-height: 0;
+    padding: var(--espacio-4) var(--espacio-3) var(--espacio-4) calc(var(--medida-tapa) + 0.375rem);
+    border: var(--borde-ancho) solid var(--color-filete);
+    border-inline-start: 0;
+    border-radius: 0 var(--radio-control) var(--radio-control) 0;
+    font-family: var(--fuente-rotulos);
+    font-size: var(--tamano-chico);
+    letter-spacing: 0.02em;
+    writing-mode: vertical-rl;
+  }
+
+  .libro-indice a[aria-current="page"] {
+    margin-block-start: 0;
+    padding-block-start: var(--espacio-4);
+    padding-inline-end: var(--espacio-5);
+    border-color: var(--color-fondo);
+  }
+
+  .libro-indice-texto {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .libro-indice-corto {
+    display: none;
+  }
+
+  .libro-indice a[aria-current="page"]::before {
+    content: "";
+    width: var(--medida-rombo);
+    height: var(--medida-rombo);
+    background-color: var(--color-signo-sello);
+    border: var(--borde-ancho) solid var(--color-signo-trazo);
+    rotate: 45deg;
+  }
+
+  .libro-mesa .avisos {
+    bottom: var(--espacio-4);
+  }
+}
+
+@media (min-width: 53.75em) and (prefers-reduced-motion: no-preference) {
+  .libro-indice a:not([aria-current]):hover {
+    transform: translateX(3px);
+  }
+}
+
+@media (min-width: 68.75em) {
+  .libro-mesa {
+    --espacio-pagina: var(--espacio-7);
+  }
+
+  .libro-pagina {
+    padding-inline: var(--espacio-7);
+  }
+}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!--/* Concepto "El camino es la página" (variante de estructura concepto-cozy-a): el inicio del
+       donante entero es el viaje de su última donación. El camino de tinta es la columna de la
+       página: sale de la rosa de los vientos (el saludo), pasa por las etapas cumplidas y se vuelve
+       lápiz en la etapa actual, donde está el alfiler de latón con "Estás acá" y cuelgan las cartas
+       del camino. Las cifras y la misión quedan al costado del camino, dentro de la vuelta; la
+       etapa que falta cierra la página. La navegación son carteles de madera: arriba en
+       escritorio, abajo en el celular. Mismos datos y acciones que alternativas/cozy-medieval/
+       paginas/estilos-armazon.html. Composición en static/css/variantes/concepto-cozy-a.css. */-->
+<html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{alternativas/cozy-medieval/layout :: cabeza(~{::title})}"><title>Muestra del área privada - DonaTrack</title></head>
+<body class="cp">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <header class="encabezado cp-cabecera">
+    <a th:replace="~{alternativas/cozy-medieval/layout :: marca}">DonaTrack</a>
+    <!--/* Carteles de madera, uno por sección; el alfiler ◆ marca la actual. En el celular, la
+           barra de abajo. */-->
+    <nav class="cp-carteles" aria-label="Secciones">
+      <ul>
+        <li th:each="opcion : ${navegacion}">
+          <a href="#" th:href="@{${opcion.ruta}}"
+             th:aria-current="${opcion.actual} ? 'page' : null"><svg
+             th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono(${opcion.icono}, 22)}"></svg><span
+             class="cp-cartel-texto" th:text="${opcion.texto}">Sección</span><span
+             class="cp-cartel-corto" aria-hidden="true" th:text="${opcion.textoCorto}">Sección</span></a>
+        </li>
+      </ul>
+    </nav>
+    <div class="encabezado-fin">
+      <a class="boton-icono" href="/notificaciones" th:href="@{/notificaciones}"
+         aria-label="Notificaciones"><svg
+         th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('notificaciones', 22)}"></svg></a>
+      <details class="cuenta">
+        <summary th:aria-label="|Cuenta de ${cuenta.nombre}|" th:text="${cuenta.inicial}">A</summary>
+        <div class="cuenta-menu">
+          <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+          <a href="/perfil" th:href="@{/perfil}">Mi perfil</a>
+          <a href="/salir" th:href="@{/salir}">Salir</a>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <main id="contenido" tabindex="-1" class="cp-camino">
+    <h1 class="solo-lectores">Inicio</h1>
+
+    <section class="cp-salida" aria-labelledby="hola-titulo">
+      <span class="cp-rosa" aria-hidden="true"></span>
+      <p class="cp-rotulo">Punto de partida</p>
+      <h2 id="hola-titulo">Hola, Ana</h2>
+      <p>Tu última donación ya salió del depósito y va camino a Comedor Barrio Ejemplo.</p>
+      <div class="cp-acciones">
+        <a href="#recorrido-titulo" role="button">Ver seguimiento</a>
+        <a href="#tarjeta-titulo" role="button" class="fantasma">Mis donaciones</a>
+      </div>
+    </section>
+
+    <section class="cp-viaje" aria-labelledby="recorrido-titulo">
+      <div class="cp-viaje-cabecera">
+        <h2 id="recorrido-titulo">Tu viaje</h2>
+        <p>Lentejas secas · 15 kg</p>
+        <span th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span>
+        <a href="#tarjeta-titulo" class="enlace-fuerte">Ver el detalle</a>
+      </div>
+      <!--/* Las etapas son las paradas del camino: ● cumplida, ◆ la actual (el alfiler, con "Estás
+             acá" y las cartas que llegaron en este tramo) y ○ la que falta; la última es el
+             destino. */-->
+      <ol class="cp-paradas" aria-labelledby="recorrido-titulo">
+        <li th:each="paso, vuelta : ${pasos}" class="cp-parada"
+            th:classappend="|cp-parada--${paso.avance.tono}|"
+            th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
+          <p class="cp-estas-aca" th:if="${paso.avance.name() == 'ACTUAL'}">Estás acá</p>
+          <p class="cp-destino" th:if="${vuelta.last}">Destino</p>
+          <p class="cp-parada-texto"><b th:text="${paso.nombre}">Paso</b><small
+             th:text="${paso.detalle}">Detalle</small></p>
+          <section th:if="${paso.avance.name() == 'ACTUAL'}" class="cp-cartas"
+                   aria-labelledby="notas-titulo">
+            <h3 id="notas-titulo">Cartas del camino</h3>
+            <p class="cp-bajada">Las últimas noticias de tus donaciones</p>
+            <ul class="notas">
+              <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+                <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+              <li><p>Tu donación quedó lista para entregar.</p>
+                <time datetime="2026-10-14T09:10">ayer</time></li>
+              <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+                <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+            </ul>
+          </section>
+        </li>
+      </ol>
+    </section>
+
+    <!--/* Al costado del camino: el cartel de madera (la cifra, que lleva a sus entregas), los
+           mojones de la huella y el sello de las que llegaron a destino. */-->
+    <section class="cp-huella" aria-labelledby="huella-titulo">
+      <h2 id="huella-titulo">Tu huella</h2>
+      <div class="cp-cartel">
+        <a th:replace="~{alternativas/cozy-medieval/fragmentos/cifra :: cifra(${realizadas})}"></a>
+        <ul class="cp-mojones">
+          <li><b>7</b> donaciones</li>
+          <li><b>2</b> entidades ayudadas</li>
+          <li><b>2</b> entregadas</li>
+        </ul>
+      </div>
+      <section class="cp-llegaron" aria-labelledby="entregadas-titulo">
+        <div class="cp-llegaron-cabecera">
+          <span class="moneda"><b>2</b></span>
+          <h3 id="entregadas-titulo">Llegaron a destino</h3>
+        </div>
+        <svg class="segmentos" viewBox="0 0 100 10" preserveAspectRatio="none"
+             aria-hidden="true" focusable="false">
+          <rect class="segmento--entregadas" x="0" y="0" width="27.3" height="10"/>
+          <rect class="segmento--camino" x="28.8" y="0" width="13.6" height="10"/>
+          <rect class="segmento--proceso" x="43.9" y="0" width="40.9" height="10"/>
+          <rect class="segmento--sin-entregar" x="86.3" y="0" width="13.7" height="10"/>
+        </svg>
+        <ul class="leyenda">
+          <li class="segmento--entregadas">2 entregadas</li>
+          <li class="segmento--camino">1 en camino</li>
+          <li class="segmento--proceso">3 en proceso</li>
+          <li class="segmento--sin-entregar">1 sin entregar</li>
+        </ul>
+      </section>
+    </section>
+
+    <!--/* El rango, junto a la misión que lleva al próximo. */-->
+    <section class="categoria cp-rango" aria-labelledby="categoria-titulo">
+      <h2 id="categoria-titulo">Tu rango</h2>
+      <p class="categoria-nombre">Colaborador</p>
+      <p class="categoria-proxima">Próxima: Sostenedor</p>
+    </section>
+
+    <!--/* Rumbo a la etapa que falta: el cuaderno de sellos de la misión. */-->
+    <section class="mision cp-mision" aria-labelledby="mision-titulo">
+      <h2 id="mision-titulo">Tu misión en curso</h2>
+      <p class="panel-bajada">Colaborador → Sostenedor</p>
+      <div class="mision-encabezado">
+        <p class="mision-nombre"><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+        <p class="mision-cuenta"><span>2/3</span><span>66 %</span></p>
+      </div>
+      <div class="mision-cuaderno">
+        <span class="mision-casilla mision-casilla--sellada" aria-hidden="true"></span>
+        <span class="mision-casilla mision-casilla--sellada" aria-hidden="true"></span>
+        <span class="mision-casilla" aria-hidden="true"></span>
+        <progress class="solo-lectores" value="66" max="100"
+                  aria-label="Progreso de la misión">66 %</progress>
+        <p class="mision-falta">Falta 1 paso</p>
+      </div>
+      <a href="#insignia-titulo" role="button" class="fantasma">Ver incentivos</a>
+    </section>
+  </main>
+  <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
+  <div id="avisos" class="avisos" aria-live="polite"></div>
+</body>
+</html>

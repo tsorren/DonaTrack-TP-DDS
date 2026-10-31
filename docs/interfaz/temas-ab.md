@@ -9,6 +9,7 @@ clara. Para sumar un tema, se agrega una fila.
 | Tema | Qué cambia entre A y B | Qué queda fijo | Cómo se juzga | Dónde se muestra |
 |---|---|---|---|---|
 | `direccion-general` | Concepto, color, tipografía y forma juntos (dos mundos distintos) | Contenido y estructura | ¿Cuál expresa mejor el brief? ¿Cuál se recuerda? | `/estilos` y una pantalla de muestra |
+| `concepto` | La idea rectora de una alternativa: composición, navegación y voz juntas (dos o tres mundos distintos, con la misma identidad) | Datos, acciones y paleta | ¿Se recuerda? ¿Da para todo el sitio? ¿Pasa el piso con datos reales? | El inicio de una persona donante |
 | `paleta` | Valores base de color y su uso | Tipografía, forma, contenido | Carácter, armonía, estados distinguibles (siempre AA) | `/estilos` |
 | `tipografia` | Familias y escala | Color, forma, contenido | Legibilidad en 360 px, carácter del título | `/estilos` + texto largo |
 | `forma` | Radios, bordes y sombras | Color, tipografía | Coherencia, sensación (amable o firme) | `/estilos` |

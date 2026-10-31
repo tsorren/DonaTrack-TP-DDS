@@ -14,6 +14,10 @@
 > **Actualización (2026-10-30):** la [directiva de estructura de Cozy](../../interfaz/estructura-cozy-medieval.md#cómo-se-separa-la-estructura)
 > cambió la parte de plantillas. Antes se compartían con Glassmorphism; ahora cada alternativa tiene
 > las suyas. El ADR sigue `proposed` y se editó en lugar de crear un sucesor, porque nunca se publicó.
+>
+> **Segunda actualización (2026-10-30):** el usuario pidió que Cozy hable con voz propia. La regla
+> "textos iguales" pasa a "**los mismos datos y acciones; voz propia en títulos y rótulos**" (tercera
+> pregunta, Textos). Sigue `proposed`, por el mismo motivo.
 
 ## Contexto y Problema
 
@@ -37,6 +41,8 @@ Problema: ¿cómo conviven dos identidades sobre las mismas pantallas? Son dos p
    Surgió cuando la directiva de estructura de Cozy pidió cambiar cómo se arma cada pantalla
    (hoja con regiones, barra lateral con pestaña, portada, mapa), algo que las hojas de estilo solas
    no alcanzan a hacer.
+3. **Textos:** ¿cada alternativa dice lo mismo con las mismas palabras, o puede tener su voz?
+   Surgió cuando el usuario pidió para Cozy títulos y rótulos propios ("Tu viaje", "Estás acá").
 
 ## Atributos de Calidad y Drivers de Decisión
 
@@ -83,6 +89,23 @@ Con estos pesos, P3 y P4 empatan. El agente recomendó P3, porque cada pieza nue
 Cozy la necesita. El usuario eligió **P4**: prefirió libertad total, sin depender de las piezas
 compartidas. Es decir, la libertad pesó más que el costo, algo que la tabla no refleja del todo.
 
+### Textos
+
+El usuario ya eligió la voz propia; la pregunta es cómo vigilarla. Requisito que decide si la opción
+sirve: ¿garantiza que las dos alternativas muestran los mismos datos y las mismas acciones?
+Puntajes de 1 a 5, estimaciones del agente (`[INFERRED]`).
+
+| Alternativa | Garantiza datos y acciones | Glassmorphism intacta | Libertad | Comparar | Costo por pantalla | Reversible | **Total** |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| T1. Textos iguales, con test (lo que había) | Sí | 5 | 1 | 5 | 4 | 5 | 3,9, descartada: no deja la voz propia |
+| T2. Voz libre, sin test de textos | No | 5 | 5 | 3 | 5 | 5 | 4,6, descartada por el requisito |
+| T3. Voz marcada en cada plantilla (un atributo con el texto de Glassmorphism) | Sí | 5 | 3 | 5 | 3 | 4 | 4,1 |
+| **T4. Mismos datos, acciones y nombres de controles, con test; voz en una tabla por alternativa** | Sí | 5 | 4 | 5 | 3 | 5 | **4,4** |
+
+Se elige **T4**: el test compara datos, acciones y nombres de controles, y deja pasar solo los
+títulos y rótulos de la tabla. T3 mezcla la regla con el marcado, ensucia el HTML publicado y no
+puede expresar un rótulo que Cozy no usa.
+
 ## Resultado de la Decisión
 
 Se elige **B**:
@@ -98,13 +121,21 @@ Se elige **B**:
   apuntando a las suyas. El juego no se apoya en las piezas de Glassmorphism: si a una alternativa
   le falta una plantilla, un test lo detecta (el interceptor, para no romper la maqueta, usa la de
   Glassmorphism si falta una página, pero eso no es parte del diseño). Los adornos (como máscaras SVG en `static/img/<nombre>/`) siguen en sus hojas.
-- **Textos iguales, con test.** Los textos fijos se escriben en cada juego de plantillas, pero
-  `InterfazFitnessTest` exige que cada par de gemelas muestre el mismo conjunto: nodos de texto,
-  `aria-label`, `alt`, `title`, `placeholder`, `data-etiqueta` y los textos entre comillas simples de
-  los atributos `th:*`. También exige que cada plantilla de `templates/` tenga su gemela en cada
-  alternativa (y al revés), y que el catálogo `/estilos` de cada alternativa
-  (`templates/alternativas/<nombre>/paginas/estilos.html`) muestre todos los fragmentos de esa
-  alternativa.
+- **Mismos datos y acciones, con test; voz propia en títulos y rótulos (T4).** Los textos se
+  escriben en cada juego de plantillas. `InterfazFitnessTest` exige que cada par de gemelas tenga:
+  - los mismos textos (nodos de texto, `aria-label`, `alt`, `title`, `placeholder`, `data-etiqueta`
+    y los textos entre comillas de los atributos `th:*`), salvo los títulos y rótulos de la tabla de
+    voz de la alternativa (`cliente-liviano/src/test/resources/voz/<nombre>.txt`);
+  - los mismos datos del modelo: las expresiones `${…}` que escriben texto o que reciben los
+    fragmentos (los íconos, siempre decorativos, no cuentan);
+  - los mismos controles (enlaces, botones, campos, formularios y `summary`), cada uno con su
+    destino y las piezas de su nombre accesible, en cualquier orden.
+
+  La tabla de voz no admite números (son datos) y cada línea tiene que estar en uso. Un rótulo de
+  la tabla puesto en un control rompe la comparación de controles. El test también exige que cada
+  plantilla de `templates/` tenga su gemela en cada alternativa (y al revés), y que el catálogo
+  `/estilos` de cada alternativa (`templates/alternativas/<nombre>/paginas/estilos.html`) muestre
+  todos los fragmentos de esa alternativa.
 - En el perfil `maqueta`, `?alternativa=<nombre>` elige la alternativa. `VariantesInterceptor` la
   valida contra las carpetas que existen, `layout.html` carga sus dos hojas y la vista
   `paginas/x` pasa a `alternativas/<nombre>/paginas/x` si esa plantilla existe. Se combina con
@@ -138,8 +169,12 @@ Se elige **B**:
   alternativa: el doble de trabajo y de revisión visual. Si se olvida una, la pantalla queda sin estilo en esa alternativa: la
   verificación visual recorre las dos y suele detectarlo (contraste, toque o desborde), pero no
   siempre.
-- **Los textos se duplican** en los dos juegos de plantillas. Un test los vigila y falla si
-  difieren, pero un cambio de texto hay que hacerlo en dos lugares.
+- **Los textos se duplican** en los dos juegos de plantillas. Un test vigila que los datos y las
+  acciones sean los mismos, pero un cambio de texto hay que hacerlo en dos lugares, y un título
+  propio, además, en la tabla de voz.
+- **El test no sabe qué es un título.** La tabla de voz podría declarar como rótulo un dato sin
+  números (un nombre, por ejemplo). Lo frenan la revisión de la tabla y la regla de los números, no
+  el test.
 - **Un arreglo de estructura hay que llevarlo a las dos.** Corregir un error de HTML en una
   pantalla de Glassmorphism no corrige su gemela de Cozy. Los tests de gemelas atrapan que falte un
   archivo o un texto, no que las dos estructuras se hayan desviado por error.
@@ -174,6 +209,16 @@ Plantillas:
 - **P4. Juego completo (elegida):** libertad total y aislamiento entre alternativas, a cambio del
   doble de HTML y de estilos por pantalla y por componente, y de textos duplicados que un test
   vigila.
+
+Textos:
+
+- **T1. Textos iguales:** lo más simple de vigilar, pero no deja la voz que pidió el usuario.
+- **T2. Voz libre:** cero costo, pero nada impide que una alternativa muestre otro dato, pierda una
+  acción o cambie el nombre de un botón sin que nadie lo note.
+- **T3. Voz marcada en la plantilla:** la excepción queda junto al texto, pero el atributo viaja al
+  HTML publicado, no puede decir "este rótulo no va" y mezcla la regla con el marcado.
+- **T4. Datos, acciones y controles con test; voz en tabla (elegida):** la libertad que pidió el
+  usuario y la garantía de comparar lo mismo, a cambio de una tabla más que mantener.
 
 ## Validación
 

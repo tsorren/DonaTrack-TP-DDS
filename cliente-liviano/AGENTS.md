@@ -59,8 +59,10 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
   Un test falla si falta.
 - **Cada alternativa tiene su propio juego de plantillas.** Toda plantilla y todo fragmento de
   `templates/` tiene su gemela, con el mismo nombre, en `templates/alternativas/<nombre>/` (y al
-  revés). Una pantalla o un componente nuevo se crea en los dos lugares. Los textos fijos deben ser
-  los mismos en las dos: un test compara cada par.
+  revés). Una pantalla o un componente nuevo se crea en los dos lugares. Las dos muestran los
+  mismos datos y las mismas acciones, con los mismos nombres de botones y enlaces: un test compara
+  cada par. Cada alternativa puede decir a su modo los títulos y los rótulos (sin números y nunca en
+  un control), declarados en su tabla de voz, `src/test/resources/voz/<alternativa>.txt`.
 - El catálogo `/estilos` de cada alternativa
   (`templates/alternativas/<nombre>/paginas/estilos.html`) muestra todos los fragmentos de esa
   alternativa. Un test falla si falta.
@@ -77,7 +79,11 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 - Si el request trae `HX-Request`, el controller devuelve el fragmento; si no, la página completa.
 - Toda petición que pueda tardar más de 300 ms lleva `hx-indicator` (RNF-UI-06).
 - Los avisos se agregan a la región `aria-live` del layout.
-- Nada de JavaScript propio salvo en los mapas.
+- JavaScript propio, solo como mejora (aclaración del usuario, 2026-10-30: "está permitido usar
+  javascript mientras se siga considerando Server Side Rendering"). Las páginas se arman en el
+  servidor con Thymeleaf; el JavaScript suma interacción o movimiento encima de enlaces y
+  formularios reales, respeta "reducir movimiento" y va en `static/js/`. Nada de aplicaciones de
+  una sola página (SPA), frameworks de cliente ni build de frontend.
 
 ## Reglas de estilos
 
@@ -86,8 +92,9 @@ ronda, opción recomendada, palabras simples y sin jerga técnica
 - Los valores base (`--p-*`) y las variables de Pico (`--pico-*`) se usan solo dentro de un
   `tokens.css`.
 - Fuera de los `tokens.css` no hay colores literales (`#…`, `rgb()`, `hsl()`) ni atributos `style`.
-- Hay dos alternativas de identidad, cada una con sus plantillas, sus textos iguales (vigilados por
-  test) y sus hojas de estilo: cada componente o pantalla nueva se escribe y se estiliza en cada una
+- Hay dos alternativas de identidad, cada una con sus plantillas, los mismos datos y acciones
+  (vigilados por test) y sus hojas de estilo: cada componente o pantalla nueva se escribe y se
+  estiliza en cada una
   ([ADR propuesto](../docs/adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)).
 - Las media queries usan solo los puntos de quiebre de `tokens.css` (`--medida-quiebre-*`), con
   mobile first.

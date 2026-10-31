@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<!--/* Concepto "El libro abierto" (Cozy / Medieval): el inicio del donante es su diario de viaje,
+       abierto sobre la mesa de nogal. Página izquierda: el saludo abre el capítulo y debajo va el
+       viaje, a lo alto, con el alfiler en "Estás acá"; al pie, las cartas del camino. Página
+       derecha: las cuentas como asientos de un libro, el sello de las que llegaron, el rango como
+       ex libris y el cuaderno de sellos de la misión. Cada sección se marca con una cinta
+       señaladora que cuelga hacia el lomo. La navegación es un índice de uñeros: en escritorio,
+       pestañas que salen del canto derecho del libro; en el celular, pestañas desde el borde de
+       abajo. La actual es del mismo papel que la página. Mismos datos y acciones que el inicio de
+       Cozy (paginas/estilos.html y layout-privado.html). Estilos: css/variantes/concepto-cozy-b.css. */-->
+<html lang="es-AR" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{alternativas/cozy-medieval/layout :: cabeza(~{::title})}"><title>Muestra del área privada - DonaTrack</title></head>
+<body class="libro-mesa">
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+  <header class="encabezado libro-encabezado">
+    <a th:replace="~{alternativas/cozy-medieval/layout :: marca}">DonaTrack</a>
+    <div class="encabezado-fin">
+      <a class="boton-icono" href="/notificaciones" th:href="@{/notificaciones}"
+         aria-label="Notificaciones"><svg
+         th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono('notificaciones', 22)}"></svg></a>
+      <details class="cuenta">
+        <summary th:aria-label="|Cuenta de ${cuenta.nombre}|" th:text="${cuenta.inicial}">A</summary>
+        <div class="cuenta-menu">
+          <p><b th:text="${cuenta.nombre}">Nombre</b><small th:text="${cuenta.rol}">Rol</small></p>
+          <a href="/perfil" th:href="@{/perfil}">Mi perfil</a>
+          <a href="/salir" th:href="@{/salir}">Salir</a>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <div class="libro">
+    <!--/* El índice de uñeros: una pestaña por sección. A la vista, el nombre corto en el celular y
+           el completo en escritorio; los lectores oyen siempre el completo. */-->
+    <nav class="libro-indice" aria-label="Secciones">
+      <ul>
+        <li th:each="opcion : ${navegacion}">
+          <a href="#" th:href="@{${opcion.ruta}}"
+             th:aria-current="${opcion.actual} ? 'page' : null"><svg
+             th:replace="~{alternativas/cozy-medieval/fragmentos/icono :: icono(${opcion.icono}, 22)}"></svg><span
+             class="libro-indice-texto" th:text="${opcion.texto}">Sección</span><span
+             class="libro-indice-corto" aria-hidden="true" th:text="${opcion.textoCorto}">Sección</span></a>
+        </li>
+      </ul>
+    </nav>
+
+    <main id="contenido" tabindex="-1" class="libro-tapa">
+      <h1 class="solo-lectores">Inicio</h1>
+
+      <div class="libro-pagina libro-pagina--izquierda">
+        <section class="libro-capitulo" aria-labelledby="hola-titulo">
+          <h2 id="hola-titulo">Hola, Ana</h2>
+          <p class="libro-capitular">Tu última donación ya salió del depósito y va camino a Comedor Barrio Ejemplo.</p>
+          <div class="libro-acciones">
+            <a href="#recorrido-titulo" role="button">Ver seguimiento</a>
+            <a href="#tarjeta-titulo" role="button" class="fantasma">Mis donaciones</a>
+          </div>
+        </section>
+
+        <section class="libro-seccion libro-viaje" aria-labelledby="recorrido-titulo">
+          <h2 id="recorrido-titulo" class="libro-cinta">Tu viaje</h2>
+          <p class="libro-carga"><span>Lentejas secas · 15 kg</span><span
+             th:replace="~{alternativas/cozy-medieval/fragmentos/insignia :: insignia(${estados[1]})}">Estado</span></p>
+          <ol class="recorrido" aria-label="Recorrido de tu última donación">
+            <li th:each="paso, vuelta : ${pasos}" class="recorrido-paso"
+                th:classappend="|recorrido-paso--${paso.avance.tono}|"
+                th:aria-current="${paso.avance.name() == 'ACTUAL'} ? 'step' : null">
+              <span class="recorrido-nodo" aria-hidden="true" th:text="${vuelta.count}">1</span>
+              <span class="recorrido-texto"><span th:text="${paso.nombre}">Paso</span><small
+                    th:text="${paso.detalle}">Detalle</small></span>
+              <em class="libro-aca" th:if="${paso.avance.name() == 'ACTUAL'}">Estás acá</em>
+            </li>
+          </ol>
+          <a href="#tarjeta-titulo" class="enlace-fuerte">Ver el detalle</a>
+        </section>
+
+        <section class="libro-seccion libro-cartas" aria-labelledby="notas-titulo">
+          <h2 id="notas-titulo" class="libro-cinta">Cartas del camino</h2>
+          <div class="libro-hoja-suelta">
+            <p class="libro-bajada">Las últimas noticias de tus donaciones</p>
+            <ul class="libro-notas">
+              <li><p>El camión salió a entregar tus lentejas a Comedor Barrio Ejemplo.</p>
+                <time datetime="2026-10-15T14:30">hace 2 h</time></li>
+              <li><p>Tu donación quedó lista para entregar.</p>
+                <time datetime="2026-10-14T09:10">ayer</time></li>
+              <li><p>Asignamos tu donación a una necesidad de Comedor Barrio Ejemplo.</p>
+                <time datetime="2026-10-13T11:00">hace 2 días</time></li>
+            </ul>
+          </div>
+        </section>
+      </div>
+
+      <div class="libro-pagina libro-pagina--derecha">
+        <section class="libro-seccion libro-huella" aria-labelledby="huella-titulo">
+          <h2 id="huella-titulo" class="libro-cinta">Tu huella</h2>
+          <div class="libro-cuentas">
+          <ul class="libro-asientos">
+            <li><b>7</b><span>donaciones</span></li>
+            <li><b>2</b><span>entidades ayudadas</span></li>
+            <li><b>2</b><span>entregadas</span></li>
+          </ul>
+          <a th:replace="~{alternativas/cozy-medieval/fragmentos/cifra :: cifra(${realizadas})}"></a>
+          </div>
+
+          <div class="libro-pie-cuentas">
+            <section class="libro-llegaron" aria-labelledby="entregadas-titulo">
+              <div class="libro-llegaron-cabecera">
+                <span class="moneda"><b>2</b></span>
+                <h3 id="entregadas-titulo">Llegaron a destino</h3>
+              </div>
+              <svg class="segmentos" viewBox="0 0 100 10" preserveAspectRatio="none"
+                   aria-hidden="true" focusable="false">
+                <rect class="segmento--entregadas" x="0" y="0" width="27.3" height="10"/>
+                <rect class="segmento--camino" x="28.8" y="0" width="13.6" height="10"/>
+                <rect class="segmento--proceso" x="43.9" y="0" width="40.9" height="10"/>
+                <rect class="segmento--sin-entregar" x="86.3" y="0" width="13.7" height="10"/>
+              </svg>
+              <ul class="leyenda">
+                <li class="segmento--entregadas">2 entregadas</li>
+                <li class="segmento--camino">1 en camino</li>
+                <li class="segmento--proceso">3 en proceso</li>
+                <li class="segmento--sin-entregar">1 sin entregar</li>
+              </ul>
+            </section>
+
+            <section class="libro-exlibris" aria-labelledby="categoria-titulo">
+              <h3 id="categoria-titulo">Tu rango</h3>
+              <p class="libro-exlibris-nombre">Colaborador</p>
+              <p class="libro-exlibris-proxima">Próxima: Sostenedor</p>
+            </section>
+          </div>
+        </section>
+
+        <section class="libro-seccion libro-mision" aria-labelledby="mision-titulo">
+          <h2 id="mision-titulo" class="libro-cinta">Tu misión en curso</h2>
+          <p class="libro-bajada">Colaborador → Sostenedor</p>
+          <div class="mision-encabezado">
+            <p class="mision-nombre"><b>Donante constante</b><span>Doná tres meses seguidos</span></p>
+            <p class="mision-cuenta"><span>2/3</span><span>66 %</span></p>
+          </div>
+          <div class="mision-cuaderno">
+            <span class="mision-casilla mision-casilla--sellada" aria-hidden="true"></span>
+            <span class="mision-casilla mision-casilla--sellada" aria-hidden="true"></span>
+            <span class="mision-casilla" aria-hidden="true"></span>
+            <progress class="solo-lectores" value="66" max="100"
+                      aria-label="Progreso de la misión">66 %</progress>
+            <p class="mision-falta">Falta 1 paso</p>
+          </div>
+          <a href="#insignia-titulo" role="button" class="fantasma">Ver incentivos</a>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!--/* Los avisos breves (toasts) se agregan acá: los lectores de pantalla los anuncian. */-->
+  <div id="avisos" class="avisos" aria-live="polite"></div>
+</body>
+</html>

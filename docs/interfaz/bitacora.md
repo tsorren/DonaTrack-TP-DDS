@@ -26,6 +26,86 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · concepto (Cozy / Medieval) · Iteración 1: la mesa del cartógrafo
+
+- **Decisión:** el inicio del donante, y desde ahí todo Cozy, es **la mesa del cartógrafo**: una
+  mesa de nogal vista desde arriba con objetos sueltos, cada uno con su forma y su papel (la nota
+  del saludo, el mapa del viaje con el alfiler, la carta con las noticias, el libro de cuentas y el
+  cuaderno de sellos), y los cajones de la mesa como navegación. Se combina con lo mejor de los
+  otros dos: del camino, "Estás acá" como hito grande de latón y los carteles de madera con punta
+  de flecha (que pasan a competir con los cajones en la iteración 2); del libro, los asientos con
+  guía de puntos y doble filete, el rango como etiqueta pegada y el recorrido que sirve para
+  cualquier cantidad de etapas.
+- **Alternativas:** A, **el camino es la página** (el viaje de la donación como columna de toda la
+  página, con carteles de madera arriba); B, **el libro abierto** (dos páginas con el lomo al medio,
+  cintas señaladoras y un índice de uñeros en el canto). Los tres se construyeron en serio, en una
+  copia aparte cada uno, y pasaron el piso en una sola corrida (360, 1280 y 1920 px, sin hallazgos).
+- **Por qué:** el crítico de arte la puso primera: es la idea más memorable, cuenta el viaje con un
+  mapa de verdad y es la que más da para el resto del sitio (listas como carpetas, detalle como
+  papel ampliado, confirmar recepción con el sello sobre el mapa). Además es la que mejor responde
+  a la dirección nueva del usuario: esquemorfismo rústico y profesional. El camino se entiende
+  rápido, pero su mitad de abajo vuelve a ser tarjetas comunes y su dibujo depende de que haya
+  cinco etapas. El libro es el más pulido y el más sólido, pero es el que más se parece a la página
+  rechazada.
+- **Costo:** el crítico de piso marcó tres bloqueos que la iteración 2 tiene que resolver: el mapa
+  está dibujado para cinco etapas con la actual en la cuarta (tiene que salir de los datos); con las
+  7 secciones del admin, la barra de abajo del celular no entra; y en 360 × 640 "Estás acá" queda
+  apenas debajo de la primera pantalla. El nogal deja de ser solo lo que navega: pasa a ser la mesa.
+  Cuando se aplique, reemplaza tres decisiones anteriores de Cozy: la estructura "cada pantalla es
+  una hoja del atlas", la barra con el lomo y la pestaña con canto de latón, y el inicio "a lo
+  ancho".
+- **Quién decidió:** el agente, con la libertad que dio el usuario ("creatividad absoluta y
+  decisiones autónomas"), después de dos críticos independientes (arte y piso).
+- **Evidencia:** `evidencia/cozy-medieval/concepto-inicio/` (antes, A, B y C; 360 y 1280 px).
+
+### 2026-10-31 · referencias (Cozy / Medieval) · Esquemorfismo rústico, profesional y con juego liviano
+
+- **Decisión:** el usuario sumó 18 imágenes de referencia y una dirección: "esquemorfismo rústico.
+  Evitar que sea gimmick-y. Buscar profesionalismo. Gamificación ligera, creatividad e identidad
+  propia. Explorar, aventura." Pidió tres iteraciones autónomas, cada una más ambiciosa, y que la
+  última diseñe el flujo completo del sitio.
+- **Alternativas:** ninguna; es un insumo del usuario.
+- **Por qué:** el primer intento de Cozy cambió el vestido y no la forma. Las referencias muestran
+  objetos con cuerpo (cuero, madera, latón y papel) ordenados con oficio editorial.
+- **Costo:** son imágenes de terceros: quedan como referencia y no entran al sitio ni al entregable.
+- **Quién decidió:** usuario.
+- **Evidencia:** `identidad/referencias-cozy-medieval/`.
+
+### 2026-10-30 · proceso · JavaScript propio, solo como mejora
+
+- **Decisión:** se permite JavaScript propio mientras las páginas se sigan armando en el servidor.
+  Lo esencial sigue funcionando sin él, respeta "reducir movimiento" y no hay SPA, frameworks de
+  cliente ni build de frontend. Cambia la regla "nada de JavaScript propio salvo en los mapas"
+  (`cliente-liviano/AGENTS.md` y D18 del ADR-E6-06, que sigue `proposed`).
+- **Alternativas:** seguir sin JavaScript propio.
+- **Por qué:** aclaración del usuario: "está permitido usar javascript mientras se siga
+  considerando Server Side Rendering".
+- **Costo:** más código propio para revisar; cada script tiene que funcionar como agregado.
+- **Quién decidió:** usuario.
+- **Evidencia:** ninguna.
+
+### 2026-10-30 · voz (Cozy / Medieval) · Los mismos datos y acciones, con voz propia
+
+- **Decisión:** Cozy dice a su modo los títulos y los rótulos ("Tu viaje", "Estás acá", "Cartas del
+  camino") y muestra los mismos datos y las mismas acciones que Glassmorphism, con los mismos
+  nombres de botones y enlaces. Los títulos propios van en una tabla
+  (`cliente-liviano/src/test/resources/voz/cozy-medieval.txt`), sin números. El test que comparaba
+  los textos de las gemelas pasa a comparar datos, acciones y nombres de controles, y deja pasar
+  solo lo que dice la tabla.
+- **Alternativas:** los mismos textos (la regla anterior); voz libre, sin test; la voz marcada en
+  cada plantilla con un atributo (ver el
+  [ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md),
+  pregunta Textos).
+- **Por qué:** el usuario quiso que Cozy tenga voz. La tabla deja la voz a la vista y el test
+  asegura que las dos alternativas se comparan sobre lo mismo. Una prueba de mutación lo demostró:
+  la voz en un título pasa; cambiar un dato, el destino de un enlace o el nombre de un botón, o
+  poner números en la voz, falla.
+- **Costo:** un título propio se escribe en la plantilla y en la tabla. El test no sabe qué es un
+  título: si alguien declara un dato sin números como rótulo, lo frena la revisión de la tabla.
+- **Quién decidió:** usuario (la regla); agente (cómo vigilarla).
+- **Evidencia:** `InterfazFitnessTest` (`lasGemelasTienenLosMismosDatosYAcciones` y
+  `laVozPropiaSoloCambiaTitulosYRotulos`).
+
 ### 2026-10-30 · componente:barra-lomo (Cozy / Medieval) · Pestaña con canto de latón
 
 - **Decisión:** la pestaña de la sección actual sigue unida a la hoja y, del lado del lomo,

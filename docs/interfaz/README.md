@@ -37,8 +37,8 @@ flowchart LR
 | 6. Revisión | Flujo, vistas y capturas | Veredicto con hallazgos | `revision-ui` |
 
 **Dos alternativas de identidad.** El sitio tiene dos identidades con las mismas pantallas,
-componentes y textos, cada una con sus plantillas y sus hojas de estilo, para comparar qué mensaje
-transmite cada una
+componentes, datos y acciones, cada una con sus plantillas, sus hojas de estilo y su voz en títulos
+y rótulos, para comparar qué mensaje transmite cada una
 ([ADR propuesto](../adr/cliente-liviano/20261030-dos-alternativas-de-identidad-visual-con-hojas-propias.md)):
 
 | Alternativa | Mensaje | Brief | Plantillas y hojas de estilo | Cómo se ve |
@@ -47,7 +47,8 @@ transmite cada una
 | Cozy / Medieval | Cálida y de aventura | [brief-cozy-medieval.md](identidad/brief-cozy-medieval.md) | `templates/alternativas/cozy-medieval/` y `static/css/alternativas/cozy-medieval/` | `?alternativa=cozy-medieval` (perfil `maqueta`) |
 
 Cada pantalla o componente nuevo se escribe y se estiliza dos veces, una por alternativa, con los
-mismos textos (un test compara los dos juegos). Cozy tiene además su propia
+mismos datos y acciones (un test compara los dos juegos y deja pasar solo los títulos y rótulos de
+la tabla de voz de cada alternativa). Cozy tiene además su propia
 [estructura y navegación](estructura-cozy-medieval.md).
 
 **Comparaciones A/B.** Cuando una decisión de gusto o de forma tiene más de una buena respuesta

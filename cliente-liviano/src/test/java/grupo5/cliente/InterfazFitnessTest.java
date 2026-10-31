@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,7 +23,8 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Reglas de la interfaz que se pueden comprobar sin navegador (cliente-liviano/AGENTS.md). Las
- * reglas y las listas permitidas viven solo en este archivo.
+ * reglas y las listas permitidas viven solo en este archivo; la voz propia de cada alternativa, en
+ * {@code src/test/resources/voz/<alternativa>.txt}.
  */
 class InterfazFitnessTest {
 
@@ -127,7 +129,47 @@ class InterfazFitnessTest {
   private static final Pattern PARECE_TEXTO =
       Pattern.compile("\\p{Lu}|[^\\p{ASCII}]|\\p{L}{2,}[,.;:]?\\s+\\p{L}");
 
+  /**
+   * Voz propia (brief de cada alternativa, Voz): títulos y rótulos que una alternativa dice a su
+   * modo. Una línea por texto, {@code <Glassmorphism> => <alternativa>}; un lado vacío es un rótulo
+   * que la alternativa suma o que no usa.
+   */
+  private static final Path VOCES = Path.of("src/test/resources/voz");
+
+  private static final String FLECHA_DE_VOZ = "=>";
+  private static final Pattern NUMERO = Pattern.compile("\\d");
+
+  /** Controles: lo que se toca. Su nombre accesible y su destino no cambian con la alternativa. */
+  private static final Pattern CONTROL =
+      Pattern.compile(
+          "<(a|button|summary|label|select|textarea)\\b([^>]*)>(.*?)</\\1>", Pattern.DOTALL);
+
+  private static final Pattern CONTROL_SIN_CIERRE = Pattern.compile("<(input|form)\\b([^>]*)>");
+  private static final Pattern DESTINO =
+      Pattern.compile(
+          "\\s((?:th:)?(?:href|action|method|for|form|name|type|commandfor|command)|hx-[\\w-]+)"
+              + "\\s*=\\s*\"([^\"]*)\"");
+  private static final Pattern TEXTO_TH = Pattern.compile("\\sth:(?:u)?text\\s*=\\s*\"([^\"]*)\"");
+
+  /**
+   * Datos del modelo que se muestran: las expresiones ${…} de los atributos que escriben texto y de
+   * los argumentos de los fragmentos. Las de forma (th:classappend, th:if, th:each, th:attr…) y las
+   * de los íconos, que son siempre decorativos, no cuentan: un dibujo es propio de cada
+   * alternativa.
+   */
+  private static final Pattern ATRIBUTO_DE_DATOS =
+      Pattern.compile(
+          "\\sth:(?:u?text|value|aria-label|alt|title|placeholder|datetime|src|data-etiqueta"
+              + "|replace|insert)\\s*=\\s*\"([^\"]*)\"");
+
+  private static final String ICONO = "fragmentos/icono ::";
+
+  private static final Pattern EXPRESION = Pattern.compile("\\$\\{([^}]*)}");
+
   private record Par(String texto, String fondo, double minimo) {}
+
+  /** Un texto de Glassmorphism y cómo lo dice la alternativa; vacío, si no lo tiene. */
+  private record Voz(String comun, String propia) {}
 
   @Test
   void soloTokensCssDefineColores() {
@@ -260,19 +302,58 @@ class InterfazFitnessTest {
   }
 
   @Test
-  void lasGemelasTienenLosMismosTextos() {
+  void lasGemelasTienenLosMismosDatosYAcciones() {
     List<String> fallas = new ArrayList<>();
     for (Path juego : juegosDeAlternativas()) {
+      List<Voz> voz = voz(juego);
       for (Path comun : plantillasDeGlassmorphism()) {
         Path gemela = juego.resolve(PLANTILLAS.relativize(comun));
         if (Files.exists(gemela)) {
-          diferencia(gemela.toString(), textos(comun), textos(gemela), fallas);
+          diferencia(
+              gemela + " (textos)",
+              conVoz(textos(comun), voz),
+              sinRotulosNuevos(textos(gemela), voz),
+              fallas);
+          diferencia(gemela + " (datos)", datos(comun), datos(gemela), fallas);
+          diferencia(gemela + " (controles)", controles(comun), controles(gemela), fallas);
         }
       }
     }
     assertThat(fallas)
-        .as("Los textos son los mismos en todas las alternativas; los signos van en SVG o CSS")
+        .as(
+            "Mismos datos, acciones y nombres de controles en todas las alternativas; los títulos y"
+                + " rótulos propios van en src/test/resources/voz/<alternativa>.txt")
         .isEmpty();
+  }
+
+  @Test
+  void laVozPropiaSoloCambiaTitulosYRotulos() {
+    List<String> fallas = new ArrayList<>();
+    for (Path juego : juegosDeAlternativas()) {
+      List<String> comunes = new ArrayList<>();
+      List<String> propios = new ArrayList<>();
+      for (Path comun : plantillasDeGlassmorphism()) {
+        Path gemela = juego.resolve(PLANTILLAS.relativize(comun));
+        if (Files.exists(gemela)) {
+          comunes.addAll(textos(comun));
+          propios.addAll(textos(gemela));
+        }
+      }
+      for (Voz linea : voz(juego)) {
+        String donde = juego.getFileName() + ": " + linea;
+        if (NUMERO.matcher(linea.comun() + linea.propia()).find()) {
+          fallas.add(donde + " tiene números, que son datos");
+        }
+        boolean usada =
+            linea.comun().isEmpty()
+                ? propios.contains(linea.propia())
+                : comunes.contains(linea.comun());
+        if (!usada) {
+          fallas.add(donde + " no aparece en ninguna plantilla");
+        }
+      }
+    }
+    assertThat(fallas).as("La voz propia: rótulos sin números y en uso").isEmpty();
   }
 
   @Test
@@ -359,7 +440,7 @@ class InterfazFitnessTest {
 
   /** Nodos de texto, atributos que se leen y literales que parecen texto en atributos th:*. */
   private static Set<String> textos(Path plantilla) {
-    String html = COMENTARIO_HTML.matcher(leer(plantilla)).replaceAll("");
+    String html = sinComentarios(plantilla);
     Set<String> textos = new TreeSet<>();
     NODO_DE_TEXTO.matcher(html).results().forEach(m -> agregarTexto(textos, m.group(1)));
     ATRIBUTO_DE_TEXTO.matcher(html).results().forEach(m -> agregarTexto(textos, m.group(1)));
@@ -380,15 +461,113 @@ class InterfazFitnessTest {
     }
   }
 
+  /** Los textos de Glassmorphism dichos con la voz de la alternativa. */
+  private static Set<String> conVoz(Set<String> comunes, List<Voz> voz) {
+    Set<String> dichos = new TreeSet<>();
+    for (String texto : comunes) {
+      String propio =
+          voz.stream()
+              .filter(linea -> linea.comun().equals(texto))
+              .map(Voz::propia)
+              .findFirst()
+              .orElse(texto);
+      if (!propio.isEmpty()) {
+        dichos.add(propio);
+      }
+    }
+    return dichos;
+  }
+
+  /** Los textos de la alternativa sin los rótulos que suma su voz. */
+  private static Set<String> sinRotulosNuevos(Set<String> propios, List<Voz> voz) {
+    Set<String> sinNuevos = new TreeSet<>(propios);
+    voz.stream()
+        .filter(linea -> linea.comun().isEmpty())
+        .forEach(linea -> sinNuevos.remove(linea.propia()));
+    return sinNuevos;
+  }
+
+  private static List<Voz> voz(Path juego) {
+    Path tabla = VOCES.resolve(juego.getFileName() + ".txt");
+    if (!Files.exists(tabla)) {
+      return List.of();
+    }
+    List<Voz> voz = new ArrayList<>();
+    for (String linea : lineas(tabla)) {
+      String limpia = linea.strip();
+      if (limpia.isEmpty() || limpia.startsWith("#")) {
+        continue;
+      }
+      int flecha = limpia.indexOf(FLECHA_DE_VOZ);
+      assertThat(flecha).as("%s: falta %s en «%s»", tabla, FLECHA_DE_VOZ, limpia).isNotNegative();
+      voz.add(
+          new Voz(
+              limpia.substring(0, flecha).strip(),
+              limpia.substring(flecha + FLECHA_DE_VOZ.length()).strip()));
+    }
+    return voz;
+  }
+
+  private static Set<String> datos(Path plantilla) {
+    Set<String> datos = new TreeSet<>();
+    ATRIBUTO_DE_DATOS
+        .matcher(sinComentarios(plantilla))
+        .results()
+        .map(atributo -> atributo.group(1))
+        .filter(valor -> !valor.contains(ICONO))
+        .flatMap(valor -> EXPRESION.matcher(valor).results())
+        .forEach(expresion -> datos.add(expresion.group(1).replaceAll("\\s+", "")));
+    return datos;
+  }
+
+  /** Cada control, con su etiqueta, su destino y las piezas de su nombre accesible. */
+  private static List<String> controles(Path plantilla) {
+    String html = sinComentarios(plantilla);
+    List<String> controles = new ArrayList<>();
+    CONTROL
+        .matcher(html)
+        .results()
+        .forEach(m -> controles.add(control(m.group(1), m.group(2), m.group(3))));
+    CONTROL_SIN_CIERRE
+        .matcher(html)
+        .results()
+        .forEach(m -> controles.add(control(m.group(1), m.group(2), "")));
+    return controles;
+  }
+
+  /** Las piezas del nombre van en cualquier orden: cada alternativa las acomoda a su modo. */
+  private static String control(String etiqueta, String atributos, String contenido) {
+    Set<String> destino = new TreeSet<>();
+    DESTINO.matcher(atributos).results().forEach(m -> destino.add(m.group(1) + "=" + m.group(2)));
+    Set<String> nombre = new TreeSet<>();
+    ATRIBUTO_DE_TEXTO.matcher(atributos).results().forEach(m -> agregarTexto(nombre, m.group(1)));
+    TEXTO_TH
+        .matcher(atributos + contenido)
+        .results()
+        .forEach(m -> agregarTexto(nombre, m.group(1)));
+    NODO_DE_TEXTO
+        .matcher(">" + contenido + "<")
+        .results()
+        .forEach(m -> agregarTexto(nombre, m.group(1)));
+    return etiqueta + " " + destino + " " + nombre;
+  }
+
+  /** Lo que sobra o falta, contando las repeticiones. */
   private static void diferencia(
-      String donde, Set<String> esperados, Set<String> propios, List<String> fallas) {
-    Set<String> faltan = new TreeSet<>(esperados);
-    faltan.removeAll(propios);
-    Set<String> sobran = new TreeSet<>(propios);
-    sobran.removeAll(esperados);
+      String donde, Collection<String> esperados, Collection<String> propios, List<String> fallas) {
+    List<String> faltan = new ArrayList<>(esperados);
+    propios.forEach(faltan::remove);
+    List<String> sobran = new ArrayList<>(propios);
+    esperados.forEach(sobran::remove);
     if (!faltan.isEmpty() || !sobran.isEmpty()) {
+      faltan.sort(null);
+      sobran.sort(null);
       fallas.add(donde + ": faltan " + faltan + "; sobran " + sobran);
     }
+  }
+
+  private static String sinComentarios(Path plantilla) {
+    return COMENTARIO_HTML.matcher(leer(plantilla)).replaceAll("");
   }
 
   /** Las plantillas de templates/ salvo los juegos de alternativas y las variantes A/B. */
