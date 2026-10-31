@@ -26,6 +26,40 @@ Cozy / Medieval** dicen "(Cozy / Medieval)" en el tema y guardan su evidencia en
 
 ## Decisiones
 
+### 2026-10-31 · flujo (Cozy / Medieval) · Iteración 3: el flujo completo del sitio, como prototipo
+
+- **Decisión:** el flujo completo del sitio en Cozy queda diseñado como un prototipo navegable de 21
+  pantallas con sus estados, para los cuatro roles: la portada como encrucijada, el mapa de
+  entregadas, ingresar y registrarse; el inicio, el fichero de donaciones por etapa, el viaje de una
+  donación con la foto pegada al pueblo, el mapa de seguimiento, el cuaderno de sellos, las
+  entidades y las cartas del donante; el pueblo de la entidad, el acta de recepción y "la tinta llega
+  y sella"; y la mesa de trabajo del admin, con entidades por aprobar, donaciones por vencer y
+  asignaciones. La ficha está en [flujo-completo-cozy-medieval.md](flujo-completo-cozy-medieval.md).
+  En la maqueta se recorre en `/prototipo/<pantalla>`, empezando por `/prototipo/publico-portada`.
+  Reglas que salen del prototipo: un solo calendario de ejemplo; el nombre del menú siempre a la
+  vista (en el admin, como título; en los demás, como rótulo sobre el título propio); el lápiz para
+  lo propuesto y la tinta para lo que pasó; los formularios por POST, para que nada de lo escrito
+  quede en la dirección.
+- **Alternativas:** construir pantallas reales en las dos alternativas (no hay flujos aprobados ni
+  APIs, y cada una exige su gemela en Glassmorphism); dejar el flujo solo en un documento (no se
+  puede recorrer ni comprobar el piso); hacerlo con variantes A/B (se borran al decidir y no se
+  pueden enlazar entre sí).
+- **Por qué:** el usuario pidió que la tercera iteración diseñe el flujo completo. Un prototipo que
+  se recorre de punta a punta muestra si la mesa del cartógrafo aguanta todo el sitio, y se comprueba
+  con la misma verificación visual que las pantallas reales (39 rutas, sin hallazgos). Lo hicieron
+  cinco grupos en paralelo; tres críticos (arte, piso y flujo) dijeron que se siente un solo sitio y
+  que es más ambicioso y mejor que la iteración 2, y marcaron los arreglos que se hicieron (fechas,
+  enlaces a la donación equivocada, callejones, contraseñas en la dirección, títulos del admin).
+- **Costo:** son pantallas de diseño, sin datos reales ni gemela: cada una se construye de nuevo,
+  en las dos alternativas, cuando se apruebe su flujo. Quedan sin dibujar Donaciones recibidas,
+  Donantes, Camiones, Ranking, Notificaciones de la entidad y del admin, y Mi perfil. El prototipo
+  pidió piezas compartidas que no existen todavía (el diálogo con campos, `campo` con valor cargado y
+  `autocomplete`, los pendientes en latón en la navegación) y mostró un problema que también tiene
+  Glassmorphism: la carga de fotos con `capture` le saca la galería al celular.
+- **Quién decidió:** el agente, con la libertad que dio el usuario, después de tres críticos.
+- **Evidencia:** `evidencia/cozy-medieval/flujo-completo/` (las pantallas principales, 360 y
+  1280 px).
+
 ### 2026-10-31 · componente:navegacion (Cozy / Medieval) · Los cajones del cartógrafo
 
 - **Decisión:** la navegación de Cozy son los cajones de la mesa: en escritorio, una fila arriba; en

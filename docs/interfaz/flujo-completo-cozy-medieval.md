@@ -74,9 +74,9 @@ flowchart LR
 | `donante-cartas` | **La bandeja de cartas**: sobres cerrados ("Sin abrir") y abiertos ("Leída"), cada una lleva a su donación | `donante-cartas-vacio` |
 | `entidad-inicio` | **Tu pueblo**: arriba, los talones de lo que llegó con "Confirmar recepción"; al lado, el pueblo con los caminos que le llegan | `entidad-inicio-vacio` |
 | `entidad-seguimiento` | **Caminos a tu pueblo**: un libro de ruta por etapas, lo que espera confirmación primero | — |
-| `entidad-seguimiento-confirmar` | **El acta de recepción**: qué llega y su último tramo, las fotos como pruebas, los bultos y el remito, y el botón en la línea de la firma | `entidad-seguimiento-confirmar-error` (errores arriba con enlaces y junto a cada campo) |
-| `entidad-seguimiento-sellada` | **La tinta llega y sella**: el último tramo se entinta y cae el sello, una sola vez; el aviso, en texto | Con "reducir movimiento" o sin JavaScript, ya sellada |
-| `entidad-necesidades` | **Lo que hace falta**: libro de registro y "Publicar otra necesidad" | Publicada (`?necesidad=`) |
+| `entidad-seguimiento-confirmar` | **El acta de recepción** (`?entrega=lentejas` o `ropa`): qué llega y su último tramo, las fotos como pruebas, los bultos y el remito, y el botón en la línea de la firma | `entidad-seguimiento-confirmar-error` (errores arriba con enlaces y junto a cada campo) |
+| `entidad-seguimiento-sellada` | **La tinta llega y sella**: el último tramo se entinta y cae el sello, una sola vez; el aviso, en texto | `entidad-seguimiento-sellada-lentejas` y `-ropa` (el sello cae una vez); con "reducir movimiento" o sin JavaScript, ya sellada |
+| `entidad-necesidades` | **Lo que hace falta**: libro de registro y "Publicar otra necesidad" | `entidad-necesidades-publicada` |
 | `admin-inicio` | **La mesa de trabajo**: lo que espera decisión primero (legajos con pestaña de latón y cantidad) y las cuentas al día | — |
 | `admin-entidades` | **Nuevos pueblos para el mapa**: registro de solicitudes; "Aprobar" deshabilitado con el porqué si falta documentación; "Rechazar" con motivo en un diálogo | Aprobada, rechazada, `admin-entidades-vacio` |
 | `admin-donaciones` | **Lo que guarda el depósito**: registro con filtros; lo que vence pronto, con marca y texto | Sin resultados; `admin-donaciones-registrar` (con error) |
