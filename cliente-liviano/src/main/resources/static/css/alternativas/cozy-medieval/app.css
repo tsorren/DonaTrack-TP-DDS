@@ -151,6 +151,14 @@ a {
   border-block-end: 4px double var(--color-filete);
 }
 
+/* La cabecera queda fija arriba: la página reserva su alto y un poco de aire, para que no tape el
+   foco ni el destino de un enlace. */
+:root {
+  scroll-padding-block-start: calc(
+    var(--medida-barra-superior) + var(--borde-regla-doble) + var(--espacio-3)
+  );
+}
+
 .marca {
   display: inline-flex;
   align-items: center;
@@ -826,23 +834,16 @@ nav.navegacion ul {
    Las dos variantes que se van a comparar:
    - B, viaje a lo ancho (la de estas reglas): el recorrido horizontal a todo el ancho de la hoja y
      la leyenda debajo.
-   - A, viaje a lo alto: el recorrido vertical, con la leyenda al costado. Se arma con este bloque,
-     dentro de @media (min-width: 53.75em):
+   - A, viaje a lo alto: el recorrido vertical, con la leyenda al costado. Es la variante
+     static/css/variantes/layout-inicio-donante-a.css. Deja el recorrido vertical en cualquier
+     ancho con .panel--viaje .recorrido { container-type: normal; }: la consulta que lo pone
+     horizontal no encuentra qué medir. Desde 1100 px pone el viaje y la leyenda en un renglón:
        .tablero {
-         grid-template-columns: minmax(0, 1fr) minmax(15rem, 20rem);
+         grid-template-columns: minmax(0, 24rem) minmax(16rem, 1fr);
          grid-template-areas: "saludo saludo" "viaje leyenda" "notas notas" "mision mision";
-         align-items: start;
        }
-       .tablero-leyenda .cifras { grid-template-columns: minmax(0, 1fr); }
-     Mientras el recorrido se oriente por el ancho de la pantalla y no por el de su lugar (hasta
-     unir el frente de signos), A necesita además estas reglas, que lo ponen vertical:
-       .tablero .recorrido { grid-auto-flow: row; gap: 0.875rem; padding-inline-start: 2px; }
-       .tablero .recorrido::before {
-         inset: 15px auto 15px 15px;
-         border-block-start: 0;
-         border-inline-start: var(--borde-ruta) dotted var(--color-ruta);
-       }
-       .tablero .recorrido-paso { flex-direction: row; gap: var(--espacio-3); text-align: start; }
+     La leyenda arranca bajo un filete, con el mismo aire que el viaje, y cada estado de la leyenda
+     va en su renglón.
      En las dos, el título del viaje va arriba y el de las notificaciones, al margen. */
 .tablero {
   display: grid;
@@ -915,16 +916,12 @@ nav.navegacion ul {
 }
 
 /* Panel destacado: el saludo, con marco propio. Es corto, para que el viaje en curso se vea
-   enseguida: la audacia de la hoja es el viaje, no el saludo. El texto va en pergamino liso; en
-   pantallas anchas, a su lado, el mapa: la cuadrícula de meridianos, la rosa de los vientos y el
-   camino de tinta con sus pueblos. */
+   enseguida: la audacia de la hoja es el viaje, no el saludo. Va en pergamino liso, sin mapa: no
+   hay geografía ni una entrega que recorrer. */
 .destacado {
-  position: relative;
   display: grid;
-  gap: var(--espacio-5);
+  gap: var(--espacio-4);
   padding: var(--espacio-4);
-  overflow: hidden;
-  isolation: isolate;
   background-color: var(--color-fondo);
   border: var(--borde-hoja) solid var(--color-filete);
   border-radius: var(--radio-panel);
@@ -965,84 +962,29 @@ nav.navegacion ul {
   padding-inline: var(--espacio-4);
 }
 
-/* El mapa aparece desde 1100 px; antes, el saludo es solo texto. Es un grabado callado: la audacia
-   de la pantalla es el viaje en curso. El camino se estira con el mapa y los pueblos van en
-   proporción del dibujo (360 × 200): siguen sobre el camino con cualquier ancho y alto. */
+/* Las cifras del saludo, en una línea de texto debajo de las acciones: sin signos ni cajas. El
+   dibujo del camino y sus pueblos queda en el HTML, sin mostrarse, porque los textos son los
+   mismos que en Glassmorphism. */
 .destacado-red {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-1) var(--espacio-4);
+  color: var(--color-texto-suave);
+  font-size: var(--tamano-chico);
+}
+
+.destacado-red > :not(.destacado-chip) {
   display: none;
-  position: relative;
-  min-height: 8rem;
 }
 
-/* La cuadrícula de meridianos va solo detrás del mapa, hasta el marco, que la recorta; la separa
-   del texto la línea de tinta del borde del mapa. Pico no repite los fondos de ningún elemento:
-   la cuadrícula lo pide. */
-.destacado-red::before {
-  content: "";
-  position: absolute;
-  inset: calc(-1 * var(--espacio-7)) calc(-1 * var(--espacio-7)) calc(-1 * var(--espacio-7))
-    calc(-1 * var(--espacio-3));
-  z-index: -1;
-  background-image:
-    linear-gradient(var(--color-trama) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-trama) 1px, transparent 1px);
-  background-repeat: repeat;
-  background-size: 3rem 3rem;
-  border-inline-start: var(--borde-ancho) solid var(--color-filete);
-}
-
-/* La rosa de los vientos, en la esquina libre del mapa, arriba a la izquierda del camino. */
-.destacado-red::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--medida-rosa-chica);
-  aspect-ratio: 1;
-  background-color: var(--color-filete);
-  mask: url("../../../img/cozy-medieval/rosa-de-los-vientos.svg") center / contain no-repeat;
-}
-
-.destacado-red svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  fill: none;
-  stroke: var(--color-ruta);
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-dasharray: 0.5 9;
-}
-
-/* Cada parada del camino es un pueblo (⌂): una entidad ayudada, en tinta, centrada en su punto del
-   camino. */
-.destacado-nodo {
-  position: absolute;
-  width: 1.125rem;
-  height: 1.125rem;
-  translate: -50% -50%;
-  background-color: var(--color-titulo);
-  mask: url("../../../img/cozy-medieval/saludo-pueblo.svg") center / contain no-repeat;
-}
-
-/* El camino termina en un pueblo (340, 14) y pasa por otro (160, 102): las dos entidades
-   ayudadas. */
-.destacado-nodo--1 {
-  top: 7%;
-  left: 94.5%;
-}
-
-.destacado-nodo--2 {
-  top: 51%;
-  left: 44.5%;
-}
-
-/* Las cartelas repetían las cifras, que en esta hoja son la leyenda, y no entran en el mapa corto.
-   Quedan en el HTML, sin mostrarse, porque los textos son los mismos que en Glassmorphism. */
 .destacado-chip {
-  display: none;
+  display: inline-flex;
+  gap: 0.3em;
+}
+
+.destacado-chip b {
+  color: var(--color-titulo);
+  font-weight: 800;
 }
 
 /* Cifras: la leyenda de la hoja, cada entrada con su signo y su texto, sin caja. */
@@ -1067,28 +1009,19 @@ nav.navegacion ul {
   letter-spacing: 0.03em;
 }
 
-/* Una entrada de la leyenda: el signo del camino de tinta con lo que cuenta y, debajo, el número.
-   Toda la entrada es el enlace a sus entregas; lo que cuenta va subrayado, como un enlace. */
+/* Una entrada de la leyenda: lo que cuenta y, debajo, el número. Sin signo: ninguno de la tabla
+   cuenta donaciones. Toda la entrada es el enlace a sus entregas; lo que cuenta va subrayado, como
+   un enlace. */
 .cifra {
   display: grid;
-  grid-template-columns: var(--medida-signo) auto minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   grid-template-areas:
-    "signo etiqueta etiqueta"
-    ". valor chip";
+    "etiqueta etiqueta"
+    "valor chip";
   align-items: center;
   gap: var(--espacio-1) var(--espacio-3);
   color: var(--color-texto);
   text-decoration: none;
-}
-
-/* El signo es un tramo del camino de tinta, entero y sin punta: la tinta es una donación. */
-.cifra::before {
-  content: "";
-  grid-area: signo;
-  width: var(--medida-signo);
-  height: var(--medida-signo-alto);
-  background-color: var(--color-signo-tinta);
-  mask: url("../../../img/cozy-medieval/signo-camino-de-tinta.svg") center / contain no-repeat;
 }
 
 /* El número va en la letra de texto, que tiene cifras alineadas. */
@@ -1246,16 +1179,17 @@ nav.navegacion ul {
   list-style: none;
 }
 
-/* La categoría: una placa de latón con su filete grabado, como la de una puerta. */
+/* La categoría: una placa de pergamino con su filete grabado en latón oscuro (6:1 sobre el
+   pergamino), como la de una puerta. Sin relleno de latón: no le compite al viaje. */
 .categoria {
   display: grid;
   gap: var(--espacio-1);
   padding: var(--espacio-4) var(--espacio-5);
-  background-color: var(--color-laton-brillante);
+  background-color: var(--color-fondo);
   border: var(--borde-marco) solid var(--color-laton-texto);
   border-radius: var(--radio-chico);
   box-shadow:
-    inset 0 0 0 4px var(--color-laton-brillante),
+    inset 0 0 0 4px var(--color-fondo),
     inset 0 0 0 5px var(--color-laton-texto);
   color: var(--color-titulo);
 }
@@ -1556,7 +1490,8 @@ nav.navegacion ul {
   white-space: nowrap;
 }
 
-/* Avisos breves: una nota de pergamino con su rombo de color. */
+/* Avisos breves: una nota de pergamino con un filete lateral en el color de su tipo. Sin rombo: el
+   rombo es el signo de "ahora". El texto dice el tipo. */
 .avisos {
   position: fixed;
   right: var(--espacio-4);
@@ -1581,23 +1516,14 @@ nav.navegacion ul {
   padding: 0.875rem 1.125rem;
   background-color: var(--color-fondo);
   border: var(--borde-hoja) solid var(--color-filete);
+  border-inline-start: var(--borde-acento) solid var(--color-marca-alterna);
   border-radius: var(--radio-tarjeta);
   box-shadow: var(--sombra-papel);
   color: var(--color-texto);
 }
 
-.aviso::before {
-  content: "";
-  flex: none;
-  width: 0.625rem;
-  height: 0.625rem;
-  margin-top: 0.4375rem;
-  background-color: var(--color-marca-alterna);
-  transform: rotate(45deg);
-}
-
-.aviso--exito::before {
-  background-color: var(--color-marca);
+.aviso--exito {
+  border-inline-start-color: var(--color-marca);
 }
 
 .aviso p {
@@ -1920,14 +1846,12 @@ svg.estado-vacio-costa {
    borrarían: van en el color del texto, con el centro de ○ y de ◉ en el de la hoja. */
 @media (forced-colors: active) {
   :is(.insignia, .leyenda li)::before,
-  .cifra::before,
   .recorrido-paso::after {
     forced-color-adjust: none;
   }
 
   :is(.insignia--en-camino, .leyenda .segmento--camino)::before,
   :is(.insignia--con-problema, .leyenda .segmento--sin-entregar)::before,
-  .cifra::before,
   .recorrido-paso--hecho::after {
     background-color: var(--color-forzado-texto);
   }
@@ -1949,6 +1873,61 @@ svg.estado-vacio-costa {
     background-color: var(--color-forzado-texto);
     border-color: var(--color-forzado-texto);
     box-shadow: inset 0 0 0 3px var(--color-forzado-fondo);
+  }
+}
+
+/* Los otros dibujos pintados (el logo, los sellos y las reglas del cuaderno, la isla y la rosa
+   del estado vacío) también se borrarían: van en el color del texto sobre el de la hoja. El sello
+   cumplido es la silueta llena con el grabado en el color de la hoja; el que falta, solo su trazo.
+   El cuaderno no se ajusta entero para que sus reglas sigan: su texto toma el color del texto. */
+@media (forced-colors: active) {
+  .marca-simbolo::after,
+  .mision-casilla::before,
+  .mision-casilla::after,
+  .mision-cuaderno,
+  .ruta-chica,
+  svg.estado-vacio-costa {
+    forced-color-adjust: none;
+  }
+
+  .marca-simbolo::after,
+  .mision-casilla::after,
+  .ruta-chica {
+    background-color: var(--color-forzado-texto);
+  }
+
+  .mision-casilla::before {
+    background-color: var(--color-forzado-fondo);
+  }
+
+  .mision-casilla--sellada::before {
+    background-color: var(--color-forzado-texto);
+  }
+
+  .mision-casilla--sellada::after {
+    background-color: var(--color-forzado-fondo);
+  }
+
+  .mision-cuaderno {
+    background-image:
+      linear-gradient(var(--color-forzado-texto), var(--color-forzado-texto)),
+      linear-gradient(var(--color-forzado-texto), var(--color-forzado-texto));
+    border-color: var(--color-forzado-texto);
+  }
+
+  .mision-cuaderno .mision-falta {
+    color: var(--color-forzado-texto);
+  }
+
+  .estado-vacio-costa .estado-vacio-tierra,
+  .estado-vacio-agua path:nth-child(even) {
+    fill: var(--color-forzado-fondo);
+    stroke: var(--color-forzado-fondo);
+  }
+
+  .estado-vacio-agua path:nth-child(odd),
+  .estado-vacio-costa .estado-vacio-orilla {
+    stroke: var(--color-forzado-texto);
   }
 }
 
@@ -2473,16 +2452,5 @@ svg.estado-vacio-costa {
 
   .notas li {
     grid-template-columns: minmax(0, 1fr) auto;
-  }
-}
-
-/* Desde 1100 px: la hoja del mapa completa, con el camino de tinta y sus cartelas. */
-@media (min-width: 68.75em) {
-  .destacado {
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-  }
-
-  .destacado-red {
-    display: block;
   }
 }

@@ -193,7 +193,6 @@
   --color-laton: var(--p-laton-500);
   --color-laton-brillante: var(--p-laton-300);
   --color-laton-texto: var(--p-laton-700);
-  --color-ruta: var(--p-tinta-600);
   --color-ruta-sobre-oscuro: var(--p-laton-a60);
   --color-trama: var(--p-tinta-a08);
   --color-segmento-vacio: var(--p-tinta-a12);
@@ -287,7 +286,6 @@
   --medida-rombo: 0.5rem;
   --medida-barra-superior: 4.25rem;
   --medida-columna-estado: 11.5rem;
-  --medida-rosa-chica: 3.5rem;
 
   /* Los mismos puntos de quiebre que Glassmorphism (600, 860 y 1100 px): las dos alternativas
      comparten las plantillas. InterfazFitnessTest compara el literal. */
